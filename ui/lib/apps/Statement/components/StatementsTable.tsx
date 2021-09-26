@@ -24,7 +24,7 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
   const {
     orderOptions,
     changeOrder,
-    validTimeRange: { begin_time, end_time },
+    statementsTimeRange: { begin_time, end_time },
     loadingStatements,
     statements,
     errors,

@@ -2,7 +2,7 @@ import CSSMotion from 'rc-animate/es/CSSMotion'
 import cx from 'classnames'
 import * as singleSpa from 'single-spa'
 import { Root, AppearAnimate } from '@lib/components'
-import React, { useState, useRef, useCallback, useMemo } from 'react'
+import React, { useState, useRef, useCallback, useMemo, ReactNode } from 'react'
 import {
   DownOutlined,
   GlobalOutlined,
@@ -153,7 +153,7 @@ function useSignInSubmit(
 ) {
   const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | ReactNode | null>(null)
 
   const clearErrorMsg = useCallback(() => {
     setError(null)
@@ -171,7 +171,20 @@ function useSignInSubmit(
       singleSpa.navigateToUrl(successRoute)
     } catch (e) {
       if (!e.handled) {
-        setError(t('signin.message.error', { msg: e.message }))
+        const errMsg = t('signin.message.error', { msg: e.message })
+        if (e.errCode === 'error.api.user.insufficient_privileges') {
+          const errComp = (
+            <>
+              {errMsg}
+              <a href={t('signin.message.access_doc_link')}>
+                {t('signin.message.access_doc')}
+              </a>
+            </>
+          )
+          setError(errComp)
+        } else {
+          setError(errMsg)
+        }
         onFailure()
       }
     } finally {
@@ -229,6 +242,7 @@ function TiDBSignInForm({
             name="username"
             label={t('signin.form.username')}
             rules={[{ required: true }]}
+            tooltip={!enableNonRootLogin && t('signin.form.username_tooltip')}
           >
             <Input
               onInput={clearErrorMsg}

@@ -34,8 +34,8 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
-	"gorm.io/gorm/clause"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
@@ -71,6 +71,8 @@ type Service struct {
 
 	encKeyPath string
 	encKeyLock sync.Mutex
+
+	createImpersonationLock sync.Mutex
 }
 
 func newService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Service, error) {
@@ -78,10 +80,11 @@ func newService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Servi
 		return nil, err
 	}
 	s := &Service{
-		params:           p,
-		oauthStateSecret: cryptopasta.NewHMACKey()[:],
-		encKeyPath:       path.Join(config.DataDir, "dbek.bin"),
-		encKeyLock:       sync.Mutex{},
+		params:                  p,
+		oauthStateSecret:        cryptopasta.NewHMACKey()[:],
+		encKeyPath:              path.Join(config.DataDir, "dbek.bin"),
+		encKeyLock:              sync.Mutex{},
+		createImpersonationLock: sync.Mutex{},
 	}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -139,9 +142,7 @@ func (s *Service) getOrCreateMasterEncKey() (*[32]byte, error) {
 // plain SQL password. Currently this function only reads `root` user impersonation.
 func (s *Service) getAndDecryptImpersonation() (string, string, error) {
 	var imp SSOImpersonationModel
-	// TODO: Support different users
 	err := s.params.LocalStore.
-		Where("sql_user = ?", "root").
 		First(&imp).Error
 	if err != nil {
 		return "", "", fmt.Errorf("bad record: %v", err)
@@ -179,50 +180,51 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 		return nil, err
 	}
 
-	user, password, err := s.getAndDecryptImpersonation()
+	userName, password, err := s.getAndDecryptImpersonation()
 	if err != nil {
 		return nil, err
 	}
-	{
-		// Try to establish a connection to verify the user and password.
-		db, err := s.params.TiDBClient.OpenSQLConn(user, password)
-		if err != nil {
-			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
-				_ = s.updateImpersonationStatus(user, ImpersonateStatusAuthFail)
-				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
-			}
-			return nil, err
-		}
 
-		_ = s.updateImpersonationStatus(user, ImpersonateStatusSuccess)
-		_ = utils.CloseTiDBConnection(db)
+	// Check whether this user can access dashboard
+	writeable, err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
+	if err != nil {
+		if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
+			_ = s.updateImpersonationStatus(userName, ImpersonateStatusAuthFail)
+			return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
+		}
+		if errorx.IsOfType(err, user.ErrInsufficientPrivs) {
+			_ = s.updateImpersonationStatus(userName, ImpersonateStatusInsufficientPrivs)
+			return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
+		}
+		return nil, err
 	}
+	_ = s.updateImpersonationStatus(userName, ImpersonateStatusSuccess)
+
 	return &utils.SessionUser{
 		Version:      utils.SessionVersion,
 		HasTiDBAuth:  true,
-		TiDBUsername: user,
+		TiDBUsername: userName,
 		TiDBPassword: password,
 		DisplayName:  userInfo.Email,
 		IsShareable:  true,
-		IsWriteable:  !dc.SSO.CoreConfig.IsReadOnly,
+		IsWriteable:  writeable && !dc.SSO.CoreConfig.IsReadOnly,
 		OIDCIDToken:  idToken,
 	}, nil
 }
 
-func (s *Service) createImpersonation(user string, password string) (*SSOImpersonationModel, error) {
-	if user != "root" {
-		return nil, ErrUnsupportedUser.New("User must be root")
-	}
+func (s *Service) createImpersonation(userName string, password string) (*SSOImpersonationModel, error) {
 	{
-		// First try to establish a connection to verify the user and password.
-		db, err := s.params.TiDBClient.OpenSQLConn(user, password)
+		// Check whether this user can access dashboard
+		_, err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
 			}
+			if errorx.IsOfType(err, user.ErrInsufficientPrivs) {
+				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
+			}
 			return nil, err
 		}
-		_ = utils.CloseTiDBConnection(db)
 	}
 	key, err := s.getOrCreateMasterEncKey()
 	if err != nil {
@@ -235,11 +237,19 @@ func (s *Service) createImpersonation(user string, password string) (*SSOImperso
 	encryptedInHex := hex.EncodeToString(encrypted)
 
 	record := &SSOImpersonationModel{
-		SQLUser:               user,
+		SQLUser:               userName,
 		EncryptedPass:         encryptedInHex,
 		LastImpersonateStatus: nil,
 	}
-	err = s.params.LocalStore.Clauses(clause.Insert{Modifier: "OR REPLACE"}).Create(&record).Error
+	// currently, we only support to authorize one sql user
+	s.createImpersonationLock.Lock()
+	defer s.createImpersonationLock.Unlock()
+
+	err = s.revokeAllImpersonations()
+	if err != nil {
+		return nil, err
+	}
+	err = s.params.LocalStore.Create(&record).Error
 	if err != nil {
 		return nil, err
 	}
@@ -254,16 +264,21 @@ func (s *Service) revokeAllImpersonations() error {
 }
 
 type oidcWellKnownConfig struct {
-	Issuer        string `json:"issuer"`
-	AuthURL       string `json:"authorization_endpoint"`
-	TokenURL      string `json:"token_endpoint"`
-	UserInfoURL   string `json:"userinfo_endpoint"`
-	EndSessionURL string `json:"end_session_endpoint"`
+	Issuer                           string   `json:"issuer"`
+	AuthURL                          string   `json:"authorization_endpoint"`
+	TokenURL                         string   `json:"token_endpoint"`
+	UserInfoURL                      string   `json:"userinfo_endpoint"`
+	EndSessionURL                    string   `json:"end_session_endpoint"`
+	JWKSURI                          string   `json:"jwks_uri"`
+	ResponseTypesSupported           []string `json:"response_types_supported"`
+	SubjectTypesSupported            []string `json:"subject_types_supported"`
+	IDTokenSigningAlgValuesSupported []string `json:"id_token_signing_alg_values_supported"`
 }
 
 func (s *Service) discoverOIDC(issuer string) (*oidcWellKnownConfig, error) {
+	issuer = strings.TrimSuffix(issuer, "/")
 	if !strings.HasPrefix(issuer, "http://") && !strings.HasPrefix(issuer, "https://") {
-		issuer = "http://" + issuer
+		issuer = "https://" + issuer
 	}
 	_, err := url.Parse(issuer)
 	if err != nil {
@@ -273,23 +288,35 @@ func (s *Service) discoverOIDC(issuer string) (*oidcWellKnownConfig, error) {
 	ctx, cancel := context.WithTimeout(s.lifecycleCtx, discoveryTimeout)
 	defer cancel()
 
-	wellKnownURL := strings.TrimSuffix(issuer, "/") + "/.well-known/openid-configuration"
+	wellKnownURL := issuer + "/.well-known/openid-configuration"
 	resp, err := resty.New().R().SetContext(ctx).SetResult(&oidcWellKnownConfig{}).Get(wellKnownURL)
 	if err != nil {
 		return nil, ErrDiscoverFailed.Wrap(err, "Failed to discover OIDC endpoints")
 	}
 	wellKnownConfig := resp.Result().(*oidcWellKnownConfig)
-	if wellKnownConfig.Issuer != issuer {
+	if strings.TrimSuffix(wellKnownConfig.Issuer, "/") != issuer {
 		return nil, ErrDiscoverFailed.New("Issuer did not match in the OIDC provider, expect %s, got %s", issuer, wellKnownConfig.Issuer)
 	}
 	if len(wellKnownConfig.TokenURL) == 0 {
-		return nil, ErrDiscoverFailed.New("TokenURL is not provided in the OIDC provider")
+		return nil, ErrDiscoverFailed.New("token_endpoint is not provided in the OIDC provider")
 	}
 	if len(wellKnownConfig.AuthURL) == 0 {
-		return nil, ErrDiscoverFailed.New("AuthURL is not provided in the OIDC provider")
+		return nil, ErrDiscoverFailed.New("authorization_endpoint is not provided in the OIDC provider")
 	}
 	if len(wellKnownConfig.UserInfoURL) == 0 {
-		return nil, ErrDiscoverFailed.New("UserInfoURL is not provided in the OIDC provider")
+		return nil, ErrDiscoverFailed.New("userinfo_endpoint is not provided in the OIDC provider")
+	}
+	if len(wellKnownConfig.JWKSURI) == 0 {
+		return nil, ErrDiscoverFailed.New("jwks_uri is not provided in the OIDC provider")
+	}
+	if len(wellKnownConfig.ResponseTypesSupported) == 0 {
+		return nil, ErrDiscoverFailed.New("response_types_supported is not provided in the OIDC provider")
+	}
+	if len(wellKnownConfig.SubjectTypesSupported) == 0 {
+		return nil, ErrDiscoverFailed.New("subject_types_supported is not provided in the OIDC provider")
+	}
+	if len(wellKnownConfig.IDTokenSigningAlgValuesSupported) == 0 {
+		return nil, ErrDiscoverFailed.New("id_token_signing_alg_values_supported is not provided in the OIDC provider")
 	}
 	return wellKnownConfig, nil
 }

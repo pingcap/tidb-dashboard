@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Button, Space, Row, Col } from 'antd'
 import { isNull, isUndefined } from 'lodash'
@@ -10,11 +10,8 @@ import client, {
   TopologyStoreInfo,
   TopologyTiDBInfo,
 } from '@lib/client'
-import {
-  ApiFormWidgetConfig,
-  createFormWidget,
-  ParamModelType,
-} from './widgets'
+import { ApiFormWidgetConfig, createFormWidget } from './widgets'
+import { isConstantModel } from './widgets/Constant'
 import { distro } from '@lib/utils/i18n'
 
 export interface Topology {
@@ -31,7 +28,6 @@ export default function ApiForm({
   endpoint: EndpointAPIModel
   topology: Topology
 }) {
-  const [form] = Form.useForm()
   const { t } = useTranslation()
   const { id, path_params, query_params, component } = endpoint
   const endpointHostParamKey = useMemo(
@@ -44,6 +40,10 @@ export default function ApiForm({
   })
   const params = [...pathParams, ...(query_params ?? [])]
   const [loading, setLoading] = useState(false)
+  const [form] = Form.useForm()
+  const formPathsWithoutConstant = params
+    .filter((p) => !isConstantModel(p))
+    .map((p) => p.name!)
 
   const download = useCallback(
     async (values: any) => {
@@ -94,6 +94,9 @@ export default function ApiForm({
       topology={topology}
     />
   )
+  useEffect(() => {
+    formPathsWithoutConstant.push(endpointHostParamKey)
+  })
 
   return (
     <Form layout="vertical" form={form} onFinish={download}>
@@ -103,9 +106,7 @@ export default function ApiForm({
         </FormItemCol>
         {params
           // hide constant param model widget
-          .filter(
-            (param) => (param.model as ParamModelType).type !== 'constant'
-          )
+          .filter((param) => !isConstantModel(param))
           .map((param) => (
             <FormItemCol key={param.name}>
               <ApiFormItem
@@ -130,7 +131,7 @@ export default function ApiForm({
           <Button
             icon={<UndoOutlined />}
             htmlType="button"
-            onClick={() => form.resetFields()}
+            onClick={() => form.resetFields(formPathsWithoutConstant)}
           >
             {t('debug_api.form.reset')}
           </Button>

@@ -45,8 +45,9 @@ const createJSXElementWrapper = (WidgetDef: ApiFormWidget) => (
 const paramModelWidgets: Widgets = {
   host: HostSelectWidget,
   text: TextWidget,
+  escape_text: TextWidget,
   bool: createJSXElementWrapper(BoolWidget),
-  tags: createJSXElementWrapper(TagsWidget),
+  multi_value: createJSXElementWrapper(TagsWidget),
   int: createJSXElementWrapper(IntWidget),
   enum: EnumWidget,
   constant: ConstantWidget,

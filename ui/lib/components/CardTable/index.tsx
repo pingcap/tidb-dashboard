@@ -123,7 +123,7 @@ function useRenderClickableRow(
         </div>
       )
     },
-    [onRowClicked, clickedRowIdx]
+    [onRowClicked, clickedRowIdx, customRender]
   )
 }
 

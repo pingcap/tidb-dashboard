@@ -7,7 +7,7 @@ error:
     user:
       signin:
         invalid_code: Authorization Code is invalid or expired
-      insufficient_privileges: The user does not have sufficient privileges to access {{distro.tidb}} Dashboard
+      insufficient_privileges: 'The user does not have sufficient privileges to access {{distro.tidb}} Dashboard. '
     slow_query:
       export_no_data: No slow queires can be exported
     statement:

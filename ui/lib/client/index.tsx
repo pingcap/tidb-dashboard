@@ -73,6 +73,7 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
         response?.data?.message || err.message || i18next.t(ERR_CODE_OTHER)
     }
     err.message = content
+    err.errCode = errCode
 
     if (errCode === 'error.api.unauthorized') {
       // Handle unauthorized error in a unified way

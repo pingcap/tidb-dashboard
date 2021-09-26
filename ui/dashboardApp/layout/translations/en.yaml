@@ -2,7 +2,7 @@ signin:
   message:
     error: 'Sign in failed: {{ msg }}'
     success: Sign in successfully
-    access_doc_link: https://docs.pingcap.com/tidb/stable/dashboard-access
+    access_doc_link: https://docs.pingcap.com/tidb/stable/dashboard-user
     see_details: see details
   form:
     username: Username

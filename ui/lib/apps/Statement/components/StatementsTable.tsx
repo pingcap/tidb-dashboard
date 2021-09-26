@@ -38,6 +38,10 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
   const navigate = useNavigate()
   const handleRowClick = usePersistFn(
     (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
+      // the evicted record's digest is empty string
+      if (!rec.digest) {
+        return
+      }
       saveClickedItemIndex(idx)
       const qs = DetailPage.buildQuery({
         digest: rec.digest,
@@ -78,7 +82,10 @@ const renderRow: IDetailsListProps['onRenderRow'] = (props) => {
   const customStyles: Partial<IDetailsRowStyles> = {}
   // the evicted record's digest is empty string
   if (!props.item.digest) {
-    customStyles.root = { backgroundColor: theme.palette.neutralLighter }
+    customStyles.root = {
+      backgroundColor: theme.palette.neutralLighter,
+      cursor: 'not-allowed',
+    }
   }
 
   return <DetailsRow {...props} styles={customStyles} />

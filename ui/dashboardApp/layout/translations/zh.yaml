@@ -3,7 +3,7 @@ signin:
     error: '登录失败: {{ msg }}'
     success: 登录成功
     access_doc_link: https://docs.pingcap.com/zh/tidb/stable/dashboard-user
-    see_details: 查看详情
+    help: 帮助
   form:
     username: 用户名
     username_tooltip: 升级到 TiDB 5.3 及更高版本后可自定义登录用户

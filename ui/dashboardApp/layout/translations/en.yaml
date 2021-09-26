@@ -3,7 +3,7 @@ signin:
     error: 'Sign in failed: {{ msg }}'
     success: Sign in successfully
     access_doc_link: https://docs.pingcap.com/tidb/stable/dashboard-user
-    see_details: see details
+    help: help
   form:
     username: Username
     username_tooltip: Sign in user can be customized in TiDB 5.3 or later versions

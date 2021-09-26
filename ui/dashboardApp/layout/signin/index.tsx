@@ -177,7 +177,7 @@ function useSignInSubmit(
             <>
               {errMsg}
               <a href={t('signin.message.access_doc_link')}>
-                {t('signin.message.see_details')}
+                {t('signin.message.help')}
               </a>
             </>
           )

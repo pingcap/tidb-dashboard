@@ -174,8 +174,10 @@ export function statementColumns(
   const tcf = new TableColumnFactory(TRANS_KEY_PREFIX, tableSchemaColumns)
 
   return tcf.columns([
-    tcf.sqlText('digest_text', showFullSQL, rows),
-    tcf.textWithTooltip('digest', rows),
+    evictedRenderColumn(
+      tcf.sqlText('digest_text', showFullSQL, rows).getConfig()
+    ),
+    evictedRenderColumn(tcf.textWithTooltip('digest', rows).getConfig()),
     tcf.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(tcf, rows),
     tcf.bar.single('exec_count', 'short', rows),
@@ -288,4 +290,21 @@ export function planColumns(rows: StatementModel[]): IColumn[] {
     tcf.bar.single('exec_count', 'short', rows),
     avgMaxColumn(tcf, 'avg_mem', 'bytes', rows),
   ])
+}
+
+export function evictedRenderColumn(defaultRenderColumn: IColumn): IColumn {
+  return {
+    ...defaultRenderColumn,
+    onRender: (...props) => {
+      const rec = props[0]
+      // the evicted record's digest is empty string
+      return rec.digest ? (
+        defaultRenderColumn.onRender!(...props)
+      ) : (
+        <Tooltip title="All of other dropped SQL statements">
+          <i>Others</i>
+        </Tooltip>
+      )
+    },
+  }
 }

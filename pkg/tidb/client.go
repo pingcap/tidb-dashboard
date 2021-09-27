@@ -89,6 +89,9 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 
 			return nil
 		},
+		OnStop: func(c context.Context) error {
+			return cache.Close()
+		},
 	})
 
 	return client

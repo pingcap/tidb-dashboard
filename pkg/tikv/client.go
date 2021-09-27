@@ -67,6 +67,9 @@ func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Clien
 			client.lifecycleCtx = ctx
 			return nil
 		},
+		OnStop: func(c context.Context) error {
+			return cache.Close()
+		},
 	})
 
 	return client

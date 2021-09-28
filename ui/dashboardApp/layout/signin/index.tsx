@@ -25,6 +25,7 @@ import styles from './index.module.less'
 import { useEffect } from 'react'
 import { getAuthURL } from '@lib/utils/authSSO'
 import { AuthTypes } from '@lib/utils/auth'
+import { isDistro } from '@lib/utils/i18n'
 
 enum DisplayFormType {
   uninitialized,
@@ -172,7 +173,13 @@ function useSignInSubmit(
     } catch (e) {
       if (!e.handled) {
         const errMsg = t('signin.message.error', { msg: e.message })
-        if (e.errCode === 'error.api.user.insufficient_privileges') {
+        if (
+          isDistro ||
+          e.errCode !== 'error.api.user.insufficient_privileges'
+        ) {
+          setError(errMsg)
+        } else {
+          // only add help link for TiDB distro when meeting insufficient_privileges error
           const errComp = (
             <>
               {errMsg}
@@ -182,8 +189,6 @@ function useSignInSubmit(
             </>
           )
           setError(errComp)
-        } else {
-          setError(errMsg)
         }
         onFailure()
       }

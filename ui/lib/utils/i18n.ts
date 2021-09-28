@@ -60,4 +60,6 @@ i18next
     },
   })
 
-export { distro }
+const isDistro = process.env.REACT_APP_DISTRO_BUILD_TAG !== undefined
+
+export { distro, isDistro }

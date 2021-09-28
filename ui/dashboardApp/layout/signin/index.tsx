@@ -25,7 +25,7 @@ import styles from './index.module.less'
 import { useEffect } from 'react'
 import { getAuthURL } from '@lib/utils/authSSO'
 import { AuthTypes } from '@lib/utils/auth'
-import { distro } from '@lib/utils/i18n'
+import { isDistro } from '@lib/utils/i18n'
 
 enum DisplayFormType {
   uninitialized,
@@ -174,7 +174,7 @@ function useSignInSubmit(
       if (!e.handled) {
         const errMsg = t('signin.message.error', { msg: e.message })
         if (
-          distro.tidb !== 'TiDB' ||
+          isDistro() ||
           e.errCode !== 'error.api.user.insufficient_privileges'
         ) {
           setError(errMsg)

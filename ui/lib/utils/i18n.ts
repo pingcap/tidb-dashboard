@@ -60,4 +60,8 @@ i18next
     },
   })
 
+export function isDistro() {
+  return process.env.REACT_APP_DISTRO_BUILD_TAG !== undefined
+}
+
 export { distro }

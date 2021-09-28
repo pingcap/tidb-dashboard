@@ -174,7 +174,7 @@ function useSignInSubmit(
       if (!e.handled) {
         const errMsg = t('signin.message.error', { msg: e.message })
         if (
-          isDistro() ||
+          isDistro ||
           e.errCode !== 'error.api.user.insufficient_privileges'
         ) {
           setError(errMsg)

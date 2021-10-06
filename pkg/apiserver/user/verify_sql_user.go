@@ -120,7 +120,7 @@ func checkDashboardPriv(privs map[string]struct{}, enableSEM bool) bool {
 		if !hasPriv("RESTRICTED_TABLES_ADMIN", privs) {
 			return false
 		}
-		if !hasPriv("RESTRICTED_TABLES_ADMIN", privs) {
+		if !hasPriv("RESTRICTED_STATUS_ADMIN", privs) {
 			return false
 		}
 	}

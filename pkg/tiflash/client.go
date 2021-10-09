@@ -57,7 +57,7 @@ func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Cl
 		httpClient:   httpClient,
 		pdClient:     pdClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
-		lifecycleCtx: nil,
+		lifecycleCtx: context.Background(),
 		timeout:      defaultTiFlashStatusAPITimeout,
 		cache:        cache,
 	}

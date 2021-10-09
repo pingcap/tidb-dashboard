@@ -63,7 +63,7 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 		httpScheme:        config.GetClusterHTTPScheme(),
 		endpointAllowlist: al,
 		baseURL:           config.PDEndPoint,
-		lifecycleCtx:      nil,
+		lifecycleCtx:      context.Background(),
 		timeout:           defaultPDTimeout,
 		cache:             cache,
 	}

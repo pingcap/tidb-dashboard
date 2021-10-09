@@ -69,7 +69,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	cache := ttlcache.NewCache()
 	cache.SkipTTLExtensionOnHit(true)
 	client := &Client{
-		lifecycleCtx:             nil,
+		lifecycleCtx:             context.Background(),
 		forwarder:                newForwarder(lc, etcdClient),
 		endpointAllowlist:        []string{},
 		statusAPIHTTPScheme:      config.GetClusterHTTPScheme(),

@@ -57,7 +57,7 @@ func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Clien
 		httpClient:   httpClient,
 		pdClient:     pdClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
-		lifecycleCtx: nil,
+		lifecycleCtx: context.Background(),
 		timeout:      defaultTiKVStatusAPITimeout,
 		cache:        cache,
 	}

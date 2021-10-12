@@ -70,6 +70,7 @@ export default function StatementsOverview() {
     allStmtTypes,
     loadingStatements,
     tableColumns,
+    isTimeRangeOutdated,
 
     downloadCSV,
     downloading,
@@ -180,15 +181,15 @@ export default function StatementsOverview() {
               />
             )}
             {enable && (
-              <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
+              <RefreshTooltip isOutdated={isTimeRangeOutdated}>
                 {loadingStatements ? (
                   <LoadingOutlined />
                 ) : (
                   <ReloadOutlined onClick={refresh} />
                 )}
-              </Tooltip>
+              </RefreshTooltip>
             )}
-            <Tooltip title={t('statement.settings.title')}>
+            <Tooltip title={t('statement.settings.title')} placement="bottom">
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
@@ -232,5 +233,26 @@ export default function StatementsOverview() {
         />
       </Drawer>
     </div>
+  )
+}
+
+function RefreshTooltip({ isOutdated, children }) {
+  const { t } = useTranslation()
+  return isOutdated ? (
+    <Tooltip
+      arrowPointAtCenter
+      title={t('statement.pages.overview.toolbar.refresh_outdated')}
+      visible={isOutdated}
+      placement="bottomLeft"
+    >
+      {children}
+    </Tooltip>
+  ) : (
+    <Tooltip
+      title={t('statement.pages.overview.toolbar.refresh')}
+      placement="bottom"
+    >
+      {children}
+    </Tooltip>
   )
 }

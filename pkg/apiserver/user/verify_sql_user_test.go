@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sqlauth
+package user
 
 import (
 	"testing"
@@ -24,11 +24,11 @@ func TestT(t *testing.T) {
 	TestingT(t)
 }
 
-var _ = Suite(&testSQLAuthSuite{})
+var _ = Suite(&testVerifySQLUserSuite{})
 
-type testSQLAuthSuite struct{}
+type testVerifySQLUserSuite struct{}
 
-func (t *testSQLAuthSuite) Test_parseUserGrants(c *C) {
+func (t *testVerifySQLUserSuite) Test_parseUserGrants(c *C) {
 	cases := []struct {
 		desc     string
 		input    []string
@@ -85,7 +85,7 @@ func (t *testSQLAuthSuite) Test_parseUserGrants(c *C) {
 	}
 }
 
-func (t *testSQLAuthSuite) Test_checkDashboardPriv(c *C) {
+func (t *testVerifySQLUserSuite) Test_checkDashboardPriv(c *C) {
 	cases := []struct {
 		desc      string
 		grants    []string
@@ -151,14 +151,14 @@ func (t *testSQLAuthSuite) Test_checkDashboardPriv(c *C) {
 		// 8
 		{
 			desc:      "extra privileges",
-			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_VARIABLES_ADMIN", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_VARIABLES_ADMIN", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_STATUS_ADMIN"},
 			enableSEM: true,
 			expected:  true,
 		},
 		// 9
 		{
 			desc:      "lack RESTRICTED_VARIABLES_ADMIN extra privileges",
-			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_STATUS_ADMIN"},
 			enableSEM: true,
 			expected:  false,
 		},
@@ -173,7 +173,7 @@ func (t *testSQLAuthSuite) Test_checkDashboardPriv(c *C) {
 	}
 }
 
-func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
+func (t *testVerifySQLUserSuite) Test_checkWriteablePriv(c *C) {
 	cases := []struct {
 		desc     string
 		grants   []string

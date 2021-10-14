@@ -1,0 +1,62 @@
+// Copyright 2021 PingCAP, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package pdclient
+
+import (
+	"context"
+	"crypto/tls"
+	"time"
+
+	"github.com/pingcap/log"
+	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/backoff"
+)
+
+type EtcdClientConfig struct {
+	Endpoints []string
+	Context   context.Context
+	TLS       *tls.Config
+}
+
+// NewEtcdClient creates a new etcd client. The client must be closed by calling `client.Close()`.
+// Returns error when config is invalid.
+func NewEtcdClient(config EtcdClientConfig) (*clientv3.Client, error) {
+	zapCfg := zap.NewProductionConfig()
+	zapCfg.Encoding = log.ZapEncodingName
+	cli, err := clientv3.New(clientv3.Config{
+		Context:              config.Context,
+		Endpoints:            config.Endpoints,
+		AutoSyncInterval:     30 * time.Second,
+		DialTimeout:          5 * time.Second,
+		DialKeepAliveTime:    10 * time.Second,
+		DialKeepAliveTimeout: 3 * time.Second,
+		PermitWithoutStream:  false,
+		DialOptions: []grpc.DialOption{
+			grpc.WithConnectParams(grpc.ConnectParams{
+				Backoff: backoff.Config{
+					BaseDelay:  100 * time.Millisecond, // Default was 1 second
+					Multiplier: 1.6,                    // Default
+					Jitter:     0.2,                    // Default
+					MaxDelay:   3 * time.Second,        // Default was 120 seconds
+				},
+				MinConnectTimeout: 5 * time.Second, // Default was 20 seconds
+			}),
+		},
+		TLS:       config.TLS,
+		LogConfig: &zapCfg,
+	})
+	return cli, err
+}

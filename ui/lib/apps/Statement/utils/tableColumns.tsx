@@ -179,6 +179,8 @@ export function statementColumns(
     ),
     evictedRenderColumn(tcf.textWithTooltip('digest', rows).getConfig()),
     tcf.bar.single('sum_latency', 'ns', rows),
+    tcf.bar.single('min_latency', 'ns', rows),
+    tcf.bar.single('max_latency', 'ns', rows),
     avgMinMaxLatencyColumn(tcf, rows),
     tcf.bar.single('exec_count', 'short', rows),
     tcf.textWithTooltip('plan_count', rows).patchConfig({

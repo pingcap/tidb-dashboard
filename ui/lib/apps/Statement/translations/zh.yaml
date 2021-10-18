@@ -79,6 +79,10 @@ statement:
     exec_count_tooltip: 该类 SQL 语句在时间段内被执行的总次数
     plan_count: 计划数
     plan_count_tooltip: 该类 SQL 语句在时间段内的不同执行计划数量
+    max_latency: 最大耗时
+    max_latency_tooltip: 单条 SQL 查询的执行时间
+    min_latency: 最小耗时
+    min_latency_tooltip: 单条 SQL 查询的执行时间
     avg_latency: 平均耗时
     avg_latency_tooltip: 单条 SQL 查询的执行时间
     avg_mem: 平均内存

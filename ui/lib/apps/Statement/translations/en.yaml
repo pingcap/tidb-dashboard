@@ -80,6 +80,10 @@ statement:
     exec_count_tooltip: Total execution count for this kind of statement
     plan_count: '# Plans'
     plan_count_tooltip: Number of distinct execution plans of this statement in current time range
+    max_latency: Max Latency
+    max_latency_tooltip: Execution time of single query
+    min_latency: Min Latency
+    min_latency_tooltip: Execution time of single query
     avg_latency: Mean Latency
     avg_latency_tooltip: Execution time of single query
     avg_mem: Mean Memory

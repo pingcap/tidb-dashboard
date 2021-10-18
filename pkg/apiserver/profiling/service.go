@@ -16,16 +16,21 @@ package profiling
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
 )
 
 const (
@@ -54,15 +59,24 @@ type ServiceParams struct {
 	fx.In
 	ConfigManager *config.DynamicConfigManager
 	LocalStore    *dbstore.DB
+
+	HTTPClient *httpc.Client
+	EtcdClient *clientv3.Client
+	PDClient   *pd.Client
 }
 
 type Service struct {
-	params        ServiceParams
+	params       ServiceParams
+	lifecycleCtx context.Context
+
 	wg            sync.WaitGroup
 	sessionCh     chan *StartRequestSession
 	lastTaskGroup *TaskGroup
 	tasks         sync.Map
 	fetchers      *fetchers
+
+	ngMonitoringReqGroup  singleflight.Group
+	ngMonitoringAddrCache atomic.Value
 }
 
 var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers) (*Service, error) {
@@ -72,6 +86,7 @@ var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers
 	s := &Service{params: p, fetchers: fts}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
+			s.lifecycleCtx = ctx
 			s.wg.Add(1)
 			go func() {
 				defer s.wg.Done()

@@ -15,9 +15,7 @@ package tidbclient
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
-	"net"
 	"time"
 
 	"github.com/VividCortex/mysqlerr"
@@ -74,19 +72,14 @@ func (c *SQLClient) OpenConn(user string, pass string) (*gorm.DB, error) {
 
 	db, err := gorm.Open(mysqlDriver.Open(dsn))
 	if err != nil {
-		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
-			//if strings.HasPrefix(addr, "0.0.0.0:") {
-			//	log.Warn(fmt.Sprintf("%s reported its address to be 0.0.0.0. Please specify `-advertise-address` command line parameter when running %s", distro.Data("tidb"), distro.Data("tidb")))
-			//}
-			//if c.forwarder.sqlProxy.noAliveRemote.Load() {
-			//	return nil, forwarder2.ErrNoAliveTiDB.NewWithNoMessage()
-			//}
-		} else if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+		log.Warn("Failed to open SQL connection",
+			zap.String("targetComponent", distro.R().TiDB),
+			zap.Error(err))
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == mysqlerr.ER_ACCESS_DENIED_ERROR {
 				return nil, ErrAuthFailed.New("Bad SQL username or password")
 			}
 		}
-		log.Warn(fmt.Sprintf("Failed to open %s connection", distro.R().TiDB), zap.Error(err))
 		return nil, ErrConnFailed.Wrap(err, "Failed to connect to %s", distro.R().TiDB)
 	}
 

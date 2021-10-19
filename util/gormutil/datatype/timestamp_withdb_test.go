@@ -1,12 +1,13 @@
-package types
+// +build integration
+
+package datatype
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	mysqldriver "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 
@@ -15,13 +16,16 @@ import (
 
 type TimestampORMSuite struct {
 	suite.Suite
+	usePrepareStatement bool
 
 	db        *testutil.TestDB
 	tableName string
 }
 
 func (suite *TimestampORMSuite) SetupSuite() {
-	suite.db = testutil.OpenTestDB(suite.T())
+	suite.db = testutil.OpenTestDB(suite.T(), func(_ *mysqldriver.Config, config *gorm.Config) {
+		config.PrepareStmt = suite.usePrepareStatement
+	})
 	suite.tableName = "`" + suite.db.NewID() + "`"
 	suite.db.MustExec(fmt.Sprintf(`CREATE TABLE %s (
 		a bigint,
@@ -215,15 +219,10 @@ func (suite *TimestampORMSuite) TestWhereInIndex() {
 	suite.Require().Equal(int64(1633880141307801000), r.UnixNano())
 
 	// Verify Plan is Index Scan
-	type explainRow struct {
-		ID string `gorm:"column:id"`
-	}
-	var rows []explainRow
-	err = suite.db.Gorm().Raw(
-		fmt.Sprintf("EXPLAIN SELECT ts FROM %s WHERE ts = ?", tableName),
-		Timestamp{Time: time.Unix(0, 1633880141307801000)}).Scan(&rows).Error
-	suite.Require().Nil(err)
-	suite.Require().Contains(rows[1].ID, "IndexRangeScan")
+	explain := suite.db.
+		MustExplain(fmt.Sprintf("SELECT ts FROM %s WHERE ts = ?", tableName),
+			Timestamp{Time: time.Unix(0, 1633880141307801000)})
+	testutil.RequireIndexRangeScan(suite.T(), explain)
 }
 
 func (suite *TimestampORMSuite) TestInsert() {
@@ -277,48 +276,13 @@ func (suite *TimestampORMSuite) TestScanNull() {
 }
 
 func TestTimestampInORM(t *testing.T) {
-	suite.Run(t, new(TimestampORMSuite))
+	suite.Run(t, &TimestampORMSuite{
+		usePrepareStatement: false,
+	})
 }
 
-func TestTimestampJSON(t *testing.T) {
-	ts := Timestamp{Time: time.Unix(0, 1633880141307801631)}
-	v, err := json.Marshal(ts)
-	require.Nil(t, err)
-	require.Equal(t, string(v), "1633880141307801")
-
-	ts = Timestamp{Time: time.Unix(0, 500)}
-	v, err = json.Marshal(ts)
-	require.Nil(t, err)
-	require.Equal(t, string(v), "0")
-
-	st := struct {
-		Foo Timestamp
-	}{
-		Foo: Timestamp{Time: time.Unix(0, 1633880141307801631)},
-	}
-	v, err = json.Marshal(st)
-	require.Nil(t, err)
-	require.Equal(t, string(v), `{"Foo":1633880141307801}`)
-
-	var ts2 Timestamp
-	err = json.Unmarshal([]byte("12345"), &ts2)
-	require.Nil(t, err)
-	require.Equal(t, int64(12345000), ts2.UnixNano())
-
-	err = json.Unmarshal([]byte(`{"Foo":12345}`), &st)
-	require.Nil(t, err)
-	require.Equal(t, int64(12345000), st.Foo.UnixNano())
-
-	err = json.Unmarshal([]byte(`{"Foo":"54321"}`), &st)
-	require.NotNil(t, err)
-
-	err = json.Unmarshal([]byte(`{"Foo":123.45}`), &st)
-	require.NotNil(t, err)
-
-	ts3 := Timestamp{Time: time.Unix(0, 1633880141307801000)}
-	v, err = json.Marshal(ts3)
-	require.Nil(t, err)
-	err = json.Unmarshal(v, &ts2)
-	require.Nil(t, err)
-	require.Equal(t, ts2, ts3)
+func TestTimestampInORMWithPrepared(t *testing.T) {
+	suite.Run(t, &TimestampORMSuite{
+		usePrepareStatement: true,
+	})
 }

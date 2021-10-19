@@ -1,7 +1,5 @@
-profiling:
-  nav_title: 实例性能分析
-instance_profiling:
-  nav_title: 手动分析
+continuous_profiling:
+  nav_title: 周期分析
   list:
     control_form:
       title: 开始性能分析

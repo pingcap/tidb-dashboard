@@ -1,7 +1,5 @@
-profiling:
-  nav_title: Profile Instances
-instance_profiling:
-  nav_title: Manually Profile
+continuous_profiling:
+  nav_title: Continuous Profile
   list:
     control_form:
       title: Start Profiling Instances

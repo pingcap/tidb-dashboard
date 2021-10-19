@@ -6,12 +6,11 @@ require (
 	github.com/ReneKroon/ttlcache/v2 v2.3.0
 	github.com/VividCortex/mysqlerr v0.0.0-20200629151747-c28746d985dd
 	github.com/Xeoncross/go-aesctr-with-hmac v0.0.0-20200623134604-12b17a7ff502
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
-	github.com/appleboy/gin-jwt/v2 v2.6.3
+	github.com/appleboy/gin-jwt/v2 v2.7.0
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/gzip v0.0.1
-	github.com/gin-gonic/gin v1.5.0
+	github.com/gin-gonic/gin v1.7.4
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-graphviz v0.0.5

@@ -11,6 +11,7 @@ continuous_profiling:
     table:
       title: Profiling History
       columns:
+        order: Order
         targets: Instances
         start_at: Start At
         duration: Duration (sec)
@@ -18,6 +19,8 @@ continuous_profiling:
       status:
         running: Running
         finished: Finished
+        failed: Failed
+        partial_finished: Partial Finished
         unknown: Unknown
       actions:
         detail: Detail
@@ -30,6 +33,7 @@ continuous_profiling:
       columns:
         instance: Instance
         kind: Component
+        content: Content
         status: Status
       status:
         finished: Finished

@@ -30,6 +30,7 @@ export default function Page() {
   } = useClientRequest((reqConfig) =>
     client.getInstance().getProfilingGroups(reqConfig)
   )
+  const historyLen = (historyTable || []).length
   const { t } = useTranslation()
   const navigate = useNavigate()
   const instanceSelect = useRef<IInstanceSelectRefProps>(null)
@@ -95,6 +96,15 @@ export default function Page() {
   const historyTableColumns = useMemo(
     () => [
       {
+        name: t('instance_profiling.list.table.columns.order'),
+        key: 'order',
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: (_rec, idx) => {
+          return <span>{historyLen - idx}</span>
+        },
+      },
+      {
         name: t('instance_profiling.list.table.columns.targets'),
         key: 'targets',
         minWidth: 150,
@@ -110,7 +120,16 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         onRender: (rec) => {
-          if (rec.state === 1) {
+          if (rec.state === 0) {
+            // all failed
+            return (
+              <Badge
+                status="error"
+                text={t('instance_profiling.list.table.status.failed')}
+              />
+            )
+          } else if (rec.state === 1) {
+            // running
             return (
               <Badge
                 status="processing"
@@ -118,10 +137,21 @@ export default function Page() {
               />
             )
           } else if (rec.state === 2) {
+            // all success
             return (
               <Badge
                 status="success"
                 text={t('instance_profiling.list.table.status.finished')}
+              />
+            )
+          } else {
+            // partial success
+            return (
+              <Badge
+                status="warning"
+                text={t(
+                  'instance_profiling.list.table.status.partial_finished'
+                )}
               />
             )
           }
@@ -144,7 +174,7 @@ export default function Page() {
         fieldName: 'profile_duration_secs',
       },
     ],
-    [t]
+    [t, historyLen]
   )
 
   return (

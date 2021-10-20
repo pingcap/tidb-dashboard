@@ -49,6 +49,9 @@ export default function Page() {
 
   const data = useMemo(() => mapData(respData), [respData])
 
+  const profileDuration =
+    respData?.task_group_status?.profile_duration_secs || 0
+
   const columns = useMemo(
     () => [
       {
@@ -65,6 +68,22 @@ export default function Page() {
         maxWidth: 150,
         onRender: (record) => {
           return InstanceKindName[record.target.kind]
+        },
+      },
+      {
+        name: t('instance_profiling.detail.table.columns.content'),
+        key: 'content',
+        minWidth: 150,
+        maxWidth: 300,
+        onRender: (record) => {
+          // FIXME: when API is ready, replace it by API
+          let profileType = ''
+          if (record.target.kind === 'pd' || record.target.kind === 'tidb') {
+            profileType = 'CPU Profiling'
+          } else {
+            profileType = 'CPU Flame Graph'
+          }
+          return `${profileType} - ${profileDuration}s`
         },
       },
       {
@@ -96,7 +115,7 @@ export default function Page() {
         },
       },
     ],
-    [t]
+    [t, profileDuration]
   )
 
   const handleRowClick = usePersistFn(

@@ -28,10 +28,9 @@ type TaskState int
 // Built-in task state
 const (
 	TaskStateError TaskState = iota
-
-	// TaskGroup can only have these two states.
 	TaskStateRunning
 	TaskStateFinish
+	TaskPartialFinish
 )
 
 type TaskModel struct {

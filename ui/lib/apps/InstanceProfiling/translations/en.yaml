@@ -13,6 +13,7 @@ instance_profiling:
     table:
       title: Profiling History
       columns:
+        order: Order
         targets: Instances
         start_at: Start At
         duration: Duration (sec)
@@ -20,6 +21,8 @@ instance_profiling:
       status:
         running: Running
         finished: Finished
+        failed: Failed
+        partial_finished: Partial Finished
         unknown: Unknown
       actions:
         detail: Detail
@@ -32,6 +35,7 @@ instance_profiling:
       columns:
         instance: Instance
         kind: Component
+        content: Content
         status: Status
       status:
         finished: Finished

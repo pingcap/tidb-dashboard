@@ -1,4 +1,13 @@
-import { Badge, Button, Form, Select, Modal } from 'antd'
+import {
+  Badge,
+  Button,
+  Form,
+  Select,
+  Modal,
+  Tooltip,
+  Space,
+  Drawer,
+} from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -13,14 +22,17 @@ import {
   CardTable,
   InstanceSelect,
   IInstanceSelectRefProps,
+  Toolbar,
+  TimeRangeSelector,
+  TimeRange,
 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { combineTargetStats } from '../utils'
 
-const profilingDurationsSec = [10, 30, 60, 120]
-const defaultProfilingDuration = 30
+import styles from './List.module.less'
+import { SettingOutlined } from '@ant-design/icons'
 
 export default function Page() {
   const {
@@ -177,47 +189,28 @@ export default function Page() {
     [t, historyLen]
   )
 
+  const [timeRange, setTimeRange] = useState<TimeRange | undefined>(undefined)
+
+  function onTimeRangeChange(v: TimeRange) {
+    setTimeRange(v)
+    // TODO: request api
+  }
+
+  const [showSetting, setShowSetting] = useState(false)
+
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.list_container}>
       <Card title={t('instance_profiling.list.control_form.title')}>
-        <Form
-          onFinish={handleFinish}
-          layout="inline"
-          initialValues={{
-            instances: [],
-            duration: defaultProfilingDuration,
-          }}
-        >
-          <Form.Item
-            name="instances"
-            label={t('instance_profiling.list.control_form.instances.label')}
-            rules={[{ required: true }]}
-          >
-            <InstanceSelect
-              enableTiFlash={true}
-              ref={instanceSelect}
-              style={{ width: 200 }}
-            />
-          </Form.Item>
-          <Form.Item
-            name="duration"
-            label={t('instance_profiling.list.control_form.duration.label')}
-            rules={[{ required: true }]}
-          >
-            <Select style={{ width: 120 }}>
-              {profilingDurationsSec.map((sec) => (
-                <Select.Option value={sec} key={sec}>
-                  {sec}s
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={submitting}>
-              {t('instance_profiling.list.control_form.submit')}
-            </Button>
-          </Form.Item>
-        </Form>
+        <Toolbar className={styles.list_toolbar}>
+          <Space>
+            <TimeRangeSelector value={timeRange} onChange={onTimeRangeChange} />
+          </Space>
+          <Space>
+            <Tooltip title={t('statement.settings.title')} placement="bottom">
+              <SettingOutlined onClick={() => setShowSetting(true)} />
+            </Tooltip>
+          </Space>
+        </Toolbar>
       </Card>
 
       <div style={{ height: '100%', position: 'relative' }}>
@@ -232,6 +225,15 @@ export default function Page() {
           />
         </ScrollablePane>
       </div>
+
+      <Drawer
+        title={t('statement.settings.title')}
+        width={300}
+        closable={true}
+        visible={showSetting}
+        onClose={() => setShowSetting(false)}
+        destroyOnClose={true}
+      ></Drawer>
     </div>
   )
 }

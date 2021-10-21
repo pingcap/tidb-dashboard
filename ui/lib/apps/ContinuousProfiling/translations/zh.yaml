@@ -37,3 +37,19 @@ continuous_profiling:
         status: 状态
       status:
         finished: 完成
+  settings:
+    switch: 启用功能
+    switch_tooltip: 是否启用周期分析功能，启用后，会周期性产出实例性能分析结果。
+    profile_targets: 分析范围
+    profile_targets_tooltip: 分析所有实例，在新实例创建后，也会自动加入分析范围。
+    profile_duration: 分析时长
+    profile_duration_tooltip:
+    profile_interval: 执行周期
+    profile_interval_tooltip: 目前有 {{n}} 个实例，预计每日生成 {{size}} 分析结果文件。
+    profile_retention_duration: 保留时间
+    profile_retention_duration_tooltip: 分析结果会持久化到磁盘中，超过保留时间会被回收。该配置对所有结果生效，包括历史结果。
+    close_feature: 关闭周期分析功能
+    close_feature_confirm: 确认要关闭该功能吗？关闭后将停止周期分析，历史结果会继续保留。
+    actions:
+      close: 关闭
+      cancel: 取消

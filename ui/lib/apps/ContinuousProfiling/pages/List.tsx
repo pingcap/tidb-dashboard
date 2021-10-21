@@ -33,6 +33,7 @@ import { combineTargetStats } from '../utils'
 
 import styles from './List.module.less'
 import { SettingOutlined } from '@ant-design/icons'
+import ConProfSettingForm from './ConProfSettingForm'
 
 export default function Page() {
   const {
@@ -101,7 +102,7 @@ export default function Page() {
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
-      openLink(`/instance_profiling/detail?id=${rec.id}`, ev, navigate)
+      openLink(`/continuous_profiling/detail?id=${rec.id}`, ev, navigate)
     }
   )
 
@@ -233,7 +234,12 @@ export default function Page() {
         visible={showSetting}
         onClose={() => setShowSetting(false)}
         destroyOnClose={true}
-      ></Drawer>
+      >
+        <ConProfSettingForm
+          onClose={() => setShowSetting(false)}
+          onConfigUpdated={() => {}}
+        />
+      </Drawer>
     </div>
   )
 }

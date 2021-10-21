@@ -167,7 +167,7 @@ func (s *Service) updateConprofConfig(c *gin.Context) {
 
 // @Summary Get Estimate Size
 // @Router /continuous-profiling/estimate-size [get]
-// @Param days query string true "days"
+// @Param days query number true "days"
 // @Security JwtAuth
 // @Success 200 {number} number "size"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"

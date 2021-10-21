@@ -37,3 +37,14 @@ continuous_profiling:
         status: Status
       status:
         finished: Finished
+  settings:
+    switch: Enable Feature
+    switch_tooltip: Whether Continuous Profiling feature is enabled. When enabled, it profiles the instances periodically.
+    profile_targets: Profile Targets
+    profile_targets_tooltip: Profile all instances, new created instance will be profiled automatically.
+    profile_duration: Profile Duration
+    profile_duration_tooltip:
+    profile_interval: Profile Interval
+    profile_interval_tooltip: It has {{n}} instances, it is estimated to generate {{size}} profile result.
+    profile_retention_duration: Retention Duration
+    profile_retention_duration_tooltip: The profile result is persisted in the disk, and will be deleted beyond the retention duration. This setting works for all result, includes the history result.

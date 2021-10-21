@@ -4,7 +4,7 @@ instance_profiling:
   nav_title: Manually Profile
   list:
     control_form:
-      title: Start Profiling Instances
+      title: Manually Profiling Instances
       instances:
         label: Select instances
       duration:

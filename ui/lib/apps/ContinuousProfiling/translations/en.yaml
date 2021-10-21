@@ -2,7 +2,7 @@ continuous_profiling:
   nav_title: Continuous Profile
   list:
     control_form:
-      title: Start Profiling Instances
+      title: Continuous Profiling Instances
       instances:
         label: Select instances
       duration:

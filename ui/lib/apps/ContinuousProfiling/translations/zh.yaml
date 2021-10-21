@@ -2,7 +2,7 @@ continuous_profiling:
   nav_title: 周期分析
   list:
     control_form:
-      title: 开始性能分析
+      title: 周期性能分析
       instances:
         label: 选择实例
       duration:

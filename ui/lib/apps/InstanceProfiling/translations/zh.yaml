@@ -4,7 +4,7 @@ instance_profiling:
   nav_title: 手动分析
   list:
     control_form:
-      title: 开始性能分析
+      title: 手动性能分析
       instances:
         label: 选择实例
       duration:

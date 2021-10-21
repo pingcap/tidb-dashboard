@@ -1,27 +1,13 @@
-import {
-  Badge,
-  Button,
-  Form,
-  Select,
-  Modal,
-  Tooltip,
-  Space,
-  Drawer,
-} from 'antd'
+import { Badge, Tooltip, Space, Drawer } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import React, { useMemo, useState, useCallback, useRef } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { usePersistFn } from 'ahooks'
-import client, {
-  ProfilingStartRequest,
-  ModelRequestTargetNode,
-} from '@lib/client'
+import client from '@lib/client'
 import {
   Card,
   CardTable,
-  InstanceSelect,
-  IInstanceSelectRefProps,
   Toolbar,
   TimeRangeSelector,
   TimeRange,
@@ -31,9 +17,10 @@ import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { combineTargetStats } from '../utils'
 
-import styles from './List.module.less'
 import { SettingOutlined } from '@ant-design/icons'
 import ConProfSettingForm from './ConProfSettingForm'
+
+import styles from './List.module.less'
 
 export default function Page() {
   const {
@@ -46,59 +33,6 @@ export default function Page() {
   const historyLen = (historyTable || []).length
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const instanceSelect = useRef<IInstanceSelectRefProps>(null)
-  const [submitting, setSubmitting] = useState(false)
-
-  const handleFinish = useCallback(
-    async (fieldsValue) => {
-      if (!fieldsValue.instances || fieldsValue.instances.length === 0) {
-        Modal.error({
-          content: 'Some required fields are not filled',
-        })
-        return
-      }
-      if (!instanceSelect.current) {
-        Modal.error({
-          content: 'Internal error: Instance select is not ready',
-        })
-        return
-      }
-      const targets: ModelRequestTargetNode[] = instanceSelect
-        .current!.getInstanceByKeys(fieldsValue.instances)
-        .map((instance) => {
-          let port
-          switch (instance.instanceKind) {
-            case 'pd':
-              port = instance.port
-              break
-            case 'tidb':
-            case 'tikv':
-            case 'tiflash':
-              port = instance.status_port
-              break
-          }
-          return {
-            kind: instance.instanceKind,
-            display_name: instance.key,
-            ip: instance.ip,
-            port,
-          }
-        })
-        .filter((i) => i.port != null)
-      const req: ProfilingStartRequest = {
-        targets,
-        duration_secs: fieldsValue.duration,
-      }
-      try {
-        setSubmitting(true)
-        const res = await client.getInstance().startProfiling(req)
-        navigate(`/instance_profiling/detail?id=${res.data.id}`)
-      } finally {
-        setSubmitting(false)
-      }
-    },
-    [navigate]
-  )
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
@@ -109,7 +43,7 @@ export default function Page() {
   const historyTableColumns = useMemo(
     () => [
       {
-        name: t('instance_profiling.list.table.columns.order'),
+        name: t('continuous_profiling.list.table.columns.order'),
         key: 'order',
         minWidth: 100,
         maxWidth: 150,
@@ -118,7 +52,7 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.list.table.columns.targets'),
+        name: t('continuous_profiling.list.table.columns.targets'),
         key: 'targets',
         minWidth: 150,
         maxWidth: 250,
@@ -128,7 +62,7 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.list.table.columns.status'),
+        name: t('continuous_profiling.list.table.columns.status'),
         key: 'status',
         minWidth: 100,
         maxWidth: 150,
@@ -138,7 +72,7 @@ export default function Page() {
             return (
               <Badge
                 status="error"
-                text={t('instance_profiling.list.table.status.failed')}
+                text={t('continuous_profiling.list.table.status.failed')}
               />
             )
           } else if (rec.state === 1) {
@@ -146,7 +80,7 @@ export default function Page() {
             return (
               <Badge
                 status="processing"
-                text={t('instance_profiling.list.table.status.running')}
+                text={t('continuous_profiling.list.table.status.running')}
               />
             )
           } else if (rec.state === 2) {
@@ -154,7 +88,7 @@ export default function Page() {
             return (
               <Badge
                 status="success"
-                text={t('instance_profiling.list.table.status.finished')}
+                text={t('continuous_profiling.list.table.status.finished')}
               />
             )
           } else {
@@ -163,7 +97,7 @@ export default function Page() {
               <Badge
                 status="warning"
                 text={t(
-                  'instance_profiling.list.table.status.partial_finished'
+                  'continuous_profiling.list.table.status.partial_finished'
                 )}
               />
             )
@@ -171,7 +105,7 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.list.table.columns.start_at'),
+        name: t('continuous_profiling.list.table.columns.start_at'),
         key: 'started_at',
         minWidth: 160,
         maxWidth: 220,
@@ -180,7 +114,7 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.list.table.columns.duration'),
+        name: t('continuous_profiling.list.table.columns.duration'),
         key: 'duration',
         minWidth: 100,
         maxWidth: 150,
@@ -201,7 +135,7 @@ export default function Page() {
 
   return (
     <div className={styles.list_container}>
-      <Card title={t('instance_profiling.list.control_form.title')}>
+      <Card title={t('continuous_profiling.list.control_form.title')}>
         <Toolbar className={styles.list_toolbar}>
           <Space>
             <TimeRangeSelector value={timeRange} onChange={onTimeRangeChange} />

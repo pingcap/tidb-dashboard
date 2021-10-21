@@ -55,14 +55,14 @@ export default function Page() {
   const columns = useMemo(
     () => [
       {
-        name: t('instance_profiling.detail.table.columns.instance'),
+        name: t('continuous_profiling.detail.table.columns.instance'),
         key: 'instance',
         minWidth: 150,
         maxWidth: 400,
         onRender: (record) => record.target.display_name,
       },
       {
-        name: t('instance_profiling.detail.table.columns.kind'),
+        name: t('continuous_profiling.detail.table.columns.kind'),
         key: 'kind',
         minWidth: 100,
         maxWidth: 150,
@@ -71,7 +71,7 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.detail.table.columns.content'),
+        name: t('continuous_profiling.detail.table.columns.content'),
         key: 'content',
         minWidth: 150,
         maxWidth: 300,
@@ -87,7 +87,7 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.detail.table.columns.status'),
+        name: t('continuous_profiling.detail.table.columns.status'),
         key: 'status',
         minWidth: 150,
         maxWidth: 200,
@@ -108,7 +108,7 @@ export default function Page() {
             return (
               <Badge
                 status="success"
-                text={t('instance_profiling.detail.table.status.finished')}
+                text={t('continuous_profiling.detail.table.status.finished')}
               />
             )
           }
@@ -146,10 +146,10 @@ export default function Page() {
   return (
     <div>
       <Head
-        title={t('instance_profiling.detail.head.title')}
+        title={t('continuous_profiling.detail.head.title')}
         back={
-          <Link to={`/instance_profiling`}>
-            <ArrowLeftOutlined /> {t('instance_profiling.detail.head.back')}
+          <Link to={`/continuous_profiling`}>
+            <ArrowLeftOutlined /> {t('continuous_profiling.detail.head.back')}
           </Link>
         }
         titleExtra={
@@ -158,7 +158,7 @@ export default function Page() {
             type="primary"
             onClick={handleDownloadGroup}
           >
-            {t('instance_profiling.detail.download')}
+            {t('continuous_profiling.detail.download')}
           </Button>
         }
       />

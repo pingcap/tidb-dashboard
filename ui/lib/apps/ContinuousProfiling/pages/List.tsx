@@ -1,4 +1,4 @@
-import { Badge, Tooltip, Space, Drawer } from 'antd'
+import { Badge, Tooltip, Space, Drawer, Switch } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -17,7 +17,11 @@ import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { combineTargetStats } from '../utils'
 
-import { SettingOutlined } from '@ant-design/icons'
+import {
+  ControlOutlined,
+  SettingOutlined,
+  WarningOutlined,
+} from '@ant-design/icons'
 import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
@@ -133,9 +137,34 @@ export default function Page() {
 
   const [showSetting, setShowSetting] = useState(false)
 
+  const {
+    data: ngMonitoringConfig,
+    sendRequest,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().continuousProfilingConfigGet(reqConfig)
+  )
+  const conprofEnable = useMemo(
+    () => ngMonitoringConfig?.continuous_profiling?.enable ?? false,
+    [ngMonitoringConfig]
+  )
+  const conProfStatusTooltip = useMemo(() => {
+    if (conprofEnable) {
+      return 'This feature is enabled, you can disable it in the settings'
+    } else {
+      return 'This feature is not enabled, you can enable it in the settings'
+    }
+  }, [conprofEnable])
+
   return (
     <div className={styles.list_container}>
-      <Card title={t('continuous_profiling.list.control_form.title')}>
+      <Card
+        title={t('continuous_profiling.list.control_form.title')}
+        subTitle={
+          <Tooltip title={conProfStatusTooltip}>
+            <Switch disabled={true} checked={conprofEnable} />
+          </Tooltip>
+        }
+      >
         <Toolbar className={styles.list_toolbar}>
           <Space>
             <TimeRangeSelector value={timeRange} onChange={onTimeRangeChange} />
@@ -171,7 +200,7 @@ export default function Page() {
       >
         <ConProfSettingForm
           onClose={() => setShowSetting(false)}
-          onConfigUpdated={() => {}}
+          onConfigUpdated={sendRequest}
         />
       </Drawer>
     </div>

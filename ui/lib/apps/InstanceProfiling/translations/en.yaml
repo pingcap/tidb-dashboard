@@ -10,6 +10,7 @@ instance_profiling:
       duration:
         label: Duration
       submit: Start Profiling
+      submit_disable_tooltip: You can see all instances profile result in the continuous profiling page
     table:
       title: Profiling History
       columns:

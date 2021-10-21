@@ -1,4 +1,4 @@
-import { Badge, Button, Form, Select, Modal } from 'antd'
+import { Badge, Button, Form, Select, Modal, Tooltip } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -30,6 +30,12 @@ export default function Page() {
   } = useClientRequest((reqConfig) =>
     client.getInstance().getProfilingGroups(reqConfig)
   )
+  const { data: ngMonitoringConfig } = useClientRequest((reqConfig) =>
+    client.getInstance().continuousProfilingConfigGet(reqConfig)
+  )
+  const conprofEnable =
+    ngMonitoringConfig?.continuous_profiling?.enable ?? false
+
   const historyLen = (historyTable || []).length
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -213,9 +219,26 @@ export default function Page() {
             </Select>
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={submitting}>
-              {t('instance_profiling.list.control_form.submit')}
-            </Button>
+            {conprofEnable ? (
+              <Tooltip
+                title={t(
+                  'instance_profiling.list.control_form.submit_disable_tooltip'
+                )}
+              >
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={submitting}
+                  disabled={true}
+                >
+                  {t('instance_profiling.list.control_form.submit')}
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button type="primary" htmlType="submit" loading={submitting}>
+                {t('instance_profiling.list.control_form.submit')}
+              </Button>
+            )}
           </Form.Item>
         </Form>
       </Card>

@@ -48,3 +48,8 @@ continuous_profiling:
     profile_interval_tooltip: It has {{n}} instances, it is estimated to generate {{size}} profile result.
     profile_retention_duration: Retention Duration
     profile_retention_duration_tooltip: The profile result is persisted in the disk, and will be deleted beyond the retention duration. This setting works for all result, includes the history result.
+    close_feature: Disable Continuous Profiling Feature
+    close_feature_confirm: Are you sure want to disable this feature, it will stop continuous profile, history result will be kept.
+    actions:
+      close: Disable
+      cancel: Cancel

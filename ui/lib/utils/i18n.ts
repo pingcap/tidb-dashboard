@@ -59,3 +59,7 @@ i18next
       defaultVariables: { distro },
     },
   })
+
+const isDistro = process.env.REACT_APP_DISTRO_BUILD_TAG !== undefined
+
+export { distro, isDistro }

@@ -2,7 +2,7 @@ import CSSMotion from 'rc-animate/es/CSSMotion'
 import cx from 'classnames'
 import * as singleSpa from 'single-spa'
 import { Root, AppearAnimate } from '@lib/components'
-import React, { useState, useRef, useCallback, useMemo } from 'react'
+import React, { useState, useRef, useCallback, useMemo, ReactNode } from 'react'
 import {
   DownOutlined,
   GlobalOutlined,
@@ -25,6 +25,7 @@ import styles from './index.module.less'
 import { useEffect } from 'react'
 import { getAuthURL } from '@lib/utils/authSSO'
 import { AuthTypes } from '@lib/utils/auth'
+import { isDistro } from '@lib/utils/i18n'
 
 enum DisplayFormType {
   uninitialized,
@@ -153,7 +154,7 @@ function useSignInSubmit(
 ) {
   const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | ReactNode | null>(null)
 
   const clearErrorMsg = useCallback(() => {
     setError(null)
@@ -171,7 +172,24 @@ function useSignInSubmit(
       singleSpa.navigateToUrl(successRoute)
     } catch (e) {
       if (!e.handled) {
-        setError(t('signin.message.error', { msg: e.message }))
+        const errMsg = t('signin.message.error', { msg: e.message })
+        if (
+          isDistro ||
+          e.errCode !== 'error.api.user.insufficient_privileges'
+        ) {
+          setError(errMsg)
+        } else {
+          // only add help link for TiDB distro when meeting insufficient_privileges error
+          const errComp = (
+            <>
+              {errMsg}
+              <a href={t('signin.message.access_doc_link')}>
+                {t('signin.message.access_doc')}
+              </a>
+            </>
+          )
+          setError(errComp)
+        }
         onFailure()
       }
     } finally {
@@ -182,7 +200,11 @@ function useSignInSubmit(
   return { handleSubmit, loading, errorMsg: error, clearErrorMsg }
 }
 
-function TiDBSignInForm({ successRoute, onClickAlternative }) {
+function TiDBSignInForm({
+  successRoute,
+  onClickAlternative,
+  enableNonRootLogin = false,
+}) {
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -225,8 +247,13 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
             name="username"
             label={t('signin.form.username')}
             rules={[{ required: true }]}
+            tooltip={!enableNonRootLogin && t('signin.form.username_tooltip')}
           >
-            <Input onInput={clearErrorMsg} prefix={<UserOutlined />} disabled />
+            <Input
+              onInput={clearErrorMsg}
+              prefix={<UserOutlined />}
+              disabled={!enableNonRootLogin}
+            />
           </Form.Item>
           <Form.Item
             data-e2e="signin_password_form_item"
@@ -386,6 +413,7 @@ function App({ registry }) {
   const [supportedAuthTypes, setSupportedAuthTypes] = useState<Array<number>>([
     0,
   ])
+  const [enableNonRootLogin, setEnableNonoRootLogin] = useState(false)
 
   const handleClickAlternative = useCallback(() => {
     setAlternativeVisible(true)
@@ -413,6 +441,7 @@ function App({ registry }) {
           setFormType(DisplayFormType.tidbCredential)
         }
         setSupportedAuthTypes(loginInfo.supported_auth_types ?? [])
+        setEnableNonoRootLogin(loginInfo.enable_non_root_login ?? false)
       } catch (e) {
         Modal.error({
           title: 'Initialize Sign in failed',
@@ -447,6 +476,7 @@ function App({ registry }) {
             <TiDBSignInForm
               successRoute={successRoute}
               onClickAlternative={handleClickAlternative}
+              enableNonRootLogin={enableNonRootLogin}
             />
           )}
           {formType === DisplayFormType.shareCode && (

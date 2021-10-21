@@ -27,7 +27,7 @@ export default function RecentStatements() {
   )
   const {
     allTimeRanges,
-    validTimeRange: { begin_time, end_time },
+    statementsTimeRange: { begin_time, end_time },
   } = controller
 
   return (

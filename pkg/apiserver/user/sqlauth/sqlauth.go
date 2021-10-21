@@ -32,11 +32,7 @@ var Module = fx.Options(
 )
 
 func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUser, error) {
-	// Currently we don't support privileges, so only root user is allowed to sign in.
-	if f.Username != "root" {
-		return nil, user.ErrSignInOther.New("non root user is not allowed")
-	}
-	db, err := a.tidbClient.OpenSQLConn(f.Username, f.Password)
+	writeable, err := user.VerifySQLUser(a.tidbClient, f.Username, f.Password)
 	if err != nil {
 		if errorx.Cast(err) == nil {
 			return nil, user.ErrSignInOther.WrapWithNoMessage(err)
@@ -46,9 +42,9 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		// tidb.ErrPDAccessFailed
 		// tidb.ErrTiDBConnFailed
 		// tidb.ErrTiDBAuthFailed
+		// user.ErrInsufficientPrivs
 		return nil, err
 	}
-	defer utils.CloseTiDBConnection(db) //nolint:errcheck
 
 	return &utils.SessionUser{
 		Version:      utils.SessionVersion,
@@ -57,6 +53,6 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		TiDBPassword: f.Password,
 		DisplayName:  f.Username,
 		IsShareable:  true,
-		IsWriteable:  true,
+		IsWriteable:  writeable,
 	}, nil
 }

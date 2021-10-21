@@ -23,13 +23,14 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	_ "github.com/pingcap/tidb-dashboard/populate/distro"
 )
 
 func main() {
 	outputPath := flag.String("o", "", "Distro resource output path")
 	flag.Parse()
 
-	d, err := json.Marshal(distro.Resource)
+	d, err := json.Marshal(distro.Resource())
 	if err != nil {
 		log.Fatalln(zap.Error(err))
 	}

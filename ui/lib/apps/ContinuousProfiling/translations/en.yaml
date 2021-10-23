@@ -3,11 +3,8 @@ continuous_profiling:
   list:
     control_form:
       title: Continuous Profiling Instances
-      instances:
-        label: Select instances
-      duration:
-        label: Duration
-      submit: Start Profiling
+      enable_tooltip: This feature is enabled, you can disable it in the settings
+      disable_tootlip: This feature is not enabled, you can enable it in the settings
     table:
       title: Profiling History
       columns:

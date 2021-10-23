@@ -3,11 +3,8 @@ continuous_profiling:
   list:
     control_form:
       title: 周期性能分析
-      instances:
-        label: 选择实例
-      duration:
-        label: 分析时长
-      submit: 开始分析
+      enable_tooltip: 该功能已开启，你可以在设置中关闭
+      disable_tootlip: 该功能未启用，你可以在设置中启用
     table:
       title: 性能分析历史
       columns:

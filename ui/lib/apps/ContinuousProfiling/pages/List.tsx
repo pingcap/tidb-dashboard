@@ -17,14 +17,11 @@ import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { combineTargetStats } from '../utils'
 
-import {
-  ControlOutlined,
-  SettingOutlined,
-  WarningOutlined,
-} from '@ant-design/icons'
+import { SettingOutlined } from '@ant-design/icons'
 import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 
 export default function Page() {
   const {
@@ -140,6 +137,7 @@ export default function Page() {
   const {
     data: ngMonitoringConfig,
     sendRequest,
+    error,
   } = useClientRequest((reqConfig) =>
     client.getInstance().continuousProfilingConfigGet(reqConfig)
   )
@@ -149,20 +147,22 @@ export default function Page() {
   )
   const conProfStatusTooltip = useMemo(() => {
     if (conprofEnable) {
-      return 'This feature is enabled, you can disable it in the settings'
+      return t('continuous_profiling.list.control_form.enable_tooltip')
     } else {
-      return 'This feature is not enabled, you can enable it in the settings'
+      return t('continuous_profiling.list.control_form.disable_tooltip')
     }
-  }, [conprofEnable])
+  }, [conprofEnable, t])
 
   return (
     <div className={styles.list_container}>
       <Card
         title={t('continuous_profiling.list.control_form.title')}
         subTitle={
-          <Tooltip title={conProfStatusTooltip}>
-            <Switch disabled={true} checked={conprofEnable} />
-          </Tooltip>
+          error ? null : (
+            <Tooltip title={conProfStatusTooltip}>
+              <Switch disabled={true} checked={conprofEnable} />
+            </Tooltip>
+          )
         }
       >
         <Toolbar className={styles.list_toolbar}>

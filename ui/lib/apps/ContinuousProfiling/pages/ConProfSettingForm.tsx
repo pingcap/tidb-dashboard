@@ -39,16 +39,16 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
     data: initialConfig,
     isLoading: loading,
     error,
-  } = useClientRequest(() =>
-    client.getInstance().continuousProfilingConfigGet()
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().continuousProfilingConfigGet(reqConfig)
   )
 
-  const { data: statisticInfo } = useClientRequest(() =>
-    client.getInstance().clusterInfoGetStatistics()
+  const { data: statisticInfo } = useClientRequest((reqConfig) =>
+    client.getInstance().clusterInfoGetStatistics(reqConfig)
   )
 
-  const { data: estimateSize } = useClientRequest(() =>
-    client.getInstance().continuousProfilingEstimateSizeGet(1)
+  const { data: estimateSize } = useClientRequest((reqConfig) =>
+    client.getInstance().continuousProfilingEstimateSizeGet(1, reqConfig)
   )
 
   const dataRetentionSeconds = useMemo(() => {
@@ -157,8 +157,12 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
                     extra={t(
                       'continuous_profiling.settings.profile_interval_tooltip',
                       {
-                        n: statisticInfo?.total_stats?.number_of_instances ?? 0,
-                        size: getValueFormat('decbytes')(estimateSize ?? 0, 0),
+                        n:
+                          statisticInfo?.total_stats?.number_of_instances ??
+                          '?',
+                        size: estimateSize
+                          ? getValueFormat('decbytes')(estimateSize, 0)
+                          : '?',
                       }
                     )}
                   >

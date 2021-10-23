@@ -26,10 +26,18 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
+const (
+	NgMonitoringNotDeploy = "ng_monitoring_not_deploy"
+	NgMonitoringNotStart  = "ng_monitoring_not_start"
+	NgMonitoringNotAlive  = "ng_monitoring_not_alive"
+)
+
 var (
-	ConProfErrNS                  = errorx.NewNamespace("error.api.continuous_profiling")
-	ErrLoadNgMonitoringAddrFailed = ConProfErrNS.NewType("load_ng_monitoring_addr_failed")
-	ErrNgMonitoringNotStart       = ConProfErrNS.NewType("ng_monitoring_not_start")
+	ConProfErrNS             = errorx.NewNamespace("error.api.continuous_profiling")
+	ErrLoadNgMonitoringAddr  = ConProfErrNS.NewType("ng_monitoring_addr_load_failed")
+	ErrNgMonitoringNotDeploy = ConProfErrNS.NewType(NgMonitoringNotDeploy)
+	ErrNgMonitoringNotStart  = ConProfErrNS.NewType(NgMonitoringNotStart)
+	ErrNgMonitoringNotAlive  = ConProfErrNS.NewType(NgMonitoringNotAlive)
 )
 
 const (
@@ -45,11 +53,36 @@ type ngMonitoringAddrCacheEntity struct {
 func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	conprofEndpoint := r.Group("/continuous-profiling")
 
-	// TODO: add auth middleware
-	conprofEndpoint.GET("/config", s.reverseProxy("/config"), s.getConprofConfig)
-	conprofEndpoint.POST("/config", s.reverseProxy("/config"), s.updateConprofConfig)
-	conprofEndpoint.GET("/estimate-size", s.reverseProxy("/continuous-profiling/estimate-size"), s.estimateSize)
-	conprofEndpoint.POST("/list", s.reverseProxy("/continuous-profiling/list"), s.list)
+	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.getConprofConfig)
+	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
+	conprofEndpoint.GET("/estimate-size", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/estimate-size"), s.estimateSize)
+}
+
+func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ngMonitoringAddr, err := s.getNgMonitoringAddrFromCache()
+		if err != nil {
+			_ = c.Error(ErrLoadNgMonitoringAddr.Wrap(err, "Load NgMonitoring address failed"))
+			return
+		}
+		if ngMonitoringAddr == NgMonitoringNotDeploy {
+			_ = c.Error(ErrNgMonitoringNotDeploy.New("NgMonitoring component is not deployed"))
+			return
+		}
+		if ngMonitoringAddr == NgMonitoringNotStart {
+			_ = c.Error(ErrNgMonitoringNotStart.New("NgMonitoring component is not started"))
+			return
+		}
+		if ngMonitoringAddr == NgMonitoringNotAlive {
+			_ = c.Error(ErrNgMonitoringNotAlive.New("NgMonitoring instance is not alive anymore, it may down or the server time is not synchronized"))
+			return
+		}
+
+		ngMonitoringURL, _ := url.Parse(ngMonitoringAddr)
+		proxy := httputil.NewSingleHostReverseProxy(ngMonitoringURL)
+		c.Request.URL.Path = targetPath
+		proxy.ServeHTTP(c.Writer, c.Request)
+	}
 }
 
 func (s *Service) getNgMonitoringAddrFromCache() (string, error) {
@@ -62,11 +95,7 @@ func (s *Service) getNgMonitoringAddrFromCache() (string, error) {
 			}
 		}
 
-		// Cache is not valid, read from PD and etcd.
-		addr, err := s.resolveNgMonitoringAddress()
-		if err != nil {
-			return "", err
-		}
+		addr := s.resolveNgMonitoringAddress()
 
 		s.ngMonitoringAddrCache.Store(&ngMonitoringAddrCacheEntity{
 			address: addr,
@@ -85,34 +114,20 @@ func (s *Service) getNgMonitoringAddrFromCache() (string, error) {
 	return resolveResult.(string), nil
 }
 
-func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ngMonitoringAddr, err := s.getNgMonitoringAddrFromCache()
-		if err != nil {
-			_ = c.Error(ErrLoadNgMonitoringAddrFailed.Wrap(err, "Load ng monitoring address failed"))
-			return
-		}
-		if ngMonitoringAddr == "" {
-			_ = c.Error(ErrNgMonitoringNotStart.New("Ng monitoring is not started"))
-			return
-		}
-
-		ngMonitoringURL, _ := url.Parse(ngMonitoringAddr)
-		proxy := httputil.NewSingleHostReverseProxy(ngMonitoringURL)
-		c.Request.URL.Path = targetPath
-		proxy.ServeHTTP(c.Writer, c.Request)
+func (s *Service) resolveNgMonitoringAddress() string {
+	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.params.EtcdClient)
+	if pi == nil || err != nil {
+		return NgMonitoringNotDeploy
 	}
-}
 
-func (s *Service) resolveNgMonitoringAddress() (string, error) {
 	addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
-	if err != nil {
-		return "", err
+	if err == nil && addr != "" {
+		return fmt.Sprintf("http://%s", addr)
 	}
-	if addr == "" {
-		return "", nil
+	if err != nil && errorx.IsOfType(err, topology.ErrInstanceNotAlive) {
+		return NgMonitoringNotAlive
 	}
-	return fmt.Sprintf("http://%s", addr), nil
+	return NgMonitoringNotStart
 }
 
 type ContinuousProfilingConfig struct {
@@ -125,23 +140,6 @@ type ContinuousProfilingConfig struct {
 
 type NgMonitoringConfig struct {
 	ContinuousProfiling ContinuousProfilingConfig `json:"continuous_profiling"`
-}
-
-type ProfileTarget struct {
-	Kind      string `json:"kind"`
-	Component string `json:"component"`
-	Address   string `json:"address"`
-}
-
-type ListReq struct {
-	Begin   int64           `json:"begin_time"`
-	End     int64           `json:"end_time"`
-	Targets []ProfileTarget `json:"targets"`
-}
-
-type ProfileList struct {
-	Target ProfileTarget `json:"target"`
-	TsList []int64       `json:"timestamp_list"`
 }
 
 // @Summary Get Continuous Profiling Config
@@ -173,16 +171,5 @@ func (s *Service) updateConprofConfig(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) estimateSize(c *gin.Context) {
-	// dummy, for generate open api
-}
-
-// @Summary Get Continuous Profiling List
-// @Router /continuous-profiling/list [post]
-// @Param request body ListReq true "Request body"
-// @Security JwtAuth
-// @Success 200 {array} ProfileList
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
-func (s *Service) list(c *gin.Context) {
 	// dummy, for generate open api
 }

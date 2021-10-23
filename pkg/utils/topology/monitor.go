@@ -15,7 +15,9 @@ package topology
 
 import (
 	"context"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
@@ -68,7 +70,6 @@ func FetchNgMonitoringTopology(ctx context.Context, etcdClient *clientv3.Client)
 		return "", ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", ngMonitoringKeyPrefix, distro.Data("pd"))
 	}
 
-	ngMonitoringAddr := ""
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
 		if !strings.HasPrefix(key, ngMonitoringKeyPrefix) {
@@ -81,12 +82,35 @@ func FetchNgMonitoringTopology(ctx context.Context, etcdClient *clientv3.Client)
 			log.Warn("Ignored invalid topology key", zap.String("component", "ng-monitoring"), zap.String("key", key))
 			continue
 		}
-		switch keyParts[1] {
-		case "ttl":
-			ngMonitoringAddr = keyParts[0]
-			// TODO: check alive
+		if keyParts[1] == "ttl" {
+			alive, err := parseNgMontioringAliveness(kv.Value)
+			if err != nil {
+				log.Warn("Ignored invalid NgMonitoring topology TTL entry",
+					zap.String("key", key),
+					zap.String("value", string(kv.Value)),
+					zap.Error(err))
+				return "", err
+			}
+			if !alive {
+				log.Warn("Alive of NgMonitoring has expired, maybe local time in different hosts are not synchronized",
+					zap.String("key", key),
+					zap.String("value", string(kv.Value)))
+				return "", ErrInstanceNotAlive.NewWithNoMessage()
+			}
+			return keyParts[0], nil
 		}
 	}
+	return "", nil
+}
 
-	return ngMonitoringAddr, nil
+func parseNgMontioringAliveness(value []byte) (bool, error) {
+	unixTimestampNano, err := strconv.ParseUint(string(value), 10, 64)
+	if err != nil {
+		return false, ErrInvalidTopologyData.Wrap(err, "NgMonitoring TTL info parse failed")
+	}
+	t := time.Unix(0, int64(unixTimestampNano))
+	if time.Since(t) > time.Second*90 {
+		return false, nil
+	}
+	return true, nil
 }

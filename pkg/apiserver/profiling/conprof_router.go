@@ -56,6 +56,7 @@ func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Servic
 	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.getConprofConfig)
 	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
 	conprofEndpoint.GET("/estimate-size", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/estimate-size"), s.estimateSize)
+	conprofEndpoint.GET("/group-profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profiles"), s.getGroupProfiles)
 }
 
 func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
@@ -149,7 +150,7 @@ type NgMonitoringConfig struct {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) getConprofConfig(c *gin.Context) {
-	// dummy, for generate open api
+	// dummy, for generate openapi
 }
 
 // @Summary Update Continuous Profiling Config
@@ -160,7 +161,7 @@ func (s *Service) getConprofConfig(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) updateConprofConfig(c *gin.Context) {
-	// dummy, for generate open api
+	// dummy, for generate openapi
 }
 
 // @Summary Get Estimate Size
@@ -171,5 +172,25 @@ func (s *Service) updateConprofConfig(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) estimateSize(c *gin.Context) {
-	// dummy, for generate open api
+	// dummy, for generate openapi
+}
+
+type GetGroupProfileReq struct {
+	BeginTime int `json:"begin_time"`
+	EndTime   int `json:"end_time"`
+}
+
+type GetGroupProfilesRes struct {
+	// TODO
+}
+
+// @Summary Get Group Profiles
+// @Router /continuous-profiling/group-profiles [get]
+// @Param q query GetGroupProfileReq true "Query"
+// @Security JwtAuth
+// @Success 200 {object} GetGroupProfilesRes
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
+func (s *Service) getGroupProfiles(c *gin.Context) {
+	// dummy, for generate openapi
 }

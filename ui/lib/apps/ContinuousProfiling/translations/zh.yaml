@@ -4,7 +4,7 @@ continuous_profiling:
     control_form:
       title: 周期性能分析
       enable_tooltip: 该功能已开启，你可以在设置中关闭
-      disable_tootlip: 该功能未启用，你可以在设置中启用
+      disable_tooltip: 该功能未启用，你可以在设置中启用
     table:
       title: 性能分析历史
       columns:

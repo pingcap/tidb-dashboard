@@ -4,7 +4,7 @@ continuous_profiling:
     control_form:
       title: Continuous Profiling Instances
       enable_tooltip: This feature is enabled, you can disable it in the settings
-      disable_tootlip: This feature is not enabled, you can enable it in the settings
+      disable_tooltip: This feature is not enabled, you can enable it in the settings
     table:
       title: Profiling History
       columns:

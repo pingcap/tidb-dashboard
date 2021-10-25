@@ -3,7 +3,7 @@ import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { usePersistFn } from 'ahooks'
+import { usePersistFn, useSessionStorageState } from 'ahooks'
 import client, { ErrorStrategy } from '@lib/client'
 import {
   Card,
@@ -123,7 +123,9 @@ export default function Page() {
     [t, historyLen]
   )
 
-  const [timeRange, setTimeRange] = useState<TimeRange | undefined>(undefined)
+  const [timeRange, setTimeRange] = useSessionStorageState<
+    TimeRange | undefined
+  >('conprof.timerange', undefined)
 
   function onTimeRangeChange(v: TimeRange) {
     setTimeRange(v)

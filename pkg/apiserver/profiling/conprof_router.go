@@ -56,7 +56,8 @@ func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Servic
 	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.getConprofConfig)
 	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
 	conprofEndpoint.GET("/estimate-size", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/estimate-size"), s.estimateSize)
-	conprofEndpoint.GET("/group-profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profiles"), s.getGroupProfiles)
+	conprofEndpoint.GET("/group-profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profiles"), s.conprofGroupProfiles)
+	conprofEndpoint.GET("/group-profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profile/detail"), s.conprofGroupProfileDetail)
 }
 
 func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
@@ -180,17 +181,57 @@ type GetGroupProfileReq struct {
 	EndTime   int `json:"end_time"`
 }
 
-type GetGroupProfilesRes struct {
-	// TODO
+type ComponentNum struct {
+	TiDB    int `json:"tidb"`
+	PD      int `json:"pd"`
+	TiKV    int `json:"tikv"`
+	TiFlash int `json:"tiflash"`
+}
+
+type GroupProfiles struct {
+	Ts          int64        `json:"ts"`
+	ProfileSecs int          `json:"profile_duration_secs"`
+	State       string       `json:"state"`
+	CompNum     ComponentNum `json:"component_num"`
+}
+
+type GroupProfileDetail struct {
+	Ts             int64           `json:"ts"`
+	ProfileSecs    int             `json:"profile_duration_secs"`
+	State          string          `json:"state"`
+	TargetProfiles []ProfileDetail `json:"target_profiles"`
+}
+
+type ProfileDetail struct {
+	State  string `json:"state"`
+	Error  string `json:"error"`
+	Type   string `json:"profile_type"`
+	Target Target `json:"target"`
+}
+
+type Target struct {
+	Component string `json:"component"`
+	Address   string `json:"address"`
 }
 
 // @Summary Get Group Profiles
 // @Router /continuous-profiling/group-profiles [get]
 // @Param q query GetGroupProfileReq true "Query"
 // @Security JwtAuth
-// @Success 200 {object} GetGroupProfilesRes
+// @Success 200 {array} GroupProfiles
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) getGroupProfiles(c *gin.Context) {
+func (s *Service) conprofGroupProfiles(c *gin.Context) {
+	// dummy, for generate openapi
+}
+
+// @Summary Get Group Profile Detail
+// @Router /continuous-profiling/group-profile/detail [get]
+// @Param ts query number true "timestamp"
+// @Security JwtAuth
+// @Success 200 {array} GroupProfileDetail
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
+func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 	// dummy, for generate openapi
 }

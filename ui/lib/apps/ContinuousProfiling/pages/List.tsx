@@ -4,40 +4,45 @@ import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { usePersistFn } from 'ahooks'
-import client from '@lib/client'
+import client, { ErrorStrategy } from '@lib/client'
 import {
   Card,
   CardTable,
   Toolbar,
   TimeRangeSelector,
   TimeRange,
+  calcTimeRange,
 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { combineTargetStats } from '../utils'
 
 import { SettingOutlined } from '@ant-design/icons'
 import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
-import { getValueFormat } from '@baurine/grafana-value-formats'
 
 export default function Page() {
   const {
     data: historyTable,
     isLoading: listLoading,
     error: historyError,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getProfilingGroups(reqConfig)
-  )
+    sendRequest: refreshGroupProfiles,
+  } = useClientRequest(() => {
+    const [beginTime, endTime] = calcTimeRange(timeRange)
+    return client
+      .getInstance()
+      .continuousProfilingGroupProfilesGet(beginTime, endTime, {
+        errorStrategy: ErrorStrategy.Custom,
+      })
+  })
   const historyLen = (historyTable || []).length
   const { t } = useTranslation()
   const navigate = useNavigate()
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
-      openLink(`/continuous_profiling/detail?id=${rec.id}`, ev, navigate)
+      openLink(`/continuous_profiling/detail?ts=${rec.ts}`, ev, navigate)
     }
   )
 
@@ -58,7 +63,8 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec) => {
-          const s = combineTargetStats(rec.target_stats)
+          const { tikv, tidb, pd, tiflash } = rec.component_num
+          const s = `${tikv} TiKV, ${tidb} TiDB, ${pd} PD, ${tiflash} TiFlash`
           return <span>{s}</span>
         },
       },
@@ -68,7 +74,7 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         onRender: (rec) => {
-          if (rec.state === 0) {
+          if (rec.state === 'failed') {
             // all failed
             return (
               <Badge
@@ -76,15 +82,7 @@ export default function Page() {
                 text={t('continuous_profiling.list.table.status.failed')}
               />
             )
-          } else if (rec.state === 1) {
-            // running
-            return (
-              <Badge
-                status="processing"
-                text={t('continuous_profiling.list.table.status.running')}
-              />
-            )
-          } else if (rec.state === 2) {
+          } else if (rec.state === 'success') {
             // all success
             return (
               <Badge
@@ -93,7 +91,7 @@ export default function Page() {
               />
             )
           } else {
-            // partial success
+            // partial failed
             return (
               <Badge
                 status="warning"
@@ -107,11 +105,11 @@ export default function Page() {
       },
       {
         name: t('continuous_profiling.list.table.columns.start_at'),
-        key: 'started_at',
+        key: 'ts',
         minWidth: 160,
         maxWidth: 220,
         onRender: (rec) => {
-          return <DateTime.Calendar unixTimestampMs={rec.started_at * 1000} />
+          return <DateTime.Long unixTimestampMs={rec.ts * 1000} />
         },
       },
       {
@@ -129,7 +127,9 @@ export default function Page() {
 
   function onTimeRangeChange(v: TimeRange) {
     setTimeRange(v)
-    // TODO: request api
+    setTimeout(() => {
+      refreshGroupProfiles()
+    }, 0)
   }
 
   const [showSetting, setShowSetting] = useState(false)
@@ -137,7 +137,7 @@ export default function Page() {
   const {
     data: ngMonitoringConfig,
     sendRequest,
-    error,
+    error: configError,
   } = useClientRequest((reqConfig) =>
     client.getInstance().continuousProfilingConfigGet(reqConfig)
   )
@@ -158,7 +158,7 @@ export default function Page() {
       <Card
         title={t('continuous_profiling.list.control_form.title')}
         subTitle={
-          error ? null : (
+          configError ? null : (
             <Tooltip title={conProfStatusTooltip}>
               <Switch disabled={true} checked={conprofEnable} />
             </Tooltip>
@@ -184,7 +184,7 @@ export default function Page() {
             loading={listLoading}
             items={historyTable || []}
             columns={historyTableColumns}
-            errors={[historyError]}
+            errors={[historyError, configError]}
             onRowClicked={handleRowClick}
           />
         </ScrollablePane>

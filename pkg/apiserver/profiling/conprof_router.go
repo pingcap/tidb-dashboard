@@ -63,6 +63,7 @@ func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Servic
 
 	conprofEndpoint.GET("/action-token", auth.MWAuthRequired(), s.getConprofActionToken)
 	conprofEndpoint.GET("/download", s.reverseProxy("/continuous-profiling/download"), s.conprofDownload)
+	conprofEndpoint.GET("/single-profile/view", s.reverseProxy("/continuous-profiling/single-profile/view"), s.conprofViewProfile)
 }
 
 func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
@@ -276,5 +277,23 @@ func (s *Service) getConprofActionToken(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) conprofDownload(c *gin.Context) {
+	// dummy, for generate openapi
+}
+
+type ViewSingleProfileReq struct {
+	Ts          int    `json:"ts"`
+	ProfileType string `json:"profile_type"`
+	Component   string `json:"component"`
+	Address     string `json:"address"`
+}
+
+// @Summary View Single Profile files
+// @Router /continuous-profiling/single-profile/view [get]
+// @Param q query ViewSingleProfileReq true "Query"
+// @Security JwtAuth
+// @Produce html
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
+func (s *Service) conprofViewProfile(c *gin.Context) {
 	// dummy, for generate openapi
 }

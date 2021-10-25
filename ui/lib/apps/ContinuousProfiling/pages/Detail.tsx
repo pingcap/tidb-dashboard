@@ -85,15 +85,21 @@ export default function Page() {
 
   const handleRowClick = usePersistFn(
     async (rec, _idx, _ev: React.MouseEvent<HTMLElement>) => {
+      const {
+        profile_type,
+        target: { component, address },
+      } = rec
       const res = await client
         .getInstance()
-        .getActionToken(rec.id, 'single_view')
+        .continuousProfilingActionTokenGet(
+          `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}`
+        )
       const token = res.data
       if (!token) {
         return
       }
       window.open(
-        `${client.getBasePath()}/profiling/single/view?token=${token}`,
+        `${client.getBasePath()}/continuous-profiling/single-profile/view?token=${token}`,
         '_blank'
       )
     }

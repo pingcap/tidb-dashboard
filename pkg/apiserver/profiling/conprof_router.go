@@ -55,13 +55,14 @@ type ngMonitoringAddrCacheEntity struct {
 func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	conprofEndpoint := r.Group("/continuous-profiling")
 
-	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.getConprofConfig)
+	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
 	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
+	conprofEndpoint.GET("/components", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/components"), s.conprofComponents)
 	conprofEndpoint.GET("/estimate-size", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/estimate-size"), s.estimateSize)
 	conprofEndpoint.GET("/group-profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profiles"), s.conprofGroupProfiles)
 	conprofEndpoint.GET("/group-profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profile/detail"), s.conprofGroupProfileDetail)
 
-	conprofEndpoint.GET("/action-token", auth.MWAuthRequired(), s.getConprofActionToken)
+	conprofEndpoint.GET("/action-token", auth.MWAuthRequired(), s.genConprofActionToken)
 	conprofEndpoint.GET("/download", s.reverseProxy("/continuous-profiling/download"), s.conprofDownload)
 	conprofEndpoint.GET("/single-profile/view", s.reverseProxy("/continuous-profiling/single-profile/view"), s.conprofViewProfile)
 }
@@ -166,7 +167,7 @@ type NgMonitoringConfig struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) getConprofConfig(c *gin.Context) {
+func (s *Service) conprofConfig(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -178,6 +179,23 @@ func (s *Service) getConprofConfig(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) updateConprofConfig(c *gin.Context) {
+	// dummy, for generate openapi
+}
+
+type Component struct {
+	Name       string `json:"name"`
+	IP         string `json:"ip"`
+	Port       uint   `json:"port"`
+	StatusPort uint   `json:"status_port"`
+}
+
+// @Summary Get current scraping components
+// @Success 200 {array} Component
+// @Router /continuous-profiling/components [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
+func (s *Service) conprofComponents(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -259,7 +277,7 @@ func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 // @Success 200 {string} string
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) getConprofActionToken(c *gin.Context) {
+func (s *Service) genConprofActionToken(c *gin.Context) {
 	q := c.Query("q")
 	token, err := utils.NewJWTString("conprof", q)
 	if err != nil {

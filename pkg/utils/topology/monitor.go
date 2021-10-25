@@ -76,7 +76,8 @@ func FetchNgMonitoringTopology(ctx context.Context, etcdClient *clientv3.Client)
 		if !strings.HasPrefix(key, ngMonitoringKeyPrefix) {
 			continue
 		}
-		// remainingKey looks like `ip:port/info` or `ip:port/ttl`.
+		// RemainingKey looks like `ip:port/info` or `ip:port/ttl`.
+		// Currently it only has `ip:port/ttl`.
 		remainingKey := key[len(ngMonitoringKeyPrefix):]
 		keyParts := strings.Split(remainingKey, "/")
 		if len(keyParts) != 2 {

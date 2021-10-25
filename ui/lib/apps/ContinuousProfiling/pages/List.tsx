@@ -21,6 +21,7 @@ import { SettingOutlined } from '@ant-design/icons'
 import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
+import { InstanceKindName } from '@lib/utils/instanceTable'
 
 export default function Page() {
   const {
@@ -64,7 +65,7 @@ export default function Page() {
         maxWidth: 250,
         onRender: (rec) => {
           const { tikv, tidb, pd, tiflash } = rec.component_num
-          const s = `${tikv} TiKV, ${tidb} TiDB, ${pd} PD, ${tiflash} TiFlash`
+          const s = `${tikv} ${InstanceKindName['tikv']}, ${tidb} ${InstanceKindName['tidb']}, ${pd} ${InstanceKindName['pd']}, ${tiflash} ${InstanceKindName['tiflash']}`
           return <span>{s}</span>
         },
       },

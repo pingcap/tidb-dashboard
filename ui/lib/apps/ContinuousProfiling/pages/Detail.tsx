@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { usePersistFn } from 'ahooks'
+import { upperFirst } from 'lodash'
 
 import client from '@lib/client'
 import { CardTable, DateTime, Head } from '@lib/components'
@@ -53,11 +54,11 @@ export default function Page() {
           const comp = record.target.component
           if (profileType === 'profile') {
             if (comp === 'tidb' || comp === 'pd') {
-              return `cpu profile - ${profileDuration}s`
+              return `CPU Profile - ${profileDuration}s`
             }
-            return `cpu flame graph - ${profileDuration}s`
+            return `CPU Flame Graph - ${profileDuration}s`
           }
-          return profileType
+          return upperFirst(profileType)
         },
       },
       {

@@ -79,7 +79,7 @@ export default function Page() {
           // FIXME: when API is ready, replace it by API
           let profileType = ''
           if (record.target.kind === 'pd' || record.target.kind === 'tidb') {
-            profileType = 'CPU Profiling'
+            profileType = 'CPU Profile'
           } else {
             profileType = 'CPU Flame Graph'
           }

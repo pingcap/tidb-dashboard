@@ -45,8 +45,5 @@ ifeq ($(UI),1)
 endif
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
-build:
-	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
-
 run:
 	bin/tidb-dashboard --debug --experimental --non-root-login

@@ -15,6 +15,7 @@ package profiling
 
 import (
 	"fmt"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"time"
@@ -23,6 +24,7 @@ import (
 	"github.com/joomcode/errorx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
@@ -58,6 +60,9 @@ func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Servic
 	conprofEndpoint.GET("/estimate-size", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/estimate-size"), s.estimateSize)
 	conprofEndpoint.GET("/group-profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profiles"), s.conprofGroupProfiles)
 	conprofEndpoint.GET("/group-profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profile/detail"), s.conprofGroupProfileDetail)
+
+	conprofEndpoint.GET("/action-token", auth.MWAuthRequired(), s.getConprofActionToken)
+	conprofEndpoint.GET("/download", s.reverseProxy("/continuous-profiling/download"), s.conprofDownload)
 }
 
 func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
@@ -80,9 +85,19 @@ func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
 			return
 		}
 
+		c.Request.URL.Path = targetPath
+		token := c.Query("token")
+		if token != "" {
+			queryStr, err := utils.ParseJWTString("conprof", token)
+			if err != nil {
+				utils.MakeInvalidRequestErrorFromError(c, err)
+				return
+			}
+			c.Request.URL.RawQuery = queryStr
+		}
+
 		ngMonitoringURL, _ := url.Parse(ngMonitoringAddr)
 		proxy := httputil.NewSingleHostReverseProxy(ngMonitoringURL)
-		c.Request.URL.Path = targetPath
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
 }
@@ -233,5 +248,33 @@ func (s *Service) conprofGroupProfiles(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
+	// dummy, for generate openapi
+}
+
+// @Summary Get action token for download or view profile
+// @Router /continuous-profiling/action-token [get]
+// @Param q query string true "target query string"
+// @Security JwtAuth
+// @Success 200 {string} string
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
+func (s *Service) getConprofActionToken(c *gin.Context) {
+	q := c.Query("q")
+	token, err := utils.NewJWTString("conprof", q)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.String(http.StatusOK, token)
+}
+
+// @Summary Download Group Profile files
+// @Router /continuous-profiling/download [get]
+// @Param ts query number true "timestamp"
+// @Security JwtAuth
+// @Produce application/x-gzip
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
+func (s *Service) conprofDownload(c *gin.Context) {
 	// dummy, for generate openapi
 }

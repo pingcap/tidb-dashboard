@@ -100,12 +100,14 @@ export default function Page() {
   )
 
   const handleDownloadGroup = useCallback(async () => {
-    const res = await client.getInstance().getActionToken(id, 'group_download')
+    const res = await client
+      .getInstance()
+      .continuousProfilingActionTokenGet(`ts=${ts}`)
     const token = res.data
     if (!token) {
       return
     }
-    window.location.href = `${client.getBasePath()}/profiling/group/download?token=${token}`
+    window.location.href = `${client.getBasePath()}/continuous-profiling/download?token=${token}`
   }, [id])
 
   return (

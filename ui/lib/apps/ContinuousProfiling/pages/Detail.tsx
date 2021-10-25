@@ -6,14 +6,13 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { usePersistFn } from 'ahooks'
 
 import client from '@lib/client'
-import { CardTable, Head } from '@lib/components'
+import { CardTable, DateTime, Head } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 
 export default function Page() {
   const { t } = useTranslation()
-  const { id } = useQueryParams()
   const { ts } = useQueryParams()
 
   const {
@@ -114,7 +113,7 @@ export default function Page() {
       return
     }
     window.location.href = `${client.getBasePath()}/continuous-profiling/download?token=${token}`
-  }, [id])
+  }, [ts])
 
   return (
     <div>
@@ -130,7 +129,11 @@ export default function Page() {
             {t('continuous_profiling.detail.download')}
           </Button>
         }
-      />
+      >
+        {groupProfileDetail && (
+          <DateTime.Long unixTimestampMs={groupProfileDetail.ts! * 1000} />
+        )}
+      </Head>
       <CardTable
         loading={groupDetailLoading}
         columns={columns}

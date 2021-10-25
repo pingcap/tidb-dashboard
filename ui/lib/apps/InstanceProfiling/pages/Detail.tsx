@@ -6,7 +6,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { usePersistFn } from 'ahooks'
 
 import client from '@lib/client'
-import { CardTable, Head } from '@lib/components'
+import { CardTable, DateTime, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -161,7 +161,13 @@ export default function Page() {
             {t('instance_profiling.detail.download')}
           </Button>
         }
-      />
+      >
+        {respData && (
+          <DateTime.Calendar
+            unixTimestampMs={respData.task_group_status!.started_at! * 1000}
+          />
+        )}
+      </Head>
       <CardTable
         loading={isLoading}
         columns={columns}

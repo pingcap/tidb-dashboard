@@ -10,13 +10,9 @@ import (
 	"github.com/fatih/structtag"
 	"github.com/henrylee2cn/ameda"
 
+	"github.com/pingcap/tidb-dashboard/util/reflectutil"
 	"github.com/pingcap/tidb-dashboard/util/timeutil"
 )
-
-// See https://cs.opensource.google/go/go/+/refs/tags/go1.17.1:src/reflect/type.go;l=619
-func isFieldExported(field reflect.StructField) bool {
-	return field.PkgPath == ""
-}
 
 // isFieldTaggedAsTime parses the csv field and check whether there is a `time` option.
 func isFieldTaggedAsTime(field reflect.StructField) bool {
@@ -72,7 +68,7 @@ func (w *CSVWriter) ensureCacheValid(objType reflect.Type) {
 	fieldsCount := objType.NumField()
 	for i := 0; i < fieldsCount; i++ {
 		f := objType.Field(i)
-		w.cacheFieldIsExported = append(w.cacheFieldIsExported, isFieldExported(f))
+		w.cacheFieldIsExported = append(w.cacheFieldIsExported, reflectutil.IsFieldExported(f))
 		w.cacheFieldIsTime = append(w.cacheFieldIsTime, isFieldTaggedAsTime(f))
 	}
 }

@@ -3,7 +3,9 @@ module github.com/pingcap/tidb-dashboard/util
 go 1.16
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/VividCortex/mysqlerr v1.0.0
+	github.com/antonmedv/expr v1.9.0
 	github.com/fatih/structtag v1.2.0
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-resty/resty/v2 v2.6.0

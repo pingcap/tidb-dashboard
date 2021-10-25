@@ -229,7 +229,7 @@ func (s *Service) conprofGroupProfiles(c *gin.Context) {
 // @Router /continuous-profiling/group-profile/detail [get]
 // @Param ts query number true "timestamp"
 // @Security JwtAuth
-// @Success 200 {array} GroupProfileDetail
+// @Success 200 {object} GroupProfileDetail
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) conprofGroupProfileDetail(c *gin.Context) {

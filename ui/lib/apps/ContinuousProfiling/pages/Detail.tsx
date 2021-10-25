@@ -1,4 +1,4 @@
-import { Badge, Button, Progress } from 'antd'
+import { Badge, Button } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -7,50 +7,24 @@ import { usePersistFn } from 'ahooks'
 
 import client from '@lib/client'
 import { CardTable, Head } from '@lib/components'
-import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
-
-function mapData(data) {
-  if (!data) {
-    return data
-  }
-  data.tasks_status.forEach((task) => {
-    if (task.state === 1) {
-      let task_elapsed_secs = data.server_time - task.started_at
-      let progress =
-        task_elapsed_secs / data.task_group_status.profile_duration_secs
-      if (progress > 0.99) {
-        progress = 0.99
-      }
-      if (progress < 0) {
-        progress = 0
-      }
-      task.progress = progress
-    }
-  })
-  return data
-}
-
-function isFinished(data) {
-  return data?.task_group_status?.state === 2
-}
 
 export default function Page() {
   const { t } = useTranslation()
   const { id } = useQueryParams()
+  const { ts } = useQueryParams()
 
-  const { data: respData, isLoading, error } = useClientRequestWithPolling(
-    (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
-    {
-      shouldPoll: (data) => !isFinished(data),
-    }
-  )
+  const {
+    data: groupProfileDetail,
+    isLoading: groupDetailLoading,
+    error: groupDetailError,
+  } = useClientRequest(() => {
+    return client.getInstance().continuousProfilingGroupProfileDetailGet(ts)
+  })
 
-  const data = useMemo(() => mapData(respData), [respData])
-
-  const profileDuration =
-    respData?.task_group_status?.profile_duration_secs || 0
+  const profileDuration = groupProfileDetail?.profile_duration_secs || 0
 
   const columns = useMemo(
     () => [
@@ -59,7 +33,7 @@ export default function Page() {
         key: 'instance',
         minWidth: 150,
         maxWidth: 400,
-        onRender: (record) => record.target.display_name,
+        onRender: (record) => record.target.address,
       },
       {
         name: t('continuous_profiling.detail.table.columns.kind'),
@@ -67,7 +41,7 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         onRender: (record) => {
-          return InstanceKindName[record.target.kind]
+          return InstanceKindName[record.target.component]
         },
       },
       {
@@ -75,16 +49,7 @@ export default function Page() {
         key: 'content',
         minWidth: 150,
         maxWidth: 300,
-        onRender: (record) => {
-          // FIXME: when API is ready, replace it by API
-          let profileType = ''
-          if (record.target.kind === 'pd' || record.target.kind === 'tidb') {
-            profileType = 'CPU Profiling'
-          } else {
-            profileType = 'CPU Flame Graph'
-          }
-          return `${profileType} - ${profileDuration}s`
-        },
+        onRender: (record) => record.profile_type,
       },
       {
         name: t('continuous_profiling.detail.table.columns.status'),
@@ -92,17 +57,7 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 200,
         onRender: (record) => {
-          if (record.state === 1) {
-            return (
-              <div style={{ width: 200 }}>
-                <Progress
-                  percent={Math.round(record.progress * 100)}
-                  size="small"
-                  width={200}
-                />
-              </div>
-            )
-          } else if (record.state === 0) {
+          if (record.state === 'failed') {
             return <Badge status="error" text={record.error} />
           } else {
             return (
@@ -153,20 +108,16 @@ export default function Page() {
           </Link>
         }
         titleExtra={
-          <Button
-            disabled={!isFinished(data)}
-            type="primary"
-            onClick={handleDownloadGroup}
-          >
+          <Button type="primary" onClick={handleDownloadGroup}>
             {t('continuous_profiling.detail.download')}
           </Button>
         }
       />
       <CardTable
-        loading={isLoading}
+        loading={groupDetailLoading}
         columns={columns}
-        items={data?.tasks_status || []}
-        errors={[error]}
+        items={groupProfileDetail?.target_profiles || []}
+        errors={[groupDetailError]}
         onRowClicked={handleRowClick}
         hideLoadingWhenNotEmpty
         extendLastColumn

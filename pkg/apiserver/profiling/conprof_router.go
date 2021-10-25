@@ -143,9 +143,9 @@ func (s *Service) resolveNgMonitoringAddress() string {
 	if err == nil && addr != "" {
 		return fmt.Sprintf("http://%s", addr)
 	}
-	if err != nil && errorx.IsOfType(err, topology.ErrInstanceNotAlive) {
-		return NgMonitoringNotAlive
-	}
+	// if err != nil && errorx.IsOfType(err, topology.ErrInstanceNotAlive) {
+	// 	return NgMonitoringNotAlive
+	// }
 	return NgMonitoringNotStart
 }
 

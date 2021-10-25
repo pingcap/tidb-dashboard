@@ -84,7 +84,7 @@ func FetchNgMonitoringTopology(ctx context.Context, etcdClient *clientv3.Client)
 			continue
 		}
 		if keyParts[1] == "ttl" {
-			alive, err := parseNgMontioringAliveness(kv.Value)
+			_, err := parseNgMontioringAliveness(kv.Value)
 			if err != nil {
 				log.Warn("Ignored invalid NgMonitoring topology TTL entry",
 					zap.String("key", key),
@@ -92,12 +92,13 @@ func FetchNgMonitoringTopology(ctx context.Context, etcdClient *clientv3.Client)
 					zap.Error(err))
 				return "", err
 			}
-			if !alive {
-				log.Warn("Alive of NgMonitoring has expired, maybe local time in different hosts are not synchronized",
-					zap.String("key", key),
-					zap.String("value", string(kv.Value)))
-				return "", ErrInstanceNotAlive.NewWithNoMessage()
-			}
+			// Currently ttl value is not refreshed periodically in the NgMonitoring side
+			// if !alive {
+			// 	log.Warn("Alive of NgMonitoring has expired, maybe local time in different hosts are not synchronized",
+			// 		zap.String("key", key),
+			// 		zap.String("value", string(kv.Value)))
+			// 	return "", ErrInstanceNotAlive.NewWithNoMessage()
+			// }
 			return keyParts[0], nil
 		}
 	}
@@ -111,8 +112,7 @@ func parseNgMontioringAliveness(value []byte) (bool, error) {
 	}
 	t := time.Unix(0, int64(unixTimestampNano))
 	fmt.Println("t:", t)
-	// if time.Since(t) > time.Second*90 {
-	if time.Since(t) > time.Second*9000 {
+	if time.Since(t) > time.Second*90 {
 		return false, nil
 	}
 	return true, nil

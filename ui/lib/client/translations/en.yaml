@@ -15,7 +15,7 @@ error:
     continuous_profiling:
       ng_monitoring_addr_load_failed: Get NgMonitoring address failed
       ng_monitoring_not_deploy: NgMonitoring component is not deployed in the cluster
-      ng_monitoring_not_start: NgMonitoring component is not started in the cluster
+      ng_monitoring_not_start: NgMonitoring component is not started or down in the cluster
       ng_monitoring_not_alive: NgMonitoring service may be down, or server time is not correctly synchronied
     other: Other error
   tidb:

@@ -49,7 +49,17 @@ export default function Page() {
         key: 'content',
         minWidth: 150,
         maxWidth: 300,
-        onRender: (record) => record.profile_type,
+        onRender: (record) => {
+          const profileType = record.profile_type
+          const comp = record.target.component
+          if (profileType === 'profile') {
+            if (comp === 'tidb' || comp === 'pd') {
+              return `cpu profile - ${profileDuration}s`
+            }
+            return `cpu flame graph - ${profileDuration}s`
+          }
+          return profileType
+        },
       },
       {
         name: t('continuous_profiling.detail.table.columns.status'),

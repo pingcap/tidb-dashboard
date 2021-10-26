@@ -7,7 +7,6 @@ import {
   Space,
   Button,
   Modal,
-  InputNumber,
   Select,
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'

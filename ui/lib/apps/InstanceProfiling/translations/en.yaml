@@ -4,13 +4,13 @@ instance_profiling:
   nav_title: Manually Profile
   list:
     control_form:
-      title: Manually Profiling Instances
+      title: Start Profiling Instances
       instances:
         label: Select instances
       duration:
         label: Duration
       submit: Start Profiling
-      submit_disable_tooltip: You can see all instances profile result in the continuous profiling page
+      submit_disable_tooltip: Already enabled continuosu profiling, you can see all instances profile results in the continuous profiling page.
     table:
       title: Profiling History
       columns:

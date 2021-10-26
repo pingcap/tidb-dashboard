@@ -2,7 +2,7 @@ continuous_profiling:
   nav_title: Continuous Profile
   list:
     control_form:
-      title: Continuous Profiling Instances
+      title: Start Profiling Instances
       enable_tooltip: This feature is enabled, you can disable it in the settings
       disable_tooltip: This feature is not enabled, you can enable it in the settings
     table:
@@ -35,7 +35,7 @@ continuous_profiling:
         finished: Finished
   settings:
     switch: Enable Feature
-    switch_tooltip: Whether Continuous Profiling feature is enabled. When enabled, it profiles the instances periodically.
+    switch_tooltip: Whether Continuous Profiling feature is enabled. When enabled, it generates the instances profile results continuously.
     profile_targets: Profile Targets
     profile_targets_tooltip: |
       Profile all instances, new created instance will be profiled automatically.

@@ -10,7 +10,7 @@ instance_profiling:
       duration:
         label: 分析时长
       submit: 开始分析
-      submit_disable_tooltip: 可在周期分析页面查看所有实例的性能分析结果
+      submit_disable_tooltip: 已启用“持续性能分析”，可在“持续性能分析”页面查看当前及过往的分析结果。
     table:
       title: 性能分析历史
       columns:

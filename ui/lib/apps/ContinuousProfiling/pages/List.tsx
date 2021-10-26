@@ -37,7 +37,6 @@ export default function Page() {
         errorStrategy: ErrorStrategy.Custom,
       })
   })
-  const historyLen = (historyTable || []).length
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -49,15 +48,6 @@ export default function Page() {
 
   const historyTableColumns = useMemo(
     () => [
-      {
-        name: t('continuous_profiling.list.table.columns.order'),
-        key: 'order',
-        minWidth: 100,
-        maxWidth: 150,
-        onRender: (_rec, idx) => {
-          return <span>{historyLen - idx}</span>
-        },
-      },
       {
         name: t('continuous_profiling.list.table.columns.targets'),
         key: 'targets',
@@ -121,7 +111,7 @@ export default function Page() {
         fieldName: 'profile_duration_secs',
       },
     ],
-    [t, historyLen]
+    [t]
   )
 
   const [timeRange, setTimeRange] = useSessionStorageState<
@@ -187,7 +177,7 @@ export default function Page() {
             loading={listLoading}
             items={historyTable || []}
             columns={historyTableColumns}
-            errors={[historyError, configError]}
+            errors={[historyError]}
             onRowClicked={handleRowClick}
           />
         </ScrollablePane>

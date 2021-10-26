@@ -76,14 +76,7 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 300,
         onRender: (record) => {
-          // FIXME: when API is ready, replace it by API
-          let profileType = ''
-          if (record.target.kind === 'pd' || record.target.kind === 'tidb') {
-            profileType = 'CPU Profile'
-          } else {
-            profileType = 'CPU Flame Graph'
-          }
-          return `${profileType} - ${profileDuration}s`
+          return `CPU Profiling - ${profileDuration}s`
         },
       },
       {

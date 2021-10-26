@@ -14,7 +14,10 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import client, { ProfilingContinuousProfilingConfig } from '@lib/client'
+import client, {
+  ErrorStrategy,
+  ProfilingContinuousProfilingConfig,
+} from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ErrorBar, InstanceSelect } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
@@ -35,20 +38,23 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
   const { t } = useTranslation()
   const isWriteable = useIsWriteable()
 
-  const {
-    data: initialConfig,
-    isLoading: loading,
-    error,
-  } = useClientRequest(() =>
-    client.getInstance().continuousProfilingConfigGet()
+  const { data: initialConfig, isLoading: loading, error } = useClientRequest(
+    () =>
+      client.getInstance().continuousProfilingConfigGet({
+        errorStrategy: ErrorStrategy.Custom,
+      })
   )
 
   const { data: scrapeComponents } = useClientRequest(() =>
-    client.getInstance().continuousProfilingComponentsGet()
+    client.getInstance().continuousProfilingComponentsGet({
+      errorStrategy: ErrorStrategy.Custom,
+    })
   )
 
   const { data: estimateSize } = useClientRequest(() =>
-    client.getInstance().continuousProfilingEstimateSizeGet(1)
+    client.getInstance().continuousProfilingEstimateSizeGet(1, {
+      errorStrategy: ErrorStrategy.Custom,
+    })
   )
 
   const dataRetentionSeconds = useMemo(() => {
@@ -126,7 +132,13 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     label={t('continuous_profiling.settings.profile_targets')}
                     extra={t(
-                      'continuous_profiling.settings.profile_targets_tooltip'
+                      'continuous_profiling.settings.profile_targets_tooltip',
+                      {
+                        n: (scrapeComponents || []).length || '?',
+                        size: estimateSize
+                          ? getValueFormat('decbytes')(estimateSize, 0)
+                          : '?',
+                      }
                     )}
                   >
                     <InstanceSelect
@@ -137,42 +149,6 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
                     />
                   </Form.Item>
 
-                  <Form.Item
-                    label={t('continuous_profiling.settings.profile_duration')}
-                    extra={t(
-                      'continuous_profiling.settings.profile_duration_tooltip'
-                    )}
-                  >
-                    <Input.Group>
-                      <Form.Item noStyle name="profile_seconds">
-                        <InputNumber
-                          formatter={(v) => `${v}s`}
-                          disabled={true}
-                        />
-                      </Form.Item>
-                    </Input.Group>
-                  </Form.Item>
-                  <Form.Item
-                    label={t('continuous_profiling.settings.profile_interval')}
-                    extra={t(
-                      'continuous_profiling.settings.profile_interval_tooltip',
-                      {
-                        n: (scrapeComponents || []).length || '?',
-                        size: estimateSize
-                          ? getValueFormat('decbytes')(estimateSize, 0)
-                          : '?',
-                      }
-                    )}
-                  >
-                    <Input.Group>
-                      <Form.Item noStyle name="interval_seconds">
-                        <InputNumber
-                          formatter={(v) => `${v}s`}
-                          disabled={true}
-                        />
-                      </Form.Item>
-                    </Input.Group>
-                  </Form.Item>
                   <Form.Item
                     label={t(
                       'continuous_profiling.settings.profile_retention_duration'

@@ -14,7 +14,6 @@ instance_profiling:
     table:
       title: Profiling History
       columns:
-        order: Order
         targets: Instances
         start_at: Start At
         duration: Duration (sec)

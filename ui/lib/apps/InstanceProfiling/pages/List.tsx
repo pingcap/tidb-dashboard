@@ -36,7 +36,6 @@ export default function Page() {
   const conprofEnable =
     ngMonitoringConfig?.continuous_profiling?.enable ?? false
 
-  const historyLen = (historyTable || []).length
   const { t } = useTranslation()
   const navigate = useNavigate()
   const instanceSelect = useRef<IInstanceSelectRefProps>(null)
@@ -101,15 +100,6 @@ export default function Page() {
 
   const historyTableColumns = useMemo(
     () => [
-      {
-        name: t('instance_profiling.list.table.columns.order'),
-        key: 'order',
-        minWidth: 100,
-        maxWidth: 150,
-        onRender: (_rec, idx) => {
-          return <span>{historyLen - idx}</span>
-        },
-      },
       {
         name: t('instance_profiling.list.table.columns.targets'),
         key: 'targets',
@@ -180,7 +170,7 @@ export default function Page() {
         fieldName: 'profile_duration_secs',
       },
     ],
-    [t, historyLen]
+    [t]
   )
 
   return (

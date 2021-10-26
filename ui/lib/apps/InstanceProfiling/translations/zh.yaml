@@ -14,7 +14,6 @@ instance_profiling:
     table:
       title: 性能分析历史
       columns:
-        order: 序号
         targets: 实例
         start_at: 开始时间
         duration: 时长（秒）

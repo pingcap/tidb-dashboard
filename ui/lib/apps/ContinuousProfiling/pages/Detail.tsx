@@ -51,12 +51,8 @@ export default function Page() {
         maxWidth: 300,
         onRender: (record) => {
           const profileType = record.profile_type
-          const comp = record.target.component
           if (profileType === 'profile') {
-            if (comp === 'tidb' || comp === 'pd') {
-              return `CPU Profile - ${profileDuration}s`
-            }
-            return `CPU Flame Graph - ${profileDuration}s`
+            return `CPU Profiling - ${profileDuration}s`
           }
           return upperFirst(profileType)
         },
@@ -99,7 +95,7 @@ export default function Page() {
         return
       }
       window.open(
-        `${client.getBasePath()}/continuous-profiling/single-profile/view?token=${token}`,
+        `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`,
         '_blank'
       )
     }
@@ -113,7 +109,7 @@ export default function Page() {
     if (!token) {
       return
     }
-    window.location.href = `${client.getBasePath()}/continuous-profiling/download?token=${token}`
+    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
   }, [ts])
 
   return (

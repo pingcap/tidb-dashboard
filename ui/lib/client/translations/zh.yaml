@@ -16,7 +16,6 @@ error:
       ng_monitoring_addr_load_failed: 获取 NgMonitoring 地址失败
       ng_monitoring_not_deploy: 集群中未部署 NgMonitoring 组件，此功能不可用
       ng_monitoring_not_start: 集群中的 NgMonitoring 组件未启动或已下线，此功能不可用
-      ng_monitoring_not_alive: 集群中的 NgMonitoring 服务未正常工作，或服务器时间未正确同步
     other: 其他错误
   tidb:
     no_alive_tidb: 没有正在运行的 {{distro.tidb}} 实例

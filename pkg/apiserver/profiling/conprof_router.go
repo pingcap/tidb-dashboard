@@ -48,42 +48,31 @@ const (
 
 type ngMonitoringAddrCacheEntity struct {
 	address string
+	err     error
 	cacheAt time.Time
 }
 
 // Register register the handlers to the service.
 func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
-	conprofEndpoint := r.Group("/continuous-profiling")
+	conprofEndpoint := r.Group("/continuous_profiling")
 
 	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
 	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
-	conprofEndpoint.GET("/components", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/components"), s.conprofComponents)
-	conprofEndpoint.GET("/estimate-size", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/estimate-size"), s.estimateSize)
-	conprofEndpoint.GET("/group-profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profiles"), s.conprofGroupProfiles)
-	conprofEndpoint.GET("/group-profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous-profiling/group-profile/detail"), s.conprofGroupProfileDetail)
+	conprofEndpoint.GET("/components", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/components"), s.conprofComponents)
+	conprofEndpoint.GET("/estimate_size", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/estimate_size"), s.estimateSize)
+	conprofEndpoint.GET("/group_profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profiles"), s.conprofGroupProfiles)
+	conprofEndpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profile/detail"), s.conprofGroupProfileDetail)
 
-	conprofEndpoint.GET("/action-token", auth.MWAuthRequired(), s.genConprofActionToken)
-	conprofEndpoint.GET("/download", s.reverseProxy("/continuous-profiling/download"), s.conprofDownload)
-	conprofEndpoint.GET("/single-profile/view", s.reverseProxy("/continuous-profiling/single-profile/view"), s.conprofViewProfile)
+	conprofEndpoint.GET("/action_token", auth.MWAuthRequired(), s.genConprofActionToken)
+	conprofEndpoint.GET("/download", s.reverseProxy("/continuous_profiling/download"), s.conprofDownload)
+	conprofEndpoint.GET("/single_profile/view", s.reverseProxy("/continuous_profiling/single_profile/view"), s.conprofViewProfile)
 }
 
 func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ngMonitoringAddr, err := s.getNgMonitoringAddrFromCache()
 		if err != nil {
-			_ = c.Error(ErrLoadNgMonitoringAddr.Wrap(err, "Load NgMonitoring address failed"))
-			return
-		}
-		if ngMonitoringAddr == NgMonitoringNotDeploy {
-			_ = c.Error(ErrNgMonitoringNotDeploy.New("NgMonitoring component is not deployed"))
-			return
-		}
-		if ngMonitoringAddr == NgMonitoringNotStart {
-			_ = c.Error(ErrNgMonitoringNotStart.New("NgMonitoring component is not started"))
-			return
-		}
-		if ngMonitoringAddr == NgMonitoringNotAlive {
-			_ = c.Error(ErrNgMonitoringNotAlive.New("NgMonitoring instance is not alive anymore, it may down or the server time is not synchronized"))
+			_ = c.Error(err)
 			return
 		}
 
@@ -110,43 +99,38 @@ func (s *Service) getNgMonitoringAddrFromCache() (string, error) {
 		if v := s.ngMonitoringAddrCache.Load(); v != nil {
 			entity := v.(*ngMonitoringAddrCacheEntity)
 			if entity.cacheAt.Add(ngMonitoringCacheTTL).After(time.Now()) {
-				return entity.address, nil
+				return entity.address, entity.err
 			}
 		}
 
-		addr := s.resolveNgMonitoringAddress()
+		addr, err := s.resolveNgMonitoringAddress()
 
 		s.ngMonitoringAddrCache.Store(&ngMonitoringAddrCacheEntity{
 			address: addr,
+			err:     err,
 			cacheAt: time.Now(),
 		})
 
-		return addr, nil
+		return addr, err
 	}
 
 	resolveResult, err, _ := s.ngMonitoringReqGroup.Do("any_key", func() (interface{}, error) {
 		return fn()
 	})
-	if err != nil {
-		return "", err
-	}
-	return resolveResult.(string), nil
+	return resolveResult.(string), err
 }
 
-func (s *Service) resolveNgMonitoringAddress() string {
+func (s *Service) resolveNgMonitoringAddress() (string, error) {
 	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if pi == nil || err != nil {
-		return NgMonitoringNotDeploy
+		return "", ErrNgMonitoringNotDeploy.Wrap(err, "NgMonitoring component is not deployed")
 	}
 
 	addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err == nil && addr != "" {
-		return fmt.Sprintf("http://%s", addr)
+		return fmt.Sprintf("http://%s", addr), nil
 	}
-	// if err != nil && errorx.IsOfType(err, topology.ErrInstanceNotAlive) {
-	// 	return NgMonitoringNotAlive
-	// }
-	return NgMonitoringNotStart
+	return "", ErrNgMonitoringNotStart.Wrap(err, "NgMonitoring component is not started")
 }
 
 type ContinuousProfilingConfig struct {
@@ -163,7 +147,7 @@ type NgMonitoringConfig struct {
 
 // @Summary Get Continuous Profiling Config
 // @Success 200 {object} NgMonitoringConfig
-// @Router /continuous-profiling/config [get]
+// @Router /continuous_profiling/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
@@ -172,7 +156,7 @@ func (s *Service) conprofConfig(c *gin.Context) {
 }
 
 // @Summary Update Continuous Profiling Config
-// @Router /continuous-profiling/config [post]
+// @Router /continuous_profiling/config [post]
 // @Param request body NgMonitoringConfig true "Request body"
 // @Security JwtAuth
 // @Success 200 {string} string "ok"
@@ -191,7 +175,7 @@ type Component struct {
 
 // @Summary Get current scraping components
 // @Success 200 {array} Component
-// @Router /continuous-profiling/components [get]
+// @Router /continuous_profiling/components [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
@@ -200,7 +184,7 @@ func (s *Service) conprofComponents(c *gin.Context) {
 }
 
 // @Summary Get Estimate Size
-// @Router /continuous-profiling/estimate-size [get]
+// @Router /continuous_profiling/estimate_size [get]
 // @Param days query number true "days"
 // @Security JwtAuth
 // @Success 200 {number} number "size"
@@ -249,7 +233,7 @@ type Target struct {
 }
 
 // @Summary Get Group Profiles
-// @Router /continuous-profiling/group-profiles [get]
+// @Router /continuous_profiling/group_profiles [get]
 // @Param q query GetGroupProfileReq true "Query"
 // @Security JwtAuth
 // @Success 200 {array} GroupProfiles
@@ -260,7 +244,7 @@ func (s *Service) conprofGroupProfiles(c *gin.Context) {
 }
 
 // @Summary Get Group Profile Detail
-// @Router /continuous-profiling/group-profile/detail [get]
+// @Router /continuous_profiling/group_profile/detail [get]
 // @Param ts query number true "timestamp"
 // @Security JwtAuth
 // @Success 200 {object} GroupProfileDetail
@@ -271,7 +255,7 @@ func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 }
 
 // @Summary Get action token for download or view profile
-// @Router /continuous-profiling/action-token [get]
+// @Router /continuous_profiling/action_token [get]
 // @Param q query string true "target query string"
 // @Security JwtAuth
 // @Success 200 {string} string
@@ -288,7 +272,7 @@ func (s *Service) genConprofActionToken(c *gin.Context) {
 }
 
 // @Summary Download Group Profile files
-// @Router /continuous-profiling/download [get]
+// @Router /continuous_profiling/download [get]
 // @Param ts query number true "timestamp"
 // @Security JwtAuth
 // @Produce application/x-gzip
@@ -306,7 +290,7 @@ type ViewSingleProfileReq struct {
 }
 
 // @Summary View Single Profile files
-// @Router /continuous-profiling/single-profile/view [get]
+// @Router /continuous_profiling/single_profile/view [get]
 // @Param q query ViewSingleProfileReq true "Query"
 // @Security JwtAuth
 // @Produce html

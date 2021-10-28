@@ -113,14 +113,14 @@ func (vvc VirtualViewClauses) Select() clause.Expression {
 		if field.viewExpr == "" {
 			// Not a computed field, just use the column name.
 			selectColumns = append(selectColumns, clause.Column{
-				Name: field.columnNameL,
+				Name: field.columnName,
 			})
 		} else {
 			// Computed field, build SQL like:
 			// SELECT PLUS(a,b) AS column_name, ...
 			//        ^^^^^^^^^^^^^^^^^^^^^^^^
 			selectColumns = append(selectColumns, clause.Column{
-				Name: fmt.Sprintf("%s AS %s", field.viewExpr, field.columnNameL),
+				Name: fmt.Sprintf("%s AS %s", field.viewExpr, field.columnName),
 				Raw:  true,
 			})
 			// TODO: We'd better quote the alias field name.
@@ -169,7 +169,7 @@ func (vvc VirtualViewClauses) OrderBy(fields []OrderByField) clause.Expression {
 			continue
 		}
 		orderByColumns = append(orderByColumns, clause.OrderByColumn{
-			Column: clause.Column{Name: field.columnNameL},
+			Column: clause.Column{Name: field.columnName},
 			Desc:   f.IsDesc,
 		})
 	}

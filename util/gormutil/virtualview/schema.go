@@ -15,6 +15,7 @@ import (
 type viewFieldProps struct {
 	jsonNameL            string   // JSON name in lower case. Possibly empty, means field is JSON unexported.
 	viewExpr             string   // Possibly empty, means either vexpr tag is not set, or is set to empty
+	columnName           string   // DB column name
 	columnNameL          string   // DB column name in lower case.
 	dependOnColumnNamesL []string // Possibly nil when viewExpr is empty.
 
@@ -49,6 +50,7 @@ func decodeField(ft reflect.StructField) (props viewFieldProps, err error) {
 		if dbName == "" {
 			dbName = schema.NamingStrategy{}.ColumnName("", ft.Name)
 		}
+		props.columnName = dbName
 		props.columnNameL = strings.ToLower(dbName)
 	}
 

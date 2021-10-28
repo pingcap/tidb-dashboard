@@ -13,12 +13,6 @@
 
 package slowquery
 
-import (
-	"github.com/thoas/go-funk"
-
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-)
-
 type Model struct {
 	Digest string `gorm:"column:Digest" json:"digest"`
 	Query  string `gorm:"column:Query" json:"query"`
@@ -29,8 +23,8 @@ type Model struct {
 	ConnectionID string `gorm:"column:Conn_ID" json:"connection_id"`
 	Success      int    `gorm:"column:Succ" json:"success"`
 
-	Timestamp             float64 `gorm:"column:timestamp" proj:"(UNIX_TIMESTAMP(Time) + 0E0)" json:"timestamp"` // finish time
-	QueryTime             float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
+	Timestamp             float64 `gorm:"column:timestamp" vexpr:"(UNIX_TIMESTAMP(Time) + 0E0)" json:"timestamp"` // finish time
+	QueryTime             float64 `gorm:"column:Query_time" json:"query_time"`                                    // latency
 	ParseTime             float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime           float64 `gorm:"column:Compile_time" json:"compile_time"`
 	RewriteTime           float64 `gorm:"column:Rewrite_time" json:"rewrite_time"`
@@ -98,36 +92,4 @@ type Model struct {
 	RocksdbBlockCacheHitCount uint `gorm:"column:Rocksdb_block_cache_hit_count" json:"rocksdb_block_cache_hit_count"`
 	RocksdbBlockReadCount     uint `gorm:"column:Rocksdb_block_read_count" json:"rocksdb_block_read_count"`
 	RocksdbBlockReadByte      uint `gorm:"column:Rocksdb_block_read_byte" json:"rocksdb_block_read_byte"`
-}
-
-type Field struct {
-	ColumnName string
-	JSONName   string
-	Projection string
-}
-
-func getFieldsAndTags() (slowQueryFields []Field) {
-	fields := utils.GetFieldsAndTags(Model{}, []string{"gorm", "proj", "json"})
-
-	for _, f := range fields {
-		sqf := Field{
-			ColumnName: utils.GetGormColumnName(f.Tags["gorm"]),
-			JSONName:   f.Tags["json"],
-			Projection: f.Tags["proj"],
-		}
-
-		slowQueryFields = append(slowQueryFields, sqf)
-	}
-
-	return
-}
-
-func getVirtualFields() []string {
-	fields := getFieldsAndTags()
-	vFields := funk.Filter(fields, func(f Field) bool {
-		return f.Projection != ""
-	}).([]Field)
-	return funk.Map(vFields, func(f Field) string {
-		return f.ColumnName
-	}).([]string)
 }

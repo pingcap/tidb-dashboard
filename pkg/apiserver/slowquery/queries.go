@@ -16,6 +16,8 @@ package slowquery
 import (
 	"strings"
 
+	"github.com/pingcap/tidb-dashboard/util/gormutil/virtualview"
+	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
 )
 
@@ -46,21 +48,33 @@ type GetDetailRequest struct {
 	ConnectID string `json:"connect_id" form:"connect_id"`
 }
 
-func (s *Service) querySlowLogList(db *gorm.DB, req *GetListRequest) ([]Model, error) {
+func (s *Service) querySlowLogList(db *gorm.DB, vv *virtualview.VirtualView, req *GetListRequest) ([]Model, error) {
+	// TODO: get table column names and set source db columns once when service start
 	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
 	if err != nil {
 		return nil, err
 	}
+	s.vv.SetSourceDBColumns(tableColumns)
+	reqFields := funk.UniqString(append(
+		strings.Split(req.Fields, ","),
+		// These three fields are the most basic information of a slow query record and should contain them
+		"digest",
+		"connection_id",
+		"timestamp",
+	))
+	clause := s.vv.Clauses(reqFields)
 
-	reqFields := strings.Split(req.Fields, ",")
-	selectStmt, err := s.genSelectStmt(tableColumns, reqFields)
-	if err != nil {
-		return nil, err
+	// more robust
+	if req.OrderBy == "" {
+		req.OrderBy = "timestamp"
 	}
 
 	tx := db.
 		Table(slowQueryTable).
-		Select(selectStmt).
+		Clauses(
+			clause.Select(),
+			clause.OrderBy([]virtualview.OrderByField{{JSONFieldName: req.OrderBy, IsDesc: req.IsDesc}}),
+		).
 		Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
 
 	if req.Limit > 0 {
@@ -84,18 +98,6 @@ func (s *Service) querySlowLogList(db *gorm.DB, req *GetListRequest) ([]Model, e
 	if len(req.DB) > 0 {
 		tx = tx.Where("DB IN (?)", req.DB)
 	}
-
-	// more robust
-	if req.OrderBy == "" {
-		req.OrderBy = "timestamp"
-	}
-
-	orderStmt, err := s.genOrderStmt(tableColumns, req.OrderBy, req.IsDesc)
-	if err != nil {
-		return nil, err
-	}
-
-	tx = tx.Order(orderStmt)
 
 	if len(req.Plans) > 0 {
 		tx = tx.Where("Plan_digest IN (?)", req.Plans)

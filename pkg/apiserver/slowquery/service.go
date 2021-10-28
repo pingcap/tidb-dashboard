@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/joomcode/errorx"
-	"github.com/thoas/go-funk"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -29,6 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/util/gormutil/virtualview"
 )
 
 var (
@@ -44,10 +44,12 @@ type ServiceParams struct {
 
 type Service struct {
 	params ServiceParams
+	vv     *virtualview.VirtualView
 }
 
 func newService(p ServiceParams) *Service {
-	return &Service{params: p}
+	vv := virtualview.MustNew(&Model{})
+	return &Service{params: p, vv: vv}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -83,7 +85,7 @@ func (s *Service) getList(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	results, err := s.querySlowLogList(db, &req)
+	results, err := s.querySlowLogList(db, s.vv, &req)
 	if err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
@@ -132,7 +134,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	list, err := s.querySlowLogList(db, &req)
+	list, err := s.querySlowLogList(db, s.vv, &req)
 	if err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
@@ -191,5 +193,5 @@ func (s *Service) queryTableColumns(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, funk.UniqString(append(cs, getVirtualFields()...)))
+	c.JSON(http.StatusOK, virtualview.FilterJSONNamesByColumnNames(s.vv, cs))
 }

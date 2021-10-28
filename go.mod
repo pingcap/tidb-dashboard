@@ -4,14 +4,14 @@ go 1.13
 
 require (
 	github.com/ReneKroon/ttlcache/v2 v2.3.0
-	github.com/VividCortex/mysqlerr v0.0.0-20200629151747-c28746d985dd
+	github.com/VividCortex/mysqlerr v1.0.0
 	github.com/Xeoncross/go-aesctr-with-hmac v0.0.0-20200623134604-12b17a7ff502
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/appleboy/gin-jwt/v2 v2.6.3
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/gzip v0.0.1
-	github.com/gin-gonic/gin v1.5.0
+	github.com/gin-gonic/gin v1.7.4
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-graphviz v0.0.5
@@ -19,14 +19,15 @@ require (
 	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/joho/godotenv v1.3.0
-	github.com/joomcode/errorx v1.0.1
+	github.com/joomcode/errorx v1.0.3
 	github.com/minio/sio v0.3.0
 	github.com/oleiade/reflections v1.0.1
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
 	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
-	github.com/pingcap/log v0.0.0-20210317133921-96f4fcab92a4
+	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
 	github.com/pingcap/sysutil v0.0.0-20210315073920-cc0985d983a3
+	github.com/pingcap/tidb-dashboard/util v0.0.0-20211025021657-53d82775dbd1
 	github.com/rs/cors v1.7.0
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
@@ -38,14 +39,14 @@ require (
 	github.com/thoas/go-funk v0.8.0
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.1
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
-	go.uber.org/atomic v1.6.0
-	go.uber.org/fx v1.10.0
-	go.uber.org/zap v1.16.0
+	go.uber.org/atomic v1.9.0
+	go.uber.org/fx v1.14.2
+	go.uber.org/zap v1.19.1
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
-	gorm.io/driver/mysql v1.0.6
-	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.21.9
+	gorm.io/driver/mysql v1.1.2
+	gorm.io/driver/sqlite v1.1.6
+	gorm.io/gorm v1.21.15
 	moul.io/zapgorm2 v1.1.0
 )

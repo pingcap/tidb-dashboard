@@ -1,0 +1,38 @@
+// Copyright 2021 PingCAP, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package virtualview
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+type SampleModel2 struct {
+	Digest    string  `gorm:"column:MyDigest" json:"digest"`
+	Timestamp float64 `gorm:"column:Timestamp" json:"timestamp"`
+	JSONAlias string  `gorm:"column:Foo" json:"foo"`
+}
+
+func TestFilterJSONNamesByColumnNames(t *testing.T) {
+	vv := MustNew(SampleModel2{})
+
+	jsonNames := FilterJSONNamesByColumnNames(vv, []string{"MyDigest", "Timestamp"})
+	require.Equal(t, "digest", jsonNames[0])
+	require.Equal(t, "timestamp", jsonNames[1])
+
+	jsonNames = FilterJSONNamesByColumnNames(vv, nil)
+	require.Equal(t, []string{"digest", "foo", "timestamp"}, jsonNames)
+}

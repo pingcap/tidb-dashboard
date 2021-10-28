@@ -2,6 +2,8 @@ module github.com/pingcap/tidb-dashboard
 
 go 1.13
 
+replace github.com/pingcap/tidb-dashboard/util v0.0.0-20211025021657-53d82775dbd1 => ./util
+
 require (
 	github.com/ReneKroon/ttlcache/v2 v2.3.0
 	github.com/VividCortex/mysqlerr v1.0.0

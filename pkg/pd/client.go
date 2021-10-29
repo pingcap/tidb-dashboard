@@ -73,6 +73,9 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 			client.lifecycleCtx = ctx
 			return nil
 		},
+		OnStop: func(c context.Context) error {
+			return cache.Close()
+		},
 	})
 
 	return client

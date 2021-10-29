@@ -151,14 +151,14 @@ func (t *testVerifySQLUserSuite) Test_checkDashboardPriv(c *C) {
 		// 8
 		{
 			desc:      "extra privileges",
-			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_VARIABLES_ADMIN", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_VARIABLES_ADMIN", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_STATUS_ADMIN"},
 			enableSEM: true,
 			expected:  true,
 		},
 		// 9
 		{
 			desc:      "lack RESTRICTED_VARIABLES_ADMIN extra privileges",
-			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_STATUS_ADMIN"},
 			enableSEM: true,
 			expected:  false,
 		},

@@ -120,7 +120,7 @@ func (c *Client) getMemberAddrs() ([]string, error) {
 		addrs = append(addrs, fmt.Sprintf("%s:%d", topo.IP, topo.StatusPort))
 	}
 
-	_ = c.cache.SetWithTTL("tikv_member_addrs", tikvTopos, 10*time.Second)
+	_ = c.cache.SetWithTTL("tikv_member_addrs", addrs, 10*time.Second)
 
 	return addrs, nil
 }

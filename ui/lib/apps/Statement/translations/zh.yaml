@@ -80,11 +80,17 @@ statement:
     plan_count: 计划数
     plan_count_tooltip: 该类 SQL 语句在时间段内的不同执行计划数量
     max_latency: 最大耗时
-    max_latency_tooltip: 单条 SQL 查询的执行时间
+    max_latency_tooltip: 单条 SQL 查询的最大执行时间
     min_latency: 最小耗时
-    min_latency_tooltip: 单条 SQL 查询的执行时间
+    min_latency_tooltip: 单条 SQL 查询的最小执行时间
     avg_latency: 平均耗时
     avg_latency_tooltip: 单条 SQL 查询的执行时间
+    max_result_rows: 最大结果集行数
+    max_result_rows_tooltip: 查询语句结果的最大行数
+    min_result_rows: 最小结果集行数
+    min_result_rows_tooltip: 查询语句结果的最小行数
+    avg_result_rows: 平均结果集行数
+    avg_result_rows_tooltip: 查询语句结果的平均行数
     avg_mem: 平均内存
     avg_mem_tooltip: 单条 SQL 查询的消耗内存大小
     max_mem: 最大内存

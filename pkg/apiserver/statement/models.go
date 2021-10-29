@@ -40,6 +40,9 @@ type Model struct {
 	AggMaxLatency            int    `json:"max_latency" agg:"MAX(max_latency)"`
 	AggMinLatency            int    `json:"min_latency" agg:"MIN(min_latency)"`
 	AggAvgLatency            int    `json:"avg_latency" agg:"CAST(SUM(exec_count * avg_latency) / SUM(exec_count) AS SIGNED)"`
+	AggMaxResultRows         int    `json:"max_result_rows" agg:"MAX(max_result_rows)"`
+	AggMinResultRows         int    `json:"min_result_rows" agg:"MIN(min_result_rows)"`
+	AggAvgResultRows         int    `json:"avg_result_rows" agg:"CAST(SUM(exec_count * avg_result_rows) / SUM(exec_count) AS SIGNED)"`
 	AggAvgParseLatency       int    `json:"avg_parse_latency" agg:"CAST(SUM(exec_count * avg_parse_latency) / SUM(exec_count) AS SIGNED)"`
 	AggMaxParseLatency       int    `json:"max_parse_latency" agg:"MAX(max_parse_latency)"`
 	AggAvgCompileLatency     int    `json:"avg_compile_latency" agg:"CAST(SUM(exec_count * avg_compile_latency) / SUM(exec_count) AS SIGNED)"`

@@ -27,6 +27,11 @@ export const derivedFields = {
     'max_latency',
     'min_latency'
   ),
+  avg_result_rows: genDerivedBarSources(
+    'avg_result_rows',
+    'max_result_rows',
+    'min_result_rows'
+  ),
   parse_latency: genDerivedBarSources('avg_parse_latency', 'max_parse_latency'),
   compile_latency: genDerivedBarSources(
     'avg_compile_latency',
@@ -181,7 +186,10 @@ export function statementColumns(
     tcf.bar.single('sum_latency', 'ns', rows),
     tcf.bar.single('min_latency', 'ns', rows),
     tcf.bar.single('max_latency', 'ns', rows),
-    avgMinMaxLatencyColumn(tcf, rows),
+    tcf.bar.multiple({ sources: derivedFields.avg_latency }, 'ns', rows),
+    tcf.bar.single('min_result_rows', 'short', rows),
+    tcf.bar.single('max_result_rows', 'short', rows),
+    tcf.bar.multiple({ sources: derivedFields.avg_result_rows }, 'short', rows),
     tcf.bar.single('exec_count', 'short', rows),
     tcf.textWithTooltip('plan_count', rows).patchConfig({
       minWidth: 100,

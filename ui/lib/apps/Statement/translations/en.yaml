@@ -81,11 +81,17 @@ statement:
     plan_count: '# Plans'
     plan_count_tooltip: Number of distinct execution plans of this statement in current time range
     max_latency: Max Latency
-    max_latency_tooltip: Execution time of single query
+    max_latency_tooltip: Max execution time of single query
     min_latency: Min Latency
-    min_latency_tooltip: Execution time of single query
+    min_latency_tooltip: Min execution time of single query
     avg_latency: Mean Latency
     avg_latency_tooltip: Execution time of single query
+    max_result_rows: Max Result Rows
+    max_result_rows_tooltip: Max statement results rows
+    min_result_rows: Min Result Rows
+    min_result_rows_tooltip: Min statement results rows
+    avg_result_rows: Mean Result Rows
+    avg_result_rows_tooltip: Statement results rows
     avg_mem: Mean Memory
     avg_mem_tooltip: Memory usage of single query
     max_mem: Max Memory

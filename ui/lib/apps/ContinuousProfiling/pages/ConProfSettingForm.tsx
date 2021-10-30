@@ -44,14 +44,8 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
       })
   )
 
-  const { data: scrapeComponents } = useClientRequest(() =>
-    client.getInstance().continuousProfilingComponentsGet({
-      errorStrategy: ErrorStrategy.Custom,
-    })
-  )
-
   const { data: estimateSize } = useClientRequest(() =>
-    client.getInstance().continuousProfilingEstimateSizeGet(1, {
+    client.getInstance().continuousProfilingEstimateSizeGet({
       errorStrategy: ErrorStrategy.Custom,
     })
   )
@@ -133,9 +127,12 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
                     extra={t(
                       'continuous_profiling.settings.profile_targets_tooltip',
                       {
-                        n: (scrapeComponents || []).length || '?',
-                        size: estimateSize
-                          ? getValueFormat('decbytes')(estimateSize, 0)
+                        n: estimateSize?.instance_count || '?',
+                        size: estimateSize?.profile_size
+                          ? getValueFormat('decbytes')(
+                              estimateSize.profile_size,
+                              0
+                            )
                           : '?',
                       }
                     )}

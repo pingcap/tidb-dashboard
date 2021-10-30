@@ -183,11 +183,15 @@ func (s *Service) conprofComponents(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
+type EstimateSizeRes struct {
+	InstanceCount int `json:"instance_count"`
+	ProfileSize   int `json:"profile_size"`
+}
+
 // @Summary Get Estimate Size
 // @Router /continuous_profiling/estimate_size [get]
-// @Param days query number true "days"
 // @Security JwtAuth
-// @Success 200 {number} number "size"
+// @Success 200 {object} EstimateSizeRes
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) estimateSize(c *gin.Context) {

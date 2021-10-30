@@ -18,6 +18,7 @@ import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { combineTargetStats } from '../utils'
+import { QuestionCircleOutlined } from '@ant-design/icons'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
@@ -175,7 +176,7 @@ export default function Page() {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Card title={t('instance_profiling.list.control_form.title')}>
+      <Card>
         <Form
           onFinish={handleFinish}
           layout="inline"
@@ -190,6 +191,7 @@ export default function Page() {
             rules={[{ required: true }]}
           >
             <InstanceSelect
+              disabled={conprofEnable}
               enableTiFlash={true}
               ref={instanceSelect}
               style={{ width: 200 }}
@@ -200,7 +202,7 @@ export default function Page() {
             label={t('instance_profiling.list.control_form.duration.label')}
             rules={[{ required: true }]}
           >
-            <Select style={{ width: 120 }}>
+            <Select style={{ width: 120 }} disabled={conprofEnable}>
               {profilingDurationsSec.map((sec) => (
                 <Select.Option value={sec} key={sec}>
                   {sec}s
@@ -222,6 +224,7 @@ export default function Page() {
                   disabled={true}
                 >
                   {t('instance_profiling.list.control_form.submit')}
+                  <QuestionCircleOutlined />
                 </Button>
               </Tooltip>
             ) : (

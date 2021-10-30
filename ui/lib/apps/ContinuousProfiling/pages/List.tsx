@@ -148,16 +148,7 @@ export default function Page() {
 
   return (
     <div className={styles.list_container}>
-      <Card
-        title={t('continuous_profiling.list.control_form.title')}
-        subTitle={
-          configError ? null : (
-            <Tooltip title={conProfStatusTooltip}>
-              <Switch disabled={true} checked={conprofEnable} />
-            </Tooltip>
-          )
-        }
-      >
+      <Card>
         <Toolbar className={styles.list_toolbar}>
           <Space>
             <TimeRangeSelector value={timeRange} onChange={onTimeRangeChange} />

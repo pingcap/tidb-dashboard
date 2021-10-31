@@ -60,5 +60,5 @@ continuous_profiling:
     close_feature: 关闭持续分析功能
     close_feature_confirm: 确认要关闭该功能吗？关闭后将停止持续分析，历史结果会继续保留。
     actions:
-      close: 关闭
+      close: 确认
       cancel: 取消

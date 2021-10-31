@@ -35,5 +35,5 @@ keyviz:
     separator_empty_warning: 分隔符为空串时，Key 将不会被切分
     actions:
       save: 保存
-      close: 关闭
+      close: 确认
       cancel: 取消

@@ -28,18 +28,10 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
-const (
-	NgMonitoringNotDeploy = "ng_monitoring_not_deploy"
-	NgMonitoringNotStart  = "ng_monitoring_not_start"
-	NgMonitoringNotAlive  = "ng_monitoring_not_alive"
-)
-
 var (
 	ConProfErrNS             = errorx.NewNamespace("error.api.continuous_profiling")
-	ErrLoadNgMonitoringAddr  = ConProfErrNS.NewType("ng_monitoring_addr_load_failed")
-	ErrNgMonitoringNotDeploy = ConProfErrNS.NewType(NgMonitoringNotDeploy)
-	ErrNgMonitoringNotStart  = ConProfErrNS.NewType(NgMonitoringNotStart)
-	ErrNgMonitoringNotAlive  = ConProfErrNS.NewType(NgMonitoringNotAlive)
+	ErrNgMonitoringNotDeploy = ConProfErrNS.NewType("ng_monitoring_not_deploy")
+	ErrNgMonitoringNotStart  = ConProfErrNS.NewType("ng_monitoring_not_start")
 )
 
 const (

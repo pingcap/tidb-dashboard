@@ -30,6 +30,7 @@ import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 import AppDiagnose from '@lib/apps/Diagnose/index.meta'
 import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
+import AppContinuousProfiling from '@lib/apps/ContinuousProfiling/index.meta'
 import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
 import AppDebugAPI from '@lib/apps/DebugAPI/index.meta'
@@ -116,6 +117,7 @@ async function webPageStart() {
     .register(AppDiagnose)
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
+    .register(AppContinuousProfiling)
     .register(AppQueryEditor)
     .register(AppConfiguration)
     .register(AppDebugAPI)

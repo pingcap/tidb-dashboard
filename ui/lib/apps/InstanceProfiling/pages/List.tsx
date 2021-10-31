@@ -1,9 +1,10 @@
-import { Badge, Button, Form, Select, Modal } from 'antd'
+import { Badge, Button, Form, Select, Modal, Alert } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { usePersistFn } from 'ahooks'
+
 import client, {
   ProfilingStartRequest,
   ModelRequestTargetNode,
@@ -19,6 +20,8 @@ import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { combineTargetStats } from '../utils'
 
+import styles from './List.module.less'
+
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
 
@@ -30,6 +33,12 @@ export default function Page() {
   } = useClientRequest((reqConfig) =>
     client.getInstance().getProfilingGroups(reqConfig)
   )
+  const { data: ngMonitoringConfig } = useClientRequest((reqConfig) =>
+    client.getInstance().continuousProfilingConfigGet(reqConfig)
+  )
+  const conprofEnable =
+    ngMonitoringConfig?.continuous_profiling?.enable ?? false
+
   const { t } = useTranslation()
   const navigate = useNavigate()
   const instanceSelect = useRef<IInstanceSelectRefProps>(null)
@@ -110,7 +119,16 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         onRender: (rec) => {
-          if (rec.state === 1) {
+          if (rec.state === 0) {
+            // all failed
+            return (
+              <Badge
+                status="error"
+                text={t('instance_profiling.list.table.status.failed')}
+              />
+            )
+          } else if (rec.state === 1) {
+            // running
             return (
               <Badge
                 status="processing"
@@ -118,10 +136,21 @@ export default function Page() {
               />
             )
           } else if (rec.state === 2) {
+            // all success
             return (
               <Badge
                 status="success"
                 text={t('instance_profiling.list.table.status.finished')}
+              />
+            )
+          } else {
+            // partial success
+            return (
+              <Badge
+                status="warning"
+                text={t(
+                  'instance_profiling.list.table.status.partial_finished'
+                )}
               />
             )
           }
@@ -148,8 +177,8 @@ export default function Page() {
   )
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Card title={t('instance_profiling.list.control_form.title')}>
+    <div className={styles.list_container}>
+      <Card>
         <Form
           onFinish={handleFinish}
           layout="inline"
@@ -164,6 +193,7 @@ export default function Page() {
             rules={[{ required: true }]}
           >
             <InstanceSelect
+              disabled={conprofEnable}
               enableTiFlash={true}
               ref={instanceSelect}
               style={{ width: 200 }}
@@ -174,7 +204,7 @@ export default function Page() {
             label={t('instance_profiling.list.control_form.duration.label')}
             rules={[{ required: true }]}
           >
-            <Select style={{ width: 120 }}>
+            <Select style={{ width: 120 }} disabled={conprofEnable}>
               {profilingDurationsSec.map((sec) => (
                 <Select.Option value={sec} key={sec}>
                   {sec}s
@@ -183,12 +213,27 @@ export default function Page() {
             </Select>
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={submitting}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={submitting}
+              disabled={conprofEnable}
+            >
               {t('instance_profiling.list.control_form.submit')}
             </Button>
           </Form.Item>
         </Form>
       </Card>
+
+      {conprofEnable && (
+        <div className={styles.alert_container}>
+          <Alert
+            type="warning"
+            message={t('instance_profiling.list.disable_warning')}
+            showIcon
+          />
+        </div>
+      )}
 
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>

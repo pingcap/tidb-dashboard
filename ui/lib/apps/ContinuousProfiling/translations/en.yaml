@@ -1,6 +1,9 @@
 continuous_profiling:
   nav_title: Continuous Profile
   list:
+    toolbar:
+      refresh: Refresh
+      settings: Settings
     control_form:
       title: Start Profiling Instances
       enable_tooltip: This feature is enabled, you can disable it in the settings
@@ -34,6 +37,12 @@ continuous_profiling:
       status:
         finished: Finished
   settings:
+    title: Settings
+    disabled_result:
+      title: Feature Not Enabled
+      sub_title: Continuous Profile feature is not enabled. You can modify settings to enable the feature and wait for new data being collected.
+    disabled_with_history: Continuous Profile feature is not enabled, but you still can view history result. You can modify settings to enable the feature.
+    open_settings: Open Settings
     switch: Enable Feature
     switch_tooltip: Whether Continuous Profiling feature is enabled. When enabled, it generates the instances profile results continuously.
     profile_targets: Profile Targets

@@ -1,6 +1,11 @@
 continuous_profiling:
   nav_title: 持续分析
+  toolbar:
+    refresh: Refresh
   list:
+    toolbar:
+      refresh: 刷新
+      settings: 设置
     control_form:
       title: 开始性能分析
       enable_tooltip: 该功能已开启，你可以在设置中关闭
@@ -34,6 +39,12 @@ continuous_profiling:
       status:
         finished: 完成
   settings:
+    title: 设置
+    disabled_result:
+      title: 该功能未启用
+      sub_title: 持续性能分析功能未启用。您可以修改设置打开该功能后等待新数据收集。
+    disabled_with_history: 持续性能分析功能未启用，但仍然可以查看历史数据。您可以修改设置打开该功能。
+    open_settings: 打开设置
     switch: 启用功能
     switch_tooltip: 是否启用持续分析功能，启用后，会持续产出实例性能分析结果。
     profile_targets: 分析范围

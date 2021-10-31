@@ -1,4 +1,4 @@
-import { Badge, Tooltip, Space, Drawer, Switch } from 'antd'
+import { Badge, Tooltip, Space, Drawer, Result, Button, Alert } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -17,7 +17,11 @@ import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
-import { SettingOutlined } from '@ant-design/icons'
+import {
+  LoadingOutlined,
+  ReloadOutlined,
+  SettingOutlined,
+} from '@ant-design/icons'
 import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
@@ -28,7 +32,7 @@ export default function Page() {
     data: historyTable,
     isLoading: listLoading,
     error: historyError,
-    sendRequest: refreshGroupProfiles,
+    sendRequest: reloadGroupProfiles,
   } = useClientRequest(() => {
     const [beginTime, endTime] = calcTimeRange(timeRange)
     return client
@@ -121,30 +125,27 @@ export default function Page() {
   function onTimeRangeChange(v: TimeRange) {
     setTimeRange(v)
     setTimeout(() => {
-      refreshGroupProfiles()
+      reloadGroupProfiles()
     }, 0)
   }
 
-  const [showSetting, setShowSetting] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const {
     data: ngMonitoringConfig,
-    sendRequest,
-    error: configError,
+    sendRequest: reloadConfig,
   } = useClientRequest((reqConfig) =>
     client.getInstance().continuousProfilingConfigGet(reqConfig)
   )
-  const conprofEnable = useMemo(
-    () => ngMonitoringConfig?.continuous_profiling?.enable ?? false,
+  const conprofIsDisabled = useMemo(
+    () => ngMonitoringConfig?.continuous_profiling?.enable === false,
     [ngMonitoringConfig]
   )
-  const conProfStatusTooltip = useMemo(() => {
-    if (conprofEnable) {
-      return t('continuous_profiling.list.control_form.enable_tooltip')
-    } else {
-      return t('continuous_profiling.list.control_form.disable_tooltip')
-    }
-  }, [conprofEnable, t])
+
+  function refresh() {
+    reloadConfig()
+    reloadGroupProfiles()
+  }
 
   return (
     <div className={styles.list_container}>
@@ -154,37 +155,74 @@ export default function Page() {
             <TimeRangeSelector value={timeRange} onChange={onTimeRangeChange} />
           </Space>
           <Space>
-            <Tooltip title={t('statement.settings.title')} placement="bottom">
-              <SettingOutlined onClick={() => setShowSetting(true)} />
+            <Tooltip
+              title={t('continuous_profiling.list.toolbar.refresh')}
+              placement="bottom"
+            >
+              {listLoading ? (
+                <LoadingOutlined />
+              ) : (
+                <ReloadOutlined onClick={refresh} />
+              )}
+            </Tooltip>
+            <Tooltip
+              title={t('continuous_profiling.list.toolbar.settings')}
+              placement="bottom"
+            >
+              <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
           </Space>
         </Toolbar>
       </Card>
 
-      <div style={{ height: '100%', position: 'relative' }}>
-        <ScrollablePane>
-          <CardTable
-            cardNoMarginTop
-            loading={listLoading}
-            items={historyTable || []}
-            columns={historyTableColumns}
-            errors={[historyError]}
-            onRowClicked={handleRowClick}
+      {conprofIsDisabled && historyTable && historyTable.length > 0 && (
+        <div className={styles.alert_container}>
+          <Alert
+            message={t('continuous_profiling.settings.disabled_with_history')}
+            type="info"
+            showIcon
           />
-        </ScrollablePane>
-      </div>
+        </div>
+      )}
+
+      {conprofIsDisabled && historyTable?.length === 0 ? (
+        <Result
+          title={t('continuous_profiling.settings.disabled_result.title')}
+          subTitle={t(
+            'continuous_profiling.settings.disabled_result.sub_title'
+          )}
+          extra={
+            <Button type="primary" onClick={() => setShowSettings(true)}>
+              {t('continuous_profiling.settings.open_settings')}
+            </Button>
+          }
+        />
+      ) : (
+        <div style={{ height: '100%', position: 'relative' }}>
+          <ScrollablePane>
+            <CardTable
+              cardNoMarginTop
+              loading={listLoading}
+              items={historyTable || []}
+              columns={historyTableColumns}
+              errors={[historyError]}
+              onRowClicked={handleRowClick}
+            />
+          </ScrollablePane>
+        </div>
+      )}
 
       <Drawer
-        title={t('statement.settings.title')}
+        title={t('continuous_profiling.settings.title')}
         width={300}
         closable={true}
-        visible={showSetting}
-        onClose={() => setShowSetting(false)}
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
         destroyOnClose={true}
       >
         <ConProfSettingForm
-          onClose={() => setShowSetting(false)}
-          onConfigUpdated={sendRequest}
+          onClose={() => setShowSettings(false)}
+          onConfigUpdated={reloadConfig}
         />
       </Drawer>
     </div>

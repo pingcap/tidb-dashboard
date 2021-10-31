@@ -12,6 +12,13 @@ error:
       export_no_data: 没有可导出的慢查询日志
     statement:
       export_no_data: 没有可导出的语句
+    continuous_profiling:
+      ng_monitoring_not_deploy: |
+        使用本功能，需先将 TiUP Cluster 升级到 1.7.0 以上版本，再使用 TiUP Cluster 对 monitor 节点进行 reload 操作。
+        想了解更多或使用 {{distro.tidb}} Operator 部署的集群，请在 {{distro.tidb}} 文档搜索”持续性能分析”查看更多内容。
+      ng_monitoring_not_start: |
+        本功能存储组件离线，请尝试使用 TiUP Cluster 对 monitor 节点进行 reload 操作。
+        若未能解决问题，请联系技术支持。
     other: 其他错误
   tidb:
     no_alive_tidb: 没有正在运行的 {{distro.tidb}} 实例

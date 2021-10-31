@@ -30,8 +30,8 @@ const (
 	TaskStateError    TaskState = iota // 0
 	TaskStateRunning                   // 1
 	TaskStateFinish                    // 2, legacy state for group all success
-	TaskPartialFinish                  // 3
-	TaskAllFinish                      // 4
+	TaskStatePartialFinish                  // 3
+	TaskStateAllFinish                      // 4
 )
 
 type TaskModel struct {

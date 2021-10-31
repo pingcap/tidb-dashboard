@@ -33,7 +33,8 @@ function mapData(data) {
 }
 
 function isFinished(data) {
-  return data?.task_group_status?.state === 2
+  const groupState = data?.task_group_status?.state
+  return groupState === 3 && groupState === 4 // 3: partial finish, 4: all finish
 }
 
 export default function Page() {

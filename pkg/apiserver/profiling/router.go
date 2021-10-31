@@ -144,6 +144,22 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 		return
 	}
 
+	if taskGroup.State == TaskStateFinish {
+		// fix legacy all finish state for group task
+		finishedTasks := 0
+		for _, task := range tasks {
+			if task.State == TaskStateFinish {
+				finishedTasks++
+			}
+		}
+		if finishedTasks == len(tasks) {
+			taskGroup.State = TaskAllFinish
+		} else {
+			taskGroup.State = TaskPartialFinish
+		}
+		s.params.LocalStore.Save(taskGroup)
+	}
+
 	c.JSON(http.StatusOK, GroupDetailResponse{
 		ServerTime: time.Now().Unix(), // Used to estimate task progress
 		TaskGroup:  taskGroup,

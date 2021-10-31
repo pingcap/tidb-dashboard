@@ -204,7 +204,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 		} else if finishedTasks < len(tasks) {
 			taskGroup.State = TaskPartialFinish
 		} else {
-			taskGroup.State = TaskStateFinish
+			taskGroup.State = TaskAllFinish
 		}
 		s.params.LocalStore.Save(taskGroup.TaskGroupModel)
 	}()

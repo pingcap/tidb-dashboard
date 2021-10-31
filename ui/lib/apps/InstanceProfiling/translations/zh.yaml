@@ -23,6 +23,7 @@ instance_profiling:
         finished: 完成
         failed: 失败
         partial_finished: 部分完成
+        legacy_all_finished: 部分或全部完成
         unknown: 未知
       actions:
         detail: 详情

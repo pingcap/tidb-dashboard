@@ -136,14 +136,16 @@ export default function Page() {
               />
             )
           } else if (rec.state === 2) {
-            // all success
+            // legacy all success
             return (
               <Badge
                 status="success"
-                text={t('instance_profiling.list.table.status.finished')}
+                text={t(
+                  'instance_profiling.list.table.status.legacy_all_finished'
+                )}
               />
             )
-          } else {
+          } else if (rec.state === 3) {
             // partial success
             return (
               <Badge
@@ -151,6 +153,14 @@ export default function Page() {
                 text={t(
                   'instance_profiling.list.table.status.partial_finished'
                 )}
+              />
+            )
+          } else {
+            // new all success
+            return (
+              <Badge
+                status="success"
+                text={t('instance_profiling.list.table.status.finished')}
               />
             )
           }

@@ -23,6 +23,7 @@ instance_profiling:
         finished: Finished
         failed: Failed
         partial_finished: Partial Finished
+        legacy_all_finished: Partial Or All Finished
         unknown: Unknown
       actions:
         detail: Detail

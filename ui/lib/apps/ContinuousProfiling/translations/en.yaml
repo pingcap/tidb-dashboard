@@ -27,6 +27,7 @@ continuous_profiling:
     head:
       back: History
       title: Profiling Detail
+      start_at: Start At
     download: Download Profiling Result
     table:
       columns:

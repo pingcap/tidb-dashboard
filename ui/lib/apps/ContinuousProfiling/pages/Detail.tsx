@@ -7,7 +7,7 @@ import { usePersistFn } from 'ahooks'
 import { upperFirst } from 'lodash'
 
 import client from '@lib/client'
-import { CardTable, DateTime, Head } from '@lib/components'
+import { CardTable, DateTime, Descriptions, Head } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -128,9 +128,17 @@ export default function Page() {
         }
       >
         {groupProfileDetail && (
-          <DateTime.Long unixTimestampMs={groupProfileDetail.ts! * 1000} />
+          <Descriptions>
+            <Descriptions.Item
+              span={2}
+              label={t('continuous_profiling.detail.head.start_at')}
+            >
+              <DateTime.Long unixTimestampMs={groupProfileDetail.ts! * 1000} />
+            </Descriptions.Item>
+          </Descriptions>
         )}
       </Head>
+
       <CardTable
         loading={groupDetailLoading}
         columns={columns}

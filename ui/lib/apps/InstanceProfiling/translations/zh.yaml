@@ -30,6 +30,7 @@ instance_profiling:
     head:
       back: 历史记录
       title: 性能分析详情
+      start_at: 开始时间
     download: 下载性能分析结果
     table:
       columns:

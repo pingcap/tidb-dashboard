@@ -35,5 +35,5 @@ keyviz:
     separator_empty_warning: If left blank, Key will not be split
     actions:
       save: Save
-      close: Close
+      close: Disable
       cancel: Cancel

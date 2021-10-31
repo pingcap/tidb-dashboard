@@ -6,7 +6,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { usePersistFn } from 'ahooks'
 
 import client from '@lib/client'
-import { CardTable, Head } from '@lib/components'
+import { CardTable, DateTime, Head, Descriptions } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -49,6 +49,9 @@ export default function Page() {
 
   const data = useMemo(() => mapData(respData), [respData])
 
+  const profileDuration =
+    respData?.task_group_status?.profile_duration_secs || 0
+
   const columns = useMemo(
     () => [
       {
@@ -65,6 +68,15 @@ export default function Page() {
         maxWidth: 150,
         onRender: (record) => {
           return InstanceKindName[record.target.kind]
+        },
+      },
+      {
+        name: t('instance_profiling.detail.table.columns.content'),
+        key: 'content',
+        minWidth: 150,
+        maxWidth: 300,
+        onRender: (record) => {
+          return `CPU Profiling - ${profileDuration}s`
         },
       },
       {
@@ -96,7 +108,7 @@ export default function Page() {
         },
       },
     ],
-    [t]
+    [t, profileDuration]
   )
 
   const handleRowClick = usePersistFn(
@@ -142,7 +154,20 @@ export default function Page() {
             {t('instance_profiling.detail.download')}
           </Button>
         }
-      />
+      >
+        {respData && (
+          <Descriptions>
+            <Descriptions.Item
+              span={2}
+              label={t('instance_profiling.detail.head.start_at')}
+            >
+              <DateTime.Calendar
+                unixTimestampMs={respData.task_group_status!.started_at! * 1000}
+              />
+            </Descriptions.Item>
+          </Descriptions>
+        )}
+      </Head>
       <CardTable
         loading={isLoading}
         columns={columns}

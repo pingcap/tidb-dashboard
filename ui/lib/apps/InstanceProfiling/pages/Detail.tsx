@@ -33,7 +33,8 @@ function mapData(data) {
 }
 
 function isFinished(data) {
-  return data?.task_group_status?.state === 2
+  const groupState = data?.task_group_status?.state
+  return groupState === 2 || groupState === 3
 }
 
 export default function Page() {

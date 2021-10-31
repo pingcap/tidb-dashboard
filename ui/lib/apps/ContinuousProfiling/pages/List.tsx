@@ -4,6 +4,12 @@ import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { usePersistFn, useSessionStorageState } from 'ahooks'
+import {
+  LoadingOutlined,
+  ReloadOutlined,
+  SettingOutlined,
+} from '@ant-design/icons'
+
 import client, { ErrorStrategy } from '@lib/client'
 import {
   Card,
@@ -16,16 +22,11 @@ import {
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import { InstanceKindName } from '@lib/utils/instanceTable'
 
-import {
-  LoadingOutlined,
-  ReloadOutlined,
-  SettingOutlined,
-} from '@ant-design/icons'
 import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
-import { InstanceKindName } from '@lib/utils/instanceTable'
 
 export default function Page() {
   const {

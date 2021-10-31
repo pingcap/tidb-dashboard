@@ -10,7 +10,7 @@ instance_profiling:
       duration:
         label: Duration
       submit: Start Profiling
-      submit_disable_tooltip: Already enabled continuosu profiling, you can see all instances profile results in the continuous profiling page.
+    disable_warning: Already enabled continuous profiling, so manually profiling is disabled. You can see all instances profile results in the continuous profiling page.
     table:
       title: Profiling History
       columns:
@@ -30,6 +30,7 @@ instance_profiling:
     head:
       back: History
       title: Profiling Detail
+      start_at: Start At
     download: Download Profiling Result
     table:
       columns:

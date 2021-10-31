@@ -1,9 +1,11 @@
-import { Badge, Button, Form, Select, Modal, Tooltip } from 'antd'
+import { Badge, Button, Form, Select, Modal, Tooltip, Alert } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { usePersistFn } from 'ahooks'
+import { QuestionCircleOutlined } from '@ant-design/icons'
+
 import client, {
   ProfilingStartRequest,
   ModelRequestTargetNode,
@@ -18,7 +20,8 @@ import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { combineTargetStats } from '../utils'
-import { QuestionCircleOutlined } from '@ant-design/icons'
+
+import styles from './List.module.less'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
@@ -175,7 +178,7 @@ export default function Page() {
   )
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.list_container}>
       <Card>
         <Form
           onFinish={handleFinish}
@@ -211,30 +214,27 @@ export default function Page() {
             </Select>
           </Form.Item>
           <Form.Item>
-            {conprofEnable ? (
-              <Tooltip
-                title={t(
-                  'instance_profiling.list.control_form.submit_disable_tooltip'
-                )}
-              >
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={submitting}
-                  disabled={true}
-                >
-                  {t('instance_profiling.list.control_form.submit')}
-                  <QuestionCircleOutlined />
-                </Button>
-              </Tooltip>
-            ) : (
-              <Button type="primary" htmlType="submit" loading={submitting}>
-                {t('instance_profiling.list.control_form.submit')}
-              </Button>
-            )}
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={submitting}
+              disabled={conprofEnable}
+            >
+              {t('instance_profiling.list.control_form.submit')}
+            </Button>
           </Form.Item>
         </Form>
       </Card>
+
+      {conprofEnable && (
+        <div className={styles.alert_container}>
+          <Alert
+            type="warning"
+            message={t('instance_profiling.list.disable_warning')}
+            showIcon
+          />
+        </div>
+      )}
 
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>

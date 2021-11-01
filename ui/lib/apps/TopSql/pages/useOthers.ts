@@ -1,9 +1,9 @@
-// import { TopsqlCPUTimeItem } from '@lib/client'
+import { TopsqlCPUTimeItem } from '@lib/client'
 
 export const OTHERS_LABEL = 'Others'
 
-export function convertOthersRecord(data: any) {
-  if (!data.is_others) {
+export function convertOthersRecord(data: TopsqlCPUTimeItem) {
+  if (!!data.sql_digest) {
     return
   }
   data.sql_digest = OTHERS_LABEL

@@ -2,12 +2,11 @@ import React, { useEffect, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { Select } from 'antd'
 
-import client from '@lib/client'
+import client, { TopsqlInstanceItem } from '@lib/client'
 
 interface InstanceGroup {
   name: string
-  // instances: CentralTopSQLInstance[]
-  instances: any[]
+  instances: TopsqlInstanceItem[]
 }
 
 export interface InstanceSelectProps {
@@ -56,7 +55,7 @@ export function InstanceSelect({ value, onChange }: InstanceSelectProps) {
     const notExist = !instances!.find((inst) => inst.instance === value)
     // set first instance as default, or reset instance id if previous instance isn't in current timestamp range
     if (!value || notExist) {
-      onChange(firstItem.instance)
+      onChange(firstItem.instance!)
     }
     // eslint-disable-next-line
   }, [instanceGroups])
@@ -72,7 +71,7 @@ export function InstanceSelect({ value, onChange }: InstanceSelectProps) {
       {instanceGroups.map((instanceGroup) => (
         <Select.OptGroup label={instanceGroup.name} key={instanceGroup.name}>
           {instanceGroup.instances.map((item) => (
-            <Select.Option value={item.instance} key={item.instance}>
+            <Select.Option value={item.instance!} key={item.instance}>
               {item.instance}
             </Select.Option>
           ))}

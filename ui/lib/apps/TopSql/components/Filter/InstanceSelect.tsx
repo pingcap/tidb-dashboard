@@ -58,6 +58,7 @@ export function InstanceSelect({ value, onChange }: InstanceSelectProps) {
     if (!value || notExist) {
       onChange(firstItem.instance)
     }
+    // eslint-disable-next-line
   }, [instanceGroups])
 
   return (

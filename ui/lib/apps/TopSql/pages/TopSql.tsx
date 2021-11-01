@@ -80,11 +80,11 @@ function App() {
   const setAutoRefresh = useCallback(() => {
     _setAutoRefresh((b) => !b)
     refreshTimestampRange()
-  }, [refreshTimestampRange])
+  }, [refreshTimestampRange, _setAutoRefresh])
 
   useEffect(() => {
     resetChartTimeRange()
-  }, [seriesData])
+  }, [seriesData, resetChartTimeRange])
 
   return (
     <div className={styles.container}>

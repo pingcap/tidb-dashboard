@@ -16,7 +16,6 @@ package profiling
 import (
 	"context"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/joomcode/errorx"
@@ -24,9 +23,9 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -63,6 +62,7 @@ type ServiceParams struct {
 	HTTPClient *httpc.Client
 	EtcdClient *clientv3.Client
 	PDClient   *pd.Client
+	NgmProxy   *utils.NgmProxy
 }
 
 type Service struct {
@@ -74,9 +74,6 @@ type Service struct {
 	lastTaskGroup *TaskGroup
 	tasks         sync.Map
 	fetchers      *fetchers
-
-	ngMonitoringReqGroup  singleflight.Group
-	ngMonitoringAddrCache atomic.Value
 }
 
 var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers) (*Service, error) {

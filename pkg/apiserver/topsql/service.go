@@ -17,6 +17,7 @@ package topsql
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
@@ -37,15 +38,14 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/top_sql")
 	endpoint.Use(auth.MWAuthRequired())
 	{
-		endpoint.GET("/instances", s.ngm.Route("/topsql/v1/instances"))
-		endpoint.GET("/cpu_time", s.ngm.Route("/topsql/v1/cpu_time"))
+		endpoint.GET("/instances", s.ngm.Route("/topsql/v1/instances"), s.getInstance)
+		endpoint.GET("/cpu_time", s.ngm.Route("/topsql/v1/cpu_time"), s.getCPUTime)
 	}
 }
 
 type InstanceResponse struct {
 	Data []InstanceItem `json:"data"`
 }
-
 type InstanceItem struct {
 	Instance     string `json:"instance"`
 	InstanceType string `json:"instance_type"`
@@ -69,9 +69,9 @@ type GetCPUTimeRequest struct {
 	Window   string `json:"window"`
 }
 type CPUTimeResponse struct {
-	Data []TopSQLItem `json:"data"`
+	Data []CPUTimeItem `json:"data"`
 }
-type TopSQLItem struct {
+type CPUTimeItem struct {
 	SQLDigest string     `json:"sql_digest"`
 	SQLText   string     `json:"sql_text"`
 	Plans     []PlanItem `json:"plans"`
@@ -90,6 +90,6 @@ type PlanItem struct {
 // @Success 200 {object} CPUTimeResponse "ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) getCpuTime(c *gin.Context) {
+func (s *Service) getCPUTime(c *gin.Context) {
 	// dummy, for generate open api
 }

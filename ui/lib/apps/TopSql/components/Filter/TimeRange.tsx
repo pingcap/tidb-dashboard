@@ -24,7 +24,9 @@ const timeRanges: TimeRange[] = [
 const defaultTimeRangeId = timeRanges[1].id
 
 export function TimeRange({ value, onChange }: TimeRangeProps) {
-  const handleRadioChange = useCallback((e) => onChange(e.target.value), [])
+  const handleRadioChange = useCallback((e) => onChange(e.target.value), [
+    onChange,
+  ])
   return (
     <Radio.Group onChange={handleRadioChange} value={value}>
       {timeRanges.map((r) => (
@@ -53,13 +55,17 @@ export function useTimeRange() {
   // save default time range when init
   const defaultTimeRange = useMemo(() => {
     return timeRanges.find((r) => r.id === timeRangeId) || timeRanges[0]
+    // eslint-disable-next-line
   }, [])
   const [timeRange, _setTimeRange] = useState(defaultTimeRange)
 
-  const setTimeRange = useCallback((timeRange: TimeRange) => {
-    _setTimeRange(timeRange)
-    setTimeRangeId(timeRange.id)
-  }, [])
+  const setTimeRange = useCallback(
+    (timeRange: TimeRange) => {
+      _setTimeRange(timeRange)
+      setTimeRangeId(timeRange.id)
+    },
+    [setTimeRangeId]
+  )
 
   return {
     timeRange,

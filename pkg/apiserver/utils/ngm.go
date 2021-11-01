@@ -24,10 +24,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"golang.org/x/sync/singleflight"
+
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 var (

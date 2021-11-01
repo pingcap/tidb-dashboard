@@ -1,8 +1,7 @@
-// import { CentralTopSQLDigestCPUTimeRecord } from 'apiClient'
+// import { TopsqlCPUTimeItem } from '@lib/client'
 
 export const OTHERS_LABEL = 'Others'
 
-// export function convertOthersRecord(data: CentralTopSQLDigestCPUTimeRecord) {
 export function convertOthersRecord(data: any) {
   if (!data.is_others) {
     return

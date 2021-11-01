@@ -12,12 +12,12 @@ import {
 import { orderBy, toPairs } from 'lodash'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { TopsqlTopSQLItem } from '@lib/client'
+import { TopsqlCPUTimeItem } from '@lib/client'
 import { useWindowSize } from './useWindowSize'
 import { TimeRange } from '../components/Filter'
 
 export interface TopSqlChartProps {
-  seriesData: TopsqlTopSQLItem[]
+  seriesData: TopsqlCPUTimeItem[]
   timeRange: TimeRange
   timestampRange: [number, number]
   chartTimeRange: [number, number] | undefined
@@ -41,7 +41,7 @@ export function TopSqlChart({
       chartRef.current?.getChartContainerRef().current?.offsetWidth || 0,
       timeRange.value
     )
-  }, [chartRef, timeRange])
+  }, [chartRef, timeRange, computeWindowSize])
 
   return (
     <Chart ref={chartRef}>
@@ -92,7 +92,7 @@ export function TopSqlChart({
   )
 }
 
-function useDigestMap(seriesData: TopsqlTopSQLItem[]) {
+function useDigestMap(seriesData: TopsqlCPUTimeItem[]) {
   const digestMap = useMemo(() => {
     if (!seriesData) {
       return {}
@@ -106,7 +106,7 @@ function useDigestMap(seriesData: TopsqlTopSQLItem[]) {
 }
 
 function useChartData(
-  seriesData: TopsqlTopSQLItem[],
+  seriesData: TopsqlCPUTimeItem[],
   timeRange: [number, number] | undefined
 ) {
   const chartData = useMemo(() => {

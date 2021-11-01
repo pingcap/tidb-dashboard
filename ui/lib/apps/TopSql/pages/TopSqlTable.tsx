@@ -2,13 +2,13 @@ import React, { useMemo } from 'react'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import { TopsqlTopSQLItem } from '@lib/client'
+import { TopsqlCPUTimeItem } from '@lib/client'
 import { Card, CardTable, Bar, TextWrap } from '@lib/components'
 import { OTHERS_LABEL } from './useOthers'
 
 interface TopSqlTableProps {
   topN: string
-  data: TopsqlTopSQLItem[]
+  data: TopsqlCPUTimeItem[]
   timeRange: [number, number] | undefined
 }
 
@@ -83,7 +83,7 @@ export function TopSqlTable({ topN, data, timeRange }: TopSqlTableProps) {
 }
 
 function useTableData(
-  records: TopsqlTopSQLItem[],
+  records: TopsqlCPUTimeItem[],
   timeRange: [number, number] | undefined
 ) {
   const tableData: { data: TableData[]; totalCpuTime: number } = useMemo(() => {

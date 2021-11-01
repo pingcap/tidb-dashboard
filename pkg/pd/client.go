@@ -42,30 +42,24 @@ const (
 )
 
 type Client struct {
-	httpScheme        string
-	endpointAllowlist []string // Endpoint addrs in the whitelist can skip the checkValidAddress check
-	baseURL           string
-	httpClient        *httpc.Client
-	lifecycleCtx      context.Context
-	timeout           time.Duration
-	cache             *ttlcache.Cache
+	httpScheme   string
+	baseURL      string
+	httpClient   *httpc.Client
+	lifecycleCtx context.Context
+	timeout      time.Duration
+	cache        *ttlcache.Cache
 }
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
 	cache := ttlcache.NewCache()
 	cache.SkipTTLExtensionOnHit(true)
-	// config.PDEndPoint should be placed in the whitelist to aviod circular invoke when fetch memebers
-	baseIP, basePort, _ := host.ParseHostAndPortFromAddressURL(config.PDEndPoint)
-	al := []string{fmt.Sprintf("%s:%d", baseIP, basePort)}
-
 	client := &Client{
-		httpClient:        httpClient,
-		httpScheme:        config.GetClusterHTTPScheme(),
-		endpointAllowlist: al,
-		baseURL:           config.PDEndPoint,
-		lifecycleCtx:      nil,
-		timeout:           defaultPDTimeout,
-		cache:             cache,
+		httpClient:   httpClient,
+		httpScheme:   config.GetClusterHTTPScheme(),
+		baseURL:      config.PDEndPoint,
+		lifecycleCtx: nil,
+		timeout:      defaultPDTimeout,
+		cache:        cache,
 	}
 
 	lc.Append(fx.Hook{
@@ -143,7 +137,13 @@ type InfoMember struct {
 }
 
 func (c *Client) FetchMembers() (*InfoMembers, error) {
-	data, err := c.SendGetRequest("/members")
+	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, "/members")
+	res, err := c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, distro.Data("pd"))
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := res.Body()
 	if err != nil {
 		return nil, err
 	}
@@ -183,9 +183,6 @@ func (c *Client) checkValidHost() error {
 		return err
 	}
 	addr := fmt.Sprintf("%s:%d", requestIP, requestPort)
-	if funk.Contains(c.endpointAllowlist, addr) {
-		return nil
-	}
 
 	addrs, err := c.getMemberAddrs()
 	if err != nil {

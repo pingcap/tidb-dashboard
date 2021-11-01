@@ -2,6 +2,8 @@ module github.com/pingcap/tidb-dashboard
 
 go 1.13
 
+replace github.com/pingcap/kvproto => github.com/zhongzc/kvproto v0.0.0-20211014161008-5d539b8be018
+
 require (
 	github.com/ReneKroon/ttlcache/v2 v2.3.0
 	github.com/VividCortex/mysqlerr v0.0.0-20200629151747-c28746d985dd

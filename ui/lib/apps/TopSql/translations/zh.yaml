@@ -1,2 +1,4 @@
 top_sql:
   nav_title: Top SQL
+  auto_refresh: 自动刷新
+  no_data: 暂无数据

@@ -3,6 +3,7 @@ import React, { useCallback, useState, useEffect } from 'react'
 import { useQuery } from 'react-query'
 import { Spin, Button, Space, Checkbox, Select } from 'antd'
 import { ReloadOutlined, FullscreenOutlined } from '@ant-design/icons'
+import { useTranslation } from 'react-i18next'
 
 import '@elastic/charts/dist/theme_light.css'
 
@@ -44,6 +45,7 @@ export function TopSQL() {
 }
 
 function App() {
+  const { t } = useTranslation()
   const [chartTimeRange, setChartTimeRange] = useState<
     [number, number] | undefined
   >(undefined)
@@ -94,20 +96,20 @@ function App() {
           <TimeRange value={timeRange} onChange={setTimeRange} />
           <Select
             style={{ width: 140 }}
-            placeholder="Show Top "
+            placeholder="Top N"
             value={topN}
             onChange={(v) => setTopN(`${v}`)}
           >
             {topNSelects.map((s) => (
               <Select.Option value={s} key={s}>
-                Show Top {s}
+                Top {s}
               </Select.Option>
             ))}
           </Select>
           <Button icon={<ReloadOutlined />} onClick={refreshTimestampRange} />
           <Button onClick={setAutoRefresh}>
             <Checkbox style={{ pointerEvents: 'none' }} checked={autoRefresh}>
-              Auto Refresh
+              {t('top_sql.auto_refresh')}
             </Checkbox>
           </Button>
           {chartTimeRange && (
@@ -127,7 +129,9 @@ function App() {
       </Head>
       <Spin spinning={isLoading}>
         {!isLoading && !seriesData?.length && (
-          <p style={{ marginTop: '100px', textAlign: 'center' }}>暂无数据</p>
+          <p style={{ marginTop: '100px', textAlign: 'center' }}>
+            {t('top_sql.no_data')}
+          </p>
         )}
         <div className={styles.chart_container}>
           <TopSqlChart

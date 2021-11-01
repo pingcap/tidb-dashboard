@@ -1,5 +1,7 @@
-instance_profiling:
+profiling:
   nav_title: Profile Instances
+instance_profiling:
+  nav_title: Manually Profile
   list:
     control_form:
       title: Start Profiling Instances
@@ -8,6 +10,7 @@ instance_profiling:
       duration:
         label: Duration
       submit: Start Profiling
+    disable_warning: Already enabled continuous profiling, so manually profiling is disabled. You can see all instances profile results in the continuous profiling page.
     table:
       title: Profiling History
       columns:
@@ -18,6 +21,8 @@ instance_profiling:
       status:
         running: Running
         finished: Finished
+        failed: Failed
+        partial_finished: Partial Finished
         unknown: Unknown
       actions:
         detail: Detail
@@ -25,11 +30,13 @@ instance_profiling:
     head:
       back: History
       title: Profiling Detail
+      start_at: Start At
     download: Download Profiling Result
     table:
       columns:
         instance: Instance
         kind: Component
+        content: Content
         status: Status
       status:
         finished: Finished

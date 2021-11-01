@@ -1,5 +1,7 @@
-instance_profiling:
+profiling:
   nav_title: 实例性能分析
+instance_profiling:
+  nav_title: 手动分析
   list:
     control_form:
       title: 开始性能分析
@@ -8,6 +10,7 @@ instance_profiling:
       duration:
         label: 分析时长
       submit: 开始分析
+    disable_warning: 已启用持续性能分析功能，因此手动性能分析不可用。可在持续性能分析页面查看当前及过往的分析结果。
     table:
       title: 性能分析历史
       columns:
@@ -18,6 +21,8 @@ instance_profiling:
       status:
         running: 分析中
         finished: 完成
+        failed: 失败
+        partial_finished: 部分完成
         unknown: 未知
       actions:
         detail: 详情
@@ -25,11 +30,13 @@ instance_profiling:
     head:
       back: 历史记录
       title: 性能分析详情
+      start_at: 开始时间
     download: 下载性能分析结果
     table:
       columns:
         instance: 实例
         kind: 组件
+        content: 内容
         status: 状态
       status:
         finished: 完成

@@ -15,12 +15,10 @@
 package topsql
 
 import (
-	"net/http/httputil"
-	"net/url"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 var (
@@ -28,37 +26,19 @@ var (
 )
 
 type Service struct {
+	ngm *utils.NgmProxy
 }
 
-func newService() *Service {
-	return &Service{}
+func newService(ngm *utils.NgmProxy) *Service {
+	return &Service{ngm: ngm}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/top_sql")
 	endpoint.Use(auth.MWAuthRequired())
 	{
-		endpoint.GET("/instances", s.reverseProxy("/topsql/v1/instances"))
-		endpoint.GET("/cpu_time", s.reverseProxy("/topsql/v1/cpu_time"))
-	}
-}
-
-func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// ngMonitoringAddr, err := s.getNgMonitoringAddrFromCache()
-		// if err != nil {
-		// 	_ = c.Error(ErrLoadNgMonitoringAddrFailed.Wrap(err, "Load ng monitoring address failed"))
-		// 	return
-		// }
-		// if ngMonitoringAddr == "" {
-		// 	_ = c.Error(ErrNgMonitoringNotStart.New("Ng monitoring is not started"))
-		// 	return
-		// }
-
-		ngMonitoringURL, _ := url.Parse("http://127.0.0.1:8428")
-		proxy := httputil.NewSingleHostReverseProxy(ngMonitoringURL)
-		c.Request.URL.Path = targetPath
-		proxy.ServeHTTP(c.Writer, c.Request)
+		endpoint.GET("/instances", s.ngm.Route("/topsql/v1/instances"))
+		endpoint.GET("/cpu_time", s.ngm.Route("/topsql/v1/cpu_time"))
 	}
 }
 

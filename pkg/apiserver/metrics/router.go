@@ -30,7 +30,7 @@ type QueryRequest struct {
 	StartTimeSec int    `json:"start_time_sec" form:"start_time_sec"`
 	EndTimeSec   int    `json:"end_time_sec" form:"end_time_sec"`
 	StepSec      int    `json:"step_sec" form:"step_sec"`
-	Query        string `json:"q" form:"q"`
+	Query        string `json:"query" form:"query"`
 }
 
 type QueryResponse struct {

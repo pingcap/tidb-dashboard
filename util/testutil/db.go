@@ -2,9 +2,11 @@ package testutil
 
 import (
 	"encoding/hex"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	mysqldriver "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/pingcap/log"
@@ -15,11 +17,16 @@ import (
 )
 
 type TestDB struct {
-	inner *gorm.DB
-	t     *testing.T
+	inner   *gorm.DB
+	require *require.Assertions
+
+	isUnderlyingMocked bool
+	mock               sqlmock.Sqlmock
 }
 
-func OpenTestDB(t *testing.T) *TestDB {
+func OpenTestDB(t *testing.T, configModifier ...func(*mysqldriver.Config, *gorm.Config)) *TestDB {
+	r := require.New(t)
+
 	dsn := mysqldriver.NewConfig()
 	dsn.Net = "tcp"
 	dsn.Addr = "127.0.0.1:4000"
@@ -29,19 +36,62 @@ func OpenTestDB(t *testing.T) *TestDB {
 	dsn.User = "root"
 	dsn.DBName = "test"
 
-	db, err := gorm.Open(mysql.Open(dsn.FormatDSN()), &gorm.Config{
+	config := &gorm.Config{
 		Logger: zapgorm2.New(log.L()),
-	})
+	}
+
+	for _, m := range configModifier {
+		m(dsn, config)
+	}
+
+	db, err := gorm.Open(mysql.Open(dsn.FormatDSN()), config)
+	r.Nil(err)
+
+	return &TestDB{
+		inner:   db.Debug(),
+		require: r,
+	}
+}
+
+func OpenMockDB(t *testing.T, configModifier ...func(*gorm.Config)) *TestDB {
+	r := require.New(t)
+
+	sqlDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	require.Nil(t, err)
-	return &TestDB{inner: db.Debug(), t: t}
+
+	config := &gorm.Config{
+		Logger: zapgorm2.New(log.L()),
+	}
+
+	for _, m := range configModifier {
+		m(config)
+	}
+
+	db, err := gorm.Open(mysql.New(mysql.Config{
+		Conn:                      sqlDB,
+		SkipInitializeWithVersion: true,
+	}), config)
+	r.Nil(err)
+
+	return &TestDB{
+		inner:   db.Debug(),
+		require: r,
+
+		isUnderlyingMocked: true,
+		mock:               mock,
+	}
 }
 
 func (db *TestDB) MustClose() {
+	if db.isUnderlyingMocked {
+		db.mock.ExpectClose()
+	}
+
 	d, err := db.inner.DB()
-	require.Nil(db.t, err)
+	db.require.Nil(err)
 
 	err = d.Close()
-	require.Nil(db.t, err)
+	db.require.Nil(err)
 }
 
 func (db *TestDB) NewID() string {
@@ -55,5 +105,36 @@ func (db *TestDB) Gorm() *gorm.DB {
 
 func (db *TestDB) MustExec(sql string, values ...interface{}) {
 	err := db.inner.Exec(sql, values...).Error
-	require.Nil(db.t, err)
+	db.require.Nil(err)
+}
+
+type ExplainRow struct {
+	ID string `gorm:"column:id"`
+}
+
+func (db *TestDB) MustExplain(sql string, values ...interface{}) []ExplainRow {
+	var rows []ExplainRow
+	err := db.Gorm().Raw("EXPLAIN "+sql, values...).Scan(&rows).Error
+	db.require.Nil(err)
+	return rows
+}
+
+func (db *TestDB) Mocker() sqlmock.Sqlmock {
+	db.require.True(db.isUnderlyingMocked)
+	return db.mock
+}
+
+func (db *TestDB) MustMeetMockExpectation() {
+	db.require.Nil(db.Mocker().ExpectationsWereMet())
+}
+
+func RequireIndexRangeScan(t *testing.T, explain []ExplainRow) {
+	hasIndexRange := false
+	for _, r := range explain {
+		if strings.Contains(r.ID, "IndexRangeScan") {
+			hasIndexRange = true
+			break
+		}
+	}
+	require.True(t, hasIndexRange, "IndexRangeScan is not contained in the explain result", explain)
 }

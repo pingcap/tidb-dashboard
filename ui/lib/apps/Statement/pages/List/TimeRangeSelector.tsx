@@ -147,9 +147,10 @@ export default function TimeRangeSelector({
   onChange,
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
-  const { minBeginTime, maxEndTime } = useMemo(() => calcAllTime(timeRanges), [
-    timeRanges,
-  ])
+  const { minBeginTime, maxEndTime } = useMemo(
+    () => calcAllTime(timeRanges),
+    [timeRanges]
+  )
   const [sliderTimeRange, setSliderTimeRange] = useState<StatementTimeRange>(
     () => calcValidStatementTimeRange(curTimeRange, timeRanges)
   )

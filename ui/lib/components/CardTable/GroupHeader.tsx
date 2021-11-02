@@ -104,10 +104,12 @@ function BaseAntCheckboxGroupHeader(props: IGroupHeaderProps) {
   )
 }
 
-export const AntCheckboxGroupHeader: React.FunctionComponent<IGroupHeaderProps> = styled<
-  IGroupHeaderProps,
-  IGroupHeaderStyleProps,
-  IGroupHeaderStyles
->(BaseAntCheckboxGroupHeader, getStyles, undefined, {
-  scope: 'GroupHeader',
-})
+export const AntCheckboxGroupHeader: React.FunctionComponent<IGroupHeaderProps> =
+  styled<IGroupHeaderProps, IGroupHeaderStyleProps, IGroupHeaderStyles>(
+    BaseAntCheckboxGroupHeader,
+    getStyles,
+    undefined,
+    {
+      scope: 'GroupHeader',
+    }
+  )

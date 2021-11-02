@@ -22,9 +22,8 @@ const getEndpointTranslationKey = (endpoint: EndpointAPIModel) =>
 const useFilterEndpoints = (endpoints?: EndpointAPIModel[]) => {
   const [keywords, setKeywords] = useState('')
   const nonNullEndpoints = useMemo(() => endpoints || [], [endpoints])
-  const [filteredEndpoints, setFilteredEndpoints] = useState<
-    EndpointAPIModel[]
-  >(nonNullEndpoints)
+  const [filteredEndpoints, setFilteredEndpoints] =
+    useState<EndpointAPIModel[]>(nonNullEndpoints)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -52,32 +51,21 @@ const useFilterEndpoints = (endpoints?: EndpointAPIModel[]) => {
 
 export default function Page() {
   const { t, i18n } = useTranslation()
-  const {
-    data: endpointData,
-    isLoading: isEndpointLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().debugAPIGetEndpoints(reqConfig)
+  const { data: endpointData, isLoading: isEndpointLoading } = useClientRequest(
+    (reqConfig) => client.getInstance().debugAPIGetEndpoints(reqConfig)
   )
   const { endpoints, filterBy } = useFilterEndpoints(endpointData)
 
   // TODO: refine with components/InstanceSelect
-  const {
-    data: tidbTopology = [],
-    isLoading: isTiDBTopology,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getTiDBTopology(reqConfig)
+  const { data: tidbTopology = [], isLoading: isTiDBTopology } =
+    useClientRequest((reqConfig) =>
+      client.getInstance().getTiDBTopology(reqConfig)
+    )
+  const { data: pdTopology = [], isLoading: isPDLoading } = useClientRequest(
+    (reqConfig) => client.getInstance().getPDTopology(reqConfig)
   )
-  const {
-    data: pdTopology = [],
-    isLoading: isPDLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getPDTopology(reqConfig)
-  )
-  const {
-    data: storeTopology,
-    isLoading: isStoreLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getStoreTopology(reqConfig)
+  const { data: storeTopology, isLoading: isStoreLoading } = useClientRequest(
+    (reqConfig) => client.getInstance().getStoreTopology(reqConfig)
   )
   const topology: Topology = {
     tidb: tidbTopology!,

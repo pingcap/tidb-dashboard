@@ -87,7 +87,7 @@ export default function Page() {
               />
             )
           } else {
-            // partial failed
+            // partially failed
             return (
               <Badge
                 status="warning"

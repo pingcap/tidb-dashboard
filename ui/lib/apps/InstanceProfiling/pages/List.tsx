@@ -136,7 +136,7 @@ export default function Page() {
               />
             )
           } else if (rec.state === 2) {
-            // legacy all success
+            // legacy all finish, no matter success or fail
             return (
               <Badge
                 status="default"
@@ -144,7 +144,7 @@ export default function Page() {
               />
             )
           } else if (rec.state === 3) {
-            // partial failed
+            // partially failed
             return (
               <Badge
                 status="warning"

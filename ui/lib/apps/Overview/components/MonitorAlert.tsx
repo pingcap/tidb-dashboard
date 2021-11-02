@@ -54,7 +54,7 @@ export default function MonitorAlert() {
             </Typography.Text>
           )}
           {grafanaData && (
-            <a href={`http://${grafanaData.ip}:${grafanaData.port}`} target="_blank" >
+            <a href={`http://${grafanaData.ip}:${grafanaData.port}`} target="_blank" rel="noopener noreferrer" >
               <Space>
                 {t('overview.monitor_alert.view_monitor')}
                 <RightOutlined />
@@ -72,7 +72,7 @@ export default function MonitorAlert() {
             </Typography.Text>
           )}
           {amData && (
-            <a href={`http://${amData.ip}:${amData.port}`} target="_blank" >
+            <a href={`http://${amData.ip}:${amData.port}`} target="_blank" rel="noopener noreferrer" >
               <Space>
                 <Typography.Text type={alertCounter > 0 ? 'danger' : undefined}>
                   {alertCounter === 0

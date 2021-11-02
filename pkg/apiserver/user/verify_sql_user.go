@@ -38,7 +38,8 @@ type tidbSecurityConfig struct {
 }
 
 type tidbSEMConfig struct {
-	EnableSEM bool `json:"enable-sem"`
+	EnableSEM      bool `json:"enable-sem"`
+	SkipGrantTable bool `json:"skip-grant-table"`
 }
 
 func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeable bool, err error) {
@@ -49,7 +50,7 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeabl
 	defer utils.CloseTiDBConnection(db) //nolint:errcheck
 
 	// Check dashboard privileges
-	// 1. Check whether TiDB SEM is enabled
+	// 1. Get TiDB config
 	resData, err := tidbClient.SendGetRequest("/config")
 	if err != nil {
 		return false, err
@@ -59,14 +60,20 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeabl
 	if err != nil {
 		return false, err
 	}
-	// 2. Get grants
+	// 2. Check SkipGrantTable
+	// Note: Currently, if TiDB enable the skip-grant-table, running `show grants` will get error.
+	// So this is a workaround before the above bug is fixed.
+	if config.Security.SkipGrantTable {
+		return true, nil
+	}
+	// 3. Get grants
 	var grantRows []string
 	err = db.Raw("show grants for current_user()").Find(&grantRows).Error
 	if err != nil {
 		return false, err
 	}
 	grants := parseUserGrants(grantRows)
-	// 3. Check
+	// 4. Check grants
 	if !checkDashboardPriv(grants, config.Security.EnableSEM) {
 		return false, ErrInsufficientPrivs.NewWithNoMessage()
 	}

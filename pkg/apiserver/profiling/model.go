@@ -34,7 +34,7 @@ type TaskState int
 const (
 	TaskStateFailed        TaskState = iota // 0
 	TaskStateRunning                        // 1
-	TaskStateFinish                         // 2, for single task, it means success; for group task, it only means all child tasks are done, no matter they are success or failed, it will be refined by TaskStateFailed|TaskStatePartialFailed|TaskStateAllFinish
+	TaskStateFinish                         // 2, for single task, it means success; for group task, it only means all child tasks are done, no matter they are success or failed, it will be refined by TaskStateFailed|TaskStatePartialFailed|TaskStateAllSuccess
 	TaskStatePartialFailed                  // 3, only for group task
 	TaskStateAllSuccess                     // 4, only for group task
 )

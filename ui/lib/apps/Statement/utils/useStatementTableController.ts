@@ -205,12 +205,8 @@ export default function useStatementTableController(
     queryStmtTypes()
   }, [refreshTimes])
 
-  const {
-    statements,
-    setStatements,
-    statementsTimeRange,
-    queryStatements,
-  } = useStatements(cacheKey)
+  const { statements, setStatements, statementsTimeRange, queryStatements } =
+    useStatements(cacheKey)
   const { schemaColumns, isLoading: isSchemaLoading } = useSchemaColumns()
   const tableColumns = useMemo(
     () => statementColumns(statements, schemaColumns, showFullSQL),
@@ -282,9 +278,8 @@ export default function useStatementTableController(
     }
   }
 
-  const { saveClickedItemIndex, getClickedItemIndex } = useCacheItemIndex(
-    cacheMgr
-  )
+  const { saveClickedItemIndex, getClickedItemIndex } =
+    useCacheItemIndex(cacheMgr)
 
   const isTimeRangeOutdated =
     !!statementsTimeRange.begin_time &&

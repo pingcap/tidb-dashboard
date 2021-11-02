@@ -38,7 +38,11 @@ const STMT_DETAIL_EXPAND = 'statement.detail_expand'
 
 function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
-  const { data: plans, isLoading, error } = useClientRequest((reqConfig) =>
+  const {
+    data: plans,
+    isLoading,
+    error,
+  } = useClientRequest((reqConfig) =>
     client
       .getInstance()
       .statementsPlansGet(

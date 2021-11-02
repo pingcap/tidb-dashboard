@@ -124,7 +124,7 @@ export default function Page() {
             return (
               <Badge
                 status="error"
-                text={t('instance_profiling.list.table.status.failed')}
+                text={t('instance_profiling.list.table.status.all_failed')}
               />
             )
           } else if (rec.state === 1) {
@@ -136,21 +136,27 @@ export default function Page() {
               />
             )
           } else if (rec.state === 2) {
-            // all success
+            // legacy all success
             return (
               <Badge
-                status="success"
+                status="default"
                 text={t('instance_profiling.list.table.status.finished')}
               />
             )
-          } else {
-            // partial success
+          } else if (rec.state === 3) {
+            // partial failed
             return (
               <Badge
                 status="warning"
-                text={t(
-                  'instance_profiling.list.table.status.partial_finished'
-                )}
+                text={t('instance_profiling.list.table.status.partial_failed')}
+              />
+            )
+          } else {
+            // new all success
+            return (
+              <Badge
+                status="success"
+                text={t('instance_profiling.list.table.status.all_success')}
               />
             )
           }

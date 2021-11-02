@@ -34,7 +34,7 @@ function mapData(data) {
 
 function isFinished(data) {
   const groupState = data?.task_group_status?.state
-  return groupState === 2 || groupState === 3
+  return groupState === 2 || groupState === 3 || groupState === 4
 }
 
 export default function Page() {
@@ -102,7 +102,7 @@ export default function Page() {
             return (
               <Badge
                 status="success"
-                text={t('instance_profiling.detail.table.status.finished')}
+                text={t('instance_profiling.detail.table.status.success')}
               />
             )
           }

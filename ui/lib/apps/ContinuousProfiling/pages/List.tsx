@@ -75,7 +75,7 @@ export default function Page() {
             return (
               <Badge
                 status="error"
-                text={t('continuous_profiling.list.table.status.failed')}
+                text={t('continuous_profiling.list.table.status.all_failed')}
               />
             )
           } else if (rec.state === 'success') {
@@ -83,7 +83,7 @@ export default function Page() {
             return (
               <Badge
                 status="success"
-                text={t('continuous_profiling.list.table.status.finished')}
+                text={t('continuous_profiling.list.table.status.all_success')}
               />
             )
           } else {
@@ -92,7 +92,7 @@ export default function Page() {
               <Badge
                 status="warning"
                 text={t(
-                  'continuous_profiling.list.table.status.partial_finished'
+                  'continuous_profiling.list.table.status.partial_failed'
                 )}
               />
             )

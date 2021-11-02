@@ -19,9 +19,9 @@ continuous_profiling:
         status: 状态
       status:
         running: 分析中
-        finished: 完成
-        failed: 失败
-        partial_finished: 部分完成
+        all_failed: 失败
+        partial_failed: 部分失败
+        all_success: 成功
         unknown: 未知
       actions:
         detail: 详情
@@ -38,7 +38,7 @@ continuous_profiling:
         content: 内容
         status: 状态
       status:
-        finished: 完成
+        success: 成功
   settings:
     title: 设置
     disabled_result:

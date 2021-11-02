@@ -17,9 +17,9 @@ continuous_profiling:
         status: Status
       status:
         running: Running
-        finished: Finished
-        failed: Failed
-        partial_finished: Partial Finished
+        all_failed: Failed
+        partial_failed: Partially Failed
+        all_success: Success
         unknown: Unknown
       actions:
         detail: Detail
@@ -36,7 +36,7 @@ continuous_profiling:
         content: Content
         status: Status
       status:
-        finished: Finished
+        success: Success
   settings:
     title: Settings
     disabled_result:

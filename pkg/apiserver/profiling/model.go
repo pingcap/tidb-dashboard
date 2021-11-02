@@ -26,11 +26,17 @@ import (
 type TaskState int
 
 // Built-in task state
+// State change flow:
+// For single task: TaskStateRunning --> TaskStateFailed (fail) | TaskStateFinish (success)
+// For group task:
+// - Old: TaskStateRunning --> TaskStateFinish
+// - New: TaskStateRunning --> TaskStateFailed (all failed) | TaskStatePartialFailed (partial failed) | TaskStateAllSuccess (all success)
 const (
-	TaskStateError TaskState = iota
-	TaskStateRunning
-	TaskStateFinish
-	TaskPartialFinish
+	TaskStateFailed        TaskState = iota // 0
+	TaskStateRunning                        // 1
+	TaskStateFinish                         // 2, for single task, it means success; for group task, it only means all child tasks are done, no matter they are success or failed, it will be refined by TaskStateFailed|TaskStatePartialFailed|TaskStateAllFinish
+	TaskStatePartialFailed                  // 3, only for group task
+	TaskStateAllSuccess                     // 4, only for group task
 )
 
 type TaskModel struct {
@@ -94,7 +100,7 @@ func (t *Task) run() {
 	svgFilePath, err := profileAndWriteSVG(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
 	if err != nil {
 		t.Error = err.Error()
-		t.State = TaskStateError
+		t.State = TaskStateFailed
 		t.taskGroup.db.Save(t.TaskModel)
 		return
 	}

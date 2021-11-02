@@ -193,18 +193,19 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 			}(i)
 		}
 		wg.Wait()
-		finishedTasks := 0
+
+		successTasks := 0
 		for _, task := range tasks {
 			if task.State == TaskStateFinish {
-				finishedTasks++
+				successTasks++
 			}
 		}
-		if finishedTasks == 0 {
-			taskGroup.State = TaskStateError
-		} else if finishedTasks < len(tasks) {
-			taskGroup.State = TaskPartialFinish
+		if successTasks == 0 {
+			taskGroup.State = TaskStateFailed
+		} else if successTasks < len(tasks) {
+			taskGroup.State = TaskStatePartialFailed
 		} else {
-			taskGroup.State = TaskStateFinish
+			taskGroup.State = TaskStateAllSuccess
 		}
 		s.params.LocalStore.Save(taskGroup.TaskGroupModel)
 	}()

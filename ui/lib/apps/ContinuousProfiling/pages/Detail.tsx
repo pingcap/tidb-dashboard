@@ -69,7 +69,7 @@ export default function Page() {
             return (
               <Badge
                 status="success"
-                text={t('continuous_profiling.detail.table.status.finished')}
+                text={t('continuous_profiling.detail.table.status.success')}
               />
             )
           }

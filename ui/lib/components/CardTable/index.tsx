@@ -1,3 +1,4 @@
+import { IRenderFunction } from '@uifabric/utilities'
 import { usePersistFn } from 'ahooks'
 import { Checkbox } from 'antd'
 import cx from 'classnames'
@@ -10,6 +11,7 @@ import {
   IDetailsList,
   IDetailsListProps,
   SelectionMode,
+  IDetailsRowProps,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
@@ -100,7 +102,11 @@ export interface ICardTableProps extends IDetailsListProps {
   clickedRowIndex?: number
 }
 
-function useRenderClickableRow(onRowClicked, clickedRowIdx) {
+function useRenderClickableRow(
+  onRowClicked,
+  clickedRowIdx,
+  customRender?: IRenderFunction<IDetailsRowProps> | undefined
+) {
   return useCallback(
     (props, defaultRender) => {
       if (!props) {
@@ -113,11 +119,11 @@ function useRenderClickableRow(onRowClicked, clickedRowIdx) {
           })}
           onClick={(ev) => onRowClicked?.(props.item, props.itemIndex, ev)}
         >
-          {defaultRender!(props)}
+          {customRender ? customRender(props) : defaultRender!(props)}
         </div>
       )
     },
-    [onRowClicked, clickedRowIdx]
+    [onRowClicked, clickedRowIdx, customRender]
   )
 }
 
@@ -153,11 +159,13 @@ export default function CardTable(props: ICardTableProps) {
     clickedRowIndex,
     columns,
     items,
+    onRenderRow,
     ...restProps
   } = props
   const renderClickableRow = useRenderClickableRow(
     onRowClicked,
-    clickedRowIndex || -1
+    clickedRowIndex || -1,
+    onRenderRow
   )
 
   const onColumnClick = usePersistFn(
@@ -246,7 +254,7 @@ export default function CardTable(props: ICardTableProps) {
             selectionMode={SelectionMode.none}
             constrainMode={ConstrainMode.unconstrained}
             layoutMode={DetailsListLayoutMode.justified}
-            onRenderRow={onRowClicked ? renderClickableRow : undefined}
+            onRenderRow={onRowClicked ? renderClickableRow : onRenderRow}
             columns={finalColumns}
             items={finalItems}
             componentRef={tableRef}

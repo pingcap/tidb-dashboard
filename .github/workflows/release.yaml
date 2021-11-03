@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - release
+      - release-5.2
 
 jobs:
   release:

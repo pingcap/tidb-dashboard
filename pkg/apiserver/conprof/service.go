@@ -31,6 +31,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
@@ -54,6 +55,7 @@ type ServiceParams struct {
 	fx.In
 
 	EtcdClient *clientv3.Client
+	Config     *config.Config
 }
 
 type Service struct {
@@ -78,18 +80,21 @@ var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams) *Service {
 
 // Register register the handlers to the service.
 func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
-	conprofEndpoint := r.Group("/continuous_profiling")
+	endpoint := r.Group("/continuous_profiling")
 
-	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
-	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
-	conprofEndpoint.GET("/components", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/components"), s.conprofComponents)
-	conprofEndpoint.GET("/estimate_size", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/estimate_size"), s.estimateSize)
-	conprofEndpoint.GET("/group_profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profiles"), s.conprofGroupProfiles)
-	conprofEndpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profile/detail"), s.conprofGroupProfileDetail)
+	endpoint.Use(utils.MWForbidByFeatureEnable(IsFeatureEnable(s.params.Config)))
+	{
+		endpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
+		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
+		endpoint.GET("/components", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/components"), s.conprofComponents)
+		endpoint.GET("/estimate_size", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/estimate_size"), s.estimateSize)
+		endpoint.GET("/group_profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profiles"), s.conprofGroupProfiles)
+		endpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profile/detail"), s.conprofGroupProfileDetail)
 
-	conprofEndpoint.GET("/action_token", auth.MWAuthRequired(), s.genConprofActionToken)
-	conprofEndpoint.GET("/download", s.reverseProxy("/continuous_profiling/download"), s.conprofDownload)
-	conprofEndpoint.GET("/single_profile/view", s.reverseProxy("/continuous_profiling/single_profile/view"), s.conprofViewProfile)
+		endpoint.GET("/action_token", auth.MWAuthRequired(), s.genConprofActionToken)
+		endpoint.GET("/download", s.reverseProxy("/continuous_profiling/download"), s.conprofDownload)
+		endpoint.GET("/single_profile/view", s.reverseProxy("/continuous_profiling/single_profile/view"), s.conprofViewProfile)
+	}
 }
 
 func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {

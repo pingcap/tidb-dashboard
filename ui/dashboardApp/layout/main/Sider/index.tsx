@@ -51,10 +51,22 @@ function Sider({
   const whoAmI = store.useState((s) => s.whoAmI)
   const appInfo = store.useState((s) => s.appInfo)
 
-  const profilingSubMenuItems = [
-    useAppMenuItem(registry, 'instance_profiling', '', true),
-    useAppMenuItem(registry, 'continuous_profiling', '', true),
-  ]
+  const instanceProfilingMenuItem = useAppMenuItem(
+    registry,
+    'instance_profiling',
+    '',
+    true
+  )
+  const conprofMenuItem = useAppMenuItem(
+    registry,
+    'continuous_profiling',
+    '',
+    true
+  )
+  const profilingSubMenuItems = [instanceProfilingMenuItem]
+  if (appInfo?.enable_conprof) {
+    profilingSubMenuItems.push(conprofMenuItem)
+  }
 
   const profilingSubMenu = (
     <Menu.SubMenu

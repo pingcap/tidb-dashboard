@@ -11,17 +11,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package profiling
+// conprof is short for continuous profiling
+package conprof
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/fx"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
@@ -44,8 +50,34 @@ type ngMonitoringAddrCacheEntity struct {
 	cacheAt time.Time
 }
 
+type ServiceParams struct {
+	fx.In
+
+	EtcdClient *clientv3.Client
+}
+
+type Service struct {
+	params       ServiceParams
+	lifecycleCtx context.Context
+
+	ngMonitoringReqGroup  singleflight.Group
+	ngMonitoringAddrCache atomic.Value
+}
+
+var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams) *Service {
+	s := &Service{params: p}
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			s.lifecycleCtx = ctx
+			return nil
+		},
+	})
+
+	return s
+})
+
 // Register register the handlers to the service.
-func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	conprofEndpoint := r.Group("/continuous_profiling")
 
 	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)

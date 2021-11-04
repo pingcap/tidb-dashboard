@@ -22,6 +22,7 @@ import (
 	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -60,6 +61,7 @@ type InfoResponse struct { //nolint
 	Version            *version.Info `json:"version"`
 	EnableTelemetry    bool          `json:"enable_telemetry"`
 	EnableExperimental bool          `json:"enable_experimental"`
+	EnableConprof      bool          `json:"enable_conprof"`
 }
 
 // @ID infoGet
@@ -73,6 +75,7 @@ func (s *Service) infoHandler(c *gin.Context) {
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
+		EnableConprof:      conprof.IsFeatureEnable(s.params.Config),
 	}
 	c.JSON(http.StatusOK, resp)
 }

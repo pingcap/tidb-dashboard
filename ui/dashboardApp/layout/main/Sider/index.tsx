@@ -140,15 +140,7 @@ function Sider({
     if (defaultCollapsed) {
       return []
     } else {
-      let openKeys = ['debug', 'experimental']
-      const urlHash = window.location.hash.substring(2)
-      if (
-        urlHash.startsWith('instance_profiling') ||
-        urlHash.startsWith('continuous_profiling')
-      ) {
-        openKeys.push('profiling')
-      }
-      return openKeys
+      return ['debug', 'experimental', 'profiling']
     }
   }, [defaultCollapsed])
 

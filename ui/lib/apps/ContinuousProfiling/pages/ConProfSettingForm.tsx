@@ -11,6 +11,7 @@ import {
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
+import { TFunction } from 'i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client, {
@@ -21,11 +22,23 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ErrorBar, InstanceSelect } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 
+const ONE_DAY_SECONDS = 24 * 60 * 60
 const RETENTION_SECONDS = [
-  3 * 24 * 60 * 60,
-  5 * 24 * 60 * 60,
-  10 * 24 * 60 * 60,
+  3 * ONE_DAY_SECONDS,
+  5 * ONE_DAY_SECONDS,
+  10 * ONE_DAY_SECONDS,
 ]
+
+function translateSecToDay(seconds: number, t: TFunction) {
+  // in our case, the seconds value must be the multiple of one day seconds
+  if (seconds % ONE_DAY_SECONDS !== 0) {
+    console.warn(`${seconds} is not the mulitple of one day seconds`)
+  }
+  const day = seconds / ONE_DAY_SECONDS
+  return t('continuous_profiling.settings.profile_retention_duration_option', {
+    d: day,
+  })
+}
 
 interface Props {
   onClose: () => void
@@ -37,11 +50,14 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
   const { t } = useTranslation()
   const isWriteable = useIsWriteable()
 
-  const { data: initialConfig, isLoading: loading, error } = useClientRequest(
-    () =>
-      client.getInstance().continuousProfilingConfigGet({
-        errorStrategy: ErrorStrategy.Custom,
-      })
+  const {
+    data: initialConfig,
+    isLoading: loading,
+    error,
+  } = useClientRequest(() =>
+    client.getInstance().continuousProfilingConfigGet({
+      errorStrategy: ErrorStrategy.Custom,
+    })
   )
 
   const { data: estimateSize } = useClientRequest(() =>
@@ -53,7 +69,12 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
   const dataRetentionSeconds = useMemo(() => {
     const curRetentionSec =
       initialConfig?.continuous_profiling?.data_retention_seconds
-    if (curRetentionSec && RETENTION_SECONDS.indexOf(curRetentionSec) === -1) {
+    if (
+      curRetentionSec &&
+      RETENTION_SECONDS.indexOf(curRetentionSec) === -1 &&
+      // filter out the duration that is not multiple of ONE_DAY_SECONDS
+      curRetentionSec % ONE_DAY_SECONDS === 0
+    ) {
       return RETENTION_SECONDS.concat(curRetentionSec).sort()
     }
     return RETENTION_SECONDS
@@ -158,7 +179,7 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
                         <Select style={{ width: 180 }}>
                           {dataRetentionSeconds.map((val) => (
                             <Select.Option key={val} value={val}>
-                              {getValueFormat('dtdurations')(val, 1)}
+                              {translateSecToDay(val, t)}
                             </Select.Option>
                           ))}
                         </Select>

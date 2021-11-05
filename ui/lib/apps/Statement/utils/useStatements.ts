@@ -29,9 +29,8 @@ interface StatementCache {
 export function useStatements(cacheKey: string) {
   const { getCache, setCache } = useCache()
   const [statements, setStatements] = useState<StatementModel[]>([])
-  const [statementsTimeRange, setStatementsTimeRange] = useState<
-    StatementTimeRange
-  >({})
+  const [statementsTimeRange, setStatementsTimeRange] =
+    useState<StatementTimeRange>({})
   const queryStatements = useCallback(
     async (...params: Parameters<DefaultApi['statementsListGet']>) => {
       const cache = getCache(cacheKey)

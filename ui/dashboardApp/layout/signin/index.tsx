@@ -1,8 +1,14 @@
 import CSSMotion from 'rc-animate/es/CSSMotion'
 import cx from 'classnames'
 import * as singleSpa from 'single-spa'
-import { Root, AppearAnimate } from '@lib/components'
-import React, { useState, useRef, useCallback, useMemo, ReactNode } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  ReactNode,
+} from 'react'
 import {
   DownOutlined,
   GlobalOutlined,
@@ -14,18 +20,20 @@ import {
 } from '@ant-design/icons'
 import { Form, Input, Button, message, Typography, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
-import LanguageDropdown from '@lib/components/LanguageDropdown'
-import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
-import * as auth from '@lib/utils/auth'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
 import { usePersistFn } from 'ahooks'
-import { ReactComponent as Logo } from './logo.svg'
-import styles from './index.module.less'
-import { useEffect } from 'react'
+
+import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
 import { getAuthURL } from '@lib/utils/authSSO'
 import { AuthTypes } from '@lib/utils/auth'
 import { isDistro } from '@lib/utils/i18n'
+import * as auth from '@lib/utils/auth'
+import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
+
+import styles from './index.module.less'
+import { ReactComponent as Logo } from './logo.svg'
+import { store } from '@lib/utils/store'
 
 enum DisplayFormType {
   uninitialized,
@@ -200,11 +208,10 @@ function useSignInSubmit(
   return { handleSubmit, loading, errorMsg: error, clearErrorMsg }
 }
 
-function TiDBSignInForm({
-  successRoute,
-  onClickAlternative,
-  enableNonRootLogin = false,
-}) {
+function TiDBSignInForm({ successRoute, onClickAlternative }) {
+  const appInfo = store.useState((s) => s.appInfo)
+  const enableNonRootLogin = appInfo?.enable_non_root_login ?? false
+
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -405,16 +412,14 @@ function SSOSignInForm({ successRoute, onClickAlternative }) {
 }
 
 function App({ registry }) {
-  const successRoute = useMemo(
-    () => `#${registry.getDefaultRouter()}`,
-    [registry]
-  )
+  const successRoute = useMemo(() => `#${registry.getDefaultRouter()}`, [
+    registry,
+  ])
   const [alternativeVisible, setAlternativeVisible] = useState(false)
   const [formType, setFormType] = useState(DisplayFormType.uninitialized)
   const [supportedAuthTypes, setSupportedAuthTypes] = useState<Array<number>>([
     0,
   ])
-  const [enableNonRootLogin, setEnableNonoRootLogin] = useState(false)
 
   const handleClickAlternative = useCallback(() => {
     setAlternativeVisible(true)
@@ -442,7 +447,6 @@ function App({ registry }) {
           setFormType(DisplayFormType.tidbCredential)
         }
         setSupportedAuthTypes(loginInfo.supported_auth_types ?? [])
-        setEnableNonoRootLogin(loginInfo.enable_non_root_login ?? false)
       } catch (e) {
         Modal.error({
           title: 'Initialize Sign in failed',
@@ -477,7 +481,6 @@ function App({ registry }) {
             <TiDBSignInForm
               successRoute={successRoute}
               onClickAlternative={handleClickAlternative}
-              enableNonRootLogin={enableNonRootLogin}
             />
           )}
           {formType === DisplayFormType.shareCode && (

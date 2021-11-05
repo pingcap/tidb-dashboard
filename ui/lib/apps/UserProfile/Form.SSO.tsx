@@ -1,7 +1,7 @@
 import { CheckCircleFilled } from '@ant-design/icons'
 import client, { SsoSSOImpersonationModel } from '@lib/client'
 import { AnimatedSkeleton, ErrorBar } from '@lib/components'
-import { useIsWriteable } from '@lib/utils/store'
+import { store, useIsWriteable } from '@lib/utils/store'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import {
   Alert,
@@ -46,9 +46,8 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
     setModalVisible(true)
   }, [])
 
-  const { data: loginInfo } = useClientRequest((reqConfig) =>
-    client.getInstance().userGetLoginInfo(reqConfig)
-  )
+  const appInfo = store.useState((s) => s.appInfo)
+  const enableNonRootLogin = appInfo?.enable_non_root_login ?? false
 
   const handleFinish = useCallback(
     async (data) => {
@@ -125,7 +124,7 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
           >
             <Input
               style={DEFAULT_FORM_ITEM_STYLE}
-              disabled={!loginInfo?.enable_non_root_login}
+              disabled={!enableNonRootLogin}
             />
           </Form.Item>
           <Form.Item

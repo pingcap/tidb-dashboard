@@ -38,7 +38,6 @@ type Config struct {
 
 	EnableTelemetry    bool
 	EnableExperimental bool
-	EnableNonRootLogin bool
 	FeatureVersion     string // assign the target TiDB version when running TiDB Dashboard as standalone mode
 }
 
@@ -52,7 +51,6 @@ func Default() *Config {
 		TiDBTLSConfig:      nil,
 		EnableTelemetry:    true,
 		EnableExperimental: false,
-		EnableNonRootLogin: false,
 		FeatureVersion:     "",
 	}
 }

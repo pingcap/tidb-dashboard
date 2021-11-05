@@ -87,10 +87,14 @@ var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.lifecycleCtx = ctx
-			s.wg.Add(1)
+			s.wg.Add(2)
 			go func() {
 				defer s.wg.Done()
 				s.serviceLoop(ctx)
+			}()
+			go func() {
+				defer s.wg.Done()
+				s.migrateLegacyState(ctx)
 			}()
 			return nil
 		},
@@ -141,6 +145,43 @@ func (s *Service) serviceLoop(ctx context.Context) {
 			}
 		case session := <-s.sessionCh:
 			s.handleRequest(ctx, session, dc)
+		}
+	}
+}
+
+// Migrate the legacy state TaskStateFinish for group task to TaskStateFailed|TaskStatePartialFailed|TaskStateAllSuccess
+func (s *Service) migrateLegacyState(ctx context.Context) {
+	var groupTasks []TaskGroupModel
+	var tasks []TaskModel
+	for {
+		// Step 1: find out group tasks whose state is TaskStateFinish
+		err := s.params.LocalStore.Where("state = ?", TaskStateFinish).Order("id DESC").Limit(100).Find(&groupTasks).Error
+		if err != nil || len(groupTasks) == 0 {
+			break
+		}
+
+		for _, groupTask := range groupTasks {
+			// Step 2: find out all child tasks of the group task
+			err = s.params.LocalStore.Where("task_group_id = ?", groupTask.ID).Find(&tasks).Error
+			if err != nil || len(tasks) == 0 {
+				continue
+			}
+
+			// Step 3: fix the group task state
+			successTasks := 0
+			for _, t := range tasks {
+				if t.State == TaskStateFinish {
+					successTasks++
+				}
+			}
+			if successTasks == 0 {
+				groupTask.State = TaskStateFailed
+			} else if successTasks < len(tasks) {
+				groupTask.State = TaskStatePartialFailed
+			} else {
+				groupTask.State = TaskStateAllSuccess
+			}
+			s.params.LocalStore.Save(groupTask)
 		}
 	}
 }

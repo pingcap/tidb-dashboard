@@ -19,6 +19,7 @@ error:
       ng_monitoring_not_start: |
         本功能存储组件离线，请尝试使用 TiUP Cluster 对 monitor 节点进行 reload 操作。
         若未能解决问题，请联系技术支持。
+    feature_not_enabled: 此功能未在当前版本开启。
     other: 其他错误
   tidb:
     no_alive_tidb: 没有正在运行的 {{distro.tidb}} 实例

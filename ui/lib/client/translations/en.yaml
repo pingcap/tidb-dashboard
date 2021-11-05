@@ -18,6 +18,7 @@ error:
         To learn more or the cluster is deployed by {{distro.tidb}} Operator, please search the doc "Continuous Profiling" in the  {{distro.tidb}}  docs to get more information.
       ng_monitoring_not_start: |
         The storage component of this feature is offline, please try to reload the monitor node by TiUP Cluster. Contact with the support if it still doesn't work.
+    feature_not_enabled: This feature is not enabled in this version.
     other: Other error
   tidb:
     no_alive_tidb: No alive {{distro.tidb}} instance

@@ -73,19 +73,9 @@ func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
 	return &c
 }
 
-// TODO: Replace using go-resty
-func (c *Client) SendRequest(
-	ctx context.Context,
-	uri string,
-	method string,
-	body io.Reader,
-	errType *errorx.Type,
-	errOriginComponent string) ([]byte, error) {
-	res, err := c.Send(ctx, uri, method, body, errType, errOriginComponent)
-	if err != nil {
-		return nil, err
-	}
-	return res.Body()
+type SendPending interface {
+	Response() (*Response, error)
+	Body() ([]byte, error)
 }
 
 func (c *Client) Send(
@@ -94,34 +84,66 @@ func (c *Client) Send(
 	method string,
 	body io.Reader,
 	errType *errorx.Type,
-	errOriginComponent string) (*Response, error) {
-	req, err := http.NewRequestWithContext(ctx, method, uri, body)
+	errOriginComponent string) SendPending {
+	return &Sender{
+		client:             c,
+		ctx:                ctx,
+		uri:                uri,
+		method:             method,
+		body:               body,
+		errType:            errType,
+		errOriginComponent: errOriginComponent,
+	}
+}
+
+type Sender struct {
+	client             *Client
+	ctx                context.Context
+	uri                string
+	method             string
+	body               io.Reader
+	errType            *errorx.Type
+	errOriginComponent string
+}
+
+var _ SendPending = (*Sender)(nil)
+
+func (s *Sender) Response() (*Response, error) {
+	req, err := http.NewRequestWithContext(s.ctx, s.method, s.uri, s.body)
 	if err != nil {
-		e := errType.Wrap(err, "Failed to build %s API request", errOriginComponent)
-		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
+		e := s.errType.Wrap(err, "Failed to build %s API request", s.errOriginComponent)
+		log.Warn("SendRequest failed", zap.String("uri", s.uri), zap.Error(err))
 		return nil, e
 	}
 
-	if c.BeforeRequest != nil {
-		c.BeforeRequest(req)
+	if s.client.BeforeRequest != nil {
+		s.client.BeforeRequest(req)
 	}
 
-	resp, err := c.Do(req)
+	resp, err := s.client.Do(req)
 	if err != nil {
-		e := errType.Wrap(err, "Failed to send %s API request", errOriginComponent)
-		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
+		e := s.errType.Wrap(err, "Failed to send %s API request", s.errOriginComponent)
+		log.Warn("SendRequest failed", zap.String("uri", s.uri), zap.Error(err))
 		return nil, e
 	}
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		defer resp.Body.Close()
 		data, _ := ioutil.ReadAll(resp.Body)
-		e := errType.New("Request failed with status code %d from %s API: %s", resp.StatusCode, errOriginComponent, string(data))
-		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
+		e := s.errType.New("Request failed with status code %d from %s API: %s", resp.StatusCode, s.errOriginComponent, string(data))
+		log.Warn("SendRequest failed", zap.String("uri", s.uri), zap.Error(err))
 		return nil, e
 	}
 
 	return &Response{resp}, nil
+}
+
+func (s *Sender) Body() ([]byte, error) {
+	res, err := s.Response()
+	if err != nil {
+		return nil, err
+	}
+	return res.Body()
 }
 
 type Response struct {

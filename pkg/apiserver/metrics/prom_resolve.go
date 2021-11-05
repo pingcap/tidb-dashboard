@@ -62,7 +62,7 @@ func normalizeCustomizedPromAddress(addr string) (string, error) {
 // The returned address must be valid. If an invalid Prometheus address is configured, errors will be returned.
 func (s *Service) resolveCustomizedPromAddress(acceptInvalidAddr bool) (string, error) {
 	// Lookup "metric-storage" cluster config in PD.
-	data, err := s.params.PDClient.SendGetRequest("/config")
+	data, err := s.params.PDClient.Get("/config").Body()
 	if err != nil {
 		return "", err
 	}
@@ -173,7 +173,7 @@ func (s *Service) setCustomPromAddress(addr string) (string, error) {
 		return "", err
 	}
 
-	_, err = s.params.PDClient.SendPostRequest("/config", bytes.NewBuffer(bodyJSON))
+	_, err = s.params.PDClient.Post("/config", bytes.NewBuffer(bodyJSON)).Body()
 	if err != nil {
 		return "", err
 	}

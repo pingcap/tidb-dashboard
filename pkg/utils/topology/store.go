@@ -138,7 +138,7 @@ type store struct {
 }
 
 func fetchStores(pdClient *pd.Client) ([]store, error) {
-	data, err := pdClient.SendGetRequest("/stores")
+	data, err := pdClient.Get("/stores").Body()
 	if err != nil {
 		return nil, err
 	}

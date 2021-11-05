@@ -34,7 +34,7 @@ func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 		return nil, err
 	}
 
-	data, err := pdClient.SendGetRequest("/members")
+	data, err := pdClient.Get("/members").Body()
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 }
 
 func fetchPDStartTimestamp(pdClient *pd.Client) (int64, error) {
-	data, err := pdClient.SendGetRequest("/status")
+	data, err := pdClient.Get("/status").Body()
 	if err != nil {
 		return 0, err
 	}
@@ -116,7 +116,7 @@ func fetchPDStartTimestamp(pdClient *pd.Client) (int64, error) {
 }
 
 func fetchPDHealth(pdClient *pd.Client) (map[uint64]struct{}, error) {
-	data, err := pdClient.SendGetRequest("/health")
+	data, err := pdClient.Get("/health").Body()
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func fetchPDHealth(pdClient *pd.Client) (map[uint64]struct{}, error) {
 }
 
 func fetchLocationLabels(pdClient *pd.Client) ([]string, error) {
-	data, err := pdClient.SendGetRequest("/config/replicate")
+	data, err := pdClient.Get("/config/replicate").Body()
 	if err != nil {
 		return nil, err
 	}

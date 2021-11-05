@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -160,44 +161,61 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
+func (c *Client) Get(relativeURI string) httpc.SendPending {
+	return &Sender{
+		client:      c,
+		relativeURI: relativeURI,
+		method:      http.MethodGet,
+		body:        nil,
+	}
+}
+
+type Sender struct {
+	client      *Client
+	relativeURI string
+	method      string
+	body        io.Reader
+}
+
+var _ httpc.SendPending = (*Sender)(nil)
+
+func (s *Sender) Response() (*httpc.Response, error) {
 	var err error
 
 	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
 	// the `tidbOverrideStatusEndpointEnvVar` and the `Client.statusAPIAddress` have the same override priority, if both exist and have not enforced `Client.statusAPIAddress` then an error is returned
-	if overrideEndpoint != "" && c.statusAPIAddress != "" && !c.enforceStatusAPIAddresss {
+	if overrideEndpoint != "" && s.client.statusAPIAddress != "" && !s.client.enforceStatusAPIAddresss {
 		log.Warn(fmt.Sprintf("Reject to establish a target specified %s status connection since `%s` is set", distro.Data("tidb"), tidbOverrideStatusEndpointEnvVar))
 		return nil, ErrTiDBConnFailed.New("%s Dashboard is configured to only connect to specified %s host", distro.Data("tidb"), distro.Data("tidb"))
 	}
 
 	var addr string
 	switch {
-	case c.enforceStatusAPIAddresss:
-		addr = c.statusAPIAddress
+	case s.client.enforceStatusAPIAddresss:
+		addr = s.client.statusAPIAddress
 	case overrideEndpoint != "":
 		addr = overrideEndpoint
 	default:
-		addr = c.statusAPIAddress
+		addr = s.client.statusAPIAddress
 	}
 	if addr == "" {
-		if addr, err = c.forwarder.getEndpointAddr(c.forwarder.statusPort); err != nil {
+		if addr, err = s.client.forwarder.getEndpointAddr(s.client.forwarder.statusPort); err != nil {
 			return nil, err
 		}
 	}
 
-	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, relativeURI)
-	res, err := c.statusAPIHTTPClient.
-		WithTimeout(c.statusAPITimeout).
-		Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, distro.Data("tidb"))
-	if err != nil && c.forwarder.statusProxy.noAliveRemote.Load() {
+	uri := fmt.Sprintf("%s://%s%s", s.client.statusAPIHTTPScheme, addr, s.relativeURI)
+	res := s.client.statusAPIHTTPClient.
+		WithTimeout(s.client.statusAPITimeout).
+		Send(s.client.lifecycleCtx, uri, s.method, s.body, ErrTiDBClientRequestFailed, distro.Data("tidb"))
+	if s.client.forwarder.statusProxy.noAliveRemote.Load() {
 		return nil, ErrNoAliveTiDB.NewWithNoMessage()
 	}
-	return res, err
+	return res.Response()
 }
 
-// FIXME: SendGetRequest should be extracted, as a common method.
-func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
-	res, err := c.Get(relativeURI)
+func (s *Sender) Body() ([]byte, error) {
+	res, err := s.Response()
 	if err != nil {
 		return nil, err
 	}

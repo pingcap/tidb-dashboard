@@ -65,20 +65,12 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c *Client) Get(host string, statusPort int, relativeURI string) (*httpc.Response, error) {
+func (c *Client) Get(host string, statusPort int, relativeURI string) httpc.SendPending {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, distro.Data("tiflash"))
 }
 
-func (c *Client) SendGetRequest(host string, statusPort int, relativeURI string) ([]byte, error) {
-	res, err := c.Get(host, statusPort, relativeURI)
-	if err != nil {
-		return nil, err
-	}
-	return res.Body()
-}
-
-func (c *Client) SendPostRequest(host string, statusPort int, relativeURI string, body io.Reader) ([]byte, error) {
+func (c *Client) Post(host string, statusPort int, relativeURI string, body io.Reader) httpc.SendPending {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, distro.Data("tiflash"))
+	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, distro.Data("tiflash"))
 }

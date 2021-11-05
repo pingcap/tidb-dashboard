@@ -122,7 +122,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 }
 
 func (s *tidbLabelStrategy) request(path string, v interface{}) error {
-	data, err := s.tidbClient.SendGetRequest(path)
+	data, err := s.tidbClient.Get(path).Body()
 	if err != nil {
 		return err
 	}

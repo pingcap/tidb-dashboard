@@ -85,7 +85,8 @@ func (impl *tidbImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc
 	return impl.Client.
 		WithEnforcedStatusAPIAddress(payload.Host, payload.Port).
 		WithStatusAPITimeout(payload.Timeout).
-		Get(fmt.Sprintf("%s?%s", payload.Path(), payload.Query()))
+		Get(fmt.Sprintf("%s?%s", payload.Path(), payload.Query())).
+		Response()
 }
 
 type tikvImplement struct {
@@ -96,7 +97,8 @@ type tikvImplement struct {
 func (impl *tikvImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	return impl.Client.
 		WithTimeout(payload.Timeout).
-		Get(payload.Host, payload.Port, fmt.Sprintf("%s?%s", payload.Path(), payload.Query()))
+		Get(payload.Host, payload.Port, fmt.Sprintf("%s?%s", payload.Path(), payload.Query())).
+		Response()
 }
 
 type tiflashImplement struct {
@@ -107,7 +109,8 @@ type tiflashImplement struct {
 func (impl *tiflashImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	return impl.Client.
 		WithTimeout(payload.Timeout).
-		Get(payload.Host, payload.Port, fmt.Sprintf("%s?%s", payload.Path(), payload.Query()))
+		Get(payload.Host, payload.Port, fmt.Sprintf("%s?%s", payload.Path(), payload.Query())).
+		Response()
 }
 
 type pdImplement struct {
@@ -119,5 +122,6 @@ func (impl *pdImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.R
 	return impl.Client.
 		WithAddress(payload.Host, payload.Port).
 		WithTimeout(payload.Timeout).
-		Get(fmt.Sprintf("%s?%s", payload.Path(), payload.Query()))
+		Get(fmt.Sprintf("%s?%s", payload.Path(), payload.Query())).
+		Response()
 }

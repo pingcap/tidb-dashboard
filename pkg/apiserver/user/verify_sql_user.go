@@ -51,7 +51,7 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeabl
 
 	// Check dashboard privileges
 	// 1. Get TiDB config
-	resData, err := tidbClient.SendGetRequest("/config")
+	resData, err := tidbClient.Get("/config").Body()
 	if err != nil {
 		return false, err
 	}

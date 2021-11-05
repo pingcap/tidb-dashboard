@@ -158,6 +158,7 @@ function AlternativeAuthForm({
 function useSignInSubmit(
   successRoute,
   fnLoginForm: (form) => UserAuthenticateForm,
+  onSuccess: (form) => void,
   onFailure: () => void
 ) {
   const { t } = useTranslation()
@@ -178,6 +179,7 @@ function useSignInSubmit(
       auth.setAuthToken(r.data.token)
       message.success(t('signin.message.success'))
       singleSpa.navigateToUrl(successRoute)
+      onSuccess(form)
     } catch (e) {
       if (!e.handled) {
         const errMsg = t('signin.message.error', { msg: e.message })
@@ -208,10 +210,11 @@ function useSignInSubmit(
   return { handleSubmit, loading, errorMsg: error, clearErrorMsg }
 }
 
+const LAST_LOGIN_USERNAME_KEY = 'dashboard_last_login_username'
+
 function TiDBSignInForm({ successRoute, onClickAlternative }) {
   const appInfo = store.useState((s) => s.appInfo)
   const enableNonRootLogin = appInfo?.enable_non_root_login ?? false
-
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -224,6 +227,9 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
       password: form.password,
       type: AuthTypes.SQLUser,
     }),
+    (form) => {
+      localStorage.setItem(LAST_LOGIN_USERNAME_KEY, form.username)
+    },
     () => {
       refForm.setFieldsValue({ password: '' })
       setTimeout(() => {
@@ -236,6 +242,10 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
     refPassword?.current?.focus()
   })
 
+  const lastLoginUsername = useMemo(() => {
+    return localStorage.getItem(LAST_LOGIN_USERNAME_KEY) || 'root'
+  }, [])
+
   return (
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
@@ -243,7 +253,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
           name="tidb_signin"
           onFinish={handleSubmit}
           layout="vertical"
-          initialValues={{ username: 'root' }}
+          initialValues={{ username: lastLoginUsername }}
           form={refForm}
         >
           <Logo className={styles.logo} />
@@ -313,6 +323,7 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
       password: form.code,
       type: AuthTypes.SharingCode,
     }),
+    () => {},
     () => {
       refForm.setFieldsValue({ code: '' })
       setTimeout(() => {

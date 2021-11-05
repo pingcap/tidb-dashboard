@@ -152,7 +152,7 @@ function Sider({
     if (defaultCollapsed) {
       return []
     } else {
-      return ['debug', 'experimental']
+      return ['debug', 'experimental', 'profiling']
     }
   }, [defaultCollapsed])
 

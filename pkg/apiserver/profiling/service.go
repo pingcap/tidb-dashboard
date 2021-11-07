@@ -151,19 +151,30 @@ func (s *Service) serviceLoop(ctx context.Context) {
 
 // Migrate the legacy state TaskStateFinish for group task to TaskStateFailed|TaskStatePartialFailed|TaskStateAllSuccess
 func (s *Service) migrateLegacyState(ctx context.Context) {
+	var lastMinID uint
 	var groupTasks []TaskGroupModel
 	var tasks []TaskModel
 	for {
 		// Step 1: find out group tasks whose state is TaskStateFinish
-		err := s.params.LocalStore.Where("state = ?", TaskStateFinish).Order("id DESC").Limit(100).Find(&groupTasks).Error
+		query := s.params.LocalStore.Where("state = ?", TaskStateFinish).Order("id DESC").Limit(100)
+		if lastMinID > 0 {
+			// Add this where condition to avoid the loop can't escape when failed to modify the TaskStateFinish to other states for some group tasks
+			query = query.Where("id < ?", lastMinID)
+		}
+		err := query.Find(&groupTasks).Error
 		if err != nil || len(groupTasks) == 0 {
 			break
 		}
+		lastMinID = groupTasks[len(groupTasks)-1].ID
 
 		for _, groupTask := range groupTasks {
 			// Step 2: find out all child tasks of the group task
 			err = s.params.LocalStore.Where("task_group_id = ?", groupTask.ID).Find(&tasks).Error
-			if err != nil || len(tasks) == 0 {
+			if err != nil {
+				continue
+			}
+			if len(tasks) == 0 {
+				s.params.LocalStore.Delete(groupTask)
 				continue
 			}
 

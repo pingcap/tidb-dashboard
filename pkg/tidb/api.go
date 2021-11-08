@@ -17,42 +17,11 @@ package tidb
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/ReneKroon/ttlcache/v2"
 	"go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
-
-const tidbMemberCacheKey = "tidb_members"
-
-type memberHub struct {
-	*ttlcache.Cache
-	etcdClient *clientv3.Client
-}
-
-func newMemberHub(etcdClient *clientv3.Client) *memberHub {
-	cache := ttlcache.NewCache()
-	cache.SkipTTLExtensionOnHit(true)
-	return &memberHub{Cache: cache, etcdClient: etcdClient}
-}
-
-func (m *memberHub) GetStatusEndpoints(ctx context.Context) (es map[string]struct{}, err error) {
-	esCache, _ := m.Get(tidbMemberCacheKey)
-	if esCache != nil {
-		es = esCache.(map[string]struct{})
-	} else {
-		_, es, err = fetchEndpoints(ctx, m.etcdClient)
-		if err != nil {
-			return nil, err
-		}
-		// Set cache failure is acceptable
-		_ = m.SetWithTTL(tidbMemberCacheKey, es, 10*time.Second)
-	}
-
-	return es, nil
-}
 
 func fetchEndpoints(ctx context.Context, etcdClient *clientv3.Client) (tidbEndpoints, statusEndpoints map[string]struct{}, err error) {
 	topos, err := topology.FetchTiDBTopology(ctx, etcdClient)

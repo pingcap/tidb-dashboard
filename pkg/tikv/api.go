@@ -16,42 +16,10 @@ package tikv
 
 import (
 	"fmt"
-	"time"
-
-	"github.com/ReneKroon/ttlcache/v2"
 
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
-
-const tikvMemberCacheKey = "tikv_members"
-
-type memberHub struct {
-	*ttlcache.Cache
-	pdClient *pd.Client
-}
-
-func newMemberHub(pdClient *pd.Client) *memberHub {
-	cache := ttlcache.NewCache()
-	cache.SkipTTLExtensionOnHit(true)
-	return &memberHub{Cache: cache, pdClient: pdClient}
-}
-
-func (m *memberHub) GetEndpoints() (es map[string]struct{}, err error) {
-	esCache, _ := m.Get(tikvMemberCacheKey)
-	if esCache != nil {
-		es = esCache.(map[string]struct{})
-	} else {
-		es, err = fetchEndpoints(m.pdClient)
-		if err != nil {
-			return nil, err
-		}
-		// Set cache failure is acceptable
-		_ = m.SetWithTTL(tikvMemberCacheKey, es, 10*time.Second)
-	}
-
-	return es, nil
-}
 
 func fetchEndpoints(pdClient *pd.Client) (endpoints map[string]struct{}, err error) {
 	tikvTopos, _, err := topology.FetchStoreTopology(pdClient)

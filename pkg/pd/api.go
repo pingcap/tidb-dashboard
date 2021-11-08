@@ -17,42 +17,10 @@ package pd
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
-	"github.com/ReneKroon/ttlcache/v2"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
 )
-
-const pdMemberCacheKey = "pd_members"
-
-type memberHub struct {
-	*ttlcache.Cache
-	pdClient *Client
-}
-
-func newMemberHub(pdClient *Client) *memberHub {
-	cache := ttlcache.NewCache()
-	cache.SkipTTLExtensionOnHit(true)
-	return &memberHub{Cache: cache, pdClient: pdClient}
-}
-
-func (m *memberHub) GetEndpoints() (es map[string]struct{}, err error) {
-	esCache, _ := m.Get(pdMemberCacheKey)
-	if esCache != nil {
-		es = esCache.(map[string]struct{})
-	} else {
-		es, err = fetchEndpoints(m.pdClient)
-		if err != nil {
-			return nil, err
-		}
-		// Set cache failure is acceptable
-		_ = m.SetWithTTL(pdMemberCacheKey, es, 10*time.Second)
-	}
-
-	return es, nil
-}
 
 func fetchEndpoints(c *Client) (endpoints map[string]struct{}, err error) {
 	d, err := FetchMembers(c)

@@ -43,17 +43,23 @@ type Client struct {
 	lifecycleCtx context.Context
 	timeout      time.Duration
 	isRawBody    bool
-	memberHub    *memberHub
+	getEndpoints func() (map[string]struct{}, error)
 }
 
 func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Client, config *config.Config) *Client {
-	memberHub := newMemberHub(pdClient)
+	cache := httpc.NewCache()
 	client := &Client{
 		httpClient:   httpClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
 		timeout:      defaultTiKVStatusAPITimeout,
-		memberHub:    memberHub,
+		getEndpoints: cache.MakeFuncWithTTL("tikv_endpoints", func() (map[string]struct{}, error) {
+			es, err := fetchEndpoints(pdClient)
+			if err != nil {
+				return nil, err
+			}
+			return es, nil
+		}, 10*time.Second).(func() (map[string]struct{}, error)),
 	}
 
 	lc.Append(fx.Hook{
@@ -62,7 +68,7 @@ func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Clien
 			return nil
 		},
 		OnStop: func(c context.Context) error {
-			return memberHub.Close()
+			return cache.Close()
 		},
 	})
 
@@ -108,7 +114,7 @@ func (c *Client) Post(host string, statusPort int, relativeURI string, body io.R
 
 // Check the request address is an valid tikv endpoint
 func (c *Client) checkAPIAddressValidity(addr string) (err error) {
-	es, err := c.memberHub.GetEndpoints()
+	es, err := c.getEndpoints()
 	if err != nil {
 		return err
 	}

@@ -46,7 +46,7 @@ type Client struct {
 	timeout        time.Duration
 	beforeRequest  httpc.BeforeRequestFunc
 	isRawBody      bool
-	memberHub      *memberHub
+	getEndpoints   func() (map[string]struct{}, error)
 }
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
@@ -59,8 +59,14 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 		timeout:        defaultPDTimeout,
 	}
 
-	memberHub := newMemberHub(client)
-	client.memberHub = memberHub
+	cache := httpc.NewCache()
+	client.getEndpoints = cache.MakeFuncWithTTL("pd_endpoints", func() (map[string]struct{}, error) {
+		es, err := fetchEndpoints(client)
+		if err != nil {
+			return nil, err
+		}
+		return es, nil
+	}, 10*time.Second).(func() (map[string]struct{}, error))
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -68,7 +74,7 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 			return nil
 		},
 		OnStop: func(c context.Context) error {
-			return memberHub.Close()
+			return cache.Close()
 		},
 	})
 
@@ -157,7 +163,7 @@ func (c *Client) needCheckAddress() bool {
 
 // Check the request address is an valid pd endpoint
 func (c *Client) checkAPIAddressValidity() (err error) {
-	es, err := c.memberHub.GetEndpoints()
+	es, err := c.getEndpoints()
 	if err != nil {
 		return err
 	}

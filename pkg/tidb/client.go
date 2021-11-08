@@ -53,7 +53,7 @@ type Client struct {
 	sqlAPITLSKey             string // Non empty means use this key as MySQL TLS config
 	sqlAPIAddress            string // Empty means to use address provided by forwarder
 	isRawBody                bool
-	memberHub                *memberHub
+	getStatusEndpoints       func() (map[string]struct{}, error)
 }
 
 func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *httpc.Client) *Client {
@@ -63,7 +63,6 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		_ = mysql.RegisterTLSConfig(sqlAPITLSKey, config.TiDBTLSConfig)
 	}
 
-	memberHub := newMemberHub(etcdClient)
 	client := &Client{
 		lifecycleCtx:             nil,
 		forwarder:                newForwarder(lc, etcdClient),
@@ -75,8 +74,16 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		sqlAPITLSKey:             sqlAPITLSKey,
 		sqlAPIAddress:            "",
 		isRawBody:                false,
-		memberHub:                memberHub,
 	}
+
+	cache := httpc.NewCache()
+	client.getStatusEndpoints = cache.MakeFuncWithTTL("tidb_endpoints", func() (map[string]struct{}, error) {
+		_, es, err := fetchEndpoints(client.lifecycleCtx, etcdClient)
+		if err != nil {
+			return nil, err
+		}
+		return es, nil
+	}, 10*time.Second).(func() (map[string]struct{}, error))
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -84,7 +91,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 			return nil
 		},
 		OnStop: func(c context.Context) error {
-			return memberHub.Close()
+			return cache.Close()
 		},
 	})
 
@@ -247,7 +254,7 @@ func (c *Client) needCheckAddress() bool {
 
 // Check the request address is an valid tidb status endpoint
 func (c *Client) checkStatusAPIAddressValidity() (err error) {
-	es, err := c.memberHub.GetStatusEndpoints(c.lifecycleCtx)
+	es, err := c.getStatusEndpoints()
 	if err != nil {
 		return err
 	}

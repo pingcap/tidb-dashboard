@@ -16,6 +16,7 @@ package endpoint
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -23,7 +24,6 @@ import (
 	. "github.com/pingcap/check"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
-	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 func TestClient(t *testing.T) {
@@ -37,10 +37,10 @@ type testClientSuite struct{}
 
 type testFetcher struct{}
 
-func (d *testFetcher) Fetch(req *ResolvedRequestPayload) (*httpc.Response, error) {
+func (d *testFetcher) Fetch(req *ResolvedRequestPayload) (*http.Response, error) {
 	r := httptest.NewRecorder()
 	_, _ = r.WriteString(testCombineReq(req.Host, req.Port, req.Path(), req.Query()))
-	return &httpc.Response{Response: r.Result()}, nil
+	return r.Result(), nil
 }
 
 func testCombineReq(host string, port int, path, query string) string {
@@ -64,7 +64,7 @@ var testAPI = &APIModel{
 
 func (t *testClientSuite) Test_Send(c *C) {
 	client := NewClient(&testFetcher{}, []*APIModel{testAPI})
-	req, err := client.Send(&RequestPayload{
+	resp, err := client.Send(&RequestPayload{
 		testAPI.ID,
 		"127.0.0.1",
 		10080,
@@ -76,7 +76,8 @@ func (t *testClientSuite) Test_Send(c *C) {
 	if err != nil {
 		c.Error(err)
 	}
-	data, _ := req.Body()
+	data, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test/foo", "queryParam=bar"))
 }

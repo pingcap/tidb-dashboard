@@ -138,7 +138,7 @@ type store struct {
 }
 
 func fetchStores(pdClient *pd.Client) ([]store, error) {
-	data, err := pdClient.Get("/stores").Body()
+	resp, err := pdClient.Get("/stores")
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func fetchStores(pdClient *pd.Client) ([]store, error) {
 			Store store
 		} `json:"stores"`
 	}{}
-	err = json.Unmarshal(data, &storeResp)
+	err = json.Unmarshal(resp.Body, &storeResp)
 	if err != nil {
 		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.Data("pd"))
 	}

@@ -108,11 +108,11 @@ func (s *Service) getConfigItemsFromPDToChannel(ch chan<- channelItem) {
 }
 
 func (s *Service) getConfigItemsFromPD() (map[string]interface{}, error) {
-	data, err := s.params.PDClient.Get("/config").Body()
+	resp, err := s.params.PDClient.Get("/config")
 	if err != nil {
 		return nil, err
 	}
-	return processNestedConfigAPIResponse(data)
+	return processNestedConfigAPIResponse(resp.Body)
 }
 
 func (s *Service) getConfigItemsFromTiDBToChannel(tidb *topology.TiDBInfo, ch chan<- channelItem) {
@@ -132,11 +132,11 @@ func (s *Service) getConfigItemsFromTiDBToChannel(tidb *topology.TiDBInfo, ch ch
 }
 
 func (s *Service) getConfigItemsFromTiDB(host string, statusPort int) (map[string]interface{}, error) {
-	data, err := s.params.TiDBClient.WithStatusAPIAddress(host, statusPort).Get("/config").Body()
+	resp, err := s.params.TiDBClient.WithStatusAPIAddress(host, statusPort).Get("/config")
 	if err != nil {
 		return nil, err
 	}
-	return processNestedConfigAPIResponse(data)
+	return processNestedConfigAPIResponse(resp.Body)
 }
 
 func (s *Service) getConfigItemsFromTiKVToChannel(tikv *topology.StoreInfo, ch chan<- channelItem) {
@@ -156,11 +156,11 @@ func (s *Service) getConfigItemsFromTiKVToChannel(tikv *topology.StoreInfo, ch c
 }
 
 func (s *Service) getConfigItemsFromTiKV(host string, statusPort int) (map[string]interface{}, error) {
-	data, err := s.params.TiKVClient.Get(host, statusPort, "/config").Body()
+	resp, err := s.params.TiKVClient.Get(host, statusPort, "/config")
 	if err != nil {
 		return nil, err
 	}
-	return processNestedConfigAPIResponse(data)
+	return processNestedConfigAPIResponse(resp.Body)
 }
 
 type ShowVariableItem struct {
@@ -332,7 +332,7 @@ func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue int
 
 	switch kind {
 	case ItemKindPDConfig:
-		_, err := s.params.PDClient.Post("/config", bytes.NewBuffer(bodyJSON)).Body()
+		_, err := s.params.PDClient.Post("/config", bytes.NewBuffer(bodyJSON))
 		if err != nil {
 			return nil, ErrEditFailed.WrapWithNoMessage(err)
 		}
@@ -344,7 +344,7 @@ func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue int
 		failures := make([]error, 0)
 		for _, kvStore := range tikvInfo {
 			// TODO: What about tombstone stores?
-			_, err := s.params.TiKVClient.Post(kvStore.IP, int(kvStore.StatusPort), "/config", bytes.NewBuffer(bodyJSON)).Body()
+			_, err := s.params.TiKVClient.Post(kvStore.IP, int(kvStore.StatusPort), "/config", bytes.NewBuffer(bodyJSON))
 			if err != nil {
 				failures = append(failures, ErrEditFailed.Wrap(err, "Failed to edit config for TiKV instance `%s:%d`", kvStore.IP, kvStore.Port))
 			}

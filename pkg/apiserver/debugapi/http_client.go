@@ -15,13 +15,13 @@ package debugapi
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
-	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
@@ -40,7 +40,7 @@ type HTTPClient struct {
 type ClientMap map[model.NodeKind]Client
 
 type Client interface {
-	Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error)
+	Get(payload *endpoint.ResolvedRequestPayload) (*http.Response, error)
 }
 
 type httpClientParam struct {
@@ -62,7 +62,7 @@ func newHTTPClient(p httpClientParam) *HTTPClient {
 	}
 }
 
-func (d *HTTPClient) Fetch(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
+func (d *HTTPClient) Fetch(payload *endpoint.ResolvedRequestPayload) (*http.Response, error) {
 	if payload.Timeout <= 0 {
 		payload.Timeout = defaultTimeout
 	}
@@ -81,12 +81,16 @@ type tidbImplement struct {
 	Client *tidb.Client
 }
 
-func (impl *tidbImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
-	return impl.Client.
+func (impl *tidbImplement) Get(payload *endpoint.ResolvedRequestPayload) (*http.Response, error) {
+	resp, err := impl.Client.
 		WithEnforcedStatusAPIAddress(payload.Host, payload.Port).
 		WithStatusAPITimeout(payload.Timeout).
-		Get(fmt.Sprintf("%s?%s", payload.Path(), payload.Query())).
-		Response()
+		WithRawBody(true).
+		Get(fmt.Sprintf("%s?%s", payload.Path(), payload.Query()))
+	if err != nil {
+		return nil, err
+	}
+	return resp.RawResponse, nil
 }
 
 type tikvImplement struct {
@@ -94,11 +98,15 @@ type tikvImplement struct {
 	Client *tikv.Client
 }
 
-func (impl *tikvImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
-	return impl.Client.
+func (impl *tikvImplement) Get(payload *endpoint.ResolvedRequestPayload) (*http.Response, error) {
+	resp, err := impl.Client.
 		WithTimeout(payload.Timeout).
-		Get(payload.Host, payload.Port, fmt.Sprintf("%s?%s", payload.Path(), payload.Query())).
-		Response()
+		WithRawBody(true).
+		Get(payload.Host, payload.Port, fmt.Sprintf("%s?%s", payload.Path(), payload.Query()))
+	if err != nil {
+		return nil, err
+	}
+	return resp.RawResponse, nil
 }
 
 type tiflashImplement struct {
@@ -106,11 +114,15 @@ type tiflashImplement struct {
 	Client *tiflash.Client
 }
 
-func (impl *tiflashImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
-	return impl.Client.
+func (impl *tiflashImplement) Get(payload *endpoint.ResolvedRequestPayload) (*http.Response, error) {
+	resp, err := impl.Client.
 		WithTimeout(payload.Timeout).
-		Get(payload.Host, payload.Port, fmt.Sprintf("%s?%s", payload.Path(), payload.Query())).
-		Response()
+		WithRawBody(true).
+		Get(payload.Host, payload.Port, fmt.Sprintf("%s?%s", payload.Path(), payload.Query()))
+	if err != nil {
+		return nil, err
+	}
+	return resp.RawResponse, nil
 }
 
 type pdImplement struct {
@@ -118,10 +130,14 @@ type pdImplement struct {
 	Client *pd.Client
 }
 
-func (impl *pdImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
-	return impl.Client.
+func (impl *pdImplement) Get(payload *endpoint.ResolvedRequestPayload) (*http.Response, error) {
+	resp, err := impl.Client.
 		WithAddress(payload.Host, payload.Port).
 		WithTimeout(payload.Timeout).
-		Get(fmt.Sprintf("%s?%s", payload.Path(), payload.Query())).
-		Response()
+		WithRawBody(true).
+		Get(fmt.Sprintf("%s?%s", payload.Path(), payload.Query()))
+	if err != nil {
+		return nil, err
+	}
+	return resp.RawResponse, nil
 }

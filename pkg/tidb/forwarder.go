@@ -25,7 +25,6 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 var (
@@ -87,21 +86,14 @@ func (f *Forwarder) pollingForTiDB() {
 	bo := backoff.WithContext(ebo, f.lifecycleCtx)
 
 	for {
-		var allTiDB []topology.TiDBInfo
+		var tidbEndpoints map[string]struct{}
+		var statusEndpoints map[string]struct{}
 		err := backoff.Retry(func() error {
 			var err error
-			allTiDB, err = topology.FetchTiDBTopology(bo.Context(), f.etcdClient)
+			tidbEndpoints, statusEndpoints, err = fetchEndpoints(bo.Context(), f.etcdClient)
 			return err
 		}, bo)
 		if err == nil {
-			statusEndpoints := make(map[string]struct{}, len(allTiDB))
-			tidbEndpoints := make(map[string]struct{}, len(allTiDB))
-			for _, server := range allTiDB {
-				if server.Status == topology.ComponentStatusUp {
-					tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
-					statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
-				}
-			}
 			f.sqlProxy.updateRemotes(tidbEndpoints)
 			f.statusProxy.updateRemotes(statusEndpoints)
 		}

@@ -77,7 +77,11 @@ type tikvFetcher struct {
 }
 
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).Get(op.ip, op.port, op.path).Body()
+	resp, err := f.client.WithTimeout(maxProfilingTimeout).Get(op.ip, op.port, op.path)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
 }
 
 type tiflashFetcher struct {
@@ -85,7 +89,11 @@ type tiflashFetcher struct {
 }
 
 func (f *tiflashFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).Get(op.ip, op.port, op.path).Body()
+	resp, err := f.client.WithTimeout(maxProfilingTimeout).Get(op.ip, op.port, op.path)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
 }
 
 type tidbFetcher struct {
@@ -93,7 +101,11 @@ type tidbFetcher struct {
 }
 
 func (f *tidbFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithStatusAPIAddress(op.ip, op.port).WithStatusAPITimeout(maxProfilingTimeout).Get(op.path).Body()
+	resp, err := f.client.WithStatusAPIAddress(op.ip, op.port).WithStatusAPITimeout(maxProfilingTimeout).Get(op.path)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
 }
 
 type pdFetcher struct {
@@ -106,5 +118,9 @@ func (f *pdFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	f.client.WithBeforeRequest(func(req *http.Request) {
 		req.Header.Add("PD-Allow-follower-handle", "true")
 	})
-	return f.client.WithTimeout(maxProfilingTimeout).WithBaseURL(baseURL).Get(op.path).Body()
+	resp, err := f.client.WithTimeout(maxProfilingTimeout).WithBaseURL(baseURL).Get(op.path)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
 }

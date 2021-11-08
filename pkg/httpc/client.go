@@ -23,9 +23,10 @@ import (
 	"time"
 
 	"github.com/joomcode/errorx"
-	"github.com/pingcap/log"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+
+	"github.com/pingcap/log"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
@@ -34,9 +35,12 @@ const (
 	defaultTimeout = time.Second * 10
 )
 
+type BeforeRequestFunc func(req *http.Request)
+
 type Client struct {
 	http.Client
-	BeforeRequest func(req *http.Request)
+	beforeRequest BeforeRequestFunc
+	isRawBody     bool
 }
 
 func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
@@ -68,89 +72,64 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
-	c.BeforeRequest = callback
+func (c Client) WithBeforeRequest(callback BeforeRequestFunc) *Client {
+	c.beforeRequest = callback
 	return &c
 }
 
-type SendPending interface {
-	Response() (*Response, error)
-	Body() ([]byte, error)
+// WithRawBody means response body will not be read internally
+func (c Client) WithRawBody(r bool) *Client {
+	c.isRawBody = r
+	return &c
 }
 
-func (c *Client) Send(
+func (c *Client) SendRequest(
 	ctx context.Context,
 	uri string,
 	method string,
 	body io.Reader,
 	errType *errorx.Type,
-	errOriginComponent string) SendPending {
-	return &Sender{
-		client:             c,
-		ctx:                ctx,
-		uri:                uri,
-		method:             method,
-		body:               body,
-		errType:            errType,
-		errOriginComponent: errOriginComponent,
-	}
-}
-
-type Sender struct {
-	client             *Client
-	ctx                context.Context
-	uri                string
-	method             string
-	body               io.Reader
-	errType            *errorx.Type
-	errOriginComponent string
-}
-
-var _ SendPending = (*Sender)(nil)
-
-func (s *Sender) Response() (*Response, error) {
-	req, err := http.NewRequestWithContext(s.ctx, s.method, s.uri, s.body)
+	errOriginComponent string,
+) (*Response, error) {
+	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
-		e := s.errType.Wrap(err, "Failed to build %s API request", s.errOriginComponent)
-		log.Warn("SendRequest failed", zap.String("uri", s.uri), zap.Error(err))
+		e := errType.Wrap(err, "Failed to build %s API request", errOriginComponent)
+		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
 		return nil, e
 	}
 
-	if s.client.BeforeRequest != nil {
-		s.client.BeforeRequest(req)
+	if c.beforeRequest != nil {
+		c.beforeRequest(req)
 	}
 
-	resp, err := s.client.Do(req)
+	resp, err := c.Do(req)
 	if err != nil {
-		e := s.errType.Wrap(err, "Failed to send %s API request", s.errOriginComponent)
-		log.Warn("SendRequest failed", zap.String("uri", s.uri), zap.Error(err))
+		e := errType.Wrap(err, "Failed to send %s API request", errOriginComponent)
+		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
 		return nil, e
+	}
+
+	var data []byte
+	if !c.isRawBody {
+		data, err = ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+		if err != nil {
+			e := errType.Wrap(err, "Failed to read %s API response", errOriginComponent)
+			log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
+			return nil, e
+		}
 	}
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		defer resp.Body.Close()
-		data, _ := ioutil.ReadAll(resp.Body)
-		e := s.errType.New("Request failed with status code %d from %s API: %s", resp.StatusCode, s.errOriginComponent, string(data))
-		log.Warn("SendRequest failed", zap.String("uri", s.uri), zap.Error(err))
+		e := errType.New("Request failed with status code %d from %s API: %s", resp.StatusCode, errOriginComponent, string(data))
+		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
 		return nil, e
 	}
 
-	return &Response{resp}, nil
-}
-
-func (s *Sender) Body() ([]byte, error) {
-	res, err := s.Response()
-	if err != nil {
-		return nil, err
-	}
-	return res.Body()
+	return &Response{RawResponse: resp, Body: data}, nil
 }
 
 type Response struct {
-	*http.Response
-}
-
-func (r *Response) Body() ([]byte, error) {
-	defer r.Response.Body.Close()
-	return ioutil.ReadAll(r.Response.Body)
+	RawResponse *http.Response
+	Body        []byte
 }

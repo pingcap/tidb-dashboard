@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"os"
@@ -29,6 +28,7 @@ var (
 	ErrTiDBConnFailed          = ErrNS.NewType("tidb_conn_failed")
 	ErrTiDBAuthFailed          = ErrNS.NewType("tidb_auth_failed")
 	ErrTiDBClientRequestFailed = ErrNS.NewType("client_request_failed")
+	ErrInvalidTiDBAddr         = ErrNS.NewType("invalid_tidb_addr")
 )
 
 const (
@@ -52,6 +52,8 @@ type Client struct {
 	statusAPITimeout         time.Duration
 	sqlAPITLSKey             string // Non empty means use this key as MySQL TLS config
 	sqlAPIAddress            string // Empty means to use address provided by forwarder
+	isRawBody                bool
+	memberHub                *memberHub
 }
 
 func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *httpc.Client) *Client {
@@ -61,6 +63,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		_ = mysql.RegisterTLSConfig(sqlAPITLSKey, config.TiDBTLSConfig)
 	}
 
+	memberHub := newMemberHub(etcdClient)
 	client := &Client{
 		lifecycleCtx:             nil,
 		forwarder:                newForwarder(lc, etcdClient),
@@ -71,12 +74,17 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		statusAPITimeout:         defaultTiDBStatusAPITimeout,
 		sqlAPITLSKey:             sqlAPITLSKey,
 		sqlAPIAddress:            "",
+		isRawBody:                false,
+		memberHub:                memberHub,
 	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			client.lifecycleCtx = ctx
 			return nil
+		},
+		OnStop: func(c context.Context) error {
+			return memberHub.Close()
 		},
 	})
 
@@ -96,6 +104,12 @@ func (c Client) WithStatusAPIAddress(host string, statusPort int) *Client {
 func (c Client) WithEnforcedStatusAPIAddress(host string, statusPort int) *Client {
 	c.enforceStatusAPIAddresss = true
 	c.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
+	return &c
+}
+
+// WithRawBody means the body will not be read internally
+func (c Client) WithRawBody(r bool) *Client {
+	c.isRawBody = r
 	return &c
 }
 
@@ -161,63 +175,86 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func (c *Client) Get(relativeURI string) httpc.SendPending {
-	return &Sender{
-		client:      c,
-		relativeURI: relativeURI,
-		method:      http.MethodGet,
-		body:        nil,
-	}
-}
-
-type Sender struct {
-	client      *Client
-	relativeURI string
-	method      string
-	body        io.Reader
-}
-
-var _ httpc.SendPending = (*Sender)(nil)
-
-func (s *Sender) Response() (*httpc.Response, error) {
-	var err error
-
-	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
-	// the `tidbOverrideStatusEndpointEnvVar` and the `Client.statusAPIAddress` have the same override priority, if both exist and have not enforced `Client.statusAPIAddress` then an error is returned
-	if overrideEndpoint != "" && s.client.statusAPIAddress != "" && !s.client.enforceStatusAPIAddresss {
-		log.Warn(fmt.Sprintf("Reject to establish a target specified %s status connection since `%s` is set", distro.Data("tidb"), tidbOverrideStatusEndpointEnvVar))
-		return nil, ErrTiDBConnFailed.New("%s Dashboard is configured to only connect to specified %s host", distro.Data("tidb"), distro.Data("tidb"))
-	}
-
-	var addr string
-	switch {
-	case s.client.enforceStatusAPIAddresss:
-		addr = s.client.statusAPIAddress
-	case overrideEndpoint != "":
-		addr = overrideEndpoint
-	default:
-		addr = s.client.statusAPIAddress
-	}
-	if addr == "" {
-		if addr, err = s.client.forwarder.getEndpointAddr(s.client.forwarder.statusPort); err != nil {
+func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
+	if c.needCheckAddress() {
+		if err := c.checkStatusAPIAddressValidity(); err != nil {
 			return nil, err
 		}
 	}
-
-	uri := fmt.Sprintf("%s://%s%s", s.client.statusAPIHTTPScheme, addr, s.relativeURI)
-	res := s.client.statusAPIHTTPClient.
-		WithTimeout(s.client.statusAPITimeout).
-		Send(s.client.lifecycleCtx, uri, s.method, s.body, ErrTiDBClientRequestFailed, distro.Data("tidb"))
-	if s.client.forwarder.statusProxy.noAliveRemote.Load() {
-		return nil, ErrNoAliveTiDB.NewWithNoMessage()
-	}
-	return res.Response()
+	return c.unsafeGet(relativeURI)
 }
 
-func (s *Sender) Body() ([]byte, error) {
-	res, err := s.Response()
+// UnsafeGet requires user to ensure the validity of request address to avoid SSRF
+func (c *Client) unsafeGet(relativeURI string) (*httpc.Response, error) {
+	addr, err := c.resolveStatusAPIAddress()
 	if err != nil {
 		return nil, err
 	}
-	return res.Body()
+
+	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, relativeURI)
+	res, err := c.statusAPIHTTPClient.
+		WithTimeout(c.statusAPITimeout).
+		WithRawBody(c.isRawBody).
+		SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, distro.Data("tidb"))
+	if err != nil {
+		return nil, err
+	}
+
+	if c.forwarder.statusProxy.noAliveRemote.Load() {
+		return nil, ErrNoAliveTiDB.NewWithNoMessage()
+	}
+
+	return res, nil
+}
+
+func (c *Client) resolveStatusAPIAddress() (addr string, err error) {
+	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
+	// the `tidbOverrideStatusEndpointEnvVar` and the `Client.statusAPIAddress` have the same override priority, if both exist and have not enforced `Client.statusAPIAddress` then an error is returned
+	if overrideEndpoint != "" && c.statusAPIAddress != "" && !c.enforceStatusAPIAddresss {
+		log.Warn(fmt.Sprintf("Reject to establish a target specified %s status connection since `%s` is set", distro.Data("tidb"), tidbOverrideStatusEndpointEnvVar))
+		return "", ErrTiDBConnFailed.New("%s Dashboard is configured to only connect to specified %s host", distro.Data("tidb"), distro.Data("tidb"))
+	}
+
+	switch {
+	case c.enforceStatusAPIAddresss:
+		addr = c.statusAPIAddress
+	case overrideEndpoint != "":
+		addr = overrideEndpoint
+	default:
+		addr = c.statusAPIAddress
+	}
+	if addr == "" {
+		if addr, err = c.forwarder.getEndpointAddr(c.forwarder.statusPort); err != nil {
+			return "", err
+		}
+	}
+
+	return addr, err
+}
+
+// The request address needs to be checked, when it is specified through
+// `WithStatusAPIAddress` and `WithEnforcedStatusAPIAddress`
+func (c *Client) needCheckAddress() bool {
+	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
+	haveEnforceStatusAPIAddress := c.enforceStatusAPIAddresss && c.statusAPIAddress != ""
+	haveStatusAPIAddressButNoOverrideEndpoint := c.statusAPIAddress != "" && overrideEndpoint == ""
+
+	if haveEnforceStatusAPIAddress || haveStatusAPIAddressButNoOverrideEndpoint {
+		return true
+	}
+	return false
+}
+
+// Check the request address is an valid tidb status endpoint
+func (c *Client) checkStatusAPIAddressValidity() (err error) {
+	es, err := c.memberHub.GetStatusEndpoints(c.lifecycleCtx)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := es[c.statusAPIAddress]; !ok {
+		return ErrInvalidTiDBAddr.New("request address %s is invalid", c.statusAPIAddress)
+	}
+
+	return
 }

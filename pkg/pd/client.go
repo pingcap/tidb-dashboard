@@ -25,10 +25,12 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
 )
 
 var (
 	ErrPDClientRequestFailed = ErrNS.NewType("client_request_failed")
+	ErrInvalidPDAddr         = ErrNS.NewType("invalid_pd_addr")
 )
 
 const (
@@ -36,26 +38,37 @@ const (
 )
 
 type Client struct {
-	httpScheme   string
-	baseURL      string
-	httpClient   *httpc.Client
-	lifecycleCtx context.Context
-	timeout      time.Duration
+	httpScheme     string
+	configEndpoint string
+	baseURL        string
+	httpClient     *httpc.Client
+	lifecycleCtx   context.Context
+	timeout        time.Duration
+	beforeRequest  httpc.BeforeRequestFunc
+	isRawBody      bool
+	memberHub      *memberHub
 }
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
 	client := &Client{
-		httpClient:   httpClient,
-		httpScheme:   config.GetClusterHTTPScheme(),
-		baseURL:      config.PDEndPoint,
-		lifecycleCtx: nil,
-		timeout:      defaultPDTimeout,
+		httpClient:     httpClient,
+		httpScheme:     config.GetClusterHTTPScheme(),
+		configEndpoint: config.PDEndPoint,
+		baseURL:        "",
+		lifecycleCtx:   nil,
+		timeout:        defaultPDTimeout,
 	}
+
+	memberHub := newMemberHub(client)
+	client.memberHub = memberHub
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			client.lifecycleCtx = ctx
 			return nil
+		},
+		OnStop: func(c context.Context) error {
+			return memberHub.Close()
 		},
 	})
 
@@ -77,17 +90,82 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
-	c.httpClient.BeforeRequest = callback
+func (c Client) WithBeforeRequest(callback httpc.BeforeRequestFunc) *Client {
+	c.beforeRequest = callback
 	return &c
 }
 
-func (c *Client) Get(relativeURI string) httpc.SendPending {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, distro.Data("pd"))
+// WithRawBody means the body will not be read internally
+func (c Client) WithRawBody(r bool) *Client {
+	c.isRawBody = r
+	return &c
 }
 
-func (c *Client) Post(relativeURI string, requestBody io.Reader) httpc.SendPending {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodPost, requestBody, ErrPDClientRequestFailed, distro.Data("pd"))
+func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
+	if c.needCheckAddress() {
+		if err := c.checkAPIAddressValidity(); err != nil {
+			return nil, err
+		}
+	}
+	return c.unsafeGet(relativeURI)
+}
+
+func (c *Client) Post(relativeURI string, requestBody io.Reader) (*httpc.Response, error) {
+	if c.needCheckAddress() {
+		if err := c.checkAPIAddressValidity(); err != nil {
+			return nil, err
+		}
+	}
+	return c.unsafePost(relativeURI, requestBody)
+}
+
+// UnsafeGet requires user to ensure the validity of request address to avoid SSRF
+func (c *Client) unsafeGet(relativeURI string) (*httpc.Response, error) {
+	uri := fmt.Sprintf("%s%s", c.resolveAPIAddress(), relativeURI)
+	return c.httpClient.
+		WithTimeout(c.timeout).
+		WithBeforeRequest(c.beforeRequest).
+		WithRawBody(c.isRawBody).
+		SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, distro.Data("pd"))
+}
+
+// UnsafePost requires user to ensure the validity of request address to avoid SSRF
+func (c *Client) unsafePost(relativeURI string, requestBody io.Reader) (*httpc.Response, error) {
+	uri := fmt.Sprintf("%s%s", c.resolveAPIAddress(), relativeURI)
+	return c.httpClient.
+		WithTimeout(c.timeout).
+		WithBeforeRequest(c.beforeRequest).
+		WithRawBody(c.isRawBody).
+		SendRequest(c.lifecycleCtx, uri, http.MethodPost, requestBody, ErrPDClientRequestFailed, distro.Data("pd"))
+}
+
+func (c *Client) resolveAPIAddress() string {
+	var baseURL string
+	if c.baseURL != "" {
+		baseURL = c.baseURL
+	} else {
+		baseURL = c.configEndpoint
+	}
+	return fmt.Sprintf("%s/pd/api/v1", baseURL)
+}
+
+// According to `resolveAPIAddress`, the request will be
+// sent to config.PDEndpoint if the baseURL is not specified
+func (c *Client) needCheckAddress() bool {
+	return c.baseURL != ""
+}
+
+// Check the request address is an valid pd endpoint
+func (c *Client) checkAPIAddressValidity() (err error) {
+	es, err := c.memberHub.GetEndpoints()
+	if err != nil {
+		return err
+	}
+
+	ip, port, _ := host.ParseHostAndPortFromAddressURL(c.baseURL)
+	if _, ok := es[fmt.Sprintf("%s:%d", ip, port)]; !ok {
+		return ErrInvalidPDAddr.New("request address %s is invalid", c.baseURL)
+	}
+
+	return
 }

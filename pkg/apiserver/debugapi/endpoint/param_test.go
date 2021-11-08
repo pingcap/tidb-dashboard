@@ -15,6 +15,7 @@
 package endpoint
 
 import (
+	"io/ioutil"
 	"net/http"
 	"testing"
 
@@ -53,7 +54,7 @@ func (t *testParamSuite) Test_Resolve(c *C) {
 			},
 		},
 	})
-	req, err := client.Send(&RequestPayload{
+	resp, err := client.Send(&RequestPayload{
 		testAPI.ID,
 		"127.0.0.1",
 		10080,
@@ -65,7 +66,8 @@ func (t *testParamSuite) Test_Resolve(c *C) {
 	if err != nil {
 		c.Error(err)
 	}
-	data, _ := req.Body()
+	data, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test/test", "queryParam=test"))
 }

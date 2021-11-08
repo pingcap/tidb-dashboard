@@ -51,12 +51,12 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeabl
 
 	// Check dashboard privileges
 	// 1. Get TiDB config
-	resData, err := tidbClient.Get("/config").Body()
+	resp, err := tidbClient.Get("/config")
 	if err != nil {
 		return false, err
 	}
 	var config tidbSecurityConfig
-	err = json.Unmarshal(resData, &config)
+	err = json.Unmarshal(resp.Body, &config)
 	if err != nil {
 		return false, err
 	}

@@ -66,7 +66,7 @@ type Service struct {
 	ngMonitoringAddrCache atomic.Value
 }
 
-var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams) *Service {
+func newService(lc fx.Lifecycle, p ServiceParams) *Service {
 	s := &Service{params: p}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -74,12 +74,11 @@ var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams) *Service {
 			return nil
 		},
 	})
-
 	return s
-})
+}
 
 // Register register the handlers to the service.
-func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/continuous_profiling")
 
 	endpoint.Use(utils.MWForbidByFeatureSupport(IsFeatureSupport(s.params.Config)))

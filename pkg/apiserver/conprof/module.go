@@ -15,4 +15,7 @@ package conprof
 
 import "go.uber.org/fx"
 
-var Module = fx.Options(newService)
+var Module = fx.Options(
+	fx.Provide(newService),
+	fx.Invoke(registerRouter),
+)

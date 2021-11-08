@@ -19,6 +19,7 @@ package httpclient
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/go-resty/resty/v2"
@@ -69,7 +70,7 @@ func New(config Config) *Client {
 	c.inner.SetRedirectPolicy(defaultRedirectPolicy)
 	c.inner.OnAfterResponse(c.handleAfterResponseHook)
 	c.inner.OnError(c.handleErrorHook)
-	c.inner.HostURL = config.BaseURL
+	c.inner.SetBaseURL(config.BaseURL)
 	c.inner.SetTLSClientConfig(config.TLS)
 	return c
 }
@@ -93,7 +94,8 @@ func (c *Client) handleErrorHook(req *resty.Request, err error) {
 		zap.String("kindTag", c.kindTag),
 		zap.String("url", req.URL),
 	}
-	if respErr, ok := err.(*resty.ResponseError); ok && respErr.Response != nil && respErr.Response.RawResponse != nil {
+	var respErr *resty.ResponseError
+	if errors.As(err, &respErr) && respErr.Response != nil && respErr.Response.RawResponse != nil {
 		fields = append(fields,
 			zap.String("responseStatus", respErr.Response.Status()),
 			zap.String("responseBody", respErr.Response.String()),
@@ -101,7 +103,7 @@ func (c *Client) handleErrorHook(req *resty.Request, err error) {
 		err = respErr.Unwrap()
 	}
 	fields = append(fields, zap.Error(err))
-	if _, hasVerboseError := err.(fmt.Formatter); !hasVerboseError {
+	if _, hasVerboseError := err.(fmt.Formatter); !hasVerboseError { //nolint:errorlint
 		fields = append(fields, zap.Stack("stack"))
 	}
 	log.Warn("Request failed", fields...)

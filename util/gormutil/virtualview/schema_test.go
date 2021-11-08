@@ -60,6 +60,7 @@ func TestDecodeFieldAssumptionJSON(t *testing.T) {
 
 func TestDecodeFieldAssumptionGORM(t *testing.T) {
 	// For GORM, when it is not specified in the tag, default naming strategy will be used:
+	//nolint:govet
 	type TestModel struct {
 		GORMOmit    string
 		QueryValue  string `gorm:"column:qv"`
@@ -81,6 +82,7 @@ func TestDecodeFieldAssumptionGORM(t *testing.T) {
 	db.MustMeetMockExpectation()
 }
 
+//nolint:govet
 type SampleModel struct {
 	Digest         string `gorm:"column:MyDigest" json:"digest"`
 	QueryValue     string

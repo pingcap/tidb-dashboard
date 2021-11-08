@@ -23,7 +23,7 @@ type StatusClient struct {
 	*httpclient.Client
 }
 
-// Returns error when config is invalid.
+// NewStatusClient returns error when config is invalid.
 func NewStatusClient(config httpclient.APIClientConfig) (*StatusClient, error) {
 	c2, err := config.IntoConfig(distro.R().TiFlash)
 	if err != nil {

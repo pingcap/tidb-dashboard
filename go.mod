@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/ReneKroon/ttlcache/v2 v2.8.1
+	github.com/ReneKroon/ttlcache/v2 v2.3.0
 	github.com/VividCortex/mysqlerr v1.0.0
 	github.com/Xeoncross/go-aesctr-with-hmac v0.0.0-20200623134604-12b17a7ff502
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751

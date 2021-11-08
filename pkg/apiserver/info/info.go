@@ -62,8 +62,7 @@ type InfoResponse struct { //nolint
 	Version            *version.Info `json:"version"`
 	EnableTelemetry    bool          `json:"enable_telemetry"`
 	EnableExperimental bool          `json:"enable_experimental"`
-	EnableConprof      bool          `json:"enable_conprof"`
-	EnableNonRootLogin bool          `json:"enable_non_root_login"`
+	SupportedFeatures  []string      `json:"supported_features"`
 }
 
 // @ID infoGet
@@ -73,12 +72,19 @@ type InfoResponse struct { //nolint
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
+	supportedFeatures := []string{}
+	if conprof.IsFeatureSupport(s.params.Config) {
+		supportedFeatures = append(supportedFeatures, "conprof")
+	}
+	if nonrootlogin.IsFeatureSupport(s.params.Config) {
+		supportedFeatures = append(supportedFeatures, "nonRootLogin")
+	}
+
 	resp := InfoResponse{
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
-		EnableConprof:      conprof.IsFeatureSupport(s.params.Config),
-		EnableNonRootLogin: nonrootlogin.IsFeatureSupport(s.params.Config),
+		SupportedFeatures:  supportedFeatures,
 	}
 	c.JSON(http.StatusOK, resp)
 }

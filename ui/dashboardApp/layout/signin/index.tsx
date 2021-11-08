@@ -33,7 +33,7 @@ import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
 
 import styles from './index.module.less'
 import { ReactComponent as Logo } from './logo.svg'
-import { store } from '@lib/utils/store'
+import { useIsFeatureSupport } from '@lib/utils/store'
 
 enum DisplayFormType {
   uninitialized,
@@ -213,8 +213,7 @@ function useSignInSubmit(
 const LAST_LOGIN_USERNAME_KEY = 'dashboard_last_login_username'
 
 function TiDBSignInForm({ successRoute, onClickAlternative }) {
-  const appInfo = store.useState((s) => s.appInfo)
-  const enableNonRootLogin = appInfo?.enable_non_root_login ?? false
+  const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -264,12 +263,12 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
             name="username"
             label={t('signin.form.username')}
             rules={[{ required: true }]}
-            tooltip={!enableNonRootLogin && t('signin.form.username_tooltip')}
+            tooltip={!supportNonRootLogin && t('signin.form.username_tooltip')}
           >
             <Input
               onInput={clearErrorMsg}
               prefix={<UserOutlined />}
-              disabled={!enableNonRootLogin}
+              disabled={!supportNonRootLogin}
             />
           </Form.Item>
           <Form.Item

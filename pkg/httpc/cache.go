@@ -15,6 +15,7 @@
 package httpc
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 
@@ -33,20 +34,31 @@ func NewCache() *Cache {
 	return &Cache{Cache: cache}
 }
 
-// MakeFuncWithTTL returns a function that will cache the result of input func
+// MakeFuncWithTTL returns a new function that will cache the result of input func.
+// Only accept wrapped functions of type `func(args ...interface{}) (result interface{}, err error)`
 func (c *Cache) MakeFuncWithTTL(key string, f interface{}, ttl time.Duration) interface{} {
 	fn := reflect.ValueOf(f)
+	fnType := reflect.TypeOf(f)
+
+	// Type guard
+	// Only accept wrapped functions of type `func(args ...interface{}) (result interface{}, err error)`
+	if fnType.NumOut() != 2 || !fnType.Out(1).Implements(reflect.TypeOf((*error)(nil)).Elem()) {
+		panic(fmt.Sprintf("MakeFuncWithTTL requires a function that second return arg is error type, type of func now: %v", fnType))
+	}
 
 	cacheWrap := func(in []reflect.Value) []reflect.Value {
 		cacheData, _ := c.Get(key)
 		if cacheData != nil {
-			return []reflect.Value{reflect.ValueOf(cacheData), reflect.ValueOf(nil)}
+			return []reflect.Value{
+				reflect.ValueOf(cacheData),
+				reflect.Zero(reflect.TypeOf((*error)(nil)).Elem()),
+			}
 		}
 
-		returns := fn.Call([]reflect.Value{})
+		returns := fn.Call(in)
 		returnData := returns[0]
 		returnErr := returns[1]
-		if returnErr.IsNil() {
+		if !returnErr.IsNil() {
 			return returns
 		}
 

@@ -64,7 +64,7 @@ statement:
     internal_query_tooltip: 开启后 {{distro.tidb}} 内部执行的 SQL 语句信息也将被收集。
     actions:
       save: 保存
-      close: 关闭
+      close: 确认
       cancel: 取消
   fields:
     related_schemas: 数据库

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { ExperimentOutlined, BugOutlined } from '@ant-design/icons'
+import { ExperimentOutlined, BugOutlined, AimOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from 'ahooks'
@@ -9,7 +9,7 @@ import Banner from './Banner'
 import styles from './index.module.less'
 import { store } from '@lib/utils/store'
 
-function useAppMenuItem(registry, appId, title?: string) {
+function useAppMenuItem(registry, appId, title?: string, hideIcon?: boolean) {
   const { t } = useTranslation()
   const app = registry.apps[appId]
   if (!app) {
@@ -18,7 +18,7 @@ function useAppMenuItem(registry, appId, title?: string) {
   return (
     <Menu.Item key={appId}>
       <Link to={app.indexRoute} id={appId}>
-        {app.icon ? <app.icon /> : null}
+        {!hideIcon && app.icon ? <app.icon /> : null}
         <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
       </Link>
     </Menu.Item>
@@ -51,10 +51,30 @@ function Sider({
   const whoAmI = store.useState((s) => s.whoAmI)
   const appInfo = store.useState((s) => s.appInfo)
 
+  const profilingSubMenuItems = [
+    useAppMenuItem(registry, 'instance_profiling', '', true),
+    useAppMenuItem(registry, 'continuous_profiling', '', true),
+  ]
+
+  const profilingSubMenu = (
+    <Menu.SubMenu
+      key="profiling"
+      title={
+        <span>
+          <AimOutlined />
+          <span>{t('profiling.nav_title')}</span>
+        </span>
+      }
+    >
+      {profilingSubMenuItems}
+    </Menu.SubMenu>
+  )
+
   const debugSubMenuItems = [
-    useAppMenuItem(registry, 'instance_profiling'),
+    profilingSubMenu,
     useAppMenuItem(registry, 'debug_api'),
   ]
+
   const debugSubMenu = (
     <Menu.SubMenu
       key="debug"
@@ -120,7 +140,7 @@ function Sider({
     if (defaultCollapsed) {
       return []
     } else {
-      return ['debug', 'experimental']
+      return ['debug', 'experimental', 'profiling']
     }
   }, [defaultCollapsed])
 
@@ -144,7 +164,7 @@ function Sider({
         />
         <Menu
           subMenuOpenDelay={animationDelay}
-          subMenuCloseDelay={animationDelay}
+          subMenuCloseDelay={animationDelay + 0.1}
           mode="inline"
           selectedKeys={[activeAppId]}
           style={{ flexGrow: 1 }}
@@ -153,8 +173,8 @@ function Sider({
           {menuItems}
         </Menu>
         <Menu
-          subMenuOpenDelay={animationDelay + 200}
-          subMenuCloseDelay={animationDelay + 200}
+          subMenuOpenDelay={animationDelay}
+          subMenuCloseDelay={animationDelay}
           mode="inline"
           selectedKeys={[activeAppId]}
         >

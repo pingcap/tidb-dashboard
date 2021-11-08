@@ -150,6 +150,7 @@ function AlternativeAuthForm({
 function useSignInSubmit(
   successRoute,
   fnLoginForm: (form) => UserAuthenticateForm,
+  onSuccess: (form) => void,
   onFailure: () => void
 ) {
   const { t } = useTranslation()
@@ -170,6 +171,7 @@ function useSignInSubmit(
       auth.setAuthToken(r.data.token)
       message.success(t('signin.message.success'))
       singleSpa.navigateToUrl(successRoute)
+      onSuccess(form)
     } catch (e) {
       if (!e.handled) {
         const errMsg = t('signin.message.error', { msg: e.message })
@@ -200,6 +202,8 @@ function useSignInSubmit(
   return { handleSubmit, loading, errorMsg: error, clearErrorMsg }
 }
 
+const LAST_LOGIN_USERNAME_KEY = 'dashboard_last_login_username'
+
 function TiDBSignInForm({
   successRoute,
   onClickAlternative,
@@ -217,6 +221,9 @@ function TiDBSignInForm({
       password: form.password,
       type: AuthTypes.SQLUser,
     }),
+    (form) => {
+      localStorage.setItem(LAST_LOGIN_USERNAME_KEY, form.username)
+    },
     () => {
       refForm.setFieldsValue({ password: '' })
       setTimeout(() => {
@@ -229,6 +236,10 @@ function TiDBSignInForm({
     refPassword?.current?.focus()
   })
 
+  const lastLoginUsername = useMemo(() => {
+    return localStorage.getItem(LAST_LOGIN_USERNAME_KEY) || 'root'
+  }, [])
+
   return (
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
@@ -236,7 +247,7 @@ function TiDBSignInForm({
           name="tidb_signin"
           onFinish={handleSubmit}
           layout="vertical"
-          initialValues={{ username: 'root' }}
+          initialValues={{ username: lastLoginUsername }}
           form={refForm}
         >
           <Logo className={styles.logo} />
@@ -306,6 +317,7 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
       password: form.code,
       type: AuthTypes.SharingCode,
     }),
+    () => {},
     () => {
       refForm.setFieldsValue({ code: '' })
       setTimeout(() => {
@@ -405,9 +417,10 @@ function SSOSignInForm({ successRoute, onClickAlternative }) {
 }
 
 function App({ registry }) {
-  const successRoute = useMemo(() => `#${registry.getDefaultRouter()}`, [
-    registry,
-  ])
+  const successRoute = useMemo(
+    () => `#${registry.getDefaultRouter()}`,
+    [registry]
+  )
   const [alternativeVisible, setAlternativeVisible] = useState(false)
   const [formType, setFormType] = useState(DisplayFormType.uninitialized)
   const [supportedAuthTypes, setSupportedAuthTypes] = useState<Array<number>>([

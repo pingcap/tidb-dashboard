@@ -49,7 +49,8 @@ function ScaledBytesWithTooltip({
   )
 }
 
-const ValueWithTooltip = (InternalValueWithTooltip as unknown) as IValueWithTooltip
+const ValueWithTooltip =
+  InternalValueWithTooltip as unknown as IValueWithTooltip
 
 ValueWithTooltip.Short = ShortValueWithTooltip
 ValueWithTooltip.ScaledBytes = ScaledBytesWithTooltip

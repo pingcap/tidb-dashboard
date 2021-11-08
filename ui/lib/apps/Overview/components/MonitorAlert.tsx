@@ -12,17 +12,11 @@ export default function MonitorAlert() {
   const { t } = useTranslation()
   const [alertCounter, setAlertCounter] = useState(0)
 
-  const {
-    data: amData,
-    isLoading: amIsLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getAlertManagerTopology(reqConfig)
+  const { data: amData, isLoading: amIsLoading } = useClientRequest(
+    (reqConfig) => client.getInstance().getAlertManagerTopology(reqConfig)
   )
-  const {
-    data: grafanaData,
-    isLoading: grafanaIsLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getGrafanaTopology(reqConfig)
+  const { data: grafanaData, isLoading: grafanaIsLoading } = useClientRequest(
+    (reqConfig) => client.getInstance().getGrafanaTopology(reqConfig)
   )
 
   useEffect(() => {
@@ -54,7 +48,11 @@ export default function MonitorAlert() {
             </Typography.Text>
           )}
           {grafanaData && (
-            <a href={`http://${grafanaData.ip}:${grafanaData.port}`}>
+            <a
+              href={`http://${grafanaData.ip}:${grafanaData.port}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Space>
                 {t('overview.monitor_alert.view_monitor')}
                 <RightOutlined />
@@ -72,7 +70,11 @@ export default function MonitorAlert() {
             </Typography.Text>
           )}
           {amData && (
-            <a href={`http://${amData.ip}:${amData.port}`}>
+            <a
+              href={`http://${amData.ip}:${amData.port}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Space>
                 <Typography.Text type={alertCounter > 0 ? 'danger' : undefined}>
                   {alertCounter === 0

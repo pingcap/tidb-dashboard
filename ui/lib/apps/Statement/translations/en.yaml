@@ -64,7 +64,7 @@ statement:
     internal_query_tooltip: After enabled, {{distro.tidb}} internal queries will be collected as well.
     actions:
       save: Save
-      close: Close
+      close: Disable
       cancel: Cancel
   fields:
     table_names: Table Names

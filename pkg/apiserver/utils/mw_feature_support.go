@@ -11,24 +11,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package nonrootlogin
+package utils
 
 import (
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-var (
-	supportedTiDBVersions = []string{">= 5.3.0"}
-	featureEnabled        *bool
-)
+func MWForbidByFeatureSupport(enabled bool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !enabled {
+			_ = c.Error(ErrFeatureNotSupported.New("The feature is not supported"))
+			c.Status(http.StatusForbidden)
+			c.Abort()
+			return
+		}
 
-func IsFeatureEnable(config *config.Config) (enabled bool) {
-	if featureEnabled != nil {
-		return *featureEnabled
+		c.Next()
 	}
-
-	enabled = utils.IsVersionSupport(config.FeatureVersion, supportedTiDBVersions)
-	featureEnabled = &enabled
-	return
 }

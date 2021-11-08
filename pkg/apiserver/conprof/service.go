@@ -82,7 +82,7 @@ var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams) *Service {
 func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/continuous_profiling")
 
-	endpoint.Use(utils.MWForbidByFeatureEnable(IsFeatureEnable(s.params.Config)))
+	endpoint.Use(utils.MWForbidByFeatureSupport(IsFeatureSupport(s.params.Config)))
 	{
 		endpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
 		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)

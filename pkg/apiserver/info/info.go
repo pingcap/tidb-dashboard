@@ -77,8 +77,8 @@ func (s *Service) infoHandler(c *gin.Context) {
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
-		EnableConprof:      conprof.IsFeatureEnable(s.params.Config),
-		EnableNonRootLogin: nonrootlogin.IsFeatureEnable(s.params.Config),
+		EnableConprof:      conprof.IsFeatureSupport(s.params.Config),
+		EnableNonRootLogin: nonrootlogin.IsFeatureSupport(s.params.Config),
 	}
 	c.JSON(http.StatusOK, resp)
 }

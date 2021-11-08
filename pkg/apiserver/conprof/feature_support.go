@@ -20,15 +20,15 @@ import (
 
 var (
 	supportedTiDBVersions = []string{">= 5.3.0"}
-	featureEnabled        *bool
+	featureSupported      *bool
 )
 
-func IsFeatureEnable(config *config.Config) (enabled bool) {
-	if featureEnabled != nil {
-		return *featureEnabled
+func IsFeatureSupport(config *config.Config) (supported bool) {
+	if featureSupported != nil {
+		return *featureSupported
 	}
 
-	enabled = utils.IsVersionSupport(config.FeatureVersion, supportedTiDBVersions)
-	featureEnabled = &enabled
+	supported = utils.IsVersionSupport(config.FeatureVersion, supportedTiDBVersions)
+	featureSupported = &supported
 	return
 }

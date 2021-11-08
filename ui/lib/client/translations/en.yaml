@@ -14,11 +14,11 @@ error:
       export_no_data: No statements can be exported
     continuous_profiling:
       ng_monitoring_not_deploy: |
-        To use this feature, please upgrade TiUP Cluster to the version above 1.7.0, then reload the monitor node by TiUP Cluster.
-        To learn more or the cluster is deployed by {{distro.tidb}} Operator, please search the doc "Continuous Profiling" in the  {{distro.tidb}}  docs to get more information.
+        To use or learn more about "Continuous Profiling" feature, please search for "Continuous Profiling" in the {{distro.tidb}} official docs for more information.
+        If it doesn't resove the issue, please contact the product's technical support.
       ng_monitoring_not_start: |
-        The storage component of this feature is offline, please try to reload the monitor node by TiUP Cluster. Contact with the support if it still doesn't work.
-    feature_not_enabled: This feature is not enabled in this version.
+        To use or learn more about "Continuous Profiling" feature, please search for "Continuous Profiling" in the {{distro.tidb}} official docs for more information.
+        If it doesn't resove the issue, please contact the product's technical support.
     other: Other error
   tidb:
     no_alive_tidb: No alive {{distro.tidb}} instance

@@ -50,11 +50,14 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
   const { t } = useTranslation()
   const isWriteable = useIsWriteable()
 
-  const { data: initialConfig, isLoading: loading, error } = useClientRequest(
-    () =>
-      client.getInstance().continuousProfilingConfigGet({
-        errorStrategy: ErrorStrategy.Custom,
-      })
+  const {
+    data: initialConfig,
+    isLoading: loading,
+    error,
+  } = useClientRequest(() =>
+    client.getInstance().continuousProfilingConfigGet({
+      errorStrategy: ErrorStrategy.Custom,
+    })
   )
 
   const { data: estimateSize } = useClientRequest(() =>

@@ -41,10 +41,10 @@ func Test_MakeFuncWithTTL(t *testing.T) {
 	result3, _ := testFn()
 	require.Equal(t, "test2", result3)
 
+	// test wrapped function with arg
 	testFn2 := cache.MakeFuncWithTTL("test2", func(x string) (string, error) {
 		return x, nil
 	}, 1*time.Second).(func(t string) (string, error))
-
 	result21, _ := testFn2("1")
 	require.Equal(t, "1", result21)
 	result22, _ := testFn2("2")
@@ -69,12 +69,12 @@ func Test_MakeFuncWithTTL(t *testing.T) {
 		}, 1*time.Second).(func() (string, string))
 	})
 
+	// test return error
 	testFn3 := cache.MakeFuncWithTTL("test_error", func(isError bool) (string, error) {
 		if isError {
 			return "", fmt.Errorf("test error")
-		} else {
-			return "test", nil
 		}
+		return "test", nil
 	}, 1*time.Second).(func(isError bool) (string, error))
 	_, err := testFn3(true)
 	require.Error(t, err)

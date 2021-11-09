@@ -25,18 +25,26 @@ import (
 // TaskState is used to represent the task/task group state.
 type TaskState int
 
+type GroupTaskState int
+
 // Built-in task state
 // State change flow:
 // For single task: TaskStateRunning --> TaskStateFailed (fail) | TaskStateFinish (success)
 // For group task:
 // - Old: TaskStateRunning --> TaskStateFinish
-// - New: TaskStateRunning --> TaskStateFailed (all failed) | TaskStatePartialFailed (partial failed) | TaskStateAllSuccess (all success)
+// - New: GroupTaskStateRunning --> GroupTaskStateAllFailed | GropuTaskStatePartialFailed | GroupTaskStateAllSuccess (all success)
 const (
-	TaskStateFailed        TaskState = iota // 0
-	TaskStateRunning                        // 1
-	TaskStateFinish                         // 2, for single task, it means success; for group task, it only means all child tasks are done, no matter they are success or failed, it will be refined by TaskStateFailed|TaskStatePartialFailed|TaskStateAllSuccess
-	TaskStatePartialFailed                  // 3, only for group task
-	TaskStateAllSuccess                     // 4, only for group task
+	TaskStateFailed  TaskState = iota // 0
+	TaskStateRunning                  // 1
+	TaskStateFinish                   // 2, for single task, it means success; for group task, it only means all child tasks are done, no matter they are success or failed, it will be refined by GroupTaskState
+)
+
+const (
+	GroupTaskStateUnknown       GroupTaskState = iota // 0
+	GroupTaskStateRunning                             // 1
+	GroupTaskStateAllFailed                           // 2
+	GropuTaskStatePartialFailed                       // 3
+	GroupTaskStateAllSuccess                          // 4
 )
 
 type TaskModel struct {
@@ -55,7 +63,8 @@ func (TaskModel) TableName() string {
 
 type TaskGroupModel struct {
 	ID                  uint                          `json:"id" gorm:"primary_key"`
-	State               TaskState                     `json:"state" gorm:"index"`
+	State               TaskState                     `json:"state" gorm:"index"` // legacy state, works before version 5.3.0
+	NewState            GroupTaskState                `json:"new_state" gorm:"index"`
 	ProfileDurationSecs uint                          `json:"profile_duration_secs"`
 	TargetStats         model.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
 	StartedAt           int64                         `json:"started_at"`
@@ -124,6 +133,7 @@ func NewTaskGroup(db *dbstore.DB, profileDurationSecs uint, stats model.RequestT
 	return &TaskGroup{
 		TaskGroupModel: &TaskGroupModel{
 			State:               TaskStateRunning,
+			NewState:            GroupTaskStateRunning,
 			ProfileDurationSecs: profileDurationSecs,
 			TargetStats:         stats,
 			StartedAt:           time.Now().Unix(),

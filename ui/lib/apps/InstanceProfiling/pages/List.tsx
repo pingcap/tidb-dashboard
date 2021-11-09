@@ -119,15 +119,15 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         onRender: (rec) => {
-          if (rec.state === 0) {
-            // all failed
+          if (rec.new_state === 0) {
+            // unknown
             return (
               <Badge
-                status="error"
-                text={t('instance_profiling.list.table.status.all_failed')}
+                status="default"
+                text={t('instance_profiling.list.table.status.unknown')}
               />
             )
-          } else if (rec.state === 1) {
+          } else if (rec.new_state === 1) {
             // running
             return (
               <Badge
@@ -135,15 +135,15 @@ export default function Page() {
                 text={t('instance_profiling.list.table.status.running')}
               />
             )
-          } else if (rec.state === 2) {
-            // legacy all finish, no matter success or fail
+          } else if (rec.new_state === 2) {
+            // all failed
             return (
               <Badge
-                status="default"
-                text={t('instance_profiling.list.table.status.finished')}
+                status="error"
+                text={t('instance_profiling.list.table.status.all_failed')}
               />
             )
-          } else if (rec.state === 3) {
+          } else if (rec.new_state === 3) {
             // partially failed
             return (
               <Badge
@@ -151,8 +151,8 @@ export default function Page() {
                 text={t('instance_profiling.list.table.status.partial_failed')}
               />
             )
-          } else {
-            // new all success
+          } else if (rec.new_state === 4) {
+            // all success
             return (
               <Badge
                 status="success"

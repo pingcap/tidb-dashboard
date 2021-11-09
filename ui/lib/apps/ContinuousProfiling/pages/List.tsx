@@ -86,7 +86,7 @@ export default function Page() {
                 text={t('continuous_profiling.list.table.status.all_success')}
               />
             )
-          } else {
+          } else if (rec.state === 'partial failed') {
             // partially failed
             return (
               <Badge

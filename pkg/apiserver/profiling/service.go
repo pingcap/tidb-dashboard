@@ -149,16 +149,17 @@ func (s *Service) serviceLoop(ctx context.Context) {
 	}
 }
 
-// Migrate the legacy state TaskStateFinish for group task to TaskStateFailed|TaskStatePartialFailed|TaskStateAllSuccess
+// migrate the legacy state (Running|Finish) for group task to new_state (Running|AllFailed|PartialFailed|AllSuccess),
+// also revert the changes for legacy state in 5.3.0 dev stage (see PR #1027).
 func (s *Service) migrateLegacyState(ctx context.Context) {
 	var lastMinID uint
 	var groupTasks []TaskGroupModel
 	var tasks []TaskModel
 	for {
-		// Step 1: find out group tasks whose state is TaskStateFinish
-		query := s.params.LocalStore.Where("state = ?", TaskStateFinish).Order("id DESC").Limit(100)
+		// step 1: find out group tasks which are not migrated yet
+		query := s.params.LocalStore.Where("new_state IS NULL or new_state = ?", GroupTaskStateUnknown).Order("id DESC").Limit(100)
 		if lastMinID > 0 {
-			// Add this where condition to avoid the loop can't escape when failed to modify the TaskStateFinish to other states for some group tasks
+			// add this where condition to avoid the loop can't escape if some group tasks are migrated fail
 			query = query.Where("id < ?", lastMinID)
 		}
 		err := query.Find(&groupTasks).Error
@@ -168,12 +169,20 @@ func (s *Service) migrateLegacyState(ctx context.Context) {
 		lastMinID = groupTasks[len(groupTasks)-1].ID
 
 		for _, groupTask := range groupTasks {
-			// Step 2: find out all child tasks of the group task
+			// if legacy state is Running, copy the state to new_state
+			if groupTask.State == TaskStateRunning {
+				groupTask.NewState = GroupTaskStateRunning
+				s.params.LocalStore.Save(groupTask)
+				continue
+			}
+
+			// Step 2: find out all child tasks of the group task whose state is not Running
 			err = s.params.LocalStore.Where("task_group_id = ?", groupTask.ID).Find(&tasks).Error
 			if err != nil {
 				continue
 			}
 			if len(tasks) == 0 {
+				// Delete it if it has no child tasks
 				s.params.LocalStore.Delete(groupTask)
 				continue
 			}
@@ -186,12 +195,14 @@ func (s *Service) migrateLegacyState(ctx context.Context) {
 				}
 			}
 			if successTasks == 0 {
-				groupTask.State = TaskStateFailed
+				groupTask.NewState = GroupTaskStateAllFailed
 			} else if successTasks < len(tasks) {
-				groupTask.State = TaskStatePartialFailed
+				groupTask.NewState = GropuTaskStatePartialFailed
 			} else {
-				groupTask.State = TaskStateAllSuccess
+				groupTask.NewState = GroupTaskStateAllSuccess
 			}
+			// revert the legacy state back to TaskStateFinish if it has changed in 5.3.0 dev stage
+			groupTask.State = TaskStateFinish
 			s.params.LocalStore.Save(groupTask)
 		}
 	}
@@ -253,12 +264,14 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 			}
 		}
 		if successTasks == 0 {
-			taskGroup.State = TaskStateFailed
+			taskGroup.NewState = GroupTaskStateAllFailed
 		} else if successTasks < len(tasks) {
-			taskGroup.State = TaskStatePartialFailed
+			taskGroup.NewState = GropuTaskStatePartialFailed
 		} else {
-			taskGroup.State = TaskStateAllSuccess
+			taskGroup.NewState = GroupTaskStateAllSuccess
 		}
+		// update legacy state to make it compatible with lower version
+		taskGroup.State = TaskStateFinish
 		s.params.LocalStore.Save(taskGroup.TaskGroupModel)
 	}()
 

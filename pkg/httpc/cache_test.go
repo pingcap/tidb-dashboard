@@ -80,7 +80,11 @@ func Test_MakeFuncWithTTL(t *testing.T) {
 	require.Error(t, err)
 	result31, _ := testFn3(false)
 	require.Equal(t, "test", result31)
+
+	time.Sleep(1 * time.Second)
 	_, _ = testFn3(true)
 	result32, _ := testFn3(false)
 	require.Equal(t, "test", result32)
+	result33, _ := testFn3(true)
+	require.Equal(t, "test", result33)
 }

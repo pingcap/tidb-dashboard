@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/joomcode/errorx"
 	"github.com/stretchr/testify/require"
@@ -90,6 +91,41 @@ func Test_unsafePost(t *testing.T) {
 	pc2 := pc.WithBaseURL(ts2.URL)
 	data2, _ := pc2.unsafePost("/aa", nil)
 	require.Equal(t, string(data2.Body), "2")
+}
+
+func Test_getEndpoints(t *testing.T) {
+	ts1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write(infoMembersBytes)
+	}))
+	ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		infoMembers2 := InfoMembers{
+			Members: []InfoMember{
+				{ClientUrls: []string{"http://127.0.0.1:2401"}},
+			},
+		}
+		infoMembersBytes2, _ := json.Marshal(infoMembers2)
+		_, _ = w.Write(infoMembersBytes2)
+	}))
+	defer ts1.Close()
+	defer ts2.Close()
+
+	ts1Result := map[string]struct{}{
+		"127.0.0.1:2399": {},
+		"127.0.0.1:2400": {},
+	}
+
+	pc := newTestPDClient(t, ts1.URL)
+	es, _ := pc.getEndpoints()
+	require.EqualValues(t, ts1Result, es)
+
+	// cache
+	pc2 := pc.WithBaseURL(ts2.URL)
+	es1, _ := pc2.getEndpoints()
+	require.EqualValues(t, ts1Result, es1)
+	time.Sleep(10 * time.Second)
+	// always use `config.PDEndPoint` to send `fetchEndpoints` requests with or without cache
+	es2, _ := pc2.getEndpoints()
+	require.EqualValues(t, ts1Result, es2)
 }
 
 func Test_resolveAPIAddress(t *testing.T) {

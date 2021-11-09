@@ -176,7 +176,7 @@ func (s *Service) migrateLegacyState(ctx context.Context) {
 				continue
 			}
 
-			// Step 2: find out all child tasks of the group task whose state is not Running
+			// step 2: find out all child tasks of the group task whose state is not Running
 			err = s.params.LocalStore.Where("task_group_id = ?", groupTask.ID).Find(&tasks).Error
 			if err != nil {
 				continue
@@ -187,7 +187,7 @@ func (s *Service) migrateLegacyState(ctx context.Context) {
 				continue
 			}
 
-			// Step 3: fix the group task state
+			// step 3: fix the group task state
 			successTasks := 0
 			for _, t := range tasks {
 				if t.State == TaskStateFinish {
@@ -202,6 +202,7 @@ func (s *Service) migrateLegacyState(ctx context.Context) {
 				groupTask.NewState = GroupTaskStateAllSuccess
 			}
 			// revert the legacy state back to TaskStateFinish if it has changed in 5.3.0 dev stage
+			// for example it changes to TaskPartialFinish
 			groupTask.State = TaskStateFinish
 			s.params.LocalStore.Save(groupTask)
 		}
@@ -270,7 +271,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 		} else {
 			taskGroup.NewState = GroupTaskStateAllSuccess
 		}
-		// update legacy state to make it compatible with lower version
+		// keep legacy state to make it compatible with lower version if it downgrades back to lower version
 		taskGroup.State = TaskStateFinish
 		s.params.LocalStore.Save(taskGroup.TaskGroupModel)
 	}()

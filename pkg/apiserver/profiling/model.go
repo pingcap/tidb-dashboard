@@ -31,8 +31,8 @@ type GroupTaskState int
 // State change flow:
 // For single task: TaskStateRunning --> TaskStateFailed (fail) | TaskStateFinish (success)
 // For group task:
-// - Old: TaskStateRunning --> TaskStateFinish
-// - New: GroupTaskStateRunning --> GroupTaskStateAllFailed | GropuTaskStatePartialFailed | GroupTaskStateAllSuccess (all success)
+// - Old: TaskStateRunning      --> TaskStateFinish
+// - New: GroupTaskStateRunning --> GroupTaskStateAllFailed | GropuTaskStatePartialFailed | GroupTaskStateAllSuccess
 const (
 	TaskStateFailed  TaskState = iota // 0
 	TaskStateRunning                  // 1

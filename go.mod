@@ -1,6 +1,6 @@
 module github.com/pingcap/tidb-dashboard
 
-go 1.16
+go 1.13
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
@@ -14,7 +14,7 @@ require (
 	github.com/fatih/structtag v1.2.0
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.7.4
-	github.com/go-resty/resty/v2 v2.7.0
+	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-graphviz v0.0.5
 	github.com/golang-jwt/jwt v3.2.1+incompatible
@@ -44,7 +44,7 @@ require (
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/atomic v1.9.0
 	go.uber.org/fx v1.10.0
-	go.uber.org/goleak v1.1.12
+	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.19.0
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c

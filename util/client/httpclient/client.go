@@ -70,7 +70,7 @@ func New(config Config) *Client {
 	c.inner.SetRedirectPolicy(defaultRedirectPolicy)
 	c.inner.OnAfterResponse(c.handleAfterResponseHook)
 	c.inner.OnError(c.handleErrorHook)
-	c.inner.SetBaseURL(config.BaseURL)
+	c.inner.SetHostURL(config.BaseURL)
 	c.inner.SetTLSClientConfig(config.TLS)
 	return c
 }

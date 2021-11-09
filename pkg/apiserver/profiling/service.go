@@ -182,12 +182,12 @@ func (s *Service) migrateLegacyState(ctx context.Context) {
 				continue
 			}
 			if len(tasks) == 0 {
-				// Delete it if it has no child tasks
+				// delete it if it has no child tasks
 				s.params.LocalStore.Delete(groupTask)
 				continue
 			}
 
-			// step 3: fix the group task state
+			// step 3: set new_state
 			successTasks := 0
 			for _, t := range tasks {
 				if t.State == TaskStateFinish {

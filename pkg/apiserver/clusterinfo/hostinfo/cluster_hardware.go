@@ -23,14 +23,14 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
 )
 
-// Used to deserialize from JSON_VALUE
+// Used to deserialize from JSON_VALUE.
 type clusterHardwareCPUInfoModel struct {
 	Arch          string `json:"cpu-arch"`
 	LogicalCores  int    `json:"cpu-logical-cores,string"`
 	PhysicalCores int    `json:"cpu-physical-cores,string"`
 }
 
-// Used to deserialize from JSON_VALUE
+// Used to deserialize from JSON_VALUE.
 type clusterHardwareDiskModel struct {
 	Path   string `json:"path"`
 	FSType string `json:"fstype"`

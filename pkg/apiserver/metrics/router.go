@@ -52,7 +52,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Success 200 {object} QueryResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Security JwtAuth
-// @Router /metrics/query [get]
+// @Router /metrics/query [get].
 func (s *Service) queryMetrics(c *gin.Context) {
 	var req QueryRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -114,7 +114,7 @@ type GetPromAddressConfigResponse struct {
 // @Success 200 {object} GetPromAddressConfigResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Security JwtAuth
-// @Router /metrics/prom_address [get]
+// @Router /metrics/prom_address [get].
 func (s *Service) getPromAddressConfig(c *gin.Context) {
 	cAddr, err := s.resolveCustomizedPromAddress(true)
 	if err != nil {
@@ -146,7 +146,7 @@ type PutCustomPromAddressResponse struct {
 // @Success 200 {object} PutCustomPromAddressResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Security JwtAuth
-// @Router /metrics/prom_address [put]
+// @Router /metrics/prom_address [put].
 func (s *Service) putCustomPromAddress(c *gin.Context) {
 	var req PutCustomPromAddressRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

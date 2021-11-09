@@ -143,7 +143,7 @@ func (p *proxy) pickActiveConn() (out net.Conn) {
 	return
 }
 
-// pick returns an active remote if there is any
+// pick returns an active remote if there is any.
 func (p *proxy) pick() *remote {
 	var picked *remote
 	if p.current == "" {

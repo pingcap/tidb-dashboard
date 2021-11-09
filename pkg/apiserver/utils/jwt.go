@@ -54,7 +54,7 @@ func NewJWTStringWithExpire(issuer string, data string, expireIn time.Duration) 
 	return tokenString, nil
 }
 
-// ParseJWTString parse the JWT string and return the raw data
+// ParseJWTString parse the JWT string and return the raw data.
 func ParseJWTString(requiredIssuer string, tokenStr string) (string, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {

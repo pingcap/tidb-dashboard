@@ -301,7 +301,7 @@ type GetLoginInfoResponse struct {
 // @ID userGetLoginInfo
 // @Summary Get log in information, like supported authenticate types.
 // @Success 200 {object} GetLoginInfoResponse
-// @Router /user/login_info [get]
+// @Router /user/login_info [get].
 func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 	supportedAuth := make([]int, 0)
 	for typeID, a := range s.authenticators {
@@ -327,7 +327,7 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 // @Param message body AuthenticateForm true "Credentials"
 // @Success 200 {object} TokenResponse
 // @Failure 401 {object} utils.APIError
-// @Router /user/login [post]
+// @Router /user/login [post].
 func (s *AuthService) loginHandler(c *gin.Context) {
 	s.middleware.LoginHandler(c)
 }
@@ -343,7 +343,7 @@ type GetSignOutInfoRequest struct {
 // @Router /user/sign_out_info [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError "Internal error"
+// @Failure 500 {object} utils.APIError "Internal error".
 func (s *AuthService) getSignOutInfoHandler(c *gin.Context) {
 	var req GetSignOutInfoRequest
 	if err := c.ShouldBindQuery(&req); err != nil {

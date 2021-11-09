@@ -142,7 +142,7 @@ type NgMonitoringConfig struct {
 // @Router /continuous_profiling/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) conprofConfig(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -153,7 +153,7 @@ func (s *Service) conprofConfig(c *gin.Context) {
 // @Security JwtAuth
 // @Success 200 {string} string "ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) updateConprofConfig(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -170,7 +170,7 @@ type Component struct {
 // @Router /continuous_profiling/components [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) conprofComponents(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -185,7 +185,7 @@ type EstimateSizeRes struct {
 // @Security JwtAuth
 // @Success 200 {object} EstimateSizeRes
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) estimateSize(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -234,7 +234,7 @@ type Target struct {
 // @Security JwtAuth
 // @Success 200 {array} GroupProfiles
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) conprofGroupProfiles(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -245,7 +245,7 @@ func (s *Service) conprofGroupProfiles(c *gin.Context) {
 // @Security JwtAuth
 // @Success 200 {object} GroupProfileDetail
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -256,7 +256,7 @@ func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 // @Security JwtAuth
 // @Success 200 {string} string
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) genConprofActionToken(c *gin.Context) {
 	q := c.Query("q")
 	token, err := utils.NewJWTString("conprof", q)
@@ -273,7 +273,7 @@ func (s *Service) genConprofActionToken(c *gin.Context) {
 // @Security JwtAuth
 // @Produce application/x-gzip
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) conprofDownload(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -291,7 +291,7 @@ type ViewSingleProfileReq struct {
 // @Security JwtAuth
 // @Produce html
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) conprofViewProfile(c *gin.Context) {
 	// dummy, for generate openapi
 }

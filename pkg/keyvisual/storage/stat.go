@@ -79,7 +79,7 @@ func newLayerStat(
 	}
 }
 
-// Reduce merges ratio axes and append to next layerStat
+// Reduce merges ratio axes and append to next layerStat.
 func (s *layerStat) Reduce(labeler decorator.Labeler) {
 	if s.Ratio == 0 || s.Next == nil {
 		_ = s.DeleteFirstAxisFromDb()

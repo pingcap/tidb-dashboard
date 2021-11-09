@@ -102,7 +102,7 @@ func (s *Service) stopService() {
 // @Router /keyvisual/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) getDynamicConfig(c *gin.Context) {
 	dc, err := s.cfgManager.Get()
 	if err != nil {
@@ -119,7 +119,7 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 500 {object} utils.APIError.
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.KeyVisualConfig
 	if err := c.ShouldBindJSON(&req); err != nil {

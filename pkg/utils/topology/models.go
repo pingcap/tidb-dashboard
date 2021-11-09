@@ -44,7 +44,7 @@ type TiDBInfo struct {
 	StartTimestamp int64           `json:"start_timestamp"`
 }
 
-// Store may be a TiKV store or TiFlash store
+// Store may be a TiKV store or TiFlash store.
 type StoreInfo struct {
 	GitHash        string            `json:"git_hash"`
 	Version        string            `json:"version"`

@@ -293,7 +293,7 @@ type task struct {
 	taskID int // taskID for arrange the tables in order
 }
 
-//change the get-Table-func to task
+//change the get-Table-func to task.
 func func2task(funcs []getTableFunc) chan *task {
 	taskChan := make(chan *task, len(funcs))
 	for i := 0; i < len(funcs); i++ {

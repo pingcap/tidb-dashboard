@@ -129,7 +129,7 @@ func executeStatements(context context.Context, db *sql.DB, statements string) (
 // @Security JwtAuth
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 403 {object} utils.APIError "Experimental feature not enabled"
+// @Failure 403 {object} utils.APIError "Experimental feature not enabled".
 func (s *Service) runHandler(c *gin.Context) {
 	var req RunRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

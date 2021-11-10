@@ -27,6 +27,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/configuration"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/diagnose"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
@@ -142,6 +143,7 @@ func (s *Service) Start(ctx context.Context) error {
 		code.Module,
 		sso.Module,
 		profiling.Module,
+		conprof.Module,
 		statement.Module,
 		slowquery.Module,
 		debugapi.Module,
@@ -151,7 +153,6 @@ func (s *Service) Start(ctx context.Context) error {
 			info.RegisterRouter,
 			clusterinfo.RegisterRouter,
 			profiling.RegisterRouter,
-			profiling.RegisterConprofRouter,
 			logsearch.RegisterRouter,
 			diagnose.RegisterRouter,
 			keyvisual.RegisterRouter,

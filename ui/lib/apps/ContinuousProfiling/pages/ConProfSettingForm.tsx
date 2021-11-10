@@ -16,7 +16,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client, {
   ErrorStrategy,
-  ProfilingContinuousProfilingConfig,
+  ConprofContinuousProfilingConfig,
 } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ErrorBar, InstanceSelect } from '@lib/components'
@@ -80,7 +80,7 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
   const handleSubmit = useCallback(
     (values) => {
       async function updateConfig(values) {
-        const newConfig: ProfilingContinuousProfilingConfig = {
+        const newConfig: ConprofContinuousProfilingConfig = {
           enable: values.enable,
           data_retention_seconds: values.data_retention_seconds,
         }

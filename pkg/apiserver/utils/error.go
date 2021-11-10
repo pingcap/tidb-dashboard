@@ -54,6 +54,8 @@ func MakeInvalidRequestErrorFromError(c *gin.Context, err error) {
 
 var ErrExpNotEnabled = ErrNS.NewType("experimental_feature_not_enabled")
 
+var ErrFeatureNotSupported = ErrNS.NewType("feature_not_supported")
+
 type APIError struct {
 	Error    bool   `json:"error"`
 	Message  string `json:"message"`

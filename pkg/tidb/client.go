@@ -21,6 +21,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
@@ -53,7 +54,8 @@ type Client struct {
 	sqlAPITLSKey             string // Non empty means use this key as MySQL TLS config
 	sqlAPIAddress            string // Empty means to use address provided by forwarder
 	isRawBody                bool
-	getStatusEndpoints       func() (map[string]struct{}, error)
+	cache                    *pd.EndpointCache
+	etcdClient               *clientv3.Client
 }
 
 func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *httpc.Client) *Client {
@@ -74,16 +76,9 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		sqlAPITLSKey:             sqlAPITLSKey,
 		sqlAPIAddress:            "",
 		isRawBody:                false,
+		cache:                    pd.NewEndpointCache(),
+		etcdClient:               etcdClient,
 	}
-
-	cache := httpc.NewCache()
-	client.getStatusEndpoints = cache.MakeFuncWithTTL("tidb_endpoints", func() (map[string]struct{}, error) {
-		_, es, err := fetchEndpoints(client.lifecycleCtx, etcdClient)
-		if err != nil {
-			return nil, err
-		}
-		return es, nil
-	}, 10*time.Second).(func() (map[string]struct{}, error))
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -91,7 +86,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 			return nil
 		},
 		OnStop: func(c context.Context) error {
-			return cache.Close()
+			return client.cache.Close()
 		},
 	})
 
@@ -264,4 +259,14 @@ func (c *Client) checkStatusAPIAddressValidity() (err error) {
 	}
 
 	return
+}
+
+func (c *Client) getStatusEndpoints() (map[string]struct{}, error) {
+	return c.cache.Func("tidb_endpoints", func() (map[string]struct{}, error) {
+		_, es, err := fetchEndpoints(c.lifecycleCtx, c.etcdClient)
+		if err != nil {
+			return nil, err
+		}
+		return es, nil
+	}, 10*time.Second)
 }

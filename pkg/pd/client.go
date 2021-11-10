@@ -59,14 +59,12 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 		timeout:        defaultPDTimeout,
 	}
 
-	cache := httpc.NewCache()
-	client.getEndpoints = cache.MakeFuncWithTTL("pd_endpoints", func() (map[string]struct{}, error) {
-		es, err := fetchEndpoints(client)
-		if err != nil {
-			return nil, err
-		}
-		return es, nil
-	}, 10*time.Second).(func() (map[string]struct{}, error))
+	cache := NewEndpointCache()
+	client.getEndpoints = func() (map[string]struct{}, error) {
+		return cache.Func("pd_endpoints", func() (map[string]struct{}, error) {
+			return fetchEndpoints(client)
+		}, 10*time.Second)
+	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

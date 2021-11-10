@@ -17,9 +17,7 @@ package pd
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -34,7 +32,7 @@ import (
 )
 
 func Test_Get(t *testing.T) {
-	ts1 := newTestHTTPServer("127.0.0.1:2399")
+	ts1 := newTestHTTPServer()
 	defer ts1.Close()
 
 	// valid address
@@ -43,13 +41,13 @@ func Test_Get(t *testing.T) {
 	require.Equal(t, string(data.Body), "2")
 
 	// invalid address
-	pc2 := pc.WithBaseURL("http://127.0.0.2:2399")
+	pc2 := pc.WithBaseURL("http://127.0.0.1:2401")
 	_, err2 := pc2.Get("/aa")
 	require.Equal(t, errorx.IsOfType(err2, ErrInvalidPDAddr), true)
 }
 
 func Test_Post(t *testing.T) {
-	ts1 := newTestHTTPServer("127.0.0.1:2399")
+	ts1 := newTestHTTPServer()
 	defer ts1.Close()
 
 	// valid address
@@ -64,9 +62,9 @@ func Test_Post(t *testing.T) {
 }
 
 func Test_unsafeGet(t *testing.T) {
-	ts1 := newTestHTTPServer("127.0.0.1:2399")
+	ts1 := newTestHTTPServer()
 	defer ts1.Close()
-	ts2 := newTestHTTPServer("127.0.0.2:2399")
+	ts2 := newTestHTTPServer()
 	defer ts1.Close()
 
 	pc := newTestPDClient(t, ts1.URL)
@@ -79,9 +77,9 @@ func Test_unsafeGet(t *testing.T) {
 }
 
 func Test_unsafePost(t *testing.T) {
-	ts1 := newTestHTTPServer("127.0.0.1:2399")
+	ts1 := newTestHTTPServer()
 	defer ts1.Close()
-	ts2 := newTestHTTPServer("127.0.0.2:2399")
+	ts2 := newTestHTTPServer()
 	defer ts1.Close()
 
 	pc := newTestPDClient(t, ts1.URL)
@@ -159,7 +157,7 @@ func Test_needCheckAddress(t *testing.T) {
 }
 
 func Test_checkAPIAddressValidity(t *testing.T) {
-	ts1 := newTestHTTPServer("127.0.0.1:2399")
+	ts1 := newTestHTTPServer()
 	defer ts1.Close()
 
 	pc := newTestPDClient(t, ts1.URL)
@@ -192,20 +190,22 @@ var infoMembersBytes, _ = json.Marshal(InfoMembers{
 	},
 })
 
-func newTestHTTPServer(addr string) *httptest.Server {
-	l, err := net.Listen("tcp", addr)
-	if err != nil {
-		panic(err)
+func newTestHTTPServer() *httptest.Server {
+	infoMembers := InfoMembers{
+		Members: []InfoMember{
+			{ClientUrls: []string{"http://127.0.0.1:2399"}},
+			{ClientUrls: []string{"http://127.0.0.1:2400"}},
+		},
 	}
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/pd/api/v1/members" {
-			_, _ = w.Write(infoMembersBytes)
+			data, _ := json.Marshal(infoMembers)
+			_, _ = w.Write(data)
 		} else {
 			_, _ = io.WriteString(w, "2")
 		}
 	}))
-	ts.URL = fmt.Sprintf("http://%s", addr)
-	_ = ts.Listener.Close()
-	ts.Listener = l
+	infoMembers.Members = append(infoMembers.Members, InfoMember{ClientUrls: []string{ts.URL}})
 	return ts
 }

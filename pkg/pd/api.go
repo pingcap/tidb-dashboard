@@ -50,7 +50,7 @@ type InfoMember struct {
 }
 
 func FetchMembers(c *Client) (*InfoMembers, error) {
-	resp, err := c.WithRawBody(false).unsafeGet("/members")
+	resp, err := c.unsafeGet("/members")
 	if err != nil {
 		return nil, err
 	}

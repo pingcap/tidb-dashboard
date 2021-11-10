@@ -43,23 +43,18 @@ type Client struct {
 	lifecycleCtx context.Context
 	timeout      time.Duration
 	isRawBody    bool
-	getEndpoints func() (map[string]struct{}, error)
+	cache        *pd.EndpointCache
+	pdClient     *pd.Client
 }
 
 func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Client, config *config.Config) *Client {
-	cache := httpc.NewCache()
 	client := &Client{
 		httpClient:   httpClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
 		timeout:      defaultTiFlashStatusAPITimeout,
-		getEndpoints: cache.MakeFuncWithTTL("tiflash_endpoints", func() (map[string]struct{}, error) {
-			es, err := fetchEndpoints(pdClient)
-			if err != nil {
-				return nil, err
-			}
-			return es, nil
-		}, 10*time.Second).(func() (map[string]struct{}, error)),
+		cache:        pd.NewEndpointCache(),
+		pdClient:     pdClient,
 	}
 
 	lc.Append(fx.Hook{
@@ -68,7 +63,7 @@ func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Cl
 			return nil
 		},
 		OnStop: func(c context.Context) error {
-			return cache.Close()
+			return client.cache.Close()
 		},
 	})
 
@@ -124,4 +119,10 @@ func (c *Client) checkAPIAddressValidity(addr string) (err error) {
 	}
 
 	return
+}
+
+func (c *Client) getEndpoints() (map[string]struct{}, error) {
+	return c.cache.Func("tiflash_endpoints", func() (map[string]struct{}, error) {
+		return fetchEndpoints(c.pdClient)
+	}, 10*time.Second)
 }

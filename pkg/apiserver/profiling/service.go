@@ -94,7 +94,7 @@ var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers
 			}()
 			go func() {
 				defer s.wg.Done()
-				s.migrateLegacyState(ctx)
+				s.migrateTaskState(ctx)
 			}()
 			return nil
 		},
@@ -149,15 +149,25 @@ func (s *Service) serviceLoop(ctx context.Context) {
 	}
 }
 
+// update the Running state to Failed state for child task,
 // migrate the legacy state (Running|Finish) for group task to new_state (Running|AllFailed|PartialFailed|AllSuccess),
 // also revert the changes for legacy state in 5.3.0 dev stage (see PR #1027).
-func (s *Service) migrateLegacyState(ctx context.Context) {
+func (s *Service) migrateTaskState(ctx context.Context) {
+	// update the Running state to Failed state for child task
+	s.params.LocalStore.Model(&TaskModel{}).Where("state = ?", TaskStateRunning).Updates(map[string]interface{}{
+		"state": TaskStateFailed,
+		"error": "task is interrupted by accident",
+	})
+
+	// Below line doesn't work, because TaskStateFailed is zero, it will be ignored
+	// s.params.LocalStore.Model(&TaskModel{}).Where("state = ?", TaskStateRunning).Updates(TaskModel{State: TaskStateFailed, Error: "task is interrupted by accident"})
+
 	var lastMinID uint
 	var groupTasks []TaskGroupModel
 	var tasks []TaskModel
 	for {
-		// step 1: find out group tasks which are not migrated yet
-		query := s.params.LocalStore.Where("new_state IS NULL or new_state = ?", GroupTaskStateUnknown).Order("id DESC").Limit(100)
+		// find out group tasks which are not migrated yet, don't miss anyone
+		query := s.params.LocalStore.Where("new_state IS NULL or new_state = ? or new_state = ? or state = ?", GroupTaskStateUnknown, GroupTaskStateRunning, TaskStateRunning).Order("id DESC").Limit(100)
 		if lastMinID > 0 {
 			// add this where condition to avoid the loop can't escape if some group tasks are migrated fail
 			query = query.Where("id < ?", lastMinID)
@@ -169,14 +179,7 @@ func (s *Service) migrateLegacyState(ctx context.Context) {
 		lastMinID = groupTasks[len(groupTasks)-1].ID
 
 		for _, groupTask := range groupTasks {
-			// if legacy state is Running, copy the state to new_state
-			if groupTask.State == TaskStateRunning {
-				groupTask.NewState = GroupTaskStateRunning
-				s.params.LocalStore.Save(groupTask)
-				continue
-			}
-
-			// step 2: find out all child tasks of the group task whose state is not Running
+			// find out all child tasks of the group task
 			err = s.params.LocalStore.Where("task_group_id = ?", groupTask.ID).Find(&tasks).Error
 			if err != nil {
 				continue
@@ -187,7 +190,7 @@ func (s *Service) migrateLegacyState(ctx context.Context) {
 				continue
 			}
 
-			// step 3: set new_state
+			// set new_state
 			successTasks := 0
 			for _, t := range tasks {
 				if t.State == TaskStateFinish {

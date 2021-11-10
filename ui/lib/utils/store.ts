@@ -16,6 +16,11 @@ export const store = new Store<StoreState>({})
 export const useIsWriteable = () =>
   store.useState((s) => Boolean(s.whoAmI && s.whoAmI.is_writeable))
 
+export const useIsFeatureSupport = (feature: string) =>
+  store.useState(
+    (s) => (s.appInfo?.supported_features?.indexOf(feature) ?? -1) !== -1
+  )
+
 export async function reloadWhoAmI() {
   if (!getAuthToken()) {
     store.update((s) => {

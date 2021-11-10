@@ -22,6 +22,8 @@ import (
 	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/nonrootlogin"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -60,6 +62,7 @@ type InfoResponse struct { //nolint
 	Version            *version.Info `json:"version"`
 	EnableTelemetry    bool          `json:"enable_telemetry"`
 	EnableExperimental bool          `json:"enable_experimental"`
+	SupportedFeatures  []string      `json:"supported_features"`
 }
 
 // @ID infoGet
@@ -69,10 +72,19 @@ type InfoResponse struct { //nolint
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
+	supportedFeatures := []string{}
+	if conprof.IsFeatureSupport(s.params.Config) {
+		supportedFeatures = append(supportedFeatures, "conprof")
+	}
+	if nonrootlogin.IsFeatureSupport(s.params.Config) {
+		supportedFeatures = append(supportedFeatures, "nonRootLogin")
+	}
+
 	resp := InfoResponse{
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
+		SupportedFeatures:  supportedFeatures,
 	}
 	c.JSON(http.StatusOK, resp)
 }

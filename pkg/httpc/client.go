@@ -142,6 +142,8 @@ func (r *Response) Body() []byte {
 	return r.body
 }
 
+// RawBody method exposes the HTTP raw response body. Use this method in-conjunction with `WithRawBody()`
+// function otherwise you get an error as `read err: http: read on closed response body`.
 func (r *Response) RawBody() io.ReadCloser {
 	if r.RawResponse == nil {
 		return nil

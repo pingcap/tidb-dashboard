@@ -56,7 +56,7 @@ func FetchMembers(c *Client) (*InfoMembers, error) {
 	}
 
 	ds := &InfoMembers{}
-	err = json.Unmarshal(resp.Body, ds)
+	err = json.Unmarshal(resp.Body(), ds)
 	if err != nil {
 		return nil, ErrPDClientRequestFailed.Wrap(err, "%s members API unmarshal failed", distro.Data("pd"))
 	}

@@ -149,7 +149,7 @@ func fetchStores(pdClient *pd.Client) ([]store, error) {
 			Store store
 		} `json:"stores"`
 	}{}
-	err = json.Unmarshal(resp.Body, &storeResp)
+	err = json.Unmarshal(resp.Body(), &storeResp)
 	if err != nil {
 		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.Data("pd"))
 	}

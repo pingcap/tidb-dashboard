@@ -126,7 +126,7 @@ func (s *tidbLabelStrategy) request(path string, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	if err = json.Unmarshal(resp.Body, v); err != nil {
+	if err = json.Unmarshal(resp.Body(), v); err != nil {
 		return ErrInvalidData.Wrap(err, "%s schema API unmarshal failed", distro.Data("tidb"))
 	}
 	return nil

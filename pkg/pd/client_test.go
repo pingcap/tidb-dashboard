@@ -38,7 +38,7 @@ func Test_Get(t *testing.T) {
 	// valid address
 	pc := newTestPDClient(t, ts1.URL)
 	data, _ := pc.Get("/aa")
-	require.Equal(t, string(data.Body), "2")
+	require.Equal(t, string(data.Body()), "2")
 
 	// invalid address
 	pc2 := pc.WithBaseURL("http://127.0.0.1:2401")
@@ -53,7 +53,7 @@ func Test_Post(t *testing.T) {
 	// valid address
 	pc := newTestPDClient(t, ts1.URL)
 	data, _ := pc.Post("/aa", nil)
-	require.Equal(t, string(data.Body), "2")
+	require.Equal(t, string(data.Body()), "2")
 
 	// invalid address
 	pc2 := pc.WithBaseURL("http://127.0.0.2:2399")
@@ -69,11 +69,11 @@ func Test_unsafeGet(t *testing.T) {
 
 	pc := newTestPDClient(t, ts1.URL)
 	data, _ := pc.unsafeGet("/aa")
-	require.Equal(t, string(data.Body), "2")
+	require.Equal(t, string(data.Body()), "2")
 
 	pc2 := pc.WithBaseURL(ts2.URL)
 	data2, _ := pc2.unsafeGet("/aa")
-	require.Equal(t, string(data2.Body), "2")
+	require.Equal(t, string(data2.Body()), "2")
 }
 
 func Test_unsafePost(t *testing.T) {
@@ -84,11 +84,11 @@ func Test_unsafePost(t *testing.T) {
 
 	pc := newTestPDClient(t, ts1.URL)
 	data, _ := pc.unsafePost("/aa", nil)
-	require.Equal(t, string(data.Body), "2")
+	require.Equal(t, string(data.Body()), "2")
 
 	pc2 := pc.WithBaseURL(ts2.URL)
 	data2, _ := pc2.unsafePost("/aa", nil)
-	require.Equal(t, string(data2.Body), "2")
+	require.Equal(t, string(data2.Body()), "2")
 }
 
 func Test_getEndpoints(t *testing.T) {

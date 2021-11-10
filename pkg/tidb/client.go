@@ -54,8 +54,7 @@ type Client struct {
 	sqlAPITLSKey             string // Non empty means use this key as MySQL TLS config
 	sqlAPIAddress            string // Empty means to use address provided by forwarder
 	isRawBody                bool
-	cache                    *pd.EndpointCache
-	etcdClient               *clientv3.Client
+	getStatusEndpoints       func() (map[string]struct{}, error)
 }
 
 func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *httpc.Client) *Client {
@@ -76,8 +75,17 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		sqlAPITLSKey:             sqlAPITLSKey,
 		sqlAPIAddress:            "",
 		isRawBody:                false,
-		cache:                    pd.NewEndpointCache(),
-		etcdClient:               etcdClient,
+	}
+
+	cache := pd.NewEndpointCache()
+	client.getStatusEndpoints = func() (map[string]struct{}, error) {
+		return cache.Func("tidb_endpoints", func() (map[string]struct{}, error) {
+			_, es, err := fetchEndpoints(client.lifecycleCtx, etcdClient)
+			if err != nil {
+				return nil, err
+			}
+			return es, nil
+		}, 10*time.Second)
 	}
 
 	lc.Append(fx.Hook{
@@ -86,7 +94,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 			return nil
 		},
 		OnStop: func(c context.Context) error {
-			return client.cache.Close()
+			return cache.Close()
 		},
 	})
 
@@ -259,14 +267,4 @@ func (c *Client) checkStatusAPIAddressValidity() (err error) {
 	}
 
 	return
-}
-
-func (c *Client) getStatusEndpoints() (map[string]struct{}, error) {
-	return c.cache.Func("tidb_endpoints", func() (map[string]struct{}, error) {
-		_, es, err := fetchEndpoints(c.lifecycleCtx, c.etcdClient)
-		if err != nil {
-			return nil, err
-		}
-		return es, nil
-	}, 10*time.Second)
 }

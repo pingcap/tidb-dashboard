@@ -92,7 +92,7 @@ func fetchPDStartTimestamp(pdClient *pd.Client) (int64, error) {
 	ds := struct {
 		StartTimestamp int64 `json:"start_timestamp"`
 	}{}
-	err = json.Unmarshal(resp.Body, &ds)
+	err = json.Unmarshal(resp.Body(), &ds)
 	if err != nil {
 		return 0, ErrInvalidTopologyData.Wrap(err, "%s status API unmarshal failed", distro.Data("pd"))
 	}
@@ -111,7 +111,7 @@ func fetchPDHealth(pdClient *pd.Client) (map[uint64]struct{}, error) {
 		Health   bool   `json:"health"`
 	}
 
-	err = json.Unmarshal(resp.Body, &healths)
+	err = json.Unmarshal(resp.Body(), &healths)
 	if err != nil {
 		return nil, ErrInvalidTopologyData.Wrap(err, "%s health API unmarshal failed", distro.Data("pd"))
 	}
@@ -134,7 +134,7 @@ func fetchLocationLabels(pdClient *pd.Client) ([]string, error) {
 	var replicateConfig struct {
 		LocationLabels string `json:"location-labels"`
 	}
-	err = json.Unmarshal(resp.Body, &replicateConfig)
+	err = json.Unmarshal(resp.Body(), &replicateConfig)
 	if err != nil {
 		return nil, ErrInvalidTopologyData.Wrap(err, "%s config/replicate API unmarshal failed", distro.Data("pd"))
 	}

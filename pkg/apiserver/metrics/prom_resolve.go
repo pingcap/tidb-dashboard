@@ -67,7 +67,7 @@ func (s *Service) resolveCustomizedPromAddress(acceptInvalidAddr bool) (string, 
 		return "", err
 	}
 	var config pdConfig
-	if err := json.Unmarshal(resp.Body, &config); err != nil {
+	if err := json.Unmarshal(resp.Body(), &config); err != nil {
 		return "", err
 	}
 	addr := config.PdServer.MetricStorage

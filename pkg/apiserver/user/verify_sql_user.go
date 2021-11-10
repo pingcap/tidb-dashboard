@@ -56,7 +56,7 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeabl
 		return false, err
 	}
 	var config tidbSecurityConfig
-	err = json.Unmarshal(resp.Body, &config)
+	err = json.Unmarshal(resp.Body(), &config)
 	if err != nil {
 		return false, err
 	}

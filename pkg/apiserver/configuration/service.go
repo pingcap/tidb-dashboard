@@ -112,7 +112,7 @@ func (s *Service) getConfigItemsFromPD() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return processNestedConfigAPIResponse(resp.Body)
+	return processNestedConfigAPIResponse(resp.Body())
 }
 
 func (s *Service) getConfigItemsFromTiDBToChannel(tidb *topology.TiDBInfo, ch chan<- channelItem) {
@@ -136,7 +136,7 @@ func (s *Service) getConfigItemsFromTiDB(host string, statusPort int) (map[strin
 	if err != nil {
 		return nil, err
 	}
-	return processNestedConfigAPIResponse(resp.Body)
+	return processNestedConfigAPIResponse(resp.Body())
 }
 
 func (s *Service) getConfigItemsFromTiKVToChannel(tikv *topology.StoreInfo, ch chan<- channelItem) {
@@ -160,7 +160,7 @@ func (s *Service) getConfigItemsFromTiKV(host string, statusPort int) (map[strin
 	if err != nil {
 		return nil, err
 	}
-	return processNestedConfigAPIResponse(resp.Body)
+	return processNestedConfigAPIResponse(resp.Body())
 }
 
 type ShowVariableItem struct {

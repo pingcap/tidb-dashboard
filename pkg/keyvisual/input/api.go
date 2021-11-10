@@ -125,6 +125,6 @@ func NewAPIPeriodicGetter(pdClient *pd.Client) regionpkg.RegionsInfoGenerator {
 		if err != nil {
 			return nil, err
 		}
-		return read(resp.Body)
+		return read(resp.Body())
 	}
 }

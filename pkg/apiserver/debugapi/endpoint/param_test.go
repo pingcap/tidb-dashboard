@@ -66,8 +66,8 @@ func (t *testParamSuite) Test_Resolve(c *C) {
 	if err != nil {
 		c.Error(err)
 	}
-	data, _ := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
+	data, _ := ioutil.ReadAll(resp.RawBody())
+	defer resp.RawBody().Close() //nolint:errcheck
 
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test/test", "queryParam=test"))
 }

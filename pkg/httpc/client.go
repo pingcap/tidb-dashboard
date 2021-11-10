@@ -126,10 +126,25 @@ func (c *Client) SendRequest(
 		return nil, e
 	}
 
-	return &Response{RawResponse: resp, Body: data}, nil
+	return &Response{RawResponse: resp, body: data}, nil
 }
 
 type Response struct {
 	RawResponse *http.Response
-	Body        []byte
+
+	body []byte
+}
+
+func (r *Response) Body() []byte {
+	if r.RawResponse == nil {
+		return []byte{}
+	}
+	return r.body
+}
+
+func (r *Response) RawBody() io.ReadCloser {
+	if r.RawResponse == nil {
+		return nil
+	}
+	return r.RawResponse.Body
 }

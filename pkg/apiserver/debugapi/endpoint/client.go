@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 var (
@@ -68,7 +69,7 @@ func (p *ResolvedRequestPayload) Query() string {
 }
 
 type HTTPClient interface {
-	Fetch(payload *ResolvedRequestPayload) (*http.Response, error)
+	Fetch(payload *ResolvedRequestPayload) (*httpc.Response, error)
 }
 
 type Client struct {
@@ -86,7 +87,7 @@ func NewClient(httpClient HTTPClient, models []*APIModel) *Client {
 	return &Client{apiMap: apiMap, apiList: models, httpClient: httpClient}
 }
 
-func (c *Client) Send(payload *RequestPayload) (*http.Response, error) {
+func (c *Client) Send(payload *RequestPayload) (*httpc.Response, error) {
 	resolvedPayload, err := c.resolve(payload)
 	if err != nil {
 		return nil, err

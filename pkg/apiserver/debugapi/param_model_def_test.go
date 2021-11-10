@@ -25,6 +25,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 func TestParamModels(t *testing.T) {
@@ -38,10 +39,10 @@ type testParamModelsSuite struct{}
 
 type testFetcher struct{}
 
-func (d *testFetcher) Fetch(req *endpoint.ResolvedRequestPayload) (*http.Response, error) {
+func (d *testFetcher) Fetch(req *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	r := httptest.NewRecorder()
 	_, _ = r.WriteString(testCombineReq(req.Host, req.Port, req.Path(), req.Query()))
-	return r.Result(), nil
+	return &httpc.Response{RawResponse: r.Result()}, nil
 }
 
 func testCombineReq(host string, port int, path, query string) string {
@@ -75,8 +76,8 @@ func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
 	if err != nil {
 		c.Error(err)
 	}
-	data, _ := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
+	data, _ := ioutil.ReadAll(resp.RawBody())
+	defer resp.RawBody().Close() //nolint:errcheck
 
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", fmt.Sprintf("param1=%s&param1=%s", "value1", "value2")))
 }
@@ -119,8 +120,8 @@ func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {
 	if err != nil {
 		c.Error(err)
 	}
-	data, _ := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
+	data, _ := ioutil.ReadAll(resp.RawBody())
+	defer resp.RawBody().Close() //nolint:errcheck
 
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", "param1=2"))
 }
@@ -150,8 +151,8 @@ func (t *testParamModelsSuite) Test_APIParamModelConstant(c *C) {
 	if err != nil {
 		c.Error(err)
 	}
-	data, _ := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
+	data, _ := ioutil.ReadAll(resp.RawBody())
+	defer resp.RawBody().Close() //nolint:errcheck
 
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", "param1=value1"))
 }
@@ -182,8 +183,8 @@ func (t *testParamModelsSuite) Test_APIParamModelEnum(c *C) {
 	if err != nil {
 		c.Error(err)
 	}
-	data, _ := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
+	data, _ := ioutil.ReadAll(resp.RawBody())
+	defer resp.RawBody().Close() //nolint:errcheck
 
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", "param1=value1"))
 

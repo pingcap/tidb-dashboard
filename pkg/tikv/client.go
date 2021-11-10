@@ -43,18 +43,21 @@ type Client struct {
 	lifecycleCtx context.Context
 	timeout      time.Duration
 	isRawBody    bool
-	cache        *pd.EndpointCache
-	pdClient     *pd.Client
+	getEndpoints func() (map[string]struct{}, error)
 }
 
 func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Client, config *config.Config) *Client {
+	cache := pd.NewEndpointCache()
 	client := &Client{
 		httpClient:   httpClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
 		timeout:      defaultTiKVStatusAPITimeout,
-		cache:        pd.NewEndpointCache(),
-		pdClient:     pdClient,
+		getEndpoints: func() (map[string]struct{}, error) {
+			return cache.Func("tikv_endpoints", func() (map[string]struct{}, error) {
+				return fetchEndpoints(pdClient)
+			}, 10*time.Second)
+		},
 	}
 
 	lc.Append(fx.Hook{
@@ -63,7 +66,7 @@ func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Clien
 			return nil
 		},
 		OnStop: func(c context.Context) error {
-			return client.cache.Close()
+			return cache.Close()
 		},
 	})
 
@@ -119,10 +122,4 @@ func (c *Client) checkAPIAddressValidity(addr string) (err error) {
 	}
 
 	return
-}
-
-func (c *Client) getEndpoints() (map[string]struct{}, error) {
-	return c.cache.Func("tikv_endpoints", func() (map[string]struct{}, error) {
-		return fetchEndpoints(c.pdClient)
-	}, 10*time.Second)
 }

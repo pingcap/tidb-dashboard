@@ -78,7 +78,7 @@ func (s *Service) infoHandler(c *gin.Context) {
 	}
 	supportedFeatures := []string{}
 	for _, ff := range featureFlags {
-		if !ff.IsSupport(s.params.Config.FeatureVersion) {
+		if !ff.IsSupported(s.params.Config.FeatureVersion) {
 			continue
 		}
 		supportedFeatures = append(supportedFeatures, ff.Name)

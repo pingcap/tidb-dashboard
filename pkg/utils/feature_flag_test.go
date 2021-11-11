@@ -22,43 +22,31 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
-func Test_IsSupport(t *testing.T) {
-	ff := NewFeatureFlag("testFeature", []string{">= 5.3.0"})
-
-	require.Equal(t, false, ff.IsSupport("v5.2.2"))
-	// The results do not change because of caching. This is expected.
-	require.Equal(t, false, ff.IsSupport("v5.3.0"))
-
-	ff2 := NewFeatureFlag("testFeature", []string{">= 5.3.0"})
-	require.Equal(t, true, ff2.IsSupport("v5.3.0"))
-
-	ff3 := NewFeatureFlag("testFeature", []string{">= 5.3.0"})
-	require.Equal(t, true, ff3.IsSupport("v5.3.2"))
-}
-
-func Test_isVersionSupport(t *testing.T) {
+func Test_IsSupported(t *testing.T) {
 	type Args struct {
-		target    string
-		supported []string
+		target      string
+		constraints []string
 	}
 	tests := []struct {
 		want bool
 		args Args
 	}{
-		{want: false, args: Args{target: "v4.2.0", supported: []string{">= 5.3.0"}}},
-		{want: false, args: Args{target: "v5.2.0", supported: []string{">= 5.3.0"}}},
-		{want: true, args: Args{target: "v5.3.0", supported: []string{">= 5.3.0"}}},
-		{want: false, args: Args{target: "v5.2.0-alpha-xxx", supported: []string{">= 5.3.0"}}},
-		{want: true, args: Args{target: "v5.3.0-alpha-xxx", supported: []string{">= 5.3.0"}}},
-		{want: true, args: Args{target: "v5.3.0", supported: []string{"= 5.3.0"}}},
-		{want: false, args: Args{target: "v5.3.1", supported: []string{"= 5.3.0"}}},
+		{want: false, args: Args{target: "v4.2.0", constraints: []string{">= 5.3.0"}}},
+		{want: false, args: Args{target: "v5.2.0", constraints: []string{">= 5.3.0"}}},
+		{want: true, args: Args{target: "v5.3.0", constraints: []string{">= 5.3.0"}}},
+		{want: false, args: Args{target: "v5.2.0-alpha-xxx", constraints: []string{">= 5.3.0"}}},
+		{want: true, args: Args{target: "v5.3.0-alpha-xxx", constraints: []string{">= 5.3.0"}}},
+		{want: true, args: Args{target: "v5.3.0", constraints: []string{"= 5.3.0"}}},
+		{want: false, args: Args{target: "v5.3.1", constraints: []string{"= 5.3.0"}}},
 	}
 
 	for _, tt := range tests {
-		isVersionSupport(tt.args.target, tt.args.supported)
+		ff := NewFeatureFlag("testFeature", tt.args.constraints)
+		require.Equal(t, tt.want, ff.IsSupported(tt.args.target))
 	}
 
 	version.Standalone = "No"
 	version.PDVersion = "v5.3.0"
-	require.Equal(t, true, isVersionSupport("v100.0.0", []string{"= 5.3.0"}))
+	ff := NewFeatureFlag("testFeature", []string{"= 5.3.0"})
+	require.Equal(t, true, ff.IsSupported("v100.0.0"))
 }

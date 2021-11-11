@@ -15,9 +15,12 @@
 package utils
 
 import (
+	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/semver"
+	"github.com/gin-gonic/gin"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
@@ -25,29 +28,18 @@ import (
 type FeatureFlag struct {
 	Name string
 
-	supportedVersions []string
-	supported         *bool
+	constraints []string
 }
 
-func NewFeatureFlag(name string, supportedVersions []string) *FeatureFlag {
-	return &FeatureFlag{Name: name, supportedVersions: supportedVersions}
+func NewFeatureFlag(name string, constraints []string) *FeatureFlag {
+	return &FeatureFlag{Name: name, constraints: constraints}
 }
 
-func (ff *FeatureFlag) IsSupport(targetVersion string) bool {
-	if ff.supported != nil {
-		return *ff.supported
-	}
-
-	supported := isVersionSupport(targetVersion, ff.supportedVersions)
-	ff.supported = &supported
-	return supported
-}
-
-// IsVersionSupport checks if a semantic version fits within a set of constraints
+// IsSupported checks if a semantic version fits within a set of constraints
 // pdVersion, standaloneVersion examples: "v5.2.2", "v5.3.0", "v5.4.0-alpha-xxx", "5.3.0" (semver can handle `v` prefix by itself)
 // constraints examples: "~5.2.2", ">= 5.3.0", see semver docs to get more information
-func isVersionSupport(standaloneVersion string, constraints []string) bool {
-	curVersion := standaloneVersion
+func (ff *FeatureFlag) IsSupported(targetVersion string) bool {
+	curVersion := targetVersion
 	if version.Standalone == "No" {
 		curVersion = version.PDVersion
 	}
@@ -57,7 +49,7 @@ func isVersionSupport(standaloneVersion string, constraints []string) bool {
 	if err != nil {
 		return false
 	}
-	for _, ver := range constraints {
+	for _, ver := range ff.constraints {
 		c, err := semver.NewConstraint(ver)
 		if err != nil {
 			continue
@@ -67,4 +59,18 @@ func isVersionSupport(standaloneVersion string, constraints []string) bool {
 		}
 	}
 	return false
+}
+
+func (ff *FeatureFlag) Middleware(targetVersion string) gin.HandlerFunc {
+	isSupported := !ff.IsSupported(targetVersion)
+	return func(c *gin.Context) {
+		if isSupported {
+			_ = c.Error(fmt.Errorf("the feature is not supported"))
+			c.Status(http.StatusForbidden)
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
 }

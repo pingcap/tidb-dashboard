@@ -15,7 +15,7 @@ import (
 	"github.com/minio/sio"
 
 	"github.com/pingcap/tidb-dashboard/util/nocopy"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 // Handler provides a file-based data serving HTTP handler.
@@ -88,7 +88,7 @@ func (s *Handler) parseClaimsFromToken(tokenString string) (*downloadTokenClaims
 func (s *Handler) HandleDownloadRequest(c *gin.Context) {
 	claims, err := s.parseClaimsFromToken(c.Query("token"))
 	if err != nil {
-		_ = c.Error(resterror.ErrBadRequest.Wrap(err, "Invalid download request"))
+		_ = c.Error(rest.ErrBadRequest.Wrap(err, "Invalid download request"))
 		return
 	}
 
@@ -96,7 +96,7 @@ func (s *Handler) HandleDownloadRequest(c *gin.Context) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			// It is possible that token is reused. In this case, raise invalid request error.
-			_ = c.Error(resterror.ErrBadRequest.Wrap(err, "Download file not found. Please retry."))
+			_ = c.Error(rest.ErrBadRequest.Wrap(err, "Download file not found. Please retry."))
 		} else {
 			_ = c.Error(err)
 		}

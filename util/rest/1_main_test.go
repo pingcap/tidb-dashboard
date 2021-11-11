@@ -1,4 +1,4 @@
-package resterror
+package rest
 
 import (
 	"testing"

@@ -33,7 +33,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 var (
@@ -110,7 +110,7 @@ func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
 		if token != "" {
 			queryStr, err := utils.ParseJWTString("conprof", token)
 			if err != nil {
-				_ = c.Error(resterror.ErrBadRequest.WrapWithNoMessage(err))
+				_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 				return
 			}
 			c.Request.URL.RawQuery = queryStr
@@ -178,8 +178,8 @@ type NgMonitoringConfig struct {
 // @Success 200 {object} NgMonitoringConfig
 // @Router /continuous_profiling/config [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) conprofConfig(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -189,8 +189,8 @@ func (s *Service) conprofConfig(c *gin.Context) {
 // @Param request body NgMonitoringConfig true "Request body"
 // @Security JwtAuth
 // @Success 200 {string} string "ok"
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) updateConprofConfig(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -206,8 +206,8 @@ type Component struct {
 // @Success 200 {array} Component
 // @Router /continuous_profiling/components [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) conprofComponents(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -221,8 +221,8 @@ type EstimateSizeRes struct {
 // @Router /continuous_profiling/estimate_size [get]
 // @Security JwtAuth
 // @Success 200 {object} EstimateSizeRes
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) estimateSize(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -270,8 +270,8 @@ type Target struct {
 // @Param q query GetGroupProfileReq true "Query"
 // @Security JwtAuth
 // @Success 200 {array} GroupProfiles
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) conprofGroupProfiles(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -281,8 +281,8 @@ func (s *Service) conprofGroupProfiles(c *gin.Context) {
 // @Param ts query number true "timestamp"
 // @Security JwtAuth
 // @Success 200 {object} GroupProfileDetail
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -292,8 +292,8 @@ func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 // @Param q query string true "target query string"
 // @Security JwtAuth
 // @Success 200 {string} string
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) genConprofActionToken(c *gin.Context) {
 	q := c.Query("q")
 	token, err := utils.NewJWTString("conprof", q)
@@ -309,8 +309,8 @@ func (s *Service) genConprofActionToken(c *gin.Context) {
 // @Param ts query number true "timestamp"
 // @Security JwtAuth
 // @Produce application/x-gzip
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) conprofDownload(c *gin.Context) {
 	// dummy, for generate openapi
 }
@@ -327,8 +327,8 @@ type ViewSingleProfileReq struct {
 // @Param q query ViewSingleProfileReq true "Query"
 // @Security JwtAuth
 // @Produce html
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) conprofViewProfile(c *gin.Context) {
 	// dummy, for generate openapi
 }

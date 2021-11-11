@@ -19,7 +19,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 // TODO: Better to be a streaming interface.
@@ -103,17 +103,17 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 	tokenPlain, err := ParseJWTString(tokenNamespace, token)
 	if err != nil {
-		_ = c.Error(resterror.ErrBadRequest.WrapWithNoMessage(err))
+		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 	arr := strings.Fields(tokenPlain)
 	if len(arr) != 2 {
-		_ = c.Error(resterror.ErrBadRequest.New("invalid token"))
+		_ = c.Error(rest.ErrBadRequest.New("invalid token"))
 		return
 	}
 	secretKey, err := base64.StdEncoding.DecodeString(arr[0])
 	if err != nil {
-		_ = c.Error(resterror.ErrBadRequest.WrapWithNoMessage(err))
+		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 

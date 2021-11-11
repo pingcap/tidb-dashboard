@@ -28,7 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 var (
@@ -73,19 +73,19 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Success 200 {array} Model
 // @Router /slow_query/list [get]
 // @Security JwtAuth
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getList(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
 	results, err := s.querySlowLogList(db, &req)
 	if err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	c.JSON(http.StatusOK, results)
@@ -96,11 +96,11 @@ func (s *Service) getList(c *gin.Context) {
 // @Success 200 {object} Model
 // @Router /slow_query/detail [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getDetails(c *gin.Context) {
 	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -119,12 +119,12 @@ func (s *Service) getDetails(c *gin.Context) {
 // @Param request body GetListRequest true "Request body"
 // @Success 200 {string} string "xxx"
 // @Security JwtAuth
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -134,7 +134,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	}
 	list, err := s.querySlowLogList(db, &req)
 	if err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(list) == 0 {
@@ -169,8 +169,8 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 // @Summary Download slow query statements
 // @Produce text/csv
 // @Param token query string true "download token"
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
 	utils.DownloadByToken(token, "slowquery/download", c)
@@ -179,8 +179,8 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Summary Query table columns
 // @Description Query slowquery table columns
 // @Success 200 {array} string
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 // @Security JwtAuth
 // @Router /slow_query/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {

@@ -30,7 +30,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 var (
@@ -112,7 +112,7 @@ func NewAuthService() *AuthService {
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			var form AuthenticateForm
 			if err := c.ShouldBindJSON(&form); err != nil {
-				return nil, resterror.ErrBadRequest.WrapWithNoMessage(err)
+				return nil, rest.ErrBadRequest.WrapWithNoMessage(err)
 			}
 			u, err := service.authForm(form)
 			if err != nil {
@@ -192,7 +192,7 @@ func NewAuthService() *AuthService {
 				err = ErrSignInOther.WrapWithNoMessage(e)
 			} else {
 				// The remaining error comes from checking tokens for protected endpoints.
-				err = resterror.ErrUnauthenticated.NewWithNoMessage()
+				err = rest.ErrUnauthenticated.NewWithNoMessage()
 			}
 			_ = c.Error(err)
 			return err.Error()
@@ -249,12 +249,12 @@ func (s *AuthService) MWRequireSharePriv() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := utils.GetSession(c)
 		if u == nil {
-			_ = c.Error(resterror.ErrUnauthenticated.NewWithNoMessage())
+			_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 		if !u.IsShareable {
-			_ = c.Error(resterror.ErrForbidden.NewWithNoMessage())
+			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -266,12 +266,12 @@ func (s *AuthService) MWRequireWritePriv() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := utils.GetSession(c)
 		if u == nil {
-			_ = c.Error(resterror.ErrUnauthenticated.NewWithNoMessage())
+			_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 		if !u.IsWriteable {
-			_ = c.Error(resterror.ErrForbidden.NewWithNoMessage())
+			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -315,7 +315,7 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 // @Summary Log in
 // @Param message body AuthenticateForm true "Credentials"
 // @Success 200 {object} TokenResponse
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /user/login [post]
 func (s *AuthService) loginHandler(c *gin.Context) {
 	s.middleware.LoginHandler(c)
@@ -331,12 +331,12 @@ type GetSignOutInfoRequest struct {
 // @Param q query GetSignOutInfoRequest true "Query"
 // @Router /user/sign_out_info [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *AuthService) getSignOutInfoHandler(c *gin.Context) {
 	var req GetSignOutInfoRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 

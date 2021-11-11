@@ -28,7 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 type ServiceParams struct {
@@ -128,13 +128,13 @@ func executeStatements(context context.Context, db *sql.DB, statements string) (
 // @Success 200 {object} RunResponse
 // @Router /query_editor/run [post]
 // @Security JwtAuth
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 403 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 403 {object} rest.ErrorResponse
 func (s *Service) runHandler(c *gin.Context) {
 	var req RunRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 

@@ -34,7 +34,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 type ServiceParams struct {
@@ -84,7 +84,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Summary Hide a TiDB instance
 // @Param address path string true "ip:port"
 // @Success 200 "delete ok"
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 // @Security JwtAuth
 // @Router /topology/tidb/{address} [delete]
 func (s *Service) deleteTiDBTopology(c *gin.Context) {
@@ -125,7 +125,7 @@ func (s *Service) deleteTiDBTopology(c *gin.Context) {
 // @Success 200 {array} topology.TiDBInfo
 // @Router /topology/tidb [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getTiDBTopology(c *gin.Context) {
 	instances, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
@@ -145,7 +145,7 @@ type StoreTopologyResponse struct {
 // @Success 200 {object} StoreTopologyResponse
 // @Router /topology/store [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getStoreTopology(c *gin.Context) {
 	tikvInstances, tiFlashInstances, err := topology.FetchStoreTopology(s.params.PDClient)
 	if err != nil {
@@ -163,7 +163,7 @@ func (s *Service) getStoreTopology(c *gin.Context) {
 // @Success 200 {object} topology.StoreLocation
 // @Router /topology/store_location [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getStoreLocationTopology(c *gin.Context) {
 	storeLocation, err := topology.FetchStoreLocation(s.params.PDClient)
 	if err != nil {
@@ -178,7 +178,7 @@ func (s *Service) getStoreLocationTopology(c *gin.Context) {
 // @Success 200 {array} topology.PDInfo
 // @Router /topology/pd [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getPDTopology(c *gin.Context) {
 	instances, err := topology.FetchPDTopology(s.params.PDClient)
 	if err != nil {
@@ -193,7 +193,7 @@ func (s *Service) getPDTopology(c *gin.Context) {
 // @Success 200 {object} topology.AlertManagerInfo
 // @Router /topology/alertmanager [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getAlertManagerTopology(c *gin.Context) {
 	instance, err := topology.FetchAlertManagerTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
@@ -208,7 +208,7 @@ func (s *Service) getAlertManagerTopology(c *gin.Context) {
 // @Success 200 {object} topology.GrafanaInfo
 // @Router /topology/grafana [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getGrafanaTopology(c *gin.Context) {
 	instance, err := topology.FetchGrafanaTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
@@ -224,7 +224,7 @@ func (s *Service) getGrafanaTopology(c *gin.Context) {
 // @Param address path string true "ip:port"
 // @Router /topology/alertmanager/{address}/count [get]
 // @Security JwtAuth
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getAlertManagerCounts(c *gin.Context) {
 	address := c.Param("address")
 	cnt, err := fetchAlertManagerCounts(s.lifecycleCtx, address, s.params.HTTPClient)
@@ -236,8 +236,8 @@ func (s *Service) getAlertManagerCounts(c *gin.Context) {
 }
 
 type GetHostsInfoResponse struct {
-	Hosts   []*hostinfo.Info        `json:"hosts"`
-	Warning resterror.ErrorResponse `json:"warning"`
+	Hosts   []*hostinfo.Info   `json:"hosts"`
+	Warning rest.ErrorResponse `json:"warning"`
 }
 
 // @ID clusterInfoGetHostsInfo
@@ -245,7 +245,7 @@ type GetHostsInfoResponse struct {
 // @Router /host/all [get]
 // @Security JwtAuth
 // @Success 200 {object} GetHostsInfoResponse
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getHostsInfo(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 
@@ -255,9 +255,9 @@ func (s *Service) getHostsInfo(c *gin.Context) {
 		return
 	}
 
-	var warning resterror.ErrorResponse
+	var warning rest.ErrorResponse
 	if err != nil {
-		warning = resterror.NewErrorResponse(err)
+		warning = rest.NewErrorResponse(err)
 	}
 
 	c.JSON(http.StatusOK, GetHostsInfoResponse{
@@ -271,7 +271,7 @@ func (s *Service) getHostsInfo(c *gin.Context) {
 // @Router /host/statistics [get]
 // @Security JwtAuth
 // @Success 200 {object} ClusterStatistics
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getStatistics(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	stats, err := s.calculateStatistics(db)

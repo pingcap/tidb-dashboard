@@ -19,7 +19,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 const (
@@ -42,7 +42,7 @@ func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 		if !sessionUser.HasTiDBAuth {
 			// Only TiDBAuth is able to access. Raise error in this case.
 			// The error is privilege error instead of authorization error so that user will not be redirected.
-			_ = c.Error(resterror.ErrForbidden.NewWithNoMessage())
+			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -52,7 +52,7 @@ func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				// If TiDB conn is ok when login but fail this time, it means TiDB credential has been changed since
 				// login. In this case, we return unauthorized error, so that the front-end can let user to login again.
-				_ = c.Error(resterror.ErrUnauthenticated.NewWithNoMessage())
+				_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
 			} else {
 				// For other kind of connection errors, for example, PD goes away, return these errors directly.
 				// In front-end we will simply display these errors but not ask user to login again.

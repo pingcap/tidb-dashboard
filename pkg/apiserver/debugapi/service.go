@@ -26,7 +26,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 const (
@@ -72,14 +72,14 @@ func getExtFromContentTypeHeader(contentType string) string {
 // @ID debugAPIRequestEndpoint
 // @Param req body endpoint.RequestPayload true "request payload"
 // @Success 200 {object} string
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /debug_api/endpoint [post]
 func (s *Service) RequestEndpoint(c *gin.Context) {
 	var req endpoint.RequestPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -119,8 +119,8 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 // @Summary Download a finished request result
 // @Param token query string true "download token"
 // @Success 200 {object} string
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /debug_api/download [get]
 func (s *Service) Download(c *gin.Context) {
 	token := c.Query("token")
@@ -131,7 +131,7 @@ func (s *Service) Download(c *gin.Context) {
 // @ID debugAPIGetEndpoints
 // @Security JwtAuth
 // @Success 200 {array} endpoint.APIModel
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /debug_api/endpoints [get]
 func (s *Service) GetEndpoints(c *gin.Context) {
 	c.JSON(http.StatusOK, s.Client.GetAllAPIModels())

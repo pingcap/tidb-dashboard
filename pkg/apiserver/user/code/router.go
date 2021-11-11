@@ -8,7 +8,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -35,14 +35,14 @@ type ShareResponse struct {
 func (s *Service) shareHandler(c *gin.Context) {
 	var req ShareRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	expiry := time.Second * time.Duration(req.ExpireInSeconds)
 
 	if expiry > MaxSessionShareExpiry || expiry < 0 {
-		_ = c.Error(resterror.ErrBadRequest.New("Invalid share expiry"))
+		_ = c.Error(rest.ErrBadRequest.New("Invalid share expiry"))
 		return
 	}
 

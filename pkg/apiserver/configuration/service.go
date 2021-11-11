@@ -31,7 +31,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 var (
@@ -201,8 +201,8 @@ type Item struct {
 }
 
 type AllConfigItems struct {
-	Errors []resterror.ErrorResponse `json:"errors"`
-	Items  map[ItemKind][]Item       `json:"items"`
+	Errors []rest.ErrorResponse `json:"errors"`
+	Items  map[ItemKind][]Item  `json:"items"`
 }
 
 func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
@@ -239,13 +239,13 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 		go s.getConfigItemsFromTiDBToChannel(&item2, ch)
 	}
 
-	errors := make([]resterror.ErrorResponse, 0)
+	errors := make([]rest.ErrorResponse, 0)
 	successItems := make([]channelItem, 0)
 
 	for i := 0; i < waitItems; i++ {
 		item := <-ch
 		if item.Err != nil {
-			errors = append(errors, resterror.NewErrorResponse(err))
+			errors = append(errors, rest.NewErrorResponse(err))
 			continue
 		}
 		successItems = append(successItems, item)
@@ -319,7 +319,7 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 	}, nil
 }
 
-func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue interface{}) ([]resterror.ErrorResponse, error) {
+func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue interface{}) ([]rest.ErrorResponse, error) {
 	if !isConfigItemEditable(kind, id) {
 		return nil, ErrNotEditable.New("Configuration `%s` is not editable", id)
 	}
@@ -355,9 +355,9 @@ func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue int
 			}
 			return nil, nil
 		}
-		warnings := make([]resterror.ErrorResponse, 0)
+		warnings := make([]rest.ErrorResponse, 0)
 		for _, err := range failures {
-			warnings = append(warnings, resterror.NewErrorResponse(err))
+			warnings = append(warnings, rest.NewErrorResponse(err))
 		}
 		return warnings, nil
 	case ItemKindTiDBVariable:

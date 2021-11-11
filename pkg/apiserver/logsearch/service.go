@@ -31,7 +31,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/util/rest"
-	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
 )
 
 type Service struct {
@@ -110,18 +109,18 @@ type TaskGroupResponse struct {
 // @Param request body CreateTaskGroupRequest true "Request body"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupResponse
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroup [put]
 func (s *Service) CreateTaskGroup(c *gin.Context) {
 	var req CreateTaskGroupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(req.Targets) == 0 {
-		_ = c.Error(resterror.ErrBadRequest.New("Expect at least 1 target"))
+		_ = c.Error(rest.ErrBadRequest.New("Expect at least 1 target"))
 		return
 	}
 	stats := model.NewRequestTargetStatisticsFromArray(&req.Targets)
@@ -159,8 +158,8 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 // @Summary List all log search task groups
 // @Security JwtAuth
 // @Success 200 {array} TaskGroupModel
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups [get]
 func (s *Service) GetAllTaskGroups(c *gin.Context) {
 	var taskGroups []*TaskGroupModel
@@ -177,8 +176,8 @@ func (s *Service) GetAllTaskGroups(c *gin.Context) {
 // @Param id path string true "Task Group ID"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupResponse
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id} [get]
 func (s *Service) GetTaskGroup(c *gin.Context) {
 	taskGroupID := c.Param("id")
@@ -205,8 +204,8 @@ func (s *Service) GetTaskGroup(c *gin.Context) {
 // @Param id path string true "task group id"
 // @Security JwtAuth
 // @Success 200 {array} PreviewModel
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id}/preview [get]
 func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 	taskGroupID := c.Param("id")
@@ -227,14 +226,14 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 // @Param id path string true "task group id"
 // @Security JwtAuth
 // @Success 200 {object} rest.EmptyResponse
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id}/retry [post]
 func (s *Service) RetryTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -276,13 +275,13 @@ func (s *Service) RetryTask(c *gin.Context) {
 // @Param id path string true "task group id"
 // @Security JwtAuth
 // @Success 200 {object} rest.EmptyResponse
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id}/cancel [post]
 func (s *Service) CancelTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskGroup := TaskGroupModel{}
@@ -292,7 +291,7 @@ func (s *Service) CancelTask(c *gin.Context) {
 		return
 	}
 	if taskGroup.State != TaskGroupStateRunning {
-		_ = c.Error(resterror.ErrBadRequest.New("Task is not running"))
+		_ = c.Error(rest.ErrBadRequest.New("Task is not running"))
 		return
 	}
 	s.scheduler.AsyncAbort(uint(taskGroupID))
@@ -303,8 +302,8 @@ func (s *Service) CancelTask(c *gin.Context) {
 // @Param id path string true "task group id"
 // @Security JwtAuth
 // @Success 200 {object} rest.EmptyResponse
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id} [delete]
 func (s *Service) DeleteTaskGroup(c *gin.Context) {
 	taskGroupID := c.Param("id")
@@ -323,8 +322,8 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 // @Param id query []string false "task id" collectionFormat(csv)
 // @Security JwtAuth
 // @Success 200 {string} string "xxx"
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /logs/download/acquire_token [get]
 func (s *Service) GetDownloadToken(c *gin.Context) {
 	ids := c.QueryArray("id")
@@ -340,15 +339,15 @@ func (s *Service) GetDownloadToken(c *gin.Context) {
 // @Summary Download logs
 // @Produce application/x-tar,application/zip
 // @Param token query string true "download token"
-// @Failure 400 {object} resterror.ErrorResponse
-// @Failure 401 {object} resterror.ErrorResponse
-// @Failure 500 {object} resterror.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/download [get]
 func (s *Service) DownloadLogs(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("logs/download", token)
 	if err != nil {
-		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	ids := strings.Split(str, ",")
@@ -366,7 +365,7 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 
 	switch len(tasks) {
 	case 0:
-		_ = c.Error(resterror.ErrBadRequest.New("Expect at least 1 target"))
+		_ = c.Error(rest.ErrBadRequest.New("Expect at least 1 target"))
 	case 1:
 		serveTaskForDownload(tasks[0], c)
 	default:

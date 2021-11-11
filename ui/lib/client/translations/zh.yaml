@@ -19,6 +19,7 @@ error:
       ng_monitoring_not_start: |
         想使用或深入了解“持续性能分析”功能，请在 {{distro.tidb}} 官方文档搜索“持续性能分析”查看更多内容。
         若未能解决问题，请联系本产品技术支持。
+    feature_not_supported: 当前版本的集群不支持或无法使用该功能，请联系技术支持了解详细情况。
     other: 其他错误
   tidb:
     no_alive_tidb: 没有正在运行的 {{distro.tidb}} 实例

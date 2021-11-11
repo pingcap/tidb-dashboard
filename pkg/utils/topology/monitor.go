@@ -15,7 +15,6 @@ package topology
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -112,7 +111,6 @@ func parseNgMontioringAliveness(value []byte) (bool, error) {
 		return false, ErrInvalidTopologyData.Wrap(err, "NgMonitoring TTL info parse failed")
 	}
 	t := time.Unix(0, int64(unixTimestampNano))
-	fmt.Println("t:", t)
 	if time.Since(t) > time.Second*90 {
 		return false, nil
 	}

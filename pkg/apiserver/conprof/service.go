@@ -11,20 +11,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package profiling
+// conprof is short for continuous profiling
+package conprof
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/fx"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
@@ -44,20 +51,49 @@ type ngMonitoringAddrCacheEntity struct {
 	cacheAt time.Time
 }
 
+type ServiceParams struct {
+	fx.In
+
+	EtcdClient *clientv3.Client
+	Config     *config.Config
+}
+
+type Service struct {
+	params       ServiceParams
+	lifecycleCtx context.Context
+
+	ngMonitoringReqGroup  singleflight.Group
+	ngMonitoringAddrCache atomic.Value
+}
+
+func newService(lc fx.Lifecycle, p ServiceParams) *Service {
+	s := &Service{params: p}
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			s.lifecycleCtx = ctx
+			return nil
+		},
+	})
+	return s
+}
+
 // Register register the handlers to the service.
-func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
-	conprofEndpoint := r.Group("/continuous_profiling")
+func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+	endpoint := r.Group("/continuous_profiling")
 
-	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
-	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
-	conprofEndpoint.GET("/components", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/components"), s.conprofComponents)
-	conprofEndpoint.GET("/estimate_size", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/estimate_size"), s.estimateSize)
-	conprofEndpoint.GET("/group_profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profiles"), s.conprofGroupProfiles)
-	conprofEndpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profile/detail"), s.conprofGroupProfileDetail)
+	endpoint.Use(utils.MWForbidByFeatureSupport(IsFeatureSupport(s.params.Config)))
+	{
+		endpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
+		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
+		endpoint.GET("/components", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/components"), s.conprofComponents)
+		endpoint.GET("/estimate_size", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/estimate_size"), s.estimateSize)
+		endpoint.GET("/group_profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profiles"), s.conprofGroupProfiles)
+		endpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profile/detail"), s.conprofGroupProfileDetail)
 
-	conprofEndpoint.GET("/action_token", auth.MWAuthRequired(), s.genConprofActionToken)
-	conprofEndpoint.GET("/download", s.reverseProxy("/continuous_profiling/download"), s.conprofDownload)
-	conprofEndpoint.GET("/single_profile/view", s.reverseProxy("/continuous_profiling/single_profile/view"), s.conprofViewProfile)
+		endpoint.GET("/action_token", auth.MWAuthRequired(), s.genConprofActionToken)
+		endpoint.GET("/download", s.reverseProxy("/continuous_profiling/download"), s.conprofDownload)
+		endpoint.GET("/single_profile/view", s.reverseProxy("/continuous_profiling/single_profile/view"), s.conprofViewProfile)
+	}
 }
 
 func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {

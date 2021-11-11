@@ -86,7 +86,7 @@ type Service struct {
 	labelStrategy decorator.LabelStrategy
 }
 
-// FIXME: Simplify these things
+// FIXME: Simplify these things.
 func NewService(
 	lc fx.Lifecycle,
 	cfg *config.Config,

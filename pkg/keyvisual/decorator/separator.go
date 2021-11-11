@@ -38,7 +38,7 @@ type separatorLabeler struct {
 	Separator string
 }
 
-// ReloadConfig reset separator
+// ReloadConfig reset separator.
 func (s *separatorLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
 	s.Separator.Store(cfg.PolicyKVSeparator)
 	log.Debug("Reload config", zap.String("separator", cfg.PolicyKVSeparator))
@@ -50,12 +50,12 @@ func (s *separatorLabelStrategy) NewLabeler() Labeler {
 	}
 }
 
-// CrossBorder is temporarily not considering cross-border logic
+// CrossBorder is temporarily not considering cross-border logic.
 func (e *separatorLabeler) CrossBorder(startKey, endKey string) bool {
 	return false
 }
 
-// Label uses separator to split key
+// Label uses separator to split key.
 func (e *separatorLabeler) Label(keys []string) []LabelKey {
 	labelKeys := make([]LabelKey, len(keys))
 	for i, key := range keys {

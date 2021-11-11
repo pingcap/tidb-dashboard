@@ -27,8 +27,6 @@ type Config struct {
 type Proxy struct {
 	nocopy.NoCopy
 
-	config Config
-
 	SQLPortProxy    *proxy.Proxy
 	StatusPortProxy *proxy.Proxy
 }

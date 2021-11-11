@@ -73,19 +73,19 @@ func (vv *VirtualView) SetSourceDBColumns(dbColumnNames []string) {
 	vv.mu.Unlock()
 }
 
-func (vv *VirtualView) Clauses(jsonFieldNames []string) VirtualViewClauses {
+func (vv *VirtualView) Clauses(jsonFieldNames []string) Clauses {
 	m := map[string]struct{}{}
 	for _, name := range jsonFieldNames {
 		m[strings.ToLower(name)] = struct{}{}
 	}
-	return VirtualViewClauses{
+	return Clauses{
 		vv:                vv,
 		jsonFieldNames:    jsonFieldNames,
 		jsonFieldsByNameL: m,
 	}
 }
 
-type VirtualViewClauses struct {
+type Clauses struct {
 	vv                *VirtualView
 	jsonFieldNames    []string
 	jsonFieldsByNameL map[string]struct{}
@@ -94,7 +94,7 @@ type VirtualViewClauses struct {
 // Select builds a Select clause that return all fields specified in Clauses().
 //
 // This function is concurrent-safe.
-func (vvc VirtualViewClauses) Select() clause.Expression {
+func (vvc Clauses) Select() clause.Expression {
 	vvc.vv.mu.Lock()
 	defer vvc.vv.mu.Unlock()
 
@@ -150,7 +150,7 @@ type OrderByField struct {
 // when calling Clauses() will be ignored.
 //
 // This function is concurrent-safe.
-func (vvc VirtualViewClauses) OrderBy(fields []OrderByField) clause.Expression {
+func (vvc Clauses) OrderBy(fields []OrderByField) clause.Expression {
 	vvc.vv.mu.Lock()
 	defer vvc.vv.mu.Unlock()
 

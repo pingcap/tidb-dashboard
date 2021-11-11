@@ -25,7 +25,7 @@ import (
 // Source data pre processing parameters.
 const (
 	// preThreshold   = 128
-	// preRatioTarget = 512
+	// preRatioTarget = 512.
 	preTarget = 3072
 
 	dirtyWrittenBytes uint64 = 1 << 32

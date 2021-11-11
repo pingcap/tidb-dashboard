@@ -22,13 +22,13 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
 )
 
-// Used to deserialize from JSON_VALUE
+// Used to deserialize from JSON_VALUE.
 type clusterLoadCPUUsageModel struct {
 	Idle   float64 `json:"idle,string"`
 	System float64 `json:"system,string"`
 }
 
-// Used to deserialize from JSON_VALUE
+// Used to deserialize from JSON_VALUE.
 type clusterLoadMemoryVirtualModel struct {
 	Used  int `json:"used,string"`
 	Total int `json:"total,string"`

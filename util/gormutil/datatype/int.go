@@ -48,7 +48,7 @@ func (n *Int) Scan(value interface{}) error {
 
 var _ schema.GormDataTypeInterface = Int(0)
 
-// GormDataType implements schema.GormDataTypeInterface
+// GormDataType implements schema.GormDataTypeInterface.
 func (n Int) GormDataType() string {
 	return "BIGINT"
 }

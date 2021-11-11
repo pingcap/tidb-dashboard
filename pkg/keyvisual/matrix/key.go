@@ -19,7 +19,7 @@ import (
 	"unsafe"
 )
 
-// KeyMap is used for string intern
+// KeyMap is used for string intern.
 type KeyMap struct {
 	sync.RWMutex
 	sync.Map

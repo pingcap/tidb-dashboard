@@ -3,23 +3,27 @@ module github.com/pingcap/tidb-dashboard
 go 1.13
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/ReneKroon/ttlcache/v2 v2.3.0
-	github.com/VividCortex/mysqlerr v0.0.0-20200629151747-c28746d985dd
+	github.com/VividCortex/mysqlerr v1.0.0
 	github.com/Xeoncross/go-aesctr-with-hmac v0.0.0-20200623134604-12b17a7ff502
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+	github.com/antonmedv/expr v1.9.0
 	github.com/appleboy/gin-jwt/v2 v2.6.3
 	github.com/baurine/speedscope-files v0.0.0-20211111230806-075a2ed1a467
 	github.com/cenkalti/backoff/v4 v4.0.2
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fatih/structtag v1.2.0
 	github.com/gin-contrib/gzip v0.0.1
-	github.com/gin-gonic/gin v1.5.0
+	github.com/gin-gonic/gin v1.7.4
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-graphviz v0.0.5
+	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/google/pprof v0.0.0-20200407044318-7d83b28da2e9
 	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
+	github.com/henrylee2cn/ameda v1.4.10
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1
 	github.com/minio/sio v0.3.0
@@ -27,8 +31,8 @@ require (
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
 	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
-	github.com/pingcap/log v0.0.0-20210317133921-96f4fcab92a4
-	github.com/pingcap/sysutil v0.0.0-20210315073920-cc0985d983a3
+	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
+	github.com/pingcap/sysutil v0.0.0-20211108113841-e5c5906ed1e7
 	github.com/rs/cors v1.7.0
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
@@ -37,11 +41,12 @@ require (
 	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba
 	github.com/swaggo/swag v1.6.6-0.20200529100950-7c765ddd0476
 	github.com/thoas/go-funk v0.8.0
-	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.1
+	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
-	go.uber.org/atomic v1.6.0
+	go.uber.org/atomic v1.9.0
 	go.uber.org/fx v1.10.0
-	go.uber.org/zap v1.16.0
+	go.uber.org/goleak v1.1.10
+	go.uber.org/zap v1.19.0
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1

@@ -240,10 +240,10 @@ func TestActiveUpstreamDown(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Contains(t, resp.String(), "foo#")
 	assert.Equal(t, servers.LastResp(), resp.String())
-	assert.Equal(t, fmt.Sprintf("foo#%d", servers.LastId()), resp.String())
+	assert.Equal(t, fmt.Sprintf("foo#%d", servers.LastID()), resp.String())
 
 	// Close the last accessed server
-	servers.Servers[servers.LastId()].Close()
+	servers.Servers[servers.LastID()].Close()
 
 	// The connection is still succeeded, but forwarded to another upstream.
 	resp2, err := sendGetToProxy(p)
@@ -271,11 +271,11 @@ func TestNonActiveUpstreamDown(t *testing.T) {
 	assert.True(t, p.HasActiveUpstream())
 	resp, err := sendGetToProxy(p)
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("foo#%d", servers.LastId()), resp.String())
+	assert.Equal(t, fmt.Sprintf("foo#%d", servers.LastID()), resp.String())
 
 	// Close other non active servers
 	for i := 0; i < 5; i++ {
-		if i != servers.LastId() {
+		if i != servers.LastID() {
 			servers.Servers[i].Close()
 		}
 	}

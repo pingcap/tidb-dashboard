@@ -25,7 +25,7 @@ import (
 // TaskState is used to represent the task/task group state.
 type TaskState int
 
-// Built-in task state
+// Built-in task state.
 const (
 	TaskStateError TaskState = iota
 	TaskStateRunning

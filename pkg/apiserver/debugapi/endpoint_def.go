@@ -76,7 +76,7 @@ func resolveTimeoutFromQuery(key string) func(*endpoint.ResolvedRequestPayload) 
 	}
 }
 
-// tidb
+// tidb.
 var endpointDefs = []*endpoint.APIModel{
 	{
 		ID:        "tidb_stats_dump",

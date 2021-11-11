@@ -30,7 +30,7 @@ type ShareResponse struct {
 // @Param request body ShareRequest true "Request body"
 // @Security JwtAuth
 // @Success 200 {object} ShareResponse
-// @Router /user/share/code [post]
+// @Router /user/share/code [post].
 func (s *Service) shareHandler(c *gin.Context) {
 	var req ShareRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

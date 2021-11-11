@@ -190,7 +190,7 @@ func (s *Service) metricsRelationViewHandler(c *gin.Context) {
 // @Success 200 {array} Report
 // @Router /diagnose/reports [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} utils.APIError "Unauthorized failure".
 func (s *Service) reportsHandler(c *gin.Context) {
 	reports, err := GetReports(s.db)
 	if err != nil {
@@ -214,7 +214,7 @@ type GenerateReportRequest struct {
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
 // @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} utils.APIError "Unauthorized failure".
 func (s *Service) genReportHandler(c *gin.Context) {
 	var req GenerateReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -268,7 +268,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 // @Success 200 {object} Report
 // @Router /diagnose/reports/{id}/status [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} utils.APIError "Unauthorized failure".
 func (s *Service) reportStatusHandler(c *gin.Context) {
 	id := c.Param("id")
 	report, err := GetReport(s.db, id)
@@ -284,7 +284,7 @@ func (s *Service) reportStatusHandler(c *gin.Context) {
 // @Produce html
 // @Param id path string true "report id"
 // @Success 200 {string} string
-// @Router /diagnose/reports/{id}/detail [get]
+// @Router /diagnose/reports/{id}/detail [get].
 func (s *Service) reportHTMLHandler(c *gin.Context) {
 	defer func(old string) {
 		c.Request.URL.Path = old
@@ -299,7 +299,7 @@ func (s *Service) reportHTMLHandler(c *gin.Context) {
 // @Produce text/javascript
 // @Param id path string true "report id"
 // @Success 200 {string} string
-// @Router /diagnose/reports/{id}/data.js [get]
+// @Router /diagnose/reports/{id}/data.js [get].
 func (s *Service) reportDataHandler(c *gin.Context) {
 	id := c.Param("id")
 	report, err := GetReport(s.db, id)
@@ -310,4 +310,49 @@ func (s *Service) reportDataHandler(c *gin.Context) {
 
 	data := "window.__diagnosis_data__ = " + report.Content
 	c.Data(http.StatusOK, "text/javascript", []byte(data))
+}
+
+type GenDiagnosisReportRequest struct {
+	StartTime int64  `json:"start_time"`
+	EndTime   int64  `json:"end_time"`
+	Kind      string `json:"kind"` // values: config, error, performance
+}
+
+// @Summary SQL diagnosis report
+// @Description Generate sql diagnosis report
+// @Produce json
+// @Param request body GenDiagnosisReportRequest true "Request body"
+// @Success 200 {object} TableDef
+// @Router /diagnose/diagnosis [post]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure".
+func (s *Service) genDiagnosisHandler(c *gin.Context) {
+	var req GenDiagnosisReportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+
+	startTime := time.Unix(req.StartTime, 0)
+	endTime := time.Unix(req.EndTime, 0)
+
+	var rules []string
+	switch req.Kind {
+	case "config":
+		rules = []string{"config", "version"}
+	case "error":
+		rules = []string{"critical-error"}
+	case "performance":
+		rules = []string{"node-load", "threshold-check"}
+	}
+
+	db := utils.TakeTiDBConnection(c)
+	defer utils.CloseTiDBConnection(db) //nolint:errcheck
+	table, err := GetDiagnoseReport(startTime.Format(timeLayout), endTime.Format(timeLayout), db, rules)
+	if err != nil {
+		tableErr := TableRowDef{Values: []string{CategoryDiagnose, "diagnose", err.Error()}}
+		table = *GenerateReportError([]TableRowDef{tableErr})
+	}
+	c.JSON(http.StatusOK, table)
 }

@@ -17,7 +17,7 @@ import (
 	"net/http"
 
 	httpSwagger "github.com/swaggo/http-swagger"
-	// Swagger doc
+	// Swagger doc.
 	_ "github.com/pingcap/tidb-dashboard/swaggerspec"
 )
 

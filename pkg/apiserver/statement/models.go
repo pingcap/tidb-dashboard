@@ -24,7 +24,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
-// TimeRange represents a range of time
+// TimeRange represents a range of time.
 type TimeRange struct {
 	BeginTime int64 `json:"begin_time"`
 	EndTime   int64 `json:"end_time"`
@@ -112,7 +112,7 @@ type Model struct {
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"
-// return "d1, d2, d3"
+// return "d1, d2, d3".
 func extractSchemasFromTableNames(tableNames string) string {
 	schemas := make(map[string]bool)
 	tables := strings.Split(tableNames, ",")

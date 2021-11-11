@@ -23,7 +23,7 @@ import (
 
 // IsVersionSupport checks if a semantic version fits within a set of constraints
 // pdVersion, standaloneVersion examples: "v5.2.2", "v5.3.0", "v5.4.0-alpha-xxx", "5.3.0" (semver can handle `v` prefix by itself)
-// constraints examples: "~5.2.2", ">= 5.3.0", see semver docs to get more information
+// constraints examples: "~5.2.2", ">= 5.3.0", see semver docs to get more information.
 func IsVersionSupport(standaloneVersion string, constraints []string) bool {
 	curVersion := standaloneVersion
 	if version.Standalone == "No" {

@@ -22,4 +22,14 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	// convert speedscope
+	fs = http.Dir("ui_speedscope/dist")
+	err = vfsgen.Generate(fs, vfsgen.Options{
+		PackageName:  "uiserver",
+		VariableName: "SpeedscopeAssets",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
 }

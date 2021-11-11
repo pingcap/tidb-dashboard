@@ -40,4 +40,5 @@ go run tools/assets_generate/main.go $BUILD_TAG_PARAMETER
 
 HANDLER_PATH=pkg/uiserver/embedded_assets_handler.go
 mv assets_vfsdata.go $HANDLER_PATH
+mv speedscopeassets_vfsdata.go pkg/uiserver/embeded_speedscope_assets.go
 echo "  - Assets handler written to $HANDLER_PATH"

@@ -41,6 +41,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
+	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator
@@ -223,6 +224,7 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	apiHandlerEngine.Use(apiutils.MWHandleErrors())
 
 	endpoint = apiHandlerEngine.Group("/dashboard/api")
+	endpoint.StaticFS("/speedscope", uiserver.SpeedscopeAssets)
 
 	return
 }

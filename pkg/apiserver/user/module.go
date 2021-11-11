@@ -11,24 +11,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package conprof
+package user
 
 import (
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
-var (
-	supportedTiDBVersions = []string{">= 5.3.0"}
-	featureSupported      *bool
-)
-
-func IsFeatureSupport(config *config.Config) (supported bool) {
-	if featureSupported != nil {
-		return *featureSupported
-	}
-
-	supported = utils.IsVersionSupport(config.FeatureVersion, supportedTiDBVersions)
-	featureSupported = &supported
-	return
-}
+var FeatureFlagNonRootLogin = utils.NewFeatureFlag("nonRootLogin", []string{">= 5.3.0"})

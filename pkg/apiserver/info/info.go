@@ -23,12 +23,12 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/nonrootlogin"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
@@ -53,7 +53,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/whoami", s.whoamiHandler)
 
-	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+	endpoint.Use(apiutils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.GET("/databases", s.databasesHandler)
 	endpoint.GET("/tables", s.tablesHandler)
 }
@@ -72,12 +72,16 @@ type InfoResponse struct { //nolint
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
-	supportedFeatures := []string{}
-	if conprof.IsFeatureSupport(s.params.Config) {
-		supportedFeatures = append(supportedFeatures, "conprof")
+	featureFlags := []*utils.FeatureFlag{
+		conprof.FeatureFlagConprof,
+		user.FeatureFlagNonRootLogin,
 	}
-	if nonrootlogin.IsFeatureSupport(s.params.Config) {
-		supportedFeatures = append(supportedFeatures, "nonRootLogin")
+	supportedFeatures := []string{}
+	for _, ff := range featureFlags {
+		if !ff.IsSupport(s.params.Config.FeatureVersion) {
+			continue
+		}
+		supportedFeatures = append(supportedFeatures, ff.Name)
 	}
 
 	resp := InfoResponse{
@@ -102,7 +106,7 @@ type WhoAmIResponse struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) whoamiHandler(c *gin.Context) {
-	sessionUser := utils.GetSession(c)
+	sessionUser := apiutils.GetSession(c)
 	resp := WhoAmIResponse{
 		DisplayName: sessionUser.DisplayName,
 		IsShareable: sessionUser.IsShareable,
@@ -122,7 +126,7 @@ func (s *Service) databasesHandler(c *gin.Context) {
 		Databases string `gorm:"column:Database"`
 	}
 	var result []databaseSchemas
-	db := utils.GetTiDBConnection(c)
+	db := apiutils.GetTiDBConnection(c)
 	err := db.Raw("SHOW DATABASES").Scan(&result).Error
 	if err != nil {
 		_ = c.Error(err)
@@ -150,7 +154,7 @@ type tableSchema struct {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) tablesHandler(c *gin.Context) {
 	var result []tableSchema
-	db := utils.GetTiDBConnection(c)
+	db := apiutils.GetTiDBConnection(c)
 	tx := db.Select([]string{"TABLE_NAME", "TIDB_TABLE_ID"}).Table("INFORMATION_SCHEMA.TABLES")
 	databaseName := c.Query("database_name")
 

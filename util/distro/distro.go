@@ -37,8 +37,10 @@ var defaultDistroRes = DistributionResource{
 	TiFlash: "TiFlash",
 }
 
-var globalDistroRes atomic.Value
-var replaceGlobalMu sync.Mutex
+var (
+	globalDistroRes atomic.Value
+	replaceGlobalMu sync.Mutex
+)
 
 // ReplaceGlobal replaces the global distribution resource with the specified one. Missing fields in the
 // resource will be filled using default values.

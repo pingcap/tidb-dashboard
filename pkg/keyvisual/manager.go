@@ -23,8 +23,8 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
 )
 
 func (s *Service) managerHook() fx.Hook {
@@ -101,8 +101,8 @@ func (s *Service) stopService() {
 // @Success 200 {object} config.KeyVisualConfig
 // @Router /keyvisual/config [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 func (s *Service) getDynamicConfig(c *gin.Context) {
 	dc, err := s.cfgManager.Get()
 	if err != nil {
@@ -117,13 +117,13 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 // @Success 200 {object} config.KeyVisualConfig
 // @Router /keyvisual/config [put]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.KeyVisualConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {

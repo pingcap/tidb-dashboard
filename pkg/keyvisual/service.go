@@ -237,7 +237,7 @@ func (s *Service) Stop(ctx context.Context) error {
 // @Success 200 {object} matrix.Matrix
 // @Router /keyvisual/heatmaps [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) heatmaps(c *gin.Context) {
 	startKey := c.Query("startkey")
 	endKey := c.Query("endkey")

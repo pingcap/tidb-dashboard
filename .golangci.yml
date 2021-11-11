@@ -32,7 +32,7 @@ linters:
     - exhaustive
     - exportloopref
     - godot
-    - gofmt
+    - gofumpt
     - goimports
     - gosec
     - importas

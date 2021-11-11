@@ -27,9 +27,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
-var (
-	ErrPDClientRequestFailed = ErrNS.NewType("client_request_failed")
-)
+var ErrPDClientRequestFailed = ErrNS.NewType("client_request_failed")
 
 const (
 	defaultPDTimeout = time.Second * 10

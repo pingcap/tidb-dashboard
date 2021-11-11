@@ -41,14 +41,13 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
+	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator.
-
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -65,9 +64,7 @@ func Handler(s *Service) http.Handler {
 	return s.NewStatusAwareHandler(http.HandlerFunc(s.handler), s.stoppedHandler)
 }
 
-var (
-	once sync.Once
-)
+var once sync.Once
 
 type Service struct {
 	app    *fx.App
@@ -220,7 +217,7 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	apiHandlerEngine.Use(gin.Recovery())
 	apiHandlerEngine.Use(cors.AllowAll())
 	apiHandlerEngine.Use(gzip.Gzip(gzip.DefaultCompression))
-	apiHandlerEngine.Use(apiutils.MWHandleErrors())
+	apiHandlerEngine.Use(resterror.ErrorHandlerFn())
 
 	endpoint = apiHandlerEngine.Group("/dashboard/api")
 

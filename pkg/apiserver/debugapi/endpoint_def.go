@@ -409,7 +409,8 @@ var endpointDefs = []*endpoint.APIModel{
 					{Value: "hist-peer"},
 					{Value: "hist-keys"},
 				}),
-				Name: "state", Required: true},
+				Name: "state", Required: true,
+			},
 		},
 		QueryParams: []*endpoint.APIParam{
 			{Model: APIParamModelInt, Name: "bound"},

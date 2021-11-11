@@ -14,13 +14,12 @@
 package utils
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
 )
 
 const (
@@ -43,22 +42,20 @@ func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 		if !sessionUser.HasTiDBAuth {
 			// Only TiDBAuth is able to access. Raise error in this case.
 			// The error is privilege error instead of authorization error so that user will not be redirected.
-			MakeInsufficientPrivilegeError(c)
+			_ = c.Error(resterror.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 
 		db, err := tidbClient.OpenSQLConn(sessionUser.TiDBUsername, sessionUser.TiDBPassword)
-
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				// If TiDB conn is ok when login but fail this time, it means TiDB credential has been changed since
 				// login. In this case, we return unauthorized error, so that the front-end can let user to login again.
-				MakeUnauthorizedError(c)
+				_ = c.Error(resterror.ErrUnauthenticated.NewWithNoMessage())
 			} else {
 				// For other kind of connection errors, for example, PD goes away, return these errors directly.
 				// In front-end we will simply display these errors but not ask user to login again.
-				c.Status(http.StatusInternalServerError)
 				_ = c.Error(err)
 			}
 			c.Abort()

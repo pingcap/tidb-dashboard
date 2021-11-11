@@ -47,20 +47,22 @@ func testCombineReq(host string, port int, path, query string) string {
 	return fmt.Sprintf("%s:%d%s?%s", host, port, path, query)
 }
 
-var testParamModel = &BaseAPIParamModel{Type: "text"}
-var testAPI = &APIModel{
-	ID:        "test_endpoint",
-	Component: model.NodeKindTiDB,
-	Path:      "/test/{pathParam}",
-	Method:    http.MethodGet,
-	PathParams: []*APIParam{
-		{Model: testParamModel, Name: "pathParam", Required: true},
-	},
-	QueryParams: []*APIParam{
-		{Model: testParamModel, Name: "queryParam", Required: true},
-		{Model: testParamModel, Name: "queryParam2"},
-	},
-}
+var (
+	testParamModel = &BaseAPIParamModel{Type: "text"}
+	testAPI        = &APIModel{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/test/{pathParam}",
+		Method:    http.MethodGet,
+		PathParams: []*APIParam{
+			{Model: testParamModel, Name: "pathParam", Required: true},
+		},
+		QueryParams: []*APIParam{
+			{Model: testParamModel, Name: "queryParam", Required: true},
+			{Model: testParamModel, Name: "queryParam2"},
+		},
+	}
+)
 
 func (t *testClientSuite) Test_Send(c *C) {
 	client := NewClient(&testFetcher{}, []*APIModel{testAPI})

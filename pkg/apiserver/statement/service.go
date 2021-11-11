@@ -19,17 +19,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"github.com/thoas/go-funk"
-
-	"github.com/gin-gonic/gin"
-
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
 )
 
 var (
@@ -86,7 +85,7 @@ type EditableConfig struct {
 // @Success 200 {object} statement.EditableConfig
 // @Router /statements/config [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) configHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	cfg := &EditableConfig{}
@@ -103,11 +102,11 @@ func (s *Service) configHandler(c *gin.Context) {
 // @Success 204 {object} string
 // @Router /statements/config [post]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) modifyConfigHandler(c *gin.Context) {
 	var config EditableConfig
 	if err := c.ShouldBindJSON(&config); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -131,7 +130,7 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 // @Success 200 {array} statement.TimeRange
 // @Router /statements/time_ranges [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) timeRangesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	timeRanges, err := queryTimeRanges(db)
@@ -146,7 +145,7 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 // @Success 200 {array} string
 // @Router /statements/stmt_types [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) stmtTypesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	stmtTypes, err := queryStmtTypes(db)
@@ -171,12 +170,12 @@ type GetStatementsRequest struct {
 // @Success 200 {array} Model
 // @Router /statements/list [get]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) listHandler(c *gin.Context) {
 	var req GetStatementsRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -192,7 +191,7 @@ func (s *Service) listHandler(c *gin.Context) {
 		req.Text,
 		fields)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	c.JSON(http.StatusOK, overviews)
@@ -210,11 +209,11 @@ type GetPlansRequest struct {
 // @Success 200 {array} Model
 // @Router /statements/plans [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) plansHandler(c *gin.Context) {
 	var req GetPlansRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -236,11 +235,11 @@ type GetPlanDetailRequest struct {
 // @Success 200 {object} Model
 // @Router /statements/plan/detail [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) planDetailHandler(c *gin.Context) {
 	var req GetPlanDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -258,12 +257,12 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 // @Param request body GetStatementsRequest true "Request body"
 // @Success 200 {string} string "xxx"
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetStatementsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -279,7 +278,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		req.Text,
 		fields)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(overviews) == 0 {
@@ -303,7 +302,6 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	token, err := utils.ExportCSV(csvData,
 		fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime),
 		"statements/download")
-
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -315,8 +313,8 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 // @Summary Download statements
 // @Produce text/csv
 // @Param token query string true "download token"
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
 	utils.DownloadByToken(token, "statements/download", c)
@@ -325,7 +323,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Summary Query table columns
 // @Description Query statements table columns
 // @Success 200 {array} string
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 // @Security JwtAuth
 // @Router /statements/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {

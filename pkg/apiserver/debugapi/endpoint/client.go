@@ -24,9 +24,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
-var (
-	ErrInvalidParam = ErrNS.NewType("invalid_parameter")
-)
+var ErrInvalidParam = ErrNS.NewType("invalid_parameter")
 
 type RequestPayload struct {
 	EndpointID string            `json:"id"`

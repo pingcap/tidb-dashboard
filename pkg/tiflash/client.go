@@ -27,9 +27,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
-var (
-	ErrFlashClientRequestFailed = ErrNS.NewType("client_request_failed")
-)
+var ErrFlashClientRequestFailed = ErrNS.NewType("client_request_failed")
 
 const (
 	defaultTiFlashStatusAPITimeout = time.Second * 10

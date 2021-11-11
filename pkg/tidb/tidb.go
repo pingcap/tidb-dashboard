@@ -17,6 +17,4 @@ import (
 	"github.com/joomcode/errorx"
 )
 
-var (
-	ErrNS = errorx.NewNamespace("error.tidb")
-)
+var ErrNS = errorx.NewNamespace("error.tidb")

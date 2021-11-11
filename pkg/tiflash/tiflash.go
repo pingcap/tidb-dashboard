@@ -17,6 +17,4 @@ import (
 	"github.com/joomcode/errorx"
 )
 
-var (
-	ErrNS = errorx.NewNamespace("error.tiflash")
-)
+var ErrNS = errorx.NewNamespace("error.tiflash")

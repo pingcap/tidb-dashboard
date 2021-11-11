@@ -483,7 +483,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		resultSubRows = append(resultSubRows, r.genNewRow(table))
 	}
 
-	var totalRatioIdx = -1
+	totalRatioIdx := -1
 	if len(row1.Values) != len(row2.Values) {
 		totalRatio = 1
 		totalRatios = nil
@@ -777,7 +777,7 @@ func getTableLablesMap(table *TableDef) (map[string]*TableRowDef, error) {
 
 func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	funcs := []getTableFunc{
-		//Node
+		// Node
 		GetLoadTable,
 		GetCPUUsageTable,
 		GetTiKVThreadCPUTable,

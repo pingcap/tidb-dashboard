@@ -27,6 +27,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
 )
 
 // Register register the handlers to the service.
@@ -53,18 +55,18 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Param req body StartRequest true "profiling request"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupModel "task group"
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 // @Router /profiling/group/start [post]
 func (s *Service) handleStartGroup(c *gin.Context) {
 	var req StartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(req.Targets) == 0 {
-		utils.MakeInvalidRequestErrorWithMessage(c, "Expect at least 1 target")
+		_ = c.Error(resterror.ErrBadRequest.New("Expect at least 1 target"))
 		return
 	}
 
@@ -97,7 +99,7 @@ func (s *Service) handleStartGroup(c *gin.Context) {
 // @Description List all profiling groups
 // @Security JwtAuth
 // @Success 200 {array} TaskGroupModel
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 // @Router /profiling/group/list [get]
 func (s *Service) getGroupList(c *gin.Context) {
 	var resp []TaskGroupModel
@@ -121,13 +123,13 @@ type GroupDetailResponse struct {
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
 // @Success 200 {object} GroupDetailResponse
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
 // @Router /profiling/group/detail/{groupId} [get]
 func (s *Service) getGroupDetail(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var taskGroup TaskGroupModel
@@ -156,21 +158,21 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 // @Description Cancel all profling tasks with a given group ID
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
-// @Success 200 {object} utils.APIEmptyResponse
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Success 200 {object} rest.EmptyResponse
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
 // @Router /profiling/group/cancel/{groupId} [post]
 func (s *Service) handleCancelGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+	c.JSON(http.StatusOK, rest.EmptyResponse{})
 }
 
 // @ID getActionToken
@@ -181,9 +183,9 @@ func (s *Service) handleCancelGroup(c *gin.Context) {
 // @Param action query string false "action"
 // @Security JwtAuth
 // @Success 200 {string} string
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 // @Router /profiling/action_token [get]
 func (s *Service) getActionToken(c *gin.Context) {
 	id := c.Query("id")
@@ -202,20 +204,20 @@ func (s *Service) getActionToken(c *gin.Context) {
 // @Produce application/x-gzip
 // @Param token query string true "download token"
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 // @Router /profiling/group/download [get]
 func (s *Service) downloadGroup(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/group_download", token)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskGroupID, err := strconv.Atoi(str)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var tasks []TaskModel
@@ -245,21 +247,21 @@ func (s *Service) downloadGroup(c *gin.Context) {
 // @Produce application/x-gzip
 // @Param token query string true "download token"
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 // @Router /profiling/single/download [get]
 func (s *Service) downloadSingle(c *gin.Context) {
 	// FIXME: We can simply provide only a single file
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/single_download", token)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskID, err := strconv.Atoi(str)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	task := TaskModel{}
@@ -284,20 +286,20 @@ func (s *Service) downloadSingle(c *gin.Context) {
 // @Produce html
 // @Param token query string true "download token"
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 // @Router /profiling/single/view [get]
 func (s *Service) viewSingle(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/single_view", token)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskID, err := strconv.Atoi(str)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	task := TaskModel{}
@@ -320,15 +322,15 @@ func (s *Service) viewSingle(c *gin.Context) {
 // @Description Delete all finished profiling tasks with a given group ID
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
-// @Success 200 {object} utils.APIEmptyResponse
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Success 200 {object} rest.EmptyResponse
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 // @Router /profiling/group/delete/{groupId} [delete]
 func (s *Service) deleteGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
@@ -344,15 +346,15 @@ func (s *Service) deleteGroup(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+	c.JSON(http.StatusOK, rest.EmptyResponse{})
 }
 
 // @Summary Get Profiling Dynamic Config
 // @Success 200 {object} config.ProfilingConfig
 // @Router /profiling/config [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 func (s *Service) getDynamicConfig(c *gin.Context) {
 	dc, err := s.params.ConfigManager.Get()
 	if err != nil {
@@ -367,13 +369,13 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 // @Success 200 {object} config.ProfilingConfig
 // @Router /profiling/config [put]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
+// @Failure 500 {object} resterror.ErrorResponse
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.ProfilingConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {

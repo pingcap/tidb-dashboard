@@ -23,9 +23,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
-var (
-	ErrUnknownColumn = ErrNS.NewType("unknown_column")
-)
+var ErrUnknownColumn = ErrNS.NewType("unknown_column")
 
 func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, error) {
 	fields := getFieldsAndTags()

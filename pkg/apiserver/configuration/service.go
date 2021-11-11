@@ -25,13 +25,13 @@ import (
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
 )
 
 var (
@@ -201,8 +201,8 @@ type Item struct {
 }
 
 type AllConfigItems struct {
-	Errors []*utils.APIError   `json:"errors"`
-	Items  map[ItemKind][]Item `json:"items"`
+	Errors []resterror.ErrorResponse `json:"errors"`
+	Items  map[ItemKind][]Item       `json:"items"`
 }
 
 func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
@@ -239,13 +239,13 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 		go s.getConfigItemsFromTiDBToChannel(&item2, ch)
 	}
 
-	errors := make([]*utils.APIError, 0)
+	errors := make([]resterror.ErrorResponse, 0)
 	successItems := make([]channelItem, 0)
 
 	for i := 0; i < waitItems; i++ {
 		item := <-ch
 		if item.Err != nil {
-			errors = append(errors, utils.NewAPIError(err))
+			errors = append(errors, resterror.NewErrorResponse(err))
 			continue
 		}
 		successItems = append(successItems, item)
@@ -319,7 +319,7 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 	}, nil
 }
 
-func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue interface{}) ([]*utils.APIError, error) {
+func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue interface{}) ([]resterror.ErrorResponse, error) {
 	if !isConfigItemEditable(kind, id) {
 		return nil, ErrNotEditable.New("Configuration `%s` is not editable", id)
 	}
@@ -355,9 +355,9 @@ func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue int
 			}
 			return nil, nil
 		}
-		warnings := make([]*utils.APIError, 0)
+		warnings := make([]resterror.ErrorResponse, 0)
 		for _, err := range failures {
-			warnings = append(warnings, utils.NewAPIError(err))
+			warnings = append(warnings, resterror.NewErrorResponse(err))
 		}
 		return warnings, nil
 	case ItemKindTiDBVariable:

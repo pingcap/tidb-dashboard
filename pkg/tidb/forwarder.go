@@ -28,9 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
-var (
-	ErrNoAliveTiDB = ErrNS.NewType("no_alive_tidb")
-)
+var ErrNoAliveTiDB = ErrNS.NewType("no_alive_tidb")
 
 type forwarderConfig struct {
 	TiDBRetrieveTimeout time.Duration

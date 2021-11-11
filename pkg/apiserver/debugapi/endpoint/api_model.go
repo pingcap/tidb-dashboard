@@ -28,9 +28,7 @@ import (
 //                                |   (the actual {host}:{port}/{path}?{query})
 //                                |-> specific endpoint host
 
-var (
-	ErrNS = errorx.NewNamespace("error.api.debugapi.endpoint")
-)
+var ErrNS = errorx.NewNamespace("error.api.debugapi.endpoint")
 
 type APIResolveFn func(resolvedPayload *ResolvedRequestPayload) error
 

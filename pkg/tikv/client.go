@@ -27,9 +27,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
-var (
-	ErrTiKVClientRequestFailed = ErrNS.NewType("client_request_failed")
-)
+var ErrTiKVClientRequestFailed = ErrNS.NewType("client_request_failed")
 
 const (
 	defaultTiKVStatusAPITimeout = time.Second * 10

@@ -20,9 +20,7 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-var (
-	ErrUnknownColumn = ErrNS.NewType("unknown_column")
-)
+var ErrUnknownColumn = ErrNS.NewType("unknown_column")
 
 func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, error) {
 	fields := getFieldsAndTags()

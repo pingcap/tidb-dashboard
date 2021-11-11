@@ -22,13 +22,13 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
-
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
+	"github.com/pingcap/tidb-dashboard/util/rest/resterror"
 )
 
 const (
@@ -90,7 +90,7 @@ type GenerateReportRequest struct {
 // @Success 200 {array} Report
 // @Router /diagnose/reports [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) reportsHandler(c *gin.Context) {
 	reports, err := GetReports(s.db)
 	if err != nil {
@@ -106,12 +106,12 @@ func (s *Service) reportsHandler(c *gin.Context) {
 // @Success 200 {object} int
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} resterror.ErrorResponse
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) genReportHandler(c *gin.Context) {
 	var req GenerateReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(resterror.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -161,7 +161,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 // @Success 200 {object} Report
 // @Router /diagnose/reports/{id}/status [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) reportStatusHandler(c *gin.Context) {
 	id := c.Param("id")
 	report, err := GetReport(s.db, id)
@@ -218,12 +218,11 @@ type GenDiagnosisReportRequest struct {
 // @Success 200 {object} TableDef
 // @Router /diagnose/diagnosis [post]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} resterror.ErrorResponse
 func (s *Service) genDiagnosisHandler(c *gin.Context) {
 	var req GenDiagnosisReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		_ = c.Error(resterror.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 

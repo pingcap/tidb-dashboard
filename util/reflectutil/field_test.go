@@ -8,11 +8,12 @@ import (
 )
 
 func TestIsFieldExported(t *testing.T) {
+	//nolint:structcheck
 	type f struct {
-		a   string
+		a   string //nolint:unused
 		B   string
-		ab  string
-		aBC string
+		ab  string //nolint:unused
+		aBC string //nolint:unused
 	}
 	rt := reflect.TypeOf(f{})
 	require.Equal(t, 4, rt.NumField())

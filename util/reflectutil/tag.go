@@ -17,7 +17,7 @@ import (
 	"reflect"
 )
 
-// GetFieldsAndTags return fields' tags assign by `tags` parameter
+// GetFieldsAndTags return fields' tags assign by `tags` parameter.
 func GetFieldsAndTags(obj interface{}, tags []string) []Field {
 	fieldTags := []Field{}
 	t := reflect.TypeOf(obj)

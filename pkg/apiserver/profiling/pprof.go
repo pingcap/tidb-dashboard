@@ -158,7 +158,7 @@ func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.P
 	return p, url, err
 }
 
-// blankPprofUI is used to eliminate the pprof logs
+// blankPprofUI is used to eliminate the pprof logs.
 type blankPprofUI struct {
 }
 

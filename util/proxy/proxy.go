@@ -17,7 +17,6 @@ package proxy
 
 import (
 	"context"
-	"errors"
 	"io"
 	"net"
 	"sync"
@@ -270,11 +269,10 @@ func (p *Proxy) runListenerLoop() {
 			conn, err := p.listener.Accept()
 			if err != nil {
 				// Ignore listener close error
-				if !errors.Is(err, net.ErrClosed) {
-					log.Warn("Accept incoming connection failed",
-						zap.String("remoteAddr", p.listener.Addr().String()),
-						zap.Error(err))
-				}
+				// TODO: Use `if !errors.Is(err, net.ErrClosed)` for higher Golang compilers.
+				log.Warn("Accept incoming connection failed",
+					zap.String("remoteAddr", p.listener.Addr().String()),
+					zap.Error(err))
 			} else {
 				go p.serveConnection(conn)
 			}

@@ -68,7 +68,7 @@ func (a *AxisModel) Delete(db *dbstore.DB) error {
 }
 
 // If the table `AxisModel` exists, return true, nil
-// or create table `AxisModel`
+// or create table `AxisModel`.
 func CreateTableAxisModelIfNotExists(db *dbstore.DB) (bool, error) {
 	if db.Migrator().HasTable(&AxisModel{}) {
 		return true, nil

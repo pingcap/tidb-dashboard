@@ -38,7 +38,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 403 {object} utils.APIError "Experimental feature not enabled"
-// @Failure 500 {object} utils.APIError "Internal error"
+// @Failure 500 {object} utils.APIError "Internal error".
 func (s *Service) getHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	r, err := s.getAllConfigItems(db)
@@ -68,7 +68,7 @@ type EditResponse struct {
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 403 {object} utils.APIError "Experimental feature not enabled"
-// @Failure 500 {object} utils.APIError "Internal error"
+// @Failure 500 {object} utils.APIError "Internal error".
 func (s *Service) editHandler(c *gin.Context) {
 	var req EditRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -74,7 +74,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Router /slow_query/list [get]
 // @Security JwtAuth
 // @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} utils.APIError "Unauthorized failure".
 func (s *Service) getList(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -96,7 +96,7 @@ func (s *Service) getList(c *gin.Context) {
 // @Success 200 {object} Model
 // @Router /slow_query/detail [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} utils.APIError "Unauthorized failure".
 func (s *Service) getDetails(c *gin.Context) {
 	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -120,7 +120,7 @@ func (s *Service) getDetails(c *gin.Context) {
 // @Success 200 {string} string "xxx"
 // @Security JwtAuth
 // @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} utils.APIError "Unauthorized failure".
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -171,7 +171,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 // @Produce text/csv
 // @Param token query string true "download token"
 // @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} utils.APIError "Unauthorized failure".
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
 	utils.DownloadByToken(token, "slowquery/download", c)
@@ -183,7 +183,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Security JwtAuth
-// @Router /slow_query/table_columns [get]
+// @Router /slow_query/table_columns [get].
 func (s *Service) queryTableColumns(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	cs, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)

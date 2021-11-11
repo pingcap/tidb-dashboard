@@ -52,3 +52,7 @@ linters-settings:
   exhaustive:
     # only cover the case when default is not given
     default-signifies-exhaustive: true
+  godot:
+    # exclude swag annotations
+    exclude:
+      - "^\\s*@"

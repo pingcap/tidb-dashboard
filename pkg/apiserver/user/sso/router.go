@@ -32,7 +32,7 @@ type GetAuthURLRequest struct {
 // @Summary Get SSO Auth URL
 // @Param q query GetAuthURLRequest true "Query"
 // @Success 200 {string} string
-// @Router /user/sso/auth_url [get].
+// @Router /user/sso/auth_url [get]
 func (s *Service) getAuthURLHandler(c *gin.Context) {
 	var req GetAuthURLRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -52,7 +52,7 @@ func (s *Service) getAuthURLHandler(c *gin.Context) {
 // @Success 200 {array} SSOImpersonationModel
 // @Router /user/sso/impersonations/list [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure".
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) listImpersonationHandler(c *gin.Context) {
 	var resp []SSOImpersonationModel
 	err := s.params.LocalStore.Find(&resp).Error
@@ -76,7 +76,7 @@ type CreateImpersonationRequest struct {
 // @Security JwtAuth
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError "Internal error".
+// @Failure 500 {object} utils.APIError "Internal error"
 func (s *Service) createImpersonationHandler(c *gin.Context) {
 	var req CreateImpersonationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -102,7 +102,7 @@ func (s *Service) createImpersonationHandler(c *gin.Context) {
 // @Router /user/sso/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError.
+// @Failure 500 {object} utils.APIError
 func (s *Service) getConfig(c *gin.Context) {
 	dc, err := s.params.ConfigManager.Get()
 	if err != nil {
@@ -124,7 +124,7 @@ type SetConfigRequest struct {
 // @Security JwtAuth
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError "Internal error".
+// @Failure 500 {object} utils.APIError "Internal error"
 func (s *Service) setConfig(c *gin.Context) {
 	var req SetConfigRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

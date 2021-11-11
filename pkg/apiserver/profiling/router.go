@@ -56,7 +56,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /profiling/group/start [post].
+// @Router /profiling/group/start [post]
 func (s *Service) handleStartGroup(c *gin.Context) {
 	var req StartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -98,7 +98,7 @@ func (s *Service) handleStartGroup(c *gin.Context) {
 // @Security JwtAuth
 // @Success 200 {array} TaskGroupModel
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /profiling/group/list [get].
+// @Router /profiling/group/list [get]
 func (s *Service) getGroupList(c *gin.Context) {
 	var resp []TaskGroupModel
 	err := s.params.LocalStore.Order("id DESC").Find(&resp).Error
@@ -123,7 +123,7 @@ type GroupDetailResponse struct {
 // @Success 200 {object} GroupDetailResponse
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /profiling/group/detail/{groupId} [get].
+// @Router /profiling/group/detail/{groupId} [get]
 func (s *Service) getGroupDetail(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
@@ -159,7 +159,7 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 // @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /profiling/group/cancel/{groupId} [post].
+// @Router /profiling/group/cancel/{groupId} [post]
 func (s *Service) handleCancelGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
@@ -184,7 +184,7 @@ func (s *Service) handleCancelGroup(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /profiling/action_token [get].
+// @Router /profiling/action_token [get]
 func (s *Service) getActionToken(c *gin.Context) {
 	id := c.Query("id")
 	action := c.Query("action") // group_download, single_download, single_view
@@ -205,7 +205,7 @@ func (s *Service) getActionToken(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /profiling/group/download [get].
+// @Router /profiling/group/download [get]
 func (s *Service) downloadGroup(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/group_download", token)
@@ -248,7 +248,7 @@ func (s *Service) downloadGroup(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /profiling/single/download [get].
+// @Router /profiling/single/download [get]
 func (s *Service) downloadSingle(c *gin.Context) {
 	// FIXME: We can simply provide only a single file
 	token := c.Query("token")
@@ -287,7 +287,7 @@ func (s *Service) downloadSingle(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /profiling/single/view [get].
+// @Router /profiling/single/view [get]
 func (s *Service) viewSingle(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/single_view", token)
@@ -324,7 +324,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /profiling/group/delete/{groupId} [delete].
+// @Router /profiling/group/delete/{groupId} [delete]
 func (s *Service) deleteGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
@@ -352,7 +352,7 @@ func (s *Service) deleteGroup(c *gin.Context) {
 // @Router /profiling/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError.
+// @Failure 500 {object} utils.APIError
 func (s *Service) getDynamicConfig(c *gin.Context) {
 	dc, err := s.params.ConfigManager.Get()
 	if err != nil {
@@ -369,7 +369,7 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError.
+// @Failure 500 {object} utils.APIError
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.ProfilingConfig
 	if err := c.ShouldBindJSON(&req); err != nil {

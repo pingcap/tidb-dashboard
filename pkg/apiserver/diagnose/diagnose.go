@@ -90,7 +90,7 @@ type GenerateReportRequest struct {
 // @Success 200 {array} Report
 // @Router /diagnose/reports [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure".
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) reportsHandler(c *gin.Context) {
 	reports, err := GetReports(s.db)
 	if err != nil {
@@ -107,7 +107,7 @@ func (s *Service) reportsHandler(c *gin.Context) {
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
 // @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure".
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
 	var req GenerateReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -161,7 +161,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 // @Success 200 {object} Report
 // @Router /diagnose/reports/{id}/status [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure".
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) reportStatusHandler(c *gin.Context) {
 	id := c.Param("id")
 	report, err := GetReport(s.db, id)
@@ -177,7 +177,7 @@ func (s *Service) reportStatusHandler(c *gin.Context) {
 // @Produce html
 // @Param id path string true "report id"
 // @Success 200 {string} string
-// @Router /diagnose/reports/{id}/detail [get].
+// @Router /diagnose/reports/{id}/detail [get]
 func (s *Service) reportHTMLHandler(c *gin.Context) {
 	defer func(old string) {
 		c.Request.URL.Path = old
@@ -192,7 +192,7 @@ func (s *Service) reportHTMLHandler(c *gin.Context) {
 // @Produce text/javascript
 // @Param id path string true "report id"
 // @Success 200 {string} string
-// @Router /diagnose/reports/{id}/data.js [get].
+// @Router /diagnose/reports/{id}/data.js [get]
 func (s *Service) reportDataHandler(c *gin.Context) {
 	id := c.Param("id")
 	report, err := GetReport(s.db, id)
@@ -218,7 +218,7 @@ type GenDiagnosisReportRequest struct {
 // @Success 200 {object} TableDef
 // @Router /diagnose/diagnosis [post]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure".
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genDiagnosisHandler(c *gin.Context) {
 	var req GenDiagnosisReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

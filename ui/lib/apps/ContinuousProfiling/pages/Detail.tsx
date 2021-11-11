@@ -94,10 +94,11 @@ export default function Page() {
       if (!token) {
         return
       }
-      window.open(
-        `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`,
-        '_blank'
+      const profileURL = encodeURIComponent(
+        `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
       )
+      const ssURL = `${client.getBasePath()}/speedscope#profileURL=${profileURL}&title=xxx`
+      window.open(ssURL, '_blank')
     }
   )
 

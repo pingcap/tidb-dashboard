@@ -30,8 +30,9 @@ import (
 	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
@@ -81,7 +82,9 @@ func newService(lc fx.Lifecycle, p ServiceParams) *Service {
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/continuous_profiling")
 
-	endpoint.Use(FeatureFlagConprof.Middleware(s.params.Config.FeatureVersion))
+	endpoint.Use(apiutils.MWForbidByFeatureFlag([]*utils.FeatureFlag{
+		FeatureFlagConprof,
+	}, s.params.Config.FeatureVersion))
 	{
 		endpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
 		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
@@ -107,9 +110,9 @@ func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
 		c.Request.URL.Path = targetPath
 		token := c.Query("token")
 		if token != "" {
-			queryStr, err := utils.ParseJWTString("conprof", token)
+			queryStr, err := apiutils.ParseJWTString("conprof", token)
 			if err != nil {
-				utils.MakeInvalidRequestErrorFromError(c, err)
+				apiutils.MakeInvalidRequestErrorFromError(c, err)
 				return
 			}
 			c.Request.URL.RawQuery = queryStr
@@ -295,7 +298,7 @@ func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 // @Failure 500 {object} utils.APIError
 func (s *Service) genConprofActionToken(c *gin.Context) {
 	q := c.Query("q")
-	token, err := utils.NewJWTString("conprof", q)
+	token, err := apiutils.NewJWTString("conprof", q)
 	if err != nil {
 		_ = c.Error(err)
 		return

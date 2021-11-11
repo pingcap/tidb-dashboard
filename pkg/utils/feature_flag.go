@@ -15,12 +15,9 @@
 package utils
 
 import (
-	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/Masterminds/semver"
-	"github.com/gin-gonic/gin"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
@@ -59,18 +56,4 @@ func (ff *FeatureFlag) IsSupported(targetVersion string) bool {
 		}
 	}
 	return false
-}
-
-func (ff *FeatureFlag) Middleware(targetVersion string) gin.HandlerFunc {
-	isSupported := !ff.IsSupported(targetVersion)
-	return func(c *gin.Context) {
-		if isSupported {
-			_ = c.Error(fmt.Errorf("the feature is not supported"))
-			c.Status(http.StatusForbidden)
-			c.Abort()
-			return
-		}
-
-		c.Next()
-	}
 }

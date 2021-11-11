@@ -111,7 +111,7 @@ type TaskGroupResponse struct {
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /logs/taskgroup [put].
+// @Router /logs/taskgroup [put]
 func (s *Service) CreateTaskGroup(c *gin.Context) {
 	var req CreateTaskGroupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -159,7 +159,7 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 // @Success 200 {array} TaskGroupModel
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /logs/taskgroups [get].
+// @Router /logs/taskgroups [get]
 func (s *Service) GetAllTaskGroups(c *gin.Context) {
 	var taskGroups []*TaskGroupModel
 	err := s.db.Find(&taskGroups).Error
@@ -177,7 +177,7 @@ func (s *Service) GetAllTaskGroups(c *gin.Context) {
 // @Success 200 {object} TaskGroupResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /logs/taskgroups/{id} [get].
+// @Router /logs/taskgroups/{id} [get]
 func (s *Service) GetTaskGroup(c *gin.Context) {
 	taskGroupID := c.Param("id")
 	var taskGroup TaskGroupModel
@@ -205,7 +205,7 @@ func (s *Service) GetTaskGroup(c *gin.Context) {
 // @Success 200 {array} PreviewModel
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /logs/taskgroups/{id}/preview [get].
+// @Router /logs/taskgroups/{id}/preview [get]
 func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 	taskGroupID := c.Param("id")
 	var lines []PreviewModel
@@ -228,7 +228,7 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /logs/taskgroups/{id}/retry [post].
+// @Router /logs/taskgroups/{id}/retry [post]
 func (s *Service) RetryTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -276,7 +276,7 @@ func (s *Service) RetryTask(c *gin.Context) {
 // @Success 200 {object} utils.APIEmptyResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 400 {object} utils.APIError
-// @Router /logs/taskgroups/{id}/cancel [post].
+// @Router /logs/taskgroups/{id}/cancel [post]
 func (s *Service) CancelTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -303,7 +303,7 @@ func (s *Service) CancelTask(c *gin.Context) {
 // @Success 200 {object} utils.APIEmptyResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /logs/taskgroups/{id} [delete].
+// @Router /logs/taskgroups/{id} [delete]
 func (s *Service) DeleteTaskGroup(c *gin.Context) {
 	taskGroupID := c.Param("id")
 	taskGroup := TaskGroupModel{}
@@ -323,7 +323,7 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 // @Success 200 {string} string "xxx"
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /logs/download/acquire_token [get].
+// @Router /logs/download/acquire_token [get]
 func (s *Service) GetDownloadToken(c *gin.Context) {
 	ids := c.QueryArray("id")
 	str := strings.Join(ids, ",")
@@ -341,7 +341,7 @@ func (s *Service) GetDownloadToken(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /logs/download [get].
+// @Router /logs/download [get]
 func (s *Service) DownloadLogs(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("logs/download", token)

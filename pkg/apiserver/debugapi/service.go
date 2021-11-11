@@ -74,7 +74,7 @@ func getExtFromContentTypeHeader(contentType string) string {
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /debug_api/endpoint [post].
+// @Router /debug_api/endpoint [post]
 func (s *Service) RequestEndpoint(c *gin.Context) {
 	var req endpoint.RequestPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -115,12 +115,12 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	c.String(http.StatusOK, token)
 }
 
-// @Summary Download a finished request result.
+// @Summary Download a finished request result
 // @Param token query string true "download token"
 // @Success 200 {object} string
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 500 {object} utils.APIError
-// @Router /debug_api/download [get].
+// @Router /debug_api/download [get]
 func (s *Service) Download(c *gin.Context) {
 	token := c.Query("token")
 	utils.FSServe(c, token, tokenIssuer)
@@ -131,7 +131,7 @@ func (s *Service) Download(c *gin.Context) {
 // @Security JwtAuth
 // @Success 200 {array} endpoint.APIModel
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /debug_api/endpoints [get].
+// @Router /debug_api/endpoints [get]
 func (s *Service) GetEndpoints(c *gin.Context) {
 	c.JSON(http.StatusOK, s.Client.GetAllAPIModels())
 }

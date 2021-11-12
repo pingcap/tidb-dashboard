@@ -40,7 +40,7 @@ func (s *layerStat) DeleteFirstAxisFromDb() error {
 	return axisModel.Delete(s.Db)
 }
 
-// Restore data from db the first time service starts
+// Restore data from db the first time service starts.
 func (s *Stat) Restore() error {
 	s.keyMap.Lock()
 	defer s.keyMap.Unlock()

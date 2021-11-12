@@ -73,7 +73,7 @@ func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
 	return &c
 }
 
-// TODO: Replace using go-resty
+// TODO: Replace using go-resty.
 func (c *Client) SendRequest(
 	ctx context.Context,
 	uri string,

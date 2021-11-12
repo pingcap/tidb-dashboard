@@ -4,38 +4,55 @@ run:
     - pkg/uiserver
   timeout: 2m
 
-linters-settings:
-  goimports:
-    local-prefixes: github.com/pingcap/tidb-dashboard
-  golint:
-    min-confidence: 0
-
 issues:
   include:
+    # Bring back all gosec checks
     - EXC0006
     - EXC0007
     - EXC0008
     - EXC0009
     - EXC0010
+  exclude-rules:
+    # TODO: Current code base does not work well for these linters. We should bring back one by one.
+    - path: ^pkg/|^cmd/
+      linters:
+        - nestif
+        - exhaustive
+        - wastedassign
+        - errorlint
 
 linters:
-  disable-all: true
   enable:
-    - govet
-    - errcheck
-    - staticcheck
-    - unused
-    - gosimple
-    - structcheck
-    - varcheck
-    - ineffassign
-    - deadcode
-    - typecheck
-    - revive
-    - gosec
-    - unconvert
-    - goimports
+    # Additionally enable some checkers
+    - asciicheck
     - depguard
-    - prealloc
+    - dogsled
+    - durationcheck
+    - errorlint
+    - exhaustive
     - exportloopref
+    - godot
+    - gofmt
+    - goimports
+    - gosec
+    - importas
+    - nestif
+    - prealloc
+    - predeclared
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - unconvert
+    - wastedassign
     - whitespace
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/pingcap/tidb-dashboard
+  exhaustive:
+    # only cover the case when default is not given
+    default-signifies-exhaustive: true
+  godot:
+    # exclude swag annotations
+    exclude:
+      - "^\\s*@"

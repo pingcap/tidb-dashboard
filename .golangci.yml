@@ -33,6 +33,7 @@ linters:
     - exportloopref
     - godot
     - gofmt
+    - goheader
     - goimports
     - gosec
     - importas
@@ -56,3 +57,6 @@ linters-settings:
     # exclude swag annotations
     exclude:
       - "^\\s*@"
+  goheader:
+    template: |-
+      Copyright {{ YEAR }} PingCAP, Inc. Licensed under Apache-2.0.

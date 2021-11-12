@@ -14,8 +14,9 @@
 package conprof
 
 import (
-	"github.com/pingcap/tidb-dashboard/util/versionutil"
 	"go.uber.org/fx"
+
+	"github.com/pingcap/tidb-dashboard/util/versionutil"
 )
 
 var FeatureFlagConprof = versionutil.NewFeatureFlag("conprof", []string{">= 5.3.0"})

@@ -18,6 +18,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/pingcap/tidb-dashboard/util/versionutil"
 )
 

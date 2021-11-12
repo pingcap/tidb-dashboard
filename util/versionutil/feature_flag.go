@@ -32,7 +32,7 @@ func NewFeatureFlag(name string, constraints []string) *FeatureFlag {
 
 // IsSupported checks if a semantic version fits within a set of constraints
 // pdVersion, standaloneVersion examples: "v5.2.2", "v5.3.0", "v5.4.0-alpha-xxx", "5.3.0" (semver can handle `v` prefix by itself)
-// constraints examples: "~5.2.2", ">= 5.3.0", see semver docs to get more information
+// constraints examples: "~5.2.2", ">= 5.3.0", see semver docs to get more information.
 func (ff *FeatureFlag) IsSupported(targetVersion string) bool {
 	curVersion := targetVersion
 	if Standalone == "No" {

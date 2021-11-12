@@ -20,6 +20,7 @@ issues:
         - exhaustive
         - wastedassign
         - errorlint
+        - goheader
 
 linters:
   enable:
@@ -33,6 +34,7 @@ linters:
     - exportloopref
     - godot
     - gofumpt
+    - goheader
     - goimports
     - gosec
     - importas
@@ -56,3 +58,6 @@ linters-settings:
     # exclude swag annotations
     exclude:
       - "^\\s*@"
+  goheader:
+    template: |-
+      Copyright {{ YEAR }} PingCAP, Inc. Licensed under Apache-2.0.

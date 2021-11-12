@@ -14,11 +14,11 @@ ifeq ($(DISTRO_BUILD_TAG),1)
 	BUILD_TAGS += distro
 endif
 
-LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(shell grep -v '^\#' ./release-version)"
-LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.Standalone=Yes"
-LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=N/A"
-LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
-LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildGitHash=$(shell git rev-parse HEAD)"
+LDFLAGS += -X "$(DASHBOARD_PKG)/util/versionutil.InternalVersion=$(shell grep -v '^\#' ./release-version)"
+LDFLAGS += -X "$(DASHBOARD_PKG)/util/versionutil.Standalone=Yes"
+LDFLAGS += -X "$(DASHBOARD_PKG)/util/versionutil.PDVersion=N/A"
+LDFLAGS += -X "$(DASHBOARD_PKG)/util/versionutil.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
+LDFLAGS += -X "$(DASHBOARD_PKG)/util/versionutil.BuildGitHash=$(shell git rev-parse HEAD)"
 
 default: server
 

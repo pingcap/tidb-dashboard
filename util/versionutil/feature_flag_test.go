@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utils
+package versionutil
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
 func Test_IsSupported(t *testing.T) {
@@ -45,8 +43,8 @@ func Test_IsSupported(t *testing.T) {
 		require.Equal(t, tt.want, ff.IsSupported(tt.args.target))
 	}
 
-	version.Standalone = "No"
-	version.PDVersion = "v5.3.0"
+	Standalone = "No"
+	PDVersion = "v5.3.0"
 	ff := NewFeatureFlag("testFeature", []string{"= 5.3.0"})
 	require.Equal(t, true, ff.IsSupported("v100.0.0"))
 }

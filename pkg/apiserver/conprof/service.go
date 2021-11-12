@@ -32,8 +32,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
-	"github.com/pingcap/tidb-dashboard/pkg/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/util/versionutil"
 )
 
 var (
@@ -82,7 +82,7 @@ func newService(lc fx.Lifecycle, p ServiceParams) *Service {
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/continuous_profiling")
 
-	endpoint.Use(apiutils.MWForbidByFeatureFlag([]*utils.FeatureFlag{
+	endpoint.Use(apiutils.MWForbidByFeatureFlag([]*versionutil.FeatureFlag{
 		FeatureFlagConprof,
 	}, s.params.Config.FeatureVersion))
 	{

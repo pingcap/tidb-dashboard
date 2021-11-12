@@ -41,6 +41,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
+	"github.com/pingcap/tidb-dashboard/util/versionutil"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator.
@@ -58,7 +59,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
 	"github.com/pingcap/tidb-dashboard/pkg/utils"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
 func Handler(s *Service) http.Handler {
@@ -171,7 +171,7 @@ func (s *Service) Start(ctx context.Context) error {
 		return err
 	}
 
-	version.Print()
+	versionutil.Print()
 
 	return nil
 }

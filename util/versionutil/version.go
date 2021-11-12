@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package version
+package versionutil
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 type Info struct {
@@ -41,10 +41,10 @@ var (
 )
 
 func Print() {
-	log.Info(fmt.Sprintf("%s Dashboard started", distro.Data("tidb")),
+	log.Info(fmt.Sprintf("%s Dashboard started", distro.R().TiDB),
 		zap.String("internal-version", InternalVersion),
 		zap.String("standalone", Standalone),
-		zap.String(fmt.Sprintf("%s-version", strings.ToLower(distro.Data("pd"))), PDVersion),
+		zap.String(fmt.Sprintf("%s-version", strings.ToLower(distro.R().PD)), PDVersion),
 		zap.String("build-time", BuildTime),
 		zap.String("build-git-hash", BuildGitHash))
 }

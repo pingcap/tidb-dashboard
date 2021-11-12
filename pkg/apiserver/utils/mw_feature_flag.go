@@ -18,13 +18,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/util/versionutil"
 )
 
 var ErrFeatureNotSupported = ErrNS.NewType("feature_not_supported")
 
-func MWForbidByFeatureFlag(featureFlags []*utils.FeatureFlag, targetVersion string) gin.HandlerFunc {
+func MWForbidByFeatureFlag(featureFlags []*versionutil.FeatureFlag, targetVersion string) gin.HandlerFunc {
 	supported := true
 	unsupportedFeatures := make([]string, len(featureFlags))
 	for _, ff := range featureFlags {

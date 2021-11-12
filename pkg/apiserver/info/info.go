@@ -28,8 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap/tidb-dashboard/pkg/utils"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/util/versionutil"
 )
 
 type ServiceParams struct {
@@ -59,10 +58,10 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type InfoResponse struct { //nolint
-	Version            *version.Info `json:"version"`
-	EnableTelemetry    bool          `json:"enable_telemetry"`
-	EnableExperimental bool          `json:"enable_experimental"`
-	SupportedFeatures  []string      `json:"supported_features"`
+	Version            *versionutil.Info `json:"version"`
+	EnableTelemetry    bool              `json:"enable_telemetry"`
+	EnableExperimental bool              `json:"enable_experimental"`
+	SupportedFeatures  []string          `json:"supported_features"`
 }
 
 // @ID infoGet
@@ -72,7 +71,7 @@ type InfoResponse struct { //nolint
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
-	featureFlags := []*utils.FeatureFlag{
+	featureFlags := []*versionutil.FeatureFlag{
 		conprof.FeatureFlagConprof,
 		user.FeatureFlagNonRootLogin,
 	}
@@ -85,7 +84,7 @@ func (s *Service) infoHandler(c *gin.Context) {
 	}
 
 	resp := InfoResponse{
-		Version:            version.GetInfo(),
+		Version:            versionutil.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
 		SupportedFeatures:  supportedFeatures,

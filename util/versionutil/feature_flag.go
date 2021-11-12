@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utils
+package versionutil
 
 import (
 	"strings"
 
 	"github.com/Masterminds/semver"
-
-	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
 type FeatureFlag struct {
@@ -37,8 +35,8 @@ func NewFeatureFlag(name string, constraints []string) *FeatureFlag {
 // constraints examples: "~5.2.2", ">= 5.3.0", see semver docs to get more information
 func (ff *FeatureFlag) IsSupported(targetVersion string) bool {
 	curVersion := targetVersion
-	if version.Standalone == "No" {
-		curVersion = version.PDVersion
+	if Standalone == "No" {
+		curVersion = PDVersion
 	}
 	// drop "-alpha-xxx" suffix
 	versionWithoutSuffix := strings.Split(curVersion, "-")[0]

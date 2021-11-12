@@ -14,12 +14,11 @@
 package conprof
 
 import (
+	"github.com/pingcap/tidb-dashboard/util/versionutil"
 	"go.uber.org/fx"
-
-	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
-var FeatureFlagConprof = utils.NewFeatureFlag("conprof", []string{">= 5.3.0"})
+var FeatureFlagConprof = versionutil.NewFeatureFlag("conprof", []string{">= 5.3.0"})
 
 var Module = fx.Options(
 	fx.Provide(newService),

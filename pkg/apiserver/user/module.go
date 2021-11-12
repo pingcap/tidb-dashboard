@@ -13,8 +13,6 @@
 
 package user
 
-import (
-	"github.com/pingcap/tidb-dashboard/pkg/utils"
-)
+import "github.com/pingcap/tidb-dashboard/util/versionutil"
 
-var FeatureFlagNonRootLogin = utils.NewFeatureFlag("nonRootLogin", []string{">= 5.3.0"})
+var FeatureFlagNonRootLogin = versionutil.NewFeatureFlag("nonRootLogin", []string{">= 5.3.0"})

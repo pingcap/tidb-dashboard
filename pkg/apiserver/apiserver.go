@@ -30,7 +30,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
-	"github.com/pingcap/tidb-dashboard/util/versionutil"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/util/feature"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator.
@@ -103,6 +104,7 @@ func (s *Service) Start(ctx context.Context) error {
 	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
+			feature.NewManagerProvider(s.config.FeatureVersion),
 			newAPIHandlerEngine,
 			s.provideLocals,
 			dbstore.NewDBStore,
@@ -114,7 +116,6 @@ func (s *Service) Start(ctx context.Context) error {
 			tikv.NewTiKVClient,
 			tiflash.NewTiFlashClient,
 			utils.NewSysSchema,
-			user.NewAuthService,
 			info.NewService,
 			clusterinfo.NewService,
 			logsearch.NewService,
@@ -126,6 +127,7 @@ func (s *Service) Start(ctx context.Context) error {
 			// __APP_NAME__.NewService,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
+		user.Module,
 		codeauth.Module,
 		sqlauth.Module,
 		ssoauth.Module,
@@ -138,7 +140,6 @@ func (s *Service) Start(ctx context.Context) error {
 		debugapi.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
-			user.RegisterRouter,
 			info.RegisterRouter,
 			clusterinfo.RegisterRouter,
 			profiling.RegisterRouter,
@@ -160,7 +161,7 @@ func (s *Service) Start(ctx context.Context) error {
 		return err
 	}
 
-	versionutil.Print()
+	version.Print()
 
 	return nil
 }

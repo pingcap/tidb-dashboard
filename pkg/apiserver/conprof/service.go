@@ -19,10 +19,10 @@ import (
 	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
-	"github.com/pingcap/tidb-dashboard/util/versionutil"
+	"github.com/pingcap/tidb-dashboard/util/feature"
 )
 
 var (
@@ -68,12 +68,11 @@ func newService(lc fx.Lifecycle, p ServiceParams) *Service {
 }
 
 // Register register the handlers to the service.
-func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service, fm *feature.Manager) {
 	endpoint := r.Group("/continuous_profiling")
 
-	endpoint.Use(apiutils.MWForbidByFeatureFlag([]*versionutil.FeatureFlag{
-		FeatureFlagConprof,
-	}, s.params.Config.FeatureVersion))
+	featureFlags := []*feature.Flag{FeatureFlagConprof}
+	endpoint.Use(fm.Guard(featureFlags))
 	{
 		endpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
 		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
@@ -99,9 +98,9 @@ func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
 		c.Request.URL.Path = targetPath
 		token := c.Query("token")
 		if token != "" {
-			queryStr, err := apiutils.ParseJWTString("conprof", token)
+			queryStr, err := utils.ParseJWTString("conprof", token)
 			if err != nil {
-				apiutils.MakeInvalidRequestErrorFromError(c, err)
+				utils.MakeInvalidRequestErrorFromError(c, err)
 				return
 			}
 			c.Request.URL.RawQuery = queryStr
@@ -287,7 +286,7 @@ func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 // @Failure 500 {object} utils.APIError
 func (s *Service) genConprofActionToken(c *gin.Context) {
 	q := c.Query("q")
-	token, err := apiutils.NewJWTString("conprof", q)
+	token, err := utils.NewJWTString("conprof", q)
 	if err != nil {
 		_ = c.Error(err)
 		return

@@ -36,8 +36,8 @@ import (
 	keyvisualregion "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 	_ "github.com/pingcap/tidb-dashboard/populate/distro"
-	"github.com/pingcap/tidb-dashboard/util/versionutil"
 )
 
 type DashboardCLIConfig struct {
@@ -84,7 +84,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	flag.Parse()
 	if *showVersion {
-		versionutil.PrintStandaloneModeInfo()
+		version.PrintStandaloneModeInfo()
 		_ = log.Sync()
 		os.Exit(0)
 	}

@@ -2,6 +2,15 @@
 
 package user
 
-import "github.com/pingcap/tidb-dashboard/util/versionutil"
+import (
+	"go.uber.org/fx"
 
-var FeatureFlagNonRootLogin = versionutil.NewFeatureFlag("nonRootLogin", []string{">= 5.3.0"})
+	"github.com/pingcap/tidb-dashboard/util/feature"
+)
+
+var FeatureFlagNonRootLogin = feature.NewFlag("nonRootLogin", []string{">= 5.3.0"})
+
+var Module = fx.Options(
+	fx.Provide(newAuthService),
+	fx.Invoke(registerRouter, FeatureFlagNonRootLogin.Register()),
+)

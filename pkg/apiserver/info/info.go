@@ -11,20 +11,21 @@ import (
 	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap/tidb-dashboard/util/versionutil"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/util/feature"
 )
 
 type ServiceParams struct {
 	fx.In
-	Config     *config.Config
-	LocalStore *dbstore.DB
-	TiDBClient *tidb.Client
+	Config         *config.Config
+	LocalStore     *dbstore.DB
+	TiDBClient     *tidb.Client
+	FeatureManager *feature.Manager
 }
 
 type Service struct {
@@ -41,16 +42,16 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/whoami", s.whoamiHandler)
 
-	endpoint.Use(apiutils.MWConnectTiDB(s.params.TiDBClient))
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.GET("/databases", s.databasesHandler)
 	endpoint.GET("/tables", s.tablesHandler)
 }
 
 type InfoResponse struct { //nolint
-	Version            *versionutil.Info `json:"version"`
-	EnableTelemetry    bool              `json:"enable_telemetry"`
-	EnableExperimental bool              `json:"enable_experimental"`
-	SupportedFeatures  []string          `json:"supported_features"`
+	Version            *version.Info `json:"version"`
+	EnableTelemetry    bool          `json:"enable_telemetry"`
+	EnableExperimental bool          `json:"enable_experimental"`
+	SupportedFeatures  []string      `json:"supported_features"`
 }
 
 // @ID infoGet
@@ -60,23 +61,11 @@ type InfoResponse struct { //nolint
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
-	featureFlags := []*versionutil.FeatureFlag{
-		conprof.FeatureFlagConprof,
-		user.FeatureFlagNonRootLogin,
-	}
-	supportedFeatures := []string{}
-	for _, ff := range featureFlags {
-		if !ff.IsSupported(s.params.Config.FeatureVersion) {
-			continue
-		}
-		supportedFeatures = append(supportedFeatures, ff.Name)
-	}
-
 	resp := InfoResponse{
-		Version:            versionutil.GetInfo(),
+		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
-		SupportedFeatures:  supportedFeatures,
+		SupportedFeatures:  s.params.FeatureManager.SupportedFeatures(),
 	}
 	c.JSON(http.StatusOK, resp)
 }
@@ -94,7 +83,7 @@ type WhoAmIResponse struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) whoamiHandler(c *gin.Context) {
-	sessionUser := apiutils.GetSession(c)
+	sessionUser := utils.GetSession(c)
 	resp := WhoAmIResponse{
 		DisplayName: sessionUser.DisplayName,
 		IsShareable: sessionUser.IsShareable,
@@ -114,7 +103,7 @@ func (s *Service) databasesHandler(c *gin.Context) {
 		Databases string `gorm:"column:Database"`
 	}
 	var result []databaseSchemas
-	db := apiutils.GetTiDBConnection(c)
+	db := utils.GetTiDBConnection(c)
 	err := db.Raw("SHOW DATABASES").Scan(&result).Error
 	if err != nil {
 		_ = c.Error(err)
@@ -142,7 +131,7 @@ type tableSchema struct {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) tablesHandler(c *gin.Context) {
 	var result []tableSchema
-	db := apiutils.GetTiDBConnection(c)
+	db := utils.GetTiDBConnection(c)
 	tx := db.Select([]string{"TABLE_NAME", "TIDB_TABLE_ID"}).Table("INFORMATION_SCHEMA.TABLES")
 	databaseName := c.Query("database_name")
 

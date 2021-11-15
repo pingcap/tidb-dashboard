@@ -41,7 +41,7 @@ type Key []byte
 // It can be reused, thereby reducing memory applications.
 type KeyInfoBuffer []byte
 
-// DecodeKey obtains the KeyInfoBuffer from a TiDB Key
+// DecodeKey obtains the KeyInfoBuffer from a TiDB Key.
 func (buf *KeyInfoBuffer) DecodeKey(key Key) (KeyInfoBuffer, error) {
 	_, result, err := decodeBytes(key, *buf)
 

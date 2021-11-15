@@ -25,7 +25,7 @@ import (
 
 // incoming configuration field should have the gorm tag `column` used to specify global variables
 // sql will be built like this,
-// struct { FieldName `gorm:"column:some_global_var"` } -> @@GLOBAL.some_global_var AS some_global_var
+// struct { FieldName `gorm:"column:some_global_var"` } -> @@GLOBAL.some_global_var AS some_global_var.
 func buildGlobalConfigProjectionSelectSQL(config interface{}) string {
 	str := buildStringByStructField(config, func(f reflect.StructField) (string, bool) {
 		gormTag, ok := f.Tag.Lookup("gorm")

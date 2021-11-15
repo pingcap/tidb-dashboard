@@ -36,9 +36,10 @@ type GroupTaskState int
 const (
 	TaskStateFailed  TaskState = iota // 0
 	TaskStateRunning                  // 1
-	TaskStateFinished                   // 2
+	TaskStateFinish                   // 2
 )
 
+// Built-in task state.
 const (
 	GroupTaskStateUnknown       GroupTaskState = iota // 0
 	GroupTaskStateRunning                             // 1

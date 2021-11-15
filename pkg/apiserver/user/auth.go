@@ -289,7 +289,7 @@ type GetLoginInfoResponse struct {
 }
 
 // @ID userGetLoginInfo
-// @Summary Get log in information, like supported authenticate types.
+// @Summary Get log in information, like supported authenticate types
 // @Success 200 {object} GetLoginInfoResponse
 // @Router /user/login_info [get]
 func (s *AuthService) getLoginInfoHandler(c *gin.Context) {

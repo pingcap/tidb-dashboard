@@ -20,7 +20,7 @@ import (
 
 // Plane stores consecutive axes. Each axis has StartTime, EndTime. The EndTime of each axis is the StartTime of its
 // next axis. Therefore satisfies:
-// len(Times) == len(Axes) + 1
+// len(Times) == len(Axes) + 1.
 type Plane struct {
 	Times []time.Time
 	Axes  []Axis

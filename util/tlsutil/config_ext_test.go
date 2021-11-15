@@ -29,7 +29,7 @@ func TestNormalizeURL(t *testing.T) {
 	assert.Equal(t, "https://foo", NormalizeURL(c, "https://foo"))
 	assert.Equal(t, "http://ftp://foo", NormalizeURL(c, "ftp://foo"))
 
-	c = &tls.Config{}
+	c = &tls.Config{} // #nosec G402
 	assert.Equal(t, "https://foo", NormalizeURL(c, "foo"))
 	assert.Equal(t, "https://foo", NormalizeURL(c, "http://foo"))
 	assert.Equal(t, "https://foo", NormalizeURL(c, "https://foo"))

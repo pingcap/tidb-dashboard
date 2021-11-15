@@ -67,6 +67,7 @@ digestFoo,queryBar,instanceBox,dbAbc,id123,2,0,1970-01-01 00:00:00 UTC,123
 }
 
 func TestCSVWriterWriteTimeTag(t *testing.T) {
+	//nolint:govet
 	type fooStruct struct {
 		Field1 int `csv:`
 		Field2 int `foo`

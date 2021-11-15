@@ -65,7 +65,7 @@ var APIParamModelInt = &endpoint.BaseAPIParamModel{
 	},
 }
 
-// enum
+// enum.
 type enumAPIParamModel struct {
 	// we need use endpoint.BaseAPIParamModel point to avoid nested json struct
 	*endpoint.BaseAPIParamModel
@@ -100,7 +100,7 @@ func APIParamModelEnum(items []EnumItem) endpoint.APIParamModel {
 	return enumModel
 }
 
-// const
+// const.
 type constantAPIParamModel struct {
 	// we need use endpoint.BaseAPIParamModel point to avoid nested json struct
 	*endpoint.BaseAPIParamModel

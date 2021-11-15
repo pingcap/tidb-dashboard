@@ -115,7 +115,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	c.String(http.StatusOK, token)
 }
 
-// @Summary Download a finished request result.
+// @Summary Download a finished request result
 // @Param token query string true "download token"
 // @Success 200 {object} string
 // @Failure 400 {object} utils.APIError "Bad request"

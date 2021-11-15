@@ -15,6 +15,7 @@ package tidbclient
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -31,9 +32,9 @@ import (
 
 var (
 	ErrNS = errorx.NewNamespace("tidb_client")
-	// ErrAuthFailed means the authentication is failed when connecting to the TiDB Server
+	// ErrAuthFailed means the authentication is failed when connecting to the TiDB Server.
 	ErrAuthFailed = ErrNS.NewType("tidb_auth_failed")
-	// ErrConnFailed means there is a connection (like network) problem when connecting to the TiDB Server
+	// ErrConnFailed means there is a connection (like network) problem when connecting to the TiDB Server.
 	ErrConnFailed = ErrNS.NewType("tidb_conn_failed")
 )
 
@@ -75,7 +76,8 @@ func (c *SQLClient) OpenConn(user string, pass string) (*gorm.DB, error) {
 		log.Warn("Failed to open SQL connection",
 			zap.String("targetComponent", distro.R().TiDB),
 			zap.Error(err))
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) {
 			if mysqlErr.Number == mysqlerr.ER_ACCESS_DENIED_ERROR {
 				return nil, ErrAuthFailed.New("Bad SQL username or password")
 			}

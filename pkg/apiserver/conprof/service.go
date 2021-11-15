@@ -41,19 +41,19 @@ func newService(lc fx.Lifecycle, p ServiceParams) *Service {
 }
 
 // Register register the handlers to the service.
-func RegisterConprofRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	conprofEndpoint := r.Group("/continuous_profiling")
 
-	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.params.NgmProxy.Route("/config"), s.conprofConfig)
-	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.params.NgmProxy.Route("/config"), s.updateConprofConfig)
-	conprofEndpoint.GET("/components", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/components"), s.conprofComponents)
-	conprofEndpoint.GET("/estimate_size", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/estimate_size"), s.estimateSize)
-	conprofEndpoint.GET("/group_profiles", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profiles"), s.conprofGroupProfiles)
-	conprofEndpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profile/detail"), s.conprofGroupProfileDetail)
+	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.params.NgmProxy.Route("/config"))
+	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.params.NgmProxy.Route("/config"))
+	conprofEndpoint.GET("/components", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/components"))
+	conprofEndpoint.GET("/estimate_size", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/estimate_size"))
+	conprofEndpoint.GET("/group_profiles", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profiles"))
+	conprofEndpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profile/detail"))
 
-	conprofEndpoint.GET("/action_token", auth.MWAuthRequired(), s.genConprofActionToken)
-	conprofEndpoint.GET("/download", s.params.NgmProxy.Route("/continuous_profiling/download"), s.conprofDownload)
-	conprofEndpoint.GET("/single_profile/view", s.params.NgmProxy.Route("/continuous_profiling/single_profile/view"), s.conprofViewProfile)
+	conprofEndpoint.GET("/action_token", auth.MWAuthRequired(), s.GenConprofActionToken)
+	conprofEndpoint.GET("/download", s.parseJWTToken, s.params.NgmProxy.Route("/continuous_profiling/download"))
+	conprofEndpoint.GET("/single_profile/view", s.parseJWTToken, s.params.NgmProxy.Route("/continuous_profiling/single_profile/view"))
 }
 
 type ContinuousProfilingConfig struct {
@@ -74,7 +74,7 @@ type NgMonitoringConfig struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) conprofConfig(c *gin.Context) {
+func (s *Service) ConprofConfig(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -85,7 +85,7 @@ func (s *Service) conprofConfig(c *gin.Context) {
 // @Success 200 {string} string "ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) updateConprofConfig(c *gin.Context) {
+func (s *Service) UpdateConprofConfig(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -102,7 +102,7 @@ type Component struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) conprofComponents(c *gin.Context) {
+func (s *Service) ConprofComponents(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -117,7 +117,7 @@ type EstimateSizeRes struct {
 // @Success 200 {object} EstimateSizeRes
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) estimateSize(c *gin.Context) {
+func (s *Service) EstimateSize(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -166,7 +166,7 @@ type Target struct {
 // @Success 200 {array} GroupProfiles
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) conprofGroupProfiles(c *gin.Context) {
+func (s *Service) ConprofGroupProfiles(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -177,7 +177,7 @@ func (s *Service) conprofGroupProfiles(c *gin.Context) {
 // @Success 200 {object} GroupProfileDetail
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
+func (s *Service) ConprofGroupProfileDetail(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -188,7 +188,7 @@ func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 // @Success 200 {string} string
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) genConprofActionToken(c *gin.Context) {
+func (s *Service) GenConprofActionToken(c *gin.Context) {
 	q := c.Query("q")
 	token, err := utils.NewJWTString("conprof", q)
 	if err != nil {
@@ -205,8 +205,18 @@ func (s *Service) genConprofActionToken(c *gin.Context) {
 // @Produce application/x-gzip
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) conprofDownload(c *gin.Context) {
+func (s *Service) ConprofDownload(c *gin.Context) {
 	// dummy, for generate openapi
+}
+
+func (s *Service) parseJWTToken(c *gin.Context) {
+	token := c.Query("token")
+	queryStr, err := utils.ParseJWTString("conprof", token)
+	if err != nil {
+		utils.MakeInvalidRequestErrorFromError(c, err)
+		return
+	}
+	c.Request.URL.RawQuery = queryStr
 }
 
 type ViewSingleProfileReq struct {
@@ -223,6 +233,6 @@ type ViewSingleProfileReq struct {
 // @Produce html
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) conprofViewProfile(c *gin.Context) {
+func (s *Service) ConprofViewProfile(c *gin.Context) {
 	// dummy, for generate openapi
 }

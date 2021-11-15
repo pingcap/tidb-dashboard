@@ -1,16 +1,4 @@
-// Copyright 2021 Suhaha
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package topsql
 
@@ -27,19 +15,19 @@ var (
 )
 
 type Service struct {
-	ngm *utils.NgmProxy
+	ngmProxy *utils.NgmProxy
 }
 
-func newService(ngm *utils.NgmProxy) *Service {
-	return &Service{ngm: ngm}
+func newService(ngmProxy *utils.NgmProxy) *Service {
+	return &Service{ngmProxy: ngmProxy}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/top_sql")
 	endpoint.Use(auth.MWAuthRequired())
 	{
-		endpoint.GET("/instances", s.ngm.Route("/topsql/v1/instances"), s.getInstance)
-		endpoint.GET("/cpu_time", s.ngm.Route("/topsql/v1/cpu_time"), s.getCPUTime)
+		endpoint.GET("/instances", s.ngmProxy.Route("/topsql/v1/instances"))
+		endpoint.GET("/cpu_time", s.ngmProxy.Route("/topsql/v1/cpu_time"))
 	}
 }
 
@@ -57,7 +45,7 @@ type InstanceItem struct {
 // @Success 200 {object} InstanceResponse "ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) getInstance(c *gin.Context) {
+func (s *Service) GetInstance(c *gin.Context) {
 	// dummy, for generate open api
 }
 
@@ -90,6 +78,6 @@ type PlanItem struct {
 // @Success 200 {object} CPUTimeResponse "ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-func (s *Service) getCPUTime(c *gin.Context) {
+func (s *Service) GetCPUTime(c *gin.Context) {
 	// dummy, for generate open api
 }

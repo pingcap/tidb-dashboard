@@ -34,7 +34,7 @@ function mapData(data) {
 
 function isFinished(data) {
   const groupState = data?.task_group_status?.new_state
-  return groupState === 3 || groupState === 4
+  return groupState === 4 || groupState === 5
 }
 
 export default function Page() {

@@ -76,20 +76,17 @@ type Service struct {
 
 var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers) (*Service, error) {
 	if err := autoMigrate(p.LocalStore); err != nil {
+		migrateTaskState(p.LocalStore)
 		return nil, err
 	}
 	s := &Service{params: p, fetchers: fts}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.lifecycleCtx = ctx
-			s.wg.Add(2)
+			s.wg.Add(1)
 			go func() {
 				defer s.wg.Done()
 				s.serviceLoop(ctx)
-			}()
-			go func() {
-				defer s.wg.Done()
-				s.migrateTaskState(ctx)
 			}()
 			return nil
 		},
@@ -146,23 +143,23 @@ func (s *Service) serviceLoop(ctx context.Context) {
 
 // update the Running state to Failed state for child task,
 // migrate the legacy state (Running|Finish) for group task to new_state (Running|AllFailed|PartialFailed|AllSuccess),
-// also revert the changes for legacy state in 5.3.0 dev stage (see PR #1027).
-func (s *Service) migrateTaskState(ctx context.Context) {
+// also revert the changes for legacy state in v2021.11.01.1 (see PR #1027).
+func migrateTaskState(db *dbstore.DB) {
 	// update the Running state to Failed state for child task
-	s.params.LocalStore.Model(&TaskModel{}).Where("state = ?", TaskStateRunning).Updates(map[string]interface{}{
+	db.Model(&TaskModel{}).Where("state = ?", TaskStateRunning).Updates(map[string]interface{}{
 		"state": TaskStateFailed,
 		"error": "task is interrupted by accident",
 	})
 
 	// Below line doesn't work, because TaskStateFailed is zero, it will be ignored
-	// s.params.LocalStore.Model(&TaskModel{}).Where("state = ?", TaskStateRunning).Updates(TaskModel{State: TaskStateFailed, Error: "task is interrupted by accident"})
+	// db.Model(&TaskModel{}).Where("state = ?", TaskStateRunning).Updates(TaskModel{State: TaskStateFailed, Error: "task is interrupted by accident"})
 
 	var lastMinID uint
 	var groupTasks []TaskGroupModel
 	var tasks []TaskModel
 	for {
 		// find out group tasks which are not migrated yet, don't miss anyone
-		query := s.params.LocalStore.Where("new_state IS NULL or new_state = ? or new_state = ? or state = ?", GroupTaskStateUnknown, GroupTaskStateRunning, TaskStateRunning).Order("id DESC").Limit(100)
+		query := db.Where("new_state IS NULL or new_state = ? or new_state = ? or state = ?", GroupTaskStateUnknown, GroupTaskStateRunning, TaskStateRunning).Order("id DESC").Limit(100)
 		if lastMinID > 0 {
 			// add this where condition to avoid the loop can't escape if some group tasks are migrated fail
 			query = query.Where("id < ?", lastMinID)
@@ -175,20 +172,20 @@ func (s *Service) migrateTaskState(ctx context.Context) {
 
 		for _, groupTask := range groupTasks {
 			// find out all child tasks of the group task
-			err = s.params.LocalStore.Where("task_group_id = ?", groupTask.ID).Find(&tasks).Error
+			err = db.Where("task_group_id = ?", groupTask.ID).Find(&tasks).Error
 			if err != nil {
 				continue
 			}
 			if len(tasks) == 0 {
 				// delete it if it has no child tasks
-				s.params.LocalStore.Delete(groupTask)
+				db.Delete(groupTask)
 				continue
 			}
 
 			// set new_state
 			successTasks := 0
 			for _, t := range tasks {
-				if t.State == TaskStateFinish {
+				if t.State == TaskStateFinished {
 					successTasks++
 				}
 			}
@@ -199,10 +196,10 @@ func (s *Service) migrateTaskState(ctx context.Context) {
 			} else {
 				groupTask.NewState = GroupTaskStateAllSuccess
 			}
-			// revert the legacy state back to TaskStateFinish if it has changed in 5.3.0 dev stage
+			// revert the legacy state back to TaskStateFinished if it has changed in v2021.11.01.1
 			// for example it changes to TaskPartialFinish
-			groupTask.State = TaskStateFinish
-			s.params.LocalStore.Save(groupTask)
+			groupTask.State = GroupTaskStateFinished
+			db.Save(groupTask)
 		}
 	}
 }
@@ -258,7 +255,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 		successTasks := 0
 		for _, task := range tasks {
-			if task.State == TaskStateFinish {
+			if task.State == TaskStateFinished {
 				successTasks++
 			}
 		}
@@ -270,7 +267,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 			taskGroup.NewState = GroupTaskStateAllSuccess
 		}
 		// keep legacy state to make it compatible with lower version if it downgrades back to lower version
-		taskGroup.State = TaskStateFinish
+		taskGroup.State = GroupTaskStateFinished
 		s.params.LocalStore.Save(taskGroup.TaskGroupModel)
 	}()
 

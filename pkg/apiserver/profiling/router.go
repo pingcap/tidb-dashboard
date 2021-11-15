@@ -219,7 +219,7 @@ func (s *Service) downloadGroup(c *gin.Context) {
 		return
 	}
 	var tasks []TaskModel
-	err = s.params.LocalStore.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateFinish).Find(&tasks).Error
+	err = s.params.LocalStore.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateFinished).Find(&tasks).Error
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -263,7 +263,7 @@ func (s *Service) downloadSingle(c *gin.Context) {
 		return
 	}
 	task := TaskModel{}
-	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
+	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinished).First(&task).Error
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -301,7 +301,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 		return
 	}
 	task := TaskModel{}
-	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
+	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinished).First(&task).Error
 	if err != nil {
 		_ = c.Error(err)
 		return

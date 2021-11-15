@@ -135,7 +135,7 @@ export default function Page() {
                 text={t('instance_profiling.list.table.status.running')}
               />
             )
-          } else if (rec.new_state === 2) {
+          } else if (rec.new_state === 3) {
             // all failed
             return (
               <Badge
@@ -143,7 +143,7 @@ export default function Page() {
                 text={t('instance_profiling.list.table.status.all_failed')}
               />
             )
-          } else if (rec.new_state === 3) {
+          } else if (rec.new_state === 4) {
             // partially failed
             return (
               <Badge
@@ -151,7 +151,7 @@ export default function Page() {
                 text={t('instance_profiling.list.table.status.partial_failed')}
               />
             )
-          } else if (rec.new_state === 4) {
+          } else if (rec.new_state === 5) {
             // all success
             return (
               <Badge

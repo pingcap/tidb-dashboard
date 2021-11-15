@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 // @title Dashboard API
 // @version 1.0
@@ -75,7 +64,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", cfg.CoreConfig.PDEndPoint, "PD endpoint address that Dashboard Server connects to")
 	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", cfg.CoreConfig.EnableTelemetry, "allow telemetry")
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
-	flag.BoolVar(&cfg.CoreConfig.EnableNonRootLogin, "non-root-login", cfg.CoreConfig.EnableNonRootLogin, "allow non root sql user login")
+	flag.StringVar(&cfg.CoreConfig.FeatureVersion, "feature-version", cfg.CoreConfig.FeatureVersion, "target TiDB version for standalone mode")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 

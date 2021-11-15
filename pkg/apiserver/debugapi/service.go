@@ -1,15 +1,4 @@
-// Copyright 2021 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package debugapi
 
@@ -115,7 +104,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	c.String(http.StatusOK, token)
 }
 
-// @Summary Download a finished request result.
+// @Summary Download a finished request result
 // @Param token query string true "download token"
 // @Success 200 {object} string
 // @Failure 400 {object} utils.APIError "Bad request"

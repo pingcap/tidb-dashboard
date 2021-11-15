@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package testutil
 
 import (
@@ -36,20 +38,20 @@ func NewHTTPServerAtHost(response string, host string) *httptest.Server {
 
 type MultiServerHelper struct {
 	Servers      []*httptest.Server
-	lastActiveId *atomic.Int32
+	lastActiveID *atomic.Int32
 	lastResponse *atomic.String
 }
 
 func NewMultiServer(n int, responsePattern string) *MultiServerHelper {
 	servers := make([]*httptest.Server, 0)
-	lastActiveId := atomic.NewInt32(-1)
+	lastActiveID := atomic.NewInt32(-1)
 	lastResponse := atomic.NewString("")
 
 	for i := 0; i < n; i++ {
 		func(i int) {
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				resp := fmt.Sprintf(responsePattern, i)
-				lastActiveId.Store(int32(i))
+				lastActiveID.Store(int32(i))
 				lastResponse.Store(resp)
 				_, _ = fmt.Fprintln(w, resp)
 			}))
@@ -58,7 +60,7 @@ func NewMultiServer(n int, responsePattern string) *MultiServerHelper {
 	}
 	return &MultiServerHelper{
 		Servers:      servers,
-		lastActiveId: lastActiveId,
+		lastActiveID: lastActiveID,
 		lastResponse: lastResponse,
 	}
 }
@@ -67,8 +69,8 @@ func (m *MultiServerHelper) LastResp() string {
 	return m.lastResponse.Load()
 }
 
-func (m *MultiServerHelper) LastId() int {
-	return int(m.lastActiveId.Load())
+func (m *MultiServerHelper) LastID() int {
+	return int(m.lastActiveID.Load())
 }
 
 func (m *MultiServerHelper) CloseAll() {

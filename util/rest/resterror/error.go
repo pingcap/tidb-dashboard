@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package resterror
 
 import (
@@ -8,10 +10,10 @@ import (
 )
 
 var (
-	ErrUnauthorized = errorx.CommonErrors.NewType("unauthorized")
-	ErrForbidden    = errorx.CommonErrors.NewType("forbidden")
-	ErrBadRequest   = errorx.CommonErrors.NewType("bad_request")
-	ErrNotFound     = errorx.CommonErrors.NewType("not_found")
+	ErrUnauthenticated = errorx.CommonErrors.NewType("unauthenticated")
+	ErrForbidden       = errorx.CommonErrors.NewType("forbidden")
+	ErrBadRequest      = errorx.CommonErrors.NewType("bad_request")
+	ErrNotFound        = errorx.CommonErrors.NewType("not_found")
 
 	errInternal  = errorx.CommonErrors.NewType("internal")
 	propHTTPCode = errorx.RegisterProperty("http_code")
@@ -38,7 +40,9 @@ func extractHTTPCodeFromError(err error) int {
 	}
 
 	// Is it a well-known error type?
-	if ex.IsOfType(ErrUnauthorized) {
+	if ex.IsOfType(ErrUnauthenticated) {
+		// See https://stackoverflow.com/questions/3297048/403-forbidden-vs-401-unauthorized-http-responses
+		// for why StatusUnauthorized comes from ErrUnauthenticated
 		return http.StatusUnauthorized
 	}
 	if ex.IsOfType(ErrForbidden) {

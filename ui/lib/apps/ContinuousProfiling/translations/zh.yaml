@@ -58,6 +58,7 @@ continuous_profiling:
     profile_interval_tooltip:
     profile_retention_duration: 保留时间
     profile_retention_duration_tooltip: 分析结果会持久化到磁盘中，超过保留时间会被回收。该配置对所有结果生效，包括历史结果。
+    profile_retention_duration_option: '{{d}} 天'
     close_feature: 关闭持续分析功能
     close_feature_confirm: 确认要关闭该功能吗？关闭后将停止持续分析，历史结果会继续保留。
     actions:

@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package virtualview
 
 import (
@@ -143,7 +145,7 @@ func parseViewModelSchema(model interface{}) (viewSchema, error) {
 		ft := vt.Field(i)
 		props, err := decodeField(ft)
 		if err != nil {
-			return viewSchema{}, fmt.Errorf("field %s is invalid: %v", ft.Name, err)
+			return viewSchema{}, fmt.Errorf("field %s is invalid: %w", ft.Name, err)
 		}
 		if props.jsonNameL == "" {
 			// this field is unexported, skip.

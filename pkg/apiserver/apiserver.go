@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package apiserver
 
@@ -27,6 +16,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/configuration"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/diagnose"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
@@ -43,7 +33,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
-	// NOTE: Don't remove above comment line, it is a placeholder for code generator
+	// NOTE: Don't remove above comment line, it is a placeholder for code generator.
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
@@ -144,6 +134,7 @@ func (s *Service) Start(ctx context.Context) error {
 		code.Module,
 		sso.Module,
 		profiling.Module,
+		conprof.Module,
 		statement.Module,
 		slowquery.Module,
 		debugapi.Module,
@@ -154,7 +145,6 @@ func (s *Service) Start(ctx context.Context) error {
 			info.RegisterRouter,
 			clusterinfo.RegisterRouter,
 			profiling.RegisterRouter,
-			profiling.RegisterConprofRouter,
 			logsearch.RegisterRouter,
 			diagnose.RegisterRouter,
 			keyvisual.RegisterRouter,

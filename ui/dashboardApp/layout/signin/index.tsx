@@ -1,8 +1,14 @@
 import CSSMotion from 'rc-animate/es/CSSMotion'
 import cx from 'classnames'
 import * as singleSpa from 'single-spa'
-import { Root, AppearAnimate } from '@lib/components'
-import React, { useState, useRef, useCallback, useMemo, ReactNode } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  ReactNode,
+} from 'react'
 import {
   DownOutlined,
   GlobalOutlined,
@@ -14,18 +20,20 @@ import {
 } from '@ant-design/icons'
 import { Form, Input, Button, message, Typography, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
-import LanguageDropdown from '@lib/components/LanguageDropdown'
-import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
-import * as auth from '@lib/utils/auth'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
 import { usePersistFn } from 'ahooks'
-import { ReactComponent as Logo } from './logo.svg'
-import styles from './index.module.less'
-import { useEffect } from 'react'
+
+import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
 import { getAuthURL } from '@lib/utils/authSSO'
 import { AuthTypes } from '@lib/utils/auth'
 import { isDistro } from '@lib/utils/i18n'
+import * as auth from '@lib/utils/auth'
+import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
+
+import styles from './index.module.less'
+import { ReactComponent as Logo } from './logo.svg'
+import { useIsFeatureSupport } from '@lib/utils/store'
 
 enum DisplayFormType {
   uninitialized,
@@ -150,6 +158,7 @@ function AlternativeAuthForm({
 function useSignInSubmit(
   successRoute,
   fnLoginForm: (form) => UserAuthenticateForm,
+  onSuccess: (form) => void,
   onFailure: () => void
 ) {
   const { t } = useTranslation()
@@ -170,6 +179,7 @@ function useSignInSubmit(
       auth.setAuthToken(r.data.token)
       message.success(t('signin.message.success'))
       singleSpa.navigateToUrl(successRoute)
+      onSuccess(form)
     } catch (e) {
       const { handled, message, errCode } = e as any
       if (!handled) {
@@ -198,11 +208,10 @@ function useSignInSubmit(
   return { handleSubmit, loading, errorMsg: error, clearErrorMsg }
 }
 
-function TiDBSignInForm({
-  successRoute,
-  onClickAlternative,
-  enableNonRootLogin = false,
-}) {
+const LAST_LOGIN_USERNAME_KEY = 'dashboard_last_login_username'
+
+function TiDBSignInForm({ successRoute, onClickAlternative }) {
+  const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -215,6 +224,9 @@ function TiDBSignInForm({
       password: form.password,
       type: AuthTypes.SQLUser,
     }),
+    (form) => {
+      localStorage.setItem(LAST_LOGIN_USERNAME_KEY, form.username)
+    },
     () => {
       refForm.setFieldsValue({ password: '' })
       setTimeout(() => {
@@ -227,6 +239,10 @@ function TiDBSignInForm({
     refPassword?.current?.focus()
   })
 
+  const lastLoginUsername = useMemo(() => {
+    return localStorage.getItem(LAST_LOGIN_USERNAME_KEY) || 'root'
+  }, [])
+
   return (
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
@@ -234,7 +250,7 @@ function TiDBSignInForm({
           name="tidb_signin"
           onFinish={handleSubmit}
           layout="vertical"
-          initialValues={{ username: 'root' }}
+          initialValues={{ username: lastLoginUsername }}
           form={refForm}
         >
           <Logo className={styles.logo} />
@@ -245,12 +261,12 @@ function TiDBSignInForm({
             name="username"
             label={t('signin.form.username')}
             rules={[{ required: true }]}
-            tooltip={!enableNonRootLogin && t('signin.form.username_tooltip')}
+            tooltip={!supportNonRootLogin && t('signin.form.username_tooltip')}
           >
             <Input
               onInput={clearErrorMsg}
               prefix={<UserOutlined />}
-              disabled={!enableNonRootLogin}
+              disabled={!supportNonRootLogin}
             />
           </Form.Item>
           <Form.Item
@@ -304,6 +320,7 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
       password: form.code,
       type: AuthTypes.SharingCode,
     }),
+    () => {},
     () => {
       refForm.setFieldsValue({ code: '' })
       setTimeout(() => {
@@ -411,7 +428,6 @@ function App({ registry }) {
   const [supportedAuthTypes, setSupportedAuthTypes] = useState<Array<number>>([
     0,
   ])
-  const [enableNonRootLogin, setEnableNonoRootLogin] = useState(false)
 
   const handleClickAlternative = useCallback(() => {
     setAlternativeVisible(true)
@@ -439,7 +455,6 @@ function App({ registry }) {
           setFormType(DisplayFormType.tidbCredential)
         }
         setSupportedAuthTypes(loginInfo.supported_auth_types ?? [])
-        setEnableNonoRootLogin(loginInfo.enable_non_root_login ?? false)
       } catch (e) {
         Modal.error({
           title: 'Initialize Sign in failed',
@@ -474,7 +489,6 @@ function App({ registry }) {
             <TiDBSignInForm
               successRoute={successRoute}
               onClickAlternative={handleClickAlternative}
-              enableNonRootLogin={enableNonRootLogin}
             />
           )}
           {formType === DisplayFormType.shareCode && (

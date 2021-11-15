@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package user
 
@@ -27,11 +16,9 @@ import (
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
 var (
@@ -41,13 +28,7 @@ var (
 	ErrSignInOther         = ErrNSSignIn.NewType("other")
 )
 
-type ServiceParams struct {
-	fx.In
-	Config *config.Config
-}
-
 type AuthService struct {
-	params         ServiceParams
 	middleware     *jwt.GinJWTMiddleware
 	authenticators map[utils.AuthType]Authenticator
 }
@@ -89,7 +70,7 @@ func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string)
 	return &SignOutInfo{}, nil
 }
 
-func NewAuthService(p ServiceParams) *AuthService {
+func NewAuthService() *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -106,7 +87,6 @@ func NewAuthService(p ServiceParams) *AuthService {
 	}
 
 	service := &AuthService{
-		params:         p,
 		middleware:     nil,
 		authenticators: map[utils.AuthType]Authenticator{},
 	}
@@ -295,11 +275,10 @@ func (s *AuthService) RegisterAuthenticator(typeID utils.AuthType, a Authenticat
 
 type GetLoginInfoResponse struct {
 	SupportedAuthTypes []int `json:"supported_auth_types"`
-	EnableNonRootLogin bool  `json:"enable_non_root_login"`
 }
 
 // @ID userGetLoginInfo
-// @Summary Get log in information, like supported authenticate types.
+// @Summary Get log in information, like supported authenticate types
 // @Success 200 {object} GetLoginInfoResponse
 // @Router /user/login_info [get]
 func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
@@ -317,7 +296,6 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 	sort.Ints(supportedAuth)
 	resp := GetLoginInfoResponse{
 		SupportedAuthTypes: supportedAuth,
-		EnableNonRootLogin: s.params.Config.EnableNonRootLogin,
 	}
 	c.JSON(http.StatusOK, resp)
 }

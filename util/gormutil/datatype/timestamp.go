@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package datatype
 
 import (
@@ -40,7 +42,7 @@ func (n *Timestamp) Scan(value interface{}) error {
 
 var _ schema.GormDataTypeInterface = Timestamp{}
 
-// GormDataType implements schema.GormDataTypeInterface
+// GormDataType implements schema.GormDataTypeInterface.
 func (n Timestamp) GormDataType() string {
 	return "TIMESTAMP"
 }

@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package tidb
 
 import (
@@ -10,11 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/VividCortex/mysqlerr"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pingcap/log"
-	"github.com/thoas/go-funk"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -24,14 +24,12 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 var (
 	ErrTiDBConnFailed          = ErrNS.NewType("tidb_conn_failed")
 	ErrTiDBAuthFailed          = ErrNS.NewType("tidb_auth_failed")
 	ErrTiDBClientRequestFailed = ErrNS.NewType("client_request_failed")
-	ErrInvalidTiDBAddr         = ErrNS.NewType("invalid_tidb_addr")
 )
 
 const (
@@ -48,7 +46,6 @@ const (
 type Client struct {
 	lifecycleCtx             context.Context
 	forwarder                *Forwarder
-	endpointAllowlist        []string // Endpoint addrs in the whitelist can skip the checkValidAddress check
 	statusAPIHTTPScheme      string
 	statusAPIAddress         string // Empty means to use address provided by forwarder
 	enforceStatusAPIAddresss bool   // enforced status api address and ignore env override config
@@ -56,7 +53,6 @@ type Client struct {
 	statusAPITimeout         time.Duration
 	sqlAPITLSKey             string // Non empty means use this key as MySQL TLS config
 	sqlAPIAddress            string // Empty means to use address provided by forwarder
-	cache                    *ttlcache.Cache
 }
 
 func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *httpc.Client) *Client {
@@ -66,12 +62,9 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		_ = mysql.RegisterTLSConfig(sqlAPITLSKey, config.TiDBTLSConfig)
 	}
 
-	cache := ttlcache.NewCache()
-	cache.SkipTTLExtensionOnHit(true)
 	client := &Client{
 		lifecycleCtx:             nil,
 		forwarder:                newForwarder(lc, etcdClient),
-		endpointAllowlist:        []string{},
 		statusAPIHTTPScheme:      config.GetClusterHTTPScheme(),
 		statusAPIAddress:         "",
 		enforceStatusAPIAddresss: false,
@@ -79,18 +72,12 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		statusAPITimeout:         defaultTiDBStatusAPITimeout,
 		sqlAPITLSKey:             sqlAPITLSKey,
 		sqlAPIAddress:            "",
-		cache:                    cache,
 	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			client.lifecycleCtx = ctx
-			client.endpointAllowlist = append(client.endpointAllowlist, client.forwarder.statusProxy.listener.Addr().String())
-
 			return nil
-		},
-		OnStop: func(c context.Context) error {
-			return cache.Close()
 		},
 	})
 
@@ -200,11 +187,6 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 		}
 	}
 
-	err = c.checkValidAddress(addr)
-	if err != nil {
-		return nil, err
-	}
-
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, relativeURI)
 	res, err := c.statusAPIHTTPClient.
 		WithTimeout(c.statusAPITimeout).
@@ -213,44 +195,6 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 		return nil, ErrNoAliveTiDB.NewWithNoMessage()
 	}
 	return res, err
-}
-
-func (c *Client) getMemberAddrs() ([]string, error) {
-	cached, _ := c.cache.Get("tidb_member_addrs")
-	if cached != nil {
-		return cached.([]string), nil
-	}
-
-	topos, err := topology.FetchTiDBTopology(c.lifecycleCtx, c.forwarder.etcdClient)
-	if err != nil {
-		return nil, err
-	}
-	addrs := []string{}
-	for _, topo := range topos {
-		addrs = append(addrs, fmt.Sprintf("%s:%d", topo.IP, topo.StatusPort))
-	}
-
-	_ = c.cache.SetWithTTL("tidb_member_addrs", addrs, 10*time.Second)
-
-	return addrs, nil
-}
-
-func (c *Client) checkValidAddress(addr string) error {
-	if funk.Contains(c.endpointAllowlist, addr) {
-		return nil
-	}
-
-	addrs, err := c.getMemberAddrs()
-	if err != nil {
-		return err
-	}
-	isValid := funk.Contains(addrs, func(mAddr string) bool {
-		return mAddr == addr
-	})
-	if !isValid {
-		return ErrInvalidTiDBAddr.New("request address %s is invalid", addr)
-	}
-	return nil
 }
 
 // FIXME: SendGetRequest should be extracted, as a common method.

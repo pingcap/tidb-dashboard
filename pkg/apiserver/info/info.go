@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package info
 
@@ -22,6 +11,8 @@ import (
 	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/nonrootlogin"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -60,6 +51,7 @@ type InfoResponse struct { //nolint
 	Version            *version.Info `json:"version"`
 	EnableTelemetry    bool          `json:"enable_telemetry"`
 	EnableExperimental bool          `json:"enable_experimental"`
+	SupportedFeatures  []string      `json:"supported_features"`
 }
 
 // @ID infoGet
@@ -69,10 +61,19 @@ type InfoResponse struct { //nolint
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
+	supportedFeatures := []string{}
+	if conprof.IsFeatureSupport(s.params.Config) {
+		supportedFeatures = append(supportedFeatures, "conprof")
+	}
+	if nonrootlogin.IsFeatureSupport(s.params.Config) {
+		supportedFeatures = append(supportedFeatures, "nonRootLogin")
+	}
+
 	resp := InfoResponse{
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
+		SupportedFeatures:  supportedFeatures,
 	}
 	c.JSON(http.StatusOK, resp)
 }

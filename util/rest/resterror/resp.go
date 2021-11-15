@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package resterror
 
 import (
@@ -77,11 +79,18 @@ func buildCode(err error) string {
 	return errInternal.FullName()
 }
 
+// Note: This function only exists for compatibility during the refactoring. Before refactoring,
+// all error codes begin with "error.". We will migrate more and more error codes to not begin with "error.".
+// Finally, after all error codes are migrated, this function is no longer needed.
+func removeErrorPrefix(code string) string {
+	return strings.TrimPrefix(code, "error.")
+}
+
 func NewErrorResponse(err error) ErrorResponse {
 	return ErrorResponse{
 		Error:    true,
 		Message:  buildSimpleMessage(err),
-		Code:     buildCode(err),
+		Code:     removeErrorPrefix(buildCode(err)),
 		FullText: fmt.Sprintf("%+v", err),
 	}
 }

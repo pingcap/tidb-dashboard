@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
 import Banner from './Banner'
 import styles from './index.module.less'
-import { store } from '@lib/utils/store'
+import { store, useIsFeatureSupport } from '@lib/utils/store'
 
 function useAppMenuItem(registry, appId, title?: string, hideIcon?: boolean) {
   const { t } = useTranslation()
@@ -50,11 +50,24 @@ function Sider({
 
   const whoAmI = store.useState((s) => s.whoAmI)
   const appInfo = store.useState((s) => s.appInfo)
+  const supportConprof = useIsFeatureSupport('conprof')
 
-  const profilingSubMenuItems = [
-    useAppMenuItem(registry, 'instance_profiling', '', true),
-    useAppMenuItem(registry, 'continuous_profiling', '', true),
-  ]
+  const instanceProfilingMenuItem = useAppMenuItem(
+    registry,
+    'instance_profiling',
+    '',
+    true
+  )
+  const conprofMenuItem = useAppMenuItem(
+    registry,
+    'continuous_profiling',
+    '',
+    true
+  )
+  const profilingSubMenuItems = [instanceProfilingMenuItem]
+  if (supportConprof) {
+    profilingSubMenuItems.push(conprofMenuItem)
+  }
 
   const profilingSubMenu = (
     <Menu.SubMenu
@@ -141,7 +154,7 @@ function Sider({
     if (defaultCollapsed) {
       return []
     } else {
-      return ['debug', 'experimental']
+      return ['debug', 'experimental', 'profiling']
     }
   }, [defaultCollapsed])
 

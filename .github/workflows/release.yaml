@@ -87,7 +87,7 @@ jobs:
     needs: release
     strategy:
       matrix:
-        branch: [master, release-4.0, release-5.0, release-5.1, release-5.2]
+        branch: [master, release-5.3]
     steps:
       - name: Check out PD code base
         uses: actions/checkout@master
@@ -111,7 +111,7 @@ jobs:
           git add go.mod go.sum
           if git status | grep -q "Changes to be committed"
           then
-            git commit --signoff --message "Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}"
+            git commit --signoff --message "Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}, ref #4257"
             echo "::set-output name=committed::1"
           else
             echo "No changes detected, skipped"
@@ -129,9 +129,9 @@ jobs:
           body: |
             ### What problem does this PR solve?
 
-            Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}.
+            This is an automatic updating PR for TiDB Dashboard. See #4257 for details.
 
-            Upstream commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }} .
+            This PR updates TiDB Dashboard to ${{ needs.release.outputs.release_version }} for upstream commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }} .
 
             ### Release note
 

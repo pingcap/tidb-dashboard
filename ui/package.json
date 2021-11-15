@@ -23,6 +23,7 @@
     "dayjs": "^1.9.6",
     "echarts": "^4.8.0",
     "echarts-for-react": "^2.0.16",
+    "esbuild": "^0.13.13",
     "eventemitter2": "^6.4.4",
     "history": "^5.0.0",
     "i18next": "^19.6.3",

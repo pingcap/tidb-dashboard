@@ -5,6 +5,7 @@ package feature
 import (
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,21 +31,22 @@ func NewManagerProvider(version string) func() *Manager {
 	}
 }
 
-// SupportedFeatures returns supported feature's names.
-func (m *Manager) SupportedFeatures() []string {
-	sf := make([]string, 0, len(m.supportedMap))
-	for k := range m.supportedMap {
-		sf = append(sf, k)
-	}
-	return sf
-}
-
 // Register feature flag.
 func (m *Manager) Register(f *Flag) {
 	m.flags = append(m.flags, f)
 	if f.IsSupported(m.version) {
 		m.supportedMap[f.Name] = struct{}{}
 	}
+}
+
+// SupportedFeatures returns supported feature's names.
+func (m *Manager) SupportedFeatures() []string {
+	sf := make([]string, 0, len(m.supportedMap))
+	for k := range m.supportedMap {
+		sf = append(sf, k)
+	}
+	sort.Strings(sf)
+	return sf
 }
 
 // Guard returns gin.HandlerFunc as guard middleware.

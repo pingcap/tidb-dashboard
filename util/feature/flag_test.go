@@ -31,3 +31,15 @@ func Test_IsSupported(t *testing.T) {
 		require.Equal(t, tt.want, ff.IsSupported(tt.args.target))
 	}
 }
+
+func Test_Register_toManager(t *testing.T) {
+	f1 := NewFlag("testFeature", []string{">= 5.3.0"})
+	f2 := injectManager(f1.Register())
+	require.Equal(t, f1, f2)
+}
+
+func injectManager(rf func(m *Manager)) *Flag {
+	m := NewManager("v5.3.0")
+	rf(m)
+	return m.flags[0]
+}

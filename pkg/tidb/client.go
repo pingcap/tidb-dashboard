@@ -119,7 +119,7 @@ func (c Client) WithEnforcedStatusAPIAddress(host string, statusPort int) *Clien
 	return &c
 }
 
-// WithRawBody means the body will not be read internally
+// WithRawBody means the body will not be read internally.
 func (c Client) WithRawBody(r bool) *Client {
 	c.isRawBody = r
 	return &c
@@ -196,7 +196,7 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 	return c.unsafeGet(relativeURI)
 }
 
-// UnsafeGet requires user to ensure the validity of request address to avoid SSRF
+// UnsafeGet requires user to ensure the validity of request address to avoid SSRF.
 func (c *Client) unsafeGet(relativeURI string) (*httpc.Response, error) {
 	addr, err := c.resolveStatusAPIAddress()
 	if err != nil {
@@ -245,7 +245,7 @@ func (c *Client) resolveStatusAPIAddress() (addr string, err error) {
 }
 
 // The request address needs to be checked, when it is specified through
-// `WithStatusAPIAddress` and `WithEnforcedStatusAPIAddress`
+// `WithStatusAPIAddress` and `WithEnforcedStatusAPIAddress`.
 func (c *Client) needCheckAddress() bool {
 	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
 	haveEnforceStatusAPIAddress := c.enforceStatusAPIAddresss && c.statusAPIAddress != ""
@@ -257,7 +257,7 @@ func (c *Client) needCheckAddress() bool {
 	return false
 }
 
-// Check the request address is an valid tidb status endpoint
+// Check the request address is an valid tidb status endpoint.
 func (c *Client) checkStatusAPIAddressValidity() (err error) {
 	es, err := c.getStatusEndpoints()
 	if err != nil {

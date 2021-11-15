@@ -67,7 +67,7 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-// WithRawBody means the body will not be read internally
+// WithRawBody means the body will not be read internally.
 func (c Client) WithRawBody(r bool) *Client {
 	c.isRawBody = r
 	return &c
@@ -99,7 +99,7 @@ func (c *Client) Post(host string, statusPort int, relativeURI string, body io.R
 		SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, distro.Data("tiflash"))
 }
 
-// Check the request address is an valid tiflash endpoint
+// Check the request address is an valid tiflash endpoint.
 func (c *Client) checkAPIAddressValidity(addr string) (err error) {
 	es, err := c.getEndpoints()
 	if err != nil {

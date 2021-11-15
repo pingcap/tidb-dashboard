@@ -88,7 +88,7 @@ func (c Client) WithBeforeRequest(callback httpc.BeforeRequestFunc) *Client {
 	return &c
 }
 
-// WithRawBody means the body will not be read internally
+// WithRawBody means the body will not be read internally.
 func (c Client) WithRawBody(r bool) *Client {
 	c.isRawBody = r
 	return &c
@@ -112,7 +112,7 @@ func (c *Client) Post(relativeURI string, requestBody io.Reader) (*httpc.Respons
 	return c.unsafePost(relativeURI, requestBody)
 }
 
-// UnsafeGet requires user to ensure the validity of request address to avoid SSRF
+// UnsafeGet requires user to ensure the validity of request address to avoid SSRF.
 func (c *Client) unsafeGet(relativeURI string) (*httpc.Response, error) {
 	uri := fmt.Sprintf("%s%s", c.resolveAPIAddress(), relativeURI)
 	return c.httpClient.
@@ -122,7 +122,7 @@ func (c *Client) unsafeGet(relativeURI string) (*httpc.Response, error) {
 		SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, distro.Data("pd"))
 }
 
-// UnsafePost requires user to ensure the validity of request address to avoid SSRF
+// UnsafePost requires user to ensure the validity of request address to avoid SSRF.
 func (c *Client) unsafePost(relativeURI string, requestBody io.Reader) (*httpc.Response, error) {
 	uri := fmt.Sprintf("%s%s", c.resolveAPIAddress(), relativeURI)
 	return c.httpClient.
@@ -143,12 +143,12 @@ func (c *Client) resolveAPIAddress() string {
 }
 
 // According to `resolveAPIAddress`, the request will be
-// sent to config.PDEndpoint if the baseURL is not specified
+// sent to config.PDEndpoint if the baseURL is not specified.
 func (c *Client) needCheckAddress() bool {
 	return c.baseURL != ""
 }
 
-// Check the request address is an valid pd endpoint
+// Check the request address is an valid pd endpoint.
 func (c *Client) checkAPIAddressValidity() (err error) {
 	es, err := c.getEndpoints()
 	if err != nil {

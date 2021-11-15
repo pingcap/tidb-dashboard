@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package datatype
 
 import (
@@ -48,7 +50,7 @@ func (n *Int) Scan(value interface{}) error {
 
 var _ schema.GormDataTypeInterface = Int(0)
 
-// GormDataType implements schema.GormDataTypeInterface
+// GormDataType implements schema.GormDataTypeInterface.
 func (n Int) GormDataType() string {
 	return "BIGINT"
 }

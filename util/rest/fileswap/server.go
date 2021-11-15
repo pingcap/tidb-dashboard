@@ -1,6 +1,9 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package fileswap
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -8,7 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt"
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/minio/sio"
@@ -75,7 +78,8 @@ func (s *Handler) parseClaimsFromToken(tokenString string) (*downloadTokenClaims
 			return claims, nil
 		}
 	}
-	if ve, ok := err.(*jwt.ValidationError); ok && ve.Errors&jwt.ValidationErrorExpired != 0 {
+	var ve *jwt.ValidationError
+	if errors.As(err, &ve) && ve.Errors&jwt.ValidationErrorExpired != 0 {
 		return nil, errorx.Decorate(err, "download token is expired")
 	}
 	return nil, errorx.Decorate(err, "download token is invalid")

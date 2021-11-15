@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package diagnose
 
@@ -51,7 +40,7 @@ type AvgMaxMinTableDef struct {
 }
 
 // Table schema
-// METRIC_NAME , LABEL, AVG(VALUE), MAX(VALUE), MIN(VALUE),
+// METRIC_NAME , LABEL, AVG(VALUE), MAX(VALUE), MIN(VALUE),.
 func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	if len(t.name) == 0 {
 		t.name = t.tbl
@@ -121,7 +110,7 @@ type sumValueQuery struct {
 }
 
 // Table schema
-// METRIC_NAME , LABEL  TOTAL_VALUE
+// METRIC_NAME , LABEL  TOTAL_VALUE.
 func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	if len(t.name) == 0 {
 		t.name = t.tbl
@@ -187,7 +176,7 @@ type totalTimeByLabelsTableDef struct {
 }
 
 // Table schema
-// METRIC_NAME , LABEL , TIME_RATIO ,  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80
+// METRIC_NAME , LABEL , TIME_RATIO ,  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80.
 func (t totalTimeByLabelsTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	sql := t.genSumarySQLs(arg.totalTime, arg.startTime, arg.endTime, arg.quantiles)
 	rows, err := querySQL(db, sql)
@@ -338,7 +327,7 @@ type totalValueAndTotalCountTableDef struct {
 }
 
 // Table schema
-// METRIC_NAME , LABEL  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80
+// METRIC_NAME , LABEL  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80.
 func (t totalValueAndTotalCountTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	sql := t.genSumarySQLs(arg.startTime, arg.endTime, arg.quantiles)
 	rows, err := querySQL(db, sql)

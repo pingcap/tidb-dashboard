@@ -1,15 +1,4 @@
-// Copyright 2021 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package proxy
 
@@ -240,10 +229,10 @@ func TestActiveUpstreamDown(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Contains(t, resp.String(), "foo#")
 	assert.Equal(t, servers.LastResp(), resp.String())
-	assert.Equal(t, fmt.Sprintf("foo#%d", servers.LastId()), resp.String())
+	assert.Equal(t, fmt.Sprintf("foo#%d", servers.LastID()), resp.String())
 
 	// Close the last accessed server
-	servers.Servers[servers.LastId()].Close()
+	servers.Servers[servers.LastID()].Close()
 
 	// The connection is still succeeded, but forwarded to another upstream.
 	resp2, err := sendGetToProxy(p)
@@ -271,11 +260,11 @@ func TestNonActiveUpstreamDown(t *testing.T) {
 	assert.True(t, p.HasActiveUpstream())
 	resp, err := sendGetToProxy(p)
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("foo#%d", servers.LastId()), resp.String())
+	assert.Equal(t, fmt.Sprintf("foo#%d", servers.LastID()), resp.String())
 
 	// Close other non active servers
 	for i := 0; i < 5; i++ {
-		if i != servers.LastId() {
+		if i != servers.LastID() {
 			servers.Servers[i].Close()
 		}
 	}

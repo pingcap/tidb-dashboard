@@ -1,15 +1,4 @@
-// Copyright 2021 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package user
 
@@ -32,7 +21,7 @@ var (
 //   ...
 //   "enable-sem": true/false,
 //   ...
-// },
+// },.
 type tidbSecurityConfig struct {
 	Security tidbSEMConfig `json:"security"`
 }
@@ -90,7 +79,7 @@ var grantRegex = regexp.MustCompile(`GRANT (.+) ON`)
 // - GRANT PROCESS,SHOW DATABASES,CONFIG ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT SYSTEM_VARIABLES_ADMIN,RESTRICTED_VARIABLES_ADMIN,RESTRICTED_STATUS_ADMIN,RESTRICTED_TABLES_ADMIN ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT ALL PRIVILEGES ON *.* TO 'dashboardAdmin'@'%'
-// - GRANT `app_read`@`%` TO `test`@`%`
+// - GRANT `app_read`@`%` TO `test`@`%`.
 func parseUserGrants(grantRows []string) map[string]struct{} {
 	grants := map[string]struct{}{}
 
@@ -117,7 +106,7 @@ func parseUserGrants(grantRows []string) map[string]struct{} {
 // When TiDB SEM is enabled, following extra privileges are required
 // - RESTRICTED_VARIABLES_ADMIN
 // - RESTRICTED_TABLES_ADMIN
-// - RESTRICTED_STATUS_ADMIN
+// - RESTRICTED_STATUS_ADMIN.
 func checkDashboardPriv(privs map[string]struct{}, enableSEM bool) bool {
 	if enableSEM {
 		// Note: When SEM is enabled, these additional privileges need to be checked even if "ALL PRIVILEGES" is granted.

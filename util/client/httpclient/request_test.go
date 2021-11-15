@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package httpclient
 
 import (
@@ -27,7 +29,7 @@ func TestRemoteEndpointError(t *testing.T) {
 }
 
 func TestRemoteEndpointBadServer(t *testing.T) {
-	listener, err := net.Listen("tcp", ":0")
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	require.Nil(t, err)
 	go func() {
 		for {

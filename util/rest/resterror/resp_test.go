@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package resterror
 
 import (
@@ -25,7 +27,7 @@ func TestBuildSimpleMessage(t *testing.T) {
 	err = os.ErrNotExist
 	require.Equal(t, "file does not exist", buildSimpleMessage(err))
 
-	err = fmt.Errorf("internal error: %+v", os.ErrNotExist)
+	err = fmt.Errorf("internal error: %w", os.ErrNotExist)
 	require.Equal(t, "internal error: file does not exist", buildSimpleMessage(err))
 
 	err = errTypeInner.NewWithNoMessage()

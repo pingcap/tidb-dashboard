@@ -45,7 +45,7 @@ const buildParams = {
   ]
 }
 
-;(async () => {
+async function main() {
   const builder = await build(buildParams)
 
   // TODO - refine
@@ -60,4 +60,6 @@ const buildParams = {
   })
 
   start(serverParams)
-})()
+}
+
+main()

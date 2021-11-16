@@ -21,4 +21,4 @@ const buildParams = {
   ]
 }
 
-build(buildParams).catch(() => process.exit(1))
+build(buildParams).finally(() => process.exit(0))

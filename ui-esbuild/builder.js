@@ -2,6 +2,7 @@ const { start } = require('live-server')
 const { watch } = require('chokidar')
 const { build } = require('esbuild')
 const fs = require('fs')
+const postCssPlugin = require('esbuild-plugin-postcss2').default
 
 /**
  * Live Server Params
@@ -34,13 +35,25 @@ const buildParams = {
   bundle: true,
   sourcemap: true,
   logLevel: 'error',
-  incremental: true
+  incremental: true,
+  plugins: [
+    postCssPlugin({
+      // lessOptions: {
+      //   javascriptEnabled: true
+      // }
+    })
+  ]
 }
 
 ;(async () => {
   const builder = await build(buildParams)
 
+  // TODO - refine
   fs.copyFileSync('./public/index.html', './dist/index.html')
+  fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
+  fs.copyFileSync('./public/manifest.json', './dist/manifest.json')
+  fs.copyFileSync('./public/logo192.png', './dist/logo192.png')
+  fs.copyFileSync('./public/logo512.png', './dist/logo512.png')
 
   watch('src/**/*.{ts,tsx}').on('all', () => {
     builder.rebuild()

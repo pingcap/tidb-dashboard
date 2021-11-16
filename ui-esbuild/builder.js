@@ -1,6 +1,7 @@
 const { start } = require('live-server')
 const { watch } = require('chokidar')
 const { build } = require('esbuild')
+const fs = require('fs')
 
 /**
  * Live Server Params
@@ -8,7 +9,7 @@ const { build } = require('esbuild')
  */
 const serverParams = {
   port: 8181, // Set the server port. Defaults to 8080.
-  root: 'public', // Set root directory that's being served. Defaults to cwd.
+  root: 'dist', // Set root directory that's being served. Defaults to cwd.
   open: true // When false, it won't load your browser by default.
   // host: "0.0.0.0", // Set the address to bind to. Defaults to 0.0.0.0 or process.env.IP.
   // ignore: 'scss,my/templates', // comma-separated string for paths to ignore
@@ -27,7 +28,7 @@ const buildParams = {
   color: true,
   entryPoints: ['src/index.tsx'],
   loader: { '.ts': 'tsx' },
-  outdir: 'public',
+  outdir: 'dist',
   minify: true,
   format: 'cjs',
   bundle: true,
@@ -35,8 +36,11 @@ const buildParams = {
   logLevel: 'error',
   incremental: true
 }
+
 ;(async () => {
   const builder = await build(buildParams)
+
+  fs.copyFileSync('./public/index.html', './dist/index.html')
 
   watch('src/**/*.{ts,tsx}').on('all', () => {
     builder.rebuild()

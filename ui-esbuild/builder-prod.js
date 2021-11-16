@@ -14,9 +14,9 @@ const buildParams = {
   incremental: true,
   plugins: [
     postCssPlugin({
-      // lessOptions: {
-      //   javascriptEnabled: true
-      // }
+      lessOptions: {
+        javascriptEnabled: true
+      }
     })
   ]
 }

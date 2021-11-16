@@ -1,7 +1,7 @@
 import React from 'react'
-import styles from './style.module.less'
-
 import { Button, Switch, Space } from 'antd'
+
+import styles from './style.module.less'
 
 export default function HelloAntD() {
   return (

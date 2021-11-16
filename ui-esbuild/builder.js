@@ -2,7 +2,7 @@ const { start } = require('live-server')
 const { watch } = require('chokidar')
 const { build } = require('esbuild')
 const fs = require('fs')
-const postCssPlugin = require('esbuild-plugin-postcss2').default
+const postCssPlugin = require('esbuild-plugin-postcss2')
 
 /**
  * Live Server Params
@@ -58,7 +58,7 @@ const buildParams = {
   logLevel: 'error',
   incremental: true,
   plugins: [
-    postCssPlugin({
+    postCssPlugin.default({
       lessOptions: {
         // modifyVars: { '@primary-color': '#1DA57A' },
         modifyVars: lessModifyVars,

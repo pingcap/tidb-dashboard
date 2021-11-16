@@ -3,7 +3,7 @@ import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { TopsqlCPUTimeItem } from '@lib/client'
-import { Card, CardTable, Bar, TextWrap } from '@lib/components'
+import { Card, CardTable, Bar, TextWrap, HighlightSQL } from '@lib/components'
 import { OTHERS_LABEL } from './useOthers'
 
 interface TopSqlTableProps {
@@ -49,10 +49,12 @@ export function TopSqlTable({ topN, data, timeRange }: TopSqlTableProps) {
             : 'Unknown'
           return (
             <Tooltip
-              title={text}
-              overlayStyle={{ maxHeight: 500, overflow: 'scroll' }}
+              title={<HighlightSQL sql={text} theme="dark" />}
+              placement="right"
             >
-              <TextWrap>{text}</TextWrap>
+              <TextWrap>
+                <HighlightSQL sql={text} compact />
+              </TextWrap>
             </Tooltip>
           )
         },

@@ -1,7 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react'
-import { Radio } from 'antd'
+import { Select } from 'antd'
+import { ClockCircleOutlined } from '@ant-design/icons'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { useURLQueryState } from '@lib/utils/useURLQueryState'
+
+import './TimeRange.less'
 
 interface TimeRangeProps {
   value: TimeRange
@@ -10,31 +14,40 @@ interface TimeRangeProps {
 
 export interface TimeRange {
   id: string
-  label: string
   // unit: second
   value: number
 }
 
 const timeRanges: TimeRange[] = [
-  { id: '5m', label: '5m', value: 5 * 60 },
-  { id: '1h', label: '1h', value: 60 * 60 },
-  { id: '1d', label: '1d', value: 24 * 60 * 60 },
-  { id: '1w', label: '1w', value: 7 * 24 * 60 * 60 },
+  { id: '5m', value: 5 * 60 },
+  { id: '1h', value: 60 * 60 },
+  { id: '1d', value: 24 * 60 * 60 },
+  { id: '1w', value: 7 * 24 * 60 * 60 },
 ]
+const timeRangesMap: { [props: string]: TimeRange } = timeRanges.reduce(
+  (prev, cur) => {
+    return { ...prev, [cur.id]: cur }
+  },
+  {} as { [props: string]: TimeRange }
+)
 const defaultTimeRangeId = timeRanges[1].id
 
 export function TimeRange({ value, onChange }: TimeRangeProps) {
-  const handleRadioChange = useCallback((e) => onChange(e.target.value), [
+  const handleChange = useCallback((v: string) => onChange(timeRangesMap[v]), [
     onChange,
   ])
   return (
-    <Radio.Group onChange={handleRadioChange} value={value}>
-      {timeRanges.map((r) => (
-        <Radio.Button value={r} key={r.value}>
-          {r.label}
-        </Radio.Button>
+    <Select onChange={handleChange} value={value.id} style={{ width: 150 }}>
+      {timeRanges.map((tr) => (
+        <Select.Option
+          key={tr.id}
+          value={tr.id}
+          className="topsql-timerange-select-option"
+        >
+          <ClockCircleOutlined /> {getValueFormat('s')(tr.value, 0)}
+        </Select.Option>
       ))}
-    </Radio.Group>
+    </Select>
   )
 }
 

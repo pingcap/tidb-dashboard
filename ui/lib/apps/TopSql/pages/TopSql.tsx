@@ -11,7 +11,7 @@ import client from '@lib/client'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 import { useURLQueryState } from '@lib/utils/useURLQueryState'
 import { asyncDebounce } from '@lib/utils/asyncDebounce'
-import { Head } from '@lib/components'
+import { Card } from '@lib/components'
 import {
   InstanceSelect,
   InstanceId,
@@ -90,8 +90,8 @@ function App() {
 
   return (
     <div className={styles.container}>
-      <Head title="Top SQL">
-        <Space>
+      <Card>
+        <Space size="middle">
           <InstanceSelect value={instanceId} onChange={setInstanceId} />
           <TimeRange value={timeRange} onChange={setTimeRange} />
           <Select
@@ -126,7 +126,7 @@ function App() {
             </div>
           )}
         </Space>
-      </Head>
+      </Card>
       <Spin spinning={isLoading}>
         {!isLoading && !seriesData?.length && (
           <p style={{ marginTop: '100px', textAlign: 'center' }}>

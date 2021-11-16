@@ -55,7 +55,7 @@ async function main() {
   fs.copyFileSync('./public/logo192.png', './dist/logo192.png')
   fs.copyFileSync('./public/logo512.png', './dist/logo512.png')
 
-  watch('src/**/*.{ts,tsx}').on('all', () => {
+  watch('src/**/*').on('all', () => {
     builder.rebuild()
   })
 

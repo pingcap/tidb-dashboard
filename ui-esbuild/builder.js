@@ -66,11 +66,12 @@ const buildParams = {
   loader: { '.ts': 'tsx' },
   outdir: 'dist',
   minify: !isDev,
-  format: 'cjs',
+  format: 'esm',
   bundle: true,
   sourcemap: true,
   logLevel: 'error',
   incremental: true,
+  splitting: true,
   loader: {
     '.svg': 'dataurl'
   },
@@ -89,11 +90,15 @@ const buildParams = {
 
 async function main() {
   // TODO - refine
-  fs.copyFile('./public/index.html', './dist/index.html', () => {})
-  fs.copyFile('./public/favicon.ico', './dist/favicon.ico', () => {})
-  fs.copyFile('./public/manifest.json', './dist/manifest.json', () => {})
-  fs.copyFile('./public/logo192.png', './dist/logo192.png', () => {})
-  fs.copyFile('./public/logo512.png', './dist/logo512.png', () => {})
+
+  fs.rmSync('./dist', { force: true, recursive: true })
+  fs.mkdirSync('./dist')
+
+  fs.copyFileSync('./public/index.html', './dist/index.html')
+  fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
+  fs.copyFileSync('./public/manifest.json', './dist/manifest.json')
+  fs.copyFileSync('./public/logo192.png', './dist/logo192.png')
+  fs.copyFileSync('./public/logo512.png', './dist/logo512.png')
 
   if (isDev) {
     const builder = await build(buildParams)

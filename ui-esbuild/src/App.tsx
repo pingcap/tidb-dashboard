@@ -9,7 +9,8 @@ import {
   HelloFluentUI,
   HelloAntDIcons,
   HelloSVG,
-  HelloYAML
+  HelloYAML,
+  HelloDynamicImport
 } from '@lib/test-components'
 
 import './style.less'
@@ -26,6 +27,7 @@ export default function App() {
       <HelloAntDIcons />
       <HelloSVG />
       <HelloYAML />
+      <HelloDynamicImport />
     </div>
   )
 }

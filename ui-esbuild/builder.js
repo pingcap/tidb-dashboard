@@ -1,4 +1,6 @@
 const fs = require('fs')
+fs.copyFileSync('./postcss2-index.js', './node_modules/esbuild-plugin-postcss2/dist/index.js')
+
 const { start } = require('live-server')
 const { watch } = require('chokidar')
 const { build } = require('esbuild')

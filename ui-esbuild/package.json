@@ -26,6 +26,7 @@
     "chokidar": "^3.5.2",
     "esbuild": "^0.12.26",
     "esbuild-plugin-postcss2": "^0.1.0",
+    "esbuild-plugin-yaml": "^0.0.1",
     "eslint": "^7.32.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-prettier": "^8.3.0",

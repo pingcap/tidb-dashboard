@@ -9,6 +9,7 @@ import HelloAntD from './lib/test-components/HelloAntD'
 import HelloFluentUI from './lib/test-components/HelloFluentUI'
 import HelloAntDIcons from './lib/test-components/HelloAntDIcons'
 import HelloSVG from './lib/test-components/HelloSVG'
+import HelloYAML from './lib/test-components/HelloYAML'
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
       <HelloFluentUI />
       <HelloAntDIcons />
       <HelloSVG />
+      <HelloYAML />
     </div>
   )
 }

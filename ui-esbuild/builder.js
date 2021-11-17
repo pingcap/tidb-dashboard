@@ -3,6 +3,7 @@ const { start } = require('live-server')
 const { watch } = require('chokidar')
 const { build } = require('esbuild')
 const postCssPlugin = require('esbuild-plugin-postcss2')
+const { yamlPlugin } = require('esbuild-plugin-yaml')
 
 const argv = (key) => {
   // Return true if the key exists and a value is defined
@@ -79,7 +80,8 @@ const buildParams = {
         globalVars: lessGlobalVars,
         javascriptEnabled: true
       }
-    })
+    }),
+    yamlPlugin()
   ]
 }
 

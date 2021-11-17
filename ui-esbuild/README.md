@@ -1,6 +1,6 @@
-To compile the fluentui, we need to modify the esbuild-plugin-postcss2 code.
+To compile with the fluentui, we need to modify the esbuild-plugin-postcss2 code.
 
-Insert the following code into `ui-esbuild/node_modules/esbuild-plugin-postcss2/dist/index.js` line 70.
+Insert the following code into `ui-esbuild/node_modules/esbuild-plugin-postcss2/dist/index.js`.
 
 ```diff
       if (!sourceFullPath)
@@ -9,5 +9,7 @@ Insert the following code into `ui-esbuild/node_modules/esbuild-plugin-postcss2/
 +       return
 +     }
 ```
+
+(The builder.js has helped do this work.)
 
 Will figure out a better solution.

@@ -1,10 +1,10 @@
-$base-color: #c6538c;
-$border-dark: rgba($base-color, 0.88);
+$test-base-color: #c6538c;
+$test-border-dark: rgba($test-base-color, 0.88);
 
 .hello-scss-container {
   text-align: center;
   background-color: cornsilk;
-  border: 1px solid $border-dark;
+  border: 1px solid $test-border-dark;
   h1 {
     color: cadetblue;
   }

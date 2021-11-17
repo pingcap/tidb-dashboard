@@ -1,17 +1,14 @@
-# esbuild React Typescript Template
+To compile the fluentui, we need to modify the esbuild-plugin-postcss2 code.
 
-> This is a Typecript template for [esbuild create react app](https://github.com/awran5/esbuild-create-react-app) project.
+Insert the following code into `ui-esbuild/node_modules/esbuild-plugin-postcss2/dist/index.js` line 79.
 
-## What is inside?
+```diff
 
-- [TypeScript](https://www.typescriptlang.org/)
-- [esbuild](https://esbuild.github.io/)
-- [Eslint](https://eslint.org/)
-- [Prettier](https://prettier.io/)
-- [Husky](https://github.com/typicode/husky)
-- [lint-staged](https://github.com/okonet/lint-staged)
-- [live-server](https://github.com/tapio/live-server)
+      if (!sourceFullPath)
+        sourceFullPath = import_path.default.resolve(args.resolveDir, args.path);
++     if (import_fs_extra.existsSync(sourceFullPath+'.js')) {
++       return
++     }
+```
 
-### License
-
-MIT © [awran5](https://github.com/awran5/)
+Will figure out a better solution.

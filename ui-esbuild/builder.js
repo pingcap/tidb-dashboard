@@ -57,6 +57,9 @@ const buildParams = {
   sourcemap: true,
   logLevel: 'error',
   incremental: true,
+  loader: {
+    '.svg': 'dataurl'
+  },
   plugins: [
     postCssPlugin.default({
       lessOptions: {

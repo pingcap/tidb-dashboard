@@ -7,7 +7,7 @@ export default function HelloFluentUI() {
   return (
     <div className={styles['hello-fluent-ui-container']}>
       <PrimaryButton>Hello Fluent UI</PrimaryButton>
-      <DatePicker />
+      <DatePicker placeholder='Select a date...' ariaLabel='Select a date' />
     </div>
   )
 }

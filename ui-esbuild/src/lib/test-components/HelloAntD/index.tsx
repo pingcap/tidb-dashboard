@@ -8,7 +8,7 @@ export default function HelloAntD() {
     <div className={styles['hello-antd-container']}>
       <Space>
         <Button>Hello Antd</Button>
-        <Switch />
+        <Switch defaultChecked />
         <DatePicker />
       </Space>
     </div>

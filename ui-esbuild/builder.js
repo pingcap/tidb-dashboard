@@ -1,8 +1,19 @@
+const fs = require('fs')
 const { start } = require('live-server')
 const { watch } = require('chokidar')
 const { build } = require('esbuild')
-const fs = require('fs')
 const postCssPlugin = require('esbuild-plugin-postcss2')
+
+const argv = (key) => {
+  // Return true if the key exists and a value is defined
+  if (process.argv.includes(`--${key}`)) return true
+
+  const value = process.argv.find((element) => element.startsWith(`--${key}=`))
+  // Return null if the key does not exist and a value is not defined
+  if (!value) return null
+  return value.replace(`--${key}=`, '')
+}
+const isDev = argv('dev') === true
 
 /**
  * Live Server Params
@@ -51,7 +62,7 @@ const buildParams = {
   entryPoints: ['src/index.tsx'],
   loader: { '.ts': 'tsx' },
   outdir: 'dist',
-  minify: true,
+  minify: !isDev,
   format: 'cjs',
   bundle: true,
   sourcemap: true,
@@ -73,20 +84,24 @@ const buildParams = {
 }
 
 async function main() {
-  const builder = await build(buildParams)
-
   // TODO - refine
-  fs.copyFileSync('./public/index.html', './dist/index.html')
-  fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
-  fs.copyFileSync('./public/manifest.json', './dist/manifest.json')
-  fs.copyFileSync('./public/logo192.png', './dist/logo192.png')
-  fs.copyFileSync('./public/logo512.png', './dist/logo512.png')
+  fs.copyFile('./public/index.html', './dist/index.html', () => {})
+  fs.copyFile('./public/favicon.ico', './dist/favicon.ico', () => {})
+  fs.copyFile('./public/manifest.json', './dist/manifest.json', () => {})
+  fs.copyFile('./public/logo192.png', './dist/logo192.png', () => {})
+  fs.copyFile('./public/logo512.png', './dist/logo512.png', () => {})
 
-  watch('src/**/*').on('all', () => {
-    builder.rebuild()
-  })
+  if (isDev) {
+    const builder = await build(buildParams)
 
-  start(serverParams)
+    watch('src/**/*').on('all', () => {
+      builder.rebuild()
+    })
+
+    start(serverParams)
+  } else {
+    build(buildParams).finally(() => process.exit(0))
+  }
 }
 
 main()

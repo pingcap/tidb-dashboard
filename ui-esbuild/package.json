@@ -5,9 +5,9 @@
   "scripts": {
     "pre-commit": "lint-staged",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
-    "start": "node builder.js",
+    "start": "node builder.js --dev",
     "build": "esbuild src/index.tsx --minify --format=cjs --outdir=public --sourcemap --bundle",
-    "prod": "node builder-prod.js"
+    "prod": "node builder.js"
   },
   "dependencies": {
     "@ant-design/icons": "^4.7.0",

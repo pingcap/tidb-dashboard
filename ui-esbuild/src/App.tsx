@@ -7,6 +7,7 @@ import HelloMLess from './lib/test-components/HelloModuleLess'
 import HelloSCSS from './lib/test-components/HelloSCSS'
 import HelloAntD from './lib/test-components/HelloAntD'
 import HelloFluentUI from './lib/test-components/HelloFluentUI'
+import HelloAntDIcons from './lib/test-components/HelloAntDIcons'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
       <HelloSCSS />
       <HelloAntD />
       <HelloFluentUI />
+      <HelloAntDIcons />
     </div>
   )
 }

@@ -1,4 +1,6 @@
-import React from 'react'
+import React, { Suspense } from 'react'
+
+const LazyComp = React.lazy(() => import('./LazyComponent'))
 
 import styles from './style.module.less'
 
@@ -13,6 +15,9 @@ export default function HelloDynamicImport() {
   return (
     <div className={styles['hello-di-container']}>
       <button onClick={btnClick}>Hello Dynamic Import</button>
+      <Suspense fallback={<div>Loading...</div>}>
+        <LazyComp />
+      </Suspense>
     </div>
   )
 }

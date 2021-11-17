@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Switch, Space } from 'antd'
+import { Button, Switch, Space, DatePicker } from 'antd'
 
 import styles from './style.module.less'
 
@@ -9,6 +9,7 @@ export default function HelloAntD() {
       <Space>
         <Button>Hello Antd</Button>
         <Switch />
+        <DatePicker />
       </Space>
     </div>
   )

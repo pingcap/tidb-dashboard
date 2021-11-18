@@ -1,0 +1,133 @@
+slow_query:
+  nav_title: Slow Queries
+  fields:
+    instance: '{{distro.tidb}} Instance'
+    instance_tooltip: The {{distro.tidb}} address that handles the query
+    connection_id: Connection ID
+    connection_id_tooltip: Unique connection ID of the query
+    sql: Query
+    query: Query
+    timestamp: Finish Time
+    timestamp_tooltip: The time this query finished execution
+    query_time: Latency
+    query_time_tooltip: Execution time of the query
+    memory_max: Max Memory
+    memory_max_tooltip: Maximum memory usage of the query
+    disk_max: Max Disk
+    disk_max_tooltip: Maximum disk usage of the query
+    digest: Query Template ID
+    digest_tooltip: a.k.a. Query digest
+    is_internal: Is Internal?
+    is_internal_tooltip: Whether this is an internal query
+    is_success: Is Success?
+    is_success_tooltip: Whether query is executed successfully
+    result: Result
+    result_tooltip: Whether query is executed successfully
+    index_names: Index Names
+    index_names_tooltip: The name of the used index
+    stats: Used Statistics
+    backoff_types: Backoff Types
+    user: Execution User
+    user_tooltip: The user that executes the query
+    host: Client Address
+    host_tooltip: The address of the client that sends the query
+    db: Execution Database
+    db_tooltip: The database used to execute the query
+
+    query_time2: Query Time
+    query_time2_tooltip: The elapsed wall time when execution the query
+    parse_time: Parse Time
+    parse_time_tooltip: Time consumed when parsing the query
+    compile_time: Generate Plan Time
+    rewrite_time: Rewrite Plan Time
+    preproc_subqueries_time: Preprocess Sub-Query Time
+    preproc_subqueries_time_tooltip: Time consumed when pre-processing the subquery during the rewrite plan phase
+    optimize_time: Optimize Plan Time
+    wait_ts: Get Start Ts Time
+    wait_ts_tooltip: Time consumed when getting a start timestamp when transaction begins
+    cop_time: Coprocessor Executor Time
+    cop_time_tooltip: 'The elapsed wall time when {{distro.tidb}} Coprocessor executor waiting all Coprocessor requests to finish (note: when there are JOIN in SQL statement, multiple {{distro.tidb}} Coprocessor executors may be running in parallel, which may cause this time not being a wall time)'
+    wait_time: Coprocessor Wait Time
+    wait_time_tooltip: 'The total time of Coprocessor request is prepared and wait to execute in {{distro.tikv}}, which may happen when retrieving a snapshot though Raft concensus protocol (note: {{distro.tikv}} waits requests in parallel so that this is not a wall time)'
+    process_time: Coprocessor Process Time
+    process_time_tooltip: 'The total time of Coprocessor request being executed in {{distro.tikv}} (note: {{distro.tikv}} executes requests in parallel so that this is not a wall time)'
+    backoff_time: Execution Backoff Time
+    backoff_time_tooltip: 'The total backoff waiting time before retry when a query encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)'
+    lock_keys_time: Lock Keys Time
+    lock_keys_time_tooltip: Time consumed when locking keys in pessimistic transaction
+    get_commit_ts_time: Get Commit Ts Time
+    get_commit_ts_time_tooltip: Time consumed when getting a commit timestamp for 2PC commit phase when transaction commits
+    local_latch_wait_time: Local Latch Wait Time
+    local_latch_wait_time_tooltip: Time consumed when {{distro.tidb}} waits for the lock in the current {{distro.tidb}} instance before 2PC commit phase when transaction commits
+    resolve_lock_time: Resolve Lock Time
+    resolve_lock_time_tooltip: Time consumed when {{distro.tidb}} resolves locks from other transactions in 2PC prewrite phase when transaction commits
+    prewrite_time: Prewrite Time
+    prewrite_time_tooltip: Time consumed in 2PC prewrite phase when transaction commits
+    wait_prewrite_binlog_time: Wait Binlog Prewrite Time
+    wait_prewrite_binlog_time_tooltip: Time consumed when waiting Binlog prewrite to finish
+    commit_time: Commit Time
+    commit_time_tooltip: Time consumed in 2PC commit phase when transaction commits
+    commit_backoff_time: Commit Backoff Time
+    commit_backoff_time_tooltip: 'The total backoff waiting time when 2PC commit encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)'
+    write_sql_response_total: Send response Time
+    write_sql_response_total_tooltip: Time consumed when sending response to the SQL client
+    exec_retry_time: Retried execution Time
+    exec_retry_time_tooltip: Wall time consumed when SQL statement is retried and executed again, except for the last exection
+
+    request_count: Request Count
+    process_keys: Process Keys
+    total_keys: Total Keys
+    cop_proc_addr: Copr Address (Process)
+    cop_proc_addr_tooltip: The address of the {{distro.tikv}} that takes most time process the Coprocessor request
+    cop_wait_addr: Copr Address (Wait)
+    cop_wait_addr_tooltip: The address of the {{distro.tikv}} that takes most time wait the Coprocessor request
+
+    txn_start_ts: Start Timestamp
+    txn_start_ts_tooltip: Transaction start timestamp, a.k.a. Transaction ID
+    write_keys: Write Keys
+    write_size: Write Size
+    prewrite_region: Prewrite Regions
+    txn_retry: Transaction Retries
+
+    prev_stmt: Previous Query
+    plan: Execution Plan
+
+    cop_proc_avg: Mean Cop Proc # ?
+    cop_wait_avg: Mean Cop Wait # ?
+
+    rocksdb_delete_skipped_count: RocksDB Skipped Deletions
+    rocksdb_delete_skipped_count_tooltip: Total number of deleted (a.k.a. tombstone) key versions that are skipped during iteration (RocksDB delete_skipped_count)
+    rocksdb_key_skipped_count: RocksDB Skipped Keys
+    rocksdb_key_skipped_count_tooltip: Total number of keys skipped during iteration (RocksDB key_skipped_count)
+    rocksdb_block_cache_hit_count: RocksDB Block Cache Hits
+    rocksdb_block_cache_hit_count_tooltip: Total number of hits from the block cache (RocksDB block_cache_hit_count)
+    rocksdb_block_read_count: RocksDB Block Reads
+    rocksdb_block_read_count_tooltip: Total number of blocks RocksDB read from file (RocksDB block_read_count)
+    rocksdb_block_read_byte: RocksDB Read Size
+    rocksdb_block_read_byte_tooltip: Total number of bytes RocksDB read from file (RocksDB block_read_byte)
+  common:
+    status:
+      success: Success
+      error: Failed
+  detail:
+    head:
+      title: Slow Query Detail
+      back: List
+      sql: Query
+      previous_sql: Previous Query
+      plan: Plan
+    tabs:
+      basic: Basic
+      time: Time
+      copr: Coprocessor
+      txn: Transaction
+  toolbar:
+    schemas:
+      placeholder: All Databases
+      selected: '{{ n }} Databases'
+      columnTitle: Execution Database Name
+    select_columns:
+      show_full_sql: Show Full Query Text
+    refresh: Refresh
+    export: Export
+    exporting: Exporting

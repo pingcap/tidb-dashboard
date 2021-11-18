@@ -1,0 +1,26 @@
+debug_api:
+  nav_title: 内部调试数据
+  keyword_search: 按关键字过滤接口
+  endpoints_not_found: 找不到对应接口
+  warning_header:
+    title: 警告
+    body: 本页面提供的调试接口主要面向 {{ distro.tidb }} 开发者、提供数据库内部运行数据。请在 {{ distro.tidb }} 技术支持的指导下使用本功能。
+  form:
+    download: 下载
+    reset: 重置
+  widgets:
+    host_select_placeholder: 请选择对应的 {{endpointType}} host
+    text: 请输入 {{param}}
+    tags: 请输入 {{param}}
+    int: 请输入 {{param}}
+    enum: 请选择 {{param}}
+    db: 请从列表中选择 database 或输入完整的 database 名称
+    table: 请从列表中选择 table 或输入完整的 table 名称
+    table_id: 请从列表中选择 table ID 或输入完整的 table ID
+  tidb:
+    endpoints:
+      tidb_stats_dump_timestamp_desc: 时间戳应当在 GC Safe Point 以后
+      tidb_pprof_desc: seconds 参数仅对 kind=profile 和 kind=trace 生效
+  pd:
+    endpoints:
+      pd_pprof_desc: seconds 参数仅对 kind=profile 和 kind=trace 生效

@@ -1,0 +1,20 @@
+.singleLine {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  > span {
+    display: inline;
+  }
+  pre {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.multiLine {
+  overflow-wrap: break-word;
+  white-space: normal;
+  text-overflow: inherit;
+  overflow: auto;
+}

@@ -1,0 +1,4 @@
+build/
+public/
+lib/client/api/*.ts
+tsconfig.json

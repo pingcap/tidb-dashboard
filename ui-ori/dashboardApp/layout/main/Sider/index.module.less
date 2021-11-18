@@ -1,0 +1,61 @@
+@import '~antd/es/style/themes/default.less';
+
+@sider-background: #f7f7fa;
+
+.sider {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  z-index: 1;
+  background: linear-gradient(@sider-background, #ebeffa);
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: none;
+  user-select: none;
+
+  :global {
+    .ant-layout-sider-children {
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 20px;
+    }
+
+    .ant-menu {
+      border-right: 0;
+      background: none;
+    }
+
+    .ant-menu-submenu-selected {
+      color: #000;
+    }
+
+    .ant-menu-item {
+      &::after {
+        left: 0;
+        right: auto;
+        border-width: 5px;
+      }
+
+      &:hover {
+        background: rgba(darken(@sider-background, 30%), 0.15);
+      }
+
+      > a {
+        color: #666;
+
+        &:hover {
+          color: @primary-color;
+        }
+      }
+
+      &.ant-menu-item-selected {
+        background: rgba(darken(@sider-background, 30%), 0.15);
+
+        > a {
+          color: #000;
+        }
+      }
+    }
+  }
+}

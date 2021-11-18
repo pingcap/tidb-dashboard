@@ -1,0 +1,28 @@
+.ant-badge {
+  font-size: 1em;
+}
+
+.ant-badge-status-text {
+  font-size: 1em;
+}
+
+.ant-form-inline .ant-form-item {
+  margin-bottom: @padding-sm;
+}
+
+.ant-form-inline {
+  margin-bottom: -@padding-sm;
+}
+
+.ant-tooltip {
+  pointer-events: none;
+}
+
+// related issue:
+// Descriptions component has different look between Chrome and Safari
+// https://github.com/ant-design/ant-design/issues/24999
+// can be removed after above issue is fixed
+th.ant-descriptions-item,
+th.ant-descriptions-item-label {
+  text-align: left;
+}

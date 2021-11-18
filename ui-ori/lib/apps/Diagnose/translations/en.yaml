@@ -1,0 +1,23 @@
+diagnose:
+  nav_title: Cluster Diagnostics
+  generate:
+    title: Cluster Diagnostics
+    range_begin: Range Start Time
+    range_duration: Range Duration
+    submit: Start
+  time_duration:
+    custom: Custom
+  table_title:
+    config_diagnosis: Config Diagnosis
+    error_diagnosis: Error Diagnosis
+    performance_diagnosis: Performance Diagnosis
+  fields:
+    rule: Rule
+    item: Item
+    type: Type
+    instance: Instance
+    status_address: Status Address
+    value: Value
+    reference: Reference
+    severity: Severity
+    details: Details

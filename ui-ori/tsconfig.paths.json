@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@lib/*": ["lib/*"],
+      "@dashboard/*": ["dashboardApp/*"],
+      "@diagnoseReport/*": ["diagnoseReportApp/*"]
+    }
+  }
+}

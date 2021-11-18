@@ -11,7 +11,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/antonmedv/expr v1.9.0
 	github.com/appleboy/gin-jwt/v2 v2.6.3
-	github.com/baurine/speedscope-files v0.0.0-20211116065238-378bc27189e5
+	github.com/baurine/speedscope-files v0.0.0-20211118075636-4dfecccd729b
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/fatih/structtag v1.2.0
 	github.com/gin-contrib/gzip v0.0.1

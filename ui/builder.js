@@ -10,6 +10,8 @@ const { build } = require('esbuild')
 const postCssPlugin = require('esbuild-plugin-postcss2')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
 
+require('dotenv').config()
+
 const argv = (key) => {
   // Return true if the key exists and a value is defined
   if (process.argv.includes(`--${key}`)) return true
@@ -26,7 +28,7 @@ const isDev = argv('dev') === true
  * @link https://www.npmjs.com/package/live-server#usage-from-node
  */
 const serverParams = {
-  port: 8181, // Set the server port. Defaults to 8080.
+  port: 3001, // Set the server port. Defaults to 8080.
   root: 'dist', // Set root directory that's being served. Defaults to cwd.
   open: false, // When false, it won't load your browser by default.
   // host: "0.0.0.0", // Set the address to bind to. Defaults to 0.0.0.0 or process.env.IP.
@@ -39,8 +41,8 @@ const serverParams = {
 }
 
 const lessModifyVars = {
-  // '@primary-color': '#4394fc',
-  '@primary-color': '#1DA57A',
+  '@primary-color': '#4394fc',
+  // '@primary-color': '#1DA57A',
   '@body-background': '#fff',
   '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
   '@tooltip-max-width': '500px',
@@ -58,6 +60,14 @@ const lessGlobalVars = {
   '@gray-9': '#262626',
   '@gray-10': '#000',
 }
+
+const define = {}
+for (const k in process.env) {
+  if (k.startsWith('REACT_APP_')) {
+    define[`process.env.${k}`] = JSON.stringify(process.env[k])
+  }
+}
+console.log(define)
 
 /**
  * ESBuild Params
@@ -78,6 +88,7 @@ const buildParams = {
   loader: {
     '.svg': 'dataurl',
   },
+  platform: 'browser',
   plugins: [
     postCssPlugin.default({
       lessOptions: {
@@ -89,13 +100,14 @@ const buildParams = {
     }),
     yamlPlugin(),
   ],
+  define,
 }
 
 async function main() {
   // TODO - refine
   fs.rmSync('./dist', { force: true, recursive: true })
   fs.mkdirSync('./dist')
-  // fs.copyFileSync('./public/index.html', './dist/index.html')
+  fs.copyFileSync('./public/index.html', './dist/index.html')
   // fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
   // fs.copyFileSync('./public/manifest.json', './dist/manifest.json')
   // fs.copyFileSync('./public/logo192.png', './dist/logo192.png')

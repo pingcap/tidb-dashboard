@@ -47,9 +47,9 @@ export default class AppRegistry {
    * }} app
    */
   register(app) {
-    if (app.translations) {
-      i18n.addTranslations(app.translations)
-    }
+    // if (app.translations) {
+    //   i18n.addTranslations(app.translations)
+    // }
 
     singleSpa.registerApplication(
       app.id,

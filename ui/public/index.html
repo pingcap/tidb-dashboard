@@ -91,11 +91,13 @@
       }
     </style>
     <title><%= htmlWebpackPlugin.options.distro_tidb %> Dashboard</title>
+    <link rel="stylesheet" href="index.css">
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <script src="%PUBLIC_URL%/compat.js"></script>
     <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
     <div id="root"></div>
+    <script type="module" src="index.js"></script>
   </body>
 </html>

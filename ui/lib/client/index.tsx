@@ -114,7 +114,7 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
 }
 
 function initAxios() {
-  i18n.addTranslations(require.context('./translations/', false, /\.yaml$/))
+  // i18n.addTranslations(require.context('./translations/', false, /\.yaml$/))
 
   const instance = axios.create()
   applyErrorHandlerInterceptor(instance)

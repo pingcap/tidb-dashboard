@@ -5,6 +5,6 @@ export default {
   routerPrefix: '/overview',
   icon: AppstoreOutlined,
   isDefaultRouter: true,
-  translations: require.context('./translations/', false, /\.yaml$/),
+  // translations: require.context('./translations/', false, /\.yaml$/),
   reactRoot: () => import(/* webpackChunkName: "app_overview" */ '.'),
 }

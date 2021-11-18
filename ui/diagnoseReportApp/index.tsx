@@ -23,7 +23,7 @@ function refineDiagnosisData() {
   return diagnosisData
 }
 
-i18n.addTranslations(require.context('./translations/', false, /\.yaml$/))
+// i18n.addTranslations(require.context('./translations/', false, /\.yaml$/))
 
 ReactDOM.render(
   <DiagnosisReport diagnosisTables={refineDiagnosisData()} />,

@@ -51,9 +51,9 @@ async function webPageStart() {
   if (options.lang) {
     i18next.changeLanguage(options.lang)
   }
-  i18n.addTranslations(
-    require.context('@dashboard/layout/translations/', false, /\.yaml$/)
-  )
+  // i18n.addTranslations(
+  //   require.context('@dashboard/layout/translations/', false, /\.yaml$/)
+  // )
 
   let info: InfoInfoResponse
 

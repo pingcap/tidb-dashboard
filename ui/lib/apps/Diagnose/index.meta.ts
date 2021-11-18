@@ -4,6 +4,6 @@ export default {
   id: 'diagnose',
   routerPrefix: '/diagnose',
   icon: SafetyCertificateOutlined,
-  translations: require.context('./translations/', false, /\.yaml$/),
+  // translations: require.context('./translations/', false, /\.yaml$/),
   reactRoot: () => import(/* webpackChunkName: "app_diagnose" */ '.'),
 }

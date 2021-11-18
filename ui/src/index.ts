@@ -1,4 +1,5 @@
 import './publicPath'
 import './sentry'
 
-import '@dashboard'
+// import '@dashboard'
+import '../dashboardApp'

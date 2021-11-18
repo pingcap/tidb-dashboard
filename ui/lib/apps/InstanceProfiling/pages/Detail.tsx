@@ -125,10 +125,13 @@ export default function Page() {
       if (!token) {
         return
       }
-      window.open(
-        `${client.getBasePath()}/profiling/single/view?token=${token}`,
-        '_blank'
+
+      const profileURL = encodeURIComponent(
+        `${client.getBasePath()}/profiling/single/view?token=${token}`
       )
+      const speedscopeURL = `${client.getBasePath()}/speedscope#profileURL=${profileURL}`
+
+      window.open(`${speedscopeURL}`, '_blank')
     }
   )
 

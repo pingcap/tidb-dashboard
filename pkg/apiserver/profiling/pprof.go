@@ -8,12 +8,9 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strconv"
-	"sync"
 	"time"
 
-	"github.com/goccy/go-graphviz"
 	"github.com/google/pprof/driver"
 	"github.com/google/pprof/profile"
 
@@ -21,8 +18,8 @@ import (
 )
 
 var (
-	_  driver.Fetcher = (*fetcher)(nil)
-	mu sync.Mutex
+	_ driver.Fetcher = (*fetcher)(nil)
+	// mu sync.Mutex.
 )
 
 type pprofOptions struct {
@@ -34,46 +31,47 @@ type pprofOptions struct {
 	fetcher *profileFetcher
 }
 
-func fetchPprofSVG(op *pprofOptions) (string, error) {
-	f, err := fetchPprof(op, "dot")
-	if err != nil {
-		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
-	}
+// func fetchPprofSVG(op *pprofOptions) (string, error) {
+// 	f, err := fetchPprof(op, "dot")
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
+// 	}
 
-	b, err := ioutil.ReadFile(filepath.Clean(f))
-	if err != nil {
-		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
-	}
+// 	b, err := ioutil.ReadFile(filepath.Clean(f))
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
+// 	}
 
-	tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
-	if err != nil {
-		return "", fmt.Errorf("failed to create temp file: %v", err)
-	}
-	defer tmpfile.Close() // #nosec
-	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
+// 	tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to create temp file: %v", err)
+// 	}
+// 	defer tmpfile.Close() // #nosec
+// 	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
 
-	g := graphviz.New()
-	mu.Lock()
-	defer mu.Unlock()
-	graph, err := graphviz.ParseBytes(b)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse DOT file: %v", err)
-	}
+// 	g := graphviz.New()
+// 	mu.Lock()
+// 	defer mu.Unlock()
+// 	graph, err := graphviz.ParseBytes(b)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to parse DOT file: %v", err)
+// 	}
 
-	if err := g.RenderFilename(graph, graphviz.SVG, tmpPath); err != nil {
-		return "", fmt.Errorf("failed to render SVG: %v", err)
-	}
+// 	if err := g.RenderFilename(graph, graphviz.SVG, tmpPath); err != nil {
+// 		return "", fmt.Errorf("failed to render SVG: %v", err)
+// 	}
 
-	return tmpPath, nil
-}
+// 	return tmpPath, nil
+// }
 
 type flagSet struct {
 	*flag.FlagSet
 	args []string
 }
 
-func fetchPprof(op *pprofOptions, format string) (string, error) {
+func fetchPprof(op *pprofOptions) (string, error) {
 	tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
+	format := "proto"
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}

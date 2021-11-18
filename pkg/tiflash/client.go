@@ -54,6 +54,11 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
+func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
+	c.httpClient.BeforeRequest = callback
+	return &c
+}
+
 func (c *Client) Get(host string, statusPort int, relativeURI string) (*httpc.Response, error) {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, distro.Data("tiflash"))

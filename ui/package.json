@@ -23,7 +23,7 @@
     "dayjs": "^1.9.6",
     "echarts": "^4.8.0",
     "echarts-for-react": "^2.0.16",
-    "esbuild": "^0.13.13",
+    "esbuild": "^0.13.14",
     "eventemitter2": "^6.4.4",
     "history": "^5.0.0",
     "i18next": "^19.6.3",
@@ -57,7 +57,9 @@
     "test": "react-app-rewired test",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
-    "storybook": "start-storybook -p 9009 -s public"
+    "storybook": "start-storybook -p 9009 -s public",
+    "esbuild-prod": "node builder.js",
+    "esbuild-dev": "node builder.js --dev"
   },
   "husky": {
     "hooks": {
@@ -98,6 +100,8 @@
     "browserslist-useragent-regexp": "^2.1.0",
     "chokidar": "^3.5.2",
     "customize-cra": "^1.0.0",
+    "esbuild-plugin-postcss2": "^0.1.0",
+    "esbuild-plugin-yaml": "^0.0.1",
     "esm": "^3.2.25",
     "gulp": "^4.0.2",
     "gulp-cli": "^2.3.0",

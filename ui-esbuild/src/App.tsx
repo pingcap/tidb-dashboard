@@ -1,33 +1,11 @@
 import React from 'react'
 
-import {
-  HelloCSS,
-  HelloLess,
-  HelloMLess,
-  HelloSCSS,
-  HelloAntD,
-  HelloFluentUI,
-  HelloAntDIcons,
-  HelloSVG,
-  HelloYAML,
-  HelloDynamicImport
-} from '@lib/test-components'
-
-import './style.less'
+import HelloApp from 'HelloApp'
 
 export default function App() {
   return (
     <div>
-      <HelloCSS />
-      <HelloLess />
-      <HelloMLess />
-      <HelloSCSS />
-      <HelloAntD />
-      <HelloFluentUI />
-      <HelloAntDIcons />
-      <HelloSVG />
-      <HelloYAML />
-      <HelloDynamicImport />
+      <HelloApp />
     </div>
   )
 }

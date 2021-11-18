@@ -72,10 +72,14 @@ func ErrorHandlerFn() gin.HandlerFunc {
 			return
 		}
 
+		if c.Writer.Size() > 0 {
+			return
+		}
+
 		statusCode := c.Writer.Status()
 		if statusCode == http.StatusOK {
 			// Change the status code if it is not specified.
-			statusCode = extractHTTPCodeFromError(err)
+			statusCode = extractHTTPCodeFromError(err.Err)
 		}
 
 		c.AbortWithStatusJSON(statusCode, NewErrorResponse(err.Err))

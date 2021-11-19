@@ -1,9 +1,10 @@
 import { EyeOutlined } from '@ant-design/icons'
+import translations from './translations'
 
 export default {
   id: 'keyviz',
   routerPrefix: '/keyviz',
   icon: EyeOutlined,
-  // translations: require.context('./translations/', false, /\.yaml$/),
+  translations,
   reactRoot: () => import(/* webpackChunkName: "app_keyviz" */ '.'),
 }

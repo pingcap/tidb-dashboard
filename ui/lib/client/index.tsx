@@ -11,6 +11,7 @@ import { reportError } from '@lib/utils/sentryHelpers'
 
 import { DefaultApi } from './api'
 import { getApiBasePath } from './baseUrl'
+import translations from './translations'
 
 export * from './api'
 
@@ -114,7 +115,7 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
 }
 
 function initAxios() {
-  // i18n.addTranslations(require.context('./translations/', false, /\.yaml$/))
+  i18n.addTranslations(translations)
 
   const instance = axios.create()
   applyErrorHandlerInterceptor(instance)

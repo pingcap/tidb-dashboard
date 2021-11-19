@@ -6,6 +6,7 @@ import '@fortawesome/fontawesome-free/js/all.js'
 
 import * as i18n from '@lib/utils/i18n'
 import DiagnosisReport from './components/DiagnosisReport'
+import translations from './translations'
 import './index.css'
 
 function refineDiagnosisData() {
@@ -23,7 +24,7 @@ function refineDiagnosisData() {
   return diagnosisData
 }
 
-// i18n.addTranslations(require.context('./translations/', false, /\.yaml$/))
+i18n.addTranslations(translations)
 
 ReactDOM.render(
   <DiagnosisReport diagnosisTables={refineDiagnosisData()} />,

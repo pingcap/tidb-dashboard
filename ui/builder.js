@@ -67,7 +67,7 @@ for (const k in process.env) {
     define[`process.env.${k}`] = JSON.stringify(process.env[k])
   }
 }
-console.log(define)
+// console.log(define)
 
 /**
  * ESBuild Params
@@ -75,7 +75,7 @@ console.log(define)
  */
 const buildParams = {
   color: true,
-  entryPoints: ['src/index.ts'],
+  entryPoints: ['src/index.ts', 'diagnoseReportApp/index.tsx'],
   loader: { '.ts': 'tsx' },
   outdir: 'dist',
   minify: !isDev,
@@ -106,8 +106,8 @@ const buildParams = {
 async function main() {
   // TODO - refine
   fs.rmSync('./dist', { force: true, recursive: true })
-  fs.mkdirSync('./dist')
-  fs.copyFileSync('./public/index.html', './dist/index.html')
+  // fs.mkdirSync('./dist')
+  // fs.copyFileSync('./public/index.html', './dist/index.html')
   // fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
   // fs.copyFileSync('./public/manifest.json', './dist/manifest.json')
   // fs.copyFileSync('./public/logo192.png', './dist/logo192.png')
@@ -115,6 +115,12 @@ async function main() {
 
   if (isDev) {
     const builder = await build(buildParams)
+
+    fs.copyFileSync('./public/index.html', './dist/src/index.html')
+    fs.copyFileSync(
+      './public/diagnoseReport.html',
+      './dist/diagnoseReportApp/index.html'
+    )
 
     start(serverParams)
 

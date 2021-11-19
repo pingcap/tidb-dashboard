@@ -94,9 +94,18 @@ const postCSSPlugin = ({
             args.resolveDir,
             args.path
           )
-        const exist = await import_fs_extra.exists(sourceFullPath + '.js')
+        // hack
+        let exist = await import_fs_extra.exists(sourceFullPath + '.js')
         if (exist) {
           return
+        }
+        exist = await import_fs_extra.exists(sourceFullPath)
+        if (!exist) {
+          sourceFullPath = import_path.default.resolve(
+            process.cwd(),
+            'node_modules',
+            args.path
+          )
         }
         const sourceExt = import_path.default.extname(sourceFullPath)
         const sourceBaseName = import_path.default.basename(

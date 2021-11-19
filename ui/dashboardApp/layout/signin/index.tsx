@@ -35,6 +35,9 @@ import styles from './index.module.less'
 import Logo from './logo.svg'
 import { useIsFeatureSupport } from '@lib/utils/store'
 
+import landing from './landing.svgd'
+const landingSVG = landing.replace('data:text/plain', 'data:image/svg+xml')
+
 enum DisplayFormType {
   uninitialized,
   tidbCredential,
@@ -508,9 +511,14 @@ function App({ registry }) {
           )}
         </AppearAnimate>
         <AppearAnimate
-          className={styles.landing}
           motionName="landingAnimation"
-        />
+          className={styles.landingContainer}
+        >
+          <div
+            style={{ backgroundImage: `url(${landingSVG})` }}
+            className={styles.landing}
+          />
+        </AppearAnimate>
       </div>
     </Root>
   )

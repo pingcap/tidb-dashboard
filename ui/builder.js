@@ -76,7 +76,7 @@ console.log(define)
 const buildParams = {
   color: true,
   entryPoints: ['src/index.ts', 'diagnoseReportApp/index.tsx'],
-  loader: { '.ts': 'tsx' },
+  loader: { '.ts': 'tsx', '.svgd': 'dataurl' },
   outdir: 'dist',
   minify: !isDev,
   format: 'esm',

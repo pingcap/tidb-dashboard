@@ -126,10 +126,12 @@ export default function Page() {
         return
       }
 
+      const titleOnTab = rec.target.kind + '_' + rec.target.display_name
+
       const profileURL = encodeURIComponent(
         `${client.getBasePath()}/profiling/single/view?token=${token}`
       )
-      const speedscopeURL = `${client.getBasePath()}/speedscope#profileURL=${profileURL}`
+      const speedscopeURL = `${client.getBasePath()}/speedscope#profileURL=${profileURL}&title=${titleOnTab}`
 
       window.open(`${speedscopeURL}`, '_blank')
     }

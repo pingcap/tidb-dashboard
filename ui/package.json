@@ -105,6 +105,7 @@
     "chokidar": "^3.5.2",
     "customize-cra": "^1.0.0",
     "esbuild-plugin-postcss2": "^0.1.0",
+    "esbuild-plugin-svgr": "^0.0.3",
     "esbuild-plugin-yaml": "^0.0.1",
     "esm": "^3.2.25",
     "gulp": "^4.0.2",

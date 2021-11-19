@@ -16,3 +16,11 @@ declare module '*.yaml' {
   }
   export default content
 }
+
+// need to comment the svg declare in the ui/node_modules/react-scripts/lib/react-app.d.ts
+declare module '*.svg' {
+  import * as React from 'react'
+
+  const ReactComponent: React.SFC<React.SVGProps<SVGSVGElement>>
+  export default ReactComponent
+}

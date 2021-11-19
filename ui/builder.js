@@ -9,6 +9,7 @@ const { watch } = require('chokidar')
 const { build } = require('esbuild')
 const postCssPlugin = require('esbuild-plugin-postcss2')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
+const svgrPlugin = require('esbuild-plugin-svgr')
 
 require('dotenv').config()
 
@@ -42,7 +43,6 @@ const serverParams = {
 
 const lessModifyVars = {
   '@primary-color': '#4394fc',
-  // '@primary-color': '#1DA57A',
   '@body-background': '#fff',
   '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
   '@tooltip-max-width': '500px',
@@ -67,7 +67,7 @@ for (const k in process.env) {
     define[`process.env.${k}`] = JSON.stringify(process.env[k])
   }
 }
-// console.log(define)
+console.log(define)
 
 /**
  * ESBuild Params
@@ -85,20 +85,17 @@ const buildParams = {
   logLevel: 'error',
   incremental: true,
   splitting: true,
-  loader: {
-    '.svg': 'dataurl',
-  },
   platform: 'browser',
   plugins: [
     postCssPlugin.default({
       lessOptions: {
-        // modifyVars: { '@primary-color': '#1DA57A' },
         modifyVars: lessModifyVars,
         globalVars: lessGlobalVars,
         javascriptEnabled: true,
       },
     }),
     yamlPlugin(),
+    svgrPlugin(),
   ],
   define,
 }

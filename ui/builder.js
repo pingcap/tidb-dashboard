@@ -124,6 +124,12 @@ async function main() {
     watch('src/**/*', { ignoreInitial: true }).on('all', () => {
       builder.rebuild()
     })
+    watch('lib/**/*', { ignoreInitial: true }).on('all', () => {
+      builder.rebuild()
+    })
+    watch('dashboardApp/**/*', { ignoreInitial: true }).on('all', () => {
+      builder.rebuild()
+    })
   } else {
     build(buildParams).finally(() => process.exit(0))
   }

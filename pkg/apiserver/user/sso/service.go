@@ -120,7 +120,7 @@ func (s *Service) getOrCreateMasterEncKey() (*[32]byte, error) {
 
 	// Try to create a key otherwise
 	key = cryptopasta.NewEncryptionKey()
-	err := ioutil.WriteFile(s.encKeyPath, key[:], 0400) // read only for owner
+	err := ioutil.WriteFile(s.encKeyPath, key[:], 0o400) // read only for owner
 	if err != nil {
 		return nil, fmt.Errorf("persist key failed: %v", err)
 	}
@@ -404,7 +404,6 @@ func (s *Service) oAuthGetUserInfo(accessToken string) (*oAuthUserInfo, error) {
 		SetResult(&oAuthUserInfo{}).
 		SetAuthToken(accessToken).
 		Get(dc.SSO.UserInfoURL)
-
 	if err != nil {
 		return nil, ErrOIDCInternalErr.Wrap(err, "Failed to read user info")
 	}

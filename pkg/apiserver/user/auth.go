@@ -11,7 +11,7 @@ import (
 	"sort"
 	"time"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
+	jwt "github.com/breeswish/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
@@ -19,6 +19,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 var (
@@ -100,7 +101,7 @@ func NewAuthService() *AuthService {
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			var form AuthenticateForm
 			if err := c.ShouldBindJSON(&form); err != nil {
-				return nil, utils.ErrInvalidRequest.WrapWithNoMessage(err)
+				return nil, rest.ErrBadRequest.WrapWithNoMessage(err)
 			}
 			u, err := service.authForm(form)
 			if err != nil {
@@ -180,7 +181,7 @@ func NewAuthService() *AuthService {
 				err = ErrSignInOther.WrapWithNoMessage(e)
 			} else {
 				// The remaining error comes from checking tokens for protected endpoints.
-				err = utils.ErrUnauthorized.NewWithNoMessage()
+				err = rest.ErrUnauthenticated.NewWithNoMessage()
 			}
 			_ = c.Error(err)
 			return err.Error()
@@ -195,7 +196,6 @@ func NewAuthService() *AuthService {
 			})
 		},
 	})
-
 	if err != nil {
 		// Error only comes from configuration errors. Fatal is fine.
 		log.Fatal("Failed to configure auth service", zap.Error(err))
@@ -238,12 +238,12 @@ func (s *AuthService) MWRequireSharePriv() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := utils.GetSession(c)
 		if u == nil {
-			utils.MakeUnauthorizedError(c)
+			_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 		if !u.IsShareable {
-			utils.MakeInsufficientPrivilegeError(c)
+			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -255,12 +255,12 @@ func (s *AuthService) MWRequireWritePriv() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := utils.GetSession(c)
 		if u == nil {
-			utils.MakeUnauthorizedError(c)
+			_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 		if !u.IsWriteable {
-			utils.MakeInsufficientPrivilegeError(c)
+			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -304,7 +304,7 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 // @Summary Log in
 // @Param message body AuthenticateForm true "Credentials"
 // @Success 200 {object} TokenResponse
-// @Failure 401 {object} utils.APIError
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /user/login [post]
 func (s *AuthService) loginHandler(c *gin.Context) {
 	s.middleware.LoginHandler(c)
@@ -320,12 +320,12 @@ type GetSignOutInfoRequest struct {
 // @Param q query GetSignOutInfoRequest true "Query"
 // @Router /user/sign_out_info [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError "Internal error"
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *AuthService) getSignOutInfoHandler(c *gin.Context) {
 	var req GetSignOutInfoRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 

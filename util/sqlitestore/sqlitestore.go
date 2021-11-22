@@ -7,13 +7,12 @@ import (
 	"os"
 	"path"
 
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"moul.io/zapgorm2"
-
 	"github.com/pingcap/log"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"moul.io/zapgorm2"
 )
 
 type SqliteDB struct {
@@ -28,7 +27,7 @@ type Config struct {
 func NewSqliteStore(lc fx.Lifecycle, config Config) (*SqliteDB, error) {
 	dataDir := path.Dir(config.DbFilePath)
 
-	err := os.MkdirAll(dataDir, 0700)
+	err := os.MkdirAll(dataDir, 0o700)
 	if err != nil {
 		log.Error("Failed to create Dashboard storage directory", zap.Error(err))
 		return nil, err

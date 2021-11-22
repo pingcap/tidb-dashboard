@@ -125,8 +125,8 @@ func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *C) {
 	}
 
 	var maxLayerNum uint8 = 2
-	var axisModelNumEachLayer = 3
-	var axisModelList = make([][]*AxisModel, maxLayerNum)
+	axisModelNumEachLayer := 3
+	axisModelList := make([][]*AxisModel, maxLayerNum)
 	for layerNum := uint8(0); layerNum < maxLayerNum; layerNum++ {
 		axisModelList[layerNum] = make([]*AxisModel, axisModelNumEachLayer)
 		for i := 0; i < axisModelNumEachLayer; i++ {

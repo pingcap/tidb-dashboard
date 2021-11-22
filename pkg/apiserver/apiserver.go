@@ -213,7 +213,8 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	apiHandlerEngine.Use(apiutils.MWHandleErrors())
 
 	endpoint = apiHandlerEngine.Group("/dashboard/api")
-	endpoint.StaticFS("/speedscope", speedscopeFiles.Assets())
+	ssEndpoint := apiHandlerEngine.Group("/dashboard/speedscope")
+	ssEndpoint.StaticFS("/", speedscopeFiles.Assets())
 
 	return
 }

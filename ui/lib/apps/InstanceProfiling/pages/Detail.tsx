@@ -131,7 +131,11 @@ export default function Page() {
       const profileURL = encodeURIComponent(
         `${client.getBasePath()}/profiling/single/view?token=${token}`
       )
-      const speedscopeURL = `${client.getBasePath()}/speedscope#profileURL=${profileURL}&title=${titleOnTab}`
+      const speedscopeBasePath = `${client.getBasePath()}`.substring(
+        0,
+        `${client.getBasePath()}`.lastIndexOf('/')
+      )
+      const speedscopeURL = `${speedscopeBasePath}/speedscope#profileURL=${profileURL}&title=${titleOnTab}`
 
       window.open(`${speedscopeURL}`, '_blank')
     }

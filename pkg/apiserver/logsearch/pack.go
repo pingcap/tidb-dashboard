@@ -4,13 +4,13 @@ package logsearch
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 func serveTaskForDownload(task *TaskModel, c *gin.Context) {
@@ -19,7 +19,7 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 		logPath = task.SlowLogStorePath
 	}
 	if logPath == nil {
-		utils.MakeInvalidRequestErrorWithMessage(c, "Log is not ready")
+		_ = c.Error(rest.ErrBadRequest.New("Log is not ready"))
 		return
 	}
 	c.FileAttachment(*logPath, fmt.Sprintf("logs-%s.zip", task.Target.FileName()))
@@ -33,8 +33,7 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 			logPath = task.SlowLogStorePath
 		}
 		if logPath == nil {
-			c.Status(http.StatusInternalServerError)
-			_ = c.Error(utils.ErrInvalidRequest.New("Some logs are not available"))
+			_ = c.Error(rest.ErrBadRequest.New("Some logs are not available"))
 			return
 		}
 		filePaths = append(filePaths, *logPath)

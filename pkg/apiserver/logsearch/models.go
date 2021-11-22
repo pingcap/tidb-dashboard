@@ -61,7 +61,7 @@ type SearchLogRequest struct {
 }
 
 func (r *SearchLogRequest) ConvertToPB(target diagnosticspb.SearchLogRequest_Target) *diagnosticspb.SearchLogRequest {
-	var levels = PBLogLevelSlice[r.MinLevel:]
+	levels := PBLogLevelSlice[r.MinLevel:]
 	return &diagnosticspb.SearchLogRequest{
 		StartTime: r.StartTime,
 		EndTime:   r.EndTime,

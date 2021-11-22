@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"sync/atomic"
 
-	"go.uber.org/fx"
-
 	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
 )
 
 type ServiceStatus int32

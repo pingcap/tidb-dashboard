@@ -40,7 +40,7 @@ func NewAxisModel(layerNum uint8, time time.Time, axis matrix.Axis) (*AxisModel,
 }
 
 func (a *AxisModel) UnmarshalAxis() (matrix.Axis, error) {
-	var buf = bytes.NewBuffer(a.Axis)
+	buf := bytes.NewBuffer(a.Axis)
 	dec := gob.NewDecoder(buf)
 	var axis matrix.Axis
 	err := dec.Decode(&axis)

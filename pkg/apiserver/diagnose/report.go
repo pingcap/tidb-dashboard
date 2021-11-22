@@ -206,7 +206,7 @@ func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableF
 	resChan := make(chan *tblAndErr, len(funcs))
 	var wg sync.WaitGroup
 
-	//get table concurrently
+	// get table concurrently
 	for i := 0; i < conc; i++ {
 		wg.Add(1)
 		go doGetTable(taskChan, resChan, &wg, startTime, endTime, db, sqliteDB, reportID, progress, totalTableCount)
@@ -282,7 +282,7 @@ type task struct {
 	taskID int // taskID for arrange the tables in order
 }
 
-//change the get-Table-func to task.
+// change the get-Table-func to task.
 func func2task(funcs []getTableFunc) chan *task {
 	taskChan := make(chan *task, len(funcs))
 	for i := 0; i < len(funcs); i++ {
@@ -821,7 +821,7 @@ func GetTiKVRocksDBConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef,
 	if err != nil {
 		return table, err
 	}
-	//var subRows []TableRowDef
+	// var subRows []TableRowDef
 	subRowsMap := make(map[string][][]string)
 	for i, row := range rows {
 		if len(row.Values) < 6 {
@@ -903,7 +903,7 @@ func GetTiKVRaftStoreConfigInfo(startTime, endTime string, db *gorm.DB) (TableDe
 	if err != nil {
 		return table, err
 	}
-	//var subRows []TableRowDef
+	// var subRows []TableRowDef
 	subRowsMap := make(map[string][][]string)
 	for i, row := range rows {
 		if len(row.Values) < 6 {

@@ -148,8 +148,7 @@ func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.P
 }
 
 // blankPprofUI is used to eliminate the pprof logs.
-type blankPprofUI struct {
-}
+type blankPprofUI struct{}
 
 func (b blankPprofUI) ReadLine(prompt string) (string, error) {
 	panic("not support")

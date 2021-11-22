@@ -33,7 +33,6 @@ type KeyInfoBuffer []byte
 // DecodeKey obtains the KeyInfoBuffer from a TiDB Key.
 func (buf *KeyInfoBuffer) DecodeKey(key Key) (KeyInfoBuffer, error) {
 	_, result, err := decodeBytes(key, *buf)
-
 	if err != nil {
 		*buf = (*buf)[:0]
 		return nil, err

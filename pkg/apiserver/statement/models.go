@@ -5,10 +5,9 @@ package statement
 import (
 	"strings"
 
+	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-
-	"github.com/thoas/go-funk"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )

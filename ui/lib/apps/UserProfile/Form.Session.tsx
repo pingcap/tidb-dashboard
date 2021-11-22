@@ -138,7 +138,7 @@ function ShareSessionButton() {
         onCancel={handleClose}
         width={600}
       >
-        <ReactMarkdown source={t('user_profile.share_session.text')} />
+        <ReactMarkdown>{t('user_profile.share_session.text')}</ReactMarkdown>
         <Alert
           message={t('user_profile.share_session.warning')}
           type="warning"

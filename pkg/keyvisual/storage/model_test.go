@@ -63,7 +63,7 @@ func (t *testDbstoreSuite) TestClearTableAxisModel(c *C) {
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, 1)
+	c.Assert(count, Equals, int64(1))
 
 	err = ClearTableAxisModel(t.db)
 	c.Assert(err, IsNil)
@@ -72,7 +72,7 @@ func (t *testDbstoreSuite) TestClearTableAxisModel(c *C) {
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, 0)
+	c.Assert(count, Equals, int64(0))
 }
 
 func (t *testDbstoreSuite) TestAxisModelFunc(c *C) {
@@ -112,7 +112,7 @@ func (t *testDbstoreSuite) TestAxisModelFunc(c *C) {
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, 0)
+	c.Assert(count, Equals, int64(0))
 
 	err = axisModel.Delete(t.db)
 	c.Assert(err, IsNil)
@@ -146,7 +146,7 @@ func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *C) {
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, int(maxLayerNum)*axisModelNumEachLayer)
+	c.Assert(count, Equals, int64(int(maxLayerNum)*axisModelNumEachLayer))
 
 	findLayerNum := maxLayerNum - 1
 	axisModels, err := FindAxisModelsOrderByTime(t.db, findLayerNum)
@@ -164,7 +164,7 @@ func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *C) {
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, int(maxLayerNum-1)*axisModelNumEachLayer)
+	c.Assert(count, Equals, int64(int(maxLayerNum-1)*axisModelNumEachLayer))
 }
 
 func axisModelsDeepEqual(obtainedAxisModels []*AxisModel, expectedAxisModels []*AxisModel, c *C) {

@@ -190,7 +190,11 @@ function useSignInSubmit(
           const errComp = (
             <>
               {errMsg}
-              <a href={t('signin.message.access_doc_link')}>
+              <a
+                href={t('signin.message.access_doc_link')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {t('signin.message.access_doc')}
               </a>
             </>

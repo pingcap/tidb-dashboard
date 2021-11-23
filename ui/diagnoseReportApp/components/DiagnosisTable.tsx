@@ -16,7 +16,7 @@ function DiagnosisRow({ row }: { row: TableRowDef }) {
   return (
     <>
       <tr>
-        {(row.Values || []).map((val, valIdx) => (
+        {(row.values || []).map((val, valIdx) => (
           <td key={valIdx}>
             {t(`diagnosis.tables.table.name.${val}`, val)}
             {valIdx === 0 &&
@@ -36,7 +36,7 @@ function DiagnosisRow({ row }: { row: TableRowDef }) {
                   </div>
                 </div>
               )}
-            {valIdx === 0 && (row.SubValues || []).length > 0 && (
+            {valIdx === 0 && (row.sub_values || []).length > 0 && (
               <>
                 &nbsp;&nbsp;&nbsp;
                 <span
@@ -50,7 +50,7 @@ function DiagnosisRow({ row }: { row: TableRowDef }) {
           </td>
         ))}
       </tr>
-      {(row.SubValues || []).map((subVals, subValsIdx) => (
+      {(row.sub_values || []).map((subVals, subValsIdx) => (
         <tr
           key={subValsIdx}
           className={`subvalues ${!internalExpand && 'fold'}`}
@@ -72,27 +72,27 @@ type Props = {
 }
 
 export default function DiagnosisTable({ diagnosis }: Props) {
-  const { Category, Title, Column, Rows } = diagnosis
+  const { category, title, column, rows } = diagnosis
   const { t } = useTranslation()
 
   return (
-    <div className="report-container" id={Title}>
-      {(Category || []).map((c, idx) => (
+    <div className="report-container" id={title}>
+      {(category || []).map((c, idx) => (
         <h1 className={`title is-size-${idx + 2}`} key={idx}>
           {c && t(`diagnosis.tables.category.${c}`)}
         </h1>
       ))}
-      <h3 className="is-size-4">{t(`diagnosis.tables.title.${Title}`)}</h3>
-      <p>
-        <ReactMarkdown source={t(`diagnosis.tables.comment.${Title}`, '')} />
-      </p>
+      <h3 className="is-size-4">{t(`diagnosis.tables.title.${title}`)}</h3>
+      <ReactMarkdown>
+        {t(`diagnosis.tables.comment.${title}`, '')}
+      </ReactMarkdown>
       <table
         className="table is-bordered is-hoverable is-narrow is-fullwidth"
         style={{ position: 'relative' }}
       >
         <thead>
           <tr>
-            {Column.map((col, colIdx) => (
+            {column.map((col, colIdx) => (
               <th className="table-header-row" key={colIdx}>
                 {col}
               </th>
@@ -100,7 +100,7 @@ export default function DiagnosisTable({ diagnosis }: Props) {
           </tr>
         </thead>
         <tbody>
-          {(Rows || []).map((row, rowIdx) => (
+          {(rows || []).map((row, rowIdx) => (
             <DiagnosisRow key={rowIdx} row={row} />
           ))}
         </tbody>

@@ -34,20 +34,6 @@ function isBuildAsDevServer() {
   return process.env.NODE_ENV !== 'production'
 }
 
-const enableEslintIgnore = () => (config) => {
-  const eslintRule = config.module.rules.filter(
-    (r) =>
-      r.use && r.use.some((u) => u.options && u.options.useEslintrc !== void 0)
-  )[0]
-  const options = eslintRule.use[0].options
-  options.ignore = true
-  options.ignorePattern = 'lib/client/api/*.ts'
-  options.baseConfig.rules = {
-    'jsx-a11y/anchor-is-valid': 'off',
-  }
-  return config
-}
-
 const disableMinimize = () => (config) => {
   config.optimization.minimize = false
   config.optimization.splitChunks = false
@@ -187,7 +173,6 @@ module.exports = override(
   }),
   addAlias(),
   addDecoratorsLegacy(),
-  enableEslintIgnore(),
   addYaml,
   addWebpackBundleSize(),
   addWebpackPlugin(new WebpackBar()),

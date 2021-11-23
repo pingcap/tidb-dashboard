@@ -42,14 +42,26 @@ task(
 )
 
 task(
+  'speedscope:copy_static_assets',
+  shell.task(
+    'mkdir -p public/speedscope && cp node_modules/@duorou_xu/speedscope/dist/release/* public/speedscope/'
+  )
+)
+
+task(
   'build',
-  series(parallel('swagger:generate', 'distro:generate'), 'webpack:build')
+  series(
+    parallel('swagger:generate', 'distro:generate'),
+    'speedscope:copy_static_assets',
+    'webpack:build'
+  )
 )
 
 task(
   'dev',
   series(
     parallel('swagger:generate', 'distro:generate'),
+    'speedscope:copy_static_assets',
     parallel('swagger:watch', 'distro:watch', 'webpack:dev')
   )
 )

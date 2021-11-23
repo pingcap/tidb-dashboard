@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"sync"
 
-	speedscopeFiles "github.com/baurine/speedscope-files"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -213,8 +212,6 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	apiHandlerEngine.Use(apiutils.MWHandleErrors())
 
 	endpoint = apiHandlerEngine.Group("/dashboard/api")
-	ssEndpoint := apiHandlerEngine.Group("/dashboard/speedscope")
-	ssEndpoint.StaticFS("/", speedscopeFiles.Assets())
 
 	return
 }

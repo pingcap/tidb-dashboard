@@ -11,7 +11,6 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/antonmedv/expr v1.9.0
 	github.com/appleboy/gin-jwt/v2 v2.6.3
-	github.com/baurine/speedscope-files v0.0.0-20211118075636-4dfecccd729b
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/fatih/structtag v1.2.0
 	github.com/gin-contrib/gzip v0.0.1
@@ -33,6 +32,7 @@ require (
 	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
 	github.com/pingcap/sysutil v0.0.0-20211108113841-e5c5906ed1e7
 	github.com/rs/cors v1.7.0
+	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 	github.com/spf13/pflag v1.0.1

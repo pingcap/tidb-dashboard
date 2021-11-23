@@ -8,7 +8,7 @@ import _ from 'lodash'
 
 import { TextWrap } from '..'
 
-// import styles from './index.module.less'
+import styles from './index.module.less'
 
 export interface IBaseSelectProps<T>
   extends Omit<

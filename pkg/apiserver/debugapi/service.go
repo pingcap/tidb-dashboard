@@ -18,10 +18,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/rest/fileswap"
 )
 
-const (
-	tokenIssuer = "debugAPI"
-)
-
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	ep := r.Group("/debug_api")
 	ep.GET("/download", s.Download)
@@ -34,15 +30,13 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 type Service struct {
 	Client *endpoint.Client
-
-	fSwap *fileswap.Handler
+	fSwap  *fileswap.Handler
 }
 
 func newService(hp httpClientParam) *Service {
 	return &Service{
 		Client: endpoint.NewClient(newHTTPClient(hp), endpointDefs),
-
-		fSwap: fileswap.New(),
+		fSwap:  fileswap.New(),
 	}
 }
 

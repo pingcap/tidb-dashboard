@@ -9,8 +9,8 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/ziputil"
 )
 
 func serveTaskForDownload(task *TaskModel, c *gin.Context) {
@@ -41,7 +41,7 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
 	c.Writer.Header().Set("Content-Disposition", "attachment; filename=\"logs.zip\"")
-	err := utils.StreamZipPack(c.Writer, filePaths, false)
+	err := ziputil.WriteZipFromFiles(c.Writer, filePaths, false)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))
 	}

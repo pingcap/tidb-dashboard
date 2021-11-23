@@ -14,8 +14,8 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/rest/fileswap"
 )
 
 const (
@@ -34,11 +34,15 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 type Service struct {
 	Client *endpoint.Client
+
+	fSwap *fileswap.Handler
 }
 
 func newService(hp httpClientParam) *Service {
 	return &Service{
 		Client: endpoint.NewClient(newHTTPClient(hp), endpointDefs),
+
+		fSwap: fileswap.New(),
 	}
 }
 
@@ -82,27 +86,31 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	}
 	defer res.Response.Body.Close() //nolint:errcheck
 
-	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
-	fileName := fmt.Sprintf("%s_%d%s", req.EndpointID, time.Now().Unix(), ext)
-
-	writer, token, err := utils.FSPersist(utils.FSPersistConfig{
-		TokenIssuer:      tokenIssuer,
-		TokenExpire:      time.Minute * 5, // Note: the expire time should include request time.
-		TempFilePattern:  "debug_api",
-		DownloadFileName: fileName,
-	})
+	writer, err := s.fSwap.NewFileWriter("debug_api")
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	defer writer.Close() //nolint:errcheck
+	defer func() {
+		_ = writer.Close()
+	}()
+
 	_, err = io.Copy(writer, res.Response.Body)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	c.String(http.StatusOK, token)
+	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
+	fileName := fmt.Sprintf("%s_%d%s", req.EndpointID, time.Now().Unix(), ext)
+	downloadToken, err := writer.GetDownloadToken(fileName, time.Minute*5)
+	if err != nil {
+		// This shall never happen
+		_ = c.Error(err)
+		return
+	}
+
+	c.String(http.StatusOK, downloadToken)
 }
 
 // @Summary Download a finished request result
@@ -112,8 +120,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 // @Failure 500 {object} rest.ErrorResponse
 // @Router /debug_api/download [get]
 func (s *Service) Download(c *gin.Context) {
-	token := c.Query("token")
-	utils.FSServe(c, token, tokenIssuer)
+	s.fSwap.HandleDownloadRequest(c)
 }
 
 // @Summary Get all endpoints

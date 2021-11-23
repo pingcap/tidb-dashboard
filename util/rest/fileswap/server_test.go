@@ -10,7 +10,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joomcode/errorx"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pingcap/tidb-dashboard/util/assertutil"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 func (s *Handler) mustGetDownloadToken(t *testing.T, fileContent string, downloadFileName string, expireIn time.Duration) string {
@@ -36,8 +40,8 @@ func TestDownload(t *testing.T) {
 
 	require.Len(t, c.Errors, 0)
 	require.Equal(t, http.StatusOK, r.Code)
-	require.Equal(t, r.Header().Get("Content-Disposition"), `attachment; filename="file.txt"`)
-	require.Equal(t, r.Header().Get("Content-Type"), `application/octet-stream`)
+	require.Equal(t, `attachment; filename="file.txt"`, r.Header().Get("Content-Disposition"))
+	require.Equal(t, `application/octet-stream`, r.Header().Get("Content-Type"))
 	require.Equal(t, "foobar", r.Body.String())
 
 	// Download again
@@ -47,6 +51,7 @@ func TestDownload(t *testing.T) {
 	handler.HandleDownloadRequest(c)
 
 	require.Len(t, c.Errors, 1)
+	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Download file not found")
 }
 
@@ -61,6 +66,7 @@ func TestDownloadAnotherInstance(t *testing.T) {
 	handler2.HandleDownloadRequest(c)
 
 	require.Len(t, c.Errors, 1)
+	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Invalid download request")
 	require.Contains(t, c.Errors[0].Error(), "download token is invalid")
 }
@@ -78,6 +84,7 @@ func TestExpiredToken(t *testing.T) {
 	handler.HandleDownloadRequest(c)
 
 	require.Len(t, c.Errors, 1)
+	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Invalid download request")
 	require.Contains(t, c.Errors[0].Error(), "download token is expired")
 }
@@ -91,6 +98,34 @@ func TestNotAToken(t *testing.T) {
 	handler.HandleDownloadRequest(c)
 
 	require.Len(t, c.Errors, 1)
+	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Invalid download request")
 	require.Contains(t, c.Errors[0].Error(), "download token is invalid")
+}
+
+func TestDownloadInMiddleware(t *testing.T) {
+	handler := New()
+	token := handler.mustGetDownloadToken(t, "abc", "myfile.bin", time.Second*5)
+
+	engine := gin.New()
+	engine.Use(rest.ErrorHandlerFn())
+	engine.GET("/download", handler.HandleDownloadRequest)
+
+	// A normal request
+	r := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/download?token="+token, nil)
+	engine.ServeHTTP(r, req)
+	require.Equal(t, http.StatusOK, r.Code)
+	require.Equal(t, `attachment; filename="myfile.bin"`, r.Header().Get("Content-Disposition"))
+	require.Equal(t, `application/octet-stream`, r.Header().Get("Content-Type"))
+	require.Equal(t, "abc", r.Body.String())
+
+	// A request without token
+	r = httptest.NewRecorder()
+	req, _ = http.NewRequest("GET", "/download", nil)
+	engine.ServeHTTP(r, req)
+	require.Equal(t, http.StatusBadRequest, r.Code)
+	require.Equal(t, "", r.Header().Get("Content-Disposition"))
+	require.Equal(t, "application/json; charset=utf-8", r.Header().Get("Content-Type"))
+	assertutil.RequireJSONContains(t, r.Body.String(), `{"code":"common.bad_request", "error":true}`)
 }

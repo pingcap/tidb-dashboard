@@ -2,6 +2,7 @@ run:
   skip-dirs:
     - swaggerspec
     - pkg/uiserver
+    - ui
   timeout: 2m
 
 issues:

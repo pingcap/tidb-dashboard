@@ -11,8 +11,6 @@ const postCssPlugin = require('esbuild-plugin-postcss2')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
 const svgrPlugin = require('esbuild-plugin-svgr')
 
-require('dotenv').config()
-
 const argv = (key) => {
   // Return true if the key exists and a value is defined
   if (process.argv.includes(`--${key}`)) return true
@@ -23,6 +21,15 @@ const argv = (key) => {
   return value.replace(`--${key}=`, '')
 }
 const isDev = argv('dev') === true
+
+// handle .env
+fs.rmSync('./.env')
+if (isDev) {
+  fs.copyFileSync('./.env.development', './.env')
+} else {
+  fs.copyFileSync('./.env.production', './.env')
+}
+require('dotenv').config()
 
 /**
  * Live Server Params

@@ -25,7 +25,8 @@ const (
 
 type Client struct {
 	http.Client
-	BeforeRequest func(req *http.Request)
+
+	header http.Header
 }
 
 func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
@@ -49,6 +50,16 @@ func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
 
 	return &Client{
 		Client: cli,
+		header: http.Header{},
+	}
+}
+
+// Clone is a temporary solution to the reference-type field and race problem
+// TODO: use latest `/util/client` to get better http client api
+func (c *Client) Clone() *Client {
+	return &Client{
+		Client: c.Client,
+		header: c.header.Clone(),
 	}
 }
 
@@ -57,9 +68,10 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
-	c.BeforeRequest = callback
-	return &c
+func (c *Client) CloneAndAddHeader(key, value string) *Client {
+	cc := c.Clone()
+	cc.header.Add(key, value)
+	return cc
 }
 
 // TODO: Replace using go-resty.
@@ -90,10 +102,7 @@ func (c *Client) Send(
 		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
 		return nil, e
 	}
-
-	if c.BeforeRequest != nil {
-		c.BeforeRequest(req)
-	}
+	req.Header = c.header
 
 	resp, err := c.Do(req)
 	if err != nil {

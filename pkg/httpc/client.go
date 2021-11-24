@@ -53,8 +53,8 @@ func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
 	}
 }
 
-// Clone is a temporary solution to the pointer-type field and race problem
-// TODO: use latest `/util/client` to get better http client api.
+// Clone is a temporary solution to the unexpected shared pointer field and race problem
+// TODO: use latest `/util/client` for better api experience.
 func (c *Client) Clone() *Client {
 	return &Client{
 		Client: c.Client,

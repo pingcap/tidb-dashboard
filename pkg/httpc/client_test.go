@@ -1,0 +1,58 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
+package httpc
+
+import (
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/fx/fxtest"
+)
+
+func newTestClient(t *testing.T) *Client {
+	lc := fxtest.NewLifecycle(t)
+	config := &config.Config{}
+	return NewHTTPClient(lc, config)
+}
+
+func Test_Clone(t *testing.T) {
+	c := newTestClient(t)
+	cc := c.Clone()
+
+	require.NotSame(t, c, cc)
+
+	require.Nil(t, c.header)
+	require.Nil(t, cc.header)
+	require.NotSame(t, c.header, cc.header)
+}
+
+func Test_CloneAndAddHeader(t *testing.T) {
+	c := newTestClient(t)
+	cc := c.CloneAndAddHeader("1", "11")
+
+	require.Nil(t, c.header)
+	require.Equal(t, "11", cc.header.Get("1"))
+
+	cc2 := cc.CloneAndAddHeader("2", "22")
+	require.Equal(t, "11", cc.header.Get("1"))
+	require.Equal(t, "", cc.header.Get("2"))
+	require.Equal(t, "11", cc2.header.Get("1"))
+	require.Equal(t, "22", cc2.header.Get("2"))
+}
+
+func Test_Send_withHeader(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(r.Header.Get("1")))
+	}))
+	defer ts.Close()
+
+	c := newTestClient(t).CloneAndAddHeader("1", "11")
+	resp, _ := c.Send(context.Background(), ts.URL, http.MethodGet, nil, nil, "")
+	d, _ := resp.Body()
+
+	require.Equal(t, "11", string(d))
+}

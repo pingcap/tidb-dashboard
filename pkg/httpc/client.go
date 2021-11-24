@@ -50,11 +50,10 @@ func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
 
 	return &Client{
 		Client: cli,
-		header: http.Header{},
 	}
 }
 
-// Clone is a temporary solution to the reference-type field and race problem
+// Clone is a temporary solution to the pointer-type field and race problem
 // TODO: use latest `/util/client` to get better http client api
 func (c *Client) Clone() *Client {
 	return &Client{
@@ -70,6 +69,9 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 
 func (c *Client) CloneAndAddHeader(key, value string) *Client {
 	cc := c.Clone()
+	if cc.header == nil {
+		cc.header = http.Header{}
+	}
 	cc.header.Add(key, value)
 	return cc
 }

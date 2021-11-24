@@ -8,10 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/pingcap/tidb-dashboard/pkg/config"
-	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
+
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 func newTestClient(t *testing.T) *Client {

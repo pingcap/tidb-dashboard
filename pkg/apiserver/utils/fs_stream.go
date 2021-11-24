@@ -14,6 +14,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gtank/cryptopasta"
 	"github.com/minio/sio"
+
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 type FSPersistConfig struct {
@@ -75,7 +77,7 @@ func FSPersist(config FSPersistConfig) (io.WriteCloser, string, error) {
 func FSServe(c *gin.Context, token string, requiredIssuer string) {
 	str, err := ParseJWTString(requiredIssuer, token)
 	if err != nil {
-		MakeInvalidRequestErrorWithMessage(c, "Invalid download request: %s.", err.Error())
+		_ = c.Error(rest.ErrBadRequest.Wrap(err, "Invalid download request"))
 		return
 	}
 	var tokenBody FSPersistTokenBody
@@ -89,7 +91,7 @@ func FSServe(c *gin.Context, token string, requiredIssuer string) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			// It is possible that token is reused. In this case, raise invalid request error.
-			MakeInvalidRequestErrorWithMessage(c, "Download file not found: %s.", err.Error())
+			_ = c.Error(rest.ErrBadRequest.Wrap(err, "Download file not found"))
 		} else {
 			_ = c.Error(err)
 		}

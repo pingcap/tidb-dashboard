@@ -91,7 +91,7 @@ const buildParams = {
   sourcemap: true,
   logLevel: 'error',
   incremental: true,
-  // splitting: true,
+  splitting: true,
   platform: 'browser',
   plugins: [
     postCssPlugin.default({

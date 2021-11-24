@@ -50,9 +50,17 @@ func Test_Send_withHeader(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := newTestClient(t).CloneAndAddHeader("1", "11")
-	resp, _ := c.Send(context.Background(), ts.URL, http.MethodGet, nil, nil, "")
-	d, _ := resp.Body()
+	c := newTestClient(t)
+	resp1, _ := c.Send(context.Background(), ts.URL, http.MethodGet, nil, nil, "")
+	d1, _ := resp1.Body()
+	require.Equal(t, "", string(d1))
 
-	require.Equal(t, "11", string(d))
+	cc := c.CloneAndAddHeader("1", "11")
+	resp2, _ := cc.Send(context.Background(), ts.URL, http.MethodGet, nil, nil, "")
+	d2, _ := resp2.Body()
+	require.Equal(t, "11", string(d2))
+
+	resp3, _ := c.Send(context.Background(), ts.URL, http.MethodGet, nil, nil, "")
+	d3, _ := resp3.Body()
+	require.Equal(t, "", string(d3))
 }

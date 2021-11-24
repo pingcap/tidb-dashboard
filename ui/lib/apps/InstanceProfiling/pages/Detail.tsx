@@ -126,15 +126,17 @@ export default function Page() {
         return
       }
 
-      const titleOnTab = rec.target.kind + '_' + rec.target.display_name
+      // make both generated graph(svg) file and protobuf file viewable online
+      let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
 
-      const profileURL = encodeURIComponent(
-        `${client.getBasePath()}/profiling/single/view?token=${token}`
-      )
+      if (!rec.file_path.endsWith('.svg')) {
+        const titleOnTab = rec.target.kind + '_' + rec.target.display_name
+        profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
+          profileURL
+        )}&title=${titleOnTab}`
+      }
 
-      const speedscopeURL = `/dashboard/speedscope#profileURL=${profileURL}&title=${titleOnTab}`
-
-      window.open(`${speedscopeURL}`, '_blank')
+      window.open(`${profileURL}`, '_blank')
     }
   )
 

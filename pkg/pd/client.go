@@ -25,11 +25,12 @@ const (
 )
 
 type Client struct {
-	httpScheme   string
-	baseURL      string
-	httpClient   *httpc.Client
-	lifecycleCtx context.Context
-	timeout      time.Duration
+	httpScheme    string
+	baseURL       string
+	httpClient    *httpc.Client
+	lifecycleCtx  context.Context
+	timeout       time.Duration
+	beforeRequest httpc.BeforeRequestFunc
 }
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
@@ -66,8 +67,8 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
-	c.httpClient.BeforeRequest = callback
+func (c Client) WithBeforeRequest(callback httpc.BeforeRequestFunc) *Client {
+	c.beforeRequest = callback
 	return &c
 }
 

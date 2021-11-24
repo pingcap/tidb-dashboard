@@ -23,9 +23,11 @@ const (
 	defaultTimeout = time.Second * 10
 )
 
+type BeforeRequestFunc func(req *http.Request)
+
 type Client struct {
 	http.Client
-	BeforeRequest func(req *http.Request)
+	beforeRequest BeforeRequestFunc
 }
 
 func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
@@ -57,8 +59,8 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
-	c.BeforeRequest = callback
+func (c Client) WithBeforeRequest(callback BeforeRequestFunc) *Client {
+	c.beforeRequest = callback
 	return &c
 }
 
@@ -91,8 +93,8 @@ func (c *Client) Send(
 		return nil, e
 	}
 
-	if c.BeforeRequest != nil {
-		c.BeforeRequest(req)
+	if c.beforeRequest != nil {
+		c.beforeRequest(req)
 	}
 
 	resp, err := c.Do(req)

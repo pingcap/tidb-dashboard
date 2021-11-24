@@ -3,24 +3,18 @@
 package profiling
 
 import (
-	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
-	"time"
-
-	"github.com/google/pprof/driver"
-	"github.com/google/pprof/profile"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-var (
-	_ driver.Fetcher = (*fetcher)(nil)
-	// mu sync.Mutex.
-)
+// var (
+// 	_ driver.Fetcher = (*fetcher)(nil)
+// 	// mu sync.Mutex.
+// )
 
 type pprofOptions struct {
 	duration uint
@@ -64,67 +58,20 @@ type pprofOptions struct {
 // 	return tmpPath, nil
 // }
 
-type flagSet struct {
-	*flag.FlagSet
-	args []string
-}
-
 func fetchPprof(op *pprofOptions) (string, error) {
 	tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
-	format := "proto"
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
 	defer tmpfile.Close() // #nosec
-	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), format)
-	format = "-" + format
-	args := []string{
-		format,
-		// prevent printing stdout
-		"-output", "dummy",
-		"-seconds", strconv.Itoa(int(op.duration)),
+	tmpPath := tmpfile.Name()
+
+	fetcher := &fetcher{profileFetcher: op.fetcher, target: op.target}
+	if err := fetcher.FetchAndWriteToFile(op.duration, tmpPath); err != nil {
+		return "", fmt.Errorf("failed to fetch annd write to temp file: %v", err)
 	}
-	address := fmt.Sprintf("%s:%d", op.target.IP, op.target.Port)
-	args = append(args, address)
-	f := &flagSet{
-		FlagSet: flag.NewFlagSet("pprof", flag.PanicOnError),
-		args:    args,
-	}
-	if err := driver.PProf(&driver.Options{
-		Fetch:   &fetcher{profileFetcher: op.fetcher, target: op.target},
-		Flagset: f,
-		UI:      &blankPprofUI{},
-		Writer:  &oswriter{output: tmpPath},
-	}); err != nil {
-		return "", fmt.Errorf("failed to generate profile report: %v", err)
-	}
+
 	return tmpPath, nil
-}
-
-func (f *flagSet) StringList(o, d, c string) *[]*string {
-	return &[]*string{f.String(o, d, c)}
-}
-
-func (f *flagSet) ExtraUsage() string {
-	return ""
-}
-
-func (f *flagSet) Parse(usage func()) []string {
-	f.Usage = usage
-	_ = f.FlagSet.Parse(f.args)
-	return f.Args()
-}
-
-func (f *flagSet) AddExtraUsage(eu string) {}
-
-// oswriter implements the Writer interface using a regular file.
-type oswriter struct {
-	output string
-}
-
-func (o *oswriter) Open(name string) (io.WriteCloser, error) {
-	f, err := os.Create(o.output)
-	return f, err
 }
 
 type fetcher struct {
@@ -132,40 +79,28 @@ type fetcher struct {
 	profileFetcher *profileFetcher
 }
 
-func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.Profile, string, error) {
-	secs := strconv.Itoa(int(duration / time.Second))
+func (f *fetcher) FetchAndWriteToFile(duration uint, tmpPath string) error {
+	secs := strconv.Itoa(int(duration))
 	url := "/debug/pprof/profile?seconds=" + secs
 
 	resp, err := (*f.profileFetcher).fetch(&fetchOptions{ip: f.target.IP, port: f.target.Port, path: url})
 	if err != nil {
-		return nil, url, err
+		return fmt.Errorf("failed to fetch profile with proto format: %v", err)
 	}
 
-	p, err := profile.ParseData(resp)
-	return p, url, err
-}
+	w, err := os.Create(tmpPath)
+	if err != nil {
+		return fmt.Errorf("failed to create tmpPath to write profile: %v", err)
+	}
 
-// blankPprofUI is used to eliminate the pprof logs.
-type blankPprofUI struct {
-}
+	_, err = w.Write(resp)
+	if err != nil {
+		return fmt.Errorf("failed to write profile: %v", err)
+	}
 
-func (b blankPprofUI) ReadLine(prompt string) (string, error) {
-	panic("not support")
-}
+	if err := w.Close(); err != nil {
+		return fmt.Errorf("failed to close tmpPath: %v", err)
+	}
 
-func (b blankPprofUI) Print(i ...interface{}) {
-}
-
-func (b blankPprofUI) PrintErr(i ...interface{}) {
-}
-
-func (b blankPprofUI) IsTerminal() bool {
-	return false
-}
-
-func (b blankPprofUI) WantBrowser() bool {
-	return false
-}
-
-func (b blankPprofUI) SetAutoComplete(complete func(string) string) {
+	return nil
 }

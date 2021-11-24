@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/util/netutil"
 )
 
 const tidbTopologyKeyPrefix = "/topology/tidb/"
@@ -110,7 +110,7 @@ func parseTiDBInfo(address string, value []byte) (*TiDBInfo, error) {
 	if err != nil {
 		return nil, ErrInvalidTopologyData.Wrap(err, "%s info unmarshal failed", distro.Data("tidb"))
 	}
-	hostname, port, err := host.ParseHostAndPortFromAddress(address)
+	hostname, port, err := netutil.ParseHostAndPortFromAddress(address)
 	if err != nil {
 		return nil, ErrInvalidTopologyData.Wrap(err, "%s info address parse failed", distro.Data("tidb"))
 	}

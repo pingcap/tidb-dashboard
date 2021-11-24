@@ -17,6 +17,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/ziputil"
 )
 
 // Register register the handlers to the service.
@@ -223,7 +224,7 @@ func (s *Service) downloadGroup(c *gin.Context) {
 	fileName := fmt.Sprintf("profiling_pack_%d.zip", taskGroupID)
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-	err = utils.StreamZipPack(c.Writer, filePathes, true)
+	err = ziputil.WriteZipFromFiles(c.Writer, filePathes, true)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))
 	}
@@ -262,7 +263,7 @@ func (s *Service) downloadSingle(c *gin.Context) {
 	fileName := fmt.Sprintf("profiling_%d.zip", taskID)
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-	err = utils.StreamZipPack(c.Writer, []string{task.FilePath}, true)
+	err = ziputil.WriteZipFromFiles(c.Writer, []string{task.FilePath}, true)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))
 	}

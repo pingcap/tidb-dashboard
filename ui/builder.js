@@ -32,7 +32,7 @@ const dashboardApiPrefix =
  */
 const serverParams = {
   port: 3002, // Set the server port. Defaults to 8080.
-  root: 'dist', // Set root directory that's being served. Defaults to cwd.
+  root: 'build', // Set root directory that's being served. Defaults to cwd.
   open: false, // When false, it won't load your browser by default.
   // host: "0.0.0.0", // Set the address to bind to. Defaults to 0.0.0.0 or process.env.IP.
   // ignore: 'scss,my/templates', // comma-separated string for paths to ignore
@@ -125,7 +125,7 @@ const buildParams = {
     diagnoseReport: 'diagnoseReportApp/index.tsx',
   },
   loader: { '.ts': 'tsx', '.svgd': 'dataurl' },
-  outdir: 'dist',
+  outdir: 'build',
   minify: !isDev,
   format: 'esm',
   bundle: true,
@@ -170,14 +170,14 @@ function buildHtml(inputFilename, outputFilename) {
 }
 
 function copyAssets() {
-  buildHtml('./public/index.html', './dist/index.html')
-  buildHtml('./public/diagnoseReport.html', './dist/diagnoseReport.html')
-  fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
-  fs.copyFileSync('./public/compat.js', './dist/compat.js')
+  buildHtml('./public/index.html', './build/index.html')
+  buildHtml('./public/diagnoseReport.html', './build/diagnoseReport.html')
+  fs.copyFileSync('./public/favicon.ico', './build/favicon.ico')
+  fs.copyFileSync('./public/compat.js', './build/compat.js')
 }
 
 async function main() {
-  fs.rmSync('./dist', { force: true, recursive: true })
+  fs.rmSync('./build', { force: true, recursive: true })
 
   const builder = await build(buildParams)
   copyAssets()

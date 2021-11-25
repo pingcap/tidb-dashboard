@@ -15,7 +15,6 @@ package profiling
 
 import (
 	"fmt"
-	"net/http"
 	"time"
 
 	"go.uber.org/fx"
@@ -103,8 +102,9 @@ type pdFetcher struct {
 
 func (f *pdFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	baseURL := fmt.Sprintf("%s://%s:%d", f.statusAPIHTTPScheme, op.ip, op.port)
-	f.client.WithBeforeRequest(func(req *http.Request) {
-		req.Header.Add("PD-Allow-follower-handle", "true")
-	})
-	return f.client.WithTimeout(maxProfilingTimeout).WithBaseURL(baseURL).SendGetRequest(op.path)
+	return f.client.
+		WithTimeout(maxProfilingTimeout).
+		WithBaseURL(baseURL).
+		AddRequestHeader("PD-Allow-follower-handle", "true").
+		SendGetRequest(op.path)
 }

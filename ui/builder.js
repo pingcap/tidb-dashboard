@@ -82,7 +82,10 @@ console.log(define)
  */
 const buildParams = {
   color: true,
-  entryPoints: ['src/index.ts', 'diagnoseReportApp/index.tsx'],
+  entryPoints: {
+    dashboard: 'src/index.ts',
+    diagnoseReport: 'diagnoseReportApp/index.tsx',
+  },
   loader: { '.ts': 'tsx', '.svgd': 'dataurl' },
   outdir: 'dist',
   minify: !isDev,
@@ -107,25 +110,20 @@ const buildParams = {
   define,
 }
 
+function copyAssets() {
+  fs.copyFileSync('./public/index.html', './dist/index.html')
+  fs.copyFileSync('./public/diagnoseReport.html', './dist/diagnoseReport.html')
+  fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
+  fs.copyFileSync('./public/compat.js', './dist/compat.js')
+}
+
 async function main() {
-  // TODO - refine
   fs.rmSync('./dist', { force: true, recursive: true })
-  // fs.mkdirSync('./dist')
-  // fs.copyFileSync('./public/index.html', './dist/index.html')
-  // fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
-  // fs.copyFileSync('./public/manifest.json', './dist/manifest.json')
-  // fs.copyFileSync('./public/logo192.png', './dist/logo192.png')
-  // fs.copyFileSync('./public/logo512.png', './dist/logo512.png')
+
+  const builder = await build(buildParams)
+  copyAssets()
 
   if (isDev) {
-    const builder = await build(buildParams)
-
-    fs.copyFileSync('./public/index.html', './dist/src/index.html')
-    fs.copyFileSync(
-      './public/diagnoseReport.html',
-      './dist/diagnoseReportApp/index.html'
-    )
-
     start(serverParams)
 
     watch('src/**/*', { ignoreInitial: true }).on('all', () => {
@@ -137,8 +135,14 @@ async function main() {
     watch('dashboardApp/**/*', { ignoreInitial: true }).on('all', () => {
       builder.rebuild()
     })
+    watch('diagnoseReportApp/**/*', { ignoreInitial: true }).on('all', () => {
+      builder.rebuild()
+    })
+    watch('public/**/*', { ignoreInitial: true }).on('all', () => {
+      copyAssets()
+    })
   } else {
-    build(buildParams).finally(() => process.exit(0))
+    process.exit(0)
   }
 }
 

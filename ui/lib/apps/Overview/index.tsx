@@ -62,7 +62,6 @@ export default function App() {
     <Root>
       <Router>
         <Row>
-          {/* <h1>Haaaa</h1> */}
           <Col span={18}>
             <QPS />
             <Latency />

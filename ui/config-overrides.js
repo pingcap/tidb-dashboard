@@ -192,19 +192,9 @@ module.exports = override(
   addWebpackBundleSize(),
   addWebpackPlugin(new WebpackBar()),
   addWebpackPlugin(
-    // new webpack.NormalModuleReplacementPlugin(
-    //   /antd\/es\/style\/index\.less/,
-    //   path.resolve(__dirname, 'lib/antd.less')
-    // )
     new webpack.NormalModuleReplacementPlugin(
       /antd\/es\/style\/index\.less/,
-      function (resource) {
-        console.log('resource:', resource)
-        resource.request = resource.request.replace(
-          /antd\/es\/style\/index\.less/,
-          path.resolve(__dirname, 'lib/antd.less')
-        )
-      }
+      path.resolve(__dirname, 'lib/antd.less')
     )
   ),
   disableMinimizeByEnv(),

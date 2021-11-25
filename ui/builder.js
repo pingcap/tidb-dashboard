@@ -26,22 +26,12 @@ require('dotenv').config()
 
 const dashboardApiPrefix =
   process.env.REACT_APP_DASHBOARD_API_URL || 'http://127.0.0.1:12333'
-/**
- * Live Server Params
- * @link https://www.npmjs.com/package/live-server#usage-from-node
- */
 const serverParams = {
-  port: 3002, // Set the server port. Defaults to 8080.
-  root: 'build', // Set root directory that's being served. Defaults to cwd.
-  open: false, // When false, it won't load your browser by default.
-  // host: "0.0.0.0", // Set the address to bind to. Defaults to 0.0.0.0 or process.env.IP.
-  // ignore: 'scss,my/templates', // comma-separated string for paths to ignore
-  // file: "index.html", // When set, serve this file (server root relative) for every 404 (useful for single-page applications)
-  // wait: 1000 // Waits for all changes, before reloading. Defaults to 0 sec.
-  // mount: [['/components', './node_modules']], // Mount a directory to a route.
-  // logLevel: 2, // 0 = errors only, 1 = some, 2 = lots
+  port: process.env.PORT,
+  root: 'build',
+  open: false,
   middleware: isDev && [
-    function (req, res, next) {
+    function (req, _res, next) {
       if (/\/dashboard\/api\/diagnose\/reports\/\S+\/detail/.test(req.url)) {
         req.url = '/diagnoseReport.html'
       }
@@ -95,7 +85,7 @@ function genDefine() {
   for (const k in process.env) {
     if (k.startsWith('REACT_APP_')) {
       let envVal = process.env[k]
-      // REACT_APP_VERSION=$npm_package_version
+      // Example: REACT_APP_VERSION=$npm_package_version
       if (envVal.startsWith('$')) {
         envVal = process.env[envVal.substring(1)]
       }
@@ -110,10 +100,6 @@ function genDefine() {
   return define
 }
 
-/**
- * ESBuild Params
- * @link https://esbuild.github.io/api/#build-api
- */
 const buildParams = {
   color: true,
   entryPoints: {

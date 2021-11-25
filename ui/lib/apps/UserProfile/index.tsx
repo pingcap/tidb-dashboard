@@ -13,7 +13,6 @@ function App() {
   return (
     <Root>
       <Router>
-        {/* <h1>haahah</h1> */}
         <Card title={t('user_profile.session.title')}>
           <SessionForm />
         </Card>

@@ -39,7 +39,6 @@ function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
   }, [sql, compact])
 
   return (
-    // <div></div>
     <SyntaxHighlighter
       language="sql"
       style={theme === 'light' ? lightTheme : darkTheme}

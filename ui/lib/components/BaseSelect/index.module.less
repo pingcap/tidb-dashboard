@@ -1,8 +1,7 @@
 @import 'antd/es/style/themes/default.less';
-@import 'antd/es/style/mixins/index'; // 没有 index.js，只有 index.less
-@import 'antd/es/input/style/mixin'; // 没有 mixin.js，只有 mixin.less
-// @import 'antd/es/select/style/index'; // 存在 index.js 和 index.less，错误地找了 index.js
-@import 'antd/es/select/style/index.less';
+@import 'antd/es/style/mixins/index';
+@import 'antd/es/input/style/mixin';
+@import 'antd/es/select/style/index.less'; // Exist index.less and index.js both, we need to declare it explictly else it will find index.js
 
 .baseSelect {
   .reset-component;

@@ -27,30 +27,24 @@ task('distro:watch', () =>
   watch(['../pkg/utils/distro/*.go'], series('distro:generate'))
 )
 
-task(
-  'webpack:dev',
-  shell.task(
-    'REACT_APP_COMMIT_HASH=$(git rev-parse --short HEAD) yarn react-app-rewired start'
-  )
-)
+task('webpack:dev', shell.task('yarn react-app-rewired start'))
 
-task(
-  'webpack:build',
-  shell.task(
-    'REACT_APP_COMMIT_HASH=$(git rev-parse --short HEAD) yarn react-app-rewired build'
-  )
-)
+task('webpack:build', shell.task('yarn react-app-rewired build'))
+
+task('esbuild:dev', shell.task('node builder.js'))
+
+task('esbuild:build', shell.task('NODE_ENV=production node builder.js'))
 
 task(
   'build',
-  series(parallel('swagger:generate', 'distro:generate'), 'webpack:build')
+  series(parallel('swagger:generate', 'distro:generate'), 'esbuild:build')
 )
 
 task(
   'dev',
   series(
     parallel('swagger:generate', 'distro:generate'),
-    parallel('swagger:watch', 'distro:watch', 'webpack:dev')
+    parallel('swagger:watch', 'distro:watch', 'esbuild:dev')
   )
 )
 

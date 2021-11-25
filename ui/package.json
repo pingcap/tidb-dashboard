@@ -62,9 +62,7 @@
     "test": "react-app-rewired test",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
-    "storybook": "start-storybook -p 9009 -s public",
-    "esbuild-prod": "NODE_ENV=production node builder.js",
-    "esbuild-dev": "node builder.js"
+    "storybook": "start-storybook -p 9009 -s public"
   },
   "husky": {
     "hooks": {

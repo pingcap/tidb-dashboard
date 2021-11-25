@@ -4,6 +4,7 @@ fs.copyFileSync(
   './node_modules/esbuild-plugin-postcss2/dist/index.js'
 )
 
+const os = require('os')
 const { start } = require('live-server')
 const { watch } = require('chokidar')
 const { build } = require('esbuild')
@@ -22,8 +23,9 @@ const argv = (key) => {
 }
 const isDev = argv('dev') === true
 
+// console.log('process.env:', process.env)
+
 // handle .env
-fs.rmSync('./.env')
 if (isDev) {
   fs.copyFileSync('./.env.development', './.env')
 } else {
@@ -84,13 +86,44 @@ const lessGlobalVars = {
   '@gray-10': '#000',
 }
 
-const define = {}
-for (const k in process.env) {
-  if (k.startsWith('REACT_APP_')) {
-    define[`process.env.${k}`] = JSON.stringify(process.env[k])
+const getInternalVersion = () => {
+  // react-app-rewired does not support async override config method right now,
+  // subscribe: https://github.com/timarney/react-app-rewired/pull/543
+  const version = fs
+    .readFileSync('../release-version', 'utf8')
+    .split(os.EOL)
+    .map((l) => l.trim())
+    .filter((l) => !l.startsWith('#') && l !== '')[0]
+
+  if (version === '') {
+    throw new Error(
+      `invalid release version, please check the release-version @tidb-dashboard/root`
+    )
   }
+
+  return version
 }
-console.log(define)
+
+function genDefine() {
+  const define = {}
+  for (const k in process.env) {
+    if (k.startsWith('REACT_APP_')) {
+      let envVal = process.env[k]
+      // REACT_APP_VERSION=$npm_package_version
+      if (envVal.startsWith('$')) {
+        envVal = process.env[envVal.substring(1)]
+      }
+      define[`process.env.${k}`] = JSON.stringify(envVal)
+    }
+  }
+  define['process.env.REACT_APP_RELEASE_VERSION'] = JSON.stringify(
+    getInternalVersion()
+  )
+  define['process.env.REACT_APP_DISTRO_BUILD_TAG'] =
+    process.env.DISTRO_BUILD_TAG
+  console.log(define)
+  return define
+}
 
 /**
  * ESBuild Params
@@ -123,15 +156,24 @@ const buildParams = {
     yamlPlugin(),
     svgrPlugin(),
   ],
-  define,
+  define: genDefine(),
   inject: ['./process-shim.js'], // fix runtime crash
 }
 
 function copyAssets() {
-  fs.copyFileSync('./public/index.html', './dist/index.html')
-  fs.copyFileSync('./public/diagnoseReport.html', './dist/diagnoseReport.html')
+  buildHtml('./public/index.html', './dist/index.html')
+  buildHtml('./public/diagnoseReport.html', './dist/diagnoseReport.html')
   fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
   fs.copyFileSync('./public/compat.js', './dist/compat.js')
+}
+
+function buildHtml(inputFilename, outputFilename) {
+  let result = fs.readFileSync(inputFilename).toString()
+  const placeholders = ['PUBLIC_URL']
+  placeholders.forEach((key) => {
+    result = result.replace(new RegExp(`%${key}%`, 'g'), process.env[key])
+  })
+  fs.writeFileSync(outputFilename, result)
 }
 
 async function main() {

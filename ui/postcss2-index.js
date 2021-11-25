@@ -89,9 +89,9 @@ const postCSSPlugin = ({
       async (args) => {
         if (args.namespace !== 'file' && args.namespace !== '') return
 
-        if (args.path.includes(`../../style/index.less`)) {
-          console.log('args:', args)
-        }
+        // if (args.path.includes(`../../style/index.less`)) {
+        //   console.log('args:', args)
+        // }
 
         let sourceFullPath = (0, import_resolve_file.default)(args.path)
         if (!sourceFullPath)

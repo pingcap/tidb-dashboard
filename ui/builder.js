@@ -11,19 +11,9 @@ const { build } = require('esbuild')
 const postCssPlugin = require('esbuild-plugin-postcss2')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
 const svgrPlugin = require('esbuild-plugin-svgr')
+const { createProxyMiddleware } = require('http-proxy-middleware')
 
-const argv = (key) => {
-  // Return true if the key exists and a value is defined
-  if (process.argv.includes(`--${key}`)) return true
-
-  const value = process.argv.find((element) => element.startsWith(`--${key}=`))
-  // Return null if the key does not exist and a value is not defined
-  if (!value) return null
-  return value.replace(`--${key}=`, '')
-}
-const isDev = argv('dev') === true
-
-// console.log('process.env:', process.env)
+const isDev = process.env.NODE_ENV !== 'production'
 
 // handle .env
 if (isDev) {
@@ -31,12 +21,11 @@ if (isDev) {
 } else {
   fs.copyFileSync('./.env.production', './.env')
 }
+// load .env file
 require('dotenv').config()
 
-const { createProxyMiddleware } = require('http-proxy-middleware')
 const dashboardApiPrefix =
   process.env.REACT_APP_DASHBOARD_API_URL || 'http://127.0.0.1:12333'
-
 /**
  * Live Server Params
  * @link https://www.npmjs.com/package/live-server#usage-from-node
@@ -51,7 +40,7 @@ const serverParams = {
   // wait: 1000 // Waits for all changes, before reloading. Defaults to 0 sec.
   // mount: [['/components', './node_modules']], // Mount a directory to a route.
   // logLevel: 2, // 0 = errors only, 1 = some, 2 = lots
-  middleware: [
+  middleware: isDev && [
     function (req, res, next) {
       if (/\/dashboard\/api\/diagnose\/reports\/\S+\/detail/.test(req.url)) {
         console.log('match')
@@ -121,7 +110,7 @@ function genDefine() {
   )
   define['process.env.REACT_APP_DISTRO_BUILD_TAG'] =
     process.env.DISTRO_BUILD_TAG
-  console.log(define)
+  // console.log(define)
   return define
 }
 
@@ -160,20 +149,31 @@ const buildParams = {
   inject: ['./process-shim.js'], // fix runtime crash
 }
 
+const distroInfo = require('./lib/distribution.json')
+function buildHtml(inputFilename, outputFilename) {
+  let result = fs.readFileSync(inputFilename).toString()
+
+  const placeholders = ['PUBLIC_URL']
+  placeholders.forEach((key) => {
+    result = result.replace(new RegExp(`%${key}%`, 'g'), process.env[key])
+  })
+
+  // handle distro
+  Object.keys(distroInfo).forEach((key) => {
+    result = result.replace(
+      new RegExp(`<%= htmlWebpackPlugin.options.distro_${key} %>`, 'g'),
+      distroInfo[key]
+    )
+  })
+
+  fs.writeFileSync(outputFilename, result)
+}
+
 function copyAssets() {
   buildHtml('./public/index.html', './dist/index.html')
   buildHtml('./public/diagnoseReport.html', './dist/diagnoseReport.html')
   fs.copyFileSync('./public/favicon.ico', './dist/favicon.ico')
   fs.copyFileSync('./public/compat.js', './dist/compat.js')
-}
-
-function buildHtml(inputFilename, outputFilename) {
-  let result = fs.readFileSync(inputFilename).toString()
-  const placeholders = ['PUBLIC_URL']
-  placeholders.forEach((key) => {
-    result = result.replace(new RegExp(`%${key}%`, 'g'), process.env[key])
-  })
-  fs.writeFileSync(outputFilename, result)
 }
 
 async function main() {

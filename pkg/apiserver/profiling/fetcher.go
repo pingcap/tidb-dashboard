@@ -94,6 +94,6 @@ func (f *pdFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	return f.client.
 		WithTimeout(maxProfilingTimeout).
 		WithBaseURL(baseURL).
-		AddHeader("PD-Allow-follower-handle", "true").
+		AddRequestHeader("PD-Allow-follower-handle", "true").
 		SendGetRequest(op.path)
 }

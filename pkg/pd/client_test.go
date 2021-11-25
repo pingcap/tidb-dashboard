@@ -23,9 +23,9 @@ func newTestClient(t *testing.T) *Client {
 	return c
 }
 
-func Test_AddHeader_returnDifferentHTTPClient(t *testing.T) {
+func Test_AddRequestHeader_returnDifferentHTTPClient(t *testing.T) {
 	c := newTestClient(t)
-	cc := c.AddHeader("1", "11")
+	cc := c.AddRequestHeader("1", "11")
 
 	require.NotSame(t, c.httpClient, cc.httpClient)
 }
@@ -41,7 +41,7 @@ func Test_Get_withHeader(t *testing.T) {
 	d1, _ := resp1.Body()
 	require.Equal(t, "", string(d1))
 
-	cc := c.AddHeader("1", "11")
+	cc := c.AddRequestHeader("1", "11")
 	resp2, _ := cc.Get("")
 	d2, _ := resp2.Body()
 	require.Equal(t, "11", string(d2))

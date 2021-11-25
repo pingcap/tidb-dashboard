@@ -67,7 +67,7 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c *Client) CloneAndAddHeader(key, value string) *Client {
+func (c *Client) CloneAndAddRequestHeader(key, value string) *Client {
 	cc := c.Clone()
 	if cc.header == nil {
 		cc.header = http.Header{}

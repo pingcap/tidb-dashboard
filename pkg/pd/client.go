@@ -64,8 +64,8 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c Client) AddHeader(key, value string) *Client {
-	c.httpClient = c.httpClient.CloneAndAddHeader(key, value)
+func (c Client) AddRequestHeader(key, value string) *Client {
+	c.httpClient = c.httpClient.CloneAndAddRequestHeader(key, value)
 	return &c
 }
 

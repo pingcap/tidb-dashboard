@@ -43,7 +43,6 @@ const serverParams = {
   middleware: isDev && [
     function (req, res, next) {
       if (/\/dashboard\/api\/diagnose\/reports\/\S+\/detail/.test(req.url)) {
-        console.log('match')
         req.url = '/diagnoseReport.html'
       }
       next()
@@ -76,8 +75,6 @@ const lessGlobalVars = {
 }
 
 const getInternalVersion = () => {
-  // react-app-rewired does not support async override config method right now,
-  // subscribe: https://github.com/timarney/react-app-rewired/pull/543
   const version = fs
     .readFileSync('../release-version', 'utf8')
     .split(os.EOL)
@@ -110,7 +107,6 @@ function genDefine() {
   )
   define['process.env.REACT_APP_DISTRO_BUILD_TAG'] =
     process.env.DISTRO_BUILD_TAG
-  // console.log(define)
   return define
 }
 
@@ -169,7 +165,7 @@ function buildHtml(inputFilename, outputFilename) {
   fs.writeFileSync(outputFilename, result)
 }
 
-function copyAssets() {
+function handleAssets() {
   buildHtml('./public/index.html', './build/index.html')
   buildHtml('./public/diagnoseReport.html', './build/diagnoseReport.html')
   fs.copyFileSync('./public/favicon.ico', './build/favicon.ico')
@@ -180,7 +176,7 @@ async function main() {
   fs.rmSync('./build', { force: true, recursive: true })
 
   const builder = await build(buildParams)
-  copyAssets()
+  handleAssets()
 
   if (isDev) {
     start(serverParams)
@@ -198,7 +194,7 @@ async function main() {
       builder.rebuild()
     })
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {
-      copyAssets()
+      handleAssets()
     })
   } else {
     process.exit(0)

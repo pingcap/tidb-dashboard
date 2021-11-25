@@ -31,6 +31,10 @@ if (isDev) {
 }
 require('dotenv').config()
 
+const { createProxyMiddleware } = require('http-proxy-middleware')
+const dashboardApiPrefix =
+  process.env.REACT_APP_DASHBOARD_API_URL || 'http://127.0.0.1:12333'
+
 /**
  * Live Server Params
  * @link https://www.npmjs.com/package/live-server#usage-from-node
@@ -45,7 +49,19 @@ const serverParams = {
   // wait: 1000 // Waits for all changes, before reloading. Defaults to 0 sec.
   // mount: [['/components', './node_modules']], // Mount a directory to a route.
   // logLevel: 2, // 0 = errors only, 1 = some, 2 = lots
-  // middleware: [function(req, res, next) { next(); }] // Takes an array of Connect-compatible middleware that are injected into the server middleware stack
+  middleware: [
+    function (req, res, next) {
+      if (/\/dashboard\/api\/diagnose\/reports\/\S+\/detail/.test(req.url)) {
+        console.log('match')
+        req.url = '/diagnoseReport.html'
+      }
+      next()
+    },
+    createProxyMiddleware('/dashboard/api/diagnose/reports/*/data.js', {
+      target: dashboardApiPrefix,
+      changeOrigin: true,
+    }),
+  ],
 }
 
 const lessModifyVars = {
@@ -108,6 +124,7 @@ const buildParams = {
     svgrPlugin(),
   ],
   define,
+  inject: ['./process-shim.js'], // fix runtime crash
 }
 
 function copyAssets() {

@@ -1,5 +1,3 @@
-/// <reference types="react-scripts" />
-
 declare module '*.module.css' {
   const classes: { readonly [key: string]: string }
   export default classes
@@ -11,13 +9,10 @@ declare module '*.module.less' {
 }
 
 declare module '*.yaml' {
-  const content: {
-    [key: string]: any
-  }
-  export default content
+  const classes: { readonly [key: string]: string }
+  export default classes
 }
 
-// need to comment the svg declare in the ui/node_modules/react-scripts/lib/react-app.d.ts
 declare module '*.svg' {
   import * as React from 'react'
 

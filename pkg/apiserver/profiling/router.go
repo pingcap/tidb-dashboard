@@ -102,12 +102,12 @@ func (s *Service) getGroupList(c *gin.Context) {
 }
 
 type ResponseTask struct {
-	ID         uint                    `json:"id" gorm:"primary_key"`
-	State      TaskState               `json:"state" gorm:"index"`
-	Target     model.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
-	Error      string                  `json:"error" gorm:"type:text"`
-	StartedAt  int64                   `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
-	IsProtobuf bool                    `json:"is_protobuf"`
+	ID                uint                    `json:"id" gorm:"primary_key"`
+	State             TaskState               `json:"state" gorm:"index"`
+	Target            model.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
+	Error             string                  `json:"error" gorm:"type:text"`
+	StartedAt         int64                   `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
+	ProfileOutputType string                  `json:"profile_output_type"`
 }
 
 type GroupDetailResponse struct {
@@ -154,7 +154,7 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 		responseTasks[i].Target = task.Target
 		responseTasks[i].Error = task.Error
 		responseTasks[i].StartedAt = task.StartedAt
-		responseTasks[i].IsProtobuf = task.IsProtobuf
+		responseTasks[i].ProfileOutputType = task.ProfileOutputType
 	}
 
 	c.JSON(http.StatusOK, GroupDetailResponse{

@@ -9,7 +9,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
+func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, string, error) {
 	switch target.Kind {
 	case model.NodeKindTiKV:
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv})
@@ -20,6 +20,6 @@ func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.Requ
 	case model.NodeKindPD:
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.pd})
 	default:
-		return "", fmt.Errorf("unsupported target %s", target)
+		return "", "", fmt.Errorf("unsupported target %s", target)
 	}
 }

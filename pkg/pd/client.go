@@ -23,12 +23,11 @@ const (
 )
 
 type Client struct {
-	httpScheme    string
-	baseURL       string
-	httpClient    *httpc.Client
-	lifecycleCtx  context.Context
-	timeout       time.Duration
-	beforeRequest httpc.BeforeRequestFunc
+	httpScheme   string
+	baseURL      string
+	httpClient   *httpc.Client
+	lifecycleCtx context.Context
+	timeout      time.Duration
 }
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {

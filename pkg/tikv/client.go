@@ -23,11 +23,10 @@ const (
 )
 
 type Client struct {
-	httpClient    *httpc.Client
-	httpScheme    string
-	lifecycleCtx  context.Context
-	timeout       time.Duration
-	beforeRequest httpc.BeforeRequestFunc
+	httpClient   *httpc.Client
+	httpScheme   string
+	lifecycleCtx context.Context
+	timeout      time.Duration
 }
 
 func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {

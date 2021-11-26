@@ -19,20 +19,21 @@ type pprofOptions struct {
 	fetcher *profileFetcher
 }
 
-func fetchPprof(op *pprofOptions) (string, error) {
+func fetchPprof(op *pprofOptions) (string, string, error) {
 	tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
 	if err != nil {
-		return "", fmt.Errorf("failed to create temp file: %v", err)
+		return "", "", fmt.Errorf("failed to create temp file: %v", err)
 	}
 	defer tmpfile.Close() // #nosec
 	tmpPath := tmpfile.Name()
 
 	fetcher := &fetcher{profileFetcher: op.fetcher, target: op.target}
-	if err := fetcher.FetchAndWriteToFile(op.duration, tmpPath); err != nil {
-		return "", fmt.Errorf("failed to fetch annd write to temp file: %v", err)
+	profileOutputType, err := fetcher.FetchAndWriteToFile(op.duration, tmpPath)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to fetch annd write to temp file: %v", err)
 	}
 
-	return tmpPath, nil
+	return tmpPath, profileOutputType, nil
 }
 
 type fetcher struct {
@@ -40,18 +41,18 @@ type fetcher struct {
 	profileFetcher *profileFetcher
 }
 
-func (f *fetcher) FetchAndWriteToFile(duration uint, tmpPath string) error {
+func (f *fetcher) FetchAndWriteToFile(duration uint, tmpPath string) (string, error) {
 	secs := strconv.Itoa(int(duration))
 	url := "/debug/pprof/profile?seconds=" + secs
 
 	resp, err := (*f.profileFetcher).fetch(&fetchOptions{ip: f.target.IP, port: f.target.Port, path: url})
 	if err != nil {
-		return fmt.Errorf("failed to fetch profile with proto format: %v", err)
+		return "", fmt.Errorf("failed to fetch profile with proto format: %v", err)
 	}
 
 	w, err := os.Create(tmpPath)
 	if err != nil {
-		return fmt.Errorf("failed to create tmpPath to write profile: %v", err)
+		return "", fmt.Errorf("failed to create tmpPath to write profile: %v", err)
 	}
 
 	_, err = w.Write(resp)
@@ -62,7 +63,7 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, tmpPath string) error {
 	}()
 
 	if err != nil {
-		return fmt.Errorf("failed to write profile: %v", err)
+		return "", fmt.Errorf("failed to write profile: %v", err)
 	}
-	return nil
+	return "protobuf", nil
 }

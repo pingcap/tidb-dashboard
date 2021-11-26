@@ -129,7 +129,7 @@ export default function Page() {
       // make both generated graph(svg) file and protobuf file viewable online
       let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
 
-      if (!rec.file_path.endsWith('.svg')) {
+      if (rec.is_protobuf) {
         const titleOnTab = rec.target.kind + '_' + rec.target.display_name
         profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
           profileURL

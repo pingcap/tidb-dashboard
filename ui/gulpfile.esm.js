@@ -48,11 +48,21 @@ task(
   )
 )
 
+task('speedscope:watch', () =>
+  watch(
+    ['node_modules/@duorou_xu/speedscope/dist/release/*'],
+    series('speedscope:copy_static_assets')
+  )
+)
+
 task(
   'build',
   series(
-    parallel('swagger:generate', 'distro:generate'),
-    'speedscope:copy_static_assets',
+    parallel(
+      'swagger:generate',
+      'distro:generate',
+      'speedscope:copy_static_assets'
+    ),
     'webpack:build'
   )
 )
@@ -60,9 +70,12 @@ task(
 task(
   'dev',
   series(
-    parallel('swagger:generate', 'distro:generate'),
-    'speedscope:copy_static_assets',
-    parallel('swagger:watch', 'distro:watch', 'webpack:dev')
+    parallel(
+      'swagger:generate',
+      'distro:generate',
+      'speedscope:copy_static_assets'
+    ),
+    parallel('swagger:watch', 'distro:watch', 'speedscope:watch', 'webpack:dev')
   )
 )
 

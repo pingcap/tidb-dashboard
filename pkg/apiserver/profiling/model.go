@@ -30,6 +30,7 @@ type TaskModel struct {
 	FilePath    string                  `json:"file_path" gorm:"type:text"`
 	Error       string                  `json:"error" gorm:"type:text"`
 	StartedAt   int64                   `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
+	IsProtobuf  bool                    `json:"is_protobuf"`
 }
 
 func (TaskModel) TableName() string {
@@ -89,6 +90,7 @@ func (t *Task) run() {
 	}
 	t.FilePath = protoFilePath
 	t.State = TaskStateFinish
+	t.IsProtobuf = true
 	t.taskGroup.db.Save(t.TaskModel)
 }
 

@@ -11,52 +11,13 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-// var (
-// 	_ driver.Fetcher = (*fetcher)(nil)
-// 	// mu sync.Mutex.
-// )
-
 type pprofOptions struct {
-	duration uint
-	// frequency          uint
+	duration           uint
 	fileNameWithoutExt string
 
 	target  *model.RequestTargetNode
 	fetcher *profileFetcher
 }
-
-// func fetchPprofSVG(op *pprofOptions) (string, error) {
-// 	f, err := fetchPprof(op, "dot")
-// 	if err != nil {
-// 		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
-// 	}
-
-// 	b, err := ioutil.ReadFile(filepath.Clean(f))
-// 	if err != nil {
-// 		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
-// 	}
-
-// 	tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
-// 	if err != nil {
-// 		return "", fmt.Errorf("failed to create temp file: %v", err)
-// 	}
-// 	defer tmpfile.Close() // #nosec
-// 	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
-
-// 	g := graphviz.New()
-// 	mu.Lock()
-// 	defer mu.Unlock()
-// 	graph, err := graphviz.ParseBytes(b)
-// 	if err != nil {
-// 		return "", fmt.Errorf("failed to parse DOT file: %v", err)
-// 	}
-
-// 	if err := g.RenderFilename(graph, graphviz.SVG, tmpPath); err != nil {
-// 		return "", fmt.Errorf("failed to render SVG: %v", err)
-// 	}
-
-// 	return tmpPath, nil
-// }
 
 func fetchPprof(op *pprofOptions) (string, error) {
 	tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
@@ -94,13 +55,14 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, tmpPath string) error {
 	}
 
 	_, err = w.Write(resp)
+	defer func() {
+		if err := w.Close(); err != nil {
+			fmt.Printf("failed to close file, %v", err)
+		}
+	}()
+
 	if err != nil {
 		return fmt.Errorf("failed to write profile: %v", err)
 	}
-
-	if err := w.Close(); err != nil {
-		return fmt.Errorf("failed to close tmpPath: %v", err)
-	}
-
 	return nil
 }

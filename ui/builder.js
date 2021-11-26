@@ -12,6 +12,7 @@ const { build } = require('esbuild')
 const postCssPlugin = require('esbuild-plugin-postcss2')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
 const svgrPlugin = require('esbuild-plugin-svgr')
+const logTime = require('./esbuild/plugins/logtime')
 const { createProxyMiddleware } = require('http-proxy-middleware')
 
 const isDev = process.env.NODE_ENV !== 'production'
@@ -127,6 +128,7 @@ const buildParams = {
     }),
     yamlPlugin(),
     svgrPlugin(),
+    logTime(),
   ],
   define: genDefine(),
   inject: ['./process-shim.js'], // fix runtime crash

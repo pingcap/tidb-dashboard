@@ -1,4 +1,5 @@
 const fs = require('fs')
+// TODO: submit PR for upstream
 fs.copyFileSync(
   './postcss2-index.js',
   './node_modules/esbuild-plugin-postcss2/dist/index.js'

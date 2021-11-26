@@ -59,6 +59,7 @@
   "scripts": {
     "start": "gulp dev",
     "build": "gulp build",
+    "ts-check": "tsc",
     "test": "react-app-rewired test",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",

@@ -67,7 +67,11 @@ jobs:
           make yarn_dependencies
       - name: Check format
         run: |
-          yarn prettier --check . || (echo "::error ::Please format your code using 'yarn fmt'"; exit 1)
+          yarn prettier --check . || (echo "::error ::Please format your code by using 'yarn fmt'"; exit 1)
+        working-directory: ui
+      - name: Check type
+        run: |
+          yarn tsc || (echo "::error ::Please check your code type by using 'yarn tsc'"; exit 1)
         working-directory: ui
       - name: Build UI
         run: |

@@ -13,7 +13,6 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -101,19 +100,10 @@ func (s *Service) getGroupList(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-type ResponseTask struct {
-	ID                uint                    `json:"id" gorm:"primary_key"`
-	State             TaskState               `json:"state" gorm:"index"`
-	Target            model.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
-	Error             string                  `json:"error" gorm:"type:text"`
-	StartedAt         int64                   `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
-	ProfileOutputType string                  `json:"profile_output_type"`
-}
-
 type GroupDetailResponse struct {
 	ServerTime int64          `json:"server_time"`
 	TaskGroup  TaskGroupModel `json:"task_group_status"`
-	Tasks      []ResponseTask `json:"tasks_status"`
+	Tasks      []TaskModel    `json:"tasks_status"`
 }
 
 // @ID getProfilingGroupDetail
@@ -139,28 +129,16 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 	}
 
 	var tasks []TaskModel
-	var responseTasks []ResponseTask
 	err = s.params.LocalStore.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	responseTasks = make([]ResponseTask, len(tasks))
-
-	for i, task := range tasks {
-		responseTasks[i].ID = task.ID
-		responseTasks[i].State = task.State
-		responseTasks[i].Target = task.Target
-		responseTasks[i].Error = task.Error
-		responseTasks[i].StartedAt = task.StartedAt
-		responseTasks[i].ProfileOutputType = task.ProfileOutputType
-	}
-
 	c.JSON(http.StatusOK, GroupDetailResponse{
 		ServerTime: time.Now().Unix(), // Used to estimate task progress
 		TaskGroup:  taskGroup,
-		Tasks:      responseTasks,
+		Tasks:      tasks,
 	})
 }
 

@@ -22,15 +22,19 @@ const (
 	TaskPartialFinish
 )
 
+type TaskProfileOutputType string
+
+const ProfilingOutputTypeProtobuf TaskProfileOutputType = "protobuf"
+
 type TaskModel struct {
 	ID                uint                    `json:"id" gorm:"primary_key"`
 	TaskGroupID       uint                    `json:"task_group_id" gorm:"index"`
 	State             TaskState               `json:"state" gorm:"index"`
 	Target            model.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
-	FilePath          string                  `json:"file_path" gorm:"type:text"`
+	FilePath          string                  `json:"-" gorm:"type:text"`
 	Error             string                  `json:"error" gorm:"type:text"`
 	StartedAt         int64                   `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
-	ProfileOutputType string                  `json:"profile_output_type"`
+	ProfileOutputType TaskProfileOutputType   `json:"profile_output_type"`
 }
 
 func (TaskModel) TableName() string {

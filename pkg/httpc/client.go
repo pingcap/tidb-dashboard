@@ -23,8 +23,6 @@ const (
 	defaultTimeout = time.Second * 10
 )
 
-type BeforeRequestFunc func(req *http.Request)
-
 type Client struct {
 	http.Client
 

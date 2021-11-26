@@ -53,8 +53,8 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c Client) WithBeforeRequest(callback httpc.BeforeRequestFunc) *Client {
-	c.beforeRequest = callback
+func (c Client) AddRequestHeader(key, value string) *Client {
+	c.httpClient = c.httpClient.CloneAndAddRequestHeader(key, value)
 	return &c
 }
 

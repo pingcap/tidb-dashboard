@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm/schema"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/reflectutil"
 )
 
 // TimeRange represents a range of time.
@@ -135,7 +136,7 @@ type Field struct {
 var gormDefaultNamingStrategy = schema.NamingStrategy{}
 
 func getFieldsAndTags() (stmtFields []Field) {
-	fields := utils.GetFieldsAndTags(Model{}, []string{"related", "agg", "json"})
+	fields := reflectutil.GetFieldsAndTags(Model{}, []string{"related", "agg", "json"})
 
 	for _, f := range fields {
 		sf := Field{

@@ -4,7 +4,6 @@ package profiling
 
 import (
 	"fmt"
-	"net/http"
 	"time"
 
 	"go.uber.org/fx"
@@ -66,10 +65,7 @@ type tikvFetcher struct {
 }
 
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	f.client.WithBeforeRequest(func(req *http.Request) {
-		req.Header.Add("Content-Type", "application/protobuf")
-	})
-	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 }
 
 type tiflashFetcher struct {
@@ -77,10 +73,7 @@ type tiflashFetcher struct {
 }
 
 func (f *tiflashFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	f.client.WithBeforeRequest(func(req *http.Request) {
-		req.Header.Add("Content-Type", "application/protobuf")
-	})
-	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 }
 
 type tidbFetcher struct {
@@ -98,8 +91,9 @@ type pdFetcher struct {
 
 func (f *pdFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	baseURL := fmt.Sprintf("%s://%s:%d", f.statusAPIHTTPScheme, op.ip, op.port)
-	f.client.WithBeforeRequest(func(req *http.Request) {
-		req.Header.Add("PD-Allow-follower-handle", "true")
-	})
-	return f.client.WithTimeout(maxProfilingTimeout).WithBaseURL(baseURL).SendGetRequest(op.path)
+	return f.client.
+		WithTimeout(maxProfilingTimeout).
+		WithBaseURL(baseURL).
+		AddRequestHeader("PD-Allow-follower-handle", "true").
+		SendGetRequest(op.path)
 }

@@ -13,7 +13,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/util/netutil"
 )
 
 func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
@@ -45,7 +45,7 @@ func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 
 	for _, ds := range ds.Members {
 		u := ds.ClientUrls[0]
-		hostname, port, err := host.ParseHostAndPortFromAddressURL(u)
+		hostname, port, err := netutil.ParseHostAndPortFromAddressURL(u)
 		if err != nil {
 			continue
 		}

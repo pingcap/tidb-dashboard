@@ -2,9 +2,9 @@ import * as url from 'url'
 import { AxiosInstance } from 'axios'
 import * as Sentry from '@sentry/react'
 import { stripQueryString } from './query'
+import { Transaction } from '@sentry/types'
 
-const firstMountTransaction = Sentry.startTransaction({ name: 'first mount' })
-const transactionHub = new Map<string, typeof firstMountTransaction>()
+const transactionHub = new Map<string, Transaction>()
 
 export const sentryEnabled = process.env.REACT_APP_SENTRY_ENABLED === 'true'
 
@@ -43,6 +43,8 @@ export const reportError: typeof Sentry.captureException = (...args) => {
 }
 
 export function initSentryRoutingInstrument() {
+  const firstMountTransaction = Sentry.startTransaction({ name: 'first mount' })
+
   window.addEventListener('single-spa:first-mount', () => {
     firstMountTransaction.finish()
   })

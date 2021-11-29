@@ -52,6 +52,11 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
+func (c Client) AddRequestHeader(key, value string) *Client {
+	c.httpClient = c.httpClient.CloneAndAddRequestHeader(key, value)
+	return &c
+}
+
 func (c *Client) Get(host string, statusPort int, relativeURI string) (*httpc.Response, error) {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiKVClientRequestFailed, distro.Data("tikv"))

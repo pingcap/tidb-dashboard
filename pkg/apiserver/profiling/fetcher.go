@@ -65,7 +65,7 @@ type tikvFetcher struct {
 }
 
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 }
 
 type tiflashFetcher struct {
@@ -73,7 +73,7 @@ type tiflashFetcher struct {
 }
 
 func (f *tiflashFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 }
 
 type tidbFetcher struct {

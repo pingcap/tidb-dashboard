@@ -34,15 +34,13 @@ type fetcher struct {
 }
 
 func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string) (string, TaskProfileOutputType, error) {
-	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt)
+	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt+"*.proto")
 	if err != nil {
-		return "", "", fmt.Errorf("failed to create tmpPath to write profile: %v", err)
+		return "", "", fmt.Errorf("failed to create tmpfile to write profile: %v", err)
 	}
 
 	defer func() {
-		if err := tmpfile.Close(); err != nil {
-			fmt.Printf("failed to close file, %v", err)
-		}
+		_ = tmpfile.Close()
 	}()
 
 	secs := strconv.Itoa(int(duration))

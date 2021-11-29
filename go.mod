@@ -17,9 +17,7 @@ require (
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/goccy/go-graphviz v0.0.5
 	github.com/golang-jwt/jwt v3.2.1+incompatible
-	github.com/google/pprof v0.0.0-20200407044318-7d83b28da2e9
 	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/henrylee2cn/ameda v1.4.10
@@ -35,7 +33,7 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
-	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd
+	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 	github.com/spf13/pflag v1.0.1
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba

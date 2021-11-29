@@ -38,5 +38,7 @@ instance_profiling:
         kind: 组件
         content: 内容
         status: 状态
+        output_type: 输出类型
+        view_result: 查看结果
       status:
         finished: 完成

@@ -1,4 +1,4 @@
-import { Badge, Button, Progress } from 'antd'
+import { Badge, Button, Progress, Form, Select } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -10,6 +10,12 @@ import { CardTable, DateTime, Head, Descriptions } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
+
+const profilingOutputTypeOptions = [
+  { text: 'Flame Graph', value: 'flamegraph' },
+  { text: 'Graph', value: 'graph' },
+]
+const defaultProfilingOutputTypeVal = 'flamegraph'
 
 function mapData(data) {
   if (!data) {
@@ -28,6 +34,25 @@ function mapData(data) {
       }
       task.progress = progress
     }
+
+    // set profiling output options for previous generated SVG files and protobuf files.
+    if (task.profile_output_type === 'protobuf') {
+      task.selected_output_type_val = defaultProfilingOutputTypeVal
+      task.profilingOutputTypeOptions = profilingOutputTypeOptions
+    } else {
+      switch (task.target.kind) {
+        case 'tidb':
+        case 'pd':
+          task.selected_output_type_val = 'graph'
+          task.profilingOutputTypeOptions = profilingOutputTypeOptions[1]
+          break
+        case 'tiflash':
+        case 'tikv':
+          task.selected_output_type_val = 'flamegraph'
+          task.profilingOutputTypeOptions = profilingOutputTypeOptions[0]
+          break
+      }
+    }
   })
   return data
 }
@@ -35,6 +60,26 @@ function mapData(data) {
 function isFinished(data) {
   const groupState = data?.task_group_status?.state
   return groupState === 2 || groupState === 3
+}
+
+const handleInlineSelectChanged = (record, selected_value) => {
+  record.selected_output_type_val = selected_value
+}
+
+function InlineSelect({ record }) {
+  return (
+    <Select
+      style={{ width: 140 }}
+      defaultValue={record.selected_output_type_val}
+      onChange={(val) => handleInlineSelectChanged(record, val)}
+    >
+      {record.profilingOutputTypeOptions.map((option) => (
+        <Select.Option key={option.value} value={option.value}>
+          {option.text}
+        </Select.Option>
+      ))}
+    </Select>
+  )
 }
 
 export default function Page() {
@@ -112,33 +157,57 @@ export default function Page() {
           }
         },
       },
+      {
+        name: t('instance_profiling.detail.table.columns.output_type'),
+        key: 'output_type',
+        minWidth: 150,
+        maxWidth: 200,
+        ignoreRowClick: true,
+        onRender: (record) => {
+          return <InlineSelect record={record} />
+        },
+      },
+      {
+        name: '',
+        key: 'view_result',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (record) => {
+          return (
+            <Button
+              type="primary"
+              onClick={() => handleViewResultClick(record)}
+            >
+              {t('instance_profiling.detail.table.columns.view_result')}
+            </Button>
+          )
+        },
+      },
     ],
     [t, profileDuration]
   )
 
-  const handleRowClick = usePersistFn(
-    async (rec, _idx, _ev: React.MouseEvent<HTMLElement>) => {
-      const res = await client
-        .getInstance()
-        .getActionToken(rec.id, 'single_view')
-      const token = res.data
-      if (!token) {
-        return
-      }
+  const handleViewResultClick = usePersistFn(async (rec) => {
+    const res = await client.getInstance().getActionToken(rec.id, 'single_view')
+    const token = res.data
+    if (!token) {
+      return
+    }
+    // make both generated graph(svg) file and protobuf file viewable online
+    let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
 
-      // make both generated graph(svg) file and protobuf file viewable online
-      let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
-
-      if (rec.profile_output_type === 'protobuf') {
+    if (rec.profile_output_type === 'protobuf') {
+      if (rec.selected_output_type_val === 'flamegraph') {
         const titleOnTab = rec.target.kind + '_' + rec.target.display_name
         profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
           profileURL
         )}&title=${titleOnTab}`
+      } else {
+        profileURL = profileURL + `&output_type=${rec.selected_output_type_val}`
       }
-
-      window.open(`${profileURL}`, '_blank')
     }
-  )
+    window.open(`${profileURL}`, '_blank')
+  })
 
   const handleDownloadGroup = useCallback(async () => {
     const res = await client.getInstance().getActionToken(id, 'group_download')
@@ -182,11 +251,11 @@ export default function Page() {
         )}
       </Head>
       <CardTable
+        disableSelectionZone
         loading={isLoading}
         columns={columns}
         items={data?.tasks_status || []}
         errors={[error]}
-        onRowClicked={handleRowClick}
         hideLoadingWhenNotEmpty
         extendLastColumn
       />

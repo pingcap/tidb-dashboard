@@ -281,6 +281,7 @@ func (s *Service) downloadSingle(c *gin.Context) {
 // @Router /profiling/single/view [get]
 func (s *Service) viewSingle(c *gin.Context) {
 	token := c.Query("token")
+	outputType := c.Query("output_type")
 	str, err := utils.ParseJWTString("profiling/single_view", token)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
@@ -300,9 +301,21 @@ func (s *Service) viewSingle(c *gin.Context) {
 
 	content, err := ioutil.ReadFile(task.FilePath)
 	if err != nil {
+		fmt.Println("error:", err)
 		_ = c.Error(err)
 		return
 	}
+	if outputType == "graph" {
+		fmt.Printf("converting to graph")
+		svgContent, err := convertProtobufToSVG(content, task)
+		if err != nil {
+			fmt.Println("error:", err)
+			_ = c.Error(err)
+			return
+		}
+		content = svgContent
+	}
+
 	c.Data(http.StatusOK, "image/svg+xml", content)
 }
 

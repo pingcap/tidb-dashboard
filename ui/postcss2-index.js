@@ -62,6 +62,14 @@ const postCSSPlugin = ({
 }) => ({
   name: 'postcss2',
   setup(build) {
+    let cache = new Map()
+    // cache = {
+    //   'srcPath': {
+    //     lastMtimeMs: 1634030364414,
+    //     output: ''
+    //   }
+    // }
+
     const tmpDirPath = import_tmp.default.dirSync().name,
       modulesMap = []
     const modulesPlugin = (0, import_postcss_modules.default)({
@@ -84,14 +92,13 @@ const postCSSPlugin = ({
           return modules.getJSON(filepath, json, outpath)
       },
     })
+
     build.onResolve(
       { filter: /.\.(css|sass|scss|less|styl)$/ },
       async (args) => {
-        if (args.namespace !== 'file' && args.namespace !== '') return
+        const start = Date.now()
 
-        // if (args.path.includes(`../../style/index.less`)) {
-        //   console.log('args:', args)
-        // }
+        if (args.namespace !== 'file' && args.namespace !== '') return
 
         let sourceFullPath = (0, import_resolve_file.default)(args.path)
         if (!sourceFullPath)
@@ -112,6 +119,42 @@ const postCSSPlugin = ({
             args.path
           )
         }
+
+        const stat = await (0, import_fs_extra.stat)(sourceFullPath)
+        // console.log('stat:', stat)
+        // stat: Stats {
+        //   dev: 64768,
+        //   mode: 33188,
+        //   nlink: 1,
+        //   uid: 1001,
+        //   gid: 1001,
+        //   rdev: 0,
+        //   blksize: 4096,
+        //   ino: 49809915,
+        //   size: 2719,
+        //   blocks: 8,
+        //   atimeMs: 1638153245827.8914,
+        //   mtimeMs: 1634030364414,
+        //   ctimeMs: 1637892184476.8418,
+        //   birthtimeMs: 1637892184472.842,
+        //   atime: 2021-11-29T02:34:05.828Z,
+        //   mtime: 2021-10-12T09:19:24.414Z,
+        //   ctime: 2021-11-26T02:03:04.477Z,
+        //   birthtime: 2021-11-26T02:03:04.473Z
+        // }
+
+        let tmpFilePath = ''
+
+        // cache
+        let cacheVal = cache.get(sourceFullPath)
+        // console.log('cache val:', cacheVal)
+        if (cacheVal && cacheVal.lastMtimeMs === stat.mtimeMs) {
+          // console.log('hit cache')
+          tmpFilePath = cacheVal.output
+        } else {
+          // console.log('miss cache')
+        }
+
         const sourceExt = import_path.default.extname(sourceFullPath)
         const sourceBaseName = import_path.default.basename(
           sourceFullPath,
@@ -119,65 +162,82 @@ const postCSSPlugin = ({
         )
         const isModule = sourceBaseName.match(/\.module$/)
         const sourceDir = import_path.default.dirname(sourceFullPath)
-        let tmpFilePath
-        if (args.kind === 'entry-point') {
-          const sourceRelDir = import_path.default.relative(
-            import_path.default.dirname(rootDir),
-            import_path.default.dirname(sourceFullPath)
-          )
-          tmpFilePath = import_path.default.resolve(
-            tmpDirPath,
-            sourceRelDir,
-            `${sourceBaseName}.css`
-          )
+
+        if (tmpFilePath === '') {
+          // let tmpFilePath
+          if (args.kind === 'entry-point') {
+            const sourceRelDir = import_path.default.relative(
+              import_path.default.dirname(rootDir),
+              import_path.default.dirname(sourceFullPath)
+            )
+            tmpFilePath = import_path.default.resolve(
+              tmpDirPath,
+              sourceRelDir,
+              `${sourceBaseName}.css`
+            )
+            await (0, import_fs_extra.ensureDir)(
+              import_path.default.dirname(tmpFilePath)
+            )
+          } else {
+            const uniqueTmpDir = import_path.default.resolve(
+              tmpDirPath,
+              uniqueId()
+            )
+            tmpFilePath = import_path.default.resolve(
+              uniqueTmpDir,
+              `${sourceBaseName}.css`
+            )
+          }
           await (0, import_fs_extra.ensureDir)(
             import_path.default.dirname(tmpFilePath)
           )
-        } else {
-          const uniqueTmpDir = import_path.default.resolve(
-            tmpDirPath,
-            uniqueId()
+          const fileContent = await (0, import_fs_extra.readFile)(
+            sourceFullPath
           )
-          tmpFilePath = import_path.default.resolve(
-            uniqueTmpDir,
-            `${sourceBaseName}.css`
-          )
-        }
-        await (0, import_fs_extra.ensureDir)(
-          import_path.default.dirname(tmpFilePath)
-        )
-        const fileContent = await (0, import_fs_extra.readFile)(sourceFullPath)
-        let css = sourceExt === '.css' ? fileContent : ''
-        if (sourceExt === '.sass' || sourceExt === '.scss')
-          css = (
-            await renderSass({ ...sassOptions, file: sourceFullPath })
-          ).css.toString()
-        if (sourceExt === '.styl')
-          css = await renderStylus(
-            new import_util.TextDecoder().decode(fileContent),
-            {
-              ...stylusOptions,
-              filename: sourceFullPath,
-            }
-          )
-        if (sourceExt === '.less')
-          css = (
-            await import_less.default.render(
+
+          let css = sourceExt === '.css' ? fileContent : ''
+          if (sourceExt === '.sass' || sourceExt === '.scss')
+            css = (
+              await renderSass({ ...sassOptions, file: sourceFullPath })
+            ).css.toString()
+          if (sourceExt === '.styl')
+            css = await renderStylus(
               new import_util.TextDecoder().decode(fileContent),
               {
-                ...lessOptions,
+                ...stylusOptions,
                 filename: sourceFullPath,
-                rootpath: import_path.default.dirname(args.path),
               }
             )
-          ).css
-        const result = await (0, import_postcss2.default)(
-          isModule ? [modulesPlugin, ...plugins] : plugins
-        ).process(css, {
-          from: sourceFullPath,
-          to: tmpFilePath,
-        })
-        await (0, import_fs_extra.writeFile)(tmpFilePath, result.css)
+          if (sourceExt === '.less')
+            css = (
+              await import_less.default.render(
+                new import_util.TextDecoder().decode(fileContent),
+                {
+                  ...lessOptions,
+                  filename: sourceFullPath,
+                  rootpath: import_path.default.dirname(args.path),
+                }
+              )
+            ).css
+          const result = await (0, import_postcss2.default)(
+            isModule ? [modulesPlugin, ...plugins] : plugins
+          ).process(css, {
+            from: sourceFullPath,
+            to: tmpFilePath,
+          })
+          await (0, import_fs_extra.writeFile)(tmpFilePath, result.css)
+
+          cache.set(sourceFullPath, {
+            lastMtimeMs: stat.mtimeMs,
+            output: tmpFilePath,
+          })
+        }
+
+        const end = Date.now()
+        console.log(
+          `plugin took ${end - start}ms [onResolve] for ${sourceFullPath}`
+        )
+
         return {
           namespace: isModule ? 'postcss-module' : 'file',
           path: tmpFilePath,

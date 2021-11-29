@@ -1422,6 +1422,13 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.5.tgz#9283c9ce5b289a3c4f61c12757469e59377f81f3"
   integrity sha512-6nFkfkmSeV/rqSaS4oWHgmpnYw194f6hmWF5is6b0J1naJZoiD0NTc9AiUwPHvWsowkjuHErCZT1wa0jg+BLIA==
 
+"@duorou_xu/speedscope@1.14.0":
+  version "1.14.0"
+  resolved "https://registry.npmmirror.com/@duorou_xu/speedscope/download/@duorou_xu/speedscope-1.14.0.tgz#e31b12481d268bd83e0cd8f29abfa0eb00ee1d58"
+  integrity sha512-kY3a7GoF9QLuKsKem/qcsCB8/syyXk9MIobsoupkHQM9VetrZcBU3utJtJq+p6q6lJrq9agzx4Xp+9BDPr988g==
+  dependencies:
+    open "7.2.0"
+
 "@emotion/cache@^10.0.27":
   version "10.0.29"
   resolved "https://registry.yarnpkg.com/@emotion/cache/-/cache-10.0.29.tgz#87e7e64f412c060102d589fe7c6dc042e6f9d1e0"
@@ -12236,6 +12243,14 @@ onetime@^5.1.0:
   integrity sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==
   dependencies:
     mimic-fn "^2.1.0"
+
+open@7.2.0:
+  version "7.2.0"
+  resolved "https://registry.npmmirror.com/open/download/open-7.2.0.tgz?cache=0&sync_timestamp=1635048357738&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fopen%2Fdownload%2Fopen-7.2.0.tgz#212959bd7b0ce2e8e3676adc76e3cf2f0a2498b4"
+  integrity sha1-ISlZvXsM4ujjZ2rcduPPLwokmLQ=
+  dependencies:
+    is-docker "^2.0.0"
+    is-wsl "^2.1.1"
 
 open@^7.0.2, open@^7.0.3:
   version "7.4.2"

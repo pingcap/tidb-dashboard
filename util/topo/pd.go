@@ -45,6 +45,7 @@ func GetPDInstances(pdAPI *pdclient.APIClient) ([]PDInfo, error) {
 				zap.String("component", distro.R().PD),
 				zap.String("targetNode", u),
 				zap.Error(err))
+			tsResp = &pdclient.GetStatusResponse{}
 		}
 
 		storeStatus := ComponentStatusUnreachable

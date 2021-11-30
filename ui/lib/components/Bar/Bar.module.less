@@ -40,7 +40,7 @@
   position: absolute;
   top: 50%;
   height: @error-line-width;
-  margin-top: -@error-line-width / 2;
+  margin-top: -(@error-line-width / 2);
   background-color: @error-bar-color;
 
   &::before {
@@ -48,7 +48,7 @@
     position: absolute;
     height: @error-bar-height;
     width: @error-line-width;
-    margin-top: -@error-bar-height / 2;
+    margin-top: -(@error-bar-height / 2);
     background-color: @error-bar-color;
     top: 50%;
   }

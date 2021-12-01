@@ -2,4 +2,6 @@
 
 set -euo pipefail
 
-tiup status
+DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1 && pwd )"
+
+go test -v ${DIR}/...

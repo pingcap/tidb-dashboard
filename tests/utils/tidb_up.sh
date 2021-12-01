@@ -9,4 +9,4 @@ $DIR/download_tools.sh
 
 echo "+ Waiting for TiDB start..."
 tiup playground latest --tiflash 0 --without-monitor &
-$PROJECT_DIR/scripts/wait_tiup_playground_2.sh 15 20
+$PROJECT_DIR/scripts/wait_tiup_playground_2.sh 10 20

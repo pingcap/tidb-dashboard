@@ -187,7 +187,6 @@ module.exports = override(
   supportDynamicPublicPathPrefix(),
   overrideProcessEnv({
     REACT_APP_RELEASE_VERSION: JSON.stringify(getInternalVersion()),
-    REACT_APP_DISTRO_BUILD_TAG: process.env.DISTRO_BUILD_TAG,
   }),
   injectDistroToHTML
 )

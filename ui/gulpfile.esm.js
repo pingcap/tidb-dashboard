@@ -21,10 +21,13 @@ task('swagger:watch', () =>
   watch(['../cmd/**/*.go', '../pkg/**/*.go'], series('swagger:generate'))
 )
 
-task('distro:generate', shell.task('../scripts/generate_distro_info.sh'))
+task('distro:generate', shell.task('../scripts/distro/write_strings.sh'))
 
 task('distro:watch', () =>
-  watch(['../pkg/utils/distro/*.go'], series('distro:generate'))
+  watch(
+    ['../internal/resource/distrores/strings.go'],
+    series('distro:generate')
+  )
 )
 
 task(

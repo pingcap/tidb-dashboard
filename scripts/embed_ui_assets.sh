@@ -14,8 +14,6 @@ set -euo pipefail
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_DIR="$(dirname "$DIR")"
 
-# See https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
-
 cd "$PROJECT_DIR"
 
 export GOBIN=$PROJECT_DIR/bin
@@ -35,8 +33,7 @@ fi
 
 echo "+ Embed UI assets"
 
-go run tools/assets_generate/main.go $BUILD_TAG_PARAMETER
-
+go run scripts/generate_assets.go $BUILD_TAG_PARAMETER
 
 HANDLER_PATH=pkg/uiserver/embedded_assets_handler.go
 mv assets_vfsdata.go $HANDLER_PATH

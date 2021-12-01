@@ -8,13 +8,9 @@ type GetStatusResponse struct {
 	StartTimestamp int64 `json:"start_timestamp"`
 }
 
-func (api *APIClient) GetStatus() (*GetStatusResponse, error) {
-	cancel, resp, err := api.LifecycleR().SetJSONResult(&GetStatusResponse{}).Get("/status")
-	defer cancel()
-	if err != nil {
-		return nil, err
-	}
-	return resp.Result().(*GetStatusResponse), nil
+func (api *APIClient) GetStatus() (resp *GetStatusResponse, err error) {
+	_, err = api.LR().Get("/status").ReadBodyAsJSON(resp)
+	return
 }
 
 type GetHealthResponse []struct {
@@ -22,13 +18,9 @@ type GetHealthResponse []struct {
 	Health   bool   `json:"health"`
 }
 
-func (api *APIClient) GetHealth() (*GetHealthResponse, error) {
-	cancel, resp, err := api.LifecycleR().SetJSONResult(&GetHealthResponse{}).Get("/health")
-	defer cancel()
-	if err != nil {
-		return nil, err
-	}
-	return resp.Result().(*GetHealthResponse), nil
+func (api *APIClient) GetHealth() (resp *GetHealthResponse, err error) {
+	_, err = api.LR().Get("/health").ReadBodyAsJSON(resp)
+	return
 }
 
 type GetMembersResponse struct {
@@ -41,26 +33,18 @@ type GetMembersResponse struct {
 	} `json:"members"`
 }
 
-func (api *APIClient) GetMembers() (*GetMembersResponse, error) {
-	cancel, resp, err := api.LifecycleR().SetJSONResult(&GetMembersResponse{}).Get("/members")
-	defer cancel()
-	if err != nil {
-		return nil, err
-	}
-	return resp.Result().(*GetMembersResponse), nil
+func (api *APIClient) GetMembers() (resp *GetMembersResponse, err error) {
+	_, err = api.LR().Get("/members").ReadBodyAsJSON(resp)
+	return
 }
 
 type GetConfigReplicateResponse struct {
 	LocationLabels string `json:"location-labels"`
 }
 
-func (api *APIClient) GetConfigReplicate() (*GetConfigReplicateResponse, error) {
-	cancel, resp, err := api.LifecycleR().SetJSONResult(&GetConfigReplicateResponse{}).Get("/config/replicate")
-	defer cancel()
-	if err != nil {
-		return nil, err
-	}
-	return resp.Result().(*GetConfigReplicateResponse), nil
+func (api *APIClient) GetConfigReplicate() (resp *GetConfigReplicateResponse, err error) {
+	_, err = api.LR().Get("/config/replicate").ReadBodyAsJSON(resp)
+	return
 }
 
 type GetStoresResponseStore struct {
@@ -84,11 +68,7 @@ type GetStoresResponse struct {
 	} `json:"stores"`
 }
 
-func (api *APIClient) GetStores() (*GetStoresResponse, error) {
-	cancel, resp, err := api.LifecycleR().SetJSONResult(&GetStoresResponse{}).Get("/stores")
-	defer cancel()
-	if err != nil {
-		return nil, err
-	}
-	return resp.Result().(*GetStoresResponse), nil
+func (api *APIClient) GetStores() (resp *GetStoresResponse, err error) {
+	_, err = api.LR().Get("/stores").ReadBodyAsJSON(resp)
+	return
 }

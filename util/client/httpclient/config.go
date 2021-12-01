@@ -9,10 +9,10 @@ import (
 )
 
 type Config struct {
-	BaseURL string
-	Context context.Context
-	TLS     *tls.Config
-	KindTag string // Used to mark what kind of HttpClient it is in error messages and logs.
+	KindTag        string
+	TLSConfig      *tls.Config
+	DefaultCtx     context.Context
+	DefaultBaseURL string
 }
 
 type APIClientConfig struct {
@@ -38,9 +38,9 @@ func (dc APIClientConfig) IntoConfig(kindTag string) (Config, error) {
 		schema = "http"
 	}
 	return Config{
-		BaseURL: schema + "://" + u.Host,
-		Context: dc.Context,
-		TLS:     dc.TLS,
-		KindTag: kindTag,
+		TLSConfig:      dc.TLS,
+		KindTag:        kindTag,
+		DefaultCtx:     dc.Context,
+		DefaultBaseURL: schema + "://" + u.Host,
 	}, nil
 }

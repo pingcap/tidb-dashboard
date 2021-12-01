@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - release
+      - release-0902
 
 jobs:
   release:
@@ -87,7 +87,7 @@ jobs:
     needs: release
     strategy:
       matrix:
-        branch: [master, release-4.0, release-5.0, release-5.1, release-5.2]
+        branch: [release-4.0, release-5.0, release-5.1]
     steps:
       - name: Check out PD code base
         uses: actions/checkout@master

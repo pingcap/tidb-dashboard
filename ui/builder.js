@@ -1,21 +1,18 @@
 const fs = require('fs-extra')
+const os = require('os')
+const { start } = require('live-server')
+const { createProxyMiddleware } = require('http-proxy-middleware')
+const { watch } = require('chokidar')
+const { build } = require('esbuild')
 // TODO: submit PR for upstream
 fs.copyFileSync(
   './postcss2-index.js',
   './node_modules/esbuild-plugin-postcss2/dist/index.js'
 )
-
-const os = require('os')
-const { start } = require('live-server')
-const { watch } = require('chokidar')
-const { build } = require('esbuild')
 const postCssPlugin = require('esbuild-plugin-postcss2')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
 const svgrPlugin = require('esbuild-plugin-svgr')
 const logTime = require('./esbuild/plugins/logtime')
-const { createProxyMiddleware } = require('http-proxy-middleware')
-
-const tsConfig = require('./tsconfig.json')
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -31,10 +28,12 @@ require('dotenv').config()
 const dashboardApiPrefix =
   process.env.REACT_APP_DASHBOARD_API_URL || 'http://127.0.0.1:12333'
 const devServerPort = process.env.PORT
-const serverParams = {
+const devServerParams = {
   port: devServerPort,
   root: 'build',
   open: '/dashboard',
+  // Set base URL
+  // https://github.com/tapio/live-server/issues/287 - How can I serve from a base URL?
   proxy: [['/dashboard', `http://127.0.0.1:${devServerPort}`]],
   middleware: isDev && [
     function (req, _res, next) {
@@ -70,19 +69,17 @@ const lessGlobalVars = {
   '@gray-10': '#000',
 }
 
-const getInternalVersion = () => {
+function getInternalVersion() {
   const version = fs
     .readFileSync('../release-version', 'utf8')
     .split(os.EOL)
     .map((l) => l.trim())
     .filter((l) => !l.startsWith('#') && l !== '')[0]
-
   if (version === '') {
     throw new Error(
       `invalid release version, please check the release-version @tidb-dashboard/root`
     )
   }
-
   return version
 }
 
@@ -92,6 +89,7 @@ function genDefine() {
     if (k.startsWith('REACT_APP_')) {
       let envVal = process.env[k]
       // Example: REACT_APP_VERSION=$npm_package_version
+      // Expect output: REACT_APP_VERSION=0.1.0
       if (envVal.startsWith('$')) {
         envVal = process.env[envVal.substring(1)]
       }
@@ -106,7 +104,7 @@ function genDefine() {
   return define
 }
 
-const buildParams = {
+const esbuildParams = {
   color: true,
   entryPoints: {
     dashboardApp: 'src/index.ts',
@@ -167,12 +165,13 @@ function handleAssets() {
 async function main() {
   fs.removeSync('./build')
 
-  const builder = await build(buildParams)
+  const builder = await build(esbuildParams)
   handleAssets()
 
   if (isDev) {
-    start(serverParams)
+    start(devServerParams)
 
+    const tsConfig = require('./tsconfig.json')
     tsConfig.include.forEach((folder) => {
       watch(`${folder}/**/*`, { ignoreInitial: true }).on('all', () => {
         builder.rebuild()

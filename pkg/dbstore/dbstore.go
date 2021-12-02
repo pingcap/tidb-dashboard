@@ -7,13 +7,12 @@ import (
 	"os"
 	"path"
 
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"moul.io/zapgorm2"
-
 	"github.com/pingcap/log"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"moul.io/zapgorm2"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -24,7 +23,7 @@ type DB struct {
 }
 
 func NewDBStore(lc fx.Lifecycle, config *config.Config) (*DB, error) {
-	err := os.MkdirAll(config.DataDir, 0777) // #nosec
+	err := os.MkdirAll(config.DataDir, 0o777) // #nosec
 	if err != nil {
 		log.Error("Failed to create Dashboard storage directory", zap.Error(err))
 		return nil, err

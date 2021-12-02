@@ -9,8 +9,8 @@ import (
 	"github.com/joomcode/errorx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -38,7 +38,7 @@ type GetAuthURLRequest struct {
 func (s *Service) getAuthURLHandler(c *gin.Context) {
 	var req GetAuthURLRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	authURL, err := s.buildOAuthURL(req.RedirectURL, req.State, req.CodeVerifier)
@@ -54,7 +54,7 @@ func (s *Service) getAuthURLHandler(c *gin.Context) {
 // @Success 200 {array} SSOImpersonationModel
 // @Router /user/sso/impersonations/list [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) listImpersonationHandler(c *gin.Context) {
 	var resp []SSOImpersonationModel
 	err := s.params.LocalStore.Find(&resp).Error
@@ -76,13 +76,13 @@ type CreateImpersonationRequest struct {
 // @Success 200 {object} SSOImpersonationModel
 // @Router /user/sso/impersonation [post]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError "Internal error"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) createImpersonationHandler(c *gin.Context) {
 	var req CreateImpersonationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -103,8 +103,8 @@ func (s *Service) createImpersonationHandler(c *gin.Context) {
 // @Success 200 {object} config.SSOCoreConfig
 // @Router /user/sso/config [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) getConfig(c *gin.Context) {
 	dc, err := s.params.ConfigManager.Get()
 	if err != nil {
@@ -124,13 +124,13 @@ type SetConfigRequest struct {
 // @Success 200 {object} config.SSOCoreConfig
 // @Router /user/sso/config [put]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError "Internal error"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) setConfig(c *gin.Context) {
 	var req SetConfigRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -138,8 +138,7 @@ func (s *Service) setConfig(c *gin.Context) {
 	if req.Config.Enabled {
 		wellKnownConfig, err := s.discoverOIDC(req.Config.DiscoveryURL)
 		if err != nil {
-			_ = c.Error(err)
-			c.Status(http.StatusBadRequest)
+			_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 			return
 		}
 		dConfig.AuthURL = wellKnownConfig.AuthURL

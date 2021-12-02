@@ -83,9 +83,9 @@ export default function DiagnosisTable({ diagnosis }: Props) {
         </h1>
       ))}
       <h3 className="is-size-4">{t(`diagnosis.tables.title.${title}`)}</h3>
-      <p>
-        <ReactMarkdown source={t(`diagnosis.tables.comment.${title}`, '')} />
-      </p>
+      <ReactMarkdown>
+        {t(`diagnosis.tables.comment.${title}`, '')}
+      </ReactMarkdown>
       <table
         className="table is-bordered is-hoverable is-narrow is-fullwidth"
         style={{ position: 'relative' }}

@@ -22,7 +22,7 @@ func TestIntJSON(t *testing.T) {
 	}
 	v, err = json.Marshal(st)
 	require.Nil(t, err)
-	require.Equal(t, string(v), `{"Foo":415425}`)
+	require.JSONEq(t, `{"Foo":415425}`, string(v))
 
 	var nv2 Int
 	err = json.Unmarshal([]byte("12345"), &nv2)

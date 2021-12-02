@@ -5,7 +5,6 @@ package utils
 import (
 	"encoding/base64"
 	"encoding/csv"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -21,6 +20,8 @@ import (
 	"github.com/oleiade/reflections"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 // TODO: Better to be a streaming interface.
@@ -104,17 +105,17 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 	tokenPlain, err := ParseJWTString(tokenNamespace, token)
 	if err != nil {
-		MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 	arr := strings.Fields(tokenPlain)
 	if len(arr) != 2 {
-		MakeInvalidRequestErrorFromError(c, errors.New("invalid token"))
+		_ = c.Error(rest.ErrBadRequest.New("invalid token"))
 		return
 	}
 	secretKey, err := base64.StdEncoding.DecodeString(arr[0])
 	if err != nil {
-		MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 

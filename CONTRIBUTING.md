@@ -92,6 +92,10 @@ yarn test
 
 ## Additional Guides
 
+### Style Guidelines
+
+This project follows the [Uber's Golang style guide](https://github.com/uber-go/guide/blob/master/style.md). Please refer to [its documentation](https://github.com/uber-go/guide/blob/master/style.md) for details.
+
 ### Swagger UI
 
 We use [Swagger] to generate the API server and corresponding clients. Swagger provides a web UI in which you can

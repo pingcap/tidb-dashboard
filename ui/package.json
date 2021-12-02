@@ -11,6 +11,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@baurine/grafana-value-formats": "^1.0.0",
+    "@duorou_xu/speedscope": "1.14.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@g07cha/flexbox-react": "^5.0.0",
     "@sentry/react": "^6.3.2",
@@ -19,7 +20,7 @@
     "ace-builds": "^1.4.12",
     "ahooks": "^2.9.2",
     "antd": "^4.16.13",
-    "axios": "^0.21.1",
+    "axios": "^0.21.4",
     "bulma": "^0.9.0",
     "classnames": "^2.2.6",
     "d3": "^5.16.0",
@@ -36,7 +37,7 @@
     "nprogress": "^0.2.0",
     "office-ui-fabric-react": "^7.123.10",
     "path-browserify": "^1.0.1",
-    "pullstate": "^1.22.1",
+    "pullstate": "^1.23.0",
     "rc-animate": "^3.1.0",
     "react": "^16.13.1",
     "react-ace": "^9.1.1",
@@ -44,6 +45,7 @@
     "react-dom": "^16.13.1",
     "react-highlight-words": "^0.16.0",
     "react-i18next": "^11.7.0",
+    "react-markdown": "^7.1.0",
     "react-router": "^6.0.0-alpha.3",
     "react-router-dom": "^6.0.0-alpha.3",
     "react-split": "^2.0.9",
@@ -86,11 +88,11 @@
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.10.5",
     "@openapitools/openapi-generator-cli": "^1.0.15-4.3.1",
-    "@storybook/addon-actions": "^6.0.0-rc.3",
-    "@storybook/addon-links": "^6.0.0-rc.3",
-    "@storybook/addons": "^6.0.0-rc.3",
+    "@storybook/addon-actions": "^6.3.12",
+    "@storybook/addon-links": "^6.3.12",
+    "@storybook/addons": "^6.3.12",
     "@storybook/preset-create-react-app": "^3.1.4",
-    "@storybook/react": "^6.0.0-rc.3",
+    "@storybook/react": "^6.3.12",
     "@types/d3": "^5.7.2",
     "@types/live-server": "^1.2.1",
     "@types/lodash": "^4.14.158",
@@ -123,10 +125,12 @@
     "react-app-rewire-multiple-entry": "^2.1.0",
     "react-app-rewire-yaml": "^1.1.0",
     "react-app-rewired": "^2.1.5",
-    "react-markdown": "^4.3.1",
-    "react-scripts": "3.4.1",
+    "react-scripts": "^4.0.3",
     "typescript": "^3.9.7",
     "webpack-bundle-analyzer": "^3.7.0",
     "webpackbar": "^4.0.0"
+  },
+  "resolutions": {
+    "babel-loader": "8.1.0"
   }
 }

@@ -21,10 +21,13 @@ task('swagger:watch', () =>
   watch(['../cmd/**/*.go', '../pkg/**/*.go'], series('swagger:generate'))
 )
 
-task('distro:generate', shell.task('../scripts/generate_distro_info.sh'))
+task('distro:generate', shell.task('../scripts/distro/write_strings.sh'))
 
 task('distro:watch', () =>
-  watch(['../pkg/utils/distro/*.go'], series('distro:generate'))
+  watch(
+    ['../internal/resource/distrores/strings.go'],
+    series('distro:generate')
+  )
 )
 
 task('webpack:dev', shell.task('yarn react-app-rewired start'))
@@ -36,15 +39,40 @@ task('esbuild:dev', shell.task('node builder.js'))
 task('esbuild:build', shell.task('NODE_ENV=production node builder.js'))
 
 task(
+  'speedscope:copy_static_assets',
+  shell.task(
+    'mkdir -p public/speedscope && cp node_modules/@duorou_xu/speedscope/dist/release/* public/speedscope/'
+  )
+)
+
+task('speedscope:watch', () =>
+  watch(
+    ['node_modules/@duorou_xu/speedscope/dist/release/*'],
+    series('speedscope:copy_static_assets')
+  )
+)
+
+task(
   'build',
-  series(parallel('swagger:generate', 'distro:generate'), 'esbuild:build')
+  series(
+    parallel(
+      'swagger:generate',
+      'distro:generate',
+      'speedscope:copy_static_assets'
+    ),
+    'esbuild:build'
+  )
 )
 
 task(
   'dev',
   series(
-    parallel('swagger:generate', 'distro:generate'),
-    parallel('swagger:watch', 'distro:watch', 'esbuild:dev')
+    parallel(
+      'swagger:generate',
+      'distro:generate',
+      'speedscope:copy_static_assets'
+    ),
+    parallel('swagger:watch', 'distro:watch', 'speedscope:watch', 'esbuild:dev')
   )
 )
 

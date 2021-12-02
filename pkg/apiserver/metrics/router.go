@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 type QueryRequest struct {
@@ -39,13 +39,13 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Description Query metrics in the given range
 // @Param q query QueryRequest true "Query"
 // @Success 200 {object} QueryResponse
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 // @Security JwtAuth
 // @Router /metrics/query [get]
 func (s *Service) queryMetrics(c *gin.Context) {
 	var req QueryRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -101,7 +101,7 @@ type GetPromAddressConfigResponse struct {
 // @ID metricsGetPromAddress
 // @Summary Get the Prometheus address cluster config
 // @Success 200 {object} GetPromAddressConfigResponse
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 // @Security JwtAuth
 // @Router /metrics/prom_address [get]
 func (s *Service) getPromAddressConfig(c *gin.Context) {
@@ -133,13 +133,13 @@ type PutCustomPromAddressResponse struct {
 // @Summary Set or clear the customized Prometheus address
 // @Param request body PutCustomPromAddressRequest true "Request body"
 // @Success 200 {object} PutCustomPromAddressResponse
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 // @Security JwtAuth
 // @Router /metrics/prom_address [put]
 func (s *Service) putCustomPromAddress(c *gin.Context) {
 	var req PutCustomPromAddressRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	addr, err := s.setCustomPromAddress(req.Addr)

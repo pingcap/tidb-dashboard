@@ -9,7 +9,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/util/netutil"
 )
 
 // Used to deserialize from JSON_VALUE.
@@ -46,7 +46,7 @@ func FillFromClusterHardwareTable(db *gorm.DB, m InfoMap) error {
 	tiFlashDisks := make([]clusterTableModel, 0)
 
 	for _, row := range rows {
-		hostname, _, err := host.ParseHostAndPortFromAddress(row.Instance)
+		hostname, _, err := netutil.ParseHostAndPortFromAddress(row.Instance)
 		if err != nil {
 			continue
 		}
@@ -126,7 +126,7 @@ func FillFromClusterHardwareTable(db *gorm.DB, m InfoMap) error {
 	}
 	// Back fill TiFlash instances
 	for instance, de := range tiFlashDiskInfo {
-		hostname, _, err := host.ParseHostAndPortFromAddress(instance)
+		hostname, _, err := netutil.ParseHostAndPortFromAddress(instance)
 		if err != nil {
 			panic(err)
 		}

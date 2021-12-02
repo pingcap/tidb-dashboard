@@ -6,6 +6,7 @@ import (
 	"github.com/thoas/go-funk"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/reflectutil"
 )
 
 type Model struct {
@@ -96,7 +97,7 @@ type Field struct {
 }
 
 func getFieldsAndTags() (slowQueryFields []Field) {
-	fields := utils.GetFieldsAndTags(Model{}, []string{"gorm", "proj", "json"})
+	fields := reflectutil.GetFieldsAndTags(Model{}, []string{"gorm", "proj", "json"})
 
 	for _, f := range fields {
 		sqf := Field{

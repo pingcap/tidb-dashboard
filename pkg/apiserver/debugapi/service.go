@@ -14,11 +14,8 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-)
-
-const (
-	tokenIssuer = "debugAPI"
+	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/rest/fileswap"
 )
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -33,11 +30,13 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 type Service struct {
 	Client *endpoint.Client
+	fSwap  *fileswap.Handler
 }
 
 func newService(hp httpClientParam) *Service {
 	return &Service{
 		Client: endpoint.NewClient(newHTTPClient(hp), endpointDefs),
+		fSwap:  fileswap.New(),
 	}
 }
 
@@ -60,14 +59,14 @@ func getExtFromContentTypeHeader(contentType string) string {
 // @ID debugAPIRequestEndpoint
 // @Param req body endpoint.RequestPayload true "request payload"
 // @Success 200 {object} string
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /debug_api/endpoint [post]
 func (s *Service) RequestEndpoint(c *gin.Context) {
 	var req endpoint.RequestPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -81,45 +80,48 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	}
 	defer res.Response.Body.Close() //nolint:errcheck
 
-	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
-	fileName := fmt.Sprintf("%s_%d%s", req.EndpointID, time.Now().Unix(), ext)
-
-	writer, token, err := utils.FSPersist(utils.FSPersistConfig{
-		TokenIssuer:      tokenIssuer,
-		TokenExpire:      time.Minute * 5, // Note: the expire time should include request time.
-		TempFilePattern:  "debug_api",
-		DownloadFileName: fileName,
-	})
+	writer, err := s.fSwap.NewFileWriter("debug_api")
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	defer writer.Close() //nolint:errcheck
+	defer func() {
+		_ = writer.Close()
+	}()
+
 	_, err = io.Copy(writer, res.Response.Body)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	c.String(http.StatusOK, token)
+	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
+	fileName := fmt.Sprintf("%s_%d%s", req.EndpointID, time.Now().Unix(), ext)
+	downloadToken, err := writer.GetDownloadToken(fileName, time.Minute*5)
+	if err != nil {
+		// This shall never happen
+		_ = c.Error(err)
+		return
+	}
+
+	c.String(http.StatusOK, downloadToken)
 }
 
 // @Summary Download a finished request result
 // @Param token query string true "download token"
 // @Success 200 {object} string
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /debug_api/download [get]
 func (s *Service) Download(c *gin.Context) {
-	token := c.Query("token")
-	utils.FSServe(c, token, tokenIssuer)
+	s.fSwap.HandleDownloadRequest(c)
 }
 
 // @Summary Get all endpoints
 // @ID debugAPIGetEndpoints
 // @Security JwtAuth
 // @Success 200 {array} endpoint.APIModel
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /debug_api/endpoints [get]
 func (s *Service) GetEndpoints(c *gin.Context) {
 	c.JSON(http.StatusOK, s.Client.GetAllAPIModels())

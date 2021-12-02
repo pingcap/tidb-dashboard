@@ -63,7 +63,7 @@ func (tg *TaskGroup) SyncRun() {
 
 	// Create log directory
 	dir := path.Join(tg.service.logStoreDirectory, strconv.Itoa(int(tg.model.ID)))
-	err := os.MkdirAll(dir, 0777) // #nosec
+	err := os.MkdirAll(dir, 0o777) // #nosec
 	if err == nil {
 		tg.model.LogStoreDir = &dir
 		tg.service.db.Save(tg.model)

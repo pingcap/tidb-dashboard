@@ -45,6 +45,6 @@ i18next
     },
   })
 
-const isDistro = process.env.REACT_APP_DISTRO_BUILD_TAG !== undefined
+const isDistro = Boolean(distro['is_distro'])
 
 export { distro, isDistro }

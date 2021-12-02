@@ -221,7 +221,7 @@ function BaseSelect<T>({
         showAction={[]}
         hideAction={[]}
         popupPlacement="bottomLeft"
-        // popupTransitionName="slide-down"
+        popupTransitionName="ant-slide-up"
         popup={overlay}
         popupVisible={dropdownVisible}
         onPopupVisibleChange={handlePopupVisibleChange}

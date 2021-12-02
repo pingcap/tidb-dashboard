@@ -20,16 +20,21 @@ type SysSchema struct {
 	cache *ttlcache.Cache
 }
 
-func NewSysSchema(lc fx.Lifecycle) *SysSchema {
-	c := ttlcache.NewCache()
-	c.SkipTTLExtensionOnHit(true)
+func ProvideSysSchema(lc fx.Lifecycle) *SysSchema {
+	s := NewSysSchema()
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
-			return c.Close()
+			return s.cache.Close()
 		},
 	})
 
+	return s
+}
+
+func NewSysSchema() *SysSchema {
+	c := ttlcache.NewCache()
+	c.SkipTTLExtensionOnHit(true)
 	return &SysSchema{
 		cache: c,
 	}

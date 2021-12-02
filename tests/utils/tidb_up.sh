@@ -3,7 +3,7 @@
 set -euo pipefail
 
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1 && pwd )"
-PROJECT_DIR="$(dirname $(dirname "$DIR"))"
+PROJECT_DIR=$( cd "$DIR/../.."; pwd )
 
 $DIR/download_tools.sh
 

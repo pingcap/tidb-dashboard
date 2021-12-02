@@ -72,7 +72,12 @@ func (s *Service) getList(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	results, err := s.querySlowLogList(db, &req)
+	columns, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
+	if err != nil {
+		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+		return
+	}
+	results, err := QuerySlowLogList(&req, columns, db)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
@@ -116,12 +121,17 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
-	db := utils.GetTiDBConnection(c)
 	fields := []string{}
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	list, err := s.querySlowLogList(db, &req)
+	db := utils.GetTiDBConnection(c)
+	columns, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
+	if err != nil {
+		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+		return
+	}
+	list, err := QuerySlowLogList(&req, columns, db)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return

@@ -35,26 +35,25 @@ type GetDetailRequest struct {
 	ConnectID string `json:"connect_id" form:"connect_id"`
 }
 
-func (s *Service) querySlowLogList(db *gorm.DB, req *GetListRequest) ([]Model, error) {
-	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
-	if err != nil {
-		return nil, err
-	}
-
+func QuerySlowLogList(req *GetListRequest, slowQueryColumns []string, db *gorm.DB) ([]Model, error) {
 	reqFields := strings.Split(req.Fields, ",")
-	selectStmt, err := s.genSelectStmt(tableColumns, reqFields)
+	selectStmt, err := genSelectStmt(slowQueryColumns, reqFields)
 	if err != nil {
 		return nil, err
 	}
 
 	tx := db.
 		Table(slowQueryTable).
-		Select(selectStmt).
-		Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
+		Select(selectStmt)
 
-	if req.Limit > 0 {
-		tx = tx.Limit(req.Limit)
+	if req.BeginTime != 0 && req.EndTime != 0 {
+		tx = tx.Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
 	}
+
+	if req.Limit <= 0 {
+		req.Limit = 100
+	}
+	tx = tx.Limit(req.Limit)
 
 	if req.Text != "" {
 		lowerStr := strings.ToLower(req.Text)
@@ -78,8 +77,7 @@ func (s *Service) querySlowLogList(db *gorm.DB, req *GetListRequest) ([]Model, e
 	if req.OrderBy == "" {
 		req.OrderBy = "timestamp"
 	}
-
-	orderStmt, err := s.genOrderStmt(tableColumns, req.OrderBy, req.IsDesc)
+	orderStmt, err := genOrderStmt(slowQueryColumns, req.OrderBy, req.IsDesc)
 	if err != nil {
 		return nil, err
 	}

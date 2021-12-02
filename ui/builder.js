@@ -30,16 +30,16 @@ require('dotenv').config()
 
 const dashboardApiPrefix =
   process.env.REACT_APP_DASHBOARD_API_URL || 'http://127.0.0.1:12333'
+const devServerPort = process.env.PORT
 const serverParams = {
-  port: process.env.PORT,
+  port: devServerPort,
   root: 'build',
-  open: false,
+  open: '/dashboard',
+  proxy: [['/dashboard', `http://127.0.0.1:${devServerPort}`]],
   middleware: isDev && [
     function (req, _res, next) {
       if (/\/dashboard\/api\/diagnose\/reports\/\S+\/detail/.test(req.url)) {
         req.url = '/diagnoseReport.html'
-      } else if (/\/dashboard\/speedscope/.test(req.url)) {
-        req.url = req.url.replace('/dashboard', '')
       }
       next()
     },
@@ -109,7 +109,7 @@ function genDefine() {
 const buildParams = {
   color: true,
   entryPoints: {
-    dashboard: 'src/index.ts',
+    dashboardApp: 'src/index.ts',
     diagnoseReport: 'diagnoseReportApp/index.tsx',
   },
   loader: { '.ts': 'tsx', '.svgd': 'dataurl' },

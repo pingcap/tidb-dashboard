@@ -1,4 +1,4 @@
-const fs = require('fs')
+const fs = require('fs-extra')
 // TODO: submit PR for upstream
 fs.copyFileSync(
   './postcss2-index.js',
@@ -14,6 +14,8 @@ const { yamlPlugin } = require('esbuild-plugin-yaml')
 const svgrPlugin = require('esbuild-plugin-svgr')
 const logTime = require('./esbuild/plugins/logtime')
 const { createProxyMiddleware } = require('http-proxy-middleware')
+
+const tsConfig = require('./tsconfig.json')
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -36,6 +38,8 @@ const serverParams = {
     function (req, _res, next) {
       if (/\/dashboard\/api\/diagnose\/reports\/\S+\/detail/.test(req.url)) {
         req.url = '/diagnoseReport.html'
+      } else if (/\/dashboard\/speedscope/.test(req.url)) {
+        req.url = req.url.replace('/dashboard', '')
       }
       next()
     },
@@ -155,14 +159,13 @@ function buildHtml(inputFilename, outputFilename) {
 }
 
 function handleAssets() {
+  fs.copySync('./public', './build')
   buildHtml('./public/index.html', './build/index.html')
   buildHtml('./public/diagnoseReport.html', './build/diagnoseReport.html')
-  fs.copyFileSync('./public/favicon.ico', './build/favicon.ico')
-  fs.copyFileSync('./public/compat.js', './build/compat.js')
 }
 
 async function main() {
-  fs.rmSync('./build', { force: true, recursive: true })
+  fs.removeSync('./build')
 
   const builder = await build(buildParams)
   handleAssets()
@@ -170,17 +173,10 @@ async function main() {
   if (isDev) {
     start(serverParams)
 
-    watch('src/**/*', { ignoreInitial: true }).on('all', () => {
-      builder.rebuild()
-    })
-    watch('lib/**/*', { ignoreInitial: true }).on('all', () => {
-      builder.rebuild()
-    })
-    watch('dashboardApp/**/*', { ignoreInitial: true }).on('all', () => {
-      builder.rebuild()
-    })
-    watch('diagnoseReportApp/**/*', { ignoreInitial: true }).on('all', () => {
-      builder.rebuild()
+    tsConfig.include.forEach((folder) => {
+      watch(`${folder}/**/*`, { ignoreInitial: true }).on('all', () => {
+        builder.rebuild()
+      })
     })
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {
       handleAssets()

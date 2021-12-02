@@ -110,6 +110,7 @@
     "esbuild-plugin-svgr": "^0.0.3",
     "esbuild-plugin-yaml": "^0.0.1",
     "esm": "^3.2.25",
+    "fs-extra": "^10.0.0",
     "gulp": "^4.0.2",
     "gulp-cli": "^2.3.0",
     "gulp-shell": "^0.8.0",

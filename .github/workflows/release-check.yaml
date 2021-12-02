@@ -3,7 +3,7 @@ name: Release Check
 on:
   pull_request:
     branches:
-      - release
+      - release-4.0
 
 jobs:
   check_release_version:

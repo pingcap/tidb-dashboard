@@ -1422,10 +1422,10 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.5.tgz#9283c9ce5b289a3c4f61c12757469e59377f81f3"
   integrity sha512-6nFkfkmSeV/rqSaS4oWHgmpnYw194f6hmWF5is6b0J1naJZoiD0NTc9AiUwPHvWsowkjuHErCZT1wa0jg+BLIA==
 
-"@duorou_xu/speedscope@1.14.0":
-  version "1.14.0"
-  resolved "https://registry.npmmirror.com/@duorou_xu/speedscope/download/@duorou_xu/speedscope-1.14.0.tgz#e31b12481d268bd83e0cd8f29abfa0eb00ee1d58"
-  integrity sha512-kY3a7GoF9QLuKsKem/qcsCB8/syyXk9MIobsoupkHQM9VetrZcBU3utJtJq+p6q6lJrq9agzx4Xp+9BDPr988g==
+"@duorou_xu/speedscope@1.14.1":
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/@duorou_xu/speedscope/-/speedscope-1.14.1.tgz#2b567228b36f1ef570a9d79d21278beda5423b6d"
+  integrity sha512-udmHqPSHei7AuM8Jdo18ePjxItE9Ydyp++cEDgHpsJ5xKbzFAiR+tC8+AEMs0UY6suPtlbID5YwlA95A1OOLGA==
   dependencies:
     open "7.2.0"
 

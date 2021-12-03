@@ -10,7 +10,7 @@ import * as i18n from '@lib/utils/i18n'
 import { reportError } from '@lib/utils/sentryHelpers'
 
 import { DefaultApi } from './api'
-import { getApiBasePath } from './baseUrl'
+import { getApiBasePath, getApiOrigin } from './baseUrl'
 
 export * from './api'
 
@@ -38,11 +38,19 @@ function getBasePath(): string {
   return basePath
 }
 
+function getApiBaseURL(): string {
+  if (process.env.NODE_ENV === 'development') {
+    return basePath
+  }
+  const origin = getApiOrigin()
+  return `${origin}${basePath}`
+}
+
 function getAxiosInstance(): AxiosInstance {
   return rawAxiosInstance
 }
 
-export default { getInstance, getBasePath, getAxiosInstance }
+export default { getInstance, getBasePath, getAxiosInstance, getApiBaseURL }
 
 //////////////////////////////
 

@@ -127,7 +127,7 @@ export default function Page() {
       }
 
       // make both generated graph(svg) file and protobuf file viewable online
-      let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
+      let profileURL = `${client.getApiBaseURL()}/profiling/single/view?token=${token}`
 
       if (rec.profile_output_type === 'protobuf') {
         const titleOnTab = rec.target.kind + '_' + rec.target.display_name

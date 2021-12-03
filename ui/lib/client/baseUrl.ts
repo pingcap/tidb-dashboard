@@ -1,6 +1,6 @@
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 
-export const API_HOST = (function getApiHost(): string {
+export const API_BASEPATH_PREFIX = (function getApiPathPrefix(): string {
   let apiPrefix
   if (process.env.NODE_ENV === 'development') {
     if (process.env.REACT_APP_DASHBOARD_API_URL) {
@@ -16,5 +16,9 @@ export const API_HOST = (function getApiHost(): string {
 })()
 
 export function getApiBasePath(): string {
-  return `${API_HOST}/api`
+  return `${API_BASEPATH_PREFIX}/api`
+}
+
+export function getApiOrigin(): string {
+  return `${window.location.origin}`
 }

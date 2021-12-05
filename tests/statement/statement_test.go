@@ -9,14 +9,11 @@ import (
 )
 
 func TestStatement(t *testing.T) {
-	suite.Run(t, &testStatementSuite{
-		tableName: "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY",
-	})
+	suite.Run(t, &testStatementSuite{})
 }
 
 type testStatementSuite struct {
 	suite.Suite
-	tableName string
 }
 
 func (s *testStatementSuite) SetupSuite() {

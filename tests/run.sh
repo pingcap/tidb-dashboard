@@ -15,7 +15,7 @@ SELECTED_TEST_NAME="${TEST_NAME-$(find tests -mindepth 2 -maxdepth 2 -name run.s
 echo -e "  - Selected test cases: \n$SELECTED_TEST_NAME"
 
 for casename in $SELECTED_TEST_NAME; do
-    script=tests/$casename/run.sh
-    echo "+ Running test $script..."
-    bash "$script" && echo "  - TEST: [$casename] success!"
+  script=tests/$casename/run.sh
+  echo "+ Running test $script..."
+  bash "$script" && echo "  - TEST: [$casename] success!"
 done

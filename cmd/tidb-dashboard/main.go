@@ -31,13 +31,13 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	_ "github.com/pingcap/tidb-dashboard/internal/resource/distrores"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	keyvisualregion "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
-	_ "github.com/pingcap/tidb-dashboard/populate/distro"
 )
 
 type DashboardCLIConfig struct {

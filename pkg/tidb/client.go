@@ -23,7 +23,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 var (
@@ -111,8 +111,8 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	overrideEndpoint := os.Getenv(tidbOverrideSQLEndpointEnvVar)
 	// the `tidbOverrideSQLEndpointEnvVar` and the `Client.sqlAPIAddress` have the same override priority, if both exist, an error is returned
 	if overrideEndpoint != "" && c.sqlAPIAddress != "" {
-		log.Warn(fmt.Sprintf("Reject to establish a target specified %s SQL connection since `%s` is set", distro.Data("tidb"), tidbOverrideSQLEndpointEnvVar))
-		return nil, ErrTiDBConnFailed.New("%s Dashboard is configured to only connect to specified %s host", distro.Data("tidb"), distro.Data("tidb"))
+		log.Warn(fmt.Sprintf("Reject to establish a target specified %s SQL connection since `%s` is set", distro.R().TiDB, tidbOverrideSQLEndpointEnvVar))
+		return nil, ErrTiDBConnFailed.New("%s Dashboard is configured to only connect to specified %s host", distro.R().TiDB, distro.R().TiDB)
 	}
 
 	var addr string
@@ -144,18 +144,18 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	if err != nil {
 		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
 			if strings.HasPrefix(addr, "0.0.0.0:") {
-				log.Warn(fmt.Sprintf("%s reported its address to be 0.0.0.0. Please specify `-advertise-address` command line parameter when running %s", distro.Data("tidb"), distro.Data("tidb")))
+				log.Warn(fmt.Sprintf("%s reported its address to be 0.0.0.0. Please specify `-advertise-address` command line parameter when running %s", distro.R().TiDB, distro.R().TiDB))
 			}
 			if c.forwarder.sqlProxy.noAliveRemote.Load() {
 				return nil, ErrNoAliveTiDB.NewWithNoMessage()
 			}
-			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to %s", distro.Data("tidb"))
+			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to %s", distro.R().TiDB)
 		} else if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == mysqlerr.ER_ACCESS_DENIED_ERROR {
-				return nil, ErrTiDBAuthFailed.New("bad %s username or password", distro.Data("tidb"))
+				return nil, ErrTiDBAuthFailed.New("bad %s username or password", distro.R().TiDB)
 			}
 		}
-		log.Warn(fmt.Sprintf("Unknown error occurred while opening %s connection", distro.Data("tidb")), zap.Error(err))
+		log.Warn(fmt.Sprintf("Unknown error occurred while opening %s connection", distro.R().TiDB), zap.Error(err))
 		return nil, err
 	}
 
@@ -168,8 +168,8 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
 	// the `tidbOverrideStatusEndpointEnvVar` and the `Client.statusAPIAddress` have the same override priority, if both exist and have not enforced `Client.statusAPIAddress` then an error is returned
 	if overrideEndpoint != "" && c.statusAPIAddress != "" && !c.enforceStatusAPIAddresss {
-		log.Warn(fmt.Sprintf("Reject to establish a target specified %s status connection since `%s` is set", distro.Data("tidb"), tidbOverrideStatusEndpointEnvVar))
-		return nil, ErrTiDBConnFailed.New("%s Dashboard is configured to only connect to specified %s host", distro.Data("tidb"), distro.Data("tidb"))
+		log.Warn(fmt.Sprintf("Reject to establish a target specified %s status connection since `%s` is set", distro.R().TiDB, tidbOverrideStatusEndpointEnvVar))
+		return nil, ErrTiDBConnFailed.New("%s Dashboard is configured to only connect to specified %s host", distro.R().TiDB, distro.R().TiDB)
 	}
 
 	var addr string
@@ -190,7 +190,7 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, relativeURI)
 	res, err := c.statusAPIHTTPClient.
 		WithTimeout(c.statusAPITimeout).
-		Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, distro.Data("tidb"))
+		Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, distro.R().TiDB)
 	if err != nil && c.forwarder.statusProxy.noAliveRemote.Load() {
 		return nil, ErrNoAliveTiDB.NewWithNoMessage()
 	}

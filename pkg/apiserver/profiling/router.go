@@ -301,15 +301,12 @@ func (s *Service) viewSingle(c *gin.Context) {
 
 	content, err := ioutil.ReadFile(task.FilePath)
 	if err != nil {
-		fmt.Println("error:", err)
 		_ = c.Error(err)
 		return
 	}
 	if outputType == "graph" {
-		fmt.Printf("converting to graph")
 		svgContent, err := convertProtobufToSVG(content, task)
 		if err != nil {
-			fmt.Println("error:", err)
 			_ = c.Error(err)
 			return
 		}

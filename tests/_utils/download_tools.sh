@@ -17,5 +17,6 @@ if ! command -v tiup >/dev/null 2>&1; then
   do
     if [ -f $c ]; then
       source $c
+    fi
   done
 fi

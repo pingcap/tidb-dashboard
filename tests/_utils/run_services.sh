@@ -2,17 +2,17 @@
 
 set -euo
 
-TEST_START_LOG=/tmp/dashboard-test-log.log
+INTEGRATION_LOG=/tmp/dashboard-integration-test.log
 
 start_tidb() {
   echo "+ Waiting for TiDB start..."
 
-  rm -rf $TEST_START_LOG
-  TIDB_VERSION=${1:-latest}
-  tiup playground $TIDB_VERSION --tiflash 0 --without-monitor > $TEST_START_LOG &
+  rm -rf $INTEGRATION_LOG
+  tidb_version=${1:-latest}
+  tiup playground $tidb_version > $INTEGRATION_LOG &
   ensure_tidb
 
-  echo "  - TiDB Version: $TIDB_VERSION, start success!"
+  echo "  - TiDB Version: $tidb_version, start success!"
 }
 
 stop_tidb() {
@@ -24,7 +24,7 @@ stop_tidb() {
 
 ensure_tidb() {
   i=1
-  while ! grep "CLUSTER START SUCCESSFULLY" $TEST_START_LOG; do
+  while ! grep "CLUSTER START SUCCESSFULLY" $INTEGRATION_LOG; do
     i=$((i+1))
     if [ "$i" -gt 20 ]; then
       echo 'Failed to start TiDB'

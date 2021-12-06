@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/tidb/model"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 const (
@@ -61,7 +61,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// get all database info
 	var dbInfos []*model.DBInfo
 	if err := s.request("/schema", &dbInfos); err != nil {
-		log.Error("fail to send schema request", zap.String("component", distro.Data("tidb")), zap.Error(err))
+		log.Error("fail to send schema request", zap.String("component", distro.R().TiDB), zap.Error(err))
 		return
 	}
 
@@ -74,7 +74,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 		var tableInfos []*model.TableInfo
 		encodeName := url.PathEscape(db.Name.O)
 		if err := s.request(fmt.Sprintf("/schema/%s", encodeName), &tableInfos); err != nil {
-			log.Error("fail to send schema request", zap.String("component", distro.Data("tidb")), zap.Error(err))
+			log.Error("fail to send schema request", zap.String("component", distro.R().TiDB), zap.Error(err))
 			updateSuccess = false
 			continue
 		}
@@ -116,7 +116,7 @@ func (s *tidbLabelStrategy) request(path string, v interface{}) error {
 		return err
 	}
 	if err = json.Unmarshal(data, v); err != nil {
-		return ErrInvalidData.Wrap(err, "%s schema API unmarshal failed", distro.Data("tidb"))
+		return ErrInvalidData.Wrap(err, "%s schema API unmarshal failed", distro.R().TiDB)
 	}
 	return nil
 }

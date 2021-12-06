@@ -3,11 +3,12 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 
+	"github.com/pingcap/log"
 	"github.com/shurcooL/vfsgen"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -22,6 +23,6 @@ func main() {
 		VariableName: "assets",
 	})
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal("Generate vfs failed", zap.Error(err))
 	}
 }

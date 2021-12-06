@@ -3,6 +3,7 @@
 package testutil
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -13,4 +14,5 @@ func TestMain(m *testing.M) {
 	EnableDebugLog()
 	gin.SetMode(gin.TestMode)
 	goleak.VerifyTestMain(m)
+	runtime.GC()
 }

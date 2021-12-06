@@ -13,14 +13,15 @@ if ! command -v tiup >/dev/null 2>&1; then
   echo "  - Update bin path"
   shell=$(echo $SHELL | awk 'BEGIN {FS="/";} { print $NF }')
   if [ -f "${HOME}/.${shell}_profile" ]; then
-      PROFILE=${HOME}/.${shell}_profile
-  elif [ -f "${HOME}/.${shell}_login" ]; then
-      PROFILE=${HOME}/.${shell}_login
-  elif [ -f "${HOME}/.${shell}rc" ]; then
-      PROFILE=${HOME}/.${shell}rc
-  else
-      PROFILE=${HOME}/.profile
+      source ${HOME}/.${shell}_profile
   fi
-
-  source $PROFILE
+  if [ -f "${HOME}/.${shell}_login" ]; then
+      source ${HOME}/.${shell}_login
+  fi
+  if [ -f "${HOME}/.${shell}rc" ]; then
+      source ${HOME}/.${shell}rc
+  fi
+  if
+      source ${HOME}/.profile
+  fi
 fi

@@ -2,10 +2,11 @@
 
 set -euo pipefail
 
-echo "+ Download tools"
-tests/_utils/download_tools.sh
-
+source tests/_utils/download_tools.sh >/dev/null
 source tests/_utils/run_services.sh >/dev/null
+
+download_tools
+setup_tools
 
 trap stop_tidb EXIT
 start_tidb

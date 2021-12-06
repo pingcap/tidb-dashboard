@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 	"github.com/pingcap/tidb-dashboard/util/netutil"
 )
 
@@ -140,7 +140,7 @@ func fetchStores(pdClient *pd.Client) ([]store, error) {
 	}{}
 	err = json.Unmarshal(data, &storeResp)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.Data("pd"))
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.R().PD)
 	}
 
 	ret := make([]store, 0, storeResp.Count)

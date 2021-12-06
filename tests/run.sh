@@ -10,5 +10,5 @@ source tests/_utils/run_services.sh >/dev/null
 trap stop_tidb EXIT
 start_tidb
 
-echo "+ Start integration tests"
+echo "+ Run integration tests"
 GO111MODULE=on go test -v ./tests/...

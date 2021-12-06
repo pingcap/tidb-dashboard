@@ -6,10 +6,13 @@ TEST_START_LOG=/tmp/dashboard-test-log.log
 
 start_tidb() {
   echo "+ Waiting for TiDB start..."
+
   rm -rf $TEST_START_LOG
-  tiup playground latest --tiflash 0 --without-monitor > $TEST_START_LOG &
+  TIDB_VERSION=${1:-latest}
+  tiup playground $TIDB_VERSION --tiflash 0 --without-monitor > $TEST_START_LOG &
   ensure_tidb
-  echo "  - Started!"
+
+  echo "  - TiDB Version: $TIDB_VERSION, start success!"
 }
 
 stop_tidb() {

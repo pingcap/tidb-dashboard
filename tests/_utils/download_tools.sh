@@ -12,16 +12,10 @@ if ! command -v tiup >/dev/null 2>&1; then
   # Update tiup bin path
   echo "  - Update bin path"
   shell=$(echo $SHELL | awk 'BEGIN {FS="/";} { print $NF }')
-  if [ -f "${HOME}/.${shell}_profile" ]; then
-      source ${HOME}/.${shell}_profile
-  fi
-  if [ -f "${HOME}/.${shell}_login" ]; then
-      source ${HOME}/.${shell}_login
-  fi
-  if [ -f "${HOME}/.${shell}rc" ]; then
-      source ${HOME}/.${shell}rc
-  fi
-  if
-      source ${HOME}/.profile
-  fi
+  configs=("${HOME}/.${shell}_profile" "${HOME}/.${shell}_login" "${HOME}/.${shell}rc" "${HOME}/.profile")
+  for c in ${configs[@]}
+  do
+    if [ -f $c ]; then
+      source $c
+  done
 fi

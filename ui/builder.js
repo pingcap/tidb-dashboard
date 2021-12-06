@@ -133,7 +133,7 @@ const esbuildParams = {
     logTime(),
   ],
   define: genDefine(),
-  inject: ['./process-shim.js'], // fix runtime crash
+  // inject: ['./process-shim.js'], // fix runtime crash
 }
 
 const distroInfo = require('./lib/distribution.json')

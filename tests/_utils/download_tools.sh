@@ -17,6 +17,7 @@ if ! command -v tiup >/dev/null 2>&1; then
   do
     if [ -f $c ]; then
       source $c
+      echo "find bash config: ${c}"
     fi
   done
 fi

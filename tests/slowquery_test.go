@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	mysqldriver "github.com/go-sql-driver/mysql"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 
@@ -81,6 +82,12 @@ func (s *testSlowQuerySuite) TearDownSuite() {
 	s.db.MustClose()
 }
 
+type testCase struct {
+	name string
+	req  *slowquery.GetListRequest
+	tx   *gorm.DB
+}
+
 func (s *testSlowQuerySuite) Test_GetList_defaultParams() {
 	var lastRecord slowquery.Model
 	err := s.tableSession().Order("Time").Last(&lastRecord).Error
@@ -92,40 +99,42 @@ func (s *testSlowQuerySuite) Test_GetList_defaultParams() {
 	defaultSelect := "Digest,Conn_ID,(UNIX_TIMESTAMP(Time) + 0E0) as timestamp"
 	defaultLimit := 100
 	defaultOrder := "Time"
-	equalTests := []struct {
-		req *slowquery.GetListRequest
-		tx  *gorm.DB
-	}{
+	equalTests := []*testCase{
 		{
-			req: &slowquery.GetListRequest{},
+			name: "default",
+			req:  &slowquery.GetListRequest{},
 			tx: s.tableSession().
 				Select(defaultSelect).
 				Limit(defaultLimit).
 				Order(defaultOrder),
 		},
 		{
-			req: &slowquery.GetListRequest{Fields: "digest,query,instance"},
+			name: "fields",
+			req:  &slowquery.GetListRequest{Fields: "digest,query,instance"},
 			tx: s.tableSession().
 				Select(fmt.Sprintf("%s,%s", defaultSelect, "Query,INSTANCE")).
 				Limit(defaultLimit).
 				Order(defaultOrder),
 		},
 		{
-			req: &slowquery.GetListRequest{Fields: "*"},
+			name: "all fields",
+			req:  &slowquery.GetListRequest{Fields: "*"},
 			tx: s.tableSession().
 				Select("*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp").
 				Limit(defaultLimit).
 				Order(defaultOrder),
 		},
 		{
-			req: &slowquery.GetListRequest{Limit: 5},
+			name: "limit",
+			req:  &slowquery.GetListRequest{Limit: 5},
 			tx: s.tableSession().
 				Select(defaultSelect).
 				Limit(5).
 				Order(defaultOrder),
 		},
 		{
-			req: &slowquery.GetListRequest{Text: firstRecord.Digest},
+			name: "text search",
+			req:  &slowquery.GetListRequest{Text: firstRecord.Digest},
 			tx: s.tableSession().
 				Select(defaultSelect).
 				Where(
@@ -134,7 +143,8 @@ func (s *testSlowQuerySuite) Test_GetList_defaultParams() {
 				Order(defaultOrder),
 		},
 		{
-			req: &slowquery.GetListRequest{Text: fmt.Sprintf("%s %s", firstRecord.Digest, lastRecord.TxnStartTS)},
+			name: "multi text search",
+			req:  &slowquery.GetListRequest{Text: fmt.Sprintf("%s %s", firstRecord.Digest, lastRecord.TxnStartTS)},
 			tx: s.tableSession().
 				Select(defaultSelect).
 				Where(
@@ -144,7 +154,8 @@ func (s *testSlowQuerySuite) Test_GetList_defaultParams() {
 				Order(defaultOrder),
 		},
 		{
-			req: &slowquery.GetListRequest{DB: []string{"test"}},
+			name: "search use db",
+			req:  &slowquery.GetListRequest{DB: []string{"test"}},
 			tx: s.tableSession().
 				Select(defaultSelect).
 				Where("DB IN (?)", []string{"test"}).
@@ -152,21 +163,24 @@ func (s *testSlowQuerySuite) Test_GetList_defaultParams() {
 				Order(defaultOrder),
 		},
 		{
-			req: &slowquery.GetListRequest{OrderBy: "query"},
+			name: "order by",
+			req:  &slowquery.GetListRequest{OrderBy: "query"},
 			tx: s.tableSession().
 				Select(defaultSelect).
 				Limit(defaultLimit).
 				Order("Query"),
 		},
 		{
-			req: &slowquery.GetListRequest{IsDesc: true},
+			name: "asc/desc",
+			req:  &slowquery.GetListRequest{IsDesc: true},
 			tx: s.tableSession().
 				Select(defaultSelect).
 				Limit(defaultLimit).
 				Order(fmt.Sprintf("%s DESC", defaultOrder)),
 		},
 		{
-			req: &slowquery.GetListRequest{Plans: []string{""}},
+			name: "plans",
+			req:  &slowquery.GetListRequest{Plans: []string{""}},
 			tx: s.tableSession().
 				Select(defaultSelect).
 				Where("Plan_digest IN (?)", []string{""}).
@@ -178,14 +192,21 @@ func (s *testSlowQuerySuite) Test_GetList_defaultParams() {
 	tableColumns, err := utils.NewSysSchema().GetTableColumnNames(s.tableSession(), testTableName)
 	s.Nil(err)
 
-	for _, t := range equalTests {
-		data1, err1 := slowquery.QuerySlowLogList(t.req, tableColumns, s.db.Gorm())
-		s.Nil(err1)
+	for _, tt := range equalTests {
+		s.T().Run(tt.name, func(innerT *testCase) func(t *testing.T) {
+			return func(t *testing.T) {
+				t.Parallel()
+				r := require.New(t)
 
-		var data2 []slowquery.Model
-		err2 := t.tx.Find(&data2).Error
-		s.Nil(err2)
+				reqData, err1 := slowquery.QuerySlowLogList(innerT.req, tableColumns, s.db.Gorm())
+				r.Nil(err1)
 
-		s.Equal(data1, data2)
+				var txData []slowquery.Model
+				err2 := innerT.tx.Find(&txData).Error
+				r.Nil(err2)
+
+				r.Equal(reqData, txData)
+			}
+		}(tt))
 	}
 }

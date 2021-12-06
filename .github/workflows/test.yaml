@@ -7,8 +7,8 @@ on:
       - release
 
 jobs:
-  backend:
-    name: backend
+  backend_ut:
+    name: Backend UT
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -24,9 +24,29 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: Test
+      - name: Run unit test
         run: |
-          make test
+          make unit_test
+  backend_integration:
+    name: Backend Integration Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v1
+        with:
+          go-version: "1.13.5"
+      - name: Load go module cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Run integration test
+        run: |
+          make integration_test
   e2e_test:
     name: E2E
     runs-on: ubuntu-latest

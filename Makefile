@@ -1,4 +1,4 @@
-.PHONY: install_tools lint dev yarn_dependencies ui server run test
+.PHONY: install_tools lint dev yarn_dependencies ui server run test unit_test integration_test
 
 DASHBOARD_PKG := github.com/pingcap/tidb-dashboard
 
@@ -20,7 +20,6 @@ LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=N/A"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildGitHash=$(shell git rev-parse HEAD)"
 
-GOTEST                    := GO111MODULE=on go test -v
 INTEGRATION_TEST_PACKAGES := "github.com\/pingcap\/tidb-dashboard\/tests"
 
 default: server
@@ -34,7 +33,7 @@ lint:
 test: unit_test integration_test
 
 unit_test:
-	$(GOTEST) $$(go list ./... | grep -v $(INTEGRATION_TEST_PACKAGES))
+	GO111MODULE=on go test -v $$(go list ./... | grep -v $(INTEGRATION_TEST_PACKAGES))
 
 integration_test: server
 	@tests/run.sh

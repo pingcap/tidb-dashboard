@@ -22,10 +22,10 @@ import (
 
 type ServiceParams struct {
 	fx.In
-	Config              *config.Config
-	LocalStore          *dbstore.DB
-	TiDBClient          *tidb.Client
-	FeatureFlagRegistry *featureflag.Registry
+	Config       *config.Config
+	LocalStore   *dbstore.DB
+	TiDBClient   *tidb.Client
+	FeatureFlags *featureflag.Registry
 }
 
 type Service struct {
@@ -65,7 +65,7 @@ func (s *Service) infoHandler(c *gin.Context) {
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
-		SupportedFeatures:  s.params.FeatureFlagRegistry.SupportedFeatures(),
+		SupportedFeatures:  s.params.FeatureFlags.SupportedFeatures(),
 	}
 	c.JSON(http.StatusOK, resp)
 }

@@ -74,7 +74,7 @@ func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string)
 	return &SignOutInfo{}, nil
 }
 
-func newAuthService(featureFlagRegistry *featureflag.Registry) *AuthService {
+func newAuthService(featureFlags *featureflag.Registry) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -91,7 +91,7 @@ func newAuthService(featureFlagRegistry *featureflag.Registry) *AuthService {
 	}
 
 	service := &AuthService{
-		FeatureFlagNonRootLogin: featureFlagRegistry.Register("nonRootLogin", ">= 5.3.0"),
+		FeatureFlagNonRootLogin: featureFlags.Register("nonRootLogin", ">= 5.3.0"),
 		middleware:              nil,
 		authenticators:          map[utils.AuthType]Authenticator{},
 	}

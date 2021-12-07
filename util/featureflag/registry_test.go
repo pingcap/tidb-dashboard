@@ -25,12 +25,17 @@ func Test_Register(t *testing.T) {
 		tt.flag = m.Register(tt.name, tt.constraints...)
 	}
 
-	for i, tt := range tests {
-		// check whether flag is in flags & supportedMap
-		require.Equal(t, m.flags[i], tt.flag)
-		_, ok := m.supportedMap[tt.flag.name]
+	for _, tt := range tests {
+		// check whether flag is in flags & supportedFeatures
+		require.Equal(t, m.flags[tt.flag.name], tt.flag)
+		_, ok := m.supportedFeatures[tt.flag.name]
 		require.Equal(t, tt.supported, ok)
 	}
+
+	// duplicated register
+	f := m.Register("testFeature3", ">= 5.3.2")
+	require.Equal(t, f.name, "testFeature3")
+	require.Equal(t, f.constraints[0], ">= 5.3.1")
 }
 
 func Test_SupportedFeatures(t *testing.T) {

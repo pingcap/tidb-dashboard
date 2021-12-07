@@ -7,40 +7,37 @@ import (
 )
 
 type Registry struct {
-	version      string
-	flags        []*FeatureFlag
-	supportedMap map[string]struct{}
+	version           string
+	flags             map[string]*FeatureFlag
+	supportedFeatures map[string]struct{}
 }
 
 func NewRegistry(version string) *Registry {
 	return &Registry{
-		version:      version,
-		flags:        []*FeatureFlag{},
-		supportedMap: map[string]struct{}{},
+		version:           version,
+		flags:             map[string]*FeatureFlag{},
+		supportedFeatures: map[string]struct{}{},
 	}
 }
 
-// ProvideRegistry returns a constructor for fx.Provide.
-func ProvideRegistry(version string) func() *Registry {
-	return func() *Registry {
-		return NewRegistry(version)
-	}
-}
-
-// Register feature flag.
+// Register create and register feature flag to registry.
 func (m *Registry) Register(name string, constraints ...string) *FeatureFlag {
-	f := NewFeatureFlag(name, constraints...)
-	m.flags = append(m.flags, f)
-	if f.IsSupported(m.version) {
-		m.supportedMap[f.Name()] = struct{}{}
+	if f, ok := m.flags[name]; ok {
+		return f
 	}
-	return f
+
+	nf := newFeatureFlag(name, m.version, constraints...)
+	m.flags[name] = nf
+	if nf.IsSupported() {
+		m.supportedFeatures[nf.Name()] = struct{}{}
+	}
+	return nf
 }
 
 // SupportedFeatures returns supported feature's names.
 func (m *Registry) SupportedFeatures() []string {
-	sf := make([]string, 0, len(m.supportedMap))
-	for k := range m.supportedMap {
+	sf := make([]string, 0, len(m.supportedFeatures))
+	for k := range m.supportedFeatures {
 		sf = append(sf, k)
 	}
 	sort.Strings(sf)

@@ -45,9 +45,9 @@ type ngMonitoringAddrCacheEntity struct {
 type ServiceParams struct {
 	fx.In
 
-	EtcdClient          *clientv3.Client
-	Config              *config.Config
-	FeatureFlagRegistry *featureflag.Registry
+	EtcdClient   *clientv3.Client
+	Config       *config.Config
+	FeatureFlags *featureflag.Registry
 }
 
 type Service struct {
@@ -62,7 +62,7 @@ type Service struct {
 
 func newService(lc fx.Lifecycle, p ServiceParams) *Service {
 	s := &Service{
-		FeatureFlagConprof: p.FeatureFlagRegistry.Register("conprof", ">= 5.3.0"),
+		FeatureFlagConprof: p.FeatureFlags.Register("conprof", ">= 5.3.0"),
 		params:             p,
 	}
 
@@ -80,7 +80,7 @@ func newService(lc fx.Lifecycle, p ServiceParams) *Service {
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/continuous_profiling")
 
-	endpoint.Use(featureflag.VersionGuard(s.params.Config.FeatureVersion, s.FeatureFlagConprof))
+	endpoint.Use(s.FeatureFlagConprof.VersionGuard())
 	{
 		endpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
 		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)

@@ -59,7 +59,7 @@ type InfoResponse struct { //nolint
 // @Success 200 {object} InfoResponse
 // @Router /info/info [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) infoHandler(c *gin.Context) {
 	resp := InfoResponse{
 		Version:            version.GetInfo(),
@@ -81,7 +81,7 @@ type WhoAmIResponse struct {
 // @Success 200 {object} WhoAmIResponse
 // @Router /info/whoami [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) whoamiHandler(c *gin.Context) {
 	sessionUser := utils.GetSession(c)
 	resp := WhoAmIResponse{
@@ -97,7 +97,7 @@ func (s *Service) whoamiHandler(c *gin.Context) {
 // @Success 200 {object} []string
 // @Router /info/databases [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) databasesHandler(c *gin.Context) {
 	type databaseSchemas struct {
 		Databases string `gorm:"column:Database"`
@@ -128,7 +128,7 @@ type tableSchema struct {
 // @Router /info/tables [get]
 // @Param database_name query string false "Database name"
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) tablesHandler(c *gin.Context) {
 	var result []tableSchema
 	db := utils.GetTiDBConnection(c)

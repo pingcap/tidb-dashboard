@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetGlobal(t *testing.T) {
+func TestR(t *testing.T) {
 	assert.Equal(t, "TiDB", R().TiDB)
 }
 
@@ -17,6 +17,7 @@ func TestReplaceGlobal(t *testing.T) {
 		TiDB: "myTiDB",
 		PD:   "",
 	})
+	assert.Equal(t, false, R().IsDistro)
 	assert.Equal(t, "myTiDB", R().TiDB)
 	assert.Equal(t, "PD", R().PD)
 	assert.Equal(t, "TiKV", R().TiKV)
@@ -24,4 +25,13 @@ func TestReplaceGlobal(t *testing.T) {
 	assert.Equal(t, "TiDB", R().TiDB)
 	assert.Equal(t, "PD", R().PD)
 	assert.Equal(t, "TiKV", R().TiKV)
+
+	restoreFn = ReplaceGlobal(DistributionResource{
+		IsDistro: true,
+	})
+	assert.Equal(t, true, R().IsDistro)
+	assert.Equal(t, "TiDB", R().TiDB)
+	assert.Equal(t, "PD", R().PD)
+	assert.Equal(t, "TiKV", R().TiKV)
+	restoreFn()
 }

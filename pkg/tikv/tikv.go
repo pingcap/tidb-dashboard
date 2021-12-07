@@ -6,6 +6,4 @@ import (
 	"github.com/joomcode/errorx"
 )
 
-var (
-	ErrNS = errorx.NewNamespace("error.tikv")
-)
+var ErrNS = errorx.NewNamespace("error.tikv")

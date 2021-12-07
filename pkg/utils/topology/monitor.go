@@ -12,7 +12,7 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 func FetchAlertManagerTopology(ctx context.Context, etcdClient *clientv3.Client) (*AlertManagerInfo, error) {
@@ -56,7 +56,7 @@ func FetchNgMonitoringTopology(ctx context.Context, etcdClient *clientv3.Client)
 
 	resp, err := etcdClient.Get(ctx2, ngMonitoringKeyPrefix, clientv3.WithPrefix())
 	if err != nil {
-		return "", ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", ngMonitoringKeyPrefix, distro.Data("pd"))
+		return "", ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", ngMonitoringKeyPrefix, distro.R().PD)
 	}
 
 	for _, kv := range resp.Kvs {

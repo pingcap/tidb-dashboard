@@ -183,17 +183,18 @@ function useSignInSubmit(
     } catch (e) {
       if (!e.handled) {
         const errMsg = t('signin.message.error', { msg: e.message })
-        if (
-          isDistro ||
-          e.errCode !== 'error.api.user.insufficient_privileges'
-        ) {
+        if (isDistro || e.errCode !== 'api.user.signin.insufficient_priv') {
           setError(errMsg)
         } else {
           // only add help link for TiDB distro when meeting insufficient_privileges error
           const errComp = (
             <>
               {errMsg}
-              <a href={t('signin.message.access_doc_link')}>
+              <a
+                href={t('signin.message.access_doc_link')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {t('signin.message.access_doc')}
               </a>
             </>
@@ -422,10 +423,9 @@ function SSOSignInForm({ successRoute, onClickAlternative }) {
 }
 
 function App({ registry }) {
-  const successRoute = useMemo(
-    () => `#${registry.getDefaultRouter()}`,
-    [registry]
-  )
+  const successRoute = useMemo(() => `#${registry.getDefaultRouter()}`, [
+    registry,
+  ])
   const [alternativeVisible, setAlternativeVisible] = useState(false)
   const [formType, setFormType] = useState(DisplayFormType.uninitialized)
   const [supportedAuthTypes, setSupportedAuthTypes] = useState<Array<number>>([

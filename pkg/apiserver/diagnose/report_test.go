@@ -96,10 +96,10 @@ func (t *testReportSuite) TestInspection(c *C) {
 	//endTime2 := "2020-03-10 13:27:00"
 
 	// diagnose for server down
-	//startTime1 := "2020-03-09 20:35:00"
-	//endTime1 := "2020-03-09 21:20:00"
-	//startTime2 := "2020-03-08 20:35:00"
-	//endTime2 := "2020-03-09 21:20:00"
+	// startTime1 := "2020-03-09 20:35:00"
+	// endTime1 := "2020-03-09 21:20:00"
+	// startTime2 := "2020-03-08 20:35:00"
+	// endTime2 := "2020-03-09 21:20:00"
 
 	// diagnose for disk slow , need more disk metric.
 	//startTime1 := "2020-03-10 12:48:00"
@@ -238,7 +238,7 @@ func printRows(t *TableDef) {
 	}
 
 	fieldLen := t.ColumnWidth()
-	//fmt.Println(fieldLen)
+	// fmt.Println(fieldLen)
 	printLine := func(values []string, comment string) {
 		line := ""
 		for i, s := range values {

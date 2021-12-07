@@ -13,13 +13,11 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
-var (
-	ErrNoAliveTiDB = ErrNS.NewType("no_alive_tidb")
-)
+var ErrNoAliveTiDB = ErrNS.NewType("no_alive_tidb")
 
 type forwarderConfig struct {
 	TiDBRetrieveTimeout time.Duration
@@ -105,7 +103,7 @@ func (f *Forwarder) pollingForTiDB() {
 
 func (f *Forwarder) getEndpointAddr(port int) (string, error) {
 	if f.statusProxy.noAliveRemote.Load() {
-		log.Warn(fmt.Sprintf("Unable to resolve connection address since no alive %s instance", distro.Data("tidb")))
+		log.Warn(fmt.Sprintf("Unable to resolve connection address since no alive %s instance", distro.R().TiDB))
 		return "", ErrNoAliveTiDB.NewWithNoMessage()
 	}
 	return fmt.Sprintf("127.0.0.1:%d", port), nil

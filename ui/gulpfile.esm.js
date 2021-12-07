@@ -21,10 +21,13 @@ task('swagger:watch', () =>
   watch(['../cmd/**/*.go', '../pkg/**/*.go'], series('swagger:generate'))
 )
 
-task('distro:generate', shell.task('../scripts/generate_distro_info.sh'))
+task('distro:generate', shell.task('../scripts/distro/write_strings.sh'))
 
 task('distro:watch', () =>
-  watch(['../pkg/utils/distro/*.go'], series('distro:generate'))
+  watch(
+    ['../internal/resource/distrores/strings.go'],
+    series('distro:generate')
+  )
 )
 
 task(
@@ -42,15 +45,40 @@ task(
 )
 
 task(
+  'speedscope:copy_static_assets',
+  shell.task(
+    'mkdir -p public/speedscope && cp node_modules/@duorou_xu/speedscope/dist/release/* public/speedscope/'
+  )
+)
+
+task('speedscope:watch', () =>
+  watch(
+    ['node_modules/@duorou_xu/speedscope/dist/release/*'],
+    series('speedscope:copy_static_assets')
+  )
+)
+
+task(
   'build',
-  series(parallel('swagger:generate', 'distro:generate'), 'webpack:build')
+  series(
+    parallel(
+      'swagger:generate',
+      'distro:generate',
+      'speedscope:copy_static_assets'
+    ),
+    'webpack:build'
+  )
 )
 
 task(
   'dev',
   series(
-    parallel('swagger:generate', 'distro:generate'),
-    parallel('swagger:watch', 'distro:watch', 'webpack:dev')
+    parallel(
+      'swagger:generate',
+      'distro:generate',
+      'speedscope:copy_static_assets'
+    ),
+    parallel('swagger:watch', 'distro:watch', 'speedscope:watch', 'webpack:dev')
   )
 )
 

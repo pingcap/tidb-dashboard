@@ -57,7 +57,7 @@ func TestDecodeFieldAssumptionJSON(t *testing.T) {
 		JSONSkip:       "c",
 	})
 	require.Nil(t, err)
-	require.Equal(t, `{"QueryValue":"a","JSONSkip":"c"}`, string(val))
+	require.JSONEq(t, `{"QueryValue":"a","JSONSkip":"c"}`, string(val))
 }
 
 func TestDecodeFieldAssumptionGORM(t *testing.T) {

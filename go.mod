@@ -10,16 +10,14 @@ require (
 	github.com/Xeoncross/go-aesctr-with-hmac v0.0.0-20200623134604-12b17a7ff502
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/antonmedv/expr v1.9.0
-	github.com/appleboy/gin-jwt/v2 v2.6.3
+	github.com/breeswish/gin-jwt/v2 v2.6.4-jwt-patch
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/fatih/structtag v1.2.0
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/goccy/go-graphviz v0.0.5
 	github.com/golang-jwt/jwt v3.2.1+incompatible
-	github.com/google/pprof v0.0.0-20200407044318-7d83b28da2e9
 	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/henrylee2cn/ameda v1.4.10
@@ -33,9 +31,7 @@ require (
 	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
 	github.com/pingcap/sysutil v0.0.0-20211108113841-e5c5906ed1e7
 	github.com/rs/cors v1.7.0
-	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
-	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd
 	github.com/spf13/pflag v1.0.1
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba

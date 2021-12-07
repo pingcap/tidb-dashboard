@@ -11,8 +11,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/util/distro"
+	"github.com/pingcap/tidb-dashboard/util/netutil"
 )
 
 // FetchStoreTopology returns TiKV info and TiFlash info.
@@ -75,12 +75,12 @@ func FetchStoreLocation(pdClient *pd.Client) (*StoreLocation, error) {
 func buildStoreTopology(stores []store) []StoreInfo {
 	nodes := make([]StoreInfo, 0, len(stores))
 	for _, v := range stores {
-		hostname, port, err := host.ParseHostAndPortFromAddress(v.Address)
+		hostname, port, err := netutil.ParseHostAndPortFromAddress(v.Address)
 		if err != nil {
 			log.Warn("Failed to parse store address", zap.Any("store", v))
 			continue
 		}
-		_, statusPort, err := host.ParseHostAndPortFromAddress(v.StatusAddress)
+		_, statusPort, err := netutil.ParseHostAndPortFromAddress(v.StatusAddress)
 		if err != nil {
 			log.Warn("Failed to parse store status address", zap.Any("store", v))
 			continue
@@ -140,7 +140,7 @@ func fetchStores(pdClient *pd.Client) ([]store, error) {
 	}{}
 	err = json.Unmarshal(data, &storeResp)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.Data("pd"))
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.R().PD)
 	}
 
 	ret := make([]store, 0, storeResp.Count)

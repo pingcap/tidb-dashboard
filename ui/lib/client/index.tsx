@@ -51,8 +51,6 @@ export enum ErrorStrategy {
   Custom = 'custom',
 }
 
-const ERR_CODE_OTHER = 'error.api.other'
-
 function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   instance.interceptors.response.use(undefined, async function (err) {
     const { response, config } = err
@@ -62,20 +60,23 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
     let errCode: string
     let content: string
     if (err.message === 'Network Error') {
-      errCode = 'error.network'
+      errCode = 'common.network'
     } else {
       errCode = response?.data?.code
     }
-    if (errCode !== ERR_CODE_OTHER && i18next.exists(errCode ?? '')) {
-      content = i18next.t(errCode)
+    if (i18next.exists(`error.${errCode ?? ''}`)) {
+      // If there is a translation for the code, use the translation.
+      // TODO: Better to display error details somewhere.
+      content = i18next.t(`error.${errCode}`)
     } else {
-      content =
-        response?.data?.message || err.message || i18next.t(ERR_CODE_OTHER)
+      content = String(
+        response?.data?.message || err.message || 'Internal error'
+      )
     }
     err.message = content
     err.errCode = errCode
 
-    if (errCode === 'error.api.unauthorized') {
+    if (errCode === 'common.unauthenticated') {
       // Handle unauthorized error in a unified way
       if (!routing.isLocationMatch('/') && !routing.isSignInPage()) {
         message.error({ content, key: errCode })

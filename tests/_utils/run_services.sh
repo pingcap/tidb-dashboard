@@ -4,12 +4,14 @@ set -euo
 
 INTEGRATION_LOG=/tmp/dashboard-integration-test.log
 
+tiup_bin_dir=$HOME/.tiup/bin
+
 start_tidb() {
   echo "+ Waiting for TiDB start..."
 
   rm -rf $INTEGRATION_LOG
   tidb_version=${1:-latest}
-  tiup playground $tidb_version > $INTEGRATION_LOG &
+  $tiup_bin_dir/tiup playground $tidb_version > $INTEGRATION_LOG &
   ensure_tidb
 
   echo "  - TiDB Version: $tidb_version, start success!"
@@ -18,7 +20,7 @@ start_tidb() {
 stop_tidb() {
   echo "+ Waiting for TiDB teardown..."
   # TODO: clean the latest started playground
-  tiup clean --all >/dev/null 2>&1
+  $tiup_bin_dir/tiup clean --all >/dev/null 2>&1
   echo "  - Stopped!"
 }
 

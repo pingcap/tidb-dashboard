@@ -9,9 +9,7 @@ import (
 	"github.com/joomcode/errorx"
 )
 
-var (
-	ErrNS = errorx.NewNamespace("feature_flag")
-)
+var ErrNS = errorx.NewNamespace("feature_flag")
 
 type FeatureFlag struct {
 	name        string

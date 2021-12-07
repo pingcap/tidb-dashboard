@@ -8,9 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	ErrFeatureUnsupported = ErrNS.NewType("feature_unsupported")
-)
+var ErrFeatureUnsupported = ErrNS.NewType("feature_unsupported")
 
 // VersionGuard returns gin.HandlerFunc as guard middleware.
 // It will determine if features are available in the target version.

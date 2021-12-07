@@ -17,15 +17,15 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
-	"github.com/pingcap/tidb-dashboard/util/feature"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 )
 
 type ServiceParams struct {
 	fx.In
-	Config         *config.Config
-	LocalStore     *dbstore.DB
-	TiDBClient     *tidb.Client
-	FeatureManager *feature.Manager
+	Config              *config.Config
+	LocalStore          *dbstore.DB
+	TiDBClient          *tidb.Client
+	FeatureFlagRegistry *featureflag.Registry
 }
 
 type Service struct {
@@ -65,7 +65,7 @@ func (s *Service) infoHandler(c *gin.Context) {
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
-		SupportedFeatures:  s.params.FeatureManager.SupportedFeatures(),
+		SupportedFeatures:  s.params.FeatureFlagRegistry.SupportedFeatures(),
 	}
 	c.JSON(http.StatusOK, resp)
 }

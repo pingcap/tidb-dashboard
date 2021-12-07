@@ -33,12 +33,12 @@ func Test_VersionGuard(t *testing.T) {
 
 	// StatusForbidden
 	e2 := gin.Default()
-	Handled := false
+	handled := false
 	e2.Use(func(c *gin.Context) {
 		c.Next()
 
 		// test error type
-		Handled = true
+		handled = true
 		r.Equal(true, errorx.IsOfType(c.Errors[0].Err, ErrFeatureUnsupported))
 	})
 	e2.Use(VersionGuard("v5.3.0", f1, f2))
@@ -50,5 +50,5 @@ func Test_VersionGuard(t *testing.T) {
 	e2.ServeHTTP(w2, req2)
 
 	r.Equal(http.StatusForbidden, w2.Code)
-	r.Equal(true, Handled)
+	r.Equal(true, handled)
 }

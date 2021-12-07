@@ -61,7 +61,6 @@ type Service struct {
 }
 
 func newService(lc fx.Lifecycle, p ServiceParams) *Service {
-
 	s := &Service{
 		FeatureFlagConprof: p.FeatureFlagRegistry.Register("conprof", ">= 5.3.0"),
 		params:             p,

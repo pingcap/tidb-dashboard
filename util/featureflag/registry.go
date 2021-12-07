@@ -20,8 +20,8 @@ func NewRegistry(version string) *Registry {
 	}
 }
 
-// NewRegistryProvider returns a fx.Provider.
-func NewRegistryProvider(version string) func() *Registry {
+// ProvideRegistry returns a constructor for fx.Provide.
+func ProvideRegistry(version string) func() *Registry {
 	return func() *Registry {
 		return NewRegistry(version)
 	}

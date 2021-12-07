@@ -19,6 +19,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 )
 
 var (
@@ -29,6 +30,8 @@ var (
 )
 
 type AuthService struct {
+	FeatureFlagNonRootLogin *featureflag.FeatureFlag
+
 	middleware     *jwt.GinJWTMiddleware
 	authenticators map[utils.AuthType]Authenticator
 }
@@ -70,7 +73,7 @@ func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string)
 	return &SignOutInfo{}, nil
 }
 
-func newAuthService() *AuthService {
+func newAuthService(featureFlagRegistry *featureflag.Registry) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -87,8 +90,9 @@ func newAuthService() *AuthService {
 	}
 
 	service := &AuthService{
-		middleware:     nil,
-		authenticators: map[utils.AuthType]Authenticator{},
+		FeatureFlagNonRootLogin: featureFlagRegistry.Register("nonRootLogin", ">= 5.3.0"),
+		middleware:              nil,
+		authenticators:          map[utils.AuthType]Authenticator{},
 	}
 
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{

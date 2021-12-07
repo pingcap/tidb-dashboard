@@ -22,7 +22,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
-	"github.com/pingcap/tidb-dashboard/util/feature"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 )
 
 var (
@@ -44,11 +44,14 @@ type ngMonitoringAddrCacheEntity struct {
 type ServiceParams struct {
 	fx.In
 
-	EtcdClient *clientv3.Client
-	Config     *config.Config
+	EtcdClient          *clientv3.Client
+	Config              *config.Config
+	FeatureFlagRegistry *featureflag.Registry
 }
 
 type Service struct {
+	FeatureFlagConprof *featureflag.FeatureFlag
+
 	params       ServiceParams
 	lifecycleCtx context.Context
 
@@ -57,22 +60,27 @@ type Service struct {
 }
 
 func newService(lc fx.Lifecycle, p ServiceParams) *Service {
-	s := &Service{params: p}
+
+	s := &Service{
+		FeatureFlagConprof: p.FeatureFlagRegistry.Register("conprof", ">= 5.3.0"),
+		params:             p,
+	}
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.lifecycleCtx = ctx
 			return nil
 		},
 	})
+
 	return s
 }
 
 // Register register the handlers to the service.
-func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service, fm *feature.Manager) {
+func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/continuous_profiling")
 
-	featureFlags := []*feature.Flag{FeatureFlagConprof}
-	endpoint.Use(fm.Guard(featureFlags))
+	endpoint.Use(featureflag.VersionGuard(s.params.Config.FeatureVersion, s.FeatureFlagConprof))
 	{
 		endpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
 		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)

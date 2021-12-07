@@ -31,7 +31,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
-	"github.com/pingcap/tidb-dashboard/util/feature"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator.
@@ -104,7 +104,7 @@ func (s *Service) Start(ctx context.Context) error {
 	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
-			feature.NewManagerProvider(s.config.FeatureVersion),
+			featureflag.ProvideRegistry(s.config.FeatureVersion),
 			newAPIHandlerEngine,
 			s.provideLocals,
 			dbstore.NewDBStore,

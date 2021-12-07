@@ -68,7 +68,7 @@ func convertDotToSVG(dotContent []byte) ([]byte, error) {
 	return svgWriteCloser.data, nil
 }
 
-// implement a writer to write content to []byte
+// implement a writer to write content to []byte.
 type protobufToDotWriter struct {
 	wc *writeCloser
 }

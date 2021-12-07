@@ -1,4 +1,4 @@
-import { Badge, Button, Progress, Form, Select } from 'antd'
+import { Badge, Button, Progress, Menu, Dropdown } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -10,12 +10,16 @@ import { CardTable, DateTime, Head, Descriptions } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
+import { ScrollablePane } from 'office-ui-fabric-react'
+import { MenuInfo } from 'rc-menu/lib/interface'
 
-const profilingOutputTypeOptions = [
-  { text: 'Flame Graph', value: 'flamegraph' },
-  { text: 'Graph', value: 'graph' },
-]
-const defaultProfilingOutputTypeVal = 'flamegraph'
+const profilingOutputTypeOptions = {
+  flamegraph: 'Flame Graph',
+  graph: 'Graph',
+}
+
+let defaultProfilingOutputTypeVal: string =
+  profilingOutputTypeOptions.flamegraph
 
 function mapData(data) {
   if (!data) {
@@ -37,19 +41,25 @@ function mapData(data) {
 
     // set profiling output options for previous generated SVG files and protobuf files.
     if (task.profile_output_type === 'protobuf') {
-      task.selected_output_type_val = defaultProfilingOutputTypeVal
+      task.default_profiling_output_type_val = defaultProfilingOutputTypeVal
       task.profilingOutputTypeOptions = profilingOutputTypeOptions
     } else {
       switch (task.target.kind) {
         case 'tidb':
         case 'pd':
-          task.selected_output_type_val = 'graph'
-          task.profilingOutputTypeOptions = profilingOutputTypeOptions[1]
+          task.default_profiling_output_type_val =
+            profilingOutputTypeOptions.graph
+          task.profilingOutputTypeOptions = {
+            graph: profilingOutputTypeOptions.graph,
+          }
           break
         case 'tiflash':
         case 'tikv':
-          task.selected_output_type_val = 'flamegraph'
-          task.profilingOutputTypeOptions = profilingOutputTypeOptions[0]
+          task.default_profiling_output_type_val =
+            profilingOutputTypeOptions.flamegraph
+          task.profilingOutputTypeOptions = {
+            flamegraph: profilingOutputTypeOptions.flamegraph,
+          }
           break
       }
     }
@@ -62,23 +72,94 @@ function isFinished(data) {
   return groupState === 2 || groupState === 3
 }
 
-const handleInlineSelectChanged = (record, selected_value) => {
-  record.selected_output_type_val = selected_value
+async function getActionToken(
+  id: string,
+  apiType: string
+): Promise<string | undefined> {
+  const res = await client.getInstance().getActionToken(id, apiType)
+  const token = res.data
+  if (!token) {
+    return
+  }
+  return token
 }
 
-function InlineSelect({ record }) {
+function ViewResultButton({ rec, t }) {
+  const isProtobuf: boolean = rec.profile_output_type === 'protobuf'
+  let token: string | undefined
+
+  const handleViewResultMenuClick = usePersistFn(async (e: MenuInfo) => {
+    switch (e.key) {
+      case 'download':
+        token = await getActionToken(rec.id, 'single_download')
+
+        window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
+        break
+      default:
+        token = await getActionToken(rec.id, 'single_view')
+        let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
+        profileURL = profileURL + `&output_type=${e.key}`
+
+        window.open(`${profileURL}`, '_blank')
+    }
+  })
+
+  const handleViewResultBtnClick = usePersistFn(async () => {
+    token = await getActionToken(rec.id, 'single_view')
+    let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
+    if (isProtobuf) {
+      const titleOnTab = rec.target.kind + '_' + rec.target.display_name
+      profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
+        profileURL
+      )}&title=${titleOnTab}`
+    }
+
+    window.open(`${profileURL}`, '_blank')
+  })
+
+  const menu = () => {
+    return (
+      <Menu onClick={handleViewResultMenuClick}>
+        <Menu.Item key="graph">
+          {t('instance_profiling.detail.table.columns.view')}{' '}
+          {profilingOutputTypeOptions.graph}
+        </Menu.Item>
+
+        <Menu.Item key="download">
+          {t('instance_profiling.detail.table.columns.download')}
+        </Menu.Item>
+      </Menu>
+    )
+  }
+
+  const DropdownButton = () => {
+    return (
+      <Dropdown.Button
+        disabled={rec.state !== 2}
+        overlay={menu}
+        onClick={handleViewResultBtnClick}
+      >
+        {t('instance_profiling.detail.table.columns.view')}{' '}
+        {rec.default_profiling_output_type_val}
+      </Dropdown.Button>
+    )
+  }
+
   return (
-    <Select
-      style={{ width: 140 }}
-      defaultValue={record.selected_output_type_val}
-      onChange={(val) => handleInlineSelectChanged(record, val)}
-    >
-      {record.profilingOutputTypeOptions.map((option) => (
-        <Select.Option key={option.value} value={option.value}>
-          {option.text}
-        </Select.Option>
-      ))}
-    </Select>
+    <>
+      {isProtobuf ? (
+        <DropdownButton />
+      ) : (
+        <Button
+          disabled={rec.state !== 2}
+          onClick={handleViewResultBtnClick}
+          style={{ width: 150 }}
+        >
+          {t('instance_profiling.detail.table.columns.view')}{' '}
+          {rec.state === 2 ? rec.default_profiling_output_type_val : ''}
+        </Button>
+      )}
+    </>
   )
 }
 
@@ -108,7 +189,7 @@ export default function Page() {
         name: t('instance_profiling.detail.table.columns.instance'),
         key: 'instance',
         minWidth: 150,
-        maxWidth: 400,
+        maxWidth: 250,
         onRender: (record) => record.target.display_name,
       },
       {
@@ -124,7 +205,7 @@ export default function Page() {
         name: t('instance_profiling.detail.table.columns.content'),
         key: 'content',
         minWidth: 150,
-        maxWidth: 300,
+        maxWidth: 250,
         onRender: (record) => {
           return `CPU Profiling - ${profileDuration}s`
         },
@@ -132,8 +213,8 @@ export default function Page() {
       {
         name: t('instance_profiling.detail.table.columns.status'),
         key: 'status',
-        minWidth: 150,
-        maxWidth: 200,
+        minWidth: 100,
+        maxWidth: 150,
         onRender: (record) => {
           if (record.state === 1) {
             return (
@@ -158,56 +239,17 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.detail.table.columns.output_type'),
+        name: t('instance_profiling.detail.table.columns.actions'),
         key: 'output_type',
         minWidth: 150,
         maxWidth: 200,
-        ignoreRowClick: true,
         onRender: (record) => {
-          return <InlineSelect record={record} />
-        },
-      },
-      {
-        name: '',
-        key: 'view_result',
-        minWidth: 100,
-        maxWidth: 200,
-        onRender: (record) => {
-          return (
-            <Button
-              type="primary"
-              onClick={() => handleViewResultClick(record)}
-            >
-              {t('instance_profiling.detail.table.columns.view_result')}
-            </Button>
-          )
+          return <ViewResultButton rec={record} t={t} />
         },
       },
     ],
     [t, profileDuration]
   )
-
-  const handleViewResultClick = usePersistFn(async (rec) => {
-    const res = await client.getInstance().getActionToken(rec.id, 'single_view')
-    const token = res.data
-    if (!token) {
-      return
-    }
-    // make both generated graph(svg) file and protobuf file viewable online
-    let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
-
-    if (rec.profile_output_type === 'protobuf') {
-      if (rec.selected_output_type_val === 'flamegraph') {
-        const titleOnTab = rec.target.kind + '_' + rec.target.display_name
-        profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
-          profileURL
-        )}&title=${titleOnTab}`
-      } else {
-        profileURL = profileURL + `&output_type=${rec.selected_output_type_val}`
-      }
-    }
-    window.open(`${profileURL}`, '_blank')
-  })
 
   const handleDownloadGroup = useCallback(async () => {
     const res = await client.getInstance().getActionToken(id, 'group_download')
@@ -219,7 +261,7 @@ export default function Page() {
   }, [id])
 
   return (
-    <div>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head
         title={t('instance_profiling.detail.head.title')}
         back={
@@ -250,15 +292,19 @@ export default function Page() {
           </Descriptions>
         )}
       </Head>
-      <CardTable
-        disableSelectionZone
-        loading={isLoading}
-        columns={columns}
-        items={data?.tasks_status || []}
-        errors={[error]}
-        hideLoadingWhenNotEmpty
-        extendLastColumn
-      />
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          <CardTable
+            disableSelectionZone
+            loading={isLoading}
+            columns={columns}
+            items={data?.tasks_status || []}
+            errors={[error]}
+            hideLoadingWhenNotEmpty
+            extendLastColumn
+          />
+        </ScrollablePane>
+      </div>
     </div>
   )
 }

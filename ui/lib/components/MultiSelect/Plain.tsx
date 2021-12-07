@@ -11,9 +11,8 @@ export default function PlainMultiSelect({
   items,
   ...restProps
 }: IPlainMultiSelectProps) {
-  const objectItems = useMemo(
-    () => items?.map((v) => ({ key: v })) ?? [],
-    [items]
-  )
+  const objectItems = useMemo(() => items?.map((v) => ({ key: v })) ?? [], [
+    items,
+  ])
   return <MultiSelect items={objectItems} {...restProps} />
 }

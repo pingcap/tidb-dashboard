@@ -94,11 +94,17 @@ function InstanceSelect(
 
   const { t } = useTranslation()
 
-  const { data: dataTiDB, isLoading: loadingTiDB } = useClientRequest(
-    (reqConfig) => client.getInstance().getTiDBTopology(reqConfig)
+  const {
+    data: dataTiDB,
+    isLoading: loadingTiDB,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getTiDBTopology(reqConfig)
   )
-  const { data: dataStores, isLoading: loadingStores } = useClientRequest(
-    (reqConfig) => client.getInstance().getStoreTopology(reqConfig)
+  const {
+    data: dataStores,
+    isLoading: loadingStores,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getStoreTopology(reqConfig)
   )
   const { data: dataPD, isLoading: loadingPD } = useClientRequest((reqConfig) =>
     client.getInstance().getPDTopology(reqConfig)

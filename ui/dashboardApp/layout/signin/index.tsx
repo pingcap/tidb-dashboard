@@ -423,10 +423,9 @@ function SSOSignInForm({ successRoute, onClickAlternative }) {
 }
 
 function App({ registry }) {
-  const successRoute = useMemo(
-    () => `#${registry.getDefaultRouter()}`,
-    [registry]
-  )
+  const successRoute = useMemo(() => `#${registry.getDefaultRouter()}`, [
+    registry,
+  ])
   const [alternativeVisible, setAlternativeVisible] = useState(false)
   const [formType, setFormType] = useState(DisplayFormType.uninitialized)
   const [supportedAuthTypes, setSupportedAuthTypes] = useState<Array<number>>([

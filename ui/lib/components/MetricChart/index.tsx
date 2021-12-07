@@ -112,17 +112,16 @@ export default function MetricChart({
   const { t } = useTranslation()
 
   const { isLoading, data, error, sendRequest } = useBatchClientRequest(
-    series.map(
-      (s) => (reqConfig) =>
-        client
-          .getInstance()
-          .metricsQueryGet(
-            timeParams.current.endTimeSec,
-            s.query,
-            timeParams.current.beginTimeSec,
-            30,
-            reqConfig
-          )
+    series.map((s) => (reqConfig) =>
+      client
+        .getInstance()
+        .metricsQueryGet(
+          timeParams.current.endTimeSec,
+          s.query,
+          timeParams.current.beginTimeSec,
+          30,
+          reqConfig
+        )
     )
   )
 

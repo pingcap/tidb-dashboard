@@ -26,10 +26,9 @@ export const DatabaseWidget: ApiFormWidget = ({ value, onChange }) => {
     }
   }, [setLoading, setOptions, options])
 
-  const memoOnChange = useCallback(
-    (tags: string[]) => onChange?.(tags[0]),
-    [onChange]
-  )
+  const memoOnChange = useCallback((tags: string[]) => onChange?.(tags[0]), [
+    onChange,
+  ])
   const { selectRef, onSelectChange } = useLimitSelection(1, memoOnChange)
 
   return (

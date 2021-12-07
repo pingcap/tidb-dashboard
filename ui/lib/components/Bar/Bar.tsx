@@ -49,10 +49,9 @@ function Bar({
     }
   }, [value, capacity])
 
-  const valuesSum = useMemo(
-    () => sum(clampedValues.map(([_s, v]) => v)),
-    [clampedValues]
-  )
+  const valuesSum = useMemo(() => sum(clampedValues.map(([_s, v]) => v)), [
+    clampedValues,
+  ])
 
   if (min != null) {
     min = clamp(min, 0, valuesSum)

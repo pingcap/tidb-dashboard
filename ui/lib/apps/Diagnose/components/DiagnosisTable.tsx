@@ -48,7 +48,8 @@ export default function DiagnosisTable({
   const { t } = useTranslation()
 
   const [internalTimeRange, setInternalTimeRange] = useState<[number, number]>([
-    0, 0,
+    0,
+    0,
   ])
   useEffect(() => setInternalTimeRange(stableTimeRange), [stableTimeRange])
   function handleStart() {
@@ -74,10 +75,12 @@ export default function DiagnosisTable({
       )
   }, [internalTimeRange, kind])
 
-  const { data, isLoading, error, sendRequest } = useClientRequest(
-    reqFn.current!,
-    { immediate: false }
-  )
+  const {
+    data,
+    isLoading,
+    error,
+    sendRequest,
+  } = useClientRequest(reqFn.current!, { immediate: false })
 
   useEffect(() => {
     if (internalTimeRange[0] !== 0) {
@@ -146,10 +149,10 @@ export default function DiagnosisTable({
     [items]
   )
 
-  const columns = useMemo(
-    () => diagnosisColumns(items, toggleShowSub),
-    [items, toggleShowSub]
-  )
+  const columns = useMemo(() => diagnosisColumns(items, toggleShowSub), [
+    items,
+    toggleShowSub,
+  ])
 
   ////////////////
 

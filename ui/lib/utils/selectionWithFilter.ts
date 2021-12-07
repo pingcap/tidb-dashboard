@@ -10,8 +10,7 @@ import {
 } from 'office-ui-fabric-react/lib/Utilities'
 
 export default class SelectionWithFilter<T = IObjectWithKey>
-  implements ISelection<T>
-{
+  implements ISelection<T> {
   private _inner: Selection<T>
 
   private _allItems: T[] = []

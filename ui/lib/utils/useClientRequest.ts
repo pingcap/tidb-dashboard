@@ -29,11 +29,8 @@ export function useClientRequest<T>(
   reqFactory: RequestFactory<T>,
   options?: Options
 ) {
-  const {
-    immediate = true,
-    afterRequest = null,
-    beforeRequest = null,
-  } = options || {}
+  const { immediate = true, afterRequest = null, beforeRequest = null } =
+    options || {}
 
   const [state, setState] = useState<State<T>>({
     isLoading: immediate,
@@ -118,11 +115,8 @@ export function useBatchClientRequest<T>(
   reqFactories: RequestFactory<T>[],
   options?: Options
 ) {
-  const {
-    immediate = true,
-    afterRequest = null,
-    beforeRequest = null,
-  } = options || {}
+  const { immediate = true, afterRequest = null, beforeRequest = null } =
+    options || {}
 
   const [state, setState] = useState<BatchState<T>>({
     isLoading: immediate,

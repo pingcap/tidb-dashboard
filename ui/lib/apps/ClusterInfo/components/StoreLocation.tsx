@@ -8,8 +8,13 @@ import StoreLocationTree, {
 } from './StoreLocationTree'
 
 export default function StoreLocation() {
-  const { data, isLoading, error, sendRequest } = useClientRequest(
-    (reqConfig) => client.getInstance().getStoreLocationTopology(reqConfig)
+  const {
+    data,
+    isLoading,
+    error,
+    sendRequest,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getStoreLocationTopology(reqConfig)
   )
   const treeData = useMemo(() => buildTreeData(data), [data])
   const shortStrMap = useMemo(() => getShortStrMap(data), [data])

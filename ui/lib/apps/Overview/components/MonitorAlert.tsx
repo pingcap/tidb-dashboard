@@ -12,11 +12,17 @@ export default function MonitorAlert() {
   const { t } = useTranslation()
   const [alertCounter, setAlertCounter] = useState(0)
 
-  const { data: amData, isLoading: amIsLoading } = useClientRequest(
-    (reqConfig) => client.getInstance().getAlertManagerTopology(reqConfig)
+  const {
+    data: amData,
+    isLoading: amIsLoading,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getAlertManagerTopology(reqConfig)
   )
-  const { data: grafanaData, isLoading: grafanaIsLoading } = useClientRequest(
-    (reqConfig) => client.getInstance().getGrafanaTopology(reqConfig)
+  const {
+    data: grafanaData,
+    isLoading: grafanaIsLoading,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getGrafanaTopology(reqConfig)
   )
 
   useEffect(() => {

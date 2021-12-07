@@ -35,10 +35,9 @@ export const TableWidget: ApiFormWidget = ({ form, value, onChange }) => {
     }
   }, [setLoading, setOptions, form])
 
-  const memoOnChange = useCallback(
-    (tags: string[]) => onChange?.(tags[0]),
-    [onChange]
-  )
+  const memoOnChange = useCallback((tags: string[]) => onChange?.(tags[0]), [
+    onChange,
+  ])
   const { selectRef, onSelectChange } = useLimitSelection(1, memoOnChange)
 
   return (

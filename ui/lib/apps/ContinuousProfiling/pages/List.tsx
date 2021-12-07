@@ -132,10 +132,12 @@ export default function Page() {
 
   const [showSettings, setShowSettings] = useState(false)
 
-  const { data: ngMonitoringConfig, sendRequest: reloadConfig } =
-    useClientRequest((reqConfig) =>
-      client.getInstance().continuousProfilingConfigGet(reqConfig)
-    )
+  const {
+    data: ngMonitoringConfig,
+    sendRequest: reloadConfig,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().continuousProfilingConfigGet(reqConfig)
+  )
   const conprofIsDisabled = useMemo(
     () => ngMonitoringConfig?.continuous_profiling?.enable === false,
     [ngMonitoringConfig]

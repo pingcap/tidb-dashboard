@@ -38,9 +38,9 @@ export interface ParamModelType {
 }
 
 // For customized form controls. https://ant.design/components/form-cn/#components-form-demo-customized-form-controls
-const createJSXElementWrapper =
-  (WidgetDef: ApiFormWidget) => (config: ApiFormWidgetConfig) =>
-    <WidgetDef {...config} />
+const createJSXElementWrapper = (WidgetDef: ApiFormWidget) => (
+  config: ApiFormWidgetConfig
+) => <WidgetDef {...config} />
 
 const paramModelWidgets: Widgets = {
   host: HostSelectWidget,

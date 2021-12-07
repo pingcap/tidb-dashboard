@@ -41,11 +41,7 @@ export default function Page() {
   const { t } = useTranslation()
   const { id } = useQueryParams()
 
-  const {
-    data: respData,
-    isLoading,
-    error,
-  } = useClientRequestWithPolling(
+  const { data: respData, isLoading, error } = useClientRequestWithPolling(
     (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
     {
       shouldPoll: (data) => !isFinished(data),

@@ -27,7 +27,8 @@ export default function DiagnoseGenerator() {
   }, [startTime, duration])
 
   const [stableTimeRange, setStableTimeRange] = useState<[number, number]>([
-    0, 0,
+    0,
+    0,
   ])
 
   function handleFinish() {

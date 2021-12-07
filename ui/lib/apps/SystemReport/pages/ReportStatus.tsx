@@ -14,11 +14,7 @@ function ReportStatus() {
   const { id } = useQueryParams()
   const { t } = useTranslation()
 
-  const {
-    data: report,
-    isLoading,
-    error,
-  } = useClientRequestWithPolling(
+  const { data: report, isLoading, error } = useClientRequestWithPolling(
     (reqConfig) =>
       client.getInstance().diagnoseReportsIdStatusGet(id, reqConfig),
     {

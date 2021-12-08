@@ -32,11 +32,7 @@ import * as auth from '@lib/utils/auth'
 import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
 
 import styles from './index.module.less'
-import Logo from './logo.svg'
 import { useIsFeatureSupport } from '@lib/utils/store'
-
-import landing from './landing.svgd'
-const landingSVG = landing.replace('data:text/plain', 'data:image/svg+xml')
 
 enum DisplayFormType {
   uninitialized,
@@ -259,7 +255,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
           initialValues={{ username: lastLoginUsername }}
           form={refForm}
         >
-          <Logo className={styles.logo} />
+          <img src="./logo.svg" className={styles.logo} />
           <Form.Item>
             <h2>{t('signin.form.tidb_auth.title')}</h2>
           </Form.Item>
@@ -516,7 +512,7 @@ function App({ registry }) {
           className={styles.landingContainer}
         >
           <div
-            style={{ backgroundImage: `url(${landingSVG})` }}
+            style={{ backgroundImage: `url(./landing.svg)` }}
             className={styles.landing}
           />
         </AppearAnimate>

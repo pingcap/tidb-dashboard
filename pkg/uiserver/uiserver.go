@@ -5,10 +5,13 @@ package uiserver
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"html"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/pingcap/log"
@@ -53,6 +56,60 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContent
 
 	rewrite("/index.html")
 	rewrite("/diagnoseReport.html")
+
+	rewriteDistroRes(fs, cfg, updater)
+}
+
+func rewriteDistroRes(fs http.FileSystem, cfg *config.Config, updater UpdateContentFunc) {
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatal("Failed to get work dir", zap.Error(err))
+	}
+
+	distroResDir := path.Join(path.Dir(exePath), "distro-res")
+	log.Debug("Distro res dir", zap.String("path", distroResDir))
+	info, err := os.Stat(distroResDir)
+	if err != nil || !info.IsDir() {
+		// just ignore
+		return
+	}
+	log.Info("Exist distro resources")
+	// traverse
+	files, err := ioutil.ReadDir(distroResDir)
+	if err != nil {
+		log.Fatal("Failed to read dir")
+	}
+	for _, file := range files {
+		fmt.Println(file.Name())
+
+		// check whether needs to override
+		f, err := fs.Open("/" + file.Name())
+		if err != nil {
+			log.Fatal("Asset not found", zap.String("path", file.Name()), zap.Error(err))
+			continue
+		}
+		f.Close()
+
+		f1, err := os.Open(path.Join(distroResDir, file.Name()))
+		if err != nil {
+			continue
+		}
+		data, err := ioutil.ReadAll(f1)
+		if err != nil {
+			continue
+		}
+
+		var b bytes.Buffer
+		w := gzip.NewWriter(&b)
+		if _, err := w.Write(data); err != nil {
+			log.Fatal("Failed to zip asset", zap.Error(err))
+		}
+		if err := w.Close(); err != nil {
+			log.Fatal("Failed to zip asset", zap.Error(err))
+		}
+
+		updater(fs, f, "/"+file.Name(), string(data), b.Bytes())
+	}
 }
 
 func Handler(root http.FileSystem) http.Handler {

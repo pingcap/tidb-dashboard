@@ -14,7 +14,10 @@ if [[ -f "${PROJECT_DIR}/internal/resource/distrores/strings.go" ]]; then
 fi
 
 echo "+ Write resource strings"
-go run -tags="${BUILD_TAG}" "${PROJECT_DIR}/scripts/distro/write_strings.go" -o="${PROJECT_DIR}/ui/lib/distribution.json"
+cd "$PROJECT_DIR"
+# FIXME: distro/write_strings needs to access the /internal package, which is not allowed to be invoked in another module
+# Currently we workaround this by invoking in the TiDB Dashboard module.
+go run -tags="${BUILD_TAG}" scripts/distro/write_strings.go -o="${PROJECT_DIR}/ui/lib/distribution.json"
 
 echo "  - Success! Resource strings:"
 cat "${PROJECT_DIR}/ui/lib/distribution.json"

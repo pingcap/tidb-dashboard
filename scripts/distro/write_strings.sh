@@ -14,7 +14,8 @@ if [[ -f "${PROJECT_DIR}/internal/resource/distrores/strings.go" ]]; then
 fi
 
 echo "+ Write resource strings"
-go run -tags="${BUILD_TAG}" "${PROJECT_DIR}/scripts/distro/write_strings.go" -o="${PROJECT_DIR}/ui/lib/distribution.json"
+cd "$PROJECT_DIR/scripts"
+go run -tags="${BUILD_TAG}" distro/write_strings.go -o="${PROJECT_DIR}/ui/lib/distribution.json"
 
 echo "  - Success! Resource strings:"
 cat "${PROJECT_DIR}/ui/lib/distribution.json"

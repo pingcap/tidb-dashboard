@@ -100,8 +100,8 @@ func (s *Service) Start(ctx context.Context) error {
 
 	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
+		fx.Supply(featureflag.NewRegistry(s.config.FeatureVersion)),
 		fx.Provide(
-			fx.Supply(featureflag.NewRegistry(s.config.FeatureVersion)),
 			newAPIHandlerEngine,
 			s.provideLocals,
 			dbstore.NewDBStore,

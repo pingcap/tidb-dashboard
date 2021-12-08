@@ -121,7 +121,8 @@ func (s *Service) queryPlans(
 		"avg_latency",
 		"exec_count",
 		"avg_mem",
-		"max_mem"})
+		"max_mem",
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -184,8 +184,10 @@ func (vvc Clauses) OrderBy(fields []OrderByField) clause.Expression {
 	return clause.OrderBy{Columns: orderByColumns}
 }
 
-var _ clause.Interface = nopClause{}
-var _ clause.Expression = nopClause{}
+var (
+	_ clause.Interface  = nopClause{}
+	_ clause.Expression = nopClause{}
+)
 
 // nopClause is a clause that will be never embedded into the SQL statement.
 type nopClause struct{}

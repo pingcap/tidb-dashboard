@@ -49,7 +49,7 @@ func TestTimestampJSON(t *testing.T) {
 	}
 	v, err = json.Marshal(st)
 	require.Nil(t, err)
-	require.Equal(t, string(v), `{"Foo":1633880141307801}`)
+	require.JSONEq(t, `{"Foo":1633880141307801}`, string(v))
 
 	var ts2 Timestamp
 	err = json.Unmarshal([]byte("12345"), &ts2)

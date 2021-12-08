@@ -12,7 +12,7 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 var (
@@ -31,7 +31,7 @@ func fetchStandardComponentTopology(ctx context.Context, componentName string, e
 	key := "/topology/" + componentName
 	resp, err := etcdClient.Get(ctx2, key, clientv3.WithPrefix())
 	if err != nil {
-		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", key, distro.Data("pd"))
+		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", key, distro.R().PD)
 	}
 	if resp.Count == 0 {
 		return nil, nil

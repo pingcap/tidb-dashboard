@@ -11,9 +11,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 )
 
-var (
-	ErrInsufficientPrivs = ErrNS.NewType("insufficient_privileges")
-)
+var ErrInsufficientPrivs = ErrNSSignIn.NewType("insufficient_priv")
 
 // TiDB config response
 //

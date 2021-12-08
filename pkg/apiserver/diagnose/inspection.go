@@ -255,6 +255,7 @@ func (s *queryQPS) setRefer() {
 	s.refer = s.result
 	s.result = nil
 }
+
 func (s *queryQPS) setCurrent() {
 	s.current = s.result
 	s.result = nil
@@ -337,6 +338,7 @@ func (s *queryQuantile) setRefer() {
 	s.refer = s.result
 	s.result = nil
 }
+
 func (s *queryQuantile) setCurrent() {
 	s.current = s.result
 	s.result = nil
@@ -389,6 +391,7 @@ func (s *queryTotal) setRefer() {
 	s.refer = s.result
 	s.result = nil
 }
+
 func (s *queryTotal) setCurrent() {
 	s.current = s.result
 	s.result = nil
@@ -516,7 +519,6 @@ func batchAtoi(ss []string) ([]int, error) {
 	re := make([]int, len(ss))
 	for i := range ss {
 		v, err := strconv.ParseFloat(ss[i], 64)
-
 		if err != nil {
 			return nil, err
 		}

@@ -1,3 +1,4 @@
 export let process = {
-  cwd: () => '',
+  // cwd: () => '',
+  env: {}, // to avoid `process.env` undefined in runtime
 }

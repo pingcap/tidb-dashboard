@@ -1,6 +1,6 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-package user
+package shared
 
 import (
 	"encoding/json"
@@ -10,8 +10,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 )
-
-var ErrInsufficientPrivs = ErrNSSignIn.NewType("insufficient_priv")
 
 // TiDB config response
 //
@@ -29,7 +27,11 @@ type tidbSEMConfig struct {
 	SkipGrantTable bool `json:"skip-grant-table"`
 }
 
-func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeable bool, err error) {
+func VerifySQLUser(tidbClient *tidb.Client, featureFlags *AuthFeatureFlags, userName, password string) (writeable bool, err error) {
+	if !featureFlags.NonRootLogin.IsSupported() && userName != "root" {
+		return false, ErrUnsupportedUser.New("User must be root")
+	}
+
 	db, err := tidbClient.OpenSQLConn(userName, password)
 	if err != nil {
 		return false, err

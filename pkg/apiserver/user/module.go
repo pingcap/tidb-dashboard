@@ -4,9 +4,15 @@ package user
 
 import (
 	"go.uber.org/fx"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/shared"
 )
 
 var Module = fx.Options(
-	fx.Provide(newAuthService),
+	fx.Provide(
+		newAuthService,
+		provideAuthenticatorRegister,
+		shared.ProvideFeatureFlags,
+	),
 	fx.Invoke(registerRouter),
 )

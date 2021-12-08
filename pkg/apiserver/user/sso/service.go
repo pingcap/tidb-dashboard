@@ -24,7 +24,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/shared"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
@@ -33,7 +33,6 @@ import (
 
 var (
 	ErrNS                           = errorx.NewNamespace("error.api.user.sso")
-	ErrUnsupportedUser              = ErrNS.NewType("unsupported_user")
 	ErrInvalidImpersonateCredential = ErrNS.NewType("invalid_impersonate_credential")
 	ErrDiscoverFailed               = ErrNS.NewType("discover_failed")
 	ErrBadConfig                    = ErrNS.NewType("bad_config")
@@ -48,9 +47,10 @@ const (
 
 type ServiceParams struct {
 	fx.In
-	LocalStore    *dbstore.DB
-	TiDBClient    *tidb.Client
-	ConfigManager *config.DynamicConfigManager
+	LocalStore       *dbstore.DB
+	TiDBClient       *tidb.Client
+	ConfigManager    *config.DynamicConfigManager
+	AuthFeatureFlags *shared.AuthFeatureFlags
 }
 
 type Service struct {
@@ -175,13 +175,13 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 	}
 
 	// Check whether this user can access dashboard
-	writeable, err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
+	writeable, err := shared.VerifySQLUser(s.params.TiDBClient, s.params.AuthFeatureFlags, userName, password)
 	if err != nil {
 		if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 			_ = s.updateImpersonationStatus(userName, ImpersonateStatusAuthFail)
 			return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
 		}
-		if errorx.IsOfType(err, user.ErrInsufficientPrivs) {
+		if errorx.IsOfType(err, shared.ErrInsufficientPrivs) {
 			_ = s.updateImpersonationStatus(userName, ImpersonateStatusInsufficientPrivs)
 			return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
 		}
@@ -204,12 +204,12 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 func (s *Service) createImpersonation(userName string, password string) (*SSOImpersonationModel, error) {
 	{
 		// Check whether this user can access dashboard
-		_, err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
+		_, err := shared.VerifySQLUser(s.params.TiDBClient, s.params.AuthFeatureFlags, userName, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
 			}
-			if errorx.IsOfType(err, user.ErrInsufficientPrivs) {
+			if errorx.IsOfType(err, shared.ErrInsufficientPrivs) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
 			}
 			return nil, err

@@ -18,30 +18,14 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/shared"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
-var (
-	ErrNS                  = errorx.NewNamespace("error.api.user")
-	ErrUnsupportedAuthType = ErrNS.NewType("unsupported_auth_type")
-	ErrNSSignIn            = ErrNS.NewSubNamespace("signin")
-	ErrSignInOther         = ErrNSSignIn.NewType("other")
-)
-
 type AuthService struct {
-	FeatureFlagNonRootLogin *featureflag.FeatureFlag
-
 	middleware     *jwt.GinJWTMiddleware
-	authenticators map[utils.AuthType]Authenticator
-}
-
-type AuthenticateForm struct {
-	Type     utils.AuthType `json:"type" example:"0"`
-	Username string         `json:"username" example:"root"` // Does not present for AuthTypeSharingCode
-	Password string         `json:"password"`
-	Extra    string         `json:"extra"` // FIXME: Use strong type
+	authenticators map[utils.AuthType]shared.Authenticator
 }
 
 type TokenResponse struct {
@@ -49,32 +33,7 @@ type TokenResponse struct {
 	Expire time.Time `json:"expire"`
 }
 
-type SignOutInfo struct {
-	EndSessionURL string `json:"end_session_url"`
-}
-
-type Authenticator interface {
-	IsEnabled() (bool, error)
-	Authenticate(form AuthenticateForm) (*utils.SessionUser, error)
-	ProcessSession(u *utils.SessionUser) bool
-	SignOutInfo(u *utils.SessionUser, redirectURL string) (*SignOutInfo, error)
-}
-
-type BaseAuthenticator struct{}
-
-func (a BaseAuthenticator) IsEnabled() (bool, error) {
-	return true, nil
-}
-
-func (a BaseAuthenticator) ProcessSession(u *utils.SessionUser) bool {
-	return true
-}
-
-func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string) (*SignOutInfo, error) {
-	return &SignOutInfo{}, nil
-}
-
-func newAuthService(featureFlags *featureflag.Registry) *AuthService {
+func newAuthService() *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -91,9 +50,8 @@ func newAuthService(featureFlags *featureflag.Registry) *AuthService {
 	}
 
 	service := &AuthService{
-		FeatureFlagNonRootLogin: featureFlags.Register("nonRootLogin", ">= 5.3.0"),
-		middleware:              nil,
-		authenticators:          map[utils.AuthType]Authenticator{},
+		middleware:     nil,
+		authenticators: map[utils.AuthType]shared.Authenticator{},
 	}
 
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
@@ -103,7 +61,7 @@ func newAuthService(featureFlags *featureflag.Registry) *AuthService {
 		Timeout:     time.Hour * 24,
 		MaxRefresh:  time.Hour * 24,
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-			var form AuthenticateForm
+			var form shared.AuthenticateForm
 			if err := c.ShouldBindJSON(&form); err != nil {
 				return nil, rest.ErrBadRequest.WrapWithNoMessage(err)
 			}
@@ -182,7 +140,7 @@ func newAuthService(featureFlags *featureflag.Registry) *AuthService {
 				err = e
 			} else if errors.Is(e, jwt.ErrFailedTokenCreation) {
 				// Try to catch other sign in failure errors.
-				err = ErrSignInOther.WrapWithNoMessage(e)
+				err = shared.ErrSignInOther.WrapWithNoMessage(e)
 			} else {
 				// The remaining error comes from checking tokens for protected endpoints.
 				err = rest.ErrUnauthenticated.NewWithNoMessage()
@@ -210,10 +168,10 @@ func newAuthService(featureFlags *featureflag.Registry) *AuthService {
 	return service
 }
 
-func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
+func (s *AuthService) authForm(f shared.AuthenticateForm) (*utils.SessionUser, error) {
 	a, ok := s.authenticators[f.Type]
 	if !ok {
-		return nil, ErrUnsupportedAuthType.NewWithNoMessage()
+		return nil, shared.ErrUnsupportedAuthType.NewWithNoMessage()
 	}
 	u, err := a.Authenticate(f)
 	if err != nil {
@@ -272,9 +230,15 @@ func (s *AuthService) MWRequireWritePriv() gin.HandlerFunc {
 	}
 }
 
-// RegisterAuthenticator registers an authenticator in the authenticate pipeline.
-func (s *AuthService) RegisterAuthenticator(typeID utils.AuthType, a Authenticator) {
+var _ shared.AuthenticatorRegister = (*AuthService)(nil)
+
+// Register impl shared.AuthenticatorRegister, registers an authenticator in the authenticate pipeline.
+func (s *AuthService) Register(typeID utils.AuthType, a shared.Authenticator) {
 	s.authenticators[typeID] = a
+}
+
+func provideAuthenticatorRegister(authService *AuthService) shared.AuthenticatorRegister {
+	return authService
 }
 
 type GetLoginInfoResponse struct {
@@ -306,7 +270,7 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 
 // @ID userLogin
 // @Summary Log in
-// @Param message body AuthenticateForm true "Credentials"
+// @Param message body shared.AuthenticateForm true "Credentials"
 // @Success 200 {object} TokenResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Router /user/login [post]
@@ -320,7 +284,7 @@ type GetSignOutInfoRequest struct {
 
 // @ID userGetSignOutInfo
 // @Summary Get sign out info
-// @Success 200 {object} SignOutInfo
+// @Success 200 {object} shared.SignOutInfo
 // @Param q query GetSignOutInfoRequest true "Query"
 // @Router /user/sign_out_info [get]
 // @Security JwtAuth
@@ -336,7 +300,7 @@ func (s *AuthService) getSignOutInfoHandler(c *gin.Context) {
 	u := utils.GetSession(c)
 	a, ok := s.authenticators[u.AuthFrom]
 	if !ok {
-		_ = c.Error(ErrUnsupportedAuthType.NewWithNoMessage())
+		_ = c.Error(shared.ErrUnsupportedAuthType.NewWithNoMessage())
 		return
 	}
 	si, err := a.SignOutInfo(u, req.RedirectURL)

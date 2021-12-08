@@ -6,7 +6,7 @@ import (
 	"github.com/joomcode/errorx"
 	"go.uber.org/fx"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/shared"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 )
@@ -14,37 +14,34 @@ import (
 const typeID utils.AuthType = 0
 
 type Authenticator struct {
-	user.BaseAuthenticator
-	tidbClient *tidb.Client
+	shared.BaseAuthenticator
+	tidbClient       *tidb.Client
+	authFeatureFlags *shared.AuthFeatureFlags
 }
 
-func newAuthenticator(tidbClient *tidb.Client) *Authenticator {
-	return &Authenticator{
-		tidbClient: tidbClient,
-	}
-}
-
-func registerAuthenticator(a *Authenticator, authService *user.AuthService) {
-	authService.RegisterAuthenticator(typeID, a)
+func registerAuthenticator(r shared.AuthenticatorRegister, tidbClient *tidb.Client, ff *shared.AuthFeatureFlags) {
+	r.Register(typeID, &Authenticator{
+		tidbClient:       tidbClient,
+		authFeatureFlags: ff,
+	})
 }
 
 var Module = fx.Options(
-	fx.Provide(newAuthenticator),
 	fx.Invoke(registerAuthenticator),
 )
 
-func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUser, error) {
-	writeable, err := user.VerifySQLUser(a.tidbClient, f.Username, f.Password)
+func (a *Authenticator) Authenticate(f shared.AuthenticateForm) (*utils.SessionUser, error) {
+	writeable, err := shared.VerifySQLUser(a.tidbClient, a.authFeatureFlags, f.Username, f.Password)
 	if err != nil {
 		if errorx.Cast(err) == nil {
-			return nil, user.ErrSignInOther.WrapWithNoMessage(err)
+			return nil, shared.ErrSignInOther.WrapWithNoMessage(err)
 		}
 		// Possible errors could be:
 		// tidb.ErrNoAliveTiDB
 		// tidb.ErrPDAccessFailed
 		// tidb.ErrTiDBConnFailed
 		// tidb.ErrTiDBAuthFailed
-		// user.ErrInsufficientPrivs
+		// shared.ErrInsufficientPrivs
 		return nil, err
 	}
 

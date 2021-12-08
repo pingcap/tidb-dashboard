@@ -7,36 +7,31 @@ import (
 
 	"go.uber.org/fx"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/shared"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 const typeID utils.AuthType = 1
 
-var ErrSignInInvalidCode = user.ErrNSSignIn.NewType("invalid_code") // Invalid or expired
+var ErrSignInInvalidCode = shared.ErrNSSignIn.NewType("invalid_code") // Invalid or expired
 
 type Authenticator struct {
-	user.BaseAuthenticator
+	shared.BaseAuthenticator
 	sharingCodeService *code.Service
 }
 
-func newAuthenticator(sharingCodeService *code.Service) *Authenticator {
-	return &Authenticator{
+func registerAuthenticator(r shared.AuthenticatorRegister, sharingCodeService *code.Service) {
+	r.Register(typeID, &Authenticator{
 		sharingCodeService: sharingCodeService,
-	}
-}
-
-func registerAuthenticator(a *Authenticator, authService *user.AuthService) {
-	authService.RegisterAuthenticator(typeID, a)
+	})
 }
 
 var Module = fx.Options(
-	fx.Provide(newAuthenticator),
 	fx.Invoke(registerAuthenticator),
 )
 
-func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUser, error) {
+func (a *Authenticator) Authenticate(f shared.AuthenticateForm) (*utils.SessionUser, error) {
 	session := a.sharingCodeService.NewSessionFromSharingCode(f.Password)
 	if session == nil {
 		return nil, ErrSignInInvalidCode.NewWithNoMessage()

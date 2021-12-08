@@ -9,6 +9,7 @@ import (
 	"github.com/joomcode/errorx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/shared"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
@@ -89,7 +90,7 @@ func (s *Service) createImpersonationHandler(c *gin.Context) {
 	rec, err := s.createImpersonation(req.SQLUser, req.Password)
 	if err != nil {
 		_ = c.Error(err)
-		if errorx.IsOfType(err, ErrUnsupportedUser) || errorx.IsOfType(err, ErrInvalidImpersonateCredential) {
+		if errorx.IsOfType(err, shared.ErrUnsupportedUser) || errorx.IsOfType(err, ErrInvalidImpersonateCredential) {
 			c.Status(http.StatusBadRequest)
 		}
 		return

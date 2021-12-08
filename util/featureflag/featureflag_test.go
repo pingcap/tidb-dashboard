@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,14 +63,22 @@ func Test_VersionGuard(t *testing.T) {
 	r.Equal(200, w.Code)
 	r.Equal("pong", w.Body.String())
 
-	// StatusForbidden
+	// abort with other middlewares
+	handled := false
 	e2 := gin.Default()
 	e2.Use(func(c *gin.Context) {
 		c.Next()
 
-		// test error type
-		c.Status(http.StatusForbidden)
-		r.Equal(true, errorx.IsOfType(c.Errors.Last().Err, ErrFeatureUnsupported))
+		handled = true
+
+		// check error type
+		currentErr := c.Errors.Last().Err
+		codeProperty, _ := rest.HTTPCodeProperty(http.StatusForbidden)
+		code, ok := c.Errors.Last().Err.(*errorx.Error).Property(codeProperty)
+		r.True(ok)
+
+		r.Equal(true, errorx.IsOfType(currentErr, ErrFeatureUnsupported))
+		r.Equal(http.StatusForbidden, code)
 	})
 	e2.Use(f1.VersionGuard(), f2.VersionGuard())
 	e2.GET("/ping", func(c *gin.Context) {
@@ -79,5 +88,5 @@ func Test_VersionGuard(t *testing.T) {
 	req2, _ := http.NewRequest("GET", "/ping", nil)
 	e2.ServeHTTP(w2, req2)
 
-	r.Equal(http.StatusForbidden, w2.Code)
+	r.Equal(true, handled)
 }

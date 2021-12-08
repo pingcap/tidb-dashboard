@@ -8,11 +8,12 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/gin-gonic/gin"
+	"github.com/joomcode/errorx"
 
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
-var ErrFeatureUnsupported = rest.ErrForbidden.NewSubtype("feature_unsupported")
+var ErrFeatureUnsupported = errorx.CommonErrors.NewType("feature_unsupported")
 
 type FeatureFlag struct {
 	name        string
@@ -39,8 +40,8 @@ func (f *FeatureFlag) IsSupported() bool {
 func (f *FeatureFlag) VersionGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !f.isSupported {
-			_ = c.Error(ErrFeatureUnsupported.New(f.name))
-			c.AbortWithStatus(http.StatusForbidden)
+			_ = c.Error(ErrFeatureUnsupported.New(f.name).WithProperty(rest.HTTPCodeProperty(http.StatusForbidden)))
+			c.Abort()
 			return
 		}
 

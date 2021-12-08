@@ -74,7 +74,7 @@ func Test_VersionGuard(t *testing.T) {
 		// check error type
 		currentErr := c.Errors.Last().Err
 		codeProperty, _ := rest.HTTPCodeProperty(http.StatusForbidden)
-		code, ok := c.Errors.Last().Err.(*errorx.Error).Property(codeProperty)
+		code, ok := currentErr.(*errorx.Error).Property(codeProperty)
 		r.True(ok)
 
 		r.Equal(true, errorx.IsOfType(currentErr, ErrFeatureUnsupported))

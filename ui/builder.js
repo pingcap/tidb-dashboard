@@ -11,7 +11,7 @@ fs.copyFileSync(
 )
 const postCssPlugin = require('esbuild-plugin-postcss2')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
-const svgrPlugin = require('esbuild-plugin-svgr')
+// const svgrPlugin = require('esbuild-plugin-svgr')
 const logTime = require('./esbuild/plugins/logtime')
 
 const isDev = process.env.NODE_ENV !== 'production'
@@ -129,7 +129,7 @@ const esbuildParams = {
       },
     }),
     yamlPlugin(),
-    svgrPlugin(),
+    // svgrPlugin(),
     logTime(),
   ],
   define: genDefine(),
@@ -162,6 +162,13 @@ function handleAssets() {
   buildHtml('./public/diagnoseReport.html', './build/diagnoseReport.html')
 }
 
+function copyDistroRes() {
+  const distroResPath = '../bin/distro-res'
+  if (fs.existsSync(distroResPath)) {
+    fs.copySync(distroResPath, './build')
+  }
+}
+
 async function main() {
   fs.removeSync('./build')
 
@@ -169,6 +176,7 @@ async function main() {
   handleAssets()
 
   if (isDev) {
+    copyDistroRes()
     start(devServerParams)
 
     const tsConfig = require('./tsconfig.json')

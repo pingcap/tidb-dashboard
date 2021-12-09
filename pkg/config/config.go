@@ -6,6 +6,8 @@ import (
 	"crypto/tls"
 	"net/url"
 	"strings"
+
+	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
 const (
@@ -40,7 +42,7 @@ func Default() *Config {
 		TiDBTLSConfig:      nil,
 		EnableTelemetry:    true,
 		EnableExperimental: false,
-		FeatureVersion:     "",
+		FeatureVersion:     version.PDVersion,
 	}
 }
 

@@ -339,7 +339,7 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
         <Form onFinish={handleSubmit} layout="vertical" form={refForm}>
-          <Logo className={styles.logo} />
+          <img src="./logo.svg" className={styles.logo} />
           <Form.Item>
             <h2>{t('signin.form.code_auth.title')}</h2>
           </Form.Item>
@@ -399,7 +399,7 @@ function SSOSignInForm({ successRoute, onClickAlternative }) {
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
         <Form>
-          <Logo className={styles.logo} />
+          <img src="./logo.svg" className={styles.logo} />
           <Form.Item>
             <Button
               type="primary"

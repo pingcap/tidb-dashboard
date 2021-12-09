@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"sync"
 
 	"github.com/pingcap/log"
@@ -87,11 +88,15 @@ func OverrideDistroStringsRes() {
 		return
 	}
 
-	distroStringsFile, err := os.Open(distroStringsResPath)
+	distroStringsFile, err := os.Open(filepath.Clean(distroStringsResPath))
 	if err != nil {
 		log.Fatal("Failed to open file", zap.String("path", distroStringsResPath), zap.Error(err))
 	}
-	defer distroStringsFile.Close()
+	defer func() {
+		if err := distroStringsFile.Close(); err != nil {
+			log.Error("Failed to close file", zap.String("path", distroStringsResPath), zap.Error(err))
+		}
+	}()
 
 	data, err := ioutil.ReadAll(distroStringsFile)
 	if err != nil {

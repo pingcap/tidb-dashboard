@@ -136,7 +136,6 @@ const esbuildParams = {
   inject: ['./process-shim.js'], // fix runtime crash
 }
 
-const distroInfo = require('./lib/distribution.json')
 function buildHtml(inputFilename, outputFilename) {
   let result = fs.readFileSync(inputFilename).toString()
 
@@ -146,12 +145,11 @@ function buildHtml(inputFilename, outputFilename) {
   })
 
   // handle distro
-  Object.keys(distroInfo).forEach((key) => {
-    result = result.replace(
-      new RegExp(`<%= htmlWebpackPlugin.options.distro_${key} %>`, 'g'),
-      distroInfo[key]
-    )
-  })
+  const distroStringsRes = require('./build/distro-res/strings.json')
+  result = result.replace(
+    '__DISTRO_STRINGS_RES__',
+    btoa(JSON.stringify(distroStringsRes))
+  )
 
   fs.writeFileSync(outputFilename, result)
 }

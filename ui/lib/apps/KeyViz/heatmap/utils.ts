@@ -63,7 +63,7 @@ export function doEventsOnYield(generator): Promise<undefined> {
     let advance = () => {
       try {
         let r = g.next()
-        if (r.done) resolve()
+        if (r.done) resolve(undefined)
       } catch (e) {
         reject(e)
       }

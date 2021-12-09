@@ -181,9 +181,10 @@ function useSignInSubmit(
       singleSpa.navigateToUrl(successRoute)
       onSuccess(form)
     } catch (e) {
-      if (!e.handled) {
-        const errMsg = t('signin.message.error', { msg: e.message })
-        if (isDistro || e.errCode !== 'api.user.signin.insufficient_priv') {
+      const { handled, message, errCode } = e as any
+      if (!handled) {
+        const errMsg = t('signin.message.error', { msg: message })
+        if (isDistro || errCode !== 'api.user.signin.insufficient_priv') {
           setError(errMsg)
         } else {
           // only add help link for TiDB distro when meeting insufficient_privileges error

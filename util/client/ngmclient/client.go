@@ -1,6 +1,6 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-package utils
+package ngmclient
 
 import (
 	"context"
@@ -17,6 +17,7 @@ import (
 	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
 var (
@@ -43,20 +44,20 @@ type NgmClient struct {
 }
 
 func NewNgmClient(lc fx.Lifecycle, etcdClient *clientv3.Client) (*NgmClient, error) {
-	s := &NgmClient{etcdClient: etcdClient}
+	nc := &NgmClient{etcdClient: etcdClient}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			s.lifecycleCtx = ctx
+			nc.lifecycleCtx = ctx
 			return nil
 		},
 	})
 
-	return s, nil
+	return nc, nil
 }
 
-func (s *NgmClient) Route(targetPath string) gin.HandlerFunc {
+func (nc *NgmClient) Route(targetPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ngMonitoringAddr, err := s.getNgMonitoringAddrFromCache()
+		ngMonitoringAddr, err := nc.getNgMonitoringAddrFromCache()
 		if err != nil {
 			_ = c.Error(err)
 			return
@@ -70,19 +71,19 @@ func (s *NgmClient) Route(targetPath string) gin.HandlerFunc {
 	}
 }
 
-func (s *NgmClient) getNgMonitoringAddrFromCache() (string, error) {
+func (nc *NgmClient) getNgMonitoringAddrFromCache() (string, error) {
 	fn := func() (string, error) {
 		// Check whether cache is valid, and use the cache if possible.
-		if v := s.ngMonitoringAddrCache.Load(); v != nil {
+		if v := nc.ngMonitoringAddrCache.Load(); v != nil {
 			entity := v.(*ngMonitoringAddrCacheEntity)
 			if entity.cacheAt.Add(ngMonitoringCacheTTL).After(time.Now()) {
 				return entity.address, entity.err
 			}
 		}
 
-		addr, err := s.resolveNgMonitoringAddress()
+		addr, err := nc.resolveNgMonitoringAddress()
 
-		s.ngMonitoringAddrCache.Store(&ngMonitoringAddrCacheEntity{
+		nc.ngMonitoringAddrCache.Store(&ngMonitoringAddrCacheEntity{
 			address: addr,
 			err:     err,
 			cacheAt: time.Now(),
@@ -91,19 +92,19 @@ func (s *NgmClient) getNgMonitoringAddrFromCache() (string, error) {
 		return addr, err
 	}
 
-	resolveResult, err, _ := s.ngMonitoringReqGroup.Do("any_key", func() (interface{}, error) {
+	resolveResult, err, _ := nc.ngMonitoringReqGroup.Do("any_key", func() (interface{}, error) {
 		return fn()
 	})
 	return resolveResult.(string), err
 }
 
-func (s *NgmClient) resolveNgMonitoringAddress() (string, error) {
-	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.etcdClient)
+func (nc *NgmClient) resolveNgMonitoringAddress() (string, error) {
+	pi, err := topology.FetchPrometheusTopology(nc.lifecycleCtx, nc.etcdClient)
 	if pi == nil || err != nil {
 		return "", ErrNgMonitoringNotDeploy.Wrap(err, "NgMonitoring component is not deployed")
 	}
 
-	addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.etcdClient)
+	addr, err := topo.FetchNgMonitoringTopology(nc.lifecycleCtx, nc.etcdClient)
 	if err == nil && addr != "" {
 		return fmt.Sprintf("http://%s", addr), nil
 	}

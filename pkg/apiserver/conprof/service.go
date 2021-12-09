@@ -14,6 +14,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/client/ngmclient"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
@@ -23,7 +24,7 @@ type ServiceParams struct {
 
 	EtcdClient   *clientv3.Client
 	Config       *config.Config
-	NgmClient    *utils.NgmClient
+	NgmClient    *ngmclient.NgmClient
 	FeatureFlags *featureflag.Registry
 }
 

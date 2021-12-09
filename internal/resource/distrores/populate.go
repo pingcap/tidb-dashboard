@@ -7,5 +7,5 @@ import (
 )
 
 func init() {
-	distro.ReplaceGlobal(resource)
+	distro.OverrideDistroStringsRes()
 }

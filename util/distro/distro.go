@@ -7,9 +7,15 @@ package distro
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"os"
+	"path"
 	"sync"
 
+	"github.com/pingcap/log"
+
 	"go.uber.org/atomic"
+	"go.uber.org/zap"
 )
 
 type DistributionResource struct {
@@ -31,6 +37,11 @@ var defaultDistroRes = DistributionResource{
 var (
 	globalDistroRes atomic.Value
 	replaceGlobalMu sync.Mutex
+)
+
+const (
+	DistroResFolderName      string = "distro-res"
+	distroStringsResFileName string = "strings.json"
 )
 
 // ReplaceGlobal replaces the global distribution resource with the specified one. Missing fields in the
@@ -61,4 +72,37 @@ func R() *DistributionResource {
 		return &defaultDistroRes
 	}
 	return r.(*DistributionResource)
+}
+
+func OverrideDistroStringsRes() {
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatal("Failed to get work dir", zap.Error(err))
+	}
+
+	distroStringsResPath := path.Join(path.Dir(exePath), DistroResFolderName, distroStringsResFileName)
+	info, err := os.Stat(distroStringsResPath)
+	if err != nil || info.IsDir() {
+		// ignore
+		return
+	}
+
+	distroStringsFile, err := os.Open(distroStringsResPath)
+	if err != nil {
+		log.Fatal("Failed to open file", zap.String("path", distroStringsResPath), zap.Error(err))
+	}
+	defer distroStringsFile.Close()
+
+	data, err := ioutil.ReadAll(distroStringsFile)
+	if err != nil {
+		log.Fatal("Failed to read file", zap.String("path", distroStringsResPath), zap.Error(err))
+	}
+
+	distroStringsRes := DistributionResource{}
+	err = json.Unmarshal(data, &distroStringsRes)
+	if err != nil {
+		log.Fatal("Failed to unmarshal distro strings res", zap.String("path", distroStringsResPath), zap.Error(err))
+	}
+
+	ReplaceGlobal(distroStringsRes)
 }

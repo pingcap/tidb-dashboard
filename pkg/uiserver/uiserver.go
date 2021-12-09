@@ -18,6 +18,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 type UpdateContentFunc func(fs http.FileSystem, oldFile http.File, path, newContent string, zippedBytes []byte)
@@ -56,16 +57,16 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContent
 	rewrite("/index.html")
 	rewrite("/diagnoseReport.html")
 
-	overrideDistroAssets(fs, cfg, updater)
+	overrideDistroAssetsRes(fs, cfg, updater)
 }
 
-func overrideDistroAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContentFunc) {
+func overrideDistroAssetsRes(fs http.FileSystem, cfg *config.Config, updater UpdateContentFunc) {
 	exePath, err := os.Executable()
 	if err != nil {
 		log.Fatal("Failed to get work dir", zap.Error(err))
 	}
 
-	distroResDir := path.Join(path.Dir(exePath), "distro-res")
+	distroResDir := path.Join(path.Dir(exePath), distro.DistroResFolderName)
 	info, err := os.Stat(distroResDir)
 	if err != nil || !info.IsDir() {
 		// just ignore

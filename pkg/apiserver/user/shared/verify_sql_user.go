@@ -27,7 +27,7 @@ type tidbSEMConfig struct {
 	SkipGrantTable bool `json:"skip-grant-table"`
 }
 
-func VerifySQLUser(tidbClient *tidb.Client, featureFlags *AuthFeatureFlags, userName, password string) (writeable bool, err error) {
+func VerifySQLUser(tidbClient *tidb.Client, featureFlags *UserFeatureFlags, userName, password string) (writeable bool, err error) {
 	if !featureFlags.NonRootLogin.IsSupported() && userName != "root" {
 		return false, ErrUnsupportedUser.New("User must be root")
 	}

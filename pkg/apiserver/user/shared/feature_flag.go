@@ -4,12 +4,12 @@ package shared
 
 import "github.com/pingcap/tidb-dashboard/util/featureflag"
 
-type AuthFeatureFlags struct {
+type UserFeatureFlags struct {
 	NonRootLogin *featureflag.FeatureFlag
 }
 
-func ProvideFeatureFlags(featureFlags *featureflag.Registry) *AuthFeatureFlags {
-	return &AuthFeatureFlags{
+func ProvideFeatureFlags(featureFlags *featureflag.Registry) *UserFeatureFlags {
+	return &UserFeatureFlags{
 		NonRootLogin: featureFlags.Register("nonRootLogin", ">= 5.3.0"),
 	}
 }

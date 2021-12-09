@@ -50,7 +50,7 @@ type ServiceParams struct {
 	LocalStore       *dbstore.DB
 	TiDBClient       *tidb.Client
 	ConfigManager    *config.DynamicConfigManager
-	AuthFeatureFlags *shared.AuthFeatureFlags
+	UserFeatureFlags *shared.UserFeatureFlags
 }
 
 type Service struct {
@@ -175,7 +175,7 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 	}
 
 	// Check whether this user can access dashboard
-	writeable, err := shared.VerifySQLUser(s.params.TiDBClient, s.params.AuthFeatureFlags, userName, password)
+	writeable, err := shared.VerifySQLUser(s.params.TiDBClient, s.params.UserFeatureFlags, userName, password)
 	if err != nil {
 		if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 			_ = s.updateImpersonationStatus(userName, ImpersonateStatusAuthFail)
@@ -204,7 +204,7 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 func (s *Service) createImpersonation(userName string, password string) (*SSOImpersonationModel, error) {
 	{
 		// Check whether this user can access dashboard
-		_, err := shared.VerifySQLUser(s.params.TiDBClient, s.params.AuthFeatureFlags, userName, password)
+		_, err := shared.VerifySQLUser(s.params.TiDBClient, s.params.UserFeatureFlags, userName, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")

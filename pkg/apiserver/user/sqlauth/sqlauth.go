@@ -16,13 +16,13 @@ const typeID utils.AuthType = 0
 type Authenticator struct {
 	shared.BaseAuthenticator
 	tidbClient       *tidb.Client
-	authFeatureFlags *shared.AuthFeatureFlags
+	userFeatureFlags *shared.UserFeatureFlags
 }
 
-func registerAuthenticator(r shared.AuthenticatorRegister, tidbClient *tidb.Client, ff *shared.AuthFeatureFlags) {
+func registerAuthenticator(r shared.AuthenticatorRegister, tidbClient *tidb.Client, ff *shared.UserFeatureFlags) {
 	r.Register(typeID, &Authenticator{
 		tidbClient:       tidbClient,
-		authFeatureFlags: ff,
+		userFeatureFlags: ff,
 	})
 }
 
@@ -31,7 +31,7 @@ var Module = fx.Options(
 )
 
 func (a *Authenticator) Authenticate(f shared.AuthenticateForm) (*utils.SessionUser, error) {
-	writeable, err := shared.VerifySQLUser(a.tidbClient, a.authFeatureFlags, f.Username, f.Password)
+	writeable, err := shared.VerifySQLUser(a.tidbClient, a.userFeatureFlags, f.Username, f.Password)
 	if err != nil {
 		if errorx.Cast(err) == nil {
 			return nil, shared.ErrSignInOther.WrapWithNoMessage(err)

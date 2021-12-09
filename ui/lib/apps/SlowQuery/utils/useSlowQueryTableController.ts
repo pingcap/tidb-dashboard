@@ -126,14 +126,8 @@ export default function useSlowQueryTableController(
   )
 
   const cacheKey = useMemo(() => {
-    const {
-      schemas,
-      digest,
-      limit,
-      plans,
-      searchText,
-      timeRange,
-    } = queryOptions
+    const { schemas, digest, limit, plans, searchText, timeRange } =
+      queryOptions
     const { desc, orderBy } = orderOptions
     const cacheKey = `${schemas.join(',')}_${digest}_${limit}_${plans.join(
       ','
@@ -254,9 +248,8 @@ export default function useSlowQueryTableController(
     }
   }
 
-  const { saveClickedItemIndex, getClickedItemIndex } = useCacheItemIndex(
-    cacheMgr
-  )
+  const { saveClickedItemIndex, getClickedItemIndex } =
+    useCacheItemIndex(cacheMgr)
 
   return {
     queryOptions,

@@ -33,9 +33,10 @@ const timeRangesMap: { [props: string]: TimeRange } = timeRanges.reduce(
 const defaultTimeRangeId = timeRanges[1].id
 
 export function TimeRange({ value, onChange }: TimeRangeProps) {
-  const handleChange = useCallback((v: string) => onChange(timeRangesMap[v]), [
-    onChange,
-  ])
+  const handleChange = useCallback(
+    (v: string) => onChange(timeRangesMap[v]),
+    [onChange]
+  )
   return (
     <Select onChange={handleChange} value={value.id} style={{ width: 150 }}>
       {timeRanges.map((tr) => (

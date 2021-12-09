@@ -1,4 +1,4 @@
-interface distroStringsRes {
+type DistroStringsRes = {
   is_distro: boolean
   tidb: string
   tikv: string
@@ -6,7 +6,7 @@ interface distroStringsRes {
   tiflash: string
 }
 
-const defalutDistroStringsRes: distroStringsRes = {
+const defalutDistroStringsRes: DistroStringsRes = {
   is_distro: false,
   tidb: 'TiDB',
   tikv: 'TiKV',
@@ -16,6 +16,7 @@ const defalutDistroStringsRes: distroStringsRes = {
 
 let distro = defalutDistroStringsRes
 
+// it is a base64 encoded string
 let distroStringsRes = document
   .querySelector('meta[name="x-distro-strings-res"]')
   ?.getAttribute('content')

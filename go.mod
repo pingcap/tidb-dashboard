@@ -42,7 +42,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/atomic v1.9.0
-	go.uber.org/fx v1.10.0
+	go.uber.org/fx v1.12.0
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.19.0
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be

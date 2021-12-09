@@ -12,11 +12,12 @@ import (
 )
 
 func main() {
-	buildTag := ""
-	if len(os.Args) > 1 {
-		buildTag = os.Args[1]
+	if len(os.Args) < 2 {
+		log.Fatal("Require 2 args")
 	}
-	var fs http.FileSystem = http.Dir("ui/build")
+	directory := os.Args[1]
+	buildTag := os.Args[2]
+	var fs http.FileSystem = http.Dir(directory)
 	err := vfsgen.Generate(fs, vfsgen.Options{
 		BuildTags:    buildTag,
 		PackageName:  "uiserver",

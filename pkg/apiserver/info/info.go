@@ -11,21 +11,21 @@ import (
 	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/nonrootlogin"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 )
 
 type ServiceParams struct {
 	fx.In
-	Config     *config.Config
-	LocalStore *dbstore.DB
-	TiDBClient *tidb.Client
+	Config       *config.Config
+	LocalStore   *dbstore.DB
+	TiDBClient   *tidb.Client
+	FeatureFlags *featureflag.Registry
 }
 
 type Service struct {
@@ -61,19 +61,11 @@ type InfoResponse struct { //nolint
 // @Security JwtAuth
 // @Failure 401 {object} rest.ErrorResponse
 func (s *Service) infoHandler(c *gin.Context) {
-	supportedFeatures := []string{}
-	if conprof.IsFeatureSupport(s.params.Config) {
-		supportedFeatures = append(supportedFeatures, "conprof")
-	}
-	if nonrootlogin.IsFeatureSupport(s.params.Config) {
-		supportedFeatures = append(supportedFeatures, "nonRootLogin")
-	}
-
 	resp := InfoResponse{
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
-		SupportedFeatures:  supportedFeatures,
+		SupportedFeatures:  s.params.FeatureFlags.SupportedFeatures(),
 	}
 	c.JSON(http.StatusOK, resp)
 }

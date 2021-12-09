@@ -5,48 +5,25 @@ package conprof
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
-	"sync/atomic"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joomcode/errorx"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
-	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
-
-var (
-	ConProfErrNS             = errorx.NewNamespace("error.api.continuous_profiling")
-	ErrNgMonitoringNotDeploy = ConProfErrNS.NewType("ng_monitoring_not_deploy")
-	ErrNgMonitoringNotStart  = ConProfErrNS.NewType("ng_monitoring_not_start")
-)
-
-const (
-	ngMonitoringCacheTTL = time.Second * 5
-)
-
-type ngMonitoringAddrCacheEntity struct {
-	address string
-	err     error
-	cacheAt time.Time
-}
 
 type ServiceParams struct {
 	fx.In
 
 	EtcdClient   *clientv3.Client
 	Config       *config.Config
+	NgmClient    *utils.NgmClient
 	FeatureFlags *featureflag.Registry
 }
 
@@ -55,9 +32,6 @@ type Service struct {
 
 	params       ServiceParams
 	lifecycleCtx context.Context
-
-	ngMonitoringReqGroup  singleflight.Group
-	ngMonitoringAddrCache atomic.Value
 }
 
 func newService(lc fx.Lifecycle, p ServiceParams) *Service {
@@ -82,82 +56,17 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 	endpoint.Use(s.FeatureFlagConprof.VersionGuard())
 	{
-		endpoint.GET("/config", auth.MWAuthRequired(), s.reverseProxy("/config"), s.conprofConfig)
-		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.reverseProxy("/config"), s.updateConprofConfig)
-		endpoint.GET("/components", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/components"), s.conprofComponents)
-		endpoint.GET("/estimate_size", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/estimate_size"), s.estimateSize)
-		endpoint.GET("/group_profiles", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profiles"), s.conprofGroupProfiles)
-		endpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.reverseProxy("/continuous_profiling/group_profile/detail"), s.conprofGroupProfileDetail)
+		endpoint.GET("/config", auth.MWAuthRequired(), s.params.NgmClient.Route("/config"))
+		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.params.NgmClient.Route("/config"))
+		endpoint.GET("/components", auth.MWAuthRequired(), s.params.NgmClient.Route("/continuous_profiling/components"))
+		endpoint.GET("/estimate_size", auth.MWAuthRequired(), s.params.NgmClient.Route("/continuous_profiling/estimate_size"))
+		endpoint.GET("/group_profiles", auth.MWAuthRequired(), s.params.NgmClient.Route("/continuous_profiling/group_profiles"))
+		endpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.params.NgmClient.Route("/continuous_profiling/group_profile/detail"))
 
-		endpoint.GET("/action_token", auth.MWAuthRequired(), s.genConprofActionToken)
-		endpoint.GET("/download", s.reverseProxy("/continuous_profiling/download"), s.conprofDownload)
-		endpoint.GET("/single_profile/view", s.reverseProxy("/continuous_profiling/single_profile/view"), s.conprofViewProfile)
+		endpoint.GET("/action_token", auth.MWAuthRequired(), s.GenConprofActionToken)
+		endpoint.GET("/download", s.parseJWTToken, s.params.NgmClient.Route("/continuous_profiling/download"))
+		endpoint.GET("/single_profile/view", s.parseJWTToken, s.params.NgmClient.Route("/continuous_profiling/single_profile/view"))
 	}
-}
-
-func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ngMonitoringAddr, err := s.getNgMonitoringAddrFromCache()
-		if err != nil {
-			_ = c.Error(err)
-			return
-		}
-
-		c.Request.URL.Path = targetPath
-		token := c.Query("token")
-		if token != "" {
-			queryStr, err := utils.ParseJWTString("conprof", token)
-			if err != nil {
-				_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
-				return
-			}
-			c.Request.URL.RawQuery = queryStr
-		}
-
-		ngMonitoringURL, _ := url.Parse(ngMonitoringAddr)
-		proxy := httputil.NewSingleHostReverseProxy(ngMonitoringURL)
-		proxy.ServeHTTP(c.Writer, c.Request)
-	}
-}
-
-func (s *Service) getNgMonitoringAddrFromCache() (string, error) {
-	fn := func() (string, error) {
-		// Check whether cache is valid, and use the cache if possible.
-		if v := s.ngMonitoringAddrCache.Load(); v != nil {
-			entity := v.(*ngMonitoringAddrCacheEntity)
-			if entity.cacheAt.Add(ngMonitoringCacheTTL).After(time.Now()) {
-				return entity.address, entity.err
-			}
-		}
-
-		addr, err := s.resolveNgMonitoringAddress()
-
-		s.ngMonitoringAddrCache.Store(&ngMonitoringAddrCacheEntity{
-			address: addr,
-			err:     err,
-			cacheAt: time.Now(),
-		})
-
-		return addr, err
-	}
-
-	resolveResult, err, _ := s.ngMonitoringReqGroup.Do("any_key", func() (interface{}, error) {
-		return fn()
-	})
-	return resolveResult.(string), err
-}
-
-func (s *Service) resolveNgMonitoringAddress() (string, error) {
-	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.params.EtcdClient)
-	if pi == nil || err != nil {
-		return "", ErrNgMonitoringNotDeploy.Wrap(err, "NgMonitoring component is not deployed")
-	}
-
-	addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
-	if err == nil && addr != "" {
-		return fmt.Sprintf("http://%s", addr), nil
-	}
-	return "", ErrNgMonitoringNotStart.Wrap(err, "NgMonitoring component is not started")
 }
 
 type ContinuousProfilingConfig struct {
@@ -178,7 +87,7 @@ type NgMonitoringConfig struct {
 // @Security JwtAuth
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) conprofConfig(c *gin.Context) {
+func (s *Service) ConprofConfig(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -189,7 +98,7 @@ func (s *Service) conprofConfig(c *gin.Context) {
 // @Success 200 {string} string "ok"
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) updateConprofConfig(c *gin.Context) {
+func (s *Service) UpdateConprofConfig(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -206,7 +115,7 @@ type Component struct {
 // @Security JwtAuth
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) conprofComponents(c *gin.Context) {
+func (s *Service) ConprofComponents(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -221,7 +130,7 @@ type EstimateSizeRes struct {
 // @Success 200 {object} EstimateSizeRes
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) estimateSize(c *gin.Context) {
+func (s *Service) EstimateSize(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -270,7 +179,7 @@ type Target struct {
 // @Success 200 {array} GroupProfiles
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) conprofGroupProfiles(c *gin.Context) {
+func (s *Service) ConprofGroupProfiles(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -281,7 +190,7 @@ func (s *Service) conprofGroupProfiles(c *gin.Context) {
 // @Success 200 {object} GroupProfileDetail
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
+func (s *Service) ConprofGroupProfileDetail(c *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -292,7 +201,7 @@ func (s *Service) conprofGroupProfileDetail(c *gin.Context) {
 // @Success 200 {string} string
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) genConprofActionToken(c *gin.Context) {
+func (s *Service) GenConprofActionToken(c *gin.Context) {
 	q := c.Query("q")
 	token, err := utils.NewJWTString("conprof", q)
 	if err != nil {
@@ -309,8 +218,18 @@ func (s *Service) genConprofActionToken(c *gin.Context) {
 // @Produce application/x-gzip
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) conprofDownload(c *gin.Context) {
+func (s *Service) ConprofDownload(c *gin.Context) {
 	// dummy, for generate openapi
+}
+
+func (s *Service) parseJWTToken(c *gin.Context) {
+	token := c.Query("token")
+	queryStr, err := utils.ParseJWTString("conprof", token)
+	if err != nil {
+		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+		return
+	}
+	c.Request.URL.RawQuery = queryStr
 }
 
 type ViewSingleProfileReq struct {
@@ -327,6 +246,6 @@ type ViewSingleProfileReq struct {
 // @Produce html
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) conprofViewProfile(c *gin.Context) {
+func (s *Service) ConprofViewProfile(c *gin.Context) {
 	// dummy, for generate openapi
 }

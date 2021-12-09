@@ -5,6 +5,8 @@ package uiserver
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/base64"
+	"encoding/json"
 	"html"
 	"io"
 	"io/ioutil"
@@ -41,6 +43,9 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContent
 		}
 		tmplText := string(bs)
 		updated := strings.ReplaceAll(tmplText, "__PUBLIC_PATH_PREFIX__", html.EscapeString(cfg.PublicPathPrefix))
+
+		distroStrings, _ := json.Marshal(distro.R()) // this will never fail
+		updated = strings.ReplaceAll(updated, "__DISTRO_STRINGS_RES__", base64.StdEncoding.EncodeToString(distroStrings))
 
 		var b bytes.Buffer
 		w := gzip.NewWriter(&b)

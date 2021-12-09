@@ -32,6 +32,8 @@ if (distroStringsRes && distroStringsRes !== '__DISTRO_STRINGS_RES__') {
   }
 }
 
+document.title = `${distro.tidb} Dashboard`
+
 const isDistro = Boolean(distro['is_distro'])
 
 export { distro, isDistro }

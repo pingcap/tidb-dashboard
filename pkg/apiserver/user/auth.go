@@ -19,6 +19,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
@@ -30,6 +31,8 @@ var (
 )
 
 type AuthService struct {
+	FeatureFlagNonRootLogin *featureflag.FeatureFlag
+
 	middleware     *jwt.GinJWTMiddleware
 	authenticators map[utils.AuthType]Authenticator
 }
@@ -71,7 +74,7 @@ func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string)
 	return &SignOutInfo{}, nil
 }
 
-func NewAuthService() *AuthService {
+func newAuthService(featureFlags *featureflag.Registry) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -88,8 +91,9 @@ func NewAuthService() *AuthService {
 	}
 
 	service := &AuthService{
-		middleware:     nil,
-		authenticators: map[utils.AuthType]Authenticator{},
+		FeatureFlagNonRootLogin: featureFlags.Register("nonRootLogin", ">= 5.3.0"),
+		middleware:              nil,
+		authenticators:          map[utils.AuthType]Authenticator{},
 	}
 
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
@@ -219,7 +223,7 @@ func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
 	return u, nil
 }
 
-func RegisterRouter(r *gin.RouterGroup, s *AuthService) {
+func registerRouter(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
 	endpoint.GET("/login_info", s.getLoginInfoHandler)
 	endpoint.POST("/login", s.loginHandler)

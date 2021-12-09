@@ -45,8 +45,8 @@ type InstanceItem struct {
 // @Router /top_sql/instances [get]
 // @Security JwtAuth
 // @Success 200 {object} InstanceResponse "ok"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) GetInstance(c *gin.Context) {
 	// dummy, for generate open api
 }
@@ -81,8 +81,8 @@ type PlanItem struct {
 // @Security JwtAuth
 // @Param q query GetCPUTimeRequest true "Query"
 // @Success 200 {object} CPUTimeResponse "ok"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) GetCPUTime(c *gin.Context) {
 	// dummy, for generate open api
 }

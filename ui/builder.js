@@ -144,12 +144,15 @@ function buildHtml(inputFilename, outputFilename) {
     result = result.replace(new RegExp(`%${key}%`, 'g'), process.env[key])
   })
 
-  // handle distro
-  const distroStringsRes = require('./build/distro-res/strings.json')
-  result = result.replace(
-    '__DISTRO_STRINGS_RES__',
-    btoa(JSON.stringify(distroStringsRes))
-  )
+  // handle distro strings res, only for dev mode
+  const distroStringsResFilePath = './build/distro-res/strings.json'
+  if (isDev && fs.existsSync(distroStringsResFilePath)) {
+    const distroStringsRes = require(distroStringsResFilePath)
+    result = result.replace(
+      '__DISTRO_STRINGS_RES__',
+      btoa(JSON.stringify(distroStringsRes))
+    )
+  }
 
   fs.writeFileSync(outputFilename, result)
 }

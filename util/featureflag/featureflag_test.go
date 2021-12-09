@@ -47,41 +47,38 @@ func Test_IsSupported(t *testing.T) {
 }
 
 func Test_VersionGuard(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	r := require.New(t)
 	f1 := newFeatureFlag("testFeature1", "v5.3.0", ">= 5.3.0")
 	f2 := newFeatureFlag("testFeature2", "v5.3.0", ">= 5.3.1")
 
-	// success
-	e := gin.Default()
-	e.Use(f1.VersionGuard())
-	e.GET("/ping", func(c *gin.Context) {
-		c.String(http.StatusOK, "pong")
+	t.Run("Success", func(t *testing.T) {
+		e := gin.Default()
+		e.Use(f1.VersionGuard())
+		e.GET("/ping", func(c *gin.Context) {
+			c.String(http.StatusOK, "pong")
+		})
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/ping", nil)
+		e.ServeHTTP(w, req)
+
+		r.Equal(http.StatusOK, w.Code)
+		r.Equal("pong", w.Body.String())
 	})
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/ping", nil)
-	e.ServeHTTP(w, req)
 
-	r.Equal(http.StatusOK, w.Code)
-	r.Equal("pong", w.Body.String())
+	t.Run("Abort", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		ctx, e := gin.CreateTestContext(w)
+		e.Use(f1.VersionGuard(), f2.VersionGuard())
+		e.GET("/ping", func(c *gin.Context) {
+			c.String(http.StatusOK, "pong")
+		})
+		ctx.Request, _ = http.NewRequest(http.MethodGet, "/ping", nil)
+		e.HandleContext(ctx)
 
-	// abort
-	handled := false
-	e2 := gin.Default()
-	e2.Use(func(c *gin.Context) {
-		c.Next()
-
-		handled = true
-		r.Equal(true, errorx.IsOfType(c.Errors.Last().Err, ErrFeatureUnsupported))
+		r.Len(ctx.Errors, 1)
+		r.True(errorx.IsOfType(ctx.Errors.Last().Err, ErrFeatureUnsupported))
 	})
-	e2.Use(f1.VersionGuard(), f2.VersionGuard())
-	e2.GET("/ping", func(c *gin.Context) {
-		c.String(http.StatusOK, "pong")
-	})
-	w2 := httptest.NewRecorder()
-	req2, _ := http.NewRequest("GET", "/ping", nil)
-	e2.ServeHTTP(w2, req2)
-
-	r.Equal(true, handled)
 }
 
 func Test_VersionGuardWith_ErrorHandlerFn(t *testing.T) {
@@ -94,9 +91,9 @@ func Test_VersionGuardWith_ErrorHandlerFn(t *testing.T) {
 	e.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
 	})
-	w2 := httptest.NewRecorder()
-	req2, _ := http.NewRequest("GET", "/ping", nil)
-	e.ServeHTTP(w2, req2)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/ping", nil)
+	e.ServeHTTP(w, req)
 
-	r.Equal(http.StatusForbidden, w2.Code)
+	r.Equal(http.StatusBadRequest, w.Code)
 }

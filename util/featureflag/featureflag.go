@@ -40,7 +40,7 @@ func (f *FeatureFlag) IsSupported() bool {
 func (f *FeatureFlag) VersionGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !f.isSupported {
-			_ = c.Error(ErrFeatureUnsupported.New(f.name).WithProperty(rest.HTTPCodeProperty(http.StatusForbidden)))
+			_ = c.Error(ErrFeatureUnsupported.New(f.name).WithProperty(rest.HTTPCodeProperty(http.StatusBadRequest)))
 			c.Abort()
 			return
 		}

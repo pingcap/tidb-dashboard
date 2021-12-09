@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 func Test_Name(t *testing.T) {
@@ -53,31 +55,48 @@ func Test_VersionGuard(t *testing.T) {
 	e := gin.Default()
 	e.Use(f1.VersionGuard())
 	e.GET("/ping", func(c *gin.Context) {
-		c.String(200, "pong")
+		c.String(http.StatusOK, "pong")
 	})
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/ping", nil)
 	e.ServeHTTP(w, req)
 
-	r.Equal(200, w.Code)
+	r.Equal(http.StatusOK, w.Code)
 	r.Equal("pong", w.Body.String())
 
-	// StatusForbidden
+	// abort
+	handled := false
 	e2 := gin.Default()
 	e2.Use(func(c *gin.Context) {
 		c.Next()
 
-		// test error type
-		c.Status(http.StatusForbidden)
+		handled = true
 		r.Equal(true, errorx.IsOfType(c.Errors.Last().Err, ErrFeatureUnsupported))
 	})
 	e2.Use(f1.VersionGuard(), f2.VersionGuard())
 	e2.GET("/ping", func(c *gin.Context) {
-		c.String(200, "pong")
+		c.String(http.StatusOK, "pong")
 	})
 	w2 := httptest.NewRecorder()
 	req2, _ := http.NewRequest("GET", "/ping", nil)
 	e2.ServeHTTP(w2, req2)
+
+	r.Equal(true, handled)
+}
+
+func Test_VersionGuardWith_ErrorHandlerFn(t *testing.T) {
+	r := require.New(t)
+	f := newFeatureFlag("testFeature", "v5.3.0", ">= 5.3.1")
+
+	e := gin.Default()
+	e.Use(rest.ErrorHandlerFn())
+	e.Use(f.VersionGuard())
+	e.GET("/ping", func(c *gin.Context) {
+		c.String(http.StatusOK, "pong")
+	})
+	w2 := httptest.NewRecorder()
+	req2, _ := http.NewRequest("GET", "/ping", nil)
+	e.ServeHTTP(w2, req2)
 
 	r.Equal(http.StatusForbidden, w2.Code)
 }

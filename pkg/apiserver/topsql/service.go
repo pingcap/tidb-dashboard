@@ -8,6 +8,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 )
 
 var (
@@ -15,16 +16,18 @@ var (
 )
 
 type Service struct {
+	FeatureTopSQL *featureflag.FeatureFlag
+
 	ngmProxy *utils.NgmProxy
 }
 
-func newService(ngmProxy *utils.NgmProxy) *Service {
-	return &Service{ngmProxy: ngmProxy}
+func newService(ngmProxy *utils.NgmProxy, ff *featureflag.Registry) *Service {
+	return &Service{ngmProxy: ngmProxy, FeatureTopSQL: ff.Register("topsql", ">= 5.3.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/top_sql")
-	endpoint.Use(auth.MWAuthRequired())
+	endpoint.Use(auth.MWAuthRequired(), s.FeatureTopSQL.VersionGuard())
 	{
 		endpoint.GET("/instances", s.ngmProxy.Route("/topsql/v1/instances"))
 		endpoint.GET("/cpu_time", s.ngmProxy.Route("/topsql/v1/cpu_time"))

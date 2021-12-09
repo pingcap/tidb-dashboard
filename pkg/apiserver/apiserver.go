@@ -40,6 +40,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"

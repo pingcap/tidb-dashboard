@@ -78,7 +78,8 @@ func overrideDistroAssetsRes(fs http.FileSystem, cfg *config.Config, updater Upd
 		return
 	}
 
-	override := func(assetPath string) {
+	override := func(assetName string) {
+		assetPath := path.Join("/", distro.DistroResFolderName, assetName)
 		targetFile, err := fs.Open(assetPath)
 		if err != nil {
 			// has no target asset to be overried, skip
@@ -86,15 +87,15 @@ func overrideDistroAssetsRes(fs http.FileSystem, cfg *config.Config, updater Upd
 		}
 		defer targetFile.Close()
 
-		sourceFile, err := os.Open(path.Join(distroResDir, assetPath))
+		sourceFile, err := os.Open(path.Join(distroResDir, assetName))
 		if err != nil {
-			log.Fatal("Failed to open source file", zap.String("path", assetPath), zap.Error(err))
+			log.Fatal("Failed to open source file", zap.String("path", assetName), zap.Error(err))
 		}
 		defer sourceFile.Close()
 
 		data, err := ioutil.ReadAll(sourceFile)
 		if err != nil {
-			log.Fatal("Failed to read asset", zap.String("path", assetPath), zap.Error(err))
+			log.Fatal("Failed to read asset", zap.String("path", assetName), zap.Error(err))
 		}
 
 		var b bytes.Buffer
@@ -115,7 +116,7 @@ func overrideDistroAssetsRes(fs http.FileSystem, cfg *config.Config, updater Upd
 		log.Fatal("Failed to read dir", zap.String("dir", distroResDir), zap.Error(err))
 	}
 	for _, file := range files {
-		override("/" + file.Name())
+		override(file.Name())
 	}
 }
 

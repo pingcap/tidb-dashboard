@@ -80,7 +80,10 @@ export default function ToggleBanner({
         >
           <Flexbox flexDirection="row">
             <div className={styles.bannerLogo}>
-              <img src="./logo-icon-light.svg" style={{ height: 30 }} />
+              <img
+                src="./distro-res/logo-icon-light.svg"
+                style={{ height: 30 }}
+              />
             </div>
             <div className={styles.bannerContent}>
               <div className={styles.bannerTitle}>

@@ -158,6 +158,10 @@ function buildHtml(inputFilename, outputFilename) {
 
 function handleAssets() {
   fs.copySync('./public', './build')
+  if (isDev) {
+    copyDistroRes()
+  }
+
   buildHtml('./public/index.html', './build/index.html')
   buildHtml('./public/diagnoseReport.html', './build/diagnoseReport.html')
 }
@@ -165,7 +169,7 @@ function handleAssets() {
 function copyDistroRes() {
   const distroResPath = '../bin/distro-res'
   if (fs.existsSync(distroResPath)) {
-    fs.copySync(distroResPath, './build')
+    fs.copySync(distroResPath, './build/distro-res')
   }
 }
 
@@ -176,7 +180,6 @@ async function main() {
   handleAssets()
 
   if (isDev) {
-    copyDistroRes()
     start(devServerParams)
 
     const tsConfig = require('./tsconfig.json')

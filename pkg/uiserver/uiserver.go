@@ -5,7 +5,6 @@ package uiserver
 import (
 	"bytes"
 	"compress/gzip"
-	"fmt"
 	"html"
 	"io"
 	"io/ioutil"
@@ -57,46 +56,39 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContent
 	rewrite("/index.html")
 	rewrite("/diagnoseReport.html")
 
-	rewriteDistroRes(fs, cfg, updater)
+	overrideDistroAssets(fs, cfg, updater)
 }
 
-func rewriteDistroRes(fs http.FileSystem, cfg *config.Config, updater UpdateContentFunc) {
+func overrideDistroAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContentFunc) {
 	exePath, err := os.Executable()
 	if err != nil {
 		log.Fatal("Failed to get work dir", zap.Error(err))
 	}
 
 	distroResDir := path.Join(path.Dir(exePath), "distro-res")
-	log.Debug("Distro res dir", zap.String("path", distroResDir))
 	info, err := os.Stat(distroResDir)
 	if err != nil || !info.IsDir() {
 		// just ignore
 		return
 	}
-	log.Info("Exist distro resources")
-	// traverse
-	files, err := ioutil.ReadDir(distroResDir)
-	if err != nil {
-		log.Fatal("Failed to read dir")
-	}
-	for _, file := range files {
-		fmt.Println(file.Name())
 
-		// check whether needs to override
-		f, err := fs.Open("/" + file.Name())
+	override := func(assetPath string) {
+		targetFile, err := fs.Open(assetPath)
 		if err != nil {
-			log.Fatal("Asset not found", zap.String("path", file.Name()), zap.Error(err))
-			continue
+			// has no target asset to be overried, skip
+			return
 		}
-		f.Close()
+		defer targetFile.Close()
 
-		f1, err := os.Open(path.Join(distroResDir, file.Name()))
+		sourceFile, err := os.Open(path.Join(distroResDir, assetPath))
 		if err != nil {
-			continue
+			log.Fatal("Failed to open source file", zap.String("path", assetPath), zap.Error(err))
 		}
-		data, err := ioutil.ReadAll(f1)
+		defer sourceFile.Close()
+
+		data, err := ioutil.ReadAll(sourceFile)
 		if err != nil {
-			continue
+			log.Fatal("Failed to read asset", zap.String("path", assetPath), zap.Error(err))
 		}
 
 		var b bytes.Buffer
@@ -108,7 +100,16 @@ func rewriteDistroRes(fs http.FileSystem, cfg *config.Config, updater UpdateCont
 			log.Fatal("Failed to zip asset", zap.Error(err))
 		}
 
-		updater(fs, f, "/"+file.Name(), string(data), b.Bytes())
+		updater(fs, targetFile, assetPath, string(data), b.Bytes())
+	}
+
+	// traverse
+	files, err := ioutil.ReadDir(distroResDir)
+	if err != nil {
+		log.Fatal("Failed to read dir", zap.String("dir", distroResDir), zap.Error(err))
+	}
+	for _, file := range files {
+		override("/" + file.Name())
 	}
 }
 

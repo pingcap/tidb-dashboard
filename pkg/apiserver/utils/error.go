@@ -9,5 +9,3 @@ import (
 var ErrNS = errorx.NewNamespace("error.api")
 
 var ErrExpNotEnabled = ErrNS.NewType("experimental_feature_not_enabled")
-
-var ErrFeatureNotSupported = ErrNS.NewType("feature_not_supported")

@@ -14,45 +14,58 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 )
 
 type ServiceParams struct {
 	fx.In
 
-	EtcdClient *clientv3.Client
-	Config     *config.Config
-	NgmProxy   *utils.NgmProxy
+	EtcdClient   *clientv3.Client
+	Config       *config.Config
+	NgmProxy     *utils.NgmProxy
+	FeatureFlags *featureflag.Registry
 }
 
 type Service struct {
+	FeatureFlagConprof *featureflag.FeatureFlag
+
 	params       ServiceParams
 	lifecycleCtx context.Context
 }
 
 func newService(lc fx.Lifecycle, p ServiceParams) *Service {
-	s := &Service{params: p}
+	s := &Service{
+		FeatureFlagConprof: p.FeatureFlags.Register("conprof", ">= 5.3.0"),
+		params:             p,
+	}
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.lifecycleCtx = ctx
 			return nil
 		},
 	})
+
 	return s
 }
 
 // Register register the handlers to the service.
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	conprofEndpoint := r.Group("/continuous_profiling")
-	conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.params.NgmProxy.Route("/config"))
-	conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.params.NgmProxy.Route("/config"))
-	conprofEndpoint.GET("/components", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/components"))
-	conprofEndpoint.GET("/estimate_size", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/estimate_size"))
-	conprofEndpoint.GET("/group_profiles", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profiles"))
-	conprofEndpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profile/detail"))
 
-	conprofEndpoint.GET("/action_token", auth.MWAuthRequired(), s.GenConprofActionToken)
-	conprofEndpoint.GET("/download", s.parseJWTToken, s.params.NgmProxy.Route("/continuous_profiling/download"))
-	conprofEndpoint.GET("/single_profile/view", s.parseJWTToken, s.params.NgmProxy.Route("/continuous_profiling/single_profile/view"))
+	conprofEndpoint.Use(s.FeatureFlagConprof.VersionGuard())
+	{
+		conprofEndpoint.GET("/config", auth.MWAuthRequired(), s.params.NgmProxy.Route("/config"))
+		conprofEndpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.params.NgmProxy.Route("/config"))
+		conprofEndpoint.GET("/components", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/components"))
+		conprofEndpoint.GET("/estimate_size", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/estimate_size"))
+		conprofEndpoint.GET("/group_profiles", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profiles"))
+		conprofEndpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profile/detail"))
+
+		conprofEndpoint.GET("/action_token", auth.MWAuthRequired(), s.GenConprofActionToken)
+		conprofEndpoint.GET("/download", s.parseJWTToken, s.params.NgmProxy.Route("/continuous_profiling/download"))
+		conprofEndpoint.GET("/single_profile/view", s.parseJWTToken, s.params.NgmProxy.Route("/continuous_profiling/single_profile/view"))
+	}
 }
 
 type ContinuousProfilingConfig struct {

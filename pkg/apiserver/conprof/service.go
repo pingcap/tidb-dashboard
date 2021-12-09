@@ -15,6 +15,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 type ServiceParams struct {
@@ -225,7 +226,7 @@ func (s *Service) parseJWTToken(c *gin.Context) {
 	token := c.Query("token")
 	queryStr, err := utils.ParseJWTString("conprof", token)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 	c.Request.URL.RawQuery = queryStr

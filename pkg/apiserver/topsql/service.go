@@ -11,9 +11,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 )
 
-var (
-	ErrNS = errorx.NewNamespace("error.api.top_sql")
-)
+var ErrNS = errorx.NewNamespace("error.api.top_sql")
 
 type Service struct {
 	FeatureTopSQL *featureflag.FeatureFlag
@@ -37,6 +35,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 type InstanceResponse struct {
 	Data []InstanceItem `json:"data"`
 }
+
 type InstanceItem struct {
 	Instance     string `json:"instance"`
 	InstanceType string `json:"instance_type"`
@@ -59,14 +58,17 @@ type GetCPUTimeRequest struct {
 	Top      string `json:"top"`
 	Window   string `json:"window"`
 }
+
 type CPUTimeResponse struct {
 	Data []CPUTimeItem `json:"data"`
 }
+
 type CPUTimeItem struct {
 	SQLDigest string     `json:"sql_digest"`
 	SQLText   string     `json:"sql_text"`
 	Plans     []PlanItem `json:"plans"`
 }
+
 type PlanItem struct {
 	PlanDigest    string   `json:"plan_digest"`
 	PlanText      string   `json:"plan_text"`

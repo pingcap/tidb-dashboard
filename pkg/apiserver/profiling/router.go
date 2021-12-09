@@ -269,6 +269,13 @@ func (s *Service) downloadSingle(c *gin.Context) {
 	}
 }
 
+type ViewOutputType string
+
+const (
+	ViewOutputTypeFlameGraph ViewOutputType = "FlameGraph"
+	ViewOutputTypeGraph      ViewOutputType = "Graph"
+)
+
 // @ID viewProfilingSingle
 // @Summary View the result of a task
 // @Description View the finished profiling result of a task
@@ -304,16 +311,29 @@ func (s *Service) viewSingle(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	if outputType == "graph" {
-		svgContent, err := convertProtobufToSVG(content, task)
-		if err != nil {
-			_ = c.Error(err)
+
+	// set default content-type for legacy profiling content.
+	contentType := "image/svg+xml"
+
+	if task.ProfileOutputType == ProfilingOutputTypeProtobuf {
+		switch outputType {
+		case string(ViewOutputTypeGraph):
+			svgContent, err := convertProtobufToSVG(content, task)
+			if err != nil {
+				_ = c.Error(err)
+				return
+			}
+			content = svgContent
+			contentType = "image/svg+xml"
+		case string(ViewOutputTypeFlameGraph):
+			contentType = "application/protobuf"
+		default:
+			// Will not handle converting protobuf to other formats except flamegraph and graph
+			log.Warn("Failed to convert protobuf to %v", zap.String("output", outputType))
 			return
 		}
-		content = svgContent
 	}
-
-	c.Data(http.StatusOK, "image/svg+xml", content)
+	c.Data(http.StatusOK, contentType, content)
 }
 
 // @ID deleteProfilingGroup

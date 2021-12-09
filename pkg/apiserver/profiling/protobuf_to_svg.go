@@ -34,7 +34,9 @@ func convertProtobufToDot(content []byte, task TaskModel) ([]byte, error) {
 		"-output", "dummy",
 		"-seconds", strconv.Itoa(int(1)),
 	}
-	address := fmt.Sprintf("%s:%d", task.Target.IP, task.Target.Port)
+	// the addr is required for driver. Pporf but not used here
+	// since we have fetched proto content and just want to convert it to dot
+	address := ""
 	args = append(args, address)
 	f := &flagSet{
 		FlagSet: flag.NewFlagSet("pprof", flag.PanicOnError),

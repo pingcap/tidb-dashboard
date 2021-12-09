@@ -24,7 +24,10 @@ const (
 
 type TaskProfileOutputType string
 
-const ProfilingOutputTypeProtobuf TaskProfileOutputType = "protobuf"
+const (
+	ProfilingOutputTypeProtobuf TaskProfileOutputType = "protobuf"
+	ProfilingOutputTypeSVG      TaskProfileOutputType = "svg"
+)
 
 type TaskModel struct {
 	ID                uint                    `json:"id" gorm:"primary_key"`

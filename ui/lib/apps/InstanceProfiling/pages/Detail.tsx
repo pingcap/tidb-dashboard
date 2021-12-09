@@ -13,13 +13,20 @@ import useQueryParams from '@lib/utils/useQueryParams'
 import { ScrollablePane } from 'office-ui-fabric-react'
 import { MenuInfo } from 'rc-menu/lib/interface'
 
-const profilingOutputTypeOptions = {
-  flamegraph: 'Flame Graph',
-  graph: 'Graph',
+enum ViewOutputTypeOptions {
+  FlameGraph = 'FlameGraph',
+  Graph = 'Graph',
 }
 
-let defaultProfilingOutputTypeVal: string =
-  profilingOutputTypeOptions.flamegraph
+enum taskState {
+  Error,
+  Running,
+  Success,
+}
+
+const ProfilingOutputTypeProtobuf = 'protobuf'
+
+let viewDefaultOutputTypeVal = ViewOutputTypeOptions.FlameGraph
 
 function mapData(data) {
   if (!data) {
@@ -40,26 +47,23 @@ function mapData(data) {
     }
 
     // set profiling output options for previous generated SVG files and protobuf files.
-    if (task.profile_output_type === 'protobuf') {
-      task.default_profiling_output_type_val = defaultProfilingOutputTypeVal
-      task.profilingOutputTypeOptions = profilingOutputTypeOptions
+    if (task.profile_output_type === ProfilingOutputTypeProtobuf) {
+      task.view_default_output_type_val = viewDefaultOutputTypeVal
+      task.view_output_type_options = [
+        ViewOutputTypeOptions.FlameGraph,
+        ViewOutputTypeOptions.Graph,
+      ]
     } else {
       switch (task.target.kind) {
         case 'tidb':
         case 'pd':
-          task.default_profiling_output_type_val =
-            profilingOutputTypeOptions.graph
-          task.profilingOutputTypeOptions = {
-            graph: profilingOutputTypeOptions.graph,
-          }
+          task.view_default_output_type_val = ViewOutputTypeOptions.Graph
+          task.view_output_type_options = ViewOutputTypeOptions.Graph
           break
         case 'tiflash':
         case 'tikv':
-          task.default_profiling_output_type_val =
-            profilingOutputTypeOptions.flamegraph
-          task.profilingOutputTypeOptions = {
-            flamegraph: profilingOutputTypeOptions.flamegraph,
-          }
+          task.view_default_output_type_val = viewDefaultOutputTypeVal
+          task.view_output_type_options = viewDefaultOutputTypeVal
           break
       }
     }
@@ -85,7 +89,8 @@ async function getActionToken(
 }
 
 function ViewResultButton({ rec, t }) {
-  const isProtobuf: boolean = rec.profile_output_type === 'protobuf'
+  const isProtobuf: boolean =
+    rec.profile_output_type === ProfilingOutputTypeProtobuf
   let token: string | undefined
 
   const handleViewResultMenuClick = usePersistFn(async (e: MenuInfo) => {
@@ -97,20 +102,22 @@ function ViewResultButton({ rec, t }) {
         break
       default:
         token = await getActionToken(rec.id, 'single_view')
-        let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
-        profileURL = profileURL + `&output_type=${e.key}`
 
+        let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
+          e.key
+        }`
         window.open(`${profileURL}`, '_blank')
     }
   })
 
   const handleViewResultBtnClick = usePersistFn(async () => {
     token = await getActionToken(rec.id, 'single_view')
+
     let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
     if (isProtobuf) {
       const titleOnTab = rec.target.kind + '_' + rec.target.display_name
       profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
-        profileURL
+        profileURL + `&output_type=${ViewOutputTypeOptions.FlameGraph}`
       )}&title=${titleOnTab}`
     }
 
@@ -120,13 +127,13 @@ function ViewResultButton({ rec, t }) {
   const menu = () => {
     return (
       <Menu onClick={handleViewResultMenuClick}>
-        <Menu.Item key="graph">
-          {t('instance_profiling.detail.table.columns.view')}{' '}
-          {profilingOutputTypeOptions.graph}
+        <Menu.Item key={ViewOutputTypeOptions.Graph}>
+          {t('instance_profiling.detail.table.columns.selection.view')}{' '}
+          {ViewOutputTypeOptions.Graph}
         </Menu.Item>
 
         <Menu.Item key="download">
-          {t('instance_profiling.detail.table.columns.download')}
+          {t('instance_profiling.detail.table.columns.selection.download')}
         </Menu.Item>
       </Menu>
     )
@@ -135,12 +142,12 @@ function ViewResultButton({ rec, t }) {
   const DropdownButton = () => {
     return (
       <Dropdown.Button
-        disabled={rec.state !== 2}
+        disabled={rec.state !== taskState.Success}
         overlay={menu}
         onClick={handleViewResultBtnClick}
       >
-        {t('instance_profiling.detail.table.columns.view')}{' '}
-        {rec.default_profiling_output_type_val}
+        {t('instance_profiling.detail.table.columns.selection.view')}{' '}
+        {rec.view_default_output_type_val}
       </Dropdown.Button>
     )
   }
@@ -151,12 +158,14 @@ function ViewResultButton({ rec, t }) {
         <DropdownButton />
       ) : (
         <Button
-          disabled={rec.state !== 2}
+          disabled={rec.state !== taskState.Success}
           onClick={handleViewResultBtnClick}
           style={{ width: 150 }}
         >
-          {t('instance_profiling.detail.table.columns.view')}{' '}
-          {rec.state === 2 ? rec.default_profiling_output_type_val : ''}
+          {t('instance_profiling.detail.table.columns.selection.view')}{' '}
+          {rec.state === taskState.Success
+            ? rec.view_default_output_type_val
+            : ''}
         </Button>
       )}
     </>
@@ -216,7 +225,7 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         onRender: (record) => {
-          if (record.state === 1) {
+          if (record.state === taskState.Running) {
             return (
               <div style={{ width: 200 }}>
                 <Progress
@@ -226,7 +235,7 @@ export default function Page() {
                 />
               </div>
             )
-          } else if (record.state === 0) {
+          } else if (record.state === taskState.Error) {
             return <Badge status="error" text={record.error} />
           } else {
             return (
@@ -239,7 +248,7 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.detail.table.columns.actions'),
+        name: t('instance_profiling.detail.table.columns.selection.actions'),
         key: 'output_type',
         minWidth: 150,
         maxWidth: 200,

@@ -38,8 +38,9 @@ instance_profiling:
         kind: Component
         content: Content
         status: Status
-        actions: Actions
-        view: View
-        download: Download Raw Data
+        selection:
+          actions: Actions
+          view: View
+          download: Download Raw Data
       status:
         finished: Finished

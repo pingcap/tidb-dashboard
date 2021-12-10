@@ -50,7 +50,6 @@ function Sider({
 
   const whoAmI = store.useState((s) => s.whoAmI)
   const appInfo = store.useState((s) => s.appInfo)
-  const supportConprof = useIsFeatureSupport('conprof')
 
   const instanceProfilingMenuItem = useAppMenuItem(
     registry,
@@ -65,7 +64,7 @@ function Sider({
     true
   )
   const profilingSubMenuItems = [instanceProfilingMenuItem]
-  if (supportConprof) {
+  if (useIsFeatureSupport('conprof')) {
     profilingSubMenuItems.push(conprofMenuItem)
   }
 
@@ -103,7 +102,6 @@ function Sider({
   )
 
   const experimentalSubMenuItems = [
-    useAppMenuItem(registry, 'top_sql'),
     useAppMenuItem(registry, 'query_editor'),
     useAppMenuItem(registry, 'configuration'),
   ]
@@ -124,6 +122,7 @@ function Sider({
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
+    useIsFeatureSupport('topsql') ? useAppMenuItem(registry, 'top_sql') : null,
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),

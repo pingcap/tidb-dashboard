@@ -5,7 +5,7 @@ import { Spin, Button, Space, Checkbox, Select } from 'antd'
 import { ReloadOutlined, FullscreenOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 
-import '@elastic/charts/dist/theme_light.css'
+import '@elastic/charts/dist/theme_only_light.css'
 
 import client from '@lib/client'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'

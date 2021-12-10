@@ -18,7 +18,6 @@ import (
 
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"github.com/pingcap/log"
-	"github.com/pingcap/sysutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -270,6 +269,6 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 }
 
 func logMessageToString(msg *diagnosticspb.LogMessage) string {
-	timeStr := time.Unix(0, msg.Time*int64(time.Millisecond)).Format(sysutil.TimeStampLayout)
+	timeStr := time.Unix(0, msg.Time*int64(time.Millisecond)).Format("2006/01/02 15:04:05.000 -07:00")
 	return fmt.Sprintf("[%s] [%s] %s\n", timeStr, msg.Level.String(), msg.Message)
 }

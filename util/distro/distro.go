@@ -75,7 +75,7 @@ func R() *DistributionResource {
 	return r.(*DistributionResource)
 }
 
-func OverrideDistroStringsRes() {
+func StringsRes() (distroStringsRes DistributionResource) {
 	exePath, err := os.Executable()
 	if err != nil {
 		log.Fatal("Failed to get work dir", zap.Error(err))
@@ -103,11 +103,10 @@ func OverrideDistroStringsRes() {
 		log.Fatal("Failed to read file", zap.String("path", distroStringsResPath), zap.Error(err))
 	}
 
-	distroStringsRes := DistributionResource{}
 	err = json.Unmarshal(data, &distroStringsRes)
 	if err != nil {
 		log.Fatal("Failed to unmarshal distro strings res", zap.String("path", distroStringsResPath), zap.Error(err))
 	}
 
-	ReplaceGlobal(distroStringsRes)
+	return
 }

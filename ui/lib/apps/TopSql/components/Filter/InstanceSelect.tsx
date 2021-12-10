@@ -18,7 +18,7 @@ export type InstanceId = string | undefined
 
 export function InstanceSelect({ value, onChange }: InstanceSelectProps) {
   const { data, isLoading } = useQuery('getInstances', () =>
-    client.getInstance().topSqlInstancesGet()
+    client.getInstance().topsqlInstancesGet()
   )
   const instances = data?.data.data
   const instanceGroups: InstanceGroup[] = useMemo(() => {

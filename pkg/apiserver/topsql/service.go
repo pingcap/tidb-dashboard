@@ -24,7 +24,7 @@ func newService(ngmClient *utils.NgmClient, ff *featureflag.Registry) *Service {
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
-	endpoint := r.Group("/top_sql")
+	endpoint := r.Group("/topsql")
 	endpoint.Use(auth.MWAuthRequired(), s.FeatureTopSQL.VersionGuard())
 	{
 		endpoint.GET("/instances", s.ngmClient.Route("/topsql/v1/instances"))
@@ -42,7 +42,7 @@ type InstanceItem struct {
 }
 
 // @Summary Get availiable instances
-// @Router /top_sql/instances [get]
+// @Router /topsql/instances [get]
 // @Security JwtAuth
 // @Success 200 {object} InstanceResponse "ok"
 // @Failure 401 {object} rest.ErrorResponse
@@ -77,7 +77,7 @@ type PlanItem struct {
 }
 
 // @Summary Get cpu time
-// @Router /top_sql/cpu_time [get]
+// @Router /topsql/cpu_time [get]
 // @Security JwtAuth
 // @Param q query GetCPUTimeRequest true "Query"
 // @Success 200 {object} CPUTimeResponse "ok"

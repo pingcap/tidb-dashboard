@@ -164,7 +164,7 @@ const queryTopSQLDigests = asyncDebounce(
     const [beginTs, endTs] = getTimestampRange(timeRange)
     return client
       .getInstance()
-      .topSqlCpuTimeGet(
+      .topsqlCpuTimeGet(
         endTs as any,
         instanceId,
         beginTs as any,

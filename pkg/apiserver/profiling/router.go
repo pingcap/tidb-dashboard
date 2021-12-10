@@ -315,7 +315,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 	// set default content-type for legacy profiling content.
 	contentType := "image/svg+xml"
 
-	if task.ProfilingRawDataType == ProfilingRawDataTypeProtobuf {
+	if task.RawDataType == RawDataTypeProtobuf {
 		switch outputType {
 		case string(ViewOutputTypeGraph):
 			svgContent, err := convertProtobufToSVG(content, task)

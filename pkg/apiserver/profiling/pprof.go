@@ -18,14 +18,14 @@ type pprofOptions struct {
 	fetcher *profileFetcher
 }
 
-func fetchPprof(op *pprofOptions) (string, TaskProfilingRawDataType, error) {
+func fetchPprof(op *pprofOptions) (string, TaskRawDataType, error) {
 	fetcher := &fetcher{profileFetcher: op.fetcher, target: op.target}
-	tmpPath, profilingRawDataType, err := fetcher.FetchAndWriteToFile(op.duration, op.fileNameWithoutExt)
+	tmpPath, rawDataType, err := fetcher.FetchAndWriteToFile(op.duration, op.fileNameWithoutExt)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to fetch annd write to temp file: %v", err)
 	}
 
-	return tmpPath, profilingRawDataType, nil
+	return tmpPath, rawDataType, nil
 }
 
 type fetcher struct {
@@ -33,7 +33,7 @@ type fetcher struct {
 	profileFetcher *profileFetcher
 }
 
-func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string) (string, TaskProfilingRawDataType, error) {
+func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string) (string, TaskRawDataType, error) {
 	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt+"*.proto")
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create tmpfile to write profile: %v", err)
@@ -56,5 +56,5 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string) 
 		return "", "", fmt.Errorf("failed to write profile: %v", err)
 	}
 
-	return tmpfile.Name(), ProfilingRawDataTypeProtobuf, nil
+	return tmpfile.Name(), RawDataTypeProtobuf, nil
 }

@@ -22,19 +22,19 @@ const (
 	TaskPartialFinish
 )
 
-type TaskProfilingRawDataType string
+type TaskRawDataType string
 
-const ProfilingRawDataTypeProtobuf TaskProfilingRawDataType = "protobuf"
+const RawDataTypeProtobuf TaskRawDataType = "protobuf"
 
 type TaskModel struct {
-	ID                   uint                     `json:"id" gorm:"primary_key"`
-	TaskGroupID          uint                     `json:"task_group_id" gorm:"index"`
-	State                TaskState                `json:"state" gorm:"index"`
-	Target               model.RequestTargetNode  `json:"target" gorm:"embedded;embedded_prefix:target_"`
-	FilePath             string                   `json:"-" gorm:"type:text"`
-	Error                string                   `json:"error" gorm:"type:text"`
-	StartedAt            int64                    `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
-	ProfilingRawDataType TaskProfilingRawDataType `json:"profile_raw_data_type"`
+	ID          uint                    `json:"id" gorm:"primary_key"`
+	TaskGroupID uint                    `json:"task_group_id" gorm:"index"`
+	State       TaskState               `json:"state" gorm:"index"`
+	Target      model.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
+	FilePath    string                  `json:"-" gorm:"type:text"`
+	Error       string                  `json:"error" gorm:"type:text"`
+	StartedAt   int64                   `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
+	RawDataType TaskRawDataType         `json:"raw_data_type"`
 }
 
 func (TaskModel) TableName() string {
@@ -85,7 +85,7 @@ func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTarg
 
 func (t *Task) run() {
 	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s", t.TaskGroupID, t.ID, t.Target.FileName())
-	protoFilePath, ProfilingRawDataType, err := profileAndWritePprof(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
+	protoFilePath, rawDataType, err := profileAndWritePprof(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError
@@ -94,7 +94,7 @@ func (t *Task) run() {
 	}
 	t.FilePath = protoFilePath
 	t.State = TaskStateFinish
-	t.ProfilingRawDataType = ProfilingRawDataType
+	t.RawDataType = rawDataType
 	t.taskGroup.db.Save(t.TaskModel)
 }
 

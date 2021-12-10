@@ -13,7 +13,7 @@ import useQueryParams from '@lib/utils/useQueryParams'
 import { ScrollablePane } from 'office-ui-fabric-react'
 import { MenuInfo } from 'rc-menu/lib/interface'
 
-enum ViewOutputTypeOptions {
+enum ViewOption {
   FlameGraph = 'flamegraph',
   Graph = 'graph',
   Download = 'download',
@@ -25,7 +25,9 @@ enum taskState {
   Success,
 }
 
-const ProfilingRawDataTypeProtobuf = 'protobuf'
+enum RawDataType {
+  Protobuf = 'protobuf',
+}
 
 function mapData(data, t) {
   if (!data) {
@@ -47,21 +49,21 @@ function mapData(data, t) {
     }
 
     // set profiling output options for previous generated SVG files and protobuf files.
-    if (task.profile_raw_data_type === ProfilingRawDataTypeProtobuf) {
-      task.view_output_type_options = [
-        ViewOutputTypeOptions.FlameGraph,
-        ViewOutputTypeOptions.Graph,
-        ViewOutputTypeOptions.Download,
+    if (task.raw_data_type === RawDataType.Protobuf) {
+      task.view_options = [
+        ViewOption.FlameGraph,
+        ViewOption.Graph,
+        ViewOption.Download,
       ]
-    } else if (task.profile_raw_data_type === '') {
+    } else if (task.raw_data_type === '') {
       switch (task.target.kind) {
         case 'tidb':
         case 'pd':
-          task.view_output_type_options = [ViewOutputTypeOptions.Graph]
+          task.view_options = [ViewOption.Graph]
           break
         case 'tikv':
         case 'tiflash':
-          task.view_output_type_options = [ViewOutputTypeOptions.FlameGraph]
+          task.view_options = [ViewOption.FlameGraph]
           break
       }
     }
@@ -87,13 +89,13 @@ async function getActionToken(
 }
 
 function ViewResultButton({ rec, t }) {
-  const isProtobuf: boolean =
-    rec.profile_raw_data_type === ProfilingRawDataTypeProtobuf
-  let token: string | undefined
+  const openResult = usePersistFn(async (openAs: string) => {
+    const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
+    let token: string | undefined
+    let profileURL: string
 
-  const handleViewResultMenuClick = usePersistFn(async (e: MenuInfo) => {
-    switch (e.key) {
-      case 'download':
+    switch (openAs) {
+      case ViewOption.Download:
         token = await getActionToken(rec.id, 'single_download')
         if (!token) {
           return
@@ -101,40 +103,43 @@ function ViewResultButton({ rec, t }) {
 
         window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
         break
-      default:
+      case ViewOption.FlameGraph:
         token = await getActionToken(rec.id, 'single_view')
         if (!token) {
           return
         }
 
-        let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
-          e.key
-        }`
+        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
+        if (isProtobuf) {
+          const titleOnTab = rec.target.kind + '_' + rec.target.display_name
+          profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
+            profileURL + `&output_type=${ViewOption.FlameGraph}`
+          )}&title=${titleOnTab}`
+        }
+
+        window.open(`${profileURL}`, '_blank')
+        break
+      case ViewOption.Graph:
+        token = await getActionToken(rec.id, 'single_view')
+        if (!token) {
+          return
+        }
+
+        profileURL =
+          profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
+
+        if (isProtobuf) {
+          profileURL = profileURL + `&output_type=${ViewOption.Graph}`
+        }
+
         window.open(`${profileURL}`, '_blank')
     }
   })
 
-  const handleViewResultBtnClick = usePersistFn(async () => {
-    token = await getActionToken(rec.id, 'single_view')
-    if (!token) {
-      return
-    }
-
-    let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
-    if (isProtobuf) {
-      const titleOnTab = rec.target.kind + '_' + rec.target.display_name
-      profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
-        profileURL + `&output_type=${ViewOutputTypeOptions.FlameGraph}`
-      )}&title=${titleOnTab}`
-    }
-
-    window.open(`${profileURL}`, '_blank')
-  })
-
   const menu = () => {
     return (
-      <Menu onClick={handleViewResultMenuClick}>
-        {rec.view_output_type_options.map((option, idx) => {
+      <Menu onClick={(e) => openResult(e.key as string)}>
+        {rec.view_options.map((option, idx) => {
           // skip the first option in menu since it has been show on the button.
           if (idx != 0) {
             return (
@@ -155,36 +160,34 @@ function ViewResultButton({ rec, t }) {
       <Dropdown.Button
         disabled={rec.state !== taskState.Success}
         overlay={menu}
-        onClick={handleViewResultBtnClick}
+        onClick={() => openResult(`${rec.view_options[0]}`)}
       >
         {t(
-          `instance_profiling.detail.table.columns.selection.types.${rec.view_output_type_options[0]}`
+          `instance_profiling.detail.table.columns.selection.types.${rec.view_options[0]}`
         )}
       </Dropdown.Button>
     )
   }
 
-  return (
-    <>
-      {isProtobuf ? (
-        <DropdownButton />
-      ) : (
-        <Button
-          disabled={rec.state !== taskState.Success}
-          onClick={handleViewResultBtnClick}
-          style={{ width: 150 }}
-        >
-          {rec.state === taskState.Success
-            ? t(
-                `instance_profiling.detail.table.columns.selection.types.${rec.view_output_type_options[0]}`
-              )
-            : t(
-                `instance_profiling.detail.table.columns.selection.types.no_data`
-              )}
-        </Button>
-      )}
-    </>
-  )
+  if (rec.view_options.length > 1) {
+    return <DropdownButton />
+  } else {
+    return (
+      <>
+        {rec.state === taskState.Success && (
+          <Button
+            disabled={rec.state !== taskState.Success}
+            onClick={() => openResult(`${rec.view_options[0]}`)}
+            style={{ width: 150 }}
+          >
+            {t(
+              `instance_profiling.detail.table.columns.selection.types.${rec.view_options[0]}`
+            )}
+          </Button>
+        )}
+      </>
+    )
+  }
 }
 
 export default function Page() {

@@ -14,8 +14,8 @@ import { ScrollablePane } from 'office-ui-fabric-react'
 import { MenuInfo } from 'rc-menu/lib/interface'
 
 enum ViewOutputTypeOptions {
-  FlameGraph = 'FlameGraph',
-  Graph = 'Graph',
+  FlameGraph = 'instance_profiling.detail.table.columns.selection.flamegraph',
+  Graph = 'instance_profiling.detail.table.columns.selection.graph',
 }
 
 enum taskState {
@@ -28,10 +28,11 @@ const ProfilingOutputTypeProtobuf = 'protobuf'
 
 let viewDefaultOutputTypeVal = ViewOutputTypeOptions.FlameGraph
 
-function mapData(data) {
+function mapData(data, t) {
   if (!data) {
     return data
   }
+
   data.tasks_status.forEach((task) => {
     if (task.state === 1) {
       let task_elapsed_secs = data.server_time - task.started_at
@@ -48,23 +49,15 @@ function mapData(data) {
 
     // set profiling output options for previous generated SVG files and protobuf files.
     if (task.profile_output_type === ProfilingOutputTypeProtobuf) {
-      task.view_default_output_type_val = viewDefaultOutputTypeVal
-      task.view_output_type_options = [
-        ViewOutputTypeOptions.FlameGraph,
-        ViewOutputTypeOptions.Graph,
-      ]
+      task.view_default_output_type_val = t(viewDefaultOutputTypeVal)
     } else {
       switch (task.target.kind) {
         case 'tidb':
         case 'pd':
-          task.view_default_output_type_val = ViewOutputTypeOptions.Graph
-          task.view_output_type_options = ViewOutputTypeOptions.Graph
+          task.view_default_output_type_val = t(ViewOutputTypeOptions.Graph)
           break
-        case 'tiflash':
-        case 'tikv':
-          task.view_default_output_type_val = viewDefaultOutputTypeVal
-          task.view_output_type_options = viewDefaultOutputTypeVal
-          break
+        default:
+          task.view_default_output_type_val = t(viewDefaultOutputTypeVal)
       }
     }
   })
@@ -103,9 +96,7 @@ function ViewResultButton({ rec, t }) {
       default:
         token = await getActionToken(rec.id, 'single_view')
 
-        let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
-          e.key
-        }`
+        let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=graph`
         window.open(`${profileURL}`, '_blank')
     }
   })
@@ -117,7 +108,7 @@ function ViewResultButton({ rec, t }) {
     if (isProtobuf) {
       const titleOnTab = rec.target.kind + '_' + rec.target.display_name
       profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
-        profileURL + `&output_type=${ViewOutputTypeOptions.FlameGraph}`
+        profileURL + `&output_type=flamegraph`
       )}&title=${titleOnTab}`
     }
 
@@ -129,7 +120,7 @@ function ViewResultButton({ rec, t }) {
       <Menu onClick={handleViewResultMenuClick}>
         <Menu.Item key={ViewOutputTypeOptions.Graph}>
           {t('instance_profiling.detail.table.columns.selection.view')}{' '}
-          {ViewOutputTypeOptions.Graph}
+          {t(ViewOutputTypeOptions.Graph)}
         </Menu.Item>
 
         <Menu.Item key="download">
@@ -187,7 +178,7 @@ export default function Page() {
     }
   )
 
-  const data = useMemo(() => mapData(respData), [respData])
+  const data = useMemo(() => mapData(respData, t), [respData])
 
   const profileDuration =
     respData?.task_group_status?.profile_duration_secs || 0

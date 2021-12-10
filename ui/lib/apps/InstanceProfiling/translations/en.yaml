@@ -41,6 +41,8 @@ instance_profiling:
         selection:
           actions: Actions
           view: View
+          flamegraph: FlameGraph
+          graph: Graph
           download: Download Raw Data
       status:
         finished: Finished

@@ -41,6 +41,8 @@ instance_profiling:
         selection:
           actions: 操作
           view: 查看
+          flamegraph: 火焰图
+          graph: 关系图
           download: 下载原始文件
       status:
         finished: 完成

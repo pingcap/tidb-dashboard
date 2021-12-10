@@ -272,8 +272,8 @@ func (s *Service) downloadSingle(c *gin.Context) {
 type ViewOutputType string
 
 const (
-	ViewOutputTypeFlameGraph ViewOutputType = "FlameGraph"
-	ViewOutputTypeGraph      ViewOutputType = "Graph"
+	ViewOutputTypeFlameGraph ViewOutputType = "flamegraph"
+	ViewOutputTypeGraph      ViewOutputType = "graph"
 )
 
 // @ID viewProfilingSingle
@@ -329,7 +329,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 			contentType = "application/protobuf"
 		default:
 			// Will not handle converting protobuf to other formats except flamegraph and graph
-			log.Warn("Failed to convert protobuf to %v", zap.String("output", outputType))
+			_ = c.Error(rest.ErrBadRequest.New("Cannot output protobuf as %s", outputType))
 			return
 		}
 	}

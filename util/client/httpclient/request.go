@@ -35,6 +35,7 @@ func newRequest(kindTag string, transport *http.Transport) *LazyRequest {
 	}
 }
 
+// Clone creates a new request with all settings cloned.
 func (lReq *LazyRequest) Clone() *LazyRequest {
 	lReqCloned := &LazyRequest{
 		kindTag:   lReq.kindTag,
@@ -47,7 +48,7 @@ func (lReq *LazyRequest) Clone() *LazyRequest {
 	return lReqCloned
 }
 
-// SetContext method sets the context.Context for current Request. It allows
+// SetContext sets the context.Context for current request. It allows
 // to interrupt the request execution if ctx.Done() channel is closed.
 // See https://blog.golang.org/context article and the "context" package
 // documentation.
@@ -69,6 +70,11 @@ func (lReq *LazyRequest) SetTimeout(timeout time.Duration) *LazyRequest {
 	return lReq
 }
 
+// SetURL sets the URL for current request. This URL will be used when calling Send().
+//  	resp := client.LR().
+//  		SetMethod("GET").
+// 			SetURL("http://httpbin.org/get").
+//			Send()
 func (lReq *LazyRequest) SetURL(url string) *LazyRequest {
 	lReq.opsR = append(lReq.opsR, func(r *resty.Request) {
 		r.URL = url
@@ -76,6 +82,11 @@ func (lReq *LazyRequest) SetURL(url string) *LazyRequest {
 	return lReq
 }
 
+// SetMethod sets the method of the request. This method will be used when calling Send().
+//  	resp := client.LR().
+//  		SetMethod("GET").
+// 			SetURL("http://httpbin.org/get").
+//			Send()
 func (lReq *LazyRequest) SetMethod(method string) *LazyRequest {
 	lReq.opsR = append(lReq.opsR, func(r *resty.Request) {
 		r.Method = method
@@ -83,13 +94,10 @@ func (lReq *LazyRequest) SetMethod(method string) *LazyRequest {
 	return lReq
 }
 
-// SetBaseURL method is to set Host URL in the client instance. It will be used with request
-// raised from this client with relative URL
-//		// Setting HTTP address
-//		client.SetBaseURL("http://myjeeva.com")
-//
-//		// Setting HTTPS address
-//		client.SetBaseURL("https://myjeeva.com")
+// SetBaseURL sets the base URL for current request. Relative URLs will be based on this base URL.
+//		resp := client.LR().
+//			SetBaseURL("http://myjeeva.com").
+//			Get("/foo")
 func (lReq *LazyRequest) SetBaseURL(baseURL string) *LazyRequest {
 	lReq.opsC = append(lReq.opsC, func(c *resty.Client) {
 		c.SetHostURL(baseURL)
@@ -107,7 +115,7 @@ func (lReq *LazyRequest) Send() *LazyResponse {
 	return newResponse(lReq.Clone())
 }
 
-// Execute method lazily send the HTTP request with given HTTP method and URL
+// Execute lazily sends the HTTP request with given HTTP method and URL
 // for current LazyRequest.
 //  	resp := client.LR().
 //  		Execute("GET", "http://httpbin.org/get")
@@ -120,18 +128,22 @@ func (lReq *LazyRequest) Execute(method, url string) *LazyResponse {
 	return newResponse(cloned)
 }
 
+// Get lazily sends a GET request with the specified URL for current LazyRequest.
 func (lReq *LazyRequest) Get(url string) *LazyResponse {
 	return lReq.Execute(resty.MethodGet, url)
 }
 
+// Post lazily sends a POST request with the specified URL for current LazyRequest.
 func (lReq *LazyRequest) Post(url string) *LazyResponse {
 	return lReq.Execute(resty.MethodPost, url)
 }
 
+// Put lazily sends a PUT request with the specified URL for current LazyRequest.
 func (lReq *LazyRequest) Put(url string) *LazyResponse {
 	return lReq.Execute(resty.MethodPut, url)
 }
 
+// Delete lazily sends a DELETE request with the specified URL for current LazyRequest.
 func (lReq *LazyRequest) Delete(url string) *LazyResponse {
 	return lReq.Execute(resty.MethodDelete, url)
 }

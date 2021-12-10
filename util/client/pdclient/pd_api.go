@@ -2,14 +2,20 @@
 
 package pdclient
 
+import "context"
+
 // TODO: Switch to use swagger.
+
+const APIPrefix = "/pd/api/v1"
 
 type GetStatusResponse struct {
 	StartTimestamp int64 `json:"start_timestamp"`
 }
 
-func (api *APIClient) GetStatus() (resp *GetStatusResponse, err error) {
-	_, err = api.LR().Get("/status").ReadBodyAsJSON(resp)
+// GetStatus returns the content from /status PD API.
+// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+func (api *APIClient) GetStatus(ctx context.Context) (resp *GetStatusResponse, err error) {
+	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/status").ReadBodyAsJSON(resp)
 	return
 }
 
@@ -18,8 +24,11 @@ type GetHealthResponse []struct {
 	Health   bool   `json:"health"`
 }
 
-func (api *APIClient) GetHealth() (resp *GetHealthResponse, err error) {
-	_, err = api.LR().Get("/health").ReadBodyAsJSON(resp)
+// GetHealth returns the content from /health PD API.
+// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+func (api *APIClient) GetHealth(ctx context.Context) (resp *GetHealthResponse, err error) {
+	context.Background()
+	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/health").ReadBodyAsJSON(resp)
 	return
 }
 
@@ -33,8 +42,10 @@ type GetMembersResponse struct {
 	} `json:"members"`
 }
 
-func (api *APIClient) GetMembers() (resp *GetMembersResponse, err error) {
-	_, err = api.LR().Get("/members").ReadBodyAsJSON(resp)
+// GetMembers returns the content from /members PD API.
+// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+func (api *APIClient) GetMembers(ctx context.Context) (resp *GetMembersResponse, err error) {
+	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/members").ReadBodyAsJSON(resp)
 	return
 }
 
@@ -42,8 +53,10 @@ type GetConfigReplicateResponse struct {
 	LocationLabels string `json:"location-labels"`
 }
 
-func (api *APIClient) GetConfigReplicate() (resp *GetConfigReplicateResponse, err error) {
-	_, err = api.LR().Get("/config/replicate").ReadBodyAsJSON(resp)
+// GetConfigReplicate returns the content from /config/replicate PD API.
+// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+func (api *APIClient) GetConfigReplicate(ctx context.Context) (resp *GetConfigReplicateResponse, err error) {
+	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/config/replicate").ReadBodyAsJSON(resp)
 	return
 }
 
@@ -68,7 +81,9 @@ type GetStoresResponse struct {
 	} `json:"stores"`
 }
 
-func (api *APIClient) GetStores() (resp *GetStoresResponse, err error) {
-	_, err = api.LR().Get("/stores").ReadBodyAsJSON(resp)
+// GetStores returns the content from /stores PD API.
+// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+func (api *APIClient) GetStores(ctx context.Context) (resp *GetStoresResponse, err error) {
+	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/stores").ReadBodyAsJSON(resp)
 	return
 }

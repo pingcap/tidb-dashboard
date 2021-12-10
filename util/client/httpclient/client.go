@@ -20,9 +20,8 @@ import (
 )
 
 var (
-	ErrNS              = errorx.NewNamespace("http_client")
-	ErrInvalidEndpoint = ErrNS.NewType("invalid_endpoint")
-	ErrRequestFailed   = ErrNS.NewType("request_failed")
+	ErrNS            = errorx.NewNamespace("http_client")
+	ErrRequestFailed = ErrNS.NewType("request_failed")
 )
 
 // Client caches connections for future re-use and should be reused instead of
@@ -30,10 +29,9 @@ var (
 type Client struct {
 	nocopy.NoCopy
 
-	kindTag        string
-	transport      *http.Transport
-	defaultCtx     context.Context
-	defaultBaseURL string
+	kindTag    string
+	transport  *http.Transport
+	defaultCtx context.Context
 }
 
 func newTransport(tlsConfig *tls.Config) *http.Transport {
@@ -56,10 +54,9 @@ func newTransport(tlsConfig *tls.Config) *http.Transport {
 
 func New(config Config) *Client {
 	return &Client{
-		kindTag:        config.KindTag,
-		transport:      newTransport(config.TLSConfig),
-		defaultCtx:     config.DefaultCtx,
-		defaultBaseURL: config.DefaultBaseURL,
+		kindTag:    config.KindTag,
+		transport:  newTransport(config.TLSConfig),
+		defaultCtx: config.DefaultCtx,
 	}
 }
 
@@ -67,9 +64,6 @@ func (c *Client) LR() *LazyRequest {
 	lReq := newRequest(c.kindTag, c.transport)
 	if c.defaultCtx != nil {
 		lReq.SetContext(c.defaultCtx)
-	}
-	if c.defaultBaseURL != "" {
-		lReq.SetBaseURL(c.defaultBaseURL)
 	}
 	return lReq
 }

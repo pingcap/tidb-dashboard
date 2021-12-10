@@ -24,6 +24,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/queryeditor"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/topsql"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code/codeauth"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
@@ -137,6 +138,7 @@ func (s *Service) Start(ctx context.Context) error {
 		statement.Module,
 		slowquery.Module,
 		debugapi.Module,
+		topsql.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			info.RegisterRouter,

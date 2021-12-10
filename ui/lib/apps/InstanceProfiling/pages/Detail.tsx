@@ -24,7 +24,7 @@ enum taskState {
   Success,
 }
 
-const ProfilingOutputTypeProtobuf = 'protobuf'
+const ProfilingRawDataTypeProtobuf = 'protobuf'
 
 let viewDefaultOutputTypeVal = ViewOutputTypeOptions.FlameGraph
 
@@ -48,7 +48,7 @@ function mapData(data, t) {
     }
 
     // set profiling output options for previous generated SVG files and protobuf files.
-    if (task.profile_output_type === ProfilingOutputTypeProtobuf) {
+    if (task.profile_raw_data_type === ProfilingRawDataTypeProtobuf) {
       task.view_default_output_type_val = t(viewDefaultOutputTypeVal)
     } else {
       switch (task.target.kind) {
@@ -83,7 +83,7 @@ async function getActionToken(
 
 function ViewResultButton({ rec, t }) {
   const isProtobuf: boolean =
-    rec.profile_output_type === ProfilingOutputTypeProtobuf
+    rec.profile_raw_data_type === ProfilingRawDataTypeProtobuf
   let token: string | undefined
 
   const handleViewResultMenuClick = usePersistFn(async (e: MenuInfo) => {

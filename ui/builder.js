@@ -1,18 +1,13 @@
 const fs = require('fs-extra')
 const os = require('os')
+const chalk = require('chalk')
 const { start } = require('live-server')
 const { createProxyMiddleware } = require('http-proxy-middleware')
 const { watch } = require('chokidar')
 const { build } = require('esbuild')
-// TODO: submit PR for upstream
-fs.copyFileSync(
-  './postcss2-index.js',
-  './node_modules/esbuild-plugin-postcss2/dist/index.js'
-)
-const postCssPlugin = require('esbuild-plugin-postcss2')
+const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
 // const svgrPlugin = require('esbuild-plugin-svgr')
-const logTime = require('./esbuild/plugins/logtime')
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -104,6 +99,23 @@ function genDefine() {
   return define
 }
 
+// customized plugin: log time
+const logTime = (_options = {}) => ({
+  name: 'logTime',
+  setup(build) {
+    let time
+
+    build.onStart(() => {
+      time = new Date()
+      console.log(`Build started`)
+    })
+
+    build.onEnd(() => {
+      console.log(`Build ended: ${chalk.yellow(`${new Date() - time}ms`)}`)
+    })
+  },
+})
+
 const esbuildParams = {
   color: true,
   entryPoints: {
@@ -127,6 +139,7 @@ const esbuildParams = {
         globalVars: lessGlobalVars,
         javascriptEnabled: true,
       },
+      enableCache: true,
     }),
     yamlPlugin(),
     // svgrPlugin(),

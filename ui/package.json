@@ -87,6 +87,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.10.5",
+    "@baurine/esbuild-plugin-postcss3": "^0.2.3",
     "@openapitools/openapi-generator-cli": "^1.0.15-4.3.1",
     "@storybook/addon-actions": "^6.3.12",
     "@storybook/addon-links": "^6.3.12",
@@ -106,7 +107,6 @@
     "browserslist-useragent-regexp": "^2.1.0",
     "chokidar": "^3.5.2",
     "customize-cra": "^1.0.0",
-    "esbuild-plugin-postcss2": "^0.1.0",
     "esbuild-plugin-svgr": "^0.0.3",
     "esbuild-plugin-yaml": "^0.0.1",
     "esm": "^3.2.25",

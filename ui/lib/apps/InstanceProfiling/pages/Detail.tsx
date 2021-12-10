@@ -11,7 +11,6 @@ import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import { ScrollablePane } from 'office-ui-fabric-react'
-import { MenuInfo } from 'rc-menu/lib/interface'
 
 enum ViewOption {
   FlameGraph = 'flamegraph',
@@ -113,7 +112,8 @@ function ViewResultButton({ rec, t }) {
         if (isProtobuf) {
           const titleOnTab = rec.target.kind + '_' + rec.target.display_name
           profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
-            profileURL + `&output_type=${ViewOption.FlameGraph}`
+            // protobuf can be rendered to flamegraph by speedscope
+            profileURL + `&output_type=protobuf`
           )}&title=${titleOnTab}`
         }
 
@@ -126,11 +126,9 @@ function ViewResultButton({ rec, t }) {
         }
 
         profileURL =
-          profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
-
-        if (isProtobuf) {
-          profileURL = profileURL + `&output_type=${ViewOption.Graph}`
-        }
+          profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
+            ViewOption.Graph
+          }`
 
         window.open(`${profileURL}`, '_blank')
     }

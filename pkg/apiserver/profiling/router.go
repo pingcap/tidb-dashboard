@@ -272,8 +272,8 @@ func (s *Service) downloadSingle(c *gin.Context) {
 type ViewOutputType string
 
 const (
-	ViewOutputTypeFlameGraph ViewOutputType = "flamegraph"
-	ViewOutputTypeGraph      ViewOutputType = "graph"
+	ViewOutputTypeProtobuf ViewOutputType = "protobuf"
+	ViewOutputTypeGraph    ViewOutputType = "graph"
 )
 
 // @ID viewProfilingSingle
@@ -325,7 +325,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 			}
 			content = svgContent
 			contentType = "image/svg+xml"
-		case string(ViewOutputTypeFlameGraph):
+		case string(ViewOutputTypeProtobuf):
 			contentType = "application/protobuf"
 		default:
 			// Will not handle converting protobuf to other formats except flamegraph and graph

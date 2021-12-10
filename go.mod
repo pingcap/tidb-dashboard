@@ -29,7 +29,6 @@ require (
 	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
 	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
-	github.com/pingcap/sysutil v0.0.0-20211108113841-e5c5906ed1e7
 	github.com/rs/cors v1.7.0
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
 	github.com/spf13/pflag v1.0.1

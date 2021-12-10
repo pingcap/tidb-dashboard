@@ -40,9 +40,10 @@ instance_profiling:
         status: Status
         selection:
           actions: Actions
-          view: View
-          flamegraph: FlameGraph
-          graph: Graph
-          download: Download Raw Data
+          types:
+            flamegraph: View FlameGraph
+            graph: View Graph
+            download: Download Raw Data
+            no_data: No Data
       status:
         finished: Finished

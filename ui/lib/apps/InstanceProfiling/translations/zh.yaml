@@ -40,9 +40,10 @@ instance_profiling:
         status: 状态
         selection:
           actions: 操作
-          view: 查看
-          flamegraph: 火焰图
-          graph: 关系图
-          download: 下载原始文件
+          types:
+            flamegraph: 查看火焰图
+            graph: 查看关系图
+            download: 下载原始文件
+            no_data: 暂无数据
       status:
         finished: 完成

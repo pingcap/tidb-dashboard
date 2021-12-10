@@ -14,8 +14,9 @@ import { ScrollablePane } from 'office-ui-fabric-react'
 import { MenuInfo } from 'rc-menu/lib/interface'
 
 enum ViewOutputTypeOptions {
-  FlameGraph = 'instance_profiling.detail.table.columns.selection.flamegraph',
-  Graph = 'instance_profiling.detail.table.columns.selection.graph',
+  FlameGraph = 'flamegraph',
+  Graph = 'graph',
+  Download = 'download',
 }
 
 enum taskState {
@@ -25,8 +26,6 @@ enum taskState {
 }
 
 const ProfilingRawDataTypeProtobuf = 'protobuf'
-
-let viewDefaultOutputTypeVal = ViewOutputTypeOptions.FlameGraph
 
 function mapData(data, t) {
   if (!data) {
@@ -49,15 +48,21 @@ function mapData(data, t) {
 
     // set profiling output options for previous generated SVG files and protobuf files.
     if (task.profile_raw_data_type === ProfilingRawDataTypeProtobuf) {
-      task.view_default_output_type_val = t(viewDefaultOutputTypeVal)
-    } else {
+      task.view_output_type_options = [
+        ViewOutputTypeOptions.FlameGraph,
+        ViewOutputTypeOptions.Graph,
+        ViewOutputTypeOptions.Download,
+      ]
+    } else if (task.profile_raw_data_type === '') {
       switch (task.target.kind) {
         case 'tidb':
         case 'pd':
-          task.view_default_output_type_val = t(ViewOutputTypeOptions.Graph)
+          task.view_output_type_options = [ViewOutputTypeOptions.Graph]
           break
-        default:
-          task.view_default_output_type_val = t(viewDefaultOutputTypeVal)
+        case 'tikv':
+        case 'tiflash':
+          task.view_output_type_options = [ViewOutputTypeOptions.FlameGraph]
+          break
       }
     }
   })
@@ -90,25 +95,36 @@ function ViewResultButton({ rec, t }) {
     switch (e.key) {
       case 'download':
         token = await getActionToken(rec.id, 'single_download')
+        if (!token) {
+          return
+        }
 
         window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
         break
       default:
         token = await getActionToken(rec.id, 'single_view')
+        if (!token) {
+          return
+        }
 
-        let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=graph`
+        let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
+          e.key
+        }`
         window.open(`${profileURL}`, '_blank')
     }
   })
 
   const handleViewResultBtnClick = usePersistFn(async () => {
     token = await getActionToken(rec.id, 'single_view')
+    if (!token) {
+      return
+    }
 
     let profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
     if (isProtobuf) {
       const titleOnTab = rec.target.kind + '_' + rec.target.display_name
       profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
-        profileURL + `&output_type=flamegraph`
+        profileURL + `&output_type=${ViewOutputTypeOptions.FlameGraph}`
       )}&title=${titleOnTab}`
     }
 
@@ -118,14 +134,18 @@ function ViewResultButton({ rec, t }) {
   const menu = () => {
     return (
       <Menu onClick={handleViewResultMenuClick}>
-        <Menu.Item key={ViewOutputTypeOptions.Graph}>
-          {t('instance_profiling.detail.table.columns.selection.view')}{' '}
-          {t(ViewOutputTypeOptions.Graph)}
-        </Menu.Item>
-
-        <Menu.Item key="download">
-          {t('instance_profiling.detail.table.columns.selection.download')}
-        </Menu.Item>
+        {rec.view_output_type_options.map((option, idx) => {
+          // skip the first option in menu since it has been show on the button.
+          if (idx != 0) {
+            return (
+              <Menu.Item key={option}>
+                {t(
+                  `instance_profiling.detail.table.columns.selection.types.${option}`
+                )}
+              </Menu.Item>
+            )
+          }
+        })}
       </Menu>
     )
   }
@@ -137,8 +157,9 @@ function ViewResultButton({ rec, t }) {
         overlay={menu}
         onClick={handleViewResultBtnClick}
       >
-        {t('instance_profiling.detail.table.columns.selection.view')}{' '}
-        {rec.view_default_output_type_val}
+        {t(
+          `instance_profiling.detail.table.columns.selection.types.${rec.view_output_type_options[0]}`
+        )}
       </Dropdown.Button>
     )
   }
@@ -153,10 +174,13 @@ function ViewResultButton({ rec, t }) {
           onClick={handleViewResultBtnClick}
           style={{ width: 150 }}
         >
-          {t('instance_profiling.detail.table.columns.selection.view')}{' '}
           {rec.state === taskState.Success
-            ? rec.view_default_output_type_val
-            : ''}
+            ? t(
+                `instance_profiling.detail.table.columns.selection.types.${rec.view_output_type_options[0]}`
+              )
+            : t(
+                `instance_profiling.detail.table.columns.selection.types.no_data`
+              )}
         </Button>
       )}
     </>

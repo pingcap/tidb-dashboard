@@ -2,3 +2,5 @@ top_sql:
   nav_title: Top SQL
   auto_refresh: Auto Refresh
   no_data: No Data
+  table:
+    description: Top 5 SQL Statements that costs most CPU resources in the current time range

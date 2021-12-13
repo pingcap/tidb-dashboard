@@ -4,6 +4,8 @@ import { Select } from 'antd'
 
 import client, { TopsqlInstanceItem } from '@lib/client'
 
+import commonStyles from './common.module.less'
+
 interface InstanceGroup {
   name: string
   instances: TopsqlInstanceItem[]
@@ -62,7 +64,7 @@ export function InstanceSelect({ value, onChange }: InstanceSelectProps) {
 
   return (
     <Select
-      style={{ width: 180 }}
+      style={{ width: 200 }}
       placeholder="Select Instance"
       value={value}
       onChange={onChange}
@@ -71,7 +73,12 @@ export function InstanceSelect({ value, onChange }: InstanceSelectProps) {
       {instanceGroups.map((instanceGroup) => (
         <Select.OptGroup label={instanceGroup.name} key={instanceGroup.name}>
           {instanceGroup.instances.map((item) => (
-            <Select.Option value={item.instance!} key={item.instance}>
+            <Select.Option
+              className={commonStyles.select_option}
+              value={item.instance!}
+              key={item.instance}
+            >
+              <span className={commonStyles.hide}>{instanceGroup.name} - </span>
               {item.instance}
             </Select.Option>
           ))}

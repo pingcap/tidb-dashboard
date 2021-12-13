@@ -5,7 +5,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { useURLQueryState } from '@lib/utils/useURLQueryState'
 
-import './TimeRange.less'
+import commonStyles from './common.module.less'
 
 interface TimeRangeProps {
   value: TimeRange
@@ -43,9 +43,10 @@ export function TimeRange({ value, onChange }: TimeRangeProps) {
         <Select.Option
           key={tr.id}
           value={tr.id}
-          className="topsql-timerange-select-option"
+          className={commonStyles.select_option}
         >
-          <ClockCircleOutlined /> {getValueFormat('s')(tr.value, 0)}
+          <ClockCircleOutlined className={commonStyles.hide} />{' '}
+          {getValueFormat('s')(tr.value, 0)}
         </Select.Option>
       ))}
     </Select>

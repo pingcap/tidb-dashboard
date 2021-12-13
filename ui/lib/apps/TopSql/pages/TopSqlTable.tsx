@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
+import { useTranslation } from 'react-i18next'
 
 import { TopsqlCPUTimeItem } from '@lib/client'
 import { Card, CardTable, Bar, TextWrap, HighlightSQL } from '@lib/components'
 import { OTHERS_LABEL } from './useOthers'
 
 interface TopSqlTableProps {
-  topN: string
   data: TopsqlCPUTimeItem[]
   timeRange: [number, number] | undefined
 }
@@ -18,29 +18,27 @@ interface TableData {
   cpuTime: number
 }
 
-export function TopSqlTable({ topN, data, timeRange }: TopSqlTableProps) {
+export function TopSqlTable({ data, timeRange }: TopSqlTableProps) {
+  const { t } = useTranslation()
   const { data: tableData, totalCpuTime } = useTableData(data, timeRange)
   const tableColumns = useMemo(
     () => [
       {
-        name: 'Query Template ID',
-        key: 'digest',
+        name: 'CPU',
+        key: 'cpuTime',
         minWidth: 150,
         maxWidth: 250,
-        onRender: (rec) =>
-          rec.digest === OTHERS_LABEL ? (
-            <i style={{ color: '#888' }}>{rec.digest}</i>
-          ) : (
-            <Tooltip title={rec.digest}>
-              <TextWrap>{rec.digest}</TextWrap>
-            </Tooltip>
-          ),
+        onRender: (rec) => (
+          <Bar textWidth={70} value={rec.cpuTime!} capacity={totalCpuTime}>
+            {getValueFormat('ms')(rec.cpuTime, 0, 0)}
+          </Bar>
+        ),
       },
       {
         name: 'Query',
         key: 'query',
-        minWidth: 150,
-        maxWidth: 250,
+        minWidth: 250,
+        maxWidth: 550,
         onRender: (rec) => {
           const text = rec.query
             ? rec.query === OTHERS_LABEL
@@ -59,22 +57,14 @@ export function TopSqlTable({ topN, data, timeRange }: TopSqlTableProps) {
           )
         },
       },
-      {
-        name: 'CPU',
-        key: 'cpuTime',
-        minWidth: 150,
-        maxWidth: 250,
-        onRender: (rec) => (
-          <Bar textWidth={70} value={rec.cpuTime!} capacity={totalCpuTime}>
-            {getValueFormat('ms')(rec.cpuTime, 0, 0)}
-          </Bar>
-        ),
-      },
     ],
     [totalCpuTime]
   )
   return (
-    <Card title={`Top ${topN} Queries`}>
+    <Card>
+      <p className="ant-form-item-extra" style={{ marginBottom: '30px' }}>
+        {t('top_sql.table.description')}
+      </p>
       <CardTable
         cardNoMarginTop
         items={tableData || []}

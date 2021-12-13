@@ -1,7 +1,7 @@
 import { timeFormatter, XYBrushArea, BrushEndListener } from '@elastic/charts'
 import React, { useCallback, useState, useEffect } from 'react'
 import { useQuery } from 'react-query'
-import { Spin, Button, Space, Checkbox, Select } from 'antd'
+import { Spin, Button, Space, Checkbox } from 'antd'
 import { ReloadOutlined, FullscreenOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 
@@ -32,9 +32,6 @@ import {
 
 const fullFormatter = timeFormatter('YYYY-MM-DD HH:mm:ss')
 
-const DEFAULT_TOP_N = '5'
-const topNSelects = ['5', '20']
-
 export function TopSQL() {
   const windowSizeContext = useWindowSizeContext({ barWidth: 10 })
   return (
@@ -53,7 +50,6 @@ function App() {
     'topsql_auto_refresh',
     false
   )
-  const [topN, setTopN] = useURLQueryState('topn', DEFAULT_TOP_N)
   const [instanceId, setInstanceId] = useURLQueryState('instance_id')
   const { timeRange, setTimeRange } = useTimeRange()
   const [refreshTimestamp, setRefreshTimestamp] = useState(0)
@@ -61,7 +57,6 @@ function App() {
     instanceId,
     timeRange,
     autoRefresh,
-    topN,
     refreshTimestamp
   )
 
@@ -94,18 +89,6 @@ function App() {
         <Space size="middle">
           <InstanceSelect value={instanceId} onChange={setInstanceId} />
           <TimeRange value={timeRange} onChange={setTimeRange} />
-          <Select
-            style={{ width: 140 }}
-            placeholder="Top N"
-            value={topN}
-            onChange={(v) => setTopN(`${v}`)}
-          >
-            {topNSelects.map((s) => (
-              <Select.Option value={s} key={s}>
-                Top {s}
-              </Select.Option>
-            ))}
-          </Select>
           <Button icon={<ReloadOutlined />} onClick={refreshTimestampRange} />
           <Button onClick={setAutoRefresh}>
             <Checkbox style={{ pointerEvents: 'none' }} checked={autoRefresh}>
@@ -143,11 +126,7 @@ function App() {
           />
         </div>
         {!!seriesData?.length && (
-          <TopSqlTable
-            topN={topN}
-            data={seriesData}
-            timeRange={chartTimeRange}
-          />
+          <TopSqlTable data={seriesData} timeRange={chartTimeRange} />
         )}
       </Spin>
     </div>
@@ -206,7 +185,6 @@ function useSeriesData(
   instanceId: InstanceId,
   timeRange: TimeRange,
   autoRefresh: boolean,
-  topN: string,
   refreshTimestamp: number
 ) {
   const { windowSize } = useWindowSize()
@@ -219,10 +197,9 @@ function useSeriesData(
       windowSize,
       timeRange.id,
       autoRefresh,
-      topN,
       refreshTimestamp,
     ],
-    () => queryTopSQLDigests(instanceId, windowSize, timeRange, topN),
+    () => queryTopSQLDigests(instanceId, windowSize, timeRange, '5'),
     {
       enabled: !!instanceId,
       refetchInterval: autoRefresh && interval > 0 && interval * 1000,

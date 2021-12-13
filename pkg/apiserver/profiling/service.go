@@ -4,6 +4,7 @@ package profiling
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -31,8 +32,9 @@ var (
 )
 
 type StartRequest struct {
-	Targets      []model.RequestTargetNode `json:"targets"`
-	DurationSecs uint                      `json:"duration_secs"`
+	Targets           []model.RequestTargetNode `json:"targets"`
+	DurationSecs      uint                      `json:"duration_secs"`
+	ProfilingTypeList string                    `json:"profiling_type_list"`
 }
 
 type StartRequestSession struct {
@@ -150,7 +152,7 @@ func (s *Service) exclusiveExecute(ctx context.Context, req *StartRequest) (*Tas
 }
 
 func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
-	taskGroup := NewTaskGroup(s.params.LocalStore, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets))
+	taskGroup := NewTaskGroup(s.params.LocalStore, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets), req.ProfilingTypeList)
 	if err := s.params.LocalStore.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		log.Warn("failed to start task group", zap.Error(err))
 		return nil, err
@@ -158,10 +160,13 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(ctx, taskGroup, target, s.fetchers)
-		s.params.LocalStore.Create(t.TaskModel)
-		s.tasks.Store(t.ID, t)
-		tasks = append(tasks, t)
+		profileTypeList := strings.Split(req.ProfilingTypeList, ",")
+		for _, profilingType := range profileTypeList {
+			t := NewTask(ctx, taskGroup, target, s.fetchers, profilingType)
+			s.params.LocalStore.Create(t.TaskModel)
+			s.tasks.Store(t.ID, t)
+			tasks = append(tasks, t)
+		}
 	}
 
 	s.wg.Add(1)
@@ -177,16 +182,20 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 			}(i)
 		}
 		wg.Wait()
+		errorTasks := 0
 		finishedTasks := 0
 		for _, task := range tasks {
-			if task.State == TaskStateFinish {
+			if task.State == TaskStateError {
+				errorTasks++
+			} else if task.State == TaskStateFinish {
 				finishedTasks++
 			}
 		}
-		if finishedTasks == 0 {
+		if errorTasks > 0 {
 			taskGroup.State = TaskStateError
-		} else if finishedTasks < len(tasks) {
-			taskGroup.State = TaskPartialFinish
+			if finishedTasks > 0 {
+				taskGroup.State = TaskPartialFinish
+			}
 		} else {
 			taskGroup.State = TaskStateFinish
 		}

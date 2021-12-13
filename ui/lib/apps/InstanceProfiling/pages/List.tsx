@@ -14,6 +14,7 @@ import {
   CardTable,
   InstanceSelect,
   IInstanceSelectRefProps,
+  MultiSelect,
 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
@@ -24,6 +25,7 @@ import styles from './List.module.less'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
+const profilingTypeOptions = ['CPU', 'Heap', 'Goroutine', 'Mutex']
 
 export default function Page() {
   const {
@@ -77,12 +79,18 @@ export default function Page() {
             display_name: instance.key,
             ip: instance.ip,
             port,
+            profiling_type_list: 'cpu,memory,goroutine,mutex',
           }
         })
         .filter((i) => i.port != null)
+
+      const selectedProfilingTypes = (fieldsValue.type as string[])
+        .join()
+        .toLowerCase()
       const req: ProfilingStartRequest = {
         targets,
         duration_secs: fieldsValue.duration,
+        profiling_type_list: selectedProfilingTypes,
       }
       try {
         setSubmitting(true)
@@ -111,6 +119,19 @@ export default function Page() {
         onRender: (rec) => {
           const s = combineTargetStats(rec.target_stats)
           return <span>{s}</span>
+        },
+      },
+      {
+        name: t('instance_profiling.list.table.columns.profiling_type_list'),
+        key: 'types',
+        minWidth: 150,
+        maxWidth: 250,
+        onRender: (rec) => {
+          if (rec.profiling_type_list) {
+            return <span>{rec.profiling_type_list}</span>
+          } else {
+            return <span>cpu</span>
+          }
         },
       },
       {
@@ -198,6 +219,24 @@ export default function Page() {
               ref={instanceSelect}
               style={{ width: 200 }}
             />
+          </Form.Item>
+          <Form.Item
+            name="type"
+            label={t(
+              'instance_profiling.list.control_form.profiling_type.label'
+            )}
+            rules={[{ required: true }]}
+          >
+            <MultiSelect.Plain
+              placeholder={t(
+                'instance_profiling.list.control_form.profiling_type.placeholder'
+              )}
+              columnTitle={t(
+                'instance_profiling.list.control_form.profiling_type.columnTitle'
+              )}
+              style={{ width: 200 }}
+              items={profilingTypeOptions}
+            ></MultiSelect.Plain>
           </Form.Item>
           <Form.Item
             name="duration"

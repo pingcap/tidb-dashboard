@@ -32,11 +32,7 @@ import * as auth from '@lib/utils/auth'
 import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
 
 import styles from './index.module.less'
-import Logo from './logo.svg'
 import { useIsFeatureSupport } from '@lib/utils/store'
-
-import landing from './landing.svgd'
-const landingSVG = landing.replace('data:text/plain', 'data:image/svg+xml')
 
 enum DisplayFormType {
   uninitialized,
@@ -259,7 +255,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
           initialValues={{ username: lastLoginUsername }}
           form={refForm}
         >
-          <Logo className={styles.logo} />
+          <img src="./distro-res/logo.svg" className={styles.logo} />
           <Form.Item>
             <h2>{t('signin.form.tidb_auth.title')}</h2>
           </Form.Item>
@@ -343,7 +339,7 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
         <Form onFinish={handleSubmit} layout="vertical" form={refForm}>
-          <Logo className={styles.logo} />
+          <img src="./distro-res/logo.svg" className={styles.logo} />
           <Form.Item>
             <h2>{t('signin.form.code_auth.title')}</h2>
           </Form.Item>
@@ -403,7 +399,7 @@ function SSOSignInForm({ successRoute, onClickAlternative }) {
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
         <Form>
-          <Logo className={styles.logo} />
+          <img src="./distro-res/logo.svg" className={styles.logo} />
           <Form.Item>
             <Button
               type="primary"
@@ -516,7 +512,7 @@ function App({ registry }) {
           className={styles.landingContainer}
         >
           <div
-            style={{ backgroundImage: `url(${landingSVG})` }}
+            style={{ backgroundImage: `url(./distro-res/landing.svg)` }}
             className={styles.landing}
           />
         </AppearAnimate>

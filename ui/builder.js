@@ -7,7 +7,7 @@ const { watch } = require('chokidar')
 const { build } = require('esbuild')
 const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
-const svgrPlugin = require('esbuild-plugin-svgr')
+// const svgrPlugin = require('esbuild-plugin-svgr')
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -142,14 +142,13 @@ const esbuildParams = {
       enableCache: true,
     }),
     yamlPlugin(),
-    svgrPlugin(),
+    // svgrPlugin(),
     logTime(),
   ],
   define: genDefine(),
   inject: ['./process-shim.js'], // fix runtime crash
 }
 
-const distroInfo = require('./lib/distribution.json')
 function buildHtml(inputFilename, outputFilename) {
   let result = fs.readFileSync(inputFilename).toString()
 
@@ -158,21 +157,34 @@ function buildHtml(inputFilename, outputFilename) {
     result = result.replace(new RegExp(`%${key}%`, 'g'), process.env[key])
   })
 
-  // handle distro
-  Object.keys(distroInfo).forEach((key) => {
+  // handle distro strings res, only for dev mode
+  const distroStringsResFilePath = './build/distro-res/strings.json'
+  if (isDev && fs.existsSync(distroStringsResFilePath)) {
+    const distroStringsRes = require(distroStringsResFilePath)
     result = result.replace(
-      new RegExp(`<%= htmlWebpackPlugin.options.distro_${key} %>`, 'g'),
-      distroInfo[key]
+      '__DISTRO_STRINGS_RES__',
+      btoa(JSON.stringify(distroStringsRes))
     )
-  })
+  }
 
   fs.writeFileSync(outputFilename, result)
 }
 
 function handleAssets() {
   fs.copySync('./public', './build')
+  if (isDev) {
+    copyDistroRes()
+  }
+
   buildHtml('./public/index.html', './build/index.html')
   buildHtml('./public/diagnoseReport.html', './build/diagnoseReport.html')
+}
+
+function copyDistroRes() {
+  const distroResPath = '../bin/distro-res'
+  if (fs.existsSync(distroResPath)) {
+    fs.copySync(distroResPath, './build/distro-res')
+  }
 }
 
 async function main() {

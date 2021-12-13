@@ -19,8 +19,3 @@ declare module '*.svg' {
   const ReactComponent: React.SFC<React.SVGProps<SVGSVGElement>>
   export default ReactComponent
 }
-
-declare module '*.svgd' {
-  const src: string
-  export default src
-}

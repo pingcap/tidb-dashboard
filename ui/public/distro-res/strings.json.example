@@ -1,0 +1,7 @@
+{
+  "is_distro": false,
+  "tidb": "TiDB",
+  "tikv": "TiKV",
+  "pd": "PD",
+  "tiflash": "TiFlash"
+}

@@ -3,12 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="x-public-path-prefix" content="__PUBLIC_PATH_PREFIX__" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="x-distro-strings-res" content="__DISTRO_STRINGS_RES__" />
+    <link rel="icon" href="%PUBLIC_URL%/distro-res/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="<%= htmlWebpackPlugin.options.distro_tidb %> Dashboard"
-    />
     <style>
       body {
         margin: 0;
@@ -90,7 +87,6 @@
         }
       }
     </style>
-    <title><%= htmlWebpackPlugin.options.distro_tidb %> Dashboard</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

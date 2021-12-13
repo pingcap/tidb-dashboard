@@ -8,4 +8,4 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
-var resource = distro.DistributionResource{}
+var resource = distro.StringsRes()

@@ -1,32 +1,15 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react'
-import { usePersistFn } from 'ahooks'
-import { useTranslation } from 'react-i18next'
-import { Space } from 'antd'
-import {
-  SelectionMode,
-  Selection,
-} from 'office-ui-fabric-react/lib/DetailsList'
-import {
-  MarqueeSelection,
-  ISelection,
-} from 'office-ui-fabric-react/lib/MarqueeSelection'
+import React, { useMemo, useState, useCallback } from 'react'
+import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-
-import CopyLink from '@lib/components/CopyLink'
-import formatSql from '@lib/utils/sqlFormatter'
+import { getTheme } from 'office-ui-fabric-react/lib/Styling'
 import {
-  Card,
-  Bar,
-  TextWrap,
-  Descriptions,
-  ErrorBar,
-  Expand,
-  HighlightSQL,
-  TextWithInfo,
-  CardTable,
-  ICardTableProps,
-} from '@lib/components'
+  DetailsRow,
+  IDetailsListProps,
+  IDetailsRowStyles,
+} from 'office-ui-fabric-react'
+
+import { Bar, TextWrap, CardTable, ICardTableProps } from '@lib/components'
 import { TopsqlPlanItem } from '@lib/client'
 
 import type { SQLRecord } from '../TopSqlTable'
@@ -35,6 +18,8 @@ import { DetailContent } from './DetailContent'
 interface TopSqlDetailTableProps {
   record: SQLRecord
 }
+
+const theme = getTheme()
 
 export function DetailTable({ record }: TopSqlDetailTableProps) {
   const { records, isMultiPlans, totalCpuTime } = usePlanRecord(record)
@@ -71,28 +56,21 @@ export function DetailTable({ record }: TopSqlDetailTableProps) {
     [totalCpuTime]
   )
 
+  const { selectedRecord, setSelectedRecord } = useSelectedRecord()
+
   let tableProps: ICardTableProps = {
     cardNoMarginTop: true,
-    getKey: (r: SQLRecord) => r.digest,
+    getKey: (r: PlanRecord) => r.plan_digest!,
     items: records || [],
     columns: tableColumns,
+    onRenderRow: renderRow,
   }
-
-  const { selectedRecord, setSelectedRecord, selection } =
-    useSelectedRecord(records)
-  const handleRowClick = usePersistFn(
-    (rec: PlanRecord, i: number, e: React.MouseEvent<HTMLElement>) => {
-      setSelectedRecord(rec)
-    }
-  )
-
   if (isMultiPlans) {
     tableProps = {
       ...tableProps,
       selectionMode: SelectionMode.single,
-      selection: selection as unknown as ISelection,
       selectionPreservedOnEmptyClick: true,
-      onRowClicked: handleRowClick,
+      onRowClicked: setSelectedRecord,
     }
   }
 
@@ -115,11 +93,11 @@ export type PlanRecord = {
   totalCpuTime: number
 } & TopsqlPlanItem
 
+const OVERALL_LABEL = '(Overall)'
+
 const usePlanRecord = (record: SQLRecord) => {
-  // const isMultiPlans = record.plans.length > 1
-  // const plans = [...record.plans]
-  const isMultiPlans = true
-  const plans = [...record.plans, { ...record.plans[0], plan_digest: 'aa' }]
+  const isMultiPlans = record.plans.length > 1
+  const plans = [...record.plans]
 
   let totalCpuTime = 0
   const records: PlanRecord[] = plans.map((p) => {
@@ -127,6 +105,7 @@ const usePlanRecord = (record: SQLRecord) => {
     totalCpuTime += cpuTime
     return {
       ...p,
+      // plan may be empty
       plan_digest: p.plan_digest || 'Unknown',
       totalCpuTime: cpuTime,
     }
@@ -141,7 +120,7 @@ const usePlanRecord = (record: SQLRecord) => {
           return prev
         },
         {
-          plan_digest: '(Overall)',
+          plan_digest: OVERALL_LABEL,
           totalCpuTime: 0,
         } as PlanRecord
       )
@@ -151,10 +130,10 @@ const usePlanRecord = (record: SQLRecord) => {
 }
 
 const canSelect = (r: PlanRecord): boolean => {
-  return !!r.plan_digest && r.plan_digest !== '(Overall)'
+  return !!r.plan_digest && r.plan_digest !== OVERALL_LABEL
 }
 
-const useSelectedRecord = (records: PlanRecord[]) => {
+const useSelectedRecord = () => {
   const [record, setRecord] = useState<PlanRecord | null>(null)
   const handleSelect = useCallback(
     (r: PlanRecord | null) => {
@@ -162,58 +141,32 @@ const useSelectedRecord = (records: PlanRecord[]) => {
         return
       }
 
-      if (!r && !!record) {
-        setRecord(null)
-        return
-      }
-
       const areDifferentRecords = !!r && r.plan_digest !== record?.plan_digest
-      const isSelectedAndSameRecord =
-        !!r && !!record && r.plan_digest === record.plan_digest
-      if (areDifferentRecords && canSelect(r)) {
+      if (areDifferentRecords) {
         setRecord(r)
-      } else if (isSelectedAndSameRecord) {
-        setRecord(null)
       }
     },
     [record]
   )
 
-  // clear record when the sql is not in the table list
-  useEffect(() => {
-    if (!record) {
-      return
+  return { selectedRecord: record, setSelectedRecord: handleSelect }
+}
+
+const renderRow: IDetailsListProps['onRenderRow'] = (props) => {
+  if (!props) {
+    return null
+  }
+
+  const customStyles: Partial<IDetailsRowStyles> = {}
+  if (!canSelect(props.item)) {
+    customStyles.root = {
+      backgroundColor: theme.palette.neutralLighter,
+      cursor: 'not-allowed',
+      pointerEvents: 'none',
+      color: '#aaa',
+      fontStyle: 'italic',
     }
+  }
 
-    const existed = !!records.find((r) => r.plan_digest === record.plan_digest)
-    if (existed) {
-      return
-    }
-    handleSelect(null)
-  }, [records.map((r) => r.plan_digest).join(',')])
-
-  const selection = useMemo(
-    () =>
-      new Selection<PlanRecord>({
-        getKey: (rec) => rec.plan_digest!,
-        selectionMode: SelectionMode.single,
-        canSelectItem: (rec) => canSelect(rec),
-      }),
-    []
-  )
-
-  useEffect(() => {
-    // selection won't set the selected item when records updated
-    if (!!record && !selection.isKeySelected(record.plan_digest!)) {
-      selection.selectToKey(record.plan_digest!)
-    }
-
-    // clear selected record
-    const selectedRecord = selection.getSelection()[0]
-    if (!record && !!selectedRecord) {
-      selection.toggleKeySelected(selectedRecord.plan_digest!)
-    }
-  }, [record, records])
-
-  return { selectedRecord: record, setSelectedRecord: handleSelect, selection }
+  return <DetailsRow {...props} styles={customStyles} />
 }

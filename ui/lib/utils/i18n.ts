@@ -5,7 +5,7 @@ import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
-import { distro, isDistro } from './distroStringsRes'
+import distro from '@lib/distribution.json'
 
 i18next.on('languageChanged', function (lng) {
   dayjs.locale(lng.toLowerCase())
@@ -44,5 +44,7 @@ i18next
       defaultVariables: { distro },
     },
   })
+
+const isDistro = Boolean(distro['is_distro'])
 
 export { distro, isDistro }

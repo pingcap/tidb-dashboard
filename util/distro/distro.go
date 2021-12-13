@@ -7,16 +7,9 @@ package distro
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"os"
-	"path"
-	"path/filepath"
 	"sync"
 
-	"github.com/pingcap/log"
-
 	"go.uber.org/atomic"
-	"go.uber.org/zap"
 )
 
 type DistributionResource struct {
@@ -38,11 +31,6 @@ var defaultDistroRes = DistributionResource{
 var (
 	globalDistroRes atomic.Value
 	replaceGlobalMu sync.Mutex
-)
-
-const (
-	DistroResFolderName      string = "distro-res"
-	distroStringsResFileName string = "strings.json"
 )
 
 // ReplaceGlobal replaces the global distribution resource with the specified one. Missing fields in the
@@ -73,40 +61,4 @@ func R() *DistributionResource {
 		return &defaultDistroRes
 	}
 	return r.(*DistributionResource)
-}
-
-func StringsRes() (distroStringsRes DistributionResource) {
-	exePath, err := os.Executable()
-	if err != nil {
-		log.Fatal("Failed to get work dir", zap.Error(err))
-	}
-
-	distroStringsResPath := path.Join(path.Dir(exePath), DistroResFolderName, distroStringsResFileName)
-	info, err := os.Stat(distroStringsResPath)
-	if err != nil || info.IsDir() {
-		// ignore
-		return
-	}
-
-	distroStringsFile, err := os.Open(filepath.Clean(distroStringsResPath))
-	if err != nil {
-		log.Fatal("Failed to open file", zap.String("path", distroStringsResPath), zap.Error(err))
-	}
-	defer func() {
-		if err := distroStringsFile.Close(); err != nil {
-			log.Error("Failed to close file", zap.String("path", distroStringsResPath), zap.Error(err))
-		}
-	}()
-
-	data, err := ioutil.ReadAll(distroStringsFile)
-	if err != nil {
-		log.Fatal("Failed to read file", zap.String("path", distroStringsResPath), zap.Error(err))
-	}
-
-	err = json.Unmarshal(data, &distroStringsRes)
-	if err != nil {
-		log.Fatal("Failed to unmarshal distro strings res", zap.String("path", distroStringsResPath), zap.Error(err))
-	}
-
-	return
 }

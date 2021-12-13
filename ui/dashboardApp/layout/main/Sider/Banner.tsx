@@ -7,6 +7,7 @@ import { InfoInfoResponse } from '@lib/client'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 
+import Logo from './logo-icon-light.svg'
 import styles from './Banner.module.less'
 import { store } from '@lib/utils/store'
 
@@ -80,10 +81,7 @@ export default function ToggleBanner({
         >
           <Flexbox flexDirection="row">
             <div className={styles.bannerLogo}>
-              <img
-                src="./distro-res/logo-icon-light.svg"
-                style={{ height: 30 }}
-              />
+              <Logo height={30} />
             </div>
             <div className={styles.bannerContent}>
               <div className={styles.bannerTitle}>

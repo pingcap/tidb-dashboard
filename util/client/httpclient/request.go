@@ -23,12 +23,12 @@ type LazyRequest struct {
 	nocopy.NoCopy
 
 	kindTag   string
-	transport *http.Transport
+	transport http.RoundTripper
 	opsR      []requestUpdateFn
 	opsC      []clientUpdateFn
 }
 
-func newRequest(kindTag string, transport *http.Transport) *LazyRequest {
+func newRequest(kindTag string, transport http.RoundTripper) *LazyRequest {
 	return &LazyRequest{
 		kindTag:   kindTag,
 		transport: transport,

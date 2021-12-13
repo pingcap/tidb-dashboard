@@ -2,12 +2,19 @@
 
 package topo
 
+import (
+	"context"
+)
+
 type TopologyProvider interface {
-	GetPD() ([]PDInfo, error)
-	GetTiDB() ([]TiDBInfo, error)
-	GetTiKV() ([]StoreInfo, error)
-	GetTiFlash() ([]StoreInfo, error)
-	GetPrometheus() (*PrometheusInfo, error)
-	GetGrafana() (*GrafanaInfo, error)
-	GetAlertManager() (*AlertManagerInfo, error)
+	GetPD(ctx context.Context) ([]PDInfo, error)
+	GetTiDB(ctx context.Context) ([]TiDBInfo, error)
+	GetTiKV(ctx context.Context) ([]StoreInfo, error)
+	GetTiFlash(ctx context.Context) ([]StoreInfo, error)
+	GetPrometheus(ctx context.Context) (*PrometheusInfo, error)
+	GetGrafana(ctx context.Context) (*GrafanaInfo, error)
+	GetAlertManager(ctx context.Context) (*AlertManagerInfo, error)
 }
+
+//go:generate mockery --name TopologyProvider --inpackage
+var _ TopologyProvider = (*MockTopologyProvider)(nil)

@@ -30,9 +30,12 @@ func (api *APIClient) HLGetStores(ctx context.Context) ([]GetStoresResponseStore
 // HLGetLocationLabels returns the location label config in PD.
 // An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
 func (api *APIClient) HLGetLocationLabels(ctx context.Context) ([]string, error) {
-	resp, err := api.GetConfigReplicate()
+	resp, err := api.GetConfigReplicate(ctx)
 	if err != nil {
 		return nil, err
+	}
+	if len(resp.LocationLabels) == 0 {
+		return []string{}, nil
 	}
 	labels := strings.Split(resp.LocationLabels, ",")
 	return labels, nil
@@ -49,12 +52,12 @@ type StoreLocations struct {
 }
 
 func (api *APIClient) HLGetStoreLocations(ctx context.Context) (*StoreLocations, error) {
-	locationLabels, err := api.HLGetLocationLabels()
+	locationLabels, err := api.HLGetLocationLabels(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	stores, err := api.HLGetStores()
+	stores, err := api.HLGetStores(ctx)
 	if err != nil {
 		return nil, err
 	}

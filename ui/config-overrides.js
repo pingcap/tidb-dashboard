@@ -1,5 +1,5 @@
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs-extra')
 const os = require('os')
 const {
   override,
@@ -17,16 +17,31 @@ const WebpackBar = require('webpackbar')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const rewireHtmlWebpackPlugin = require('react-app-rewire-html-webpack-plugin')
 
+function copyDistroRes() {
+  const distroResPath = '../bin/distro-res'
+  if (fs.existsSync(distroResPath)) {
+    fs.copySync(distroResPath, './public/distro-res')
+  }
+}
+
 function injectDistroToHTML(config, env) {
-  const distroInfo = Object.entries(require('./lib/distribution.json')).reduce(
-    (prev, [k, v]) => {
-      return {
-        ...prev,
-        [`distro_${k}`]: v,
-      }
+  let distroStringsResMeta = '__DISTRO_STRINGS_RES__'
+
+  if (isBuildAsDevServer()) {
+    copyDistroRes()
+
+    const distroStringsResFilePath = './public/distro-res/strings.json'
+    if (fs.existsSync(distroStringsResFilePath)) {
+      const distroStringsRes = require(distroStringsResFilePath)
+      distroStringsResMeta = btoa(JSON.stringify(distroStringsRes))
+    }
+  }
+
+  const distroInfo = {
+    meta: {
+      'x-distro-strings-res': distroStringsResMeta,
     },
-    {}
-  )
+  }
   return rewireHtmlWebpackPlugin(config, env, distroInfo)
 }
 

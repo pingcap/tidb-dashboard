@@ -1,6 +1,9 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package pdtopo_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,7 +15,7 @@ import (
 
 func TestGetStoreInstances(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
-	tiKvStores, tiFlashStores, err := pdtopo.GetStoreInstances(nil, apiClient)
+	tiKvStores, tiFlashStores, err := pdtopo.GetStoreInstances(context.Background(), apiClient)
 	require.Nil(t, err)
 	require.Equal(t, []topo.StoreInfo{
 		topo.StoreInfo{

@@ -1,6 +1,9 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package pdtopo_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,7 +15,7 @@ import (
 
 func TestGetPDInstances(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
-	resp, err := pdtopo.GetPDInstances(nil, apiClient)
+	resp, err := pdtopo.GetPDInstances(context.Background(), apiClient)
 	require.Nil(t, err)
 	require.Equal(t, []topo.PDInfo{
 		topo.PDInfo{

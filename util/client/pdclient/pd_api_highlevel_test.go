@@ -1,6 +1,9 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package pdclient_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,14 +14,14 @@ import (
 
 func TestAPIClient_HLGetLocationLabels(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
-	resp, err := apiClient.HLGetLocationLabels(nil)
+	resp, err := apiClient.HLGetLocationLabels(context.Background())
 	require.Nil(t, err)
 	require.Equal(t, []string{}, resp)
 }
 
 func TestAPIClient_HLGetStoreLocations(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
-	resp, err := apiClient.HLGetStoreLocations(nil)
+	resp, err := apiClient.HLGetStoreLocations(context.Background())
 	require.Nil(t, err)
 	require.Equal(t, &pdclient.StoreLocations{
 		LocationLabels: []string{},
@@ -32,7 +35,7 @@ func TestAPIClient_HLGetStoreLocations(t *testing.T) {
 
 func TestAPIClient_HLGetStores(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
-	resp, err := apiClient.HLGetStores(nil)
+	resp, err := apiClient.HLGetStores(context.Background())
 	require.Nil(t, err)
 	require.Equal(t, []pdclient.GetStoresResponseStore{
 		pdclient.GetStoresResponseStore{

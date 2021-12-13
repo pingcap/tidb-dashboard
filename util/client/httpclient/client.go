@@ -29,9 +29,9 @@ var (
 type Client struct {
 	nocopy.NoCopy
 
-	kindTag    string
-	transport  http.RoundTripper
-	defaultCtx context.Context
+	kindTag        string
+	transport      http.RoundTripper
+	defaultCtx     context.Context
 	defaultBaseURL string
 }
 
@@ -55,9 +55,10 @@ func newTransport(tlsConfig *tls.Config) *http.Transport {
 
 func New(config Config) *Client {
 	return &Client{
-		kindTag:    config.KindTag,
-		transport:  newTransport(config.TLSConfig),
-		defaultCtx: config.DefaultCtx,
+		kindTag:        config.KindTag,
+		transport:      newTransport(config.TLSConfig),
+		defaultCtx:     config.DefaultCtx,
+		defaultBaseURL: config.DefaultBaseURL,
 	}
 }
 

@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package topo
 
 import (
@@ -12,10 +14,15 @@ import (
 )
 
 func TestCachedTopologyCacheValue(t *testing.T) {
+	type mockKey string
+
+	const mockKey1 = mockKey("useMock1")
+	const mockKey2 = mockKey("useMock2")
+
 	mp := new(MockTopologyProvider)
 	mp.
 		On("GetPrometheus", mock.MatchedBy(func(ctx context.Context) bool {
-			ctxV := ctx.Value("useMock1")
+			ctxV := ctx.Value(mockKey1)
 			return ctxV != nil && ctxV.(bool) == true
 		})).
 		Return(&PrometheusInfo{
@@ -23,7 +30,7 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 			Port: 1234,
 		}, nil).
 		On("GetPrometheus", mock.MatchedBy(func(ctx context.Context) bool {
-			ctxV := ctx.Value("useMock2")
+			ctxV := ctx.Value(mockKey2)
 			return ctxV != nil && ctxV.(bool) == true
 		})).
 		Return(&PrometheusInfo{
@@ -49,19 +56,19 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 2)
 
 	// Non error response should be cached
-	v, err = cp.GetPrometheus(context.WithValue(context.Background(), "useMock1", true))
+	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey1, true))
 	require.Nil(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 3)
 
-	v, err = cp.GetPrometheus(context.WithValue(context.Background(), "useMock1", true))
+	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey1, true))
 	require.Nil(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 3)
 
-	v, err = cp.GetPrometheus(context.WithValue(context.Background(), "useMock2", true))
+	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey2, true))
 	require.Nil(t, err)
 	require.Equal(t, "192.168.35.10", v.IP) // Unchanged since it is cached
 	require.Equal(t, uint(1234), v.Port)
@@ -69,7 +76,7 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 
 	// Wait until expired
 	time.Sleep(time.Millisecond * 550)
-	v, err = cp.GetPrometheus(context.WithValue(context.Background(), "useMock2", true))
+	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey2, true))
 	require.Nil(t, err)
 	require.Equal(t, "192.168.100.5", v.IP)
 	require.Equal(t, uint(5414), v.Port)
@@ -95,7 +102,7 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 6)
 
-	v, err = cp.GetPrometheus(context.WithValue(context.Background(), "useMock1", true))
+	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey1, true))
 	require.Nil(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)
@@ -110,7 +117,7 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 	// Read should not extend TTL
 	time.Sleep(time.Millisecond * 550)
 	tBegin := time.Now()
-	v, err = cp.GetPrometheus(context.WithValue(context.Background(), "useMock1", true))
+	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey1, true))
 	require.Nil(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)

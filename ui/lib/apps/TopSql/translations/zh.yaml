@@ -1,6 +1,16 @@
 top_sql:
   nav_title: Top SQL
-  auto_refresh: 自动刷新
-  no_data: 暂无数据
+  refresh: 刷新
+  no_data: 当前时间段内暂无数据
   table:
     description: Top 5 SQL（以当前时间范围 CPU 开销排序）
+  detail:
+    title: SQL 详情
+  fields:
+    sql_text: SQL 模板
+    sql_text_tooltip: 相似的 SQL 查询即使查询参数不一样也具有相同的 SQL 模板
+    sql_digest: SQL 模板 ID
+    sql_digest_tooltip: SQL 模板的唯一标识（SQL 指纹）
+    plan_digest: Plan 模板 ID
+    plan_digest_tooltip: Plan 模板的唯一标识（Plan 指纹）
+    plan: 执行计划

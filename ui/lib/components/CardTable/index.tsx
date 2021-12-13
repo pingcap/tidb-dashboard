@@ -78,6 +78,7 @@ export interface ICardTableProps extends IDetailsListProps {
   loading?: boolean
   hideLoadingWhenNotEmpty?: boolean // Whether loading animation should not show when data is not empty
   errors?: any[]
+  selectionMode?: SelectionMode
 
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
@@ -160,6 +161,7 @@ export default function CardTable(props: ICardTableProps) {
     columns,
     items,
     onRenderRow,
+    selectionMode = SelectionMode.none,
     ...restProps
   } = props
   const renderClickableRow = useRenderClickableRow(
@@ -251,7 +253,7 @@ export default function CardTable(props: ICardTableProps) {
       >
         <div className={styles.cardTableContent}>
           <MemoDetailsList
-            selectionMode={SelectionMode.none}
+            selectionMode={selectionMode}
             constrainMode={ConstrainMode.unconstrained}
             layoutMode={DetailsListLayoutMode.justified}
             onRenderRow={onRowClicked ? renderClickableRow : onRenderRow}

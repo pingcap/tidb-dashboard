@@ -92,7 +92,7 @@ function App() {
           <Button icon={<ReloadOutlined />} onClick={refreshTimestampRange} />
           <Button onClick={setAutoRefresh}>
             <Checkbox style={{ pointerEvents: 'none' }} checked={autoRefresh}>
-              {t('top_sql.auto_refresh')}
+              {t('top_sql.refresh')}
             </Checkbox>
           </Button>
           {chartTimeRange && (

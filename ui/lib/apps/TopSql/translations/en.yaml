@@ -1,6 +1,16 @@
 top_sql:
   nav_title: Top SQL
-  auto_refresh: Auto Refresh
-  no_data: No Data
+  refresh: Refresh
+  no_data: No Data for the current time range
   table:
     description: Top 5 SQL Statements that costs most CPU resources in the current time range
+  detail:
+    title: SQL Statement Details by Plan
+  fields:
+    sql_text: Statement Template
+    sql_text_tooltip: Similar queries have same statement template even for different query parameters
+    sql_digest: Query Template ID
+    sql_digest_tooltip: a.k.a. Query digest
+    plan_digest: Plan Template ID
+    plan_digest_tooltip: a.k.a. Plan digest
+    plan: Execution Plan

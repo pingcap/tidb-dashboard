@@ -1,6 +1,6 @@
 import { TopsqlCPUTimeItem } from '@lib/client'
 
-export const OTHERS_LABEL = 'Others'
+const OTHERS_LABEL = '(Others)'
 
 export function convertOthersRecord(data: TopsqlCPUTimeItem) {
   if (!!data.sql_digest) {
@@ -8,4 +8,8 @@ export function convertOthersRecord(data: TopsqlCPUTimeItem) {
   }
   data.sql_digest = OTHERS_LABEL
   data.sql_text = OTHERS_LABEL
+}
+
+export function isOthers(digest: string) {
+  return digest === OTHERS_LABEL
 }

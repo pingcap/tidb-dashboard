@@ -1,8 +1,8 @@
 import { timeFormatter, XYBrushArea, BrushEndListener } from '@elastic/charts'
 import React, { useCallback, useState, useEffect } from 'react'
 import { useQuery } from 'react-query'
-import { Spin, Button, Space, Checkbox } from 'antd'
-import { ReloadOutlined, FullscreenOutlined } from '@ant-design/icons'
+import { Spin, Button, Space } from 'antd'
+import { FullscreenOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 
 import '@elastic/charts/dist/theme_only_light.css'
@@ -11,14 +11,13 @@ import client from '@lib/client'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 import { useURLQueryState } from '@lib/utils/useURLQueryState'
 import { asyncDebounce } from '@lib/utils/asyncDebounce'
-import { Card } from '@lib/components'
+import { Card, AutoRefreshButton } from '@lib/components'
 import {
   InstanceSelect,
   InstanceId,
   TimeRange,
   useTimeRange,
   getTimestampRange,
-  TIME_RANGE_INTERVAL_MAP,
 } from '../components/Filter'
 import { TopSqlTable } from './TopSqlTable'
 import styles from './TopSql.module.less'
@@ -41,14 +40,16 @@ export function TopSQL() {
   )
 }
 
+const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
+
 function App() {
   const { t } = useTranslation()
   const [chartTimeRange, setChartTimeRange] = useState<
     [number, number] | undefined
   >(undefined)
-  const [autoRefresh, _setAutoRefresh] = useLocalStorageState(
+  const [autoRefreshSeconds, setAutoRefreshSeconds] = useLocalStorageState(
     'topsql_auto_refresh',
-    false
+    0
   )
   const [instanceId, setInstanceId] = useURLQueryState('instance_id')
   const { timeRange, setTimeRange } = useTimeRange()
@@ -56,7 +57,7 @@ function App() {
   const { seriesData, queryTimestampRange, isLoading } = useSeriesData(
     instanceId,
     timeRange,
-    autoRefresh,
+    autoRefreshSeconds,
     refreshTimestamp
   )
 
@@ -74,14 +75,36 @@ function App() {
     setRefreshTimestamp(Date.now())
   }, [])
 
-  const setAutoRefresh = useCallback(() => {
-    _setAutoRefresh((b) => !b)
-    refreshTimestampRange()
-  }, [refreshTimestampRange, _setAutoRefresh])
-
   useEffect(() => {
     resetChartTimeRange()
   }, [seriesData, resetChartTimeRange])
+
+  // auto refresh
+  const [remainingRefreshSeconds, setRemainingRefreshSeconds] =
+    useState(autoRefreshSeconds)
+
+  useEffect(() => {
+    if (remainingRefreshSeconds > autoRefreshSeconds) {
+      setRemainingRefreshSeconds(autoRefreshSeconds)
+    }
+  }, [autoRefreshSeconds])
+
+  const [timer, setTimer] = useState<NodeJS.Timeout>(null as any)
+  useEffect(() => {
+    if (autoRefreshSeconds === 0) {
+      clearInterval(timer)
+      return
+    }
+
+    clearInterval(timer)
+    setRemainingRefreshSeconds(autoRefreshSeconds)
+    setTimer(
+      setInterval(() => {
+        setRemainingRefreshSeconds((c) => c - 1)
+      }, 1000)
+    )
+    return () => clearInterval(timer)
+  }, [autoRefreshSeconds, queryTimestampRange])
 
   return (
     <div className={styles.container}>
@@ -89,12 +112,14 @@ function App() {
         <Space size="middle">
           <InstanceSelect value={instanceId} onChange={setInstanceId} />
           <TimeRange value={timeRange} onChange={setTimeRange} />
-          <Button icon={<ReloadOutlined />} onClick={refreshTimestampRange} />
-          <Button onClick={setAutoRefresh}>
-            <Checkbox style={{ pointerEvents: 'none' }} checked={autoRefresh}>
-              {t('top_sql.refresh')}
-            </Checkbox>
-          </Button>
+          <AutoRefreshButton
+            autoRefreshSeconds={autoRefreshSeconds}
+            onAutoRefreshSecondsChange={setAutoRefreshSeconds}
+            remainingRefreshSeconds={remainingRefreshSeconds}
+            isLoading={isLoading}
+            onRefresh={refreshTimestampRange}
+            options={autoRefreshOptions}
+          />
           {chartTimeRange && (
             <div>
               <Button
@@ -184,11 +209,10 @@ const queryTopSQLDigests = asyncDebounce(
 function useSeriesData(
   instanceId: InstanceId,
   timeRange: TimeRange,
-  autoRefresh: boolean,
+  autoRefreshSeconds: number,
   refreshTimestamp: number
 ) {
   const { windowSize } = useWindowSize()
-  const interval = TIME_RANGE_INTERVAL_MAP[timeRange.id]
 
   const { data, ...otherReturns } = useQuery(
     [
@@ -196,13 +220,13 @@ function useSeriesData(
       instanceId,
       windowSize,
       timeRange.id,
-      autoRefresh,
+      autoRefreshSeconds,
       refreshTimestamp,
     ],
     () => queryTopSQLDigests(instanceId, windowSize, timeRange, '5'),
     {
       enabled: !!instanceId,
-      refetchInterval: autoRefresh && interval > 0 && interval * 1000,
+      refetchInterval: !!autoRefreshSeconds && autoRefreshSeconds * 1000,
     }
   )
 

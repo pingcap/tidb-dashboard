@@ -14,13 +14,12 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlCPUTimeItem } from '@lib/client'
 import { useWindowSize } from './useWindowSize'
-import { TimeRange } from '../components/Filter'
+import { calcTimeRange, TimeRange } from '@lib/components'
 
 export interface TopSqlChartProps {
   seriesData: TopsqlCPUTimeItem[]
   timeRange: TimeRange
   timestampRange: [number, number]
-  chartTimeRange: [number, number] | undefined
   onBrushEnd: BrushEndListener
 }
 
@@ -29,17 +28,18 @@ export function TopSqlChart({
   seriesData,
   timeRange,
   timestampRange,
-  chartTimeRange,
 }: TopSqlChartProps) {
   const chartRef = useRef<Chart>(null)
-  const { chartData } = useChartData(seriesData, chartTimeRange)
+  const { chartData } = useChartData(seriesData)
   const { digestMap } = useDigestMap(seriesData)
   const { windowSize, computeWindowSize } = useWindowSize()
 
   useEffect(() => {
+    const timeRangeTimestamp = calcTimeRange(timeRange)
+    const delta = timeRangeTimestamp[1] - timeRangeTimestamp[0]
     computeWindowSize(
       chartRef.current?.getChartContainerRef().current?.offsetWidth || 0,
-      timeRange.value
+      delta
     )
   }, [chartRef, timeRange, computeWindowSize])
 
@@ -49,15 +49,11 @@ export function TopSqlChart({
         showLegend
         legendPosition={Position.Bottom}
         onBrushEnd={onBrushEnd}
-        xDomain={
-          chartTimeRange
-            ? undefined
-            : {
-                minInterval: windowSize * 1000,
-                min: timestampRange[0],
-                max: timestampRange[1],
-              }
-        }
+        xDomain={{
+          minInterval: windowSize * 1000,
+          min: timestampRange[0],
+          max: timestampRange[1],
+        }}
       />
       <Axis
         id="bottom"
@@ -105,10 +101,7 @@ function useDigestMap(seriesData: TopsqlCPUTimeItem[]) {
   return { digestMap }
 }
 
-function useChartData(
-  seriesData: TopsqlCPUTimeItem[],
-  timeRange: [number, number] | undefined
-) {
+function useChartData(seriesData: TopsqlCPUTimeItem[]) {
   const chartData = useMemo(() => {
     if (!seriesData) {
       return {}
@@ -126,10 +119,6 @@ function useChartData(
       let sum = 0
       series.plans?.forEach((values) => {
         values.timestamp_secs?.forEach((t, i) => {
-          if (timeRange && (t < timeRange[0] || t > timeRange[1])) {
-            return
-          }
-
           if (!map[t]) {
             map[t] = values.cpu_time_millis![i]
           } else {
@@ -166,7 +155,7 @@ function useChartData(
     }
 
     return datumByDigest
-  }, [seriesData, timeRange])
+  }, [seriesData])
 
   return {
     chartData,

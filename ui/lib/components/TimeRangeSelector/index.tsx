@@ -29,7 +29,7 @@ const RECENT_SECONDS = [
   28 * 24 * 60 * 60,
 ]
 
-const DEFAULT_TIME_RANGE: TimeRange = {
+export const DEFAULT_TIME_RANGE: TimeRange = {
   type: 'recent',
   value: 30 * 60,
 }

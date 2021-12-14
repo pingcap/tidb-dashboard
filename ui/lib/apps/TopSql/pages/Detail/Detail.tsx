@@ -1,5 +1,8 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+
+import { Head } from '@lib/components'
+
 import { DetailTable } from './DetailTable'
 import type { SQLRecord } from '../TopSqlTable'
 
@@ -12,7 +15,7 @@ export function TopSqlDetail({ record }: TopSqlDetailProps) {
 
   return (
     <div>
-      <h1>{t('top_sql.detail.title')}</h1>
+      <Head title={t('top_sql.detail.title')} noMarginLeft />
       <DetailTable record={record} />
     </div>
   )

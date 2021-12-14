@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { DownOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons'
 import { Spin, Dropdown, Menu } from 'antd'
 import { useSpring, animated } from 'react-spring'
@@ -165,4 +165,34 @@ function RefreshProgress(props) {
       />
     </svg>
   )
+}
+
+export function useAutoFreshRemainingSecondsFactory() {
+  let timer: NodeJS.Timeout
+  const useAutoFreshRemainingSeconds = (
+    autoRefreshSeconds: number,
+    deps: React.DependencyList = []
+  ) => {
+    const [remainingRefreshSeconds, setRemainingRefreshSeconds] =
+      useState(autoRefreshSeconds)
+
+    useEffect(() => {
+      if (autoRefreshSeconds === 0) {
+        clearInterval(timer)
+        timer = null as any
+        return
+      }
+
+      clearInterval(timer)
+      setRemainingRefreshSeconds(autoRefreshSeconds)
+      timer = setInterval(() => {
+        setRemainingRefreshSeconds((c) => c - 1)
+      }, 1000)
+      return () => clearInterval(timer)
+    }, [autoRefreshSeconds, ...deps])
+
+    return { remainingRefreshSeconds }
+  }
+
+  return useAutoFreshRemainingSeconds
 }

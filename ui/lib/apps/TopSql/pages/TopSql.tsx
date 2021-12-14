@@ -1,9 +1,9 @@
-import { timeFormatter, XYBrushArea, BrushEndListener } from '@elastic/charts'
-import React, { useCallback, useState, useEffect } from 'react'
+import { XYBrushArea, BrushEndListener } from '@elastic/charts'
+import React, { useCallback, useState } from 'react'
 import { useQuery } from 'react-query'
-import { Spin, Button, Space } from 'antd'
-import { FullscreenOutlined } from '@ant-design/icons'
+import { Spin, Space, Button } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { ZoomOutOutlined } from '@ant-design/icons'
 
 import '@elastic/charts/dist/theme_only_light.css'
 
@@ -15,14 +15,12 @@ import {
   Card,
   AutoRefreshButton,
   useAutoFreshRemainingSecondsFactory,
-} from '@lib/components'
-import {
-  InstanceSelect,
-  InstanceId,
+  TimeRangeSelector,
   TimeRange,
-  useTimeRange,
-  getTimestampRange,
-} from '../components/Filter'
+  calcTimeRange,
+  DEFAULT_TIME_RANGE,
+} from '@lib/components'
+import { InstanceSelect, InstanceId } from '../components/Filter'
 import { TopSqlTable } from './TopSqlTable'
 import styles from './TopSql.module.less'
 import { convertOthersRecord } from './useOthers'
@@ -32,8 +30,6 @@ import {
   useWindowSize,
   WindowSizeContext,
 } from './useWindowSize'
-
-const fullFormatter = timeFormatter('YYYY-MM-DD HH:mm:ss')
 
 export function TopSQL() {
   const windowSizeContext = useWindowSizeContext({ barWidth: 10 })
@@ -46,18 +42,20 @@ export function TopSQL() {
 
 const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
 const useAutoRefreshRemainingSeconds = useAutoFreshRemainingSecondsFactory()
+const zoomOutRate = 0.5
 
 function App() {
   const { t } = useTranslation()
-  const [chartTimeRange, setChartTimeRange] = useState<
-    [number, number] | undefined
-  >(undefined)
   const [autoRefreshSeconds, setAutoRefreshSeconds] = useLocalStorageState(
     'topsql_auto_refresh',
     0
   )
   const [instanceId, setInstanceId] = useURLQueryState('instance_id')
-  const { timeRange, setTimeRange } = useTimeRange()
+  const [recentTimeRange, setRecentTimeRange] = useLocalStorageState(
+    'topsql_recent_time_range',
+    DEFAULT_TIME_RANGE
+  )
+  const [timeRange, setTimeRange] = useState<TimeRange>(recentTimeRange)
   const [refreshTimestamp, setRefreshTimestamp] = useState(0)
   const { seriesData, queryTimestampRange, isLoading } = useSeriesData(
     instanceId,
@@ -66,56 +64,65 @@ function App() {
     refreshTimestamp
   )
 
-  const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
-    if (v.x) {
-      setChartTimeRange(v.x)
+  const setAbsoluteTimeRange = useCallback((tr: [number, number]) => {
+    setAutoRefreshSeconds(0)
+    setTimeRange({ type: 'absolute', value: tr })
+  }, [])
+
+  const handleSetTimeRange = useCallback((v: TimeRange) => {
+    setTimeRange(v)
+    if (v.type === 'recent') {
+      setRecentTimeRange(v)
     }
   }, [])
 
-  const resetChartTimeRange = useCallback(() => {
-    setChartTimeRange(undefined)
+  const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
+    if (v.x) {
+      setAbsoluteTimeRange(
+        v.x.map((d) => Math.ceil(d / 1000)) as [number, number]
+      )
+    }
   }, [])
+
+  const handleZoomOut = useCallback(() => {
+    const [start, end] = calcTimeRange(timeRange)
+    setAbsoluteTimeRange([start - (end - start) * zoomOutRate, end])
+  }, [timeRange])
 
   const refreshTimestampRange = useCallback(() => {
     setRefreshTimestamp(Date.now())
   }, [])
-
-  useEffect(() => {
-    resetChartTimeRange()
-  }, [seriesData, resetChartTimeRange])
 
   const { remainingRefreshSeconds } = useAutoRefreshRemainingSeconds(
     autoRefreshSeconds,
     [queryTimestampRange]
   )
 
+  const handleAutoRefreshSecondsChange = useCallback((v: number) => {
+    setAutoRefreshSeconds(v)
+    setTimeRange(recentTimeRange)
+  }, [])
+
   return (
     <div className={styles.container}>
       <Card>
         <Space size="middle">
           <InstanceSelect value={instanceId} onChange={setInstanceId} />
-          <TimeRange value={timeRange} onChange={setTimeRange} />
+          <Button.Group>
+            <TimeRangeSelector
+              value={timeRange}
+              onChange={handleSetTimeRange}
+            />
+            <Button icon={<ZoomOutOutlined />} onClick={handleZoomOut} />
+          </Button.Group>
           <AutoRefreshButton
             autoRefreshSeconds={autoRefreshSeconds}
-            onAutoRefreshSecondsChange={setAutoRefreshSeconds}
+            onAutoRefreshSecondsChange={handleAutoRefreshSecondsChange}
             remainingRefreshSeconds={remainingRefreshSeconds}
             isLoading={isLoading}
             onRefresh={refreshTimestampRange}
             options={autoRefreshOptions}
           />
-          {chartTimeRange && (
-            <div>
-              <Button
-                icon={<FullscreenOutlined />}
-                onClick={resetChartTimeRange}
-              >
-                Reset Time Range
-              </Button>
-              {` (now: ${fullFormatter(chartTimeRange[0])} ~ ${fullFormatter(
-                chartTimeRange[1]
-              )})`}
-            </div>
-          )}
         </Space>
       </Card>
       <Spin spinning={isLoading}>
@@ -130,12 +137,9 @@ function App() {
             seriesData={seriesData}
             timeRange={timeRange}
             timestampRange={queryTimestampRange}
-            chartTimeRange={chartTimeRange}
           />
         </div>
-        {!!seriesData?.length && (
-          <TopSqlTable data={seriesData} timeRange={chartTimeRange} />
-        )}
+        {!!seriesData?.length && <TopSqlTable data={seriesData} />}
       </Spin>
     </div>
   )
@@ -148,7 +152,7 @@ const queryTopSQLDigests = asyncDebounce(
     timeRange: TimeRange,
     topN: string
   ) => {
-    const [beginTs, endTs] = getTimestampRange(timeRange)
+    const [beginTs, endTs] = calcTimeRange(timeRange)
     return client
       .getInstance()
       .topsqlCpuTimeGet(
@@ -202,7 +206,7 @@ function useSeriesData(
       'getSeriesData',
       instanceId,
       windowSize,
-      timeRange.id,
+      timeRange.value,
       autoRefreshSeconds,
       refreshTimestamp,
     ],

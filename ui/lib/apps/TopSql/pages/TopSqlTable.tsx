@@ -9,7 +9,6 @@ import { OTHERS_LABEL } from './useOthers'
 
 interface TopSqlTableProps {
   data: TopsqlCPUTimeItem[]
-  timeRange: [number, number] | undefined
 }
 
 interface TableData {
@@ -18,9 +17,9 @@ interface TableData {
   cpuTime: number
 }
 
-export function TopSqlTable({ data, timeRange }: TopSqlTableProps) {
+export function TopSqlTable({ data }: TopSqlTableProps) {
   const { t } = useTranslation()
-  const { data: tableData, totalCpuTime } = useTableData(data, timeRange)
+  const { data: tableData, totalCpuTime } = useTableData(data)
   const tableColumns = useMemo(
     () => [
       {
@@ -74,10 +73,7 @@ export function TopSqlTable({ data, timeRange }: TopSqlTableProps) {
   )
 }
 
-function useTableData(
-  records: TopsqlCPUTimeItem[],
-  timeRange: [number, number] | undefined
-) {
+function useTableData(records: TopsqlCPUTimeItem[]) {
   const tableData: { data: TableData[]; totalCpuTime: number } = useMemo(() => {
     if (!records) {
       return { data: [], totalCpuTime: 0 }
@@ -88,9 +84,6 @@ function useTableData(
         let cpuTime = 0
         r.plans?.forEach((plan) => {
           plan.timestamp_secs?.forEach((t, i) => {
-            if (timeRange && (t < timeRange[0] || t > timeRange[1])) {
-              return
-            }
             cpuTime += plan.cpu_time_millis![i]
           })
         })
@@ -101,7 +94,7 @@ function useTableData(
       .sort((a, b) => b.cpuTime - a.cpuTime)
       .sort((a, b) => (b.digest === OTHERS_LABEL ? -1 : 0))
     return { data: d, totalCpuTime }
-  }, [records, timeRange])
+  }, [records])
 
   return tableData
 }

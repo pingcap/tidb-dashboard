@@ -1,4 +1,7 @@
-import { AutoRefreshButton } from './AutoRefreshButton'
+import {
+  AutoRefreshButton,
+  useAutoFreshRemainingSecondsFactory,
+} from './AutoRefreshButton'
 
 export default AutoRefreshButton
-export { AutoRefreshButton }
+export { AutoRefreshButton, useAutoFreshRemainingSecondsFactory }

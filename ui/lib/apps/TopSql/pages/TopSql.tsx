@@ -11,7 +11,11 @@ import client from '@lib/client'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 import { useURLQueryState } from '@lib/utils/useURLQueryState'
 import { asyncDebounce } from '@lib/utils/asyncDebounce'
-import { Card, AutoRefreshButton } from '@lib/components'
+import {
+  Card,
+  AutoRefreshButton,
+  useAutoFreshRemainingSecondsFactory,
+} from '@lib/components'
 import {
   InstanceSelect,
   InstanceId,
@@ -41,6 +45,7 @@ export function TopSQL() {
 }
 
 const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
+const useAutoRefreshRemainingSeconds = useAutoFreshRemainingSecondsFactory()
 
 function App() {
   const { t } = useTranslation()
@@ -79,32 +84,10 @@ function App() {
     resetChartTimeRange()
   }, [seriesData, resetChartTimeRange])
 
-  // auto refresh
-  const [remainingRefreshSeconds, setRemainingRefreshSeconds] =
-    useState(autoRefreshSeconds)
-
-  useEffect(() => {
-    if (remainingRefreshSeconds > autoRefreshSeconds) {
-      setRemainingRefreshSeconds(autoRefreshSeconds)
-    }
-  }, [autoRefreshSeconds])
-
-  const [timer, setTimer] = useState<NodeJS.Timeout>(null as any)
-  useEffect(() => {
-    if (autoRefreshSeconds === 0) {
-      clearInterval(timer)
-      return
-    }
-
-    clearInterval(timer)
-    setRemainingRefreshSeconds(autoRefreshSeconds)
-    setTimer(
-      setInterval(() => {
-        setRemainingRefreshSeconds((c) => c - 1)
-      }, 1000)
-    )
-    return () => clearInterval(timer)
-  }, [autoRefreshSeconds, queryTimestampRange])
+  const { remainingRefreshSeconds } = useAutoRefreshRemainingSeconds(
+    autoRefreshSeconds,
+    [queryTimestampRange]
+  )
 
   return (
     <div className={styles.container}>

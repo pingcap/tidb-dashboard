@@ -2,14 +2,14 @@ import React, { useMemo, useState, useCallback } from 'react'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { getTheme } from 'office-ui-fabric-react/lib/Styling'
-import {
-  DetailsRow,
-  IDetailsListProps,
-  IDetailsRowStyles,
-} from 'office-ui-fabric-react'
 
-import { Bar, TextWrap, CardTable, ICardTableProps } from '@lib/components'
+import {
+  Bar,
+  TextWrap,
+  CardTable,
+  ICardTableProps,
+  createUnselectableRow,
+} from '@lib/components'
 import { TopsqlPlanItem } from '@lib/client'
 
 import type { SQLRecord } from '../TopSqlTable'
@@ -19,7 +19,11 @@ interface TopSqlDetailTableProps {
   record: SQLRecord
 }
 
-const theme = getTheme()
+const canSelect = (r: PlanRecord): boolean => {
+  return !!r.plan_digest && r.plan_digest !== OVERALL_LABEL
+}
+
+const unselectableRow = createUnselectableRow((props) => !canSelect(props.item))
 
 export function DetailTable({ record }: TopSqlDetailTableProps) {
   const { records, isMultiPlans, totalCpuTime } = usePlanRecord(record)
@@ -63,7 +67,7 @@ export function DetailTable({ record }: TopSqlDetailTableProps) {
     getKey: (r: PlanRecord) => r.plan_digest!,
     items: records || [],
     columns: tableColumns,
-    onRenderRow: renderRow,
+    onRenderRow: unselectableRow,
   }
   if (isMultiPlans) {
     tableProps = {
@@ -129,10 +133,6 @@ const usePlanRecord = (record: SQLRecord) => {
   return { isMultiPlans, records, totalCpuTime }
 }
 
-const canSelect = (r: PlanRecord): boolean => {
-  return !!r.plan_digest && r.plan_digest !== OVERALL_LABEL
-}
-
 const useSelectedRecord = () => {
   const [record, setRecord] = useState<PlanRecord | null>(null)
   const handleSelect = useCallback(
@@ -150,23 +150,4 @@ const useSelectedRecord = () => {
   )
 
   return { selectedRecord: record, setSelectedRecord: handleSelect }
-}
-
-const renderRow: IDetailsListProps['onRenderRow'] = (props) => {
-  if (!props) {
-    return null
-  }
-
-  const customStyles: Partial<IDetailsRowStyles> = {}
-  if (!canSelect(props.item)) {
-    customStyles.root = {
-      backgroundColor: theme.palette.neutralLighter,
-      cursor: 'not-allowed',
-      pointerEvents: 'none',
-      color: '#aaa',
-      fontStyle: 'italic',
-    }
-  }
-
-  return <DetailsRow {...props} styles={customStyles} />
 }

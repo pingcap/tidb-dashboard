@@ -23,6 +23,7 @@ import ErrorBar from '../ErrorBar'
 import styles from './index.module.less'
 
 export { AntCheckboxGroupHeader } from './GroupHeader'
+export { createUnselectableRow } from './UnselectableRow'
 
 DetailsList['whyDidYouRender'] = {
   customName: 'DetailsList',

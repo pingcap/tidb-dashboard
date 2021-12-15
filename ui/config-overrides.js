@@ -27,6 +27,10 @@ function copyDistroRes() {
 function injectDistroToHTML(config, env) {
   let distroStringsResMeta = '__DISTRO_STRINGS_RES__'
 
+  // For dev mode,
+  // we copy distro assets from bin/distro-res to public/distro-res to override the default assets,
+  // read distro strings res from public/distro-res/strings.json and encode it by base64 if it exists.
+  // For production mode, we keep the "__DISTRO_STRINGS_RES__" value, it will be replaced by the backend RewriteAssets() method in the run time.
   if (isBuildAsDevServer()) {
     copyDistroRes()
 
@@ -37,6 +41,7 @@ function injectDistroToHTML(config, env) {
     }
   }
 
+  // Store the distro strings res in the html head meta.
   const distroInfo = {
     meta: {
       'x-distro-strings-res': distroStringsResMeta,

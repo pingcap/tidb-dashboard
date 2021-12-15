@@ -71,7 +71,7 @@ func overrideDistroAssetsRes(fs http.FileSystem, cfg *config.Config, updater Upd
 		log.Fatal("Failed to get work dir", zap.Error(err))
 	}
 
-	distroResDir := path.Join(path.Dir(exePath), distro.DistroResFolderName)
+	distroResDir := path.Join(path.Dir(exePath), "distro-res")
 	info, err := os.Stat(distroResDir)
 	if err != nil || !info.IsDir() {
 		// just ignore
@@ -79,7 +79,7 @@ func overrideDistroAssetsRes(fs http.FileSystem, cfg *config.Config, updater Upd
 	}
 
 	override := func(assetName string) {
-		assetPath := path.Join("/", distro.DistroResFolderName, assetName)
+		assetPath := path.Join("/", "distro-res", assetName)
 		targetFile, err := fs.Open(assetPath)
 		if err != nil {
 			// has no target asset to be overried, skip

@@ -7,16 +7,13 @@ package distro
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"sync"
 
-	"github.com/pingcap/log"
-
 	"go.uber.org/atomic"
-	"go.uber.org/zap"
 )
 
 type DistributionResource struct {
@@ -40,10 +37,10 @@ var (
 	replaceGlobalMu sync.Mutex
 )
 
-const (
-	DistroResFolderName      string = "distro-res"
-	distroStringsResFileName string = "strings.json"
-)
+// const (
+// 	DistroResFolderName      string = "distro-res"
+// 	distroStringsResFileName string = "strings.json"
+// )
 
 // ReplaceGlobal replaces the global distribution resource with the specified one. Missing fields in the
 // resource will be filled using default values.
@@ -75,38 +72,32 @@ func R() *DistributionResource {
 	return r.(*DistributionResource)
 }
 
-func StringsRes() (distroStringsRes DistributionResource) {
-	exePath, err := os.Executable()
+func ReadResourceStringsFromFile(filePath string) (DistributionResource, error) {
+	distroStringsRes := DistributionResource{}
+
+	info, err := os.Stat(filePath)
+	if errors.Is(err, os.ErrNotExist) || info.IsDir() {
+		// ignore if file not exist or it is a folder
+		return distroStringsRes, nil
+	}
 	if err != nil {
-		log.Fatal("Failed to get work dir", zap.Error(err))
+		// may permission or other errors
+		return distroStringsRes, err
 	}
 
-	distroStringsResPath := path.Join(path.Dir(exePath), DistroResFolderName, distroStringsResFileName)
-	info, err := os.Stat(distroStringsResPath)
-	if err != nil || info.IsDir() {
-		// ignore
-		return
-	}
-
-	distroStringsFile, err := os.Open(filepath.Clean(distroStringsResPath))
+	distroStringsFile, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
-		log.Fatal("Failed to open file", zap.String("path", distroStringsResPath), zap.Error(err))
+		return distroStringsRes, err
 	}
 	defer func() {
-		if err := distroStringsFile.Close(); err != nil {
-			log.Error("Failed to close file", zap.String("path", distroStringsResPath), zap.Error(err))
-		}
+		_ = distroStringsFile.Close()
 	}()
 
 	data, err := ioutil.ReadAll(distroStringsFile)
 	if err != nil {
-		log.Fatal("Failed to read file", zap.String("path", distroStringsResPath), zap.Error(err))
+		return distroStringsRes, err
 	}
 
 	err = json.Unmarshal(data, &distroStringsRes)
-	if err != nil {
-		log.Fatal("Failed to unmarshal distro strings res", zap.String("path", distroStringsResPath), zap.Error(err))
-	}
-
-	return
+	return distroStringsRes, err
 }

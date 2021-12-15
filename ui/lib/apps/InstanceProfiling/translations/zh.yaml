@@ -19,7 +19,7 @@ instance_profiling:
       title: 性能分析历史
       columns:
         targets: 实例
-        profiling_type_list: 分析类型
+        requsted_profiling_types: 分析类型
         start_at: 开始时间
         duration: 时长（秒）
         status: 状态
@@ -53,3 +53,5 @@ instance_profiling:
       status:
         finished: 完成
         skipped: 忽略
+      tooltip:
+        skipped: 该 {{kind}} 不支持 {{type}} 分析

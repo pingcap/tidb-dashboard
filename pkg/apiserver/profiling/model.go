@@ -4,8 +4,12 @@ package profiling
 
 import (
 	"context"
+	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/joomcode/errorx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
@@ -30,7 +34,19 @@ const (
 	RawDataTypeText     TaskRawDataType = "text"
 )
 
-type TaskProfilingType string
+type (
+	TaskProfilingType     string
+	TaskProfilingTypeList []TaskProfilingType
+)
+
+func (r *TaskProfilingTypeList) Scan(src interface{}) error {
+	return json.Unmarshal([]byte(src.(string)), r)
+}
+
+func (r TaskProfilingTypeList) Value() (driver.Value, error) {
+	val, err := json.Marshal(r)
+	return string(val), err
+}
 
 const (
 	ProfilingTypeCPU       TaskProfilingType = "cpu"
@@ -48,7 +64,7 @@ type TaskModel struct {
 	Error         string                  `json:"error" gorm:"type:text"`
 	StartedAt     int64                   `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
 	RawDataType   TaskRawDataType         `json:"raw_data_type" gorm:"raw_data_type"`
-	ProfilingType string                  `json:"profiling_type"`
+	ProfilingType TaskProfilingType       `json:"profiling_type"`
 }
 
 func (TaskModel) TableName() string {
@@ -56,12 +72,12 @@ func (TaskModel) TableName() string {
 }
 
 type TaskGroupModel struct {
-	ID                  uint                          `json:"id" gorm:"primary_key"`
-	State               TaskState                     `json:"state" gorm:"index"`
-	ProfileDurationSecs uint                          `json:"profile_duration_secs"`
-	TargetStats         model.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
-	StartedAt           int64                         `json:"started_at"`
-	ProfilingTypeList   string                        `json:"profiling_type_list"`
+	ID                     uint                          `json:"id" gorm:"primary_key"`
+	State                  TaskState                     `json:"state" gorm:"index"`
+	ProfileDurationSecs    uint                          `json:"profile_duration_secs"`
+	TargetStats            model.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
+	StartedAt              int64                         `json:"started_at"`
+	RequstedProfilingTypes TaskProfilingTypeList         `json:"requsted_profiling_types"`
 }
 
 func (TaskGroupModel) TableName() string {
@@ -82,7 +98,7 @@ type Task struct {
 }
 
 // NewTask creates a new profiling task.
-func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, fts *fetchers, profilingType string) *Task {
+func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, fts *fetchers, profilingType TaskProfilingType) *Task {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Task{
 		TaskModel: &TaskModel{
@@ -103,10 +119,10 @@ func (t *Task) run() {
 	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s_%s", t.TaskGroupID, t.ID, t.ProfilingType, t.Target.FileName())
 	protoFilePath, rawDataType, err := profileAndWritePprof(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs, t.ProfilingType)
 	if err != nil {
-		t.Error = err.Error()
-		if err.Error() == "unsupported profiling type" {
+		if errorx.IsOfType(err, ErrTaskSikpped) {
 			t.State = TaskSkipped
 		} else {
+			t.Error = err.Error()
 			t.State = TaskStateError
 		}
 		t.taskGroup.db.Save(t.TaskModel)
@@ -129,14 +145,14 @@ type TaskGroup struct {
 }
 
 // NewTaskGroup create a new profiling task group.
-func NewTaskGroup(db *dbstore.DB, profileDurationSecs uint, stats model.RequestTargetStatistics, profilingTypeList string) *TaskGroup {
+func NewTaskGroup(db *dbstore.DB, profileDurationSecs uint, stats model.RequestTargetStatistics, requestedProfilingTypes TaskProfilingTypeList) *TaskGroup {
 	return &TaskGroup{
 		TaskGroupModel: &TaskGroupModel{
-			State:               TaskStateRunning,
-			ProfileDurationSecs: profileDurationSecs,
-			TargetStats:         stats,
-			StartedAt:           time.Now().Unix(),
-			ProfilingTypeList:   profilingTypeList,
+			State:                  TaskStateRunning,
+			ProfileDurationSecs:    profileDurationSecs,
+			TargetStats:            stats,
+			StartedAt:              time.Now().Unix(),
+			RequstedProfilingTypes: requestedProfilingTypes,
 		},
 		db: db,
 	}

@@ -4,7 +4,6 @@ package profiling
 
 import (
 	"context"
-	"strings"
 	"sync"
 	"time"
 
@@ -29,12 +28,13 @@ var (
 	ErrNS             = errorx.NewNamespace("error.profiling")
 	ErrIgnoredRequest = ErrNS.NewType("ignored_request")
 	ErrTimeout        = ErrNS.NewType("timeout")
+	ErrTaskSikpped    = ErrNS.NewType("task_skipped")
 )
 
 type StartRequest struct {
-	Targets           []model.RequestTargetNode `json:"targets"`
-	DurationSecs      uint                      `json:"duration_secs"`
-	ProfilingTypeList string                    `json:"profiling_type_list"`
+	Targets                []model.RequestTargetNode `json:"targets"`
+	DurationSecs           uint                      `json:"duration_secs"`
+	RequstedProfilingTypes TaskProfilingTypeList     `json:"requsted_profiling_types"`
 }
 
 type StartRequestSession struct {
@@ -152,7 +152,7 @@ func (s *Service) exclusiveExecute(ctx context.Context, req *StartRequest) (*Tas
 }
 
 func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
-	taskGroup := NewTaskGroup(s.params.LocalStore, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets), req.ProfilingTypeList)
+	taskGroup := NewTaskGroup(s.params.LocalStore, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets), req.RequstedProfilingTypes)
 	if err := s.params.LocalStore.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		log.Warn("failed to start task group", zap.Error(err))
 		return nil, err
@@ -160,7 +160,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		profileTypeList := strings.Split(req.ProfilingTypeList, ",")
+		profileTypeList := req.RequstedProfilingTypes
 		for _, profilingType := range profileTypeList {
 			t := NewTask(ctx, taskGroup, target, s.fetchers, profilingType)
 			s.params.LocalStore.Create(t.TaskModel)

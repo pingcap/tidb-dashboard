@@ -16,7 +16,7 @@ type pprofOptions struct {
 
 	target        *model.RequestTargetNode
 	fetcher       *profileFetcher
-	profilingType string
+	profilingType TaskProfilingType
 }
 
 func fetchPprof(op *pprofOptions) (string, TaskRawDataType, error) {
@@ -34,25 +34,25 @@ type fetcher struct {
 	profileFetcher *profileFetcher
 }
 
-func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, profilingType string) (string, TaskRawDataType, error) {
+func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, profilingType TaskProfilingType) (string, TaskRawDataType, error) {
 	var profilingRawDataType TaskRawDataType
 	var fileExtenstion string
 	secs := strconv.Itoa(int(duration))
 	var url string
 	switch profilingType {
-	case string(ProfilingTypeCPU):
+	case ProfilingTypeCPU:
 		url = "/debug/pprof/profile?seconds=" + secs
 		profilingRawDataType = RawDataTypeProtobuf
 		fileExtenstion = "*.proto"
-	case string(ProfilingTypeHeap):
+	case ProfilingTypeHeap:
 		url = "/debug/pprof/heap"
 		profilingRawDataType = RawDataTypeProtobuf
 		fileExtenstion = "*.proto"
-	case string(ProfilingTypeGoroutine):
+	case ProfilingTypeGoroutine:
 		url = "/debug/pprof/goroutine?debug=1"
 		profilingRawDataType = RawDataTypeText
 		fileExtenstion = "*.txt"
-	case string(ProfilingTypeMutex):
+	case ProfilingTypeMutex:
 		url = "/debug/pprof/mutex?debug=1"
 		profilingRawDataType = RawDataTypeText
 		fileExtenstion = "*.txt"

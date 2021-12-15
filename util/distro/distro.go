@@ -37,11 +37,6 @@ var (
 	replaceGlobalMu sync.Mutex
 )
 
-// const (
-// 	DistroResFolderName      string = "distro-res"
-// 	distroStringsResFileName string = "strings.json"
-// )
-
 // ReplaceGlobal replaces the global distribution resource with the specified one. Missing fields in the
 // resource will be filled using default values.
 func ReplaceGlobal(r DistributionResource) func() {

@@ -7,9 +7,13 @@ package uiserver
 import (
 	"net/http"
 	"os"
+	"path"
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
+	"github.com/pingcap/log"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 

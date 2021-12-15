@@ -41,7 +41,8 @@ function injectDistroToHTML(config, env) {
     }
   }
 
-  // Store the distro strings res in the html head meta.
+  // Store the distro strings res in the html head meta,
+  // HtmlWebpacPlugin will write this meta into the html head.
   const distroInfo = {
     meta: {
       'x-distro-strings-res': distroStringsResMeta,

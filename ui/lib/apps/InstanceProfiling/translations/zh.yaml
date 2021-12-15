@@ -38,5 +38,12 @@ instance_profiling:
         kind: 组件
         content: 内容
         status: 状态
+        selection:
+          actions: 操作
+          types:
+            flamegraph: 查看火焰图
+            graph: 查看关系图
+            download: 下载原始文件
+            no_data: 暂无数据
       status:
         finished: 完成

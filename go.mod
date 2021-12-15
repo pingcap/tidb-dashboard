@@ -19,7 +19,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-graphviz v0.0.9
 	github.com/golang-jwt/jwt v3.2.1+incompatible
-	github.com/google/pprof v0.0.0-20211204230040-2007db6d4f53
+	github.com/google/pprof v0.0.0-20211122183932-1daafda22083
 	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/henrylee2cn/ameda v1.4.10

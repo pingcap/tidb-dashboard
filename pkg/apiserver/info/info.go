@@ -151,3 +151,13 @@ func (s *Service) tablesHandler(c *gin.Context) {
 	}).([]tableSchema)
 	c.JSON(http.StatusOK, result)
 }
+
+// @ID queryDistroRes
+// @Summary Query distro res
+// @Security JwtAuth
+// @Success 200 {object} distro.DistributionResource
+// @Failure 401 {object} rest.ErrorResponse
+// @Router /info/distro [get]
+func (s *Service) DistroRes(c *gin.Context) {
+	// dummy, for generate type for frontend
+}

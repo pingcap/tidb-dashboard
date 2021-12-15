@@ -1,12 +1,6 @@
-type DistroStringsRes = {
-  is_distro: boolean
-  tidb: string
-  tikv: string
-  pd: string
-  tiflash: string
-}
+import { DistroDistributionResource } from '@lib/client'
 
-const defalutDistroStringsRes: DistroStringsRes = {
+const defalutDistroStringsRes: DistroDistributionResource = {
   is_distro: false,
   tidb: 'TiDB',
   tikv: 'TiKV',

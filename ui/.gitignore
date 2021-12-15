@@ -7,6 +7,11 @@ node_modules
 
 # testing
 coverage
+cypress/downloads
+cypress/videos
+cypress/screeshots
+cypress/integration/1-getting-started
+cypress/integration/2-advanced-examples
 
 # production
 build/

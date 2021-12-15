@@ -215,6 +215,9 @@ const LAST_LOGIN_USERNAME_KEY = 'dashboard_last_login_username'
 
 function TiDBSignInForm({ successRoute, onClickAlternative }) {
   const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
+
+  console.log('supportNonRootLogin:', supportNonRootLogin)
+
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -261,12 +264,14 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
             <h2>{t('signin.form.tidb_auth.title')}</h2>
           </Form.Item>
           <Form.Item
+            data-e2e="signin_username_form_item"
             name="username"
             label={t('signin.form.username')}
             rules={[{ required: true }]}
             tooltip={!supportNonRootLogin && t('signin.form.username_tooltip')}
           >
             <Input
+              data-e2e="signin_username_input"
               onInput={clearErrorMsg}
               prefix={<UserOutlined />}
               disabled={!supportNonRootLogin}
@@ -450,6 +455,7 @@ function App({ registry }) {
     async function run() {
       try {
         const resp = await client.getInstance().userGetLoginInfo()
+        console.log('resp', resp)
         const loginInfo = resp.data
         if (
           (loginInfo.supported_auth_types?.indexOf(AuthTypes.SSO) ?? -1) > -1

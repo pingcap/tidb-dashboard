@@ -58,7 +58,9 @@
     "test": "react-app-rewired test",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
-    "storybook": "start-storybook -p 9009 -s public"
+    "storybook": "start-storybook -p 9009 -s public",
+    "run:e2e-test": "cypress run",
+    "open:cypress": "cypress open"
   },
   "husky": {
     "hooks": {
@@ -97,6 +99,7 @@
     "babel-plugin-import": "^1.13.0",
     "browserslist-useragent-regexp": "^2.1.0",
     "customize-cra": "^1.0.0",
+    "cypress": "8.5.0",
     "esm": "^3.2.25",
     "gulp": "^4.0.2",
     "gulp-cli": "^2.3.0",

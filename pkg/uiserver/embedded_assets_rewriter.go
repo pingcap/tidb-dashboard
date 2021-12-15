@@ -17,7 +17,13 @@ var once sync.Once
 
 func Assets(cfg *config.Config) http.FileSystem {
 	once.Do(func() {
-		RewriteAssets(assets, cfg, func(fs http.FileSystem, f http.File, path, newContent string, bs []byte) {
+		exePath, err := os.Executable()
+		if err != nil {
+			log.Fatal("Failed to get executable path", zap.Error(err))
+		}
+
+		distroResFolderPath := path.Join(path.Dir(exePath), distroResFolderName)
+		RewriteAssets(assets, cfg, distroResFolderPath, func(fs http.FileSystem, f http.File, path, newContent string, bs []byte) {
 			m := fs.(vfsgen۰FS)
 			fi := f.(os.FileInfo)
 			m[path] = &vfsgen۰CompressedFileInfo{

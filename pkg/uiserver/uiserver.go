@@ -7,6 +7,7 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"html"
 	"io"
 	"io/ioutil"
@@ -23,9 +24,13 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
+const (
+	distroResFolderName = "distro-res"
+)
+
 type UpdateContentFunc func(fs http.FileSystem, oldFile http.File, path, newContent string, zippedBytes []byte)
 
-func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContentFunc) {
+func RewriteAssets(fs http.FileSystem, cfg *config.Config, distroResFolderPath string, updater UpdateContentFunc) {
 	if fs == nil {
 		return
 	}
@@ -62,62 +67,60 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContent
 	rewrite("/index.html")
 	rewrite("/diagnoseReport.html")
 
-	overrideDistroAssetsRes(fs, cfg, updater)
+	overrideDistroAssetsRes(fs, distroResFolderPath, updater)
 }
 
-func overrideDistroAssetsRes(fs http.FileSystem, cfg *config.Config, updater UpdateContentFunc) {
-	exePath, err := os.Executable()
-	if err != nil {
-		log.Fatal("Failed to get work dir", zap.Error(err))
-	}
-
-	distroResDir := path.Join(path.Dir(exePath), "distro-res")
-	info, err := os.Stat(distroResDir)
-	if err != nil || !info.IsDir() {
-		// just ignore
+func overrideDistroAssetsRes(fs http.FileSystem, distroResFolderPath string, updater UpdateContentFunc) {
+	info, err := os.Stat(distroResFolderPath)
+	if errors.Is(err, os.ErrNotExist) || !info.IsDir() {
+		// just ignore if the folder doesn't exist or it's not a folder
 		return
 	}
-
-	override := func(assetName string) {
-		assetPath := path.Join("/", "distro-res", assetName)
-		targetFile, err := fs.Open(assetPath)
-		if err != nil {
-			// has no target asset to be overried, skip
-			return
-		}
-		defer targetFile.Close()
-
-		sourceFile, err := os.Open(path.Join(distroResDir, assetName))
-		if err != nil {
-			log.Fatal("Failed to open source file", zap.String("path", assetName), zap.Error(err))
-		}
-		defer sourceFile.Close()
-
-		data, err := ioutil.ReadAll(sourceFile)
-		if err != nil {
-			log.Fatal("Failed to read asset", zap.String("path", assetName), zap.Error(err))
-		}
-
-		var b bytes.Buffer
-		w := gzip.NewWriter(&b)
-		if _, err := w.Write(data); err != nil {
-			log.Fatal("Failed to zip asset", zap.Error(err))
-		}
-		if err := w.Close(); err != nil {
-			log.Fatal("Failed to zip asset", zap.Error(err))
-		}
-
-		updater(fs, targetFile, assetPath, string(data), b.Bytes())
+	if err != nil {
+		log.Fatal("Failed to stat dir", zap.String("dir", distroResFolderPath), zap.Error(err))
 	}
 
 	// traverse
-	files, err := ioutil.ReadDir(distroResDir)
+	files, err := ioutil.ReadDir(distroResFolderPath)
 	if err != nil {
-		log.Fatal("Failed to read dir", zap.String("dir", distroResDir), zap.Error(err))
+		log.Fatal("Failed to read dir", zap.String("dir", distroResFolderPath), zap.Error(err))
 	}
 	for _, file := range files {
-		override(file.Name())
+		overrideSingleDistroAsset(fs, distroResFolderPath, file.Name(), updater)
 	}
+}
+
+func overrideSingleDistroAsset(fs http.FileSystem, distroResFolderPath, assetName string, updater UpdateContentFunc) {
+	assetPath := path.Join("/", distroResFolderName, assetName)
+	targetFile, err := fs.Open(assetPath)
+	if err != nil {
+		// has no target asset to be overried, skip
+		return
+	}
+	defer targetFile.Close()
+
+	assetFullPath := path.Join(distroResFolderPath, assetName)
+	sourceFile, err := os.Open(assetFullPath)
+	if err != nil {
+		log.Fatal("Failed to open source file", zap.String("file", assetFullPath), zap.Error(err))
+	}
+	defer sourceFile.Close()
+
+	data, err := ioutil.ReadAll(sourceFile)
+	if err != nil {
+		log.Fatal("Failed to read asset", zap.String("file", assetFullPath), zap.Error(err))
+	}
+
+	var b bytes.Buffer
+	w := gzip.NewWriter(&b)
+	if _, err := w.Write(data); err != nil {
+		log.Fatal("Failed to zip asset", zap.Error(err))
+	}
+	if err := w.Close(); err != nil {
+		log.Fatal("Failed to zip asset", zap.Error(err))
+	}
+
+	updater(fs, targetFile, assetPath, string(data), b.Bytes())
 }
 
 func Handler(root http.FileSystem) http.Handler {

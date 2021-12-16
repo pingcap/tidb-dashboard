@@ -1,9 +1,8 @@
 import { Badge, Button, Progress, Menu, Dropdown } from 'antd'
-import React, { useCallback, useMemo, useState, useEffect } from 'react'
+import React, { useCallback, useMemo, useState, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { usePersistFn } from 'ahooks'
 
 import client from '@lib/client'
 import { CardTable, DateTime, Head, Descriptions } from '@lib/components'
@@ -36,7 +35,7 @@ interface IRow {
   kind: string
 }
 
-function mapData(data, t) {
+function mapData(data) {
   if (!data) {
     return data
   }
@@ -98,67 +97,11 @@ async function getActionToken(
   return token
 }
 
-function ViewResultButton({ rec, t }) {
-  const openResult = usePersistFn(async (openAs: string) => {
-    const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
-    let token: string | undefined
-    let profileURL: string
-
-    switch (openAs) {
-      case ViewOptions.Download:
-        token = await getActionToken(rec.id, 'single_download')
-        if (!token) {
-          return
-        }
-
-        window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
-        break
-      case ViewOptions.FlameGraph:
-        token = await getActionToken(rec.id, 'single_view')
-        if (!token) {
-          return
-        }
-
-        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
-        if (isProtobuf) {
-          const titleOnTab = rec.target.kind + '_' + rec.target.display_name
-          profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
-            // protobuf can be rendered to flamegraph by speedscope
-            profileURL + `&output_type=protobuf`
-          )}&title=${titleOnTab}`
-        }
-
-        window.open(`${profileURL}`, '_blank')
-        break
-      case ViewOptions.Graph:
-        token = await getActionToken(rec.id, 'single_view')
-        if (!token) {
-          return
-        }
-
-        profileURL =
-          profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
-            ViewOptions.Graph
-          }`
-
-        window.open(`${profileURL}`, '_blank')
-        break
-      case ViewOptions.Text:
-        token = await getActionToken(rec.id, 'single_view')
-        if (!token) {
-          return
-        }
-        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
-          ViewOptions.Text
-        }`
-        window.open(`${profileURL}`, '_blank')
-        break
-    }
-  })
-
+function DropdownButton(props) {
+  const { rec, t } = props
   const menu = () => {
     return (
-      <Menu onClick={(e) => openResult(e.key as string)}>
+      <Menu onClick={(e) => openResult(e.key as string, rec)}>
         {rec.view_options.map((option, idx) => {
           // skip the first option in menu since it has been show on the button.
           if (idx != 0) {
@@ -175,29 +118,86 @@ function ViewResultButton({ rec, t }) {
     )
   }
 
-  const DropdownButton = () => {
-    return (
-      <Dropdown.Button
-        disabled={rec.state !== taskState.Success}
-        overlay={menu}
-        onClick={() => openResult(`${rec.view_options[0]}`)}
-      >
-        {t(
-          `instance_profiling.detail.table.columns.selection.types.${rec.view_options[0]}`
-        )}
-      </Dropdown.Button>
-    )
-  }
+  return (
+    <Dropdown.Button
+      disabled={rec.state !== taskState.Success}
+      overlay={menu}
+      onClick={() => openResult(`${rec.view_options[0]}`, rec)}
+    >
+      {t(
+        `instance_profiling.detail.table.columns.selection.types.${rec.view_options[0]}`
+      )}
+    </Dropdown.Button>
+  )
+}
 
+const openResult = async (openAs: string, rec) => {
+  const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
+  let token: string | undefined
+  let profileURL: string
+
+  switch (openAs) {
+    case ViewOptions.Download:
+      token = await getActionToken(rec.id, 'single_download')
+      if (!token) {
+        return
+      }
+
+      window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
+      break
+    case ViewOptions.FlameGraph:
+      token = await getActionToken(rec.id, 'single_view')
+      if (!token) {
+        return
+      }
+
+      profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
+      if (isProtobuf) {
+        const titleOnTab = rec.target.kind + '_' + rec.target.display_name
+        profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
+          // protobuf can be rendered to flamegraph by speedscope
+          profileURL + `&output_type=protobuf`
+        )}&title=${titleOnTab}`
+      }
+
+      window.open(`${profileURL}`, '_blank')
+      break
+    case ViewOptions.Graph:
+      token = await getActionToken(rec.id, 'single_view')
+      if (!token) {
+        return
+      }
+
+      profileURL =
+        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
+          ViewOptions.Graph
+        }`
+
+      window.open(`${profileURL}`, '_blank')
+      break
+    case ViewOptions.Text:
+      token = await getActionToken(rec.id, 'single_view')
+      if (!token) {
+        return
+      }
+      profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
+        ViewOptions.Text
+      }`
+      window.open(`${profileURL}`, '_blank')
+      break
+  }
+}
+
+function ViewResultButton({ rec, t }) {
   if (rec.view_options.length > 1) {
-    return <DropdownButton />
+    return <DropdownButton rec={rec} t={t} />
   } else {
     return (
       <>
         {rec.state === taskState.Success && (
           <Button
             disabled={rec.state !== taskState.Success}
-            onClick={() => openResult(`${rec.view_options[0]}`)}
+            onClick={() => openResult(`${rec.view_options[0]}`, rec)}
             style={{ width: 150 }}
           >
             {t(
@@ -209,6 +209,8 @@ function ViewResultButton({ rec, t }) {
     )
   }
 }
+
+const ViewResultButtonMemo = memo(ViewResultButton)
 
 export default function Page() {
   const { t } = useTranslation()
@@ -225,7 +227,7 @@ export default function Page() {
     }
   )
 
-  const data = useMemo(() => mapData(respData, t), [respData])
+  const data = useMemo(() => mapData(respData), [respData])
   const [groups, setGroups] = useState<IGroup[]>([])
 
   const profileDuration =
@@ -320,7 +322,7 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 200,
         onRender: (record) => {
-          return <ViewResultButton rec={record} t={t} />
+          return <ViewResultButtonMemo rec={record} t={t} />
         },
       },
     ],

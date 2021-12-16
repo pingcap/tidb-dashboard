@@ -72,12 +72,12 @@ func (s *Service) getList(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	columns, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
+	columns, err := s.params.SysSchema.GetTableColumnNames(db, SlowQueryTable)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
-	results, err := QuerySlowLogList(&req, columns, db)
+	results, err := QuerySlowLogList(&req, columns, db.Table(SlowQueryTable))
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
@@ -126,12 +126,12 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		fields = strings.Split(req.Fields, ",")
 	}
 	db := utils.GetTiDBConnection(c)
-	columns, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
+	columns, err := s.params.SysSchema.GetTableColumnNames(db, SlowQueryTable)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
-	list, err := QuerySlowLogList(&req, columns, db)
+	list, err := QuerySlowLogList(&req, columns, db.Table(SlowQueryTable))
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
@@ -184,7 +184,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Router /slow_query/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cs, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
+	cs, err := s.params.SysSchema.GetTableColumnNames(db, SlowQueryTable)
 	if err != nil {
 		_ = c.Error(err)
 		return

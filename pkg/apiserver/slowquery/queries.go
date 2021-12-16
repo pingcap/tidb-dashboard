@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	slowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
+	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
 )
 
 type GetListRequest struct {
@@ -43,7 +43,6 @@ func QuerySlowLogList(req *GetListRequest, slowQueryColumns []string, db *gorm.D
 	}
 
 	tx := db.
-		Table(slowQueryTable).
 		Select(selectStmt)
 
 	if req.BeginTime != 0 && req.EndTime != 0 {
@@ -103,7 +102,6 @@ func QuerySlowLogList(req *GetListRequest, slowQueryColumns []string, db *gorm.D
 func (s *Service) querySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*Model, error) {
 	var result Model
 	err := db.
-		Table(slowQueryTable).
 		Select("*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp").
 		Where("Digest = ?", req.Digest).
 		Where("Time = FROM_UNIXTIME(?)", req.Timestamp).

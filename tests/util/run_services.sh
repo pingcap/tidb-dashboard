@@ -34,3 +34,22 @@ ensure_tidb() {
     sleep 5
   done
 }
+
+PROJECT_DIR="$(dirname "$0")/.."
+BIN="${PROJECT_DIR}/bin"
+
+import_test_data() {
+  if [ -e "$BIN/tidb-lightning" ]; then
+    echo "+ Start import fixtures..."
+    $BIN/tidb-lightning --backend tidb -tidb-host 127.0.0.1 -tidb-port 4000 -tidb-user root -d tests/fixtures
+    echo "+ Import success!"
+  fi
+}
+
+dump_test_data() {
+  if [ -e "$BIN/dumpling" ]; then
+    echo "+ Start dump fixtures..."
+    $BIN/dumpling -u root -P 4000 -h 127.0.0.1 --filetype sql -o "${PROJECT_DIR}/tests/fixtures" -T $1
+    echo "+ Dump success!"
+  fi
+}

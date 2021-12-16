@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	mysqldriver "github.com/go-sql-driver/mysql"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 
@@ -18,13 +17,12 @@ import (
 )
 
 const (
-	testTableName     = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	testMockTableName = "mock.INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
+	TestSlowQueryTableName = "test.CLUSTER_SLOW_QUERY"
 )
 
 func TestSlowQuery(t *testing.T) {
 	db := testutil.OpenTestDB(t, func(c1 *mysqldriver.Config, c2 *gorm.Config) {
-		// will be recorded in slow query if we set params
+		// set param sql will be recorded in slow query
 		c1.Params = map[string]string{}
 	})
 
@@ -35,21 +33,27 @@ func TestSlowQuery(t *testing.T) {
 
 type testSlowQuerySuite struct {
 	suite.Suite
-	db *testutil.TestDB
+	db               *testutil.TestDB
+	slowqueryColumns []string
 }
-
-func (s *testSlowQuerySuite) tableSession() *gorm.DB {
-	return s.db.Gorm().Debug().Table(testTableName)
-}
-
-// func (s *testSlowQuerySuite) mockTableSession() *gorm.DB {
-// 	return s.db.Gorm().Debug().Table(testMockTableName)
-// }
 
 func (s *testSlowQuerySuite) SetupSuite() {
+	s.prepareTable()
+
+	columns, err := utils.NewSysSchema().GetTableColumnNames(s.TableSession(), slowquery.SlowQueryTable)
+	s.NoError(err)
+	s.slowqueryColumns = columns
+}
+
+func (s *testSlowQuerySuite) TearDownSuite() {
+	s.db.MustExec("SET tidb_enable_slow_log = true")
+	s.db.MustClose()
+}
+
+func (s *testSlowQuerySuite) prepareTable() {
 	// init dataset
 	var c int64
-	err := s.tableSession().Count(&c).Error
+	err := s.TableSession().Count(&c).Error
 	s.Nil(err)
 	if c == 0 {
 		s.db.MustExec("SET tidb_slow_log_threshold = 0")
@@ -58,7 +62,7 @@ func (s *testSlowQuerySuite) SetupSuite() {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				s.db.MustExec(fmt.Sprintf("SELECT count(*) FROM %s", testTableName))
+				s.db.MustExec(fmt.Sprintf("SELECT count(*) FROM %s", slowquery.SlowQueryTable))
 			}()
 		}
 		wg.Wait()
@@ -66,147 +70,137 @@ func (s *testSlowQuerySuite) SetupSuite() {
 	}
 
 	s.db.MustExec("SET tidb_enable_slow_log = false")
-
-	// init mock table
-	// FIXME: Table '.INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY' doesn't exist
-	// s.db.MustExec(fmt.Sprintf("CREATE TABLE `%s` LIKE `%s`", testMockTableName, testTableName))
-	// FIXME: 'CREATE TABLE ... SELECT' is not implemented yet
-	// s.db.MustExec(fmt.Sprintf("CREATE TABLE `%s` SELECT * FROM `%s` LIMIT 0", testMockTableName, testTableName))
-	// init mock dataset
-	// ...
 }
 
-func (s *testSlowQuerySuite) TearDownSuite() {
-	s.db.MustExec("SET tidb_enable_slow_log = true")
-	s.db.MustExec(fmt.Sprintf("DROP TABLE IF EXISTS `%s`", testMockTableName))
-	s.db.MustClose()
+func (s *testSlowQuerySuite) mustQuerySlowLogList(req *slowquery.GetListRequest) []slowquery.Model {
+	d, err := slowquery.QuerySlowLogList(req, s.slowqueryColumns, s.MockTableSession())
+	s.NoError(err)
+	return d
 }
 
-type testCase struct {
-	name string
-	req  *slowquery.GetListRequest
-	tx   *gorm.DB
+func (s *testSlowQuerySuite) TableSession() *gorm.DB {
+	return s.db.Gorm().Debug().Table(slowquery.SlowQueryTable)
 }
 
-func (s *testSlowQuerySuite) Test_GetList_defaultParams() {
-	var lastRecord slowquery.Model
-	err := s.tableSession().Order("Time").Last(&lastRecord).Error
-	s.Nil(err)
-	var firstRecord slowquery.Model
-	err = s.tableSession().Order("Time").First(&firstRecord).Error
-	s.Nil(err)
+func (s *testSlowQuerySuite) MockTableSession() *gorm.DB {
+	return s.db.Gorm().Debug().Table(TestSlowQueryTableName)
+}
 
-	defaultSelect := "Digest,Conn_ID,(UNIX_TIMESTAMP(Time) + 0E0) as timestamp"
-	defaultLimit := 100
-	defaultOrder := "Time"
-	equalTests := []*testCase{
-		{
-			name: "default",
-			req:  &slowquery.GetListRequest{},
-			tx: s.tableSession().
-				Select(defaultSelect).
-				Limit(defaultLimit).
-				Order(defaultOrder),
-		},
-		{
-			name: "fields",
-			req:  &slowquery.GetListRequest{Fields: "digest,query,instance"},
-			tx: s.tableSession().
-				Select(fmt.Sprintf("%s,%s", defaultSelect, "Query,INSTANCE")).
-				Limit(defaultLimit).
-				Order(defaultOrder),
-		},
-		{
-			name: "all fields",
-			req:  &slowquery.GetListRequest{Fields: "*"},
-			tx: s.tableSession().
-				Select("*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp").
-				Limit(defaultLimit).
-				Order(defaultOrder),
-		},
-		{
-			name: "limit",
-			req:  &slowquery.GetListRequest{Limit: 5},
-			tx: s.tableSession().
-				Select(defaultSelect).
-				Limit(5).
-				Order(defaultOrder),
-		},
-		{
-			name: "text search",
-			req:  &slowquery.GetListRequest{Text: firstRecord.Digest},
-			tx: s.tableSession().
-				Select(defaultSelect).
-				Where(
-					`LOWER(Digest) REGEXP ?`, firstRecord.Digest).
-				Limit(defaultLimit).
-				Order(defaultOrder),
-		},
-		{
-			name: "multi text search",
-			req:  &slowquery.GetListRequest{Text: fmt.Sprintf("%s %s", firstRecord.Digest, lastRecord.TxnStartTS)},
-			tx: s.tableSession().
-				Select(defaultSelect).
-				Where(
-					`Txn_start_ts REGEXP ? AND LOWER(Digest) REGEXP ?`,
-					lastRecord.TxnStartTS, firstRecord.Digest).
-				Limit(defaultLimit).
-				Order(defaultOrder),
-		},
-		{
-			name: "search use db",
-			req:  &slowquery.GetListRequest{DB: []string{"test"}},
-			tx: s.tableSession().
-				Select(defaultSelect).
-				Where("DB IN (?)", []string{"test"}).
-				Limit(defaultLimit).
-				Order(defaultOrder),
-		},
-		{
-			name: "order by",
-			req:  &slowquery.GetListRequest{OrderBy: "query"},
-			tx: s.tableSession().
-				Select(defaultSelect).
-				Limit(defaultLimit).
-				Order("Query"),
-		},
-		{
-			name: "asc/desc",
-			req:  &slowquery.GetListRequest{IsDesc: true},
-			tx: s.tableSession().
-				Select(defaultSelect).
-				Limit(defaultLimit).
-				Order(fmt.Sprintf("%s DESC", defaultOrder)),
-		},
-		{
-			name: "plans",
-			req:  &slowquery.GetListRequest{Plans: []string{""}},
-			tx: s.tableSession().
-				Select(defaultSelect).
-				Where("Plan_digest IN (?)", []string{""}).
-				Limit(defaultLimit).
-				Order(defaultOrder),
-		},
+func (s *testSlowQuerySuite) TestGetListDefaultRequest() {
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{})
+
+	s.Len(ds, 100)
+
+	for i, d := range ds {
+		s.NotEmpty(d.Digest)
+		s.NotEmpty(d.ConnectionID)
+		s.NotEmpty(d.Timestamp)
+
+		// order by timestamp
+		if i == 0 {
+			continue
+		}
+		s.GreaterOrEqual(d.Timestamp, ds[i-1].Timestamp)
+	}
+}
+
+func (s *testSlowQuerySuite) TestGetListSpecificFieldsRequest() {
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "digest,query"})
+
+	for _, d := range ds {
+		s.NotEmpty(d.Digest)
+		s.NotEmpty(d.ConnectionID)
+		s.NotEmpty(d.Timestamp)
+		s.NotEmpty(d.Query)
+	}
+}
+
+func (s *testSlowQuerySuite) TestGetListAllFieldsRequest() {
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*"})
+	var queryDs []slowquery.Model
+	s.MockTableSession().
+		Select("*,(UNIX_TIMESTAMP(Time) + 0E0) as timestamp").
+		Limit(100).
+		Order("Time").
+		Find(&queryDs)
+
+	s.Equal(ds, queryDs)
+}
+
+func (s *testSlowQuerySuite) TestGetListLimitRequest() {
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Limit: 5})
+
+	s.Len(ds, 5)
+}
+
+func (s *testSlowQuerySuite) TestGetListSearchRequest() {
+	digest := "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df"
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: digest})
+
+	s.NotEmpty(ds)
+	for _, d := range ds {
+		s.Contains(d.Digest, digest)
 	}
 
-	tableColumns, err := utils.NewSysSchema().GetTableColumnNames(s.tableSession(), testTableName)
-	s.Nil(err)
+	txnStartTS := ds[0].TxnStartTS
+	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: txnStartTS})
 
-	for _, tt := range equalTests {
-		s.T().Run(tt.name, func(innerT *testCase) func(t *testing.T) {
-			return func(t *testing.T) {
-				t.Parallel()
-				r := require.New(t)
-
-				reqData, err1 := slowquery.QuerySlowLogList(innerT.req, tableColumns, s.db.Gorm())
-				r.Nil(err1)
-
-				var txData []slowquery.Model
-				err2 := innerT.tx.Find(&txData).Error
-				r.Nil(err2)
-
-				r.Equal(reqData, txData)
-			}
-		}(tt))
+	s.NotEmpty(ds2)
+	for _, d := range ds2 {
+		s.Contains(d.TxnStartTS, txnStartTS)
 	}
+
+	query := "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
+	ds3 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: query})
+
+	s.NotEmpty(ds3)
+	for _, d := range ds3 {
+		s.Contains(d.Query, query)
+	}
+
+	// TODO: search by Prev_stmt
+}
+
+func (s *testSlowQuerySuite) TestGetListMultiKeywordsSearchRequest() {
+	digest := "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df"
+	txnStartTS := "429825230089486339"
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: fmt.Sprintf("%s %s", digest, txnStartTS)})
+
+	s.Len(ds, 1)
+	s.Contains(ds[0].Digest, digest)
+	s.Contains(ds[0].TxnStartTS, txnStartTS)
+}
+
+func (s *testSlowQuerySuite) TestGetListUseDBRequest() {
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{DB: []string{"test"}})
+	s.NotEmpty(ds)
+
+	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{DB: []string{"not_exist_db"}})
+	s.Empty(ds2)
+}
+
+func (s *testSlowQuerySuite) TestGetListOrderRequest() {
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{OrderBy: "txn_start_ts"})
+	for i, d := range ds {
+		if i == 0 {
+			continue
+		}
+		s.GreaterOrEqual(d.TxnStartTS, ds[i-1].TxnStartTS)
+	}
+
+	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{IsDesc: true, OrderBy: "txn_start_ts"})
+	for i, d := range ds2 {
+		if i == 0 {
+			continue
+		}
+		s.LessOrEqual(d.TxnStartTS, ds[i-1].TxnStartTS)
+	}
+}
+
+func (s *testSlowQuerySuite) TestGetListPlansRequest() {
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Plans: []string{"a5e33155313418557311d13039dbf20aa54df3b825d062bdca92f1a271e5778a"}})
+	s.NotEmpty(ds)
+
+	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Plans: []string{"not_exist_plan"}})
+	s.Empty(ds2)
 }

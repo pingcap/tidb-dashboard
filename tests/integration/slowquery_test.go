@@ -1,13 +1,12 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-package tests
+package integration
 
 import (
 	"fmt"
-	"sync"
+	"os"
 	"testing"
 
-	mysqldriver "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 
@@ -20,69 +19,41 @@ const (
 	TestSlowQueryTableName = "test.CLUSTER_SLOW_QUERY"
 )
 
-func TestSlowQuery(t *testing.T) {
-	db := testutil.OpenTestDB(t, func(c1 *mysqldriver.Config, c2 *gorm.Config) {
-		// set param sql will be recorded in slow query
-		c1.Params = map[string]string{}
-	})
-
-	suite.Run(t, &testSlowQuerySuite{
-		db: db,
-	})
-}
-
 type testSlowQuerySuite struct {
 	suite.Suite
 	db               *testutil.TestDB
 	slowqueryColumns []string
 }
 
-func (s *testSlowQuerySuite) SetupSuite() {
-	s.prepareTable()
+func TestSlowQuery(t *testing.T) {
+	db := testutil.OpenTestDB(t)
+	suite.Run(t, &testSlowQuerySuite{
+		db: db,
+	})
+}
 
-	columns, err := utils.NewSysSchema().GetTableColumnNames(s.TableSession(), slowquery.SlowQueryTable)
+func (s *testSlowQuerySuite) SetupSuite() {
+	columns, err := utils.NewSysSchema().GetTableColumnNames(s.slowQuerySession(), slowquery.SlowQueryTable)
 	s.NoError(err)
 	s.slowqueryColumns = columns
 }
 
 func (s *testSlowQuerySuite) TearDownSuite() {
-	s.db.MustExec("SET tidb_enable_slow_log = true")
+	s.db.MustExec(fmt.Sprintf("DROP TABLE IF EXISTS `%s`", TestSlowQueryTableName))
 	s.db.MustClose()
 }
 
-func (s *testSlowQuerySuite) prepareTable() {
-	// init dataset
-	var c int64
-	err := s.TableSession().Count(&c).Error
-	s.Nil(err)
-	if c == 0 {
-		s.db.MustExec("SET tidb_slow_log_threshold = 0")
-		var wg sync.WaitGroup
-		for i := 1; i < 200; i++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				s.db.MustExec(fmt.Sprintf("SELECT count(*) FROM %s", slowquery.SlowQueryTable))
-			}()
-		}
-		wg.Wait()
-		s.db.MustExec("SET tidb_slow_log_threshold = 200")
-	}
-
-	s.db.MustExec("SET tidb_enable_slow_log = false")
-}
-
 func (s *testSlowQuerySuite) mustQuerySlowLogList(req *slowquery.GetListRequest) []slowquery.Model {
-	d, err := slowquery.QuerySlowLogList(req, s.slowqueryColumns, s.MockTableSession())
+	d, err := slowquery.QuerySlowLogList(req, s.slowqueryColumns, s.mockSlowQuerySession())
 	s.NoError(err)
 	return d
 }
 
-func (s *testSlowQuerySuite) TableSession() *gorm.DB {
+func (s *testSlowQuerySuite) slowQuerySession() *gorm.DB {
 	return s.db.Gorm().Debug().Table(slowquery.SlowQueryTable)
 }
 
-func (s *testSlowQuerySuite) MockTableSession() *gorm.DB {
+func (s *testSlowQuerySuite) mockSlowQuerySession() *gorm.DB {
 	return s.db.Gorm().Debug().Table(TestSlowQueryTableName)
 }
 
@@ -116,9 +87,13 @@ func (s *testSlowQuerySuite) TestGetListSpecificFieldsRequest() {
 }
 
 func (s *testSlowQuerySuite) TestGetListAllFieldsRequest() {
+	if os.Getenv("TIDB_VERSION") != "latest" {
+		s.T().Skip("Use latest TiDB to test all fields request")
+	}
+
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*"})
 	var queryDs []slowquery.Model
-	s.MockTableSession().
+	s.mockSlowQuerySession().
 		Select("*,(UNIX_TIMESTAMP(Time) + 0E0) as timestamp").
 		Limit(100).
 		Order("Time").

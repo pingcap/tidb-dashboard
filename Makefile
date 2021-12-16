@@ -36,6 +36,7 @@ unit_test:
 integration_test:
 	@mkdir -p ./coverage
 	@tests/run.sh
+	@TIDB_VERSION=v4.0.1 tests/run.sh
 
 dev: lint default
 

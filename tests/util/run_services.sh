@@ -17,13 +17,12 @@ start_tidb() {
   $TIUP_BIN_DIR/tiup playground --tag $PLAYGROUND_TAG $TIDB_VERSION > $INTEGRATION_LOG_PATH &
   ensure_tidb
 
-  echo "  - TiDB Version: $TIDB_VERSION, start success!"
+  echo "  - Start TiDB@$TIDB_VERSION Success!"
 }
 
 stop_tidb() {
   echo "+ Waiting for TiDB teardown..."
   $TIUP_BIN_DIR/tiup clean $PLAYGROUND_TAG >/dev/null 2>&1
-  echo "  - Stopped!"
 }
 
 ensure_tidb() {

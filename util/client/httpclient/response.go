@@ -141,8 +141,10 @@ func (lResp *LazyResponse) close() {
 	_ = lResp.executedResponseBody.Close()
 }
 
-// Finish closes the response. Read is not possible any more.
-// The returned raw response does not have a body so that you don't need to close it manually.
+// Finish closes the response and discard any unreaded response body. Read is not possible after that.
+// The returned raw response does not have a body. To read the body, call PipeBody, ReadBodyAsBytes,
+// ReadBodyAsString or ReadBodyAsJSON.
+// If the response status code is not a success status, an error will be returned.
 func (lResp *LazyResponse) Finish() (respNoBody *http.Response, err error) {
 	lResp.doExecutionOnce()
 	if lResp.executedError != nil {
@@ -153,6 +155,8 @@ func (lResp *LazyResponse) Finish() (respNoBody *http.Response, err error) {
 	return
 }
 
+// PipeBody pipes the body of the response to a writer.
+// If the response status code is not a success status, an error will be returned.
 func (lResp *LazyResponse) PipeBody(w io.Writer) (written int64, respNoBody *http.Response, err error) {
 	lResp.doExecutionOnce()
 	if lResp.executedError != nil {
@@ -169,6 +173,8 @@ func (lResp *LazyResponse) PipeBody(w io.Writer) (written int64, respNoBody *htt
 	return
 }
 
+// ReadBodyAsBytes reads all body content of the response to a byte slice.
+// If the response status code is not a success status, an error will be returned.
 func (lResp *LazyResponse) ReadBodyAsBytes() (bytes []byte, respNoBody *http.Response, err error) {
 	lResp.doExecutionOnce()
 	if lResp.executedError != nil {
@@ -186,6 +192,8 @@ func (lResp *LazyResponse) ReadBodyAsBytes() (bytes []byte, respNoBody *http.Res
 	return
 }
 
+// ReadBodyAsString reads all body content of the response to a string.
+// If the response status code is not a success status, an error will be returned.
 func (lResp *LazyResponse) ReadBodyAsString() (data string, respNoBody *http.Response, err error) {
 	bytes, resp, err := lResp.ReadBodyAsBytes()
 	if err != nil {
@@ -194,6 +202,8 @@ func (lResp *LazyResponse) ReadBodyAsString() (data string, respNoBody *http.Res
 	return strings.TrimSpace(string(bytes)), resp, nil
 }
 
+// ReadBodyAsJSON reads all body content of the response as JSON and does unmarshal.
+// If the response status code is not a success status, an error will be returned.
 func (lResp *LazyResponse) ReadBodyAsJSON(destination interface{}) (respNoBody *http.Response, err error) {
 	bytes, resp, err := lResp.ReadBodyAsBytes()
 	if err != nil {

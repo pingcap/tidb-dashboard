@@ -1,7 +1,6 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-// Package topoutil provides utilities to read the component topology.
-package topo
+package pdtopo
 
 import (
 	"context"
@@ -11,15 +10,17 @@ import (
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
+
+	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
 var (
-	ErrNS                  = errorx.NewNamespace("topo_util")
+	ErrNS                  = errorx.NewNamespace("topo.pd")
 	ErrEtcdRequestFailed   = ErrNS.NewType("etcd_request_failed")
 	ErrInvalidTopologyData = ErrNS.NewType("invalid_topology_data")
 )
 
-func fetchStandardComponentTopology(ctx context.Context, componentName string, etcdClient *clientv3.Client) (*StandardComponentInfo, error) {
+func fetchStandardComponentTopology(ctx context.Context, componentName string, etcdClient *clientv3.Client) (*topo.StandardComponentInfo, error) {
 	key := "/topology/" + componentName
 	resp, err := etcdClient.Get(ctx, key, clientv3.WithPrefix())
 	if err != nil {
@@ -28,7 +29,7 @@ func fetchStandardComponentTopology(ctx context.Context, componentName string, e
 	if resp.Count == 0 {
 		return nil, nil
 	}
-	info := StandardComponentInfo{}
+	info := topo.StandardComponentInfo{}
 	kv := resp.Kvs[0]
 	if err = json.Unmarshal(kv.Value, &info); err != nil {
 		log.Warn("Failed to unmarshal topology value",

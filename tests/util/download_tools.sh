@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+PROJECT_DIR="$(dirname "$0")/.."
+BIN="${PROJECT_DIR}/bin"
+
 download_tools() {
   echo "+ Download tools"
 
@@ -11,8 +14,6 @@ download_tools() {
     echo "  - Downloading tiup..."
     curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
   fi
-
-  BIN="$(dirname "$0")/../bin"
 
   if [ ! -e "$BIN/toolkit.tar.gz" ]; then
     echo "  - Downloading toolkit..."

@@ -30,11 +30,11 @@ lint:
 test: clean unit_test integration_test
 
 unit_test:
-	@mkdir ./coverage
+	@mkdir -p ./coverage
 	GO111MODULE=on go test -race -v -cover -coverprofile=coverage/ut.out ./pkg/... ./util/...
 
-integration_test: server
-	@mkdir ./coverage
+integration_test:
+	@mkdir -p ./coverage
 	@tests/run.sh
 
 dev: lint default

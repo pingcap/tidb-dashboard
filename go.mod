@@ -17,10 +17,13 @@ require (
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/goccy/go-graphviz v0.0.9
 	github.com/golang-jwt/jwt v3.2.1+incompatible
+	github.com/google/pprof v0.0.0-20211122183932-1daafda22083
 	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/henrylee2cn/ameda v1.4.10
+	github.com/jarcoal/httpmock v1.0.8
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1
 	github.com/minio/sio v0.3.0
@@ -29,7 +32,6 @@ require (
 	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
 	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
-	github.com/pingcap/sysutil v0.0.0-20211108113841-e5c5906ed1e7
 	github.com/rs/cors v1.7.0
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
 	github.com/spf13/pflag v1.0.1

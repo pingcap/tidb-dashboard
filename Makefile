@@ -1,4 +1,4 @@
-.PHONY: install_tools lint dev yarn_dependencies ui server run test unit_test integration_test
+.PHONY: install_tools lint dev yarn_dependencies go_generate ui server run test unit_test integration_test
 
 DASHBOARD_PKG := github.com/pingcap/tidb-dashboard
 
@@ -48,8 +48,12 @@ ui: yarn_dependencies
 	cd ui &&\
 	yarn build
 
-server: install_tools
+go_generate: export PATH := $(shell pwd)/bin:$(PATH)
+go_generate:
 	scripts/generate_swagger_spec.sh
+	go generate -x ./...
+
+server: install_tools go_generate
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif

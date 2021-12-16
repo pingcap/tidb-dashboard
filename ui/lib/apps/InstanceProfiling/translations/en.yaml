@@ -19,7 +19,7 @@ instance_profiling:
       title: Profiling History
       columns:
         targets: Instances
-        profiling_type_list: Profiling Types
+        requsted_profiling_types: Profiling Types
         start_at: Start At
         duration: Duration (sec)
         status: Status
@@ -53,3 +53,5 @@ instance_profiling:
       status:
         finished: Finished
         skipped: Skipped
+      tooltip:
+        skipped: The {{kind}} does support {{type}} profiling

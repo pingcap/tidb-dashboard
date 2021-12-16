@@ -79,18 +79,16 @@ export default function Page() {
             display_name: instance.key,
             ip: instance.ip,
             port,
-            profiling_type_list: 'cpu,memory,goroutine,mutex',
           }
         })
         .filter((i) => i.port != null)
 
-      const selectedProfilingTypes = (fieldsValue.type as string[])
-        .join()
-        .toLowerCase()
       const req: ProfilingStartRequest = {
         targets,
         duration_secs: fieldsValue.duration,
-        profiling_type_list: selectedProfilingTypes,
+        requsted_profiling_types: fieldsValue.type.map((type) =>
+          type.toLowerCase()
+        ),
       }
       try {
         setSubmitting(true)
@@ -122,13 +120,15 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.list.table.columns.profiling_type_list'),
+        name: t(
+          'instance_profiling.list.table.columns.requsted_profiling_types'
+        ),
         key: 'types',
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec) => {
-          if (rec.profiling_type_list) {
-            return <span>{rec.profiling_type_list}</span>
+          if (rec.requsted_profiling_types) {
+            return <span>{rec.requsted_profiling_types.join(',')}</span>
           } else {
             return <span>cpu</span>
           }

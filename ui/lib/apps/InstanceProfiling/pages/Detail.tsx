@@ -1,4 +1,4 @@
-import { Badge, Button, Progress, Menu, Dropdown } from 'antd'
+import { Badge, Button, Progress, Menu, Dropdown, Tooltip } from 'antd'
 import React, { useCallback, useMemo, useState, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -298,13 +298,24 @@ export default function Page() {
               </div>
             )
           } else if (record.state === taskState.Error) {
-            return <Badge status="error" text={record.error} />
+            return (
+              <Tooltip title={record.error}>
+                <Badge status="error" text={record.error} />
+              </Tooltip>
+            )
           } else if (record.state == taskState.Skipped) {
             return (
-              <Badge
-                status="default"
-                text={t('instance_profiling.detail.table.status.skipped')}
-              />
+              <Tooltip
+                title={t('instance_profiling.detail.table.tooltip.skipped', {
+                  kind: record.target.kind,
+                  type: record.profiling_type,
+                })}
+              >
+                <Badge
+                  status="default"
+                  text={t('instance_profiling.detail.table.status.skipped')}
+                />
+              </Tooltip>
             )
           } else {
             return (

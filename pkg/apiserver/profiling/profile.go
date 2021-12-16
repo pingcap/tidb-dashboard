@@ -10,19 +10,19 @@ import (
 )
 
 func skipTask(profilingType string) (string, TaskRawDataType, error) {
-	return "nil", "", fmt.Errorf("unsupported profiling type")
+	return "nil", "", ErrTaskSikpped.New("task_skipped")
 }
 
-func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, profilingType string) (string, TaskRawDataType, error) {
+func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, profilingType TaskProfilingType) (string, TaskRawDataType, error) {
 	switch target.Kind {
 	case model.NodeKindTiKV:
-		if profilingType != string(ProfilingTypeCPU) {
-			return skipTask(profilingType)
+		if string(profilingType) != string(ProfilingTypeCPU) {
+			return skipTask(string(profilingType))
 		}
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv, profilingType: profilingType})
 	case model.NodeKindTiFlash:
-		if profilingType != string(ProfilingTypeCPU) {
-			return skipTask(profilingType)
+		if string(profilingType) != string(ProfilingTypeCPU) {
+			return skipTask(string(profilingType))
 		}
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tiflash, profilingType: profilingType})
 	case model.NodeKindTiDB:

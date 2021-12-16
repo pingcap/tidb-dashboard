@@ -1,9 +1,12 @@
-continuous_profiling:
+conprof:
   nav_title: Continuous Profiling
   list:
     toolbar:
       refresh: Refresh
       settings: Settings
+      range_end: Range End Time
+      range_duration: Range Duration
+      query: Query
     control_form:
       title: Start Profiling Instances
       enable_tooltip: This feature is enabled, you can disable it in the settings

@@ -87,7 +87,7 @@ export default function Page() {
   const historyTableColumns = useMemo(
     () => [
       {
-        name: t('continuous_profiling.list.table.columns.targets'),
+        name: t('conprof.list.table.columns.targets'),
         key: 'targets',
         minWidth: 150,
         maxWidth: 250,
@@ -98,7 +98,7 @@ export default function Page() {
         },
       },
       {
-        name: t('continuous_profiling.list.table.columns.status'),
+        name: t('conprof.list.table.columns.status'),
         key: 'status',
         minWidth: 100,
         maxWidth: 150,
@@ -108,7 +108,7 @@ export default function Page() {
             return (
               <Badge
                 status="error"
-                text={t('continuous_profiling.list.table.status.failed')}
+                text={t('conprof.list.table.status.failed')}
               />
             )
           } else if (rec.state === 'success') {
@@ -116,7 +116,7 @@ export default function Page() {
             return (
               <Badge
                 status="success"
-                text={t('continuous_profiling.list.table.status.finished')}
+                text={t('conprof.list.table.status.finished')}
               />
             )
           } else {
@@ -124,16 +124,14 @@ export default function Page() {
             return (
               <Badge
                 status="warning"
-                text={t(
-                  'continuous_profiling.list.table.status.partial_finished'
-                )}
+                text={t('conprof.list.table.status.partial_finished')}
               />
             )
           }
         },
       },
       {
-        name: t('continuous_profiling.list.table.columns.start_at'),
+        name: t('conprof.list.table.columns.start_at'),
         key: 'ts',
         minWidth: 160,
         maxWidth: 220,
@@ -142,7 +140,7 @@ export default function Page() {
         },
       },
       {
-        name: t('continuous_profiling.list.table.columns.duration'),
+        name: t('conprof.list.table.columns.duration'),
         key: 'duration',
         minWidth: 100,
         maxWidth: 150,
@@ -185,22 +183,25 @@ export default function Page() {
               onFinish={handleFinish}
               initialValues={{ rangeEndTime }}
             >
-              <Form.Item name="rangeEndTime" label="Range End Time">
+              <Form.Item
+                name="rangeEndTime"
+                label={t('conprof.list.toolbar.range_end')}
+              >
                 <DatePicker showTime />
               </Form.Item>
-              <Form.Item label="Range Duration">
+              <Form.Item label={t('conprof.list.toolbar.range_duration')}>
                 <span>-2h</span>
               </Form.Item>
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={listLoading}>
-                  Query
+                  {t('conprof.list.toolbar.query')}
                 </Button>
               </Form.Item>
             </Form>
           </Space>
           <Space>
             <Tooltip
-              title={t('continuous_profiling.list.toolbar.refresh')}
+              title={t('conprof.list.toolbar.refresh')}
               placement="bottom"
             >
               {listLoading ? (
@@ -210,7 +211,7 @@ export default function Page() {
               )}
             </Tooltip>
             <Tooltip
-              title={t('continuous_profiling.list.toolbar.settings')}
+              title={t('conprof.list.toolbar.settings')}
               placement="bottom"
             >
               <SettingOutlined onClick={() => setShowSettings(true)} />
@@ -222,7 +223,7 @@ export default function Page() {
       {conprofIsDisabled && historyTable && historyTable.length > 0 && (
         <div className={styles.alert_container}>
           <Alert
-            message={t('continuous_profiling.settings.disabled_with_history')}
+            message={t('conprof.settings.disabled_with_history')}
             type="info"
             showIcon
           />
@@ -231,13 +232,11 @@ export default function Page() {
 
       {conprofIsDisabled && historyTable?.length === 0 ? (
         <Result
-          title={t('continuous_profiling.settings.disabled_result.title')}
-          subTitle={t(
-            'continuous_profiling.settings.disabled_result.sub_title'
-          )}
+          title={t('conprof.settings.disabled_result.title')}
+          subTitle={t('conprof.settings.disabled_result.sub_title')}
           extra={
             <Button type="primary" onClick={() => setShowSettings(true)}>
-              {t('continuous_profiling.settings.open_settings')}
+              {t('conprof.settings.open_settings')}
             </Button>
           }
         />
@@ -257,7 +256,7 @@ export default function Page() {
       )}
 
       <Drawer
-        title={t('continuous_profiling.settings.title')}
+        title={t('conprof.settings.title')}
         width={300}
         closable={true}
         visible={showSettings}

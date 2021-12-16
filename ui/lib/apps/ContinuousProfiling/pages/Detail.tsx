@@ -29,14 +29,14 @@ export default function Page() {
   const columns = useMemo(
     () => [
       {
-        name: t('continuous_profiling.detail.table.columns.instance'),
+        name: t('conprof.detail.table.columns.instance'),
         key: 'instance',
         minWidth: 150,
         maxWidth: 400,
         onRender: (record) => record.target.address,
       },
       {
-        name: t('continuous_profiling.detail.table.columns.kind'),
+        name: t('conprof.detail.table.columns.kind'),
         key: 'kind',
         minWidth: 100,
         maxWidth: 150,
@@ -45,7 +45,7 @@ export default function Page() {
         },
       },
       {
-        name: t('continuous_profiling.detail.table.columns.content'),
+        name: t('conprof.detail.table.columns.content'),
         key: 'content',
         minWidth: 150,
         maxWidth: 300,
@@ -58,7 +58,7 @@ export default function Page() {
         },
       },
       {
-        name: t('continuous_profiling.detail.table.columns.status'),
+        name: t('conprof.detail.table.columns.status'),
         key: 'status',
         minWidth: 150,
         maxWidth: 200,
@@ -69,7 +69,7 @@ export default function Page() {
             return (
               <Badge
                 status="success"
-                text={t('continuous_profiling.detail.table.status.finished')}
+                text={t('conprof.detail.table.status.finished')}
               />
             )
           }
@@ -115,15 +115,15 @@ export default function Page() {
   return (
     <div>
       <Head
-        title={t('continuous_profiling.detail.head.title')}
+        title={t('conprof.detail.head.title')}
         back={
           <Link to={`/continuous_profiling`}>
-            <ArrowLeftOutlined /> {t('continuous_profiling.detail.head.back')}
+            <ArrowLeftOutlined /> {t('conprof.detail.head.back')}
           </Link>
         }
         titleExtra={
           <Button type="primary" onClick={handleDownloadGroup}>
-            {t('continuous_profiling.detail.download')}
+            {t('conprof.detail.download')}
           </Button>
         }
       >
@@ -131,7 +131,7 @@ export default function Page() {
           <Descriptions>
             <Descriptions.Item
               span={2}
-              label={t('continuous_profiling.detail.head.start_at')}
+              label={t('conprof.detail.head.start_at')}
             >
               <DateTime.Long unixTimestampMs={groupProfileDetail.ts! * 1000} />
             </Descriptions.Item>

@@ -1,4 +1,4 @@
-continuous_profiling:
+conprof:
   nav_title: 持续分析
   toolbar:
     refresh: Refresh
@@ -6,6 +6,9 @@ continuous_profiling:
     toolbar:
       refresh: 刷新
       settings: 设置
+      range_end: 区间结束时间
+      range_duration: 区间长度
+      query: 查询
     control_form:
       title: 开始性能分析
       enable_tooltip: 该功能已开启，你可以在设置中关闭

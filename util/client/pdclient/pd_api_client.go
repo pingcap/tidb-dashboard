@@ -12,12 +12,7 @@ type APIClient struct {
 	*httpclient.Client
 }
 
-// NewAPIClient returns error when config is invalid.
-func NewAPIClient(config httpclient.APIClientConfig) (*APIClient, error) {
-	c2, err := config.IntoConfig(distro.R().PD)
-	if err != nil {
-		return nil, err
-	}
-	c2.DefaultBaseURL += "/pd/api/v1"
-	return &APIClient{httpclient.New(c2)}, nil
+func NewAPIClient(config httpclient.Config) *APIClient {
+	config.KindTag = distro.R().PD
+	return &APIClient{httpclient.New(config)}
 }

@@ -16,9 +16,10 @@ LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=N/A"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildGitHash=$(shell git rev-parse HEAD)"
 
-INTEGRATION_TEST_PACKAGES := "github.com\/pingcap\/tidb-dashboard\/tests"
-
 default: server
+
+clean:
+	rm -rf ./coverage
 
 install_tools:
 	scripts/install_go_tools.sh
@@ -26,12 +27,14 @@ install_tools:
 lint:
 	scripts/lint.sh
 
-test: unit_test integration_test
+test: clean unit_test integration_test
 
 unit_test:
-	GO111MODULE=on go test -v $$(go list ./... | grep -v $(INTEGRATION_TEST_PACKAGES))
+	@mkdir ./coverage
+	GO111MODULE=on go test -race -v -cover -coverprofile=coverage/ut.out ./pkg/... ./util/...
 
 integration_test: server
+	@mkdir ./coverage
 	@tests/run.sh
 
 dev: lint default

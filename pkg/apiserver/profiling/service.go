@@ -25,10 +25,11 @@ const (
 )
 
 var (
-	ErrNS             = errorx.NewNamespace("error.profiling")
-	ErrIgnoredRequest = ErrNS.NewType("ignored_request")
-	ErrTimeout        = ErrNS.NewType("timeout")
-	ErrTaskSikpped    = ErrNS.NewType("task_skipped")
+	ErrNS                         = errorx.NewNamespace("error.profiling")
+	ErrIgnoredRequest             = ErrNS.NewType("ignored_request")
+	ErrTimeout                    = ErrNS.NewType("timeout")
+	ErrUnsupportedProfilingType   = ErrNS.NewType("unsupported_profiling_type")
+	ErrUnsupportedProfilingTarget = ErrNS.NewType("unsupported_profiling_target")
 )
 
 type StartRequest struct {
@@ -162,6 +163,9 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 	for _, target := range req.Targets {
 		profileTypeList := req.RequstedProfilingTypes
 		for _, profilingType := range profileTypeList {
+			if !IsVaildProfilingType(profilingType) {
+				return nil, ErrUnsupportedProfilingType.NewWithNoMessage()
+			}
 			t := NewTask(ctx, taskGroup, target, s.fetchers, profilingType)
 			s.params.LocalStore.Create(t.TaskModel)
 			s.tasks.Store(t.ID, t)
@@ -194,7 +198,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 		if errorTasks > 0 {
 			taskGroup.State = TaskStateError
 			if finishedTasks > 0 {
-				taskGroup.State = TaskPartialFinish
+				taskGroup.State = TaskStatePartialFinish
 			}
 		} else {
 			taskGroup.State = TaskStateFinish

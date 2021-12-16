@@ -4,25 +4,22 @@ package profiling
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-func skipTask(profilingType string) (string, TaskRawDataType, error) {
-	return "nil", "", ErrTaskSikpped.New("task_skipped")
-}
-
 func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, profilingType TaskProfilingType) (string, TaskRawDataType, error) {
 	switch target.Kind {
 	case model.NodeKindTiKV:
-		if string(profilingType) != string(ProfilingTypeCPU) {
-			return skipTask(string(profilingType))
+		// TiKV only supports CPU Profiling
+		if profilingType != ProfilingTypeCPU {
+			return "", "", ErrUnsupportedProfilingType.NewWithNoMessage()
 		}
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv, profilingType: profilingType})
 	case model.NodeKindTiFlash:
-		if string(profilingType) != string(ProfilingTypeCPU) {
-			return skipTask(string(profilingType))
+		// TiFlash only supports CPU Profiling
+		if profilingType != ProfilingTypeCPU {
+			return "", "", ErrUnsupportedProfilingType.NewWithNoMessage()
 		}
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tiflash, profilingType: profilingType})
 	case model.NodeKindTiDB:
@@ -30,6 +27,6 @@ func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.Requ
 	case model.NodeKindPD:
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.pd, profilingType: profilingType})
 	default:
-		return "", "", fmt.Errorf("unsupported target %s", target)
+		return "", "", ErrUnsupportedProfilingTarget.New(target.String())
 	}
 }

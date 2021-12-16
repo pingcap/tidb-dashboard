@@ -23,8 +23,8 @@ const (
 	TaskStateError TaskState = iota
 	TaskStateRunning
 	TaskStateFinish
-	TaskPartialFinish
-	TaskSkipped
+	TaskStatePartialFinish // Only valid for task group
+	TaskStateSkipped
 )
 
 type TaskRawDataType string
@@ -54,6 +54,25 @@ const (
 	ProfilingTypeGoroutine TaskProfilingType = "goroutine"
 	ProfilingTypeMutex     TaskProfilingType = "mutex"
 )
+
+var profilingTypeList = []TaskProfilingType{
+	ProfilingTypeCPU,
+	ProfilingTypeHeap,
+	ProfilingTypeGoroutine,
+	ProfilingTypeMutex,
+}
+
+// IsVaildProfilingType checks the validation of requestedProfilingType
+func IsVaildProfilingType(profilingType TaskProfilingType) bool {
+	inProfilingTypeList := false
+	for _, py := range profilingTypeList {
+		if profilingType == py {
+			inProfilingTypeList = true
+			break
+		}
+	}
+	return inProfilingTypeList
+}
 
 type TaskModel struct {
 	ID            uint                    `json:"id" gorm:"primary_key"`
@@ -119,8 +138,8 @@ func (t *Task) run() {
 	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s_%s", t.TaskGroupID, t.ID, t.ProfilingType, t.Target.FileName())
 	protoFilePath, rawDataType, err := profileAndWritePprof(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs, t.ProfilingType)
 	if err != nil {
-		if errorx.IsOfType(err, ErrTaskSikpped) {
-			t.State = TaskSkipped
+		if errorx.IsOfType(err, ErrUnsupportedProfilingType) {
+			t.State = TaskStateSkipped
 		} else {
 			t.Error = err.Error()
 			t.State = TaskStateError

@@ -8,6 +8,7 @@ require (
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 	github.com/swaggo/swag v1.6.6-0.20200529100950-7c765ddd0476
+	github.com/vektra/mockery/v2 v2.9.4
 	go.uber.org/zap v1.19.0
 )
 

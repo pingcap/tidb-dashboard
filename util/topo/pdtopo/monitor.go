@@ -1,14 +1,16 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-package topo
+package pdtopo
 
 import (
 	"context"
 
 	"go.etcd.io/etcd/clientv3"
+
+	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
-func GetAlertManagerInstance(ctx context.Context, etcdClient *clientv3.Client) (*AlertManagerInfo, error) {
+func GetAlertManagerInstance(ctx context.Context, etcdClient *clientv3.Client) (*topo.AlertManagerInfo, error) {
 	i, err := fetchStandardComponentTopology(ctx, "alertmanager", etcdClient)
 	if err != nil {
 		return nil, err
@@ -16,10 +18,10 @@ func GetAlertManagerInstance(ctx context.Context, etcdClient *clientv3.Client) (
 	if i == nil {
 		return nil, nil
 	}
-	return (*AlertManagerInfo)(i), nil
+	return (*topo.AlertManagerInfo)(i), nil
 }
 
-func GetGrafanaInstance(ctx context.Context, etcdClient *clientv3.Client) (*GrafanaInfo, error) {
+func GetGrafanaInstance(ctx context.Context, etcdClient *clientv3.Client) (*topo.GrafanaInfo, error) {
 	i, err := fetchStandardComponentTopology(ctx, "grafana", etcdClient)
 	if err != nil {
 		return nil, err
@@ -27,10 +29,10 @@ func GetGrafanaInstance(ctx context.Context, etcdClient *clientv3.Client) (*Graf
 	if i == nil {
 		return nil, nil
 	}
-	return (*GrafanaInfo)(i), nil
+	return (*topo.GrafanaInfo)(i), nil
 }
 
-func GetPrometheusInstance(ctx context.Context, etcdClient *clientv3.Client) (*PrometheusInfo, error) {
+func GetPrometheusInstance(ctx context.Context, etcdClient *clientv3.Client) (*topo.PrometheusInfo, error) {
 	i, err := fetchStandardComponentTopology(ctx, "prometheus", etcdClient)
 	if err != nil {
 		return nil, err
@@ -38,5 +40,5 @@ func GetPrometheusInstance(ctx context.Context, etcdClient *clientv3.Client) (*P
 	if i == nil {
 		return nil, nil
 	}
-	return (*PrometheusInfo)(i), nil
+	return (*topo.PrometheusInfo)(i), nil
 }

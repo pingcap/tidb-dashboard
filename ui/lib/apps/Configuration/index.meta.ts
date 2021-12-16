@@ -1,9 +1,10 @@
 import { ToolOutlined } from '@ant-design/icons'
+import translations from './translations'
 
 export default {
   id: 'configuration',
   routerPrefix: '/configuration',
   icon: ToolOutlined,
-  translations: require.context('./translations/', false, /\.yaml$/),
+  translations,
   reactRoot: () => import(/* webpackChunkName: "app_configuration" */ '.'),
 }

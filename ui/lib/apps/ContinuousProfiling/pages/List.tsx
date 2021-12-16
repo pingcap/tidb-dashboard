@@ -1,4 +1,13 @@
-import { Badge, Tooltip, Space, Drawer, Result, Button, Alert } from 'antd'
+import {
+  Badge,
+  Tooltip,
+  Space,
+  Drawer,
+  Result,
+  Button,
+  Alert,
+  Form,
+} from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -9,16 +18,10 @@ import {
   ReloadOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
+import dayjs, { Dayjs } from 'dayjs'
 
 import client, { ErrorStrategy } from '@lib/client'
-import {
-  Card,
-  CardTable,
-  Toolbar,
-  TimeRangeSelector,
-  TimeRange,
-  calcTimeRange,
-} from '@lib/components'
+import { Card, CardTable, Toolbar, DatePicker } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -29,19 +32,49 @@ import ConProfSettingForm from './ConProfSettingForm'
 import styles from './List.module.less'
 
 export default function Page() {
+  const [endTime, setEndTime] = useSessionStorageState<Dayjs | string>(
+    'conprof.end_time',
+    ''
+  )
+  const rangeEndTime: Dayjs | undefined = useMemo(() => {
+    let _rangeEndTime: Dayjs | undefined
+    if (typeof endTime === 'string') {
+      if (endTime === '') {
+        _rangeEndTime = undefined
+      } else {
+        _rangeEndTime = dayjs(endTime)
+      }
+    } else {
+      _rangeEndTime = endTime
+    }
+    return _rangeEndTime
+  }, [endTime])
+
   const {
     data: historyTable,
     isLoading: listLoading,
     error: historyError,
     sendRequest: reloadGroupProfiles,
   } = useClientRequest(() => {
-    const [beginTime, endTime] = calcTimeRange(timeRange)
+    let _rangeEndTime: Dayjs
+    if (rangeEndTime === undefined) {
+      _rangeEndTime = dayjs()
+    } else {
+      _rangeEndTime = rangeEndTime
+    }
+    const _rangeStartTime = _rangeEndTime.subtract(2, 'h')
+
     return client
       .getInstance()
-      .continuousProfilingGroupProfilesGet(beginTime, endTime, {
-        errorStrategy: ErrorStrategy.Custom,
-      })
+      .continuousProfilingGroupProfilesGet(
+        _rangeStartTime.unix(),
+        _rangeEndTime.unix(),
+        {
+          errorStrategy: ErrorStrategy.Custom,
+        }
+      )
   })
+
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -119,17 +152,6 @@ export default function Page() {
     [t]
   )
 
-  const [timeRange, setTimeRange] = useSessionStorageState<
-    TimeRange | undefined
-  >('conprof.timerange', undefined)
-
-  function onTimeRangeChange(v: TimeRange) {
-    setTimeRange(v)
-    setTimeout(() => {
-      reloadGroupProfiles()
-    }, 0)
-  }
-
   const [showSettings, setShowSettings] = useState(false)
 
   const { data: ngMonitoringConfig, sendRequest: reloadConfig } =
@@ -146,12 +168,35 @@ export default function Page() {
     reloadGroupProfiles()
   }
 
+  function handleFinish(fieldsValues) {
+    setEndTime(fieldsValues['rangeEndTime'] || '')
+    setTimeout(() => {
+      reloadGroupProfiles()
+    }, 0)
+  }
+
   return (
     <div className={styles.list_container}>
       <Card>
         <Toolbar className={styles.list_toolbar}>
           <Space>
-            <TimeRangeSelector value={timeRange} onChange={onTimeRangeChange} />
+            <Form
+              layout="inline"
+              onFinish={handleFinish}
+              initialValues={{ rangeEndTime }}
+            >
+              <Form.Item name="rangeEndTime" label="Range End Time">
+                <DatePicker showTime />
+              </Form.Item>
+              <Form.Item label="Range Duration">
+                <span>-2h</span>
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" loading={listLoading}>
+                  Query
+                </Button>
+              </Form.Item>
+            </Form>
           </Space>
           <Space>
             <Tooltip

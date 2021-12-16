@@ -62,7 +62,7 @@ var profilingTypeList = []TaskProfilingType{
 	ProfilingTypeMutex,
 }
 
-// IsVaildProfilingType checks the validation of requestedProfilingType
+// IsVaildProfilingType checks the validation of requestedProfilingType.
 func IsVaildProfilingType(profilingType TaskProfilingType) bool {
 	inProfilingTypeList := false
 	for _, py := range profilingTypeList {

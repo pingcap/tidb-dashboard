@@ -38,6 +38,8 @@ import { mustLoadAppInfo, reloadWhoAmI } from '@lib/utils/store'
 // import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
 // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
+import translations from './layout/translations'
+
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
   if (spinner) {
@@ -50,9 +52,7 @@ async function webPageStart() {
   if (options.lang) {
     i18next.changeLanguage(options.lang)
   }
-  i18n.addTranslations(
-    require.context('@dashboard/layout/translations/', false, /\.yaml$/)
-  )
+  i18n.addTranslations(translations)
 
   let info: InfoInfoResponse
 

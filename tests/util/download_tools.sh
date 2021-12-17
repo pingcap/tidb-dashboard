@@ -15,6 +15,8 @@ download_tools() {
     curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
   fi
 
+  mkdir -p $BIN
+
   if [ ! -e "$BIN/toolkit.tar.gz" ]; then
     echo "  - Downloading toolkit..."
     curl -L -f -o "$BIN/toolkit.tar.gz" "https://download.pingcap.org/tidb-toolkit-nightly-linux-amd64.tar.gz"

@@ -40,8 +40,14 @@ conprof:
         kind: 组件
         content: 内容
         status: 状态
+        actions: 操作
       status:
         finished: 完成
+      actions:
+        view_flamegraph: 查看火焰图
+        view_graph: 查看关系图
+        view_text: 查看文本
+        download: 下载原始文件
   settings:
     title: 设置
     disabled_result:

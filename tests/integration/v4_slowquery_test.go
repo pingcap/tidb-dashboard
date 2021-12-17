@@ -72,12 +72,5 @@ func (s *testV4SlowQuerySuite) mustQuerySlowLogList(req *slowquery.GetListReques
 
 func (s *testV4SlowQuerySuite) TestFieldsCompatibility() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*"})
-
-	for _, d := range ds {
-		s.Empty(d.RocksdbBlockCacheHitCount)
-		s.Empty(d.RocksdbBlockReadByte)
-		s.Empty(d.RocksdbBlockReadCount)
-		s.Empty(d.RocksdbDeleteSkippedCount)
-		s.Empty(d.RocksdbKeySkippedCount)
-	}
+	s.NotEmpty(ds)
 }

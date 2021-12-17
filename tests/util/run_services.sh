@@ -43,14 +43,26 @@ import_test_data() {
   if [ -e "$BIN/tidb-lightning" ]; then
     echo "+ Start import fixtures..."
     $BIN/tidb-lightning --backend tidb -tidb-host 127.0.0.1 -tidb-port 4000 -tidb-user root -d $FIXTRUE_DIR
-    echo "+ Import success!"
+    echo "  - Import success!"
+  else
+    echo "Tool $BIN/tidb-lightning not exist"
+    return 1
   fi
 }
 
 dump_test_data() {
+  if [ ${1:-""} = "" ]; then
+    echo "Please specify the 'database-name.table-name' to dump"
+    echo "Usage: tests/dump.sh database-name.table-name"
+    return 1
+  fi
+
   if [ -e "$BIN/dumpling" ]; then
     echo "+ Start dump fixtures..."
     $BIN/dumpling -u root -P 4000 -h 127.0.0.1 --filetype sql -o $FIXTRUE_DIR -T $1
-    echo "+ Dump success!"
+    echo "  - Dump success!"
+  else
+    echo "Tool $BIN/dumpling not exist"
+    return 1
   fi
 }

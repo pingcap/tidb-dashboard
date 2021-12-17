@@ -16,6 +16,8 @@ LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=N/A"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildGitHash=$(shell git rev-parse HEAD)"
 
+TIDB_VERSION ?= latest
+
 default: server
 
 clean:
@@ -31,12 +33,11 @@ test: clean unit_test integration_test
 
 unit_test:
 	@mkdir -p ./coverage
-	GO111MODULE=on go test -race -v -cover -coverprofile=coverage/ut.out ./pkg/... ./util/...
+	GO111MODULE=on go test -v -cover -coverprofile=coverage/ut.out ./pkg/... ./util/...
 
 integration_test:
 	@mkdir -p ./coverage
-	@tests/run.sh
-	@TIDB_VERSION=v4.0.1 tests/run.sh
+	@TIDB_VERSION=${TIDB_VERSION} tests/run.sh
 
 dev: lint default
 

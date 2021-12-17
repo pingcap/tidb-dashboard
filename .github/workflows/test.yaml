@@ -31,6 +31,9 @@ jobs:
     name: Backend Integration Test
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        tidb_version: [latest, v4.0.1]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -46,7 +49,7 @@ jobs:
             ${{ runner.os }}-go-
       - name: Run integration test
         run: |
-          make integration_test
+          make integration_test TIDB_VERSION=${{ matrix.tidb_version }}
   e2e_test:
     name: E2E
     runs-on: ubuntu-latest

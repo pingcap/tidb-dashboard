@@ -7,6 +7,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import client from '@lib/client'
 import { CardTable, DateTime, Head, Descriptions } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
@@ -133,7 +134,10 @@ function DropdownButton(props) {
 
 const openResult = async (openAs: string, rec) => {
   const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
-  let token: string | undefined
+  let token: string | undefined = await getActionToken(rec.id, 'single_view')
+  if (!token) {
+    return
+  }
   let profileURL: string
 
   switch (openAs) {
@@ -146,15 +150,10 @@ const openResult = async (openAs: string, rec) => {
       window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
       break
     case ViewOptions.FlameGraph:
-      token = await getActionToken(rec.id, 'single_view')
-      if (!token) {
-        return
-      }
-
       profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
       if (isProtobuf) {
         const titleOnTab = rec.target.kind + '_' + rec.target.display_name
-        profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
+        profileURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
           // protobuf can be rendered to flamegraph by speedscope
           profileURL + `&output_type=protobuf`
         )}&title=${titleOnTab}`
@@ -163,11 +162,6 @@ const openResult = async (openAs: string, rec) => {
       window.open(`${profileURL}`, '_blank')
       break
     case ViewOptions.Graph:
-      token = await getActionToken(rec.id, 'single_view')
-      if (!token) {
-        return
-      }
-
       profileURL =
         profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
           ViewOptions.Graph
@@ -176,10 +170,6 @@ const openResult = async (openAs: string, rec) => {
       window.open(`${profileURL}`, '_blank')
       break
     case ViewOptions.Text:
-      token = await getActionToken(rec.id, 'single_view')
-      if (!token) {
-        return
-      }
       profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
         ViewOptions.Text
       }`
@@ -228,6 +218,7 @@ export default function Page() {
   )
 
   const data = useMemo(() => mapData(respData), [respData])
+  const [rows, setRows] = useState<IRow[]>([])
   const [groups, setGroups] = useState<IGroup[]>([])
 
   const profileDuration =
@@ -260,6 +251,7 @@ export default function Page() {
       })
       startIndex = newRows.length
     }
+    setRows(newRows)
     setGroups(newGroups)
   }, [data])
 
@@ -278,7 +270,11 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 250,
         onRender: (record) => {
-          return `${record.profiling_type} - ${profileDuration}s`
+          if (record.profiling_type === 'cpu') {
+            return `${record.profiling_type} - ${profileDuration}s`
+          } else {
+            return `${record.profiling_type}`
+          }
         },
       },
       {
@@ -387,7 +383,7 @@ export default function Page() {
             disableSelectionZone
             loading={isLoading}
             columns={columns}
-            items={data?.tasks_status || []}
+            items={rows}
             errors={[error]}
             groups={groups}
             groupProps={{

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo
+set -euo pipefail
 
 INTEGRATION_LOG_PATH=/tmp/dashboard-integration-test.log
 TIUP_BIN_DIR=$HOME/.tiup/bin

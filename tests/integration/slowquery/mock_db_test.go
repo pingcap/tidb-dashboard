@@ -1,6 +1,6 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-package integration
+package slowquery
 
 import (
 	"fmt"
@@ -19,74 +19,70 @@ const (
 	TestSlowQueryTableName = "test.CLUSTER_SLOW_QUERY"
 )
 
-type testSlowQuerySuite struct {
+type testMockDBSuite struct {
 	suite.Suite
-	db               *testutil.TestDB
-	slowqueryColumns []string
+	db        *testutil.TestDB
+	sysSchema *utils.SysSchema
 }
 
-func TestSlowQuery(t *testing.T) {
+func TestMockDBSuite(t *testing.T) {
 	db := testutil.OpenTestDB(t)
-	suite.Run(t, &testSlowQuerySuite{
-		db: db,
+	sysSchema := utils.NewSysSchema()
+
+	suite.Run(t, &testMockDBSuite{
+		db:        db,
+		sysSchema: sysSchema,
 	})
 }
 
-func (s *testSlowQuerySuite) SetupSuite() {
-	columns, err := utils.NewSysSchema().GetTableColumnNames(s.slowQuerySession(), slowquery.SlowQueryTable)
-	s.NoError(err)
-	s.slowqueryColumns = columns
+func (s *testMockDBSuite) SetupSuite() {
 }
 
-func (s *testSlowQuerySuite) TearDownSuite() {
+func (s *testMockDBSuite) TearDownSuite() {
 	s.db.MustExec(fmt.Sprintf("DROP TABLE IF EXISTS `%s`", TestSlowQueryTableName))
 	s.db.MustClose()
 }
 
-func (s *testSlowQuerySuite) mustQuerySlowLogList(req *slowquery.GetListRequest) []slowquery.Model {
-	d, err := slowquery.QuerySlowLogList(req, s.slowqueryColumns, s.mockSlowQuerySession())
-	s.NoError(err)
+func (s *testMockDBSuite) mustQuerySlowLogList(req *slowquery.GetListRequest) []slowquery.Model {
+	d, err := slowquery.QuerySlowLogList(req, s.sysSchema, s.mockSlowQuerySession())
+	s.Require().NoError(err)
 	return d
 }
 
-func (s *testSlowQuerySuite) slowQuerySession() *gorm.DB {
-	return s.db.Gorm().Debug().Table(slowquery.SlowQueryTable)
-}
-
-func (s *testSlowQuerySuite) mockSlowQuerySession() *gorm.DB {
+func (s *testMockDBSuite) mockSlowQuerySession() *gorm.DB {
 	return s.db.Gorm().Debug().Table(TestSlowQueryTableName)
 }
 
-func (s *testSlowQuerySuite) TestGetListDefaultRequest() {
+func (s *testMockDBSuite) TestGetListDefaultRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{})
 
-	s.Len(ds, 100)
+	s.Require().Len(ds, 100)
 
 	for i, d := range ds {
-		s.NotEmpty(d.Digest)
-		s.NotEmpty(d.ConnectionID)
-		s.NotEmpty(d.Timestamp)
+		s.Require().NotEmpty(d.Digest)
+		s.Require().NotEmpty(d.ConnectionID)
+		s.Require().NotEmpty(d.Timestamp)
 
 		// order by timestamp
 		if i == 0 {
 			continue
 		}
-		s.GreaterOrEqual(d.Timestamp, ds[i-1].Timestamp)
+		s.Require().GreaterOrEqual(d.Timestamp, ds[i-1].Timestamp)
 	}
 }
 
-func (s *testSlowQuerySuite) TestGetListSpecificFieldsRequest() {
+func (s *testMockDBSuite) TestGetListSpecificFieldsRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "digest,query"})
 
 	for _, d := range ds {
-		s.NotEmpty(d.Digest)
-		s.NotEmpty(d.ConnectionID)
-		s.NotEmpty(d.Timestamp)
-		s.NotEmpty(d.Query)
+		s.Require().NotEmpty(d.Digest)
+		s.Require().NotEmpty(d.ConnectionID)
+		s.Require().NotEmpty(d.Timestamp)
+		s.Require().NotEmpty(d.Query)
 	}
 }
 
-func (s *testSlowQuerySuite) TestGetListAllFieldsRequest() {
+func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	if os.Getenv("TIDB_VERSION") != "latest" {
 		s.T().Skip("Use latest TiDB to test all fields request")
 	}
@@ -99,68 +95,68 @@ func (s *testSlowQuerySuite) TestGetListAllFieldsRequest() {
 		Order("Time").
 		Find(&queryDs)
 
-	s.Equal(ds, queryDs)
+	s.Require().Equal(ds, queryDs)
 }
 
-func (s *testSlowQuerySuite) TestGetListLimitRequest() {
+func (s *testMockDBSuite) TestGetListLimitRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Limit: 5})
 
-	s.Len(ds, 5)
+	s.Require().Len(ds, 5)
 }
 
-func (s *testSlowQuerySuite) TestGetListSearchRequest() {
+func (s *testMockDBSuite) TestGetListSearchRequest() {
 	digest := "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df"
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: digest})
 
-	s.NotEmpty(ds)
+	s.Require().NotEmpty(ds)
 	for _, d := range ds {
-		s.Contains(d.Digest, digest)
+		s.Require().Contains(d.Digest, digest)
 	}
 
 	txnStartTS := ds[0].TxnStartTS
 	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: txnStartTS})
 
-	s.NotEmpty(ds2)
+	s.Require().NotEmpty(ds2)
 	for _, d := range ds2 {
-		s.Contains(d.TxnStartTS, txnStartTS)
+		s.Require().Contains(d.TxnStartTS, txnStartTS)
 	}
 
 	query := "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
 	ds3 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: query})
 
-	s.NotEmpty(ds3)
+	s.Require().NotEmpty(ds3)
 	for _, d := range ds3 {
-		s.Contains(d.Query, query)
+		s.Require().Contains(d.Query, query)
 	}
 
 	// TODO: search by Prev_stmt
 }
 
-func (s *testSlowQuerySuite) TestGetListMultiKeywordsSearchRequest() {
+func (s *testMockDBSuite) TestGetListMultiKeywordsSearchRequest() {
 	digest := "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df"
 	txnStartTS := "429825230089486339"
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: fmt.Sprintf("%s %s", digest, txnStartTS)})
 
-	s.Len(ds, 1)
-	s.Contains(ds[0].Digest, digest)
-	s.Contains(ds[0].TxnStartTS, txnStartTS)
+	s.Require().Len(ds, 1)
+	s.Require().Contains(ds[0].Digest, digest)
+	s.Require().Contains(ds[0].TxnStartTS, txnStartTS)
 }
 
-func (s *testSlowQuerySuite) TestGetListUseDBRequest() {
+func (s *testMockDBSuite) TestGetListUseDBRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{DB: []string{"test"}})
-	s.NotEmpty(ds)
+	s.Require().NotEmpty(ds)
 
 	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{DB: []string{"not_exist_db"}})
-	s.Empty(ds2)
+	s.Require().Empty(ds2)
 }
 
-func (s *testSlowQuerySuite) TestGetListOrderRequest() {
+func (s *testMockDBSuite) TestGetListOrderRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{OrderBy: "txn_start_ts"})
 	for i, d := range ds {
 		if i == 0 {
 			continue
 		}
-		s.GreaterOrEqual(d.TxnStartTS, ds[i-1].TxnStartTS)
+		s.Require().GreaterOrEqual(d.TxnStartTS, ds[i-1].TxnStartTS)
 	}
 
 	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{IsDesc: true, OrderBy: "txn_start_ts"})
@@ -168,14 +164,14 @@ func (s *testSlowQuerySuite) TestGetListOrderRequest() {
 		if i == 0 {
 			continue
 		}
-		s.LessOrEqual(d.TxnStartTS, ds[i-1].TxnStartTS)
+		s.Require().LessOrEqual(d.TxnStartTS, ds[i-1].TxnStartTS)
 	}
 }
 
-func (s *testSlowQuerySuite) TestGetListPlansRequest() {
+func (s *testMockDBSuite) TestGetListPlansRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Plans: []string{"a5e33155313418557311d13039dbf20aa54df3b825d062bdca92f1a271e5778a"}})
-	s.NotEmpty(ds)
+	s.Require().NotEmpty(ds)
 
 	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Plans: []string{"not_exist_plan"}})
-	s.Empty(ds2)
+	s.Require().Empty(ds2)
 }

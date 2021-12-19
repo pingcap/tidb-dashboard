@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend_ut:
-    name: Backend UT
+    name: Backend Unit Test
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

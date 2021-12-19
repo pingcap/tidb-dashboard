@@ -5,6 +5,8 @@ package slowquery
 import (
 	"strings"
 
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
 )
 
@@ -35,7 +37,12 @@ type GetDetailRequest struct {
 	ConnectID string `json:"connect_id" form:"connect_id"`
 }
 
-func QuerySlowLogList(req *GetListRequest, slowQueryColumns []string, db *gorm.DB) ([]Model, error) {
+func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.DB) ([]Model, error) {
+	slowQueryColumns, err := sysSchema.GetTableColumnNames(db, SlowQueryTable)
+	if err != nil {
+		return nil, err
+	}
+
 	reqFields := strings.Split(req.Fields, ",")
 	selectStmt, err := genSelectStmt(slowQueryColumns, reqFields)
 	if err != nil {
@@ -99,7 +106,7 @@ func QuerySlowLogList(req *GetListRequest, slowQueryColumns []string, db *gorm.D
 	return results, nil
 }
 
-func (s *Service) querySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*Model, error) {
+func QuerySlowLogDetail(req *GetDetailRequest, db *gorm.DB) (*Model, error) {
 	var result Model
 	err := db.
 		Select("*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp").
@@ -111,4 +118,12 @@ func (s *Service) querySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*Model
 		return nil, err
 	}
 	return &result, nil
+}
+
+func QueryTableColumns(sysSchema *utils.SysSchema, db *gorm.DB) ([]string, error) {
+	cs, err := sysSchema.GetTableColumnNames(db, SlowQueryTable)
+	if err != nil {
+		return nil, err
+	}
+	return funk.UniqString(append(cs, getVirtualFields()...)), nil
 }

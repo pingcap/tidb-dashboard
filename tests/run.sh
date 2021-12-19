@@ -23,6 +23,7 @@ start_tidb ${TIDB_VERSION:=latest}
 
 import_test_data
 
-echo "+ Run integration tests"
-GO111MODULE=on TIDB_VERSION=$TIDB_VERSION go test -race -v -cover -coverprofile=coverage/integration_${TIDB_VERSION}.out -coverpkg=${COVER_PKG:-./pkg/...} ./tests/...
+PRECISE_TIDB_VERSION=$(mysql --host 127.0.0.1 --port 4000 -u root -se "SELECT VERSION()" | sed -r "s/.*TiDB-(v[0-9]+\.[0-9]+\.[0-9]+).*/\1/g")
+echo "+ Run integration tests on tidb $PRECISE_TIDB_VERSION"
+GO111MODULE=on TIDB_VERSION=$PRECISE_TIDB_VERSION go test -race -v -cover -coverprofile=coverage/integration_${TIDB_VERSION}.out -coverpkg=${COVER_PKG:-./pkg/...} ./tests/integration/...
 echo "  - All tests passed!"

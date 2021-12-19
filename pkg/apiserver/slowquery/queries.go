@@ -5,9 +5,10 @@ package slowquery
 import (
 	"strings"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils"
 	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
+
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 const (

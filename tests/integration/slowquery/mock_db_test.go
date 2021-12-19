@@ -7,11 +7,13 @@ import (
 	"os"
 	"testing"
 
+	"github.com/shhdgit/testfixtures/v3"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/tests/util"
 	"github.com/pingcap/tidb-dashboard/util/testutil"
 )
 
@@ -36,6 +38,18 @@ func TestMockDBSuite(t *testing.T) {
 }
 
 func (s *testMockDBSuite) SetupSuite() {
+	db, err := s.db.Gorm().DB()
+	s.Require().NoError(err)
+
+	fixtures, err := testfixtures.New(
+		testfixtures.Database(db),
+		testfixtures.Dialect("tidb"),
+		testfixtures.Directory("../../fixtures"),
+	)
+	s.Require().NoError(err)
+
+	err = fixtures.Load()
+	s.Require().NoError(err)
 }
 
 func (s *testMockDBSuite) TearDownSuite() {
@@ -56,7 +70,7 @@ func (s *testMockDBSuite) mockSlowQuerySession() *gorm.DB {
 func (s *testMockDBSuite) TestGetListDefaultRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{})
 
-	s.Require().Len(ds, 100)
+	s.Require().Len(ds, 9)
 
 	for i, d := range ds {
 		s.Require().NotEmpty(d.Digest)
@@ -134,7 +148,7 @@ func (s *testMockDBSuite) TestGetListSearchRequest() {
 
 func (s *testMockDBSuite) TestGetListMultiKeywordsSearchRequest() {
 	digest := "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df"
-	txnStartTS := "429825230089486339"
+	txnStartTS := "429897544566046725"
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: fmt.Sprintf("%s %s", digest, txnStartTS)})
 
 	s.Require().Len(ds, 1)
@@ -174,4 +188,28 @@ func (s *testMockDBSuite) TestGetListPlansRequest() {
 
 	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Plans: []string{"not_exist_plan"}})
 	s.Require().Empty(ds2)
+}
+
+func (s *testMockDBSuite) TestFieldsCompatibility() {
+	if util.CheckTiDBVersion(s.Require(), "< 5.0.0") {
+		ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*"})
+		for _, d := range ds {
+			s.Require().Empty(d.RocksdbBlockCacheHitCount)
+			s.Require().Empty(d.RocksdbBlockReadByte)
+			s.Require().Empty(d.RocksdbBlockReadCount)
+			s.Require().Empty(d.RocksdbDeleteSkippedCount)
+			s.Require().Empty(d.RocksdbKeySkippedCount)
+		}
+	}
+
+	if util.CheckTiDBVersion(s.Require(), ">= 5.0.0") {
+		ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*"})
+		for _, d := range ds {
+			s.Require().NotEmpty(d.RocksdbBlockCacheHitCount)
+			s.Require().NotEmpty(d.RocksdbBlockReadByte)
+			s.Require().NotEmpty(d.RocksdbBlockReadCount)
+			s.Require().NotEmpty(d.RocksdbDeleteSkippedCount)
+			s.Require().NotEmpty(d.RocksdbKeySkippedCount)
+		}
+	}
 }

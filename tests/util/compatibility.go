@@ -9,10 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// IsTiDBVersionLessOrEqual tests if tidb version less or equal input version
-// If the tidb version equal to "latest" or "nightly", it always returns false
+// CheckTiDBVersion tests if tidb version satisfies the constraints.
+// Constraint examples: "~5.2.2", ">= 5.3.0", see github.com/Masterminds/semver to get more information.
 func CheckTiDBVersion(r *require.Assertions, constraint string) bool {
 	tidbVersion := os.Getenv("TIDB_VERSION")
+	if tidbVersion == "" {
+		return false
+	}
 	c, err := semver.NewConstraint(constraint)
 	r.NoError(err)
 	v, err := semver.NewVersion(tidbVersion)

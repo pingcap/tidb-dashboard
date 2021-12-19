@@ -33,14 +33,6 @@ func TestWithDBSuite(t *testing.T) {
 }
 
 func (s *testWithDBSuite) SetupSuite() {
-	s.prepareSlowQuery()
-}
-
-func (s *testWithDBSuite) TearDownSuite() {
-	s.db.MustClose()
-}
-
-func (s *testWithDBSuite) prepareSlowQuery() {
 	s.db.MustExec("SET tidb_slow_log_threshold = 0")
 	var wg sync.WaitGroup
 	for i := 1; i < 5; i++ {
@@ -54,38 +46,12 @@ func (s *testWithDBSuite) prepareSlowQuery() {
 	s.db.MustExec("SET tidb_slow_log_threshold = 300")
 }
 
+func (s *testWithDBSuite) TearDownSuite() {
+	s.db.MustClose()
+}
+
 func (s *testWithDBSuite) slowQuerySession() *gorm.DB {
 	return s.db.Gorm().Debug().Table(slowquery.SlowQueryTable)
-}
-
-func (s *testWithDBSuite) mustQuerySlowLogList(req *slowquery.GetListRequest) []slowquery.Model {
-	d, err := slowquery.QuerySlowLogList(req, s.sysSchema, s.slowQuerySession())
-	s.Require().NoError(err)
-	return d
-}
-
-func (s *testWithDBSuite) TestFieldsCompatibility() {
-	if util.CheckTiDBVersion(s.Require(), "< 5.0.0") {
-		// ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*"})
-		// for _, d := range ds {
-		// 	s.Require().Empty(d.RocksdbBlockCacheHitCount)
-		// 	s.Require().Empty(d.RocksdbBlockReadByte)
-		// 	s.Require().Empty(d.RocksdbBlockReadCount)
-		// 	s.Require().Empty(d.RocksdbDeleteSkippedCount)
-		// 	s.Require().Empty(d.RocksdbKeySkippedCount)
-		// }
-	}
-
-	if util.CheckTiDBVersion(s.Require(), ">= 5.0.0") {
-		// ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*"})
-		// for _, d := range ds {
-		// s.Require().NotEmpty(d.RocksdbBlockCacheHitCount)
-		// s.Require().NotEmpty(d.RocksdbBlockReadByte)
-		// s.Require().NotEmpty(d.RocksdbBlockReadCount)
-		// s.Require().NotEmpty(d.RocksdbDeleteSkippedCount)
-		// s.Require().NotEmpty(d.RocksdbKeySkippedCount)
-		// }
-	}
 }
 
 func (s *testWithDBSuite) TestQueryTableColumns() {

@@ -22,11 +22,6 @@ download_tools() {
     curl -L -f -o "$BIN/toolkit.tar.gz" "https://download.pingcap.org/tidb-toolkit-nightly-linux-amd64.tar.gz"
   fi
 
-  if [ ! -e "$BIN/tidb-lightning" ]; then
-    tar -x -f "$BIN/toolkit.tar.gz" -C "$BIN/" tidb-toolkit-nightly-linux-amd64/bin/tidb-lightning
-    mv "$BIN"/tidb-toolkit-nightly-linux-amd64/bin/tidb-lightning "$BIN/tidb-lightning"
-  fi
-
   if [ ! -e "$BIN/dumpling" ]; then
     tar -x -f "$BIN/toolkit.tar.gz" -C "$BIN/" tidb-toolkit-nightly-linux-amd64/bin/dumpling
     mv "$BIN"/tidb-toolkit-nightly-linux-amd64/bin/dumpling "$BIN/dumpling"

@@ -67,60 +67,66 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, distroResFolderPath s
 	rewrite("/index.html")
 	rewrite("/diagnoseReport.html")
 
-	overrideDistroAssetsRes(fs, distroResFolderPath, updater)
+	if err := overrideDistroAssetsRes(fs, distroResFolderPath, updater); err != nil {
+		log.Fatal("Failed to load distro assets res", zap.Error(err))
+	}
 }
 
-func overrideDistroAssetsRes(fs http.FileSystem, distroResFolderPath string, updater UpdateContentFunc) {
+func overrideDistroAssetsRes(fs http.FileSystem, distroResFolderPath string, updater UpdateContentFunc) error {
 	info, err := os.Stat(distroResFolderPath)
 	if errors.Is(err, os.ErrNotExist) || !info.IsDir() {
 		// just ignore if the folder doesn't exist or it's not a folder
-		return
+		return nil
 	}
 	if err != nil {
-		log.Fatal("Failed to stat dir", zap.String("dir", distroResFolderPath), zap.Error(err))
+		return err
 	}
 
 	// traverse
 	files, err := ioutil.ReadDir(distroResFolderPath)
 	if err != nil {
-		log.Fatal("Failed to read dir", zap.String("dir", distroResFolderPath), zap.Error(err))
+		return err
 	}
 	for _, file := range files {
-		overrideSingleDistroAsset(fs, distroResFolderPath, file.Name(), updater)
+		if err := overrideSingleDistroAsset(fs, distroResFolderPath, file.Name(), updater); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func overrideSingleDistroAsset(fs http.FileSystem, distroResFolderPath, assetName string, updater UpdateContentFunc) {
+func overrideSingleDistroAsset(fs http.FileSystem, distroResFolderPath, assetName string, updater UpdateContentFunc) error {
 	assetPath := path.Join("/", distroResFolderName, assetName)
 	targetFile, err := fs.Open(assetPath)
 	if err != nil {
 		// has no target asset to be overried, skip
-		return
+		return nil
 	}
 	defer targetFile.Close()
 
 	assetFullPath := path.Join(distroResFolderPath, assetName)
 	sourceFile, err := os.Open(assetFullPath)
 	if err != nil {
-		log.Fatal("Failed to open source file", zap.String("file", assetFullPath), zap.Error(err))
+		return err
 	}
 	defer sourceFile.Close()
 
 	data, err := ioutil.ReadAll(sourceFile)
 	if err != nil {
-		log.Fatal("Failed to read asset", zap.String("file", assetFullPath), zap.Error(err))
+		return err
 	}
 
 	var b bytes.Buffer
 	w := gzip.NewWriter(&b)
 	if _, err := w.Write(data); err != nil {
-		log.Fatal("Failed to zip asset", zap.Error(err))
+		return err
 	}
 	if err := w.Close(); err != nil {
-		log.Fatal("Failed to zip asset", zap.Error(err))
+		return err
 	}
 
 	updater(fs, targetFile, assetPath, string(data), b.Bytes())
+	return nil
 }
 
 func Handler(root http.FileSystem) http.Handler {

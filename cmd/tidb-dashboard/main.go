@@ -21,6 +21,7 @@ import (
 	_ "net/http/pprof" // #nosec
 	"os"
 	"os/signal"
+	"path"
 	"strings"
 	"sync"
 	"syscall"
@@ -31,13 +32,13 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	_ "github.com/pingcap/tidb-dashboard/internal/resource/distrores"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	keyvisualregion "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 type DashboardCLIConfig struct {
@@ -147,6 +148,26 @@ func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
 	return tlsConfig
 }
 
+const (
+	distroResFolderName      string = "distro-res"
+	distroStringsResFileName string = "strings.json"
+)
+
+func loadDistroStringsRes() {
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatal("Failed to get executable path", zap.Error(err))
+	}
+
+	distroStringsResPath := path.Join(path.Dir(exePath), distroResFolderName, distroStringsResFileName)
+	distroStringsRes, err := distro.ReadResourceStringsFromFile(distroStringsResPath)
+	if err != nil {
+		log.Fatal("Failed to load distro strings res", zap.String("path", distroStringsResPath), zap.Error(err))
+	}
+
+	distro.ReplaceGlobal(distroStringsRes)
+}
+
 func main() {
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
@@ -164,10 +185,12 @@ func main() {
 		log.SetLevel(zapcore.DebugLevel)
 	}
 
+	loadDistroStringsRes()
+
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		log.Fatal("TiDB Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
+		log.Fatal(fmt.Sprintf("%s Dashboard server listen failed", distro.R().TiDB), zap.String("addr", listenAddr), zap.Error(err))
 	}
 
 	var customKeyVisualProvider *keyvisualregion.DataProvider

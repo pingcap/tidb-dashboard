@@ -103,7 +103,6 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         onRender: (rec) => {
-          // The following state will be refactored later by ngm
           if (rec.state === 'failed') {
             // all failed
             return (

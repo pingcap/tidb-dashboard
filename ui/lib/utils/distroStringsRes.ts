@@ -1,14 +1,6 @@
-import { DistroDistributionResource } from '@lib/client'
+import defaultDistroStringsRes from '@lib/distro_strings.json'
 
-const defalutDistroStringsRes: DistroDistributionResource = {
-  is_distro: false,
-  tidb: 'TiDB',
-  tikv: 'TiKV',
-  pd: 'PD',
-  tiflash: 'TiFlash',
-}
-
-let distro = defalutDistroStringsRes
+let distro = defaultDistroStringsRes
 
 // it is a base64 encoded string
 let distroStringsRes = document
@@ -19,7 +11,7 @@ if (distroStringsRes && distroStringsRes !== '__DISTRO_STRINGS_RES__') {
   try {
     const distroObj = JSON.parse(atob(distroStringsRes))
     distro = {
-      ...defalutDistroStringsRes,
+      ...defaultDistroStringsRes,
       ...distroObj,
     }
   } catch (error) {

@@ -24,7 +24,7 @@ type DistributionResource struct {
 	TiFlash  string `json:"tiflash,omitempty"`
 }
 
-var defaultDistroRes = DistributionResource{
+var DefaultDistroRes = DistributionResource{
 	IsDistro: false,
 	TiDB:     "TiDB",
 	TiKV:     "TiKV",
@@ -48,7 +48,7 @@ func ReplaceGlobal(r DistributionResource) func() {
 	currentGlobals := *R()
 
 	// Fill missing resources with the default one by using JSON Unmarshal.
-	newResource := defaultDistroRes
+	newResource := DefaultDistroRes
 	rJSON, _ := json.Marshal(r)             // This will never fail
 	_ = json.Unmarshal(rJSON, &newResource) // This will never fail
 	globalDistroRes.Store(&newResource)
@@ -62,7 +62,7 @@ func ReplaceGlobal(r DistributionResource) func() {
 func R() *DistributionResource {
 	r := globalDistroRes.Load()
 	if r == nil {
-		return &defaultDistroRes
+		return &DefaultDistroRes
 	}
 	return r.(*DistributionResource)
 }

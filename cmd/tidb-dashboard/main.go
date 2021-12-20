@@ -190,7 +190,7 @@ func main() {
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("%s Dashboard server listen failed", distro.R().TiDB), zap.String("addr", listenAddr), zap.Error(err))
+		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
 	var customKeyVisualProvider *keyvisualregion.DataProvider

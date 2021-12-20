@@ -10,5 +10,3 @@ require (
 	github.com/vektra/mockery/v2 v2.9.4
 	go.uber.org/zap v1.19.0
 )
-
-replace github.com/pingcap/tidb-dashboard => ../

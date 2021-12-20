@@ -38,6 +38,7 @@ export default function Page() {
   const { data: ngMonitoringConfig } = useClientRequest((reqConfig) =>
     client.getInstance().continuousProfilingConfigGet(reqConfig)
   )
+
   const conprofEnable =
     ngMonitoringConfig?.continuous_profiling?.enable ?? false
 

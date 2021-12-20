@@ -134,10 +134,7 @@ function DropdownButton(props) {
 
 const openResult = async (openAs: string, rec) => {
   const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
-  let token: string | undefined = await getActionToken(rec.id, 'single_view')
-  if (!token) {
-    return
-  }
+  let token: string | undefined
   let profileURL: string
 
   switch (openAs) {
@@ -150,6 +147,10 @@ const openResult = async (openAs: string, rec) => {
       window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
       break
     case ViewOptions.FlameGraph:
+      token = await getActionToken(rec.id, 'single_view')
+      if (!token) {
+        return
+      }
       profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
       if (isProtobuf) {
         const titleOnTab = rec.target.kind + '_' + rec.target.display_name
@@ -162,6 +163,10 @@ const openResult = async (openAs: string, rec) => {
       window.open(`${profileURL}`, '_blank')
       break
     case ViewOptions.Graph:
+      token = await getActionToken(rec.id, 'single_view')
+      if (!token) {
+        return
+      }
       profileURL =
         profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
           ViewOptions.Graph
@@ -170,6 +175,10 @@ const openResult = async (openAs: string, rec) => {
       window.open(`${profileURL}`, '_blank')
       break
     case ViewOptions.Text:
+      token = await getActionToken(rec.id, 'single_view')
+      if (!token) {
+        return
+      }
       profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
         ViewOptions.Text
       }`
@@ -218,22 +227,16 @@ export default function Page() {
   )
 
   const data = useMemo(() => mapData(respData), [respData])
-  const [rows, setRows] = useState<IRow[]>([])
-  const [groups, setGroups] = useState<IGroup[]>([])
 
   const profileDuration =
     respData?.task_group_status?.profile_duration_secs || 0
 
-  useEffect(() => {
-    if (!data) {
-      setGroups([])
-      return
-    }
+  const [tableData, groupData] = useMemo(() => {
     const newRows: IRow[] = []
     const newGroups: IGroup[] = []
     let startIndex = 0
+    const tasks = data?.tasks_status ?? []
     for (const instanceKind of ['pd', 'tidb', 'tikv', 'tiflash']) {
-      const tasks = data?.tasks_status ?? []
       tasks.forEach((task) => {
         if (task.target.kind === instanceKind) {
           newRows.push({
@@ -251,8 +254,7 @@ export default function Page() {
       })
       startIndex = newRows.length
     }
-    setRows(newRows)
-    setGroups(newGroups)
+    return [newRows, newGroups]
   }, [data])
 
   const columns = useMemo(
@@ -383,9 +385,9 @@ export default function Page() {
             disableSelectionZone
             loading={isLoading}
             columns={columns}
-            items={rows}
+            items={tableData}
             errors={[error]}
-            groups={groups}
+            groups={groupData}
             groupProps={{
               showEmptyGroups: true,
             }}

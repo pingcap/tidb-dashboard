@@ -204,10 +204,10 @@ module.exports = override(
     )
   ),
   disableMinimizeByEnv(),
-  addExtraEntries(),
   supportDynamicPublicPathPrefix(),
   overrideProcessEnv({
     REACT_APP_RELEASE_VERSION: JSON.stringify(getInternalVersion()),
   }),
-  injectDistroToHTML
+  injectDistroToHTML,
+  addExtraEntries()
 )

@@ -27,6 +27,14 @@ jobs:
       - name: Run unit test
         run: |
           make unit_test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          directory: ./coverage/
+          fail_ci_if_error: true
+          flags: unittests
+          path_to_write_report: ./coverage/codecov_report.txt
+          verbose: true
   backend_integration:
     name: Backend Integration Test
     runs-on: ubuntu-latest
@@ -50,6 +58,14 @@ jobs:
       - name: Run integration test
         run: |
           make integration_test TIDB_VERSION=${{ matrix.tidb_version }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          directory: ./coverage/
+          fail_ci_if_error: true
+          flags: integrationtests
+          path_to_write_report: ./coverage/codecov_report.txt
+          verbose: true
   e2e_test:
     name: E2E
     runs-on: ubuntu-latest

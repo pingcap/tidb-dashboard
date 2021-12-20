@@ -1,6 +1,7 @@
 # TiDB Dashboard
 
 [![GitHub license](https://img.shields.io/github/license/pingcap/tidb-dashboard?style=flat-square)](https://github.com/pingcap/tidb-dashboard/blob/master/LICENSE)
+[![codecov](https://codecov.io/gh/pingcap/tidb-dashboard/branch/master/graph/badge.svg?token=CBLMNQ1LLC)](https://codecov.io/gh/pingcap/tidb-dashboard)
 
 TiDB Dashboard is a Web UI for monitoring, diagnosing and managing the TiDB cluster.
 

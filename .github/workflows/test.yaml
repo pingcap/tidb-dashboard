@@ -32,7 +32,7 @@ jobs:
         with:
           files: ./coverage/unit_test.txt
           fail_ci_if_error: true
-          flags: unit_test
+          flags: be_unit_test
           verbose: true
   backend_integration:
     name: Backend Integration Test
@@ -62,7 +62,7 @@ jobs:
         with:
           files: ./coverage/integration_${{ matrix.tidb_version }}.txt
           fail_ci_if_error: true
-          flags: integration_test_${{ matrix.tidb_version }}
+          flags: be_integration_test_${{ matrix.tidb_version }}
           verbose: true
   e2e_test:
     name: E2E

@@ -1,74 +1,74 @@
-- INSTANCE: ""
+- INSTANCE: "1"
   Time: 2021-12-19T23:45:30.786521+08:00
-  Txn_start_ts: 0
-  User: ""
-  Host: ""
-  Conn_ID: 0
-  Exec_retry_count: 0
-  Exec_retry_time: 0
+  Txn_start_ts: 1
+  User: "1"
+  Host: "1"
+  Conn_ID: 1
+  Exec_retry_count: 1
+  Exec_retry_time: 1
   Query_time: 0.462883101
-  Parse_time: 0
+  Parse_time: 1
   Compile_time: 3.2932e-05
   Rewrite_time: 1.943e-06
-  Preproc_subqueries: 0
-  Preproc_subqueries_time: 0
-  Optimize_time: 0
-  Wait_TS: 0
-  Prewrite_time: 0
-  Wait_prewrite_binlog_time: 0
-  Commit_time: 0
-  Get_commit_ts_time: 0
-  Commit_backoff_time: 0
-  Backoff_types: ""
-  Resolve_lock_time: 0
-  Local_latch_wait_time: 0
-  Write_keys: 0
-  Write_size: 0
-  Prewrite_region: 0
-  Txn_retry: 0
-  Cop_time: 0
-  Process_time: 0
-  Wait_time: 0
-  Backoff_time: 0
-  LockKeys_time: 0
-  Request_count: 0
-  Total_keys: 0
-  Process_keys: 0
+  Preproc_subqueries: 1
+  Preproc_subqueries_time: 1
+  Optimize_time: 1
+  Wait_TS: 1
+  Prewrite_time: 1
+  Wait_prewrite_binlog_time: 1
+  Commit_time: 1
+  Get_commit_ts_time: 1
+  Commit_backoff_time: 1
+  Backoff_types: "1"
+  Resolve_lock_time: 1
+  Local_latch_wait_time: 1
+  Write_keys: 1
+  Write_size: 1
+  Prewrite_region: 1
+  Txn_retry: 1
+  Cop_time: 1
+  Process_time: 1
+  Wait_time: 1
+  Backoff_time: 1
+  LockKeys_time: 1
+  Request_count: 1
+  Total_keys: 1
+  Process_keys: 1
   Rocksdb_delete_skipped_count: 1
   Rocksdb_key_skipped_count: 1
   Rocksdb_block_cache_hit_count: 1
   Rocksdb_block_read_count: 1
   Rocksdb_block_read_byte: 1
-  DB: ""
-  Index_names: ""
+  DB: "1"
+  Index_names: "1"
   Is_internal: 1
-  Digest: 59d2b959c2dcd2417e677fe0a611660d536688c1190dcdb1047fd9311a095e50
-  Stats: ""
-  Cop_proc_avg: 0
-  Cop_proc_p90: 0
-  Cop_proc_max: 0
-  Cop_proc_addr: ""
-  Cop_wait_avg: 0
-  Cop_wait_p90: 0
-  Cop_wait_max: 0
-  Cop_wait_addr: ""
-  Mem_max: 0
-  Disk_max: 0
-  KV_total: 0
-  PD_total: 0
-  Backoff_total: 0
-  Write_sql_response_total: 0
-  Result_rows: 0
-  Backoff_Detail: ""
-  Prepared: 0
+  Digest: TEST_ALL_FIELDS
+  Stats: "1"
+  Cop_proc_avg: 1
+  Cop_proc_p90: 1
+  Cop_proc_max: 1
+  Cop_proc_addr: "1"
+  Cop_wait_avg: 1
+  Cop_wait_p90: 1
+  Cop_wait_max: 1
+  Cop_wait_addr: "1"
+  Mem_max: 1
+  Disk_max: 1
+  KV_total: 1
+  PD_total: 1
+  Backoff_total: 1
+  Write_sql_response_total: 1
+  Result_rows: 1
+  Backoff_Detail: "1"
+  Prepared: 1
   Succ: 1
-  IsExplicitTxn: 0
-  IsWriteCacheTable: 0
-  Plan_from_cache: 0
-  Plan_from_binding: 0
-  Plan: ""
-  Plan_digest: ""
-  Prev_stmt: ""
+  IsExplicitTxn: 1
+  IsWriteCacheTable: 1
+  Plan_from_cache: 1
+  Plan_from_binding: 1
+  Plan: "1"
+  Plan_digest: "1"
+  Prev_stmt: "1"
   Query: CREATE DATABASE IF NOT EXISTS `mysql`;
 - INSTANCE: ""
   Time: 2021-12-19T23:49:47.79658+08:00

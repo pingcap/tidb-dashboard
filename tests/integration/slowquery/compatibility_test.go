@@ -16,7 +16,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/testutil"
 )
 
-type testWithDBSuite struct {
+type testCompatibilitySuite struct {
 	suite.Suite
 	db        *testutil.TestDB
 	sysSchema *utils.SysSchema
@@ -26,13 +26,13 @@ func TestWithDBSuite(t *testing.T) {
 	db := testutil.OpenTestDB(t)
 	sysSchema := utils.NewSysSchema()
 
-	suite.Run(t, &testWithDBSuite{
+	suite.Run(t, &testCompatibilitySuite{
 		db:        db,
 		sysSchema: sysSchema,
 	})
 }
 
-func (s *testWithDBSuite) SetupSuite() {
+func (s *testCompatibilitySuite) SetupSuite() {
 	s.db.MustExec("SET tidb_slow_log_threshold = 0")
 	var wg sync.WaitGroup
 	for i := 1; i < 5; i++ {
@@ -48,47 +48,25 @@ func (s *testWithDBSuite) SetupSuite() {
 	util.LoadFixtures(s.T(), s.db, "../../fixtures")
 }
 
-func (s *testWithDBSuite) TearDownSuite() {
+func (s *testCompatibilitySuite) TearDownSuite() {
 	s.db.MustClose()
 }
 
-func (s *testWithDBSuite) dbSession() *gorm.DB {
+func (s *testCompatibilitySuite) dbSession() *gorm.DB {
 	return s.db.Gorm().Debug().Table(slowquery.SlowQueryTable)
 }
 
-func (s *testWithDBSuite) mockDBSession() *gorm.DB {
+func (s *testCompatibilitySuite) mockDBSession() *gorm.DB {
 	return s.db.Gorm().Debug().Table(TestSlowQueryTableName)
 }
 
-func (s *testWithDBSuite) mustQuerySlowLogListWithMockDB(req *slowquery.GetListRequest) []slowquery.Model {
+func (s *testCompatibilitySuite) mustQuerySlowLogListWithMockDB(req *slowquery.GetListRequest) []slowquery.Model {
 	d, err := slowquery.QuerySlowLogList(req, s.sysSchema, s.mockDBSession())
 	s.Require().NoError(err)
 	return d
 }
 
-func (s *testWithDBSuite) TestQueryTableColumns() {
-	if util.CheckTiDBVersion(s.Require(), "< 5.0.0") {
-		cls, err := slowquery.QueryTableColumns(s.sysSchema, s.dbSession())
-		s.Require().NoError(err)
-		s.Require().NotContains(cls, "Rocksdb_delete_skipped_count")
-		s.Require().NotContains(cls, "Rocksdb_key_skipped_count")
-		s.Require().NotContains(cls, "Rocksdb_block_cache_hit_count")
-		s.Require().NotContains(cls, "Rocksdb_block_read_count")
-		s.Require().NotContains(cls, "Rocksdb_block_read_byte")
-	}
-
-	if util.CheckTiDBVersion(s.Require(), ">= 5.0.0") {
-		cls, err := slowquery.QueryTableColumns(s.sysSchema, s.dbSession())
-		s.Require().NoError(err)
-		s.Require().Contains(cls, "Rocksdb_delete_skipped_count")
-		s.Require().Contains(cls, "Rocksdb_key_skipped_count")
-		s.Require().Contains(cls, "Rocksdb_block_cache_hit_count")
-		s.Require().Contains(cls, "Rocksdb_block_read_count")
-		s.Require().Contains(cls, "Rocksdb_block_read_byte")
-	}
-}
-
-func (s *testWithDBSuite) TestFieldsCompatibility() {
+func (s *testCompatibilitySuite) TestFieldsCompatibility() {
 	if util.CheckTiDBVersion(s.Require(), "< 5.0.0") {
 		ds := s.mustQuerySlowLogListWithMockDB(&slowquery.GetListRequest{Fields: "*"})
 		for _, d := range ds {
@@ -109,5 +87,27 @@ func (s *testWithDBSuite) TestFieldsCompatibility() {
 			s.Require().NotEmpty(d.RocksdbDeleteSkippedCount)
 			s.Require().NotEmpty(d.RocksdbKeySkippedCount)
 		}
+	}
+}
+
+func (s *testCompatibilitySuite) TestQueryTableColumns() {
+	if util.CheckTiDBVersion(s.Require(), "< 5.0.0") {
+		cls, err := slowquery.QueryTableColumns(s.sysSchema, s.dbSession())
+		s.Require().NoError(err)
+		s.Require().NotContains(cls, "Rocksdb_delete_skipped_count")
+		s.Require().NotContains(cls, "Rocksdb_key_skipped_count")
+		s.Require().NotContains(cls, "Rocksdb_block_cache_hit_count")
+		s.Require().NotContains(cls, "Rocksdb_block_read_count")
+		s.Require().NotContains(cls, "Rocksdb_block_read_byte")
+	}
+
+	if util.CheckTiDBVersion(s.Require(), ">= 5.0.0") {
+		cls, err := slowquery.QueryTableColumns(s.sysSchema, s.dbSession())
+		s.Require().NoError(err)
+		s.Require().Contains(cls, "Rocksdb_delete_skipped_count")
+		s.Require().Contains(cls, "Rocksdb_key_skipped_count")
+		s.Require().Contains(cls, "Rocksdb_block_cache_hit_count")
+		s.Require().Contains(cls, "Rocksdb_block_read_count")
+		s.Require().Contains(cls, "Rocksdb_block_read_byte")
 	}
 }

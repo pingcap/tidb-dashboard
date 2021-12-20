@@ -4,7 +4,6 @@ package slowquery
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -85,19 +84,62 @@ func (s *testMockDBSuite) TestGetListSpecificFieldsRequest() {
 }
 
 func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
-	if os.Getenv("TIDB_VERSION") != "latest" {
-		s.T().Skip("Use latest TiDB to test all fields request")
-	}
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Digest: "TEST_ALL_FIELDS", Fields: "*"})
+	s.Require().Len(ds, 1)
 
-	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*"})
-	var queryDs []slowquery.Model
-	s.mockDBSession().
-		Select("*,(UNIX_TIMESTAMP(Time) + 0E0) as timestamp").
-		Limit(100).
-		Order("Time").
-		Find(&queryDs)
-
-	s.Require().Equal(ds, queryDs)
+	d := ds[0]
+	s.Require().NotEmpty(d.BackoffTime)
+	s.Require().NotEmpty(d.BackoffTypes)
+	s.Require().NotEmpty(d.CommitBackoffTime)
+	s.Require().NotEmpty(d.CommitTime)
+	s.Require().NotEmpty(d.CompileTime)
+	s.Require().NotEmpty(d.ConnectionID)
+	s.Require().NotEmpty(d.CopProcAddr)
+	s.Require().NotEmpty(d.CopProcAvg)
+	s.Require().NotEmpty(d.CopProcMax)
+	s.Require().NotEmpty(d.CopProcP90)
+	s.Require().NotEmpty(d.CopTime)
+	s.Require().NotEmpty(d.CopWaitAddr)
+	s.Require().NotEmpty(d.CopWaitAvg)
+	s.Require().NotEmpty(d.CopWaitMax)
+	s.Require().NotEmpty(d.CopWaitP90)
+	s.Require().NotEmpty(d.DB)
+	s.Require().NotEmpty(d.Digest)
+	s.Require().NotEmpty(d.DiskMax)
+	s.Require().NotEmpty(d.ExecRetryTime)
+	s.Require().NotEmpty(d.GetCommitTSTime)
+	s.Require().NotEmpty(d.Host)
+	s.Require().NotEmpty(d.IndexNames)
+	s.Require().NotEmpty(d.Instance)
+	s.Require().NotEmpty(d.IsInternal)
+	s.Require().NotEmpty(d.LocalLatchWaitTime)
+	s.Require().NotEmpty(d.LockKeysTime)
+	s.Require().NotEmpty(d.MemoryMax)
+	s.Require().NotEmpty(d.OptimizeTime)
+	s.Require().NotEmpty(d.ParseTime)
+	s.Require().NotEmpty(d.Plan)
+	s.Require().NotEmpty(d.PreprocSubqueriesTime)
+	s.Require().NotEmpty(d.PrevStmt)
+	s.Require().NotEmpty(d.PrewriteRegion)
+	s.Require().NotEmpty(d.PrewriteTime)
+	s.Require().NotEmpty(d.ProcessKeys)
+	s.Require().NotEmpty(d.ProcessTime)
+	s.Require().NotEmpty(d.Query)
+	s.Require().NotEmpty(d.QueryTime)
+	s.Require().NotEmpty(d.RequestCount)
+	s.Require().NotEmpty(d.RewriteTime)
+	s.Require().NotEmpty(d.Stats)
+	s.Require().NotEmpty(d.Success)
+	s.Require().NotEmpty(d.Timestamp)
+	s.Require().NotEmpty(d.TotalKeys)
+	s.Require().NotEmpty(d.TxnRetry)
+	s.Require().NotEmpty(d.User)
+	s.Require().NotEmpty(d.WaitPreWriteBinlogTime)
+	s.Require().NotEmpty(d.WaitTSTime)
+	s.Require().NotEmpty(d.WaitTime)
+	s.Require().NotEmpty(d.WriteKeys)
+	s.Require().NotEmpty(d.WriteRespTime)
+	s.Require().NotEmpty(d.WriteSize)
 }
 
 func (s *testMockDBSuite) TestGetListLimitRequest() {
@@ -108,25 +150,22 @@ func (s *testMockDBSuite) TestGetListLimitRequest() {
 
 func (s *testMockDBSuite) TestGetListSearchRequest() {
 	digest := "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df"
-	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: digest})
-
-	s.Require().NotEmpty(ds)
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "digest", Text: digest})
+	s.Require().Len(ds, 4)
 	for _, d := range ds {
 		s.Require().Contains(d.Digest, digest)
 	}
 
-	txnStartTS := ds[0].TxnStartTS
-	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: txnStartTS})
-
-	s.Require().NotEmpty(ds2)
+	txnStartTS := "429897544566046725"
+	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "txn_start_ts", Text: txnStartTS})
+	s.Require().Len(ds2, 1)
 	for _, d := range ds2 {
 		s.Require().Contains(d.TxnStartTS, txnStartTS)
 	}
 
 	query := "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	ds3 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: query})
-
-	s.Require().NotEmpty(ds3)
+	ds3 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "query", Text: query})
+	s.Require().Len(ds3, 4)
 	for _, d := range ds3 {
 		s.Require().Contains(d.Query, query)
 	}

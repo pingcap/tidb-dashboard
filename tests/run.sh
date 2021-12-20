@@ -9,7 +9,7 @@
 #   default: latest
 
 # See code coverage html
-# $ go tool cover -html ./coverage/integration.txt
+# go tool cover -html ./coverage/integration_$TIDB_VERSION.txt
 
 set -euo pipefail
 

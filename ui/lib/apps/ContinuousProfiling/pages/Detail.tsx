@@ -8,72 +8,20 @@ import { upperFirst } from 'lodash'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 
 import client, { ConprofProfileDetail } from '@lib/client'
-import { CardTable, DateTime, Descriptions, Head } from '@lib/components'
+import {
+  CardTable,
+  DateTime,
+  Descriptions,
+  Head,
+  ActionsButton,
+} from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 
-type Action = 'view_flamegraph' | 'view_graph' | 'view_text' | 'download'
-const COMMON_ACTIONS: Action[] = ['view_flamegraph', 'view_graph', 'download']
-const TEXT_ACTIONS: Action[] = ['view_text']
-
-interface IActionsButtonProps {
-  actions: Action[]
-  disabled: boolean
-  onClick: (action: Action) => void
-  transKeyPrefix: string
-}
-
-function ActionsButton({
-  actions,
-  disabled,
-  onClick,
-  transKeyPrefix,
-}: IActionsButtonProps) {
-  const { t } = useTranslation()
-
-  if (actions.length === 0) {
-    throw new Error('actions should at least have one action')
-  }
-
-  // actions.length > 0
-  const mainAction = actions[0]
-  if (actions.length === 1) {
-    return (
-      <Button
-        disabled={disabled}
-        onClick={() => onClick(mainAction)}
-        style={{ width: 150 }}
-      >
-        {t(`${transKeyPrefix}.${mainAction}`)}
-      </Button>
-    )
-  }
-
-  // actions.length > 1
-  const menu = (
-    <Menu onClick={(e) => onClick(e.key as Action)}>
-      {actions.map((act, idx) => {
-        // skip the first option in menu since it has been show on the button.
-        if (idx !== 0) {
-          return (
-            <Menu.Item key={act}>{t(`${transKeyPrefix}.${act}`)}</Menu.Item>
-          )
-        }
-      })}
-    </Menu>
-  )
-  return (
-    <Dropdown.Button
-      disabled={disabled}
-      overlay={menu}
-      onClick={() => onClick(mainAction)}
-    >
-      {t(`${transKeyPrefix}.${mainAction}`)}
-    </Dropdown.Button>
-  )
-}
+const COMMON_ACTIONS: string[] = ['view_flamegraph', 'view_graph', 'download']
+const TEXT_ACTIONS: string[] = ['view_text']
 
 export default function Page() {
   const { t } = useTranslation()
@@ -170,16 +118,19 @@ export default function Page() {
         maxWidth: 200,
         onRender: (record) => {
           const rec = record as ConprofProfileDetail
-          let actions = TEXT_ACTIONS
+          let actionsKey = TEXT_ACTIONS
           if (rec.profile_type !== 'goroutine') {
-            actions = COMMON_ACTIONS
+            actionsKey = COMMON_ACTIONS
           }
+          const actions = actionsKey.map((key) => ({
+            key,
+            text: t(`conprof.detail.table.actions.${key}`),
+          }))
           return (
             <ActionsButton
               actions={actions}
               disabled={rec.state !== 'success'}
               onClick={(act) => handleClick(act, rec)}
-              transKeyPrefix="conprof.detail.table.actions"
             />
           )
         },
@@ -189,7 +140,7 @@ export default function Page() {
   )
 
   const handleClick = usePersistFn(
-    async (action: Action, rec: ConprofProfileDetail) => {
+    async (action: string, rec: ConprofProfileDetail) => {
       const { profile_type, target } = rec
       const { component, address } = target!
       const res = await client

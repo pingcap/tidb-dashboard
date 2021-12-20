@@ -68,7 +68,7 @@
   Plan_from_binding: 1
   Plan: "1"
   Plan_digest: "1"
-  Prev_stmt: "1"
+  Prev_stmt: "test prev stmt"
   Query: CREATE DATABASE IF NOT EXISTS `mysql`;
 - INSTANCE: ""
   Time: 2021-12-19T23:49:47.79658+08:00

@@ -83,7 +83,7 @@ func (s *testMockDBSuite) TestGetListSpecificFieldsRequest() {
 	}
 }
 
-// Contains fields available for all tidb versions, other fields will be tested in compatibility_test.go
+// Contains fields available for all tidb versions, other fields will be tested in compatibility_test.go.
 func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Digest: "TEST_ALL_FIELDS", Fields: "*"})
 	s.Require().Len(ds, 1)
@@ -153,9 +153,7 @@ func (s *testMockDBSuite) TestGetListSearchRequest() {
 	txnStartTS := "429897544566046725"
 	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "txn_start_ts", Text: txnStartTS})
 	s.Require().Len(ds2, 1)
-	for _, d := range ds2 {
-		s.Require().Contains(d.TxnStartTS, txnStartTS)
-	}
+	s.Require().Contains(ds2[0].TxnStartTS, txnStartTS)
 
 	query := "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
 	ds3 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "query", Text: query})
@@ -164,13 +162,16 @@ func (s *testMockDBSuite) TestGetListSearchRequest() {
 		s.Require().Contains(d.Query, query)
 	}
 
-	// TODO: search by Prev_stmt
+	prevStmt := "test prev stmt"
+	ds4 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "prev_stmt", Text: prevStmt})
+	s.Require().Len(ds4, 1)
+	s.Require().Contains(ds4[0].PrevStmt, prevStmt)
 }
 
 func (s *testMockDBSuite) TestGetListMultiKeywordsSearchRequest() {
 	digest := "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df"
 	txnStartTS := "429897544566046725"
-	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "*", Text: fmt.Sprintf("%s %s", digest, txnStartTS)})
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Fields: "digest,txn_start_ts", Text: fmt.Sprintf("%s %s", digest, txnStartTS)})
 
 	s.Require().Len(ds, 1)
 	s.Require().Contains(ds[0].Digest, digest)

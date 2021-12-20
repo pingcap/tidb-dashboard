@@ -171,7 +171,7 @@ export default function Page() {
       }
 
       if (action === 'download') {
-        window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
+        window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}&data_format=protobuf`
         return
       }
     }
@@ -185,7 +185,7 @@ export default function Page() {
     if (!token) {
       return
     }
-    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
+    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}&data_format=protobuf`
   }, [ts])
 
   return (

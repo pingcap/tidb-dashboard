@@ -21,7 +21,7 @@ task('swagger:watch', () =>
   watch(['../cmd/**/*.go', '../pkg/**/*.go'], series('swagger:generate'))
 )
 
-task('distro:generate', shell.task('../scripts/write_distro_strings.sh'))
+task('distro:generate', shell.task('../scripts/distro/write_strings.sh'))
 
 task('webpack:dev', shell.task('yarn react-app-rewired start'))
 

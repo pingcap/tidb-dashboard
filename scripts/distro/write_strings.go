@@ -17,7 +17,7 @@ func main() {
 	outputPath := flag.String("o", "", "Output json file path")
 	flag.Parse()
 
-	d, _ := json.Marshal(distro.DefaultDistroRes)
+	d, _ := json.Marshal(distro.R())
 	if err := ioutil.WriteFile(*outputPath, d, 0o600); err != nil {
 		log.Fatal("Write output failed", zap.Error(err))
 	}

@@ -53,7 +53,7 @@ func (c *SQLClient) OpenConn(user string, pass string) (*gorm.DB, error) {
 	dsnConfig.Addr = fmt.Sprintf("%s:%d", c.config.Host, c.config.Port)
 	dsnConfig.User = user
 	dsnConfig.Passwd = pass
-	dsnConfig.Timeout = time.Second * 5
+	dsnConfig.Timeout = time.Second * 60
 	dsnConfig.ParseTime = true
 	dsnConfig.Loc = time.Local
 	dsnConfig.MultiStatements = true // TODO: Disable this, as it increase security risk.

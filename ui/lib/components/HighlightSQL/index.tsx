@@ -1,6 +1,9 @@
 import React, { useMemo } from 'react'
 
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
+// This usage will generate tons of files about languages highlight when esbuild splitting enable
+// See https://github.com/react-syntax-highlighter/react-syntax-highlighter/blob/master/src/async-languages/hljs.js to understand why
+// import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
+import SyntaxHighlighter from 'react-syntax-highlighter/dist/esm/light'
 import sql from 'react-syntax-highlighter/dist/esm/languages/hljs/sql'
 import lightTheme from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light'
 import darkTheme from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark'

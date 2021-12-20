@@ -1,9 +1,10 @@
 import { RocketOutlined } from '@ant-design/icons'
+import translations from './translations'
 
 export default {
   id: 'slow_query',
   routerPrefix: '/slow_query',
   icon: RocketOutlined,
-  translations: require.context('./translations/', false, /\.yaml$/),
+  translations,
   reactRoot: () => import(/* webpackChunkName: "app_slow_query" */ '.'),
 }

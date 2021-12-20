@@ -11,24 +11,9 @@ i18next.on('languageChanged', function (lng) {
   dayjs.locale(lng.toLowerCase())
 })
 
-export function addTranslations(requireContext) {
-  if (typeof requireContext === 'object') {
-    Object.keys(requireContext).forEach((key) => {
-      const translations = requireContext[key]
-      addTranslationResource(key, translations)
-    })
-    return
-  }
-
-  const keys = requireContext.keys()
-  keys.forEach((key) => {
-    const m = key.match(/\/(.+)\.yaml/)
-    if (!m) {
-      return
-    }
-    const lang = m[1]
-    const translations = requireContext(key)
-    addTranslationResource(lang, translations)
+export function addTranslations(translations) {
+  Object.keys(translations).forEach((key) => {
+    addTranslationResource(key, translations[key])
   })
 }
 

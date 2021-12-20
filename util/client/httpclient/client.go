@@ -20,9 +20,8 @@ import (
 )
 
 var (
-	ErrNS              = errorx.NewNamespace("http_client")
-	ErrInvalidEndpoint = ErrNS.NewType("invalid_endpoint")
-	ErrRequestFailed   = ErrNS.NewType("request_failed")
+	ErrNS            = errorx.NewNamespace("http_client")
+	ErrRequestFailed = ErrNS.NewType("request_failed")
 )
 
 // Client caches connections for future re-use and should be reused instead of
@@ -31,7 +30,7 @@ type Client struct {
 	nocopy.NoCopy
 
 	kindTag        string
-	transport      *http.Transport
+	transport      http.RoundTripper
 	defaultCtx     context.Context
 	defaultBaseURL string
 }
@@ -63,12 +62,32 @@ func New(config Config) *Client {
 	}
 }
 
+// SetDefaultTransport sets the default HTTP transport for subsequent new requests.
+// This function should be used only when you want to mock the request.
+// In other cases, there is usually no need to use a customized HTTP transport.
+func (c *Client) SetDefaultTransport(transport http.RoundTripper) *Client {
+	c.transport = transport
+	return c
+}
+
+// SetDefaultCtx sets the default context for subsequent new requests.
+func (c *Client) SetDefaultCtx(ctx context.Context) *Client {
+	c.defaultCtx = ctx
+	return c
+}
+
+// SetDefaultBaseURL sets the default base URL for subsequent new requests.
+func (c *Client) SetDefaultBaseURL(baseURL string) *Client {
+	c.defaultBaseURL = baseURL
+	return c
+}
+
 func (c *Client) LR() *LazyRequest {
 	lReq := newRequest(c.kindTag, c.transport)
 	if c.defaultCtx != nil {
 		lReq.SetContext(c.defaultCtx)
 	}
-	if c.defaultBaseURL != "" {
+	if len(c.defaultBaseURL) > 0 {
 		lReq.SetBaseURL(c.defaultBaseURL)
 	}
 	return lReq

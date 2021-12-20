@@ -13,6 +13,8 @@
 
 set -euo pipefail
 
+PROJECT_DIR="$(dirname "$0")/.."
+
 source tests/_inc/download_tools.sh >/dev/null
 source tests/_inc/run_services.sh >/dev/null
 
@@ -21,13 +23,14 @@ download_tools
 trap stop_tidb EXIT
 start_tidb ${TIDB_VERSION:=latest}
 
-echo "+ Create test tables"
-cat tests/schema/*.sql | mysql --host 127.0.0.1 --port 4000 -u root test || true
+$PROJECT_DIR/tests/create_table.sh
 
 PRECISE_TIDB_VERSION=$(mysql --host 127.0.0.1 --port 4000 -u root -se "SELECT VERSION()" | sed -r "s/.*TiDB-(v[0-9]+\.[0-9]+\.[0-9]+).*/\1/g")
+
 echo "+ Run integration tests on tidb $PRECISE_TIDB_VERSION"
 GO111MODULE=on TIDB_VERSION=$PRECISE_TIDB_VERSION go test -race -v -cover \
 -coverprofile=coverage/integration_${PRECISE_TIDB_VERSION}.out \
 -coverpkg=${COVER_PKG:-./pkg/...} \
 ./tests/integration/...
+
 echo "  - All tests passed!"

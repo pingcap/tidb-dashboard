@@ -83,6 +83,7 @@ func (s *testMockDBSuite) TestGetListSpecificFieldsRequest() {
 	}
 }
 
+// Contains fields available for all tidb versions, other fields will be tested in compatibility_test.go
 func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Digest: "TEST_ALL_FIELDS", Fields: "*"})
 	s.Require().Len(ds, 1)
@@ -105,8 +106,6 @@ func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	s.Require().NotEmpty(d.CopWaitP90)
 	s.Require().NotEmpty(d.DB)
 	s.Require().NotEmpty(d.Digest)
-	s.Require().NotEmpty(d.DiskMax)
-	s.Require().NotEmpty(d.ExecRetryTime)
 	s.Require().NotEmpty(d.GetCommitTSTime)
 	s.Require().NotEmpty(d.Host)
 	s.Require().NotEmpty(d.IndexNames)
@@ -115,10 +114,8 @@ func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	s.Require().NotEmpty(d.LocalLatchWaitTime)
 	s.Require().NotEmpty(d.LockKeysTime)
 	s.Require().NotEmpty(d.MemoryMax)
-	s.Require().NotEmpty(d.OptimizeTime)
 	s.Require().NotEmpty(d.ParseTime)
 	s.Require().NotEmpty(d.Plan)
-	s.Require().NotEmpty(d.PreprocSubqueriesTime)
 	s.Require().NotEmpty(d.PrevStmt)
 	s.Require().NotEmpty(d.PrewriteRegion)
 	s.Require().NotEmpty(d.PrewriteTime)
@@ -127,7 +124,6 @@ func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	s.Require().NotEmpty(d.Query)
 	s.Require().NotEmpty(d.QueryTime)
 	s.Require().NotEmpty(d.RequestCount)
-	s.Require().NotEmpty(d.RewriteTime)
 	s.Require().NotEmpty(d.Stats)
 	s.Require().NotEmpty(d.Success)
 	s.Require().NotEmpty(d.Timestamp)
@@ -135,10 +131,8 @@ func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	s.Require().NotEmpty(d.TxnRetry)
 	s.Require().NotEmpty(d.User)
 	s.Require().NotEmpty(d.WaitPreWriteBinlogTime)
-	s.Require().NotEmpty(d.WaitTSTime)
 	s.Require().NotEmpty(d.WaitTime)
 	s.Require().NotEmpty(d.WriteKeys)
-	s.Require().NotEmpty(d.WriteRespTime)
 	s.Require().NotEmpty(d.WriteSize)
 }
 

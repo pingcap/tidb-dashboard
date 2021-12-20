@@ -68,25 +68,39 @@ func (s *testCompatibilitySuite) mustQuerySlowLogListWithMockDB(req *slowquery.G
 
 func (s *testCompatibilitySuite) TestFieldsCompatibility() {
 	if util.CheckTiDBVersion(s.Require(), "< 5.0.0") {
-		ds := s.mustQuerySlowLogListWithMockDB(&slowquery.GetListRequest{Fields: "*"})
-		for _, d := range ds {
-			s.Require().Empty(d.RocksdbBlockCacheHitCount)
-			s.Require().Empty(d.RocksdbBlockReadByte)
-			s.Require().Empty(d.RocksdbBlockReadCount)
-			s.Require().Empty(d.RocksdbDeleteSkippedCount)
-			s.Require().Empty(d.RocksdbKeySkippedCount)
-		}
+		ds := s.mustQuerySlowLogListWithMockDB(&slowquery.GetListRequest{Digest: "TEST_ALL_FIELDS", Fields: "*"})
+		s.Require().Len(ds, 1)
+		d := ds[0]
+		s.Require().Empty(d.DiskMax)
+		s.Require().Empty(d.ExecRetryTime)
+		s.Require().Empty(d.OptimizeTime)
+		s.Require().Empty(d.PreprocSubqueriesTime)
+		s.Require().Empty(d.RewriteTime)
+		s.Require().Empty(d.WaitTSTime)
+		s.Require().Empty(d.WriteRespTime)
+		s.Require().Empty(d.RocksdbBlockCacheHitCount)
+		s.Require().Empty(d.RocksdbBlockReadByte)
+		s.Require().Empty(d.RocksdbBlockReadCount)
+		s.Require().Empty(d.RocksdbDeleteSkippedCount)
+		s.Require().Empty(d.RocksdbKeySkippedCount)
 	}
 
 	if util.CheckTiDBVersion(s.Require(), ">= 5.0.0") {
-		ds := s.mustQuerySlowLogListWithMockDB(&slowquery.GetListRequest{Fields: "*"})
-		for _, d := range ds {
-			s.Require().NotEmpty(d.RocksdbBlockCacheHitCount)
-			s.Require().NotEmpty(d.RocksdbBlockReadByte)
-			s.Require().NotEmpty(d.RocksdbBlockReadCount)
-			s.Require().NotEmpty(d.RocksdbDeleteSkippedCount)
-			s.Require().NotEmpty(d.RocksdbKeySkippedCount)
-		}
+		ds := s.mustQuerySlowLogListWithMockDB(&slowquery.GetListRequest{Digest: "TEST_ALL_FIELDS", Fields: "*"})
+		s.Require().Len(ds, 1)
+		d := ds[0]
+		s.Require().NotEmpty(d.DiskMax)
+		s.Require().NotEmpty(d.ExecRetryTime)
+		s.Require().NotEmpty(d.OptimizeTime)
+		s.Require().NotEmpty(d.PreprocSubqueriesTime)
+		s.Require().NotEmpty(d.RewriteTime)
+		s.Require().NotEmpty(d.WaitTSTime)
+		s.Require().NotEmpty(d.WriteRespTime)
+		s.Require().NotEmpty(d.RocksdbBlockCacheHitCount)
+		s.Require().NotEmpty(d.RocksdbBlockReadByte)
+		s.Require().NotEmpty(d.RocksdbBlockReadCount)
+		s.Require().NotEmpty(d.RocksdbDeleteSkippedCount)
+		s.Require().NotEmpty(d.RocksdbKeySkippedCount)
 	}
 }
 

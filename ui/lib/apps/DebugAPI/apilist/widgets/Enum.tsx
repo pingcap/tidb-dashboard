@@ -1,21 +1,21 @@
 import React from 'react'
 import { Select } from 'antd'
-import { useTranslation } from 'react-i18next'
 
-import type { ApiFormWidget, ParamModelType } from './index'
+import type { ApiFormWidget } from './index'
 
 export const EnumWidget: ApiFormWidget = ({ param }) => {
-  const { t } = useTranslation()
   return (
-    <Select placeholder={t(`debug_api.widgets.enum`, { param: param.name })}>
+    <Select>
       {(
-        (param.model as ParamModelType).data as {
-          name: string
+        ((param.ui_props as any)?.items as {
           value: string
-        }[]
+          display_as: string
+        }[]) ?? []
       ).map((option) => (
         <Select.Option key={option.value} value={option.value}>
-          {option.name}
+          {option.display_as
+            ? `${option.value} (${option.display_as})`
+            : option.value}
         </Select.Option>
       ))}
     </Select>

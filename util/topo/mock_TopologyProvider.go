@@ -129,15 +129,15 @@ func (_m *MockTopologyProvider) GetTiDB(ctx context.Context) ([]TiDBInfo, error)
 }
 
 // GetTiFlash provides a mock function with given fields: ctx
-func (_m *MockTopologyProvider) GetTiFlash(ctx context.Context) ([]StoreInfo, error) {
+func (_m *MockTopologyProvider) GetTiFlash(ctx context.Context) ([]TiFlashStoreInfo, error) {
 	ret := _m.Called(ctx)
 
-	var r0 []StoreInfo
-	if rf, ok := ret.Get(0).(func(context.Context) []StoreInfo); ok {
+	var r0 []TiFlashStoreInfo
+	if rf, ok := ret.Get(0).(func(context.Context) []TiFlashStoreInfo); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]StoreInfo)
+			r0 = ret.Get(0).([]TiFlashStoreInfo)
 		}
 	}
 
@@ -152,15 +152,15 @@ func (_m *MockTopologyProvider) GetTiFlash(ctx context.Context) ([]StoreInfo, er
 }
 
 // GetTiKV provides a mock function with given fields: ctx
-func (_m *MockTopologyProvider) GetTiKV(ctx context.Context) ([]StoreInfo, error) {
+func (_m *MockTopologyProvider) GetTiKV(ctx context.Context) ([]TiKVStoreInfo, error) {
 	ret := _m.Called(ctx)
 
-	var r0 []StoreInfo
-	if rf, ok := ret.Get(0).(func(context.Context) []StoreInfo); ok {
+	var r0 []TiKVStoreInfo
+	if rf, ok := ret.Get(0).(func(context.Context) []TiKVStoreInfo); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]StoreInfo)
+			r0 = ret.Get(0).([]TiKVStoreInfo)
 		}
 	}
 

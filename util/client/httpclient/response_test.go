@@ -5,6 +5,8 @@ package httpclient
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -516,7 +518,7 @@ func TestSetHeader(t *testing.T) {
 	require.Equal(t, "hello", dataStr)
 }
 
-func TestSetBaseURL(t *testing.T) {
+func TestSetTLSAwareBaseURL(t *testing.T) {
 	ts1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, _ = fmt.Fprintln(w, "ts1"+r.URL.Path)
 	}))
@@ -528,14 +530,35 @@ func TestSetBaseURL(t *testing.T) {
 	defer ts2.Close()
 
 	client := New(Config{})
-	dataStr, _, err := client.LR().SetBaseURL(ts1.URL).Get("/foo").ReadBodyAsString()
+	dataStr, _, err := client.LR().SetTLSAwareBaseURL(ts1.URL).Get("/foo").ReadBodyAsString()
 	require.Nil(t, err)
 	require.Equal(t, "ts1/foo", dataStr)
 
-	// BaseURL can be overwritten
-	dataStr, _, err = client.LR().SetBaseURL(ts1.URL).Get(ts2.URL).ReadBodyAsString()
+	// base url can be overwritten
+	dataStr, _, err = client.LR().SetTLSAwareBaseURL(ts1.URL).Get(ts2.URL).ReadBodyAsString()
 	require.Nil(t, err)
 	require.Equal(t, "ts2/", dataStr)
+
+	// Rewrite http:// to https:// if TLS config is specified
+	tsTLS := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = fmt.Fprintln(w, "tsTLS"+r.URL.Path)
+	}))
+	defer tsTLS.Close()
+
+	httpURL := "http://" + tsTLS.Listener.Addr().String()
+
+	certpool := x509.NewCertPool()
+	certpool.AddCert(tsTLS.Certificate())
+	client = New(Config{TLSConfig: &tls.Config{
+		RootCAs: certpool,
+	}})
+	_, _, err = client.LR().Get(httpURL).ReadBodyAsString()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "Response status 400")
+
+	dataStr, _, err = client.LR().SetTLSAwareBaseURL(httpURL).Get("/bar").ReadBodyAsString()
+	require.Nil(t, err)
+	require.Equal(t, "tsTLS/bar", dataStr)
 }
 
 func TestFailureStatusCode(t *testing.T) {
@@ -968,7 +991,7 @@ func TestTimeoutBody(t *testing.T) {
 }
 
 // FIXME: Seems that there is no way to test the panic happens inside runtime finalizers.
-//func TestUsageCheck(t *testing.T) {
+// func TestUsageCheck(t *testing.T) {
 //	if !israce.Enabled {
 //		t.Skipf("LazyResponse usage check will be tested only when race detector is enabled")
 //		return
@@ -976,7 +999,7 @@ func TestTimeoutBody(t *testing.T) {
 //	client := New(Config{})
 //	client.LR().Get("foo://example.com")
 //	assert.Panics(t, func() { runtime.GC() })
-//}
+// }
 
 // TODO: TestCtxRequest
 

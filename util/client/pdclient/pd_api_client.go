@@ -16,3 +16,7 @@ func NewAPIClient(config httpclient.Config) *APIClient {
 	config.KindTag = distro.R().PD
 	return &APIClient{httpclient.New(config)}
 }
+
+func (c *APIClient) Clone() *APIClient {
+	return &APIClient{c.Client.Clone()}
+}

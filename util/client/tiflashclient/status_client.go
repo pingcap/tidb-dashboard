@@ -16,3 +16,7 @@ func NewStatusClient(config httpclient.Config) *StatusClient {
 	config.KindTag = distro.R().TiFlash
 	return &StatusClient{httpclient.New(config)}
 }
+
+func (c *StatusClient) Clone() *StatusClient {
+	return &StatusClient{c.Client.Clone()}
+}

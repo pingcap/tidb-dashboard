@@ -9,6 +9,7 @@ package httpclient
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -23,6 +24,7 @@ type LazyRequest struct {
 	nocopy.NoCopy
 
 	kindTag   string
+	debugTag  string
 	transport http.RoundTripper
 	opsR      []requestUpdateFn
 	opsC      []clientUpdateFn
@@ -39,6 +41,7 @@ func newRequest(kindTag string, transport http.RoundTripper) *LazyRequest {
 func (lReq *LazyRequest) Clone() *LazyRequest {
 	lReqCloned := &LazyRequest{
 		kindTag:   lReq.kindTag,
+		debugTag:  lReq.debugTag,
 		transport: lReq.transport, // transport will never change after creation, so this is concurrent-safe
 		opsR:      make([]requestUpdateFn, len(lReq.opsR)),
 		opsC:      make([]clientUpdateFn, len(lReq.opsC)),
@@ -46,6 +49,13 @@ func (lReq *LazyRequest) Clone() *LazyRequest {
 	copy(lReqCloned.opsR, lReq.opsR)
 	copy(lReqCloned.opsC, lReq.opsC)
 	return lReqCloned
+}
+
+// SetDebugTag enables the debugging log if tag is not empty, or disables it otherwise.
+// The debugging log will be printed with log level INFO.
+func (lReq *LazyRequest) SetDebugTag(debugTag string) *LazyRequest {
+	lReq.debugTag = debugTag
+	return lReq
 }
 
 // SetContext sets the context.Context for current request. It allows
@@ -94,11 +104,21 @@ func (lReq *LazyRequest) SetMethod(method string) *LazyRequest {
 	return lReq
 }
 
-// SetBaseURL sets the base URL for current request. Relative URLs will be based on this base URL.
+// SetTLSAwareBaseURL sets the base URL for current request. Relative URLs will be based on this base URL.
+// If the client is built with TLS certs, http scheme will be changed to https automatically.
+//
 //		resp := client.LR().
-//			SetBaseURL("http://myjeeva.com").
+//			SetTLSAwareBaseURL("http://myjeeva.com").
 //			Get("/foo")
-func (lReq *LazyRequest) SetBaseURL(baseURL string) *LazyRequest {
+func (lReq *LazyRequest) SetTLSAwareBaseURL(baseURL string) *LazyRequest {
+	// Rewrite http URL to https if TLS certificate is specified.
+	if transport, ok := lReq.transport.(*http.Transport); ok {
+		if transport.TLSClientConfig != nil &&
+			len(transport.TLSClientConfig.Certificates) > 0 &&
+			strings.HasPrefix(baseURL, "http://") {
+			baseURL = "https://" + baseURL[len("http://"):]
+		}
+	}
 	lReq.opsC = append(lReq.opsC, func(c *resty.Client) {
 		c.SetHostURL(baseURL)
 	})

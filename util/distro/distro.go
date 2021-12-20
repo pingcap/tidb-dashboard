@@ -76,7 +76,7 @@ func ReadResourceStringsFromFile(filePath string) (DistributionResource, error) 
 		return distroStringsRes, nil
 	}
 	if err != nil {
-		// may permission or other errors
+		// may be permission-like errors
 		return distroStringsRes, err
 	}
 

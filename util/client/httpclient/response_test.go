@@ -551,7 +551,7 @@ func TestSetTLSAwareBaseURL(t *testing.T) {
 	certpool.AddCert(tsTLS.Certificate())
 	client = New(Config{TLSConfig: &tls.Config{
 		RootCAs: certpool,
-	}})
+	}}) // #nosec G402
 	_, _, err = client.LR().Get(httpURL).ReadBodyAsString()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "Response status 400")

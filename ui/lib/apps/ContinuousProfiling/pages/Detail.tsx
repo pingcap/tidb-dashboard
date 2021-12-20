@@ -43,6 +43,12 @@ export default function Page() {
 
     let startIndex = 0
     const profiles = groupProfileDetail?.target_profiles || []
+    // rename profile to cpu for profile_type
+    profiles.forEach((p) => {
+      if (p.profile_type === 'profile') {
+        p.profile_type = 'cpu'
+      }
+    })
     profiles.sort((a, b) => {
       if (a.target!.component! > b.target!.component!) {
         return 1
@@ -87,7 +93,7 @@ export default function Page() {
         maxWidth: 300,
         onRender: (record) => {
           const profileType = record.profile_type
-          if (profileType === 'profile') {
+          if (profileType === 'cpu') {
             return `CPU Profiling - ${profileDuration}s`
           }
           return upperFirst(profileType)

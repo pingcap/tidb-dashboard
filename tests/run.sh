@@ -29,7 +29,7 @@ PRECISE_TIDB_VERSION=$(mysql --host 127.0.0.1 --port 4000 -u root -se "SELECT VE
 
 echo "+ Run integration tests on tidb $PRECISE_TIDB_VERSION"
 GO111MODULE=on TIDB_VERSION=$PRECISE_TIDB_VERSION go test -race -v -cover \
--coverprofile=coverage/integration_${PRECISE_TIDB_VERSION}.txt \
+-coverprofile=coverage/integration_${TIDB_VERSION}.txt \
 -coverpkg=${COVER_PKG:-./pkg/...} \
 ./tests/integration/...
 

@@ -43,7 +43,7 @@ export default function Page() {
 
     let startIndex = 0
     const profiles = groupProfileDetail?.target_profiles || []
-    // rename profile to cpu for profile_type
+    // rename profile to cpu for profile_type for easier sort
     profiles.forEach((p) => {
       if (p.profile_type === 'profile') {
         p.profile_type = 'cpu'
@@ -56,6 +56,12 @@ export default function Page() {
         return 1
       } else {
         return -1
+      }
+    })
+    // revert name after sorting
+    profiles.forEach((p) => {
+      if (p.profile_type === 'cpu') {
+        p.profile_type = 'profile'
       }
     })
     for (const instanceKind of ['pd', 'tidb', 'tikv', 'tiflash']) {
@@ -93,7 +99,7 @@ export default function Page() {
         maxWidth: 300,
         onRender: (record) => {
           const profileType = record.profile_type
-          if (profileType === 'cpu') {
+          if (profileType === 'profile') {
             return `CPU Profiling - ${profileDuration}s`
           }
           return upperFirst(profileType)
@@ -149,10 +155,14 @@ export default function Page() {
     async (action: string, rec: ConprofProfileDetail) => {
       const { profile_type, target } = rec
       const { component, address } = target!
+      let dataFormat = ''
+      if (action === 'view_flamegraph' || action === 'download') {
+        dataFormat = 'protobuf'
+      }
       const res = await client
         .getInstance()
         .continuousProfilingActionTokenGet(
-          `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}`
+          `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}&data_format=${dataFormat}`
         )
       const token = res.data
       if (!token) {
@@ -168,7 +178,7 @@ export default function Page() {
       if (action === 'view_flamegraph') {
         // view flamegraph by speedscope
         const speedscopeTitle = `${rec.target?.component}_${rec.target?.address}_${rec.profile_type}`
-        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}&data_format=protobuf`
+        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
         const speedscopeURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
           profileURL
         )}&title=${speedscopeTitle}`
@@ -177,7 +187,7 @@ export default function Page() {
       }
 
       if (action === 'download') {
-        window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}&data_format=protobuf`
+        window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
         return
       }
     }
@@ -186,12 +196,12 @@ export default function Page() {
   const handleDownloadGroup = useCallback(async () => {
     const res = await client
       .getInstance()
-      .continuousProfilingActionTokenGet(`ts=${ts}`)
+      .continuousProfilingActionTokenGet(`ts=${ts}&data_format=protobuf`)
     const token = res.data
     if (!token) {
       return
     }
-    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}&data_format=protobuf`
+    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
   }, [ts])
 
   return (

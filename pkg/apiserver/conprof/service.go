@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"strings"
 	"sync/atomic"
 	"time"
 
@@ -112,7 +111,7 @@ func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
 				return
 			}
 
-			c.Request.URL.RawQuery = strings.Replace(c.Request.URL.RawQuery, "token="+token, queryStr, 1)
+			c.Request.URL.RawQuery = queryStr
 		}
 
 		ngMonitoringURL, _ := url.Parse(ngMonitoringAddr)

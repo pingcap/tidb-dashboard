@@ -50,6 +50,7 @@ func (s *testCompatibilitySuite) SetupSuite() {
 
 func (s *testCompatibilitySuite) TearDownSuite() {
 	s.db.MustClose()
+	_ = s.sysSchema.Close()
 }
 
 func (s *testCompatibilitySuite) dbSession() *gorm.DB {

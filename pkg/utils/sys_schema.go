@@ -25,7 +25,7 @@ func ProvideSysSchema(lc fx.Lifecycle) *SysSchema {
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
-			return s.cache.Close()
+			return s.Close()
 		},
 	})
 
@@ -38,6 +38,10 @@ func NewSysSchema() *SysSchema {
 	return &SysSchema{
 		cache: c,
 	}
+}
+
+func (c *SysSchema) Close() error {
+	return c.cache.Close()
 }
 
 func (c *SysSchema) GetTableColumnNames(db *gorm.DB, tableName string) ([]string, error) {

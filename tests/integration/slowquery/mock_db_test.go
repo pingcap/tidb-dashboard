@@ -42,6 +42,7 @@ func (s *testMockDBSuite) SetupSuite() {
 func (s *testMockDBSuite) TearDownSuite() {
 	s.db.MustExec(fmt.Sprintf("DROP TABLE IF EXISTS `%s`", TestSlowQueryTableName))
 	s.db.MustClose()
+	_ = s.sysSchema.Close()
 }
 
 func (s *testMockDBSuite) mustQuerySlowLogList(req *slowquery.GetListRequest) []slowquery.Model {

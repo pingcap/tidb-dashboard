@@ -55,23 +55,11 @@ const (
 	ProfilingTypeMutex     TaskProfilingType = "mutex"
 )
 
-var profilingTypeList = []TaskProfilingType{
-	ProfilingTypeCPU,
-	ProfilingTypeHeap,
-	ProfilingTypeGoroutine,
-	ProfilingTypeMutex,
-}
-
-// IsVaildProfilingType checks the validation of requestedProfilingType.
-func IsVaildProfilingType(profilingType TaskProfilingType) bool {
-	inProfilingTypeList := false
-	for _, py := range profilingTypeList {
-		if profilingType == py {
-			inProfilingTypeList = true
-			break
-		}
-	}
-	return inProfilingTypeList
+var profilingTypeMap = map[TaskProfilingType]struct{}{
+	ProfilingTypeCPU:       {},
+	ProfilingTypeHeap:      {},
+	ProfilingTypeGoroutine: {},
+	ProfilingTypeMutex:     {},
 }
 
 type TaskModel struct {

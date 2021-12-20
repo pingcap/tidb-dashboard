@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	ErrNS                         = errorx.NewNamespace("error.profiling")
+	ErrNS                         = errorx.NewNamespace("error.api.profiling")
 	ErrIgnoredRequest             = ErrNS.NewType("ignored_request")
 	ErrTimeout                    = ErrNS.NewType("timeout")
 	ErrUnsupportedProfilingType   = ErrNS.NewType("unsupported_profiling_type")
@@ -163,9 +163,12 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 	for _, target := range req.Targets {
 		profileTypeList := req.RequstedProfilingTypes
 		for _, profilingType := range profileTypeList {
-			if !IsVaildProfilingType(profilingType) {
+			// profilingTypeMap checks the validation of requestedProfilingType.
+			_, valid := profilingTypeMap[profilingType]
+			if !valid {
 				return nil, ErrUnsupportedProfilingType.NewWithNoMessage()
 			}
+
 			t := NewTask(ctx, taskGroup, target, s.fetchers, profilingType)
 			s.params.LocalStore.Create(t.TaskModel)
 			s.tasks.Store(t.ID, t)

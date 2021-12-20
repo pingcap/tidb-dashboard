@@ -22,7 +22,7 @@ type testCompatibilitySuite struct {
 	sysSchema *utils.SysSchema
 }
 
-func TestWithDBSuite(t *testing.T) {
+func TestCompatibilitySuite(t *testing.T) {
 	db := testutil.OpenTestDB(t)
 	sysSchema := utils.NewSysSchema()
 

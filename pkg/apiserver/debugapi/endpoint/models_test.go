@@ -24,7 +24,7 @@ func TestAPIParamPDKey(t *testing.T) {
 	require.Contains(t, err.Error(), "'0x0011' is not a valid hex key")
 
 	v, err = p.Resolve("0011")
-	require.Equal(t, []string{"%00%11"}, v)
+	require.Equal(t, []string{"\x00\x11"}, v)
 	require.Nil(t, err)
 }
 

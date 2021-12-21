@@ -27,7 +27,7 @@ type APIDefinition struct {
 type APIParamResolveFn func(value string) ([]string, error)
 
 // APIParamDefinition defines what an API endpoint parameter accepts and how it should look like in the UI.
-// This struct should not be manually constructed. Use NewAPIParamXxx() to create it.
+// Usually this struct doesn't need to be manually constructed. Use APIParamXxx() helpers.
 type APIParamDefinition struct {
 	Name             string            `json:"name"`
 	Required         bool              `json:"required"`

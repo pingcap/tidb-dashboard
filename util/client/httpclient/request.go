@@ -104,6 +104,22 @@ func (lReq *LazyRequest) SetMethod(method string) *LazyRequest {
 	return lReq
 }
 
+func isMTLSConfigured(r http.RoundTripper) bool {
+	transport, ok := r.(*http.Transport)
+	if !ok {
+		return false
+	}
+	if transport.TLSClientConfig == nil {
+		return false
+	}
+	if len(transport.TLSClientConfig.Certificates) > 0 || transport.TLSClientConfig.RootCAs != nil {
+		return true
+	}
+	// It may be possible that transport.TLSClientConfig is &tls.Config{}. In this case
+	// we still treat it as mTLS not configured.
+	return false
+}
+
 // SetTLSAwareBaseURL sets the base URL for current request. Relative URLs will be based on this base URL.
 // If the client is built with TLS certs, http scheme will be changed to https automatically.
 //
@@ -112,12 +128,8 @@ func (lReq *LazyRequest) SetMethod(method string) *LazyRequest {
 //			Get("/foo")
 func (lReq *LazyRequest) SetTLSAwareBaseURL(baseURL string) *LazyRequest {
 	// Rewrite http URL to https if TLS certificate is specified.
-	if transport, ok := lReq.transport.(*http.Transport); ok {
-		if transport.TLSClientConfig != nil &&
-			len(transport.TLSClientConfig.Certificates) > 0 &&
-			strings.HasPrefix(baseURL, "http://") {
-			baseURL = "https://" + baseURL[len("http://"):]
-		}
+	if isMTLSConfigured(lReq.transport) && strings.HasPrefix(baseURL, "http://") {
+		baseURL = "https://" + baseURL[len("http://"):]
 	}
 	lReq.opsC = append(lReq.opsC, func(c *resty.Client) {
 		c.SetHostURL(baseURL)

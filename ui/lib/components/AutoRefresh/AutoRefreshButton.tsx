@@ -13,7 +13,6 @@ interface AutoRefreshButtonProps {
   onAutoRefreshSecondsChange: (v: number) => void
   onRefresh: () => void
   isLoading: boolean
-  remainingRefreshSeconds: number
   enabled?: boolean
 }
 
@@ -49,7 +48,6 @@ export function AutoRefreshButton({
   onRefresh,
   enabled = true,
   isLoading,
-  remainingRefreshSeconds,
 }: AutoRefreshButtonProps) {
   const { t } = useTranslation()
   const autoRefreshMenu = (
@@ -82,6 +80,36 @@ export function AutoRefreshButton({
     onRefresh()
   }, [isLoading, onRefresh])
 
+  // Auto refresh
+  const [timer, setTimer] = useState<number | undefined>()
+  const [remainingRefreshSeconds, setRemainingRefreshSeconds] =
+    useState(autoRefreshSeconds)
+
+  useEffect(() => {
+    setRemainingRefreshSeconds(autoRefreshSeconds)
+  }, [autoRefreshSeconds])
+
+  useEffect(() => {
+    if (autoRefreshSeconds === 0) {
+      clearTimeout(timer)
+      setTimer(undefined)
+      return
+    }
+
+    clearTimeout(timer)
+    setTimer(
+      setTimeout(() => {
+        if (remainingRefreshSeconds === 0) {
+          setRemainingRefreshSeconds(autoRefreshSeconds)
+          handleRefresh()
+        } else {
+          setRemainingRefreshSeconds((c) => c - 1)
+        }
+      }, 1000) as unknown as number
+    )
+    return () => clearTimeout(timer)
+  }, [autoRefreshSeconds, remainingRefreshSeconds])
+
   return (
     <>
       <Dropdown.Button
@@ -101,7 +129,7 @@ export function AutoRefreshButton({
         {t('component.autoRefreshButton.refresh')}
       </Dropdown.Button>
 
-      {(isLoading || remainingRefreshSeconds === 1) && (
+      {isLoading && (
         <Spin
           indicator={
             <LoadingOutlined
@@ -165,34 +193,4 @@ function RefreshProgress(props) {
       />
     </svg>
   )
-}
-
-export function useAutoFreshRemainingSecondsFactory() {
-  let timer: NodeJS.Timeout
-  const useAutoFreshRemainingSeconds = (
-    autoRefreshSeconds: number,
-    deps: React.DependencyList = []
-  ) => {
-    const [remainingRefreshSeconds, setRemainingRefreshSeconds] =
-      useState(autoRefreshSeconds)
-
-    useEffect(() => {
-      if (autoRefreshSeconds === 0) {
-        clearInterval(timer)
-        timer = null as any
-        return
-      }
-
-      clearInterval(timer)
-      setRemainingRefreshSeconds(autoRefreshSeconds)
-      timer = setInterval(() => {
-        setRemainingRefreshSeconds((c) => c - 1)
-      }, 1000)
-      return () => clearInterval(timer)
-    }, [autoRefreshSeconds, ...deps])
-
-    return { remainingRefreshSeconds }
-  }
-
-  return useAutoFreshRemainingSeconds
 }

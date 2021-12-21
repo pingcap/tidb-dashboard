@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo } from 'react'
-import { useQuery } from 'react-query'
 import { Select } from 'antd'
 
 import client, { TopsqlInstanceItem } from '@lib/client'
 
 import commonStyles from './common.module.less'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 interface InstanceGroup {
   name: string
@@ -19,10 +19,10 @@ export interface InstanceSelectProps {
 export type InstanceId = string | undefined
 
 export function InstanceSelect({ value, onChange }: InstanceSelectProps) {
-  const { data, isLoading } = useQuery('getInstances', () =>
-    client.getInstance().topsqlInstancesGet()
-  )
-  const instances = data?.data.data
+  const { data, isLoading } = useClientRequest(() => {
+    return client.getInstance().topsqlInstancesGet()
+  })
+  const instances = data?.data
   const instanceGroups: InstanceGroup[] = useMemo(() => {
     if (!instances) {
       return []

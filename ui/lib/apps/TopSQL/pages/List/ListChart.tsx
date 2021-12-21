@@ -10,49 +10,48 @@ import {
   BrushEndListener,
 } from '@elastic/charts'
 import { orderBy, toPairs } from 'lodash'
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlCPUTimeItem } from '@lib/client'
-import { useWindowSize } from '../../utils/useWindowSize'
-import { calcTimeRange, TimeRange } from '@lib/components'
 
 export interface ListChartProps {
-  seriesData: TopsqlCPUTimeItem[]
-  timeRange: TimeRange
-  timestampRange: [number, number]
+  data: TopsqlCPUTimeItem[]
+  timeWindowSize: number
+  timeRangeTimestamp: [number, number]
   onBrushEnd: BrushEndListener
 }
 
 export function ListChart({
   onBrushEnd,
-  seriesData,
-  timeRange,
-  timestampRange,
+  data,
+  timeWindowSize,
+  timeRangeTimestamp,
 }: ListChartProps) {
-  const chartRef = useRef<Chart>(null)
-  const { chartData } = useChartData(seriesData)
-  const { digestMap } = useDigestMap(seriesData)
-  const { windowSize, computeWindowSize } = useWindowSize()
+  // We need to update data and xDomain.minInterval at same time on the legacy @elastic/charts
+  // to avoid `Error: custom xDomain is invalid, custom minInterval is greater than computed minInterval`
+  // https://github.com/elastic/elastic-charts/pull/933
+  // TODO: update @elastic/charts
+  const [dataWithTimeWindowSize, setDataWithTimeWindowSize] = useState({
+    data,
+    timeWindowSize,
+  })
+  const { chartData } = useChartData(dataWithTimeWindowSize.data)
+  const { digestMap } = useDigestMap(dataWithTimeWindowSize.data)
 
   useEffect(() => {
-    const timeRangeTimestamp = calcTimeRange(timeRange)
-    const delta = timeRangeTimestamp[1] - timeRangeTimestamp[0]
-    computeWindowSize(
-      chartRef.current?.getChartContainerRef().current?.offsetWidth || 0,
-      delta
-    )
-  }, [chartRef, timeRange, computeWindowSize])
+    setDataWithTimeWindowSize({ data, timeWindowSize })
+  }, [data])
 
   return (
-    <Chart ref={chartRef}>
+    <Chart>
       <Settings
         showLegend
         legendPosition={Position.Bottom}
         onBrushEnd={onBrushEnd}
         xDomain={{
-          minInterval: windowSize * 1000,
-          min: timestampRange[0],
-          max: timestampRange[1],
+          minInterval: dataWithTimeWindowSize.timeWindowSize * 1000,
+          min: timeRangeTimestamp[0] * 1000,
+          max: timeRangeTimestamp[1] * 1000,
         }}
       />
       <Axis

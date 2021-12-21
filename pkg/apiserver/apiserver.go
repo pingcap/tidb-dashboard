@@ -115,7 +115,7 @@ func (s *Service) Start(ctx context.Context) error {
 			tikv.NewTiKVClient,
 			tiflash.NewTiFlashClient,
 			utils.NewSysSchema,
-			apiutils.NewNgmClient,
+			apiutils.NewNgmProxy,
 			info.NewService,
 			clusterinfo.NewService,
 			logsearch.NewService,

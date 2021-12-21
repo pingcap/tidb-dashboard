@@ -20,30 +20,30 @@ import (
 )
 
 var (
-	NgmErrNS                 = errorx.NewNamespace("error.api.ng_monitoring")
-	ErrNgMonitoringNotDeploy = NgmErrNS.NewType("not_deploy")
-	ErrNgMonitoringNotStart  = NgmErrNS.NewType("not_start")
+	NgmErrNS        = errorx.NewNamespace("ngm")
+	ErrNgmNotDeploy = NgmErrNS.NewType("ngm_not_deploy")
+	ErrNgmNotStart  = NgmErrNS.NewType("ngm_not_start")
 )
 
 const (
-	ngMonitoringCacheTTL = time.Second * 5
+	ngmCacheTTL = time.Second * 5
 )
 
-type ngMonitoringAddrCacheEntity struct {
+type ngmAddrCacheEntity struct {
 	address string
 	err     error
 	cacheAt time.Time
 }
 
-type NgmClient struct {
-	lifecycleCtx          context.Context
-	etcdClient            *clientv3.Client
-	ngMonitoringReqGroup  singleflight.Group
-	ngMonitoringAddrCache atomic.Value
+type NgmProxy struct {
+	lifecycleCtx context.Context
+	etcdClient   *clientv3.Client
+	ngmReqGroup  singleflight.Group
+	ngmAddrCache atomic.Value
 }
 
-func NewNgmClient(lc fx.Lifecycle, etcdClient *clientv3.Client) (*NgmClient, error) {
-	s := &NgmClient{etcdClient: etcdClient}
+func NewNgmProxy(lc fx.Lifecycle, etcdClient *clientv3.Client) (*NgmProxy, error) {
+	s := &NgmProxy{etcdClient: etcdClient}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.lifecycleCtx = ctx
@@ -54,9 +54,9 @@ func NewNgmClient(lc fx.Lifecycle, etcdClient *clientv3.Client) (*NgmClient, err
 	return s, nil
 }
 
-func (s *NgmClient) Route(targetPath string) gin.HandlerFunc {
+func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ngMonitoringAddr, err := s.getNgMonitoringAddrFromCache()
+		ngmAddr, err := n.getNgmAddrFromCache()
 		if err != nil {
 			_ = c.Error(err)
 			return
@@ -64,25 +64,25 @@ func (s *NgmClient) Route(targetPath string) gin.HandlerFunc {
 
 		c.Request.URL.Path = targetPath
 
-		ngMonitoringURL, _ := url.Parse(ngMonitoringAddr)
-		proxy := httputil.NewSingleHostReverseProxy(ngMonitoringURL)
+		ngmURL, _ := url.Parse(ngmAddr)
+		proxy := httputil.NewSingleHostReverseProxy(ngmURL)
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
 }
 
-func (s *NgmClient) getNgMonitoringAddrFromCache() (string, error) {
+func (n *NgmProxy) getNgmAddrFromCache() (string, error) {
 	fn := func() (string, error) {
 		// Check whether cache is valid, and use the cache if possible.
-		if v := s.ngMonitoringAddrCache.Load(); v != nil {
-			entity := v.(*ngMonitoringAddrCacheEntity)
-			if entity.cacheAt.Add(ngMonitoringCacheTTL).After(time.Now()) {
+		if v := n.ngmAddrCache.Load(); v != nil {
+			entity := v.(*ngmAddrCacheEntity)
+			if entity.cacheAt.Add(ngmCacheTTL).After(time.Now()) {
 				return entity.address, entity.err
 			}
 		}
 
-		addr, err := s.resolveNgMonitoringAddress()
+		addr, err := n.resolveNgmAddress()
 
-		s.ngMonitoringAddrCache.Store(&ngMonitoringAddrCacheEntity{
+		n.ngmAddrCache.Store(&ngmAddrCacheEntity{
 			address: addr,
 			err:     err,
 			cacheAt: time.Now(),
@@ -91,21 +91,21 @@ func (s *NgmClient) getNgMonitoringAddrFromCache() (string, error) {
 		return addr, err
 	}
 
-	resolveResult, err, _ := s.ngMonitoringReqGroup.Do("any_key", func() (interface{}, error) {
+	resolveResult, err, _ := n.ngmReqGroup.Do("any_key", func() (interface{}, error) {
 		return fn()
 	})
 	return resolveResult.(string), err
 }
 
-func (s *NgmClient) resolveNgMonitoringAddress() (string, error) {
-	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.etcdClient)
+func (n *NgmProxy) resolveNgmAddress() (string, error) {
+	pi, err := topology.FetchPrometheusTopology(n.lifecycleCtx, n.etcdClient)
 	if pi == nil || err != nil {
-		return "", ErrNgMonitoringNotDeploy.Wrap(err, "NgMonitoring component is not deployed")
+		return "", ErrNgmNotDeploy.Wrap(err, "NgMonitoring component is not deployed")
 	}
 
-	addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.etcdClient)
+	addr, err := topology.FetchNgMonitoringTopology(n.lifecycleCtx, n.etcdClient)
 	if err == nil && addr != "" {
 		return fmt.Sprintf("http://%s", addr), nil
 	}
-	return "", ErrNgMonitoringNotStart.Wrap(err, "NgMonitoring component is not started")
+	return "", ErrNgmNotStart.Wrap(err, "NgMonitoring component is not started")
 }

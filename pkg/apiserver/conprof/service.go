@@ -23,7 +23,7 @@ type ServiceParams struct {
 
 	EtcdClient   *clientv3.Client
 	Config       *config.Config
-	NgmClient    *utils.NgmClient
+	NgmProxy     *utils.NgmProxy
 	FeatureFlags *featureflag.Registry
 }
 
@@ -56,16 +56,16 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 	endpoint.Use(s.FeatureFlagConprof.VersionGuard())
 	{
-		endpoint.GET("/config", auth.MWAuthRequired(), s.params.NgmClient.Route("/config"))
-		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.params.NgmClient.Route("/config"))
-		endpoint.GET("/components", auth.MWAuthRequired(), s.params.NgmClient.Route("/continuous_profiling/components"))
-		endpoint.GET("/estimate_size", auth.MWAuthRequired(), s.params.NgmClient.Route("/continuous_profiling/estimate_size"))
-		endpoint.GET("/group_profiles", auth.MWAuthRequired(), s.params.NgmClient.Route("/continuous_profiling/group_profiles"))
-		endpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.params.NgmClient.Route("/continuous_profiling/group_profile/detail"))
+		endpoint.GET("/config", auth.MWAuthRequired(), s.params.NgmProxy.Route("/config"))
+		endpoint.POST("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.params.NgmProxy.Route("/config"))
+		endpoint.GET("/components", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/components"))
+		endpoint.GET("/estimate_size", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/estimate_size"))
+		endpoint.GET("/group_profiles", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profiles"))
+		endpoint.GET("/group_profile/detail", auth.MWAuthRequired(), s.params.NgmProxy.Route("/continuous_profiling/group_profile/detail"))
 
 		endpoint.GET("/action_token", auth.MWAuthRequired(), s.GenConprofActionToken)
-		endpoint.GET("/download", s.parseJWTToken, s.params.NgmClient.Route("/continuous_profiling/download"))
-		endpoint.GET("/single_profile/view", s.parseJWTToken, s.params.NgmClient.Route("/continuous_profiling/single_profile/view"))
+		endpoint.GET("/download", s.parseJWTToken, s.params.NgmProxy.Route("/continuous_profiling/download"))
+		endpoint.GET("/single_profile/view", s.parseJWTToken, s.params.NgmProxy.Route("/continuous_profiling/single_profile/view"))
 	}
 }
 

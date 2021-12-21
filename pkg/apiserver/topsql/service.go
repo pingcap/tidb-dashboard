@@ -16,19 +16,19 @@ var ErrNS = errorx.NewNamespace("error.api.top_sql")
 type Service struct {
 	FeatureTopSQL *featureflag.FeatureFlag
 
-	ngmClient *utils.NgmClient
+	ngmProxy *utils.NgmProxy
 }
 
-func newService(ngmClient *utils.NgmClient, ff *featureflag.Registry) *Service {
-	return &Service{ngmClient: ngmClient, FeatureTopSQL: ff.Register("topsql", ">= 5.3.0")}
+func newService(ngmProxy *utils.NgmProxy, ff *featureflag.Registry) *Service {
+	return &Service{ngmProxy: ngmProxy, FeatureTopSQL: ff.Register("topsql", ">= 5.3.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/topsql")
 	endpoint.Use(auth.MWAuthRequired(), s.FeatureTopSQL.VersionGuard())
 	{
-		endpoint.GET("/instances", s.ngmClient.Route("/topsql/v1/instances"))
-		endpoint.GET("/cpu_time", s.ngmClient.Route("/topsql/v1/cpu_time"))
+		endpoint.GET("/instances", s.ngmProxy.Route("/topsql/v1/instances"))
+		endpoint.GET("/cpu_time", s.ngmProxy.Route("/topsql/v1/cpu_time"))
 	}
 }
 

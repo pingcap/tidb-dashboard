@@ -12,10 +12,10 @@ import {
 } from '@lib/components'
 import { TopsqlPlanItem } from '@lib/client'
 
-import type { SQLRecord } from '../TopSqlTable'
-import { DetailContent } from './DetailContent'
+import type { SQLRecord } from '../ListTable'
+import { ListDetailContent } from './ListDetailContent'
 
-interface TopSqlDetailTableProps {
+interface ListDetailTableProps {
   record: SQLRecord
 }
 
@@ -25,7 +25,7 @@ const canSelect = (r: PlanRecord): boolean => {
 
 const unselectableRow = createUnselectableRow((props) => !canSelect(props.item))
 
-export function DetailTable({ record }: TopSqlDetailTableProps) {
+export function ListDetailTable({ record }: ListDetailTableProps) {
   const { records, isMultiPlans, totalCpuTime } = usePlanRecord(record)
 
   const tableColumns = useMemo(
@@ -88,7 +88,7 @@ export function DetailTable({ record }: TopSqlDetailTableProps) {
   return (
     <>
       <CardTable {...tableProps} />
-      <DetailContent sqlRecord={record} planRecord={planRecord} />
+      <ListDetailContent sqlRecord={record} planRecord={planRecord} />
     </>
   )
 }

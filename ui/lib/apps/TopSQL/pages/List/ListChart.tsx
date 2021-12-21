@@ -13,22 +13,22 @@ import { orderBy, toPairs } from 'lodash'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlCPUTimeItem } from '@lib/client'
-import { useWindowSize } from './useWindowSize'
+import { useWindowSize } from '../../utils/useWindowSize'
 import { calcTimeRange, TimeRange } from '@lib/components'
 
-export interface TopSqlChartProps {
+export interface ListChartProps {
   seriesData: TopsqlCPUTimeItem[]
   timeRange: TimeRange
   timestampRange: [number, number]
   onBrushEnd: BrushEndListener
 }
 
-export function TopSqlChart({
+export function ListChart({
   onBrushEnd,
   seriesData,
   timeRange,
   timestampRange,
-}: TopSqlChartProps) {
+}: ListChartProps) {
   const chartRef = useRef<Chart>(null)
   const { chartData } = useChartData(seriesData)
   const { digestMap } = useDigestMap(seriesData)

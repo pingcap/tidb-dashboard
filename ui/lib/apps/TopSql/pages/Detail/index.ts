@@ -1,1 +1,0 @@
-export { TopSqlDetail } from './Detail'

@@ -15,10 +15,10 @@ import {
   createUnselectableRow,
 } from '@lib/components'
 
-import { isOthers } from './useOthers'
-import { TopSqlDetail } from './Detail'
+import { isOthersRecord } from '../../utils/othersRecord'
+import { ListDetail } from './ListDetail'
 
-interface TopSqlTableProps {
+interface ListTableProps {
   data: TopsqlCPUTimeItem[]
 }
 
@@ -31,12 +31,12 @@ export interface SQLRecord {
 }
 
 const canSelect = (r: SQLRecord): boolean => {
-  return !!r.digest && !isOthers(r.digest)
+  return !!r.digest && !isOthersRecord(r)
 }
 
 const unselectableRow = createUnselectableRow((props) => !canSelect(props.item))
 
-export function TopSqlTable({ data }: TopSqlTableProps) {
+export function ListTable({ data }: ListTableProps) {
   const { t } = useTranslation()
   const { data: tableRecords, totalCpuTime } = useTableData(data)
   const tableColumns = useMemo(
@@ -59,7 +59,7 @@ export function TopSqlTable({ data }: TopSqlTableProps) {
         maxWidth: 550,
         onRender: (rec) => {
           const text = rec.query
-            ? isOthers(rec.digest)
+            ? isOthersRecord(rec)
               ? ''
               : rec.query
             : 'Unknown'
@@ -98,7 +98,7 @@ export function TopSqlTable({ data }: TopSqlTableProps) {
       />
       {selectedRecord && (
         <AppearAnimate motionName="contentAnimation">
-          <TopSqlDetail record={selectedRecord} />
+          <ListDetail record={selectedRecord} />
         </AppearAnimate>
       )}
     </Card>
@@ -130,7 +130,7 @@ function useTableData(records: TopsqlCPUTimeItem[]) {
       })
       .filter((r) => !!r.cpuTime)
       .sort((a, b) => b.cpuTime - a.cpuTime)
-      .sort((a, b) => (isOthers(b.digest) ? -1 : 0))
+      .sort((a, b) => (isOthersRecord(b) ? -1 : 0))
     return { data: d, totalCpuTime }
   }, [records])
 

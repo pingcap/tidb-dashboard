@@ -10,15 +10,18 @@ import {
   HighlightSQL,
   TextWithInfo,
 } from '@lib/components'
-import type { PlanRecord } from './DetailTable'
-import type { SQLRecord } from '../TopSqlTable'
+import type { PlanRecord } from './ListDetailTable'
+import type { SQLRecord } from '../ListTable'
 
-interface DetailContentProps {
+interface ListDetailContentProps {
   sqlRecord: SQLRecord
   planRecord: PlanRecord | null
 }
 
-export function DetailContent({ sqlRecord, planRecord }: DetailContentProps) {
+export function ListDetailContent({
+  sqlRecord,
+  planRecord,
+}: ListDetailContentProps) {
   const [sqlExpanded, setSqlExpanded] = useState(false)
   const toggleSqlExpanded = () => setSqlExpanded((prev) => !prev)
   const [planExpanded, setPlanExpanded] = useState(false)

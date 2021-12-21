@@ -3,20 +3,20 @@ import { useTranslation } from 'react-i18next'
 
 import { Head } from '@lib/components'
 
-import { DetailTable } from './DetailTable'
-import type { SQLRecord } from '../TopSqlTable'
+import { ListDetailTable } from './ListDetailTable'
+import type { SQLRecord } from '../ListTable'
 
-interface TopSqlDetailProps {
+interface ListDetailProps {
   record: SQLRecord
 }
 
-export function TopSqlDetail({ record }: TopSqlDetailProps) {
+export function ListDetail({ record }: ListDetailProps) {
   const { t } = useTranslation()
 
   return (
     <div>
       <Head title={t('top_sql.detail.title')} noMarginLeft />
-      <DetailTable record={record} />
+      <ListDetailTable record={record} />
     </div>
   )
 }

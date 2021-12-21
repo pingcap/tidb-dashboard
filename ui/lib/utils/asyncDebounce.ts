@@ -1,13 +1,13 @@
 import { debounce, DebounceSettings } from 'lodash'
 
-export function asyncDebounce<T extends (...args: any) => any>(
+export function asyncDebounce<T extends (...args: any) => Promise<any>>(
   func: T,
   wait?: number,
   options?: DebounceSettings
 ): T {
   const debounced = debounce(
-    (resolve, reject, args) => {
-      func(...args)
+    (resolve, reject, _args) => {
+      func(..._args)
         .then(resolve)
         .catch(reject)
     },
@@ -17,5 +17,5 @@ export function asyncDebounce<T extends (...args: any) => any>(
   return ((...args) =>
     new Promise((resolve, reject) => {
       debounced(resolve, reject, args)
-    })) as any
+    })) as T
 }

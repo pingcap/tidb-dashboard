@@ -20,18 +20,18 @@ import {
   calcTimeRange,
   DEFAULT_TIME_RANGE,
 } from '@lib/components'
-import { InstanceSelect, InstanceId } from '../components/Filter'
-import { TopSqlTable } from './TopSqlTable'
-import styles from './TopSql.module.less'
-import { convertOthersRecord } from './useOthers'
-import { TopSqlChart } from './TopSqlChart'
+import { InstanceSelect, InstanceId } from '../../components/Filter'
+import styles from './List.module.less'
+import { ListTable } from './ListTable'
+import { ListChart } from './ListChart'
+import { convertOthersRecord } from '../../utils/othersRecord'
 import {
   useWindowSizeContext,
   useWindowSize,
   WindowSizeContext,
-} from './useWindowSize'
+} from '../../utils/useWindowSize'
 
-export function TopSQL() {
+export function TopSQLList() {
   const windowSizeContext = useWindowSizeContext({ barWidth: 10 })
   return (
     <WindowSizeContext.Provider value={windowSizeContext}>
@@ -132,14 +132,14 @@ function App() {
           </p>
         )}
         <div className={styles.chart_container}>
-          <TopSqlChart
+          <ListChart
             onBrushEnd={handleBrushEnd}
             seriesData={seriesData}
             timeRange={timeRange}
             timestampRange={queryTimestampRange}
           />
         </div>
-        {!!seriesData?.length && <TopSqlTable data={seriesData} />}
+        {!!seriesData?.length && <ListTable data={seriesData} />}
       </Spin>
     </div>
   )

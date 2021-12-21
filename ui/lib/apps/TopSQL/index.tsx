@@ -4,7 +4,7 @@ import { QueryClientProvider, QueryClient } from 'react-query'
 
 import { Root } from '@lib/components'
 
-import { TopSQL } from './pages/TopSql'
+import { TopSQLList } from './pages/List/List'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +20,7 @@ export default function () {
       <Root>
         <Router>
           <Routes>
-            <Route path="/top_sql" element={<TopSQL />} />
+            <Route path="/top_sql" element={<TopSQLList />} />
           </Routes>
         </Router>
       </Root>

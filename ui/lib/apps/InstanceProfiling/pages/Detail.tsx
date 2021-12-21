@@ -1,11 +1,18 @@
-import { Badge, Button, Progress, Menu, Dropdown, Tooltip } from 'antd'
-import React, { useCallback, useMemo, useState, useEffect, memo } from 'react'
+import { Badge, Button, Progress, Tooltip } from 'antd'
+import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePersistFn } from 'ahooks'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
-import client from '@lib/client'
-import { CardTable, DateTime, Head, Descriptions } from '@lib/components'
+import client, { ProfilingTaskModel } from '@lib/client'
+import {
+  CardTable,
+  DateTime,
+  Head,
+  Descriptions,
+  ActionsButton,
+} from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { InstanceKindName } from '@lib/utils/instanceTable'
@@ -98,118 +105,9 @@ async function getActionToken(
   return token
 }
 
-function DropdownButton(props) {
-  const { rec, t } = props
-  const menu = () => {
-    return (
-      <Menu onClick={(e) => openResult(e.key as string, rec)}>
-        {rec.view_options.map((option, idx) => {
-          // skip the first option in menu since it has been show on the button.
-          if (idx != 0) {
-            return (
-              <Menu.Item key={option}>
-                {t(
-                  `instance_profiling.detail.table.columns.selection.types.${option}`
-                )}
-              </Menu.Item>
-            )
-          }
-        })}
-      </Menu>
-    )
-  }
-
-  return (
-    <Dropdown.Button
-      disabled={rec.state !== taskState.Success}
-      overlay={menu}
-      onClick={() => openResult(`${rec.view_options[0]}`, rec)}
-    >
-      {t(
-        `instance_profiling.detail.table.columns.selection.types.${rec.view_options[0]}`
-      )}
-    </Dropdown.Button>
-  )
+interface ActionButtonProps extends ProfilingTaskModel {
+  view_options: ViewOptions[]
 }
-
-const openResult = async (openAs: string, rec) => {
-  const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
-  let token: string | undefined
-  let profileURL: string
-
-  switch (openAs) {
-    case ViewOptions.Download:
-      token = await getActionToken(rec.id, 'single_download')
-      if (!token) {
-        return
-      }
-
-      window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
-      break
-    case ViewOptions.FlameGraph:
-      token = await getActionToken(rec.id, 'single_view')
-      if (!token) {
-        return
-      }
-      profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
-      if (isProtobuf) {
-        const titleOnTab = rec.target.kind + '_' + rec.target.display_name
-        profileURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
-          // protobuf can be rendered to flamegraph by speedscope
-          profileURL + `&output_type=protobuf`
-        )}&title=${titleOnTab}`
-      }
-
-      window.open(`${profileURL}`, '_blank')
-      break
-    case ViewOptions.Graph:
-      token = await getActionToken(rec.id, 'single_view')
-      if (!token) {
-        return
-      }
-      profileURL =
-        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
-          ViewOptions.Graph
-        }`
-
-      window.open(`${profileURL}`, '_blank')
-      break
-    case ViewOptions.Text:
-      token = await getActionToken(rec.id, 'single_view')
-      if (!token) {
-        return
-      }
-      profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
-        ViewOptions.Text
-      }`
-      window.open(`${profileURL}`, '_blank')
-      break
-  }
-}
-
-function ViewResultButton({ rec, t }) {
-  if (rec.view_options.length > 1) {
-    return <DropdownButton rec={rec} t={t} />
-  } else {
-    return (
-      <>
-        {rec.state === taskState.Success && (
-          <Button
-            disabled={rec.state !== taskState.Success}
-            onClick={() => openResult(`${rec.view_options[0]}`, rec)}
-            style={{ width: 150 }}
-          >
-            {t(
-              `instance_profiling.detail.table.columns.selection.types.${rec.view_options[0]}`
-            )}
-          </Button>
-        )}
-      </>
-    )
-  }
-}
-
-const ViewResultButtonMemo = memo(ViewResultButton)
 
 export default function Page() {
   const { t } = useTranslation()
@@ -256,6 +154,51 @@ export default function Page() {
     }
     return [newRows, newGroups]
   }, [data])
+
+  const openResult = usePersistFn(
+    async (openAs: string, rec: ActionButtonProps) => {
+      const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
+      let token: string | undefined
+      let profileURL: string
+
+      switch (openAs) {
+        case ViewOptions.Download:
+          token = await getActionToken(rec.id, 'single_download')
+          if (!token) {
+            return
+          }
+
+          window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
+          break
+        case ViewOptions.FlameGraph:
+          token = await getActionToken(rec.id, 'single_view')
+          if (!token) {
+            return
+          }
+          profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
+          if (isProtobuf) {
+            const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
+            profileURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
+              // protobuf can be rendered to flamegraph by speedscope
+              profileURL + `&output_type=protobuf`
+            )}&title=${titleOnTab}`
+          }
+
+          window.open(`${profileURL}`, '_blank')
+          break
+        case ViewOptions.Graph:
+        case ViewOptions.Text:
+          token = await getActionToken(rec.id, 'single_view')
+          if (!token) {
+            return
+          }
+          profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${openAs}`
+
+          window.open(`${profileURL}`, '_blank')
+          break
+      }
+    }
+  )
 
   const columns = useMemo(
     () => [
@@ -331,7 +274,20 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 200,
         onRender: (record) => {
-          return <ViewResultButtonMemo rec={record} t={t} />
+          const rec = record as ActionButtonProps
+          const actions = rec.view_options.map((key) => ({
+            key,
+            text: t(
+              `instance_profiling.detail.table.columns.selection.types.${key}`
+            ),
+          }))
+          return (
+            <ActionsButton
+              actions={actions}
+              disabled={rec.state != taskState.Success}
+              onClick={(act) => openResult(act, rec)}
+            />
+          )
         },
       },
     ],

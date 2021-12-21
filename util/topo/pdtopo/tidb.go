@@ -1,6 +1,6 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-package topo
+package pdtopo
 
 import (
 	"context"
@@ -16,18 +16,19 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/util/distro"
 	"github.com/pingcap/tidb-dashboard/util/netutil"
+	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
 const tidbTopologyKeyPrefix = "/topology/tidb/"
 
-func GetTiDBInstances(ctx context.Context, etcdClient *clientv3.Client) ([]TiDBInfo, error) {
+func GetTiDBInstances(ctx context.Context, etcdClient *clientv3.Client) ([]topo.TiDBInfo, error) {
 	resp, err := etcdClient.Get(ctx, tidbTopologyKeyPrefix, clientv3.WithPrefix())
 	if err != nil {
 		return nil, ErrEtcdRequestFailed.Wrap(err, "Failed to read topology from etcd key `%s`", tidbTopologyKeyPrefix)
 	}
 
 	nodesAlive := make(map[string]struct{}, len(resp.Kvs))
-	nodesInfo := make(map[string]*TiDBInfo, len(resp.Kvs))
+	nodesInfo := make(map[string]*topo.TiDBInfo, len(resp.Kvs))
 
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
@@ -76,11 +77,11 @@ func GetTiDBInstances(ctx context.Context, etcdClient *clientv3.Client) ([]TiDBI
 		}
 	}
 
-	nodes := make([]TiDBInfo, 0)
+	nodes := make([]topo.TiDBInfo, 0)
 
 	for addr, info := range nodesInfo {
 		if _, ok := nodesAlive[addr]; ok {
-			info.Status = ComponentStatusUp
+			info.Status = topo.ComponentStatusUp
 		}
 		nodes = append(nodes, *info)
 	}
@@ -98,7 +99,7 @@ func GetTiDBInstances(ctx context.Context, etcdClient *clientv3.Client) ([]TiDBI
 	return nodes, nil
 }
 
-func parseTiDBInfo(address string, value []byte) (*TiDBInfo, error) {
+func parseTiDBInfo(address string, value []byte) (*topo.TiDBInfo, error) {
 	ds := struct {
 		Version        string `json:"version"`
 		GitHash        string `json:"git_hash"`
@@ -116,13 +117,13 @@ func parseTiDBInfo(address string, value []byte) (*TiDBInfo, error) {
 		return nil, ErrInvalidTopologyData.Wrap(err, "Read topology address failed")
 	}
 
-	return &TiDBInfo{
+	return &topo.TiDBInfo{
 		GitHash:        ds.GitHash,
 		Version:        ds.Version,
 		IP:             hostname,
 		Port:           port,
 		DeployPath:     ds.DeployPath,
-		Status:         ComponentStatusUnreachable,
+		Status:         topo.ComponentStatusUnreachable,
 		StatusPort:     ds.StatusPort,
 		StartTimestamp: ds.StartTimestamp,
 	}, nil

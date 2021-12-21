@@ -38,5 +38,12 @@ instance_profiling:
         kind: Component
         content: Content
         status: Status
+        selection:
+          actions: Actions
+          types:
+            flamegraph: View FlameGraph
+            graph: View Graph
+            download: Download Raw Data
+            no_data: No Data
       status:
         finished: Finished

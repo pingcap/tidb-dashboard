@@ -105,7 +105,7 @@ async function getActionToken(
   return token
 }
 
-interface ActionButtonProps extends ProfilingTaskModel {
+interface IRecord extends ProfilingTaskModel {
   view_options: ViewOptions[]
 }
 
@@ -155,50 +155,48 @@ export default function Page() {
     return [newRows, newGroups]
   }, [data])
 
-  const openResult = usePersistFn(
-    async (openAs: string, rec: ActionButtonProps) => {
-      const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
-      let token: string | undefined
-      let profileURL: string
+  const openResult = usePersistFn(async (openAs: string, rec: IRecord) => {
+    const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
+    let token: string | undefined
+    let profileURL: string
 
-      switch (openAs) {
-        case ViewOptions.Download:
-          token = await getActionToken(rec.id, 'single_download')
-          if (!token) {
-            return
-          }
+    switch (openAs) {
+      case ViewOptions.Download:
+        token = await getActionToken(rec.id, 'single_download')
+        if (!token) {
+          return
+        }
 
-          window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
-          break
-        case ViewOptions.FlameGraph:
-          token = await getActionToken(rec.id, 'single_view')
-          if (!token) {
-            return
-          }
-          profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
-          if (isProtobuf) {
-            const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
-            profileURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
-              // protobuf can be rendered to flamegraph by speedscope
-              profileURL + `&output_type=protobuf`
-            )}&title=${titleOnTab}`
-          }
+        window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
+        break
+      case ViewOptions.FlameGraph:
+        token = await getActionToken(rec.id, 'single_view')
+        if (!token) {
+          return
+        }
+        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
+        if (isProtobuf) {
+          const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
+          profileURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
+            // protobuf can be rendered to flamegraph by speedscope
+            profileURL + `&output_type=protobuf`
+          )}&title=${titleOnTab}`
+        }
 
-          window.open(`${profileURL}`, '_blank')
-          break
-        case ViewOptions.Graph:
-        case ViewOptions.Text:
-          token = await getActionToken(rec.id, 'single_view')
-          if (!token) {
-            return
-          }
-          profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${openAs}`
+        window.open(`${profileURL}`, '_blank')
+        break
+      case ViewOptions.Graph:
+      case ViewOptions.Text:
+        token = await getActionToken(rec.id, 'single_view')
+        if (!token) {
+          return
+        }
+        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${openAs}`
 
-          window.open(`${profileURL}`, '_blank')
-          break
-      }
+        window.open(`${profileURL}`, '_blank')
+        break
     }
-  )
+  })
 
   const columns = useMemo(
     () => [
@@ -274,7 +272,7 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 200,
         onRender: (record) => {
-          const rec = record as ActionButtonProps
+          const rec = record as IRecord
           const actions = rec.view_options.map((key) => ({
             key,
             text: t(

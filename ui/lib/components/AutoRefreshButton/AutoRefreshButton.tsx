@@ -5,6 +5,7 @@ import { useSpring, animated } from 'react-spring'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import { addTranslationResource } from '@lib/utils/i18n'
+import { useGetSet } from 'react-use'
 
 interface AutoRefreshButtonProps {
   // use seconds as options
@@ -82,8 +83,8 @@ export function AutoRefreshButton({
 
   // Auto refresh
   const [timer, setTimer] = useState<number | undefined>()
-  const [remainingRefreshSeconds, setRemainingRefreshSeconds] =
-    useState(autoRefreshSeconds)
+  const [getRemainingRefreshSeconds, setRemainingRefreshSeconds] =
+    useGetSet(autoRefreshSeconds)
 
   useEffect(() => {
     setRemainingRefreshSeconds(autoRefreshSeconds)
@@ -99,7 +100,11 @@ export function AutoRefreshButton({
     clearTimeout(timer)
     setTimer(
       setTimeout(() => {
-        if (remainingRefreshSeconds === 0) {
+        if (isLoading) {
+          return
+        }
+
+        if (getRemainingRefreshSeconds() === 0) {
           setRemainingRefreshSeconds(autoRefreshSeconds)
           handleRefresh()
         } else {
@@ -108,7 +113,7 @@ export function AutoRefreshButton({
       }, 1000) as unknown as number
     )
     return () => clearTimeout(timer)
-  }, [autoRefreshSeconds, remainingRefreshSeconds])
+  }, [autoRefreshSeconds, isLoading, getRemainingRefreshSeconds()])
 
   // reset auto refresh when onRefresh function update
   useEffect(() => {
@@ -128,7 +133,7 @@ export function AutoRefreshButton({
       >
         {autoRefreshSeconds ? (
           <RefreshProgress
-            value={1 - (remainingRefreshSeconds || 0) / autoRefreshSeconds}
+            value={1 - (getRemainingRefreshSeconds() || 0) / autoRefreshSeconds}
           />
         ) : (
           <SyncOutlined />

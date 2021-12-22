@@ -56,9 +56,11 @@ export function TopSQLList() {
   }, [])
 
   const handleTimeRangeChange = useCallback((v: TimeRange) => {
-    setTimeRange(v)
     if (v.type === 'recent') {
+      setTimeRange(v)
       setRecentTimeRange(v)
+    } else {
+      setAbsoluteTimeRange(v.value)
     }
   }, [])
 
@@ -75,10 +77,13 @@ export function TopSQLList() {
     setAbsoluteTimeRange([start - (end - start) * zoomOutRate, end])
   }, [timeRange])
 
-  const handleAutoRefreshSecondsChange = useCallback((v: number) => {
-    setAutoRefreshSeconds(v)
-    setTimeRange(recentTimeRange)
-  }, [])
+  const handleAutoRefreshSecondsChange = useCallback(
+    (v: number) => {
+      setTimeRange(recentTimeRange)
+      setAutoRefreshSeconds(v)
+    },
+    [recentTimeRange]
+  )
 
   useEffect(() => {
     if (!isTimeWindowSizeComputed) {

@@ -98,6 +98,7 @@
     "browserslist-useragent-regexp": "^2.1.0",
     "customize-cra": "^1.0.0",
     "esm": "^3.2.25",
+    "fs-extra": "^10.0.0",
     "gulp": "^4.0.2",
     "gulp-cli": "^2.3.0",
     "gulp-shell": "^0.8.0",

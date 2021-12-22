@@ -151,6 +151,10 @@ const useTopSQLData = (
   )
   const [isLoading, setIsLoading] = useState(false)
   const updateTopSQLData = useCallback(async () => {
+    if (!instanceId) {
+      return
+    }
+
     const [beginTs, endTs] = calcTimeRange(timeRange)
     let data: TopsqlCPUTimeItem[]
     try {

@@ -82,6 +82,7 @@ export interface ICardTableProps extends IDetailsListProps {
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
   cardNoMarginTop?: boolean
+  cardNoMarginBottom?: boolean
   extendLastColumn?: boolean
 
   // The keys of visible columns. If null, all columns will be shown.
@@ -149,6 +150,7 @@ export default function CardTable(props: ICardTableProps) {
     cardExtra,
     cardNoMargin,
     cardNoMarginTop,
+    cardNoMarginBottom,
     extendLastColumn,
     visibleColumnKeys,
     visibleItemsCount,
@@ -240,6 +242,7 @@ export default function CardTable(props: ICardTableProps) {
       })}
       noMargin={cardNoMargin}
       noMarginTop={cardNoMarginTop}
+      noMarginBottom={cardNoMarginBottom}
       extra={cardExtra}
     >
       <ErrorBar errors={errors} />

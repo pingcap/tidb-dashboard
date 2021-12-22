@@ -89,22 +89,21 @@ export function ListTable({ data }: ListTableProps) {
 
   return (
     <>
-      <Card>
-        <p className="ant-form-item-extra" style={{ marginBottom: '30px' }}>
-          {t('top_sql.table.description')}
-        </p>
-        <CardTable
-          cardNoMarginTop
-          getKey={(r: SQLRecord) => r.digest}
-          items={tableRecords || []}
-          columns={tableColumns}
-          selection={selection}
-          selectionMode={SelectionMode.single}
-          selectionPreservedOnEmptyClick={true}
-          onRowClicked={setSelectedRecord}
-          onRenderRow={unselectableRow}
-        />
+      <Card noMarginBottom noMarginTop>
+        <p className="ant-form-item-extra">{t('top_sql.table.description')}</p>
       </Card>
+      <CardTable
+        cardNoMarginTop
+        cardNoMarginBottom
+        getKey={(r: SQLRecord) => r.digest}
+        items={tableRecords || []}
+        columns={tableColumns}
+        selection={selection}
+        selectionMode={SelectionMode.single}
+        selectionPreservedOnEmptyClick={true}
+        onRowClicked={setSelectedRecord}
+        onRenderRow={unselectableRow}
+      />
       {getSelectedRecord() && (
         <AppearAnimate motionName="contentAnimation">
           <ListDetail record={getSelectedRecord()!} />

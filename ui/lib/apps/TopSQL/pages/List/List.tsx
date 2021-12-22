@@ -102,7 +102,7 @@ export function TopSQLList() {
 
   return (
     <div className={styles.container} ref={containerRef}>
-      <Card>
+      <Card noMarginBottom>
         <Space size="middle">
           <InstanceSelect value={instanceId} onChange={handleSetInstance} />
           <Button.Group>

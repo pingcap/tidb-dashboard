@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react'
+import React, { useMemo } from 'react'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -15,6 +15,7 @@ import { TopsqlPlanItem } from '@lib/client'
 
 import type { SQLRecord } from '../ListTable'
 import { ListDetailContent } from './ListDetailContent'
+import { useSelectedRecord } from '../../../utils/useSelectedRecord'
 
 interface ListDetailTableProps {
   record: SQLRecord
@@ -61,7 +62,12 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
     [totalCpuTime]
   )
 
-  const { selectedRecord, setSelectedRecord } = useSelectedRecord()
+  const { getSelectedRecord, setSelectedRecord, selection } =
+    useSelectedRecord<PlanRecord>({
+      selections: records,
+      getKey: (r) => r.plan_digest!,
+      disableSelection: (r) => !canSelect(r),
+    })
 
   let tableProps: ICardTableProps = {
     cardNoMarginTop: true,
@@ -69,6 +75,7 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
     items: records || [],
     columns: tableColumns,
     onRenderRow: unselectableRow,
+    selectionMode: SelectionMode.none,
   }
   if (isMultiPlans) {
     tableProps = {
@@ -76,12 +83,13 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
       selectionMode: SelectionMode.single,
       selectionPreservedOnEmptyClick: true,
       onRowClicked: setSelectedRecord,
+      selection,
     }
   }
 
   const planRecord = useMemo(() => {
     if (isMultiPlans) {
-      return selectedRecord
+      return getSelectedRecord()
     }
     return records[0]
   }, [records])
@@ -132,23 +140,4 @@ const usePlanRecord = (record: SQLRecord) => {
     )
 
   return { isMultiPlans, records, totalCpuTime }
-}
-
-const useSelectedRecord = () => {
-  const [record, setRecord] = useState<PlanRecord | null>(null)
-  const handleSelect = useCallback(
-    (r: PlanRecord | null) => {
-      if (!!r && !canSelect(r)) {
-        return
-      }
-
-      const areDifferentRecords = !!r && r.plan_digest !== record?.plan_digest
-      if (areDifferentRecords) {
-        setRecord(r)
-      }
-    },
-    [record]
-  )
-
-  return { selectedRecord: record, setSelectedRecord: handleSelect }
 }

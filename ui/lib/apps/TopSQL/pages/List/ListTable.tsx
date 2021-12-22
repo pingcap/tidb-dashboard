@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useMemo } from 'react'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
@@ -16,6 +16,7 @@ import {
 } from '@lib/components'
 
 import { isOthersRecord } from '../../utils/othersRecord'
+import { useSelectedRecord } from '../../utils/useSelectedRecord'
 import { ListDetail } from './ListDetail'
 
 interface ListTableProps {
@@ -79,7 +80,12 @@ export function ListTable({ data }: ListTableProps) {
     [totalCpuTime]
   )
 
-  const { selectedRecord, setSelectedRecord } = useSelectedRecord()
+  const { getSelectedRecord, setSelectedRecord, selection } =
+    useSelectedRecord<SQLRecord>({
+      selections: tableRecords,
+      getKey: (r) => r.digest,
+      disableSelection: (r) => !canSelect(r),
+    })
 
   return (
     <>
@@ -92,15 +98,16 @@ export function ListTable({ data }: ListTableProps) {
           getKey={(r: SQLRecord) => r.digest}
           items={tableRecords || []}
           columns={tableColumns}
+          selection={selection}
           selectionMode={SelectionMode.single}
           selectionPreservedOnEmptyClick={true}
           onRowClicked={setSelectedRecord}
           onRenderRow={unselectableRow}
         />
       </Card>
-      {selectedRecord && (
+      {getSelectedRecord() && (
         <AppearAnimate motionName="contentAnimation">
-          <ListDetail record={selectedRecord} />
+          <ListDetail record={getSelectedRecord()!} />
         </AppearAnimate>
       )}
     </>
@@ -137,24 +144,4 @@ function useTableData(records: TopsqlCPUTimeItem[]) {
   }, [records])
 
   return tableData
-}
-
-const useSelectedRecord = () => {
-  const [record, setRecord] = useState<SQLRecord | null>(null)
-  const handleSelect = useCallback(
-    (r: SQLRecord | null) => {
-      if (!!r && !canSelect(r)) {
-        return
-      }
-
-      const areDifferentRecords = !!r && r.digest !== record?.digest
-      if (areDifferentRecords) {
-        setRecord(r)
-        return
-      }
-    },
-    [record, setRecord]
-  )
-
-  return { selectedRecord: record, setSelectedRecord: handleSelect }
 }

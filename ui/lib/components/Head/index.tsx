@@ -9,7 +9,6 @@ export interface IHeadProps {
   footer?: ReactNode
   className?: string
   children?: ReactNode
-  noMarginLeft?: boolean
 }
 
 function Head({
@@ -19,19 +18,13 @@ function Head({
   footer,
   className,
   children,
-  noMarginLeft = false,
   ...rest
 }: IHeadProps) {
   return (
     <div className={cx(styles.headContainer, className)} {...rest}>
       <div className={styles.headInner}>
         {(title || titleExtra || back) && (
-          <div
-            className={cx(
-              styles.headTitleSection,
-              noMarginLeft ? styles.noMarginLeft : ''
-            )}
-          >
+          <div className={cx(styles.headTitleSection)}>
             {back && <div className={styles.headBack}>{back}</div>}
             {title && <div className={styles.headTitle}>{title}</div>}
             {titleExtra && <div>{titleExtra}</div>}

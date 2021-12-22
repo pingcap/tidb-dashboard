@@ -14,9 +14,9 @@ export function ListDetail({ record }: ListDetailProps) {
   const { t } = useTranslation()
 
   return (
-    <div>
-      <Head title={t('top_sql.detail.title')} noMarginLeft />
+    <>
+      <Head title={t('top_sql.detail.title')} />
       <ListDetailTable record={record} />
-    </div>
+    </>
   )
 }

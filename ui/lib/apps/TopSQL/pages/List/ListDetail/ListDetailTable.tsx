@@ -9,6 +9,7 @@ import {
   CardTable,
   ICardTableProps,
   createUnselectableRow,
+  Card,
 } from '@lib/components'
 import { TopsqlPlanItem } from '@lib/client'
 
@@ -86,10 +87,10 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
   }, [records])
 
   return (
-    <>
+    <Card>
       <CardTable {...tableProps} />
       <ListDetailContent sqlRecord={record} planRecord={planRecord} />
-    </>
+    </Card>
   )
 }
 

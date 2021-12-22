@@ -5,10 +5,6 @@ keyviz:
     zoom:
       select: Select & Zoom
       reset: Reset
-    refresh: Refresh
-    auto_refresh:
-      title: Auto Refresh
-      off: Off
     view_type:
       read_bytes: Read (bytes)
       write_bytes: Write (bytes)

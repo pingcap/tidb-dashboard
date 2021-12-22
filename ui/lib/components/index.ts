@@ -53,6 +53,8 @@ export * from './AppearAnimate'
 export { default as AppearAnimate } from './AppearAnimate'
 export * from './Blink'
 export { default as Blink } from './Blink'
+export * from './ActionsButton'
+export { default as ActionsButton } from './ActionsButton'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'

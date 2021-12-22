@@ -85,7 +85,6 @@ const KeyViz = () => {
   const [getSelection, setSelection] = useGetSet<HeatmapRange | null>(null)
   const [isLoading, setLoading] = useState(true)
   const [getAutoRefreshSeconds, setAutoRefreshSeconds] = useGetSet(0)
-  const [getRemainingRefreshSeconds, setRemainingRefreshSeconds] = useGetSet(0)
   const [getOnBrush, setOnBrush] = useGetSet(false)
   const [getDateRange, setDateRange] = useGetSet(3600 * 6)
   const [getBrightLevel, setBrightLevel] = useGetSet(1)
@@ -118,9 +117,6 @@ const KeyViz = () => {
   useMount(updateServiceStatus)
 
   const updateHeatmap = useCallback(async () => {
-    if (getAutoRefreshSeconds() > 0) {
-      setRemainingRefreshSeconds(getAutoRefreshSeconds())
-    }
     try {
       setLoading(true)
       setOnBrush(false)
@@ -182,9 +178,6 @@ const KeyViz = () => {
   }, [])
 
   useEffect(() => {
-    if (getRemainingRefreshSeconds() > getAutoRefreshSeconds()) {
-      setRemainingRefreshSeconds(getAutoRefreshSeconds())
-    }
     if (getAutoRefreshSeconds() > 0) {
       onResetZoom()
       setOnBrush(false)
@@ -198,17 +191,6 @@ const KeyViz = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, getSelection(), getDateRange(), getMetricType()])
-
-  useInterval(() => {
-    if (getAutoRefreshSeconds() === 0) {
-      return
-    }
-    if (getRemainingRefreshSeconds() === 0) {
-      updateHeatmap()
-    } else {
-      setRemainingRefreshSeconds((c) => c - 1)
-    }
-  }, 1000)
 
   const disabledPage = isLoading ? null : (
     <Result
@@ -245,7 +227,6 @@ const KeyViz = () => {
         onResetZoom={onResetZoom}
         isLoading={isLoading}
         autoRefreshSeconds={getAutoRefreshSeconds()}
-        remainingRefreshSeconds={getRemainingRefreshSeconds()}
         isOnBrush={getOnBrush()}
         onChangeBrightLevel={onChangeBrightLevel}
         onChangeMetric={setMetricType}

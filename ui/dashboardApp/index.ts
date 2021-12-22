@@ -10,6 +10,7 @@ import AppRegistry from '@lib/utils/registry'
 import * as routing from '@lib/utils/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
+import { distro } from '@lib/utils/i18n'
 import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
 import {
   initSentryRoutingInstrument,
@@ -152,6 +153,8 @@ async function webPageStart() {
 }
 
 async function main() {
+  document.title = `${distro.tidb} Dashboard`
+
   if (routing.isPortalPage()) {
     // the portal page is only used to receive options
     function handlePortalEvent(event) {

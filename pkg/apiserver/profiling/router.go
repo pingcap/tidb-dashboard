@@ -274,6 +274,7 @@ type ViewOutputType string
 const (
 	ViewOutputTypeProtobuf ViewOutputType = "protobuf"
 	ViewOutputTypeGraph    ViewOutputType = "graph"
+	ViewOutputTypeText     ViewOutputType = "text"
 )
 
 // @ID viewProfilingSingle
@@ -330,6 +331,15 @@ func (s *Service) viewSingle(c *gin.Context) {
 		default:
 			// Will not handle converting protobuf to other formats except flamegraph and graph
 			_ = c.Error(rest.ErrBadRequest.New("Cannot output protobuf as %s", outputType))
+			return
+		}
+	} else if task.RawDataType == RawDataTypeText {
+		switch outputType {
+		case string(ViewOutputTypeText):
+			contentType = "text/plain"
+		default:
+			// Will not handle converting text to other formats
+			_ = c.Error(rest.ErrBadRequest.New("Cannot output text as %s", outputType))
 			return
 		}
 	}

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { DownOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons'
-import { Spin, Dropdown, Menu } from 'antd'
+import { Spin, Dropdown, Menu, Space } from 'antd'
 import { useSpring, animated } from 'react-spring'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
@@ -123,7 +123,7 @@ export function AutoRefreshButton({
   }, [onRefresh])
 
   return (
-    <>
+    <Space>
       <Dropdown.Button
         disabled={!enabled}
         onClick={() => handleRefresh()}
@@ -142,16 +142,9 @@ export function AutoRefreshButton({
       </Dropdown.Button>
 
       {isLoading && (
-        <Spin
-          indicator={
-            <LoadingOutlined
-              style={{ fontSize: 24, marginLeft: '10px' }}
-              spin
-            />
-          }
-        />
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
       )}
-    </>
+    </Space>
   )
 }
 

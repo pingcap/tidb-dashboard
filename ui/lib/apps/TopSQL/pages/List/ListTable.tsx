@@ -39,7 +39,7 @@ const unselectableRow = createUnselectableRow((props) => !canSelect(props.item))
 
 export function ListTable({ data }: ListTableProps) {
   const { t } = useTranslation()
-  const { data: tableRecords, totalCpuTime } = useTableData(data)
+  const { data: tableRecords, capacity } = useTableData(data)
   const tableColumns = useMemo(
     () => [
       {
@@ -48,7 +48,7 @@ export function ListTable({ data }: ListTableProps) {
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec) => (
-          <Bar textWidth={70} value={rec.cpuTime!} capacity={totalCpuTime}>
+          <Bar textWidth={70} value={rec.cpuTime!} capacity={capacity}>
             {getValueFormat('ms')(rec.cpuTime, 0, 0)}
           </Bar>
         ),
@@ -77,7 +77,7 @@ export function ListTable({ data }: ListTableProps) {
         },
       },
     ],
-    [totalCpuTime]
+    [capacity]
   )
 
   const { getSelectedRecord, setSelectedRecord, selection } =
@@ -114,11 +114,11 @@ export function ListTable({ data }: ListTableProps) {
 }
 
 function useTableData(records: TopsqlCPUTimeItem[]) {
-  const tableData: { data: SQLRecord[]; totalCpuTime: number } = useMemo(() => {
+  const tableData: { data: SQLRecord[]; capacity: number } = useMemo(() => {
     if (!records) {
-      return { data: [], totalCpuTime: 0 }
+      return { data: [], capacity: 0 }
     }
-    let totalCpuTime = 0
+    let capacity = 0
     const d = records
       .map((r) => {
         let cpuTime = 0
@@ -127,7 +127,11 @@ function useTableData(records: TopsqlCPUTimeItem[]) {
             cpuTime += plan.cpu_time_millis![i]
           })
         })
-        totalCpuTime += cpuTime
+
+        if (capacity < cpuTime) {
+          capacity = cpuTime
+        }
+
         return {
           key: r.sql_digest!,
           cpuTime,
@@ -139,7 +143,7 @@ function useTableData(records: TopsqlCPUTimeItem[]) {
       .filter((r) => !!r.cpuTime)
       .sort((a, b) => b.cpuTime - a.cpuTime)
       .sort((a, b) => (isOthersRecord(b) ? -1 : 0))
-    return { data: d, totalCpuTime }
+    return { data: d, capacity }
   }, [records])
 
   return tableData

@@ -74,7 +74,10 @@ export function TopSQLList() {
 
   const zoomOut = useCallback(() => {
     const [start, end] = calcTimeRange(timeRange)
-    setAbsoluteTimeRange([start - (end - start) * zoomOutRate, end])
+    const offset = Date.now() / 1000 - end
+    const newStart = start - (end - start) * zoomOutRate + offset
+    const newEnd = end + offset
+    setAbsoluteTimeRange([newStart, newEnd])
   }, [timeRange])
 
   const handleAutoRefreshSecondsChange = useCallback(
@@ -121,18 +124,16 @@ export function TopSQLList() {
           />
         </Space>
       </Card>
+      <div className={styles.chart_container}>
+        <ListChart
+          onBrushEnd={handleBrushEnd}
+          data={topSQLData}
+          timeRangeTimestamp={queryTimestampRange}
+          timeWindowSize={timeWindowSize}
+        />
+      </div>
       {!!topSQLData?.length ? (
-        <>
-          <div className={styles.chart_container}>
-            <ListChart
-              onBrushEnd={handleBrushEnd}
-              data={topSQLData}
-              timeRangeTimestamp={queryTimestampRange}
-              timeWindowSize={timeWindowSize}
-            />
-          </div>
-          <ListTable data={topSQLData} />
-        </>
+        <ListTable data={topSQLData} />
       ) : (
         !isLoading && (
           <p style={{ marginTop: '100px', textAlign: 'center' }}>

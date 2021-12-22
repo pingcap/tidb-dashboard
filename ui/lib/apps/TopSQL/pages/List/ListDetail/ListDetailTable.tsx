@@ -27,7 +27,7 @@ const canSelect = (r: PlanRecord): boolean => {
 const unselectableRow = createUnselectableRow((props) => !canSelect(props.item))
 
 export function ListDetailTable({ record }: ListDetailTableProps) {
-  const { records, isMultiPlans, totalCpuTime } = usePlanRecord(record)
+  const { records, isMultiPlans, capacity } = usePlanRecord(record)
 
   const tableColumns = useMemo(
     () => [
@@ -37,8 +37,8 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec: PlanRecord) => (
-          <Bar textWidth={70} value={rec.totalCpuTime!} capacity={totalCpuTime}>
-            {getValueFormat('ms')(rec.totalCpuTime, 0, 0)}
+          <Bar textWidth={70} value={rec.cpuTime!} capacity={capacity}>
+            {getValueFormat('ms')(rec.cpuTime, 0, 0)}
           </Bar>
         ),
       },
@@ -58,7 +58,7 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
         },
       },
     ],
-    [totalCpuTime]
+    [capacity]
   )
 
   const { getSelectedRecord, setSelectedRecord, selection } =
@@ -102,41 +102,45 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
 }
 
 export type PlanRecord = {
-  totalCpuTime: number
+  cpuTime: number
 } & TopsqlPlanItem
 
 const OVERALL_LABEL = '(Overall)'
+const UNKNOWN_LABEL = 'Unknown'
 
 const usePlanRecord = (record: SQLRecord) => {
   const isMultiPlans = record.plans.length > 1
   const plans = [...record.plans]
 
-  let totalCpuTime = 0
   const records: PlanRecord[] = plans.map((p) => {
     const cpuTime = p.cpu_time_millis?.reduce((pt, t) => pt + t, 0) || 0
-    totalCpuTime += cpuTime
     return {
       ...p,
       // plan may be empty
-      plan_digest: p.plan_digest || 'Unknown',
-      totalCpuTime: cpuTime,
+      plan_digest: p.plan_digest || UNKNOWN_LABEL,
+      cpuTime,
     }
   })
 
   // add overall
-  isMultiPlans &&
+  if (isMultiPlans) {
     records.unshift(
       records.reduce(
         (prev, current) => {
-          prev.totalCpuTime += current.totalCpuTime
+          prev.cpuTime += current.cpuTime
           return prev
         },
         {
           plan_digest: OVERALL_LABEL,
-          totalCpuTime: 0,
+          cpuTime: 0,
         } as PlanRecord
       )
     )
+  }
 
-  return { isMultiPlans, records, totalCpuTime }
+  const capacity = records.reduce((prev, current) => {
+    return (prev += current.cpuTime)
+  }, 0)
+
+  return { isMultiPlans, records, capacity }
 }

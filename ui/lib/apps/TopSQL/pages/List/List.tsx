@@ -45,6 +45,11 @@ export function TopSQLList() {
   const { topSQLData, updateTopSQLData, isLoading, queryTimestampRange } =
     useTopSQLData(instanceId, timeRange, timeWindowSize, '5')
 
+  const handleSetInstance = useCallback((id: string) => {
+    setInstanceId(id)
+    setTimeRange(recentTimeRange)
+  }, [])
+
   const setAbsoluteTimeRange = useCallback((t: [number, number]) => {
     setAutoRefreshSeconds(0)
     setTimeRange({ type: 'absolute', value: t })
@@ -94,7 +99,7 @@ export function TopSQLList() {
     <div className={styles.container} ref={containerRef}>
       <Card>
         <Space size="middle">
-          <InstanceSelect value={instanceId} onChange={setInstanceId} />
+          <InstanceSelect value={instanceId} onChange={handleSetInstance} />
           <Button.Group>
             <TimeRangeSelector
               value={timeRange}

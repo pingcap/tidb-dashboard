@@ -110,6 +110,13 @@ export function AutoRefreshButton({
     return () => clearTimeout(timer)
   }, [autoRefreshSeconds, remainingRefreshSeconds])
 
+  // reset auto refresh when onRefresh function update
+  useEffect(() => {
+    clearTimeout(timer)
+    setTimer(undefined)
+    setRemainingRefreshSeconds(autoRefreshSeconds)
+  }, [onRefresh])
+
   return (
     <>
       <Dropdown.Button

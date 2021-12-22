@@ -7,6 +7,10 @@ instance_profiling:
       title: Start Profiling Instances
       instances:
         label: Select instances
+      profiling_type:
+        label: Select Profiling Type
+        placeholder: Select Profiling Type
+        columnTitle: Profiling Type
       duration:
         label: Duration
       submit: Start Profiling
@@ -15,6 +19,7 @@ instance_profiling:
       title: Profiling History
       columns:
         targets: Instances
+        requsted_profiling_types: Profiling Types
         start_at: Start At
         duration: Duration (sec)
         status: Status
@@ -44,6 +49,9 @@ instance_profiling:
             flamegraph: View FlameGraph
             graph: View Graph
             download: Download Raw Data
-            no_data: No Data
+            text: View Text
       status:
         finished: Finished
+        skipped: Skipped
+      tooltip:
+        skipped: The {{kind}} does support {{type}} profiling

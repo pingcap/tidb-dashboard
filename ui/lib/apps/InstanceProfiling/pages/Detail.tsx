@@ -1,34 +1,49 @@
-import { Badge, Button, Progress, Menu, Dropdown } from 'antd'
+import { Badge, Button, Progress, Tooltip } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePersistFn } from 'ahooks'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { usePersistFn } from 'ahooks'
 
-import client from '@lib/client'
-import { CardTable, DateTime, Head, Descriptions } from '@lib/components'
+import client, { ProfilingTaskModel } from '@lib/client'
+import {
+  CardTable,
+  DateTime,
+  Head,
+  Descriptions,
+  ActionsButton,
+} from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
-import { ScrollablePane } from 'office-ui-fabric-react'
+import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 
-enum ViewOption {
+enum ViewOptions {
   FlameGraph = 'flamegraph',
   Graph = 'graph',
   Download = 'download',
+  Text = 'text',
 }
 
 enum taskState {
   Error,
   Running,
   Success,
+  Skipped = 4,
 }
 
 enum RawDataType {
   Protobuf = 'protobuf',
+  Text = 'text',
 }
 
-function mapData(data, t) {
+interface IRow {
+  kind: string
+}
+
+function mapData(data) {
   if (!data) {
     return data
   }
@@ -50,23 +65,26 @@ function mapData(data, t) {
     // set profiling output options for previous generated SVG files and protobuf files.
     if (task.raw_data_type === RawDataType.Protobuf) {
       task.view_options = [
-        ViewOption.FlameGraph,
-        ViewOption.Graph,
-        ViewOption.Download,
+        ViewOptions.FlameGraph,
+        ViewOptions.Graph,
+        ViewOptions.Download,
       ]
+    } else if (task.raw_data_type === RawDataType.Text) {
+      task.view_options = [ViewOptions.Text]
     } else if (task.raw_data_type === '') {
       switch (task.target.kind) {
         case 'tidb':
         case 'pd':
-          task.view_options = [ViewOption.Graph]
+          task.view_options = [ViewOptions.Graph]
           break
         case 'tikv':
         case 'tiflash':
-          task.view_options = [ViewOption.FlameGraph]
+          task.view_options = [ViewOptions.FlameGraph]
           break
       }
     }
   })
+
   return data
 }
 
@@ -87,14 +105,63 @@ async function getActionToken(
   return token
 }
 
-function ViewResultButton({ rec, t }) {
-  const openResult = usePersistFn(async (openAs: string) => {
+interface IRecord extends ProfilingTaskModel {
+  view_options: ViewOptions[]
+}
+
+export default function Page() {
+  const { t } = useTranslation()
+  const { id } = useQueryParams()
+
+  const {
+    data: respData,
+    isLoading,
+    error,
+  } = useClientRequestWithPolling(
+    (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
+    {
+      shouldPoll: (data) => !isFinished(data),
+    }
+  )
+
+  const data = useMemo(() => mapData(respData), [respData])
+
+  const profileDuration =
+    respData?.task_group_status?.profile_duration_secs || 0
+
+  const [tableData, groupData] = useMemo(() => {
+    const newRows: IRow[] = []
+    const newGroups: IGroup[] = []
+    let startIndex = 0
+    const tasks = data?.tasks_status ?? []
+    for (const instanceKind of ['pd', 'tidb', 'tikv', 'tiflash']) {
+      tasks.forEach((task) => {
+        if (task.target.kind === instanceKind) {
+          newRows.push({
+            ...task,
+            kind: InstanceKindName[instanceKind],
+          })
+        }
+      })
+
+      newGroups.push({
+        key: InstanceKindName[instanceKind],
+        name: InstanceKindName[instanceKind],
+        startIndex: startIndex,
+        count: newRows.length - startIndex,
+      })
+      startIndex = newRows.length
+    }
+    return [newRows, newGroups]
+  }, [data])
+
+  const openResult = usePersistFn(async (openAs: string, rec: IRecord) => {
     const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
     let token: string | undefined
     let profileURL: string
 
     switch (openAs) {
-      case ViewOption.Download:
+      case ViewOptions.Download:
         token = await getActionToken(rec.id, 'single_download')
         if (!token) {
           return
@@ -102,16 +169,15 @@ function ViewResultButton({ rec, t }) {
 
         window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
         break
-      case ViewOption.FlameGraph:
+      case ViewOptions.FlameGraph:
         token = await getActionToken(rec.id, 'single_view')
         if (!token) {
           return
         }
-
         profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
         if (isProtobuf) {
-          const titleOnTab = rec.target.kind + '_' + rec.target.display_name
-          profileURL = `/dashboard/speedscope#profileURL=${encodeURIComponent(
+          const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
+          profileURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
             // protobuf can be rendered to flamegraph by speedscope
             profileURL + `&output_type=protobuf`
           )}&title=${titleOnTab}`
@@ -119,90 +185,18 @@ function ViewResultButton({ rec, t }) {
 
         window.open(`${profileURL}`, '_blank')
         break
-      case ViewOption.Graph:
+      case ViewOptions.Graph:
+      case ViewOptions.Text:
         token = await getActionToken(rec.id, 'single_view')
         if (!token) {
           return
         }
-
-        profileURL =
-          profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${
-            ViewOption.Graph
-          }`
+        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${openAs}`
 
         window.open(`${profileURL}`, '_blank')
+        break
     }
   })
-
-  const menu = () => {
-    return (
-      <Menu onClick={(e) => openResult(e.key as string)}>
-        {rec.view_options.map((option, idx) => {
-          // skip the first option in menu since it has been show on the button.
-          if (idx != 0) {
-            return (
-              <Menu.Item key={option}>
-                {t(
-                  `instance_profiling.detail.table.columns.selection.types.${option}`
-                )}
-              </Menu.Item>
-            )
-          }
-        })}
-      </Menu>
-    )
-  }
-
-  const DropdownButton = () => {
-    return (
-      <Dropdown.Button
-        disabled={rec.state !== taskState.Success}
-        overlay={menu}
-        onClick={() => openResult(`${rec.view_options[0]}`)}
-      >
-        {t(
-          `instance_profiling.detail.table.columns.selection.types.${rec.view_options[0]}`
-        )}
-      </Dropdown.Button>
-    )
-  }
-
-  if (rec.view_options.length > 1) {
-    return <DropdownButton />
-  } else {
-    return (
-      <>
-        {rec.state === taskState.Success && (
-          <Button
-            disabled={rec.state !== taskState.Success}
-            onClick={() => openResult(`${rec.view_options[0]}`)}
-            style={{ width: 150 }}
-          >
-            {t(
-              `instance_profiling.detail.table.columns.selection.types.${rec.view_options[0]}`
-            )}
-          </Button>
-        )}
-      </>
-    )
-  }
-}
-
-export default function Page() {
-  const { t } = useTranslation()
-  const { id } = useQueryParams()
-
-  const { data: respData, isLoading, error } = useClientRequestWithPolling(
-    (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
-    {
-      shouldPoll: (data) => !isFinished(data),
-    }
-  )
-
-  const data = useMemo(() => mapData(respData, t), [respData])
-
-  const profileDuration =
-    respData?.task_group_status?.profile_duration_secs || 0
 
   const columns = useMemo(
     () => [
@@ -214,21 +208,16 @@ export default function Page() {
         onRender: (record) => record.target.display_name,
       },
       {
-        name: t('instance_profiling.detail.table.columns.kind'),
-        key: 'kind',
-        minWidth: 100,
-        maxWidth: 150,
-        onRender: (record) => {
-          return InstanceKindName[record.target.kind]
-        },
-      },
-      {
         name: t('instance_profiling.detail.table.columns.content'),
         key: 'content',
         minWidth: 150,
         maxWidth: 250,
         onRender: (record) => {
-          return `CPU Profiling - ${profileDuration}s`
+          if (record.profiling_type === 'cpu') {
+            return `${record.profiling_type} - ${profileDuration}s`
+          } else {
+            return `${record.profiling_type}`
+          }
         },
       },
       {
@@ -248,7 +237,25 @@ export default function Page() {
               </div>
             )
           } else if (record.state === taskState.Error) {
-            return <Badge status="error" text={record.error} />
+            return (
+              <Tooltip title={record.error}>
+                <Badge status="error" text={record.error} />
+              </Tooltip>
+            )
+          } else if (record.state == taskState.Skipped) {
+            return (
+              <Tooltip
+                title={t('instance_profiling.detail.table.tooltip.skipped', {
+                  kind: record.target.kind,
+                  type: record.profiling_type,
+                })}
+              >
+                <Badge
+                  status="default"
+                  text={t('instance_profiling.detail.table.status.skipped')}
+                />
+              </Tooltip>
+            )
           } else {
             return (
               <Badge
@@ -265,7 +272,20 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 200,
         onRender: (record) => {
-          return <ViewResultButton rec={record} t={t} />
+          const rec = record as IRecord
+          const actions = rec.view_options.map((key) => ({
+            key,
+            text: t(
+              `instance_profiling.detail.table.columns.selection.types.${key}`
+            ),
+          }))
+          return (
+            <ActionsButton
+              actions={actions}
+              disabled={rec.state != taskState.Success}
+              onClick={(act) => openResult(act, rec)}
+            />
+          )
         },
       },
     ],
@@ -319,8 +339,12 @@ export default function Page() {
             disableSelectionZone
             loading={isLoading}
             columns={columns}
-            items={data?.tasks_status || []}
+            items={tableData}
             errors={[error]}
+            groups={groupData}
+            groupProps={{
+              showEmptyGroups: true,
+            }}
             hideLoadingWhenNotEmpty
             extendLastColumn
           />

@@ -3,13 +3,14 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
 import { useSize } from 'ahooks'
 import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
-import { InfoInfoResponse } from '@lib/client'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 
-import { ReactComponent as Logo } from './logo-icon-light.svg'
-import styles from './Banner.module.less'
+import { InfoInfoResponse } from '@lib/client'
 import { store } from '@lib/utils/store'
+import publicPathPrefix from '@lib/utils/publicPathPrefix'
+
+import styles from './Banner.module.less'
 
 const toggleWidth = 40
 const toggleHeight = 50
@@ -81,7 +82,10 @@ export default function ToggleBanner({
         >
           <Flexbox flexDirection="row">
             <div className={styles.bannerLogo}>
-              <Logo height={30} />
+              <img
+                src={`${publicPathPrefix}/distro-res/logo-icon-light.svg`}
+                style={{ height: 30 }}
+              />
             </div>
             <div className={styles.bannerContent}>
               <div className={styles.bannerTitle}>

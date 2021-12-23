@@ -74,7 +74,7 @@ func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string)
 	return &SignOutInfo{}, nil
 }
 
-func newAuthService(featureFlags *featureflag.Registry) *AuthService {
+func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -223,7 +223,7 @@ func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
 	return u, nil
 }
 
-func registerRouter(r *gin.RouterGroup, s *AuthService) {
+func RegisterRouter(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
 	endpoint.GET("/login_info", s.getLoginInfoHandler)
 	endpoint.POST("/login", s.loginHandler)

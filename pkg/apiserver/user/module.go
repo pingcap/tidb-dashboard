@@ -7,6 +7,6 @@ import (
 )
 
 var Module = fx.Options(
-	fx.Provide(newAuthService),
-	fx.Invoke(registerRouter),
+	fx.Provide(NewAuthService),
+	fx.Invoke(RegisterRouter),
 )

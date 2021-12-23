@@ -1,7 +1,6 @@
 top_sql:
   nav_title: Top SQL
   refresh: Refresh
-  no_data: No Data for the current time range
   table:
     description: Top 5 SQL Statements that costs most CPU resources in the current time range
   detail:

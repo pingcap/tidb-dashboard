@@ -1,7 +1,6 @@
 top_sql:
   nav_title: Top SQL
   refresh: 刷新
-  no_data: 当前时间段内暂无数据
   table:
     description: Top 5 SQL（以当前时间范围 CPU 开销排序）
   detail:

@@ -11,6 +11,7 @@ import {
   IDetailsList,
   IDetailsListProps,
   IDetailsRowProps,
+  SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
@@ -162,6 +163,7 @@ export default function CardTable(props: ICardTableProps) {
     columns,
     items,
     onRenderRow,
+    selectionMode = SelectionMode.none,
     ...restProps
   } = props
   const renderClickableRow = useRenderClickableRow(
@@ -260,6 +262,7 @@ export default function CardTable(props: ICardTableProps) {
             columns={finalColumns}
             items={finalItems}
             componentRef={tableRef}
+            selectionMode={selectionMode}
             {...restProps}
           />
         </div>

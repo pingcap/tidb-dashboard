@@ -1,10 +1,17 @@
 .cardTable {
   :global {
     .ms-DetailsRow {
-      > :first-child.ms-DetailsRow-fields {
+      .ms-DetailsRow-fields {
         font-size: 0.8rem;
+      }
+      > :first-child.ms-DetailsRow-fields {
         > :first-child {
           padding-left: @padding-page;
+        }
+      }
+      > .ms-DetailsRow-cellCheck + .ms-DetailsRow-fields {
+        > :first-child {
+          padding-left: 0;
         }
       }
     }
@@ -19,6 +26,11 @@
           padding-right: @padding-page;
         }
       }
+      > .ms-DetailsRow-cellCheck + .ms-DetailsRow-fields {
+        > :first-child {
+          padding-left: 0;
+        }
+      }
     }
   }
 }
@@ -30,6 +42,11 @@
 
       > :first-child .ms-DetailsHeader-cellTitle {
         padding-left: @padding-page;
+      }
+      > :first-child.ms-DetailsHeader-cellIsCheck
+        + .ms-DetailsHeader-cell
+        .ms-DetailsHeader-cellTitle {
+        padding-left: 0;
       }
 
       // FIXME: For sticky headers, when there is `.contentExtended`, we

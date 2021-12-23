@@ -45,10 +45,13 @@ export function TopSQLList() {
   const { topSQLData, updateTopSQLData, isLoading, queryTimestampRange } =
     useTopSQLData(instanceId, timeRange, timeWindowSize, '5')
 
-  const handleSetInstance = useCallback((id: string) => {
-    setInstanceId(id)
-    setTimeRange(recentTimeRange)
-  }, [])
+  const handleSetInstance = useCallback(
+    (id: string) => {
+      setInstanceId(id)
+      setTimeRange(recentTimeRange)
+    },
+    [recentTimeRange]
+  )
 
   const setAbsoluteTimeRange = useCallback((t: [number, number]) => {
     setAutoRefreshSeconds(0)
@@ -74,9 +77,18 @@ export function TopSQLList() {
 
   const zoomOut = useCallback(() => {
     const [start, end] = calcTimeRange(timeRange)
-    const offset = Date.now() / 1000 - end
-    const newStart = start - (end - start) * zoomOutRate + offset
-    const newEnd = end + offset
+    const now = Date.now() / 1000
+    const interval = end - start
+    let endOffset = interval * zoomOutRate
+    let newEnd = end + endOffset
+
+    if (newEnd > now) {
+      newEnd = now
+      endOffset = now - end
+    }
+
+    const newStart = start - interval + endOffset
+
     setAbsoluteTimeRange([newStart, newEnd])
   }, [timeRange])
 
@@ -131,15 +143,7 @@ export function TopSQLList() {
           timeWindowSize={timeWindowSize}
         />
       </div>
-      {!!topSQLData?.length ? (
-        <ListTable data={topSQLData} />
-      ) : (
-        !isLoading && (
-          <p style={{ marginTop: '100px', textAlign: 'center' }}>
-            {t('top_sql.no_data')}
-          </p>
-        )
-      )}
+      {!!topSQLData?.length && <ListTable data={topSQLData} />}
     </div>
   )
 }

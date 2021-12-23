@@ -20,8 +20,15 @@ interface ListDetailTableProps {
   record: SQLRecord
 }
 
+const OVERALL_LABEL = '(Overall)'
+const UNKNOWN_LABEL = 'Unknown'
+
 const canSelect = (r: PlanRecord): boolean => {
-  return !!r.plan_digest && r.plan_digest !== OVERALL_LABEL
+  return (
+    !!r.plan_digest &&
+    r.plan_digest !== OVERALL_LABEL &&
+    r.plan_digest !== UNKNOWN_LABEL
+  )
 }
 
 const unselectableRow = createUnselectableRow((props) => !canSelect(props.item))
@@ -104,9 +111,6 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
 export type PlanRecord = {
   cpuTime: number
 } & TopsqlPlanItem
-
-const OVERALL_LABEL = '(Overall)'
-const UNKNOWN_LABEL = 'Unknown'
 
 const usePlanRecord = (record: SQLRecord) => {
   const isMultiPlans = record.plans.length > 1

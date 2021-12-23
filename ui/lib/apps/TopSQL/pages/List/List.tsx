@@ -2,6 +2,7 @@ import { XYBrushArea, BrushEndListener } from '@elastic/charts'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Space, Button, Spin } from 'antd'
 import { ZoomOutOutlined, LoadingOutlined } from '@ant-design/icons'
+import { useGetSet } from 'react-use'
 
 import '@elastic/charts/dist/theme_only_light.css'
 
@@ -37,11 +38,11 @@ export function TopSQLList() {
     'topsql_recent_time_range',
     DEFAULT_TIME_RANGE
   )
-  const [timeRange, setTimeRange] = useState<TimeRange>(recentTimeRange)
+  const [getTimeRange, setTimeRange] = useGetSet<TimeRange>(recentTimeRange)
   const { timeWindowSize, computeTimeWindowSize, isTimeWindowSizeComputed } =
     useTimeWindowSize()
   const { topSQLData, updateTopSQLData, isLoading, queryTimestampRange } =
-    useTopSQLData(instanceId, timeRange, timeWindowSize, '5')
+    useTopSQLData(instanceId, getTimeRange(), timeWindowSize, '5')
 
   const resetAutoRefresh = useCallback(() => {
     const prevAutoRefreshSeconds = autoRefreshSeconds
@@ -62,7 +63,10 @@ export function TopSQLList() {
 
   const setAbsoluteTimeRange = useCallback((t: [number, number]) => {
     setAutoRefreshSeconds(0)
-    setTimeRange({ type: 'absolute', value: t })
+    setTimeRange({
+      type: 'absolute',
+      value: [Math.ceil(t[0]), Math.floor(t[1])],
+    })
   }, [])
 
   const handleTimeRangeChange = useCallback(
@@ -80,28 +84,26 @@ export function TopSQLList() {
 
   const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
     if (v.x) {
-      setAbsoluteTimeRange(
-        v.x.map((d) => Math.ceil(d / 1000)) as [number, number]
-      )
+      setAbsoluteTimeRange(v.x.map((d) => d / 1000) as [number, number])
     }
   }, [])
 
   const zoomOut = useCallback(() => {
-    const [start, end] = calcTimeRange(timeRange)
+    const [start, end] = calcTimeRange(getTimeRange())
     const now = Date.now() / 1000
     const interval = end - start
     let endOffset = interval * zoomOutRate
-    let newEnd = end + endOffset
+    let computedEnd = end + endOffset
 
-    if (newEnd > now) {
-      newEnd = now
+    if (computedEnd > now) {
+      computedEnd = now
       endOffset = now - end
     }
 
-    const newStart = start - interval + endOffset
+    const computedStart = start - interval + endOffset
 
-    setAbsoluteTimeRange([newStart, newEnd])
-  }, [timeRange])
+    setAbsoluteTimeRange([computedStart, computedEnd])
+  }, [])
 
   const handleAutoRefreshSecondsChange = useCallback(
     (v: number) => {
@@ -122,22 +124,31 @@ export function TopSQLList() {
   // Calculate time window size by container width and time range
   const containerRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const timeRangeTimestamp = calcTimeRange(timeRange)
+    const timeRangeTimestamp = calcTimeRange(getTimeRange())
     const delta = timeRangeTimestamp[1] - timeRangeTimestamp[0]
     computeTimeWindowSize(containerRef.current?.offsetWidth || 0, delta)
-  }, [containerRef, timeRange])
+  }, [containerRef, getTimeRange()])
 
   return (
     <div className={styles.container} ref={containerRef}>
       <Card noMarginBottom>
         <Space size="middle">
-          <InstanceSelect value={instanceId} onChange={handleSetInstance} />
+          <InstanceSelect
+            value={instanceId}
+            onChange={handleSetInstance}
+            disabled={isLoading}
+          />
           <Button.Group>
             <TimeRangeSelector
-              value={timeRange}
+              value={getTimeRange()}
               onChange={handleTimeRangeChange}
+              disabled={isLoading}
             />
-            <Button icon={<ZoomOutOutlined />} onClick={zoomOut} />
+            <Button
+              icon={<ZoomOutOutlined />}
+              onClick={zoomOut}
+              disabled={isLoading}
+            />
           </Button.Group>
           <AutoRefreshButton
             disabled={isLoading}

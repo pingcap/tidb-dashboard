@@ -14,11 +14,16 @@ interface InstanceGroup {
 export interface InstanceSelectProps {
   value: InstanceId
   onChange: (id: string) => void
+  disabled?: boolean
 }
 
 export type InstanceId = string | undefined
 
-export function InstanceSelect({ value, onChange }: InstanceSelectProps) {
+export function InstanceSelect({
+  value,
+  onChange,
+  disabled = false,
+}: InstanceSelectProps) {
   const { data, isLoading } = useClientRequest(() => {
     return client.getInstance().topsqlInstancesGet()
   })
@@ -69,6 +74,7 @@ export function InstanceSelect({ value, onChange }: InstanceSelectProps) {
       value={value}
       onChange={onChange}
       loading={isLoading}
+      disabled={disabled}
     >
       {instanceGroups.map((instanceGroup) => (
         <Select.OptGroup label={instanceGroup.name} key={instanceGroup.name}>

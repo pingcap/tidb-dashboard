@@ -98,6 +98,14 @@ const KeyViz = () => {
 
   const enabled = config?.auto_collection_disabled !== true
 
+  const resetAutoRefresh = useCallback(() => {
+    const prevAutoRefreshSeconds = getAutoRefreshSeconds()
+    setAutoRefreshSeconds(0)
+    setTimeout(() => {
+      setAutoRefreshSeconds(prevAutoRefreshSeconds)
+    })
+  }, [getAutoRefreshSeconds()])
+
   const updateServiceStatus = useCallback(async function () {
     try {
       setLoading(true)
@@ -139,11 +147,15 @@ const KeyViz = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const onChangeDateRange = useCallback((v: number) => {
-    setDateRange(v)
-    setSelection(null)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const onChangeDateRange = useCallback(
+    (v: number) => {
+      setDateRange(v)
+      setSelection(null)
+      resetAutoRefresh()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [resetAutoRefresh]
+  )
 
   const onResetZoom = useCallback(() => {
     setSelection(null)
@@ -169,6 +181,14 @@ const KeyViz = () => {
     setAutoRefreshSeconds(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const onChangeMetricType = useCallback(
+    (v: DataTag) => {
+      setMetricType(v)
+      resetAutoRefresh()
+    },
+    [resetAutoRefresh]
+  )
 
   const onChartInit = useCallback((chart) => {
     _chart = chart
@@ -220,6 +240,7 @@ const KeyViz = () => {
     <div className="PD-KeyVis">
       <KeyVizToolbar
         enabled={enabled}
+        isLoading={isLoading}
         dateRange={getDateRange()}
         metricType={getMetricType()}
         brightLevel={getBrightLevel()}
@@ -228,7 +249,7 @@ const KeyViz = () => {
         autoRefreshSeconds={getAutoRefreshSeconds()}
         isOnBrush={getOnBrush()}
         onChangeBrightLevel={onChangeBrightLevel}
-        onChangeMetric={setMetricType}
+        onChangeMetric={onChangeMetricType}
         onChangeDateRange={onChangeDateRange}
         onChangeAutoRefresh={setAutoRefreshSeconds}
         onRefresh={updateHeatmap}

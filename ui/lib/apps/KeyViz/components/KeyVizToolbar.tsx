@@ -16,6 +16,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 export interface IKeyVizToolbarProps {
   enabled: boolean
+  isLoading: boolean
   autoRefreshSeconds: number
   isOnBrush: boolean
   metricType: string
@@ -27,7 +28,7 @@ export interface IKeyVizToolbarProps {
   onChangeDateRange: (number) => void
   onChangeBrightLevel: (number) => void
   onChangeAutoRefresh: (number) => void
-  onRefresh: () => Promise<void>
+  onRefresh: () => void
   onShowSettings: () => any
 }
 
@@ -37,7 +38,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
   }
 
   handleRefreshClick = () => {
-    return this.props.onRefresh()
+    this.props.onRefresh()
   }
 
   handleAutoRefreshMenuClick = (key) => {
@@ -67,6 +68,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
     const {
       t,
       enabled,
+      isLoading,
       dateRange,
       isOnBrush,
       metricType,
@@ -181,8 +183,14 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
               onAutoRefreshSecondsChange={this.handleAutoRefreshMenuClick}
               onRefresh={this.handleRefreshClick}
               autoRefreshSecondsOptions={autoRefreshOptions}
-              disabled={!enabled}
+              disabled={!enabled || isLoading}
             />
+
+            {this.props.isLoading && (
+              <Spin
+                indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+              />
+            )}
           </Space>
 
           <Space>

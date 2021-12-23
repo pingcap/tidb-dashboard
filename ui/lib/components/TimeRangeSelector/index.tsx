@@ -69,12 +69,14 @@ export interface ITimeRangeSelectorProps {
   value?: TimeRange
   onChange?: (val: TimeRange) => void
   disabled?: boolean
+  disabledDate?: (currentDate: Dayjs) => boolean
 }
 
 function TimeRangeSelector({
   value,
   onChange,
   disabled = false,
+  disabledDate = () => false,
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -158,6 +160,7 @@ function TimeRangeSelector({
             format="YYYY-MM-DD HH:mm:ss"
             value={rangePickerValue}
             onChange={handleRangePickerChange}
+            disabledDate={disabledDate}
           />
         </div>
       </div>

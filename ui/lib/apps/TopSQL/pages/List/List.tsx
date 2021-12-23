@@ -26,6 +26,8 @@ import { createUseTimeWindowSize } from '../../utils/useTimeWindowSize'
 
 const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
 const zoomOutRate = 0.5
+const minDate = new Date('2015-08-03')
+const minDateTimestamp = minDate.getTime() / 1000
 const useTimeWindowSize = createUseTimeWindowSize(10)
 
 export function TopSQLList() {
@@ -92,15 +94,18 @@ export function TopSQLList() {
     const [start, end] = calcTimeRange(getTimeRange())
     const now = Date.now() / 1000
     const interval = end - start
+
     let endOffset = interval * zoomOutRate
     let computedEnd = end + endOffset
-
     if (computedEnd > now) {
       computedEnd = now
       endOffset = now - end
     }
 
-    const computedStart = start - interval + endOffset
+    let computedStart = start - interval + endOffset
+    if (computedStart < minDateTimestamp) {
+      computedStart = minDateTimestamp
+    }
 
     setAbsoluteTimeRange([computedStart, computedEnd])
   }, [])
@@ -143,6 +148,11 @@ export function TopSQLList() {
               value={getTimeRange()}
               onChange={handleTimeRangeChange}
               disabled={isLoading}
+              disabledDate={(current) => {
+                const tooLate = current.isBefore(minDate)
+                const tooEarly = current.isAfter(new Date())
+                return tooLate || tooEarly
+              }}
             />
             <Button
               icon={<ZoomOutOutlined />}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { DownOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons'
 import { Spin, Dropdown, Menu, Space } from 'antd'
 import { useSpring, animated } from 'react-spring'
@@ -8,13 +8,11 @@ import { addTranslationResource } from '@lib/utils/i18n'
 import { useGetSet } from 'react-use'
 
 interface AutoRefreshButtonProps {
-  // use seconds as options
-  options: number[]
+  autoRefreshSecondsOptions: number[]
   autoRefreshSeconds: number
   onAutoRefreshSecondsChange: (v: number) => void
-  onRefresh: () => void
-  isLoading: boolean
-  enabled?: boolean
+  onRefresh: () => Promise<void>
+  disabled?: boolean
 }
 
 const translations = {
@@ -43,46 +41,54 @@ for (const key in translations) {
 }
 
 export function AutoRefreshButton({
-  options,
+  autoRefreshSecondsOptions,
   autoRefreshSeconds,
   onAutoRefreshSecondsChange,
   onRefresh,
-  enabled = true,
-  isLoading,
+  disabled = false,
 }: AutoRefreshButtonProps) {
   const { t } = useTranslation()
-  const autoRefreshMenu = (
-    <Menu
-      onClick={({ key }) => onAutoRefreshSecondsChange(parseInt(key as string))}
-      selectedKeys={[String(autoRefreshSeconds || 0)]}
-    >
-      <Menu.ItemGroup
-        title={t('component.autoRefreshButton.auto_refresh.title')}
+  const autoRefreshMenu = useMemo(
+    () => (
+      <Menu
+        onClick={({ key }) =>
+          onAutoRefreshSecondsChange(parseInt(key as string))
+        }
+        selectedKeys={[String(autoRefreshSeconds || 0)]}
       >
-        <Menu.Item key="0">
-          {t('component.autoRefreshButton.auto_refresh.off')}
-        </Menu.Item>
-        <Menu.Divider />
-        {options.map((sec) => {
-          return (
-            <Menu.Item key={String(sec)}>
-              {getValueFormat('s')(sec, 0)}
-            </Menu.Item>
-          )
-        })}
-      </Menu.ItemGroup>
-    </Menu>
+        <Menu.ItemGroup
+          title={t('component.autoRefreshButton.auto_refresh.title')}
+        >
+          <Menu.Item key="0">
+            {t('component.autoRefreshButton.auto_refresh.off')}
+          </Menu.Item>
+          <Menu.Divider />
+          {autoRefreshSecondsOptions.map((sec) => {
+            return (
+              <Menu.Item key={String(sec)}>
+                {getValueFormat('s')(sec, 0)}
+              </Menu.Item>
+            )
+          })}
+        </Menu.ItemGroup>
+      </Menu>
+    ),
+    [autoRefreshSecondsOptions, onAutoRefreshSecondsChange]
   )
 
-  const handleRefresh = useCallback(() => {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleRefresh = useCallback(async () => {
     if (isLoading) {
       return
     }
-    onRefresh()
+    setIsLoading(true)
+    await onRefresh()
+    setIsLoading(false)
   }, [isLoading, onRefresh])
 
   // Auto refresh
-  const [timer, setTimer] = useState<number | undefined>()
+  const [getTimer, setTimer] = useGetSet<NodeJS.Timer | undefined>(undefined)
   const [getRemainingRefreshSeconds, setRemainingRefreshSeconds] =
     useGetSet(autoRefreshSeconds)
 
@@ -92,12 +98,12 @@ export function AutoRefreshButton({
 
   useEffect(() => {
     if (autoRefreshSeconds === 0) {
-      clearTimeout(timer)
+      clearTimeout(getTimer()!)
       setTimer(undefined)
       return
     }
 
-    clearTimeout(timer)
+    clearTimeout(getTimer()!)
     setTimer(
       setTimeout(() => {
         if (isLoading) {
@@ -110,41 +116,35 @@ export function AutoRefreshButton({
         } else {
           setRemainingRefreshSeconds((c) => c - 1)
         }
-      }, 1000) as unknown as number
+      }, 1000)
     )
-    return () => clearTimeout(timer)
+    return () => clearTimeout(getTimer()!)
   }, [autoRefreshSeconds, isLoading, getRemainingRefreshSeconds()])
 
   // reset auto refresh when onRefresh function update
   useEffect(() => {
-    clearTimeout(timer)
+    clearTimeout(getTimer()!)
     setTimer(undefined)
     setRemainingRefreshSeconds(autoRefreshSeconds)
   }, [onRefresh])
 
   return (
-    <Space>
-      <Dropdown.Button
-        disabled={!enabled}
-        onClick={() => handleRefresh()}
-        overlay={autoRefreshMenu}
-        trigger={['click']}
-        icon={<DownOutlined />}
-      >
-        {autoRefreshSeconds ? (
-          <RefreshProgress
-            value={1 - (getRemainingRefreshSeconds() || 0) / autoRefreshSeconds}
-          />
-        ) : (
-          <SyncOutlined />
-        )}
-        {t('component.autoRefreshButton.refresh')}
-      </Dropdown.Button>
-
-      {isLoading && (
-        <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+    <Dropdown.Button
+      disabled={disabled}
+      onClick={() => handleRefresh()}
+      overlay={autoRefreshMenu}
+      trigger={['click']}
+      icon={<DownOutlined />}
+    >
+      {autoRefreshSeconds && !isLoading ? (
+        <RefreshProgress
+          value={1 - (getRemainingRefreshSeconds() || 0) / autoRefreshSeconds}
+        />
+      ) : (
+        <SyncOutlined spin={isLoading} />
       )}
-    </Space>
+      {t('component.autoRefreshButton.refresh')}
+    </Dropdown.Button>
   )
 }
 

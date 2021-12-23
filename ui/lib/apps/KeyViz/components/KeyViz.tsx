@@ -225,7 +225,6 @@ const KeyViz = () => {
         brightLevel={getBrightLevel()}
         onToggleBrush={onToggleBrush}
         onResetZoom={onResetZoom}
-        isLoading={isLoading}
         autoRefreshSeconds={getAutoRefreshSeconds()}
         isOnBrush={getOnBrush()}
         onChangeBrightLevel={onChangeBrightLevel}

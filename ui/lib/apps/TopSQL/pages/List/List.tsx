@@ -118,9 +118,8 @@ export function TopSQLList() {
           <AutoRefreshButton
             autoRefreshSeconds={autoRefreshSeconds}
             onAutoRefreshSecondsChange={handleAutoRefreshSecondsChange}
-            isLoading={isLoading}
             onRefresh={updateTopSQLData}
-            options={autoRefreshOptions}
+            autoRefreshSecondsOptions={autoRefreshOptions}
           />
         </Space>
       </Card>

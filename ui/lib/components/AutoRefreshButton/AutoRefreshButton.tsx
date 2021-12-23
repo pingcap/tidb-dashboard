@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { DownOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons'
 import { Spin, Dropdown, Menu, Space } from 'antd'
 import { useSpring, animated } from 'react-spring'
@@ -9,9 +9,10 @@ import { useGetSet } from 'react-use'
 
 interface AutoRefreshButtonProps {
   autoRefreshSecondsOptions: number[]
+  // 0 means auto refresh off
   autoRefreshSeconds: number
   onAutoRefreshSecondsChange: (v: number) => void
-  onRefresh: () => Promise<void>
+  onRefresh: () => void
   disabled?: boolean
 }
 
@@ -73,75 +74,64 @@ export function AutoRefreshButton({
         </Menu.ItemGroup>
       </Menu>
     ),
-    [autoRefreshSecondsOptions, onAutoRefreshSecondsChange]
+    [autoRefreshSeconds, autoRefreshSecondsOptions, onAutoRefreshSecondsChange]
   )
 
-  const [isLoading, setIsLoading] = useState(false)
-
-  const handleRefresh = useCallback(async () => {
-    if (isLoading) {
-      return
-    }
-    setIsLoading(true)
-    await onRefresh()
-    setIsLoading(false)
-  }, [isLoading, onRefresh])
-
-  // Auto refresh
-  const [getTimer, setTimer] = useGetSet<NodeJS.Timer | undefined>(undefined)
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [getRemainingRefreshSeconds, setRemainingRefreshSeconds] =
     useGetSet(autoRefreshSeconds)
 
-  useEffect(() => {
+  const handleReset = useCallback(() => {
+    clearTimeout(timer.current!)
+    timer.current = undefined
     setRemainingRefreshSeconds(autoRefreshSeconds)
   }, [autoRefreshSeconds])
+  useEffect(() => {
+    handleReset()
+  }, [handleReset])
+
+  const handleRefresh = useCallback(async () => {
+    if (disabled) {
+      return
+    }
+    handleReset()
+    onRefresh()
+  }, [disabled, handleReset, onRefresh])
 
   useEffect(() => {
-    if (autoRefreshSeconds === 0) {
-      clearTimeout(getTimer()!)
-      setTimer(undefined)
+    if (!autoRefreshSeconds || disabled) {
+      if (!!timer.current) {
+        clearTimeout(timer.current)
+        timer.current = undefined
+      }
       return
     }
 
-    clearTimeout(getTimer()!)
-    setTimer(
-      setTimeout(() => {
-        if (isLoading) {
-          return
-        }
-
-        if (getRemainingRefreshSeconds() === 0) {
-          setRemainingRefreshSeconds(autoRefreshSeconds)
-          handleRefresh()
-        } else {
-          setRemainingRefreshSeconds((c) => c - 1)
-        }
-      }, 1000)
-    )
-    return () => clearTimeout(getTimer()!)
-  }, [autoRefreshSeconds, isLoading, getRemainingRefreshSeconds()])
-
-  // reset auto refresh when onRefresh function update
-  useEffect(() => {
-    clearTimeout(getTimer()!)
-    setTimer(undefined)
-    setRemainingRefreshSeconds(autoRefreshSeconds)
-  }, [onRefresh])
+    timer.current = setTimeout(() => {
+      if (getRemainingRefreshSeconds() === 0) {
+        setRemainingRefreshSeconds(autoRefreshSeconds)
+        handleRefresh()
+      } else {
+        setRemainingRefreshSeconds((c) => c - 1)
+      }
+    }, 1000)
+    return () => clearTimeout(timer.current!)
+  }, [autoRefreshSeconds, disabled, getRemainingRefreshSeconds()])
 
   return (
     <Dropdown.Button
       disabled={disabled}
-      onClick={() => handleRefresh()}
+      onClick={handleRefresh}
       overlay={autoRefreshMenu}
       trigger={['click']}
       icon={<DownOutlined />}
     >
-      {autoRefreshSeconds && !isLoading ? (
+      {autoRefreshSeconds ? (
         <RefreshProgress
           value={1 - (getRemainingRefreshSeconds() || 0) / autoRefreshSeconds}
         />
       ) : (
-        <SyncOutlined spin={isLoading} />
+        <SyncOutlined />
       )}
       {t('component.autoRefreshButton.refresh')}
     </Dropdown.Button>

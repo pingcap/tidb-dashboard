@@ -27,7 +27,7 @@ export interface IKeyVizToolbarProps {
   onChangeDateRange: (number) => void
   onChangeBrightLevel: (number) => void
   onChangeAutoRefresh: (number) => void
-  onRefresh: () => Promise<void>
+  onRefresh: () => void
   onShowSettings: () => any
 }
 
@@ -37,7 +37,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
   }
 
   handleRefreshClick = () => {
-    return this.props.onRefresh()
+    this.props.onRefresh()
   }
 
   handleAutoRefreshMenuClick = (key) => {

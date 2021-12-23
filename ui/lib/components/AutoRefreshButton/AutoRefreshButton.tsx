@@ -86,9 +86,17 @@ export function AutoRefreshButton({
     timer.current = undefined
     setRemainingRefreshSeconds(autoRefreshSeconds)
   }, [autoRefreshSeconds])
+
   useEffect(() => {
-    handleReset()
-  }, [handleReset])
+    clearTimeout(timer.current!)
+    timer.current = undefined
+    if (
+      getRemainingRefreshSeconds() > autoRefreshSeconds ||
+      getRemainingRefreshSeconds() === 0
+    ) {
+      setRemainingRefreshSeconds(autoRefreshSeconds)
+    }
+  }, [autoRefreshSeconds])
 
   const handleRefresh = useCallback(async () => {
     if (disabled) {

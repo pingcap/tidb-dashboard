@@ -152,8 +152,8 @@ const KeyViz = () => {
       setDateRange(v)
       setSelection(null)
       resetAutoRefresh()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [resetAutoRefresh]
   )
 

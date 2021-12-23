@@ -1,8 +1,7 @@
 import { XYBrushArea, BrushEndListener } from '@elastic/charts'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Space, Button } from 'antd'
-import { useTranslation } from 'react-i18next'
-import { ZoomOutOutlined } from '@ant-design/icons'
+import { Space, Button, Spin } from 'antd'
+import { ZoomOutOutlined, LoadingOutlined } from '@ant-design/icons'
 
 import '@elastic/charts/dist/theme_only_light.css'
 
@@ -29,7 +28,6 @@ const zoomOutRate = 0.5
 const useTimeWindowSize = createUseTimeWindowSize(10)
 
 export function TopSQLList() {
-  const { t } = useTranslation()
   const [autoRefreshSeconds, setAutoRefreshSeconds] = useLocalStorageState(
     'topsql_auto_refresh',
     0
@@ -45,12 +43,21 @@ export function TopSQLList() {
   const { topSQLData, updateTopSQLData, isLoading, queryTimestampRange } =
     useTopSQLData(instanceId, timeRange, timeWindowSize, '5')
 
+  const resetAutoRefresh = useCallback(() => {
+    const prevAutoRefreshSeconds = autoRefreshSeconds
+    setAutoRefreshSeconds(0)
+    setTimeout(() => {
+      setAutoRefreshSeconds(prevAutoRefreshSeconds)
+    })
+  }, [autoRefreshSeconds])
+
   const handleSetInstance = useCallback(
     (id: string) => {
       setInstanceId(id)
       setTimeRange(recentTimeRange)
+      resetAutoRefresh()
     },
-    [recentTimeRange]
+    [recentTimeRange, resetAutoRefresh]
   )
 
   const setAbsoluteTimeRange = useCallback((t: [number, number]) => {
@@ -58,14 +65,18 @@ export function TopSQLList() {
     setTimeRange({ type: 'absolute', value: t })
   }, [])
 
-  const handleTimeRangeChange = useCallback((v: TimeRange) => {
-    if (v.type === 'recent') {
-      setTimeRange(v)
-      setRecentTimeRange(v)
-    } else {
-      setAbsoluteTimeRange(v.value)
-    }
-  }, [])
+  const handleTimeRangeChange = useCallback(
+    (v: TimeRange) => {
+      if (v.type === 'recent') {
+        setTimeRange(v)
+        setRecentTimeRange(v)
+        resetAutoRefresh()
+      } else {
+        setAbsoluteTimeRange(v.value)
+      }
+    },
+    [resetAutoRefresh]
+  )
 
   const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
     if (v.x) {
@@ -100,6 +111,7 @@ export function TopSQLList() {
     [recentTimeRange]
   )
 
+  // init
   useEffect(() => {
     if (!isTimeWindowSizeComputed) {
       return
@@ -128,11 +140,17 @@ export function TopSQLList() {
             <Button icon={<ZoomOutOutlined />} onClick={zoomOut} />
           </Button.Group>
           <AutoRefreshButton
+            disabled={isLoading}
             autoRefreshSeconds={autoRefreshSeconds}
             onAutoRefreshSecondsChange={handleAutoRefreshSecondsChange}
             onRefresh={updateTopSQLData}
             autoRefreshSecondsOptions={autoRefreshOptions}
           />
+          {isLoading && (
+            <Spin
+              indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+            />
+          )}
         </Space>
       </Card>
       <div className={styles.chart_container}>

@@ -23,13 +23,6 @@ task('swagger:watch', () =>
 
 task('distro:generate', shell.task('../scripts/distro/write_strings.sh'))
 
-task('distro:watch', () =>
-  watch(
-    ['../internal/resource/distrores/strings.go'],
-    series('distro:generate')
-  )
-)
-
 task('webpack:dev', shell.task('yarn react-app-rewired start'))
 
 task('webpack:build', shell.task('yarn react-app-rewired build'))
@@ -72,7 +65,7 @@ task(
       'distro:generate',
       'speedscope:copy_static_assets'
     ),
-    parallel('swagger:watch', 'distro:watch', 'speedscope:watch', 'esbuild:dev')
+    parallel('swagger:watch', 'speedscope:watch', 'esbuild:dev')
   )
 )
 

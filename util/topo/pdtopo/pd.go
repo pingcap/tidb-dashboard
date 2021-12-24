@@ -1,8 +1,9 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-package topo
+package pdtopo
 
 import (
+	"context"
 	"sort"
 
 	"github.com/pingcap/log"
@@ -11,15 +12,16 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
 	"github.com/pingcap/tidb-dashboard/util/distro"
 	"github.com/pingcap/tidb-dashboard/util/netutil"
+	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
-func GetPDInstances(pdAPI *pdclient.APIClient) ([]PDInfo, error) {
-	ds, err := pdAPI.GetMembers()
+func GetPDInstances(ctx context.Context, pdAPI *pdclient.APIClient) ([]topo.PDInfo, error) {
+	ds, err := pdAPI.GetMembers(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	health, err := pdAPI.GetHealth()
+	health, err := pdAPI.GetHealth(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +32,7 @@ func GetPDInstances(pdAPI *pdclient.APIClient) ([]PDInfo, error) {
 		}
 	}
 
-	nodes := make([]PDInfo, 0)
+	nodes := make([]topo.PDInfo, 0)
 
 	for _, ds := range ds.Members {
 		u := ds.ClientUrls[0]
@@ -39,7 +41,7 @@ func GetPDInstances(pdAPI *pdclient.APIClient) ([]PDInfo, error) {
 			continue
 		}
 
-		tsResp, err := pdAPI.GetStatus()
+		tsResp, err := pdAPI.GetStatus(ctx)
 		if err != nil {
 			log.Warn("Failed to fetch start timestamp",
 				zap.String("component", distro.R().PD),
@@ -48,12 +50,12 @@ func GetPDInstances(pdAPI *pdclient.APIClient) ([]PDInfo, error) {
 			tsResp = &pdclient.GetStatusResponse{}
 		}
 
-		storeStatus := ComponentStatusUnreachable
+		storeStatus := topo.ComponentStatusUnreachable
 		if _, ok := healthMap[ds.MemberID]; ok {
-			storeStatus = ComponentStatusUp
+			storeStatus = topo.ComponentStatusUp
 		}
 
-		nodes = append(nodes, PDInfo{
+		nodes = append(nodes, topo.PDInfo{
 			GitHash:        ds.GitHash,
 			Version:        ds.BinaryVersion,
 			IP:             hostname,

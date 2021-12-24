@@ -269,6 +269,14 @@ func (s *Service) downloadSingle(c *gin.Context) {
 	}
 }
 
+type ViewOutputType string
+
+const (
+	ViewOutputTypeProtobuf ViewOutputType = "protobuf"
+	ViewOutputTypeGraph    ViewOutputType = "graph"
+	ViewOutputTypeText     ViewOutputType = "text"
+)
+
 // @ID viewProfilingSingle
 // @Summary View the result of a task
 // @Description View the finished profiling result of a task
@@ -281,6 +289,7 @@ func (s *Service) downloadSingle(c *gin.Context) {
 // @Router /profiling/single/view [get]
 func (s *Service) viewSingle(c *gin.Context) {
 	token := c.Query("token")
+	outputType := c.Query("output_type")
 	str, err := utils.ParseJWTString("profiling/single_view", token)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
@@ -303,7 +312,38 @@ func (s *Service) viewSingle(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.Data(http.StatusOK, "image/svg+xml", content)
+
+	// set default content-type for legacy profiling content.
+	contentType := "image/svg+xml"
+
+	if task.RawDataType == RawDataTypeProtobuf {
+		switch outputType {
+		case string(ViewOutputTypeGraph):
+			svgContent, err := convertProtobufToSVG(content, task)
+			if err != nil {
+				_ = c.Error(err)
+				return
+			}
+			content = svgContent
+			contentType = "image/svg+xml"
+		case string(ViewOutputTypeProtobuf):
+			contentType = "application/protobuf"
+		default:
+			// Will not handle converting protobuf to other formats except flamegraph and graph
+			_ = c.Error(rest.ErrBadRequest.New("Cannot output protobuf as %s", outputType))
+			return
+		}
+	} else if task.RawDataType == RawDataTypeText {
+		switch outputType {
+		case string(ViewOutputTypeText):
+			contentType = "text/plain"
+		default:
+			// Will not handle converting text to other formats
+			_ = c.Error(rest.ErrBadRequest.New("Cannot output text as %s", outputType))
+			return
+		}
+	}
+	c.Data(http.StatusOK, contentType, content)
 }
 
 // @ID deleteProfilingGroup

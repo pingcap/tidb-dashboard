@@ -14,15 +14,16 @@ type pprofOptions struct {
 	duration           uint
 	fileNameWithoutExt string
 
-	target  *model.RequestTargetNode
-	fetcher *profileFetcher
+	target        *model.RequestTargetNode
+	fetcher       *profileFetcher
+	profilingType TaskProfilingType
 }
 
 func fetchPprof(op *pprofOptions) (string, TaskRawDataType, error) {
 	fetcher := &fetcher{profileFetcher: op.fetcher, target: op.target}
-	tmpPath, rawDataType, err := fetcher.FetchAndWriteToFile(op.duration, op.fileNameWithoutExt)
+	tmpPath, rawDataType, err := fetcher.FetchAndWriteToFile(op.duration, op.fileNameWithoutExt, op.profilingType)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to fetch annd write to temp file: %v", err)
+		return "", "", fmt.Errorf("failed to fetch and write to temp file: %v", err)
 	}
 
 	return tmpPath, rawDataType, nil
@@ -33,8 +34,31 @@ type fetcher struct {
 	profileFetcher *profileFetcher
 }
 
-func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string) (string, TaskRawDataType, error) {
-	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt+"*.proto")
+func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, profilingType TaskProfilingType) (string, TaskRawDataType, error) {
+	var profilingRawDataType TaskRawDataType
+	var fileExtenstion string
+	secs := strconv.Itoa(int(duration))
+	var url string
+	switch profilingType {
+	case ProfilingTypeCPU:
+		url = "/debug/pprof/profile?seconds=" + secs
+		profilingRawDataType = RawDataTypeProtobuf
+		fileExtenstion = "*.proto"
+	case ProfilingTypeHeap:
+		url = "/debug/pprof/heap"
+		profilingRawDataType = RawDataTypeProtobuf
+		fileExtenstion = "*.proto"
+	case ProfilingTypeGoroutine:
+		url = "/debug/pprof/goroutine?debug=1"
+		profilingRawDataType = RawDataTypeText
+		fileExtenstion = "*.txt"
+	case ProfilingTypeMutex:
+		url = "/debug/pprof/mutex?debug=1"
+		profilingRawDataType = RawDataTypeText
+		fileExtenstion = "*.txt"
+	}
+
+	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt+fileExtenstion)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create tmpfile to write profile: %v", err)
 	}
@@ -43,12 +67,9 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string) 
 		_ = tmpfile.Close()
 	}()
 
-	secs := strconv.Itoa(int(duration))
-	url := "/debug/pprof/profile?seconds=" + secs
-
 	resp, err := (*f.profileFetcher).fetch(&fetchOptions{ip: f.target.IP, port: f.target.Port, path: url})
 	if err != nil {
-		return "", "", fmt.Errorf("failed to fetch profile with proto format: %v", err)
+		return "", "", fmt.Errorf("failed to fetch profile with %v format: %v", fileExtenstion, err)
 	}
 
 	_, err = tmpfile.Write(resp)
@@ -56,5 +77,5 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string) 
 		return "", "", fmt.Errorf("failed to write profile: %v", err)
 	}
 
-	return tmpfile.Name(), RawDataTypeProtobuf, nil
+	return tmpfile.Name(), profilingRawDataType, nil
 }

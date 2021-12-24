@@ -10,7 +10,6 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	_ "github.com/pingcap/tidb-dashboard/internal/resource/distrores"
 	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 

@@ -1,24 +1,60 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TableDef, ExpandContext, TableRowDef } from '../types'
 import ReactMarkdown from 'react-markdown'
+import { distro } from '@lib/utils/i18n'
+import { TableDef, ExpandContext, TableRowDef } from '../types'
+
+const lowerDistro = Object.keys(distro).reduce((accu, cur) => {
+  if (typeof distro[cur] === 'string') {
+    accu[cur] = distro[cur].toLowerCase()
+  }
+  return accu
+}, {})
+
+const distroRegs = Object.keys(lowerDistro).reduce((accu, cur) => {
+  accu[cur] = new RegExp(cur, 'ig')
+  return accu
+}, {})
+
+function replaceDistro(oriStr: string): string {
+  let retStr = oriStr
+  Object.keys(lowerDistro).forEach((key) => {
+    retStr = retStr.replace(distroRegs[key], lowerDistro[key])
+  })
+  return retStr
+}
 
 function DiagnosisRow({ row }: { row: TableRowDef }) {
   const outsideExpand = useContext(ExpandContext)
   const [internalExpand, setInternalExpand] = useState(false)
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   // when outsideExpand changes, reset the internalExpand to the same as outsideExpand
   useEffect(() => {
     setInternalExpand(outsideExpand)
   }, [outsideExpand])
 
+  function showRowName(rowName: string) {
+    const i18nKey = `diagnosis.tables.table.name.${rowName}`
+    if (i18n.exists(i18nKey)) {
+      return t(i18nKey)
+    }
+    return replaceDistro(rowName)
+  }
+
+  function showOthers(val: string | number) {
+    if (typeof val === 'string') {
+      return replaceDistro(val)
+    }
+    return val
+  }
+
   return (
     <>
       <tr>
         {(row.values || []).map((val, valIdx) => (
           <td key={valIdx}>
-            {t(`diagnosis.tables.table.name.${val}`, val)}
+            {valIdx === 0 ? showRowName(val) : showOthers(val)}
             {valIdx === 0 &&
               t(`diagnosis.tables.table.comment.${val}`, '') !== '' && (
                 <div className="dropdown is-hoverable is-up">
@@ -58,7 +94,7 @@ function DiagnosisRow({ row }: { row: TableRowDef }) {
           {subVals.map((subVal, subValIdx) => (
             <td key={subValIdx}>
               {subValIdx === 0 && '|-- '}
-              {subVal}
+              {showOthers(subVal)}
             </td>
           ))}
         </tr>

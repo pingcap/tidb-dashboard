@@ -1,8 +1,13 @@
 import { XYBrushArea, BrushEndListener } from '@elastic/charts'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Space, Button, Spin } from 'antd'
-import { ZoomOutOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Space, Button, Spin, Alert, Tooltip, Drawer } from 'antd'
+import {
+  ZoomOutOutlined,
+  LoadingOutlined,
+  SettingOutlined,
+} from '@ant-design/icons'
 import { useGetSet } from 'react-use'
+import { useTranslation } from 'react-i18next'
 
 import '@elastic/charts/dist/theme_only_light.css'
 
@@ -16,13 +21,17 @@ import {
   TimeRange,
   calcTimeRange,
   DEFAULT_TIME_RANGE,
+  Toolbar,
 } from '@lib/components'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+
 import { InstanceSelect, InstanceId } from '../../components/Filter'
 import styles from './List.module.less'
 import { ListTable } from './ListTable'
 import { ListChart } from './ListChart'
 import { convertOthersRecord } from '../../utils/othersRecord'
 import { createUseTimeWindowSize } from '../../utils/useTimeWindowSize'
+import { SettingsForm } from './SettingsForm'
 
 const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
 const zoomOutRate = 0.5
@@ -31,6 +40,15 @@ const minDateTimestamp = minDate.getTime() / 1000
 const useTimeWindowSize = createUseTimeWindowSize(10)
 
 export function TopSQLList() {
+  const { t } = useTranslation()
+  const {
+    data: topSQLConfig,
+    isLoading: isConfigLoading,
+    sendRequest: updateConfig,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().topsqlConfigGet(reqConfig)
+  )
+  const [showSettings, setShowSettings] = useState(false)
   const [autoRefreshSeconds, setAutoRefreshSeconds] = useLocalStorageState(
     'topsql_auto_refresh',
     0
@@ -43,8 +61,13 @@ export function TopSQLList() {
   const [getTimeRange, setTimeRange] = useGetSet<TimeRange>(recentTimeRange)
   const { timeWindowSize, computeTimeWindowSize, isTimeWindowSizeComputed } =
     useTimeWindowSize()
-  const { topSQLData, updateTopSQLData, isLoading, queryTimestampRange } =
-    useTopSQLData(instanceId, getTimeRange(), timeWindowSize, '5')
+  const {
+    topSQLData,
+    updateTopSQLData,
+    isLoading: isDataLoading,
+    queryTimestampRange,
+  } = useTopSQLData(instanceId, getTimeRange(), timeWindowSize, '5')
+  const isLoading = isConfigLoading || isDataLoading
 
   const resetAutoRefresh = useCallback(() => {
     const prevAutoRefreshSeconds = autoRefreshSeconds
@@ -135,55 +158,89 @@ export function TopSQLList() {
   }, [containerRef, getTimeRange()])
 
   return (
-    <div className={styles.container} ref={containerRef}>
-      <Card noMarginBottom>
-        <Space size="middle">
-          <InstanceSelect
-            value={instanceId}
-            onChange={handleSetInstance}
-            disabled={isLoading}
+    <>
+      <div className={styles.container} ref={containerRef}>
+        {!isConfigLoading && !topSQLConfig?.enable && (
+          <Card noMarginBottom>
+            <Alert
+              message={t(`topsql.alert_header.title`)}
+              description={t(`topsql.alert_header.body`)}
+              type="info"
+              showIcon
+            />
+          </Card>
+        )}
+        <Card noMarginBottom>
+          <Toolbar>
+            <Space>
+              <InstanceSelect
+                value={instanceId}
+                onChange={handleSetInstance}
+                disabled={isLoading}
+              />
+              <Button.Group>
+                <TimeRangeSelector
+                  value={getTimeRange()}
+                  onChange={handleTimeRangeChange}
+                  disabled={isLoading}
+                  disabledDate={(current) => {
+                    const tooLate = current.isBefore(minDate)
+                    const tooEarly = current.isAfter(new Date())
+                    return tooLate || tooEarly
+                  }}
+                />
+                <Button
+                  icon={<ZoomOutOutlined />}
+                  onClick={zoomOut}
+                  disabled={isLoading}
+                />
+              </Button.Group>
+              <AutoRefreshButton
+                disabled={isLoading}
+                autoRefreshSeconds={autoRefreshSeconds}
+                onAutoRefreshSecondsChange={handleAutoRefreshSecondsChange}
+                onRefresh={updateTopSQLData}
+                autoRefreshSecondsOptions={autoRefreshOptions}
+                disableAutoRefresh={!isConfigLoading && !topSQLConfig?.enable}
+              />
+              {isLoading && (
+                <Spin
+                  indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+                />
+              )}
+            </Space>
+
+            <Space>
+              <Tooltip title={t('topsql.settings.title')} placement="bottom">
+                <SettingOutlined onClick={() => setShowSettings(true)} />
+              </Tooltip>
+            </Space>
+          </Toolbar>
+        </Card>
+        <div className={styles.chart_container}>
+          <ListChart
+            onBrushEnd={handleBrushEnd}
+            data={topSQLData}
+            timeRangeTimestamp={queryTimestampRange}
+            timeWindowSize={timeWindowSize}
           />
-          <Button.Group>
-            <TimeRangeSelector
-              value={getTimeRange()}
-              onChange={handleTimeRangeChange}
-              disabled={isLoading}
-              disabledDate={(current) => {
-                const tooLate = current.isBefore(minDate)
-                const tooEarly = current.isAfter(new Date())
-                return tooLate || tooEarly
-              }}
-            />
-            <Button
-              icon={<ZoomOutOutlined />}
-              onClick={zoomOut}
-              disabled={isLoading}
-            />
-          </Button.Group>
-          <AutoRefreshButton
-            disabled={isLoading}
-            autoRefreshSeconds={autoRefreshSeconds}
-            onAutoRefreshSecondsChange={handleAutoRefreshSecondsChange}
-            onRefresh={updateTopSQLData}
-            autoRefreshSecondsOptions={autoRefreshOptions}
-          />
-          {isLoading && (
-            <Spin
-              indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-            />
-          )}
-        </Space>
-      </Card>
-      <div className={styles.chart_container}>
-        <ListChart
-          onBrushEnd={handleBrushEnd}
-          data={topSQLData}
-          timeRangeTimestamp={queryTimestampRange}
-          timeWindowSize={timeWindowSize}
-        />
+        </div>
+        {!!topSQLData?.length && <ListTable data={topSQLData} />}
       </div>
-      {!!topSQLData?.length && <ListTable data={topSQLData} />}
-    </div>
+      <Drawer
+        title={t('statement.settings.title')}
+        width={300}
+        closable={true}
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        destroyOnClose={true}
+      >
+        <SettingsForm
+          onClose={() => setShowSettings(false)}
+          onConfigUpdated={updateConfig}
+        />
+      </Drawer>
+    </>
   )
 }
 

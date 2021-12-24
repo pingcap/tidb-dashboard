@@ -3,32 +3,49 @@
 package topsql
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
-var ErrNS = errorx.NewNamespace("error.api.top_sql")
+var ErrNS = errorx.NewNamespace("error.api.topsql")
+
+type ServiceParams struct {
+	fx.In
+	TiDBClient *tidb.Client
+	NgmProxy   *utils.NgmProxy
+}
 
 type Service struct {
 	FeatureTopSQL *featureflag.FeatureFlag
 
-	ngmProxy *utils.NgmProxy
+	params ServiceParams
 }
 
-func newService(ngmProxy *utils.NgmProxy, ff *featureflag.Registry) *Service {
-	return &Service{ngmProxy: ngmProxy, FeatureTopSQL: ff.Register("topsql", ">= 5.3.0")}
+func newService(p ServiceParams, ff *featureflag.Registry) *Service {
+	return &Service{params: p, FeatureTopSQL: ff.Register("topsql", ">= 5.3.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/topsql")
-	endpoint.Use(auth.MWAuthRequired(), s.FeatureTopSQL.VersionGuard())
+	endpoint.Use(
+		auth.MWAuthRequired(),
+		s.FeatureTopSQL.VersionGuard(),
+		utils.MWConnectTiDB(s.params.TiDBClient),
+	)
 	{
-		endpoint.GET("/instances", s.ngmProxy.Route("/topsql/v1/instances"))
-		endpoint.GET("/cpu_time", s.ngmProxy.Route("/topsql/v1/cpu_time"))
+		endpoint.GET("/config", s.GetConfig)
+		endpoint.POST("/config", s.UpdateConfig)
+		endpoint.GET("/instances", s.params.NgmProxy.Route("/topsql/v1/instances"))
+		endpoint.GET("/cpu_time", s.params.NgmProxy.Route("/topsql/v1/cpu_time"))
 	}
 }
 
@@ -85,4 +102,49 @@ type PlanItem struct {
 // @Failure 500 {object} rest.ErrorResponse
 func (s *Service) GetCPUTime(c *gin.Context) {
 	// dummy, for generate open api
+}
+
+type EditableConfig struct {
+	Enable bool `json:"enable" gorm:"column:tidb_enable_top_sql"`
+}
+
+// @Summary Get Top SQL config
+// @Router /topsql/config [get]
+// @Security JwtAuth
+// @Success 200 {object} EditableConfig "ok"
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
+func (s *Service) GetConfig(c *gin.Context) {
+	db := utils.GetTiDBConnection(c)
+	cfg := &EditableConfig{}
+	err := db.Raw("SELECT @@GLOBAL.tidb_enable_top_sql as tidb_enable_top_sql").Find(cfg).Error
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, cfg)
+}
+
+// @Summary Update Top SQL config
+// @Router /topsql/config [post]
+// @Param request body EditableConfig true "Request body"
+// @Security JwtAuth
+// @Success 204 {object} string
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
+func (s *Service) UpdateConfig(c *gin.Context) {
+	var cfg EditableConfig
+	if err := c.ShouldBindJSON(&cfg); err != nil {
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	err := db.Exec("SET @@GLOBAL.tidb_enable_top_sql = @Enable", &cfg).Error
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

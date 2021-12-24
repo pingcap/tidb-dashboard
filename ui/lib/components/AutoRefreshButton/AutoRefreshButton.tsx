@@ -14,6 +14,7 @@ interface AutoRefreshButtonProps {
   onAutoRefreshSecondsChange: (v: number) => void
   onRefresh: () => void
   disabled?: boolean
+  disableAutoRefresh?: boolean
 }
 
 const translations = {
@@ -47,6 +48,7 @@ export function AutoRefreshButton({
   onAutoRefreshSecondsChange,
   onRefresh,
   disabled = false,
+  disableAutoRefresh = false,
 }: AutoRefreshButtonProps) {
   const { t } = useTranslation()
   const autoRefreshMenu = useMemo(
@@ -66,7 +68,7 @@ export function AutoRefreshButton({
           <Menu.Divider />
           {autoRefreshSecondsOptions.map((sec) => {
             return (
-              <Menu.Item key={String(sec)}>
+              <Menu.Item key={String(sec)} disabled={disableAutoRefresh}>
                 {getValueFormat('s')(sec, 0)}
               </Menu.Item>
             )
@@ -74,7 +76,12 @@ export function AutoRefreshButton({
         </Menu.ItemGroup>
       </Menu>
     ),
-    [autoRefreshSeconds, autoRefreshSecondsOptions, onAutoRefreshSecondsChange]
+    [
+      autoRefreshSeconds,
+      autoRefreshSecondsOptions,
+      onAutoRefreshSecondsChange,
+      disableAutoRefresh,
+    ]
   )
 
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -97,6 +104,12 @@ export function AutoRefreshButton({
       setRemainingRefreshSeconds(autoRefreshSeconds)
     }
   }, [autoRefreshSeconds])
+
+  useEffect(() => {
+    if (disableAutoRefresh) {
+      onAutoRefreshSecondsChange(0)
+    }
+  }, [disableAutoRefresh])
 
   const handleRefresh = useCallback(async () => {
     if (disabled) {

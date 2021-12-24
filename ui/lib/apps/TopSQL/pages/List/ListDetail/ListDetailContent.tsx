@@ -36,7 +36,7 @@ export function ListDetailContent({
           multiline={sqlExpanded}
           label={
             <Space size="middle">
-              <TextWithInfo.TransKey transKey="top_sql.fields.sql_text" />
+              <TextWithInfo.TransKey transKey="topsql.fields.sql_text" />
               <Expand.Link expanded={sqlExpanded} onClick={toggleSqlExpanded} />
               <CopyLink
                 displayVariant="formatted_sql"
@@ -56,7 +56,7 @@ export function ListDetailContent({
         <Descriptions.Item
           label={
             <Space size="middle">
-              <TextWithInfo.TransKey transKey="top_sql.fields.sql_digest" />
+              <TextWithInfo.TransKey transKey="topsql.fields.sql_digest" />
               <CopyLink data={sqlRecord.digest} />
             </Space>
           }
@@ -67,7 +67,7 @@ export function ListDetailContent({
           <Descriptions.Item
             label={
               <Space size="middle">
-                <TextWithInfo.TransKey transKey="top_sql.fields.plan_digest" />
+                <TextWithInfo.TransKey transKey="topsql.fields.plan_digest" />
                 <CopyLink data={planRecord.plan_digest} />
               </Space>
             }
@@ -81,7 +81,7 @@ export function ListDetailContent({
             multiline={planExpanded}
             label={
               <Space size="middle">
-                <TextWithInfo.TransKey transKey="top_sql.fields.plan" />
+                <TextWithInfo.TransKey transKey="topsql.fields.plan" />
                 <Expand.Link
                   expanded={planExpanded}
                   onClick={togglePlanExpanded}

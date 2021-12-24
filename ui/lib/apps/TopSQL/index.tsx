@@ -10,7 +10,7 @@ export default function () {
     <Root>
       <Router>
         <Routes>
-          <Route path="/top_sql" element={<TopSQLList />} />
+          <Route path="/topsql" element={<TopSQLList />} />
         </Routes>
       </Router>
     </Root>

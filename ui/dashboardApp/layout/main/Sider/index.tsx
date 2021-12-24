@@ -122,7 +122,7 @@ function Sider({
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
-    useIsFeatureSupport('topsql') ? useAppMenuItem(registry, 'top_sql') : null,
+    useIsFeatureSupport('topsql') ? useAppMenuItem(registry, 'topsql') : null,
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),

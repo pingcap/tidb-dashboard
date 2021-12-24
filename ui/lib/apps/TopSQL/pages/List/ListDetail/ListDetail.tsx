@@ -15,7 +15,7 @@ export function ListDetail({ record }: ListDetailProps) {
 
   return (
     <>
-      <Head title={t('top_sql.detail.title')} />
+      <Head title={t('topsql.detail.title')} />
       <ListDetailTable record={record} />
     </>
   )

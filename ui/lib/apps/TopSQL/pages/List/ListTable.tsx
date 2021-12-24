@@ -90,7 +90,7 @@ export function ListTable({ data }: ListTableProps) {
   return (
     <>
       <Card noMarginBottom noMarginTop>
-        <p className="ant-form-item-extra">{t('top_sql.table.description')}</p>
+        <p className="ant-form-item-extra">{t('topsql.table.description')}</p>
       </Card>
       <CardTable
         cardNoMarginTop

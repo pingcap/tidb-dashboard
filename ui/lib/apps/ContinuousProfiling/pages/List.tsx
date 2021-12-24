@@ -103,15 +103,15 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         onRender: (rec) => {
-          if (rec.state === 'failed') {
-            // all failed
+          if (rec.state === 'running') {
             return (
               <Badge
-                status="error"
-                text={t('conprof.list.table.status.failed')}
+                status="processing"
+                text={t('conprof.list.table.status.running')}
               />
             )
-          } else if (rec.state === 'success') {
+          }
+          if (rec.state === 'finished' || rec.state === 'success') {
             // all success
             return (
               <Badge
@@ -119,7 +119,11 @@ export default function Page() {
                 text={t('conprof.list.table.status.finished')}
               />
             )
-          } else {
+          }
+          if (
+            rec.state === 'finished_with_error' ||
+            rec.state === 'partial failed'
+          ) {
             // partial failed
             return (
               <Badge
@@ -128,6 +132,16 @@ export default function Page() {
               />
             )
           }
+          if (rec.state === 'failed') {
+            // all failed
+            return (
+              <Badge
+                status="error"
+                text={t('conprof.list.table.status.failed')}
+              />
+            )
+          }
+          return <Badge text={t('conprof.list.table.status.unknown')} />
         },
       },
       {

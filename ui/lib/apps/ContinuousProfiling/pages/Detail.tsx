@@ -111,9 +111,7 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 200,
         onRender: (record) => {
-          if (record.state === 'failed') {
-            return <Badge status="error" text={record.error} />
-          } else {
+          if (record.state === 'finished' || record.state === 'success') {
             return (
               <Badge
                 status="success"
@@ -121,6 +119,10 @@ export default function Page() {
               />
             )
           }
+          if (record.state === 'failed') {
+            return <Badge status="error" text={record.error} />
+          }
+          return <Badge text={t('conprof.list.table.status.unknown')} />
         },
       },
       {
@@ -141,7 +143,7 @@ export default function Page() {
           return (
             <ActionsButton
               actions={actions}
-              disabled={rec.state !== 'success'}
+              disabled={rec.state !== 'finished' && rec.state !== 'success'}
               onClick={(act) => handleClick(act, rec)}
             />
           )

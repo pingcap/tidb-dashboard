@@ -1,19 +1,13 @@
 import React from 'react'
 import type { FormInstance } from 'antd/es/form/Form'
-
-import { EndpointAPIModel, EndpointAPIParam } from '@lib/client'
 import type { Topology } from '../ApiForm'
-import { TextWidget, TextQueryBuilder } from './Text'
-import { TagsWidget } from './Tags'
-import { IntWidget } from './Int'
+import { TextWidget } from './Text'
 import { EnumWidget } from './Enum'
-import { ConstantWidget, ConstantQueryBuilder } from './Constant'
 import { HostSelectWidget } from './Host'
 import { DatabaseWidget } from './Database'
 import { TableWidget } from './Table'
 import { TableIDWidget } from './TableID'
-import { StoresStateWidget } from './StoresState'
-import { BoolWidget } from './Bool'
+import { EndpointAPIDefinition, EndpointAPIParamDefinition } from '@lib/client'
 
 export interface Widgets {
   [type: string]: ApiFormWidget
@@ -25,73 +19,43 @@ export interface ApiFormWidget {
 
 export interface ApiFormWidgetConfig {
   form: FormInstance
-  param: EndpointAPIParam
-  endpoint: EndpointAPIModel
+  param: EndpointAPIParamDefinition
+  endpoint: EndpointAPIDefinition
   topology: Topology
   value?: string
   onChange?: (v: string) => void
 }
 
-export interface ParamModelType {
-  type: string
-  data: any
-}
-
 // For customized form controls. https://ant.design/components/form-cn/#components-form-demo-customized-form-controls
-const createJSXElementWrapper = (WidgetDef: ApiFormWidget) => (
-  config: ApiFormWidgetConfig
-) => <WidgetDef {...config} />
+const createJSXElementWrapper =
+  (WidgetDef: ApiFormWidget) => (config: ApiFormWidgetConfig) =>
+    <WidgetDef {...config} />
 
 const paramModelWidgets: Widgets = {
   host: HostSelectWidget,
   text: TextWidget,
-  escape_text: TextWidget,
-  bool: createJSXElementWrapper(BoolWidget),
-  multi_value: createJSXElementWrapper(TagsWidget),
-  int: createJSXElementWrapper(IntWidget),
-  enum: EnumWidget,
-  constant: ConstantWidget,
-  db: createJSXElementWrapper(DatabaseWidget),
-  table: createJSXElementWrapper(TableWidget),
-  table_id: createJSXElementWrapper(TableIDWidget),
-}
-
-const paramWidgets: Widgets = {
-  'pd_stores/state': createJSXElementWrapper(StoresStateWidget),
+  dropdown: EnumWidget,
+  db_dropdown: createJSXElementWrapper(DatabaseWidget),
+  table_dropdown: createJSXElementWrapper(TableWidget),
+  table_id_dropdown: createJSXElementWrapper(TableIDWidget),
 }
 
 export const createFormWidget = (config: ApiFormWidgetConfig) => {
-  const { param, endpoint } = config
-  const widget =
-    paramWidgets[`${endpoint.id}/${param.name!}`] ||
-    paramModelWidgets[(param.model as any).type] ||
-    paramModelWidgets.text
+  const { param } = config
+  const widget = paramModelWidgets[param.ui_kind ?? 'text']
   return widget(config)
 }
 
 // query string
 
-export interface QueryBuilder {
-  (p: EndpointAPIParam): string
-}
-
-const queryBuilders: { [type: string]: QueryBuilder } = {
-  text: TextQueryBuilder,
-  constant: ConstantQueryBuilder,
-}
-
-export const buildQueryString = (params: EndpointAPIParam[]) => {
+export const buildQueryString = (params: EndpointAPIParamDefinition[]) => {
   const query = params.reduce((prev, param, i) => {
     if (i === 0) {
       prev += '?'
     } else {
       prev += '&'
     }
-
-    const builder =
-      queryBuilders[(param.model as ParamModelType).type] || queryBuilders.text
-    prev += builder(param)
-
+    prev += `${param.name}={${param.name}}`
     return prev
   }, '')
   return query

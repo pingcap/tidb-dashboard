@@ -205,8 +205,8 @@ func TestCachedTopologyAllMethods(t *testing.T) {
 	mp.
 		On("GetPD", mock.Anything).Return([]PDInfo{{IP: "addr-pd.internal"}}, nil).
 		On("GetTiDB", mock.Anything).Return([]TiDBInfo{{IP: "addr-tidb-2.internal"}, {IP: "addr-tidb-1.internal"}}, nil).
-		On("GetTiKV", mock.Anything).Return([]StoreInfo{{IP: "addr-tikv-3.internal"}}, nil).
-		On("GetTiFlash", mock.Anything).Return([]StoreInfo{}, nil).
+		On("GetTiKV", mock.Anything).Return([]TiKVStoreInfo{{IP: "addr-tikv-3.internal"}}, nil).
+		On("GetTiFlash", mock.Anything).Return([]TiFlashStoreInfo{}, nil).
 		On("GetPrometheus", mock.Anything).Return(nil, nil).
 		On("GetGrafana", mock.Anything).Return(&GrafanaInfo{IP: "addr-grafana.internal"}, nil).
 		On("GetAlertManager", mock.Anything).Return(&AlertManagerInfo{IP: "addr-am-x.internal"}, nil)

@@ -9,22 +9,21 @@ import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 import { AnimatedSkeleton, Card, Root } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client, { EndpointAPIModel } from '@lib/client'
+import client, { EndpointAPIDefinition } from '@lib/client'
 
 import style from './ApiList.module.less'
 import ApiForm, { Topology } from './ApiForm'
 import { buildQueryString } from './widgets'
 import { distro } from '@lib/utils/i18n'
 
-const getEndpointTranslationKey = (endpoint: EndpointAPIModel) =>
+const getEndpointTranslationKey = (endpoint: EndpointAPIDefinition) =>
   `debug_api.${endpoint.component}.endpoints.${endpoint.id}`
 
-const useFilterEndpoints = (endpoints?: EndpointAPIModel[]) => {
+const useFilterEndpoints = (endpoints?: EndpointAPIDefinition[]) => {
   const [keywords, setKeywords] = useState('')
   const nonNullEndpoints = useMemo(() => endpoints || [], [endpoints])
-  const [filteredEndpoints, setFilteredEndpoints] = useState<
-    EndpointAPIModel[]
-  >(nonNullEndpoints)
+  const [filteredEndpoints, setFilteredEndpoints] =
+    useState<EndpointAPIDefinition[]>(nonNullEndpoints)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -46,38 +45,27 @@ const useFilterEndpoints = (endpoints?: EndpointAPIModel[]) => {
 
   return {
     endpoints: filteredEndpoints,
-    filterBy: debounce(setKeywords, 300),
+    filterBy: debounce(setKeywords, 100),
   }
 }
 
 export default function Page() {
   const { t, i18n } = useTranslation()
-  const {
-    data: endpointData,
-    isLoading: isEndpointLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().debugAPIGetEndpoints(reqConfig)
+  const { data: endpointData, isLoading: isEndpointLoading } = useClientRequest(
+    (reqConfig) => client.getInstance().debugAPIGetEndpoints(reqConfig)
   )
   const { endpoints, filterBy } = useFilterEndpoints(endpointData)
 
   // TODO: refine with components/InstanceSelect
-  const {
-    data: tidbTopology = [],
-    isLoading: isTiDBTopology,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getTiDBTopology(reqConfig)
+  const { data: tidbTopology = [], isLoading: isTiDBTopology } =
+    useClientRequest((reqConfig) =>
+      client.getInstance().getTiDBTopology(reqConfig)
+    )
+  const { data: pdTopology = [], isLoading: isPDLoading } = useClientRequest(
+    (reqConfig) => client.getInstance().getPDTopology(reqConfig)
   )
-  const {
-    data: pdTopology = [],
-    isLoading: isPDLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getPDTopology(reqConfig)
-  )
-  const {
-    data: storeTopology,
-    isLoading: isStoreLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getStoreTopology(reqConfig)
+  const { data: storeTopology, isLoading: isStoreLoading } = useClientRequest(
+    (reqConfig) => client.getInstance().getStoreTopology(reqConfig)
   )
   const topology: Topology = {
     tidb: tidbTopology!,
@@ -96,7 +84,7 @@ export default function Page() {
         }
         prev[groupName].push(endpoint)
         return prev
-      }, {} as { [group: string]: EndpointAPIModel[] }),
+      }, {} as { [group: string]: EndpointAPIDefinition[] }),
     [endpoints]
   )
   const sortedGroups = useMemo(
@@ -107,7 +95,7 @@ export default function Page() {
     [groups]
   )
 
-  function EndpointGroup({ group }: { group: EndpointAPIModel[] }) {
+  function EndpointGroup({ group }: { group: EndpointAPIDefinition[] }) {
     return (
       <Card
         noMarginLeft
@@ -189,7 +177,7 @@ function CustomHeader({
   endpoint,
   translation,
 }: {
-  endpoint: EndpointAPIModel
+  endpoint: EndpointAPIDefinition
   translation: {
     t: TFunction
   }
@@ -208,11 +196,11 @@ function CustomHeader({
 }
 
 // e.g. http://{tidb_ip}/stats/dump/{db}/{table}?queryName={queryName}
-function Schema({ endpoint }: { endpoint: EndpointAPIModel }) {
+function Schema({ endpoint }: { endpoint: EndpointAPIDefinition }) {
   const query = buildQueryString(endpoint.query_params ?? [])
   return (
     <p className={style.schema}>
-      {`http://{${distro[endpoint.component!]?.toLowerCase()}_host}${
+      {`http://{${distro[endpoint.component!]?.toLowerCase()}_instance}${
         endpoint.path
       }${query}`}
     </p>

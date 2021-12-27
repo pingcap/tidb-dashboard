@@ -216,8 +216,6 @@ const LAST_LOGIN_USERNAME_KEY = 'dashboard_last_login_username'
 function TiDBSignInForm({ successRoute, onClickAlternative }) {
   const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
 
-  console.log('supportNonRootLogin:', supportNonRootLogin)
-
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -464,7 +462,6 @@ function App({ registry }) {
     async function run() {
       try {
         const resp = await client.getInstance().userGetLoginInfo()
-        console.log('resp', resp)
         const loginInfo = resp.data
         if (
           (loginInfo.supported_auth_types?.indexOf(AuthTypes.SSO) ?? -1) > -1

@@ -1,4 +1,4 @@
-name: Test
+name: E2E Test Compatibility
 
 on:
   pull_request:

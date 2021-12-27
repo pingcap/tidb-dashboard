@@ -1,5 +1,5 @@
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs-extra')
 const os = require('os')
 const {
   override,
@@ -17,16 +17,37 @@ const WebpackBar = require('webpackbar')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const rewireHtmlWebpackPlugin = require('react-app-rewire-html-webpack-plugin')
 
+function copyDistroRes() {
+  const distroResPath = '../bin/distro-res'
+  if (fs.existsSync(distroResPath)) {
+    fs.copySync(distroResPath, './public/distro-res')
+  }
+}
+
 function injectDistroToHTML(config, env) {
-  const distroInfo = Object.entries(require('./lib/distribution.json')).reduce(
-    (prev, [k, v]) => {
-      return {
-        ...prev,
-        [`distro_${k}`]: v,
-      }
+  let distroStringsResMeta = '__DISTRO_STRINGS_RES__'
+
+  // For dev mode,
+  // we copy distro assets from bin/distro-res to public/distro-res to override the default assets,
+  // read distro strings res from public/distro-res/strings.json and encode it by base64 if it exists.
+  // For production mode, we keep the "__DISTRO_STRINGS_RES__" value, it will be replaced by the backend RewriteAssets() method in the run time.
+  if (isBuildAsDevServer()) {
+    copyDistroRes()
+
+    const distroStringsResFilePath = './public/distro-res/strings.json'
+    if (fs.existsSync(distroStringsResFilePath)) {
+      const distroStringsRes = require(distroStringsResFilePath)
+      distroStringsResMeta = btoa(JSON.stringify(distroStringsRes))
+    }
+  }
+
+  // Store the distro strings res in the html head meta,
+  // HtmlWebpacPlugin will write this meta into the html head.
+  const distroInfo = {
+    meta: {
+      'x-distro-strings-res': distroStringsResMeta,
     },
-    {}
-  )
+  }
   return rewireHtmlWebpackPlugin(config, env, distroInfo)
 }
 
@@ -183,10 +204,10 @@ module.exports = override(
     )
   ),
   disableMinimizeByEnv(),
-  addExtraEntries(),
   supportDynamicPublicPathPrefix(),
   overrideProcessEnv({
     REACT_APP_RELEASE_VERSION: JSON.stringify(getInternalVersion()),
   }),
-  injectDistroToHTML
+  injectDistroToHTML,
+  addExtraEntries()
 )

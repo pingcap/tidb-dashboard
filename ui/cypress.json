@@ -2,5 +2,13 @@
   "defaultCommandTimeout": 60000,
   "responseTimeout": 60000,
   "screenshotOnRunFailure": false,
-  "video": false
+  "video": false,
+  "env": {
+    "db": {
+      "host": "127.0.0.1",
+      "port": "4000",
+      "user": "root",
+      "password": ""
+    }
+  }
 }

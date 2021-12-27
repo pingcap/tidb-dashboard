@@ -28,16 +28,13 @@ describe('User Login with nonRootLogin supported', () => {
   })
 
   describe('root login', () => {
-    it('root login with no pwd', () => {
-      cy.exec(
-        `echo "SET PASSWORD FOR 'root'@'%' = '';" | mysql --comments --host 127.0.0.1 --port 4000 -u root`
-      )
+    it('root login with no pwd', function () {
       cy.get('[data-e2e=signin_username_input]').should('have.value', 'root')
       cy.get('[data-e2e=signin_submit]').click()
       cy.url().should('include', '/overview')
     })
 
-    it('last succeeded login username is root', () => {
+    it('remember last succeeded login username', () => {
       cy.get('[data-e2e=signin_username_input]').should('have.value', 'root')
     })
 
@@ -58,34 +55,38 @@ describe('User Login with nonRootLogin supported', () => {
 
     it('root login with correct pwd', () => {
       // set password for root
-      cy.exec(
-        `echo "SET PASSWORD FOR 'root'@'%' = 'root_pwd';" | mysql --comments --host 127.0.0.1 --port 4000 -u root`
-      )
+      let query = "SET PASSWORD FOR 'root'@'%' = 'root_pwd'"
+      let password = ''
+      cy.task('queryDB', { query, password })
+
       cy.get('[data-e2e="signin_password_input"]').type('root_pwd{enter}')
       cy.url().should('include', '/overview')
-      cy.exec(
-        `echo "SET PASSWORD FOR 'root'@'%' = '';" | mysql --comments --host 127.0.0.1 --port 4000 -u root -p'root_pwd'`
-      )
+
+      // set empty password for root
+      query = "SET PASSWORD FOR 'root'@'%' = ''"
+      password = 'root_pwd'
+      cy.task('queryDB', { query, password })
     })
   })
 
   describe('nonRoot login', () => {
     // create user test
     before(() => {
-      cy.exec(
-        `echo "DROP USER IF EXISTS 'test'@'%';" | mysql --comments --host 127.0.0.1 --port 4000 -u root`
-      )
-      cy.exec(
-        `echo "CREATE USER 'test'@'%' IDENTIFIED BY 'test';" | mysql --comments --host 127.0.0.1 --port 4000 -u root`
-      )
-      cy.exec(
-        `echo "GRANT ALL PRIVILEGES ON *.* TO 'test'@'%' WITH GRANT OPTION;" | mysql --comments --host 127.0.0.1 --port 4000 -u root`
-      )
+      // set empty password for root
+      let query = "DROP USER IF EXISTS 'test'@'%'"
+      let password = ''
+      cy.task('queryDB', { query, password })
+
+      query = "CREATE USER 'test'@'%' IDENTIFIED BY 'test_pwd'"
+      cy.task('queryDB', { query, password })
+
+      query = "GRANT ALL PRIVILEGES ON *.* TO 'test'@'%' WITH GRANT OPTION"
+      cy.task('queryDB', { query, password })
     })
 
     it('nonRoot user with correct password', function () {
       cy.get('[data-e2e=signin_username_input]').clear().type('test')
-      cy.get('[data-e2e="signin_password_input"]').type('test{enter}')
+      cy.get('[data-e2e="signin_password_input"]').type('test_pwd{enter}')
       cy.url().should('include', '/overview')
     })
 

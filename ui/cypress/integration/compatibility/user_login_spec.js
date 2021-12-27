@@ -24,10 +24,10 @@ describe('User Login in', () => {
     })
 
     it('root login with correct pwd', function () {
-      // create user test
-      cy.exec(
-        `echo "SET PASSWORD FOR 'root'@'%' = 'root_pwd';" | mysql --comments --host 127.0.0.1 --port 4000 -u root`
-      )
+      // set password for root
+      let query = "SET PASSWORD FOR 'root'@'%' = 'root_pwd'"
+      let password = ''
+      cy.task('queryDB', { query, password })
 
       cy.get('[data-e2e="signin_password_input"]').type('root_pwd{enter}')
       cy.url().should('include', '/overview')
@@ -35,11 +35,15 @@ describe('User Login in', () => {
 
     it('root login with incorrect pwd', function () {
       cy.get('[data-e2e="signin_password_input"]').type('incorrect_pwd{enter}')
-      cy.url().should('include', '/overview')
       cy.get('[data-e2e="signin_password_form_item"]').should(
         'have.class',
         'ant-form-item-has-error'
       )
+
+      // reset empty password for root
+      let query = "SET PASSWORD FOR 'root'@'%' = ''"
+      let password = 'root_pwd'
+      cy.task('queryDB', { query, password })
     })
   })
 })

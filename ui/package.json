@@ -30,6 +30,7 @@
     "i18next-browser-languagedetector": "^5.0.0",
     "lodash": "^4.17.21",
     "moize": "^5.4.7",
+    "mysql": "mysqljs/mysql",
     "nprogress": "^0.2.0",
     "office-ui-fabric-react": "^7.123.10",
     "pullstate": "^1.23.0",

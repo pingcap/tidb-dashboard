@@ -8,7 +8,7 @@ import { useLimitSelection } from './useLimitSelection'
 
 export const DatabaseWidget: ApiFormWidget = ({ value, onChange }) => {
   const { t } = useTranslation()
-  const tips = t(`debug_api.widgets.db`)
+  const tips = t(`debug_api.widgets.db_dropdown`)
 
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState<string[]>([])
@@ -33,23 +33,21 @@ export const DatabaseWidget: ApiFormWidget = ({ value, onChange }) => {
   const { selectRef, onSelectChange } = useLimitSelection(1, memoOnChange)
 
   return (
-    <Tooltip trigger={['focus']} title={tips} placement="topLeft">
-      <Select
-        ref={selectRef}
-        mode="tags"
-        dropdownStyle={{ visibility: loading ? 'hidden' : 'visible' }}
-        loading={loading}
-        placeholder={tips}
-        value={value ? [value] : []}
-        onFocus={onFocus}
-        onChange={onSelectChange}
-      >
-        {options.map((option) => (
-          <Select.Option key={option} value={option}>
-            {option}
-          </Select.Option>
-        ))}
-      </Select>
-    </Tooltip>
+    <Select
+      ref={selectRef}
+      mode="tags"
+      dropdownStyle={{ visibility: loading ? 'hidden' : 'visible' }}
+      loading={loading}
+      placeholder={tips}
+      value={value ? [value] : []}
+      onFocus={onFocus}
+      onChange={onSelectChange}
+    >
+      {options.map((option) => (
+        <Select.Option key={option} value={option}>
+          {option}
+        </Select.Option>
+      ))}
+    </Select>
   )
 }

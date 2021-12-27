@@ -64,6 +64,17 @@ export function ListChart({
         position={Position.Left}
         tickFormat={(v) => getValueFormat('ms')(v, 0, 0)}
       />
+      <BarSeries
+        key="PLACEHOLDER"
+        id="PLACEHOLDER"
+        xScaleType={ScaleType.Time}
+        yScaleType={ScaleType.Linear}
+        xAccessor={0}
+        yAccessors={[1]}
+        stackAccessors={[0]}
+        data={[timeRangeTimestamp[0], 0]}
+        name="PLACEHOLDER"
+      />
       {Object.keys(chartData).map((digest) => {
         return (
           <BarSeries

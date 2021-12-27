@@ -15,19 +15,20 @@ import { TopsqlPlanItem } from '@lib/client'
 import type { SQLRecord } from '../ListTable'
 import { ListDetailContent } from './ListDetailContent'
 import { useSelectedRecord } from '../../../utils/useSelectedRecord'
+import {
+  convertOthersPlanRecord,
+  isOthersPlanRecord,
+} from '@lib/apps/TopSQL/utils/othersRecord'
 
 interface ListDetailTableProps {
   record: SQLRecord
 }
 
 const OVERALL_LABEL = '(Overall)'
-const UNKNOWN_LABEL = 'Unknown'
 
 const canSelect = (r: PlanRecord): boolean => {
   return (
-    !!r.plan_digest &&
-    r.plan_digest !== OVERALL_LABEL &&
-    r.plan_digest !== UNKNOWN_LABEL
+    !!r.plan_digest && r.plan_digest !== OVERALL_LABEL && !isOthersPlanRecord(r)
   )
 }
 
@@ -52,8 +53,8 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
       {
         name: 'Plan',
         key: 'plan',
-        minWidth: 150,
-        maxWidth: 150,
+        minWidth: 80,
+        maxWidth: 80,
         onRender: (rec: PlanRecord) => {
           return rec.plan_digest === '(Overall)' ? (
             rec.plan_digest
@@ -116,15 +117,16 @@ const usePlanRecord = (record: SQLRecord) => {
   const isMultiPlans = record.plans.length > 1
   const plans = [...record.plans]
 
-  const records: PlanRecord[] = plans.map((p) => {
-    const cpuTime = p.cpu_time_millis?.reduce((pt, t) => pt + t, 0) || 0
-    return {
-      ...p,
-      // plan may be empty
-      plan_digest: p.plan_digest || UNKNOWN_LABEL,
-      cpuTime,
-    }
-  })
+  const records: PlanRecord[] = plans
+    .map((p) => {
+      const cpuTime = p.cpu_time_millis?.reduce((pt, t) => pt + t, 0) || 0
+      convertOthersPlanRecord(p)
+      return {
+        ...p,
+        cpuTime,
+      }
+    })
+    .sort((a, b) => (isOthersPlanRecord(b) ? -1 : 0))
 
   // add overall
   if (isMultiPlans) {

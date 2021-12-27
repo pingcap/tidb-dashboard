@@ -7,7 +7,6 @@ import {
   Bar,
   TextWrap,
   CardTable,
-  ICardTableProps,
   createUnselectableRow,
 } from '@lib/components'
 import { TopsqlPlanItem } from '@lib/client'
@@ -34,8 +33,12 @@ const canSelect = (r: PlanRecord): boolean => {
 
 const unselectableRow = createUnselectableRow((props) => !canSelect(props.item))
 
-export function ListDetailTable({ record }: ListDetailTableProps) {
-  const { records, isMultiPlans, capacity } = usePlanRecord(record)
+export function ListDetailTable({ record: sqlRecord }: ListDetailTableProps) {
+  const {
+    records: planRecords,
+    isMultiPlans,
+    capacity,
+  } = usePlanRecord(sqlRecord || [])
 
   const tableColumns = useMemo(
     () => [
@@ -45,8 +48,8 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec: PlanRecord) => (
-          <Bar textWidth={70} value={rec.cpuTime!} capacity={capacity}>
-            {getValueFormat('ms')(rec.cpuTime, 0, 0)}
+          <Bar textWidth={80} value={rec.cpuTime!} capacity={capacity}>
+            {getValueFormat('ms')(rec.cpuTime, 2)}
           </Bar>
         ),
       },
@@ -71,40 +74,33 @@ export function ListDetailTable({ record }: ListDetailTableProps) {
 
   const { getSelectedRecord, setSelectedRecord, selection } =
     useSelectedRecord<PlanRecord>({
-      selections: records,
+      selections: planRecords,
       getKey: (r) => r.plan_digest!,
       disableSelection: (r) => !canSelect(r),
     })
-
-  let tableProps: ICardTableProps = {
-    cardNoMarginTop: true,
-    getKey: (r: PlanRecord) => r.plan_digest!,
-    items: records || [],
-    columns: tableColumns,
-    onRenderRow: unselectableRow,
-    selectionMode: SelectionMode.none,
-  }
-  if (isMultiPlans) {
-    tableProps = {
-      ...tableProps,
-      selectionMode: SelectionMode.single,
-      selectionPreservedOnEmptyClick: true,
-      onRowClicked: setSelectedRecord,
-      selection,
-    }
-  }
 
   const planRecord = useMemo(() => {
     if (isMultiPlans) {
       return getSelectedRecord()
     }
-    return records[0]
-  }, [records])
+
+    return planRecords[0]
+  }, [planRecords])
 
   return (
     <>
-      <CardTable {...tableProps} />
-      <ListDetailContent sqlRecord={record} planRecord={planRecord} />
+      <CardTable
+        cardNoMarginTop
+        getKey={(r: PlanRecord) => r?.plan_digest!}
+        items={planRecords}
+        columns={tableColumns}
+        onRenderRow={unselectableRow}
+        selectionMode={isMultiPlans ? SelectionMode.single : SelectionMode.none}
+        selectionPreservedOnEmptyClick
+        onRowClicked={isMultiPlans ? setSelectedRecord : undefined}
+        selection={selection}
+      />
+      <ListDetailContent sqlRecord={sqlRecord} planRecord={planRecord} />
     </>
   )
 }
@@ -113,7 +109,13 @@ export type PlanRecord = {
   cpuTime: number
 } & TopsqlPlanItem
 
-const usePlanRecord = (record: SQLRecord) => {
+const usePlanRecord = (
+  record: SQLRecord
+): { isMultiPlans: boolean; records: PlanRecord[]; capacity: number } => {
+  if (!record?.plans?.length) {
+    return { isMultiPlans: false, records: [], capacity: 0 }
+  }
+
   const isMultiPlans = record.plans.length > 1
   const plans = [...record.plans]
 

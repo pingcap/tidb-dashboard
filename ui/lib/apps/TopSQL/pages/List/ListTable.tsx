@@ -48,8 +48,8 @@ export function ListTable({ data }: ListTableProps) {
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec) => (
-          <Bar textWidth={70} value={rec.cpuTime!} capacity={capacity}>
-            {getValueFormat('ms')(rec.cpuTime, 0, 0)}
+          <Bar textWidth={80} value={rec.cpuTime!} capacity={capacity}>
+            {getValueFormat('ms')(rec.cpuTime, 2)}
           </Bar>
         ),
       },

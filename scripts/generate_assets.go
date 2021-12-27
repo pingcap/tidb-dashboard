@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	if len(os.Args) < 3 {
 		log.Fatal("Require 2 args")
 	}
 	directory := os.Args[1]

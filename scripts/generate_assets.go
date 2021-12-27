@@ -12,14 +12,11 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	if len(os.Args) < 3 {
 		log.Fatal("Require 2 args")
 	}
 	directory := os.Args[1]
-	buildTag := ""
-	if len(os.Args) > 2 {
-		buildTag = os.Args[2]
-	}
+	buildTag := os.Args[2]
 	var fs http.FileSystem = http.Dir(directory)
 	err := vfsgen.Generate(fs, vfsgen.Options{
 		BuildTags:    buildTag,

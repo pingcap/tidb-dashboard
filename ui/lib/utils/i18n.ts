@@ -5,30 +5,15 @@ import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
-import distro from '@lib/distribution.json'
+import { distro, isDistro } from './distroStringsRes'
 
 i18next.on('languageChanged', function (lng) {
   dayjs.locale(lng.toLowerCase())
 })
 
-export function addTranslations(requireContext) {
-  if (typeof requireContext === 'object') {
-    Object.keys(requireContext).forEach((key) => {
-      const translations = requireContext[key]
-      addTranslationResource(key, translations)
-    })
-    return
-  }
-
-  const keys = requireContext.keys()
-  keys.forEach((key) => {
-    const m = key.match(/\/(.+)\.yaml/)
-    if (!m) {
-      return
-    }
-    const lang = m[1]
-    const translations = requireContext(key)
-    addTranslationResource(lang, translations)
+export function addTranslations(translations) {
+  Object.keys(translations).forEach((key) => {
+    addTranslationResource(key, translations[key])
   })
 }
 
@@ -59,7 +44,5 @@ i18next
       defaultVariables: { distro },
     },
   })
-
-const isDistro = Boolean(distro['is_distro'])
 
 export { distro, isDistro }

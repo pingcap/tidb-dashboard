@@ -7,6 +7,10 @@ package distro
 
 import (
 	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"sync"
 
 	"go.uber.org/atomic"
@@ -61,4 +65,34 @@ func R() *DistributionResource {
 		return &defaultDistroRes
 	}
 	return r.(*DistributionResource)
+}
+
+func ReadResourceStringsFromFile(filePath string) (DistributionResource, error) {
+	distroStringsRes := DistributionResource{}
+
+	info, err := os.Stat(filePath)
+	if errors.Is(err, os.ErrNotExist) || info.IsDir() {
+		// ignore if file not exist or it is a folder
+		return distroStringsRes, nil
+	}
+	if err != nil {
+		// may be permission-like errors
+		return distroStringsRes, err
+	}
+
+	distroStringsFile, err := os.Open(filepath.Clean(filePath))
+	if err != nil {
+		return distroStringsRes, err
+	}
+	defer func() {
+		_ = distroStringsFile.Close()
+	}()
+
+	data, err := ioutil.ReadAll(distroStringsFile)
+	if err != nil {
+		return distroStringsRes, err
+	}
+
+	err = json.Unmarshal(data, &distroStringsRes)
+	return distroStringsRes, err
 }

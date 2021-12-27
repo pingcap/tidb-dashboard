@@ -10,6 +10,7 @@ import AppRegistry from '@lib/utils/registry'
 import * as routing from '@lib/utils/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
+import { distro } from '@lib/utils/i18n'
 import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
 import {
   initSentryRoutingInstrument,
@@ -39,6 +40,8 @@ import { mustLoadAppInfo, reloadWhoAmI } from '@lib/utils/store'
 // import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
 // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
+import translations from './layout/translations'
+
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
   if (spinner) {
@@ -51,9 +54,7 @@ async function webPageStart() {
   if (options.lang) {
     i18next.changeLanguage(options.lang)
   }
-  i18n.addTranslations(
-    require.context('@dashboard/layout/translations/', false, /\.yaml$/)
-  )
+  i18n.addTranslations(translations)
 
   let info: InfoInfoResponse
 
@@ -150,6 +151,8 @@ async function webPageStart() {
 }
 
 async function main() {
+  document.title = `${distro.tidb} Dashboard`
+
   if (routing.isPortalPage()) {
     // the portal page is only used to receive options
     function handlePortalEvent(event) {

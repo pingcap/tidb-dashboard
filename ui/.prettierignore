@@ -2,3 +2,4 @@ build/
 public/
 lib/client/api/*.ts
 tsconfig.json
+distro_strings.json

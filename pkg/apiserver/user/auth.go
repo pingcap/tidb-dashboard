@@ -226,7 +226,7 @@ func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
 func RegisterRouter(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
 	endpoint.GET("/login_info", s.getLoginInfoHandler)
-	endpoint.POST("/login", s.loginHandler)
+	endpoint.POST("/login", s.LoginHandler)
 	endpoint.GET("/sign_out_info", s.MWAuthRequired(), s.getSignOutInfoHandler)
 }
 
@@ -310,7 +310,7 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 // @Success 200 {object} TokenResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Router /user/login [post]
-func (s *AuthService) loginHandler(c *gin.Context) {
+func (s *AuthService) LoginHandler(c *gin.Context) {
 	s.middleware.LoginHandler(c)
 }
 

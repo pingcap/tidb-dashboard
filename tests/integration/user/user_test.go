@@ -5,12 +5,12 @@ package user
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/tests/util"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/testutil"
@@ -19,43 +19,37 @@ import (
 
 type testUserSuite struct {
 	suite.Suite
-	db *testutil.TestDB
+	db          *testutil.TestDB
+	tidbVersion string
 }
 
 func TestUserSuite(t *testing.T) {
 	db := testutil.OpenTestDB(t)
 
 	suite.Run(t, &testUserSuite{
-		db: db,
+		db:          db,
+		tidbVersion: util.GetTiDBVersion(t, db),
 	})
 }
 
 func (s *testUserSuite) SetupSuite() {
+	// create user
 }
 
 func (s *testUserSuite) TearDownSuite() {
 }
 
 func (s *testUserSuite) TestLogin() {
-	router := gin.Default()
-	routerGroup := router.Group("/dashboard/api")
-	featureFlagRegister := featureflag.NewRegistry(os.Getenv("TIDB_VERSION"))
+	featureFlagRegister := featureflag.NewRegistry(s.tidbVersion)
 	authService := user.NewAuthService(featureFlagRegister)
 
-	handled := false
-	routerGroup.Use(func(c *gin.Context) {
-		c.Next()
-
-		handled = true
-		s.Require().True(errorx.IsOfType(c.Errors.Last().Err, rest.ErrBadRequest))
-	})
-	user.RegisterRouter(routerGroup, authService)
-
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodPost, "/dashboard/api/user/login", nil)
-	router.ServeHTTP(w, req)
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", nil)
+	// when this case fails, it only updates context status and err, doesn't update and send response
+	authService.LoginHandler(c)
 
-	s.Require().Equal(http.StatusUnauthorized, w.Code)
-	s.Require().True(handled)
-	s.Require().Contains("invalid request", w.Body.String())
+	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, rest.ErrBadRequest))
+	s.Require().Equal(401, c.Writer.Status())
+	s.Require().Equal(200, w.Code)
 }

@@ -9,10 +9,11 @@ import { useGetSet } from 'react-use'
 
 interface AutoRefreshButtonProps {
   autoRefreshSecondsOptions: number[]
-  // 0 means auto refresh off
+  // set to 0 will stop the auto refresh
   autoRefreshSeconds: number
   onAutoRefreshSecondsChange: (v: number) => void
   onRefresh: () => void
+  // set to false will pause the auto refresh
   disabled?: boolean
 }
 
@@ -81,7 +82,7 @@ export function AutoRefreshButton({
   const [getRemainingRefreshSeconds, setRemainingRefreshSeconds] =
     useGetSet(autoRefreshSeconds)
 
-  const handleReset = useCallback(() => {
+  const resetTimer = useCallback(() => {
     clearTimeout(timer.current!)
     timer.current = undefined
     setRemainingRefreshSeconds(autoRefreshSeconds)
@@ -91,6 +92,8 @@ export function AutoRefreshButton({
     clearTimeout(timer.current!)
     timer.current = undefined
     if (
+      // If remaining seconds is less than the new autoRefreshSeconds, keep the current remaining seconds.
+      // Otherwise, set remaining seconds to new autoRefreshSeconds.
       getRemainingRefreshSeconds() > autoRefreshSeconds ||
       getRemainingRefreshSeconds() === 0
     ) {
@@ -102,11 +105,12 @@ export function AutoRefreshButton({
     if (disabled) {
       return
     }
-    handleReset()
+    resetTimer()
     onRefresh()
-  }, [disabled, handleReset, onRefresh])
+  }, [disabled, resetTimer, onRefresh])
 
   useEffect(() => {
+    // stop or pause auto refresh need to clear timer
     if (!autoRefreshSeconds || disabled) {
       if (!!timer.current) {
         clearTimeout(timer.current)

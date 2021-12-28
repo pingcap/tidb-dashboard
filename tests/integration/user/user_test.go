@@ -12,6 +12,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"github.com/stretchr/testify/suite"
+	"go.uber.org/fx"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
@@ -24,8 +27,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/testutil"
-	"github.com/stretchr/testify/suite"
-	"go.uber.org/fx"
 )
 
 type testUserSuite struct {
@@ -58,7 +59,7 @@ func TestUserSuite(t *testing.T) {
 		fx.Populate(&infoService),
 	)
 	ctx := context.Background()
-	app.Start(ctx)
+	_ = app.Start(ctx)
 
 	suite.Run(t, &testUserSuite{
 		db:          db,
@@ -66,7 +67,7 @@ func TestUserSuite(t *testing.T) {
 		infoService: infoService,
 	})
 
-	app.Stop(ctx)
+	_ = app.Stop(ctx)
 }
 
 func (s *testUserSuite) supportNonRootLogin() bool {
@@ -74,7 +75,7 @@ func (s *testUserSuite) supportNonRootLogin() bool {
 }
 
 func genReq(method, uri string, param map[string]interface{}) (*gin.Context, *httptest.ResponseRecorder) {
-	var jsonByte []byte = nil
+	var jsonByte []byte
 	if param != nil {
 		jsonByte, _ = json.Marshal(param)
 	}

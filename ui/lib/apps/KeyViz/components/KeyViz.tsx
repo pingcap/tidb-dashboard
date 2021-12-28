@@ -144,14 +144,11 @@ const KeyViz = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const onChangeDateRange = useCallback(
-    (v: number) => {
-      setDateRange(v)
-      setSelection(null)
-    },
+  const onChangeDateRange = useCallback((v: number) => {
+    setDateRange(v)
+    setSelection(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  )
+  }, [])
 
   const onResetZoom = useCallback(() => {
     setSelection(null)
@@ -176,10 +173,6 @@ const KeyViz = () => {
   const onZoom = useCallback(() => {
     setAutoRefreshSeconds(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const onChangeMetricType = useCallback((v: DataTag) => {
-    setMetricType(v)
   }, [])
 
   const onChartInit = useCallback((chart) => {
@@ -242,7 +235,7 @@ const KeyViz = () => {
         remainingRefreshSeconds={getRemainingRefreshSeconds()}
         isOnBrush={getOnBrush()}
         onChangeBrightLevel={onChangeBrightLevel}
-        onChangeMetric={onChangeMetricType}
+        onChangeMetric={setMetricType}
         onChangeDateRange={onChangeDateRange}
         onChangeAutoRefresh={setAutoRefreshSeconds}
         onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}

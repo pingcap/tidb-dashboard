@@ -73,6 +73,18 @@ func (s *testUserSuite) supportNonRootLogin() bool {
 	return s.authService.FeatureFlagNonRootLogin.IsSupported()
 }
 
+func genReq(method, uri string, param map[string]interface{}) (*gin.Context, *httptest.ResponseRecorder) {
+	var jsonByte []byte = nil
+	if param != nil {
+		jsonByte, _ = json.Marshal(param)
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest(method, uri, bytes.NewReader(jsonByte))
+	return c, w
+}
+
 func (s *testUserSuite) SetupSuite() {
 	// drop user if exist
 	s.db.MustExec("DROP USER IF EXISTS 'dashboardAdmin'@'%'")
@@ -98,9 +110,8 @@ func (s *testUserSuite) TearDownSuite() {
 }
 
 func (s *testUserSuite) TestLoginWithEmpty() {
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", nil)
+	c, w := genReq(http.MethodPost, "/user/login", nil)
+
 	// when this case fails, it only updates context status and err, doesn't update and send response
 	s.authService.LoginHandler(c)
 
@@ -114,11 +125,8 @@ func (s *testUserSuite) TestLoginWithNotExistUser() {
 	param["type"] = 0
 	param["username"] = "not_exist"
 	param["password"] = "aaa"
-	jsonByte, _ := json.Marshal(param)
+	c, w := genReq(http.MethodPost, "/user/login", param)
 
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
 	// when this case fails, it only updates context status and err, doesn't update and send response
 	s.authService.LoginHandler(c)
 
@@ -133,11 +141,8 @@ func (s *testUserSuite) TestLoginWithWrongPassword() {
 	param["type"] = 0
 	param["username"] = "dashboardAdmin"
 	param["password"] = "123456789"
-	jsonByte, _ := json.Marshal(param)
+	c, w := genReq(http.MethodPost, "/user/login", param)
 
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
 	// when this case fails, it only updates context status and err, doesn't update and send response
 	s.authService.LoginHandler(c)
 
@@ -152,11 +157,8 @@ func (s *testUserSuite) TestLoginWithInsufficientPrivs() {
 	param["type"] = 0
 	param["username"] = "dashboardAdmin-2"
 	param["password"] = "12345678"
-	jsonByte, _ := json.Marshal(param)
+	c, w := genReq(http.MethodPost, "/user/login", param)
 
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
 	// when this case fails, it only updates context status and err, doesn't update and send response
 	s.authService.LoginHandler(c)
 
@@ -172,11 +174,8 @@ func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 		param["type"] = 0
 		param["username"] = "dashboardAdmin"
 		param["password"] = "12345678"
-		jsonByte, _ := json.Marshal(param)
+		c, w := genReq(http.MethodPost, "/user/login", param)
 
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
 		s.authService.LoginHandler(c)
 
 		s.Require().Len(c.Errors, 0)
@@ -190,14 +189,13 @@ func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 		s.Require().Nil(err)
 
 		// request /whoami by the token
-		w2 := httptest.NewRecorder()
-		c2, _ := gin.CreateTestContext(w2)
-		c2.Request, _ = http.NewRequest(http.MethodGet, "/info/whomai", nil)
+		c2, w2 := genReq(http.MethodGet, "/info/whoami", nil)
 		c2.Request.Header.Add("Authorization", "Bearer "+res.Token)
 		s.authService.MWAuthRequired()(c2)
 		s.infoService.WhoamiHandler(c2)
 
 		s.Require().Equal(200, w2.Code)
+
 		res2 := info.WhoAmIResponse{}
 		err2 := json.Unmarshal(w2.Body.Bytes(), &res2)
 		s.Require().Nil(err2)

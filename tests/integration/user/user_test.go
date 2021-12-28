@@ -68,17 +68,25 @@ func (s *testUserSuite) supportNonRootLogin() bool {
 func (s *testUserSuite) SetupSuite() {
 	// drop user if exist
 	s.db.MustExec("DROP USER IF EXISTS 'dashboardAdmin'@'%'")
-	// create user
+	s.db.MustExec("DROP USER IF EXISTS 'dashboardAdmin-2'@'%'")
+
+	// create user 1 with sufficient priviledges
 	s.db.MustExec("CREATE USER 'dashboardAdmin'@'%' IDENTIFIED BY '12345678'")
 	s.db.MustExec("GRANT PROCESS, CONFIG ON *.* TO 'dashboardAdmin'@'%'")
 	s.db.MustExec("GRANT SHOW DATABASES ON *.* TO 'dashboardAdmin'@'%'")
 	if s.supportNonRootLogin() {
 		s.db.MustExec("GRANT DASHBOARD_CLIENT ON *.* TO 'dashboardAdmin'@'%'")
 	}
+
+	// create user 2 with insufficient priviledges
+	s.db.MustExec("CREATE USER 'dashboardAdmin-2'@'%' IDENTIFIED BY '12345678'")
+	s.db.MustExec("GRANT PROCESS, CONFIG ON *.* TO 'dashboardAdmin-2'@'%'")
+	s.db.MustExec("GRANT SHOW DATABASES ON *.* TO 'dashboardAdmin-2'@'%'")
 }
 
 func (s *testUserSuite) TearDownSuite() {
 	s.db.MustExec("DROP USER IF EXISTS 'dashboardAdmin'@'%'")
+	s.db.MustExec("DROP USER IF EXISTS 'dashboardAdmin-2'@'%'")
 }
 
 func (s *testUserSuite) TestLoginWithEmpty() {
@@ -94,24 +102,58 @@ func (s *testUserSuite) TestLoginWithEmpty() {
 }
 
 func (s *testUserSuite) TestLoginWithNotExistUser() {
-	if s.supportNonRootLogin() {
-		param := make(map[string]interface{})
-		param["type"] = 0
-		param["username"] = "not_exist"
-		param["password"] = "aaa"
-		param["extra"] = "bbb"
-		jsonByte, _ := json.Marshal(param)
+	param := make(map[string]interface{})
+	param["type"] = 0
+	param["username"] = "not_exist"
+	param["password"] = "aaa"
+	jsonByte, _ := json.Marshal(param)
 
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
-		// when this case fails, it only updates context status and err, doesn't update and send response
-		s.authService.LoginHandler(c)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	// when this case fails, it only updates context status and err, doesn't update and send response
+	s.authService.LoginHandler(c)
 
-		// fmt.Println("err:", c.Errors.Last().Err)
-		s.Require().True(errorx.IsOfType(c.Errors.Last().Err, tidb.ErrTiDBAuthFailed))
-		s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
-		s.Require().Equal(401, c.Writer.Status())
-		s.Require().Equal(200, w.Code)
-	}
+	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, tidb.ErrTiDBAuthFailed))
+	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
+	s.Require().Equal(401, c.Writer.Status())
+	s.Require().Equal(200, w.Code)
+}
+
+func (s *testUserSuite) TestLoginWithWrongPassword() {
+	param := make(map[string]interface{})
+	param["type"] = 0
+	param["username"] = "dashboardAdmin"
+	param["password"] = "123456789"
+	jsonByte, _ := json.Marshal(param)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	// when this case fails, it only updates context status and err, doesn't update and send response
+	s.authService.LoginHandler(c)
+
+	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, tidb.ErrTiDBAuthFailed))
+	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
+	s.Require().Equal(401, c.Writer.Status())
+	s.Require().Equal(200, w.Code)
+}
+
+func (s *testUserSuite) TestLoginWithInsufficientPrivs() {
+	param := make(map[string]interface{})
+	param["type"] = 0
+	param["username"] = "dashboardAdmin-2"
+	param["password"] = "12345678"
+	jsonByte, _ := json.Marshal(param)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	// when this case fails, it only updates context status and err, doesn't update and send response
+	s.authService.LoginHandler(c)
+
+	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
+	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, user.ErrInsufficientPrivs))
+	s.Require().Equal(401, c.Writer.Status())
+	s.Require().Equal(200, w.Code)
 }

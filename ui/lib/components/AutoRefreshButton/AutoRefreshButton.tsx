@@ -12,6 +12,8 @@ interface AutoRefreshButtonProps {
   // set to 0 will stop the auto refresh
   autoRefreshSeconds: number
   onAutoRefreshSecondsChange: (v: number) => void
+  remainingRefreshSeconds: number
+  onRemainingRefreshSecondsChange: (v: number) => void
   onRefresh: () => void
   // set to false will pause the auto refresh
   disabled?: boolean
@@ -46,6 +48,8 @@ export function AutoRefreshButton({
   autoRefreshSecondsOptions,
   autoRefreshSeconds,
   onAutoRefreshSecondsChange,
+  remainingRefreshSeconds,
+  onRemainingRefreshSecondsChange,
   onRefresh,
   disabled = false,
 }: AutoRefreshButtonProps) {
@@ -79,13 +83,11 @@ export function AutoRefreshButton({
   )
 
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const [getRemainingRefreshSeconds, setRemainingRefreshSeconds] =
-    useGetSet(autoRefreshSeconds)
 
   const resetTimer = useCallback(() => {
     clearTimeout(timer.current!)
     timer.current = undefined
-    setRemainingRefreshSeconds(autoRefreshSeconds)
+    onRemainingRefreshSecondsChange(autoRefreshSeconds)
   }, [autoRefreshSeconds])
 
   useEffect(() => {
@@ -94,10 +96,10 @@ export function AutoRefreshButton({
     if (
       // If remaining seconds is less than the new autoRefreshSeconds, keep the current remaining seconds.
       // Otherwise, set remaining seconds to new autoRefreshSeconds.
-      getRemainingRefreshSeconds() > autoRefreshSeconds ||
-      getRemainingRefreshSeconds() === 0
+      remainingRefreshSeconds > autoRefreshSeconds ||
+      remainingRefreshSeconds === 0
     ) {
-      setRemainingRefreshSeconds(autoRefreshSeconds)
+      onRemainingRefreshSecondsChange(autoRefreshSeconds)
     }
   }, [autoRefreshSeconds])
 
@@ -120,15 +122,15 @@ export function AutoRefreshButton({
     }
 
     timer.current = setTimeout(() => {
-      if (getRemainingRefreshSeconds() === 0) {
-        setRemainingRefreshSeconds(autoRefreshSeconds)
+      if (remainingRefreshSeconds === 0) {
+        onRemainingRefreshSecondsChange(autoRefreshSeconds)
         handleRefresh()
       } else {
-        setRemainingRefreshSeconds((c) => c - 1)
+        onRemainingRefreshSecondsChange(remainingRefreshSeconds - 1)
       }
     }, 1000)
     return () => clearTimeout(timer.current!)
-  }, [autoRefreshSeconds, disabled, getRemainingRefreshSeconds()])
+  }, [autoRefreshSeconds, disabled, remainingRefreshSeconds])
 
   return (
     <Dropdown.Button
@@ -140,7 +142,7 @@ export function AutoRefreshButton({
     >
       {autoRefreshSeconds ? (
         <RefreshProgress
-          value={1 - (getRemainingRefreshSeconds() || 0) / autoRefreshSeconds}
+          value={1 - remainingRefreshSeconds / autoRefreshSeconds}
         />
       ) : (
         <SyncOutlined />

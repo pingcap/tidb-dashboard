@@ -18,6 +18,7 @@ export interface IKeyVizToolbarProps {
   enabled: boolean
   isLoading: boolean
   autoRefreshSeconds: number
+  remainingRefreshSeconds?: number
   isOnBrush: boolean
   metricType: string
   brightLevel: number
@@ -28,6 +29,7 @@ export interface IKeyVizToolbarProps {
   onChangeDateRange: (number) => void
   onChangeBrightLevel: (number) => void
   onChangeAutoRefresh: (number) => void
+  onRemainingRefreshSecondsChange: (number) => void
   onRefresh: () => void
   onShowSettings: () => any
 }
@@ -42,7 +44,11 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
   }
 
   handleAutoRefreshMenuClick = (key) => {
-    this.props.onChangeAutoRefresh(parseInt(key))
+    this.props.onChangeAutoRefresh(key)
+  }
+
+  handleRemainingRefreshSecondsChange = (v: number) => {
+    this.props.onRemainingRefreshSecondsChange(v)
   }
 
   handleDateRange = (value) => {
@@ -72,6 +78,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
       dateRange,
       isOnBrush,
       metricType,
+      remainingRefreshSeconds = 0,
       autoRefreshSeconds,
       onShowSettings,
     } = this.props
@@ -181,6 +188,10 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
             <AutoRefreshButton
               autoRefreshSeconds={autoRefreshSeconds}
               onAutoRefreshSecondsChange={this.handleAutoRefreshMenuClick}
+              remainingRefreshSeconds={remainingRefreshSeconds}
+              onRemainingRefreshSecondsChange={
+                this.handleRemainingRefreshSecondsChange
+              }
               onRefresh={this.handleRefreshClick}
               autoRefreshSecondsOptions={autoRefreshOptions}
               disabled={!enabled || isLoading}

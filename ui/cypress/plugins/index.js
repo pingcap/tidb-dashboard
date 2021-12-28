@@ -44,6 +44,9 @@ function queryTestDB(query, password) {
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+
+  require('@cypress/code-coverage/task')(on, config)
+
   config.baseUrl =
     (process.env.SERVER_URL || 'http://localhost:3001/dashboard') + '#'
 

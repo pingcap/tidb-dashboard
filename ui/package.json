@@ -18,6 +18,7 @@
     "ahooks": "^2.9.2",
     "antd": "~4.8.5",
     "axios": "^0.21.4",
+    "babel-plugin-istanbul": "^6.1.1",
     "bulma": "^0.9.0",
     "classnames": "^2.2.6",
     "d3": "^5.16.0",
@@ -61,7 +62,8 @@
     "gen:browserlist": "gulp gen:browserlist",
     "storybook": "start-storybook -p 9009 -s public",
     "run:e2e-test": "cypress run",
-    "open:cypress": "cypress open"
+    "open:cypress": "cypress open",
+    "coverage:report": ""
   },
   "husky": {
     "hooks": {
@@ -83,6 +85,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.10.5",
+    "@cypress/code-coverage": "^3.9.12",
     "@openapitools/openapi-generator-cli": "^1.0.15-4.3.1",
     "@storybook/addon-actions": "^6.3.12",
     "@storybook/addon-links": "^6.3.12",

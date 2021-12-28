@@ -4,7 +4,7 @@ on: pull_request
 
 jobs:
   backend:
-    name: backend
+    name: Backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -34,7 +34,7 @@ jobs:
           git diff --exit-code
 
   frontend:
-    name: frontend
+    name: Frontend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

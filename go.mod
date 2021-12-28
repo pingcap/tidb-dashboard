@@ -24,7 +24,7 @@ require (
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/henrylee2cn/ameda v1.4.10
 	github.com/jarcoal/httpmock v1.0.8
-	github.com/joho/godotenv v1.3.0
+	github.com/joho/godotenv v1.4.0
 	github.com/joomcode/errorx v1.0.1
 	github.com/minio/sio v0.3.0
 	github.com/oleiade/reflections v1.0.1
@@ -33,8 +33,9 @@ require (
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
 	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
 	github.com/rs/cors v1.7.0
+	github.com/shhdgit/testfixtures/v3 v3.6.2-0.20211219171712-c4f264d673d3
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
-	github.com/spf13/pflag v1.0.1
+	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba
 	github.com/swaggo/swag v1.6.6-0.20200529100950-7c765ddd0476

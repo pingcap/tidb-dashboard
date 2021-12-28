@@ -49,6 +49,7 @@ export function TopSQLList() {
     client.getInstance().topsqlConfigGet(reqConfig)
   )
   const [showSettings, setShowSettings] = useState(false)
+  const [remainingRefreshSeconds, setRemainingRefreshSeconds] = useState(0)
   const [autoRefreshSeconds, setAutoRefreshSeconds] = useLocalStorageState(
     'topsql_auto_refresh',
     0
@@ -69,22 +70,10 @@ export function TopSQLList() {
   } = useTopSQLData(instanceId, getTimeRange(), timeWindowSize, '5')
   const isLoading = isConfigLoading || isDataLoading
 
-  const resetAutoRefresh = useCallback(() => {
-    const prevAutoRefreshSeconds = autoRefreshSeconds
-    setAutoRefreshSeconds(0)
-    setTimeout(() => {
-      setAutoRefreshSeconds(prevAutoRefreshSeconds)
-    })
-  }, [autoRefreshSeconds])
-
-  const handleSetInstance = useCallback(
-    (id: string) => {
-      setInstanceId(id)
-      setTimeRange(recentTimeRange)
-      resetAutoRefresh()
-    },
-    [recentTimeRange, resetAutoRefresh]
-  )
+  const handleUpdateTopSQLData = useCallback(() => {
+    setRemainingRefreshSeconds(autoRefreshSeconds)
+    updateTopSQLData()
+  }, [updateTopSQLData, autoRefreshSeconds])
 
   const setAbsoluteTimeRange = useCallback((t: [number, number]) => {
     setAutoRefreshSeconds(0)
@@ -94,18 +83,14 @@ export function TopSQLList() {
     })
   }, [])
 
-  const handleTimeRangeChange = useCallback(
-    (v: TimeRange) => {
-      if (v.type === 'recent') {
-        setTimeRange(v)
-        setRecentTimeRange(v)
-        resetAutoRefresh()
-      } else {
-        setAbsoluteTimeRange(v.value)
-      }
-    },
-    [resetAutoRefresh]
-  )
+  const handleTimeRangeChange = useCallback((v: TimeRange) => {
+    if (v.type === 'recent') {
+      setTimeRange(v)
+      setRecentTimeRange(v)
+    } else {
+      setAbsoluteTimeRange(v.value)
+    }
+  }, [])
 
   const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
     if (v.x) {
@@ -146,7 +131,7 @@ export function TopSQLList() {
     if (!isTimeWindowSizeComputed) {
       return
     }
-    updateTopSQLData()
+    handleUpdateTopSQLData()
   }, [instanceId, timeWindowSize, isTimeWindowSizeComputed])
 
   // Calculate time window size by container width and time range
@@ -175,7 +160,7 @@ export function TopSQLList() {
             <Space>
               <InstanceSelect
                 value={instanceId}
-                onChange={handleSetInstance}
+                onChange={setInstanceId}
                 disabled={isLoading}
               />
               <Button.Group>
@@ -199,9 +184,13 @@ export function TopSQLList() {
                 disabled={isLoading}
                 autoRefreshSeconds={autoRefreshSeconds}
                 onAutoRefreshSecondsChange={handleAutoRefreshSecondsChange}
-                onRefresh={updateTopSQLData}
+                remainingRefreshSeconds={remainingRefreshSeconds}
+                onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}
+                onRefresh={handleUpdateTopSQLData}
                 autoRefreshSecondsOptions={autoRefreshOptions}
-                disableAutoRefresh={!isConfigLoading && !topSQLConfig?.enable}
+                disableAutoRefreshOptions={
+                  !isConfigLoading && !topSQLConfig?.enable
+                }
               />
               {isLoading && (
                 <Spin

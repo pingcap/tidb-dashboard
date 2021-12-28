@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import { DownOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons'
-import { Spin, Dropdown, Menu, Space } from 'antd'
+import { DownOutlined, SyncOutlined } from '@ant-design/icons'
+import { Dropdown, Menu } from 'antd'
 import { useSpring, animated } from 'react-spring'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import { addTranslationResource } from '@lib/utils/i18n'
-import { useGetSet } from 'react-use'
 
 interface AutoRefreshButtonProps {
   autoRefreshSecondsOptions: number[]
@@ -17,6 +16,7 @@ interface AutoRefreshButtonProps {
   onRefresh: () => void
   // set to false will pause the auto refresh
   disabled?: boolean
+  disableAutoRefreshOptions?: boolean
 }
 
 const translations = {
@@ -52,6 +52,7 @@ export function AutoRefreshButton({
   onRemainingRefreshSecondsChange,
   onRefresh,
   disabled = false,
+  disableAutoRefreshOptions = false,
 }: AutoRefreshButtonProps) {
   const { t } = useTranslation()
   const autoRefreshMenu = useMemo(
@@ -71,7 +72,7 @@ export function AutoRefreshButton({
           <Menu.Divider />
           {autoRefreshSecondsOptions.map((sec) => {
             return (
-              <Menu.Item key={String(sec)}>
+              <Menu.Item key={String(sec)} disabled={disableAutoRefreshOptions}>
                 {getValueFormat('s')(sec, 0)}
               </Menu.Item>
             )
@@ -79,7 +80,12 @@ export function AutoRefreshButton({
         </Menu.ItemGroup>
       </Menu>
     ),
-    [autoRefreshSeconds, autoRefreshSecondsOptions, onAutoRefreshSecondsChange]
+    [
+      autoRefreshSeconds,
+      autoRefreshSecondsOptions,
+      onAutoRefreshSecondsChange,
+      disableAutoRefreshOptions,
+    ]
   )
 
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -110,6 +116,12 @@ export function AutoRefreshButton({
     resetTimer()
     onRefresh()
   }, [disabled, resetTimer, onRefresh])
+
+  useEffect(() => {
+    if (disableAutoRefreshOptions) {
+      onAutoRefreshSecondsChange(0)
+    }
+  }, [disableAutoRefreshOptions])
 
   useEffect(() => {
     // stop or pause auto refresh need to clear timer

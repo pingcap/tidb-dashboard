@@ -125,6 +125,10 @@ const KeyViz = () => {
   useMount(updateServiceStatus)
 
   const updateHeatmap = useCallback(async () => {
+    if (getAutoRefreshSeconds() > 0) {
+      setRemainingRefreshSeconds(getAutoRefreshSeconds())
+    }
+
     try {
       setLoading(true)
       setOnBrush(false)
@@ -252,6 +256,7 @@ const KeyViz = () => {
         onChangeMetric={onChangeMetricType}
         onChangeDateRange={onChangeDateRange}
         onChangeAutoRefresh={setAutoRefreshSeconds}
+        onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}
         onRefresh={updateHeatmap}
         onShowSettings={openSettings}
       />

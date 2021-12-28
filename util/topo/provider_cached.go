@@ -68,24 +68,24 @@ func (c *CachedTopology) GetTiDB(ctx context.Context) ([]TiDBInfo, error) {
 	return v.([]TiDBInfo), nil
 }
 
-func (c *CachedTopology) GetTiKV(ctx context.Context) ([]StoreInfo, error) {
+func (c *CachedTopology) GetTiKV(ctx context.Context) ([]TiKVStoreInfo, error) {
 	v, err := c.getOrFillCache("tikv", func() (interface{}, error) {
 		return c.p.GetTiKV(ctx)
 	})
 	if err != nil {
 		return nil, err
 	}
-	return v.([]StoreInfo), nil
+	return v.([]TiKVStoreInfo), nil
 }
 
-func (c *CachedTopology) GetTiFlash(ctx context.Context) ([]StoreInfo, error) {
+func (c *CachedTopology) GetTiFlash(ctx context.Context) ([]TiFlashStoreInfo, error) {
 	v, err := c.getOrFillCache("tiflash", func() (interface{}, error) {
 		return c.p.GetTiFlash(ctx)
 	})
 	if err != nil {
 		return nil, err
 	}
-	return v.([]StoreInfo), nil
+	return v.([]TiFlashStoreInfo), nil
 }
 
 func (c *CachedTopology) GetPrometheus(ctx context.Context) (*PrometheusInfo, error) {
@@ -109,7 +109,7 @@ func (c *CachedTopology) GetGrafana(ctx context.Context) (*GrafanaInfo, error) {
 }
 
 func (c *CachedTopology) GetAlertManager(ctx context.Context) (*AlertManagerInfo, error) {
-	v, err := c.getOrFillCache("alertmanager", func() (interface{}, error) {
+	v, err := c.getOrFillCache("alert_manager", func() (interface{}, error) {
 		return c.p.GetAlertManager(ctx)
 	})
 	if err != nil {

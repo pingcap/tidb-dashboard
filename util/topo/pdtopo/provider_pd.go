@@ -34,7 +34,7 @@ func (p *TopologyFromPD) GetTiDB(ctx context.Context) ([]topo.TiDBInfo, error) {
 	return GetTiDBInstances(ctx, p.etcdClient)
 }
 
-func (p *TopologyFromPD) GetTiKV(ctx context.Context) ([]topo.StoreInfo, error) {
+func (p *TopologyFromPD) GetTiKV(ctx context.Context) ([]topo.TiKVStoreInfo, error) {
 	tikvStores, _, err := GetStoreInstances(ctx, p.pdAPI)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (p *TopologyFromPD) GetTiKV(ctx context.Context) ([]topo.StoreInfo, error) 
 	return tikvStores, nil
 }
 
-func (p *TopologyFromPD) GetTiFlash(ctx context.Context) ([]topo.StoreInfo, error) {
+func (p *TopologyFromPD) GetTiFlash(ctx context.Context) ([]topo.TiFlashStoreInfo, error) {
 	_, tiFlashStores, err := GetStoreInstances(ctx, p.pdAPI)
 	if err != nil {
 		return nil, err

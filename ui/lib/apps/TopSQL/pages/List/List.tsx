@@ -37,7 +37,7 @@ const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
 const zoomOutRate = 0.5
 const minDate = new Date('2015-08-03')
 const minDateTimestamp = minDate.getTime() / 1000
-const useTimeWindowSize = createUseTimeWindowSize(10)
+const useTimeWindowSize = createUseTimeWindowSize(8)
 
 export function TopSQLList() {
   const { t } = useTranslation()

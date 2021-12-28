@@ -7,6 +7,7 @@ import {
   Settings,
   timeFormatter,
   BrushEndListener,
+  PartialTheme,
 } from '@elastic/charts'
 import { orderBy, toPairs } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -18,6 +19,15 @@ export interface ListChartProps {
   timeWindowSize: number
   timeRangeTimestamp: [number, number]
   onBrushEnd: BrushEndListener
+}
+
+const theme: PartialTheme = {
+  chartPaddings: {
+    right: 0,
+  },
+  chartMargins: {
+    right: 0,
+  },
 }
 
 export function ListChart({
@@ -44,6 +54,7 @@ export function ListChart({
   return (
     <Chart>
       <Settings
+        theme={theme}
         showLegend
         legendPosition={Position.Bottom}
         onBrushEnd={onBrushEnd}

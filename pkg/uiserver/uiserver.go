@@ -5,10 +5,15 @@ package uiserver
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"html"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/pingcap/log"
@@ -16,11 +21,16 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/distro"
+)
+
+const (
+	distroResFolderName = "distro-res"
 )
 
 type UpdateContentFunc func(fs http.FileSystem, oldFile http.File, path, newContent string, zippedBytes []byte)
 
-func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContentFunc) {
+func RewriteAssets(fs http.FileSystem, cfg *config.Config, distroResFolderPath string, updater UpdateContentFunc) {
 	if fs == nil {
 		return
 	}
@@ -39,6 +49,9 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContent
 		tmplText := string(bs)
 		updated := strings.ReplaceAll(tmplText, "__PUBLIC_PATH_PREFIX__", html.EscapeString(cfg.PublicPathPrefix))
 
+		distroStrings, _ := json.Marshal(distro.R()) // this will never fail
+		updated = strings.ReplaceAll(updated, "__DISTRO_STRINGS_RES__", base64.StdEncoding.EncodeToString(distroStrings))
+
 		var b bytes.Buffer
 		w := gzip.NewWriter(&b)
 		if _, err := w.Write([]byte(updated)); err != nil {
@@ -53,6 +66,67 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContent
 
 	rewrite("/index.html")
 	rewrite("/diagnoseReport.html")
+
+	if err := overrideDistroAssetsRes(fs, distroResFolderPath, updater); err != nil {
+		log.Fatal("Failed to load distro assets res", zap.Error(err))
+	}
+}
+
+func overrideDistroAssetsRes(fs http.FileSystem, distroResFolderPath string, updater UpdateContentFunc) error {
+	info, err := os.Stat(distroResFolderPath)
+	if errors.Is(err, os.ErrNotExist) || !info.IsDir() {
+		// just ignore if the folder doesn't exist or it's not a folder
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	// traverse
+	files, err := ioutil.ReadDir(distroResFolderPath)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		if err := overrideSingleDistroAsset(fs, distroResFolderPath, file.Name(), updater); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func overrideSingleDistroAsset(fs http.FileSystem, distroResFolderPath, assetName string, updater UpdateContentFunc) error {
+	assetPath := path.Join("/", distroResFolderName, assetName)
+	targetFile, err := fs.Open(assetPath)
+	if err != nil {
+		// has no target asset to be overried, skip
+		return nil
+	}
+	defer targetFile.Close()
+
+	assetFullPath := path.Join(distroResFolderPath, assetName)
+	sourceFile, err := os.Open(assetFullPath)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
+
+	data, err := ioutil.ReadAll(sourceFile)
+	if err != nil {
+		return err
+	}
+
+	var b bytes.Buffer
+	w := gzip.NewWriter(&b)
+	if _, err := w.Write(data); err != nil {
+		return err
+	}
+	if err := w.Close(); err != nil {
+		return err
+	}
+
+	updater(fs, targetFile, assetPath, string(data), b.Bytes())
+	return nil
 }
 
 func Handler(root http.FileSystem) http.Handler {

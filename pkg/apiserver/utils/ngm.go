@@ -24,6 +24,14 @@ var (
 	ErrNgmNotStart = NgmErrNS.NewType("ngm_not_started")
 )
 
+type NgmState string
+
+const (
+	NgmStateNotSupported NgmState = "not_supported"
+	NgmStateNotStarted   NgmState = "not_started"
+	NgmStateStarted      NgmState = "started"
+)
+
 const (
 	ngmCacheTTL = time.Second * 5
 )

@@ -63,20 +63,12 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type InfoResponse struct { //nolint
-	Version            *version.Info `json:"version"`
-	EnableTelemetry    bool          `json:"enable_telemetry"`
-	EnableExperimental bool          `json:"enable_experimental"`
-	SupportedFeatures  []string      `json:"supported_features"`
-	NgmState           NgmState      `json:"ngm_state"`
+	Version            *version.Info  `json:"version"`
+	EnableTelemetry    bool           `json:"enable_telemetry"`
+	EnableExperimental bool           `json:"enable_experimental"`
+	SupportedFeatures  []string       `json:"supported_features"`
+	NgmState           utils.NgmState `json:"ngm_state"`
 }
-
-type NgmState string
-
-const (
-	NgmStateNotSupported NgmState = "not_supported"
-	NgmStateNotStarted   NgmState = "not_started"
-	NgmStateStarted      NgmState = "started"
-)
 
 // @ID infoGet
 // @Summary Get information about this TiDB Dashboard
@@ -99,12 +91,12 @@ func (s *Service) infoHandler(c *gin.Context) {
 		return
 	}
 
-	ngmState := NgmStateNotSupported
+	ngmState := utils.NgmStateNotSupported
 	if constraint.Check(v) {
-		ngmState = NgmStateNotStarted
+		ngmState = utils.NgmStateNotStarted
 		addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
 		if err == nil && addr != "" {
-			ngmState = NgmStateStarted
+			ngmState = utils.NgmStateStarted
 		}
 	}
 

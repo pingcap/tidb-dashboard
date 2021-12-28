@@ -31,7 +31,15 @@ const canSelect = (r: PlanRecord): boolean => {
   )
 }
 
-const unselectableRow = createUnselectableRow((props) => !canSelect(props.item))
+const unselectableRow = createUnselectableRow(
+  (props) => !canSelect(props.item),
+  (props) =>
+    props.item.plan_digest === OVERALL_LABEL
+      ? // overall
+        { backgroundColor: '#fff' }
+      : // others
+        { backgroundColor: '#fff', fontStyle: 'italic' }
+)
 
 export function ListDetailTable({ record: sqlRecord }: ListDetailTableProps) {
   const {

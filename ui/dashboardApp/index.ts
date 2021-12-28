@@ -37,11 +37,7 @@ import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
 import AppDebugAPI from '@lib/apps/DebugAPI/index.meta'
 import { handleSSOCallback, isSSOCallback } from '@lib/utils/authSSO'
-import {
-  mustLoadAppInfo,
-  reloadWhoAmI,
-  useIsFeatureSupport,
-} from '@lib/utils/store'
+import { mustLoadAppInfo, reloadWhoAmI, NgmState } from '@lib/utils/store'
 // import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
 // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
@@ -82,7 +78,7 @@ async function webPageStart() {
     applySentryTracingInterceptor(instance)
   }
 
-  if (info?.ngm_state === 'not_started') {
+  if (info?.ngm_state === NgmState.NotStarted) {
     notification.error({
       key: 'ngm_not_started',
       message: i18next.t('health_check.failed_notification_title'),

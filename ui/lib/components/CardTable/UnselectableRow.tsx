@@ -1,34 +1,35 @@
 import React from 'react'
-import { getTheme } from 'office-ui-fabric-react/lib/Styling'
 import {
   DetailsRow,
   IDetailsListProps,
   IDetailsRowStyles,
   IDetailsRowProps,
+  IRawStyle,
 } from 'office-ui-fabric-react'
 
-const theme = getTheme()
-
 export const createUnselectableRow = (
-  when: (props: IDetailsRowProps) => boolean
+  when: (props: IDetailsRowProps) => boolean,
+  customStyles: IRawStyle | ((props: IDetailsRowProps) => IRawStyle)
 ) => {
   const renderRow: IDetailsListProps['onRenderRow'] = (props) => {
     if (!props) {
       return null
     }
 
-    const customStyles: Partial<IDetailsRowStyles> = {}
+    const styles: Partial<IDetailsRowStyles> = {}
     if (when(props)) {
-      customStyles.root = {
-        backgroundColor: theme.palette.neutralLighter,
-        cursor: 'not-allowed',
+      const s =
+        typeof customStyles === 'function' ? customStyles(props) : customStyles
+      styles.root = {
         pointerEvents: 'none',
-        color: '#aaa',
-        fontStyle: 'italic',
+        ...s,
+      }
+      styles.checkCell = {
+        cursor: 'default',
       }
     }
 
-    return <DetailsRow {...props} styles={customStyles} />
+    return <DetailsRow {...props} styles={styles} />
   }
   return renderRow
 }

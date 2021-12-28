@@ -35,7 +35,10 @@ const canSelect = (r: SQLRecord): boolean => {
   return !!r.digest && !isOthersRecord(r)
 }
 
-const unselectableRow = createUnselectableRow((props) => !canSelect(props.item))
+const unselectableRow = createUnselectableRow(
+  (props) => !canSelect(props.item),
+  { backgroundColor: '#fff' }
+)
 
 export function ListTable({ data }: ListTableProps) {
   const { t } = useTranslation()

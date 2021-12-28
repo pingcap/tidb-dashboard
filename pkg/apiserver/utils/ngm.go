@@ -20,9 +20,8 @@ import (
 )
 
 var (
-	NgmErrNS        = errorx.NewNamespace("ngm")
-	ErrNgmNotDeploy = NgmErrNS.NewType("ngm_not_deploy")
-	ErrNgmNotStart  = NgmErrNS.NewType("ngm_not_start")
+	NgmErrNS       = errorx.NewNamespace("ngm")
+	ErrNgmNotStart = NgmErrNS.NewType("ngm_not_started")
 )
 
 const (
@@ -98,11 +97,6 @@ func (n *NgmProxy) getNgmAddrFromCache() (string, error) {
 }
 
 func (n *NgmProxy) resolveNgmAddress() (string, error) {
-	pi, err := topology.FetchPrometheusTopology(n.lifecycleCtx, n.etcdClient)
-	if pi == nil || err != nil {
-		return "", ErrNgmNotDeploy.Wrap(err, "NgMonitoring component is not deployed")
-	}
-
 	addr, err := topology.FetchNgMonitoringTopology(n.lifecycleCtx, n.etcdClient)
 	if err == nil && addr != "" {
 		return fmt.Sprintf("http://%s", addr), nil

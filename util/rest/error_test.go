@@ -29,6 +29,7 @@ func TestExtractHTTPCodeFromError(t *testing.T) {
 		{http.StatusInternalServerError, fmt.Errorf("foo")},
 		{http.StatusBadRequest, ErrBadRequest.NewWithNoMessage()},
 		{http.StatusBadRequest, ErrBadRequest.WrapWithNoMessage(fmt.Errorf("foo"))},
+		{http.StatusBadRequest, errorx.Decorate(ErrBadRequest.NewWithNoMessage(), "parameter foo is invalid")},
 		{http.StatusInternalServerError, et.NewWithNoMessage()},
 		{http.StatusInternalServerError, et.WrapWithNoMessage(ErrBadRequest.NewWithNoMessage())},
 		{http.StatusBadGateway, et.NewWithNoMessage().WithProperty(HTTPCodeProperty(http.StatusBadGateway))},

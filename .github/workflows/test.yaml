@@ -7,8 +7,65 @@ on:
       - release
 
 jobs:
+  backend_ut:
+    name: Backend Unit Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v1
+        with:
+          go-version: "1.13.5"
+      - name: Load go module cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Run unit test
+        run: |
+          make unit_test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./coverage/unit_test.txt
+          fail_ci_if_error: true
+          flags: be_unit_test
+          verbose: true
+  backend_integration:
+    name: Backend Integration Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        tidb_version: [latest, v4.0.1]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v1
+        with:
+          go-version: "1.13.5"
+      - name: Load go module cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Run integration test
+        run: |
+          make integration_test TIDB_VERSION=${{ matrix.tidb_version }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./coverage/integration_${{ matrix.tidb_version }}.txt
+          fail_ci_if_error: true
+          flags: be_integration_test_${{ matrix.tidb_version }}
+          verbose: true
   e2e_test:
-    name: UI
+    name: E2E
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

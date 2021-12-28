@@ -4,16 +4,19 @@ package debugapi
 
 import (
 	"fmt"
-	"io"
 	"mime"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joomcode/errorx"
+	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/rest/fileswap"
 )
@@ -28,15 +31,31 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	}
 }
 
-type Service struct {
-	Client *endpoint.Client
-	fSwap  *fileswap.Handler
+type ServiceParams struct {
+	fx.In
+	PDAPIClient         *pdclient.APIClient
+	TiDBStatusClient    *tidbclient.StatusClient
+	TiKVStatusClient    *tikvclient.StatusClient
+	TiFlashStatusClient *tiflashclient.StatusClient
 }
 
-func newService(hp httpClientParam) *Service {
+type Service struct {
+	httpClients endpoint.HTTPClients
+	resolver    *endpoint.RequestPayloadResolver
+	fSwap       *fileswap.Handler
+}
+
+func newService(p ServiceParams) *Service {
+	httpClients := endpoint.HTTPClients{
+		PDAPIClient:         p.PDAPIClient,
+		TiDBStatusClient:    p.TiDBStatusClient,
+		TiKVStatusClient:    p.TiKVStatusClient,
+		TiFlashStatusClient: p.TiFlashStatusClient,
+	}
 	return &Service{
-		Client: endpoint.NewClient(newHTTPClient(hp), endpointDefs),
-		fSwap:  fileswap.New(),
+		httpClients: httpClients,
+		resolver:    endpoint.NewRequestPayloadResolver(apiEndpoints, httpClients),
+		fSwap:       fileswap.New(),
 	}
 }
 
@@ -46,8 +65,14 @@ func getExtFromContentTypeHeader(contentType string) string {
 		return ".bin"
 	}
 
+	// Some explicit overrides
+	if mediaType == "text/plain" {
+		return ".txt"
+	}
+
 	exts, err := mime.ExtensionsByType(mediaType)
 	if err == nil && len(exts) > 0 {
+		// Note: the first element might not be the most common one
 		return exts[0]
 	}
 
@@ -70,15 +95,11 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		return
 	}
 
-	res, err := s.Client.Send(&req)
+	resolved, err := s.resolver.ResolvePayload(req)
 	if err != nil {
 		_ = c.Error(err)
-		if errorx.IsOfType(err, endpoint.ErrInvalidParam) {
-			c.Status(http.StatusBadRequest)
-		}
 		return
 	}
-	defer res.Response.Body.Close() //nolint:errcheck
 
 	writer, err := s.fSwap.NewFileWriter("debug_api")
 	if err != nil {
@@ -89,14 +110,14 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		_ = writer.Close()
 	}()
 
-	_, err = io.Copy(writer, res.Response.Body)
+	resp, err := resolved.SendRequestAndPipe(s.httpClients, writer)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
-	fileName := fmt.Sprintf("%s_%d%s", req.EndpointID, time.Now().Unix(), ext)
+	ext := getExtFromContentTypeHeader(resp.Header.Get("Content-Type"))
+	fileName := fmt.Sprintf("%s_%d%s", req.API, time.Now().Unix(), ext)
 	downloadToken, err := writer.GetDownloadToken(fileName, time.Minute*5)
 	if err != nil {
 		// This shall never happen
@@ -120,9 +141,9 @@ func (s *Service) Download(c *gin.Context) {
 // @Summary Get all endpoints
 // @ID debugAPIGetEndpoints
 // @Security JwtAuth
-// @Success 200 {array} endpoint.APIModel
+// @Success 200 {array} endpoint.APIDefinition
 // @Failure 401 {object} rest.ErrorResponse
 // @Router /debug_api/endpoints [get]
 func (s *Service) GetEndpoints(c *gin.Context) {
-	c.JSON(http.StatusOK, s.Client.GetAllAPIModels())
+	c.JSON(http.StatusOK, s.resolver.ListAPIs())
 }

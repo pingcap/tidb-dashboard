@@ -21,6 +21,7 @@ import {
 
 interface ListDetailTableProps {
   record: SQLRecord
+  capacity: number
 }
 
 const OVERALL_LABEL = '(Overall)'
@@ -41,12 +42,11 @@ const unselectableRow = createUnselectableRow(
         { backgroundColor: '#fff', fontStyle: 'italic' }
 )
 
-export function ListDetailTable({ record: sqlRecord }: ListDetailTableProps) {
-  const {
-    records: planRecords,
-    isMultiPlans,
-    capacity,
-  } = usePlanRecord(sqlRecord || [])
+export function ListDetailTable({
+  record: sqlRecord,
+  capacity,
+}: ListDetailTableProps) {
+  const { records: planRecords, isMultiPlans } = usePlanRecord(sqlRecord || [])
 
   const tableColumns = useMemo(
     () => [
@@ -119,9 +119,9 @@ export type PlanRecord = {
 
 const usePlanRecord = (
   record: SQLRecord
-): { isMultiPlans: boolean; records: PlanRecord[]; capacity: number } => {
+): { isMultiPlans: boolean; records: PlanRecord[] } => {
   if (!record?.plans?.length) {
-    return { isMultiPlans: false, records: [], capacity: 0 }
+    return { isMultiPlans: false, records: [] }
   }
 
   const isMultiPlans = record.plans.length > 1
@@ -154,9 +154,5 @@ const usePlanRecord = (
     )
   }
 
-  const capacity = records.reduce((prev, current) => {
-    return (prev += current.cpuTime)
-  }, 0)
-
-  return { isMultiPlans, records, capacity }
+  return { isMultiPlans, records }
 }

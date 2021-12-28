@@ -8,15 +8,16 @@ import type { SQLRecord } from '../ListTable'
 
 interface ListDetailProps {
   record: SQLRecord
+  capacity: number
 }
 
-export function ListDetail({ record }: ListDetailProps) {
+export function ListDetail({ record, capacity }: ListDetailProps) {
   const { t } = useTranslation()
 
   return (
     <>
       <Head title={t('topsql.detail.title')} />
-      <ListDetailTable record={record} />
+      <ListDetailTable record={record} capacity={capacity} />
     </>
   )
 }

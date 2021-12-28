@@ -109,7 +109,7 @@ export function ListTable({ data }: ListTableProps) {
       />
       {getSelectedRecord() && (
         <AppearAnimate motionName="contentAnimation">
-          <ListDetail record={getSelectedRecord()!} />
+          <ListDetail record={getSelectedRecord()!} capacity={capacity} />
         </AppearAnimate>
       )}
     </>

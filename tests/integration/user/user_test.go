@@ -194,6 +194,7 @@ func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 		s.authService.MWAuthRequired()(c2)
 		s.infoService.WhoamiHandler(c2)
 
+		s.Require().Equal(200, c2.Writer.Status())
 		s.Require().Equal(200, w2.Code)
 
 		res2 := info.WhoAmIResponse{}
@@ -201,4 +202,41 @@ func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 		s.Require().Nil(err2)
 		s.Require().Equal(res2.DisplayName, "dashboardAdmin")
 	}
+}
+
+func (s *testUserSuite) TestLoginWithWrongPasswordForRoot() {
+	param := make(map[string]interface{})
+	param["type"] = 0
+	param["username"] = "root"
+	param["password"] = "aaa"
+	c, w := genReq(http.MethodPost, "/user/login", param)
+
+	// when this case fails, it only updates context status and err, doesn't update and send response
+	s.authService.LoginHandler(c)
+
+	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
+	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, tidb.ErrTiDBAuthFailed))
+	s.Require().Equal(401, c.Writer.Status())
+	s.Require().Equal(200, w.Code)
+}
+
+func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
+	param := make(map[string]interface{})
+	param["type"] = 0
+	param["username"] = "root"
+	param["password"] = ""
+	c, w := genReq(http.MethodPost, "/user/login", param)
+
+	// when this case fails, it only updates context status and err, doesn't update and send response
+	s.authService.LoginHandler(c)
+
+	s.Require().Len(c.Errors, 0)
+	s.Require().Equal(200, c.Writer.Status())
+	s.Require().Equal(200, w.Code)
+
+	res := struct {
+		Token string
+	}{}
+	err := json.Unmarshal(w.Body.Bytes(), &res)
+	s.Require().Nil(err)
 }

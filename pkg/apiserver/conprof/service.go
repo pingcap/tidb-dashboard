@@ -27,9 +27,8 @@ import (
 )
 
 var (
-	ConProfErrNS             = errorx.NewNamespace("error.api.continuous_profiling")
-	ErrNgMonitoringNotDeploy = ConProfErrNS.NewType("ng_monitoring_not_deploy")
-	ErrNgMonitoringNotStart  = ConProfErrNS.NewType("ng_monitoring_not_start")
+	ConProfErrNS            = errorx.NewNamespace("error.api.continuous_profiling")
+	ErrNgMonitoringNotReady = ConProfErrNS.NewType("ng_monitoring_not_ready")
 )
 
 const (
@@ -111,6 +110,7 @@ func (s *Service) reverseProxy(targetPath string) gin.HandlerFunc {
 				_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 				return
 			}
+
 			c.Request.URL.RawQuery = queryStr
 		}
 
@@ -148,16 +148,11 @@ func (s *Service) getNgMonitoringAddrFromCache() (string, error) {
 }
 
 func (s *Service) resolveNgMonitoringAddress() (string, error) {
-	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.params.EtcdClient)
-	if pi == nil || err != nil {
-		return "", ErrNgMonitoringNotDeploy.Wrap(err, "NgMonitoring component is not deployed")
-	}
-
 	addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err == nil && addr != "" {
 		return fmt.Sprintf("http://%s", addr), nil
 	}
-	return "", ErrNgMonitoringNotStart.Wrap(err, "NgMonitoring component is not started")
+	return "", ErrNgMonitoringNotReady.Wrap(err, "NgMonitoring component is not ready")
 }
 
 type ContinuousProfilingConfig struct {

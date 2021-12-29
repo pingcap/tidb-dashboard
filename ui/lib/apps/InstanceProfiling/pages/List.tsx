@@ -22,6 +22,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { combineTargetStats } from '../utils'
 
 import styles from './List.module.less'
+import { upperFirst } from 'lodash'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
@@ -116,8 +117,7 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec) => {
-          const s = combineTargetStats(rec.target_stats)
-          return <span>{s}</span>
+          return combineTargetStats(rec.target_stats)
         },
       },
       {
@@ -128,11 +128,9 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec) => {
-          if (rec.requsted_profiling_types) {
-            return <span>{rec.requsted_profiling_types.join(',')}</span>
-          } else {
-            return <span>cpu</span>
-          }
+          return (rec.requsted_profiling_types ?? ['cpu'])
+            .map((p) => (p === 'cpu' ? 'CPU' : upperFirst(p)))
+            .join(',')
         },
       },
       {
@@ -229,6 +227,7 @@ export default function Page() {
             rules={[{ required: true }]}
           >
             <MultiSelect.Plain
+              disabled={conprofEnable}
               placeholder={t(
                 'instance_profiling.list.control_form.profiling_type.placeholder'
               )}

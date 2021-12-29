@@ -7,10 +7,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/fx"
@@ -85,18 +83,6 @@ func (s *testUserSuite) supportNonRootLogin() bool {
 	return s.authService.FeatureFlagNonRootLogin.IsSupported()
 }
 
-func genReq(method, uri string, param map[string]interface{}) (*gin.Context, *httptest.ResponseRecorder) {
-	var jsonByte []byte
-	if param != nil {
-		jsonByte, _ = json.Marshal(param)
-	}
-
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request, _ = http.NewRequest(method, uri, bytes.NewReader(jsonByte))
-	return c, w
-}
-
 func (s *testUserSuite) SetupSuite() {
 	// drop user if exist
 	s.db.MustExec("DROP USER IF EXISTS 'dashboardAdmin'@'%'")
@@ -122,14 +108,12 @@ func (s *testUserSuite) TearDownSuite() {
 }
 
 func (s *testUserSuite) TestLoginWithEmpty() {
-	c, w := genReq(http.MethodPost, "/user/login", nil)
-
-	// when this case fails, it only updates context status and err, doesn't update and send response
-	s.authService.LoginHandler(c)
+	req, _ := http.NewRequest(http.MethodPost, "/user/login", nil)
+	c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
 
 	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, rest.ErrBadRequest))
 	s.Require().Equal(401, c.Writer.Status())
-	s.Require().Equal(200, w.Code)
+	s.Require().Equal(401, w.Code)
 }
 
 func (s *testUserSuite) TestLoginWithNotExistUser() {
@@ -137,15 +121,15 @@ func (s *testUserSuite) TestLoginWithNotExistUser() {
 	param["type"] = 0
 	param["username"] = "not_exist"
 	param["password"] = "aaa"
-	c, w := genReq(http.MethodPost, "/user/login", param)
 
-	// when this case fails, it only updates context status and err, doesn't update and send response
-	s.authService.LoginHandler(c)
+	jsonByte, _ := json.Marshal(param)
+	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
 
 	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
 	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, tidb.ErrTiDBAuthFailed))
 	s.Require().Equal(401, c.Writer.Status())
-	s.Require().Equal(200, w.Code)
+	s.Require().Equal(401, w.Code)
 }
 
 func (s *testUserSuite) TestLoginWithWrongPassword() {
@@ -153,15 +137,15 @@ func (s *testUserSuite) TestLoginWithWrongPassword() {
 	param["type"] = 0
 	param["username"] = "dashboardAdmin"
 	param["password"] = "123456789"
-	c, w := genReq(http.MethodPost, "/user/login", param)
 
-	// when this case fails, it only updates context status and err, doesn't update and send response
-	s.authService.LoginHandler(c)
+	jsonByte, _ := json.Marshal(param)
+	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
 
 	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
 	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, tidb.ErrTiDBAuthFailed))
 	s.Require().Equal(401, c.Writer.Status())
-	s.Require().Equal(200, w.Code)
+	s.Require().Equal(401, w.Code)
 }
 
 func (s *testUserSuite) TestLoginWithInsufficientPrivs() {
@@ -169,15 +153,15 @@ func (s *testUserSuite) TestLoginWithInsufficientPrivs() {
 	param["type"] = 0
 	param["username"] = "dashboardAdmin-2"
 	param["password"] = "12345678"
-	c, w := genReq(http.MethodPost, "/user/login", param)
 
-	// when this case fails, it only updates context status and err, doesn't update and send response
-	s.authService.LoginHandler(c)
+	jsonByte, _ := json.Marshal(param)
+	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
 
 	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
 	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, user.ErrInsufficientPrivs))
 	s.Require().Equal(401, c.Writer.Status())
-	s.Require().Equal(200, w.Code)
+	s.Require().Equal(401, w.Code)
 }
 
 func (s *testUserSuite) TestLoginWithSufficientPrivs() {
@@ -186,9 +170,10 @@ func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 		param["type"] = 0
 		param["username"] = "dashboardAdmin"
 		param["password"] = "12345678"
-		c, w := genReq(http.MethodPost, "/user/login", param)
 
-		s.authService.LoginHandler(c)
+		jsonByte, _ := json.Marshal(param)
+		req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+		c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
 
 		s.Require().Len(c.Errors, 0)
 		s.Require().Equal(200, c.Writer.Status())
@@ -200,11 +185,10 @@ func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 		err := json.Unmarshal(w.Body.Bytes(), &res)
 		s.Require().Nil(err)
 
-		// request /whoami by the token
-		c2, w2 := genReq(http.MethodGet, "/info/whoami", nil)
-		c2.Request.Header.Add("Authorization", "Bearer "+res.Token)
-		s.authService.MWAuthRequired()(c2)
-		s.infoService.WhoamiHandler(c2)
+		// request /info/whoami by the token
+		req2, _ := http.NewRequest(http.MethodPost, "/info/whoami", nil)
+		req2.Header.Add("Authorization", "Bearer "+res.Token)
+		c2, w2 := util.TestReqWithHandlers(req2, s.authService.MWAuthRequired(), s.infoService.WhoamiHandler)
 
 		s.Require().Equal(200, c2.Writer.Status())
 		s.Require().Equal(200, w2.Code)
@@ -221,15 +205,15 @@ func (s *testUserSuite) TestLoginWithWrongPasswordForRoot() {
 	param["type"] = 0
 	param["username"] = "root"
 	param["password"] = "aaa"
-	c, w := genReq(http.MethodPost, "/user/login", param)
 
-	// when this case fails, it only updates context status and err, doesn't update and send response
-	s.authService.LoginHandler(c)
+	jsonByte, _ := json.Marshal(param)
+	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
 
 	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
 	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, tidb.ErrTiDBAuthFailed))
 	s.Require().Equal(401, c.Writer.Status())
-	s.Require().Equal(200, w.Code)
+	s.Require().Equal(401, w.Code)
 }
 
 func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
@@ -237,10 +221,10 @@ func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
 	param["type"] = 0
 	param["username"] = "root"
 	param["password"] = ""
-	c, w := genReq(http.MethodPost, "/user/login", param)
 
-	// when this case fails, it only updates context status and err, doesn't update and send response
-	s.authService.LoginHandler(c)
+	jsonByte, _ := json.Marshal(param)
+	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
 
 	s.Require().Len(c.Errors, 0)
 	s.Require().Equal(200, c.Writer.Status())
@@ -254,9 +238,8 @@ func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
 }
 
 func (s *testUserSuite) TestLoginInfo() {
-	c, w := genReq(http.MethodGet, "/user/login_info", nil)
-
-	s.authService.GetLoginInfoHandler(c)
+	req, _ := http.NewRequest(http.MethodGet, "/user/login_info", nil)
+	c, w := util.TestReqWithHandlers(req, s.authService.GetLoginInfoHandler)
 
 	s.Require().Len(c.Errors, 0)
 	s.Require().Equal(200, c.Writer.Status())
@@ -266,6 +249,6 @@ func (s *testUserSuite) TestLoginInfo() {
 	err := json.Unmarshal(w.Body.Bytes(), &res)
 	s.Require().Nil(err)
 
-	// sso is not enabled default, so only returns []int{0, 1}
+	// SSO is not enabled default, so only returns []int{0, 1}
 	s.Require().Equal([]int{0, 1}, res.SupportedAuthTypes)
 }

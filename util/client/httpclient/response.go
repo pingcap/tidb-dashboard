@@ -15,6 +15,8 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/util/israce"
 	"github.com/pingcap/tidb-dashboard/util/nocopy"
@@ -70,6 +72,17 @@ func (lResp *LazyResponse) doExecutionOnce() {
 	})
 	client.SetRedirectPolicy(resty.FlexibleRedirectPolicy(10))
 	client.SetTimeout(defaultTimeout)
+	if lResp.requestSnapshot.debugTag != "" {
+		client.SetPreRequestHook(func(rc *resty.Client, rr *http.Request) error {
+			log.Info("Send request",
+				zap.String("kindTag", lResp.requestSnapshot.kindTag),
+				zap.String("debugTag", lResp.requestSnapshot.debugTag),
+				zap.String("method", rr.Method),
+				zap.String("url", rr.URL.String()))
+			return nil
+		})
+	}
+
 	for _, op := range lResp.requestSnapshot.opsC {
 		op(client)
 	}

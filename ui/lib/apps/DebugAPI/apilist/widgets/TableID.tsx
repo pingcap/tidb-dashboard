@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Select, Tooltip } from 'antd'
+import { Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import client, { InfoTableSchema } from '@lib/client'
@@ -16,7 +16,7 @@ const filterOptionByNameAndID: any = (
 
 export const TableIDWidget: ApiFormWidget = ({ value, onChange }) => {
   const { t } = useTranslation()
-  const tips = t(`debug_api.widgets.table_id`)
+  const tips = t(`debug_api.widgets.table_id_dropdown`)
 
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState<InfoTableSchema[]>([])
@@ -24,7 +24,6 @@ export const TableIDWidget: ApiFormWidget = ({ value, onChange }) => {
     if (options.length) {
       return
     }
-
     setLoading(true)
     try {
       const rst = await client.getInstance().infoListTables()
@@ -41,24 +40,22 @@ export const TableIDWidget: ApiFormWidget = ({ value, onChange }) => {
   const { selectRef, onSelectChange } = useLimitSelection(1, memoOnChange)
 
   return (
-    <Tooltip trigger={['focus']} title={tips} placement="topLeft">
-      <Select
-        ref={selectRef}
-        mode="tags"
-        dropdownStyle={{ visibility: loading ? 'hidden' : 'visible' }}
-        loading={loading}
-        placeholder={tips}
-        value={value ? [value] : []}
-        onFocus={onFocus}
-        onChange={onSelectChange}
-        filterOption={filterOptionByNameAndID}
-      >
-        {options.map((option) => (
-          <Select.Option key={option.table_id!} value={option.table_id!}>
-            {`(${option.table_name})${option.table_id}`}
-          </Select.Option>
-        ))}
-      </Select>
-    </Tooltip>
+    <Select
+      ref={selectRef}
+      mode="tags"
+      dropdownStyle={{ visibility: loading ? 'hidden' : 'visible' }}
+      loading={loading}
+      placeholder={tips}
+      value={value ? [value] : []}
+      onFocus={onFocus}
+      onChange={onSelectChange}
+      filterOption={filterOptionByNameAndID}
+    >
+      {options.map((option) => (
+        <Select.Option key={option.table_id!} value={option.table_id!}>
+          {`${option.table_name}: ${option.table_id}`}
+        </Select.Option>
+      ))}
+    </Select>
   )
 }

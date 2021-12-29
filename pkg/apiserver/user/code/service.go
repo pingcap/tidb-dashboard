@@ -35,14 +35,14 @@ type sharedSession struct {
 	RevokeWritePriv bool
 }
 
-func newService() *Service {
+func NewService() *Service {
 	return &Service{
 		sharingSecret: cryptopasta.NewEncryptionKey(),
 	}
 }
 
 var Module = fx.Options(
-	fx.Provide(newService),
+	fx.Provide(NewService),
 	fx.Invoke(registerRouter),
 )
 

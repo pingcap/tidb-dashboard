@@ -17,7 +17,11 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code/codeauth"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -50,11 +54,18 @@ func TestUserSuite(t *testing.T) {
 			httpc.NewHTTPClient,
 			pd.NewEtcdClient,
 			tidb.NewTiDBClient,
-			user.NewAuthService,
+
+			config.NewDynamicConfigManager,
 			dbstore.NewDBStore,
+
+			code.NewService,
+			sso.NewService,
+			user.NewAuthService,
 			info.NewService,
 		),
 		sqlauth.Module,
+		codeauth.Module,
+		ssoauth.Module,
 		fx.Populate(&authService),
 		fx.Populate(&infoService),
 	)
@@ -240,4 +251,21 @@ func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
 	}{}
 	err := json.Unmarshal(w.Body.Bytes(), &res)
 	s.Require().Nil(err)
+}
+
+func (s *testUserSuite) TestLoginInfo() {
+	c, w := genReq(http.MethodGet, "/user/login_info", nil)
+
+	s.authService.GetLoginInfoHandler(c)
+
+	s.Require().Len(c.Errors, 0)
+	s.Require().Equal(200, c.Writer.Status())
+	s.Require().Equal(200, w.Code)
+
+	res := user.GetLoginInfoResponse{}
+	err := json.Unmarshal(w.Body.Bytes(), &res)
+	s.Require().Nil(err)
+
+	// sso is not enabled default, so only returns []int{0, 1}
+	s.Require().Equal([]int{0, 1}, res.SupportedAuthTypes)
 }

@@ -225,7 +225,7 @@ func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
 
 func registerRouter(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
-	endpoint.GET("/login_info", s.getLoginInfoHandler)
+	endpoint.GET("/login_info", s.GetLoginInfoHandler)
 	endpoint.POST("/login", s.LoginHandler)
 	endpoint.GET("/sign_out_info", s.MWAuthRequired(), s.getSignOutInfoHandler)
 }
@@ -285,7 +285,7 @@ type GetLoginInfoResponse struct {
 // @Summary Get log in information, like supported authenticate types
 // @Success 200 {object} GetLoginInfoResponse
 // @Router /user/login_info [get]
-func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
+func (s *AuthService) GetLoginInfoHandler(c *gin.Context) {
 	supportedAuth := make([]int, 0)
 	for typeID, a := range s.authenticators {
 		enabled, err := a.IsEnabled()

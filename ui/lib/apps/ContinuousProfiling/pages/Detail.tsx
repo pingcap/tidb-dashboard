@@ -21,7 +21,14 @@ import useQueryParams from '@lib/utils/useQueryParams'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 
 const COMMON_ACTIONS: string[] = ['view_flamegraph', 'view_graph', 'download']
-const TEXT_ACTIONS: string[] = ['view_text']
+const TEXT_ACTIONS: string[] = ['view_text', 'download']
+
+const profileTypeSortOrder: { [key: string]: number } = {
+  profile: 1,
+  heap: 2,
+  goroutine: 3,
+  mutex: 4,
+}
 
 export default function Page() {
   const { t } = useTranslation()
@@ -43,25 +50,14 @@ export default function Page() {
 
     let startIndex = 0
     const profiles = groupProfileDetail?.target_profiles || []
-    // rename profile to cpu for profile_type for easier sort
-    profiles.forEach((p) => {
-      if (p.profile_type === 'profile') {
-        p.profile_type = 'cpu'
-      }
-    })
     profiles.sort((a, b) => {
       if (a.target!.component! > b.target!.component!) {
         return 1
-      } else if (a.profile_type! > b.profile_type!) {
-        return 1
       } else {
-        return -1
-      }
-    })
-    // revert name after sorting
-    profiles.forEach((p) => {
-      if (p.profile_type === 'cpu') {
-        p.profile_type = 'profile'
+        return (
+          (profileTypeSortOrder[a.profile_type!] ?? 0) -
+          (profileTypeSortOrder[b.profile_type!] ?? 0)
+        )
       }
     })
     for (const instanceKind of ['pd', 'tidb', 'tikv', 'tiflash']) {
@@ -100,7 +96,7 @@ export default function Page() {
         onRender: (record) => {
           const profileType = record.profile_type
           if (profileType === 'profile') {
-            return `CPU Profiling - ${profileDuration}s`
+            return `CPU - ${profileDuration}s`
           }
           return upperFirst(profileType)
         },

@@ -6,7 +6,7 @@ import {
   LoadingOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
-import { useGetSet } from 'react-use'
+import { useGetSet, useWindowSize, useThrottle } from 'react-use'
 import { useTranslation } from 'react-i18next'
 
 import '@elastic/charts/dist/theme_only_light.css'
@@ -41,6 +41,8 @@ const useTimeWindowSize = createUseTimeWindowSize(8)
 
 export function TopSQLList() {
   const { t } = useTranslation()
+  const { width: _screenWidth } = useWindowSize()
+  const screenWidth = useThrottle(_screenWidth, 500)
   const {
     data: topSQLConfig,
     isLoading: isConfigLoading,
@@ -140,7 +142,7 @@ export function TopSQLList() {
     const timeRangeTimestamp = calcTimeRange(getTimeRange())
     const delta = timeRangeTimestamp[1] - timeRangeTimestamp[0]
     computeTimeWindowSize(containerRef.current?.offsetWidth || 0, delta)
-  }, [containerRef, getTimeRange()])
+  }, [containerRef, getTimeRange(), screenWidth])
 
   return (
     <>

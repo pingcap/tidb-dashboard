@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
@@ -91,16 +91,12 @@ export function ListTable({ data, topN }: ListTableProps) {
     [capacity]
   )
 
-  const { selectedRecordKey, selectRecord, selection } =
-    useRecordSelection<SQLRecord>({
-      selections: tableRecords,
-      getKey: (r) => r.digest,
-      disableSelection: (r) => !canSelect(r),
-    })
-  const selectedRecord = useMemo(
-    () => tableRecords.find((r) => r.digest === selectedRecordKey),
-    [tableRecords, selectedRecordKey]
-  )
+  const { selectedRecord, selection } = useRecordSelection<SQLRecord>({
+    localStorageKey: 'topsql.list_table_selected_key',
+    selections: tableRecords,
+    getKey: (r) => r.digest,
+    disableSelection: (r) => !canSelect(r),
+  })
 
   return (
     <>
@@ -117,14 +113,14 @@ export function ListTable({ data, topN }: ListTableProps) {
         columns={tableColumns}
         selection={selection}
         selectionMode={SelectionMode.single}
-        selectionPreservedOnEmptyClick={true}
-        onRowClicked={selectRecord}
+        selectionPreservedOnEmptyClick
+        onRowClicked={() => {}}
       />
-      {!!selectedRecord && (
-        <AppearAnimate motionName="contentAnimation">
+      <AppearAnimate motionName="contentAnimation">
+        {selectedRecord && (
           <ListDetail record={selectedRecord} capacity={capacity} />
-        </AppearAnimate>
-      )}
+        )}
+      </AppearAnimate>
     </>
   )
 }

@@ -5,7 +5,7 @@ import { useState } from 'react'
 // bar width * number of bar = screen width
 export const createUseTimeWindowSize = (barWidth: number) => {
   return () => {
-    const [timeWindowSize, setTimeWindowSize] = useState<number>(1)
+    const [timeWindowSize, setTimeWindowSize] = useState<number>(0)
     const [isComputed, setIsComputed] = useState(false)
     const computeTimeWindowSize = (
       screenWidth: number,

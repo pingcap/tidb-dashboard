@@ -16,7 +16,7 @@ import type { SQLRecord } from '../ListTable'
 
 interface ListDetailContentProps {
   sqlRecord: SQLRecord
-  planRecord: PlanRecord | undefined
+  planRecord?: PlanRecord
 }
 
 export function ListDetailContent({

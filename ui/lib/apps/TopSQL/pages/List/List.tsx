@@ -6,7 +6,6 @@ import {
   LoadingOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
-import { useGetSet, useWindowSize, useThrottle } from 'react-use'
 import { useTranslation } from 'react-i18next'
 
 import '@elastic/charts/dist/theme_only_light.css'
@@ -42,8 +41,6 @@ const topN = 5
 
 export function TopSQLList() {
   const { t } = useTranslation()
-  const { width: _screenWidth } = useWindowSize()
-  const screenWidth = useThrottle(_screenWidth, 500)
   const {
     data: topSQLConfig,
     isLoading: isConfigLoading,
@@ -54,15 +51,14 @@ export function TopSQLList() {
   const [showSettings, setShowSettings] = useState(false)
   const [remainingRefreshSeconds, setRemainingRefreshSeconds] = useState(0)
   const [autoRefreshSeconds, setAutoRefreshSeconds] = useLocalStorageState(
-    'topsql_auto_refresh',
+    'topsql.auto_refresh',
     0
   )
   const [instanceId, setInstanceId] = useURLQueryState('instance_id')
-  const [recentTimeRange, setRecentTimeRange] = useLocalStorageState(
-    'topsql_recent_time_range',
+  const [timeRange, setTimeRange] = useLocalStorageState(
+    'topsql.recent_time_range',
     DEFAULT_TIME_RANGE
   )
-  const [getTimeRange, setTimeRange] = useGetSet<TimeRange>(recentTimeRange)
   const { timeWindowSize, computeTimeWindowSize, isTimeWindowSizeComputed } =
     useTimeWindowSize()
   const {
@@ -70,43 +66,71 @@ export function TopSQLList() {
     updateTopSQLData,
     isLoading: isDataLoading,
     queryTimestampRange,
-  } = useTopSQLData(instanceId, getTimeRange(), timeWindowSize, topN)
+  } = useTopSQLData(instanceId, timeRange, timeWindowSize, topN)
   const isLoading = isConfigLoading || isDataLoading
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState(0)
+
+  useEffect(() => {
+    setContainerWidth(containerRef.current?.offsetWidth || 0)
+  }, [containerRef])
+
+  // Calculate time window size by container width and time range
+  useEffect(() => {
+    if (!containerWidth) {
+      return
+    }
+
+    const timeRangeTimestamp = calcTimeRange(timeRange)
+    const delta = timeRangeTimestamp[1] - timeRangeTimestamp[0]
+    computeTimeWindowSize(containerWidth, delta)
+  }, [containerWidth, timeRange])
 
   const handleUpdateTopSQLData = useCallback(() => {
+    const cw = containerRef.current?.offsetWidth || 0
+    if (cw !== containerWidth) {
+      setContainerWidth(containerRef.current?.offsetWidth || 0)
+      return
+    }
     setRemainingRefreshSeconds(autoRefreshSeconds)
     updateTopSQLData()
-  }, [updateTopSQLData, autoRefreshSeconds])
+  }, [updateTopSQLData, autoRefreshSeconds, containerRef, containerWidth])
 
-  const setAbsoluteTimeRange = useCallback((t: [number, number]) => {
-    setAutoRefreshSeconds(0)
+  // fetch data when instance id / time window size update
+  useEffect(() => {
+    if (!isTimeWindowSizeComputed) {
+      return
+    }
+    handleUpdateTopSQLData()
+  }, [instanceId, timeWindowSize, isTimeWindowSizeComputed])
+
+  const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
+    if (!v.x) {
+      return
+    }
+
+    const tr = v.x.map((d) => d / 1000)
+    if (tr[1] - tr[0] < 60) {
+      return
+    }
+
     setTimeRange({
       type: 'absolute',
-      value: [Math.ceil(t[0]), Math.floor(t[1])],
+      value: [Math.ceil(tr[0]), Math.floor(tr[1])],
     })
   }, [])
 
-  const handleTimeRangeChange = useCallback((v: TimeRange) => {
-    if (v.type === 'recent') {
-      setTimeRange(v)
-      setRecentTimeRange(v)
-    } else {
-      setAbsoluteTimeRange(v.value)
-    }
-  }, [])
-
-  const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
-    if (v.x) {
-      setAbsoluteTimeRange(v.x.map((d) => d / 1000) as [number, number])
-    }
-  }, [])
-
   const zoomOut = useCallback(() => {
-    const [start, end] = calcTimeRange(getTimeRange())
+    const [start, end] = calcTimeRange(timeRange)
     const now = Date.now() / 1000
     const interval = end - start
+    let _zoomOutRate = zoomOutRate
 
-    let endOffset = interval * zoomOutRate
+    if (interval < 300) {
+      _zoomOutRate = 1
+    }
+
+    let endOffset = interval * _zoomOutRate
     let computedEnd = end + endOffset
     if (computedEnd > now) {
       computedEnd = now
@@ -118,32 +142,8 @@ export function TopSQLList() {
       computedStart = minDateTimestamp
     }
 
-    setAbsoluteTimeRange([computedStart, computedEnd])
-  }, [])
-
-  const handleAutoRefreshSecondsChange = useCallback(
-    (v: number) => {
-      setTimeRange(recentTimeRange)
-      setAutoRefreshSeconds(v)
-    },
-    [recentTimeRange]
-  )
-
-  // init
-  useEffect(() => {
-    if (!isTimeWindowSizeComputed) {
-      return
-    }
-    handleUpdateTopSQLData()
-  }, [instanceId, timeWindowSize, isTimeWindowSizeComputed])
-
-  // Calculate time window size by container width and time range
-  const containerRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const timeRangeTimestamp = calcTimeRange(getTimeRange())
-    const delta = timeRangeTimestamp[1] - timeRangeTimestamp[0]
-    computeTimeWindowSize(containerRef.current?.offsetWidth || 0, delta)
-  }, [containerRef, getTimeRange(), screenWidth])
+    setTimeRange({ type: 'absolute', value: [computedStart, computedEnd] })
+  }, [timeRange])
 
   return (
     <>
@@ -168,8 +168,8 @@ export function TopSQLList() {
               />
               <Button.Group>
                 <TimeRangeSelector
-                  value={getTimeRange()}
-                  onChange={handleTimeRangeChange}
+                  value={timeRange}
+                  onChange={setTimeRange}
                   disabled={isLoading}
                   disabledDate={(current) => {
                     const tooLate = current.isBefore(minDate)
@@ -186,14 +186,11 @@ export function TopSQLList() {
               <AutoRefreshButton
                 disabled={isLoading}
                 autoRefreshSeconds={autoRefreshSeconds}
-                onAutoRefreshSecondsChange={handleAutoRefreshSecondsChange}
+                onAutoRefreshSecondsChange={setAutoRefreshSeconds}
                 remainingRefreshSeconds={remainingRefreshSeconds}
                 onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}
                 onRefresh={handleUpdateTopSQLData}
                 autoRefreshSecondsOptions={autoRefreshOptions}
-                disableAutoRefreshOptions={
-                  !isConfigLoading && !topSQLConfig?.enable
-                }
               />
               {isLoading && (
                 <Spin

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -16,6 +16,7 @@ interface ListDetailTableProps {
 }
 
 const OVERALL_LABEL = '(Overall)'
+const UNKNOWN_LABEL = 'Unknown'
 
 const canSelect = (r: PlanRecord): boolean => {
   return !!r.plan_digest && r.plan_digest !== OVERALL_LABEL
@@ -25,7 +26,7 @@ export function ListDetailTable({
   record: sqlRecord,
   capacity,
 }: ListDetailTableProps) {
-  const { records: planRecords, isMultiPlans } = usePlanRecord(sqlRecord || [])
+  const { records: planRecords, isMultiPlans } = usePlanRecord(sqlRecord)
 
   const tableColumns = useMemo(
     () => [
@@ -50,7 +51,7 @@ export function ListDetailTable({
             rec.plan_digest
           ) : (
             <Tooltip title={rec.plan_digest} placement="right">
-              <TextWrap>{rec.plan_digest}</TextWrap>
+              <TextWrap>{rec.plan_digest || UNKNOWN_LABEL}</TextWrap>
             </Tooltip>
           )
         },
@@ -59,16 +60,16 @@ export function ListDetailTable({
     [capacity]
   )
 
-  const { selectedRecordKey, selectRecord, selection } =
-    useRecordSelection<PlanRecord>({
-      selections: planRecords,
-      getKey: (r) => r.plan_digest!,
-      disableSelection: (r) => !canSelect(r),
-    })
+  const { selectedRecord, selection } = useRecordSelection<PlanRecord>({
+    localStorageKey: 'topsql.list_detail_table_selected_key',
+    selections: planRecords,
+    getKey: (r) => r.plan_digest!,
+    disableSelection: (r) => !canSelect(r),
+  })
 
   const planRecord = useMemo(() => {
     if (isMultiPlans) {
-      return planRecords.find((r) => r.plan_digest === selectedRecordKey)
+      return selectedRecord
     }
 
     return planRecords[0]
@@ -83,7 +84,7 @@ export function ListDetailTable({
         columns={tableColumns}
         selectionMode={isMultiPlans ? SelectionMode.single : SelectionMode.none}
         selectionPreservedOnEmptyClick
-        onRowClicked={isMultiPlans ? selectRecord : undefined}
+        onRowClicked={isMultiPlans ? () => {} : undefined}
         selection={selection}
       />
       <ListDetailContent sqlRecord={sqlRecord} planRecord={planRecord} />
@@ -98,36 +99,39 @@ export type PlanRecord = {
 const usePlanRecord = (
   record: SQLRecord
 ): { isMultiPlans: boolean; records: PlanRecord[] } => {
-  if (!record?.plans?.length) {
-    return { isMultiPlans: false, records: [] }
-  }
-
-  const isMultiPlans = record.plans.length > 1
-  const plans = [...record.plans]
-
-  const records: PlanRecord[] = plans.map((p) => {
-    const cpuTime = p.cpu_time_millis?.reduce((pt, t) => pt + t, 0) || 0
-    return {
-      ...p,
-      cpuTime,
+  return useMemo(() => {
+    if (!record?.plans?.length) {
+      return { isMultiPlans: false, records: [] }
     }
-  })
 
-  // add overall
-  if (isMultiPlans) {
-    records.unshift(
-      records.reduce(
-        (prev, current) => {
-          prev.cpuTime += current.cpuTime
-          return prev
-        },
-        {
-          plan_digest: OVERALL_LABEL,
-          cpuTime: 0,
-        } as PlanRecord
+    const isMultiPlans = record.plans.length > 1
+    // const isMultiPlans = true
+    const plans = [...record.plans]
+
+    const records: PlanRecord[] = plans.map((p) => {
+      const cpuTime = p.cpu_time_millis?.reduce((pt, t) => pt + t, 0) || 0
+      return {
+        ...p,
+        cpuTime,
+      }
+    })
+
+    // add overall
+    if (isMultiPlans) {
+      records.unshift(
+        records.reduce(
+          (prev, current) => {
+            prev.cpuTime += current.cpuTime
+            return prev
+          },
+          {
+            plan_digest: OVERALL_LABEL,
+            cpuTime: 0,
+          } as PlanRecord
+        )
       )
-    )
-  }
+    }
 
-  return { isMultiPlans, records }
+    return { isMultiPlans, records }
+  }, [record])
 }

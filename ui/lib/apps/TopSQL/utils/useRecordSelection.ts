@@ -1,57 +1,73 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useEffect, useCallback } from 'react'
 import {
   Selection,
   SelectionMode,
   IObjectWithKey,
 } from 'office-ui-fabric-react/lib/Selection'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
+import { useGetSet } from 'react-use'
 
 interface Props<T> {
+  localStorageKey: string
   selections: T[]
   getKey: (s: T) => string
   disableSelection: (r: T) => boolean
 }
 
 export const useRecordSelection = <T>({
+  localStorageKey,
   selections,
   getKey = () => 'key',
   disableSelection = () => false,
 }: Props<T>) => {
-  const [selectedRecordKey, setSelectedRecordKey] = useState('')
-  const handleSelect = useCallback(
-    (r: T | null) => {
-      if (!!r && disableSelection(r)) {
-        return
-      }
-
-      const areDifferentRecords =
-        !!r && (!selectedRecordKey || getKey(r) !== selectedRecordKey)
-      if (areDifferentRecords) {
-        setSelectedRecordKey(getKey(r))
-        return
-      }
-    },
-    [selectedRecordKey]
+  const [selectedRecordKey, _setSelectedRecordKey] = useLocalStorageState(
+    localStorageKey,
+    ''
+  )
+  const [getInternalKey, setInternalKey] = useGetSet(selectedRecordKey)
+  const setSelectedRecordKey = useCallback((k: string) => {
+    _setSelectedRecordKey(k)
+    setInternalKey(k)
+  }, [])
+  const selectedRecord = useMemo(
+    () => selections.find((r) => getKey(r) === selectedRecordKey),
+    [selections, selectedRecordKey]
   )
   const selection = useMemo(() => {
     const s = new Selection({
-      items: selections,
       selectionMode: SelectionMode.single,
-      canSelectItem: (item) => !disableSelection(item as T),
       getKey: getKey as
         | ((
             item: IObjectWithKey,
             index?: number | undefined
           ) => string | number)
         | undefined,
+      canSelectItem: (item) => !disableSelection(item as T),
+      onSelectionChanged: () => {
+        const r = s.getSelection()[0] as T
+
+        // fluent ui bug, SelectionZone.tsx L330
+        // When click disabled item, it will clear the selection state
+        // if (!r && getInternalKey()) {
+        //   s.selectToKey(getInternalKey())
+        // }
+
+        if (!r) {
+          return
+        }
+
+        const rk = getKey(r)
+        if (rk !== getInternalKey()) {
+          setSelectedRecordKey(rk)
+        }
+      },
     })
     return s
   }, [])
 
   useEffect(() => {
-    selection.setItems(selections)
-
     // Selected record will be cleared by selection itself when update items
     // So we need manual keep the selected state in the selection
     const isRecordInSelections =
@@ -60,11 +76,11 @@ export const useRecordSelection = <T>({
     if (!selection.getSelection().length && isRecordInSelections) {
       selection.selectToKey(selectedRecordKey)
     }
-  }, [selections, selectedRecordKey])
+  }, [selections])
 
   return {
+    selectedRecord,
     selectedRecordKey,
-    selectRecord: handleSelect,
     selection,
   }
 }

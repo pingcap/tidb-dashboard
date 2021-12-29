@@ -52,6 +52,7 @@ instance_profiling:
             text: View Text
       status:
         finished: Finished
-        skipped: Skipped
+        skipped: Not Applicable
       tooltip:
         skipped: The {{kind}} does support {{type}} profiling
+        temp_skipped: The {{kind}} does support {{type}} profiling temporary

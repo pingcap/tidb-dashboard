@@ -14,10 +14,7 @@ error:
     statement:
       export_no_data: No statements can be exported
     continuous_profiling:
-      ng_monitoring_not_deploy: |
-        To use or learn more about "Continuous Profiling" feature, please search for "Continuous Profiling" in the {{distro.tidb}} official docs for more information.
-        If it doesn't resove the issue, please contact the product's technical support.
-      ng_monitoring_not_start: |
+      ng_monitoring_not_ready: |
         To use or learn more about "Continuous Profiling" feature, please search for "Continuous Profiling" in the {{distro.tidb}} official docs for more information.
         If it doesn't resove the issue, please contact the product's technical support.
     feature_not_supported: The cluster of this version doesn't support or can't use this feature, please contact with technical support to get more information.

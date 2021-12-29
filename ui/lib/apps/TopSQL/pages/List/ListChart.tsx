@@ -73,7 +73,7 @@ export function ListChart({
       <Axis
         id="left"
         position={Position.Left}
-        tickFormat={(v) => getValueFormat('ms')(v, 0, 0)}
+        tickFormat={(v) => getValueFormat('ms')(v, 2)}
       />
       <BarSeries
         key="PLACEHOLDER"

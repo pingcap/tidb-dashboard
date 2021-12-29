@@ -21,20 +21,15 @@ export default function ActionsButton({
     throw new Error('actions should at least have one action')
   }
 
-  // hide actions if the task does not succceed
   if (disabled) {
-    return <></>
+    return null
   }
 
   // actions.length > 0
   const mainAction = actions[0]
   if (actions.length === 1) {
     return (
-      <Button
-        disabled={disabled}
-        onClick={() => onClick(mainAction.key)}
-        style={{ width: 150 }}
-      >
+      <Button onClick={() => onClick(mainAction.key)} style={{ width: 150 }}>
         {mainAction.text}
       </Button>
     )
@@ -52,11 +47,7 @@ export default function ActionsButton({
     </Menu>
   )
   return (
-    <Dropdown.Button
-      disabled={disabled}
-      overlay={menu}
-      onClick={() => onClick(mainAction.key)}
-    >
+    <Dropdown.Button overlay={menu} onClick={() => onClick(mainAction.key)}>
       {mainAction.text}
     </Dropdown.Button>
   )

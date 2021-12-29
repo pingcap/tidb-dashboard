@@ -1,4 +1,13 @@
-import { Badge, Tooltip, Space, Drawer, Result, Button, Alert } from 'antd'
+import {
+  Badge,
+  Tooltip,
+  Space,
+  Drawer,
+  Result,
+  Button,
+  Alert,
+  Form,
+} from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -9,16 +18,10 @@ import {
   ReloadOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
+import dayjs, { Dayjs } from 'dayjs'
 
 import client, { ErrorStrategy } from '@lib/client'
-import {
-  Card,
-  CardTable,
-  Toolbar,
-  TimeRangeSelector,
-  TimeRange,
-  calcTimeRange,
-} from '@lib/components'
+import { Card, CardTable, Toolbar, DatePicker } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -29,19 +32,49 @@ import ConProfSettingForm from './ConProfSettingForm'
 import styles from './List.module.less'
 
 export default function Page() {
+  const [endTime, setEndTime] = useSessionStorageState<Dayjs | string>(
+    'conprof.end_time',
+    ''
+  )
+  const rangeEndTime: Dayjs | undefined = useMemo(() => {
+    let _rangeEndTime: Dayjs | undefined
+    if (typeof endTime === 'string') {
+      if (endTime === '') {
+        _rangeEndTime = undefined
+      } else {
+        _rangeEndTime = dayjs(endTime)
+      }
+    } else {
+      _rangeEndTime = endTime
+    }
+    return _rangeEndTime
+  }, [endTime])
+
   const {
     data: historyTable,
     isLoading: listLoading,
     error: historyError,
     sendRequest: reloadGroupProfiles,
   } = useClientRequest(() => {
-    const [beginTime, endTime] = calcTimeRange(timeRange)
+    let _rangeEndTime: Dayjs
+    if (rangeEndTime === undefined) {
+      _rangeEndTime = dayjs()
+    } else {
+      _rangeEndTime = rangeEndTime
+    }
+    const _rangeStartTime = _rangeEndTime.subtract(2, 'h')
+
     return client
       .getInstance()
-      .continuousProfilingGroupProfilesGet(beginTime, endTime, {
-        errorStrategy: ErrorStrategy.Custom,
-      })
+      .continuousProfilingGroupProfilesGet(
+        _rangeStartTime.unix(),
+        _rangeEndTime.unix(),
+        {
+          errorStrategy: ErrorStrategy.Custom,
+        }
+      )
   })
+
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -54,7 +87,7 @@ export default function Page() {
   const historyTableColumns = useMemo(
     () => [
       {
-        name: t('continuous_profiling.list.table.columns.targets'),
+        name: t('conprof.list.table.columns.targets'),
         key: 'targets',
         minWidth: 150,
         maxWidth: 250,
@@ -65,42 +98,54 @@ export default function Page() {
         },
       },
       {
-        name: t('continuous_profiling.list.table.columns.status'),
+        name: t('conprof.list.table.columns.status'),
         key: 'status',
         minWidth: 100,
         maxWidth: 150,
         onRender: (rec) => {
+          if (rec.state === 'running') {
+            return (
+              <Badge
+                status="processing"
+                text={t('conprof.list.table.status.running')}
+              />
+            )
+          }
+          if (rec.state === 'finished' || rec.state === 'success') {
+            // all success
+            return (
+              <Badge
+                status="success"
+                text={t('conprof.list.table.status.finished')}
+              />
+            )
+          }
+          if (
+            rec.state === 'finished_with_error' ||
+            rec.state === 'partial failed'
+          ) {
+            // partial failed
+            return (
+              <Badge
+                status="warning"
+                text={t('conprof.list.table.status.partial_finished')}
+              />
+            )
+          }
           if (rec.state === 'failed') {
             // all failed
             return (
               <Badge
                 status="error"
-                text={t('continuous_profiling.list.table.status.failed')}
-              />
-            )
-          } else if (rec.state === 'success') {
-            // all success
-            return (
-              <Badge
-                status="success"
-                text={t('continuous_profiling.list.table.status.finished')}
-              />
-            )
-          } else {
-            // partial failed
-            return (
-              <Badge
-                status="warning"
-                text={t(
-                  'continuous_profiling.list.table.status.partial_finished'
-                )}
+                text={t('conprof.list.table.status.failed')}
               />
             )
           }
+          return <Badge text={t('conprof.list.table.status.unknown')} />
         },
       },
       {
-        name: t('continuous_profiling.list.table.columns.start_at'),
+        name: t('conprof.list.table.columns.start_at'),
         key: 'ts',
         minWidth: 160,
         maxWidth: 220,
@@ -109,7 +154,7 @@ export default function Page() {
         },
       },
       {
-        name: t('continuous_profiling.list.table.columns.duration'),
+        name: t('conprof.list.table.columns.duration'),
         key: 'duration',
         minWidth: 100,
         maxWidth: 150,
@@ -118,17 +163,6 @@ export default function Page() {
     ],
     [t]
   )
-
-  const [timeRange, setTimeRange] = useSessionStorageState<
-    TimeRange | undefined
-  >('conprof.timerange', undefined)
-
-  function onTimeRangeChange(v: TimeRange) {
-    setTimeRange(v)
-    setTimeout(() => {
-      reloadGroupProfiles()
-    }, 0)
-  }
 
   const [showSettings, setShowSettings] = useState(false)
 
@@ -148,16 +182,42 @@ export default function Page() {
     reloadGroupProfiles()
   }
 
+  function handleFinish(fieldsValues) {
+    setEndTime(fieldsValues['rangeEndTime'] || '')
+    setTimeout(() => {
+      reloadGroupProfiles()
+    }, 0)
+  }
+
   return (
     <div className={styles.list_container}>
       <Card>
         <Toolbar className={styles.list_toolbar}>
           <Space>
-            <TimeRangeSelector value={timeRange} onChange={onTimeRangeChange} />
+            <Form
+              layout="inline"
+              onFinish={handleFinish}
+              initialValues={{ rangeEndTime }}
+            >
+              <Form.Item
+                name="rangeEndTime"
+                label={t('conprof.list.toolbar.range_end')}
+              >
+                <DatePicker showTime />
+              </Form.Item>
+              <Form.Item label={t('conprof.list.toolbar.range_duration')}>
+                <span>-2h</span>
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" loading={listLoading}>
+                  {t('conprof.list.toolbar.query')}
+                </Button>
+              </Form.Item>
+            </Form>
           </Space>
           <Space>
             <Tooltip
-              title={t('continuous_profiling.list.toolbar.refresh')}
+              title={t('conprof.list.toolbar.refresh')}
               placement="bottom"
             >
               {listLoading ? (
@@ -167,7 +227,7 @@ export default function Page() {
               )}
             </Tooltip>
             <Tooltip
-              title={t('continuous_profiling.list.toolbar.settings')}
+              title={t('conprof.list.toolbar.settings')}
               placement="bottom"
             >
               <SettingOutlined onClick={() => setShowSettings(true)} />
@@ -179,7 +239,7 @@ export default function Page() {
       {conprofIsDisabled && historyTable && historyTable.length > 0 && (
         <div className={styles.alert_container}>
           <Alert
-            message={t('continuous_profiling.settings.disabled_with_history')}
+            message={t('conprof.settings.disabled_with_history')}
             type="info"
             showIcon
           />
@@ -188,13 +248,11 @@ export default function Page() {
 
       {conprofIsDisabled && historyTable?.length === 0 ? (
         <Result
-          title={t('continuous_profiling.settings.disabled_result.title')}
-          subTitle={t(
-            'continuous_profiling.settings.disabled_result.sub_title'
-          )}
+          title={t('conprof.settings.disabled_result.title')}
+          subTitle={t('conprof.settings.disabled_result.sub_title')}
           extra={
             <Button type="primary" onClick={() => setShowSettings(true)}>
-              {t('continuous_profiling.settings.open_settings')}
+              {t('conprof.settings.open_settings')}
             </Button>
           }
         />
@@ -214,7 +272,7 @@ export default function Page() {
       )}
 
       <Drawer
-        title={t('continuous_profiling.settings.title')}
+        title={t('conprof.settings.title')}
         width={300}
         closable={true}
         visible={showSettings}

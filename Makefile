@@ -4,14 +4,10 @@ BUILD_TAGS ?=
 
 LDFLAGS ?=
 
-FEATURE_VERSION = "6.0.0"
+FEATURE_VERSION ?= 6.0.0
 
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
-endif
-
-ifeq ($(TEST_COMPATIBILITY),1)
-	FEATURE_VERSION = "5.0.0"
 endif
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(shell grep -v '^\#' ./release-version)"
@@ -77,12 +73,14 @@ endif
 
 .PHONY: run
 run:
-	bin/tidb-dashboard --debug --experimental --feature-version "${FEATURE_VERSION}"
+	bin/tidb-dashboard --debug --experimental --feature-version "$(FEATURE_VERSION)"
 
-e2e_test_features:
+test_e2e_compat_features:
 	cd ui &&\
-	yarn run:e2e-test --spec cypress/integration/features/**/*_spec.js
+	yarn run:e2e-test:compat-features --env FEATURE_VERSION=$(FEATURE_VERSION)
 
-e2e_test_compatibility:
+test_e2e_common_features:
 	cd ui &&\
-	yarn run:e2e-test --spec cypress/integration/compatibility/**/*_spec.js
+	yarn run:e2e-test:common-features
+
+test_e2e: test_e2e_compat_features test_e2e_common_features

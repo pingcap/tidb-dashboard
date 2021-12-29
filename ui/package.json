@@ -31,7 +31,6 @@
     "i18next-browser-languagedetector": "^5.0.0",
     "lodash": "^4.17.21",
     "moize": "^5.4.7",
-    "mysql": "mysqljs/mysql",
     "nprogress": "^0.2.0",
     "office-ui-fabric-react": "^7.123.10",
     "pullstate": "^1.23.0",
@@ -61,9 +60,9 @@
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
     "storybook": "start-storybook -p 9009 -s public",
-    "run:e2e-test": "cypress run",
-    "open:cypress": "cypress open",
-    "coverage:report": ""
+    "run:e2e-test:compat-features": "cypress run --spec cypress/integration/compatibility-features/**/*_spec.js",
+    "run:e2e-test:common-features": "cypress run --spec cypress/integration/common-features/**/*_spec.js",
+    "open:cypress": "cypress open"
   },
   "husky": {
     "hooks": {
@@ -113,6 +112,7 @@
     "husky": "^4.2.5",
     "less": "^3.12.2",
     "less-loader": "^5.0.0",
+    "mysql2": "^2.3.3",
     "prettier": "2.4.1",
     "pretty-quick": "^2.0.1",
     "react-app-rewire-alias": "^0.1.6",

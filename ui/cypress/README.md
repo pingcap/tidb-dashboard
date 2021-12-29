@@ -1,6 +1,6 @@
 # E2E Test
 
-Since there are some features is different from version to version, we have `e2e-test-features` and `e2e-test-compatibility` to test new features of latest version and compatibility of low version, respectively.
+Since there are some features is different from version to version, we have `make test_e2e_compat_features` and `make test_e2e_common_features` to test features compatibility in different versions and common features in all versions, respectively.
 
 ## Install Cypress
 
@@ -10,9 +10,9 @@ The Cypress has been added to package.json, so just run `yarn` to install it. We
 
 **Prerequisite**: TiDB Dashboard server has to be started before run cypress test.
 
-### Run Test Locally
+### Open Test Runner to Run Test Locally
 
-#### Test E2E Features
+#### Test E2E with FEATURE_VERSION >= 5.3.0
 
 ```shell
 # start frontend server
@@ -23,17 +23,26 @@ make dev && make run
 cd ui && yarn open:cypress
 ```
 
-Run test by choosing test file under `integration/features` on cypress test runner, cypress will open a broswer to run e2e test.
-
-#### Test E2E Compatibility
+#### Test E2E with FEATURE_VERSION < 5.3.0
 
 ```shell
 # start frontend server
 cd ui && yarn start
 # start backend server
-make dev && TEST_COMPATIBILITY=1 make run
+make dev && make run FEATURE_VERSION=5.0.0
 # open cypress test runner
-cd ui && yarn open:cypress
+cd ui && yarn open:cypress --env FEATURE_VERSION=5.0.0
 ```
 
-Run test by choosing test file under `integration/compatibility` on cypress test runner, cypress will open a broswer to run e2e test.
+Run test by choosing test file under `/integration` on cypress test runner, cypress will open a broswer to run e2e test.
+
+### Run on CI
+
+```shell
+# start frontend server
+make ui
+# start backend server
+UI=1 make && make run FEATURE_VERSION=${FEATURE_VERSION}
+# run e2e_compat_features and e2e_common_features tests
+make test_e2e FEATURE_VERSION=${FEATURE_VERSION}
+```

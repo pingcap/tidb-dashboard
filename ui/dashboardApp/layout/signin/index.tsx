@@ -265,7 +265,6 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
             <h2>{t('signin.form.tidb_auth.title')}</h2>
           </Form.Item>
           <Form.Item
-            data-e2e="signin_username_form_item"
             name="username"
             label={t('signin.form.username')}
             rules={[{ required: true }]}

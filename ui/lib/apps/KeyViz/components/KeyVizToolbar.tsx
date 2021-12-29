@@ -1,4 +1,4 @@
-import React, { Component, useEffect } from 'react'
+import React, { Component } from 'react'
 import {
   AreaChartOutlined,
   ArrowsAltOutlined,
@@ -6,76 +6,13 @@ import {
   ClockCircleOutlined,
   DownOutlined,
   LoadingOutlined,
-  SyncOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
-import {
-  Slider,
-  Spin,
-  Select,
-  Dropdown,
-  Button,
-  Menu,
-  Tooltip,
-  Space,
-} from 'antd'
+import { Slider, Spin, Select, Dropdown, Button, Tooltip, Space } from 'antd'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { useSpring, animated } from 'react-spring'
 import Flexbox from '@g07cha/flexbox-react'
-import { Card, Toolbar } from '@lib/components'
+import { Card, Toolbar, AutoRefreshButton } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-
-function RefreshProgress(props) {
-  const { value } = props
-  const r = 50
-  const totalLength = 2 * Math.PI * r
-  const [springProps, setSpringProps] = useSpring(() => ({
-    value: 0,
-  }))
-
-  useEffect(() => {
-    setSpringProps({
-      value,
-    })
-  }, [setSpringProps, value])
-
-  return (
-    <svg
-      viewBox="0 0 120 120"
-      width="1em"
-      height="1em"
-      className="anticon"
-      style={{
-        transform: 'rotate(-90deg)',
-      }}
-    >
-      <circle
-        cx="60"
-        cy="60"
-        r={r}
-        fill="none"
-        stroke="#eee"
-        strokeWidth="20"
-      />
-      <animated.circle
-        cx="60"
-        cy="60"
-        r={r}
-        fill="none"
-        stroke={springProps.value.interpolate({
-          range: [0, 1],
-          output: ['#989CAB', '#4571FF'],
-        })}
-        strokeWidth="20"
-        strokeDasharray={totalLength}
-        strokeDashoffset={springProps.value.interpolate({
-          range: [0, 1],
-          output: [totalLength, 0],
-        })}
-      />
-    </svg>
-  )
-}
 
 export interface IKeyVizToolbarProps {
   enabled: boolean
@@ -92,6 +29,7 @@ export interface IKeyVizToolbarProps {
   onChangeDateRange: (number) => void
   onChangeBrightLevel: (number) => void
   onChangeAutoRefresh: (number) => void
+  onRemainingRefreshSecondsChange: (number) => void
   onRefresh: () => void
   onShowSettings: () => any
 }
@@ -105,8 +43,12 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
     this.props.onRefresh()
   }
 
-  handleAutoRefreshMenuClick = ({ key }) => {
-    this.props.onChangeAutoRefresh(parseInt(key))
+  handleAutoRefreshMenuClick = (key) => {
+    this.props.onChangeAutoRefresh(key)
+  }
+
+  handleRemainingRefreshSecondsChange = (v: number) => {
+    this.props.onRemainingRefreshSecondsChange(v)
   }
 
   handleDateRange = (value) => {
@@ -132,10 +74,11 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
     const {
       t,
       enabled,
+      isLoading,
       dateRange,
       isOnBrush,
       metricType,
-      remainingRefreshSeconds,
+      remainingRefreshSeconds = 0,
       autoRefreshSeconds,
       onShowSettings,
     } = this.props
@@ -156,25 +99,6 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
 
     // in seconds
     const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
-
-    const autoRefreshMenu = (
-      <Menu
-        onClick={this.handleAutoRefreshMenuClick}
-        selectedKeys={[String(this.props.autoRefreshSeconds || 0)]}
-      >
-        <Menu.ItemGroup title={t('keyviz.toolbar.auto_refresh.title')}>
-          <Menu.Item key="0">{t('keyviz.toolbar.auto_refresh.off')}</Menu.Item>
-          <Menu.Divider />
-          {autoRefreshOptions.map((sec) => {
-            return (
-              <Menu.Item key={String(sec)}>
-                {getValueFormat('s')(sec, 0)}
-              </Menu.Item>
-            )
-          })}
-        </Menu.ItemGroup>
-      </Menu>
-    )
 
     return (
       <Card>
@@ -261,24 +185,17 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
               ))}
             </Select>
 
-            <Dropdown.Button
-              disabled={!enabled}
-              onClick={this.handleRefreshClick}
-              overlay={autoRefreshMenu}
-              trigger={['click']}
-              icon={<DownOutlined />}
-            >
-              {autoRefreshSeconds ? (
-                <RefreshProgress
-                  value={
-                    1 - (remainingRefreshSeconds || 0) / autoRefreshSeconds
-                  }
-                />
-              ) : (
-                <SyncOutlined />
-              )}
-              {t('keyviz.toolbar.refresh')}
-            </Dropdown.Button>
+            <AutoRefreshButton
+              autoRefreshSeconds={autoRefreshSeconds}
+              onAutoRefreshSecondsChange={this.handleAutoRefreshMenuClick}
+              remainingRefreshSeconds={remainingRefreshSeconds}
+              onRemainingRefreshSecondsChange={
+                this.handleRemainingRefreshSecondsChange
+              }
+              onRefresh={this.handleRefreshClick}
+              autoRefreshSecondsOptions={autoRefreshOptions}
+              disabled={!enabled || isLoading}
+            />
 
             {this.props.isLoading && (
               <Spin

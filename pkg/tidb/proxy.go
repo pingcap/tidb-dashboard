@@ -164,8 +164,9 @@ func (p *proxy) pick() *remote {
 	if picked != nil {
 		return picked
 	}
-	if p.current.Load() != "" {
-		r, ok := p.remotes.Load(p.current)
+	curRemote := p.current.Load()
+	if curRemote != "" {
+		r, ok := p.remotes.Load(curRemote)
 		if ok {
 			picked = r.(*remote)
 		} else {

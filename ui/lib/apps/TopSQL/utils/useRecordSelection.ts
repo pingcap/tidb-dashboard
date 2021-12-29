@@ -1,7 +1,6 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
-import { useCallback, useEffect, useMemo } from 'react'
-import { useGetSet } from 'react-use'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Selection,
   SelectionMode,
@@ -19,22 +18,25 @@ export const useRecordSelection = <T>({
   getKey = () => 'key',
   disableSelection = () => false,
 }: Props<T>) => {
-  const [getRecord, setRecord] = useGetSet<T | null>(null)
-  const handleSelect = useCallback((r: T | null) => {
-    if (!!r && disableSelection(r)) {
-      return
-    }
+  const [selectedRecordKey, setSelectedRecordKey] = useState('')
+  const handleSelect = useCallback(
+    (r: T | null) => {
+      if (!!r && disableSelection(r)) {
+        return
+      }
 
-    const prevRecord = getRecord()
-    const areDifferentRecords =
-      !!r && (!prevRecord || getKey(r) !== getKey(prevRecord))
-    if (areDifferentRecords) {
-      setRecord(r)
-      return
-    }
-  }, [])
+      const areDifferentRecords =
+        !!r && (!selectedRecordKey || getKey(r) !== selectedRecordKey)
+      if (areDifferentRecords) {
+        setSelectedRecordKey(getKey(r))
+        return
+      }
+    },
+    [selectedRecordKey]
+  )
   const selection = useMemo(() => {
     const s = new Selection({
+      items: selections,
       selectionMode: SelectionMode.single,
       canSelectItem: (item) => !disableSelection(item as T),
       getKey: getKey as
@@ -43,29 +45,26 @@ export const useRecordSelection = <T>({
             index?: number | undefined
           ) => string | number)
         | undefined,
-      onSelectionChanged: () => {
-        const r = getRecord()
-        const isRecordInSelections =
-          !!r && s.getItems().find((tr) => getKey(tr as T) === getKey(r))
-        if (!s.getSelection().length && isRecordInSelections) {
-          s.selectToKey(getKey(r))
-        }
-      },
     })
     return s
-  }, [selections])
+  }, [])
 
   useEffect(() => {
-    const r = getRecord()
-    if (!r || selections.find((tr) => getKey(tr) === getKey(r))) {
-      return
+    selection.setItems(selections)
+
+    // Selected record will be cleared by selection itself when update items
+    // So we need manual keep the selected state in the selection
+    const isRecordInSelections =
+      !!selectedRecordKey &&
+      selection.getItems().find((tr) => getKey(tr as T) === selectedRecordKey)
+    if (!selection.getSelection().length && isRecordInSelections) {
+      selection.selectToKey(selectedRecordKey)
     }
-    setRecord(null)
-  }, [selections])
+  }, [selections, selectedRecordKey])
 
   return {
-    getSelectedRecord: getRecord,
-    setSelectedRecord: handleSelect,
+    selectedRecordKey,
+    selectRecord: handleSelect,
     selection,
   }
 }

@@ -59,7 +59,7 @@ export function ListDetailTable({
     [capacity]
   )
 
-  const { getSelectedRecord, setSelectedRecord, selection } =
+  const { selectedRecordKey, selectRecord, selection } =
     useRecordSelection<PlanRecord>({
       selections: planRecords,
       getKey: (r) => r.plan_digest!,
@@ -68,11 +68,11 @@ export function ListDetailTable({
 
   const planRecord = useMemo(() => {
     if (isMultiPlans) {
-      return getSelectedRecord()
+      return planRecords.find((r) => r.plan_digest === selectedRecordKey)
     }
 
     return planRecords[0]
-  }, [planRecords])
+  }, [planRecords, isMultiPlans])
 
   return (
     <>
@@ -83,7 +83,7 @@ export function ListDetailTable({
         columns={tableColumns}
         selectionMode={isMultiPlans ? SelectionMode.single : SelectionMode.none}
         selectionPreservedOnEmptyClick
-        onRowClicked={isMultiPlans ? setSelectedRecord : undefined}
+        onRowClicked={isMultiPlans ? selectRecord : undefined}
         selection={selection}
       />
       <ListDetailContent sqlRecord={sqlRecord} planRecord={planRecord} />

@@ -91,12 +91,16 @@ export function ListTable({ data, topN }: ListTableProps) {
     [capacity]
   )
 
-  const { getSelectedRecord, setSelectedRecord, selection } =
+  const { selectedRecordKey, selectRecord, selection } =
     useRecordSelection<SQLRecord>({
       selections: tableRecords,
       getKey: (r) => r.digest,
       disableSelection: (r) => !canSelect(r),
     })
+  const selectedRecord = useMemo(
+    () => tableRecords.find((r) => r.digest === selectedRecordKey),
+    [tableRecords, selectedRecordKey]
+  )
 
   return (
     <>
@@ -114,11 +118,11 @@ export function ListTable({ data, topN }: ListTableProps) {
         selection={selection}
         selectionMode={SelectionMode.single}
         selectionPreservedOnEmptyClick={true}
-        onRowClicked={setSelectedRecord}
+        onRowClicked={selectRecord}
       />
-      {getSelectedRecord() && (
+      {!!selectedRecord && (
         <AppearAnimate motionName="contentAnimation">
-          <ListDetail record={getSelectedRecord()!} capacity={capacity} />
+          <ListDetail record={selectedRecord} capacity={capacity} />
         </AppearAnimate>
       )}
     </>

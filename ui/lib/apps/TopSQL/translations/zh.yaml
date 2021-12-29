@@ -17,7 +17,8 @@ topsql:
       cancel: 取消
   refresh: 刷新
   table:
-    description: Top 5 SQL（以当前时间范围 CPU 开销排序）
+    description: Top {{topN}} SQL（以当前时间范围 CPU 开销排序）
+    others_tooltip: Top {{topN}} 以外数据的聚合
   detail:
     title: SQL 详情
   fields:

@@ -3,6 +3,7 @@ import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
+import { QuestionCircleOutlined } from '@ant-design/icons'
 
 import { TopsqlCPUTimeItem, TopsqlPlanItem } from '@lib/client'
 import {
@@ -12,15 +13,15 @@ import {
   TextWrap,
   HighlightSQL,
   AppearAnimate,
-  createUnselectableRow,
 } from '@lib/components'
 
 import { isOthersRecord } from '../../utils/othersRecord'
-import { useSelectedRecord } from '../../utils/useSelectedRecord'
+import { useRecordSelection } from '../../utils/useRecordSelection'
 import { ListDetail } from './ListDetail'
 
 interface ListTableProps {
   data: TopsqlCPUTimeItem[]
+  topN: number
 }
 
 export interface SQLRecord {
@@ -35,12 +36,7 @@ const canSelect = (r: SQLRecord): boolean => {
   return !!r.digest && !isOthersRecord(r)
 }
 
-const unselectableRow = createUnselectableRow(
-  (props) => !canSelect(props.item),
-  { backgroundColor: '#fff' }
-)
-
-export function ListTable({ data }: ListTableProps) {
+export function ListTable({ data, topN }: ListTableProps) {
   const { t } = useTranslation()
   const { data: tableRecords, capacity } = useTableData(data)
   const tableColumns = useMemo(
@@ -62,12 +58,24 @@ export function ListTable({ data }: ListTableProps) {
         minWidth: 250,
         maxWidth: 550,
         onRender: (rec) => {
-          const text = rec.query
-            ? isOthersRecord(rec)
-              ? ''
-              : rec.query
-            : 'Unknown'
-          return (
+          const isOthers = isOthersRecord(rec)
+          const text = rec.query || 'Unknown'
+          return isOthers ? (
+            <Tooltip
+              title={t('topsql.table.others_tooltip', { topN })}
+              placement="right"
+            >
+              <span
+                style={{
+                  verticalAlign: 'middle',
+                  fontStyle: 'italic',
+                  color: '#aaa',
+                }}
+              >
+                {text} <QuestionCircleOutlined />
+              </span>
+            </Tooltip>
+          ) : (
             <Tooltip
               title={<HighlightSQL sql={text} theme="dark" />}
               placement="right"
@@ -84,7 +92,7 @@ export function ListTable({ data }: ListTableProps) {
   )
 
   const { getSelectedRecord, setSelectedRecord, selection } =
-    useSelectedRecord<SQLRecord>({
+    useRecordSelection<SQLRecord>({
       selections: tableRecords,
       getKey: (r) => r.digest,
       disableSelection: (r) => !canSelect(r),
@@ -93,7 +101,9 @@ export function ListTable({ data }: ListTableProps) {
   return (
     <>
       <Card noMarginBottom noMarginTop>
-        <p className="ant-form-item-extra">{t('topsql.table.description')}</p>
+        <p className="ant-form-item-extra">
+          {t('topsql.table.description', { topN })}
+        </p>
       </Card>
       <CardTable
         cardNoMarginTop
@@ -105,7 +115,6 @@ export function ListTable({ data }: ListTableProps) {
         selectionMode={SelectionMode.single}
         selectionPreservedOnEmptyClick={true}
         onRowClicked={setSelectedRecord}
-        onRenderRow={unselectableRow}
       />
       {getSelectedRecord() && (
         <AppearAnimate motionName="contentAnimation">

@@ -3,21 +3,12 @@ import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import {
-  Bar,
-  TextWrap,
-  CardTable,
-  createUnselectableRow,
-} from '@lib/components'
+import { Bar, TextWrap, CardTable } from '@lib/components'
 import { TopsqlPlanItem } from '@lib/client'
 
 import type { SQLRecord } from '../ListTable'
 import { ListDetailContent } from './ListDetailContent'
-import { useSelectedRecord } from '../../../utils/useSelectedRecord'
-import {
-  convertOthersPlanRecord,
-  isOthersPlanRecord,
-} from '@lib/apps/TopSQL/utils/othersRecord'
+import { useRecordSelection } from '../../../utils/useRecordSelection'
 
 interface ListDetailTableProps {
   record: SQLRecord
@@ -27,20 +18,8 @@ interface ListDetailTableProps {
 const OVERALL_LABEL = '(Overall)'
 
 const canSelect = (r: PlanRecord): boolean => {
-  return (
-    !!r.plan_digest && r.plan_digest !== OVERALL_LABEL && !isOthersPlanRecord(r)
-  )
+  return !!r.plan_digest && r.plan_digest !== OVERALL_LABEL
 }
-
-const unselectableRow = createUnselectableRow(
-  (props) => !canSelect(props.item),
-  (props) =>
-    props.item.plan_digest === OVERALL_LABEL
-      ? // overall
-        { backgroundColor: '#fff' }
-      : // others
-        { backgroundColor: '#fff', fontStyle: 'italic' }
-)
 
 export function ListDetailTable({
   record: sqlRecord,
@@ -67,7 +46,7 @@ export function ListDetailTable({
         minWidth: 80,
         maxWidth: 80,
         onRender: (rec: PlanRecord) => {
-          return rec.plan_digest === '(Overall)' ? (
+          return rec.plan_digest === OVERALL_LABEL ? (
             rec.plan_digest
           ) : (
             <Tooltip title={rec.plan_digest} placement="right">
@@ -81,7 +60,7 @@ export function ListDetailTable({
   )
 
   const { getSelectedRecord, setSelectedRecord, selection } =
-    useSelectedRecord<PlanRecord>({
+    useRecordSelection<PlanRecord>({
       selections: planRecords,
       getKey: (r) => r.plan_digest!,
       disableSelection: (r) => !canSelect(r),
@@ -102,7 +81,6 @@ export function ListDetailTable({
         getKey={(r: PlanRecord) => r?.plan_digest!}
         items={planRecords}
         columns={tableColumns}
-        onRenderRow={unselectableRow}
         selectionMode={isMultiPlans ? SelectionMode.single : SelectionMode.none}
         selectionPreservedOnEmptyClick
         onRowClicked={isMultiPlans ? setSelectedRecord : undefined}
@@ -127,16 +105,13 @@ const usePlanRecord = (
   const isMultiPlans = record.plans.length > 1
   const plans = [...record.plans]
 
-  const records: PlanRecord[] = plans
-    .map((p) => {
-      const cpuTime = p.cpu_time_millis?.reduce((pt, t) => pt + t, 0) || 0
-      convertOthersPlanRecord(p)
-      return {
-        ...p,
-        cpuTime,
-      }
-    })
-    .sort((a, b) => (isOthersPlanRecord(b) ? -1 : 0))
+  const records: PlanRecord[] = plans.map((p) => {
+    const cpuTime = p.cpu_time_millis?.reduce((pt, t) => pt + t, 0) || 0
+    return {
+      ...p,
+      cpuTime,
+    }
+  })
 
   // add overall
   if (isMultiPlans) {

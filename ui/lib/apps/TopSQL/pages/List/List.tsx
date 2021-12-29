@@ -38,6 +38,7 @@ const zoomOutRate = 0.5
 const minDate = new Date('2015-08-03')
 const minDateTimestamp = minDate.getTime() / 1000
 const useTimeWindowSize = createUseTimeWindowSize(8)
+const topN = 5
 
 export function TopSQLList() {
   const { t } = useTranslation()
@@ -69,7 +70,7 @@ export function TopSQLList() {
     updateTopSQLData,
     isLoading: isDataLoading,
     queryTimestampRange,
-  } = useTopSQLData(instanceId, getTimeRange(), timeWindowSize, '5')
+  } = useTopSQLData(instanceId, getTimeRange(), timeWindowSize, topN)
   const isLoading = isConfigLoading || isDataLoading
 
   const handleUpdateTopSQLData = useCallback(() => {
@@ -216,7 +217,7 @@ export function TopSQLList() {
             timeWindowSize={timeWindowSize}
           />
         </div>
-        {!!topSQLData?.length && <ListTable data={topSQLData} />}
+        {!!topSQLData?.length && <ListTable topN={topN} data={topSQLData} />}
       </div>
       <Drawer
         title={t('statement.settings.title')}
@@ -239,7 +240,7 @@ const useTopSQLData = (
   instanceId: InstanceId,
   timeRange: TimeRange,
   timeWindowSize: number,
-  topN: string
+  topN: number
 ) => {
   const [topSQLData, setTopSQLData] = useState<TopsqlCPUTimeItem[]>([])
   const [queryTimestampRange, setQueryTimestampRange] = useState(
@@ -261,7 +262,7 @@ const useTopSQLData = (
           endTs as any,
           instanceId,
           beginTs as any,
-          topN,
+          String(topN),
           `${timeWindowSize}s` as any
         )
       data = resp.data.data ?? []

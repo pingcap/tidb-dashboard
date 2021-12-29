@@ -14,7 +14,7 @@ interface Props<T> {
   disableSelection: (r: T) => boolean
 }
 
-export const useSelectedRecord = <T>({
+export const useRecordSelection = <T>({
   selections,
   getKey = () => 'key',
   disableSelection = () => false,
@@ -36,6 +36,7 @@ export const useSelectedRecord = <T>({
   const selection = useMemo(() => {
     const s = new Selection({
       selectionMode: SelectionMode.single,
+      canSelectItem: (item) => !disableSelection(item as T),
       getKey: getKey as
         | ((
             item: IObjectWithKey,

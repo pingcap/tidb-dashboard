@@ -17,7 +17,8 @@ topsql:
       cancel: Cancel
   refresh: Refresh
   table:
-    description: Top 5 SQL Statements that costs most CPU resources in the current time range
+    description: Top {{topN}} SQL Statements that costs most CPU resources in the current time range
+    others_tooltip: Aggregation of data not in the top {{topN}}
   detail:
     title: SQL Statement Details by Plan
   fields:

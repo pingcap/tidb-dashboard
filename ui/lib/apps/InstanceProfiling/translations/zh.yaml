@@ -7,6 +7,10 @@ instance_profiling:
       title: 开始性能分析
       instances:
         label: 选择实例
+      profiling_type:
+        label: 选择分析类型
+        placeholder: 选择分析类型
+        columnTitle: 分析类型
       duration:
         label: 分析时长
       submit: 开始分析
@@ -15,6 +19,7 @@ instance_profiling:
       title: 性能分析历史
       columns:
         targets: 实例
+        requsted_profiling_types: 分析类型
         start_at: 开始时间
         duration: 时长（秒）
         status: 状态
@@ -38,5 +43,16 @@ instance_profiling:
         kind: 组件
         content: 内容
         status: 状态
+        selection:
+          actions: 操作
+          types:
+            flamegraph: 查看火焰图
+            graph: 查看关系图
+            download: 下载原始文件
+            text: 查看文本
       status:
         finished: 完成
+        skipped: 不适用
+      tooltip:
+        skipped: '{{kind}} 不支持 {{type}} 分析'
+        temp_skipped: '{{kind}} 暂不支持 {{type}} 分析'

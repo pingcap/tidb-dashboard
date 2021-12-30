@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package code
 
 import (
@@ -8,6 +10,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -34,14 +37,14 @@ type ShareResponse struct {
 func (s *Service) shareHandler(c *gin.Context) {
 	var req ShareRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	expiry := time.Second * time.Duration(req.ExpireInSeconds)
 
 	if expiry > MaxSessionShareExpiry || expiry < 0 {
-		utils.MakeInvalidRequestErrorWithMessage(c, "Invalid share expiry")
+		_ = c.Error(rest.ErrBadRequest.New("Invalid share expiry"))
 		return
 	}
 

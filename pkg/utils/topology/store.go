@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package topology
 
@@ -22,8 +11,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/util/distro"
+	"github.com/pingcap/tidb-dashboard/util/netutil"
 )
 
 // FetchStoreTopology returns TiKV info and TiFlash info.
@@ -86,12 +75,12 @@ func FetchStoreLocation(pdClient *pd.Client) (*StoreLocation, error) {
 func buildStoreTopology(stores []store) []StoreInfo {
 	nodes := make([]StoreInfo, 0, len(stores))
 	for _, v := range stores {
-		hostname, port, err := host.ParseHostAndPortFromAddress(v.Address)
+		hostname, port, err := netutil.ParseHostAndPortFromAddress(v.Address)
 		if err != nil {
 			log.Warn("Failed to parse store address", zap.Any("store", v))
 			continue
 		}
-		_, statusPort, err := host.ParseHostAndPortFromAddress(v.StatusAddress)
+		_, statusPort, err := netutil.ParseHostAndPortFromAddress(v.StatusAddress)
 		if err != nil {
 			log.Warn("Failed to parse store status address", zap.Any("store", v))
 			continue
@@ -151,7 +140,7 @@ func fetchStores(pdClient *pd.Client) ([]store, error) {
 	}{}
 	err = json.Unmarshal(data, &storeResp)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.Data("pd"))
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.R().PD)
 	}
 
 	ret := make([]store, 0, storeResp.Count)

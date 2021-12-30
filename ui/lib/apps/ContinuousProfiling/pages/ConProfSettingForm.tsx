@@ -16,7 +16,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client, {
   ErrorStrategy,
-  ProfilingContinuousProfilingConfig,
+  ConprofContinuousProfilingConfig,
 } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ErrorBar, InstanceSelect } from '@lib/components'
@@ -35,7 +35,7 @@ function translateSecToDay(seconds: number, t: TFunction) {
     console.warn(`${seconds} is not the mulitple of one day seconds`)
   }
   const day = seconds / ONE_DAY_SECONDS
-  return t('continuous_profiling.settings.profile_retention_duration_option', {
+  return t('conprof.settings.profile_retention_duration_option', {
     d: day,
   })
 }
@@ -50,11 +50,14 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
   const { t } = useTranslation()
   const isWriteable = useIsWriteable()
 
-  const { data: initialConfig, isLoading: loading, error } = useClientRequest(
-    () =>
-      client.getInstance().continuousProfilingConfigGet({
-        errorStrategy: ErrorStrategy.Custom,
-      })
+  const {
+    data: initialConfig,
+    isLoading: loading,
+    error,
+  } = useClientRequest(() =>
+    client.getInstance().continuousProfilingConfigGet({
+      errorStrategy: ErrorStrategy.Custom,
+    })
   )
 
   const { data: estimateSize } = useClientRequest(() =>
@@ -80,7 +83,7 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
   const handleSubmit = useCallback(
     (values) => {
       async function updateConfig(values) {
-        const newConfig: ProfilingContinuousProfilingConfig = {
+        const newConfig: ConprofContinuousProfilingConfig = {
           enable: values.enable,
           data_retention_seconds: values.data_retention_seconds,
         }
@@ -99,11 +102,11 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
       if (!values.enable) {
         // confirm
         Modal.confirm({
-          title: t('continuous_profiling.settings.close_feature'),
+          title: t('conprof.settings.close_feature'),
           icon: <ExclamationCircleOutlined />,
-          content: t('continuous_profiling.settings.close_feature_confirm'),
-          okText: t('continuous_profiling.settings.actions.close'),
-          cancelText: t('continuous_profiling.settings.actions.cancel'),
+          content: t('conprof.settings.close_feature_confirm'),
+          okText: t('conprof.settings.actions.close'),
+          cancelText: t('conprof.settings.actions.cancel'),
           okButtonProps: { danger: true },
           onOk: () => updateConfig(values),
         })
@@ -126,8 +129,8 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
         >
           <Form.Item
             valuePropName="checked"
-            label={t('continuous_profiling.settings.switch')}
-            extra={t('continuous_profiling.settings.switch_tooltip')}
+            label={t('conprof.settings.switch')}
+            extra={t('conprof.settings.switch_tooltip')}
           >
             <Form.Item noStyle name="enable" valuePropName="checked">
               <Switch disabled={!isWriteable} />
@@ -141,19 +144,16 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
               getFieldValue('enable') && (
                 <>
                   <Form.Item
-                    label={t('continuous_profiling.settings.profile_targets')}
-                    extra={t(
-                      'continuous_profiling.settings.profile_targets_tooltip',
-                      {
-                        n: estimateSize?.instance_count || '?',
-                        size: estimateSize?.profile_size
-                          ? getValueFormat('decbytes')(
-                              estimateSize.profile_size,
-                              0
-                            )
-                          : '?',
-                      }
-                    )}
+                    label={t('conprof.settings.profile_targets')}
+                    extra={t('conprof.settings.profile_targets_tooltip', {
+                      n: estimateSize?.instance_count || '?',
+                      size: estimateSize?.profile_size
+                        ? getValueFormat('decbytes')(
+                            estimateSize.profile_size,
+                            0
+                          )
+                        : '?',
+                    })}
                   >
                     <InstanceSelect
                       defaultSelectAll={true}
@@ -164,11 +164,9 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
                   </Form.Item>
 
                   <Form.Item
-                    label={t(
-                      'continuous_profiling.settings.profile_retention_duration'
-                    )}
+                    label={t('conprof.settings.profile_retention_duration')}
                     extra={t(
-                      'continuous_profiling.settings.profile_retention_duration_tooltip'
+                      'conprof.settings.profile_retention_duration_tooltip'
                     )}
                   >
                     <Input.Group>

@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package apiserver
 
@@ -27,6 +16,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/configuration"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/diagnose"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
@@ -40,13 +30,20 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
+	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
-	// NOTE: Don't remove above comment line, it is a placeholder for code generator
+	// NOTE: Don't remove above comment line, it is a placeholder for code generator.
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -56,16 +53,13 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
 	"github.com/pingcap/tidb-dashboard/pkg/utils"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
 func Handler(s *Service) http.Handler {
 	return s.NewStatusAwareHandler(http.HandlerFunc(s.handler), s.stoppedHandler)
 }
 
-var (
-	once sync.Once
-)
+var once sync.Once
 
 type Service struct {
 	app    *fx.App
@@ -111,8 +105,10 @@ func (s *Service) Start(ctx context.Context) error {
 
 	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
+		fx.Supply(featureflag.NewRegistry(s.config.FeatureVersion)),
 		fx.Provide(
 			newAPIHandlerEngine,
+			newClients,
 			s.provideLocals,
 			dbstore.NewDBStore,
 			httpc.NewHTTPClient,
@@ -122,8 +118,7 @@ func (s *Service) Start(ctx context.Context) error {
 			tidb.NewTiDBClient,
 			tikv.NewTiKVClient,
 			tiflash.NewTiFlashClient,
-			utils.NewSysSchema,
-			user.NewAuthService,
+			utils.ProvideSysSchema,
 			info.NewService,
 			clusterinfo.NewService,
 			logsearch.NewService,
@@ -135,22 +130,22 @@ func (s *Service) Start(ctx context.Context) error {
 			// __APP_NAME__.NewService,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
+		user.Module,
 		codeauth.Module,
 		sqlauth.Module,
 		ssoauth.Module,
 		code.Module,
 		sso.Module,
 		profiling.Module,
+		conprof.Module,
 		statement.Module,
 		slowquery.Module,
 		debugapi.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
-			user.RegisterRouter,
 			info.RegisterRouter,
 			clusterinfo.RegisterRouter,
 			profiling.RegisterRouter,
-			profiling.RegisterConprofRouter,
 			logsearch.RegisterRouter,
 			diagnose.RegisterRouter,
 			keyvisual.RegisterRouter,
@@ -172,6 +167,32 @@ func (s *Service) Start(ctx context.Context) error {
 	version.Print()
 
 	return nil
+}
+
+// TODO: Find a better place to put these client bundles.
+func newClients(lc fx.Lifecycle, config *config.Config) (
+	dbClient *tidbclient.StatusClient,
+	kvClient *tikvclient.StatusClient,
+	csClient *tiflashclient.StatusClient,
+	pdClient *pdclient.APIClient,
+) {
+	httpConfig := httpclient.Config{
+		TLSConfig: config.ClusterTLSConfig,
+	}
+	dbClient = tidbclient.NewStatusClient(httpConfig)
+	kvClient = tikvclient.NewStatusClient(httpConfig)
+	csClient = tiflashclient.NewStatusClient(httpConfig)
+	pdClient = pdclient.NewAPIClient(httpConfig)
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			dbClient.SetDefaultCtx(ctx)
+			kvClient.SetDefaultCtx(ctx)
+			csClient.SetDefaultCtx(ctx)
+			pdClient.SetDefaultCtx(ctx)
+			return nil
+		},
+	})
+	return
 }
 
 func (s *Service) cleanAfterError() {
@@ -218,7 +239,7 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	apiHandlerEngine.Use(gin.Recovery())
 	apiHandlerEngine.Use(cors.AllowAll())
 	apiHandlerEngine.Use(gzip.Gzip(gzip.DefaultCompression))
-	apiHandlerEngine.Use(apiutils.MWHandleErrors())
+	apiHandlerEngine.Use(rest.ErrorHandlerFn())
 
 	endpoint = apiHandlerEngine.Group("/dashboard/api")
 

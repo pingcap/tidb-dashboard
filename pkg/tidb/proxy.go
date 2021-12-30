@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package tidb
 
 import (
@@ -143,7 +145,7 @@ func (p *proxy) pickActiveConn() (out net.Conn) {
 	return
 }
 
-// pick returns an active remote if there is any
+// pick returns an active remote if there is any.
 func (p *proxy) pick() *remote {
 	var picked *remote
 	if p.current == "" {

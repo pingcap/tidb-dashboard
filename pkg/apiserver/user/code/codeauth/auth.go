@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package codeauth
 
 import (
@@ -12,9 +14,7 @@ import (
 
 const typeID utils.AuthType = 1
 
-var (
-	ErrSignInInvalidCode = user.ErrNSSignIn.NewType("invalid_code") // Invalid or expired
-)
+var ErrSignInInvalidCode = user.ErrNSSignIn.NewType("invalid_code") // Invalid or expired
 
 type Authenticator struct {
 	user.BaseAuthenticator

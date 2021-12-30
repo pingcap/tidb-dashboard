@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package info
 
@@ -28,13 +17,15 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 )
 
 type ServiceParams struct {
 	fx.In
-	Config     *config.Config
-	LocalStore *dbstore.DB
-	TiDBClient *tidb.Client
+	Config       *config.Config
+	LocalStore   *dbstore.DB
+	TiDBClient   *tidb.Client
+	FeatureFlags *featureflag.Registry
 }
 
 type Service struct {
@@ -60,6 +51,7 @@ type InfoResponse struct { //nolint
 	Version            *version.Info `json:"version"`
 	EnableTelemetry    bool          `json:"enable_telemetry"`
 	EnableExperimental bool          `json:"enable_experimental"`
+	SupportedFeatures  []string      `json:"supported_features"`
 }
 
 // @ID infoGet
@@ -67,12 +59,13 @@ type InfoResponse struct { //nolint
 // @Success 200 {object} InfoResponse
 // @Router /info/info [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) infoHandler(c *gin.Context) {
 	resp := InfoResponse{
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
+		SupportedFeatures:  s.params.FeatureFlags.SupportedFeatures(),
 	}
 	c.JSON(http.StatusOK, resp)
 }
@@ -88,7 +81,7 @@ type WhoAmIResponse struct {
 // @Success 200 {object} WhoAmIResponse
 // @Router /info/whoami [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) whoamiHandler(c *gin.Context) {
 	sessionUser := utils.GetSession(c)
 	resp := WhoAmIResponse{
@@ -104,7 +97,7 @@ func (s *Service) whoamiHandler(c *gin.Context) {
 // @Success 200 {object} []string
 // @Router /info/databases [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) databasesHandler(c *gin.Context) {
 	type databaseSchemas struct {
 		Databases string `gorm:"column:Database"`
@@ -135,7 +128,7 @@ type tableSchema struct {
 // @Router /info/tables [get]
 // @Param database_name query string false "Database name"
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) tablesHandler(c *gin.Context) {
 	var result []tableSchema
 	db := utils.GetTiDBConnection(c)

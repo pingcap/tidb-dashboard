@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package ssoauth
 
 import (
@@ -8,6 +10,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 const typeID utils.AuthType = 2
@@ -42,7 +45,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	var extra SSOExtra
 	err := json.Unmarshal([]byte(f.Extra), &extra)
 	if err != nil {
-		return nil, utils.ErrInvalidRequest.Wrap(err, "Invalid extra payload")
+		return nil, rest.ErrBadRequest.Wrap(err, "Invalid extra payload")
 	}
 	u, err := a.ssoService.NewSessionFromOAuthExchange(extra.RedirectURL, extra.Code, extra.CodeVerifier)
 	if err != nil {

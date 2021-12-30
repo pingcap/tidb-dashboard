@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package profiling
 
@@ -27,6 +16,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/ziputil"
 )
 
 // Register register the handlers to the service.
@@ -53,18 +44,18 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Param req body StartRequest true "profiling request"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupModel "task group"
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/group/start [post]
 func (s *Service) handleStartGroup(c *gin.Context) {
 	var req StartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(req.Targets) == 0 {
-		utils.MakeInvalidRequestErrorWithMessage(c, "Expect at least 1 target")
+		_ = c.Error(rest.ErrBadRequest.New("Expect at least 1 target"))
 		return
 	}
 
@@ -97,7 +88,7 @@ func (s *Service) handleStartGroup(c *gin.Context) {
 // @Description List all profiling groups
 // @Security JwtAuth
 // @Success 200 {array} TaskGroupModel
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /profiling/group/list [get]
 func (s *Service) getGroupList(c *gin.Context) {
 	var resp []TaskGroupModel
@@ -121,13 +112,13 @@ type GroupDetailResponse struct {
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
 // @Success 200 {object} GroupDetailResponse
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /profiling/group/detail/{groupId} [get]
 func (s *Service) getGroupDetail(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var taskGroup TaskGroupModel
@@ -156,21 +147,21 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 // @Description Cancel all profling tasks with a given group ID
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
-// @Success 200 {object} utils.APIEmptyResponse
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Success 200 {object} rest.EmptyResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /profiling/group/cancel/{groupId} [post]
 func (s *Service) handleCancelGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+	c.JSON(http.StatusOK, rest.EmptyResponse{})
 }
 
 // @ID getActionToken
@@ -181,9 +172,9 @@ func (s *Service) handleCancelGroup(c *gin.Context) {
 // @Param action query string false "action"
 // @Security JwtAuth
 // @Success 200 {string} string
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/action_token [get]
 func (s *Service) getActionToken(c *gin.Context) {
 	id := c.Query("id")
@@ -202,20 +193,20 @@ func (s *Service) getActionToken(c *gin.Context) {
 // @Produce application/x-gzip
 // @Param token query string true "download token"
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/group/download [get]
 func (s *Service) downloadGroup(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/group_download", token)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskGroupID, err := strconv.Atoi(str)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var tasks []TaskModel
@@ -233,7 +224,7 @@ func (s *Service) downloadGroup(c *gin.Context) {
 	fileName := fmt.Sprintf("profiling_pack_%d.zip", taskGroupID)
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-	err = utils.StreamZipPack(c.Writer, filePathes, true)
+	err = ziputil.WriteZipFromFiles(c.Writer, filePathes, true)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))
 	}
@@ -245,21 +236,21 @@ func (s *Service) downloadGroup(c *gin.Context) {
 // @Produce application/x-gzip
 // @Param token query string true "download token"
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/single/download [get]
 func (s *Service) downloadSingle(c *gin.Context) {
 	// FIXME: We can simply provide only a single file
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/single_download", token)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskID, err := strconv.Atoi(str)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	task := TaskModel{}
@@ -272,11 +263,19 @@ func (s *Service) downloadSingle(c *gin.Context) {
 	fileName := fmt.Sprintf("profiling_%d.zip", taskID)
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-	err = utils.StreamZipPack(c.Writer, []string{task.FilePath}, true)
+	err = ziputil.WriteZipFromFiles(c.Writer, []string{task.FilePath}, true)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))
 	}
 }
+
+type ViewOutputType string
+
+const (
+	ViewOutputTypeProtobuf ViewOutputType = "protobuf"
+	ViewOutputTypeGraph    ViewOutputType = "graph"
+	ViewOutputTypeText     ViewOutputType = "text"
+)
 
 // @ID viewProfilingSingle
 // @Summary View the result of a task
@@ -284,20 +283,21 @@ func (s *Service) downloadSingle(c *gin.Context) {
 // @Produce html
 // @Param token query string true "download token"
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/single/view [get]
 func (s *Service) viewSingle(c *gin.Context) {
 	token := c.Query("token")
+	outputType := c.Query("output_type")
 	str, err := utils.ParseJWTString("profiling/single_view", token)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskID, err := strconv.Atoi(str)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	task := TaskModel{}
@@ -312,7 +312,38 @@ func (s *Service) viewSingle(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.Data(http.StatusOK, "image/svg+xml", content)
+
+	// set default content-type for legacy profiling content.
+	contentType := "image/svg+xml"
+
+	if task.RawDataType == RawDataTypeProtobuf {
+		switch outputType {
+		case string(ViewOutputTypeGraph):
+			svgContent, err := convertProtobufToSVG(content, task)
+			if err != nil {
+				_ = c.Error(err)
+				return
+			}
+			content = svgContent
+			contentType = "image/svg+xml"
+		case string(ViewOutputTypeProtobuf):
+			contentType = "application/protobuf"
+		default:
+			// Will not handle converting protobuf to other formats except flamegraph and graph
+			_ = c.Error(rest.ErrBadRequest.New("Cannot output protobuf as %s", outputType))
+			return
+		}
+	} else if task.RawDataType == RawDataTypeText {
+		switch outputType {
+		case string(ViewOutputTypeText):
+			contentType = "text/plain"
+		default:
+			// Will not handle converting text to other formats
+			_ = c.Error(rest.ErrBadRequest.New("Cannot output text as %s", outputType))
+			return
+		}
+	}
+	c.Data(http.StatusOK, contentType, content)
 }
 
 // @ID deleteProfilingGroup
@@ -320,15 +351,15 @@ func (s *Service) viewSingle(c *gin.Context) {
 // @Description Delete all finished profiling tasks with a given group ID
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
-// @Success 200 {object} utils.APIEmptyResponse
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Success 200 {object} rest.EmptyResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/group/delete/{groupId} [delete]
 func (s *Service) deleteGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
@@ -344,15 +375,15 @@ func (s *Service) deleteGroup(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+	c.JSON(http.StatusOK, rest.EmptyResponse{})
 }
 
 // @Summary Get Profiling Dynamic Config
 // @Success 200 {object} config.ProfilingConfig
 // @Router /profiling/config [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) getDynamicConfig(c *gin.Context) {
 	dc, err := s.params.ConfigManager.Get()
 	if err != nil {
@@ -367,13 +398,13 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 // @Success 200 {object} config.ProfilingConfig
 // @Router /profiling/config [put]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.ProfilingConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {

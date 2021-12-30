@@ -1,26 +1,14 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package utils
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 const (
@@ -43,22 +31,20 @@ func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 		if !sessionUser.HasTiDBAuth {
 			// Only TiDBAuth is able to access. Raise error in this case.
 			// The error is privilege error instead of authorization error so that user will not be redirected.
-			MakeInsufficientPrivilegeError(c)
+			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 
 		db, err := tidbClient.OpenSQLConn(sessionUser.TiDBUsername, sessionUser.TiDBPassword)
-
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				// If TiDB conn is ok when login but fail this time, it means TiDB credential has been changed since
 				// login. In this case, we return unauthorized error, so that the front-end can let user to login again.
-				MakeUnauthorizedError(c)
+				_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
 			} else {
 				// For other kind of connection errors, for example, PD goes away, return these errors directly.
 				// In front-end we will simply display these errors but not ask user to login again.
-				c.Status(http.StatusInternalServerError)
 				_ = c.Error(err)
 			}
 			c.Abort()

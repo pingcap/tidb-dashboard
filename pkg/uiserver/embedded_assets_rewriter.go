@@ -1,15 +1,5 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 // +build ui_server
 
 package uiserver
@@ -17,9 +7,13 @@ package uiserver
 import (
 	"net/http"
 	"os"
+	"path"
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
+	"github.com/pingcap/log"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
@@ -27,7 +21,13 @@ var once sync.Once
 
 func Assets(cfg *config.Config) http.FileSystem {
 	once.Do(func() {
-		RewriteAssets(assets, cfg, func(fs http.FileSystem, f http.File, path, newContent string, bs []byte) {
+		exePath, err := os.Executable()
+		if err != nil {
+			log.Fatal("Failed to get executable path", zap.Error(err))
+		}
+
+		distroResFolderPath := path.Join(path.Dir(exePath), distroResFolderName)
+		RewriteAssets(assets, cfg, distroResFolderPath, func(fs http.FileSystem, f http.File, path, newContent string, bs []byte) {
 			m := fs.(vfsgen۰FS)
 			fi := f.(os.FileInfo)
 			m[path] = &vfsgen۰CompressedFileInfo{

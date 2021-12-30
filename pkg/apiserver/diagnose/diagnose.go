@@ -1,48 +1,28 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package diagnose
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
-	"net/url"
-	"os"
-	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goccy/go-graphviz"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
-
-	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 const (
 	timeLayout = "2006-01-02 15:04:05"
 )
-
-var graphvizMutex sync.Mutex
 
 type Service struct {
 	// FIXME: Use fx.In
@@ -80,124 +60,11 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/reports/:id/status",
 		auth.MWAuthRequired(),
 		s.reportStatusHandler)
-	endpoint.POST("/metrics_relation/generate", auth.MWAuthRequired(), s.metricsRelationHandler)
-	endpoint.GET("/metrics_relation/view", s.metricsRelationViewHandler)
-}
 
-func (s *Service) generateMetricsRelation(startTime, endTime time.Time, graphType string) (string, error) {
-	params := url.Values{}
-	params.Add("start", startTime.Format(time.RFC3339))
-	params.Add("end", endTime.Format(time.RFC3339))
-	params.Add("type", graphType)
-	encodedParams := params.Encode()
-
-	data, err := s.tidbClient.SendGetRequest("/metrics/profile?" + encodedParams)
-	if err != nil {
-		return "", err
-	}
-
-	file, err := ioutil.TempFile("", "metrics*.svg")
-	if err != nil {
-		return "", fmt.Errorf("failed to create temp file: %v", err)
-	}
-	_ = file.Close()
-
-	g := graphviz.New()
-	// FIXME: should share a global mutex for profiling.
-	graphvizMutex.Lock()
-	defer graphvizMutex.Unlock()
-	graph, err := graphviz.ParseBytes(data)
-	if err != nil {
-		_ = os.Remove(file.Name())
-		return "", fmt.Errorf("failed to parse DOT file: %v", err)
-	}
-
-	if err := g.RenderFilename(graph, graphviz.SVG, file.Name()); err != nil {
-		_ = os.Remove(file.Name())
-		return "", fmt.Errorf("failed to render SVG: %v", err)
-	}
-
-	return file.Name(), nil
-}
-
-type GenerateMetricsRelationRequest struct {
-	StartTime int64  `json:"start_time"`
-	EndTime   int64  `json:"end_time"`
-	Type      string `json:"type"`
-}
-
-// @Id diagnoseGenerateMetricsRelationship
-// @Summary Generate metrics relationship graph.
-// @Param request body GenerateMetricsRelationRequest true "Request body"
-// @Router /diagnose/metrics_relation/generate [post]
-// @Success 200 {string} string
-// @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) metricsRelationHandler(c *gin.Context) {
-	var req GenerateMetricsRelationRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
-		return
-	}
-
-	startTime := time.Unix(req.StartTime, 0)
-	endTime := time.Unix(req.EndTime, 0)
-
-	path, err := s.generateMetricsRelation(startTime, endTime, req.Type)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	token, err := utils.NewJWTString("diagnose/metrics", path)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	c.JSON(http.StatusOK, token)
-}
-
-// @Summary View metrics relationship graph.
-// @Produce image/svg
-// @Param token query string true "token"
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
-// @Router /diagnose/metrics_relation/view [get]
-func (s *Service) metricsRelationViewHandler(c *gin.Context) {
-	token := c.Query("token")
-	path, err := utils.ParseJWTString("diagnose/metrics", token)
-	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
-		return
-	}
-
-	data, err := ioutil.ReadFile(filepath.Clean(path))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	// Do not remove it? Otherwise the link will just expire..
-	// _ = os.Remove(path)
-
-	c.Data(http.StatusOK, "image/svg+xml", data)
-}
-
-// @Summary SQL diagnosis reports history
-// @Description Get sql diagnosis reports history
-// @Success 200 {array} Report
-// @Router /diagnose/reports [get]
-// @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) reportsHandler(c *gin.Context) {
-	reports, err := GetReports(s.db)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.JSON(http.StatusOK, reports)
+	endpoint.POST("/diagnosis",
+		auth.MWAuthRequired(),
+		utils.MWConnectTiDB((s.tidbClient)),
+		s.genDiagnosisHandler)
 }
 
 type GenerateReportRequest struct {
@@ -207,18 +74,33 @@ type GenerateReportRequest struct {
 	CompareEndTime   int64 `json:"compare_end_time"`
 }
 
+// @Summary SQL diagnosis reports history
+// @Description Get sql diagnosis reports history
+// @Success 200 {array} Report
+// @Router /diagnose/reports [get]
+// @Security JwtAuth
+// @Failure 401 {object} rest.ErrorResponse
+func (s *Service) reportsHandler(c *gin.Context) {
+	reports, err := GetReports(s.db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, reports)
+}
+
 // @Summary SQL diagnosis report
 // @Description Generate sql diagnosis report
 // @Param request body GenerateReportRequest true "Request body"
 // @Success 200 {object} int
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) genReportHandler(c *gin.Context) {
 	var req GenerateReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -268,7 +150,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 // @Success 200 {object} Report
 // @Router /diagnose/reports/{id}/status [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) reportStatusHandler(c *gin.Context) {
 	id := c.Param("id")
 	report, err := GetReport(s.db, id)
@@ -310,4 +192,48 @@ func (s *Service) reportDataHandler(c *gin.Context) {
 
 	data := "window.__diagnosis_data__ = " + report.Content
 	c.Data(http.StatusOK, "text/javascript", []byte(data))
+}
+
+type GenDiagnosisReportRequest struct {
+	StartTime int64  `json:"start_time"`
+	EndTime   int64  `json:"end_time"`
+	Kind      string `json:"kind"` // values: config, error, performance
+}
+
+// @Summary SQL diagnosis report
+// @Description Generate sql diagnosis report
+// @Produce json
+// @Param request body GenDiagnosisReportRequest true "Request body"
+// @Success 200 {object} TableDef
+// @Router /diagnose/diagnosis [post]
+// @Security JwtAuth
+// @Failure 401 {object} rest.ErrorResponse
+func (s *Service) genDiagnosisHandler(c *gin.Context) {
+	var req GenDiagnosisReportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+		return
+	}
+
+	startTime := time.Unix(req.StartTime, 0)
+	endTime := time.Unix(req.EndTime, 0)
+
+	var rules []string
+	switch req.Kind {
+	case "config":
+		rules = []string{"config", "version"}
+	case "error":
+		rules = []string{"critical-error"}
+	case "performance":
+		rules = []string{"node-load", "threshold-check"}
+	}
+
+	db := utils.TakeTiDBConnection(c)
+	defer utils.CloseTiDBConnection(db) //nolint:errcheck
+	table, err := GetDiagnoseReport(startTime.Format(timeLayout), endTime.Format(timeLayout), db, rules)
+	if err != nil {
+		tableErr := TableRowDef{Values: []string{CategoryDiagnose, "diagnose", err.Error()}}
+		table = *GenerateReportError([]TableRowDef{tableErr})
+	}
+	c.JSON(http.StatusOK, table)
 }

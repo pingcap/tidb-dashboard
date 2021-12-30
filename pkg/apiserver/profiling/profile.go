@@ -1,36 +1,32 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package profiling
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-func profileAndWriteSVG(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
+func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, profilingType TaskProfilingType) (string, TaskRawDataType, error) {
 	switch target.Kind {
 	case model.NodeKindTiKV:
-		return fetchFlameGraphSVG(&flameGraphOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv})
+		// TiKV only supports CPU Profiling
+		if profilingType != ProfilingTypeCPU {
+			return "", "", ErrUnsupportedProfilingType.NewWithNoMessage()
+		}
+		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv, profilingType: profilingType})
 	case model.NodeKindTiFlash:
-		return fetchFlameGraphSVG(&flameGraphOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tiflash})
+		// TiFlash only supports CPU Profiling
+		if profilingType != ProfilingTypeCPU {
+			return "", "", ErrUnsupportedProfilingType.NewWithNoMessage()
+		}
+		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tiflash, profilingType: profilingType})
 	case model.NodeKindTiDB:
-		return fetchPprofSVG(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tidb})
+		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tidb, profilingType: profilingType})
 	case model.NodeKindPD:
-		return fetchPprofSVG(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.pd})
+		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.pd, profilingType: profilingType})
 	default:
-		return "", fmt.Errorf("unsupported target %s", target)
+		return "", "", ErrUnsupportedProfilingTarget.New(target.String())
 	}
 }

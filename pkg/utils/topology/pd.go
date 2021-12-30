@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package topology
 
@@ -23,8 +12,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/util/distro"
+	"github.com/pingcap/tidb-dashboard/util/netutil"
 )
 
 func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
@@ -51,19 +40,19 @@ func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 
 	err = json.Unmarshal(data, &ds)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s members API unmarshal failed", distro.Data("pd"))
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s members API unmarshal failed", distro.R().PD)
 	}
 
 	for _, ds := range ds.Members {
 		u := ds.ClientUrls[0]
-		hostname, port, err := host.ParseHostAndPortFromAddressURL(u)
+		hostname, port, err := netutil.ParseHostAndPortFromAddressURL(u)
 		if err != nil {
 			continue
 		}
 
 		ts, err := fetchPDStartTimestamp(pdClient)
 		if err != nil {
-			log.Warn(fmt.Sprintf("Failed to fetch %s start timestamp", distro.Data("pd")), zap.String("targetPdNode", u), zap.Error(err))
+			log.Warn(fmt.Sprintf("Failed to fetch %s start timestamp", distro.R().PD), zap.String("targetPdNode", u), zap.Error(err))
 			ts = 0
 		}
 
@@ -109,7 +98,7 @@ func fetchPDStartTimestamp(pdClient *pd.Client) (int64, error) {
 	}{}
 	err = json.Unmarshal(data, &ds)
 	if err != nil {
-		return 0, ErrInvalidTopologyData.Wrap(err, "%s status API unmarshal failed", distro.Data("pd"))
+		return 0, ErrInvalidTopologyData.Wrap(err, "%s status API unmarshal failed", distro.R().PD)
 	}
 
 	return ds.StartTimestamp, nil
@@ -128,7 +117,7 @@ func fetchPDHealth(pdClient *pd.Client) (map[uint64]struct{}, error) {
 
 	err = json.Unmarshal(data, &healths)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s health API unmarshal failed", distro.Data("pd"))
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s health API unmarshal failed", distro.R().PD)
 	}
 
 	memberHealth := map[uint64]struct{}{}
@@ -151,7 +140,7 @@ func fetchLocationLabels(pdClient *pd.Client) ([]string, error) {
 	}
 	err = json.Unmarshal(data, &replicateConfig)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s config/replicate API unmarshal failed", distro.Data("pd"))
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s config/replicate API unmarshal failed", distro.R().PD)
 	}
 	labels := strings.Split(replicateConfig.LocationLabels, ",")
 	return labels, nil

@@ -1,15 +1,4 @@
-// Copyright 2021 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package sso
 
@@ -131,7 +120,7 @@ func (s *Service) getOrCreateMasterEncKey() (*[32]byte, error) {
 
 	// Try to create a key otherwise
 	key = cryptopasta.NewEncryptionKey()
-	err := ioutil.WriteFile(s.encKeyPath, key[:], 0400) // read only for owner
+	err := ioutil.WriteFile(s.encKeyPath, key[:], 0o400) // read only for owner
 	if err != nil {
 		return nil, fmt.Errorf("persist key failed: %v", err)
 	}
@@ -415,7 +404,6 @@ func (s *Service) oAuthGetUserInfo(accessToken string) (*oAuthUserInfo, error) {
 		SetResult(&oAuthUserInfo{}).
 		SetAuthToken(accessToken).
 		Get(dc.SSO.UserInfoURL)
-
 	if err != nil {
 		return nil, ErrOIDCInternalErr.Wrap(err, "Failed to read user info")
 	}

@@ -1,8 +1,14 @@
 import CSSMotion from 'rc-animate/es/CSSMotion'
 import cx from 'classnames'
 import * as singleSpa from 'single-spa'
-import { Root, AppearAnimate } from '@lib/components'
-import React, { useState, useRef, useCallback, useMemo, ReactNode } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  ReactNode,
+} from 'react'
 import {
   DownOutlined,
   GlobalOutlined,
@@ -14,18 +20,20 @@ import {
 } from '@ant-design/icons'
 import { Form, Input, Button, message, Typography, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
-import LanguageDropdown from '@lib/components/LanguageDropdown'
-import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
-import * as auth from '@lib/utils/auth'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
 import { usePersistFn } from 'ahooks'
-import { ReactComponent as Logo } from './logo.svg'
-import styles from './index.module.less'
-import { useEffect } from 'react'
+
+import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
 import { getAuthURL } from '@lib/utils/authSSO'
 import { AuthTypes } from '@lib/utils/auth'
 import { isDistro } from '@lib/utils/i18n'
+import * as auth from '@lib/utils/auth'
+import { useIsFeatureSupport } from '@lib/utils/store'
+import publicPathPrefix from '@lib/utils/publicPathPrefix'
+import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
+
+import styles from './index.module.less'
 
 enum DisplayFormType {
   uninitialized,
@@ -175,17 +183,18 @@ function useSignInSubmit(
     } catch (e) {
       if (!e.handled) {
         const errMsg = t('signin.message.error', { msg: e.message })
-        if (
-          isDistro ||
-          e.errCode !== 'error.api.user.insufficient_privileges'
-        ) {
+        if (isDistro || e.errCode !== 'api.user.signin.insufficient_priv') {
           setError(errMsg)
         } else {
           // only add help link for TiDB distro when meeting insufficient_privileges error
           const errComp = (
             <>
               {errMsg}
-              <a href={t('signin.message.access_doc_link')}>
+              <a
+                href={t('signin.message.access_doc_link')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {t('signin.message.access_doc')}
               </a>
             </>
@@ -204,11 +213,8 @@ function useSignInSubmit(
 
 const LAST_LOGIN_USERNAME_KEY = 'dashboard_last_login_username'
 
-function TiDBSignInForm({
-  successRoute,
-  onClickAlternative,
-  enableNonRootLogin = false,
-}) {
+function TiDBSignInForm({ successRoute, onClickAlternative }) {
+  const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -250,7 +256,10 @@ function TiDBSignInForm({
           initialValues={{ username: lastLoginUsername }}
           form={refForm}
         >
-          <Logo className={styles.logo} />
+          <img
+            src={`${publicPathPrefix}/distro-res/logo.svg`}
+            className={styles.logo}
+          />
           <Form.Item>
             <h2>{t('signin.form.tidb_auth.title')}</h2>
           </Form.Item>
@@ -258,12 +267,12 @@ function TiDBSignInForm({
             name="username"
             label={t('signin.form.username')}
             rules={[{ required: true }]}
-            tooltip={!enableNonRootLogin && t('signin.form.username_tooltip')}
+            tooltip={!supportNonRootLogin && t('signin.form.username_tooltip')}
           >
             <Input
               onInput={clearErrorMsg}
               prefix={<UserOutlined />}
-              disabled={!enableNonRootLogin}
+              disabled={!supportNonRootLogin}
             />
           </Form.Item>
           <Form.Item
@@ -334,7 +343,10 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
         <Form onFinish={handleSubmit} layout="vertical" form={refForm}>
-          <Logo className={styles.logo} />
+          <img
+            src={`${publicPathPrefix}/distro-res/logo.svg`}
+            className={styles.logo}
+          />
           <Form.Item>
             <h2>{t('signin.form.code_auth.title')}</h2>
           </Form.Item>
@@ -394,7 +406,10 @@ function SSOSignInForm({ successRoute, onClickAlternative }) {
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
         <Form>
-          <Logo className={styles.logo} />
+          <img
+            src={`${publicPathPrefix}/distro-res/logo.svg`}
+            className={styles.logo}
+          />
           <Form.Item>
             <Button
               type="primary"
@@ -417,15 +432,15 @@ function SSOSignInForm({ successRoute, onClickAlternative }) {
 }
 
 function App({ registry }) {
-  const successRoute = useMemo(() => `#${registry.getDefaultRouter()}`, [
-    registry,
-  ])
+  const successRoute = useMemo(
+    () => `#${registry.getDefaultRouter()}`,
+    [registry]
+  )
   const [alternativeVisible, setAlternativeVisible] = useState(false)
   const [formType, setFormType] = useState(DisplayFormType.uninitialized)
   const [supportedAuthTypes, setSupportedAuthTypes] = useState<Array<number>>([
     0,
   ])
-  const [enableNonRootLogin, setEnableNonoRootLogin] = useState(false)
 
   const handleClickAlternative = useCallback(() => {
     setAlternativeVisible(true)
@@ -453,7 +468,6 @@ function App({ registry }) {
           setFormType(DisplayFormType.tidbCredential)
         }
         setSupportedAuthTypes(loginInfo.supported_auth_types ?? [])
-        setEnableNonoRootLogin(loginInfo.enable_non_root_login ?? false)
       } catch (e) {
         Modal.error({
           title: 'Initialize Sign in failed',
@@ -488,7 +502,6 @@ function App({ registry }) {
             <TiDBSignInForm
               successRoute={successRoute}
               onClickAlternative={handleClickAlternative}
-              enableNonRootLogin={enableNonRootLogin}
             />
           )}
           {formType === DisplayFormType.shareCode && (
@@ -505,9 +518,16 @@ function App({ registry }) {
           )}
         </AppearAnimate>
         <AppearAnimate
-          className={styles.landing}
           motionName="landingAnimation"
-        />
+          className={styles.landingContainer}
+        >
+          <div
+            style={{
+              backgroundImage: `url(${publicPathPrefix}/distro-res/landing.svg)`,
+            }}
+            className={styles.landing}
+          />
+        </AppearAnimate>
       </div>
     </Root>
   )

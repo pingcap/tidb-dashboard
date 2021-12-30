@@ -1,35 +1,24 @@
-// Copyright 2021 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package debugapi
 
 import (
 	"fmt"
-	"io"
 	"mime"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joomcode/errorx"
+	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-)
-
-const (
-	tokenIssuer = "debugAPI"
+	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
+	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/rest/fileswap"
 )
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -42,13 +31,31 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	}
 }
 
-type Service struct {
-	Client *endpoint.Client
+type ServiceParams struct {
+	fx.In
+	PDAPIClient         *pdclient.APIClient
+	TiDBStatusClient    *tidbclient.StatusClient
+	TiKVStatusClient    *tikvclient.StatusClient
+	TiFlashStatusClient *tiflashclient.StatusClient
 }
 
-func newService(hp httpClientParam) *Service {
+type Service struct {
+	httpClients endpoint.HTTPClients
+	resolver    *endpoint.RequestPayloadResolver
+	fSwap       *fileswap.Handler
+}
+
+func newService(p ServiceParams) *Service {
+	httpClients := endpoint.HTTPClients{
+		PDAPIClient:         p.PDAPIClient,
+		TiDBStatusClient:    p.TiDBStatusClient,
+		TiKVStatusClient:    p.TiKVStatusClient,
+		TiFlashStatusClient: p.TiFlashStatusClient,
+	}
 	return &Service{
-		Client: endpoint.NewClient(newHTTPClient(hp), endpointDefs),
+		httpClients: httpClients,
+		resolver:    endpoint.NewRequestPayloadResolver(apiEndpoints, httpClients),
+		fSwap:       fileswap.New(),
 	}
 }
 
@@ -58,8 +65,14 @@ func getExtFromContentTypeHeader(contentType string) string {
 		return ".bin"
 	}
 
+	// Some explicit overrides
+	if mediaType == "text/plain" {
+		return ".txt"
+	}
+
 	exts, err := mime.ExtensionsByType(mediaType)
 	if err == nil && len(exts) > 0 {
+		// Note: the first element might not be the most common one
 		return exts[0]
 	}
 
@@ -71,67 +84,66 @@ func getExtFromContentTypeHeader(contentType string) string {
 // @ID debugAPIRequestEndpoint
 // @Param req body endpoint.RequestPayload true "request payload"
 // @Success 200 {object} string
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /debug_api/endpoint [post]
 func (s *Service) RequestEndpoint(c *gin.Context) {
 	var req endpoint.RequestPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
-	res, err := s.Client.Send(&req)
-	if err != nil {
-		_ = c.Error(err)
-		if errorx.IsOfType(err, endpoint.ErrInvalidParam) {
-			c.Status(http.StatusBadRequest)
-		}
-		return
-	}
-	defer res.Response.Body.Close() //nolint:errcheck
-
-	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
-	fileName := fmt.Sprintf("%s_%d%s", req.EndpointID, time.Now().Unix(), ext)
-
-	writer, token, err := utils.FSPersist(utils.FSPersistConfig{
-		TokenIssuer:      tokenIssuer,
-		TokenExpire:      time.Minute * 5, // Note: the expire time should include request time.
-		TempFilePattern:  "debug_api",
-		DownloadFileName: fileName,
-	})
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	defer writer.Close() //nolint:errcheck
-	_, err = io.Copy(writer, res.Response.Body)
+	resolved, err := s.resolver.ResolvePayload(req)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	c.String(http.StatusOK, token)
+	writer, err := s.fSwap.NewFileWriter("debug_api")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	defer func() {
+		_ = writer.Close()
+	}()
+
+	resp, err := resolved.SendRequestAndPipe(s.httpClients, writer)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	ext := getExtFromContentTypeHeader(resp.Header.Get("Content-Type"))
+	fileName := fmt.Sprintf("%s_%d%s", req.API, time.Now().Unix(), ext)
+	downloadToken, err := writer.GetDownloadToken(fileName, time.Minute*5)
+	if err != nil {
+		// This shall never happen
+		_ = c.Error(err)
+		return
+	}
+
+	c.String(http.StatusOK, downloadToken)
 }
 
-// @Summary Download a finished request result.
+// @Summary Download a finished request result
 // @Param token query string true "download token"
 // @Success 200 {object} string
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /debug_api/download [get]
 func (s *Service) Download(c *gin.Context) {
-	token := c.Query("token")
-	utils.FSServe(c, token, tokenIssuer)
+	s.fSwap.HandleDownloadRequest(c)
 }
 
 // @Summary Get all endpoints
 // @ID debugAPIGetEndpoints
 // @Security JwtAuth
-// @Success 200 {array} endpoint.APIModel
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Success 200 {array} endpoint.APIDefinition
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /debug_api/endpoints [get]
 func (s *Service) GetEndpoints(c *gin.Context) {
-	c.JSON(http.StatusOK, s.Client.GetAllAPIModels())
+	c.JSON(http.StatusOK, s.resolver.ListAPIs())
 }

@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package logsearch
 
@@ -30,6 +19,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 type Service struct {
@@ -108,18 +98,18 @@ type TaskGroupResponse struct {
 // @Param request body CreateTaskGroupRequest true "Request body"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupResponse
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroup [put]
 func (s *Service) CreateTaskGroup(c *gin.Context) {
 	var req CreateTaskGroupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(req.Targets) == 0 {
-		utils.MakeInvalidRequestErrorWithMessage(c, "Expect at least 1 target")
+		_ = c.Error(rest.ErrBadRequest.New("Expect at least 1 target"))
 		return
 	}
 	stats := model.NewRequestTargetStatisticsFromArray(&req.Targets)
@@ -157,8 +147,8 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 // @Summary List all log search task groups
 // @Security JwtAuth
 // @Success 200 {array} TaskGroupModel
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups [get]
 func (s *Service) GetAllTaskGroups(c *gin.Context) {
 	var taskGroups []*TaskGroupModel
@@ -175,8 +165,8 @@ func (s *Service) GetAllTaskGroups(c *gin.Context) {
 // @Param id path string true "Task Group ID"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupResponse
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id} [get]
 func (s *Service) GetTaskGroup(c *gin.Context) {
 	taskGroupID := c.Param("id")
@@ -203,8 +193,8 @@ func (s *Service) GetTaskGroup(c *gin.Context) {
 // @Param id path string true "task group id"
 // @Security JwtAuth
 // @Success 200 {array} PreviewModel
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id}/preview [get]
 func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 	taskGroupID := c.Param("id")
@@ -224,15 +214,15 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 // @Summary Retry failed tasks in a log search task group
 // @Param id path string true "task group id"
 // @Security JwtAuth
-// @Success 200 {object} utils.APIEmptyResponse
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Success 200 {object} rest.EmptyResponse
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id}/retry [post]
 func (s *Service) RetryTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -251,7 +241,7 @@ func (s *Service) RetryTask(c *gin.Context) {
 
 	if len(tasks) == 0 {
 		// No tasks to retry
-		c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+		c.JSON(http.StatusOK, rest.EmptyResponse{})
 		return
 	}
 
@@ -267,20 +257,20 @@ func (s *Service) RetryTask(c *gin.Context) {
 	if !s.scheduler.AsyncStart(&taskGroup, tasks) {
 		log.Error("Failed to retry task group", zap.Uint("task_group_id", taskGroup.ID))
 	}
-	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+	c.JSON(http.StatusOK, rest.EmptyResponse{})
 }
 
 // @Summary Cancel running tasks in a log search task group
 // @Param id path string true "task group id"
 // @Security JwtAuth
-// @Success 200 {object} utils.APIEmptyResponse
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 400 {object} utils.APIError
+// @Success 200 {object} rest.EmptyResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 400 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id}/cancel [post]
 func (s *Service) CancelTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskGroup := TaskGroupModel{}
@@ -290,19 +280,19 @@ func (s *Service) CancelTask(c *gin.Context) {
 		return
 	}
 	if taskGroup.State != TaskGroupStateRunning {
-		utils.MakeInvalidRequestErrorWithMessage(c, "Task is not running")
+		_ = c.Error(rest.ErrBadRequest.New("Task is not running"))
 		return
 	}
 	s.scheduler.AsyncAbort(uint(taskGroupID))
-	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+	c.JSON(http.StatusOK, rest.EmptyResponse{})
 }
 
 // @Summary Delete a log search task group
 // @Param id path string true "task group id"
 // @Security JwtAuth
-// @Success 200 {object} utils.APIEmptyResponse
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Success 200 {object} rest.EmptyResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/taskgroups/{id} [delete]
 func (s *Service) DeleteTaskGroup(c *gin.Context) {
 	taskGroupID := c.Param("id")
@@ -313,7 +303,7 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 		return
 	}
 	taskGroup.Delete(s.db)
-	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+	c.JSON(http.StatusOK, rest.EmptyResponse{})
 }
 
 // @Summary Generate a download token for downloading logs
@@ -321,8 +311,8 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 // @Param id query []string false "task id" collectionFormat(csv)
 // @Security JwtAuth
 // @Success 200 {string} string "xxx"
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 // @Router /logs/download/acquire_token [get]
 func (s *Service) GetDownloadToken(c *gin.Context) {
 	ids := c.QueryArray("id")
@@ -338,15 +328,15 @@ func (s *Service) GetDownloadToken(c *gin.Context) {
 // @Summary Download logs
 // @Produce application/x-tar,application/zip
 // @Param token query string true "download token"
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 // @Router /logs/download [get]
 func (s *Service) DownloadLogs(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("logs/download", token)
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	ids := strings.Split(str, ",")
@@ -364,7 +354,7 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 
 	switch len(tasks) {
 	case 0:
-		utils.MakeInvalidRequestErrorWithMessage(c, "Expect at least 1 target")
+		_ = c.Error(rest.ErrBadRequest.New("Expect at least 1 target"))
 	case 1:
 		serveTaskForDownload(tasks[0], c)
 	default:

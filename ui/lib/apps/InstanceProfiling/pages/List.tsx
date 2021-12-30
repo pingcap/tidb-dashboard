@@ -14,6 +14,7 @@ import {
   CardTable,
   InstanceSelect,
   IInstanceSelectRefProps,
+  MultiSelect,
 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
@@ -21,9 +22,11 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { combineTargetStats } from '../utils'
 
 import styles from './List.module.less'
+import { upperFirst } from 'lodash'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
+const profilingTypeOptions = ['CPU', 'Heap', 'Goroutine', 'Mutex']
 
 export default function Page() {
   const {
@@ -36,6 +39,7 @@ export default function Page() {
   const { data: ngMonitoringConfig } = useClientRequest((reqConfig) =>
     client.getInstance().continuousProfilingConfigGet(reqConfig)
   )
+
   const conprofEnable =
     ngMonitoringConfig?.continuous_profiling?.enable ?? false
 
@@ -80,9 +84,13 @@ export default function Page() {
           }
         })
         .filter((i) => i.port != null)
+
       const req: ProfilingStartRequest = {
         targets,
         duration_secs: fieldsValue.duration,
+        requsted_profiling_types: fieldsValue.type.map((type) =>
+          type.toLowerCase()
+        ),
       }
       try {
         setSubmitting(true)
@@ -109,8 +117,20 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec) => {
-          const s = combineTargetStats(rec.target_stats)
-          return <span>{s}</span>
+          return combineTargetStats(rec.target_stats)
+        },
+      },
+      {
+        name: t(
+          'instance_profiling.list.table.columns.requsted_profiling_types'
+        ),
+        key: 'types',
+        minWidth: 150,
+        maxWidth: 250,
+        onRender: (rec) => {
+          return (rec.requsted_profiling_types ?? ['cpu'])
+            .map((p) => (p === 'cpu' ? 'CPU' : upperFirst(p)))
+            .join(',')
         },
       },
       {
@@ -198,6 +218,25 @@ export default function Page() {
               ref={instanceSelect}
               style={{ width: 200 }}
             />
+          </Form.Item>
+          <Form.Item
+            name="type"
+            label={t(
+              'instance_profiling.list.control_form.profiling_type.label'
+            )}
+            rules={[{ required: true }]}
+          >
+            <MultiSelect.Plain
+              disabled={conprofEnable}
+              placeholder={t(
+                'instance_profiling.list.control_form.profiling_type.placeholder'
+              )}
+              columnTitle={t(
+                'instance_profiling.list.control_form.profiling_type.columnTitle'
+              )}
+              style={{ width: 200 }}
+              items={profilingTypeOptions}
+            ></MultiSelect.Plain>
           </Form.Item>
           <Form.Item
             name="duration"

@@ -1,15 +1,4 @@
-// Copyright 2019 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package decorator
 
@@ -26,7 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/tidb/model"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 const (
@@ -72,7 +61,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// get all database info
 	var dbInfos []*model.DBInfo
 	if err := s.request("/schema", &dbInfos); err != nil {
-		log.Error("fail to send schema request", zap.String("component", distro.Data("tidb")), zap.Error(err))
+		log.Error("fail to send schema request", zap.String("component", distro.R().TiDB), zap.Error(err))
 		return
 	}
 
@@ -85,7 +74,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 		var tableInfos []*model.TableInfo
 		encodeName := url.PathEscape(db.Name.O)
 		if err := s.request(fmt.Sprintf("/schema/%s", encodeName), &tableInfos); err != nil {
-			log.Error("fail to send schema request", zap.String("component", distro.Data("tidb")), zap.Error(err))
+			log.Error("fail to send schema request", zap.String("component", distro.R().TiDB), zap.Error(err))
 			updateSuccess = false
 			continue
 		}
@@ -127,7 +116,7 @@ func (s *tidbLabelStrategy) request(path string, v interface{}) error {
 		return err
 	}
 	if err = json.Unmarshal(data, v); err != nil {
-		return ErrInvalidData.Wrap(err, "%s schema API unmarshal failed", distro.Data("tidb"))
+		return ErrInvalidData.Wrap(err, "%s schema API unmarshal failed", distro.R().TiDB)
 	}
 	return nil
 }

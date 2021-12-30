@@ -1,126 +1,66 @@
-import {
-  Button,
-  Form,
-  Input,
-  InputNumber,
-  message,
-  Modal,
-  Select,
-  Switch,
-} from 'antd'
+import { Button, Form, Input, InputNumber, Select } from 'antd'
+import dayjs, { Dayjs } from 'dayjs'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import React, { useCallback, useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import client from '@lib/client'
-import { Card, Pre } from '@lib/components'
+
+import { Card } from '@lib/components'
 import { DatePicker } from '@lib/components'
+import DiagnosisTable from '../components/DiagnosisTable'
 
-import DiagnoseHistory from '../components/DiagnoseHistory'
+const DURATION_MINS = [5, 10, 30, 60, 24 * 60]
+const DEF_DURATION_MINS = 10
 
-const useFinishHandler = (navigate) => {
-  return async (fieldsValue) => {
-    const start_time = fieldsValue['rangeBegin'].unix()
-    let range_duration = fieldsValue['rangeDuration']
-    if (fieldsValue['rangeDuration'] === 0) {
-      range_duration = fieldsValue['rangeDurationCustom']
-    }
-    const is_compare = fieldsValue['isCompare']
-    const compare_range_begin = fieldsValue['compareRangeBegin']
-
-    const end_time = start_time + range_duration * 60
-    const compare_start_time = is_compare ? compare_range_begin.unix() : 0
-    const compare_end_time = is_compare
-      ? compare_start_time + range_duration * 60
-      : 0
-
-    try {
-      const res = await client.getInstance().diagnoseReportsPost({
-        start_time,
-        end_time,
-        compare_start_time,
-        compare_end_time,
-      })
-      navigate(`/diagnose/detail?id=${res.data}`)
-    } catch (error) {
-      message.error(error.message)
-    }
-  }
+function minsAgo(mins: number): Dayjs {
+  return dayjs().subtract(mins, 'm')
 }
-
-const DURATIONS = [5, 10, 30, 60, 24 * 60]
 
 export default function DiagnoseGenerator() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const handleFinish = useFinishHandler(navigate)
-  const [form] = Form.useForm()
-  const [isGenerateRelationPosting, setGenerateRelationPosting] = useState(
-    false
+
+  const [duration, setDuration] = useState(DEF_DURATION_MINS)
+  const [startTime, setStartTime] = useState<Dayjs>(() => minsAgo(duration))
+  const timeRange: [number, number] = useMemo(() => {
+    const _startTime = dayjs(startTime).unix()
+    return [_startTime, _startTime + duration * 60]
+  }, [startTime, duration])
+
+  const [stableTimeRange, setStableTimeRange] = useState<[number, number]>([
+    0, 0,
+  ])
+
+  function handleFinish() {
+    setStableTimeRange(timeRange)
+  }
+
+  const timeChanged = useMemo(
+    () =>
+      timeRange[0] !== stableTimeRange[0] ||
+      timeRange[1] !== stableTimeRange[1],
+    [timeRange, stableTimeRange]
   )
-
-  const handleMetricsRelation = useCallback(async () => {
-    try {
-      await form.validateFields()
-    } catch (e) {
-      return
-    }
-
-    const fieldsValue = form.getFieldsValue()
-
-    const start_time = fieldsValue['rangeBegin'].unix()
-    let range_duration = fieldsValue['rangeDuration']
-    if (fieldsValue['rangeDuration'] === 0) {
-      range_duration = fieldsValue['rangeDurationCustom']
-    }
-    const end_time = start_time + range_duration * 60
-
-    try {
-      setGenerateRelationPosting(true)
-
-      const resp = await client
-        .getInstance()
-        .diagnoseGenerateMetricsRelationship({
-          start_time,
-          end_time,
-          type: 'sum',
-        })
-      Modal.success({
-        title: t('diagnose.metrics_relation.success.title'),
-        okText: t('diagnose.metrics_relation.success.button'),
-        okButtonProps: {
-          target: '_blank',
-          href:
-            `${client.getBasePath()}/diagnose/metrics_relation/view?token=` +
-            encodeURIComponent(resp.data),
-        },
-      })
-    } catch (e) {
-      Modal.error({
-        title: 'Error',
-        content: <Pre>{e?.response?.data?.message ?? e.message}</Pre>,
-      })
-    }
-
-    setGenerateRelationPosting(false)
-  }, [t, form])
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Card title={t('diagnose.generate.title')}>
         <Form
-          form={form}
           layout="inline"
           onFinish={handleFinish}
-          initialValues={{ rangeDuration: 10, rangeDurationCustom: 10 }}
+          initialValues={{
+            rangeDuration: DEF_DURATION_MINS,
+            rangeDurationCustom: DEF_DURATION_MINS,
+          }}
         >
           <Form.Item
-            name="rangeBegin"
             rules={[{ required: true }]}
             label={t('diagnose.generate.range_begin')}
           >
-            <DatePicker showTime />
+            <DatePicker
+              value={startTime}
+              showTime
+              onChange={(val) => setStartTime(val || minsAgo(duration))}
+            />
           </Form.Item>
           <Form.Item label={t('diagnose.generate.range_duration')} required>
             <Input.Group compact>
@@ -129,8 +69,13 @@ export default function DiagnoseGenerator() {
                 rules={[{ required: true }]}
                 noStyle
               >
-                <Select style={{ width: 120 }}>
-                  {DURATIONS.map((val) => (
+                <Select
+                  style={{ width: 120 }}
+                  onChange={(val) =>
+                    setDuration((val as number) || DEF_DURATION_MINS)
+                  }
+                >
+                  {DURATION_MINS.map((val) => (
                     <Select.Option key={val} value={val}>
                       {getValueFormat('m')(val, 0)}
                     </Select.Option>
@@ -160,6 +105,7 @@ export default function DiagnoseGenerator() {
                           formatter={(value) => `${value} min`}
                           parser={(value) => value?.replace(/[^\d]/g, '') || ''}
                           style={{ width: 120 }}
+                          onChange={(val) => setDuration(val as number)}
                         />
                       </Form.Item>
                     )
@@ -168,50 +114,33 @@ export default function DiagnoseGenerator() {
               </Form.Item>
             </Input.Group>
           </Form.Item>
-          <Form.Item
-            name="isCompare"
-            valuePropName="checked"
-            label={t('diagnose.generate.is_compare')}
-          >
-            <Switch />
-          </Form.Item>
-          <Form.Item
-            noStyle
-            shouldUpdate={(prev, cur) => prev.isCompare !== cur.isCompare}
-          >
-            {({ getFieldValue }) => {
-              return (
-                getFieldValue('isCompare') && (
-                  <Form.Item
-                    name="compareRangeBegin"
-                    rules={[{ required: true }]}
-                    label={t('diagnose.generate.compare_range_begin')}
-                  >
-                    <DatePicker showTime />
-                  </Form.Item>
-                )
-              )
-            }}
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              {t('diagnose.generate.submit')}
-            </Button>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              onClick={handleMetricsRelation}
-              loading={isGenerateRelationPosting}
-            >
-              {t('diagnose.generate.metrics_relation')}
-            </Button>
-          </Form.Item>
+          {timeChanged && (
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                {t('diagnose.generate.submit')}
+              </Button>
+            </Form.Item>
+          )}
         </Form>
       </Card>
 
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
-          <DiagnoseHistory />
+          <DiagnosisTable
+            stableTimeRange={stableTimeRange}
+            unstableTimeRange={timeRange}
+            kind="config"
+          />
+          <DiagnosisTable
+            stableTimeRange={stableTimeRange}
+            unstableTimeRange={timeRange}
+            kind="performance"
+          />
+          <DiagnosisTable
+            stableTimeRange={stableTimeRange}
+            unstableTimeRange={timeRange}
+            kind="error"
+          />
         </ScrollablePane>
       </div>
     </div>

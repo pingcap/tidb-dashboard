@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 // @title Dashboard API
 // @version 1.0
@@ -32,6 +21,7 @@ import (
 	_ "net/http/pprof" // #nosec
 	"os"
 	"os/signal"
+	"path"
 	"strings"
 	"sync"
 	"syscall"
@@ -48,7 +38,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
-	_ "github.com/pingcap/tidb-dashboard/populate/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 type DashboardCLIConfig struct {
@@ -75,7 +65,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", cfg.CoreConfig.PDEndPoint, "PD endpoint address that Dashboard Server connects to")
 	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", cfg.CoreConfig.EnableTelemetry, "allow telemetry")
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
-	flag.BoolVar(&cfg.CoreConfig.EnableNonRootLogin, "non-root-login", cfg.CoreConfig.EnableNonRootLogin, "allow non root sql user login")
+	flag.StringVar(&cfg.CoreConfig.FeatureVersion, "feature-version", cfg.CoreConfig.FeatureVersion, "target TiDB version for standalone mode")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 
@@ -158,6 +148,26 @@ func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
 	return tlsConfig
 }
 
+const (
+	distroResFolderName      string = "distro-res"
+	distroStringsResFileName string = "strings.json"
+)
+
+func loadDistroStringsRes() {
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatal("Failed to get executable path", zap.Error(err))
+	}
+
+	distroStringsResPath := path.Join(path.Dir(exePath), distroResFolderName, distroStringsResFileName)
+	distroStringsRes, err := distro.ReadResourceStringsFromFile(distroStringsResPath)
+	if err != nil {
+		log.Fatal("Failed to load distro strings res", zap.String("path", distroStringsResPath), zap.Error(err))
+	}
+
+	distro.ReplaceGlobal(distroStringsRes)
+}
+
 func main() {
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
@@ -175,10 +185,12 @@ func main() {
 		log.SetLevel(zapcore.DebugLevel)
 	}
 
+	loadDistroStringsRes()
+
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		log.Fatal("TiDB Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
+		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
 	var customKeyVisualProvider *keyvisualregion.DataProvider

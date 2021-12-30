@@ -4,7 +4,7 @@ diagnosis:
   fold_all: Collapse All
   expand: Expand
   fold: Collapse
-  all_tables: Diagnostics Overview
+  all_tables: Report Overview
   tables:
     category:
       header: Basic Info
@@ -30,7 +30,7 @@ diagnosis:
       max_diff_item: Maximum Different Item
       slow_query_t2: Slow Queries In Time Range t2
       generate_report_error: Report Generation Error
-      report_time_range: Diagnostics Time Range
+      report_time_range: Report Time Range
       diagnose: Diagnosis Result
       total_time_consume: Time Consumed by Each Component
       total_error: Errors Occurred in Each Component

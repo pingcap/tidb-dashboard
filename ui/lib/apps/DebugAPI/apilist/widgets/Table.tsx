@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react'
-import { Select, Tooltip } from 'antd'
+import { Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import client, { InfoTableSchema } from '@lib/client'
@@ -8,7 +8,7 @@ import { useLimitSelection } from './useLimitSelection'
 
 export const TableWidget: ApiFormWidget = ({ form, value, onChange }) => {
   const { t } = useTranslation()
-  const tips = t(`debug_api.widgets.table`)
+  const tips = t(`debug_api.widgets.table_dropdown`)
 
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState<InfoTableSchema[]>([])
@@ -35,29 +35,28 @@ export const TableWidget: ApiFormWidget = ({ form, value, onChange }) => {
     }
   }, [setLoading, setOptions, form])
 
-  const memoOnChange = useCallback((tags: string[]) => onChange?.(tags[0]), [
-    onChange,
-  ])
+  const memoOnChange = useCallback(
+    (tags: string[]) => onChange?.(tags[0]),
+    [onChange]
+  )
   const { selectRef, onSelectChange } = useLimitSelection(1, memoOnChange)
 
   return (
-    <Tooltip trigger={['focus']} title={tips} placement="topLeft">
-      <Select
-        ref={selectRef}
-        mode="tags"
-        dropdownStyle={{ visibility: loading ? 'hidden' : 'visible' }}
-        loading={loading}
-        placeholder={tips}
-        value={value ? [value] : []}
-        onFocus={onFocus}
-        onChange={onSelectChange}
-      >
-        {options.map((option) => (
-          <Select.Option key={option.table_name!} value={option.table_name!}>
-            {option.table_name}
-          </Select.Option>
-        ))}
-      </Select>
-    </Tooltip>
+    <Select
+      ref={selectRef}
+      mode="tags"
+      dropdownStyle={{ visibility: loading ? 'hidden' : 'visible' }}
+      loading={loading}
+      placeholder={tips}
+      value={value ? [value] : []}
+      onFocus={onFocus}
+      onChange={onSelectChange}
+    >
+      {options.map((option) => (
+        <Select.Option key={option.table_name!} value={option.table_name!}>
+          {option.table_name}
+        </Select.Option>
+      ))}
+    </Select>
   )
 }

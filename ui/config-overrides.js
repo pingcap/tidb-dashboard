@@ -1,5 +1,5 @@
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs-extra')
 const os = require('os')
 const {
   override,
@@ -17,35 +17,42 @@ const WebpackBar = require('webpackbar')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const rewireHtmlWebpackPlugin = require('react-app-rewire-html-webpack-plugin')
 
+function copyDistroRes() {
+  const distroResPath = '../bin/distro-res'
+  if (fs.existsSync(distroResPath)) {
+    fs.copySync(distroResPath, './public/distro-res')
+  }
+}
+
 function injectDistroToHTML(config, env) {
-  const distroInfo = Object.entries(require('./lib/distribution.json')).reduce(
-    (prev, [k, v]) => {
-      return {
-        ...prev,
-        [`distro_${k}`]: v,
-      }
+  let distroStringsResMeta = '__DISTRO_STRINGS_RES__'
+
+  // For dev mode,
+  // we copy distro assets from bin/distro-res to public/distro-res to override the default assets,
+  // read distro strings res from public/distro-res/strings.json and encode it by base64 if it exists.
+  // For production mode, we keep the "__DISTRO_STRINGS_RES__" value, it will be replaced by the backend RewriteAssets() method in the run time.
+  if (isBuildAsDevServer()) {
+    copyDistroRes()
+
+    const distroStringsResFilePath = './public/distro-res/strings.json'
+    if (fs.existsSync(distroStringsResFilePath)) {
+      const distroStringsRes = require(distroStringsResFilePath)
+      distroStringsResMeta = btoa(JSON.stringify(distroStringsRes))
+    }
+  }
+
+  // Store the distro strings res in the html head meta,
+  // HtmlWebpacPlugin will write this meta into the html head.
+  const distroInfo = {
+    meta: {
+      'x-distro-strings-res': distroStringsResMeta,
     },
-    {}
-  )
+  }
   return rewireHtmlWebpackPlugin(config, env, distroInfo)
 }
 
 function isBuildAsDevServer() {
   return process.env.NODE_ENV !== 'production'
-}
-
-const enableEslintIgnore = () => (config) => {
-  const eslintRule = config.module.rules.filter(
-    (r) =>
-      r.use && r.use.some((u) => u.options && u.options.useEslintrc !== void 0)
-  )[0]
-  const options = eslintRule.use[0].options
-  options.ignore = true
-  options.ignorePattern = 'lib/client/api/*.ts'
-  options.baseConfig.rules = {
-    'jsx-a11y/anchor-is-valid': 'off',
-  }
-  return config
 }
 
 const disableMinimize = () => (config) => {
@@ -187,7 +194,6 @@ module.exports = override(
   }),
   addAlias(),
   addDecoratorsLegacy(),
-  enableEslintIgnore(),
   addYaml,
   addWebpackBundleSize(),
   addWebpackPlugin(new WebpackBar()),
@@ -198,11 +204,10 @@ module.exports = override(
     )
   ),
   disableMinimizeByEnv(),
-  addExtraEntries(),
   supportDynamicPublicPathPrefix(),
   overrideProcessEnv({
     REACT_APP_RELEASE_VERSION: JSON.stringify(getInternalVersion()),
-    REACT_APP_DISTRO_BUILD_TAG: process.env.DISTRO_BUILD_TAG,
   }),
-  injectDistroToHTML
+  injectDistroToHTML,
+  addExtraEntries()
 )

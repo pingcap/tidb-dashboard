@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package diagnose
 
@@ -29,20 +18,20 @@ import (
 )
 
 type TableDef struct {
-	Category       []string // The category of the table, such as [TiDB]
-	Title          string
-	Comment        string // English Comment
+	Category       []string `json:"category"` // The category of the table, such as [TiDB]
+	Title          string   `json:"title"`
+	Comment        string   `json:"comment"`
 	joinColumns    []int
 	compareColumns []int
-	Column         []string // Column name
-	Rows           []TableRowDef
+	Column         []string      `json:"column"`
+	Rows           []TableRowDef `json:"rows"`
 }
 
 type TableRowDef struct {
-	Values    []string
-	SubValues [][]string // SubValues need fold default.
+	Values    []string   `json:"values"`
+	SubValues [][]string `json:"sub_values"` // SubValues need fold default.
 	ratio     float64
-	Comment   string
+	Comment   string `json:"comment"`
 }
 
 func (t TableDef) ColumnWidth() []int {
@@ -91,6 +80,7 @@ func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB, sqliteDB 
 		return []*TableDef{GenerateReportError(errRows)}
 	}
 	tables := GetReportTables(startTime, endTime, db, sqliteDB, reportID)
+
 	lastCategory := ""
 	for _, tbl := range tables {
 		if tbl == nil {
@@ -138,7 +128,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 		GetClusterInfoTable,
 
 		// Diagnose
-		GetDiagnoseReport,
+		GetAllDiagnoseReport,
 
 		// Load
 		GetLoadTable,
@@ -216,7 +206,7 @@ func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableF
 	resChan := make(chan *tblAndErr, len(funcs))
 	var wg sync.WaitGroup
 
-	//get table concurrently
+	// get table concurrently
 	for i := 0; i < conc; i++ {
 		wg.Add(1)
 		go doGetTable(taskChan, resChan, &wg, startTime, endTime, db, sqliteDB, reportID, progress, totalTableCount)
@@ -292,7 +282,7 @@ type task struct {
 	taskID int // taskID for arrange the tables in order
 }
 
-//change the get-Table-func to task
+// change the get-Table-func to task.
 func func2task(funcs []getTableFunc) chan *task {
 	taskChan := make(chan *task, len(funcs))
 	for i := 0; i < len(funcs); i++ {
@@ -324,7 +314,11 @@ func GetHeaderTimeTable(startTime, endTime string, db *gorm.DB) (TableDef, error
 	}, nil
 }
 
-func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetAllDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	return GetDiagnoseReport(startTime, endTime, db, nil)
+}
+
+func GetDiagnoseReport(startTime, endTime string, db *gorm.DB, rules []string) (TableDef, error) {
 	table := TableDef{
 		Category: []string{CategoryDiagnose},
 		Title:    "diagnose",
@@ -332,6 +326,9 @@ func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error)
 		Column:   []string{"RULE", "ITEM", "TYPE", "INSTANCE", "STATUS_ADDRESS", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
 	}
 	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ %s from information_schema.INSPECTION_RESULT", startTime, endTime, strings.Join(table.Column, ","))
+	if len(rules) > 0 {
+		sql = fmt.Sprintf("%s where RULE in ('%s')", sql, strings.Join(rules, "','"))
+	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
 		return table, err
@@ -824,7 +821,7 @@ func GetTiKVRocksDBConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef,
 	if err != nil {
 		return table, err
 	}
-	//var subRows []TableRowDef
+	// var subRows []TableRowDef
 	subRowsMap := make(map[string][][]string)
 	for i, row := range rows {
 		if len(row.Values) < 6 {
@@ -906,7 +903,7 @@ func GetTiKVRaftStoreConfigInfo(startTime, endTime string, db *gorm.DB) (TableDe
 	if err != nil {
 		return table, err
 	}
-	//var subRows []TableRowDef
+	// var subRows []TableRowDef
 	subRowsMap := make(map[string][][]string)
 	for i, row := range rows {
 		if len(row.Values) < 6 {
@@ -2124,7 +2121,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableD
 		FROM information_schema.CLUSTER_HARDWARE
 		WHERE device_type='cpu'
 		group by instance,type,VALUE,NAME HAVING NAME = 'cpu-physical-cores'
-		OR NAME = 'cpu-logical-cores' ORDER BY INSTANCE `
+		OR NAME = 'cpu-logical-cores' ORDER BY INSTANCE`
 	rows, err := querySQL(db, sql)
 	if err != nil {
 		return table, err

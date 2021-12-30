@@ -1,15 +1,4 @@
-// Copyright 2021 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package profiling
 
@@ -76,7 +65,7 @@ type tikvFetcher struct {
 }
 
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 }
 
 type tiflashFetcher struct {
@@ -84,7 +73,7 @@ type tiflashFetcher struct {
 }
 
 func (f *tiflashFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 }
 
 type tidbFetcher struct {

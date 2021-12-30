@@ -21,36 +21,47 @@ task('swagger:watch', () =>
   watch(['../cmd/**/*.go', '../pkg/**/*.go'], series('swagger:generate'))
 )
 
-task('distro:generate', shell.task('../scripts/generate_distro_info.sh'))
+task('distro:generate', shell.task('../scripts/distro/write_strings.sh'))
 
-task('distro:watch', () =>
-  watch(['../pkg/utils/distro/*.go'], series('distro:generate'))
-)
+task('webpack:dev', shell.task('yarn react-app-rewired start'))
+
+task('webpack:build', shell.task('yarn react-app-rewired build'))
 
 task(
-  'webpack:dev',
+  'speedscope:copy_static_assets',
   shell.task(
-    'REACT_APP_COMMIT_HASH=$(git rev-parse --short HEAD) yarn react-app-rewired start'
+    'mkdir -p public/speedscope && cp node_modules/@duorou_xu/speedscope/dist/release/* public/speedscope/'
   )
 )
 
-task(
-  'webpack:build',
-  shell.task(
-    'REACT_APP_COMMIT_HASH=$(git rev-parse --short HEAD) yarn react-app-rewired build'
+task('speedscope:watch', () =>
+  watch(
+    ['node_modules/@duorou_xu/speedscope/dist/release/*'],
+    series('speedscope:copy_static_assets')
   )
 )
 
 task(
   'build',
-  series(parallel('swagger:generate', 'distro:generate'), 'webpack:build')
+  series(
+    parallel(
+      'swagger:generate',
+      'distro:generate',
+      'speedscope:copy_static_assets'
+    ),
+    'webpack:build'
+  )
 )
 
 task(
   'dev',
   series(
-    parallel('swagger:generate', 'distro:generate'),
-    parallel('swagger:watch', 'distro:watch', 'webpack:dev')
+    parallel(
+      'swagger:generate',
+      'distro:generate',
+      'speedscope:copy_static_assets'
+    ),
+    parallel('swagger:watch', 'speedscope:watch', 'webpack:dev')
   )
 )
 

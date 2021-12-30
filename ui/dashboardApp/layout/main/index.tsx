@@ -48,11 +48,8 @@ export default function App({ registry }) {
     false
   )
   const [defaultCollapsed] = useState(collapsed)
-  const {
-    contentLeftOffset,
-    onAnimationStart,
-    onAnimationFrame,
-  } = useContentLeftOffset(collapsed)
+  const { contentLeftOffset, onAnimationStart, onAnimationFrame } =
+    useContentLeftOffset(collapsed)
   const transContentBack = useSpring({
     x: collapsed ? collapsedContentOffset : 0,
     onStart: onAnimationStart,

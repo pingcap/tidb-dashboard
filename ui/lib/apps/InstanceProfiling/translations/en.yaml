@@ -1,20 +1,25 @@
 profiling:
-  nav_title: Profile Instances
+  nav_title: Profiling Instances
 instance_profiling:
-  nav_title: Manually Profile
+  nav_title: Manual Profiling
   list:
     control_form:
       title: Start Profiling Instances
       instances:
         label: Select instances
+      profiling_type:
+        label: Select Profiling Type
+        placeholder: Select Profiling Type
+        columnTitle: Profiling Type
       duration:
         label: Duration
       submit: Start Profiling
-    disable_warning: Already enabled continuous profiling, so manually profiling is disabled. You can see all instances profile results in the continuous profiling page.
+    disable_warning: Already enabled continuous profiling, so manual profiling is disabled. You can see all instances profiling results in the continuous profiling page.
     table:
       title: Profiling History
       columns:
         targets: Instances
+        requsted_profiling_types: Profiling Types
         start_at: Start At
         duration: Duration (sec)
         status: Status
@@ -38,5 +43,16 @@ instance_profiling:
         kind: Component
         content: Content
         status: Status
+        selection:
+          actions: Actions
+          types:
+            flamegraph: View FlameGraph
+            graph: View Graph
+            download: Download Raw Data
+            text: View Text
       status:
         finished: Finished
+        skipped: Not Applicable
+      tooltip:
+        skipped: The {{kind}} does support {{type}} profiling
+        temp_skipped: The {{kind}} does support {{type}} profiling temporary

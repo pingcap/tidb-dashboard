@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package tidb
 
@@ -24,13 +13,11 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
-var (
-	ErrNoAliveTiDB = ErrNS.NewType("no_alive_tidb")
-)
+var ErrNoAliveTiDB = ErrNS.NewType("no_alive_tidb")
 
 type forwarderConfig struct {
 	TiDBRetrieveTimeout time.Duration
@@ -116,7 +103,7 @@ func (f *Forwarder) pollingForTiDB() {
 
 func (f *Forwarder) getEndpointAddr(port int) (string, error) {
 	if f.statusProxy.noAliveRemote.Load() {
-		log.Warn(fmt.Sprintf("Unable to resolve connection address since no alive %s instance", distro.Data("tidb")))
+		log.Warn(fmt.Sprintf("Unable to resolve connection address since no alive %s instance", distro.R().TiDB))
 		return "", ErrNoAliveTiDB.NewWithNoMessage()
 	}
 	return fmt.Sprintf("127.0.0.1:%d", port), nil

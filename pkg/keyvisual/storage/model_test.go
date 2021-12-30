@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package storage
 
@@ -136,8 +125,8 @@ func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *C) {
 	}
 
 	var maxLayerNum uint8 = 2
-	var axisModelNumEachLayer = 3
-	var axisModelList = make([][]*AxisModel, maxLayerNum)
+	axisModelNumEachLayer := 3
+	axisModelList := make([][]*AxisModel, maxLayerNum)
 	for layerNum := uint8(0); layerNum < maxLayerNum; layerNum++ {
 		axisModelList[layerNum] = make([]*AxisModel, axisModelNumEachLayer)
 		for i := 0; i < axisModelNumEachLayer; i++ {

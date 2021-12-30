@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package slowquery
 
@@ -19,16 +8,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joomcode/errorx"
-	"github.com/thoas/go-funk"
-
 	"github.com/gin-gonic/gin"
+	"github.com/joomcode/errorx"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 var (
@@ -73,21 +61,22 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Success 200 {array} Model
 // @Router /slow_query/list [get]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getList(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
-	results, err := s.querySlowLogList(db, &req)
+	results, err := QuerySlowLogList(&req, s.params.SysSchema, db.Table(SlowQueryTable))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
+
 	c.JSON(http.StatusOK, results)
 }
 
@@ -96,16 +85,16 @@ func (s *Service) getList(c *gin.Context) {
 // @Success 200 {object} Model
 // @Router /slow_query/detail [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getDetails(c *gin.Context) {
 	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
-	result, err := s.querySlowLogDetail(db, &req)
+	result, err := QuerySlowLogDetail(&req, db)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -119,22 +108,22 @@ func (s *Service) getDetails(c *gin.Context) {
 // @Param request body GetListRequest true "Request body"
 // @Success 200 {string} string "xxx"
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
-	db := utils.GetTiDBConnection(c)
 	fields := []string{}
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	list, err := s.querySlowLogList(db, &req)
+	db := utils.GetTiDBConnection(c)
+	list, err := QuerySlowLogList(&req, s.params.SysSchema, db.Table(SlowQueryTable))
 	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(list) == 0 {
@@ -158,7 +147,6 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	token, err := utils.ExportCSV(csvData,
 		fmt.Sprintf("slowquery_%s_%s_*.csv", beginTime, endTime),
 		"slowquery/download")
-
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -170,8 +158,8 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 // @Summary Download slow query statements
 // @Produce text/csv
 // @Param token query string true "download token"
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
 	utils.DownloadByToken(token, "slowquery/download", c)
@@ -180,16 +168,16 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Summary Query table columns
 // @Description Query slowquery table columns
 // @Success 200 {array} string
-// @Failure 400 {object} utils.APIError "Bad request"
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
 // @Security JwtAuth
 // @Router /slow_query/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cs, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
+	cs, err := QueryTableColumns(s.params.SysSchema, db)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, funk.UniqString(append(cs, getVirtualFields()...)))
+	c.JSON(http.StatusOK, cs)
 }

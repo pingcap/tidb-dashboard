@@ -12,17 +12,13 @@
 set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-PROJECT_DIR="$(dirname "$DIR")"
-
-# See https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
-
-cd "$PROJECT_DIR"
+PROJECT_DIR=$(cd "$DIR/.."; pwd)
 
 export GOBIN=$PROJECT_DIR/bin
 export PATH=$GOBIN:$PATH
 
 echo "+ Preflight check"
-if [ ! -d "ui/build" ]; then
+if [ ! -d "$PROJECT_DIR/ui/build" ]; then
   echo "  - Error: UI assets must be built first"
   exit 1
 fi
@@ -35,9 +31,9 @@ fi
 
 echo "+ Embed UI assets"
 
-go run tools/assets_generate/main.go $BUILD_TAG_PARAMETER
+cd "$PROJECT_DIR/scripts"
+go run generate_assets.go "$PROJECT_DIR/ui/build" "$BUILD_TAG_PARAMETER"
 
-
-HANDLER_PATH=pkg/uiserver/embedded_assets_handler.go
+HANDLER_PATH=$PROJECT_DIR/pkg/uiserver/embedded_assets_handler.go
 mv assets_vfsdata.go $HANDLER_PATH
 echo "  - Assets handler written to $HANDLER_PATH"

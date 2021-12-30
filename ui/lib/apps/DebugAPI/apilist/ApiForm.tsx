@@ -4,14 +4,13 @@ import { Form, Button, Space, Row, Col } from 'antd'
 import { isNull, isUndefined } from 'lodash'
 import { DownloadOutlined, UndoOutlined } from '@ant-design/icons'
 import client, {
-  EndpointAPIModel,
-  EndpointAPIParam,
+  EndpointAPIDefinition,
+  EndpointAPIParamDefinition,
   TopologyPDInfo,
   TopologyStoreInfo,
   TopologyTiDBInfo,
 } from '@lib/client'
 import { ApiFormWidgetConfig, createFormWidget } from './widgets'
-import { isConstantModel } from './widgets/Constant'
 import { distro } from '@lib/utils/i18n'
 
 export interface Topology {
@@ -25,13 +24,13 @@ export default function ApiForm({
   endpoint,
   topology,
 }: {
-  endpoint: EndpointAPIModel
+  endpoint: EndpointAPIDefinition
   topology: Topology
 }) {
   const { t } = useTranslation()
   const { id, path_params, query_params, component } = endpoint
   const endpointHostParamKey = useMemo(
-    () => `${distro[component!]?.toLowerCase()}_host`,
+    () => `${distro[component!]?.toLowerCase()}_instance`,
     [component]
   )
   const pathParams = (path_params ?? []).map((p) => {
@@ -41,9 +40,7 @@ export default function ApiForm({
   const params = [...pathParams, ...(query_params ?? [])]
   const [loading, setLoading] = useState(false)
   const [form] = Form.useForm()
-  const formPathsWithoutConstant = params
-    .filter((p) => !isConstantModel(p))
-    .map((p) => p.name!)
+  const formPaths = [...params.map((p) => p.name!), endpointHostParamKey]
 
   const download = useCallback(
     async (values: any) => {
@@ -52,17 +49,17 @@ export default function ApiForm({
         const { [endpointHostParamKey]: host, ...p } = values
         const [hostname, port] = host.split(':')
         // filter the null value params
-        const params = Object.entries(p).reduce((prev, [k, v]) => {
+        const param_values = Object.entries(p).reduce((prev, [k, v]) => {
           if (!(isUndefined(v) || isNull(v) || v === '')) {
             prev[k] = v
           }
           return prev
         }, {})
         const resp = await client.getInstance().debugAPIRequestEndpoint({
-          id,
+          api_id: id,
           host: hostname,
           port: Number(port),
-          params,
+          param_values,
         })
         const token = resp.data
         window.location.href = `${client.getBasePath()}/debug_api/download?token=${token}`
@@ -75,13 +72,11 @@ export default function ApiForm({
     [id, endpointHostParamKey]
   )
 
-  const endpointParam = useMemo<EndpointAPIParam>(
+  const endpointParam = useMemo<EndpointAPIParamDefinition>(
     () => ({
       name: endpointHostParamKey,
       required: true,
-      model: {
-        type: 'host',
-      },
+      ui_kind: 'host',
     }),
     [endpointHostParamKey]
   )
@@ -94,9 +89,6 @@ export default function ApiForm({
       topology={topology}
     />
   )
-  useEffect(() => {
-    formPathsWithoutConstant.push(endpointHostParamKey)
-  })
 
   return (
     <Form layout="vertical" form={form} onFinish={download}>
@@ -104,19 +96,16 @@ export default function ApiForm({
         <FormItemCol>
           <EndpointHost />
         </FormItemCol>
-        {params
-          // hide constant param model widget
-          .filter((param) => !isConstantModel(param))
-          .map((param) => (
-            <FormItemCol key={param.name}>
-              <ApiFormItem
-                form={form}
-                endpoint={endpoint}
-                param={param}
-                topology={topology}
-              ></ApiFormItem>
-            </FormItemCol>
-          ))}
+        {params.map((param) => (
+          <FormItemCol key={param.name}>
+            <ApiFormItem
+              form={form}
+              endpoint={endpoint}
+              param={param}
+              topology={topology}
+            ></ApiFormItem>
+          </FormItemCol>
+        ))}
       </Row>
       <Form.Item>
         <Space>
@@ -131,7 +120,7 @@ export default function ApiForm({
           <Button
             icon={<UndoOutlined />}
             htmlType="button"
-            onClick={() => form.resetFields(formPathsWithoutConstant)}
+            onClick={() => form.resetFields(formPaths)}
           >
             {t('debug_api.form.reset')}
           </Button>

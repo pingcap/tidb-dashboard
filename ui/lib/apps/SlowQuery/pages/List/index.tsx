@@ -74,10 +74,7 @@ function List() {
   } = controller
 
   function exportCSV() {
-    const hide = message.loading(
-      t('statement.pages.overview.toolbar.exporting') + '...',
-      0
-    )
+    const hide = message.loading(t('slow_query.toolbar.exporting') + '...', 0)
     downloadCSV().finally(hide)
   }
 
@@ -93,8 +90,8 @@ function List() {
     <Menu onClick={menuItemClick}>
       <Menu.Item key="export" disabled={downloading} icon={<ExportOutlined />}>
         {downloading
-          ? t('statement.pages.overview.toolbar.exporting')
-          : t('statement.pages.overview.toolbar.export')}
+          ? t('slow_query.toolbar.exporting')
+          : t('slow_query.toolbar.export')}
       </Menu.Item>
     </Menu>
   )
@@ -114,13 +111,9 @@ function List() {
               }
             />
             <MultiSelect.Plain
-              placeholder={t(
-                'statement.pages.overview.toolbar.schemas.placeholder'
-              )}
-              selectedValueTransKey="statement.pages.overview.toolbar.schemas.selected"
-              columnTitle={t(
-                'statement.pages.overview.toolbar.schemas.columnTitle'
-              )}
+              placeholder={t('slow_query.toolbar.schemas.placeholder')}
+              selectedValueTransKey="slow_query.toolbar.schemas.selected"
+              columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
               value={queryOptions.schemas}
               style={{ width: 150 }}
               onChange={(schemas) =>
@@ -162,9 +155,7 @@ function List() {
                     checked={showFullSQL}
                     onChange={(e) => setShowFullSQL(e.target.checked)}
                   >
-                    {t(
-                      'statement.pages.overview.toolbar.select_columns.show_full_sql'
-                    )}
+                    {t('slow_query.toolbar.select_columns.show_full_sql')}
                   </Checkbox>
                 }
               />

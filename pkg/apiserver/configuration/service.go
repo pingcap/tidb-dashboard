@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package configuration
 
@@ -25,13 +14,13 @@ import (
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/util/distro"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 var (
@@ -120,7 +109,7 @@ func (s *Service) getConfigItemsFromTiDBToChannel(tidb *topology.TiDBInfo, ch ch
 
 	r, err := s.getConfigItemsFromTiDB(tidb.IP, int(tidb.StatusPort))
 	if err != nil {
-		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s config items of %s", distro.Data("tidb"), displayAddress)}
+		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s config items of %s", distro.R().TiDB, displayAddress)}
 		return
 	}
 	ch <- channelItem{
@@ -171,7 +160,7 @@ type ShowVariableItem struct {
 func (s *Service) getGlobalVariablesFromTiDBToChannel(db *gorm.DB, ch chan<- channelItem) {
 	r, err := s.getGlobalVariablesFromTiDB(db)
 	if err != nil {
-		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s variables", distro.Data("tidb"))}
+		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s variables", distro.R().TiDB)}
 		return
 	}
 	ch <- channelItem{
@@ -201,8 +190,8 @@ type Item struct {
 }
 
 type AllConfigItems struct {
-	Errors []*utils.APIError   `json:"errors"`
-	Items  map[ItemKind][]Item `json:"items"`
+	Errors []rest.ErrorResponse `json:"errors"`
+	Items  map[ItemKind][]Item  `json:"items"`
 }
 
 func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
@@ -213,7 +202,7 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 
 	tidbInfo, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
-		return nil, ErrListTopologyFailed.Wrap(err, "Failed to list %s instances", distro.Data("tidb"))
+		return nil, ErrListTopologyFailed.Wrap(err, "Failed to list %s instances", distro.R().TiDB)
 	}
 
 	ch := make(chan channelItem)
@@ -239,13 +228,13 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 		go s.getConfigItemsFromTiDBToChannel(&item2, ch)
 	}
 
-	errors := make([]*utils.APIError, 0)
+	errors := make([]rest.ErrorResponse, 0)
 	successItems := make([]channelItem, 0)
 
 	for i := 0; i < waitItems; i++ {
 		item := <-ch
 		if item.Err != nil {
-			errors = append(errors, utils.NewAPIError(err))
+			errors = append(errors, rest.NewErrorResponse(err))
 			continue
 		}
 		successItems = append(successItems, item)
@@ -319,7 +308,7 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 	}, nil
 }
 
-func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue interface{}) ([]*utils.APIError, error) {
+func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue interface{}) ([]rest.ErrorResponse, error) {
 	if !isConfigItemEditable(kind, id) {
 		return nil, ErrNotEditable.New("Configuration `%s` is not editable", id)
 	}
@@ -355,9 +344,9 @@ func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue int
 			}
 			return nil, nil
 		}
-		warnings := make([]*utils.APIError, 0)
+		warnings := make([]rest.ErrorResponse, 0)
 		for _, err := range failures {
-			warnings = append(warnings, utils.NewAPIError(err))
+			warnings = append(warnings, rest.NewErrorResponse(err))
 		}
 		return warnings, nil
 	case ItemKindTiDBVariable:

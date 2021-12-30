@@ -1,15 +1,4 @@
-// Copyright 2021 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package statement
 
@@ -20,12 +9,10 @@ import (
 	"github.com/thoas/go-funk"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
-var (
-	ErrUnknownColumn = ErrNS.NewType("unknown_column")
-)
+var ErrUnknownColumn = ErrNS.NewType("unknown_column")
 
 func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, error) {
 	fields := getFieldsAndTags()
@@ -52,7 +39,7 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 	}).([]Field)
 
 	if len(fields) == 0 {
-		return "", ErrUnknownColumn.New("all columns are not included in the current version %s schema, columns: %q", distro.Data("tidb"), reqJSONColumns)
+		return "", ErrUnknownColumn.New("all columns are not included in the current version %s schema, columns: %q", distro.R().TiDB, reqJSONColumns)
 	}
 
 	stmt := funk.Map(fields, func(f Field) string {

@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package keyvisual
 
@@ -23,8 +12,8 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 func (s *Service) managerHook() fx.Hook {
@@ -101,8 +90,8 @@ func (s *Service) stopService() {
 // @Success 200 {object} config.KeyVisualConfig
 // @Router /keyvisual/config [get]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) getDynamicConfig(c *gin.Context) {
 	dc, err := s.cfgManager.Get()
 	if err != nil {
@@ -117,13 +106,13 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 // @Success 200 {object} config.KeyVisualConfig
 // @Router /keyvisual/config [put]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Failure 500 {object} utils.APIError
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.KeyVisualConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {

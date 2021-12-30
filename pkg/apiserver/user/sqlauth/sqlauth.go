@@ -1,3 +1,5 @@
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+
 package sqlauth
 
 import (
@@ -16,7 +18,7 @@ type Authenticator struct {
 	tidbClient *tidb.Client
 }
 
-func newAuthenticator(tidbClient *tidb.Client) *Authenticator {
+func NewAuthenticator(tidbClient *tidb.Client) *Authenticator {
 	return &Authenticator{
 		tidbClient: tidbClient,
 	}
@@ -27,7 +29,7 @@ func registerAuthenticator(a *Authenticator, authService *user.AuthService) {
 }
 
 var Module = fx.Options(
-	fx.Provide(newAuthenticator),
+	fx.Provide(NewAuthenticator),
 	fx.Invoke(registerAuthenticator),
 )
 

@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package tiflash
 
@@ -24,12 +13,10 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
-var (
-	ErrFlashClientRequestFailed = ErrNS.NewType("client_request_failed")
-)
+var ErrFlashClientRequestFailed = ErrNS.NewType("client_request_failed")
 
 const (
 	defaultTiFlashStatusAPITimeout = time.Second * 10
@@ -65,9 +52,14 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
+func (c Client) AddRequestHeader(key, value string) *Client {
+	c.httpClient = c.httpClient.CloneAndAddRequestHeader(key, value)
+	return &c
+}
+
 func (c *Client) Get(host string, statusPort int, relativeURI string) (*httpc.Response, error) {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, distro.Data("tiflash"))
+	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, distro.R().TiFlash)
 }
 
 func (c *Client) SendGetRequest(host string, statusPort int, relativeURI string) ([]byte, error) {
@@ -80,5 +72,5 @@ func (c *Client) SendGetRequest(host string, statusPort int, relativeURI string)
 
 func (c *Client) SendPostRequest(host string, statusPort int, relativeURI string, body io.Reader) ([]byte, error) {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, distro.Data("tiflash"))
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, distro.R().TiFlash)
 }

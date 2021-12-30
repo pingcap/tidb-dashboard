@@ -1,22 +1,10 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package profiling
 
 import (
 	"context"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/joomcode/errorx"
@@ -24,7 +12,6 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -38,14 +25,17 @@ const (
 )
 
 var (
-	ErrNS             = errorx.NewNamespace("error.profiling")
-	ErrIgnoredRequest = ErrNS.NewType("ignored_request")
-	ErrTimeout        = ErrNS.NewType("timeout")
+	ErrNS                         = errorx.NewNamespace("error.api.profiling")
+	ErrIgnoredRequest             = ErrNS.NewType("ignored_request")
+	ErrTimeout                    = ErrNS.NewType("timeout")
+	ErrUnsupportedProfilingType   = ErrNS.NewType("unsupported_profiling_type")
+	ErrUnsupportedProfilingTarget = ErrNS.NewType("unsupported_profiling_target")
 )
 
 type StartRequest struct {
-	Targets      []model.RequestTargetNode `json:"targets"`
-	DurationSecs uint                      `json:"duration_secs"`
+	Targets                []model.RequestTargetNode `json:"targets"`
+	DurationSecs           uint                      `json:"duration_secs"`
+	RequstedProfilingTypes TaskProfilingTypeList     `json:"requsted_profiling_types"`
 }
 
 type StartRequestSession struct {
@@ -74,9 +64,6 @@ type Service struct {
 	lastTaskGroup *TaskGroup
 	tasks         sync.Map
 	fetchers      *fetchers
-
-	ngMonitoringReqGroup  singleflight.Group
-	ngMonitoringAddrCache atomic.Value
 }
 
 var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers) (*Service, error) {
@@ -166,7 +153,7 @@ func (s *Service) exclusiveExecute(ctx context.Context, req *StartRequest) (*Tas
 }
 
 func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
-	taskGroup := NewTaskGroup(s.params.LocalStore, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets))
+	taskGroup := NewTaskGroup(s.params.LocalStore, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets), req.RequstedProfilingTypes)
 	if err := s.params.LocalStore.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		log.Warn("failed to start task group", zap.Error(err))
 		return nil, err
@@ -174,10 +161,19 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(ctx, taskGroup, target, s.fetchers)
-		s.params.LocalStore.Create(t.TaskModel)
-		s.tasks.Store(t.ID, t)
-		tasks = append(tasks, t)
+		profileTypeList := req.RequstedProfilingTypes
+		for _, profilingType := range profileTypeList {
+			// profilingTypeMap checks the validation of requestedProfilingType.
+			_, valid := profilingTypeMap[profilingType]
+			if !valid {
+				return nil, ErrUnsupportedProfilingType.NewWithNoMessage()
+			}
+
+			t := NewTask(ctx, taskGroup, target, s.fetchers, profilingType)
+			s.params.LocalStore.Create(t.TaskModel)
+			s.tasks.Store(t.ID, t)
+			tasks = append(tasks, t)
+		}
 	}
 
 	s.wg.Add(1)
@@ -193,16 +189,20 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 			}(i)
 		}
 		wg.Wait()
+		errorTasks := 0
 		finishedTasks := 0
 		for _, task := range tasks {
-			if task.State == TaskStateFinish {
+			if task.State == TaskStateError {
+				errorTasks++
+			} else if task.State == TaskStateFinish {
 				finishedTasks++
 			}
 		}
-		if finishedTasks == 0 {
+		if errorTasks > 0 {
 			taskGroup.State = TaskStateError
-		} else if finishedTasks < len(tasks) {
-			taskGroup.State = TaskPartialFinish
+			if finishedTasks > 0 {
+				taskGroup.State = TaskStatePartialFinish
+			}
 		} else {
 			taskGroup.State = TaskStateFinish
 		}

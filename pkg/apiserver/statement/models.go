@@ -1,30 +1,19 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package statement
 
 import (
 	"strings"
 
+	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	"github.com/thoas/go-funk"
-
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/reflectutil"
 )
 
-// TimeRange represents a range of time
+// TimeRange represents a range of time.
 type TimeRange struct {
 	BeginTime int64 `json:"begin_time"`
 	EndTime   int64 `json:"end_time"`
@@ -112,7 +101,7 @@ type Model struct {
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"
-// return "d1, d2, d3"
+// return "d1, d2, d3".
 func extractSchemasFromTableNames(tableNames string) string {
 	schemas := make(map[string]bool)
 	tables := strings.Split(tableNames, ",")
@@ -147,7 +136,7 @@ type Field struct {
 var gormDefaultNamingStrategy = schema.NamingStrategy{}
 
 func getFieldsAndTags() (stmtFields []Field) {
-	fields := utils.GetFieldsAndTags(Model{}, []string{"related", "agg", "json"})
+	fields := reflectutil.GetFieldsAndTags(Model{}, []string{"related", "agg", "json"})
 
 	for _, f := range fields {
 		sf := Field{

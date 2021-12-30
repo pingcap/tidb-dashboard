@@ -1,15 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 package input
 
@@ -24,7 +13,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/storage"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/util/distro"
 )
 
 type fileInput struct {
@@ -63,12 +52,12 @@ func readFile(fileTime time.Time) (*RegionsInfo, error) {
 	fileName := fileTime.Format("./data/20060102-15-04.json")
 	file, err := os.Open(filepath.Clean(fileName))
 	if err != nil {
-		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.Data("pd"), fileName)
+		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.R().PD, fileName)
 	}
 	defer file.Close() // #nosec
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.Data("pd"), fileName)
+		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.R().PD, fileName)
 	}
 	return read(data)
 }

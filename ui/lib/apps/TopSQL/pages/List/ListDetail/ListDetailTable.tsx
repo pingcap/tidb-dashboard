@@ -25,13 +25,13 @@ const canSelect = (r: PlanRecord): boolean => {
 }
 
 const shortFormat = (v: number = 0) => {
-  return getValueFormat('short')(v, 4)
+  return getValueFormat('short')(v, 1)
 }
 const fixedFormat = (v: number = 0) => {
-  return getValueFormat('none')(v, 4)
+  return getValueFormat('none')(v, 1)
 }
 const msFormat = (v: number = 0) => {
-  return getValueFormat('ms')(v, 4)
+  return getValueFormat('ms')(v, 1)
 }
 
 export function ListDetailTable({

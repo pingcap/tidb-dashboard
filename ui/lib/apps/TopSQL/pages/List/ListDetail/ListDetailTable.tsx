@@ -24,6 +24,13 @@ const canSelect = (r: PlanRecord): boolean => {
   return !!r.plan_digest && r.plan_digest !== OVERALL_LABEL
 }
 
+const shortFormat = (v: number = 0) => {
+  return getValueFormat('short')(v, 4)
+}
+const fixedFormat = (v: number = 0) => {
+  return getValueFormat('none')(v, 4)
+}
+
 export function ListDetailTable({
   record: sqlRecord,
   capacity,
@@ -86,6 +93,50 @@ export function ListDetailTable({
             </Tooltip>
           )
         },
+      },
+      {
+        name: 'Call/sec',
+        key: 'qps',
+        minWidth: 50,
+        maxWidth: 150,
+        onRender: (rec: PlanRecord) => (
+          <Tooltip title={fixedFormat(rec.exec_count_per_sec)}>
+            <TextWrap>{shortFormat(rec.exec_count_per_sec)}</TextWrap>
+          </Tooltip>
+        ),
+      },
+      {
+        name: 'Scan Rows/sec',
+        key: 'scan_row',
+        minWidth: 50,
+        maxWidth: 150,
+        onRender: (rec: PlanRecord) => (
+          <Tooltip title={fixedFormat(rec.scan_records_per_sec)}>
+            <TextWrap>{shortFormat(rec.scan_records_per_sec)}</TextWrap>
+          </Tooltip>
+        ),
+      },
+      {
+        name: 'Scan Index/sec',
+        key: 'scan_index',
+        minWidth: 50,
+        maxWidth: 150,
+        onRender: (rec: PlanRecord) => (
+          <Tooltip title={fixedFormat(rec.scan_indexes_per_sec)}>
+            <TextWrap>{shortFormat(rec.scan_indexes_per_sec)}</TextWrap>
+          </Tooltip>
+        ),
+      },
+      {
+        name: 'Latency (s)/call',
+        key: 'latency',
+        minWidth: 50,
+        maxWidth: 150,
+        onRender: (rec: PlanRecord) => (
+          <Tooltip title={fixedFormat(rec.duration_per_exec_ms)}>
+            <TextWrap>{shortFormat(rec.duration_per_exec_ms)}</TextWrap>
+          </Tooltip>
+        ),
       },
     ],
     [capacity]

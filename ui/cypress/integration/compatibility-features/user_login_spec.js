@@ -19,7 +19,7 @@ describe('User Login', () => {
     })
 
     // Run before each test
-    beforeEach(function () {
+    beforeEach(() => {
       // Load a fixed set of data located in cypress/fixtures.
       cy.fixture('uri.json').as('uri')
 
@@ -38,13 +38,13 @@ describe('User Login', () => {
       cy.get('[data-e2e=signin_username_input]').should('not.be.disabled')
     })
 
-    it('nonRoot user with correct password', function () {
+    it('nonRoot user with correct password', () => {
       cy.get('[data-e2e=signin_username_input]').clear().type('test')
       cy.get('[data-e2e="signin_password_input"]').type('test_pwd{enter}')
       cy.url().should('include', '/overview')
     })
 
-    it('nonRoot user with incorrect password', function () {
+    it('nonRoot user with incorrect password', () => {
       cy.intercept('POST', '/dashboard/api/user/login').as('login')
 
       cy.get('[data-e2e=signin_username_input]').clear().type('test')
@@ -55,7 +55,7 @@ describe('User Login', () => {
       })
     })
   } else if (Cypress.env('FEATURE_VERSION') === '5.0.0') {
-    beforeEach(function () {
+    beforeEach(() => {
       cy.fixture('uri.json').as('uri')
       cy.visit('@uri.root')
     })

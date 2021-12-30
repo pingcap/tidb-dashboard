@@ -3,20 +3,22 @@
 // Test User login
 describe('Root User Login', () => {
   beforeEach(function () {
-    cy.fixture('uri.json').as('uri')
-    cy.visit('@uri.root')
+    cy.fixture('uri.json').then(function (uri) {
+      this.uri = uri
+      cy.visit(`${this.uri.root}`)
+    })
   })
 
   it('authenticated redirect', function () {
     // Redirect to login
     cy.visit(this.uri.root)
-    cy.url().should('eq', `${Cypress.config().baseUrl}${'@uri.root'}`)
+    cy.url().should('eq', `${Cypress.config().baseUrl}${this.uri.root}`)
   })
 
   it('root login with no pwd', function () {
     cy.get('[data-e2e=signin_username_input]').should('have.value', 'root')
     cy.get('[data-e2e=signin_submit]').click()
-    cy.url().should('include', '@uri.overview')
+    cy.url().should('include', `${this.uri.overview}`)
   })
 
   it('remember last succeeded login username', () => {
@@ -36,14 +38,14 @@ describe('Root User Login', () => {
     })
   })
 
-  it('root login with correct pwd', () => {
+  it('root login with correct pwd', function () {
     // set password for root
     let query = "SET PASSWORD FOR 'root'@'%' = 'root_pwd'"
     let password = ''
     cy.task('queryDB', { query, password })
 
     cy.get('[data-e2e="signin_password_input"]').type('root_pwd{enter}')
-    cy.url().should('include', '/overview')
+    cy.url().should('include', `${this.uri.overview}`)
 
     // set empty password for root
     query = "SET PASSWORD FOR 'root'@'%' = ''"

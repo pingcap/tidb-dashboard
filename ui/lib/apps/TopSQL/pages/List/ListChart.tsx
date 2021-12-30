@@ -13,6 +13,7 @@ import { orderBy, toPairs } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlSummaryItem } from '@lib/client'
+import { useTranslation } from 'react-i18next'
 
 export interface ListChartProps {
   data: TopsqlSummaryItem[]
@@ -36,6 +37,7 @@ export function ListChart({
   timeWindowSize,
   timeRangeTimestamp,
 }: ListChartProps) {
+  const { t } = useTranslation()
   // We need to update data and xDomain.minInterval at same time on the legacy @elastic/charts
   // to avoid `Error: custom xDomain is invalid, custom minInterval is greater than computed minInterval`
   // https://github.com/elastic/elastic-charts/pull/933
@@ -97,10 +99,7 @@ export function ListChart({
             yAccessors={[1]}
             stackAccessors={[0]}
             data={chartData[digest]}
-            name={
-              digestMap?.[digest]?.slice(0, 50) ||
-              `Unknown(digest: ${digest.slice(0, 8)})`
-            }
+            name={digestMap?.[digest]?.slice(0, 50) || t('topsql.table.others')}
           />
         )
       })}

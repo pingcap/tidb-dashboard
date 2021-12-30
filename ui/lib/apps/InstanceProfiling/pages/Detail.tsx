@@ -259,7 +259,7 @@ export default function Page() {
               >
                 <Badge
                   status="default"
-                  text={t(`instance_profiling.detail.table.status.skipped`)}
+                  text={t('instance_profiling.detail.table.status.skipped')}
                 />
               </Tooltip>
             )

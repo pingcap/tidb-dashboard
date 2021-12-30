@@ -81,7 +81,7 @@ type tidbFetcher struct {
 }
 
 func (f *tidbFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithStatusAPIAddress(op.ip, op.port).WithStatusAPITimeout(maxProfilingTimeout).SendGetRequest(op.path)
+	return f.client.WithEnforcedStatusAPIAddress(op.ip, op.port).WithStatusAPITimeout(maxProfilingTimeout).SendGetRequest(op.path)
 }
 
 type pdFetcher struct {

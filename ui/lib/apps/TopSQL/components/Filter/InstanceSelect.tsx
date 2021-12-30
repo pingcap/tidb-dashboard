@@ -22,6 +22,9 @@ export interface InstanceSelectProps {
 const splitter = ' - '
 
 const combineSelectValue = (item: TopsqlInstanceItem) => {
+  if (!item) {
+    return ''
+  }
   return `${item.instance_type}${splitter}${item.instance}`
 }
 
@@ -71,6 +74,17 @@ export function InstanceSelect({
       return prev
     }, [] as InstanceGroup[])
   }, [instances])
+
+  useEffect(() => {
+    if (!!value) {
+      return
+    }
+
+    const firstInstance = instanceGroups[0]?.instances[0]
+    if (firstInstance) {
+      onChange(firstInstance)
+    }
+  }, [instanceGroups])
 
   return (
     <Select

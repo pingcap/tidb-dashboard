@@ -14,8 +14,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
@@ -234,12 +232,14 @@ func (s *Service) downloadGroup(c *gin.Context) {
 
 	err = writeZipFromFiles(zw, filePathes, true)
 	if err != nil {
-		log.Error("Stream zip pack failed", zap.Error(err))
+		_ = c.Error(err)
+		return
 	}
 
 	err = zipREADME(zw)
 	if err != nil {
-		log.Error("Stream zip README file failed", zap.Error(err))
+		_ = c.Error(err)
+		return
 	}
 }
 
@@ -283,12 +283,14 @@ func (s *Service) downloadSingle(c *gin.Context) {
 
 	err = writeZipFromFiles(zw, []string{task.FilePath}, true)
 	if err != nil {
-		log.Error("Stream zip pack failed", zap.Error(err))
+		_ = c.Error(err)
+		return
 	}
 
 	err = zipREADME(zw)
 	if err != nil {
-		log.Error("Stream zip README file failed", zap.Error(err))
+		_ = c.Error(err)
+		return
 	}
 }
 

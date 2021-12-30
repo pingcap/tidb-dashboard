@@ -34,8 +34,6 @@ import { SettingsForm } from './SettingsForm'
 
 const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
 const zoomOutRate = 0.5
-const minDate = new Date('2015-08-03')
-const minDateTimestamp = minDate.getTime() / 1000
 const useTimeWindowSize = createUseTimeWindowSize(8)
 const topN = 5
 
@@ -122,25 +120,13 @@ export function TopSQLList() {
 
   const zoomOut = useCallback(() => {
     const [start, end] = calcTimeRange(timeRange)
-    const now = Date.now() / 1000
-    const interval = end - start
-    let _zoomOutRate = zoomOutRate
-
-    if (interval < 300) {
-      _zoomOutRate = 1
+    let expand = (end - start) * zoomOutRate
+    if (expand < 300) {
+      expand = 300
     }
 
-    let endOffset = interval * _zoomOutRate
-    let computedEnd = end + endOffset
-    if (computedEnd > now) {
-      computedEnd = now
-      endOffset = now - end
-    }
-
-    let computedStart = start - interval + endOffset
-    if (computedStart < minDateTimestamp) {
-      computedStart = minDateTimestamp
-    }
+    let computedStart = start - expand
+    let computedEnd = end + expand
 
     setTimeRange({ type: 'absolute', value: [computedStart, computedEnd] })
   }, [timeRange])
@@ -171,11 +157,6 @@ export function TopSQLList() {
                   value={timeRange}
                   onChange={setTimeRange}
                   disabled={isLoading}
-                  disabledDate={(current) => {
-                    const tooLate = current.isBefore(minDate)
-                    const tooEarly = current.isAfter(new Date())
-                    return tooLate || tooEarly
-                  }}
                 />
                 <Button
                   icon={<ZoomOutOutlined />}

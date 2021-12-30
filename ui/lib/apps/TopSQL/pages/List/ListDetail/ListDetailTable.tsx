@@ -158,7 +158,7 @@ export function ListDetailTable({
     }
 
     return planRecords[0]
-  }, [planRecords, isMultiPlans])
+  }, [planRecords, isMultiPlans, selectedRecord])
 
   return (
     <>
@@ -190,16 +190,17 @@ const usePlanRecord = (
     }
 
     const isMultiPlans = record.plans.length > 1
-    // const isMultiPlans = true
     const plans = [...record.plans]
 
-    const records: PlanRecord[] = plans.map((p) => {
-      const cpuTime = p.cpu_time_ms?.reduce((pt, t) => pt + t, 0) || 0
-      return {
-        ...p,
-        cpuTime,
-      }
-    })
+    const records: PlanRecord[] = plans
+      .map((p) => {
+        const cpuTime = p.cpu_time_ms?.reduce((pt, t) => pt + t, 0) || 0
+        return {
+          ...p,
+          cpuTime,
+        }
+      })
+      .sort((a, b) => b.cpuTime - a.cpuTime)
 
     // add overall
     if (isMultiPlans) {
@@ -207,11 +208,19 @@ const usePlanRecord = (
         records.reduce(
           (prev, current) => {
             prev.cpuTime += current.cpuTime
+            prev.exec_count_per_sec! += current.exec_count_per_sec || 0
+            prev.scan_records_per_sec! += current.scan_records_per_sec || 0
+            prev.scan_indexes_per_sec! += current.scan_indexes_per_sec || 0
+            prev.duration_per_exec_ms! += current.duration_per_exec_ms || 0
             return prev
           },
           {
             plan_digest: OVERALL_LABEL,
             cpuTime: 0,
+            exec_count_per_sec: 0,
+            scan_records_per_sec: 0,
+            scan_indexes_per_sec: 0,
+            duration_per_exec_ms: 0,
           } as PlanRecord
         )
       )

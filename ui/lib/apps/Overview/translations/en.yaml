@@ -1,7 +1,7 @@
 overview:
   nav_title: Overview
   top_statements:
-    title: Top SQL Statements
+    title: Time Consuming SQL Statements
   recent_slow_query:
     title: Recent Slow Queries
   instances:

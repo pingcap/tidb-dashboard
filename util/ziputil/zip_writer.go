@@ -10,38 +10,10 @@ import (
 	"time"
 )
 
-type Options func(zw *zip.Writer) error
-
-// WithREADME returns an option to write the README file.
-func WithREADME() Options {
-	return func(zw *zip.Writer) error {
-		const downloadREADME = `
-To review the CPU profiling or heap profiling result interactively:
-
-$ go tool pprof --http=0.0.0.0:1234 cpu_xxx.proto
-`
-
-		zipFile, err := zw.CreateHeader(&zip.FileHeader{
-			Name:     "README.md",
-			Method:   zip.Deflate,
-			Modified: time.Now(),
-		})
-		if err != nil {
-			return err
-		}
-
-		_, err = zipFile.Write([]byte(downloadREADME))
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-}
-
 // WriteZipFromFiles compresses `files` using zip and write the zip in a streaming way to the io Writer `w`.
 // The files will be flattened in the zip file, i.e. `/a/b/c.txt` becomes `c.txt`.
 // FIXME: This function does not handle with encrypted files on the disk.
-func WriteZipFromFiles(w io.Writer, files []string, compress bool, opts ...Options) error {
+func WriteZipFromFiles(w io.Writer, files []string, compress bool) error {
 	zw := zip.NewWriter(w)
 	defer func() {
 		_ = zw.Close()
@@ -50,12 +22,6 @@ func WriteZipFromFiles(w io.Writer, files []string, compress bool, opts ...Optio
 	// TODO: Handle with duplicate file names.
 	for _, file := range files {
 		err := writeZipFromFile(zw, file, compress)
-		if err != nil {
-			return err
-		}
-	}
-	for _, opt := range opts {
-		err := opt(zw)
 		if err != nil {
 			return err
 		}

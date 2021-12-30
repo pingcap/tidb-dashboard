@@ -349,9 +349,6 @@ export default function Page() {
             items={tableData}
             errors={[error]}
             groups={groupData}
-            groupProps={{
-              showEmptyGroups: true,
-            }}
             hideLoadingWhenNotEmpty
             extendLastColumn
           />

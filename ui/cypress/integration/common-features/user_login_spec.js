@@ -10,7 +10,7 @@ describe('Root User Login', () => {
   it('authenticated redirect', function () {
     // Redirect to login
     cy.visit(this.uri.root)
-    cy.url().should('eq', `${Cypress.config().baseUrl}${this.uri.login}`)
+    cy.url().should('eq', `${Cypress.config().baseUrl}${'@uri.root'}`)
   })
 
   it('root login with no pwd', function () {
@@ -24,7 +24,7 @@ describe('Root User Login', () => {
   })
 
   it('root login with incorrect pwd', () => {
-    cy.intercept('POST', '/dashboard/api/user/login').as('login')
+    cy.intercept('POST', `${Cypress.env('apiUrl')}/user/login`).as('login')
 
     // {enter} causes the form to submit
     cy.get('[data-e2e="signin_password_input"]').type(

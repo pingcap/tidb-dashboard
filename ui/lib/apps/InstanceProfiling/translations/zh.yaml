@@ -55,4 +55,4 @@ instance_profiling:
         skipped: 不适用
       tooltip:
         skipped: '{{kind}} 不支持 {{type}} 分析'
-        temp_skipped: '{{kind}} 暂不支持 {{type}} 分析'
+        to_be_supported: '{{kind}} 暂不支持 {{type}} 分析'

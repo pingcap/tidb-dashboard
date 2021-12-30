@@ -123,7 +123,7 @@ func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTarg
 }
 
 func (t *Task) run() {
-	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s_%s", t.TaskGroupID, t.ID, t.ProfilingType, t.Target.FileName())
+	fileNameWithoutExt := fmt.Sprintf("%s_%s", t.ProfilingType, t.Target.FileName())
 	protoFilePath, rawDataType, err := profileAndWritePprof(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs, t.ProfilingType)
 	if err != nil {
 		if errorx.IsOfType(err, ErrUnsupportedProfilingType) {

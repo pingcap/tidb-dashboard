@@ -18,6 +18,7 @@ export interface IKeyVizToolbarProps {
   enabled: boolean
   isLoading: boolean
   autoRefreshSeconds: number
+  remainingRefreshSeconds?: number
   isOnBrush: boolean
   metricType: string
   brightLevel: number

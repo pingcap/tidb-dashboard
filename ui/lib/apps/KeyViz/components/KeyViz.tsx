@@ -85,6 +85,7 @@ const KeyViz = () => {
   const [getSelection, setSelection] = useGetSet<HeatmapRange | null>(null)
   const [isLoading, setLoading] = useState(true)
   const [getAutoRefreshSeconds, setAutoRefreshSeconds] = useGetSet(0)
+  const [getRemainingRefreshSeconds, setRemainingRefreshSeconds] = useGetSet(0)
   const [getOnBrush, setOnBrush] = useGetSet(false)
   const [getDateRange, setDateRange] = useGetSet(3600 * 6)
   const [getBrightLevel, setBrightLevel] = useGetSet(1)
@@ -97,14 +98,6 @@ const KeyViz = () => {
   const { t } = useTranslation()
 
   const enabled = config?.auto_collection_disabled !== true
-
-  const resetAutoRefresh = useCallback(() => {
-    const prevAutoRefreshSeconds = getAutoRefreshSeconds()
-    setAutoRefreshSeconds(0)
-    setTimeout(() => {
-      setAutoRefreshSeconds(prevAutoRefreshSeconds)
-    })
-  }, [getAutoRefreshSeconds()])
 
   const updateServiceStatus = useCallback(async function () {
     try {
@@ -151,15 +144,11 @@ const KeyViz = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const onChangeDateRange = useCallback(
-    (v: number) => {
-      setDateRange(v)
-      setSelection(null)
-      resetAutoRefresh()
-    },
+  const onChangeDateRange = useCallback((v: number) => {
+    setDateRange(v)
+    setSelection(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [resetAutoRefresh]
-  )
+  }, [])
 
   const onResetZoom = useCallback(() => {
     setSelection(null)
@@ -185,14 +174,6 @@ const KeyViz = () => {
     setAutoRefreshSeconds(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const onChangeMetricType = useCallback(
-    (v: DataTag) => {
-      setMetricType(v)
-      resetAutoRefresh()
-    },
-    [resetAutoRefresh]
-  )
 
   const onChartInit = useCallback((chart) => {
     _chart = chart
@@ -251,9 +232,10 @@ const KeyViz = () => {
         onToggleBrush={onToggleBrush}
         onResetZoom={onResetZoom}
         autoRefreshSeconds={getAutoRefreshSeconds()}
+        remainingRefreshSeconds={getRemainingRefreshSeconds()}
         isOnBrush={getOnBrush()}
         onChangeBrightLevel={onChangeBrightLevel}
-        onChangeMetric={onChangeMetricType}
+        onChangeMetric={setMetricType}
         onChangeDateRange={onChangeDateRange}
         onChangeAutoRefresh={setAutoRefreshSeconds}
         onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}

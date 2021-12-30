@@ -1,11 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 
-import { TopsqlSummaryItem, TopsqlSummaryPlanItem } from '@lib/client'
+import { TopsqlSummaryItem } from '@lib/client'
 import {
   Card,
   CardTable,
@@ -15,7 +15,6 @@ import {
   AppearAnimate,
 } from '@lib/components'
 
-import { isOthersRecord } from '../../utils/othersRecord'
 import { useRecordSelection } from '../../utils/useRecordSelection'
 import { ListDetail } from './ListDetail'
 
@@ -24,16 +23,12 @@ interface ListTableProps {
   topN: number
 }
 
-export interface SQLRecord {
-  key: string
-  query: string
-  digest: string
+export type SQLRecord = TopsqlSummaryItem & {
   cpuTime: number
-  plans: TopsqlSummaryPlanItem[]
 }
 
 const canSelect = (r: SQLRecord): boolean => {
-  return !!r.digest && !isOthersRecord(r)
+  return !!r.sql_digest && !r.is_other
 }
 
 export function ListTable({ data, topN }: ListTableProps) {
@@ -46,7 +41,7 @@ export function ListTable({ data, topN }: ListTableProps) {
         key: 'cpuTime',
         minWidth: 150,
         maxWidth: 250,
-        onRender: (rec) => (
+        onRender: (rec: SQLRecord) => (
           <Bar textWidth={80} value={rec.cpuTime!} capacity={capacity}>
             {getValueFormat('ms')(rec.cpuTime, 2)}
           </Bar>
@@ -57,10 +52,9 @@ export function ListTable({ data, topN }: ListTableProps) {
         key: 'query',
         minWidth: 250,
         maxWidth: 550,
-        onRender: (rec) => {
-          const isOthers = isOthersRecord(rec)
-          const text = rec.query || 'Unknown'
-          return isOthers ? (
+        onRender: (rec: SQLRecord) => {
+          const text = rec.sql_text || t('topsql.table.others')!
+          return rec.is_other ? (
             <Tooltip
               title={t('topsql.table.others_tooltip', { topN })}
               placement="right"
@@ -94,7 +88,7 @@ export function ListTable({ data, topN }: ListTableProps) {
   const { selectedRecord, selection } = useRecordSelection<SQLRecord>({
     localStorageKey: 'topsql.list_table_selected_key',
     selections: tableRecords,
-    getKey: (r) => r.digest,
+    getKey: (r) => r.sql_digest!,
     disableSelection: (r) => !canSelect(r),
   })
 
@@ -108,7 +102,7 @@ export function ListTable({ data, topN }: ListTableProps) {
       <CardTable
         cardNoMarginTop
         cardNoMarginBottom
-        getKey={(r: SQLRecord) => r.digest}
+        getKey={(r: SQLRecord) => r.sql_digest!}
         items={tableRecords || []}
         columns={tableColumns}
         selection={selection}
@@ -145,16 +139,14 @@ function useTableData(records: TopsqlSummaryItem[]) {
         }
 
         return {
-          key: r.sql_digest!,
+          ...r,
           cpuTime,
-          query: r.sql_text!,
-          digest: r.sql_digest!,
           plans: r.plans || [],
         }
       })
       .filter((r) => !!r.cpuTime)
       .sort((a, b) => b.cpuTime - a.cpuTime)
-      .sort((a, b) => (isOthersRecord(b) ? -1 : 0))
+      .sort((a, b) => (b.is_other ? -1 : 0))
     return { data: d, capacity }
   }, [records])
 

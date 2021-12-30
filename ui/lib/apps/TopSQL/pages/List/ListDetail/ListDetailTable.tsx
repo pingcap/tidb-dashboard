@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
+import { useTranslation } from 'react-i18next'
+import { QuestionCircleOutlined } from '@ant-design/icons'
 
 import { Bar, TextWrap, CardTable } from '@lib/components'
 import { TopsqlSummaryPlanItem } from '@lib/client'
@@ -15,7 +17,7 @@ interface ListDetailTableProps {
   capacity: number
 }
 
-const OVERALL_LABEL = '(Overall)'
+const OVERALL_LABEL = 'Overall'
 const UNKNOWN_LABEL = 'Unknown'
 
 const canSelect = (r: PlanRecord): boolean => {
@@ -27,6 +29,7 @@ export function ListDetailTable({
   capacity,
 }: ListDetailTableProps) {
   const { records: planRecords, isMultiPlans } = usePlanRecord(sqlRecord)
+  const { t } = useTranslation()
 
   const tableColumns = useMemo(
     () => [
@@ -44,14 +47,42 @@ export function ListDetailTable({
       {
         name: 'Plan',
         key: 'plan',
-        minWidth: 80,
-        maxWidth: 80,
+        minWidth: 150,
+        maxWidth: 150,
         onRender: (rec: PlanRecord) => {
           return rec.plan_digest === OVERALL_LABEL ? (
-            rec.plan_digest
-          ) : (
+            <Tooltip
+              title={t('topsql.detail.overall_tooltip')}
+              placement="right"
+            >
+              <span
+                style={{
+                  verticalAlign: 'middle',
+                  fontStyle: 'italic',
+                  color: '#aaa',
+                }}
+              >
+                {t('topsql.detail.overall')} <QuestionCircleOutlined />
+              </span>
+            </Tooltip>
+          ) : rec.plan_digest ? (
             <Tooltip title={rec.plan_digest} placement="right">
               <TextWrap>{rec.plan_digest || UNKNOWN_LABEL}</TextWrap>
+            </Tooltip>
+          ) : (
+            <Tooltip
+              title={t('topsql.detail.no_plan_tooltip')}
+              placement="right"
+            >
+              <span
+                style={{
+                  verticalAlign: 'middle',
+                  fontStyle: 'italic',
+                  color: '#aaa',
+                }}
+              >
+                {t('topsql.detail.no_plan')} <QuestionCircleOutlined />
+              </span>
             </Tooltip>
           )
         },

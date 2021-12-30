@@ -17,10 +17,15 @@ topsql:
       cancel: 取消
   refresh: 刷新
   table:
-    description: Top {{topN}} SQL（以当前时间范围 CPU 开销排序）
-    others_tooltip: Top {{topN}} 以外数据的聚合
+    description: 以下表格展示了当前时间范围内消耗 CPU 资源最多的 {{topN}} 类 SQL 语句，点击后可进一步显示详情。
+    others: 其他语句
+    others_tooltip: 所有其他非 Top {{topN}} 的语句
   detail:
     title: SQL 详情
+    overall: 总计
+    overall_tooltip: 该语句在所有执行计划上的总计详情
+    no_plan: 无执行计划
+    no_plan_tooltip: 该语句不是查询语句，或当时执行计划正在生成中
   fields:
     sql_text: SQL 模板
     sql_text_tooltip: 相似的 SQL 查询即使查询参数不一样也具有相同的 SQL 模板

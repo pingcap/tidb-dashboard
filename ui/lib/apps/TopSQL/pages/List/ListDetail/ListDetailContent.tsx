@@ -40,28 +40,33 @@ export function ListDetailContent({
               <Expand.Link expanded={sqlExpanded} onClick={toggleSqlExpanded} />
               <CopyLink
                 displayVariant="formatted_sql"
-                data={formatSql(sqlRecord.query)}
+                data={formatSql(sqlRecord.sql_text)}
               />
-              <CopyLink displayVariant="original_sql" data={sqlRecord.query} />
+              <CopyLink
+                displayVariant="original_sql"
+                data={sqlRecord.sql_text}
+              />
             </Space>
           }
         >
           <Expand
             expanded={sqlExpanded}
-            collapsedContent={<HighlightSQL sql={sqlRecord.query} compact />}
+            collapsedContent={
+              <HighlightSQL sql={sqlRecord.sql_text!} compact />
+            }
           >
-            <HighlightSQL sql={sqlRecord.query} />
+            <HighlightSQL sql={sqlRecord.sql_text!} />
           </Expand>
         </Descriptions.Item>
         <Descriptions.Item
           label={
             <Space size="middle">
               <TextWithInfo.TransKey transKey="topsql.fields.sql_digest" />
-              <CopyLink data={sqlRecord.digest} />
+              <CopyLink data={sqlRecord.sql_digest} />
             </Space>
           }
         >
-          {sqlRecord.digest}
+          {sqlRecord.sql_digest}
         </Descriptions.Item>
         {planRecord && (
           <Descriptions.Item

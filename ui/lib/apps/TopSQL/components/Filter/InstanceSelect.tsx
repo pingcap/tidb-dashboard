@@ -26,7 +26,7 @@ const combineSelectValue = (item: TopsqlInstanceItem) => {
 }
 
 const splitSelectValue = (v: string): TopsqlInstanceItem => {
-  const [instance_type, instance] = v.split(v)
+  const [instance_type, instance] = v.split(splitter)
   return { instance, instance_type }
 }
 

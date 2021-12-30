@@ -27,7 +27,6 @@ import { InstanceSelect } from '../../components/Filter'
 import styles from './List.module.less'
 import { ListTable } from './ListTable'
 import { ListChart } from './ListChart'
-import { convertOthersRecord } from '../../utils/othersRecord'
 import { createUseTimeWindowSize } from '../../utils/useTimeWindowSize'
 import { SettingsForm } from './SettingsForm'
 
@@ -261,7 +260,6 @@ const useTopSQLData = ({
     // If this digest occurs continuously on the timeline, we can easily see the sequential overhead
     data.sort((a, b) => a.sql_digest?.localeCompare(b.sql_digest!) || 0)
     data.forEach((d) => {
-      convertOthersRecord(d)
       d.plans?.forEach(
         (item) =>
           (item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000))

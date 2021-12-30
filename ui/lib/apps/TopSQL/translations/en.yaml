@@ -17,10 +17,15 @@ topsql:
       cancel: Cancel
   refresh: Refresh
   table:
-    description: Top {{topN}} SQL Statements that costs most CPU resources in the current time range
-    others_tooltip: Aggregation of data not in the top {{topN}}
+    description: The below are top {{topN}} SQL statements that costs most CPU resources in the current time range. Click one to see details.
+    others: Other Statements
+    others_tooltip: All of other non Top {{topN}} statements
   detail:
     title: SQL Statement Details by Plan
+    overall: Overall
+    overall_tooltip: The execution details of all plans of this statement
+    no_plan: Plan Not Available
+    no_plan_tooltip: This statement is not a query or the statement plan was being generated
   fields:
     sql_text: Statement Template
     sql_text_tooltip: Similar queries have same statement template even for different query parameters

@@ -58,7 +58,7 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, 
 		fileExtenstion = "*.txt"
 	}
 
-	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt+fileExtenstion)
+	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt+"_"+fileExtenstion)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create tmpfile to write profile: %v", err)
 	}

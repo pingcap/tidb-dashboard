@@ -53,7 +53,6 @@ instance_profiling:
       status:
         finished: 完成
         skipped: 不支持
-        to_be_supported: 待支持
       tooltip:
         skipped: '{{kind}} 不支持 {{type}} 分析'
         to_be_supported: '{{kind}} 暂不支持 {{type}} 分析'

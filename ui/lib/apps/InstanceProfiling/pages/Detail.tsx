@@ -244,25 +244,22 @@ export default function Page() {
               </Tooltip>
             )
           } else if (record.state == taskState.Skipped) {
-            let tooltipTransKey = 'skipped'
+            let tooltipTransKey =
+              'instance_profiling.detail.table.tooltip.skipped'
             if (record.profiling_type === 'heap') {
-              tooltipTransKey = 'to_be_supported'
+              tooltipTransKey =
+                'instance_profiling.detail.table.tooltip.to_be_supported'
             }
             return (
               <Tooltip
-                title={t(
-                  `instance_profiling.detail.table.tooltip.${tooltipTransKey}`,
-                  {
-                    kind: record.target.kind,
-                    type: record.profiling_type,
-                  }
-                )}
+                title={t(tooltipTransKey, {
+                  kind: record.target.kind,
+                  type: record.profiling_type,
+                })}
               >
                 <Badge
                   status="default"
-                  text={t(
-                    `instance_profiling.detail.table.status.${tooltipTransKey}`
-                  )}
+                  text={t(`instance_profiling.detail.table.status.skipped`)}
                 />
               </Tooltip>
             )

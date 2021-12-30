@@ -45,8 +45,13 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		endpoint.GET("/config", s.GetConfig)
 		endpoint.POST("/config", s.UpdateConfig)
 		endpoint.GET("/instances", s.params.NgmProxy.Route("/topsql/v1/instances"))
-		endpoint.GET("/cpu_time", s.params.NgmProxy.Route("/topsql/v1/cpu_time"))
+		endpoint.GET("/summary", s.params.NgmProxy.Route("/topsql/v1/summary"))
 	}
+}
+
+type GetInstancesRequest struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
 }
 
 type InstanceResponse struct {
@@ -61,6 +66,7 @@ type InstanceItem struct {
 // @Summary Get availiable instances
 // @Router /topsql/instances [get]
 // @Security JwtAuth
+// @Param q query GetInstancesRequest true "Query"
 // @Success 200 {object} InstanceResponse "ok"
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
@@ -68,39 +74,45 @@ func (s *Service) GetInstance(c *gin.Context) {
 	// dummy, for generate open api
 }
 
-type GetCPUTimeRequest struct {
-	Instance string `json:"instance"`
-	Start    string `json:"start"`
-	End      string `json:"end"`
-	Top      string `json:"top"`
-	Window   string `json:"window"`
+type GetSummaryRequest struct {
+	Instance     string `json:"instance"`
+	InstanceType string `json:"instance_type"`
+	Start        string `json:"start"`
+	End          string `json:"end"`
+	Top          string `json:"top"`
+	Window       string `json:"window"`
 }
 
-type CPUTimeResponse struct {
-	Data []CPUTimeItem `json:"data"`
+type SummaryResponse struct {
+	Data []SummaryItem `json:"data"`
 }
 
-type CPUTimeItem struct {
-	SQLDigest string     `json:"sql_digest"`
-	SQLText   string     `json:"sql_text"`
-	Plans     []PlanItem `json:"plans"`
+type SummaryItem struct {
+	SQLDigest string            `json:"sql_digest"`
+	SQLText   string            `json:"sql_text"`
+	IsOther   bool              `json:"is_other"`
+	Plans     []SummaryPlanItem `json:"plans"`
 }
 
-type PlanItem struct {
-	PlanDigest    string   `json:"plan_digest"`
-	PlanText      string   `json:"plan_text"`
-	TimestampSecs []uint64 `json:"timestamp_secs"`
-	CPUTimeMillis []uint32 `json:"cpu_time_millis"`
+type SummaryPlanItem struct {
+	PlanDigest        string   `json:"plan_digest"`
+	PlanText          string   `json:"plan_text"`
+	TimestampSec      []uint64 `json:"timestamp_sec"`
+	CPUTimeMs         []uint64 `json:"cpu_time_ms,omitempty"`
+	ExecCountPerSec   float64  `json:"exec_count_per_sec"`
+	DurationPerExecMs float64  `json:"duration_per_exec_ms"`
+	ScanRecordsPerSec float64  `json:"scan_records_per_sec"`
+	ScanIndexesPerSec float64  `json:"scan_indexes_per_sec"`
 }
 
-// @Summary Get cpu time
-// @Router /topsql/cpu_time [get]
+// @Summary Get summaries
+// @Router /topsql/summary [get]
 // @Security JwtAuth
-// @Param q query GetCPUTimeRequest true "Query"
-// @Success 200 {object} CPUTimeResponse "ok"
+// @Param q query GetSummaryRequest true "Query"
+// @Success 200 {object} SummaryResponse "ok"
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) GetCPUTime(c *gin.Context) {
+func (s *Service) GetSummary(c *gin.Context) {
 	// dummy, for generate open api
 }
 

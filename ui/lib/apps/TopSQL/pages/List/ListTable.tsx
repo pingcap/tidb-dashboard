@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 
-import { TopsqlCPUTimeItem, TopsqlPlanItem } from '@lib/client'
+import { TopsqlSummaryItem, TopsqlSummaryPlanItem } from '@lib/client'
 import {
   Card,
   CardTable,
@@ -20,7 +20,7 @@ import { useRecordSelection } from '../../utils/useRecordSelection'
 import { ListDetail } from './ListDetail'
 
 interface ListTableProps {
-  data: TopsqlCPUTimeItem[]
+  data: TopsqlSummaryItem[]
   topN: number
 }
 
@@ -29,7 +29,7 @@ export interface SQLRecord {
   query: string
   digest: string
   cpuTime: number
-  plans: TopsqlPlanItem[]
+  plans: TopsqlSummaryPlanItem[]
 }
 
 const canSelect = (r: SQLRecord): boolean => {
@@ -125,7 +125,7 @@ export function ListTable({ data, topN }: ListTableProps) {
   )
 }
 
-function useTableData(records: TopsqlCPUTimeItem[]) {
+function useTableData(records: TopsqlSummaryItem[]) {
   const tableData: { data: SQLRecord[]; capacity: number } = useMemo(() => {
     if (!records) {
       return { data: [], capacity: 0 }
@@ -135,8 +135,8 @@ function useTableData(records: TopsqlCPUTimeItem[]) {
       .map((r) => {
         let cpuTime = 0
         r.plans?.forEach((plan) => {
-          plan.timestamp_secs?.forEach((t, i) => {
-            cpuTime += plan.cpu_time_millis![i]
+          plan.timestamp_sec?.forEach((t, i) => {
+            cpuTime += plan.cpu_time_ms![i]
           })
         })
 

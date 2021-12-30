@@ -5,6 +5,7 @@ import client, { TopsqlInstanceItem } from '@lib/client'
 
 import commonStyles from './common.module.less'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import { calcTimeRange, TimeRange } from '@lib/components'
 
 interface InstanceGroup {
   name: string
@@ -12,21 +13,38 @@ interface InstanceGroup {
 }
 
 export interface InstanceSelectProps {
-  value: InstanceId
-  onChange: (id: string) => void
+  value: TopsqlInstanceItem
+  onChange: (instance: TopsqlInstanceItem) => void
+  timeRange: TimeRange
   disabled?: boolean
 }
 
-export type InstanceId = string | undefined
+const splitter = ' - '
+
+const combineSelectValue = (item: TopsqlInstanceItem) => {
+  return `${item.instance_type}${splitter}${item.instance}`
+}
+
+const splitSelectValue = (v: string): TopsqlInstanceItem => {
+  const [instance_type, instance] = v.split(v)
+  return { instance, instance_type }
+}
 
 export function InstanceSelect({
   value,
   onChange,
+  timeRange,
   disabled = false,
 }: InstanceSelectProps) {
-  const { data, isLoading } = useClientRequest(() => {
-    return client.getInstance().topsqlInstancesGet()
+  const { data, isLoading, sendRequest } = useClientRequest(() => {
+    const [start, end] = calcTimeRange(timeRange)
+    return client.getInstance().topsqlInstancesGet(String(end), String(start))
   })
+
+  useEffect(() => {
+    sendRequest()
+  }, [timeRange])
+
   const instances = data?.data
   const instanceGroups: InstanceGroup[] = useMemo(() => {
     if (!instances) {
@@ -54,25 +72,15 @@ export function InstanceSelect({
     }, [] as InstanceGroup[])
   }, [instances])
 
-  useEffect(() => {
-    if (!instanceGroups.length) {
-      return
-    }
-    const firstItem = instanceGroups[0].instances[0]
-    const notExist = !instances!.find((inst) => inst.instance === value)
-    // set first instance as default, or reset instance id if previous instance isn't in current timestamp range
-    if (!value || notExist) {
-      onChange(firstItem.instance!)
-    }
-    // eslint-disable-next-line
-  }, [instanceGroups])
-
   return (
     <Select
       style={{ width: 200 }}
       placeholder="Select Instance"
-      value={value}
-      onChange={onChange}
+      value={combineSelectValue(value)}
+      onChange={(value) => {
+        const instance = splitSelectValue(value)
+        onChange(instance)
+      }}
       loading={isLoading}
       disabled={disabled}
     >
@@ -81,7 +89,7 @@ export function InstanceSelect({
           {instanceGroup.instances.map((item) => (
             <Select.Option
               className={commonStyles.select_option}
-              value={item.instance!}
+              value={combineSelectValue(item)}
               key={item.instance}
             >
               <span className={commonStyles.hide}>{instanceGroup.name} - </span>

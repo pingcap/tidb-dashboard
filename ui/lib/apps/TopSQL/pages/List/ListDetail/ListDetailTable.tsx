@@ -4,7 +4,7 @@ import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { Bar, TextWrap, CardTable } from '@lib/components'
-import { TopsqlPlanItem } from '@lib/client'
+import { TopsqlSummaryPlanItem } from '@lib/client'
 
 import type { SQLRecord } from '../ListTable'
 import { ListDetailContent } from './ListDetailContent'
@@ -94,7 +94,7 @@ export function ListDetailTable({
 
 export type PlanRecord = {
   cpuTime: number
-} & TopsqlPlanItem
+} & TopsqlSummaryPlanItem
 
 const usePlanRecord = (
   record: SQLRecord
@@ -109,7 +109,7 @@ const usePlanRecord = (
     const plans = [...record.plans]
 
     const records: PlanRecord[] = plans.map((p) => {
-      const cpuTime = p.cpu_time_millis?.reduce((pt, t) => pt + t, 0) || 0
+      const cpuTime = p.cpu_time_ms?.reduce((pt, t) => pt + t, 0) || 0
       return {
         ...p,
         cpuTime,

@@ -12,10 +12,10 @@ import {
 import { orderBy, toPairs } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { TopsqlCPUTimeItem } from '@lib/client'
+import { TopsqlSummaryItem } from '@lib/client'
 
 export interface ListChartProps {
-  data: TopsqlCPUTimeItem[]
+  data: TopsqlSummaryItem[]
   timeWindowSize: number
   timeRangeTimestamp: [number, number]
   onBrushEnd: BrushEndListener
@@ -108,7 +108,7 @@ export function ListChart({
   )
 }
 
-function useDigestMap(seriesData: TopsqlCPUTimeItem[]) {
+function useDigestMap(seriesData: TopsqlSummaryItem[]) {
   const digestMap = useMemo(() => {
     if (!seriesData) {
       return {}
@@ -121,7 +121,7 @@ function useDigestMap(seriesData: TopsqlCPUTimeItem[]) {
   return { digestMap }
 }
 
-function useChartData(seriesData: TopsqlCPUTimeItem[]) {
+function useChartData(seriesData: TopsqlSummaryItem[]) {
   const chartData = useMemo(() => {
     if (!seriesData) {
       return {}
@@ -138,13 +138,13 @@ function useChartData(seriesData: TopsqlCPUTimeItem[]) {
       const map = valuesByDigestAndTs[seriesDigest]
       let sum = 0
       series.plans?.forEach((values) => {
-        values.timestamp_secs?.forEach((t, i) => {
+        values.timestamp_sec?.forEach((t, i) => {
           if (!map[t]) {
-            map[t] = values.cpu_time_millis![i]
+            map[t] = values.cpu_time_ms![i]
           } else {
-            map[t] += values.cpu_time_millis![i]
+            map[t] += values.cpu_time_ms![i]
           }
-          sum += values.cpu_time_millis![i]
+          sum += values.cpu_time_ms![i]
         })
       })
 

@@ -1,10 +1,10 @@
-import { TopsqlCPUTimeItem, TopsqlPlanItem } from '@lib/client'
+import { TopsqlSummaryItem, TopsqlSummaryPlanItem } from '@lib/client'
 import { PlanRecord } from '../pages/List/ListDetail/ListDetailTable'
 import { SQLRecord } from '../pages/List/ListTable'
 
 const OTHERS_LABEL = '(Others)'
 
-export function convertOthersRecord(r: TopsqlCPUTimeItem) {
+export function convertOthersRecord(r: TopsqlSummaryItem) {
   if (!!r.sql_digest) {
     return
   }
@@ -16,7 +16,7 @@ export function isOthersRecord(r: SQLRecord) {
   return r.digest === OTHERS_LABEL
 }
 
-export function convertOthersPlanRecord(r: TopsqlPlanItem) {
+export function convertOthersPlanRecord(r: TopsqlSummaryPlanItem) {
   if (!!r.plan_digest) {
     return
   }

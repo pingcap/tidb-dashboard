@@ -10,9 +10,8 @@ import { useTranslation } from 'react-i18next'
 
 import '@elastic/charts/dist/theme_only_light.css'
 
-import client, { TopsqlCPUTimeItem } from '@lib/client'
+import client, { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
-import { useURLQueryState } from '@lib/utils/useURLQueryState'
 import {
   Card,
   AutoRefreshButton,
@@ -24,7 +23,7 @@ import {
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
-import { InstanceSelect, InstanceId } from '../../components/Filter'
+import { InstanceSelect } from '../../components/Filter'
 import styles from './List.module.less'
 import { ListTable } from './ListTable'
 import { ListChart } from './ListChart'
@@ -52,7 +51,10 @@ export function TopSQLList() {
     'topsql.auto_refresh',
     0
   )
-  const [instanceId, setInstanceId] = useURLQueryState('instance_id')
+  const [instance, setInstance] = useLocalStorageState<TopsqlInstanceItem>(
+    'topsql.instance',
+    null as any
+  )
   const [timeRange, setTimeRange] = useLocalStorageState(
     'topsql.recent_time_range',
     DEFAULT_TIME_RANGE
@@ -64,7 +66,7 @@ export function TopSQLList() {
     updateTopSQLData,
     isLoading: isDataLoading,
     queryTimestampRange,
-  } = useTopSQLData(instanceId, timeRange, timeWindowSize, topN)
+  } = useTopSQLData({ instance, timeRange, timeWindowSize, topN })
   const isLoading = isConfigLoading || isDataLoading
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
@@ -100,7 +102,7 @@ export function TopSQLList() {
       return
     }
     handleUpdateTopSQLData()
-  }, [instanceId, timeWindowSize, isTimeWindowSizeComputed])
+  }, [instance, timeWindowSize, isTimeWindowSizeComputed])
 
   const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
     if (!v.x) {
@@ -148,9 +150,10 @@ export function TopSQLList() {
           <Toolbar>
             <Space>
               <InstanceSelect
-                value={instanceId}
-                onChange={setInstanceId}
+                value={instance}
+                onChange={setInstance}
                 disabled={isLoading}
+                timeRange={timeRange}
               />
               <Button.Group>
                 <TimeRangeSelector
@@ -214,31 +217,37 @@ export function TopSQLList() {
   )
 }
 
-const useTopSQLData = (
-  instanceId: InstanceId,
-  timeRange: TimeRange,
-  timeWindowSize: number,
+const useTopSQLData = ({
+  instance,
+  timeRange,
+  timeWindowSize,
+  topN,
+}: {
+  instance?: TopsqlInstanceItem
+  timeRange: TimeRange
+  timeWindowSize: number
   topN: number
-) => {
-  const [topSQLData, setTopSQLData] = useState<TopsqlCPUTimeItem[]>([])
+}) => {
+  const [topSQLData, setTopSQLData] = useState<TopsqlSummaryItem[]>([])
   const [queryTimestampRange, setQueryTimestampRange] = useState(
     calcTimeRange(timeRange)
   )
   const [isLoading, setIsLoading] = useState(false)
   const updateTopSQLData = useCallback(async () => {
-    if (!instanceId) {
+    if (!instance) {
       return
     }
 
     const [beginTs, endTs] = calcTimeRange(timeRange)
-    let data: TopsqlCPUTimeItem[]
+    let data: TopsqlSummaryItem[]
     try {
       setIsLoading(true)
       const resp = await client
         .getInstance()
-        .topsqlCpuTimeGet(
+        .topsqlSummaryGet(
           endTs as any,
-          instanceId,
+          instance.instance,
+          instance.instance_type,
           beginTs as any,
           String(topN),
           `${timeWindowSize}s` as any
@@ -255,13 +264,13 @@ const useTopSQLData = (
       convertOthersRecord(d)
       d.plans?.forEach(
         (item) =>
-          (item.timestamp_secs = item.timestamp_secs?.map((t) => t * 1000))
+          (item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000))
       )
     })
 
     setTopSQLData(data)
     setQueryTimestampRange([beginTs, endTs])
-  }, [instanceId, timeWindowSize, timeRange, topN])
+  }, [instance, timeWindowSize, timeRange, topN])
 
   return { topSQLData, updateTopSQLData, isLoading, queryTimestampRange }
 }

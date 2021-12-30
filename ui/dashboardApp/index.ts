@@ -78,14 +78,14 @@ async function webPageStart() {
     applySentryTracingInterceptor(instance)
   }
 
-  if (info?.ngm_state === NgmState.NotStarted) {
-    notification.error({
-      key: 'ngm_not_started',
-      message: i18next.t('health_check.failed_notification_title'),
-      description: i18next.t('health_check.ngm_not_started'),
-      duration: null,
-    })
-  }
+  // if (info?.ngm_state === NgmState.NotStarted) {
+  //   notification.error({
+  //     key: 'ngm_not_started',
+  //     message: i18next.t('health_check.failed_notification_title'),
+  //     description: i18next.t('health_check.ngm_not_started'),
+  //     duration: null,
+  //   })
+  // }
 
   const registry = new AppRegistry(options)
 

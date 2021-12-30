@@ -57,12 +57,7 @@ function Sider({
     '',
     true
   )
-  const conprofMenuItem = useAppMenuItem(
-    registry,
-    'continuous_profiling',
-    '',
-    true
-  )
+  const conprofMenuItem = useAppMenuItem(registry, 'conprof', '', true)
   const profilingSubMenuItems = [instanceProfilingMenuItem]
   if (useIsFeatureSupport('conprof')) {
     profilingSubMenuItems.push(conprofMenuItem)

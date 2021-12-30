@@ -18,8 +18,6 @@ import (
 	"encoding/gob"
 	"time"
 
-	"gorm.io/gorm"
-
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/matrix"
 )
@@ -79,9 +77,7 @@ func CreateTableAxisModelIfNotExists(db *dbstore.DB) (bool, error) {
 }
 
 func ClearTableAxisModel(db *dbstore.DB) error {
-	return db.Session(&gorm.Session{AllowGlobalUpdate: true}).
-		Delete(&AxisModel{}).
-		Error
+	return db.Delete(&AxisModel{}).Error
 }
 
 func FindAxisModelsOrderByTime(db *dbstore.DB, layerNum uint8) ([]*AxisModel, error) {

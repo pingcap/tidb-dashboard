@@ -77,8 +77,8 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
-func (c Client) AddRequestHeader(key, value string) *Client {
-	c.httpClient = c.httpClient.CloneAndAddRequestHeader(key, value)
+func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
+	c.httpClient.BeforeRequest = callback
 	return &c
 }
 

@@ -18,20 +18,20 @@ import (
 )
 
 type TableDef struct {
-	Category       []string // The category of the table, such as [TiDB]
-	Title          string
-	Comment        string // English Comment
+	Category       []string `json:"category"` // The category of the table, such as [TiDB]
+	Title          string   `json:"title"`
+	Comment        string   `json:"comment"`
 	joinColumns    []int
 	compareColumns []int
-	Column         []string // Column name
-	Rows           []TableRowDef
+	Column         []string      `json:"column"`
+	Rows           []TableRowDef `json:"rows"`
 }
 
 type TableRowDef struct {
-	Values    []string
-	SubValues [][]string // SubValues need fold default.
+	Values    []string   `json:"values"`
+	SubValues [][]string `json:"sub_values"` // SubValues need fold default.
 	ratio     float64
-	Comment   string
+	Comment   string `json:"comment"`
 }
 
 func (t TableDef) ColumnWidth() []int {
@@ -80,6 +80,7 @@ func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB, sqliteDB 
 		return []*TableDef{GenerateReportError(errRows)}
 	}
 	tables := GetReportTables(startTime, endTime, db, sqliteDB, reportID)
+
 	lastCategory := ""
 	for _, tbl := range tables {
 		if tbl == nil {
@@ -127,7 +128,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 		GetClusterInfoTable,
 
 		// Diagnose
-		GetDiagnoseReport,
+		GetAllDiagnoseReport,
 
 		// Load
 		GetLoadTable,
@@ -313,7 +314,11 @@ func GetHeaderTimeTable(startTime, endTime string, db *gorm.DB) (TableDef, error
 	}, nil
 }
 
-func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetAllDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	return GetDiagnoseReport(startTime, endTime, db, nil)
+}
+
+func GetDiagnoseReport(startTime, endTime string, db *gorm.DB, rules []string) (TableDef, error) {
 	table := TableDef{
 		Category: []string{CategoryDiagnose},
 		Title:    "diagnose",
@@ -321,6 +326,9 @@ func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error)
 		Column:   []string{"RULE", "ITEM", "TYPE", "INSTANCE", "STATUS_ADDRESS", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
 	}
 	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ %s from information_schema.INSPECTION_RESULT", startTime, endTime, strings.Join(table.Column, ","))
+	if len(rules) > 0 {
+		sql = fmt.Sprintf("%s where RULE in ('%s')", sql, strings.Join(rules, "','"))
+	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
 		return table, err
@@ -2113,7 +2121,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableD
 		FROM information_schema.CLUSTER_HARDWARE
 		WHERE device_type='cpu'
 		group by instance,type,VALUE,NAME HAVING NAME = 'cpu-physical-cores'
-		OR NAME = 'cpu-logical-cores' ORDER BY INSTANCE `
+		OR NAME = 'cpu-logical-cores' ORDER BY INSTANCE`
 	rows, err := querySQL(db, sql)
 	if err != nil {
 		return table, err

@@ -79,13 +79,8 @@ function getKey(item: IRow) {
 }
 
 export default function () {
-  const {
-    data,
-    isLoading,
-    error,
-    sendRequest,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().configurationGetAll(reqConfig)
+  const { data, isLoading, error, sendRequest } = useClientRequest(
+    (reqConfig) => client.getInstance().configurationGetAll(reqConfig)
   )
 
   const { t } = useTranslation()

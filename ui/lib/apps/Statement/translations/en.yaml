@@ -24,7 +24,7 @@ statement:
         schemas:
           placeholder: All Databases
           selected: '{{ n }} Databases'
-          columnTitle: Database Name
+          columnTitle: Execution Database Name
         statement_types:
           placeholder: All Kinds
           selected: '{{ n }} Kinds'

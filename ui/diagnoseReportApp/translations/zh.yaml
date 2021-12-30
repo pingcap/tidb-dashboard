@@ -4,7 +4,7 @@ diagnosis:
   fold_all: 收起所有
   expand: 展开
   fold: 收起
-  all_tables: 诊断信息总览
+  all_tables: 报告信息总览
   tables:
     category:
       header: 基本信息
@@ -18,7 +18,7 @@ diagnosis:
       error: 错误
     title:
       compare_diagnose: 诊断对比
-      compare_report_time_range: 对比诊断区间
+      compare_report_time_range: 对比报告区间
       top_10_slow_query_in_time_range_t1: t1 中的 Top 10 慢查询
       top_10_slow_query_in_time_range_t2: t2 中的 Top 10 慢查询
       top_10_slow_query_group_by_digest_in_time_range_t1: 按 SQL 指纹聚合的 t1 Top 10 慢查询
@@ -30,7 +30,7 @@ diagnosis:
       max_diff_item: 最大不同项
       slow_query_t2: t2 中的慢查询
       generate_report_error: 生成报告的报错
-      report_time_range: 诊断区间
+      report_time_range: 报告区间
       diagnose: 诊断结果
       total_time_consume: 各组件总耗时
       total_error: 各组件总报错数

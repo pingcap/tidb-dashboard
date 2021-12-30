@@ -17,10 +17,10 @@ function refineDiagnosisData() {
 
   let preCategory = ''
   diagnosisData.forEach((d) => {
-    if (d.Category.join('') === preCategory) {
-      d.Category = []
+    if (d.category.join('') === preCategory) {
+      d.category = []
     } else {
-      preCategory = d.Category.join('')
+      preCategory = d.category.join('')
     }
   })
   return diagnosisData

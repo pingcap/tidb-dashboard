@@ -121,6 +121,7 @@ function Sider({
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),
+    useAppMenuItem(registry, 'system_report'),
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
     // useAppMenuItem(registry, '__APP_NAME__'),

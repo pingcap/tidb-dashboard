@@ -106,7 +106,7 @@
     "husky": "^4.2.5",
     "less": "^3.12.2",
     "less-loader": "^5.0.0",
-    "prettier": "^2.0.4",
+    "prettier": "2.4.1",
     "pretty-quick": "^2.0.1",
     "react-app-rewire-alias": "^0.1.6",
     "react-app-rewire-html-webpack-plugin": "^1.0.3",

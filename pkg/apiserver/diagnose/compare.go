@@ -872,7 +872,7 @@ func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, 
 		GetTiDBSlowQueryWithDiffPlan,
 
 		// Diagnose
-		GetDiagnoseReport,
+		GetAllDiagnoseReport,
 	}
 	atomic.AddInt32(totalTableCount, int32(len(funcs)*2))
 

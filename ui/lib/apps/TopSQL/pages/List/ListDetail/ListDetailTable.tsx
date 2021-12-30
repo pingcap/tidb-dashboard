@@ -30,6 +30,9 @@ const shortFormat = (v: number = 0) => {
 const fixedFormat = (v: number = 0) => {
   return getValueFormat('none')(v, 4)
 }
+const msFormat = (v: number = 0) => {
+  return getValueFormat('ms')(v, 4)
+}
 
 export function ListDetailTable({
   record: sqlRecord,
@@ -128,13 +131,13 @@ export function ListDetailTable({
         ),
       },
       {
-        name: 'Latency (s)/call',
+        name: 'Latency/call',
         key: 'latency',
         minWidth: 50,
         maxWidth: 150,
         onRender: (rec: PlanRecord) => (
-          <Tooltip title={fixedFormat(rec.duration_per_exec_ms)}>
-            <TextWrap>{shortFormat(rec.duration_per_exec_ms)}</TextWrap>
+          <Tooltip title={msFormat(rec.duration_per_exec_ms)}>
+            <TextWrap>{msFormat(rec.duration_per_exec_ms)}</TextWrap>
           </Tooltip>
         ),
       },

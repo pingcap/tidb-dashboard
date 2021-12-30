@@ -7,12 +7,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // WriteZipFromFiles compresses `files` using zip and write the zip in a streaming way to the io Writer `w`.
 // The files will be flattened in the zip file, i.e. `/a/b/c.txt` becomes `c.txt`.
 // FIXME: This function does not handle with encrypted files on the disk.
-func WriteZipFromFiles(w io.Writer, files []string, compress bool) error {
+func WriteZipFromFiles(w io.Writer, files []string, compress bool, withREADME bool) error {
 	zw := zip.NewWriter(w)
 	defer func() {
 		_ = zw.Close()
@@ -21,6 +22,27 @@ func WriteZipFromFiles(w io.Writer, files []string, compress bool) error {
 	// TODO: Handle with duplicate file names.
 	for _, file := range files {
 		err := writeZipFromFile(zw, file, compress)
+		if err != nil {
+			return err
+		}
+	}
+
+	if withREADME {
+		const downloadReadme = `
+			To review the CPU profiling or heap profiling result interactively:
+
+			$ go tool pprof --http=0.0.0.0:1234 cpu_xxx.proto
+			`
+
+		zipFile, err := zw.CreateHeader(&zip.FileHeader{
+			Name:     "README.md",
+			Method:   zip.Deflate,
+			Modified: time.Now(),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = zipFile.Write([]byte(downloadReadme))
 		if err != nil {
 			return err
 		}
@@ -48,8 +70,9 @@ func writeZipFromFile(zw *zip.Writer, file string, compress bool) error {
 		zipMethod = zip.Deflate // compress
 	}
 	zipFile, err := zw.CreateHeader(&zip.FileHeader{
-		Name:   fileInfo.Name(),
-		Method: zipMethod,
+		Name:     fileInfo.Name(),
+		Method:   zipMethod,
+		Modified: time.Now(),
 	})
 	if err != nil {
 		return err

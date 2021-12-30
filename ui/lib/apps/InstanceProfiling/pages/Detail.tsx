@@ -71,7 +71,7 @@ function mapData(data) {
         ViewOptions.Download,
       ]
     } else if (task.raw_data_type === RawDataType.Text) {
-      task.view_options = [ViewOptions.Text]
+      task.view_options = [ViewOptions.Text, ViewOptions.Download]
     } else if (task.raw_data_type === '') {
       switch (task.target.kind) {
         case 'tidb':
@@ -244,22 +244,25 @@ export default function Page() {
               </Tooltip>
             )
           } else if (record.state == taskState.Skipped) {
-            let tooltipTransKey =
-              'instance_profiling.detail.table.tooltip.skipped'
+            let tooltipTransKey = 'skipped'
             if (record.profiling_type === 'heap') {
-              tooltipTransKey =
-                'instance_profiling.detail.table.tooltip.temp_skipped'
+              tooltipTransKey = 'to_be_supported'
             }
             return (
               <Tooltip
-                title={t(tooltipTransKey, {
-                  kind: record.target.kind,
-                  type: record.profiling_type,
-                })}
+                title={t(
+                  `instance_profiling.detail.table.tooltip.${tooltipTransKey}`,
+                  {
+                    kind: record.target.kind,
+                    type: record.profiling_type,
+                  }
+                )}
               >
                 <Badge
                   status="default"
-                  text={t('instance_profiling.detail.table.status.skipped')}
+                  text={t(
+                    `instance_profiling.detail.table.status.${tooltipTransKey}`
+                  )}
                 />
               </Tooltip>
             )

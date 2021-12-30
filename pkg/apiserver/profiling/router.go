@@ -221,10 +221,10 @@ func (s *Service) downloadGroup(c *gin.Context) {
 		filePathes[i] = task.FilePath
 	}
 
-	fileName := fmt.Sprintf("profiling_pack_%d.zip", taskGroupID)
+	fileName := fmt.Sprintf("profiling_%s.zip", time.Now().Format("2006-01-02_15-04-05"))
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-	err = ziputil.WriteZipFromFiles(c.Writer, filePathes, true)
+	err = ziputil.WriteZipFromFiles(c.Writer, filePathes, true, true)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))
 	}
@@ -260,10 +260,16 @@ func (s *Service) downloadSingle(c *gin.Context) {
 		return
 	}
 
-	fileName := fmt.Sprintf("profiling_%d.zip", taskID)
+	withREADME := true
+
+	if task.RawDataType == RawDataTypeText {
+		withREADME = false
+	}
+
+	fileName := fmt.Sprintf("profiling_%s.zip", time.Now().Format("2006-01-02_15-04-05"))
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-	err = ziputil.WriteZipFromFiles(c.Writer, []string{task.FilePath}, true)
+	err = ziputil.WriteZipFromFiles(c.Writer, []string{task.FilePath}, true, withREADME)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))
 	}

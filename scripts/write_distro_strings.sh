@@ -5,11 +5,11 @@
 set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-PROJECT_DIR=$(cd "$DIR/../.."; pwd)
+PROJECT_DIR=$(cd "$DIR/.."; pwd)
 
 echo "+ Write distro strings"
 cd "$PROJECT_DIR"
-go run scripts/distro/write_strings.go -o="${PROJECT_DIR}/ui/lib/distro_strings.json"
+go run cmd/distro/write_strings.go -o="${PROJECT_DIR}/ui/lib/distro_strings.json"
 
 echo "  - Success! Distro strings:"
 cat "${PROJECT_DIR}/ui/lib/distro_strings.json"

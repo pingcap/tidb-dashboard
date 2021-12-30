@@ -260,7 +260,7 @@ func (s *Service) downloadSingle(c *gin.Context) {
 		return
 	}
 
-	zipOptions := make([]ziputil.Option, 0)
+	zipOptions := make([]ziputil.Options, 0)
 
 	if task.RawDataType != RawDataTypeText {
 		zipOptions = append(zipOptions, ziputil.WithREADME())

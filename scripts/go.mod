@@ -1,4 +1,4 @@
-module scripts
+module github.com/pingcap/tidb-dashboard/scripts
 
 go 1.13
 

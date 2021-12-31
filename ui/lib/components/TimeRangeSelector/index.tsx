@@ -29,7 +29,7 @@ const RECENT_SECONDS = [
   28 * 24 * 60 * 60,
 ]
 
-const DEFAULT_TIME_RANGE: TimeRange = {
+export const DEFAULT_TIME_RANGE: TimeRange = {
   type: 'recent',
   value: 30 * 60,
 }
@@ -68,9 +68,16 @@ export function stringifyTimeRange(timeRange?: TimeRange): string {
 export interface ITimeRangeSelectorProps {
   value?: TimeRange
   onChange?: (val: TimeRange) => void
+  disabled?: boolean
+  disabledDate?: (currentDate: Dayjs) => boolean
 }
 
-function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
+function TimeRangeSelector({
+  value,
+  onChange,
+  disabled = false,
+  disabledDate = () => false,
+}: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
 
@@ -153,6 +160,7 @@ function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
             format="YYYY-MM-DD HH:mm:ss"
             value={rangePickerValue}
             onChange={handleRangePickerChange}
+            disabledDate={disabledDate}
           />
         </div>
       </div>
@@ -165,6 +173,7 @@ function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
       trigger={['click']}
       visible={dropdownVisible}
       onVisibleChange={setDropdownVisible}
+      disabled={disabled}
     >
       <Button icon={<ClockCircleOutlined />} data-e2e="timerange-selector">
         {value && value.type === 'recent' && (

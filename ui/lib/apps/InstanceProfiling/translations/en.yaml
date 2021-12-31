@@ -14,7 +14,7 @@ instance_profiling:
       duration:
         label: Duration
       submit: Start Profiling
-    disable_warning: Already enabled continuous profiling, so manual profiling is disabled. You can see all instances profiling results in the continuous profiling page.
+    disable_warning: You cannot start a profile now since continuous profiling is enabled. You can see latest profiling results in the continuous profiling page.
     table:
       title: Profiling History
       columns:

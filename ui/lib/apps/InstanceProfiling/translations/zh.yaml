@@ -14,7 +14,7 @@ instance_profiling:
       duration:
         label: 分析时长
       submit: 开始分析
-    disable_warning: 已启用持续性能分析功能，因此手动性能分析不可用。可在持续性能分析页面查看当前及过往的分析结果。
+    disable_warning: 当前已启用持续性能分析，因此不能再发起一个新的性能分析。可在持续性能分析页面查看当前及过往的分析结果。
     table:
       title: 性能分析历史
       columns:

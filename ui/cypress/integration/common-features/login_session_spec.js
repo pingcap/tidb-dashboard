@@ -7,15 +7,20 @@ describe('Login session', () => {
     })
   })
 
-  it('Redirect to sigin page when unlogin', function () {
-    cy.visit(`${this.uri.overview}`)
-    cy.intercept('GET', `${Cypress.env('apiUrl')}/statements/config`).as(
-      'statements'
-    )
-    cy.wait('@statements').should(({ response }) => {
-      expect(response.body).to.have.property('code', 'common.unauthenticated')
-    })
+  it('Redirect to sigin page when user not login', function () {
+    cy.visit(this.uri.overview)
+    // cy.get('.ant-message-error').should('be.visible')
+    expect(localStorage.getItem('dashboard_auth_token')).to.be.null
+    cy.url('include', `${this.uri.login}`)
+  })
+
+  // Use fake token to indicate session expired.
+  it('Redirect user to sigin page when session token expired', function () {
+    // Set `dashboard_auth_token` with an invalid token
+    localStorage.setItem('dashboard_auth_token', 'invalid_auth_token')
+    cy.visit(this.uri.overview)
 
     cy.url('include', `${this.uri.login}`)
+    cy.get('.ant-message-error').should('be.visible')
   })
 })

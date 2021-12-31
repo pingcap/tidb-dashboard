@@ -152,7 +152,7 @@ export default function useSlowQueryTableController(
         })
         setAllSchemas(res?.data || [])
       } catch (e) {
-        setErrors((prev) => prev.concat(e))
+        setErrors((prev) => prev.concat(e as Error))
       }
     }
 
@@ -203,7 +203,7 @@ export default function useSlowQueryTableController(
         cacheMgr?.set(cacheKey, res.data || [])
         setErrors([])
       } catch (e) {
-        setErrors((prev) => prev.concat(e))
+        setErrors((prev) => prev.concat(e as Error))
       }
       setLoadingSlowQueries(false)
     }

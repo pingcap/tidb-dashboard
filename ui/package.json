@@ -8,6 +8,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@baurine/grafana-value-formats": "^1.0.0",
+    "@elastic/charts": "^20.0.0",
     "@duorou_xu/speedscope": "1.14.1",
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@g07cha/flexbox-react": "^5.0.0",
@@ -30,6 +31,7 @@
     "i18next-browser-languagedetector": "^5.0.0",
     "lodash": "^4.17.21",
     "moize": "^5.4.7",
+    "moment-timezone": "^0.5.33",
     "nprogress": "^0.2.0",
     "office-ui-fabric-react": "^7.123.10",
     "pullstate": "^1.23.0",

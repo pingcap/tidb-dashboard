@@ -9,6 +9,9 @@ describe('Search Logs', () => {
 
       await Promise.all([page.waitForNavigation(), page.click('a#search_logs')])
 
+      // FIXME: should be integrated with ngm
+      await page.click('.ant-notification-close-x')
+
       // Fill keyword
       await expect(page).toFill('[data-e2e="log_search_keywords"]', 'Welcome')
 

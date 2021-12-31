@@ -253,8 +253,8 @@ export default function Page() {
             return (
               <Tooltip
                 title={t(tooltipTransKey, {
-                  kind: record.target.kind,
-                  type: record.profiling_type,
+                  kind: InstanceKindName[record.target.kind],
+                  type: upperFirst(record.profiling_type),
                 })}
               >
                 <Badge

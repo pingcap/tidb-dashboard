@@ -71,7 +71,7 @@ function mapData(data) {
         ViewOptions.Download,
       ]
     } else if (task.raw_data_type === RawDataType.Text) {
-      task.view_options = [ViewOptions.Text]
+      task.view_options = [ViewOptions.Text, ViewOptions.Download]
     } else if (task.raw_data_type === '') {
       switch (task.target.kind) {
         case 'tidb':
@@ -248,13 +248,13 @@ export default function Page() {
               'instance_profiling.detail.table.tooltip.skipped'
             if (record.profiling_type === 'heap') {
               tooltipTransKey =
-                'instance_profiling.detail.table.tooltip.temp_skipped'
+                'instance_profiling.detail.table.tooltip.to_be_supported'
             }
             return (
               <Tooltip
                 title={t(tooltipTransKey, {
-                  kind: record.target.kind,
-                  type: record.profiling_type,
+                  kind: InstanceKindName[record.target.kind],
+                  type: upperFirst(record.profiling_type),
                 })}
               >
                 <Badge
@@ -349,9 +349,6 @@ export default function Page() {
             items={tableData}
             errors={[error]}
             groups={groupData}
-            groupProps={{
-              showEmptyGroups: true,
-            }}
             hideLoadingWhenNotEmpty
             extendLastColumn
           />

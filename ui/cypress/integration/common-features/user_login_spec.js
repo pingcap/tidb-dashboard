@@ -5,7 +5,7 @@ describe('Root User Login', () => {
   beforeEach(function () {
     cy.fixture('uri.json').then(function (uri) {
       this.uri = uri
-      cy.visit(`${this.uri.root}`)
+      cy.visit(this.uri.root)
     })
   })
 

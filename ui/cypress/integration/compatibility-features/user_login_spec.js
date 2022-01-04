@@ -24,16 +24,12 @@ describe('User Login', () => {
       // Direct to login page
       cy.fixture('uri.json').then(function (uri) {
         this.uri = uri
-        cy.visit(`${this.uri.overview}`)
+        cy.visit(this.uri.overview)
       })
     })
 
     it('noRootLogin is supported', () => {
       cy.log('FEATURE_VERSION is: ', Cypress.env('FEATURE_VERSION'))
-      cy.request(`${Cypress.env('apiUrl')}info/info`).then((resp) => {
-        expect(resp.status).to.eq(200)
-        expect(resp.body.supported_features).include('nonRootLogin')
-      })
 
       // Check username input is not disabled
       cy.get('[data-e2e=signin_username_input]').should('not.be.disabled')
@@ -59,16 +55,12 @@ describe('User Login', () => {
     beforeEach(() => {
       cy.fixture('uri.json').then(function (uri) {
         this.uri = uri
-        cy.visit(`${this.uri.overview}`)
+        cy.visit(this.uri.overview)
       })
     })
 
     it('noRootLogin is unsupported', () => {
       cy.log('FEATURE_VERSION is: ', Cypress.env('FEATURE_VERSION'))
-      cy.request(`${Cypress.env('apiUrl')}info/info`).then((resp) => {
-        expect(resp.status).to.eq(200)
-        expect(resp.body.supported_features).not.include('nonRootLogin')
-      })
 
       // Check username input is disabled
       cy.get('[data-e2e=signin_username_input]').should('be.disabled')

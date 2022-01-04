@@ -60,4 +60,4 @@ linters-settings:
       - "^\\s*@"
   goheader:
     template: |-
-      Copyright {{ YEAR }} PingCAP, Inc. Licensed under Apache-2.0.
+      Copyright {{ YEAR-RANGE }} PingCAP, Inc. Licensed under Apache-2.0.

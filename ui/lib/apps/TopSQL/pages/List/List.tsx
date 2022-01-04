@@ -30,7 +30,7 @@ import { ListChart } from './ListChart'
 import { createUseTimeWindowSize } from '../../utils/useTimeWindowSize'
 import { SettingsForm } from './SettingsForm'
 
-const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
+const autoRefreshOptions = [30, 60, 2 * 60, 5 * 60, 10 * 60]
 const zoomOutRate = 0.5
 const useTimeWindowSize = createUseTimeWindowSize(8)
 const topN = 5

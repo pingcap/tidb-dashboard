@@ -6,26 +6,25 @@ import {
   SelectionMode,
   IObjectWithKey,
 } from 'office-ui-fabric-react/lib/Selection'
-import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
-import { useGetSet } from 'react-use'
+import { useGetSet, useSessionStorage } from 'react-use'
+import { isNoPlanRecord } from './specialRecord'
 
 interface Props<T> {
-  localStorageKey: string
+  storageKey: string
   selections: T[]
   getKey: (s: T) => string
-  disableSelection: (r: T) => boolean
+  canSelectItem?: (s: T) => boolean
 }
 
 export const useRecordSelection = <T>({
-  localStorageKey,
+  storageKey,
   selections,
   getKey = () => 'key',
-  disableSelection = () => false,
+  canSelectItem = () => true,
 }: Props<T>) => {
-  const [selectedRecordKey, _setSelectedRecordKey] = useLocalStorageState(
-    localStorageKey,
-    ''
-  )
+  const [selectedRecordKey, _setSelectedRecordKey] = useSessionStorage<
+    string | null
+  >(storageKey, null)
   const [getInternalKey, setInternalKey] = useGetSet(selectedRecordKey)
   const setSelectedRecordKey = useCallback((k: string) => {
     _setSelectedRecordKey(k)
@@ -44,17 +43,22 @@ export const useRecordSelection = <T>({
             index?: number | undefined
           ) => string | number)
         | undefined,
-      canSelectItem: (item) => !disableSelection(item as T),
+      canSelectItem: canSelectItem as
+        | ((item: IObjectWithKey, index?: number | undefined) => boolean)
+        | undefined,
       onSelectionChanged: () => {
         const r = s.getSelection()[0] as T
-
-        // fluent ui bug, SelectionZone.tsx L330
-        // When click disabled item, it will clear the selection state
-        // if (!r && getInternalKey()) {
-        //   s.selectToKey(getInternalKey())
-        // }
-
         if (!r) {
+          // A hack to fix the selection zone bug, SelectionZone.tsx L330
+          // It will clear the selection state when click disabled item.
+          // So we need to reselect the correct target.
+          const internalKey = getInternalKey()
+          const isSelectedItemInSelections = s
+            .getItems()
+            .find((r) => getKey(r as T) === internalKey)
+          if (!!internalKey && isSelectedItemInSelections) {
+            s.selectToKey(internalKey)
+          }
           return
         }
 

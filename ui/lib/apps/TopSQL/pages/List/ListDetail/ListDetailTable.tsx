@@ -170,9 +170,9 @@ export function ListDetailTable({
         getKey={(r: PlanRecord) => r?.plan_digest!}
         items={planRecords}
         columns={tableColumns}
-        selectionMode={isMultiPlans ? SelectionMode.single : SelectionMode.none}
+        selectionMode={SelectionMode.single}
         selectionPreservedOnEmptyClick
-        onRowClicked={isMultiPlans ? () => {} : undefined}
+        onRowClicked={() => {}}
         selection={selection}
       />
       {!sqlRecord.is_other && (

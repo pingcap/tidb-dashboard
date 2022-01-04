@@ -145,13 +145,15 @@ export default function Page() {
         }
       })
 
-      newGroups.push({
-        key: InstanceKindName[instanceKind],
-        name: InstanceKindName[instanceKind],
-        startIndex: startIndex,
-        count: newRows.length - startIndex,
-      })
-      startIndex = newRows.length
+      if (newRows.length - startIndex > 0) {
+        newGroups.push({
+          key: InstanceKindName[instanceKind],
+          name: InstanceKindName[instanceKind],
+          startIndex: startIndex,
+          count: newRows.length - startIndex,
+        })
+        startIndex = newRows.length
+      }
     }
     return [newRows, newGroups]
   }, [data])
@@ -178,7 +180,7 @@ export default function Page() {
         profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
         if (isProtobuf) {
           const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
-          profileURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
+          profileURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
             // protobuf can be rendered to flamegraph by speedscope
             profileURL + `&output_type=protobuf`
           )}&title=${titleOnTab}`

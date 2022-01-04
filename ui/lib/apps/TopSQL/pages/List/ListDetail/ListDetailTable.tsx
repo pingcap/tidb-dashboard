@@ -11,18 +11,19 @@ import { TopsqlSummaryPlanItem } from '@lib/client'
 import type { SQLRecord } from '../ListTable'
 import { ListDetailContent } from './ListDetailContent'
 import { useRecordSelection } from '../../../utils/useRecordSelection'
+import {
+  convertNoPlanRecord,
+  createOverallRecord,
+  isNoPlanRecord,
+  isOverallRecord,
+} from '@lib/apps/TopSQL/utils/specialRecord'
 
 interface ListDetailTableProps {
   record: SQLRecord
   capacity: number
 }
 
-const OVERALL_LABEL = 'Overall'
 const UNKNOWN_LABEL = 'Unknown'
-
-const canSelect = (r: PlanRecord): boolean => {
-  return !!r.plan_digest && r.plan_digest !== OVERALL_LABEL
-}
 
 const shortFormat = (v: number = 0) => {
   return getValueFormat('short')(v, 1)
@@ -60,7 +61,7 @@ export function ListDetailTable({
         minWidth: 150,
         maxWidth: 150,
         onRender: (rec: PlanRecord) => {
-          return rec.plan_digest === OVERALL_LABEL ? (
+          return isOverallRecord(rec) ? (
             <Tooltip
               title={t('topsql.detail.overall_tooltip')}
               placement="right"
@@ -75,11 +76,7 @@ export function ListDetailTable({
                 {t('topsql.detail.overall')} <QuestionCircleOutlined />
               </span>
             </Tooltip>
-          ) : rec.plan_digest ? (
-            <Tooltip title={rec.plan_digest} placement="right">
-              <TextWrap>{rec.plan_digest || UNKNOWN_LABEL}</TextWrap>
-            </Tooltip>
-          ) : (
+          ) : isNoPlanRecord(rec) ? (
             <Tooltip
               title={t('topsql.detail.no_plan_tooltip')}
               placement="right"
@@ -93,6 +90,12 @@ export function ListDetailTable({
               >
                 {t('topsql.detail.no_plan')} <QuestionCircleOutlined />
               </span>
+            </Tooltip>
+          ) : (
+            <Tooltip title={rec.plan_digest} placement="right">
+              <TextWrap style={{ width: '80px' }}>
+                {rec.plan_digest || UNKNOWN_LABEL}
+              </TextWrap>
             </Tooltip>
           )
         },
@@ -146,10 +149,10 @@ export function ListDetailTable({
   )
 
   const { selectedRecord, selection } = useRecordSelection<PlanRecord>({
-    localStorageKey: 'topsql.list_detail_table_selected_key',
+    storageKey: 'topsql.list_detail_table_selected_key',
     selections: planRecords,
     getKey: (r) => r.plan_digest!,
-    disableSelection: (r) => !canSelect(r),
+    canSelectItem: (r) => !isNoPlanRecord(r) && !isOverallRecord(r),
   })
 
   const planRecord = useMemo(() => {
@@ -172,7 +175,9 @@ export function ListDetailTable({
         onRowClicked={isMultiPlans ? () => {} : undefined}
         selection={selection}
       />
-      <ListDetailContent sqlRecord={sqlRecord} planRecord={planRecord} />
+      {!sqlRecord.is_other && (
+        <ListDetailContent sqlRecord={sqlRecord} planRecord={planRecord} />
+      )}
     </>
   )
 }
@@ -201,29 +206,11 @@ const usePlanRecord = (
         }
       })
       .sort((a, b) => b.cpuTime - a.cpuTime)
+      .map(convertNoPlanRecord)
 
-    // add overall
+    // add overall record to the first
     if (isMultiPlans) {
-      records.unshift(
-        records.reduce(
-          (prev, current) => {
-            prev.cpuTime += current.cpuTime
-            prev.exec_count_per_sec! += current.exec_count_per_sec || 0
-            prev.scan_records_per_sec! += current.scan_records_per_sec || 0
-            prev.scan_indexes_per_sec! += current.scan_indexes_per_sec || 0
-            prev.duration_per_exec_ms! += current.duration_per_exec_ms || 0
-            return prev
-          },
-          {
-            plan_digest: OVERALL_LABEL,
-            cpuTime: 0,
-            exec_count_per_sec: 0,
-            scan_records_per_sec: 0,
-            scan_indexes_per_sec: 0,
-            duration_per_exec_ms: 0,
-          } as PlanRecord
-        )
-      )
+      records.unshift(createOverallRecord(records))
     }
 
     return { isMultiPlans, records }

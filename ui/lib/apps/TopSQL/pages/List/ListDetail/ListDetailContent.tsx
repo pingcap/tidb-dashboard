@@ -13,6 +13,10 @@ import {
 } from '@lib/components'
 import type { PlanRecord } from './ListDetailTable'
 import type { SQLRecord } from '../ListTable'
+import {
+  isNoPlanRecord,
+  isOverallRecord,
+} from '@lib/apps/TopSQL/utils/specialRecord'
 
 interface ListDetailContentProps {
   sqlRecord: SQLRecord
@@ -68,7 +72,9 @@ export function ListDetailContent({
         >
           {sqlRecord.sql_digest}
         </Descriptions.Item>
-        {planRecord && (
+        {!!planRecord?.plan_digest &&
+        !isOverallRecord(planRecord) &&
+        !isNoPlanRecord(planRecord) ? (
           <Descriptions.Item
             label={
               <Space size="middle">
@@ -79,8 +85,8 @@ export function ListDetailContent({
           >
             {planRecord.plan_digest}
           </Descriptions.Item>
-        )}
-        {planRecord && (
+        ) : null}
+        {!!planRecord?.plan_text ? (
           <Descriptions.Item
             span={2}
             multiline={planExpanded}
@@ -99,7 +105,7 @@ export function ListDetailContent({
               <Pre noWrap>{planRecord.plan_text}</Pre>
             </Expand>
           </Descriptions.Item>
-        )}
+        ) : null}
       </Descriptions>
     </Card>
   )

@@ -14,6 +14,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlSummaryItem } from '@lib/client'
 import { useTranslation } from 'react-i18next'
+import { isOthersDigest } from '../../utils/specialRecord'
 
 export interface ListChartProps {
   data: TopsqlSummaryItem[]
@@ -89,6 +90,18 @@ export function ListChart({
         name="PLACEHOLDER"
       />
       {Object.keys(chartData).map((digest) => {
+        const sql = digestMap?.[digest] || ''
+        let text = sql
+
+        if (isOthersDigest(digest)) {
+          text = t('topsql.table.others')
+          // is unknown sql text
+        } else if (!sql) {
+          text = `(SQL ${digest.slice(0, 8)})`
+        } else {
+          text = sql.length > 50 ? `${sql.slice(0, 50)}...` : sql
+        }
+
         return (
           <BarSeries
             key={digest}
@@ -99,7 +112,7 @@ export function ListChart({
             yAccessors={[1]}
             stackAccessors={[0]}
             data={chartData[digest]}
-            name={digestMap?.[digest]?.slice(0, 50) || t('topsql.table.others')}
+            name={text}
           />
         )
       })}
@@ -115,7 +128,7 @@ function useDigestMap(seriesData: TopsqlSummaryItem[]) {
     return seriesData.reduce((prev, { sql_digest, sql_text }) => {
       prev[sql_digest!] = sql_text
       return prev
-    }, {})
+    }, {} as { [digest: string]: string | undefined })
   }, [seriesData])
   return { digestMap }
 }

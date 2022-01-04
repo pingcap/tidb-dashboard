@@ -17,6 +17,7 @@ import {
 
 import { useRecordSelection } from '../../utils/useRecordSelection'
 import { ListDetail } from './ListDetail'
+import { isOthersRecord, isUnknownSQLRecord } from '../../utils/specialRecord'
 
 interface ListTableProps {
   data: TopsqlSummaryItem[]
@@ -25,10 +26,6 @@ interface ListTableProps {
 
 export type SQLRecord = TopsqlSummaryItem & {
   cpuTime: number
-}
-
-const canSelect = (r: SQLRecord): boolean => {
-  return !!r.sql_digest && !r.is_other
 }
 
 export function ListTable({ data, topN }: ListTableProps) {
@@ -53,8 +50,10 @@ export function ListTable({ data, topN }: ListTableProps) {
         minWidth: 250,
         maxWidth: 550,
         onRender: (rec: SQLRecord) => {
-          const text = rec.sql_text || t('topsql.table.others')!
-          return rec.is_other ? (
+          const text = isUnknownSQLRecord(rec)
+            ? `(SQL ${rec.sql_digest?.slice(0, 8)})`
+            : rec.sql_text!
+          return isOthersRecord(rec) ? (
             <Tooltip
               title={t('topsql.table.others_tooltip', { topN })}
               placement="right"
@@ -66,7 +65,7 @@ export function ListTable({ data, topN }: ListTableProps) {
                   color: '#aaa',
                 }}
               >
-                {text} <QuestionCircleOutlined />
+                {t('topsql.table.others')} <QuestionCircleOutlined />
               </span>
             </Tooltip>
           ) : (
@@ -86,10 +85,9 @@ export function ListTable({ data, topN }: ListTableProps) {
   )
 
   const { selectedRecord, selection } = useRecordSelection<SQLRecord>({
-    localStorageKey: 'topsql.list_table_selected_key',
+    storageKey: 'topsql.list_table_selected_key',
     selections: tableRecords,
     getKey: (r) => r.sql_digest!,
-    disableSelection: (r) => !canSelect(r),
   })
 
   return (

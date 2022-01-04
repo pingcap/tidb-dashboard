@@ -14,11 +14,12 @@
 
 const mysql = require('mysql2')
 
-function queryTestDB(query, password) {
+function queryTestDB(query, password, database) {
   const dbConfig = {
     host: '127.0.0.1',
     port: '4000',
     user: 'root',
+    database: database,
     password: password,
   }
   // creates a new mysql connection
@@ -52,10 +53,10 @@ module.exports = (on, config) => {
 
   config.env.apiUrl = 'http://127.0.0.1:12333/dashboard/api/'
 
-  // Usage: cy.task('queryDB', {query, password})
+  // Usage: cy.task('queryDB', { ...queryData })
   on('task', {
-    queryDB: ({ query, password }) => {
-      return queryTestDB(query, password)
+    queryDB: ({ query, password = '', database = 'mysql' }) => {
+      return queryTestDB(query, password, database)
     },
   })
 

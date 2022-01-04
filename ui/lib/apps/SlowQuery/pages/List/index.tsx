@@ -99,7 +99,7 @@ function List() {
   return (
     <div className={styles.list_container}>
       <Card>
-        <Toolbar className={styles.list_toolbar}>
+        <Toolbar className={styles.list_toolbar} data-e2e="slow_query_toolbar">
           <Space>
             <TimeRangeSelector
               value={queryOptions.timeRange}

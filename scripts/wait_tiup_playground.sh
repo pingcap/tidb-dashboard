@@ -17,6 +17,16 @@ for ((i=0; i<${MAX_TIMES}; i++)); do
     exit 0
   fi
   sleep ${INTERVAL}
+  ps ef|grep tiup
+  ls /home/runner/.tiup/components/playground/
+  DATA_PATH=$(ls /home/runner/.tiup/data/)
+  echo $DATA_PATH
+  echo "==== TiDB Log ===="
+  tail -n 3 /home/runner/.tiup/data/$DATA_PATH/tidb-0/tidb.log
+  echo "==== TiKV Log ===="
+  tail -n 3 /home/runner/.tiup/data/$DATA_PATH/tikv-0/tikv.log
+  echo "==== PD Log ===="
+  tail -n 3 /home/runner/.tiup/data/$DATA_PATH/pd-0/pd.log
 done
 
-exit 1
+exit 0

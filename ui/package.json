@@ -8,8 +8,8 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@baurine/grafana-value-formats": "^1.0.0",
-    "@elastic/charts": "^20.0.0",
     "@duorou_xu/speedscope": "1.14.1",
+    "@elastic/charts": "^20.0.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@g07cha/flexbox-react": "^5.0.0",
     "@sentry/react": "^6.3.2",

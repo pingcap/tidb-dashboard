@@ -7,15 +7,21 @@ describe('User Login', () => {
   if (Cypress.env('FEATURE_VERSION') === '6.0.0') {
     // Create user test
     before(() => {
-      let query = "DROP USER IF EXISTS 'test'@'%'"
-      let password = ''
-      cy.task('queryDB', { query, password })
+      let queryData = {
+        query: 'DROP USER IF EXISTS "test"@"%"',
+      }
+      cy.task('queryDB', { ...queryData })
 
-      query = "CREATE USER 'test'@'%' IDENTIFIED BY 'test_pwd'"
-      cy.task('queryDB', { query, password })
+      queryData = {
+        query: "CREATE USER 'test'@'%' IDENTIFIED BY 'test_pwd'",
+      }
 
-      query = "GRANT ALL PRIVILEGES ON *.* TO 'test'@'%' WITH GRANT OPTION"
-      cy.task('queryDB', { query, password })
+      cy.task('queryDB', { ...queryData })
+
+      queryData = {
+        query: "GRANT ALL PRIVILEGES ON *.* TO 'test'@'%' WITH GRANT OPTION",
+      }
+      cy.task('queryDB', { ...queryData })
     })
 
     // Run before each test

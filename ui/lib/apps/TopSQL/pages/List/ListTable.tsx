@@ -44,7 +44,7 @@ export function ListTable({
   const tableColumns = useMemo(
     () => [
       {
-        name: 'CPU',
+        name: t('topsql.table.fields.cpu_time'),
         key: 'cpuTime',
         minWidth: 150,
         maxWidth: 250,
@@ -55,7 +55,7 @@ export function ListTable({
         ),
       },
       {
-        name: 'Query',
+        name: t('topsql.table.fields.sql'),
         key: 'query',
         minWidth: 250,
         maxWidth: 550,

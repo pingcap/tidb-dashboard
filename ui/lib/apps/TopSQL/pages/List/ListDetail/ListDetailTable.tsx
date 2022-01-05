@@ -45,7 +45,7 @@ export function ListDetailTable({
   const tableColumns = useMemo(
     () => [
       {
-        name: 'CPU',
+        name: t('topsql.detail.fields.cpu_time'),
         key: 'cpuTime',
         minWidth: 150,
         maxWidth: 250,
@@ -56,7 +56,7 @@ export function ListDetailTable({
         ),
       },
       {
-        name: 'Plan',
+        name: t('topsql.detail.fields.plan'),
         key: 'plan',
         minWidth: 150,
         maxWidth: 150,
@@ -101,8 +101,8 @@ export function ListDetailTable({
         },
       },
       {
-        name: 'Call/sec',
-        key: 'qps',
+        name: t('topsql.detail.fields.exec_count_per_sec'),
+        key: 'exec_count_per_sec',
         minWidth: 50,
         maxWidth: 150,
         onRender: (rec: PlanRecord) => (
@@ -112,8 +112,8 @@ export function ListDetailTable({
         ),
       },
       {
-        name: 'Scan Rows/sec',
-        key: 'scan_row',
+        name: t('topsql.detail.fields.scan_records_per_sec'),
+        key: 'scan_records_per_sec',
         minWidth: 50,
         maxWidth: 150,
         onRender: (rec: PlanRecord) => (
@@ -123,8 +123,8 @@ export function ListDetailTable({
         ),
       },
       {
-        name: 'Scan Index/sec',
-        key: 'scan_index',
+        name: t('topsql.detail.fields.scan_indexes_per_sec'),
+        key: 'scan_indexes_per_sec',
         minWidth: 50,
         maxWidth: 150,
         onRender: (rec: PlanRecord) => (
@@ -134,7 +134,7 @@ export function ListDetailTable({
         ),
       },
       {
-        name: 'Latency/call',
+        name: t('topsql.detail.fields.duration_per_exec_ms'),
         key: 'latency',
         minWidth: 50,
         maxWidth: 150,

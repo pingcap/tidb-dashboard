@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 
 import '@elastic/charts/dist/theme_only_light.css'
 
+import formatSql from '@lib/utils/sqlFormatter'
 import client, { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 import {
@@ -272,6 +273,7 @@ const useTopSQLData = ({
     data.sort((a, b) => a.sql_digest?.localeCompare(b.sql_digest!) || 0)
 
     data.forEach((d) => {
+      d.sql_text = formatSql(d.sql_text)
       d.plans?.forEach((item) => {
         // Filter empty cpu time data
         item.timestamp_sec = item.timestamp_sec?.filter(

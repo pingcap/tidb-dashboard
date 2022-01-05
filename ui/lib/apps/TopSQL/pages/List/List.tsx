@@ -270,11 +270,17 @@ const useTopSQLData = ({
     // Sort data by digest
     // If this digest occurs continuously on the timeline, we can easily see the sequential overhead
     data.sort((a, b) => a.sql_digest?.localeCompare(b.sql_digest!) || 0)
+
     data.forEach((d) => {
-      d.plans?.forEach(
-        (item) =>
-          (item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000))
-      )
+      d.plans?.forEach((item) => {
+        // Filter empty cpu time data
+        item.timestamp_sec = item.timestamp_sec?.filter(
+          (_, index) => !!item.cpu_time_ms?.[index]
+        )
+        item.cpu_time_ms = item.cpu_time_ms?.filter((c) => !!c)
+
+        item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000)
+      })
     })
 
     setTopSQLData(data)

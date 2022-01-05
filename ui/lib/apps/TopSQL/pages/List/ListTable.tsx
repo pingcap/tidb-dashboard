@@ -21,10 +21,12 @@ import {
 import { useRecordSelection } from '../../utils/useRecordSelection'
 import { ListDetail } from './ListDetail'
 import { isOthersRecord, isUnknownSQLRecord } from '../../utils/specialRecord'
+import { InstanceType } from './ListDetail/ListDetailTable'
 
 interface ListTableProps {
   data: TopsqlSummaryItem[]
   topN: number
+  instanceType: InstanceType
   onRowOver: (key: string) => void
   onRowLeave: () => void
 }
@@ -36,6 +38,7 @@ export type SQLRecord = TopsqlSummaryItem & {
 export function ListTable({
   data,
   topN,
+  instanceType,
   onRowLeave,
   onRowOver,
 }: ListTableProps) {
@@ -128,7 +131,11 @@ export function ListTable({
       />
       <AppearAnimate motionName="contentAnimation">
         {selectedRecord && (
-          <ListDetail record={selectedRecord} capacity={capacity} />
+          <ListDetail
+            instanceType={instanceType}
+            record={selectedRecord}
+            capacity={capacity}
+          />
         )}
       </AppearAnimate>
     </>

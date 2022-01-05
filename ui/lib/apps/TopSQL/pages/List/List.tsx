@@ -31,6 +31,7 @@ import { ListChart } from './ListChart'
 import { createUseTimeWindowSize } from '../../utils/useTimeWindowSize'
 import { SettingsForm } from './SettingsForm'
 import { onLegendItemOver, onLegendItemOut } from './legendAction'
+import { InstanceType } from './ListDetail/ListDetailTable'
 
 const autoRefreshOptions = [30, 60, 2 * 60, 5 * 60, 10 * 60]
 const zoomOutRate = 0.5
@@ -225,6 +226,7 @@ export function TopSQLList() {
                 }
                 onRowLeave={() => onLegendItemOut(chartRef.current)}
                 topN={topN}
+                instanceType={instance.instance_type as InstanceType}
                 data={topSQLData}
               />
             )}

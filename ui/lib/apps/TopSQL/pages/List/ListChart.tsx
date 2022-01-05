@@ -66,7 +66,11 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
           id="bottom"
           position={Position.Bottom}
           showOverlappingTicks
-          tickFormat={timeFormatter('MM-DD HH:mm:ss')}
+          tickFormat={
+            timeRangeTimestamp[1] - timeRangeTimestamp[0] < 24 * 60 * 60
+              ? timeFormatter('HH:mm:ss')
+              : timeFormatter('MM-DD HH:mm')
+          }
         />
         <Axis
           id="left"

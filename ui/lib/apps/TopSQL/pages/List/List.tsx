@@ -160,7 +160,7 @@ export function TopSQLList() {
                 value={instance}
                 onChange={setInstance}
                 disabled={isLoading}
-                timeRange={timeRange}
+                queryTimestampRange={queryTimestampRange}
               />
               <Button.Group>
                 <TimeRangeSelector

@@ -15,7 +15,7 @@ interface InstanceGroup {
 export interface InstanceSelectProps {
   value: TopsqlInstanceItem
   onChange: (instance: TopsqlInstanceItem) => void
-  timeRange: TimeRange
+  queryTimestampRange: [number, number]
   disabled?: boolean
 }
 
@@ -36,17 +36,17 @@ const splitSelectValue = (v: string): TopsqlInstanceItem => {
 export function InstanceSelect({
   value,
   onChange,
-  timeRange,
+  queryTimestampRange,
   disabled = false,
 }: InstanceSelectProps) {
   const { data, isLoading, sendRequest } = useClientRequest(() => {
-    const [start, end] = calcTimeRange(timeRange)
+    const [start, end] = queryTimestampRange
     return client.getInstance().topsqlInstancesGet(String(end), String(start))
   })
 
   useEffect(() => {
     sendRequest()
-  }, [timeRange])
+  }, [queryTimestampRange])
 
   const instances = data?.data
   const instanceGroups: InstanceGroup[] = useMemo(() => {

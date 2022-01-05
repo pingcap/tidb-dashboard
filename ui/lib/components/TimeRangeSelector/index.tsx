@@ -12,18 +12,15 @@ import styles from './index.module.less'
 const { RangePicker } = DatePicker
 
 const RECENT_SECONDS = [
+  5 * 60,
   15 * 60,
   30 * 60,
   60 * 60,
-
   2 * 60 * 60,
   6 * 60 * 60,
   12 * 60 * 60,
-
   24 * 60 * 60,
   2 * 24 * 60 * 60,
-  3 * 24 * 60 * 60,
-
   7 * 24 * 60 * 60,
   14 * 24 * 60 * 60,
   28 * 24 * 60 * 60,

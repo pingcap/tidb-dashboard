@@ -9,25 +9,15 @@ export const isOverallRecord = (r: PlanRecord) => {
   return r.plan_digest === OVERALL_IDENTIFIER
 }
 
-export const createOverallRecord = (records: PlanRecord[]) => {
-  return records.reduce(
-    (prev, current) => {
-      prev.cpuTime += current.cpuTime
-      prev.exec_count_per_sec! += current.exec_count_per_sec || 0
-      prev.scan_records_per_sec! += current.scan_records_per_sec || 0
-      prev.scan_indexes_per_sec! += current.scan_indexes_per_sec || 0
-      prev.duration_per_exec_ms! += current.duration_per_exec_ms || 0
-      return prev
-    },
-    {
-      plan_digest: OVERALL_IDENTIFIER,
-      cpuTime: 0,
-      exec_count_per_sec: 0,
-      scan_records_per_sec: 0,
-      scan_indexes_per_sec: 0,
-      duration_per_exec_ms: 0,
-    } as PlanRecord
-  )
+export const createOverallRecord = (record: SQLRecord): PlanRecord => {
+  return {
+    plan_digest: OVERALL_IDENTIFIER,
+    cpuTime: record.cpu_time_ms || 0,
+    exec_count_per_sec: record.exec_count_per_sec,
+    scan_records_per_sec: record.scan_records_per_sec,
+    scan_indexes_per_sec: record.scan_indexes_per_sec,
+    duration_per_exec_ms: record.duration_per_exec_ms,
+  }
 }
 
 export const isOthersRecord = (r: SQLRecord) => {

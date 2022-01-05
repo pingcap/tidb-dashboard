@@ -210,7 +210,7 @@ const usePlanRecord = (
 
     // add overall record to the first
     if (isMultiPlans) {
-      records.unshift(createOverallRecord(records))
+      records.unshift(createOverallRecord(record))
     }
 
     return { isMultiPlans, records }

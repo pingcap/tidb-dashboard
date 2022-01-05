@@ -107,7 +107,15 @@ export function TopSQLList() {
     }
 
     const tr = v.x.map((d) => d / 1000)
-    if (tr[1] - tr[0] < 60) {
+    const delta = tr[1] - tr[0]
+    if (delta < 60) {
+      const offset = Math.floor(delta / 2)
+      const start = tr[0] + offset - 30
+      const end = tr[1] - offset + 30
+      setTimeRange({
+        type: 'absolute',
+        value: [Math.ceil(start), Math.floor(end)],
+      })
       return
     }
 

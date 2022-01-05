@@ -38,7 +38,7 @@ topsql:
       plan: Plan
       exec_count_per_sec: Call/sec
       scan_records_per_sec: Scan Rows/sec
-      scan_indexes_per_sec: Scan Index/sec
+      scan_indexes_per_sec: Scan Indexes/sec
       duration_per_exec_ms: Latency/call
   detail_content:
     fields:

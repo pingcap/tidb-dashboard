@@ -29,6 +29,7 @@ import { ListTable } from './ListTable'
 import { ListChart } from './ListChart'
 import { createUseTimeWindowSize } from '../../utils/useTimeWindowSize'
 import { SettingsForm } from './SettingsForm'
+import { onLegendItemOver, onLegendItemOut } from './legendAction'
 
 const autoRefreshOptions = [30, 60, 2 * 60, 5 * 60, 10 * 60]
 const zoomOutRate = 0.5
@@ -132,6 +133,8 @@ export function TopSQLList() {
     setTimeRange({ type: 'absolute', value: [computedStart, computedEnd] })
   }, [timeRange])
 
+  const chartRef = useRef<any>(null)
+
   return (
     <>
       <div className={styles.container} ref={containerRef}>
@@ -195,9 +198,17 @@ export function TopSQLList() {
             data={topSQLData}
             timeRangeTimestamp={queryTimestampRange}
             timeWindowSize={timeWindowSize}
+            ref={chartRef}
           />
         </div>
-        {!!topSQLData?.length && <ListTable topN={topN} data={topSQLData} />}
+        {!!topSQLData?.length && (
+          <ListTable
+            onRowOver={(key: string) => onLegendItemOver(chartRef.current, key)}
+            onRowLeave={() => onLegendItemOut(chartRef.current)}
+            topN={topN}
+            data={topSQLData}
+          />
+        )}
       </div>
       <Drawer
         title={t('statement.settings.title')}

@@ -2,7 +2,10 @@ import React, { useMemo } from 'react'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
-import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
+import {
+  SelectionMode,
+  DetailsRow,
+} from 'office-ui-fabric-react/lib/DetailsList'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 
 import { TopsqlSummaryItem } from '@lib/client'
@@ -22,13 +25,20 @@ import { isOthersRecord, isUnknownSQLRecord } from '../../utils/specialRecord'
 interface ListTableProps {
   data: TopsqlSummaryItem[]
   topN: number
+  onRowOver: (key: string) => void
+  onRowLeave: () => void
 }
 
 export type SQLRecord = TopsqlSummaryItem & {
   cpuTime: number
 }
 
-export function ListTable({ data, topN }: ListTableProps) {
+export function ListTable({
+  data,
+  topN,
+  onRowLeave,
+  onRowOver,
+}: ListTableProps) {
   const { t } = useTranslation()
   const { data: tableRecords, capacity } = useTableData(data)
   const tableColumns = useMemo(
@@ -107,6 +117,14 @@ export function ListTable({ data, topN }: ListTableProps) {
         selectionMode={SelectionMode.single}
         selectionPreservedOnEmptyClick
         onRowClicked={() => {}}
+        onRenderRow={(props: any) => (
+          <div
+            onMouseEnter={() => onRowOver(props.item.sql_digest)}
+            onMouseLeave={onRowLeave}
+          >
+            <DetailsRow {...props} />
+          </div>
+        )}
       />
       <AppearAnimate motionName="contentAnimation">
         {selectedRecord && (

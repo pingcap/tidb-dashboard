@@ -4,6 +4,7 @@ topsql:
   alert_header:
     title: 该功能未启用
     body: Top SQL 功能未启用，可查看历史数据。您可以修改设置打开该功能后等待新数据收集。
+    settings: 设置
   settings:
     title: 设置
     open_setting: 打开设置
@@ -11,6 +12,9 @@ topsql:
     disable_warning: 确认要关闭该功能吗？
     enable: 启用功能
     enable_tooltip: 是否启用 Top SQL 功能，关闭后将只能看到历史数据，但能提升少量 {{distro.tidb}} 性能。
+    disabled_result:
+      title: 该功能未启用
+      sub_title: Top SQL 功能未启用。您可以修改设置打开该功能后等待新数据收集。
     actions:
       save: 保存
       close: 确认

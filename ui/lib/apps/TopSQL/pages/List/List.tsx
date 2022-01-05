@@ -1,6 +1,6 @@
 import { XYBrushArea, BrushEndListener } from '@elastic/charts'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Space, Button, Spin, Alert, Tooltip, Drawer } from 'antd'
+import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
 import {
   ZoomOutOutlined,
   LoadingOutlined,
@@ -39,13 +39,8 @@ const topN = 5
 
 export function TopSQLList() {
   const { t } = useTranslation()
-  const {
-    data: topSQLConfig,
-    isLoading: isConfigLoading,
-    sendRequest: updateConfig,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().topsqlConfigGet(reqConfig)
-  )
+  const { topSQLConfig, isConfigLoading, updateConfig, haveHistoryData } =
+    useTopSQLConfig()
   const [showSettings, setShowSettings] = useState(false)
   const [remainingRefreshSeconds, setRemainingRefreshSeconds] = useState(0)
   const [autoRefreshSeconds, setAutoRefreshSeconds] = useLocalStorageState(
@@ -143,12 +138,20 @@ export function TopSQLList() {
           <Card noMarginBottom>
             <Alert
               message={t(`topsql.alert_header.title`)}
-              description={t(`topsql.alert_header.body`)}
+              description={
+                <>
+                  {t(`topsql.alert_header.body`)}
+                  <a onClick={() => setShowSettings(true)}>
+                    {t('topsql.alert_header.settings')}
+                  </a>
+                </>
+              }
               type="info"
               showIcon
             />
           </Card>
         )}
+
         <Card noMarginBottom>
           <Toolbar>
             <Space>
@@ -193,24 +196,42 @@ export function TopSQLList() {
             </Space>
           </Toolbar>
         </Card>
-        <div className={styles.chart_container}>
-          <ListChart
-            onBrushEnd={handleBrushEnd}
-            data={topSQLData}
-            timeRangeTimestamp={queryTimestampRange}
-            timeWindowSize={timeWindowSize}
-            ref={chartRef}
+
+        {!isConfigLoading && !topSQLConfig?.enable && !haveHistoryData ? (
+          <Result
+            title={t('topsql.settings.disabled_result.title')}
+            subTitle={t('topsql.settings.disabled_result.sub_title')}
+            extra={
+              <Button type="primary" onClick={() => setShowSettings(true)}>
+                {t('conprof.settings.open_settings')}
+              </Button>
+            }
           />
-        </div>
-        {!!topSQLData?.length && (
-          <ListTable
-            onRowOver={(key: string) => onLegendItemOver(chartRef.current, key)}
-            onRowLeave={() => onLegendItemOut(chartRef.current)}
-            topN={topN}
-            data={topSQLData}
-          />
+        ) : (
+          <>
+            <div className={styles.chart_container}>
+              <ListChart
+                onBrushEnd={handleBrushEnd}
+                data={topSQLData}
+                timeRangeTimestamp={queryTimestampRange}
+                timeWindowSize={timeWindowSize}
+                ref={chartRef}
+              />
+            </div>
+            {!!topSQLData?.length && (
+              <ListTable
+                onRowOver={(key: string) =>
+                  onLegendItemOver(chartRef.current, key)
+                }
+                onRowLeave={() => onLegendItemOut(chartRef.current)}
+                topN={topN}
+                data={topSQLData}
+              />
+            )}
+          </>
         )}
       </div>
+
       <Drawer
         title={t('statement.settings.title')}
         width={300}
@@ -290,4 +311,55 @@ const useTopSQLData = ({
   }, [instance, timeWindowSize, timeRange, topN])
 
   return { topSQLData, updateTopSQLData, isLoading, queryTimestampRange }
+}
+
+const useTopSQLConfig = () => {
+  const {
+    data: topSQLConfig,
+    isLoading: isConfigLoading,
+    sendRequest: updateConfig,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().topsqlConfigGet(reqConfig)
+  )
+  const [haveHistoryData, setHaveHistoryData] = useState(true)
+  const [loadingHistory, setLoadingHistory] = useState(true)
+
+  useEffect(() => {
+    if (!topSQLConfig) {
+      return
+    }
+
+    if (!!topSQLConfig.enable) {
+      setLoadingHistory(false)
+      return
+    }
+
+    ;(async function () {
+      const now = Date.now() / 1000
+      const sevenDaysAgo = now - 7 * 24 * 60 * 60
+      // const sevenDaysAgo = now - 60
+
+      setLoadingHistory(true)
+      try {
+        const res = await client
+          .getInstance()
+          .topsqlInstancesGet(String(now), String(sevenDaysAgo))
+        const data = res.data.data
+        if (!!data?.length) {
+          setHaveHistoryData(true)
+        } else {
+          setHaveHistoryData(false)
+        }
+      } finally {
+        setLoadingHistory(false)
+      }
+    })()
+  }, [topSQLConfig])
+
+  return {
+    topSQLConfig,
+    isConfigLoading: isConfigLoading || loadingHistory,
+    updateConfig,
+    haveHistoryData,
+  }
 }

@@ -4,6 +4,7 @@ topsql:
   alert_header:
     title: Feature Not Enabled
     body: Top SQL feature is not enabled. The history data are available. You can modify settings to enable the feature and wait for new data being collected.
+    settings: Settings
   settings:
     title: Settings
     open_setting: Open Settings
@@ -11,6 +12,9 @@ topsql:
     disable_warning: Are you sure want to disable this feature?
     enable: Enable Feature
     enable_tooltip: Whether Top SQL feature is enabled. When enabled, there will be small overhead.
+    disabled_result:
+      title: Feature Not Enabled
+      sub_title: Top SQL feature is not enabled. You can modify settings to enable the feature and wait for new data being collected.
     actions:
       save: Save
       close: Disable

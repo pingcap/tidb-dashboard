@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package integration
 
@@ -17,7 +17,7 @@ var _ = Suite(&testReportSuite{})
 
 type testReportSuite struct{}
 
-//func (t *testReportSuite) TestReport(c *C) {
+// func (t *testReportSuite) TestReport(c *C) {
 //	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
 //	c.Assert(err, IsNil)
 //	defer cli.Close()
@@ -29,7 +29,7 @@ type testReportSuite struct{}
 //	for _, tbl := range tables {
 //		printRows(tbl)
 //	}
-//}
+// }
 
 // func (t *testReportSuite) TestGetTable(c *C) {
 // 	cli, err := gorm.Open(mysql.Open("root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local"))

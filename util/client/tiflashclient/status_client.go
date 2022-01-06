@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Package tiflashclient provides a flexible TiFlash API access to any TiFlash instance.
 package tiflashclient

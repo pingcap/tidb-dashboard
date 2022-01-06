@@ -10,10 +10,11 @@ import {
   PartialTheme,
 } from '@elastic/charts'
 import { orderBy, toPairs } from 'lodash'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, forwardRef } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlSummaryItem } from '@lib/client'
 import { useTranslation } from 'react-i18next'
+import { isOthersDigest } from '../../utils/specialRecord'
 
 export interface ListChartProps {
   data: TopsqlSummaryItem[]
@@ -31,81 +32,93 @@ const theme: PartialTheme = {
   },
 }
 
-export function ListChart({
-  onBrushEnd,
-  data,
-  timeWindowSize,
-  timeRangeTimestamp,
-}: ListChartProps) {
-  const { t } = useTranslation()
-  // We need to update data and xDomain.minInterval at same time on the legacy @elastic/charts
-  // to avoid `Error: custom xDomain is invalid, custom minInterval is greater than computed minInterval`
-  // https://github.com/elastic/elastic-charts/pull/933
-  // TODO: update @elastic/charts
-  const [dataWithTimeWindowSize, setDataWithTimeWindowSize] = useState({
-    data,
-    timeWindowSize,
-  })
-  const { chartData } = useChartData(dataWithTimeWindowSize.data)
-  const { digestMap } = useDigestMap(dataWithTimeWindowSize.data)
+export const ListChart = forwardRef<Chart, ListChartProps>(
+  ({ onBrushEnd, data, timeWindowSize, timeRangeTimestamp }, ref) => {
+    const { t } = useTranslation()
+    // We need to update data and xDomain.minInterval at same time on the legacy @elastic/charts
+    // to avoid `Error: custom xDomain is invalid, custom minInterval is greater than computed minInterval`
+    // https://github.com/elastic/elastic-charts/pull/933
+    // TODO: update @elastic/charts
+    const [dataWithTimeWindowSize, setDataWithTimeWindowSize] = useState({
+      data,
+      timeWindowSize,
+    })
+    const { chartData } = useChartData(dataWithTimeWindowSize.data)
+    const { digestMap } = useDigestMap(dataWithTimeWindowSize.data)
 
-  useEffect(() => {
-    setDataWithTimeWindowSize({ data, timeWindowSize })
-  }, [data])
+    useEffect(() => {
+      setDataWithTimeWindowSize({ data, timeWindowSize })
+    }, [data])
 
-  return (
-    <Chart>
-      <Settings
-        theme={theme}
-        showLegend
-        legendPosition={Position.Bottom}
-        onBrushEnd={onBrushEnd}
-        xDomain={{
-          minInterval: dataWithTimeWindowSize.timeWindowSize * 1000,
-          min: timeRangeTimestamp[0] * 1000,
-          max: timeRangeTimestamp[1] * 1000,
-        }}
-      />
-      <Axis
-        id="bottom"
-        position={Position.Bottom}
-        showOverlappingTicks
-        tickFormat={timeFormatter('MM-DD HH:mm:ss')}
-      />
-      <Axis
-        id="left"
-        position={Position.Left}
-        tickFormat={(v) => getValueFormat('ms')(v, 2)}
-      />
-      <BarSeries
-        key="PLACEHOLDER"
-        id="PLACEHOLDER"
-        xScaleType={ScaleType.Time}
-        yScaleType={ScaleType.Linear}
-        xAccessor={0}
-        yAccessors={[1]}
-        stackAccessors={[0]}
-        data={[timeRangeTimestamp[0], 0]}
-        name="PLACEHOLDER"
-      />
-      {Object.keys(chartData).map((digest) => {
-        return (
-          <BarSeries
-            key={digest}
-            id={digest}
-            xScaleType={ScaleType.Time}
-            yScaleType={ScaleType.Linear}
-            xAccessor={0}
-            yAccessors={[1]}
-            stackAccessors={[0]}
-            data={chartData[digest]}
-            name={digestMap?.[digest]?.slice(0, 50) || t('topsql.table.others')}
-          />
-        )
-      })}
-    </Chart>
-  )
-}
+    return (
+      <Chart ref={ref}>
+        <Settings
+          theme={theme}
+          legendPosition={Position.Bottom}
+          onBrushEnd={onBrushEnd}
+          xDomain={{
+            minInterval: dataWithTimeWindowSize.timeWindowSize * 1000,
+            min: timeRangeTimestamp[0] * 1000,
+            max: timeRangeTimestamp[1] * 1000,
+          }}
+        />
+        <Axis
+          id="bottom"
+          position={Position.Bottom}
+          showOverlappingTicks
+          tickFormat={
+            timeRangeTimestamp[1] - timeRangeTimestamp[0] < 24 * 60 * 60
+              ? timeFormatter('HH:mm:ss')
+              : timeFormatter('MM-DD HH:mm')
+          }
+        />
+        <Axis
+          id="left"
+          position={Position.Left}
+          tickFormat={(v) => getValueFormat('ms')(v, 2)}
+        />
+        <BarSeries
+          key="PLACEHOLDER"
+          id="PLACEHOLDER"
+          xScaleType={ScaleType.Time}
+          yScaleType={ScaleType.Linear}
+          xAccessor={0}
+          yAccessors={[1]}
+          stackAccessors={[0]}
+          data={[timeRangeTimestamp[0], 0]}
+          name="PLACEHOLDER"
+        />
+        {Object.keys(chartData).map((digest) => {
+          const sql = digestMap?.[digest] || ''
+          let text = sql
+
+          if (isOthersDigest(digest)) {
+            text = t('topsql.table.others')
+            // is unknown sql text
+          } else if (!sql) {
+            text = `(SQL ${digest.slice(0, 8)})`
+          } else {
+            text = sql.length > 50 ? `${sql.slice(0, 50)}...` : sql
+          }
+
+          return (
+            <BarSeries
+              key={digest}
+              id={digest}
+              xScaleType={ScaleType.Time}
+              yScaleType={ScaleType.Linear}
+              xAccessor={0}
+              yAccessors={[1]}
+              stackAccessors={[0]}
+              data={chartData[digest]}
+              name={text}
+            />
+          )
+        })}
+      </Chart>
+    )
+  }
+)
 
 function useDigestMap(seriesData: TopsqlSummaryItem[]) {
   const digestMap = useMemo(() => {
@@ -115,7 +128,7 @@ function useDigestMap(seriesData: TopsqlSummaryItem[]) {
     return seriesData.reduce((prev, { sql_digest, sql_text }) => {
       prev[sql_digest!] = sql_text
       return prev
-    }, {})
+    }, {} as { [digest: string]: string | undefined })
   }, [seriesData])
   return { digestMap }
 }

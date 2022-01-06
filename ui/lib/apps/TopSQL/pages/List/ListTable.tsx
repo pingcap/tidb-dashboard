@@ -2,7 +2,10 @@ import React, { useMemo } from 'react'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
-import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
+import {
+  SelectionMode,
+  DetailsRow,
+} from 'office-ui-fabric-react/lib/DetailsList'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 
 import { TopsqlSummaryItem } from '@lib/client'
@@ -17,27 +20,34 @@ import {
 
 import { useRecordSelection } from '../../utils/useRecordSelection'
 import { ListDetail } from './ListDetail'
+import { isOthersRecord, isUnknownSQLRecord } from '../../utils/specialRecord'
+import { InstanceType } from './ListDetail/ListDetailTable'
 
 interface ListTableProps {
   data: TopsqlSummaryItem[]
   topN: number
+  instanceType: InstanceType
+  onRowOver: (key: string) => void
+  onRowLeave: () => void
 }
 
 export type SQLRecord = TopsqlSummaryItem & {
   cpuTime: number
 }
 
-const canSelect = (r: SQLRecord): boolean => {
-  return !!r.sql_digest && !r.is_other
-}
-
-export function ListTable({ data, topN }: ListTableProps) {
+export function ListTable({
+  data,
+  topN,
+  instanceType,
+  onRowLeave,
+  onRowOver,
+}: ListTableProps) {
   const { t } = useTranslation()
   const { data: tableRecords, capacity } = useTableData(data)
   const tableColumns = useMemo(
     () => [
       {
-        name: 'CPU',
+        name: t('topsql.table.fields.cpu_time'),
         key: 'cpuTime',
         minWidth: 150,
         maxWidth: 250,
@@ -48,13 +58,15 @@ export function ListTable({ data, topN }: ListTableProps) {
         ),
       },
       {
-        name: 'Query',
+        name: t('topsql.table.fields.sql'),
         key: 'query',
         minWidth: 250,
         maxWidth: 550,
         onRender: (rec: SQLRecord) => {
-          const text = rec.sql_text || t('topsql.table.others')!
-          return rec.is_other ? (
+          const text = isUnknownSQLRecord(rec)
+            ? `(SQL ${rec.sql_digest?.slice(0, 8)})`
+            : rec.sql_text!
+          return isOthersRecord(rec) ? (
             <Tooltip
               title={t('topsql.table.others_tooltip', { topN })}
               placement="right"
@@ -66,7 +78,7 @@ export function ListTable({ data, topN }: ListTableProps) {
                   color: '#aaa',
                 }}
               >
-                {text} <QuestionCircleOutlined />
+                {t('topsql.table.others')} <QuestionCircleOutlined />
               </span>
             </Tooltip>
           ) : (
@@ -86,10 +98,9 @@ export function ListTable({ data, topN }: ListTableProps) {
   )
 
   const { selectedRecord, selection } = useRecordSelection<SQLRecord>({
-    localStorageKey: 'topsql.list_table_selected_key',
+    storageKey: 'topsql.list_table_selected_key',
     selections: tableRecords,
     getKey: (r) => r.sql_digest!,
-    disableSelection: (r) => !canSelect(r),
   })
 
   return (
@@ -109,10 +120,22 @@ export function ListTable({ data, topN }: ListTableProps) {
         selectionMode={SelectionMode.single}
         selectionPreservedOnEmptyClick
         onRowClicked={() => {}}
+        onRenderRow={(props: any) => (
+          <div
+            onMouseEnter={() => onRowOver(props.item.sql_digest)}
+            onMouseLeave={onRowLeave}
+          >
+            <DetailsRow {...props} />
+          </div>
+        )}
       />
       <AppearAnimate motionName="contentAnimation">
         {selectedRecord && (
-          <ListDetail record={selectedRecord} capacity={capacity} />
+          <ListDetail
+            instanceType={instanceType}
+            record={selectedRecord}
+            capacity={capacity}
+          />
         )}
       </AppearAnimate>
     </>

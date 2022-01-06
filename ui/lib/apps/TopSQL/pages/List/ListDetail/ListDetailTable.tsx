@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
+import { SelectionMode, IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
@@ -11,18 +11,22 @@ import { TopsqlSummaryPlanItem } from '@lib/client'
 import type { SQLRecord } from '../ListTable'
 import { ListDetailContent } from './ListDetailContent'
 import { useRecordSelection } from '../../../utils/useRecordSelection'
+import {
+  convertNoPlanRecord,
+  createOverallRecord,
+  isNoPlanRecord,
+  isOverallRecord,
+} from '@lib/apps/TopSQL/utils/specialRecord'
+
+export type InstanceType = 'tidb' | 'tikv'
 
 interface ListDetailTableProps {
   record: SQLRecord
   capacity: number
+  instanceType: InstanceType
 }
 
-const OVERALL_LABEL = 'Overall'
 const UNKNOWN_LABEL = 'Unknown'
-
-const canSelect = (r: PlanRecord): boolean => {
-  return !!r.plan_digest && r.plan_digest !== OVERALL_LABEL
-}
 
 const shortFormat = (v: number = 0) => {
   return getValueFormat('short')(v, 1)
@@ -37,119 +41,123 @@ const msFormat = (v: number = 0) => {
 export function ListDetailTable({
   record: sqlRecord,
   capacity,
+  instanceType,
 }: ListDetailTableProps) {
   const { records: planRecords, isMultiPlans } = usePlanRecord(sqlRecord)
   const { t } = useTranslation()
 
   const tableColumns = useMemo(
-    () => [
-      {
-        name: 'CPU',
-        key: 'cpuTime',
-        minWidth: 150,
-        maxWidth: 250,
-        onRender: (rec: PlanRecord) => (
-          <Bar textWidth={80} value={rec.cpuTime!} capacity={capacity}>
-            {getValueFormat('ms')(rec.cpuTime, 2)}
-          </Bar>
-        ),
-      },
-      {
-        name: 'Plan',
-        key: 'plan',
-        minWidth: 150,
-        maxWidth: 150,
-        onRender: (rec: PlanRecord) => {
-          return rec.plan_digest === OVERALL_LABEL ? (
-            <Tooltip
-              title={t('topsql.detail.overall_tooltip')}
-              placement="right"
-            >
-              <span
-                style={{
-                  verticalAlign: 'middle',
-                  fontStyle: 'italic',
-                  color: '#aaa',
-                }}
-              >
-                {t('topsql.detail.overall')} <QuestionCircleOutlined />
-              </span>
-            </Tooltip>
-          ) : rec.plan_digest ? (
-            <Tooltip title={rec.plan_digest} placement="right">
-              <TextWrap>{rec.plan_digest || UNKNOWN_LABEL}</TextWrap>
-            </Tooltip>
-          ) : (
-            <Tooltip
-              title={t('topsql.detail.no_plan_tooltip')}
-              placement="right"
-            >
-              <span
-                style={{
-                  verticalAlign: 'middle',
-                  fontStyle: 'italic',
-                  color: '#aaa',
-                }}
-              >
-                {t('topsql.detail.no_plan')} <QuestionCircleOutlined />
-              </span>
-            </Tooltip>
-          )
+    () =>
+      [
+        {
+          name: t('topsql.detail.fields.cpu_time'),
+          key: 'cpuTime',
+          minWidth: 150,
+          maxWidth: 250,
+          onRender: (rec: PlanRecord) => (
+            <Bar textWidth={80} value={rec.cpuTime!} capacity={capacity}>
+              {getValueFormat('ms')(rec.cpuTime, 2)}
+            </Bar>
+          ),
         },
-      },
-      {
-        name: 'Call/sec',
-        key: 'qps',
-        minWidth: 50,
-        maxWidth: 150,
-        onRender: (rec: PlanRecord) => (
-          <Tooltip title={fixedFormat(rec.exec_count_per_sec)}>
-            <TextWrap>{shortFormat(rec.exec_count_per_sec)}</TextWrap>
-          </Tooltip>
-        ),
-      },
-      {
-        name: 'Scan Rows/sec',
-        key: 'scan_row',
-        minWidth: 50,
-        maxWidth: 150,
-        onRender: (rec: PlanRecord) => (
-          <Tooltip title={fixedFormat(rec.scan_records_per_sec)}>
-            <TextWrap>{shortFormat(rec.scan_records_per_sec)}</TextWrap>
-          </Tooltip>
-        ),
-      },
-      {
-        name: 'Scan Index/sec',
-        key: 'scan_index',
-        minWidth: 50,
-        maxWidth: 150,
-        onRender: (rec: PlanRecord) => (
-          <Tooltip title={fixedFormat(rec.scan_indexes_per_sec)}>
-            <TextWrap>{shortFormat(rec.scan_indexes_per_sec)}</TextWrap>
-          </Tooltip>
-        ),
-      },
-      {
-        name: 'Latency/call',
-        key: 'latency',
-        minWidth: 50,
-        maxWidth: 150,
-        onRender: (rec: PlanRecord) => (
-          <Tooltip title={msFormat(rec.duration_per_exec_ms)}>
-            <TextWrap>{msFormat(rec.duration_per_exec_ms)}</TextWrap>
-          </Tooltip>
-        ),
-      },
-    ],
-    [capacity]
+        {
+          name: t('topsql.detail.fields.plan'),
+          key: 'plan',
+          minWidth: 150,
+          maxWidth: 150,
+          onRender: (rec: PlanRecord) => {
+            return isOverallRecord(rec) ? (
+              <Tooltip
+                title={t('topsql.detail.overall_tooltip')}
+                placement="right"
+              >
+                <span
+                  style={{
+                    verticalAlign: 'middle',
+                    fontStyle: 'italic',
+                    color: '#aaa',
+                  }}
+                >
+                  {t('topsql.detail.overall')} <QuestionCircleOutlined />
+                </span>
+              </Tooltip>
+            ) : isNoPlanRecord(rec) ? (
+              <Tooltip
+                title={t('topsql.detail.no_plan_tooltip')}
+                placement="right"
+              >
+                <span
+                  style={{
+                    verticalAlign: 'middle',
+                    fontStyle: 'italic',
+                    color: '#aaa',
+                  }}
+                >
+                  {t('topsql.detail.no_plan')} <QuestionCircleOutlined />
+                </span>
+              </Tooltip>
+            ) : (
+              <Tooltip title={rec.plan_digest} placement="right">
+                <TextWrap style={{ width: '80px' }}>
+                  {rec.plan_digest || UNKNOWN_LABEL}
+                </TextWrap>
+              </Tooltip>
+            )
+          },
+        },
+        {
+          name: t('topsql.detail.fields.exec_count_per_sec'),
+          key: 'exec_count_per_sec',
+          minWidth: 50,
+          maxWidth: 150,
+          onRender: (rec: PlanRecord) => (
+            <Tooltip title={fixedFormat(rec.exec_count_per_sec)}>
+              <TextWrap>{shortFormat(rec.exec_count_per_sec)}</TextWrap>
+            </Tooltip>
+          ),
+        },
+        instanceType === 'tikv' && {
+          name: t('topsql.detail.fields.scan_records_per_sec'),
+          key: 'scan_records_per_sec',
+          minWidth: 50,
+          maxWidth: 150,
+          onRender: (rec: PlanRecord) => (
+            <Tooltip title={fixedFormat(rec.scan_records_per_sec)}>
+              <TextWrap>{shortFormat(rec.scan_records_per_sec)}</TextWrap>
+            </Tooltip>
+          ),
+        },
+        instanceType === 'tikv' && {
+          name: t('topsql.detail.fields.scan_indexes_per_sec'),
+          key: 'scan_indexes_per_sec',
+          minWidth: 50,
+          maxWidth: 150,
+          onRender: (rec: PlanRecord) => (
+            <Tooltip title={fixedFormat(rec.scan_indexes_per_sec)}>
+              <TextWrap>{shortFormat(rec.scan_indexes_per_sec)}</TextWrap>
+            </Tooltip>
+          ),
+        },
+        instanceType === 'tidb' && {
+          name: t('topsql.detail.fields.duration_per_exec_ms'),
+          key: 'latency',
+          minWidth: 50,
+          maxWidth: 150,
+          onRender: (rec: PlanRecord) => (
+            <Tooltip title={msFormat(rec.duration_per_exec_ms)}>
+              <TextWrap>{msFormat(rec.duration_per_exec_ms)}</TextWrap>
+            </Tooltip>
+          ),
+        },
+      ].filter((c) => !!c) as IColumn[],
+    [capacity, instanceType]
   )
 
   const { selectedRecord, selection } = useRecordSelection<PlanRecord>({
-    localStorageKey: 'topsql.list_detail_table_selected_key',
+    storageKey: 'topsql.list_detail_table_selected_key',
     selections: planRecords,
     getKey: (r) => r.plan_digest!,
-    disableSelection: (r) => !canSelect(r),
+    canSelectItem: (r) => !isNoPlanRecord(r) && !isOverallRecord(r),
   })
 
   const planRecord = useMemo(() => {
@@ -167,12 +175,14 @@ export function ListDetailTable({
         getKey={(r: PlanRecord) => r?.plan_digest!}
         items={planRecords}
         columns={tableColumns}
-        selectionMode={isMultiPlans ? SelectionMode.single : SelectionMode.none}
+        selectionMode={SelectionMode.single}
         selectionPreservedOnEmptyClick
-        onRowClicked={isMultiPlans ? () => {} : undefined}
+        onRowClicked={() => {}}
         selection={selection}
       />
-      <ListDetailContent sqlRecord={sqlRecord} planRecord={planRecord} />
+      {!sqlRecord.is_other && (
+        <ListDetailContent sqlRecord={sqlRecord} planRecord={planRecord} />
+      )}
     </>
   )
 }
@@ -201,29 +211,11 @@ const usePlanRecord = (
         }
       })
       .sort((a, b) => b.cpuTime - a.cpuTime)
+      .map(convertNoPlanRecord)
 
-    // add overall
+    // add overall record to the first
     if (isMultiPlans) {
-      records.unshift(
-        records.reduce(
-          (prev, current) => {
-            prev.cpuTime += current.cpuTime
-            prev.exec_count_per_sec! += current.exec_count_per_sec || 0
-            prev.scan_records_per_sec! += current.scan_records_per_sec || 0
-            prev.scan_indexes_per_sec! += current.scan_indexes_per_sec || 0
-            prev.duration_per_exec_ms! += current.duration_per_exec_ms || 0
-            return prev
-          },
-          {
-            plan_digest: OVERALL_LABEL,
-            cpuTime: 0,
-            exec_count_per_sec: 0,
-            scan_records_per_sec: 0,
-            scan_indexes_per_sec: 0,
-            duration_per_exec_ms: 0,
-          } as PlanRecord
-        )
-      )
+      records.unshift(createOverallRecord(record))
     }
 
     return { isMultiPlans, records }

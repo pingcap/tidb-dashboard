@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package sso
 
@@ -14,7 +14,7 @@ const (
 	ImpersonateStatusInsufficientPrivs ImpersonateStatus = "insufficient_privileges"
 )
 
-type SSOImpersonationModel struct { //nolint
+type SSOImpersonationModel struct { // nolint
 	SQLUser string `gorm:"primary_key;size:128" json:"sql_user"`
 	// The encryption key is placed somewhere else in the FS, to avoid being collected by diagnostics collecting tools.
 	EncryptedPass         string             `gorm:"type:text" json:"-"`

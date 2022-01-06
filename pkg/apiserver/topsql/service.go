@@ -88,10 +88,15 @@ type SummaryResponse struct {
 }
 
 type SummaryItem struct {
-	SQLDigest string            `json:"sql_digest"`
-	SQLText   string            `json:"sql_text"`
-	IsOther   bool              `json:"is_other"`
-	Plans     []SummaryPlanItem `json:"plans"`
+	SQLDigest         string            `json:"sql_digest"`
+	SQLText           string            `json:"sql_text"`
+	IsOther           bool              `json:"is_other"`
+	CPUTimeMs         uint64            `json:"cpu_time_ms"`
+	ExecCountPerSec   float64           `json:"exec_count_per_sec"`
+	DurationPerExecMs float64           `json:"duration_per_exec_ms"`
+	ScanRecordsPerSec float64           `json:"scan_records_per_sec"`
+	ScanIndexesPerSec float64           `json:"scan_indexes_per_sec"`
+	Plans             []SummaryPlanItem `json:"plans"`
 }
 
 type SummaryPlanItem struct {

@@ -13,6 +13,10 @@ import {
 } from '@lib/components'
 import type { PlanRecord } from './ListDetailTable'
 import type { SQLRecord } from '../ListTable'
+import {
+  isNoPlanRecord,
+  isOverallRecord,
+} from '@lib/apps/TopSQL/utils/specialRecord'
 
 interface ListDetailContentProps {
   sqlRecord: SQLRecord
@@ -36,7 +40,7 @@ export function ListDetailContent({
           multiline={sqlExpanded}
           label={
             <Space size="middle">
-              <TextWithInfo.TransKey transKey="topsql.fields.sql_text" />
+              <TextWithInfo.TransKey transKey="topsql.detail_content.fields.sql_text" />
               <Expand.Link expanded={sqlExpanded} onClick={toggleSqlExpanded} />
               <CopyLink
                 displayVariant="formatted_sql"
@@ -61,32 +65,34 @@ export function ListDetailContent({
         <Descriptions.Item
           label={
             <Space size="middle">
-              <TextWithInfo.TransKey transKey="topsql.fields.sql_digest" />
+              <TextWithInfo.TransKey transKey="topsql.detail_content.fields.sql_digest" />
               <CopyLink data={sqlRecord.sql_digest} />
             </Space>
           }
         >
           {sqlRecord.sql_digest}
         </Descriptions.Item>
-        {planRecord && (
+        {!!planRecord?.plan_digest &&
+        !isOverallRecord(planRecord) &&
+        !isNoPlanRecord(planRecord) ? (
           <Descriptions.Item
             label={
               <Space size="middle">
-                <TextWithInfo.TransKey transKey="topsql.fields.plan_digest" />
+                <TextWithInfo.TransKey transKey="topsql.detail_content.fields.plan_digest" />
                 <CopyLink data={planRecord.plan_digest} />
               </Space>
             }
           >
             {planRecord.plan_digest}
           </Descriptions.Item>
-        )}
-        {planRecord && (
+        ) : null}
+        {!!planRecord?.plan_text ? (
           <Descriptions.Item
             span={2}
             multiline={planExpanded}
             label={
               <Space size="middle">
-                <TextWithInfo.TransKey transKey="topsql.fields.plan" />
+                <TextWithInfo.TransKey transKey="topsql.detail_content.fields.plan" />
                 <Expand.Link
                   expanded={planExpanded}
                   onClick={togglePlanExpanded}
@@ -99,7 +105,7 @@ export function ListDetailContent({
               <Pre noWrap>{planRecord.plan_text}</Pre>
             </Expand>
           </Descriptions.Item>
-        )}
+        ) : null}
       </Descriptions>
     </Card>
   )

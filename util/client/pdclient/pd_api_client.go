@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Package pdclient provides a flexible PD API access to any PD instance.
 package pdclient

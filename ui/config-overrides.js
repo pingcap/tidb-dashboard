@@ -9,6 +9,7 @@ const {
   addDecoratorsLegacy,
   addBundleVisualizer,
   getBabelLoader,
+  useBabelRc,
 } = require('customize-cra')
 const addYaml = require('react-app-rewire-yaml')
 const { alias, configPaths } = require('react-app-rewire-alias')
@@ -161,6 +162,7 @@ const getInternalVersion = () => {
 }
 
 module.exports = override(
+  useBabelRc(),
   fixBabelImports('import', {
     libraryName: 'antd',
     libraryDirectory: 'es',

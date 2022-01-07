@@ -1,0 +1,9 @@
+{
+  "defaultCommandTimeout": 60000,
+  "responseTimeout": 60000,
+  "screenshotOnRunFailure": false,
+  "video": false,
+  "env": {
+    "FEATURE_VERSION": "6.0.0"
+  }
+}

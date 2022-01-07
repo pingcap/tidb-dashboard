@@ -6,6 +6,8 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import { addTranslationResource } from '@lib/utils/i18n'
 
+import styles from './index.module.less'
+
 interface AutoRefreshButtonProps {
   autoRefreshSecondsOptions: number[]
   // set to 0 will stop the auto refresh
@@ -133,11 +135,23 @@ export function AutoRefreshButton({
 
   return (
     <Dropdown.Button
+      className={styles.auto_refresh_btn}
       disabled={disabled}
       onClick={handleRefresh}
       overlay={autoRefreshMenu}
       trigger={['click']}
-      icon={<DownOutlined />}
+      icon={
+        <>
+          {autoRefreshSeconds ? (
+            <span className={styles.auto_refresh_secs}>
+              {getValueFormat('s')(autoRefreshSeconds, 0)}
+            </span>
+          ) : (
+            ''
+          )}
+          <DownOutlined />
+        </>
+      }
     >
       {autoRefreshSeconds ? (
         <RefreshProgress

@@ -1,6 +1,5 @@
 topsql:
   nav_title: Top SQL
-  ngm_not_started: 集群中未启动必要组件 `NgMonitoring`，本功能不可用。
   alert_header:
     title: 该功能未启用
     body: Top SQL 功能未启用，可查看历史数据。您可以修改设置打开该功能后等待新数据收集。

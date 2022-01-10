@@ -7,12 +7,12 @@ import {
   SettingOutlined,
 } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
+import { useSessionStorage } from 'react-use'
 
 import '@elastic/charts/dist/theme_only_light.css'
 
 import formatSql from '@lib/utils/sqlFormatter'
 import client, { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
-import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 import {
   Card,
   AutoRefreshButton,
@@ -44,35 +44,38 @@ export function TopSQLList() {
     useTopSQLConfig()
   const [showSettings, setShowSettings] = useState(false)
   const [remainingRefreshSeconds, setRemainingRefreshSeconds] = useState(0)
-  const [autoRefreshSeconds, setAutoRefreshSeconds] = useLocalStorageState(
+  const [autoRefreshSeconds, setAutoRefreshSeconds] = useSessionStorage(
     'topsql.auto_refresh',
     0
   )
-  const [instance, setInstance] = useLocalStorageState<TopsqlInstanceItem>(
+  const [instance, setInstance] = useSessionStorage<TopsqlInstanceItem>(
     'topsql.instance',
     null as any
   )
-  const [timeRange, setTimeRange] = useLocalStorageState(
+  const [timeRange, setTimeRange] = useSessionStorage(
     'topsql.recent_time_range',
     DEFAULT_TIME_RANGE
   )
-  const { timeWindowSize, computeTimeWindowSize, isTimeWindowSizeComputed } =
-    useTimeWindowSize()
+  const { timeWindowSize, computeTimeWindowSize } = useTimeWindowSize()
   const {
     topSQLData,
     updateTopSQLData,
     isLoading: isDataLoading,
-    queryTimestampRange,
-  } = useTopSQLData({ instance, timeRange, timeWindowSize, topN })
+  } = useTopSQLData()
   const isLoading = isConfigLoading || isDataLoading
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
+  const [queryTimestampRange, setQueryTimestampRange] = useState<
+    [number, number] | null
+  >(null)
+  const { instances, isLoading: isInstancesLoading } =
+    useInstances(queryTimestampRange)
 
   useEffect(() => {
     setContainerWidth(containerRef.current?.offsetWidth || 0)
   }, [containerRef])
 
-  // Calculate time window size by container width and time range
+  // Calculate time window size by container width and time range.
   useEffect(() => {
     if (!containerWidth) {
       return
@@ -84,22 +87,36 @@ export function TopSQLList() {
   }, [containerWidth, timeRange])
 
   const handleUpdateTopSQLData = useCallback(() => {
+    // Update container width when refresh, then trigger the update of time window size to refresh.
     const cw = containerRef.current?.offsetWidth || 0
     if (cw !== containerWidth) {
       setContainerWidth(containerRef.current?.offsetWidth || 0)
       return
     }
+
+    const timestamps = calcTimeRange(timeRange)
+    setQueryTimestampRange(timestamps)
+
+    if (!instance || !timeWindowSize) {
+      return
+    }
+
     setRemainingRefreshSeconds(autoRefreshSeconds)
-    updateTopSQLData()
-  }, [updateTopSQLData, autoRefreshSeconds, containerRef, containerWidth])
+    updateTopSQLData({ instance, timestamps, timeWindowSize, topN })
+  }, [
+    instance,
+    timeRange,
+    timeWindowSize,
+    topN,
+    autoRefreshSeconds,
+    containerRef,
+    containerWidth,
+  ])
 
   // fetch data when instance id / time window size update
   useEffect(() => {
-    if (!isTimeWindowSizeComputed) {
-      return
-    }
     handleUpdateTopSQLData()
-  }, [instance, timeWindowSize, isTimeWindowSizeComputed])
+  }, [instance, timeWindowSize])
 
   const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
     if (!v.x) {
@@ -167,8 +184,8 @@ export function TopSQLList() {
               <InstanceSelect
                 value={instance}
                 onChange={setInstance}
-                disabled={isLoading}
-                queryTimestampRange={queryTimestampRange}
+                instances={instances}
+                disabled={isLoading || isInstancesLoading}
               />
               <Button.Group>
                 <TimeRangeSelector
@@ -219,13 +236,15 @@ export function TopSQLList() {
         ) : (
           <>
             <div className={styles.chart_container}>
-              <ListChart
-                onBrushEnd={handleBrushEnd}
-                data={topSQLData}
-                timeRangeTimestamp={queryTimestampRange}
-                timeWindowSize={timeWindowSize}
-                ref={chartRef}
-              />
+              {!!queryTimestampRange && (
+                <ListChart
+                  onBrushEnd={handleBrushEnd}
+                  data={topSQLData}
+                  timeRangeTimestamp={queryTimestampRange}
+                  timeWindowSize={timeWindowSize}
+                  ref={chartRef}
+                />
+              )}
             </div>
             {!!topSQLData?.length && (
               <ListTable
@@ -259,71 +278,67 @@ export function TopSQLList() {
   )
 }
 
-const useTopSQLData = ({
-  instance,
-  timeRange,
-  timeWindowSize,
-  topN,
-}: {
-  instance?: TopsqlInstanceItem
-  timeRange: TimeRange
-  timeWindowSize: number
-  topN: number
-}) => {
+const useTopSQLData = () => {
   const [topSQLData, setTopSQLData] = useState<TopsqlSummaryItem[]>([])
-  const [queryTimestampRange, setQueryTimestampRange] = useState(
-    calcTimeRange(timeRange)
-  )
   const [isLoading, setIsLoading] = useState(false)
-  const updateTopSQLData = useCallback(async () => {
-    if (!instance) {
-      return
-    }
+  const updateTopSQLData = useCallback(
+    async ({
+      instance,
+      timestamps,
+      timeWindowSize,
+      topN,
+    }: {
+      instance: TopsqlInstanceItem
+      timestamps: [number, number]
+      timeWindowSize: number
+      topN: number
+    }) => {
+      let data: TopsqlSummaryItem[]
+      const [start, end] = timestamps
+      try {
+        setIsLoading(true)
+        const resp = await client
+          .getInstance()
+          .topsqlSummaryGet(
+            String(end),
+            instance.instance,
+            instance.instance_type,
+            String(start),
+            String(topN),
+            `${timeWindowSize}s` as any
+          )
+        data = resp.data.data ?? []
+      } finally {
+        setIsLoading(false)
+      }
 
-    const [beginTs, endTs] = calcTimeRange(timeRange)
-    let data: TopsqlSummaryItem[]
-    try {
-      setIsLoading(true)
-      const resp = await client
-        .getInstance()
-        .topsqlSummaryGet(
-          endTs as any,
-          instance.instance,
-          instance.instance_type,
-          beginTs as any,
-          String(topN),
-          `${timeWindowSize}s` as any
-        )
-      data = resp.data.data ?? []
-    } finally {
-      setIsLoading(false)
-    }
+      // Sort data by digest
+      // If this digest occurs continuously on the timeline, we can easily see the sequential overhead
+      data.sort((a, b) => a.sql_digest?.localeCompare(b.sql_digest!) || 0)
 
-    // Sort data by digest
-    // If this digest occurs continuously on the timeline, we can easily see the sequential overhead
-    data.sort((a, b) => a.sql_digest?.localeCompare(b.sql_digest!) || 0)
+      data.forEach((d) => {
+        d.sql_text = formatSql(d.sql_text)
+        d.plans?.forEach((item) => {
+          // Filter empty cpu time data
+          item.timestamp_sec = item.timestamp_sec?.filter(
+            (_, index) => !!item.cpu_time_ms?.[index]
+          )
+          item.cpu_time_ms = item.cpu_time_ms?.filter((c) => !!c)
 
-    data.forEach((d) => {
-      d.sql_text = formatSql(d.sql_text)
-      d.plans?.forEach((item) => {
-        // Filter empty cpu time data
-        item.timestamp_sec = item.timestamp_sec?.filter(
-          (_, index) => !!item.cpu_time_ms?.[index]
-        )
-        item.cpu_time_ms = item.cpu_time_ms?.filter((c) => !!c)
-
-        item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000)
+          item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000)
+        })
       })
-    })
 
-    setTopSQLData(data)
-    setQueryTimestampRange([beginTs, endTs])
-  }, [instance, timeWindowSize, timeRange, topN])
+      setTopSQLData(data)
+    },
+    []
+  )
 
-  return { topSQLData, updateTopSQLData, isLoading, queryTimestampRange }
+  return { topSQLData, updateTopSQLData, isLoading }
 }
 
 const useTopSQLConfig = () => {
+  // Use the instance interface to query if historical data is available
   const {
     data: topSQLConfig,
     isLoading: isConfigLoading,
@@ -347,7 +362,6 @@ const useTopSQLConfig = () => {
     ;(async function () {
       const now = Date.now() / 1000
       const sevenDaysAgo = now - 7 * 24 * 60 * 60
-      // const sevenDaysAgo = now - 60
 
       setLoadingHistory(true)
       try {
@@ -371,5 +385,40 @@ const useTopSQLConfig = () => {
     isConfigLoading: isConfigLoading || loadingHistory,
     updateConfig,
     haveHistoryData,
+  }
+}
+
+const useInstances = (queryTimestampRange: [number, number] | null) => {
+  const [instances, setInstances] = useState<TopsqlInstanceItem[]>([])
+  const [isLoading, setLoading] = useState(false)
+  const updateInstances = useCallback(async () => {
+    if (!queryTimestampRange) {
+      return
+    }
+
+    const [start, end] = queryTimestampRange
+
+    setLoading(true)
+    try {
+      const resp = await client
+        .getInstance()
+        .topsqlInstancesGet(String(end), String(start))
+      const instances = resp.data.data
+      if (!instances) {
+        return
+      }
+      setInstances(instances)
+    } finally {
+      setLoading(false)
+    }
+  }, [String(queryTimestampRange)])
+
+  useEffect(() => {
+    updateInstances()
+  }, [String(queryTimestampRange)])
+
+  return {
+    instances,
+    isLoading,
   }
 }

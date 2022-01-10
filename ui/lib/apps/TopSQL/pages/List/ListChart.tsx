@@ -39,15 +39,18 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
     // to avoid `Error: custom xDomain is invalid, custom minInterval is greater than computed minInterval`
     // https://github.com/elastic/elastic-charts/pull/933
     // TODO: update @elastic/charts
-    const [dataWithTimeWindowSize, setDataWithTimeWindowSize] = useState({
+
+    // And we need update all the data at the same time and let the chart refresh only once for a better experience.
+    const [wall, setWall] = useState({
       data,
       timeWindowSize,
+      timeRangeTimestamp,
     })
-    const { chartData } = useChartData(dataWithTimeWindowSize.data)
-    const { digestMap } = useDigestMap(dataWithTimeWindowSize.data)
+    const { chartData } = useChartData(wall.data)
+    const { digestMap } = useDigestMap(wall.data)
 
     useEffect(() => {
-      setDataWithTimeWindowSize({ data, timeWindowSize })
+      setWall({ data, timeWindowSize, timeRangeTimestamp })
     }, [data])
 
     return (
@@ -57,9 +60,9 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
           legendPosition={Position.Bottom}
           onBrushEnd={onBrushEnd}
           xDomain={{
-            minInterval: dataWithTimeWindowSize.timeWindowSize * 1000,
-            min: timeRangeTimestamp[0] * 1000,
-            max: timeRangeTimestamp[1] * 1000,
+            minInterval: wall.timeWindowSize * 1000,
+            min: wall.timeRangeTimestamp[0] * 1000,
+            max: wall.timeRangeTimestamp[1] * 1000,
           }}
         />
         <Axis
@@ -67,7 +70,8 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
           position={Position.Bottom}
           showOverlappingTicks
           tickFormat={
-            timeRangeTimestamp[1] - timeRangeTimestamp[0] < 24 * 60 * 60
+            wall.timeRangeTimestamp[1] - wall.timeRangeTimestamp[0] <
+            24 * 60 * 60
               ? timeFormatter('HH:mm:ss')
               : timeFormatter('MM-DD HH:mm')
           }

@@ -1,6 +1,5 @@
 topsql:
   nav_title: Top SQL
-  ngm_not_started: A required component `NgMonitoring` is not started in this cluster. Top SQL can not work.
   alert_header:
     title: Feature Not Enabled
     body: Top SQL feature is not enabled. The history data are available. You can modify settings to enable the feature and wait for new data being collected.
@@ -21,7 +20,7 @@ topsql:
       cancel: Cancel
   refresh: Refresh
   table:
-    description: The below are top {{topN}} SQL statements that costs most CPU resources in the current time range. Click one to see details.
+    description: The following table shows which top {{topN}} queries are contributing the most to load in the current time range. Click one to see details.
     others: Other Statements
     others_tooltip: All of other non Top {{topN}} statements
     fields:

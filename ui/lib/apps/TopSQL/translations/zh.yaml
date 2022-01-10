@@ -1,6 +1,6 @@
 topsql:
   nav_title: Top SQL
-  ngm_not_started: 本集群未部署必要组件 `NgMonitoring`，Top SQL 功能不可用
+  ngm_not_started: 集群中未启动必要组件 `NgMonitoring`，本功能不可用。
   alert_header:
     title: 该功能未启用
     body: Top SQL 功能未启用，可查看历史数据。您可以修改设置打开该功能后等待新数据收集。
@@ -21,7 +21,7 @@ topsql:
       cancel: 取消
   refresh: 刷新
   table:
-    description: 以下表格展示了当前时间范围内消耗 CPU 资源最多的 {{topN}} 类 SQL 语句，点击后可进一步显示详情。
+    description: 以下表格展示了当前时间范围内消耗负载最多的 {{topN}} 类 SQL 查询，点击后可进一步显示详情。
     others: 其他语句
     others_tooltip: 所有其他非 Top {{topN}} 的语句
     fields:

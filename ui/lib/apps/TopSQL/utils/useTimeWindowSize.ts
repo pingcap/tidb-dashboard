@@ -6,20 +6,17 @@ import { useState } from 'react'
 export const createUseTimeWindowSize = (barWidth: number) => {
   return () => {
     const [timeWindowSize, setTimeWindowSize] = useState<number>(0)
-    const [isComputed, setIsComputed] = useState(false)
     const computeTimeWindowSize = (
       screenWidth: number,
       totalTimeRange: number
     ) => {
       const windowSize = (barWidth * totalTimeRange) / screenWidth
       setTimeWindowSize(Math.ceil(windowSize))
-      setIsComputed(true)
     }
 
     return {
       timeWindowSize,
       computeTimeWindowSize,
-      isTimeWindowSizeComputed: isComputed,
     }
   }
 }

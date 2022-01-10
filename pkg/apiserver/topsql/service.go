@@ -31,7 +31,7 @@ type Service struct {
 }
 
 func newService(p ServiceParams, ff *featureflag.Registry) *Service {
-	return &Service{params: p, FeatureTopSQL: ff.Register("topsql", ">= 5.3.0")}
+	return &Service{params: p, FeatureTopSQL: ff.Register("topsql", ">= 5.4.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -43,7 +43,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	)
 	{
 		endpoint.GET("/config", s.GetConfig)
-		endpoint.POST("/config", s.UpdateConfig)
+		endpoint.POST("/config", auth.MWRequireWritePriv(), s.UpdateConfig)
 		endpoint.GET("/instances", s.params.NgmProxy.Route("/topsql/v1/instances"))
 		endpoint.GET("/summary", s.params.NgmProxy.Route("/topsql/v1/summary"))
 	}

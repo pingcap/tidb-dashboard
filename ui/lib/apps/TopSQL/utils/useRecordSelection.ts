@@ -7,7 +7,6 @@ import {
   IObjectWithKey,
 } from 'office-ui-fabric-react/lib/Selection'
 import { useGetSet, useSessionStorage } from 'react-use'
-import { isNoPlanRecord } from './specialRecord'
 
 interface Props<T> {
   storageKey: string

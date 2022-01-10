@@ -97,11 +97,9 @@ export function ListDetailTable({
                 </span>
               </Tooltip>
             ) : (
-              <Tooltip title={rec.plan_digest} placement="right">
-                <TextWrap style={{ width: '80px' }}>
-                  {rec.plan_digest || UNKNOWN_LABEL}
-                </TextWrap>
-              </Tooltip>
+              <pre style={{ margin: 0 }}>
+                {rec.plan_digest?.slice(0, 8) || UNKNOWN_LABEL}
+              </pre>
             )
           },
         },

@@ -28,14 +28,17 @@ interface ListDetailTableProps {
 
 const UNKNOWN_LABEL = 'Unknown'
 
-const shortFormat = (v: number = 0) => {
-  return getValueFormat('short')(v, 1)
+const formatZero = (v: number) => {
+  if (v.toFixed(1) === '0.0') {
+    return 0
+  }
+  return v
 }
-const fixedFormat = (v: number = 0) => {
-  return getValueFormat('none')(v, 1)
+const shortFormat = (v: number = 0) => {
+  return getValueFormat('short')(formatZero(v), 1)
 }
 const msFormat = (v: number = 0) => {
-  return getValueFormat('ms')(v, 1)
+  return getValueFormat('ms')(formatZero(v), 1)
 }
 
 export function ListDetailTable({
@@ -97,11 +100,9 @@ export function ListDetailTable({
                 </span>
               </Tooltip>
             ) : (
-              <Tooltip title={rec.plan_digest} placement="right">
-                <TextWrap style={{ width: '80px' }}>
-                  {rec.plan_digest || UNKNOWN_LABEL}
-                </TextWrap>
-              </Tooltip>
+              <pre style={{ margin: 0 }}>
+                {rec.plan_digest?.slice(0, 8) || UNKNOWN_LABEL}
+              </pre>
             )
           },
         },
@@ -111,9 +112,7 @@ export function ListDetailTable({
           minWidth: 50,
           maxWidth: 150,
           onRender: (rec: PlanRecord) => (
-            <Tooltip title={fixedFormat(rec.exec_count_per_sec)}>
-              <TextWrap>{shortFormat(rec.exec_count_per_sec)}</TextWrap>
-            </Tooltip>
+            <TextWrap>{shortFormat(rec.exec_count_per_sec)}</TextWrap>
           ),
         },
         instanceType === 'tikv' && {
@@ -122,9 +121,7 @@ export function ListDetailTable({
           minWidth: 50,
           maxWidth: 150,
           onRender: (rec: PlanRecord) => (
-            <Tooltip title={fixedFormat(rec.scan_records_per_sec)}>
-              <TextWrap>{shortFormat(rec.scan_records_per_sec)}</TextWrap>
-            </Tooltip>
+            <TextWrap>{shortFormat(rec.scan_records_per_sec)}</TextWrap>
           ),
         },
         instanceType === 'tikv' && {
@@ -133,9 +130,7 @@ export function ListDetailTable({
           minWidth: 50,
           maxWidth: 150,
           onRender: (rec: PlanRecord) => (
-            <Tooltip title={fixedFormat(rec.scan_indexes_per_sec)}>
-              <TextWrap>{shortFormat(rec.scan_indexes_per_sec)}</TextWrap>
-            </Tooltip>
+            <TextWrap>{shortFormat(rec.scan_indexes_per_sec)}</TextWrap>
           ),
         },
         instanceType === 'tidb' && {
@@ -144,9 +139,7 @@ export function ListDetailTable({
           minWidth: 50,
           maxWidth: 150,
           onRender: (rec: PlanRecord) => (
-            <Tooltip title={msFormat(rec.duration_per_exec_ms)}>
-              <TextWrap>{msFormat(rec.duration_per_exec_ms)}</TextWrap>
-            </Tooltip>
+            <TextWrap>{msFormat(rec.duration_per_exec_ms)}</TextWrap>
           ),
         },
       ].filter((c) => !!c) as IColumn[],

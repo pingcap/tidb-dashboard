@@ -103,7 +103,7 @@ export function ListTable({
     getKey: (r) => r.sql_digest!,
   })
 
-  return (
+  return tableRecords.length ? (
     <>
       <Card noMarginBottom noMarginTop>
         <p className="ant-form-item-extra">
@@ -139,7 +139,7 @@ export function ListTable({
         )}
       </AppearAnimate>
     </>
-  )
+  ) : null
 }
 
 function useTableData(records: TopsqlSummaryItem[]) {

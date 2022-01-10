@@ -22,12 +22,17 @@ import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
 
 import { CacheContext } from '@lib/utils/useCache'
-import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
+import {
+  Card,
+  ColumnsSelector,
+  Toolbar,
+  MultiSelect,
+  TimeRangeSelector,
+} from '@lib/components'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
-import TimeRangeSelector from './TimeRangeSelector'
 import useStatementTableController, {
   DEF_STMT_COLUMN_KEYS,
 } from '../../utils/useStatementTableController'
@@ -65,7 +70,6 @@ export default function StatementsOverview() {
     setQueryOptions,
     refresh,
     enable,
-    allTimeRanges,
     allSchemas,
     allStmtTypes,
     loadingStatements,
@@ -109,7 +113,6 @@ export default function StatementsOverview() {
           <Space>
             <TimeRangeSelector
               value={queryOptions.timeRange}
-              timeRanges={allTimeRanges}
               onChange={(timeRange) =>
                 setQueryOptions({
                   ...queryOptions,

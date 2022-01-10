@@ -143,7 +143,8 @@ export function TopSQLList() {
   return (
     <>
       <div className={styles.container} ref={containerRef}>
-        {!isConfigLoading && !topSQLConfig?.enable && (
+        {/* Show "not enabled" Alert when there are historical data */}
+        {!isConfigLoading && !topSQLConfig?.enable && haveHistoryData && (
           <Card noMarginBottom>
             <Alert
               message={t(`topsql.alert_header.title`)}
@@ -151,7 +152,7 @@ export function TopSQLList() {
                 <>
                   {t(`topsql.alert_header.body`)}
                   <a onClick={() => setShowSettings(true)}>
-                    {t('topsql.alert_header.settings')}
+                    {` ${t('topsql.alert_header.settings')}`}
                   </a>
                 </>
               }
@@ -206,6 +207,7 @@ export function TopSQLList() {
           </Toolbar>
         </Card>
 
+        {/* Show "not enabled" Result when there are no historical data */}
         {!isConfigLoading && !topSQLConfig?.enable && !haveHistoryData ? (
           <Result
             title={t('topsql.settings.disabled_result.title')}

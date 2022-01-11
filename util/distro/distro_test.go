@@ -5,11 +5,11 @@ package distro
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestR(t *testing.T) {
-	assert.Equal(t, "TiDB", R().TiDB)
+	require.Equal(t, "TiDB", R().TiDB)
 }
 
 func TestReplaceGlobal(t *testing.T) {
@@ -17,21 +17,21 @@ func TestReplaceGlobal(t *testing.T) {
 		TiDB: "myTiDB",
 		PD:   "",
 	})
-	assert.Equal(t, false, R().IsDistro)
-	assert.Equal(t, "myTiDB", R().TiDB)
-	assert.Equal(t, "PD", R().PD)
-	assert.Equal(t, "TiKV", R().TiKV)
+	require.Equal(t, false, R().IsDistro)
+	require.Equal(t, "myTiDB", R().TiDB)
+	require.Equal(t, "PD", R().PD)
+	require.Equal(t, "TiKV", R().TiKV)
 	restoreFn()
-	assert.Equal(t, "TiDB", R().TiDB)
-	assert.Equal(t, "PD", R().PD)
-	assert.Equal(t, "TiKV", R().TiKV)
+	require.Equal(t, "TiDB", R().TiDB)
+	require.Equal(t, "PD", R().PD)
+	require.Equal(t, "TiKV", R().TiKV)
 
 	restoreFn = ReplaceGlobal(DistributionResource{
 		IsDistro: true,
 	})
-	assert.Equal(t, true, R().IsDistro)
-	assert.Equal(t, "TiDB", R().TiDB)
-	assert.Equal(t, "PD", R().PD)
-	assert.Equal(t, "TiKV", R().TiKV)
+	require.Equal(t, true, R().IsDistro)
+	require.Equal(t, "TiDB", R().TiDB)
+	require.Equal(t, "PD", R().PD)
+	require.Equal(t, "TiKV", R().TiKV)
 	restoreFn()
 }

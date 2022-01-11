@@ -1,6 +1,6 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
-package profiling
+package profutil
 
 import (
 	"flag"
@@ -14,20 +14,19 @@ import (
 	"github.com/google/pprof/profile"
 )
 
-func convertProtobufToSVG(content []byte, task TaskModel) ([]byte, error) {
-	dotContent, err := convertProtobufToDot(content, task)
+func ConvertProtoToGraphSVG(protoData []byte) ([]byte, error) {
+	dotData, err := convertProtoToDot(protoData)
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert protobuf to dot: %v", err)
+		return nil, fmt.Errorf("failed to generate dot file: %w", err)
 	}
-	svgContent, err := convertDotToSVG(dotContent)
+	svgData, err := convertDotToSVG(dotData)
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert dot to svg: %v", err)
+		return nil, fmt.Errorf("failed to generate dot svg: %w", err)
 	}
-
-	return svgContent, nil
+	return svgData, nil
 }
 
-func convertProtobufToDot(content []byte, task TaskModel) ([]byte, error) {
+func convertProtoToDot(protoData []byte) ([]byte, error) {
 	args := []string{
 		"-dot",
 		// prevent printing stdout
@@ -39,15 +38,15 @@ func convertProtobufToDot(content []byte, task TaskModel) ([]byte, error) {
 	address := ""
 	args = append(args, address)
 	f := &flagSet{
-		FlagSet: flag.NewFlagSet("pprof", flag.PanicOnError),
+		FlagSet: flag.NewFlagSet("pprof", flag.ContinueOnError),
 		args:    args,
 	}
 
 	protoToDotWriter := &protobufToDotWriter{}
 	if err := driver.PProf(&driver.Options{
-		Fetch:   &dotFetcher{content},
+		Fetch:   &dotFetcher{protoData},
 		Flagset: f,
-		UI:      &blankPprofUI{},
+		UI:      blankPprofUI{},
 		Writer:  protoToDotWriter,
 	}); err != nil {
 		return nil, err
@@ -56,9 +55,9 @@ func convertProtobufToDot(content []byte, task TaskModel) ([]byte, error) {
 	return protoToDotWriter.wc.data, nil
 }
 
-func convertDotToSVG(dotContent []byte) ([]byte, error) {
+func convertDotToSVG(dotData []byte) ([]byte, error) {
 	g := graphviz.New()
-	graph, err := graphviz.ParseBytes(dotContent)
+	graph, err := graphviz.ParseBytes(dotData)
 	if err != nil {
 		return nil, err
 	}
@@ -98,9 +97,9 @@ type dotFetcher struct {
 	data []byte
 }
 
-func (f *dotFetcher) Fetch(src string, duration, timeout time.Duration) (*profile.Profile, string, error) {
-	profile, err := profile.ParseData(f.data)
-	return profile, "", err
+func (f *dotFetcher) Fetch(_ string, _, _ time.Duration) (*profile.Profile, string, error) {
+	p, err := profile.ParseData(f.data)
+	return p, "", err
 }
 
 type flagSet struct {
@@ -128,7 +127,7 @@ func (f *flagSet) AddExtraUsage(eu string) {}
 type blankPprofUI struct{}
 
 func (b blankPprofUI) ReadLine(prompt string) (string, error) {
-	panic("not support")
+	return "", nil
 }
 
 func (b blankPprofUI) Print(i ...interface{}) {

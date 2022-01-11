@@ -14,9 +14,9 @@ import (
 )
 
 func TestGetStoreInstances(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	tiKvStores, tiFlashStores, err := pdtopo.GetStoreInstances(context.Background(), apiClient)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, []topo.TiKVStoreInfo{
 		{
 			GitHash:        "d7dc4fff51ca71c76a928a0780a069efaaeaae70",

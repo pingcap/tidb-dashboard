@@ -13,6 +13,7 @@ require (
 	github.com/vektra/mockery/v2 v2.9.4
 	go.uber.org/zap v1.19.0
 	golang.org/x/mod v0.5.1
+	golang.org/x/tools v0.0.0-20210112230658-8b4aab62c064
 )
 
 replace github.com/pingcap/tidb-dashboard => ../

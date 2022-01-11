@@ -9,14 +9,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
-	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
-	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
-	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
+	"github.com/pingcap/tidb-dashboard/util/clientbundle"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/rest/fileswap"
 )
@@ -31,27 +27,13 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	}
 }
 
-type ServiceParams struct {
-	fx.In
-	PDAPIClient         *pdclient.APIClient
-	TiDBStatusClient    *tidbclient.StatusClient
-	TiKVStatusClient    *tikvclient.StatusClient
-	TiFlashStatusClient *tiflashclient.StatusClient
-}
-
 type Service struct {
-	httpClients endpoint.HTTPClients
+	httpClients clientbundle.HTTPClientBundle
 	resolver    *endpoint.RequestPayloadResolver
 	fSwap       *fileswap.Handler
 }
 
-func newService(p ServiceParams) *Service {
-	httpClients := endpoint.HTTPClients{
-		PDAPIClient:         p.PDAPIClient,
-		TiDBStatusClient:    p.TiDBStatusClient,
-		TiKVStatusClient:    p.TiKVStatusClient,
-		TiFlashStatusClient: p.TiFlashStatusClient,
-	}
+func newService(httpClients clientbundle.HTTPClientBundle) *Service {
 	return &Service{
 		httpClients: httpClients,
 		resolver:    endpoint.NewRequestPayloadResolver(apiEndpoints, httpClients),

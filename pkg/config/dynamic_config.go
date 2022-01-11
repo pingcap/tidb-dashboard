@@ -2,19 +2,11 @@
 
 package config
 
-import (
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
-)
-
 const (
 	KeyVisualDBPolicy = "db"
 	KeyVisualKVPolicy = "kv"
 
 	DefaultKeyVisualPolicy = KeyVisualDBPolicy
-
-	DefaultProfilingAutoCollectionDurationSecs = 30
-	MaxProfilingAutoCollectionDurationSecs     = 120
-	DefaultProfilingAutoCollectionIntervalSecs = 3600
 )
 
 var (
@@ -38,12 +30,6 @@ func (c *KeyVisualConfig) validatePolicy() error {
 	return ErrVerificationFailed.New("policy must be in %v", KeyVisualPolicies)
 }
 
-type ProfilingConfig struct {
-	AutoCollectionTargets      []model.RequestTargetNode `json:"auto_collection_targets"`
-	AutoCollectionDurationSecs uint                      `json:"auto_collection_duration_secs"`
-	AutoCollectionIntervalSecs uint                      `json:"auto_collection_interval_secs"`
-}
-
 type SSOCoreConfig struct {
 	Enabled      bool   `json:"enabled"`
 	ClientID     string `json:"client_id"`
@@ -61,14 +47,11 @@ type SSOConfig struct {
 
 type DynamicConfig struct {
 	KeyVisual KeyVisualConfig `json:"keyvisual"`
-	Profiling ProfilingConfig `json:"profiling"`
 	SSO       SSOConfig       `json:"sso"`
 }
 
 func (c *DynamicConfig) Clone() *DynamicConfig {
 	newCfg := *c
-	newCfg.Profiling.AutoCollectionTargets = make([]model.RequestTargetNode, len(c.Profiling.AutoCollectionTargets))
-	copy(newCfg.Profiling.AutoCollectionTargets, c.Profiling.AutoCollectionTargets)
 	return &newCfg
 }
 
@@ -78,26 +61,6 @@ func (c *DynamicConfig) Validate() error {
 			return err
 		}
 	}
-
-	if len(c.Profiling.AutoCollectionTargets) > 0 {
-		if c.Profiling.AutoCollectionDurationSecs == 0 {
-			return ErrVerificationFailed.New("auto_collection_duration_secs cannot be 0")
-		}
-		if c.Profiling.AutoCollectionDurationSecs > MaxProfilingAutoCollectionDurationSecs {
-			return ErrVerificationFailed.New("auto_collection_duration_secs cannot be greater than %d", MaxProfilingAutoCollectionDurationSecs)
-		}
-		if c.Profiling.AutoCollectionIntervalSecs == 0 {
-			return ErrVerificationFailed.New("auto_collection_interval_secs cannot be 0")
-		}
-	} else {
-		if c.Profiling.AutoCollectionDurationSecs != 0 {
-			return ErrVerificationFailed.New("auto_collection_duration_secs must be 0")
-		}
-		if c.Profiling.AutoCollectionIntervalSecs != 0 {
-			return ErrVerificationFailed.New("auto_collection_interval_secs must be 0")
-		}
-	}
-
 	return nil
 }
 
@@ -107,20 +70,5 @@ func (c *DynamicConfig) Adjust() {
 		if err := c.KeyVisual.validatePolicy(); err != nil {
 			c.KeyVisual.Policy = DefaultKeyVisualPolicy
 		}
-	}
-
-	if len(c.Profiling.AutoCollectionTargets) > 0 {
-		if c.Profiling.AutoCollectionDurationSecs == 0 {
-			c.Profiling.AutoCollectionDurationSecs = DefaultProfilingAutoCollectionDurationSecs
-		}
-		if c.Profiling.AutoCollectionDurationSecs > MaxProfilingAutoCollectionDurationSecs {
-			c.Profiling.AutoCollectionDurationSecs = MaxProfilingAutoCollectionDurationSecs
-		}
-		if c.Profiling.AutoCollectionIntervalSecs == 0 {
-			c.Profiling.AutoCollectionIntervalSecs = DefaultProfilingAutoCollectionIntervalSecs
-		}
-	} else {
-		c.Profiling.AutoCollectionDurationSecs = 0
-		c.Profiling.AutoCollectionIntervalSecs = 0
 	}
 }

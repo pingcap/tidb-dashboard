@@ -25,7 +25,7 @@ func TestAPIParamPDKey(t *testing.T) {
 
 	v, err = p.Resolve("0011")
 	require.Equal(t, []string{"\x00\x11"}, v)
-	require.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func TestAPIParamEnum(t *testing.T) {
@@ -48,7 +48,7 @@ func TestAPIParamEnum(t *testing.T) {
 
 	v, err = p.Resolve("v1")
 	require.Equal(t, []string{"v1"}, v)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	v, err = p.Resolve("d1")
 	require.Nil(t, v)
@@ -73,5 +73,5 @@ func TestAPIParamInt(t *testing.T) {
 
 	v, err = p.Resolve("123")
 	require.Equal(t, []string{"123"}, v)
-	require.Nil(t, err)
+	require.NoError(t, err)
 }

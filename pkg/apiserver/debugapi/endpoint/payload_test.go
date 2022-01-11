@@ -12,16 +12,16 @@ import (
 	"testing"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
+	"github.com/pingcap/tidb-dashboard/util/clientbundle"
 	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
 func TestRequestPayloadResolver(t *testing.T) {
-	clients := HTTPClients{
+	clients := clientbundle.HTTPClientBundle{
 		TiDBStatusClient: tidbclient.NewStatusClient(httpclient.Config{}),
 	}
 	apis := []APIDefinition{
@@ -104,7 +104,7 @@ func TestRequestPayloadResolver(t *testing.T) {
 			"queryParam": "q1",
 		},
 	})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, resolved.api, &apis[1])
 	require.Equal(t, "tidb-1.internal", resolved.host)
 	require.Equal(t, 12345, resolved.port)
@@ -119,7 +119,7 @@ func TestRequestPayloadResolver(t *testing.T) {
 			"regionID": "35",
 		},
 	})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, resolved.api, &apis[2])
 	require.Equal(t, "tidb-1.internal", resolved.host)
 	require.Equal(t, 12345, resolved.port)
@@ -201,7 +201,7 @@ func TestRequestPayloadResolver(t *testing.T) {
 			"queryParam2": "q?foo",
 		},
 	})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, resolved.api, &apis[1])
 	require.Equal(t, "tidb-x.internal", resolved.host)
 	require.Equal(t, 5431, resolved.port)
@@ -218,7 +218,7 @@ func TestRequestPayloadResolver(t *testing.T) {
 			"state":    "",
 		},
 	})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, resolved.api, &apis[2])
 	require.Equal(t, "tidb-1.internal", resolved.host)
 	require.Equal(t, 12345, resolved.port)
@@ -249,7 +249,7 @@ func TestRequestPayloadResolver(t *testing.T) {
 			"state":    "v",
 		},
 	})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, resolved.api, &apis[2])
 	require.Equal(t, "tidb-1.internal", resolved.host)
 	require.Equal(t, 12345, resolved.port)
@@ -282,13 +282,13 @@ func TestResolvedRequestPayload(t *testing.T) {
 	}
 
 	client := tidbclient.NewStatusClient(httpclient.Config{})
-	clients := HTTPClients{
+	clients := clientbundle.HTTPClientBundle{
 		TiDBStatusClient: client,
 	}
 
 	buf := bytes.Buffer{}
 	_, err := rp.SendRequestAndPipe(clients, &buf)
 
-	assert.Nil(t, err)
-	assert.Equal(t, "/abc\nhello\n", buf.String())
+	require.NoError(t, err)
+	require.Equal(t, "/abc\nhello\n", buf.String())
 }

@@ -47,7 +47,7 @@ func OpenTestDB(t *testing.T, configModifier ...func(*mysqldriver.Config, *gorm.
 	}
 
 	db, err := gorm.Open(mysql.Open(dsn.FormatDSN()), config)
-	r.Nil(err)
+	r.NoError(err)
 
 	return &TestDB{
 		inner:   db.Debug(),
@@ -59,7 +59,7 @@ func OpenMockDB(t *testing.T, configModifier ...func(*gorm.Config)) *TestDB {
 	r := require.New(t)
 
 	sqlDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	config := &gorm.Config{
 		Logger: zapgorm2.New(log.L()),
@@ -73,7 +73,7 @@ func OpenMockDB(t *testing.T, configModifier ...func(*gorm.Config)) *TestDB {
 		Conn:                      sqlDB,
 		SkipInitializeWithVersion: true,
 	}), config)
-	r.Nil(err)
+	r.NoError(err)
 
 	return &TestDB{
 		inner:   db.Debug(),
@@ -90,10 +90,10 @@ func (db *TestDB) MustClose() {
 	}
 
 	d, err := db.inner.DB()
-	db.require.Nil(err)
+	db.require.NoError(err)
 
 	err = d.Close()
-	db.require.Nil(err)
+	db.require.NoError(err)
 }
 
 func (db *TestDB) NewID() string {
@@ -107,7 +107,7 @@ func (db *TestDB) Gorm() *gorm.DB {
 
 func (db *TestDB) MustExec(sql string, values ...interface{}) {
 	err := db.inner.Exec(sql, values...).Error
-	db.require.Nil(err)
+	db.require.NoError(err)
 }
 
 type ExplainRow struct {
@@ -117,7 +117,7 @@ type ExplainRow struct {
 func (db *TestDB) MustExplain(sql string, values ...interface{}) []ExplainRow {
 	var rows []ExplainRow
 	err := db.Gorm().Raw("EXPLAIN "+sql, values...).Scan(&rows).Error
-	db.require.Nil(err)
+	db.require.NoError(err)
 	return rows
 }
 

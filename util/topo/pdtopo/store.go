@@ -99,7 +99,7 @@ func parseStoreState(state string) topo.ComponentStatus {
 	case "tombstone":
 		return topo.ComponentStatusTombstone
 	case "offline":
-		return topo.ComponentStatusOffline
+		return topo.ComponentStatusLeaving
 	case "down":
 		return topo.ComponentStatusDown
 	case "disconnected":

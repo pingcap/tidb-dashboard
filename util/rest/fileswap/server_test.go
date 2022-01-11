@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -15,17 +16,18 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/util/assertutil"
 	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/testutil/gintest"
 )
 
 func (s *Handler) mustGetDownloadToken(t *testing.T, fileContent string, downloadFileName string, expireIn time.Duration) string {
 	fw, err := s.NewFileWriter("test")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	_, err = fmt.Fprint(fw, fileContent)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	err = fw.Close()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	token, err := fw.GetDownloadToken(downloadFileName, expireIn)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	return token
 }
 
@@ -33,11 +35,8 @@ func TestDownload(t *testing.T) {
 	handler := New()
 	token := handler.mustGetDownloadToken(t, "foobar", "file.txt", time.Second*5)
 
-	r := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(r)
-	c.Request, _ = http.NewRequest(http.MethodGet, "/download?token="+token, nil)
+	c, r := gintest.CtxGet(url.Values{"token": []string{token}})
 	handler.HandleDownloadRequest(c)
-
 	require.Len(t, c.Errors, 0)
 	require.Equal(t, http.StatusOK, r.Code)
 	require.Equal(t, `attachment; filename="file.txt"`, r.Header().Get("Content-Disposition"))
@@ -45,11 +44,8 @@ func TestDownload(t *testing.T) {
 	require.Equal(t, "foobar", r.Body.String())
 
 	// Download again
-	r = httptest.NewRecorder()
-	c, _ = gin.CreateTestContext(r)
-	c.Request, _ = http.NewRequest(http.MethodGet, "/download?token="+token, nil)
+	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
 	handler.HandleDownloadRequest(c)
-
 	require.Len(t, c.Errors, 1)
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Download file not found")
@@ -60,11 +56,9 @@ func TestDownloadAnotherInstance(t *testing.T) {
 	token := handler.mustGetDownloadToken(t, "foobar", "file.txt", time.Second*5)
 
 	handler2 := New()
-	r := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(r)
-	c.Request, _ = http.NewRequest(http.MethodGet, "/download?token="+token, nil)
-	handler2.HandleDownloadRequest(c)
 
+	c, _ := gintest.CtxGet(url.Values{"token": []string{token}})
+	handler2.HandleDownloadRequest(c)
 	require.Len(t, c.Errors, 1)
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Invalid download request")
@@ -78,11 +72,8 @@ func TestExpiredToken(t *testing.T) {
 	// Note: token expiration precision is 1sec.
 	time.Sleep(time.Millisecond * 1100)
 
-	r := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(r)
-	c.Request, _ = http.NewRequest(http.MethodGet, "/download?token="+token, nil)
+	c, _ := gintest.CtxGet(url.Values{"token": []string{token}})
 	handler.HandleDownloadRequest(c)
-
 	require.Len(t, c.Errors, 1)
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Invalid download request")
@@ -92,11 +83,8 @@ func TestExpiredToken(t *testing.T) {
 func TestNotAToken(t *testing.T) {
 	handler := New()
 
-	r := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(r)
-	c.Request, _ = http.NewRequest(http.MethodGet, "/download?token=abc", nil)
+	c, _ := gintest.CtxGet(url.Values{"token": []string{"abc"}})
 	handler.HandleDownloadRequest(c)
-
 	require.Len(t, c.Errors, 1)
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Invalid download request")

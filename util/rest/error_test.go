@@ -15,6 +15,7 @@ import (
 	"go.uber.org/atomic"
 
 	"github.com/pingcap/tidb-dashboard/util/assertutil"
+	"github.com/pingcap/tidb-dashboard/util/jsonserde/ginjson"
 )
 
 func TestExtractHTTPCodeFromError(t *testing.T) {
@@ -48,7 +49,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNoError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		c.JSON(200, gin.H{
+		ginjson.Render(c, 200, gin.H{
 			"foo": "bar",
 		})
 	})
@@ -114,7 +115,7 @@ func (suite *ErrorHandlerFnTestSuite) TestResponseAfterError() {
 	engine.GET("/test", func(c *gin.Context) {
 		_ = c.Error(ErrBadRequest.NewWithNoMessage())
 		// If normal response is returned, no error message will be generated
-		c.JSON(http.StatusNotFound, gin.H{
+		ginjson.Render(c, http.StatusNotFound, gin.H{
 			"foo": "bar",
 		})
 	})

@@ -9,13 +9,8 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
-	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
-	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
-	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
-	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
+	"github.com/pingcap/tidb-dashboard/util/clientbundle"
 	"github.com/pingcap/tidb-dashboard/util/rest"
-	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
 // RequestPayload describes how a server-side request should be sent, by describing the API endpoint to send
@@ -28,40 +23,6 @@ type RequestPayload struct {
 	ParamValues map[string]string `json:"param_values"`
 }
 
-type HTTPClients struct {
-	PDAPIClient         *pdclient.APIClient
-	TiDBStatusClient    *tidbclient.StatusClient
-	TiKVStatusClient    *tikvclient.StatusClient
-	TiFlashStatusClient *tiflashclient.StatusClient
-}
-
-func (c HTTPClients) GetHTTPClientByNodeKind(kind topo.ComponentKind) *httpclient.Client {
-	switch kind {
-	case topo.KindPD:
-		if c.PDAPIClient == nil {
-			return nil
-		}
-		return c.PDAPIClient.Client
-	case topo.KindTiDB:
-		if c.TiDBStatusClient == nil {
-			return nil
-		}
-		return c.TiDBStatusClient.Client
-	case topo.KindTiKV:
-		if c.TiKVStatusClient == nil {
-			return nil
-		}
-		return c.TiKVStatusClient.Client
-	case topo.KindTiFlash:
-		if c.TiFlashStatusClient == nil {
-			return nil
-		}
-		return c.TiFlashStatusClient.Client
-	default:
-		return nil
-	}
-}
-
 // RequestPayloadResolver resolves the request payload using specified API definitions.
 //
 // The relationship is below:
@@ -71,11 +32,11 @@ type RequestPayloadResolver struct {
 	apiMapByID map[string]*APIDefinition
 }
 
-func NewRequestPayloadResolver(apis []APIDefinition, acceptedClients HTTPClients) *RequestPayloadResolver {
+func NewRequestPayloadResolver(apis []APIDefinition, acceptedClients clientbundle.HTTPClientBundle) *RequestPayloadResolver {
 	// Filter APIs by accepted clients
 	filteredAPIs := make([]APIDefinition, 0, len(apis))
 	for _, api := range apis {
-		httpClient := acceptedClients.GetHTTPClientByNodeKind(api.Component)
+		httpClient := acceptedClients.GetHTTPClientByComponentKind(api.Component)
 		if httpClient != nil {
 			filteredAPIs = append(filteredAPIs, api)
 		}
@@ -170,8 +131,8 @@ type ResolvedRequestPayload struct {
 	queryValues url.Values
 }
 
-func (p *ResolvedRequestPayload) SendRequestAndPipe(clientsToUse HTTPClients, w io.Writer) (respNoBody *http.Response, err error) {
-	httpClient := clientsToUse.GetHTTPClientByNodeKind(p.api.Component)
+func (p *ResolvedRequestPayload) SendRequestAndPipe(clientsToUse clientbundle.HTTPClientBundle, w io.Writer) (respNoBody *http.Response, err error) {
+	httpClient := clientsToUse.GetHTTPClientByComponentKind(p.api.Component)
 	if httpClient == nil {
 		return nil, ErrUnknownComponent.New("Unknown component '%s'", p.api.Component)
 	}

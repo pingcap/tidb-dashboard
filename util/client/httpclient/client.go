@@ -55,10 +55,9 @@ func newTransport(tlsConfig *tls.Config) *http.Transport {
 
 func New(config Config) *Client {
 	return &Client{
-		kindTag:        config.KindTag,
-		transport:      newTransport(config.TLSConfig),
-		defaultCtx:     config.DefaultCtx,
-		defaultBaseURL: config.DefaultBaseURL,
+		kindTag:    config.KindTag,
+		transport:  newTransport(config.TLSConfig),
+		defaultCtx: config.DefaultCtx,
 	}
 }
 

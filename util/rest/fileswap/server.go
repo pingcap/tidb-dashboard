@@ -3,7 +3,6 @@
 package fileswap
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,12 +11,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/gtank/cryptopasta"
-	"github.com/joomcode/errorx"
 	"github.com/minio/sio"
 
 	"github.com/pingcap/tidb-dashboard/util/nocopy"
 	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/rest/download"
 )
 
 // Handler provides a file-based data serving HTTP handler.
@@ -28,25 +26,25 @@ import (
 type Handler struct {
 	nocopy.NoCopy
 
-	// The secret is used to sign the download token as well as encrypting the file in the FS.
-	secret []byte
+	downloadServer *download.Server
 }
 
 func New() *Handler {
 	return &Handler{
-		secret: cryptopasta.NewEncryptionKey()[:],
+		downloadServer: download.NewServer(),
 	}
 }
 
 // NewFileWriter creates a writer for storing data into FS. A download token can be generated from the writer
 // for downloading later. The downloading can be handled by the HandleDownloadRequest.
+// This function is concurrent-safe.
 func (s *Handler) NewFileWriter(tempFilePattern string) (*FileWriter, error) {
 	file, err := ioutil.TempFile("", tempFilePattern)
 	if err != nil {
 		return nil, err
 	}
 
-	w, err := sio.EncryptWriter(file, sio.Config{Key: s.secret})
+	w, err := sio.EncryptWriter(file, sio.Config{Key: s.downloadServer.Secret()})
 	if err != nil {
 		_ = file.Close()
 		_ = os.Remove(file.Name())
@@ -54,9 +52,9 @@ func (s *Handler) NewFileWriter(tempFilePattern string) (*FileWriter, error) {
 	}
 
 	return &FileWriter{
-		WriteCloser: w,
-		secret:      s.secret,
-		filePath:    file.Name(),
+		WriteCloser:    w,
+		downloadServer: s.downloadServer,
+		filePath:       file.Name(),
 	}, nil
 }
 
@@ -66,29 +64,12 @@ type downloadTokenClaims struct {
 	DownloadFileName string
 }
 
-func (s *Handler) parseClaimsFromToken(tokenString string) (*downloadTokenClaims, error) {
-	token, err := jwt.ParseWithClaims(
-		tokenString,
-		&downloadTokenClaims{},
-		func(token *jwt.Token) (interface{}, error) {
-			return s.secret, nil
-		})
-	if token != nil {
-		if claims, ok := token.Claims.(*downloadTokenClaims); ok && token.Valid {
-			return claims, nil
-		}
-	}
-	var ve *jwt.ValidationError
-	if errors.As(err, &ve) && ve.Errors&jwt.ValidationErrorExpired != 0 {
-		return nil, errorx.Decorate(err, "download token is expired")
-	}
-	return nil, errorx.Decorate(err, "download token is invalid")
-}
-
 // HandleDownloadRequest handles a gin Request for serving the file in the FS by using a download token.
 // The file will be removed after it is successfully served to the user.
+// This function is concurrent-safe.
 func (s *Handler) HandleDownloadRequest(c *gin.Context) {
-	claims, err := s.parseClaimsFromToken(c.Query("token"))
+	var claims downloadTokenClaims
+	err := s.downloadServer.HandleDownloadToken(c.Query("token"), &claims)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.Wrap(err, "Invalid download request"))
 		return
@@ -113,7 +94,7 @@ func (s *Handler) HandleDownloadRequest(c *gin.Context) {
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, claims.DownloadFileName))
 
 	_, err = sio.Decrypt(c.Writer, file, sio.Config{
-		Key: s.secret,
+		Key: s.downloadServer.Secret(),
 	})
 	if err != nil {
 		_ = c.Error(err)
@@ -125,8 +106,8 @@ type FileWriter struct {
 	nocopy.NoCopy
 	io.WriteCloser
 
-	secret   []byte
-	filePath string
+	downloadServer *download.Server
+	filePath       string
 }
 
 func (fw *FileWriter) Remove() {
@@ -136,6 +117,7 @@ func (fw *FileWriter) Remove() {
 
 // GetDownloadToken generates a download token for downloading this file later.
 // The downloading can be handled by the Handler.HandleDownloadRequest.
+// This function is concurrent-safe.
 func (fw *FileWriter) GetDownloadToken(downloadFileName string, expireIn time.Duration) (string, error) {
 	claims := downloadTokenClaims{
 		TempFileName:     fw.filePath,
@@ -144,10 +126,5 @@ func (fw *FileWriter) GetDownloadToken(downloadFileName string, expireIn time.Du
 			ExpiresAt: time.Now().Add(expireIn).Unix(),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenSigned, err := token.SignedString(fw.secret)
-	if err != nil {
-		return "", err
-	}
-	return tokenSigned, nil
+	return fw.downloadServer.GetDownloadToken(claims)
 }

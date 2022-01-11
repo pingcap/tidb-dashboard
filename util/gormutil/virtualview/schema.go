@@ -30,6 +30,7 @@ func decodeField(ft reflect.StructField) (props viewFieldProps, err error) {
 	props.viewExpr = ft.Tag.Get("vexpr")
 
 	// parse JSON tag
+	// TODO: Some refinement is needed to respect JSON serialized by json-iterator.
 	{
 		props.jsonNameL = strings.ToLower(ft.Name)
 		tags, _ := structtag.Parse(string(ft.Tag))

@@ -5,15 +5,15 @@ package tidbproto
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDecodeBytes(t *testing.T) {
 	key := "abcdefghijklmnopqrstuvwxyz"
 	for i := 0; i < len(key); i++ {
 		_, k, err := decodeBytes(encodeBytes([]byte(key[:i])), nil)
-		assert.Nil(t, err)
-		assert.Equal(t, string(k), key[:i])
+		require.NoError(t, err)
+		require.Equal(t, string(k), key[:i])
 	}
 }
 
@@ -22,7 +22,7 @@ func TestTiDBInfo(t *testing.T) {
 
 	// no encode
 	_, err := buf.DecodeKey([]byte("t\x80\x00\x00\x00\x00\x00\x00\xff"))
-	assert.NotNil(t, err)
+	require.NotNil(t, err)
 
 	testcases := []struct {
 		Key            string
@@ -93,14 +93,14 @@ func TestTiDBInfo(t *testing.T) {
 	for _, testcase := range testcases {
 		key := encodeBytes([]byte(testcase.Key))
 		_, err := buf.DecodeKey(key)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		isMeta, tableID := buf.MetaOrTable()
-		assert.Equal(t, testcase.IsMeta, isMeta)
-		assert.Equal(t, testcase.TableID, tableID)
+		require.Equal(t, testcase.IsMeta, isMeta)
+		require.Equal(t, testcase.TableID, tableID)
 		isCommonHandle, rowID := buf.RowInfo()
-		assert.Equal(t, testcase.IsCommonHandle, isCommonHandle)
-		assert.Equal(t, testcase.RowID, rowID)
+		require.Equal(t, testcase.IsCommonHandle, isCommonHandle)
+		require.Equal(t, testcase.RowID, rowID)
 		indexID := buf.IndexInfo()
-		assert.Equal(t, testcase.IndexID, indexID)
+		require.Equal(t, testcase.IndexID, indexID)
 	}
 }

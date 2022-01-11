@@ -14,9 +14,9 @@ import (
 )
 
 func TestGetPDInstances(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	resp, err := pdtopo.GetPDInstances(context.Background(), apiClient)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, []topo.PDInfo{
 		topo.PDInfo{
 			GitHash:        "0c1246dd219fd16b4b2ff5108941e5d3e958922d",

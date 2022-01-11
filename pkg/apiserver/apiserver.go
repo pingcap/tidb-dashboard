@@ -39,6 +39,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
+	"github.com/pingcap/tidb-dashboard/util/topo/lister"
+	"github.com/pingcap/tidb-dashboard/util/topo/pdtopo"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator.
@@ -111,8 +113,10 @@ func (s *Service) Start(ctx context.Context) error {
 		fx.Provide(
 			newAPIHandlerEngine,
 			newClients,
+			newSqliteDB,
+			pdtopo.NewTopologyProviderFromPD,
 			s.provideLocals,
-			dbstore.NewDBStore,
+			lister.NewHS256Signer,
 			httpc.NewHTTPClient,
 			pd.NewEtcdClient,
 			pd.NewPDClient,
@@ -139,17 +143,16 @@ func (s *Service) Start(ctx context.Context) error {
 		ssoauth.Module,
 		code.Module,
 		sso.Module,
-		profiling.Module,
 		conprof.Module,
 		statement.Module,
 		slowquery.Module,
 		debugapi.Module,
 		topsql.Module,
+		profiling.Mod,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			info.RegisterRouter,
 			clusterinfo.RegisterRouter,
-			profiling.RegisterRouter,
 			logsearch.RegisterRouter,
 			diagnose.RegisterRouter,
 			keyvisual.RegisterRouter,
@@ -187,12 +190,28 @@ func newClients(lc fx.Lifecycle, config *config.Config) (
 	kvClient = tikvclient.NewStatusClient(httpConfig)
 	csClient = tiflashclient.NewStatusClient(httpConfig)
 	pdClient = pdclient.NewAPIClient(httpConfig)
+	pdClient.SetDefaultBaseURL(config.PDEndPoint)
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			dbClient.SetDefaultCtx(ctx)
 			kvClient.SetDefaultCtx(ctx)
 			csClient.SetDefaultCtx(ctx)
 			pdClient.SetDefaultCtx(ctx)
+			return nil
+		},
+	})
+	return
+}
+
+// TODO: Find a better place to put this.
+func newSqliteDB(lc fx.Lifecycle, config *config.Config) (db *dbstore.DB, err error) {
+	db, err = dbstore.NewDBStore(config.DataDir)
+	if err != nil {
+		return
+	}
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			_ = db.Close()
 			return nil
 		},
 	})

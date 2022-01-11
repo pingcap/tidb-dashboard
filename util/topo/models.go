@@ -2,14 +2,23 @@
 
 package topo
 
-type ComponentStatus uint
+import (
+	"database/sql"
+	"database/sql/driver"
+	"fmt"
+	"strings"
+
+	"github.com/pingcap/tidb-dashboard/util/jsonserde"
+)
+
+type ComponentStatus string
 
 const (
-	ComponentStatusUnreachable ComponentStatus = 0
-	ComponentStatusUp          ComponentStatus = 1
-	ComponentStatusTombstone   ComponentStatus = 2
-	ComponentStatusOffline     ComponentStatus = 3
-	ComponentStatusDown        ComponentStatus = 4
+	ComponentStatusUnreachable ComponentStatus = "unreachable"
+	ComponentStatusUp          ComponentStatus = "up"
+	ComponentStatusTombstone   ComponentStatus = "tombstone"
+	ComponentStatusLeaving     ComponentStatus = "leaving"
+	ComponentStatusDown        ComponentStatus = "down"
 )
 
 type ComponentKind string
@@ -24,21 +33,55 @@ const (
 	KindPrometheus   ComponentKind = "prometheus"
 )
 
+// ComponentDescriptor provides the minimal basic information about a component.
 type ComponentDescriptor struct {
-	IP   string        `json:"ip"`
-	Port uint          `json:"port"`
-	Kind ComponentKind `json:"kind"`
+	IP         string
+	Port       uint
+	StatusPort uint
+	Kind       ComponentKind
+	// Extreme care should be taken when adding more fields here, as this descriptor is widely used or persisted.
 }
 
-type PDInfo struct {
-	GitHash        string          `json:"git_hash"`
-	Version        string          `json:"version"`
-	IP             string          `json:"ip"`
-	Port           uint            `json:"port"`
-	DeployPath     string          `json:"deploy_path"`
-	Status         ComponentStatus `json:"status"`
-	StartTimestamp int64           `json:"start_timestamp"` // Ts = 0 means unknown
+var _ sql.Scanner = (*ComponentDescriptor)(nil)
+var _ driver.Valuer = ComponentDescriptor{}
+
+func (cd *ComponentDescriptor) Scan(src interface{}) error {
+	return jsonserde.Default.Unmarshal([]byte(src.(string)), cd)
 }
+
+func (cd ComponentDescriptor) Value() (driver.Value, error) {
+	val, err := jsonserde.Default.Marshal(cd)
+	return string(val), err
+}
+
+func (cd *ComponentDescriptor) DisplayHost() string {
+	return fmt.Sprintf("%s:%d", cd.IP, cd.Port)
+}
+
+func (cd *ComponentDescriptor) FileName() string {
+	host := strings.NewReplacer(":", "_", ".", "_").Replace(cd.DisplayHost())
+	return fmt.Sprintf("%s_%s", cd.Kind, host)
+}
+
+// Info is an interface implemented by all component info structures.
+type Info interface {
+	Describe() ComponentDescriptor
+}
+
+//go:generate mockery --name Info --inpackage
+var _ Info = (*MockInfo)(nil)
+
+type PDInfo struct {
+	GitHash        string
+	Version        string
+	IP             string
+	Port           uint
+	DeployPath     string
+	Status         ComponentStatus
+	StartTimestamp int64 // Ts = 0 means unknown
+}
+
+var _ Info = &PDInfo{}
 
 func (i *PDInfo) Describe() ComponentDescriptor {
 	return ComponentDescriptor{
@@ -49,63 +92,74 @@ func (i *PDInfo) Describe() ComponentDescriptor {
 }
 
 type TiDBInfo struct {
-	GitHash        string          `json:"git_hash"`
-	Version        string          `json:"version"`
-	IP             string          `json:"ip"`
-	Port           uint            `json:"port"`
-	DeployPath     string          `json:"deploy_path"`
-	Status         ComponentStatus `json:"status"`
-	StatusPort     uint            `json:"status_port"`
-	StartTimestamp int64           `json:"start_timestamp"`
+	GitHash        string
+	Version        string
+	IP             string
+	Port           uint
+	DeployPath     string
+	Status         ComponentStatus
+	StatusPort     uint
+	StartTimestamp int64
 }
+
+var _ Info = &TiDBInfo{}
 
 func (i *TiDBInfo) Describe() ComponentDescriptor {
 	return ComponentDescriptor{
-		IP:   i.IP,
-		Port: i.Port,
-		Kind: KindTiDB,
+		IP:         i.IP,
+		Port:       i.Port,
+		StatusPort: i.StatusPort,
+		Kind:       KindTiDB,
 	}
 }
 
 // StoreInfo may be either a TiKV store info or a TiFlash store info.
 type StoreInfo struct {
-	GitHash        string            `json:"git_hash"`
-	Version        string            `json:"version"`
-	IP             string            `json:"ip"`
-	Port           uint              `json:"port"`
-	DeployPath     string            `json:"deploy_path"`
-	Status         ComponentStatus   `json:"status"`
-	StatusPort     uint              `json:"status_port"`
-	Labels         map[string]string `json:"labels"`
-	StartTimestamp int64             `json:"start_timestamp"`
+	GitHash        string
+	Version        string
+	IP             string
+	Port           uint
+	DeployPath     string
+	Status         ComponentStatus
+	StatusPort     uint
+	Labels         map[string]string
+	StartTimestamp int64
 }
 
 type TiKVStoreInfo StoreInfo
 
+var _ Info = &TiKVStoreInfo{}
+
 func (i *TiKVStoreInfo) Describe() ComponentDescriptor {
 	return ComponentDescriptor{
-		IP:   i.IP,
-		Port: i.Port,
-		Kind: KindTiKV,
+		IP:         i.IP,
+		Port:       i.Port,
+		StatusPort: i.StatusPort,
+		Kind:       KindTiKV,
 	}
 }
 
 type TiFlashStoreInfo StoreInfo
 
+var _ Info = &TiFlashStoreInfo{}
+
 func (i *TiFlashStoreInfo) Describe() ComponentDescriptor {
 	return ComponentDescriptor{
-		IP:   i.IP,
-		Port: i.Port,
-		Kind: KindTiFlash,
+		IP:         i.IP,
+		Port:       i.Port,
+		StatusPort: i.StatusPort,
+		Kind:       KindTiFlash,
 	}
 }
 
 type StandardComponentInfo struct {
-	IP   string `json:"ip"`
-	Port uint   `json:"port"`
+	IP   string
+	Port uint
 }
 
 type AlertManagerInfo StandardComponentInfo
+
+var _ Info = &AlertManagerInfo{}
 
 func (i *AlertManagerInfo) Describe() ComponentDescriptor {
 	return ComponentDescriptor{
@@ -117,6 +171,8 @@ func (i *AlertManagerInfo) Describe() ComponentDescriptor {
 
 type GrafanaInfo StandardComponentInfo
 
+var _ Info = &GrafanaInfo{}
+
 func (i *GrafanaInfo) Describe() ComponentDescriptor {
 	return ComponentDescriptor{
 		IP:   i.IP,
@@ -126,6 +182,8 @@ func (i *GrafanaInfo) Describe() ComponentDescriptor {
 }
 
 type PrometheusInfo StandardComponentInfo
+
+var _ Info = &PrometheusInfo{}
 
 func (i *PrometheusInfo) Describe() ComponentDescriptor {
 	return ComponentDescriptor{

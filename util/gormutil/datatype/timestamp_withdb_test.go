@@ -64,7 +64,7 @@ func (suite *TimestampORMSuite) TestCheckFixture() {
 		Select([]string{"UNIX_TIMESTAMP(d) AS C1", "UNIX_TIMESTAMP(e) AS C2"}).
 		Find(&row).
 		Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(1633803684.694123, row.C1)
 	suite.Require().Equal(1633803684.694123, row.C2)
 }
@@ -72,19 +72,19 @@ func (suite *TimestampORMSuite) TestCheckFixture() {
 func (suite *TimestampORMSuite) TestScanFromInt() {
 	var r Timestamp
 	err := suite.db.Gorm().Table(suite.tableName).Select("a").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 func (suite *TimestampORMSuite) TestScanFromDouble() {
 	var r Timestamp
 	err := suite.db.Gorm().Table(suite.tableName).Select("b").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 func (suite *TimestampORMSuite) TestScanFromString() {
 	var r Timestamp
 	err := suite.db.Gorm().Table(suite.tableName).Select("c").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 func (suite *TimestampORMSuite) TestScanFromTimestamp() {
@@ -98,19 +98,19 @@ func (suite *TimestampORMSuite) TestScanFromTimestamp() {
 
 	suite.db.MustExec("SET time_zone = '+08:00'")
 	err := suite.db.Gorm().Table(suite.tableName).Select("d").Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(int64(1633832484694123000), r.UnixNano())
 
 	suite.db.MustExec("SET time_zone = '+00:00'")
 	err = suite.db.Gorm().Table(suite.tableName).Select("d").Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(int64(1633803684694123000), r.UnixNano())
 
 	// Another safe way to deal with the TIMESTAMP is to use UNIX_TIMESTAMP function:
 	suite.db.MustExec("SET time_zone = '+03:00'") // Session time zone doesn't matter
 	var r2 float64
 	err = suite.db.Gorm().Table(suite.tableName).Select("UNIX_TIMESTAMP(d)").Take(&r2).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(1633803684.694123, r2)
 }
 
@@ -119,13 +119,13 @@ func (suite *TimestampORMSuite) TestScanFromDatetime() {
 
 	suite.db.MustExec("SET time_zone = '+08:00'")
 	err := suite.db.Gorm().Table(suite.tableName).Select("e").Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	// Note: MySQL return the "Y-m-d H:m:s" as it is, while the driver will treat it as in UTC.
 	suite.Require().Equal(int64(1633803684694123000), r.UnixNano())
 
 	suite.db.MustExec("SET time_zone = '+04:00'") // Session time zone doesn't matter.
 	err = suite.db.Gorm().Table(suite.tableName).Select("e").Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(int64(1633803684694123000), r.UnixNano())
 }
 
@@ -134,22 +134,22 @@ func (suite *TimestampORMSuite) TestScanFromDatetime() {
 func (suite *TimestampORMSuite) TestScanToGoTypes() {
 	var r1 int
 	err := suite.db.Gorm().Table(suite.tableName).Select("d").Take(&r1).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 
 	var r2 float64
 	err = suite.db.Gorm().Table(suite.tableName).Select("d").Take(&r2).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 
 	// Scanning a TIMESTAMP field type into String is valid.
 	var r3 string
 	suite.db.MustExec("SET time_zone = '+00:00'")
 	err = suite.db.Gorm().Table(suite.tableName).Select("d").Take(&r3).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal("2021-10-09T18:21:24.694123Z", r3)
 
 	suite.db.MustExec("SET time_zone = '+03:00'")
 	err = suite.db.Gorm().Table(suite.tableName).Select("d").Take(&r3).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal("2021-10-09T21:21:24.694123Z", r3)
 }
 
@@ -160,7 +160,7 @@ func (suite *TimestampORMSuite) TestWhere() {
 		Select("d").
 		Where("d = ?", Timestamp{Time: time.Unix(0, 1633803684694123000)}).
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(int64(1633803684694123000), r.UnixNano())
 
 	err = suite.db.Gorm().
@@ -168,7 +168,7 @@ func (suite *TimestampORMSuite) TestWhere() {
 		Select("d").
 		Where("d > ?", Timestamp{Time: time.Unix(0, 1633803684694000000)}).
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(int64(1633803684694123000), r.UnixNano())
 
 	err = suite.db.Gorm().
@@ -176,7 +176,7 @@ func (suite *TimestampORMSuite) TestWhere() {
 		Select("d").
 		Where("d = ?", Timestamp{Time: time.Unix(0, 1633803684694000000)}).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 
 	err = suite.db.Gorm().
@@ -184,7 +184,7 @@ func (suite *TimestampORMSuite) TestWhere() {
 		Select("d").
 		Where("d > ?", Timestamp{Time: time.Unix(0, 1633803684694123001)}).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 
 	// It is also possible to specify string directly for a TIMESTAMP type.
@@ -193,7 +193,7 @@ func (suite *TimestampORMSuite) TestWhere() {
 		Select("d").
 		Where("d = ?", "2021-10-09 18:21:24.694123").
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(int64(1633803684694123000), r.UnixNano())
 }
 
@@ -218,7 +218,7 @@ func (suite *TimestampORMSuite) TestWhereInIndex() {
 		Select("ts").
 		Where("ts = ?", Timestamp{Time: time.Unix(0, 1633880141307801000)}).
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(int64(1633880141307801000), r.UnixNano())
 
 	// Verify Plan is Index Scan
@@ -246,11 +246,11 @@ func (suite *TimestampORMSuite) TestInsert() {
 		ID: 5,
 		Ts: Timestamp{Time: time.Unix(0, 1633880957785123456)},
 	}).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 
 	var r model
 	err = suite.db.Gorm().Table(tableName).Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(5, r.ID)
 	suite.Require().Equal(int64(1633880957785123000), r.Ts.UnixNano())
 }
@@ -274,7 +274,7 @@ func (suite *TimestampORMSuite) TestScanNull() {
 		Table(tableName).
 		Select("ts").
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(int64(0), r.UnixNano())
 }
 

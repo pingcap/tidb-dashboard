@@ -30,22 +30,22 @@ func TestParseHostAndPortFromAddress(t *testing.T) {
 	require.Equal(t, uint(80), port)
 
 	_, _, err = ParseHostAndPortFromAddress("http://abc.com:123")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddress("abc.com")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddress("localhost")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddress("abc.com:def")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddress("::ffff:1.2.3.4:10023")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddress("2001:0db8::1428:57ab:80")
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestParseHostAndPortFromAddressURL(t *testing.T) {
@@ -70,20 +70,20 @@ func TestParseHostAndPortFromAddressURL(t *testing.T) {
 	require.Equal(t, uint(80), port)
 
 	_, _, err = ParseHostAndPortFromAddressURL("http://abc.com")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddressURL("abc.com:345")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddressURL("http://localhost")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddressURL("http://abc.com:def")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddressURL("http://::ffff:1.2.3.4:10023")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, _, err = ParseHostAndPortFromAddressURL("http://2001:0db8::1428:57ab:80")
-	require.NotNil(t, err)
+	require.Error(t, err)
 }

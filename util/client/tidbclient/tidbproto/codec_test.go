@@ -22,7 +22,7 @@ func TestTiDBInfo(t *testing.T) {
 
 	// no encode
 	_, err := buf.DecodeKey([]byte("t\x80\x00\x00\x00\x00\x00\x00\xff"))
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	testcases := []struct {
 		Key            string

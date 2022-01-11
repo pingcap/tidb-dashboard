@@ -34,7 +34,7 @@ func TestNoUpstream(t *testing.T) {
 
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestAddUpstream(t *testing.T) {
@@ -49,7 +49,7 @@ func TestAddUpstream(t *testing.T) {
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
 	// Incoming connection will not be established until a probe interval.
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 
 	time.Sleep(probeWait)
@@ -70,7 +70,7 @@ func TestAddMultipleUpstream(t *testing.T) {
 	require.False(t, p.HasActiveUpstream())
 	p.SetUpstreams(servers.GetEndpoints())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 
 	time.Sleep(probeWait)
@@ -100,7 +100,7 @@ func TestRemoveAllUpstreams(t *testing.T) {
 	p.SetUpstreams([]string{})
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestRemoveOneUpstream(t *testing.T) {
@@ -210,7 +210,7 @@ func TestAllUpstreamDown(t *testing.T) {
 	require.True(t, p.HasActiveUpstream())
 
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 }
 
@@ -296,7 +296,7 @@ func TestBrokenServer(t *testing.T) {
 	require.True(t, p.HasActiveUpstream())
 
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.True(t, os.IsTimeout(err))
 	require.True(t, p.HasActiveUpstream())
 
@@ -310,7 +310,7 @@ func TestBrokenServer(t *testing.T) {
 	require.True(t, p.HasActiveUpstream())
 
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.True(t, os.IsTimeout(err))
 
 	// Let's remove the first upstream! We should get success response immediately without waiting probe.
@@ -340,7 +340,7 @@ func TestUpstreamBack(t *testing.T) {
 	// Close the upstream server
 	server.Close()
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 
 	// Start the upstream server again at the original listen address
@@ -349,7 +349,7 @@ func TestUpstreamBack(t *testing.T) {
 	// We will still get failure here, even if the upstream is back. It will recover at next probe round.
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 
 	time.Sleep(probeWait)
@@ -381,20 +381,20 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 	server.Close()
 	require.True(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 
 	// Wait one round probe, nothing is changed
 	time.Sleep(probeWait)
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	// Add a new alive upstream
 	p.SetUpstreams([]string{testutil.GetHTTPServerHost(server), testutil.GetHTTPServerHost(server2)})
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	time.Sleep(probeWait)
 	require.True(t, p.HasActiveUpstream())
@@ -407,7 +407,7 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 
 	require.True(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	server3 := testutil.NewHTTPServer("box")
 	defer server3.Close()
@@ -417,7 +417,7 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 	p.SetUpstreams([]string{testutil.GetHTTPServerHost(server), testutil.GetHTTPServerHost(server2), host3})
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	time.Sleep(probeWait)
 	require.True(t, p.HasActiveUpstream())
@@ -435,13 +435,13 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 	p.SetUpstreams([]string{testutil.GetHTTPServerHost(server), testutil.GetHTTPServerHost(server2), host3, host4})
 	require.True(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 
 	time.Sleep(probeWait)
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	// Bring back server3
 	server3New := testutil.NewHTTPServerAtHost("newBox", host3)
@@ -449,7 +449,7 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	time.Sleep(probeWait)
 	require.True(t, p.HasActiveUpstream())
@@ -461,17 +461,17 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 	p.SetUpstreams([]string{testutil.GetHTTPServerHost(server), testutil.GetHTTPServerHost(server2), host4})
 	require.True(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 	time.Sleep(probeWait)
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	// Remove server4
 	p.SetUpstreams([]string{testutil.GetHTTPServerHost(server), testutil.GetHTTPServerHost(server2)})
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 
 	// Start server4 again, nothing should be changed (keep failure).
@@ -479,18 +479,18 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 	defer server4New.Close()
 
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 	time.Sleep(probeWait)
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	// Add server3 back to the upstream
 	p.SetUpstreams([]string{testutil.GetHTTPServerHost(server2), host3})
 	require.False(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	time.Sleep(probeWait)
 	require.True(t, p.HasActiveUpstream())
 	resp, err = sendGetToProxy(p)
@@ -502,7 +502,7 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 	p.SetUpstreams([]string{host4})
 	require.True(t, p.HasActiveUpstream())
 	_, err = sendGetToProxy(p) // At this time, active upstream is host3, and host4 is not recognized as alive, so it should fail
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.False(t, p.HasActiveUpstream())
 
 	time.Sleep(probeWait)
@@ -530,7 +530,7 @@ func TestClose(t *testing.T) {
 	p.Close()
 	require.True(t, p.HasActiveUpstream()) // TODO: Should we fix this behaviour?
 	_, err = sendGetToProxy(p)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	p.Close() // Close again should be fine!
 }

@@ -34,10 +34,10 @@ func TestIntJSON(t *testing.T) {
 	require.Equal(t, Int(56789), st.Foo)
 
 	err = json.Unmarshal([]byte(`{"Foo":"123"}`), &st)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	err = json.Unmarshal([]byte(`{"Foo":1300.45}`), &st)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	nv3 := Int(48691071)
 	v, err = json.Marshal(nv3)

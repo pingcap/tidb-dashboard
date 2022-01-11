@@ -40,7 +40,7 @@ func TestParseExprDependencies(t *testing.T) {
 	}
 	for _, tt := range failTests {
 		_, err := parseExprDependencies(tt)
-		require.NotNil(t, err)
+		require.Error(t, err)
 	}
 }
 
@@ -201,10 +201,10 @@ func TestParseViewModelSchemaFailure(t *testing.T) {
 		Foo    string `vexpr:"invalidExpr(a,"`
 	}
 	_, err := parseViewModelSchema(&Model{})
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, err = parseViewModelSchema(Model{})
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestUpdateFieldsAvailability(t *testing.T) {

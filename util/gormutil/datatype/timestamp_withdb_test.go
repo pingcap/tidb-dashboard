@@ -72,19 +72,19 @@ func (suite *TimestampORMSuite) TestCheckFixture() {
 func (suite *TimestampORMSuite) TestScanFromInt() {
 	var r Timestamp
 	err := suite.db.Gorm().Table(suite.tableName).Select("a").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 func (suite *TimestampORMSuite) TestScanFromDouble() {
 	var r Timestamp
 	err := suite.db.Gorm().Table(suite.tableName).Select("b").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 func (suite *TimestampORMSuite) TestScanFromString() {
 	var r Timestamp
 	err := suite.db.Gorm().Table(suite.tableName).Select("c").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 func (suite *TimestampORMSuite) TestScanFromTimestamp() {
@@ -134,11 +134,11 @@ func (suite *TimestampORMSuite) TestScanFromDatetime() {
 func (suite *TimestampORMSuite) TestScanToGoTypes() {
 	var r1 int
 	err := suite.db.Gorm().Table(suite.tableName).Select("d").Take(&r1).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 
 	var r2 float64
 	err = suite.db.Gorm().Table(suite.tableName).Select("d").Take(&r2).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 
 	// Scanning a TIMESTAMP field type into String is valid.
 	var r3 string
@@ -176,7 +176,7 @@ func (suite *TimestampORMSuite) TestWhere() {
 		Select("d").
 		Where("d = ?", Timestamp{Time: time.Unix(0, 1633803684694000000)}).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 
 	err = suite.db.Gorm().
@@ -184,7 +184,7 @@ func (suite *TimestampORMSuite) TestWhere() {
 		Select("d").
 		Where("d > ?", Timestamp{Time: time.Unix(0, 1633803684694123001)}).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 
 	// It is also possible to specify string directly for a TIMESTAMP type.

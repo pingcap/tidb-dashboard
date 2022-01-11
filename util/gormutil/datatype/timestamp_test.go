@@ -61,10 +61,10 @@ func TestTimestampJSON(t *testing.T) {
 	require.Equal(t, int64(12345000), st.Foo.UnixNano())
 
 	err = json.Unmarshal([]byte(`{"Foo":"54321"}`), &st)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	err = json.Unmarshal([]byte(`{"Foo":123.45}`), &st)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	ts3 := Timestamp{Time: time.Unix(0, 1633880141307801000)}
 	v, err = json.Marshal(ts3)

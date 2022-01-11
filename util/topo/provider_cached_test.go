@@ -44,13 +44,13 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 
 	// Error response should not be cached
 	v, err := cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 1)
 
 	v, err = cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 2)
@@ -91,13 +91,13 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 	// Wait until expired
 	time.Sleep(time.Millisecond * 550)
 	v, err = cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 5)
 
 	v, err = cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 6)
@@ -132,7 +132,7 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 
 	time.Sleep(time.Millisecond * 150) // 550ms has passed since first put, so we should expect cache to expire
 	v, err = cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 9)

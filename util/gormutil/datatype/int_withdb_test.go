@@ -91,7 +91,7 @@ func (suite *IntORMSuite) TestScanFromNonNumericString() {
 		E Int
 	}
 	err := suite.db.Gorm().Table(suite.tableName).Select("e").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 // Scanning double into int is invalid. That's why we need Int.
@@ -100,7 +100,7 @@ func (suite *IntORMSuite) TestScanDoubleToStdInt() {
 		B int
 	}
 	err := suite.db.Gorm().Table(suite.tableName).Select("b").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 func (suite *IntORMSuite) TestWhere() {
@@ -128,7 +128,7 @@ func (suite *IntORMSuite) TestWhere() {
 		Select("a").
 		Where("a = ?", Int(123)).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 
 	err = suite.db.Gorm().
@@ -136,7 +136,7 @@ func (suite *IntORMSuite) TestWhere() {
 		Select("a").
 		Where("a > ?", Int(73371570)).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 
 	err = suite.db.Gorm().
@@ -154,7 +154,7 @@ func (suite *IntORMSuite) TestWhere() {
 		Select("b").
 		Where("b = ?", Int(val)).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 }
 

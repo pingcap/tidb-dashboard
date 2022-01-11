@@ -294,7 +294,7 @@ func TestPipeBody(t *testing.T) {
 	wBytes, rawResp, err = resp.PipeBody(&w)
 	require.Equal(t, int32(3), requestTimes.Load())
 	require.Equal(t, int64(10), wBytes)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "write too many bytes")
 	require.Nil(t, rawResp)
 	require.Equal(t, 2, w.writeCalled)
@@ -304,7 +304,7 @@ func TestPipeBody(t *testing.T) {
 	wBytes, rawResp, err = resp.PipeBody(&w)
 	require.Equal(t, int32(3), requestTimes.Load())
 	require.Equal(t, int64(0), wBytes)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "read on closed response body")
 	require.Nil(t, rawResp)
 	require.Equal(t, 2, w.writeCalled) // Unchanged
@@ -552,7 +552,7 @@ func TestSetTLSAwareBaseURL(t *testing.T) {
 		RootCAs: certpool,
 	}}) // #nosec G402
 	_, _, err = client.LR().Get(httpURL).ReadBodyAsString()
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Response status 400")
 
 	dataStr, _, err = client.LR().SetTLSAwareBaseURL(httpURL).Get("/bar").ReadBodyAsString()
@@ -859,25 +859,25 @@ func TestTimeoutHeader(t *testing.T) {
 	_, rawResp, err := resp.ReadBodyAsString()
 	require.Equal(t, int32(1), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Read again
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(1), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	rawResp, err = resp.Finish()
 	require.Equal(t, int32(1), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Even if the request is finished then, we should still get timeout error.
 	time.Sleep(1 * time.Second)
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(1), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 
@@ -887,7 +887,7 @@ func TestTimeoutHeader(t *testing.T) {
 	rawResp, err = resp.Finish()
 	require.Equal(t, int32(2), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 
@@ -934,20 +934,20 @@ func TestTimeoutBody(t *testing.T) {
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(2), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Read again
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(2), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Wait enough time and read again
 	time.Sleep(1 * time.Second)
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(2), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Finish() should succeed
@@ -965,7 +965,7 @@ func TestTimeoutBody(t *testing.T) {
 	wBytes, rawResp, err := resp.PipeBody(&buf)
 	require.Equal(t, int32(3), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	require.Equal(t, int64(10), wBytes) // The first chunk is written
@@ -974,7 +974,7 @@ func TestTimeoutBody(t *testing.T) {
 	wBytes, rawResp, err = resp.PipeBody(&buf)
 	require.Equal(t, int32(3), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	require.Equal(t, int64(0), wBytes) // No more chunk is written

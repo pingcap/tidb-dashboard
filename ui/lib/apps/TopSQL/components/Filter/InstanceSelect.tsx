@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo } from 'react'
 import { Select } from 'antd'
 
-import client, { TopsqlInstanceItem } from '@lib/client'
+import { TopsqlInstanceItem } from '@lib/client'
 
 import commonStyles from './common.module.less'
-import { useClientRequest } from '@lib/utils/useClientRequest'
-import { calcTimeRange, TimeRange } from '@lib/components'
 
 interface InstanceGroup {
   name: string
@@ -15,7 +13,7 @@ interface InstanceGroup {
 export interface InstanceSelectProps {
   value: TopsqlInstanceItem
   onChange: (instance: TopsqlInstanceItem) => void
-  timeRange: TimeRange
+  instances: TopsqlInstanceItem[]
   disabled?: boolean
 }
 
@@ -36,19 +34,9 @@ const splitSelectValue = (v: string): TopsqlInstanceItem => {
 export function InstanceSelect({
   value,
   onChange,
-  timeRange,
+  instances,
   disabled = false,
 }: InstanceSelectProps) {
-  const { data, isLoading, sendRequest } = useClientRequest(() => {
-    const [start, end] = calcTimeRange(timeRange)
-    return client.getInstance().topsqlInstancesGet(String(end), String(start))
-  })
-
-  useEffect(() => {
-    sendRequest()
-  }, [timeRange])
-
-  const instances = data?.data
   const instanceGroups: InstanceGroup[] = useMemo(() => {
     if (!instances) {
       return []
@@ -95,7 +83,6 @@ export function InstanceSelect({
         const instance = splitSelectValue(value)
         onChange(instance)
       }}
-      loading={isLoading}
       disabled={disabled}
     >
       {instanceGroups.map((instanceGroup) => (

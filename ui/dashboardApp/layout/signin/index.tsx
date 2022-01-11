@@ -216,6 +216,7 @@ const LAST_LOGIN_USERNAME_KEY = 'dashboard_last_login_username'
 
 function TiDBSignInForm({ successRoute, onClickAlternative }) {
   const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
+
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -271,6 +272,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
             tooltip={!supportNonRootLogin && t('signin.form.username_tooltip')}
           >
             <Input
+              data-e2e="signin_username_input"
               onInput={clearErrorMsg}
               prefix={<UserOutlined />}
               disabled={!supportNonRootLogin}

@@ -41,7 +41,7 @@ type BackendSuite struct {
 	mockTiKVTransport *httpmock.MockTransport
 }
 
-// Turn array into the map for easier testing
+// Turn array into the map for easier testing.
 func mapProfilesByIPAndKind(profiles []model.Profile) map[string]model.Profile {
 	profilesByIPAndKind := map[string]model.Profile{}
 	for _, profile := range profiles {
@@ -51,7 +51,7 @@ func mapProfilesByIPAndKind(profiles []model.Profile) map[string]model.Profile {
 	return profilesByIPAndKind
 }
 
-// Turn array into the map for easier testing
+// Turn array into the map for easier testing.
 func mapProfilesDataByIPAndKind(profiles []model.ProfileWithData) map[string]model.ProfileWithData {
 	profilesByIPAndKind := map[string]model.ProfileWithData{}
 	for _, profile := range profiles {

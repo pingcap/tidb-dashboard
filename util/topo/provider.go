@@ -18,7 +18,7 @@ type TopologyProvider interface {
 	GetAlertManager(ctx context.Context) (*AlertManagerInfo, error)
 }
 
-func GetDescriptorByKind(p TopologyProvider, ctx context.Context, kind ComponentKind) ([]ComponentDescriptor, error) {
+func GetDescriptorByKind(ctx context.Context, p TopologyProvider, kind ComponentKind) ([]ComponentDescriptor, error) {
 	switch kind {
 	case KindTiDB:
 		v, err := p.GetTiDB(ctx)

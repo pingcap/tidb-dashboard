@@ -94,10 +94,8 @@ func TestTokenFromAnotherServer(t *testing.T) {
 	require.Contains(t, err.Error(), "download token is invalid")
 	require.Equal(t, "def", outputClaim.Foo) // unchanged
 
-	token2, err := server2.GetDownloadToken(testFooClaim{
-		Foo: "",
-	})
-
+	token2, err := server2.GetDownloadToken(testFooClaim{Foo: ""})
+	require.NoError(t, err)
 	err = server2.HandleDownloadToken(token2, &outputClaim)
 	require.NoError(t, err)
 	require.Equal(t, "", outputClaim.Foo)

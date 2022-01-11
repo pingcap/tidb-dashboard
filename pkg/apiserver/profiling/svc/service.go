@@ -11,6 +11,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/profutil"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/svc/model"
@@ -66,12 +68,11 @@ func (s *Service) StartBundle(c *gin.Context) {
 			return
 		}
 	}
-	d := req.DurationSec
-	if d > 5*60 {
-		d = 5 * 60
+	if req.DurationSec > 5*60 {
+		req.DurationSec = 5 * 60
 	}
-	if d == 0 {
-		d = 10
+	if req.DurationSec == 0 {
+		req.DurationSec = 10
 	}
 	ret, err := s.backend.StartBundle(req)
 	if err != nil {
@@ -212,6 +213,9 @@ func (s *Service) DownloadBundleData(c *gin.Context) {
 		} else {
 			_, zipError = zipFile.Write([]byte(strings.TrimSpace(bundleREADME)))
 		}
+	}
+	if zipError != nil {
+		log.Warn("Error happened when generating the profiling bundle", zap.Error(zipError))
 	}
 
 	_ = zw.Close()

@@ -6,6 +6,8 @@ run:
   timeout: 2m
 
 issues:
+  exclude:
+    - S1016  # Disable due to many false positives
   include:
     # Bring back all gosec checks
     - EXC0006

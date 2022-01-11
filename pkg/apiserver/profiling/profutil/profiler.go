@@ -104,7 +104,7 @@ type profilerCPU struct{}
 
 var _ profiler = profilerCPU{}
 
-func (_ profilerCPU) isSupported(k topo.ComponentKind) bool {
+func (p profilerCPU) isSupported(k topo.ComponentKind) bool {
 	return k == topo.KindTiDB || k == topo.KindPD || k == topo.KindTiKV || k == topo.KindTiFlash
 }
 
@@ -134,7 +134,7 @@ type profilerHeap struct{}
 
 var _ profiler = profilerHeap{}
 
-func (_ profilerHeap) isSupported(k topo.ComponentKind) bool {
+func (p profilerHeap) isSupported(k topo.ComponentKind) bool {
 	return k == topo.KindTiDB || k == topo.KindPD
 }
 
@@ -157,7 +157,7 @@ type profilerGoroutine struct{}
 
 var _ profiler = profilerGoroutine{}
 
-func (_ profilerGoroutine) isSupported(k topo.ComponentKind) bool {
+func (p profilerGoroutine) isSupported(k topo.ComponentKind) bool {
 	return k == topo.KindTiDB || k == topo.KindPD
 }
 
@@ -180,7 +180,7 @@ type profilerMutex struct{}
 
 var _ profiler = profilerMutex{}
 
-func (_ profilerMutex) isSupported(k topo.ComponentKind) bool {
+func (p profilerMutex) isSupported(k topo.ComponentKind) bool {
 	return k == topo.KindTiDB || k == topo.KindPD
 }
 

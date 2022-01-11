@@ -52,7 +52,6 @@ func (t *profileTask) run() {
 
 	memBuf := bytes.Buffer{}
 	dataType, err := profutil.FetchProfile(config, &memBuf)
-
 	if err != nil {
 		t.State = model.ProfileStateError
 		t.Error = err.Error()

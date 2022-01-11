@@ -23,7 +23,7 @@ func NewHS256Signer() Signer {
 	}
 }
 
-type SignedComponentDescriptor string
+type SignedComponentDescriptor string // TODO (wenxuan): I'm not sure, but it may be a good idea to always keep it in the same format.
 
 type cdClaim struct {
 	jwt.StandardClaims

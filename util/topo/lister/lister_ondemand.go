@@ -32,7 +32,7 @@ func (l *OnDemand) List(ctx context.Context) ([]SignedComponentDescriptor, error
 	// TODO: use goroutine to fetch components concurrently
 	result := make([]SignedComponentDescriptor, 0, len(l.listComponents))
 	for _, c := range l.listComponents {
-		descriptors, err := topo.GetDescriptorByKind(l.provider, ctx, c)
+		descriptors, err := topo.GetDescriptorByKind(ctx, l.provider, c)
 		if err != nil {
 			return nil, err
 		}

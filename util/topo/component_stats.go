@@ -19,8 +19,10 @@ func CountComponents(descriptors []ComponentDescriptor) ComponentStats {
 	return statsByMap
 }
 
-var _ sql.Scanner = (*ComponentStats)(nil)
-var _ driver.Valuer = ComponentStats{}
+var (
+	_ sql.Scanner   = (*ComponentStats)(nil)
+	_ driver.Valuer = ComponentStats{}
+)
 
 func (r *ComponentStats) Scan(src interface{}) error {
 	return jsonserde.Default.Unmarshal([]byte(src.(string)), r)

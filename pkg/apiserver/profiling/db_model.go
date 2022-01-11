@@ -16,8 +16,10 @@ import (
 
 type ProfKindList []profutil.ProfKind
 
-var _ sql.Scanner = (*ProfKindList)(nil)
-var _ driver.Valuer = ProfKindList{}
+var (
+	_ sql.Scanner   = (*ProfKindList)(nil)
+	_ driver.Valuer = ProfKindList{}
+)
 
 func (r *ProfKindList) Scan(src interface{}) error {
 	return jsonserde.Default.Unmarshal([]byte(src.(string)), r)

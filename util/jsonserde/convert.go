@@ -1,4 +1,5 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+
 // Copyright (c) 2017 Eason Lin
 
 package jsonserde

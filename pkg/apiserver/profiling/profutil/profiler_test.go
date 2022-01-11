@@ -31,7 +31,7 @@ func Test_resolvePProfAPI(t *testing.T) {
 	require.Equal(t, "test-pd.example-domain.internal", host)
 	require.EqualValues(t, 10080, port)
 
-	host, port, err = resolvePProfAPI(topo.ComponentDescriptor{
+	_, _, err = resolvePProfAPI(topo.ComponentDescriptor{
 		IP:         "test-prometheus.example-domain.internal",
 		Port:       9090,
 		StatusPort: 0,
@@ -123,7 +123,7 @@ sampling period=10
 	require.Contains(t, w.String(), "cycles/second=2200002545")
 
 	w.Reset()
-	resultType, err = p.fetch(Config{
+	_, err = p.fetch(Config{
 		ProfilingKind: ProfKindMutex,
 		Client:        client,
 		Target: topo.ComponentDescriptor{
@@ -138,7 +138,7 @@ sampling period=10
 	require.Empty(t, w.String())
 
 	w.Reset()
-	resultType, err = p.fetch(Config{
+	_, err = p.fetch(Config{
 		ProfilingKind: ProfKindMutex,
 		Client:        client,
 		Target: topo.ComponentDescriptor{

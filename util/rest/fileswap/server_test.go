@@ -44,7 +44,7 @@ func TestDownload(t *testing.T) {
 	require.Equal(t, "foobar", r.Body.String())
 
 	// Download again
-	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
+	c, _ = gintest.CtxGet(url.Values{"token": []string{token}})
 	handler.HandleDownloadRequest(c)
 	require.Len(t, c.Errors, 1)
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))

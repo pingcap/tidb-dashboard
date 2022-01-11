@@ -29,11 +29,11 @@ func TestHS256Signer(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, component, cd)
 
-	cd, err = signer.Verify("")
+	_, err = signer.Verify("")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "descriptor verify failed")
 
-	cd, err = signer.Verify("invalid")
+	_, err = signer.Verify("invalid")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "descriptor verify failed")
 
@@ -44,7 +44,7 @@ func TestHS256Signer(t *testing.T) {
 	cd, err = signer2.Verify(v2)
 	require.NoError(t, err)
 	require.Equal(t, component, cd)
-	cd, err = signer.Verify(v2) // Verify using another signer
+	_, err = signer.Verify(v2) // Verify using another signer
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "descriptor verify failed")
 
@@ -52,7 +52,7 @@ func TestHS256Signer(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []topo.ComponentDescriptor{component}, cdList)
 
-	cdList, err = signer2.BatchVerify([]SignedComponentDescriptor{v2, v})
+	_, err = signer2.BatchVerify([]SignedComponentDescriptor{v2, v})
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "descriptor verify failed")
 }

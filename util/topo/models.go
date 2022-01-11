@@ -42,8 +42,10 @@ type ComponentDescriptor struct {
 	// Extreme care should be taken when adding more fields here, as this descriptor is widely used or persisted.
 }
 
-var _ sql.Scanner = (*ComponentDescriptor)(nil)
-var _ driver.Valuer = ComponentDescriptor{}
+var (
+	_ sql.Scanner   = (*ComponentDescriptor)(nil)
+	_ driver.Valuer = ComponentDescriptor{}
+)
 
 func (cd *ComponentDescriptor) Scan(src interface{}) error {
 	return jsonserde.Default.Unmarshal([]byte(src.(string)), cd)

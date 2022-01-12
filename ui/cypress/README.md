@@ -1,6 +1,6 @@
 # E2E Test
 
-Since there are some features is different from version to version, we have `make test_e2e_compat_features` and `make test_e2e_common_features` to test features compatibility in different versions and common features in all versions, respectively.
+Since there are some features is different from version to version, we have `make e2e_compat_features_test` and `make e2e_common_features_test` to test features compatibility in different versions and common features in all versions, respectively.
 
 ## Install Cypress
 
@@ -44,5 +44,5 @@ make ui
 # start backend server
 UI=1 make && make run FEATURE_VERSION=${FEATURE_VERSION}
 # run e2e_compat_features and e2e_common_features tests
-make test_e2e FEATURE_VERSION=${FEATURE_VERSION}
+make e2e_test FEATURE_VERSION=${FEATURE_VERSION}
 ```

@@ -1,7 +1,7 @@
 system_report:
-  nav_title: 系统报告
+  nav_title: 集群诊断
   generate:
-    title: 生成系统报告
+    title: 生成诊断报告
     range_begin: 区间起始时间
     range_duration: 区间长度
     is_compare: 与基线区间对比
@@ -10,17 +10,17 @@ system_report:
     metrics_relation: 生成监控关系图
   list_table:
     id: 报告 ID
-    report_create_time: 报告时间
+    report_create_time: 诊断时间
     status: 状态
     status_running: 诊断中
     status_finish: 完成
-    range: 报告区间
+    range: 诊断区间
     compare_range: 对比区间
   status:
     head:
-      title: 报告状态
-      back: 生成系统报告
-      view: 查看完整系统报告
+      title: 诊断状态
+      back: 生成诊断报告
+      view: 查看完整诊断报告
     range_begin: 区间起始时间
     range_end: 区间结束时间
     baseline_begin: 基线区间起始时间

@@ -7,6 +7,7 @@ system_report:
     is_compare: 与基线区间对比
     compare_range_begin: 基线区间起始时间
     submit: 开始
+    metrics_relation: 生成监控关系图
   list_table:
     id: 报告 ID
     report_create_time: 报告时间
@@ -26,3 +27,7 @@ system_report:
     progress: 生成进度
   time_duration:
     custom: 自定义
+  metrics_relation:
+    success:
+      title: 监控耗时关系图生成成功
+      button: 查看关系图

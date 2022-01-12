@@ -122,7 +122,8 @@ function Sider({
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'system_report'),
-    useAppMenuItem(registry, 'diagnose'),
+    // warning: "diagnose" app doesn't release yet
+    // useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
     // useAppMenuItem(registry, '__APP_NAME__'),
     // NOTE: Don't remove above comment line, it is a placeholder for code generator

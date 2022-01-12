@@ -39,7 +39,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
-	"github.com/pingcap/tidb-dashboard/util/topo/lister"
+	"github.com/pingcap/tidb-dashboard/util/topo"
 	"github.com/pingcap/tidb-dashboard/util/topo/pdtopo"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
@@ -116,7 +116,7 @@ func (s *Service) Start(ctx context.Context) error {
 			newSqliteDB,
 			pdtopo.NewTopologyProviderFromPD,
 			s.provideLocals,
-			lister.NewHS256Signer,
+			topo.NewHS256CompDescSigner,
 			httpc.NewHTTPClient,
 			pd.NewEtcdClient,
 			pd.NewPDClient,

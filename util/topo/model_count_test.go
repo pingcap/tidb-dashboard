@@ -9,7 +9,7 @@ import (
 )
 
 func TestCountComponents(t *testing.T) {
-	list := []ComponentDescriptor{
+	list := []CompDesc{
 		{Kind: KindTiKV},
 		{Kind: KindTiFlash},
 		{Kind: KindTiDB},

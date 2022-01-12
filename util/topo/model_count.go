@@ -9,10 +9,10 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/jsonserde"
 )
 
-type ComponentStats map[ComponentKind]int
+type CompCount map[Kind]int
 
-func CountComponents(descriptors []ComponentDescriptor) ComponentStats {
-	statsByMap := map[ComponentKind]int{}
+func CountComponents(descriptors []CompDesc) CompCount {
+	statsByMap := map[Kind]int{}
 	for _, d := range descriptors {
 		statsByMap[d.Kind]++
 	}
@@ -20,15 +20,15 @@ func CountComponents(descriptors []ComponentDescriptor) ComponentStats {
 }
 
 var (
-	_ sql.Scanner   = (*ComponentStats)(nil)
-	_ driver.Valuer = ComponentStats{}
+	_ sql.Scanner   = (*CompCount)(nil)
+	_ driver.Valuer = CompCount{}
 )
 
-func (r *ComponentStats) Scan(src interface{}) error {
+func (r *CompCount) Scan(src interface{}) error {
 	return jsonserde.Default.Unmarshal([]byte(src.(string)), r)
 }
 
-func (r ComponentStats) Value() (driver.Value, error) {
+func (r CompCount) Value() (driver.Value, error) {
 	val, err := jsonserde.Default.Marshal(r)
 	return string(val), err
 }

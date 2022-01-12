@@ -18,21 +18,20 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/gormutil/gormerr"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/topo"
-	"github.com/pingcap/tidb-dashboard/util/topo/lister"
 )
 
 type Params struct {
 	fx.In
-	LocalStore     *dbstore.DB
-	Auth           *user.AuthService
-	TopoListSigner lister.Signer
-	TopoProvider   topo.TopologyProvider
+	LocalStore   *dbstore.DB
+	Auth         *user.AuthService
+	CompSigner   topo.CompDescSigner
+	TopoProvider topo.TopologyProvider
 }
 
 type StandardBackend struct {
 	Params
 	clientbundle.HTTPClientBundle
-	componentLister lister.ComponentLister
+	componentLister topo.InfoLister
 
 	ctx          context.Context
 	cancel       context.CancelFunc
@@ -45,9 +44,8 @@ func NewStandardBackend(lc fx.Lifecycle, p Params, httpClients clientbundle.HTTP
 	backend := &StandardBackend{
 		Params:           p,
 		HTTPClientBundle: httpClients,
-		componentLister: lister.NewOnDemandLister(
+		componentLister: topo.NewOnDemandLister(
 			p.TopoProvider,
-			p.TopoListSigner,
 			topo.KindPD, topo.KindTiDB, topo.KindTiKV, topo.KindTiFlash),
 	}
 	lc.Append(fx.Hook{
@@ -94,15 +92,19 @@ func (backend *StandardBackend) AuthFn(ops ...model.Operation) []gin.HandlerFunc
 }
 
 func (backend *StandardBackend) ListTargets() (model.ListTargetsResp, error) {
-	scd, err := backend.componentLister.List(backend.ctx)
+	infoList, err := backend.componentLister.List(backend.ctx)
 	if err != nil {
 		return model.ListTargetsResp{}, err
 	}
-	return model.ListTargetsResp{Targets: scd}, nil
+	signedTargets, err := topo.BatchSignCompInfo(backend.CompSigner, infoList)
+	if err != nil {
+		return model.ListTargetsResp{}, err
+	}
+	return model.ListTargetsResp{Targets: signedTargets}, nil
 }
 
 func (backend *StandardBackend) StartBundle(req model.StartBundleReq) (model.StartBundleResp, error) {
-	targets, err := backend.componentLister.BatchVerify(req.Targets)
+	targets, err := topo.BatchVerifyCompDesc(backend.CompSigner, req.Targets)
 	if err != nil {
 		return model.StartBundleResp{}, rest.ErrBadRequest.Wrap(err, "targets are not valid")
 	}

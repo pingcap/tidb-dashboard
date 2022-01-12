@@ -41,6 +41,22 @@ To review the CPU profiling or heap profiling result interactively:
 $ go tool pprof --http=127.0.0.1:1234 cpu_xxx.proto
 `
 
+// ListTargets godoc
+// @Summary List all available profiling targets
+// @Description The list may be unordered.
+// @Security JwtAuth
+// @Success 200 {object} model.ListTargetsResp
+// @Failure 500 {object} rest.ErrorResponse
+// @Router /profiling/targets/list [post]
+func (s *Service) ListTargets(c *gin.Context) {
+	ret, err := s.backend.ListTargets()
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	ginjson.Render(c, http.StatusOK, ret)
+}
+
 // StartBundle godoc
 // @Summary Start a bundle of profiling
 // @Param req body model.StartBundleReq true "request"

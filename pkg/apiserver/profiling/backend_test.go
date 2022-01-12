@@ -25,7 +25,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/testutil/httpmockutil"
 	"github.com/pingcap/tidb-dashboard/util/topo"
-	"github.com/pingcap/tidb-dashboard/util/topo/lister"
 )
 
 type BackendSuite struct {
@@ -34,6 +33,7 @@ type BackendSuite struct {
 	db        *dbstore.DB
 	lifecycle *fxtest.Lifecycle
 	backend   *StandardBackend
+	signer    topo.CompDescSigner
 
 	mockTopoProvider  *topo.MockTopologyProvider
 	mockTiDBTransport *httpmock.MockTransport
@@ -82,10 +82,12 @@ func (suite *BackendSuite) SetupTest() {
 
 	suite.mockTopoProvider = new(topo.MockTopologyProvider)
 
+	suite.signer = topo.NewHS256CompDescSigner()
+
 	suite.backend = NewStandardBackend(suite.lifecycle, Params{
-		LocalStore:     db,
-		TopoProvider:   suite.mockTopoProvider,
-		TopoListSigner: lister.InsecureSigner{},
+		LocalStore:   db,
+		TopoProvider: suite.mockTopoProvider,
+		CompSigner:   suite.signer,
 	}, clientbundle.HTTPClientBundle{
 		PDAPIClient:      pdAPIClient,
 		TiDBStatusClient: tidbClient,
@@ -98,6 +100,12 @@ func (suite *BackendSuite) SetupTest() {
 func (suite *BackendSuite) TearDownTest() {
 	suite.lifecycle.RequireStop()
 	suite.db.MustClose()
+}
+
+func (suite *BackendSuite) mustSignDesc(i topo.CompDesc) topo.SignedCompDesc {
+	r, err := suite.signer.Sign(&i)
+	suite.Require().NoError(err)
+	return r
 }
 
 func (suite *BackendSuite) TestListTargets() {
@@ -123,10 +131,36 @@ func (suite *BackendSuite) TestListTargets() {
 	targets, err := suite.backend.ListTargets()
 	suite.Require().NoError(err)
 	suite.Require().Len(targets.Targets, 2)
-	suite.Require().EqualValues(`{"ip":"pd-1.internal","port":2379,"status_port":0,"kind":"pd"}`, targets.Targets[0])
-	suite.Require().EqualValues(`{"ip":"pd-2.internal","port":1414,"status_port":0,"kind":"pd"}`, targets.Targets[1])
+	suite.Require().NotEmpty(targets.Targets[0].SignedDescriptor.Signature)
+	suite.Require().Equal("pd-1.internal", targets.Targets[0].SignedDescriptor.IP)
+	suite.Require().NoError(suite.signer.Verify(&targets.Targets[0].SignedDescriptor))
+	suite.Require().NotEmpty(targets.Targets[1].SignedDescriptor.Signature)
+	suite.Require().Equal("pd-2.internal", targets.Targets[1].SignedDescriptor.IP)
+	suite.Require().NoError(suite.signer.Verify(&targets.Targets[1].SignedDescriptor))
 
 	suite.mockTopoProvider.AssertExpectations(suite.T())
+}
+
+func (suite *BackendSuite) TestStartNotSigned() {
+	_, err := suite.backend.StartBundle(model.StartBundleReq{
+		DurationSec: 10,
+		Kinds: []profutil.ProfKind{
+			profutil.ProfKindCPU,
+		},
+		Targets: []topo.SignedCompDesc{
+			{
+				CompDesc: topo.CompDesc{
+					IP:         "tiflash-1.internal",
+					Port:       1234,
+					StatusPort: 5678,
+					Kind:       topo.KindTiFlash,
+				},
+				Signature: "invalid signature",
+			},
+		},
+	})
+	suite.Require().Error(err)
+	suite.Require().Contains(err.Error(), "targets are not valid")
 }
 
 func (suite *BackendSuite) TestStartWithoutClient() {
@@ -135,8 +169,13 @@ func (suite *BackendSuite) TestStartWithoutClient() {
 		Kinds: []profutil.ProfKind{
 			profutil.ProfKindCPU,
 		},
-		Targets: []lister.SignedComponentDescriptor{
-			`{"ip":"tiflash-1.internal","port":1234,"status_port":5678,"kind":"tiflash"}`,
+		Targets: []topo.SignedCompDesc{
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tiflash-1.internal",
+				Port:       1234,
+				StatusPort: 5678,
+				Kind:       topo.KindTiFlash,
+			}),
 		},
 	})
 	suite.Require().NoError(err)
@@ -148,11 +187,11 @@ func (suite *BackendSuite) TestStartWithoutClient() {
 	getResp, err := suite.backend.GetBundle(model.GetBundleReq{BundleID: startResp.BundleID})
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(startResp.BundleID, getResp.Bundle.BundleID)
-	suite.Require().Equal(topo.ComponentStats{topo.KindTiFlash: 1}, getResp.Bundle.TargetsCount)
+	suite.Require().Equal(topo.CompCount{topo.KindTiFlash: 1}, getResp.Bundle.TargetsCount)
 	suite.Require().Equal(model.BundleStateAllSucceeded, getResp.Bundle.State)
 	suite.Require().Len(getResp.Profiles, 1)
 	suite.Require().Equal(model.ProfileStateSkipped, getResp.Profiles[0].State) // skipped due to TiDB http client not set
-	suite.Require().Equal(topo.ComponentDescriptor{
+	suite.Require().Equal(topo.CompDesc{
 		IP:         "tiflash-1.internal",
 		Port:       1234,
 		StatusPort: 5678,
@@ -209,10 +248,25 @@ func (suite *BackendSuite) TestMultipleTargets() {
 			profutil.ProfKindCPU,
 			profutil.ProfKindMutex,
 		},
-		Targets: []lister.SignedComponentDescriptor{
-			`{"ip":"tidb-1.internal","port":4000,"status_port":10080,"kind":"tidb"}`,
-			`{"ip":"tidb-2.internal","port":4000,"status_port":10080,"kind":"tidb"}`,
-			`{"ip":"kv-2412.internal","port":1111,"status_port":2222,"kind":"tikv"}`,
+		Targets: []topo.SignedCompDesc{
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tidb-1.internal",
+				Port:       4000,
+				StatusPort: 10080,
+				Kind:       topo.KindTiDB,
+			}),
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tidb-2.internal",
+				Port:       4000,
+				StatusPort: 10080,
+				Kind:       topo.KindTiDB,
+			}),
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "kv-2412.internal",
+				Port:       1111,
+				StatusPort: 2222,
+				Kind:       topo.KindTiKV,
+			}),
 		},
 	})
 	suite.Require().NoError(err)
@@ -223,7 +277,7 @@ func (suite *BackendSuite) TestMultipleTargets() {
 	getResp, err := suite.backend.GetBundle(model.GetBundleReq{BundleID: startResp.BundleID})
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(startResp.BundleID, getResp.Bundle.BundleID)
-	suite.Require().Equal(topo.ComponentStats{topo.KindTiDB: 2, topo.KindTiKV: 1}, getResp.Bundle.TargetsCount)
+	suite.Require().Equal(topo.CompCount{topo.KindTiDB: 2, topo.KindTiKV: 1}, getResp.Bundle.TargetsCount)
 	suite.Require().Equal(model.BundleStatePartialSucceeded, getResp.Bundle.State)
 	suite.Require().Equal([]profutil.ProfKind{profutil.ProfKindCPU, profutil.ProfKindMutex}, getResp.Bundle.Kinds)
 	suite.Require().Len(getResp.Profiles, 6)
@@ -252,9 +306,18 @@ func (suite *BackendSuite) TestAllFailed() {
 			profutil.ProfKindCPU,
 			profutil.ProfKindMutex,
 		},
-		Targets: []lister.SignedComponentDescriptor{
-			`{"ip":"tidb-1.internal","port":4000,"status_port":10080,"kind":"tidb"}`,
-			`{"ip":"pd-4.internal","port":2379,"status_port":2379,"kind":"pd"}`,
+		Targets: []topo.SignedCompDesc{
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tidb-1.internal",
+				Port:       4000,
+				StatusPort: 10080,
+				Kind:       topo.KindTiDB,
+			}),
+			suite.mustSignDesc(topo.CompDesc{
+				IP:   "pd-4.internal",
+				Port: 2379,
+				Kind: topo.KindPD,
+			}),
 		},
 	})
 	suite.Require().NoError(err)
@@ -264,7 +327,7 @@ func (suite *BackendSuite) TestAllFailed() {
 
 	getResp, err := suite.backend.GetBundle(model.GetBundleReq{BundleID: startResp.BundleID})
 	suite.Require().NoError(err)
-	suite.Require().Equal(topo.ComponentStats{topo.KindTiDB: 1, topo.KindPD: 1}, getResp.Bundle.TargetsCount)
+	suite.Require().Equal(topo.CompCount{topo.KindTiDB: 1, topo.KindPD: 1}, getResp.Bundle.TargetsCount)
 	suite.Require().Equal(model.BundleStateAllFailed, getResp.Bundle.State)
 	suite.Require().Len(getResp.Profiles, 4)
 	profiles := mapProfilesByIPAndKind(getResp.Profiles)
@@ -294,9 +357,19 @@ func (suite *BackendSuite) TestAllSkipped() {
 			profutil.ProfKindGoroutine,
 			profutil.ProfKindMutex,
 		},
-		Targets: []lister.SignedComponentDescriptor{
-			`{"ip":"tikv-1.internal","port":1414,"status_port":5050,"kind":"tikv"}`,
-			`{"ip":"tikv-2.internal","port":1414,"status_port":5050,"kind":"tikv"}`,
+		Targets: []topo.SignedCompDesc{
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tikv-1.internal",
+				Port:       1414,
+				StatusPort: 5050,
+				Kind:       topo.KindTiKV,
+			}),
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tikv-2.internal",
+				Port:       1414,
+				StatusPort: 5050,
+				Kind:       topo.KindTiKV,
+			}),
 		},
 	})
 	suite.Require().NoError(err)
@@ -306,7 +379,7 @@ func (suite *BackendSuite) TestAllSkipped() {
 
 	getResp, err := suite.backend.GetBundle(model.GetBundleReq{BundleID: startResp.BundleID})
 	suite.Require().NoError(err)
-	suite.Require().Equal(topo.ComponentStats{topo.KindTiKV: 2}, getResp.Bundle.TargetsCount)
+	suite.Require().Equal(topo.CompCount{topo.KindTiKV: 2}, getResp.Bundle.TargetsCount)
 	suite.Require().Equal(model.BundleStateAllSucceeded, getResp.Bundle.State)
 	suite.Require().Len(getResp.Profiles, 4)
 	profiles := mapProfilesByIPAndKind(getResp.Profiles)
@@ -336,9 +409,19 @@ func (suite *BackendSuite) TestAllSucceeded() {
 		Kinds: []profutil.ProfKind{
 			profutil.ProfKindCPU,
 		},
-		Targets: []lister.SignedComponentDescriptor{
-			`{"ip":"tidb-1.internal","port":4000,"status_port":10080,"kind":"tidb"}`,
-			`{"ip":"tidb-2.internal","port":1051,"status_port":5101,"kind":"tidb"}`,
+		Targets: []topo.SignedCompDesc{
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tidb-1.internal",
+				Port:       4000,
+				StatusPort: 10080,
+				Kind:       topo.KindTiDB,
+			}),
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tidb-2.internal",
+				Port:       1051,
+				StatusPort: 5101,
+				Kind:       topo.KindTiDB,
+			}),
 		},
 	})
 	suite.Require().NoError(err)
@@ -348,7 +431,7 @@ func (suite *BackendSuite) TestAllSucceeded() {
 
 	getResp, err := suite.backend.GetBundle(model.GetBundleReq{BundleID: startResp.BundleID})
 	suite.Require().NoError(err)
-	suite.Require().Equal(topo.ComponentStats{topo.KindTiDB: 2}, getResp.Bundle.TargetsCount)
+	suite.Require().Equal(topo.CompCount{topo.KindTiDB: 2}, getResp.Bundle.TargetsCount)
 	suite.Require().Equal(model.BundleStateAllSucceeded, getResp.Bundle.State)
 	suite.Require().Len(getResp.Profiles, 2)
 	profiles := mapProfilesByIPAndKind(getResp.Profiles)
@@ -384,9 +467,19 @@ func (suite *BackendSuite) TestSomeFailedSomeSucceeded() {
 		Kinds: []profutil.ProfKind{
 			profutil.ProfKindCPU,
 		},
-		Targets: []lister.SignedComponentDescriptor{
-			`{"ip":"tidb-1.internal","port":4000,"status_port":10080,"kind":"tidb"}`,
-			`{"ip":"tidb-2.internal","port":1051,"status_port":5101,"kind":"tidb"}`,
+		Targets: []topo.SignedCompDesc{
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tidb-1.internal",
+				Port:       4000,
+				StatusPort: 10080,
+				Kind:       topo.KindTiDB,
+			}),
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tidb-2.internal",
+				Port:       1051,
+				StatusPort: 5101,
+				Kind:       topo.KindTiDB,
+			}),
 		},
 	})
 	suite.Require().NoError(err)
@@ -396,7 +489,7 @@ func (suite *BackendSuite) TestSomeFailedSomeSucceeded() {
 
 	getResp, err := suite.backend.GetBundle(model.GetBundleReq{BundleID: startResp.BundleID})
 	suite.Require().NoError(err)
-	suite.Require().Equal(topo.ComponentStats{topo.KindTiDB: 2}, getResp.Bundle.TargetsCount)
+	suite.Require().Equal(topo.CompCount{topo.KindTiDB: 2}, getResp.Bundle.TargetsCount)
 	suite.Require().Equal(model.BundleStatePartialSucceeded, getResp.Bundle.State)
 	suite.Require().Len(getResp.Profiles, 2)
 	profiles := mapProfilesByIPAndKind(getResp.Profiles)
@@ -433,16 +526,25 @@ func (suite *BackendSuite) TestRunningState() {
 		Kinds: []profutil.ProfKind{
 			profutil.ProfKindCPU,
 		},
-		Targets: []lister.SignedComponentDescriptor{
-			`{"ip":"tidb-1.internal","port":4000,"status_port":10080,"kind":"tidb"}`,
-			`{"ip":"pd-4.internal","port":2379,"status_port":2379,"kind":"pd"}`,
+		Targets: []topo.SignedCompDesc{
+			suite.mustSignDesc(topo.CompDesc{
+				IP:         "tidb-1.internal",
+				Port:       4000,
+				StatusPort: 10080,
+				Kind:       topo.KindTiDB,
+			}),
+			suite.mustSignDesc(topo.CompDesc{
+				IP:   "pd-4.internal",
+				Port: 2379,
+				Kind: topo.KindPD,
+			}),
 		},
 	})
 	suite.Require().NoError(err)
 
 	getResp, _ := suite.backend.GetBundle(model.GetBundleReq{BundleID: startResp.BundleID})
 	suite.Require().NoError(err)
-	suite.Require().Equal(topo.ComponentStats{topo.KindTiDB: 1, topo.KindPD: 1}, getResp.Bundle.TargetsCount)
+	suite.Require().Equal(topo.CompCount{topo.KindTiDB: 1, topo.KindPD: 1}, getResp.Bundle.TargetsCount)
 	suite.Require().Equal(model.BundleStateRunning, getResp.Bundle.State)
 	suite.Require().Len(getResp.Profiles, 2)
 	profiles := mapProfilesByIPAndKind(getResp.Profiles)
@@ -458,7 +560,7 @@ func (suite *BackendSuite) TestRunningState() {
 
 	getResp, _ = suite.backend.GetBundle(model.GetBundleReq{BundleID: startResp.BundleID})
 	suite.Require().NoError(err)
-	suite.Require().Equal(topo.ComponentStats{topo.KindTiDB: 1, topo.KindPD: 1}, getResp.Bundle.TargetsCount)
+	suite.Require().Equal(topo.CompCount{topo.KindTiDB: 1, topo.KindPD: 1}, getResp.Bundle.TargetsCount)
 	suite.Require().Equal(model.BundleStateRunning, getResp.Bundle.State)
 	suite.Require().Len(getResp.Profiles, 2)
 	profiles = mapProfilesByIPAndKind(getResp.Profiles)
@@ -473,7 +575,7 @@ func (suite *BackendSuite) TestRunningState() {
 
 	getResp, _ = suite.backend.GetBundle(model.GetBundleReq{BundleID: startResp.BundleID})
 	suite.Require().NoError(err)
-	suite.Require().Equal(topo.ComponentStats{topo.KindTiDB: 1, topo.KindPD: 1}, getResp.Bundle.TargetsCount)
+	suite.Require().Equal(topo.CompCount{topo.KindTiDB: 1, topo.KindPD: 1}, getResp.Bundle.TargetsCount)
 	suite.Require().Equal(model.BundleStateAllSucceeded, getResp.Bundle.State)
 	suite.Require().Len(getResp.Profiles, 2)
 	profiles = mapProfilesByIPAndKind(getResp.Profiles)

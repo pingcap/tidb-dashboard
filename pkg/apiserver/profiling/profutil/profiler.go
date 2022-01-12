@@ -45,7 +45,7 @@ type Config struct {
 	// Note: The configured default base URL of the client will be discarded and
 	// always overridden by the host and port specified by the Target.
 	Client *httpclient.Client
-	Target topo.ComponentDescriptor
+	Target topo.CompDesc
 
 	DurationSec uint
 }
@@ -80,7 +80,7 @@ func FetchProfile(config Config, w io.Writer) (ProfDataType, error) {
 	return profilers[config.ProfilingKind].fetch(config, w)
 }
 
-func resolvePProfAPI(cd topo.ComponentDescriptor) (host string, port uint, err error) {
+func resolvePProfAPI(cd topo.CompDesc) (host string, port uint, err error) {
 	switch cd.Kind {
 	case topo.KindTiDB:
 		return cd.IP, cd.StatusPort, nil
@@ -96,7 +96,7 @@ func resolvePProfAPI(cd topo.ComponentDescriptor) (host string, port uint, err e
 }
 
 type profiler interface {
-	isSupported(k topo.ComponentKind) bool
+	isSupported(k topo.Kind) bool
 	fetch(config Config, w io.Writer) (resultType ProfDataType, err error)
 }
 
@@ -104,7 +104,7 @@ type profilerCPU struct{}
 
 var _ profiler = profilerCPU{}
 
-func (p profilerCPU) isSupported(k topo.ComponentKind) bool {
+func (p profilerCPU) isSupported(k topo.Kind) bool {
 	return k == topo.KindTiDB || k == topo.KindPD || k == topo.KindTiKV || k == topo.KindTiFlash
 }
 
@@ -134,7 +134,7 @@ type profilerHeap struct{}
 
 var _ profiler = profilerHeap{}
 
-func (p profilerHeap) isSupported(k topo.ComponentKind) bool {
+func (p profilerHeap) isSupported(k topo.Kind) bool {
 	return k == topo.KindTiDB || k == topo.KindPD
 }
 
@@ -157,7 +157,7 @@ type profilerGoroutine struct{}
 
 var _ profiler = profilerGoroutine{}
 
-func (p profilerGoroutine) isSupported(k topo.ComponentKind) bool {
+func (p profilerGoroutine) isSupported(k topo.Kind) bool {
 	return k == topo.KindTiDB || k == topo.KindPD
 }
 
@@ -180,7 +180,7 @@ type profilerMutex struct{}
 
 var _ profiler = profilerMutex{}
 
-func (p profilerMutex) isSupported(k topo.ComponentKind) bool {
+func (p profilerMutex) isSupported(k topo.Kind) bool {
 	return k == topo.KindTiDB || k == topo.KindPD
 }
 

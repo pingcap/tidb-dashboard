@@ -24,7 +24,7 @@ func TestGetPDInstances(t *testing.T) {
 			IP:             "172.16.6.169",
 			Port:           2379,
 			DeployPath:     "/home/tidb/tidb-deploy/pd-2379/bin",
-			Status:         topo.ComponentStatusUp,
+			Status:         topo.CompStatusUp,
 			StartTimestamp: 1635762685,
 		},
 		topo.PDInfo{
@@ -33,7 +33,7 @@ func TestGetPDInstances(t *testing.T) {
 			IP:             "172.16.6.170",
 			Port:           2379,
 			DeployPath:     "/home/tidb/tidb-deploy/pd-2379/bin",
-			Status:         topo.ComponentStatusUp,
+			Status:         topo.CompStatusUp,
 			StartTimestamp: 1635762685,
 		},
 		topo.PDInfo{
@@ -42,7 +42,7 @@ func TestGetPDInstances(t *testing.T) {
 			IP:             "172.16.6.171",
 			Port:           2379,
 			DeployPath:     "/home/tidb/tidb-deploy/pd-2379/bin",
-			Status:         topo.ComponentStatusUp,
+			Status:         topo.CompStatusUp,
 			StartTimestamp: 1635762685,
 		},
 	}, resp)

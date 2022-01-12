@@ -91,20 +91,20 @@ func buildStoreTopology(stores []pdclient.GetStoresResponseStore) []topo.StoreIn
 	return nodes
 }
 
-func parseStoreState(state string) topo.ComponentStatus {
+func parseStoreState(state string) topo.CompStatus {
 	state = strings.Trim(strings.ToLower(state), "\n ")
 	switch state {
 	case "up":
-		return topo.ComponentStatusUp
+		return topo.CompStatusUp
 	case "tombstone":
-		return topo.ComponentStatusTombstone
+		return topo.CompStatusTombstone
 	case "offline":
-		return topo.ComponentStatusLeaving
+		return topo.CompStatusLeaving
 	case "down":
-		return topo.ComponentStatusDown
+		return topo.CompStatusDown
 	case "disconnected":
-		return topo.ComponentStatusUnreachable
+		return topo.CompStatusUnreachable
 	default:
-		return topo.ComponentStatusUnreachable
+		return topo.CompStatusUnreachable
 	}
 }

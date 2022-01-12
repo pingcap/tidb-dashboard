@@ -44,20 +44,20 @@ func TestService_StartBundle(t *testing.T) {
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
-	c, r = gintest.CtxPost(nil, `{"targets":["foo","bar"],"kinds":[]}`)
+	c, r = gintest.CtxPost(nil, `{"targets":[{"signature":"foo"},{"signature":"bar"}],"kinds":[]}`)
 	service.StartBundle(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "Expect at least 1 profiling kind")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
-	c, r = gintest.CtxPost(nil, `{"targets":["foo","bar"],"kinds":["cpu"]}`)
+	c, r = gintest.CtxPost(nil, `{"targets":[{"signature":"foo"},{"signature":"bar"}],"kinds":["cpu"]}`)
 	service.StartBundle(c)
 	require.Empty(t, c.Errors)
 	require.Equal(t, http.StatusOK, r.Code)
 	require.JSONEq(t, `{"bundle_id":5}`, r.Body.String())
 
-	c, r = gintest.CtxPost(nil, `{"targets":["foo","bar"],"kinds":["xyz"]}`)
+	c, r = gintest.CtxPost(nil, `{"targets":[{"signature":"foo"},{"signature":"bar"}],"kinds":["xyz"]}`)
 	service.StartBundle(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "Unsupported profiling kind xyz")
@@ -116,7 +116,7 @@ func TestService_DownloadBundleData(t *testing.T) {
 					Profile: model.Profile{
 						ProfileID: 1,
 						State:     model.ProfileStateSucceeded,
-						Target: topo.ComponentDescriptor{
+						Target: topo.CompDesc{
 							IP:         "example-tidb.internal",
 							Port:       4000,
 							StatusPort: 12345,
@@ -248,7 +248,7 @@ func TestService_RenderProfileData(t *testing.T) {
 				Profile: model.Profile{
 					ProfileID: 54,
 					State:     model.ProfileStateSucceeded,
-					Target: topo.ComponentDescriptor{
+					Target: topo.CompDesc{
 						IP:         "example-tidb.internal",
 						Port:       4000,
 						StatusPort: 12345,
@@ -270,7 +270,7 @@ func TestService_RenderProfileData(t *testing.T) {
 				Profile: model.Profile{
 					ProfileID: 80,
 					State:     model.ProfileStateSucceeded,
-					Target: topo.ComponentDescriptor{
+					Target: topo.CompDesc{
 						IP:   "example-pd.internal",
 						Port: 2379,
 						Kind: topo.KindPD,

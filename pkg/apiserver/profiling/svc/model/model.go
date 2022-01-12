@@ -10,7 +10,6 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/profutil"
 	"github.com/pingcap/tidb-dashboard/util/topo"
-	"github.com/pingcap/tidb-dashboard/util/topo/lister"
 )
 
 //go:generate stringer -type=Operation
@@ -43,6 +42,7 @@ type Backend interface {
 	ListTargets() (ListTargetsResp, error)
 
 	// StartBundle starts a new profiling bundle.
+	// The backend must verify whether the signed component descriptor is valid.
 	StartBundle(StartBundleReq) (StartBundleResp, error)
 
 	// ListBundles returns all profiling bundles ordered by creation time in descending order.
@@ -62,13 +62,13 @@ type Backend interface {
 var _ Backend = (*MockBackend)(nil)
 
 type ListTargetsResp struct {
-	Targets []lister.SignedComponentDescriptor
+	Targets []topo.CompInfoWithSignedDesc
 }
 
 type StartBundleReq struct {
 	DurationSec uint
 	Kinds       []profutil.ProfKind
-	Targets     []lister.SignedComponentDescriptor
+	Targets     []topo.SignedCompDesc
 }
 
 type StartBundleResp struct {
@@ -97,7 +97,7 @@ type Bundle struct {
 	BundleID     uint
 	State        BundleState
 	DurationSec  uint
-	TargetsCount topo.ComponentStats
+	TargetsCount topo.CompCount
 	StartAt      time.Time
 	Kinds        []profutil.ProfKind
 }
@@ -113,7 +113,7 @@ type GetBundleReq struct {
 type Profile struct {
 	ProfileID uint
 	State     ProfileState
-	Target    topo.ComponentDescriptor
+	Target    topo.CompDesc
 	Kind      profutil.ProfKind
 	Error     string
 	StartAt   time.Time

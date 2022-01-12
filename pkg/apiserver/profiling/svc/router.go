@@ -9,6 +9,11 @@ import (
 )
 
 func RegisterRouter(r *gin.RouterGroup, s *Service) {
+	r.POST("/profiling/targets/list", append(
+		s.backend.AuthFn(model.OpListTargets),
+		s.ListTargets,
+	)...)
+
 	r.POST("/profiling/bundle/start", append(
 		s.backend.AuthFn(model.OpStartBundle),
 		s.StartBundle,

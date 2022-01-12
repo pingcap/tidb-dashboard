@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        branch: [master, release-4.0, release-5.0, release-5.1]
+        branch: [master, release-5.3, release-5.4]
     steps:
       - name: Check out PD code base
         uses: actions/checkout@master
@@ -37,7 +37,7 @@ jobs:
           git add go.mod go.sum
           if git status | grep -q "Changes to be committed"
           then
-            git commit --signoff --message "Update TiDB Dashboard to ${{ github.event.inputs.release_version }}"
+            git commit --signoff --message "Update TiDB Dashboard to ${{ github.event.inputs.release_version }}, ref #4257"
             echo "::set-output name=committed::1"
           else
             echo "No changes detected, skipped"

@@ -28,7 +28,7 @@ func TestParseExprDependencies(t *testing.T) {
 	}
 	for _, tt := range tests {
 		v, err := parseExprDependencies(tt.args)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.Equal(t, tt.want, v)
 	}
 
@@ -40,7 +40,7 @@ func TestParseExprDependencies(t *testing.T) {
 	}
 	for _, tt := range failTests {
 		_, err := parseExprDependencies(tt)
-		require.NotNil(t, err)
+		require.Error(t, err)
 	}
 }
 
@@ -56,7 +56,7 @@ func TestDecodeFieldAssumptionJSON(t *testing.T) {
 		JSONUnexported: "b",
 		JSONSkip:       "c",
 	})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.JSONEq(t, `{"QueryValue":"a","JSONSkip":"c"}`, string(val))
 }
 
@@ -79,7 +79,7 @@ func TestDecodeFieldAssumptionGORM(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
 	err := db.Gorm().Migrator().CreateTable(TestModel{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	db.MustMeetMockExpectation()
 }
@@ -100,55 +100,55 @@ type SampleModel struct {
 func TestDecodeField(t *testing.T) {
 	ft := reflect.TypeOf(SampleModel{})
 	f, err := decodeField(ft.Field(0))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "digest", f.jsonNameL)
 	require.Equal(t, "", f.viewExpr)
 	require.Equal(t, "mydigest", f.columnNameL)
 
 	f, err = decodeField(ft.Field(1))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "queryvalue", f.jsonNameL)
 	require.Equal(t, "", f.viewExpr)
 	require.Equal(t, "query_value", f.columnNameL)
 
 	f, err = decodeField(ft.Field(2))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "timestamp", f.jsonNameL)
 	require.Equal(t, "PLUS(a, b)", f.viewExpr)
 	require.Equal(t, "timestamp", f.columnNameL)
 
 	f, err = decodeField(ft.Field(3))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "", f.jsonNameL)
 	require.Equal(t, "", f.viewExpr)
 	require.Equal(t, "json_unexported", f.columnNameL)
 
 	f, err = decodeField(ft.Field(4))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "jsonskip", f.jsonNameL)
 	require.Equal(t, "", f.viewExpr)
 	require.Equal(t, "json_skip", f.columnNameL)
 
 	f, err = decodeField(ft.Field(5))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "invalidtag", f.jsonNameL)
 	require.Equal(t, "", f.viewExpr)
 	require.Equal(t, "invalid_tag", f.columnNameL)
 
 	f, err = decodeField(ft.Field(6))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "gorminvalid", f.jsonNameL)
 	require.Equal(t, "", f.viewExpr)
 	require.Equal(t, "gorm_invalid", f.columnNameL)
 
 	f, err = decodeField(ft.Field(7))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "foo", f.jsonNameL)
 	require.Equal(t, "SUM(a+1)", f.viewExpr)
 	require.Equal(t, "json_alias", f.columnNameL)
 
 	f, err = decodeField(ft.Field(8))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "bar", f.jsonNameL)
 	require.Equal(t, "AVG(Time)", f.viewExpr)
 	require.Equal(t, "full_col", f.columnNameL)
@@ -156,7 +156,7 @@ func TestDecodeField(t *testing.T) {
 
 func TestParseViewModelSchemaSuccess(t *testing.T) {
 	schema, err := parseViewModelSchema(&SampleModel{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	require.Equal(t, 8, len(schema.fields))
 	require.Equal(t, "digest", schema.fields[0].jsonNameL)
@@ -182,7 +182,7 @@ func TestParseViewModelSchemaSuccess(t *testing.T) {
 
 	// Test passing struct directly
 	schema, err = parseViewModelSchema(SampleModel{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	require.Equal(t, 8, len(schema.fields))
 	require.Equal(t, "digest", schema.fields[0].jsonNameL)
@@ -201,15 +201,15 @@ func TestParseViewModelSchemaFailure(t *testing.T) {
 		Foo    string `vexpr:"invalidExpr(a,"`
 	}
 	_, err := parseViewModelSchema(&Model{})
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	_, err = parseViewModelSchema(Model{})
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestUpdateFieldsAvailability(t *testing.T) {
 	schema, err := parseViewModelSchema(&SampleModel{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, 8, len(schema.fields))
 
 	requireFieldsInvalid := func(status ...bool) {

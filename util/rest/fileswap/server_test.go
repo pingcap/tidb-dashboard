@@ -19,13 +19,13 @@ import (
 
 func (s *Handler) mustGetDownloadToken(t *testing.T, fileContent string, downloadFileName string, expireIn time.Duration) string {
 	fw, err := s.NewFileWriter("test")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	_, err = fmt.Fprint(fw, fileContent)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	err = fw.Close()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	token, err := fw.GetDownloadToken(downloadFileName, expireIn)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	return token
 }
 

@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/joomcode/errorx"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/atomic"
 )
@@ -43,7 +42,7 @@ func TestReadBodyAsString(t *testing.T) {
 	require.Equal(t, int32(0), requestTimes.Load()) // Lazy request
 	dataStr, rawResp, err := resp.ReadBodyAsString()
 	require.Equal(t, int32(1), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Basically OK, Req #1", dataStr)
 	require.Nil(t, rawResp.Body)
 	require.Equal(t, 202, rawResp.StatusCode) // Due to lazy request, we should get 202
@@ -68,7 +67,7 @@ func TestReadBodyAsString(t *testing.T) {
 	require.Equal(t, int32(1), requestTimes.Load())
 	dataStr2, rawResp2, err := resp.ReadBodyAsString()
 	require.Equal(t, int32(2), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Basically OK, Req #2", dataStr2)
 	require.Nil(t, rawResp2.Body)
 	require.Equal(t, 202, rawResp.StatusCode) // The previous response should not be changed by a new request
@@ -80,7 +79,7 @@ func TestReadBodyAsString(t *testing.T) {
 	require.Equal(t, int32(2), requestTimes.Load())
 	dataStr3, rawResp3, err := resp.ReadBodyAsString()
 	require.Equal(t, int32(3), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Basically OK, Req #3", dataStr3)
 	require.Nil(t, rawResp3.Body)
 	require.Equal(t, 202, rawResp.StatusCode)
@@ -94,7 +93,7 @@ func TestReadBodyAsString(t *testing.T) {
 	require.Equal(t, int32(3), requestTimes.Load())
 	dataStr4, rawResp4, err := resp.ReadBodyAsString()
 	require.Equal(t, int32(4), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Basically OK, Req #4", dataStr4)
 	require.Nil(t, rawResp4.Body)
 	require.Equal(t, 202, rawResp.StatusCode)
@@ -122,14 +121,14 @@ func TestFinish(t *testing.T) {
 	require.Equal(t, int32(0), requestTimes.Load()) // Lazy request
 	rawResp, err := resp.Finish()
 	require.Equal(t, int32(1), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Nil(t, rawResp.Body)
 	require.Equal(t, 202, rawResp.StatusCode)
 
 	// Call Finish() again should not send a new request
 	rawResp, err = resp.Finish()
 	require.Equal(t, int32(1), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Nil(t, rawResp.Body)
 	require.Equal(t, 202, rawResp.StatusCode)
 
@@ -151,13 +150,13 @@ func TestFinish(t *testing.T) {
 	require.Equal(t, int32(1), requestTimes.Load())
 	dataStr, rawResp, err := resp.ReadBodyAsString()
 	require.Equal(t, int32(2), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Basically OK, Req #2", dataStr)
 	require.Nil(t, rawResp.Body)
 	require.Equal(t, 200, rawResp.StatusCode)
 	rawResp2, err := resp.Finish()
 	require.Equal(t, int32(2), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Same(t, rawResp, rawResp2)
 }
 
@@ -171,7 +170,7 @@ func TestReadBodyAsJSON(t *testing.T) {
 	client := New(Config{})
 	var respMap map[string]interface{}
 	rawResp, err := client.LR().Get(ts.URL).ReadBodyAsJSON(&respMap)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 	expectedMap := map[string]interface{}{
 		"foo": "bar",
@@ -185,7 +184,7 @@ func TestReadBodyAsJSON(t *testing.T) {
 	var respStruct Response
 	req := client.LR().Get(ts.URL)
 	rawResp, err = req.ReadBodyAsJSON(&respStruct)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 	require.Equal(t, Response{Foo: "bar"}, respStruct)
 }
@@ -201,17 +200,17 @@ func TestReadBodyAsJSON_UnmarshalFailure(t *testing.T) {
 	client := New(Config{})
 
 	var respMap map[string]interface{}
-	assert.Equal(t, int32(0), requestTimes.Load())
+	require.Equal(t, int32(0), requestTimes.Load())
 	req := client.LR().Get(ts.URL)
 	rawResp, err := req.ReadBodyAsJSON(&respMap)
-	assert.Equal(t, int32(1), requestTimes.Load())
+	require.Equal(t, int32(1), requestTimes.Load())
 	require.Contains(t, err.Error(), "invalid character")
 	require.Nil(t, rawResp)
 	require.Nil(t, respMap)
 
 	// Read JSON again should not send new request
 	rawResp, err = req.ReadBodyAsJSON(&respMap)
-	assert.Equal(t, int32(1), requestTimes.Load())
+	require.Equal(t, int32(1), requestTimes.Load())
 	require.Contains(t, err.Error(), "read on closed response body")
 	require.Nil(t, rawResp)
 	require.Nil(t, respMap)
@@ -219,8 +218,8 @@ func TestReadBodyAsJSON_UnmarshalFailure(t *testing.T) {
 	// Finish should success without sending new requests
 	// Unlike other Read errors, for unmarshal errors, Finish() will succeed since an OK response is read successfully
 	rawResp, err = req.Finish()
-	assert.Equal(t, int32(1), requestTimes.Load())
-	require.Nil(t, err)
+	require.Equal(t, int32(1), requestTimes.Load())
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 }
 
@@ -251,22 +250,22 @@ func TestPipeBody(t *testing.T) {
 	client := New(Config{})
 
 	buf := bytes.Buffer{}
-	assert.Equal(t, int32(0), requestTimes.Load())
+	require.Equal(t, int32(0), requestTimes.Load())
 	req := client.LR().Get(ts.URL)
 	wBytes, rawResp, err := req.PipeBody(&buf)
-	assert.Equal(t, int32(1), requestTimes.Load())
-	require.Nil(t, err)
+	require.Equal(t, int32(1), requestTimes.Load())
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 	require.Equal(t, "Hello world\n", buf.String())
 	require.Equal(t, int64(12), wBytes)
 
 	// The copy chunk size is large, so that there will be only one write call to the writer
 	w := myWriter{}
-	assert.Equal(t, int32(1), requestTimes.Load())
+	require.Equal(t, int32(1), requestTimes.Load())
 	wBytes, rawResp, err = client.LR().Get(ts.URL).PipeBody(&w)
-	assert.Equal(t, int32(2), requestTimes.Load())
+	require.Equal(t, int32(2), requestTimes.Load())
 	require.Equal(t, int64(12), wBytes)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 	require.Equal(t, 1, w.writeCalled)
 	require.Equal(t, 12, w.writedBytes)
@@ -290,12 +289,12 @@ func TestPipeBody(t *testing.T) {
 
 	// PipeData should produce data chunk by chunk
 	w = myWriter{}
-	assert.Equal(t, int32(2), requestTimes.Load())
+	require.Equal(t, int32(2), requestTimes.Load())
 	resp := client.LR().Get(ts.URL)
 	wBytes, rawResp, err = resp.PipeBody(&w)
-	assert.Equal(t, int32(3), requestTimes.Load())
+	require.Equal(t, int32(3), requestTimes.Load())
 	require.Equal(t, int64(10), wBytes)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "write too many bytes")
 	require.Nil(t, rawResp)
 	require.Equal(t, 2, w.writeCalled)
@@ -303,9 +302,9 @@ func TestPipeBody(t *testing.T) {
 	require.Equal(t, 1, w.errorRaised)
 	// Call PipeBody again should fail due to response is closed
 	wBytes, rawResp, err = resp.PipeBody(&w)
-	assert.Equal(t, int32(3), requestTimes.Load())
+	require.Equal(t, int32(3), requestTimes.Load())
 	require.Equal(t, int64(0), wBytes)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "read on closed response body")
 	require.Nil(t, rawResp)
 	require.Equal(t, 2, w.writeCalled) // Unchanged
@@ -314,11 +313,11 @@ func TestPipeBody(t *testing.T) {
 
 	// PipeBody should copy all data when there are multiple chunks from the server
 	buf = bytes.Buffer{}
-	assert.Equal(t, int32(3), requestTimes.Load())
+	require.Equal(t, int32(3), requestTimes.Load())
 	req = client.LR().Get(ts.URL)
 	wBytes, rawResp, err = req.PipeBody(&buf)
-	assert.Equal(t, int32(4), requestTimes.Load())
-	require.Nil(t, err)
+	require.Equal(t, int32(4), requestTimes.Load())
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 	require.Equal(t, "Partial...Done\n", buf.String())
 	require.Equal(t, int64(15), wBytes)
@@ -335,7 +334,7 @@ func TestResponseHeader(t *testing.T) {
 	client := New(Config{})
 	resp := client.LR().Get(ts.URL)
 	rawResp, err := resp.Finish()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, http.StatusAlreadyReported, rawResp.StatusCode)
 	require.Equal(t, "bar", rawResp.Header.Get("foo"))
 }
@@ -359,34 +358,34 @@ func TestSetURL(t *testing.T) {
 	r2 := req.SetURL(ts2.URL)
 	require.Same(t, r1, r2)
 	dataStr, _, err := r1.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 2", dataStr)
 	dataStr, _, err = r2.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 2", dataStr)
 
 	r1.SetURL(ts1.URL)
 	dataStr, _, err = r2.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 
 	// SetURL should not affect another request in the same client
 	req2 := client.LR()
 	req2.SetURL(ts2.URL)
 	dataStr, _, err = r1.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 	dataStr, _, err = r2.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 	dataStr, _, err = req2.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 2", dataStr)
 	dataStr, _, err = req.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 	dataStr, _, err = r1.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 }
 
@@ -414,10 +413,10 @@ func TestGet(t *testing.T) {
 	resp1 := client.LR().Get(ts1.URL)
 	resp2 := client.LR().Get(ts2.URL)
 	dataStr, _, err := resp1.ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 	dataStr, _, err = resp2.ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 2", dataStr)
 
 	// "Get" should not affect each other
@@ -425,24 +424,24 @@ func TestGet(t *testing.T) {
 	resp1 = req.Get(ts1.URL)
 	resp2 = req.Get(ts2.URL)
 	dataStr, _, err = resp1.ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 	dataStr, _, err = resp2.ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 2", dataStr)
 	resp3 := req.Get(ts1.URL)
 	dataStr, _, err = resp3.ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 
 	// "Get()" should not affect the previous "SetURL()" call
 	req = client.LR()
 	req.SetURL(ts1.URL)
 	dataStr, _, err = req.Get(ts2.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 2", dataStr)
 	dataStr, _, err = req.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 
 	// "SetURL()" should not affect the previous "Get()" call
@@ -450,10 +449,10 @@ func TestGet(t *testing.T) {
 	resp1 = req.Get(ts1.URL)
 	req.SetURL(ts2.URL)
 	dataStr, _, err = resp1.ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 1", dataStr)
 	dataStr, _, err = req.Send().ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Result from server 2", dataStr)
 }
 
@@ -469,16 +468,16 @@ func TestPost(t *testing.T) {
 	// SetBody from different requests should not affect each other
 	r1 := client.LR().SetBody("foo")
 	dataStr, _, err := r1.Post(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Body is foo", dataStr)
 
 	r2 := client.LR().SetBody("bar")
 	dataStr, _, err = r2.Post(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Body is bar", dataStr)
 
 	dataStr, _, err = r1.Post(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Body is foo", dataStr)
 }
 
@@ -493,15 +492,15 @@ func TestSetHeader(t *testing.T) {
 
 	// SetHeader from different requests should not affect each other
 	dataStr, _, err := req.Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "foobar", dataStr)
 
 	dataStr, _, err = client.LR().Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "", dataStr)
 
 	dataStr, _, err = req.Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "foobar", dataStr)
 
 	// SetHeader after Get should not taking effect
@@ -509,12 +508,12 @@ func TestSetHeader(t *testing.T) {
 	resp := req.Get(ts.URL)
 	req.SetHeader("X-Test", "hello")
 	dataStr, _, err = resp.ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "", dataStr)
 
 	resp = req.Get(ts.URL)
 	dataStr, _, err = resp.ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "hello", dataStr)
 }
 
@@ -531,12 +530,12 @@ func TestSetTLSAwareBaseURL(t *testing.T) {
 
 	client := New(Config{})
 	dataStr, _, err := client.LR().SetTLSAwareBaseURL(ts1.URL).Get("/foo").ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "ts1/foo", dataStr)
 
 	// base url can be overwritten
 	dataStr, _, err = client.LR().SetTLSAwareBaseURL(ts1.URL).Get(ts2.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "ts2/", dataStr)
 
 	// Rewrite http:// to https:// if TLS config is specified
@@ -553,11 +552,11 @@ func TestSetTLSAwareBaseURL(t *testing.T) {
 		RootCAs: certpool,
 	}}) // #nosec G402
 	_, _, err = client.LR().Get(httpURL).ReadBodyAsString()
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Response status 400")
 
 	dataStr, _, err = client.LR().SetTLSAwareBaseURL(httpURL).Get("/bar").ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "tsTLS/bar", dataStr)
 }
 
@@ -658,7 +657,7 @@ func TestFailureStatusCode(t *testing.T) {
 func TestBadServer(t *testing.T) {
 	requestTimes := atomic.Int32{}
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	go func() {
 		for {
 			conn, err := listener.Accept()
@@ -773,14 +772,14 @@ func TestConnectionReuse(t *testing.T) {
 
 	client := New(Config{})
 	dataStr, _, err := client.LR().Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Req #1", dataStr)
 	require.Equal(t, int32(1), newConn.Load())
 	require.Equal(t, int32(0), closedConn.Load())
 
 	// Use the same client to send request, the connection is expected to be reused
 	dataStr, _, err = client.LR().Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Req #2", dataStr)
 	require.Equal(t, int32(1), newConn.Load())
 	require.Equal(t, int32(0), closedConn.Load())
@@ -788,19 +787,19 @@ func TestConnectionReuse(t *testing.T) {
 	// A new client should create a new connection
 	client2 := New(Config{})
 	dataStr, _, err = client2.LR().Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Req #3", dataStr)
 	require.Equal(t, int32(2), newConn.Load())
 	require.Equal(t, int32(0), closedConn.Load())
 
 	// Connections are reused
 	dataStr, _, err = client.LR().Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Req #4", dataStr)
 	require.Equal(t, int32(2), newConn.Load())
 	require.Equal(t, int32(0), closedConn.Load())
 	dataStr, _, err = client2.LR().Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "Req #5", dataStr)
 	require.Equal(t, int32(2), newConn.Load())
 	require.Equal(t, int32(0), closedConn.Load())
@@ -830,11 +829,11 @@ func TestClone(t *testing.T) {
 	req2.SetHeader("x-req2header1", "value1")
 
 	dataStr, _, err := req1.Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.JSONEq(t, `{"X-Req1header1":"value1","X-Req1header2":"value2"}`, dataStr)
 
 	dataStr, _, err = req2.Get(ts.URL).ReadBodyAsString()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.JSONEq(t, `{"X-Req1header1":"value1","X-Req2header1":"value1"}`, dataStr)
 }
 
@@ -860,25 +859,25 @@ func TestTimeoutHeader(t *testing.T) {
 	_, rawResp, err := resp.ReadBodyAsString()
 	require.Equal(t, int32(1), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Read again
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(1), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	rawResp, err = resp.Finish()
 	require.Equal(t, int32(1), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Even if the request is finished then, we should still get timeout error.
 	time.Sleep(1 * time.Second)
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(1), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 
@@ -888,7 +887,7 @@ func TestTimeoutHeader(t *testing.T) {
 	rawResp, err = resp.Finish()
 	require.Equal(t, int32(2), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 
@@ -896,7 +895,7 @@ func TestTimeoutHeader(t *testing.T) {
 	resp = client.LR().SetTimeout(1200 * time.Millisecond).Get(ts.URL)
 	dataStr, rawResp, err := resp.ReadBodyAsString()
 	require.Equal(t, int32(3), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 	require.Equal(t, "OK", dataStr)
 }
@@ -926,7 +925,7 @@ func TestTimeoutBody(t *testing.T) {
 	rawResp, err := resp.Finish()
 	require.Equal(t, int32(1), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 50*time.Millisecond)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 
 	// ReadBodyAsString() should fail
@@ -935,20 +934,20 @@ func TestTimeoutBody(t *testing.T) {
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(2), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Read again
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(2), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Wait enough time and read again
 	time.Sleep(1 * time.Second)
 	_, rawResp, err = resp.ReadBodyAsString()
 	require.Equal(t, int32(2), requestTimes.Load())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	// Finish() should succeed
@@ -956,7 +955,7 @@ func TestTimeoutBody(t *testing.T) {
 	rawResp, err = resp.Finish()
 	require.Equal(t, int32(2), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 50*time.Millisecond)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 
 	// PipeBody() should fail
@@ -966,7 +965,7 @@ func TestTimeoutBody(t *testing.T) {
 	wBytes, rawResp, err := resp.PipeBody(&buf)
 	require.Equal(t, int32(3), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	require.Equal(t, int64(10), wBytes) // The first chunk is written
@@ -975,7 +974,7 @@ func TestTimeoutBody(t *testing.T) {
 	wBytes, rawResp, err = resp.PipeBody(&buf)
 	require.Equal(t, int32(3), requestTimes.Load())
 	require.Less(t, time.Since(tBegin), 300*time.Millisecond)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "Client.Timeout")
 	require.Nil(t, rawResp)
 	require.Equal(t, int64(0), wBytes) // No more chunk is written
@@ -985,7 +984,7 @@ func TestTimeoutBody(t *testing.T) {
 	resp = client.LR().SetTimeout(1200 * time.Millisecond).Get(ts.URL)
 	dataStr, rawResp, err := resp.ReadBodyAsString()
 	require.Equal(t, int32(4), requestTimes.Load())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
 	require.Equal(t, "Partial...Done", dataStr)
 }
@@ -998,7 +997,7 @@ func TestTimeoutBody(t *testing.T) {
 //	}
 //	client := New(Config{})
 //	client.LR().Get("foo://example.com")
-//	assert.Panics(t, func() { runtime.GC() })
+//	require.Panics(t, func() { runtime.GC() })
 // }
 
 // TODO: TestCtxRequest

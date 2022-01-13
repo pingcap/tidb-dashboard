@@ -39,6 +39,9 @@ export interface IInstanceStatusBadgeProps {
   status?: number
 }
 
+/**
+ * Note: For util/topo.CompStatus, please use InstanceStatusBadgeV2
+ */
 function InstanceStatusBadge({ status }: IInstanceStatusBadgeProps) {
   const { t } = useTranslation()
   switch (status) {

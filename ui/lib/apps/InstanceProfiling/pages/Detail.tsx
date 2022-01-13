@@ -1,205 +1,138 @@
-import { Badge, Button, Progress, Tooltip } from 'antd'
+import { Badge, Button, Progress, Space, Tooltip } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { usePersistFn } from 'ahooks'
 import { Link } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { upperFirst } from 'lodash'
-
-import client, { ProfilingTaskModel } from '@lib/client'
-import {
-  CardTable,
-  DateTime,
-  Head,
-  Descriptions,
-  ActionsButton,
-} from '@lib/components'
+import client, { ModelBundle, ModelProfile } from '@lib/client'
+import { CardTable, DateTime, Head, Descriptions } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
-import { InstanceKindName } from '@lib/utils/instanceTable'
+import {
+  InstanceKind,
+  InstanceKindName,
+  InstanceKinds,
+} from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import _ from 'lodash'
+import { BundleState, ProfDataType, ProfileState } from '../utils/constants'
 
-enum ViewOptions {
+enum ViewAsOptions {
   FlameGraph = 'flamegraph',
   Graph = 'graph',
-  Download = 'download',
-  Text = 'text',
+  Raw = 'raw',
 }
 
-enum taskState {
-  Error,
-  Running,
-  Success,
-  Skipped = 4,
-}
-
-enum RawDataType {
-  Protobuf = 'protobuf',
-  Text = 'text',
-}
-
-interface IRow {
-  kind: string
-}
-
-function mapData(data) {
-  if (!data) {
-    return data
-  }
-
-  data.tasks_status.forEach((task) => {
-    if (task.state === 1) {
-      let task_elapsed_secs = data.server_time - task.started_at
-      let progress =
-        task_elapsed_secs / data.task_group_status.profile_duration_secs
-      if (progress > 0.99) {
-        progress = 0.99
-      }
-      if (progress < 0) {
-        progress = 0
-      }
-      task.progress = progress
-    }
-
-    // set profiling output options for previous generated SVG files and protobuf files.
-    if (task.raw_data_type === RawDataType.Protobuf) {
-      task.view_options = [
-        ViewOptions.FlameGraph,
-        ViewOptions.Graph,
-        ViewOptions.Download,
-      ]
-    } else if (task.raw_data_type === RawDataType.Text) {
-      task.view_options = [ViewOptions.Text, ViewOptions.Download]
-    } else if (task.raw_data_type === '') {
-      switch (task.target.kind) {
-        case 'tidb':
-        case 'pd':
-          task.view_options = [ViewOptions.Graph]
-          break
-        case 'tikv':
-        case 'tiflash':
-          task.view_options = [ViewOptions.FlameGraph]
-          break
-      }
-    }
-  })
-
-  return data
-}
-
-function isFinished(data) {
-  const groupState = data?.task_group_status?.state
-  return groupState === 2 || groupState === 3
-}
-
-async function getActionToken(
-  id: string,
-  apiType: string
-): Promise<string | undefined> {
-  const res = await client.getInstance().getActionToken(id, apiType)
-  const token = res.data
-  if (!token) {
-    return
-  }
-  return token
-}
-
-interface IRecord extends ProfilingTaskModel {
-  view_options: ViewOptions[]
+function isFinished(bundle?: ModelBundle) {
+  return (
+    [
+      BundleState.AllFailed,
+      BundleState.AllSucceeded,
+      BundleState.PartialSucceeded,
+    ].indexOf((bundle?.state ?? '') as BundleState) > -1
+  )
 }
 
 export default function Page() {
   const { t } = useTranslation()
   const { id } = useQueryParams()
 
-  const {
-    data: respData,
-    isLoading,
-    error,
-  } = useClientRequestWithPolling(
-    (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
+  const { data, isLoading, error } = useClientRequestWithPolling(
+    (reqConfig) =>
+      client.getInstance().profilingGetBundle(
+        {
+          bundle_id: Number(id),
+        },
+        reqConfig
+      ),
     {
-      shouldPoll: (data) => !isFinished(data),
+      shouldPoll: (data) => !isFinished(data.bundle),
     }
   )
 
-  const data = useMemo(() => mapData(respData), [respData])
-
-  const profileDuration =
-    respData?.task_group_status?.profile_duration_secs || 0
+  const profileDuration = data?.bundle?.duration_sec ?? 0
 
   const [tableData, groupData] = useMemo(() => {
-    const newRows: IRow[] = []
+    const newRows: ModelProfile[] = []
     const newGroups: IGroup[] = []
     let startIndex = 0
-    const tasks = data?.tasks_status ?? []
-    for (const instanceKind of ['pd', 'tidb', 'tikv', 'tiflash']) {
-      tasks.forEach((task) => {
-        if (task.target.kind === instanceKind) {
-          newRows.push({
-            ...task,
-            kind: InstanceKindName[instanceKind],
-          })
-        }
-      })
 
-      if (newRows.length - startIndex > 0) {
-        newGroups.push({
-          key: InstanceKindName[instanceKind],
-          name: InstanceKindName[instanceKind],
-          startIndex: startIndex,
-          count: newRows.length - startIndex,
-        })
-        startIndex = newRows.length
+    const profilesByComponent: Record<InstanceKind, ModelProfile[]> = _.groupBy(
+      data?.profiles ?? [],
+      'target.kind'
+    ) as any
+    for (const instanceKind of InstanceKinds) {
+      if (!profilesByComponent[instanceKind]?.length) {
+        continue
       }
+      for (const profile of profilesByComponent[instanceKind]) {
+        newRows.push(profile)
+      }
+      newGroups.push({
+        key: instanceKind,
+        name: InstanceKindName[instanceKind],
+        startIndex: startIndex,
+        count: newRows.length - startIndex,
+      })
+      startIndex = newRows.length
     }
     return [newRows, newGroups]
   }, [data])
 
-  const openResult = usePersistFn(async (openAs: string, rec: IRecord) => {
-    const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
-    let token: string | undefined
-    let profileURL: string
-
-    switch (openAs) {
-      case ViewOptions.Download:
-        token = await getActionToken(rec.id + '', 'single_download')
-        if (!token) {
-          return
+  const openResult = useCallback(
+    async (viewAs: ViewAsOptions, rec: ModelProfile) => {
+      switch (viewAs) {
+        case ViewAsOptions.Raw: {
+          const token = await client
+            .getInstance()
+            .profilingGetTokenForProfileData({
+              profile_id: rec.profile_id,
+              render_as: 'unchanged',
+            })
+          window.open(
+            `${client.getBasePath()}/profiling/profile/render?token=${
+              token.data
+            }`
+          )
+          break
         }
-
-        window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
-        break
-      case ViewOptions.FlameGraph:
-        token = await getActionToken(rec.id + '', 'single_view')
-        if (!token) {
-          return
+        case ViewAsOptions.FlameGraph: {
+          const token = await client
+            .getInstance()
+            .profilingGetTokenForProfileData({
+              profile_id: rec.profile_id,
+              render_as: 'unchanged',
+            })
+          const protoURL = `${client.getBasePath()}/profiling/profile/render?token=${
+            token.data
+          }`
+          const titleOnTab = `${rec.target?.kind} - ${rec.target?.ip}:${rec.target?.port} (${rec.kind})`
+          const url = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
+            protoURL
+          )}&title=${encodeURIComponent(titleOnTab)}`
+          window.open(`${url}`, '_blank')
+          break
         }
-        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
-        if (isProtobuf) {
-          const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
-          profileURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
-            // protobuf can be rendered to flamegraph by speedscope
-            profileURL + `&output_type=protobuf`
-          )}&title=${titleOnTab}`
+        case ViewAsOptions.Graph: {
+          const token = await client
+            .getInstance()
+            .profilingGetTokenForProfileData({
+              profile_id: rec.profile_id,
+              render_as: 'svg_graph',
+            })
+          window.open(
+            `${client.getBasePath()}/profiling/profile/render?token=${
+              token.data
+            }`
+          )
+          break
         }
-
-        window.open(`${profileURL}`, '_blank')
-        break
-      case ViewOptions.Graph:
-      case ViewOptions.Text:
-        token = await getActionToken(rec.id + '', 'single_view')
-        if (!token) {
-          return
-        }
-        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${openAs}`
-
-        window.open(`${profileURL}`, '_blank')
-        break
-    }
-  })
+      }
+    },
+    []
+  )
 
   const columns = useMemo(
     () => [
@@ -207,19 +140,21 @@ export default function Page() {
         name: t('instance_profiling.detail.table.columns.instance'),
         key: 'instance',
         minWidth: 150,
-        maxWidth: 300,
-        onRender: (record) => record.target.display_name,
+        maxWidth: 250,
+        onRender: (record: ModelProfile) => {
+          return `${record.target?.ip}:${record.target?.port}`
+        },
       },
       {
         name: t('instance_profiling.detail.table.columns.content'),
         key: 'content',
-        minWidth: 150,
-        maxWidth: 300,
-        onRender: (record) => {
-          if (record.profiling_type === 'cpu') {
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: (record: ModelProfile) => {
+          if (record.kind === 'cpu') {
             return `CPU - ${profileDuration}s`
           } else {
-            return upperFirst(record.profiling_type)
+            return upperFirst(record.kind)
           }
         },
       },
@@ -228,72 +163,100 @@ export default function Page() {
         key: 'status',
         minWidth: 150,
         maxWidth: 200,
-        onRender: (record) => {
-          if (record.state === taskState.Running) {
+        onRender: (record: ModelProfile) => {
+          if (record.state === ProfileState.Running) {
             return (
               <div style={{ width: 200 }}>
                 <Progress
-                  percent={Math.round(record.progress * 100)}
+                  percent={~~((record.progress ?? 0) * 100)}
                   size="small"
                   width={200}
                 />
               </div>
             )
-          } else if (record.state === taskState.Error) {
+          } else if (record.state === ProfileState.Error) {
             return (
-              <Tooltip title={record.error}>
-                <Badge status="error" text={record.error} />
-              </Tooltip>
+              <Badge
+                status="error"
+                text={t('instance_profiling.common.profile_state.error')}
+              />
+              // <Tooltip title={record.error}>
+              //   <Badge status="error" text={record.error} />
+              // </Tooltip>
             )
-          } else if (record.state == taskState.Skipped) {
-            let tooltipTransKey =
-              'instance_profiling.detail.table.tooltip.skipped'
-            if (record.profiling_type === 'heap') {
-              tooltipTransKey =
-                'instance_profiling.detail.table.tooltip.to_be_supported'
-            }
+          } else if (record.state == ProfileState.Skipped) {
             return (
               <Tooltip
-                title={t(tooltipTransKey, {
-                  kind: InstanceKindName[record.target.kind],
-                  type: upperFirst(record.profiling_type),
-                })}
+                title={t(
+                  'instance_profiling.common.profile_state.skipped_tooltip'
+                )}
               >
                 <Badge
                   status="default"
-                  text={t('instance_profiling.detail.table.status.skipped')}
+                  text={
+                    <span>
+                      {t('instance_profiling.common.profile_state.skipped')}{' '}
+                      <QuestionCircleOutlined />
+                    </span>
+                  }
                 />
               </Tooltip>
+            )
+          } else if (record.state == ProfileState.Succeeded) {
+            return (
+              <Badge
+                status="success"
+                text={t('instance_profiling.common.profile_state.suceeded')}
+              />
             )
           } else {
             return (
               <Badge
-                status="success"
-                text={t('instance_profiling.detail.table.status.finished')}
+                status="error"
+                text={t('instance_profiling.common.profile_state.unknown')}
               />
             )
           }
         },
       },
       {
-        name: t('instance_profiling.detail.table.columns.selection.actions'),
-        key: 'output_type',
+        name: t('instance_profiling.detail.table.columns.view_as'),
+        key: 'view_as',
         minWidth: 150,
         maxWidth: 200,
-        onRender: (record) => {
-          const rec = record as IRecord
-          const actions = rec.view_options.map((key) => ({
-            key,
-            text: t(
-              `instance_profiling.detail.table.columns.selection.types.${key}`
-            ),
-          }))
+        onRender: (record: ModelProfile) => {
+          if (record.state === ProfileState.Error) {
+            return <a href="javascript:;">Error</a>
+          }
+
+          if (record.state !== ProfileState.Succeeded) {
+            return <></>
+          }
+
+          let actions: ViewAsOptions[] = []
+          if (record.data_type == ProfDataType.Protobuf) {
+            actions = [
+              ViewAsOptions.FlameGraph,
+              ViewAsOptions.Graph,
+              ViewAsOptions.Raw,
+            ]
+          } else if (record.data_type == ProfDataType.Text) {
+            actions = [ViewAsOptions.Raw]
+          }
           return (
-            <ActionsButton
-              actions={actions}
-              disabled={rec.state != taskState.Success}
-              onClick={(act) => openResult(act, rec)}
-            />
+            <Space>
+              {actions.map((action) => {
+                return (
+                  <a
+                    href="javascript:;"
+                    onClick={() => openResult(action, record)}
+                    key={action}
+                  >
+                    {t(`instance_profiling.detail.view_as.${action}`)}
+                  </a>
+                )
+              })}
+            </Space>
           )
         },
       },
@@ -302,13 +265,17 @@ export default function Page() {
   )
 
   const handleDownloadGroup = useCallback(async () => {
-    const res = await client.getInstance().getActionToken(id, 'group_download')
-    const token = res.data
-    if (!token) {
-      return
-    }
-    window.location.href = `${client.getBasePath()}/profiling/group/download?token=${token}`
+    const token = await client
+      .getInstance()
+      .profilingGetTokenForBundleData({ bundle_id: Number(id) })
+    window.location.href = `${client.getBasePath()}/profiling/bundle/download?token=${
+      token.data
+    }`
   }, [id])
+
+  const getKey = useCallback((rec: ModelProfile) => {
+    return `${rec.kind}${rec.target?.ip}${rec.target?.port}`
+  }, [])
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -321,7 +288,7 @@ export default function Page() {
         }
         titleExtra={
           <Button
-            disabled={!isFinished(data)}
+            disabled={!isFinished(data?.bundle)}
             type="primary"
             onClick={handleDownloadGroup}
           >
@@ -329,15 +296,13 @@ export default function Page() {
           </Button>
         }
       >
-        {respData && (
+        {data && (
           <Descriptions>
             <Descriptions.Item
               span={2}
               label={t('instance_profiling.detail.head.start_at')}
             >
-              <DateTime.Calendar
-                unixTimestampMs={respData.task_group_status!.started_at! * 1000}
-              />
+              <DateTime.Calendar unixTimestampMs={data.bundle?.start_at ?? 0} />
             </Descriptions.Item>
           </Descriptions>
         )}
@@ -345,6 +310,8 @@ export default function Page() {
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
           <CardTable
+            getKey={getKey}
+            cardNoMarginTop
             disableSelectionZone
             loading={isLoading}
             columns={columns}

@@ -2,6 +2,7 @@ import {
   TopologyPDInfo,
   TopologyTiDBInfo,
   TopologyStoreInfo,
+  TopoCompInfoWithSignature,
 } from '@lib/client'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 import _ from 'lodash'
@@ -9,6 +10,7 @@ import i18next from 'i18next'
 
 export type InstanceKind = 'pd' | 'tidb' | 'tikv' | 'tiflash'
 
+// Deprecated. Use InstanceStatusV2.
 export const InstanceStatus = {
   Unreachable: 0,
   Up: 1,
@@ -128,6 +130,58 @@ export function filterInstanceTable(
     instances.forEach((instance) => {
       tableData.push(instance)
     })
+  }
+  return [tableData, groupData]
+}
+
+// Below are utilities for util/topo
+
+export enum InstanceStatusV2 {
+  Unknown = '',
+  Unreachable = 'unreachable',
+  Up = 'up',
+  Tombstone = 'tombstone',
+  Leaving = 'leaving',
+  Down = 'down',
+}
+
+export function filterComponentsList(
+  items: TopoCompInfoWithSignature[],
+  filterKeyword: string
+): [TopoCompInfoWithSignature[], IGroup[]] {
+  const kw = filterKeyword.toLowerCase()
+  let filteredItems = items
+  if (filterKeyword.length > 0) {
+    filteredItems = items.filter((i) => {
+      const searchableText = `${i.kind} ${i.ip}:${i.port}`
+      return searchableText.indexOf(kw) > -1
+    })
+  }
+
+  const tableData: TopoCompInfoWithSignature[] = []
+  const groupData: IGroup[] = []
+  let startIndex = 0
+
+  // TODO: Support other instance kinds
+  const itemsByKind = _.groupBy(filteredItems, 'kind') as unknown as Record<
+    InstanceKind,
+    TopoCompInfoWithSignature[]
+  >
+  for (const ik of InstanceKinds) {
+    const instances = itemsByKind[ik]
+    if (!instances || instances.length === 0) {
+      continue
+    }
+    const sortedInstances = _.sortBy(instances, [(i) => `${i.ip}:${i.port}`])
+    groupData.push({
+      key: ik,
+      name: InstanceKindName[ik],
+      startIndex: startIndex,
+      count: sortedInstances.length,
+      level: 0,
+    })
+    startIndex += sortedInstances.length
+    sortedInstances.forEach((i) => tableData.push(i))
   }
   return [tableData, groupData]
 }

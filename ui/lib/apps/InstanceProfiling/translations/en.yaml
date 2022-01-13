@@ -2,6 +2,20 @@ profiling:
   nav_title: Profiling Instances
 instance_profiling:
   nav_title: Manual Profiling
+  common:
+    profile_state:
+      skipped: Not Applicable
+      skipped_tooltip: This profiling kind is currently not supported
+      suceeded: Succeeded
+      unknown: Unknown
+      running: Running
+      error: Error
+    bundle_state:
+      running: Running
+      all_succeeded: Succeeded
+      partial_succeeded: Partial Succeeded
+      all_failed: Failed
+      unknown: Unknown
   list:
     control_form:
       title: Start Profiling Instances
@@ -23,12 +37,6 @@ instance_profiling:
         start_at: Start At
         duration: Duration (sec)
         status: Status
-      status:
-        running: Running
-        finished: Finished
-        failed: Failed
-        partial_finished: Partial Finished
-        unknown: Unknown
       actions:
         detail: Detail
   detail:
@@ -37,22 +45,14 @@ instance_profiling:
       title: Profiling Detail
       start_at: Start At
     download: Download Profiling Result
+    view_as:
+      flamegraph: FlameGraph
+      graph: DotGraph
+      raw: RawData
     table:
       columns:
         instance: Instance
         kind: Component
         content: Content
         status: Status
-        selection:
-          actions: Actions
-          types:
-            flamegraph: View FlameGraph
-            graph: View Graph
-            download: Download Raw Data
-            text: View Text
-      status:
-        finished: Finished
-        skipped: Not Applicable
-      tooltip:
-        skipped: The {{kind}} does not support {{type}} profiling
-        to_be_supported: The {{kind}} does not support {{type}} profiling temporary
+        view_as: View As

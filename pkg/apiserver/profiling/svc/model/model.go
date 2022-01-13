@@ -88,8 +88,11 @@ type Bundle struct {
 	State        BundleState
 	DurationSec  uint
 	TargetsCount topo.CompCount
-	StartAt      time.Time
-	Kinds        []profutil.ProfKind
+	// TODO: Use .swaggo to globally specify that time.Time is serialized as integer
+	// when go1.13 support is dropped (swag that provides this feature does not
+	// support go1.13).
+	StartAt time.Time `swaggertype:"integer"`
+	Kinds   []profutil.ProfKind
 }
 
 type ListBundlesResp struct {
@@ -106,9 +109,12 @@ type Profile struct {
 	Target    topo.CompDescriptor
 	Kind      profutil.ProfKind
 	Error     string
-	StartAt   time.Time
-	Progress  float32
-	DataType  profutil.ProfDataType
+	// TODO: Use .swaggo to globally specify that time.Time is serialized as integer
+	// when go1.13 support is dropped (swag that provides this feature does not
+	// support go1.13).
+	StartAt  time.Time `swaggertype:"integer"`
+	Progress float32
+	DataType profutil.ProfDataType
 }
 
 func (p *Profile) FileName() string {

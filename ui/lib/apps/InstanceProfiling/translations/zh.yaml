@@ -23,12 +23,6 @@ instance_profiling:
         start_at: 开始时间
         duration: 时长（秒）
         status: 状态
-      status:
-        running: 分析中
-        finished: 完成
-        failed: 失败
-        partial_finished: 部分完成
-        unknown: 未知
       actions:
         detail: 详情
   detail:
@@ -37,22 +31,14 @@ instance_profiling:
       title: 性能分析详情
       start_at: 开始时间
     download: 下载性能分析结果
+    view_as:
+      flamegraph: 火焰图
+      graph: 关系图
+      raw: 原始数据
     table:
       columns:
         instance: 实例
         kind: 组件
         content: 内容
         status: 状态
-        selection:
-          actions: 操作
-          types:
-            flamegraph: 查看火焰图
-            graph: 查看关系图
-            download: 下载原始文件
-            text: 查看文本
-      status:
-        finished: 完成
-        skipped: 不适用
-      tooltip:
-        skipped: '{{kind}} 不支持 {{type}} 分析'
-        to_be_supported: '{{kind}} 暂不支持 {{type}} 分析'
+        view_as: 查看方式

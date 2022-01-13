@@ -4,38 +4,36 @@ import React, { useMemo, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { usePersistFn } from 'ahooks'
-
-import client, {
-  ProfilingStartRequest,
-  ModelRequestTargetNode,
-} from '@lib/client'
-import {
-  Card,
-  CardTable,
-  InstanceSelect,
-  IInstanceSelectRefProps,
-  MultiSelect,
-} from '@lib/components'
+import { Card, CardTable, MultiSelect } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { combineTargetStats } from '../utils'
-
+import { stringifyTopoCount } from '../utils'
 import styles from './List.module.less'
 import { upperFirst } from 'lodash'
+import InstanceSelectV2 from '@lib/components/InstanceSelectV2'
+import client, {
+  ModelBundle,
+  ModelStartBundleReq,
+  TopoCompInfoWithSignature,
+  TopoSignedCompDescriptor,
+} from '@lib/client'
+import _ from 'lodash'
+import { BundleState } from '../utils/constants'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
 const profilingTypeOptions = ['CPU', 'Heap', 'Goroutine', 'Mutex']
 
 export default function Page() {
-  const {
-    data: historyTable,
-    isLoading: listLoading,
-    error: historyError,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getProfilingGroups(reqConfig)
+  const bundlesResp = useClientRequest((reqConfig) =>
+    client.getInstance().profilingListBundles(reqConfig)
   )
+
+  const targetsResp = useClientRequest((reqConfig) =>
+    client.getInstance().profilingListTargets(reqConfig)
+  )
+
   const { data: ngMonitoringConfig } = useClientRequest((reqConfig) =>
     client.getInstance().continuousProfilingConfigGet(reqConfig)
   )
@@ -45,7 +43,6 @@ export default function Page() {
 
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const instanceSelect = useRef<IInstanceSelectRefProps>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const handleFinish = useCallback(
@@ -56,56 +53,34 @@ export default function Page() {
         })
         return
       }
-      if (!instanceSelect.current) {
-        Modal.error({
-          content: 'Internal error: Instance select is not ready',
-        })
-        return
-      }
-      const targets: ModelRequestTargetNode[] = instanceSelect
-        .current!.getInstanceByKeys(fieldsValue.instances)
-        .map((instance) => {
-          let port
-          switch (instance.instanceKind) {
-            case 'pd':
-              port = instance.port
-              break
-            case 'tidb':
-            case 'tikv':
-            case 'tiflash':
-              port = instance.status_port
-              break
-          }
-          return {
-            kind: instance.instanceKind,
-            display_name: instance.key,
-            ip: instance.ip,
-            port,
-          }
-        })
-        .filter((i) => i.port != null)
 
-      const req: ProfilingStartRequest = {
-        targets,
-        duration_secs: fieldsValue.duration,
-        requsted_profiling_types: fieldsValue.type.map((type) =>
-          type.toLowerCase()
-        ),
+      const targetsBySignature: Record<string, TopoCompInfoWithSignature> =
+        _.keyBy(targetsResp.data?.targets ?? [], 'signature')
+
+      const selectedTargets: Array<TopoSignedCompDescriptor> =
+        fieldsValue.instances
+          .map((sig) => targetsBySignature[sig])
+          .filter((v) => !!v)
+
+      const req: ModelStartBundleReq = {
+        duration_sec: fieldsValue.duration,
+        kinds: fieldsValue.type.map((t) => t.toLowerCase()),
+        targets: selectedTargets,
       }
       try {
         setSubmitting(true)
-        const res = await client.getInstance().startProfiling(req)
-        navigate(`/instance_profiling/detail?id=${res.data.id}`)
+        const res = await client.getInstance().profilingStartBundle(req)
+        navigate(`/instance_profiling/detail?id=${res.data.bundle_id}`)
       } finally {
         setSubmitting(false)
       }
     },
-    [navigate]
+    [navigate, targetsResp]
   )
 
   const handleRowClick = usePersistFn(
-    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
-      openLink(`/instance_profiling/detail?id=${rec.id}`, ev, navigate)
+    (rec: ModelBundle, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      openLink(`/instance_profiling/detail?id=${rec.bundle_id}`, ev, navigate)
     }
   )
 
@@ -116,21 +91,8 @@ export default function Page() {
         key: 'targets',
         minWidth: 150,
         maxWidth: 250,
-        onRender: (rec) => {
-          return combineTargetStats(rec.target_stats)
-        },
-      },
-      {
-        name: t(
-          'instance_profiling.list.table.columns.requsted_profiling_types'
-        ),
-        key: 'types',
-        minWidth: 150,
-        maxWidth: 250,
-        onRender: (rec) => {
-          return (rec.requsted_profiling_types ?? ['cpu'])
-            .map((p) => (p === 'cpu' ? 'CPU' : upperFirst(p)))
-            .join(',')
+        onRender: (rec: ModelBundle) => {
+          return stringifyTopoCount(rec.targets_count ?? {})
         },
       },
       {
@@ -138,39 +100,42 @@ export default function Page() {
         key: 'status',
         minWidth: 100,
         maxWidth: 150,
-        onRender: (rec) => {
-          if (rec.state === 0) {
-            // all failed
+        onRender: (rec: ModelBundle) => {
+          if (rec.state === BundleState.AllFailed) {
             return (
               <Badge
                 status="error"
-                text={t('instance_profiling.list.table.status.failed')}
+                text={t('instance_profiling.common.bundle_state.all_failed')}
               />
             )
-          } else if (rec.state === 1) {
-            // running
+          } else if (rec.state === BundleState.Running) {
             return (
               <Badge
                 status="processing"
-                text={t('instance_profiling.list.table.status.running')}
+                text={t('instance_profiling.common.bundle_state.running')}
               />
             )
-          } else if (rec.state === 2) {
-            // all success
+          } else if (rec.state === BundleState.AllSucceeded) {
             return (
               <Badge
                 status="success"
-                text={t('instance_profiling.list.table.status.finished')}
+                text={t('instance_profiling.common.bundle_state.all_succeeded')}
               />
             )
-          } else {
-            // partial success
+          } else if (rec.state === BundleState.PartialSucceeded) {
             return (
               <Badge
                 status="warning"
                 text={t(
-                  'instance_profiling.list.table.status.partial_finished'
+                  'instance_profiling.common.bundle_state.partial_succeeded'
                 )}
+              />
+            )
+          } else {
+            return (
+              <Badge
+                status="warning"
+                text={t('instance_profiling.common.bundle_state.unknown')}
               />
             )
           }
@@ -181,8 +146,8 @@ export default function Page() {
         key: 'started_at',
         minWidth: 160,
         maxWidth: 220,
-        onRender: (rec) => {
-          return <DateTime.Calendar unixTimestampMs={rec.started_at * 1000} />
+        onRender: (rec: ModelBundle) => {
+          return <DateTime.Calendar unixTimestampMs={rec.start_at ?? 0} />
         },
       },
       {
@@ -190,7 +155,20 @@ export default function Page() {
         key: 'duration',
         minWidth: 100,
         maxWidth: 150,
-        fieldName: 'profile_duration_secs',
+        fieldName: 'duration_sec',
+      },
+      {
+        name: t(
+          'instance_profiling.list.table.columns.requsted_profiling_types'
+        ),
+        key: 'types',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (rec: ModelBundle) => {
+          return (rec.kinds ?? ['cpu'])
+            .map((p) => (p === 'cpu' ? 'CPU' : upperFirst(p)))
+            .join(', ')
+        },
       },
     ],
     [t]
@@ -212,10 +190,9 @@ export default function Page() {
             label={t('instance_profiling.list.control_form.instances.label')}
             rules={[{ required: true }]}
           >
-            <InstanceSelect
-              disabled={conprofEnable}
-              enableTiFlash={true}
-              ref={instanceSelect}
+            <InstanceSelectV2
+              disabled={conprofEnable || targetsResp.isLoading}
+              instances={targetsResp.data?.targets}
               style={{ width: 200 }}
             />
           </Form.Item>
@@ -265,24 +242,25 @@ export default function Page() {
       </Card>
 
       {conprofEnable && (
-        <div className={styles.alert_container}>
+        <Card noMarginTop>
           <Alert
             type="warning"
             message={t('instance_profiling.list.disable_warning')}
             showIcon
           />
-        </div>
+        </Card>
       )}
 
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
           <CardTable
             cardNoMarginTop
-            loading={listLoading}
-            items={historyTable || []}
+            loading={bundlesResp.isLoading}
+            items={bundlesResp.data?.bundles || []}
             columns={historyTableColumns}
-            errors={[historyError]}
+            errors={[bundlesResp.error]}
             onRowClicked={handleRowClick}
+            extendLastColumn
           />
         </ScrollablePane>
       </div>

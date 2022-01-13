@@ -42,6 +42,7 @@ $ go tool pprof --http=127.0.0.1:1234 cpu_xxx.proto
 `
 
 // ListTargets godoc
+// @ID profilingListTargets
 // @Summary List all available profiling targets
 // @Description The list may be unordered.
 // @Security JwtAuth
@@ -58,6 +59,7 @@ func (s *Service) ListTargets(c *gin.Context) {
 }
 
 // StartBundle godoc
+// @ID profilingStartBundle
 // @Summary Start a bundle of profiling
 // @Param req body model.StartBundleReq true "request"
 // @Security JwtAuth
@@ -99,6 +101,7 @@ func (s *Service) StartBundle(c *gin.Context) {
 }
 
 // ListBundles godoc
+// @ID profilingListBundles
 // @Summary List all profiling bundles
 // @Security JwtAuth
 // @Success 200 {object} model.ListBundlesResp
@@ -114,6 +117,7 @@ func (s *Service) ListBundles(c *gin.Context) {
 }
 
 // GetBundle godoc
+// @ID profilingGetBundle
 // @Summary Get the details of a profile bundle
 // @Param req body model.GetBundleReq true "request"
 // @Security JwtAuth
@@ -142,6 +146,7 @@ type GetBundleDataReqClaim struct {
 const audienceBundleData = "BundleData"
 
 // GetTokenForBundleData godoc
+// @ID profilingGetTokenForBundleData
 // @Summary Get a token for downloading the bundle data as a zip
 // @Param req body model.GetBundleDataReq true "request"
 // @Security JwtAuth
@@ -169,6 +174,7 @@ func (s *Service) GetTokenForBundleData(c *gin.Context) {
 }
 
 // DownloadBundleData godoc
+// @ID profilingDownloadBundleData
 // @Summary Download the bundle data as a zip using a download token from GetTokenForBundleData
 // @Produce application/x-gzip
 // @Param token query string true "download token"
@@ -257,6 +263,7 @@ type RenderProfileDataReqClaim struct {
 const audienceProfileData = "ProfileData"
 
 // GetTokenForProfileData godoc
+// @ID profilingGetTokenForProfileData
 // @Summary Get a token for downloading the profile data
 // @Param req body RenderProfileDataReq true "request"
 // @Security JwtAuth
@@ -284,6 +291,7 @@ func (s *Service) GetTokenForProfileData(c *gin.Context) {
 }
 
 // RenderProfileData godoc
+// @ID profilingRenderProfileData
 // @Summary Render the profile data in a requested format using a download token from GetTokenForProfileData
 // @Produce application/octet-stream
 // @Param token query string true "download token"
@@ -315,7 +323,12 @@ func (s *Service) RenderProfileData(c *gin.Context) {
 
 	switch claim.RenderAs {
 	case "", RenderTypeUnchanged:
-		c.Writer.Header().Set("Content-type", "application/octet-stream")
+		if ret.Profile.DataType == profutil.ProfDataTypeText {
+			c.Writer.Header().Set("Content-type", "text/plain")
+		} else {
+			c.Writer.Header().Set("Content-type", "application/octet-stream")
+			c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s%s\"", ret.Profile.FileName(), ret.Profile.DataType.Extension()))
+		}
 		_, _ = c.Writer.Write(ret.Profile.Data)
 		return
 	case RenderTypeSVGGraph:

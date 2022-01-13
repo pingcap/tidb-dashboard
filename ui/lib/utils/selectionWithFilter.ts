@@ -14,6 +14,10 @@ export default class SelectionWithFilter<T = IObjectWithKey>
 {
   private _inner: Selection<T>
 
+  // items and allItems specified by user may come in any order so that
+  // we store both of them in order to calculate out a union.
+  private _userAssignedItems: T[] = []
+
   private _allItems: T[] = []
   private _allItemsMap: Map<string, T> = new Map()
   private _allSelectedKeysSet: Set<string> = new Set()
@@ -95,39 +99,9 @@ export default class SelectionWithFilter<T = IObjectWithKey>
   }
   // Override
   setItems(items: T[], shouldClear?: boolean) {
-    this._allSelectionCache = null
-    if (shouldClear) {
-      this._allSelectedKeysSet.clear()
-    }
-
-    // Only items in AllItems can be added
-    const itemSubset: T[] = []
-    this._itemKeysSet.clear()
-    for (const item of items) {
-      const key = this._inner.getKey(item)
-      if (this._allItemsMap.has(key)) {
-        this._itemKeysSet.add(key)
-        itemSubset.push(item)
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(
-            'Warning: SelectionWithFilter::setItems is called with an item not in allItems',
-            item,
-            key
-          )
-        }
-      }
-    }
-
-    this._inner.setChangeEvents(false)
-    this._inner.setItems(itemSubset, shouldClear)
-    // Re-select if newly added items are selected in allSelected
-    for (const key of this._allSelectedKeysSet) {
-      if (this._itemKeysSet.has(key)) {
-        this._inner.setKeySelected(key, true, false)
-      }
-    }
-    this._inner.setChangeEvents(true)
+    // shouldClear is unsupported
+    this._userAssignedItems = items.slice(0)
+    this._updateActualItems()
   }
   // Override
   setAllSelected(isAllSelected: boolean) {
@@ -177,32 +151,36 @@ export default class SelectionWithFilter<T = IObjectWithKey>
       const key = this._inner.getKey(item)
       this._allItemsMap.set(key, item)
     }
-    // Ensure `items` is a subset of `alllItems`. If not, update `items`.
-    const filteredItems = this._inner.getItems()
-    const newItems: T[] = []
-    for (const item of filteredItems) {
+    this._updateActualItems()
+  }
+
+  private _updateActualItems() {
+    const items: T[] = []
+    this._itemKeysSet.clear()
+    for (const item of this._userAssignedItems) {
       const key = this._inner.getKey(item)
       if (this._allItemsMap.has(key)) {
-        newItems.push(item)
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(
-            'Note: SelectionWithFilter::setAllItems is filtering away an item previously in items but not in allItems',
-            item,
-            key
-          )
-        }
+        this._itemKeysSet.add(key)
+        items.push(item)
       }
     }
-    if (filteredItems.length !== newItems.length) {
-      this.setItems(newItems)
+
+    this._inner.setChangeEvents(false)
+    this._inner.setItems(items)
+    // Re-select if newly added items are selected in allSelected
+    for (const key of this._allSelectedKeysSet) {
+      if (this._itemKeysSet.has(key)) {
+        this._inner.setKeySelected(key, true, false)
+      }
     }
+    this._inner.setChangeEvents(true)
   }
 
   getAllItems(): T[] {
     return this._allItems
   }
 
+  // Unlike getSelection, this function returns items that was selected but has been filtered away.
   getAllSelection(): T[] {
     if (!this._allSelectionCache) {
       this._allSelectionCache = []

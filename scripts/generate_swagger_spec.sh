@@ -13,5 +13,4 @@ cd $PROJECT_DIR
 
 echo "+ Generate swagger spec"
 bin/swag init --generalInfo cmd/tidb-dashboard/main.go --propertyStrategy snakecase \
-  --parseDependency --parseDepth 1 \
   --exclude ui --output swaggerspec

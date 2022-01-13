@@ -1,5 +1,5 @@
 import { ModelRequestTargetStatistics } from '@lib/client'
-import { InstanceKindName } from '@lib/utils/instanceTable'
+import { InstanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
 
 const targetNameMap = {
   num_tidb_nodes: InstanceKindName.tidb,
@@ -16,3 +16,14 @@ export const combineTargetStats = (stats: ModelRequestTargetStatistics) =>
       return prev
     }, [] as string[])
     .join(', ')
+
+// Pretty-print util/topo.CompCount
+export function stringifyTopoCount(count: { [key: string]: number }) {
+  const val: string[] = []
+  InstanceKinds.forEach((ik) => {
+    if (count[ik] !== undefined) {
+      val.push(`${count[ik]} ${InstanceKindName[ik]}`)
+    }
+  })
+  return val.join(', ')
+}

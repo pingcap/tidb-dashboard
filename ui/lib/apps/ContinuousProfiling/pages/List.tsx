@@ -235,13 +235,13 @@ export default function Page() {
       </Card>
 
       {conprofIsDisabled && historyTable && historyTable.length > 0 && (
-        <div className={styles.alert_container}>
+        <Card noMarginTop>
           <Alert
             message={t('conprof.settings.disabled_with_history')}
             type="info"
             showIcon
           />
-        </div>
+        </Card>
       )}
 
       {conprofIsDisabled && historyTable?.length === 0 ? (

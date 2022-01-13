@@ -149,8 +149,8 @@ export function TopSQLList() {
       expand = 300
     }
 
-    let computedStart = start - expand
-    let computedEnd = end + expand
+    let computedStart = start - Math.floor(expand / 2)
+    let computedEnd = end + Math.floor(expand / 2)
 
     setTimeRange({ type: 'absolute', value: [computedStart, computedEnd] })
   }, [timeRange])

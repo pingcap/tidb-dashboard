@@ -34,22 +34,6 @@ func (_m *MockBackend) AuthFn(_a0 ...Operation) []gin.HandlerFunc {
 	return r0
 }
 
-// Capabilities provides a mock function with given fields:
-func (_m *MockBackend) Capabilities() []Capability {
-	ret := _m.Called()
-
-	var r0 []Capability
-	if rf, ok := ret.Get(0).(func() []Capability); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]Capability)
-		}
-	}
-
-	return r0
-}
-
 // GetBundle provides a mock function with given fields: _a0
 func (_m *MockBackend) GetBundle(_a0 GetBundleReq) (GetBundleResp, error) {
 	ret := _m.Called(_a0)

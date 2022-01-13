@@ -39,7 +39,7 @@ var _ Info = &PDInfo{}
 
 func (i *PDInfo) Info() CompInfo {
 	return CompInfo{
-		Descriptor: CompDesc{
+		CompDescriptor: CompDescriptor{
 			IP:   i.IP,
 			Port: i.Port,
 			Kind: KindPD,
@@ -64,7 +64,7 @@ var _ Info = &TiDBInfo{}
 
 func (i *TiDBInfo) Info() CompInfo {
 	return CompInfo{
-		Descriptor: CompDesc{
+		CompDescriptor: CompDescriptor{
 			IP:         i.IP,
 			Port:       i.Port,
 			StatusPort: i.StatusPort,
@@ -94,7 +94,7 @@ var _ Info = &TiKVStoreInfo{}
 
 func (i *TiKVStoreInfo) Info() CompInfo {
 	return CompInfo{
-		Descriptor: CompDesc{
+		CompDescriptor: CompDescriptor{
 			IP:         i.IP,
 			Port:       i.Port,
 			StatusPort: i.StatusPort,
@@ -111,7 +111,7 @@ var _ Info = &TiFlashStoreInfo{}
 
 func (i *TiFlashStoreInfo) Info() CompInfo {
 	return CompInfo{
-		Descriptor: CompDesc{
+		CompDescriptor: CompDescriptor{
 			IP:         i.IP,
 			Port:       i.Port,
 			StatusPort: i.StatusPort,
@@ -133,7 +133,7 @@ var _ Info = &AlertManagerInfo{}
 
 func (i *AlertManagerInfo) Info() CompInfo {
 	return CompInfo{
-		Descriptor: CompDesc{
+		CompDescriptor: CompDescriptor{
 			IP:   i.IP,
 			Port: i.Port,
 			Kind: KindAlertManager,
@@ -149,7 +149,7 @@ var _ Info = &GrafanaInfo{}
 
 func (i *GrafanaInfo) Info() CompInfo {
 	return CompInfo{
-		Descriptor: CompDesc{
+		CompDescriptor: CompDescriptor{
 			IP:   i.IP,
 			Port: i.Port,
 			Kind: KindGrafana,
@@ -165,7 +165,7 @@ var _ Info = &PrometheusInfo{}
 
 func (i *PrometheusInfo) Info() CompInfo {
 	return CompInfo{
-		Descriptor: CompDesc{
+		CompDescriptor: CompDescriptor{
 			IP:   i.IP,
 			Port: i.Port,
 			Kind: KindPrometheus,

@@ -11,7 +11,7 @@ import (
 
 type CompCount map[Kind]int
 
-func CountComponents(descriptors []CompDesc) CompCount {
+func CountComponents(descriptors []CompDescriptor) CompCount {
 	statsByMap := map[Kind]int{}
 	for _, d := range descriptors {
 		statsByMap[d.Kind]++

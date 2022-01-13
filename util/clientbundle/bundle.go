@@ -21,7 +21,7 @@ type HTTPClientBundle struct {
 	TiFlashStatusClient *tiflashclient.StatusClient
 }
 
-func (c HTTPClientBundle) GetHTTPClientByComponentKind(kind topo.ComponentKind) *httpclient.Client {
+func (c HTTPClientBundle) GetHTTPClientByComponentKind(kind topo.Kind) *httpclient.Client {
 	switch kind {
 	case topo.KindPD:
 		if c.PDAPIClient == nil {

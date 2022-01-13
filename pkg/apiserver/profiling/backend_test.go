@@ -33,7 +33,7 @@ type BackendSuite struct {
 	db        *dbstore.DB
 	lifecycle *fxtest.Lifecycle
 	backend   *StandardBackend
-	signer    topo.CompDescSigner
+	signer    topo.CompDescriptorSigner
 
 	mockTopoProvider  *topo.MockTopologyProvider
 	mockTiDBTransport *httpmock.MockTransport
@@ -82,7 +82,7 @@ func (suite *BackendSuite) SetupTest() {
 
 	suite.mockTopoProvider = new(topo.MockTopologyProvider)
 
-	suite.signer = topo.NewHS256CompDescSigner()
+	suite.signer = topo.NewHS256Signer()
 
 	suite.backend = NewStandardBackend(suite.lifecycle, Params{
 		LocalStore:   db,
@@ -102,7 +102,7 @@ func (suite *BackendSuite) TearDownTest() {
 	suite.db.MustClose()
 }
 
-func (suite *BackendSuite) mustSignDesc(i topo.CompDesc) topo.SignedCompDesc {
+func (suite *BackendSuite) mustSignDesc(i topo.CompDescriptor) topo.SignedCompDescriptor {
 	r, err := suite.signer.Sign(&i)
 	suite.Require().NoError(err)
 	return r
@@ -131,12 +131,12 @@ func (suite *BackendSuite) TestListTargets() {
 	targets, err := suite.backend.ListTargets()
 	suite.Require().NoError(err)
 	suite.Require().Len(targets.Targets, 2)
-	suite.Require().NotEmpty(targets.Targets[0].SignedDescriptor.Signature)
-	suite.Require().Equal("pd-1.internal", targets.Targets[0].SignedDescriptor.IP)
-	suite.Require().NoError(suite.signer.Verify(&targets.Targets[0].SignedDescriptor))
-	suite.Require().NotEmpty(targets.Targets[1].SignedDescriptor.Signature)
-	suite.Require().Equal("pd-2.internal", targets.Targets[1].SignedDescriptor.IP)
-	suite.Require().NoError(suite.signer.Verify(&targets.Targets[1].SignedDescriptor))
+	suite.Require().NotEmpty(targets.Targets[0].Signature)
+	suite.Require().Equal("pd-1.internal", targets.Targets[0].IP)
+	suite.Require().NoError(suite.signer.Verify(&targets.Targets[0].SignedCompDescriptor))
+	suite.Require().NotEmpty(targets.Targets[1].Signature)
+	suite.Require().Equal("pd-2.internal", targets.Targets[1].IP)
+	suite.Require().NoError(suite.signer.Verify(&targets.Targets[1].SignedCompDescriptor))
 
 	suite.mockTopoProvider.AssertExpectations(suite.T())
 }
@@ -147,9 +147,9 @@ func (suite *BackendSuite) TestStartNotSigned() {
 		Kinds: []profutil.ProfKind{
 			profutil.ProfKindCPU,
 		},
-		Targets: []topo.SignedCompDesc{
+		Targets: []topo.SignedCompDescriptor{
 			{
-				CompDesc: topo.CompDesc{
+				CompDescriptor: topo.CompDescriptor{
 					IP:         "tiflash-1.internal",
 					Port:       1234,
 					StatusPort: 5678,
@@ -169,8 +169,8 @@ func (suite *BackendSuite) TestStartWithoutClient() {
 		Kinds: []profutil.ProfKind{
 			profutil.ProfKindCPU,
 		},
-		Targets: []topo.SignedCompDesc{
-			suite.mustSignDesc(topo.CompDesc{
+		Targets: []topo.SignedCompDescriptor{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tiflash-1.internal",
 				Port:       1234,
 				StatusPort: 5678,
@@ -191,7 +191,7 @@ func (suite *BackendSuite) TestStartWithoutClient() {
 	suite.Require().Equal(model.BundleStateAllSucceeded, getResp.Bundle.State)
 	suite.Require().Len(getResp.Profiles, 1)
 	suite.Require().Equal(model.ProfileStateSkipped, getResp.Profiles[0].State) // skipped due to TiDB http client not set
-	suite.Require().Equal(topo.CompDesc{
+	suite.Require().Equal(topo.CompDescriptor{
 		IP:         "tiflash-1.internal",
 		Port:       1234,
 		StatusPort: 5678,
@@ -248,20 +248,20 @@ func (suite *BackendSuite) TestMultipleTargets() {
 			profutil.ProfKindCPU,
 			profutil.ProfKindMutex,
 		},
-		Targets: []topo.SignedCompDesc{
-			suite.mustSignDesc(topo.CompDesc{
+		Targets: []topo.SignedCompDescriptor{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tidb-1.internal",
 				Port:       4000,
 				StatusPort: 10080,
 				Kind:       topo.KindTiDB,
 			}),
-			suite.mustSignDesc(topo.CompDesc{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tidb-2.internal",
 				Port:       4000,
 				StatusPort: 10080,
 				Kind:       topo.KindTiDB,
 			}),
-			suite.mustSignDesc(topo.CompDesc{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "kv-2412.internal",
 				Port:       1111,
 				StatusPort: 2222,
@@ -306,14 +306,14 @@ func (suite *BackendSuite) TestAllFailed() {
 			profutil.ProfKindCPU,
 			profutil.ProfKindMutex,
 		},
-		Targets: []topo.SignedCompDesc{
-			suite.mustSignDesc(topo.CompDesc{
+		Targets: []topo.SignedCompDescriptor{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tidb-1.internal",
 				Port:       4000,
 				StatusPort: 10080,
 				Kind:       topo.KindTiDB,
 			}),
-			suite.mustSignDesc(topo.CompDesc{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:   "pd-4.internal",
 				Port: 2379,
 				Kind: topo.KindPD,
@@ -357,14 +357,14 @@ func (suite *BackendSuite) TestAllSkipped() {
 			profutil.ProfKindGoroutine,
 			profutil.ProfKindMutex,
 		},
-		Targets: []topo.SignedCompDesc{
-			suite.mustSignDesc(topo.CompDesc{
+		Targets: []topo.SignedCompDescriptor{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tikv-1.internal",
 				Port:       1414,
 				StatusPort: 5050,
 				Kind:       topo.KindTiKV,
 			}),
-			suite.mustSignDesc(topo.CompDesc{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tikv-2.internal",
 				Port:       1414,
 				StatusPort: 5050,
@@ -409,14 +409,14 @@ func (suite *BackendSuite) TestAllSucceeded() {
 		Kinds: []profutil.ProfKind{
 			profutil.ProfKindCPU,
 		},
-		Targets: []topo.SignedCompDesc{
-			suite.mustSignDesc(topo.CompDesc{
+		Targets: []topo.SignedCompDescriptor{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tidb-1.internal",
 				Port:       4000,
 				StatusPort: 10080,
 				Kind:       topo.KindTiDB,
 			}),
-			suite.mustSignDesc(topo.CompDesc{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tidb-2.internal",
 				Port:       1051,
 				StatusPort: 5101,
@@ -467,14 +467,14 @@ func (suite *BackendSuite) TestSomeFailedSomeSucceeded() {
 		Kinds: []profutil.ProfKind{
 			profutil.ProfKindCPU,
 		},
-		Targets: []topo.SignedCompDesc{
-			suite.mustSignDesc(topo.CompDesc{
+		Targets: []topo.SignedCompDescriptor{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tidb-1.internal",
 				Port:       4000,
 				StatusPort: 10080,
 				Kind:       topo.KindTiDB,
 			}),
-			suite.mustSignDesc(topo.CompDesc{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tidb-2.internal",
 				Port:       1051,
 				StatusPort: 5101,
@@ -526,14 +526,14 @@ func (suite *BackendSuite) TestRunningState() {
 		Kinds: []profutil.ProfKind{
 			profutil.ProfKindCPU,
 		},
-		Targets: []topo.SignedCompDesc{
-			suite.mustSignDesc(topo.CompDesc{
+		Targets: []topo.SignedCompDescriptor{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:         "tidb-1.internal",
 				Port:       4000,
 				StatusPort: 10080,
 				Kind:       topo.KindTiDB,
 			}),
-			suite.mustSignDesc(topo.CompDesc{
+			suite.mustSignDesc(topo.CompDescriptor{
 				IP:   "pd-4.internal",
 				Port: 2379,
 				Kind: topo.KindPD,

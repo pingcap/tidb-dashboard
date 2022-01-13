@@ -31,10 +31,10 @@ func (r ProfKindList) Value() (driver.Value, error) {
 }
 
 type ProfileModel struct {
-	ID            uint               `gorm:"primary_key"`
-	BundleID      uint               `gorm:"index"`
-	State         model.ProfileState `gorm:"index"`
-	Target        topo.CompDesc      `gorm:"type:TEXT"`
+	ID            uint                `gorm:"primary_key"`
+	BundleID      uint                `gorm:"index"`
+	State         model.ProfileState  `gorm:"index"`
+	Target        topo.CompDescriptor `gorm:"type:TEXT"`
 	Kind          profutil.ProfKind
 	Error         string `gorm:"type:TEXT"`
 	StartAt       int64

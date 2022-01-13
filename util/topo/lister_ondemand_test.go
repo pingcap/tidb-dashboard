@@ -44,9 +44,9 @@ func TestOnDemandLister(t *testing.T) {
 	ret, err = l.List(context.Background())
 	require.NoError(t, err)
 	require.Len(t, ret, 3)
-	require.Equal(t, "tidb-2.internal", ret[0].Descriptor.IP)
-	require.Equal(t, "tidb-1.internal", ret[1].Descriptor.IP)
-	require.Equal(t, "192.168.35.10", ret[2].Descriptor.IP)
+	require.Equal(t, "tidb-2.internal", ret[0].IP)
+	require.Equal(t, "tidb-1.internal", ret[1].IP)
+	require.Equal(t, "192.168.35.10", ret[2].IP)
 
 	l = NewOnDemandLister(mp, KindPrometheus, KindGrafana)
 	_, err = l.List(context.Background())

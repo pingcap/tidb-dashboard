@@ -7,16 +7,16 @@ import (
 )
 
 var (
-	errSignerNS           = errorx.NewNamespace("topo.desc_signer")
+	errSignerNS           = errorx.NewNamespace("topo.descriptor_signer")
 	ErrSignerBadInput     = errSignerNS.NewType("bad_input")
 	ErrSignerBadSignature = errSignerNS.NewType("bad_signature")
 )
 
-// CompDescSigner signs and verifies a Component Descriptor.
-type CompDescSigner interface {
+// CompDescriptorSigner signs and verifies a Component Desc.
+type CompDescriptorSigner interface {
 	// Sign creates a signed component descriptor.
-	Sign(d *CompDesc) (SignedCompDesc, error)
+	Sign(d *CompDescriptor) (SignedCompDescriptor, error)
 
 	// Verify verifies whether a signed component descriptor is correctly signed.
-	Verify(sd *SignedCompDesc) error
+	Verify(sd *SignedCompDescriptor) error
 }

@@ -65,7 +65,7 @@ func (t *profileTask) run() {
 	t.backend.LocalStore.Save(t.ProfileModel)
 }
 
-func (bundleTask *bundleTask) newProfileTask(now time.Time, target topo.CompDesc, profKind profutil.ProfKind) *profileTask {
+func (bundleTask *bundleTask) newProfileTask(now time.Time, target topo.CompDescriptor, profKind profutil.ProfKind) *profileTask {
 	return &profileTask{
 		ProfileModel: &ProfileModel{
 			BundleID:      bundleTask.ID,
@@ -89,7 +89,7 @@ type bundleTask struct {
 
 func (backend *StandardBackend) createAndRunBundle(
 	durationSec uint,
-	targets []topo.CompDesc,
+	targets []topo.CompDescriptor,
 	profilingKinds []profutil.ProfKind) (*bundleTask, error) {
 	log.Info("createAndRunBundle")
 	defer func() {

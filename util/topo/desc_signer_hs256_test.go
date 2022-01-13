@@ -10,10 +10,10 @@ import (
 )
 
 func TestHS256Signer(t *testing.T) {
-	signer := NewHS256CompDescSigner()
+	signer := NewHS256Signer()
 	require.NotNil(t, signer)
 
-	component := CompDesc{
+	component := CompDescriptor{
 		IP:         "topo-test.internal",
 		Port:       1234,
 		StatusPort: 4567,
@@ -31,15 +31,15 @@ func TestHS256Signer(t *testing.T) {
 	require.Error(t, err)
 	require.True(t, errorx.IsOfType(err, ErrSignerBadInput))
 
-	err = signer.Verify(&SignedCompDesc{})
+	err = signer.Verify(&SignedCompDescriptor{})
 	require.Error(t, err)
 	require.True(t, errorx.IsOfType(err, ErrSignerBadSignature))
 
-	err = signer.Verify(&SignedCompDesc{Signature: "hello"})
+	err = signer.Verify(&SignedCompDescriptor{Signature: "hello"})
 	require.Error(t, err)
 	require.True(t, errorx.IsOfType(err, ErrSignerBadSignature))
 
-	err = signer.Verify(&SignedCompDesc{Signature: "fffe"})
+	err = signer.Verify(&SignedCompDescriptor{Signature: "fffe"})
 	require.Error(t, err)
 	require.True(t, errorx.IsOfType(err, ErrSignerBadSignature))
 
@@ -58,7 +58,7 @@ func TestHS256Signer(t *testing.T) {
 	require.True(t, errorx.IsOfType(err, ErrSignerBadSignature))
 
 	// signature from another signer
-	signer2 := NewHS256CompDescSigner()
+	signer2 := NewHS256Signer()
 	require.NotNil(t, signer)
 	signedComponent2, err := signer2.Sign(&component)
 	require.NoError(t, err)

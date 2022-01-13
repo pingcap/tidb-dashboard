@@ -9,29 +9,29 @@ import (
 
 // CompInfo provides common information for a component.
 // It must not be persisted, as the runtime status may change at any time.
-// It must not be accepted directly from the user input. See SignedCompDesc.
+// It must not be accepted directly from the user input. See SignedCompDescriptor.
 // The contained descriptor is unsigned, which means it may not be very useful to be passed to users.
 // Call WithSignature() if you want to pass to users.
 type CompInfo struct {
-	Descriptor CompDesc
-	Version    string
-	Status     CompStatus
+	CompDescriptor
+	Version string
+	Status  CompStatus
 }
 
-func (i *CompInfo) WithSignature(signer CompDescSigner) (CompInfoWithSignedDesc, error) {
-	sd, err := signer.Sign(&i.Descriptor)
+func (i *CompInfo) WithSignature(signer CompDescriptorSigner) (CompInfoWithSignature, error) {
+	sd, err := signer.Sign(&i.CompDescriptor)
 	if err != nil {
-		return CompInfoWithSignedDesc{}, err
+		return CompInfoWithSignature{}, err
 	}
-	return CompInfoWithSignedDesc{
-		SignedDescriptor: sd,
-		Version:          i.Version,
-		Status:           i.Status,
+	return CompInfoWithSignature{
+		SignedCompDescriptor: sd,
+		Version:              i.Version,
+		Status:               i.Status,
 	}, nil
 }
 
-func BatchSignCompInfo(signer CompDescSigner, list []CompInfo) ([]CompInfoWithSignedDesc, error) {
-	signedList := make([]CompInfoWithSignedDesc, 0, len(list))
+func BatchSignCompInfo(signer CompDescriptorSigner, list []CompInfo) ([]CompInfoWithSignature, error) {
+	signedList := make([]CompInfoWithSignature, 0, len(list))
 	for _, info := range list {
 		signed, err := info.WithSignature(signer)
 		if err != nil {
@@ -42,12 +42,12 @@ func BatchSignCompInfo(signer CompDescSigner, list []CompInfo) ([]CompInfoWithSi
 	return signedList, nil
 }
 
-// CompInfoWithSignedDesc is a CompInfo where the descriptor is attached with a signature.
+// CompInfoWithSignature is a CompInfo where the descriptor is attached with a signature.
 // This struct can be passed to users so that users can securely pass signed descriptor back.
-type CompInfoWithSignedDesc struct {
-	SignedDescriptor SignedCompDesc
-	Version          string
-	Status           CompStatus
+type CompInfoWithSignature struct {
+	SignedCompDescriptor
+	Version string
+	Status  CompStatus
 }
 
 // Info is an interface implemented by all component info structures.

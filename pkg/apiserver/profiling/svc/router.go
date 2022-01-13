@@ -9,7 +9,7 @@ import (
 )
 
 func RegisterRouter(r *gin.RouterGroup, s *Service) {
-	r.POST("/profiling/targets/list", append(
+	r.GET("/profiling/targets/list", append(
 		s.backend.AuthFn(model.OpListTargets),
 		s.ListTargets,
 	)...)

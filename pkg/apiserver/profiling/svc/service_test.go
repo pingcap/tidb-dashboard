@@ -116,7 +116,7 @@ func TestService_DownloadBundleData(t *testing.T) {
 					Profile: model.Profile{
 						ProfileID: 1,
 						State:     model.ProfileStateSucceeded,
-						Target: topo.CompDesc{
+						Target: topo.CompDescriptor{
 							IP:         "example-tidb.internal",
 							Port:       4000,
 							StatusPort: 12345,
@@ -248,7 +248,7 @@ func TestService_RenderProfileData(t *testing.T) {
 				Profile: model.Profile{
 					ProfileID: 54,
 					State:     model.ProfileStateSucceeded,
-					Target: topo.CompDesc{
+					Target: topo.CompDescriptor{
 						IP:         "example-tidb.internal",
 						Port:       4000,
 						StatusPort: 12345,
@@ -270,7 +270,7 @@ func TestService_RenderProfileData(t *testing.T) {
 				Profile: model.Profile{
 					ProfileID: 80,
 					State:     model.ProfileStateSucceeded,
-					Target: topo.CompDesc{
+					Target: topo.CompDescriptor{
 						IP:   "example-pd.internal",
 						Port: 2379,
 						Kind: topo.KindPD,

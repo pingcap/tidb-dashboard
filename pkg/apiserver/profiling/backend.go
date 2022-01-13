@@ -24,7 +24,7 @@ type Params struct {
 	fx.In
 	LocalStore   *dbstore.DB
 	Auth         *user.AuthService
-	CompSigner   topo.CompDescSigner
+	CompSigner   topo.CompDescriptorSigner
 	TopoProvider topo.TopologyProvider
 }
 
@@ -66,12 +66,6 @@ func NewStandardBackend(lc fx.Lifecycle, p Params, httpClients clientbundle.HTTP
 		},
 	})
 	return backend
-}
-
-func (backend *StandardBackend) Capabilities() []model.Capability {
-	return []model.Capability{
-		model.CapStartNewBundle,
-	}
 }
 
 func (backend *StandardBackend) AuthFn(ops ...model.Operation) []gin.HandlerFunc {

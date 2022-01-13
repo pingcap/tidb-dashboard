@@ -10,39 +10,39 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/jsonserde"
 )
 
-// CompDescHS256Signer is a signer that use HS256 jwt to sign and verify the component list.
-type CompDescHS256Signer struct {
+// HS256Signer is a signer that use HS256 jwt to sign and verify the component list.
+type HS256Signer struct {
 	secret *[32]byte
 }
 
-var _ CompDescSigner = &CompDescHS256Signer{}
+var _ CompDescriptorSigner = &HS256Signer{}
 
-func NewHS256CompDescSigner() CompDescSigner {
-	return &CompDescHS256Signer{
+func NewHS256Signer() CompDescriptorSigner {
+	return &HS256Signer{
 		secret: cryptopasta.NewHMACKey(),
 	}
 }
 
-func (s *CompDescHS256Signer) serializeMessage(d *CompDesc) ([]byte, error) {
+func (s *HS256Signer) serializeMessage(d *CompDescriptor) ([]byte, error) {
 	return jsonserde.Default.Marshal(d)
 }
 
-func (s *CompDescHS256Signer) Sign(d *CompDesc) (SignedCompDesc, error) {
+func (s *HS256Signer) Sign(d *CompDescriptor) (SignedCompDescriptor, error) {
 	if d == nil {
-		return SignedCompDesc{}, ErrSignerBadInput.New("input is nil")
+		return SignedCompDescriptor{}, ErrSignerBadInput.New("input is nil")
 	}
 	message, err := s.serializeMessage(d)
 	if err != nil {
-		return SignedCompDesc{}, ErrSignerBadInput.WrapWithNoMessage(err)
+		return SignedCompDescriptor{}, ErrSignerBadInput.WrapWithNoMessage(err)
 	}
 	signature := cryptopasta.GenerateHMAC(message, s.secret)
-	return SignedCompDesc{
-		CompDesc:  *d,
-		Signature: hex.EncodeToString(signature),
+	return SignedCompDescriptor{
+		CompDescriptor: *d,
+		Signature:      hex.EncodeToString(signature),
 	}, nil
 }
 
-func (s *CompDescHS256Signer) Verify(sd *SignedCompDesc) error {
+func (s *HS256Signer) Verify(sd *SignedCompDescriptor) error {
 	if sd == nil {
 		return ErrSignerBadInput.New("input is nil")
 	}
@@ -50,7 +50,7 @@ func (s *CompDescHS256Signer) Verify(sd *SignedCompDesc) error {
 	if err != nil {
 		return ErrSignerBadSignature.NewWithNoMessage()
 	}
-	message, err := s.serializeMessage(&sd.CompDesc)
+	message, err := s.serializeMessage(&sd.CompDescriptor)
 	if err != nil {
 		return ErrSignerBadSignature.NewWithNoMessage()
 	}

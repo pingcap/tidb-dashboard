@@ -21,7 +21,7 @@ func TestIsProfKindValid(t *testing.T) {
 }
 
 func Test_resolvePProfAPI(t *testing.T) {
-	host, port, err := resolvePProfAPI(topo.CompDesc{
+	host, port, err := resolvePProfAPI(topo.CompDescriptor{
 		IP:         "test-pd.example-domain.internal",
 		Port:       4000,
 		StatusPort: 10080,
@@ -31,7 +31,7 @@ func Test_resolvePProfAPI(t *testing.T) {
 	require.Equal(t, "test-pd.example-domain.internal", host)
 	require.EqualValues(t, 10080, port)
 
-	_, _, err = resolvePProfAPI(topo.CompDesc{
+	_, _, err = resolvePProfAPI(topo.CompDescriptor{
 		IP:         "test-prometheus.example-domain.internal",
 		Port:       9090,
 		StatusPort: 0,
@@ -43,23 +43,23 @@ func Test_resolvePProfAPI(t *testing.T) {
 func TestIsProfSupported(t *testing.T) {
 	require.True(t, IsProfSupported(Config{
 		ProfilingKind: ProfKindCPU,
-		Target:        topo.CompDesc{Kind: topo.KindTiKV},
+		Target:        topo.CompDescriptor{Kind: topo.KindTiKV},
 	}))
 	require.True(t, IsProfSupported(Config{
 		ProfilingKind: ProfKindGoroutine,
-		Target:        topo.CompDesc{Kind: topo.KindTiDB},
+		Target:        topo.CompDescriptor{Kind: topo.KindTiDB},
 	}))
 	require.False(t, IsProfSupported(Config{
 		ProfilingKind: ProfKindHeap,
-		Target:        topo.CompDesc{Kind: topo.KindTiKV},
+		Target:        topo.CompDescriptor{Kind: topo.KindTiKV},
 	}))
 	require.False(t, IsProfSupported(Config{
 		ProfilingKind: "fooKind",
-		Target:        topo.CompDesc{Kind: topo.KindTiDB},
+		Target:        topo.CompDescriptor{Kind: topo.KindTiDB},
 	}))
 	require.False(t, IsProfSupported(Config{
 		ProfilingKind: ProfKindCPU,
-		Target:        topo.CompDesc{Kind: "fooComponent"},
+		Target:        topo.CompDescriptor{Kind: "fooComponent"},
 	}))
 }
 
@@ -111,7 +111,7 @@ sampling period=10
 	resultType, err := p.fetch(Config{
 		ProfilingKind: ProfKindMutex, // This doesn't matter
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "172.16.6.171",
 			Port:       2379,
 			StatusPort: 0,
@@ -126,7 +126,7 @@ sampling period=10
 	_, err = p.fetch(Config{
 		ProfilingKind: ProfKindMutex,
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "example.internal",
 			Port:       4000,
 			StatusPort: 10080,
@@ -141,7 +141,7 @@ sampling period=10
 	_, err = p.fetch(Config{
 		ProfilingKind: ProfKindMutex,
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "example.internal",
 			Port:       4000,
 			StatusPort: 10080,
@@ -156,7 +156,7 @@ sampling period=10
 	resultType, err = p.fetch(Config{
 		ProfilingKind: ProfKindMutex, // This doesn't matter
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "example-tidb.internal",
 			Port:       4000,
 			StatusPort: 10080,
@@ -189,7 +189,7 @@ sampling period=10
 	resultType, err := FetchProfile(Config{
 		ProfilingKind: ProfKindMutex,
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "abc.internal",
 			Port:       2379,
 			StatusPort: 0,
@@ -204,7 +204,7 @@ sampling period=10
 	resultType, err = FetchProfile(Config{
 		ProfilingKind: ProfKindCPU,
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "def.internal",
 			Port:       20111,
 			StatusPort: 20180,
@@ -219,7 +219,7 @@ sampling period=10
 	resultType, err = FetchProfile(Config{
 		ProfilingKind: ProfKindMutex,
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "example-tidb.internal",
 			Port:       1234,
 			StatusPort: 10080,
@@ -234,7 +234,7 @@ sampling period=10
 	resultType, err = FetchProfile(Config{
 		ProfilingKind: ProfKindHeap,
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "xyz.internal",
 			Port:       1234,
 			StatusPort: 5678,
@@ -249,7 +249,7 @@ sampling period=10
 	resultType, err = FetchProfile(Config{
 		ProfilingKind: ProfKindHeap,
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "xyz.internal",
 			Port:       1234,
 			StatusPort: 5678,
@@ -264,7 +264,7 @@ sampling period=10
 	resultType, err = FetchProfile(Config{
 		ProfilingKind: ProfKindGoroutine,
 		Client:        client,
-		Target: topo.CompDesc{
+		Target: topo.CompDescriptor{
 			IP:         "foo.internal",
 			Port:       1234,
 			StatusPort: 5678,

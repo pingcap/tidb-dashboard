@@ -116,7 +116,7 @@ func (s *Service) Start(ctx context.Context) error {
 			newSqliteDB,
 			pdtopo.NewTopologyProviderFromPD,
 			s.provideLocals,
-			topo.NewHS256CompDescSigner,
+			topo.NewHS256Signer,
 			httpc.NewHTTPClient,
 			pd.NewEtcdClient,
 			pd.NewPDClient,

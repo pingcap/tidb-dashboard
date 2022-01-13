@@ -24,17 +24,7 @@ const (
 	OpGetBundleData
 )
 
-//go:generate stringer -type=Capability
-type Capability int
-
-const (
-	CapStartNewBundle Capability = iota
-)
-
 type Backend interface {
-	// Capabilities give hints about the feature this backend supports.
-	Capabilities() []Capability
-
 	// AuthFn authenticates the request.
 	AuthFn(...Operation) []gin.HandlerFunc
 
@@ -62,13 +52,13 @@ type Backend interface {
 var _ Backend = (*MockBackend)(nil)
 
 type ListTargetsResp struct {
-	Targets []topo.CompInfoWithSignedDesc
+	Targets []topo.CompInfoWithSignature
 }
 
 type StartBundleReq struct {
 	DurationSec uint
 	Kinds       []profutil.ProfKind
-	Targets     []topo.SignedCompDesc
+	Targets     []topo.SignedCompDescriptor
 }
 
 type StartBundleResp struct {
@@ -113,7 +103,7 @@ type GetBundleReq struct {
 type Profile struct {
 	ProfileID uint
 	State     ProfileState
-	Target    topo.CompDesc
+	Target    topo.CompDescriptor
 	Kind      profutil.ProfKind
 	Error     string
 	StartAt   time.Time

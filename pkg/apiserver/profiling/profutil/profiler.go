@@ -45,7 +45,7 @@ type Config struct {
 	// Note: The configured default base URL of the client will be discarded and
 	// always overridden by the host and port specified by the Target.
 	Client *httpclient.Client
-	Target topo.CompDesc
+	Target topo.CompDescriptor
 
 	DurationSec uint
 }
@@ -80,7 +80,7 @@ func FetchProfile(config Config, w io.Writer) (ProfDataType, error) {
 	return profilers[config.ProfilingKind].fetch(config, w)
 }
 
-func resolvePProfAPI(cd topo.CompDesc) (host string, port uint, err error) {
+func resolvePProfAPI(cd topo.CompDescriptor) (host string, port uint, err error) {
 	switch cd.Kind {
 	case topo.KindTiDB:
 		return cd.IP, cd.StatusPort, nil

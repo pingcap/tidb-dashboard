@@ -23,5 +23,4 @@ else
 fi
 
 # Run Tiup
-tiup update playground
-playground ${tidb_version} --tiflash=0 &> start_tiup.log &
+$TIUP_BIN_DIR playground ${tidb_version} --tiflash=0 &> start_tiup.log &

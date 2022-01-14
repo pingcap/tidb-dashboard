@@ -12,6 +12,7 @@ describe('SlowQuery list page', () => {
   beforeEach(function () {
     cy.login('root')
     cy.visit(this.uri.slow_query)
+    cy.url().should('include', this.uri.slow_query)
   })
 
   describe('Initialize slow query page', () => {

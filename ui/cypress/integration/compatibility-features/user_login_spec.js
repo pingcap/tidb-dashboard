@@ -44,7 +44,7 @@ describe('User Login', () => {
     it('nonRoot user with correct password', function () {
       cy.get('[data-e2e=signin_username_input]').clear().type('test')
       cy.get('[data-e2e="signin_password_input"]').type('test_pwd{enter}')
-      cy.url().should('include', `${this.uri.overview}`)
+      cy.url().should('include', this.uri.overview)
     })
 
     it('nonRoot user with incorrect password', () => {

@@ -12,20 +12,20 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/nocopy"
 )
 
-type Server struct {
+type Controller struct {
 	nocopy.NoCopy
 	secret []byte
 }
 
-func NewServer() *Server {
-	return &Server{
+func NewController() *Controller {
+	return &Controller{
 		secret: cryptopasta.NewHMACKey()[:],
 	}
 }
 
 // Secret returns the secret used to sign the token.
 // This function is concurrent-safe.
-func (s *Server) Secret() []byte {
+func (s *Controller) Secret() []byte {
 	return s.secret
 }
 
@@ -33,7 +33,7 @@ func (s *Server) Secret() []byte {
 // The token is safe to be passed back later without an authentication check so that it can be used to start
 // a browser download easily.
 // This function is concurrent-safe.
-func (s *Server) GetDownloadToken(claims jwt.Claims) (string, error) {
+func (s *Controller) GetDownloadToken(claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenSigned, err := token.SignedString(s.secret)
 	if err != nil {
@@ -46,7 +46,7 @@ func (s *Server) GetDownloadToken(claims jwt.Claims) (string, error) {
 // If an expiration time is specified in the original token, it will be checked.
 // WARN: The audience and the issuer are never checked by this function. You must check manually if needed.
 // This function is concurrent-safe.
-func (s *Server) HandleDownloadToken(tokenString string, outputClaims jwt.Claims) error {
+func (s *Controller) HandleDownloadToken(tokenString string, outputClaims jwt.Claims) error {
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		outputClaims,

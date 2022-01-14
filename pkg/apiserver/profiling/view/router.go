@@ -1,36 +1,34 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
-package svc
+package view
 
 import (
 	"github.com/gin-gonic/gin"
-
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/svc/model"
 )
 
-func RegisterRouter(r *gin.RouterGroup, s *Service) {
+func RegisterRouter(r *gin.RouterGroup, s *View) {
 	r.POST("/profiling/targets/list", append(
-		s.backend.AuthFn(model.OpListTargets),
+		s.model.AuthFn(OpListTargets),
 		s.ListTargets,
 	)...)
 
 	r.POST("/profiling/bundle/start", append(
-		s.backend.AuthFn(model.OpStartBundle),
+		s.model.AuthFn(OpStartBundle),
 		s.StartBundle,
 	)...)
 
 	r.POST("/profiling/bundle/list", append(
-		s.backend.AuthFn(model.OpListBundles),
+		s.model.AuthFn(OpListBundles),
 		s.ListBundles,
 	)...)
 
 	r.POST("/profiling/bundle/get", append(
-		s.backend.AuthFn(model.OpGetBundle),
+		s.model.AuthFn(OpGetBundle),
 		s.GetBundle,
 	)...)
 
 	r.POST("/profiling/bundle/download_token", append(
-		s.backend.AuthFn(model.OpGetBundleData),
+		s.model.AuthFn(OpGetBundleData),
 		s.GetTokenForBundleData,
 	)...)
 
@@ -39,7 +37,7 @@ func RegisterRouter(r *gin.RouterGroup, s *Service) {
 	)
 
 	r.POST("/profiling/profile/download_token", append(
-		s.backend.AuthFn(model.OpGetProfileData),
+		s.model.AuthFn(OpGetProfileData),
 		s.GetTokenForProfileData,
 	)...)
 

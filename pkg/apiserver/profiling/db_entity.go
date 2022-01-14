@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/profutil"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/svc/model"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/view"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/util/jsonserde"
 	"github.com/pingcap/tidb-dashboard/util/topo"
@@ -30,10 +30,10 @@ func (r ProfKindList) Value() (driver.Value, error) {
 	return string(val), err
 }
 
-type ProfileModel struct {
+type ProfileEntity struct {
 	ID            uint                `gorm:"primary_key"`
 	BundleID      uint                `gorm:"index"`
-	State         model.ProfileState  `gorm:"index"`
+	State         view.ProfileState   `gorm:"index"`
 	Target        topo.CompDescriptor `gorm:"type:TEXT"`
 	Kind          profutil.ProfKind
 	Error         string `gorm:"type:TEXT"`
@@ -43,13 +43,13 @@ type ProfileModel struct {
 	RawDataType   profutil.ProfDataType
 }
 
-func (ProfileModel) TableName() string {
+func (ProfileEntity) TableName() string {
 	return "profiling_v2_profiles"
 }
 
-func (m *ProfileModel) ToStandardModel(now time.Time) model.Profile {
+func (m *ProfileEntity) ToViewModel(now time.Time) view.Profile {
 	var progress float32
-	if m.State == model.ProfileStateError || m.State == model.ProfileStateSkipped || m.State == model.ProfileStateSucceeded {
+	if m.State == view.ProfileStateError || m.State == view.ProfileStateSkipped || m.State == view.ProfileStateSucceeded {
 		progress = 1
 	} else {
 		plannedSecs := m.EstimateEndAt - m.StartAt
@@ -69,7 +69,7 @@ func (m *ProfileModel) ToStandardModel(now time.Time) model.Profile {
 			progress = float32(elapsedSecs) / float32(plannedSecs)
 		}
 	}
-	return model.Profile{
+	return view.Profile{
 		ProfileID: m.ID,
 		State:     m.State,
 		Target:    m.Target,
@@ -81,21 +81,21 @@ func (m *ProfileModel) ToStandardModel(now time.Time) model.Profile {
 	}
 }
 
-type BundleModel struct {
-	ID           uint              `gorm:"primary_key"`
-	State        model.BundleState `gorm:"index"`
+type BundleEntity struct {
+	ID           uint             `gorm:"primary_key"`
+	State        view.BundleState `gorm:"index"`
 	DurationSec  uint
 	TargetsCount topo.CompCount `gorm:"type:TEXT"`
 	StartAt      int64
 	Kinds        ProfKindList `gorm:"type:TEXT"`
 }
 
-func (BundleModel) TableName() string {
+func (BundleEntity) TableName() string {
 	return "profiling_v2_bundles"
 }
 
-func (m *BundleModel) ToStandardModel() model.Bundle {
-	return model.Bundle{
+func (m *BundleEntity) ToViewModel() view.Bundle {
+	return view.Bundle{
 		BundleID:     m.ID,
 		State:        m.State,
 		DurationSec:  m.DurationSec,
@@ -106,5 +106,5 @@ func (m *BundleModel) ToStandardModel() model.Bundle {
 }
 
 func autoMigrate(db *dbstore.DB) error {
-	return db.AutoMigrate(&ProfileModel{}, &BundleModel{})
+	return db.AutoMigrate(&ProfileEntity{}, &BundleEntity{})
 }

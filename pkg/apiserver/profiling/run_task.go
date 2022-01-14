@@ -11,16 +11,16 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/profutil"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/svc/model"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/view"
 	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
 // profileTask is associated with a profiling record. It is the in-memory representation of the record with some
 // state managements.
 type profileTask struct {
-	*ProfileModel
-	backend     *StandardBackend
-	bundleModel *BundleModel
+	*ProfileEntity
+	model        *StandardModelImpl
+	bundleEntity *BundleEntity
 }
 
 func (t *profileTask) run() {
@@ -29,65 +29,65 @@ func (t *profileTask) run() {
 		log.Info("profileTask.runFinish", zap.Uint("id", t.ID))
 	}()
 
-	client := t.backend.HTTPClientBundle.GetHTTPClientByComponentKind(t.Target.Kind)
+	client := t.model.HTTPClientBundle.GetHTTPClientByComponentKind(t.Target.Kind)
 	if client == nil {
 		// We cannot send request to this component kind
-		t.State = model.ProfileStateSkipped
-		t.backend.LocalStore.Save(t.ProfileModel)
+		t.State = view.ProfileStateSkipped
+		t.model.LocalStore.Save(t.ProfileEntity)
 		return
 	}
 
 	config := profutil.Config{
-		Context:       t.backend.ctx,
+		Context:       t.model.ctx,
 		ProfilingKind: t.Kind,
 		Client:        client,
 		Target:        t.Target,
-		DurationSec:   t.bundleModel.DurationSec,
+		DurationSec:   t.bundleEntity.DurationSec,
 	}
 	if !profutil.IsProfSupported(config) {
-		t.State = model.ProfileStateSkipped
-		t.backend.LocalStore.Save(t.ProfileModel)
+		t.State = view.ProfileStateSkipped
+		t.model.LocalStore.Save(t.ProfileEntity)
 		return
 	}
 
 	memBuf := bytes.Buffer{}
 	dataType, err := profutil.FetchProfile(config, &memBuf)
 	if err != nil {
-		t.State = model.ProfileStateError
+		t.State = view.ProfileStateError
 		t.Error = err.Error()
-		t.backend.LocalStore.Save(t.ProfileModel)
+		t.model.LocalStore.Save(t.ProfileEntity)
 		return
 	}
 
 	t.RawData = memBuf.Bytes()
 	t.RawDataType = dataType
-	t.State = model.ProfileStateSucceeded
-	t.backend.LocalStore.Save(t.ProfileModel)
+	t.State = view.ProfileStateSucceeded
+	t.model.LocalStore.Save(t.ProfileEntity)
 }
 
 func (bundleTask *bundleTask) newProfileTask(now time.Time, target topo.CompDescriptor, profKind profutil.ProfKind) *profileTask {
 	return &profileTask{
-		ProfileModel: &ProfileModel{
+		ProfileEntity: &ProfileEntity{
 			BundleID:      bundleTask.ID,
-			State:         model.ProfileStateRunning,
+			State:         view.ProfileStateRunning,
 			Target:        target,
 			Kind:          profKind,
 			StartAt:       now.Unix(),
 			EstimateEndAt: now.Unix() + int64(bundleTask.DurationSec),
 			RawDataType:   profutil.ProfDataTypeUnknown,
 		},
-		backend:     bundleTask.backend,
-		bundleModel: bundleTask.BundleModel,
+		model:        bundleTask.model,
+		bundleEntity: bundleTask.BundleEntity,
 	}
 }
 
 // bundleTask is associated with a bundle record.
 type bundleTask struct {
-	*BundleModel
-	backend *StandardBackend
+	*BundleEntity
+	model *StandardModelImpl
 }
 
-func (backend *StandardBackend) createAndRunBundle(
+func (model *StandardModelImpl) createAndRunBundle(
 	durationSec uint,
 	targets []topo.CompDescriptor,
 	profilingKinds []profutil.ProfKind) (*bundleTask, error) {
@@ -99,17 +99,17 @@ func (backend *StandardBackend) createAndRunBundle(
 	now := time.Now()
 
 	bundleTask := &bundleTask{
-		BundleModel: &BundleModel{
-			State:        model.BundleStateRunning,
+		BundleEntity: &BundleEntity{
+			State:        view.BundleStateRunning,
 			DurationSec:  durationSec,
 			TargetsCount: topo.CountComponents(targets),
 			StartAt:      now.Unix(),
 			Kinds:        profilingKinds,
 		},
-		backend: backend,
+		model: model,
 	}
 
-	if err := backend.LocalStore.Create(bundleTask.BundleModel).Error; err != nil {
+	if err := model.LocalStore.Create(bundleTask.BundleEntity).Error; err != nil {
 		return nil, err
 	}
 
@@ -117,15 +117,15 @@ func (backend *StandardBackend) createAndRunBundle(
 	for _, target := range targets {
 		for _, profilingKind := range profilingKinds {
 			profileTask := bundleTask.newProfileTask(now, target, profilingKind)
-			backend.LocalStore.Create(profileTask.ProfileModel)
+			model.LocalStore.Create(profileTask.ProfileEntity)
 			profileTasks = append(profileTasks, profileTask)
 		}
 	}
 
-	backend.bundleTaskWg.Add(1)
+	model.bundleTaskWg.Add(1)
 	go func() {
 		log.Info("createAndRunBundle async goroutine")
-		defer backend.bundleTaskWg.Done()
+		defer model.bundleTaskWg.Done()
 
 		var taskTg sync.WaitGroup
 		for i := 0; i < len(profileTasks); i++ {
@@ -140,22 +140,22 @@ func (backend *StandardBackend) createAndRunBundle(
 		errorTasks := 0
 		finishedTasks := 0
 		for _, profileTask := range profileTasks {
-			if profileTask.State == model.ProfileStateError {
+			if profileTask.State == view.ProfileStateError {
 				errorTasks++
-			} else if profileTask.State == model.ProfileStateSkipped || profileTask.State == model.ProfileStateSucceeded {
+			} else if profileTask.State == view.ProfileStateSkipped || profileTask.State == view.ProfileStateSucceeded {
 				finishedTasks++
 			}
 		}
 		if errorTasks > 0 {
 			if finishedTasks > 0 {
-				bundleTask.State = model.BundleStatePartialSucceeded
+				bundleTask.State = view.BundleStatePartialSucceeded
 			} else {
-				bundleTask.State = model.BundleStateAllFailed
+				bundleTask.State = view.BundleStateAllFailed
 			}
 		} else {
-			bundleTask.State = model.BundleStateAllSucceeded
+			bundleTask.State = view.BundleStateAllSucceeded
 		}
-		backend.LocalStore.Save(bundleTask.BundleModel)
+		model.LocalStore.Save(bundleTask.BundleEntity)
 	}()
 
 	return bundleTask, nil

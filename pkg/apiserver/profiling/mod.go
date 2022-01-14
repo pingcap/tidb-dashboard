@@ -5,11 +5,11 @@ package profiling
 import (
 	"go.uber.org/fx"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/svc"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/view"
 )
 
 var Mod = fx.Options(
-	fx.Provide(NewStandardBackend),
-	fx.Provide(svc.NewService),
-	fx.Invoke(svc.RegisterRouter),
+	fx.Provide(NewStandardModelImpl),
+	fx.Provide(view.NewView),
+	fx.Invoke(view.RegisterRouter),
 )

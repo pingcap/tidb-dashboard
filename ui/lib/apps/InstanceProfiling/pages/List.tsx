@@ -13,8 +13,8 @@ import styles from './List.module.less'
 import { upperFirst } from 'lodash'
 import InstanceSelectV2 from '@lib/components/InstanceSelectV2'
 import client, {
-  ModelBundle,
-  ModelStartBundleReq,
+  ViewBundle,
+  ViewStartBundleReq,
   TopoCompInfoWithSignature,
   TopoSignedCompDescriptor,
 } from '@lib/client'
@@ -62,7 +62,7 @@ export default function Page() {
           .map((sig) => targetsBySignature[sig])
           .filter((v) => !!v)
 
-      const req: ModelStartBundleReq = {
+      const req: ViewStartBundleReq = {
         duration_sec: fieldsValue.duration,
         kinds: fieldsValue.type.map((t) => t.toLowerCase()),
         targets: selectedTargets,
@@ -79,7 +79,7 @@ export default function Page() {
   )
 
   const handleRowClick = usePersistFn(
-    (rec: ModelBundle, _idx, ev: React.MouseEvent<HTMLElement>) => {
+    (rec: ViewBundle, _idx, ev: React.MouseEvent<HTMLElement>) => {
       openLink(`/instance_profiling/detail?id=${rec.bundle_id}`, ev, navigate)
     }
   )
@@ -91,7 +91,7 @@ export default function Page() {
         key: 'targets',
         minWidth: 150,
         maxWidth: 250,
-        onRender: (rec: ModelBundle) => {
+        onRender: (rec: ViewBundle) => {
           return stringifyTopoCount(rec.targets_count ?? {})
         },
       },
@@ -100,7 +100,7 @@ export default function Page() {
         key: 'status',
         minWidth: 100,
         maxWidth: 150,
-        onRender: (rec: ModelBundle) => {
+        onRender: (rec: ViewBundle) => {
           if (rec.state === BundleState.AllFailed) {
             return (
               <Badge
@@ -146,7 +146,7 @@ export default function Page() {
         key: 'started_at',
         minWidth: 160,
         maxWidth: 220,
-        onRender: (rec: ModelBundle) => {
+        onRender: (rec: ViewBundle) => {
           return <DateTime.Calendar unixTimestampMs={rec.start_at ?? 0} />
         },
       },
@@ -164,7 +164,7 @@ export default function Page() {
         key: 'types',
         minWidth: 100,
         maxWidth: 200,
-        onRender: (rec: ModelBundle) => {
+        onRender: (rec: ViewBundle) => {
           return (rec.kinds ?? ['cpu'])
             .map((p) => (p === 'cpu' ? 'CPU' : upperFirst(p)))
             .join(', ')

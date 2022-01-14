@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { upperFirst } from 'lodash'
-import client, { ModelBundle, ModelProfile } from '@lib/client'
+import client, { ViewBundle, ViewProfile } from '@lib/client'
 import { CardTable, DateTime, Head, Descriptions } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
@@ -25,7 +25,7 @@ enum ViewAsOptions {
   Raw = 'raw',
 }
 
-function isFinished(bundle?: ModelBundle) {
+function isFinished(bundle?: ViewBundle) {
   return (
     [
       BundleState.AllFailed,
@@ -55,11 +55,11 @@ export default function Page() {
   const profileDuration = data?.bundle?.duration_sec ?? 0
 
   const [tableData, groupData] = useMemo(() => {
-    const newRows: ModelProfile[] = []
+    const newRows: ViewProfile[] = []
     const newGroups: IGroup[] = []
     let startIndex = 0
 
-    const profilesByComponent: Record<InstanceKind, ModelProfile[]> = _.groupBy(
+    const profilesByComponent: Record<InstanceKind, ViewProfile[]> = _.groupBy(
       data?.profiles ?? [],
       'target.kind'
     ) as any
@@ -82,7 +82,7 @@ export default function Page() {
   }, [data])
 
   const openResult = useCallback(
-    async (viewAs: ViewAsOptions, rec: ModelProfile) => {
+    async (viewAs: ViewAsOptions, rec: ViewProfile) => {
       switch (viewAs) {
         case ViewAsOptions.Raw: {
           const token = await client
@@ -141,7 +141,7 @@ export default function Page() {
         key: 'instance',
         minWidth: 150,
         maxWidth: 250,
-        onRender: (record: ModelProfile) => {
+        onRender: (record: ViewProfile) => {
           return `${record.target?.ip}:${record.target?.port}`
         },
       },
@@ -150,7 +150,7 @@ export default function Page() {
         key: 'content',
         minWidth: 100,
         maxWidth: 150,
-        onRender: (record: ModelProfile) => {
+        onRender: (record: ViewProfile) => {
           if (record.kind === 'cpu') {
             return `CPU - ${profileDuration}s`
           } else {
@@ -163,7 +163,7 @@ export default function Page() {
         key: 'status',
         minWidth: 150,
         maxWidth: 200,
-        onRender: (record: ModelProfile) => {
+        onRender: (record: ViewProfile) => {
           if (record.state === ProfileState.Running) {
             return (
               <div style={{ width: 200 }}>
@@ -224,7 +224,7 @@ export default function Page() {
         key: 'view_as',
         minWidth: 150,
         maxWidth: 200,
-        onRender: (record: ModelProfile) => {
+        onRender: (record: ViewProfile) => {
           if (record.state === ProfileState.Error) {
             return <a href="javascript:;">Error</a>
           }
@@ -273,7 +273,7 @@ export default function Page() {
     }`
   }, [id])
 
-  const getKey = useCallback((rec: ModelProfile) => {
+  const getKey = useCallback((rec: ViewProfile) => {
     return `${rec.kind}${rec.target?.ip}${rec.target?.port}`
   }, [])
 

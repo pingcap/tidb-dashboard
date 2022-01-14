@@ -1,6 +1,6 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
-package svc
+package view
 
 import (
 	"archive/zip"
@@ -17,105 +17,104 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/profutil"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/svc/model"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/testutil/gintest"
 	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
-func TestService_StartBundle(t *testing.T) {
-	mb := new(model.MockBackend)
-	mb.
+func TestView_StartBundle(t *testing.T) {
+	mm := new(MockModel)
+	mm.
 		On("StartBundle", mock.Anything).
-		Return(model.StartBundleResp{BundleID: 5}, nil)
-	service := NewService(mb)
+		Return(StartBundleResp{BundleID: 5}, nil)
+	view := NewView(mm)
 
 	c, r := gintest.CtxPost(nil, `abc`)
-	service.StartBundle(c)
+	view.StartBundle(c)
 	require.Len(t, c.Errors, 1)
 	require.Error(t, c.Errors[0])
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
 	c, r = gintest.CtxPost(nil, `{"targets":[],"kinds":["cpu"]}`)
-	service.StartBundle(c)
+	view.StartBundle(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "Expect at least 1 target")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
 	c, r = gintest.CtxPost(nil, `{"targets":[{"signature":"foo"},{"signature":"bar"}],"kinds":[]}`)
-	service.StartBundle(c)
+	view.StartBundle(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "Expect at least 1 profiling kind")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
 	c, r = gintest.CtxPost(nil, `{"targets":[{"signature":"foo"},{"signature":"bar"}],"kinds":["cpu"]}`)
-	service.StartBundle(c)
+	view.StartBundle(c)
 	require.Empty(t, c.Errors)
 	require.Equal(t, http.StatusOK, r.Code)
 	require.JSONEq(t, `{"bundle_id":5}`, r.Body.String())
 
 	c, r = gintest.CtxPost(nil, `{"targets":[{"signature":"foo"},{"signature":"bar"}],"kinds":["xyz"]}`)
-	service.StartBundle(c)
+	view.StartBundle(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "Unsupported profiling kind xyz")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
-	mb.AssertExpectations(t)
+	mm.AssertExpectations(t)
 }
 
-func TestService_DownloadBundleData(t *testing.T) {
-	mb := new(model.MockBackend)
-	service := NewService(mb)
+func TestView_DownloadBundleData(t *testing.T) {
+	mm := new(MockModel)
+	view := NewView(mm)
 
 	c, r := gintest.CtxPost(nil, `abc`)
-	service.GetTokenForBundleData(c)
+	view.GetTokenForBundleData(c)
 	require.Len(t, c.Errors, 1)
 	require.Error(t, c.Errors[0])
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
 	c, r = gintest.CtxPost(nil, `{"bundle_id":58}`)
-	service.GetTokenForBundleData(c)
+	view.GetTokenForBundleData(c)
 	require.Empty(t, c.Errors)
 	require.Equal(t, http.StatusOK, r.Code)
 	token := r.Body.String() // save a correct token for later tests
 	require.NotEmpty(t, token)
 
 	c, r = gintest.CtxGet(nil)
-	service.DownloadBundleData(c)
+	view.DownloadBundleData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "download token is invalid")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
 	c, r = gintest.CtxGet(url.Values{"token": []string{"invalid"}})
-	service.DownloadBundleData(c)
+	view.DownloadBundleData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "download token is invalid")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
-	mb.
-		On("GetBundleData", mock.MatchedBy(func(req model.GetBundleDataReq) bool {
+	mm.
+		On("GetBundleData", mock.MatchedBy(func(req GetBundleDataReq) bool {
 			return req.BundleID == 58
 		})).
-		Return(model.GetBundleDataResp{
-			Profiles: []model.ProfileWithData{
+		Return(GetBundleDataResp{
+			Profiles: []ProfileWithData{
 				{
-					Profile: model.Profile{
+					Profile: Profile{
 						ProfileID: 5,
-						State:     model.ProfileStateSkipped,
+						State:     ProfileStateSkipped,
 					},
 					Data: []byte("data"),
 				},
 				{
-					Profile: model.Profile{
+					Profile: Profile{
 						ProfileID: 1,
-						State:     model.ProfileStateSucceeded,
+						State:     ProfileStateSucceeded,
 						Target: topo.CompDescriptor{
 							IP:         "example-tidb.internal",
 							Port:       4000,
@@ -130,9 +129,9 @@ func TestService_DownloadBundleData(t *testing.T) {
 					Data: []byte("sample mutex output"),
 				},
 				{
-					Profile: model.Profile{
+					Profile: Profile{
 						ProfileID: 7,
-						State:     model.ProfileStateSucceeded,
+						State:     ProfileStateSucceeded,
 						Kind:      profutil.ProfKindCPU,
 						StartAt:   time.Unix(1641720252, 0),
 						Progress:  1,
@@ -143,10 +142,10 @@ func TestService_DownloadBundleData(t *testing.T) {
 			},
 		}, nil).
 		On("GetBundleData", mock.Anything).
-		Return(model.GetBundleDataResp{}, fmt.Errorf("not found"))
+		Return(GetBundleDataResp{}, fmt.Errorf("not found"))
 
 	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
-	service.DownloadBundleData(c)
+	view.DownloadBundleData(c)
 	require.Empty(t, c.Errors)
 	require.NotEmpty(t, r.Body.Bytes())
 
@@ -168,47 +167,47 @@ func TestService_DownloadBundleData(t *testing.T) {
 	// Generate another token that points to a non-existed record,
 	// and then use the new token for downloading
 	c, r = gintest.CtxPost(nil, `{"bundle_id":999}`)
-	service.GetTokenForBundleData(c)
+	view.GetTokenForBundleData(c)
 	require.Empty(t, c.Errors)
 	require.Equal(t, http.StatusOK, r.Code)
 	token2 := r.Body.String()
 	require.NotEmpty(t, token2)
 
 	c, r = gintest.CtxGet(url.Values{"token": []string{token2}})
-	service.DownloadBundleData(c)
+	view.DownloadBundleData(c)
 	require.Len(t, c.Errors, 1)
 	require.EqualError(t, c.Errors[0].Err, "not found")
 	require.Empty(t, r.Body.Bytes())
 
-	mb.AssertExpectations(t)
+	mm.AssertExpectations(t)
 }
 
-func TestService_RenderProfileData(t *testing.T) {
-	mb := new(model.MockBackend)
-	service := NewService(mb)
+func TestView_RenderProfileData(t *testing.T) {
+	mm := new(MockModel)
+	view := NewView(mm)
 
 	c, r := gintest.CtxPost(nil, `abc`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Len(t, c.Errors, 1)
 	require.Error(t, c.Errors[0])
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
 	c, r = gintest.CtxPost(nil, `{"profile_id":5}`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Empty(t, c.Errors)
 	require.Equal(t, http.StatusOK, r.Code)
 	require.NotEmpty(t, r.Body.String())
 
 	c, r = gintest.CtxGet(nil)
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "download token is invalid")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
 	c, r = gintest.CtxGet(url.Values{"token": []string{"invalid"}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "download token is invalid")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
@@ -216,38 +215,38 @@ func TestService_RenderProfileData(t *testing.T) {
 
 	// use a token generated from GetTokenForBundleData
 	c, r = gintest.CtxPost(nil, `{"bundle_id":58}`)
-	service.GetTokenForBundleData(c)
+	view.GetTokenForBundleData(c)
 	require.Empty(t, c.Errors)
 	tokenBundleData := r.Body.String()
 	require.NotEmpty(t, tokenBundleData)
 	c, r = gintest.CtxGet(url.Values{"token": []string{tokenBundleData}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "download token is invalid")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
-	mb.
-		On("GetProfileData", mock.MatchedBy(func(req model.GetProfileDataReq) bool {
+	mm.
+		On("GetProfileData", mock.MatchedBy(func(req GetProfileDataReq) bool {
 			return req.ProfileID == 42
 		})).
-		Return(model.GetProfileDataResp{
-			Profile: model.ProfileWithData{
-				Profile: model.Profile{
+		Return(GetProfileDataResp{
+			Profile: ProfileWithData{
+				Profile: Profile{
 					ProfileID: 42,
-					State:     model.ProfileStateSkipped,
+					State:     ProfileStateSkipped,
 				},
 				Data: []byte("data"),
 			},
 		}, nil).
-		On("GetProfileData", mock.MatchedBy(func(req model.GetProfileDataReq) bool {
+		On("GetProfileData", mock.MatchedBy(func(req GetProfileDataReq) bool {
 			return req.ProfileID == 54
 		})).
-		Return(model.GetProfileDataResp{
-			Profile: model.ProfileWithData{
-				Profile: model.Profile{
+		Return(GetProfileDataResp{
+			Profile: ProfileWithData{
+				Profile: Profile{
 					ProfileID: 54,
-					State:     model.ProfileStateSucceeded,
+					State:     ProfileStateSucceeded,
 					Target: topo.CompDescriptor{
 						IP:         "example-tidb.internal",
 						Port:       4000,
@@ -262,14 +261,14 @@ func TestService_RenderProfileData(t *testing.T) {
 				Data: []byte{0x1, 0x2, 0x3},
 			},
 		}, nil).
-		On("GetProfileData", mock.MatchedBy(func(req model.GetProfileDataReq) bool {
+		On("GetProfileData", mock.MatchedBy(func(req GetProfileDataReq) bool {
 			return req.ProfileID == 80
 		})).
-		Return(model.GetProfileDataResp{
-			Profile: model.ProfileWithData{
-				Profile: model.Profile{
+		Return(GetProfileDataResp{
+			Profile: ProfileWithData{
+				Profile: Profile{
 					ProfileID: 80,
-					State:     model.ProfileStateSucceeded,
+					State:     ProfileStateSucceeded,
 					Target: topo.CompDescriptor{
 						IP:   "example-pd.internal",
 						Port: 2379,
@@ -284,28 +283,28 @@ func TestService_RenderProfileData(t *testing.T) {
 			},
 		}, nil).
 		On("GetProfileData", mock.Anything).
-		Return(model.GetProfileDataResp{}, fmt.Errorf("not found"))
+		Return(GetProfileDataResp{}, fmt.Errorf("not found"))
 
-	// Test backend returns error
+	// Test model returns error
 	c, r = gintest.CtxPost(nil, `{"profile_id":1}`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Empty(t, c.Errors)
 	token := r.Body.String()
 	require.NotEmpty(t, token)
 	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "not found")
 	require.Empty(t, r.Body.Bytes())
 
 	// Test unsupported render as
 	c, r = gintest.CtxPost(nil, `{"profile_id":54, "render_as":"foo"}`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Empty(t, c.Errors)
 	token = r.Body.String()
 	require.NotEmpty(t, token)
 	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "unsupported render type foo")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
@@ -313,73 +312,73 @@ func TestService_RenderProfileData(t *testing.T) {
 
 	// Test default render as
 	c, r = gintest.CtxPost(nil, `{"profile_id":54}`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Empty(t, c.Errors)
 	token = r.Body.String()
 	require.NotEmpty(t, token)
 	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Empty(t, c.Errors)
 	require.Equal(t, []byte{0x1, 0x2, 0x3}, r.Body.Bytes())
 
-	// Test invalid profile returned by backend
+	// Test invalid profile returned by model
 	c, r = gintest.CtxPost(nil, `{"profile_id":42}`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Empty(t, c.Errors)
 	token = r.Body.String()
 	require.NotEmpty(t, token)
 	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "the profile is not generated successfully")
 	require.Empty(t, r.Body.Bytes())
 
 	// Test render as unchanged
 	c, r = gintest.CtxPost(nil, `{"profile_id":54, "render_as":"unchanged"}`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Empty(t, c.Errors)
 	token = r.Body.String()
 	require.NotEmpty(t, token)
 	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Empty(t, c.Errors)
 	require.Equal(t, []byte{0x1, 0x2, 0x3}, r.Body.Bytes())
 
 	// Test proto -> svg convert failure
 	c, r = gintest.CtxPost(nil, `{"profile_id":54, "render_as":"svg_graph"}`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Empty(t, c.Errors)
 	token = r.Body.String()
 	require.NotEmpty(t, token)
 	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "failed to generate dot file")
 	require.Empty(t, r.Body.Bytes())
 
 	// Test raw data type is text
 	c, r = gintest.CtxPost(nil, `{"profile_id":80}`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Empty(t, c.Errors)
 	token = r.Body.String()
 	require.NotEmpty(t, token)
 	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Empty(t, c.Errors)
 	require.Equal(t, []byte("goroutine data"), r.Body.Bytes())
 
 	// Test text -> svg
 	c, r = gintest.CtxPost(nil, `{"profile_id":80, "render_as":"svg_graph"}`)
-	service.GetTokenForProfileData(c)
+	view.GetTokenForProfileData(c)
 	require.Empty(t, c.Errors)
 	token = r.Body.String()
 	require.NotEmpty(t, token)
 	c, r = gintest.CtxGet(url.Values{"token": []string{token}})
-	service.RenderProfileData(c)
+	view.RenderProfileData(c)
 	require.Len(t, c.Errors, 1)
 	require.Contains(t, c.Errors[0].Error(), "cannot render text as svg_graph")
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Empty(t, r.Body.Bytes())
 
-	mb.AssertExpectations(t)
+	mm.AssertExpectations(t)
 }

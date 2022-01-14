@@ -19,7 +19,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/testutil/gintest"
 )
 
-func (s *Handler) mustGetDownloadToken(t *testing.T, fileContent string, downloadFileName string, expireIn time.Duration) string {
+func (s *Controller) mustGetDownloadToken(t *testing.T, fileContent string, downloadFileName string, expireIn time.Duration) string {
 	fw, err := s.NewFileWriter("test")
 	require.NoError(t, err)
 	_, err = fmt.Fprint(fw, fileContent)
@@ -32,11 +32,11 @@ func (s *Handler) mustGetDownloadToken(t *testing.T, fileContent string, downloa
 }
 
 func TestDownload(t *testing.T) {
-	handler := New()
-	token := handler.mustGetDownloadToken(t, "foobar", "file.txt", time.Second*5)
+	ctl := NewController()
+	token := ctl.mustGetDownloadToken(t, "foobar", "file.txt", time.Second*5)
 
 	c, r := gintest.CtxGet(url.Values{"token": []string{token}})
-	handler.HandleDownloadRequest(c)
+	ctl.HandleDownloadRequest(c)
 	require.Len(t, c.Errors, 0)
 	require.Equal(t, http.StatusOK, r.Code)
 	require.Equal(t, `attachment; filename="file.txt"`, r.Header().Get("Content-Disposition"))
@@ -45,20 +45,20 @@ func TestDownload(t *testing.T) {
 
 	// Download again
 	c, _ = gintest.CtxGet(url.Values{"token": []string{token}})
-	handler.HandleDownloadRequest(c)
+	ctl.HandleDownloadRequest(c)
 	require.Len(t, c.Errors, 1)
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Download file not found")
 }
 
 func TestDownloadAnotherInstance(t *testing.T) {
-	handler := New()
-	token := handler.mustGetDownloadToken(t, "foobar", "file.txt", time.Second*5)
+	ctl := NewController()
+	token := ctl.mustGetDownloadToken(t, "foobar", "file.txt", time.Second*5)
 
-	handler2 := New()
+	ctl2 := NewController()
 
 	c, _ := gintest.CtxGet(url.Values{"token": []string{token}})
-	handler2.HandleDownloadRequest(c)
+	ctl2.HandleDownloadRequest(c)
 	require.Len(t, c.Errors, 1)
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Invalid download request")
@@ -66,14 +66,14 @@ func TestDownloadAnotherInstance(t *testing.T) {
 }
 
 func TestExpiredToken(t *testing.T) {
-	handler := New()
-	token := handler.mustGetDownloadToken(t, "foobar", "file.txt", 0)
+	ctl := NewController()
+	token := ctl.mustGetDownloadToken(t, "foobar", "file.txt", 0)
 
 	// Note: token expiration precision is 1sec.
 	time.Sleep(time.Millisecond * 1100)
 
 	c, _ := gintest.CtxGet(url.Values{"token": []string{token}})
-	handler.HandleDownloadRequest(c)
+	ctl.HandleDownloadRequest(c)
 	require.Len(t, c.Errors, 1)
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Invalid download request")
@@ -81,10 +81,10 @@ func TestExpiredToken(t *testing.T) {
 }
 
 func TestNotAToken(t *testing.T) {
-	handler := New()
+	ctl := NewController()
 
 	c, _ := gintest.CtxGet(url.Values{"token": []string{"abc"}})
-	handler.HandleDownloadRequest(c)
+	ctl.HandleDownloadRequest(c)
 	require.Len(t, c.Errors, 1)
 	require.True(t, errorx.IsOfType(c.Errors[0].Err, rest.ErrBadRequest))
 	require.Contains(t, c.Errors[0].Error(), "Invalid download request")
@@ -92,12 +92,12 @@ func TestNotAToken(t *testing.T) {
 }
 
 func TestDownloadInMiddleware(t *testing.T) {
-	handler := New()
-	token := handler.mustGetDownloadToken(t, "abc", "myfile.bin", time.Second*5)
+	ctl := NewController()
+	token := ctl.mustGetDownloadToken(t, "abc", "myfile.bin", time.Second*5)
 
 	engine := gin.New()
 	engine.Use(rest.ErrorHandlerFn())
-	engine.GET("/download", handler.HandleDownloadRequest)
+	engine.GET("/download", ctl.HandleDownloadRequest)
 
 	// A normal request
 	r := httptest.NewRecorder()

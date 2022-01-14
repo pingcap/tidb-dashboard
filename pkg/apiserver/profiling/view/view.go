@@ -1,6 +1,6 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
-package svc
+package view
 
 import (
 	"archive/zip"
@@ -15,22 +15,21 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/profutil"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/svc/model"
 	"github.com/pingcap/tidb-dashboard/util/jsonserde/ginjson"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/rest/download"
 )
 
-type Service struct {
-	backend               model.Backend
-	downloadServer        *download.Server
+type View struct {
+	model                 Model
+	downloadCtl           *download.Controller
 	downloadTokenValidity time.Duration
 }
 
-func NewService(backend model.Backend) *Service {
-	return &Service{
-		backend:               backend,
-		downloadServer:        download.NewServer(),
+func NewView(model Model) *View {
+	return &View{
+		model:                 model,
+		downloadCtl:           download.NewController(),
 		downloadTokenValidity: time.Hour,
 	}
 }
@@ -46,11 +45,11 @@ $ go tool pprof --http=127.0.0.1:1234 cpu_xxx.proto
 // @Summary List all available profiling targets
 // @Description The list may be unordered.
 // @Security JwtAuth
-// @Success 200 {object} model.ListTargetsResp
+// @Success 200 {object} ListTargetsResp
 // @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/targets/list [post]
-func (s *Service) ListTargets(c *gin.Context) {
-	ret, err := s.backend.ListTargets()
+func (s *View) ListTargets(c *gin.Context) {
+	ret, err := s.model.ListTargets()
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -61,13 +60,13 @@ func (s *Service) ListTargets(c *gin.Context) {
 // StartBundle godoc
 // @ID profilingStartBundle
 // @Summary Start a bundle of profiling
-// @Param req body model.StartBundleReq true "request"
+// @Param req body StartBundleReq true "request"
 // @Security JwtAuth
-// @Success 200 {object} model.StartBundleResp
+// @Success 200 {object} StartBundleResp
 // @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/bundle/start [post]
-func (s *Service) StartBundle(c *gin.Context) {
-	var req model.StartBundleReq
+func (s *View) StartBundle(c *gin.Context) {
+	var req StartBundleReq
 	if err := c.ShouldBindWith(&req, ginjson.Binding); err != nil {
 		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
@@ -92,7 +91,7 @@ func (s *Service) StartBundle(c *gin.Context) {
 	if req.DurationSec == 0 {
 		req.DurationSec = 10
 	}
-	ret, err := s.backend.StartBundle(req)
+	ret, err := s.model.StartBundle(req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -104,11 +103,11 @@ func (s *Service) StartBundle(c *gin.Context) {
 // @ID profilingListBundles
 // @Summary List all profiling bundles
 // @Security JwtAuth
-// @Success 200 {object} model.ListBundlesResp
+// @Success 200 {object} ListBundlesResp
 // @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/bundle/list [post]
-func (s *Service) ListBundles(c *gin.Context) {
-	ret, err := s.backend.ListBundles()
+func (s *View) ListBundles(c *gin.Context) {
+	ret, err := s.model.ListBundles()
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -119,18 +118,18 @@ func (s *Service) ListBundles(c *gin.Context) {
 // GetBundle godoc
 // @ID profilingGetBundle
 // @Summary Get the details of a profile bundle
-// @Param req body model.GetBundleReq true "request"
+// @Param req body GetBundleReq true "request"
 // @Security JwtAuth
-// @Success 200 {object} model.GetBundleResp
+// @Success 200 {object} GetBundleResp
 // @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/bundle/get [post]
-func (s *Service) GetBundle(c *gin.Context) {
-	var req model.GetBundleReq
+func (s *View) GetBundle(c *gin.Context) {
+	var req GetBundleReq
 	if err := c.ShouldBindWith(&req, ginjson.Binding); err != nil {
 		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
-	ret, err := s.backend.GetBundle(req)
+	ret, err := s.model.GetBundle(req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -138,8 +137,8 @@ func (s *Service) GetBundle(c *gin.Context) {
 	ginjson.Render(c, http.StatusOK, ret)
 }
 
-type GetBundleDataReqClaim struct {
-	model.GetBundleDataReq
+type getBundleDataReqClaim struct {
+	GetBundleDataReq
 	jwt.StandardClaims
 }
 
@@ -148,18 +147,18 @@ const audienceBundleData = "BundleData"
 // GetTokenForBundleData godoc
 // @ID profilingGetTokenForBundleData
 // @Summary Get a token for downloading the bundle data as a zip
-// @Param req body model.GetBundleDataReq true "request"
+// @Param req body GetBundleDataReq true "request"
 // @Security JwtAuth
 // @Success 200 {string} string
 // @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/bundle/download_token [post]
-func (s *Service) GetTokenForBundleData(c *gin.Context) {
-	var req model.GetBundleDataReq
+func (s *View) GetTokenForBundleData(c *gin.Context) {
+	var req GetBundleDataReq
 	if err := c.ShouldBindWith(&req, ginjson.Binding); err != nil {
 		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
-	token, err := s.downloadServer.GetDownloadToken(GetBundleDataReqClaim{
+	token, err := s.downloadCtl.GetDownloadToken(getBundleDataReqClaim{
 		GetBundleDataReq: req,
 		StandardClaims: jwt.StandardClaims{
 			Audience:  audienceBundleData,
@@ -180,10 +179,10 @@ func (s *Service) GetTokenForBundleData(c *gin.Context) {
 // @Param token query string true "download token"
 // @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/bundle/download [get]
-func (s *Service) DownloadBundleData(c *gin.Context) {
-	var claim GetBundleDataReqClaim
+func (s *View) DownloadBundleData(c *gin.Context) {
+	var claim getBundleDataReqClaim
 	token := c.Query("token")
-	err := s.downloadServer.HandleDownloadToken(token, &claim)
+	err := s.downloadCtl.HandleDownloadToken(token, &claim)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
@@ -193,7 +192,7 @@ func (s *Service) DownloadBundleData(c *gin.Context) {
 		return
 	}
 
-	ret, err := s.backend.GetBundleData(claim.GetBundleDataReq)
+	ret, err := s.model.GetBundleData(claim.GetBundleDataReq)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -207,7 +206,7 @@ func (s *Service) DownloadBundleData(c *gin.Context) {
 
 	var zipError error
 	for _, profile := range ret.Profiles {
-		if len(profile.Data) == 0 || profile.State != model.ProfileStateSucceeded {
+		if len(profile.Data) == 0 || profile.State != ProfileStateSucceeded {
 			continue
 		}
 		zipFile, err := zw.CreateHeader(&zip.FileHeader{
@@ -251,11 +250,11 @@ const (
 )
 
 type RenderProfileDataReq struct {
-	model.GetProfileDataReq
+	GetProfileDataReq
 	RenderAs RenderType
 }
 
-type RenderProfileDataReqClaim struct {
+type renderProfileDataReqClaim struct {
 	RenderProfileDataReq
 	jwt.StandardClaims
 }
@@ -270,13 +269,13 @@ const audienceProfileData = "ProfileData"
 // @Success 200 {string} string
 // @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/profile/download_token [post]
-func (s *Service) GetTokenForProfileData(c *gin.Context) {
+func (s *View) GetTokenForProfileData(c *gin.Context) {
 	var req RenderProfileDataReq
 	if err := c.ShouldBindWith(&req, ginjson.Binding); err != nil {
 		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
-	token, err := s.downloadServer.GetDownloadToken(RenderProfileDataReqClaim{
+	token, err := s.downloadCtl.GetDownloadToken(renderProfileDataReqClaim{
 		RenderProfileDataReq: req,
 		StandardClaims: jwt.StandardClaims{
 			Audience:  audienceProfileData,
@@ -297,10 +296,10 @@ func (s *Service) GetTokenForProfileData(c *gin.Context) {
 // @Param token query string true "download token"
 // @Failure 500 {object} rest.ErrorResponse
 // @Router /profiling/profile/render [get]
-func (s *Service) RenderProfileData(c *gin.Context) {
-	var claim RenderProfileDataReqClaim
+func (s *View) RenderProfileData(c *gin.Context) {
+	var claim renderProfileDataReqClaim
 	token := c.Query("token")
-	err := s.downloadServer.HandleDownloadToken(token, &claim)
+	err := s.downloadCtl.HandleDownloadToken(token, &claim)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
@@ -310,13 +309,13 @@ func (s *Service) RenderProfileData(c *gin.Context) {
 		return
 	}
 
-	ret, err := s.backend.GetProfileData(claim.GetProfileDataReq)
+	ret, err := s.model.GetProfileData(claim.GetProfileDataReq)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	if ret.Profile.State != model.ProfileStateSucceeded {
+	if ret.Profile.State != ProfileStateSucceeded {
 		_ = c.Error(fmt.Errorf("the profile is not generated successfully"))
 		return
 	}

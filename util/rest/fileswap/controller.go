@@ -18,33 +18,33 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/rest/download"
 )
 
-// Handler provides a file-based data serving HTTP handler.
+// Controller provides a file-based data serving HTTP handler.
 // Arbitrary data stream can be stored in the file in encrypted form temporarily, and then downloaded by the user later.
 // As data is stored in the file, large chunk of data is supported.
 //
-// Note: the download token cannot be mixed in different Handler instances.
-type Handler struct {
+// Note: the download token cannot be mixed in different Controller instances.
+type Controller struct {
 	nocopy.NoCopy
 
-	downloadServer *download.Server
+	downloadCtl *download.Controller
 }
 
-func New() *Handler {
-	return &Handler{
-		downloadServer: download.NewServer(),
+func NewController() *Controller {
+	return &Controller{
+		downloadCtl: download.NewController(),
 	}
 }
 
 // NewFileWriter creates a writer for storing data into FS. A download token can be generated from the writer
 // for downloading later. The downloading can be handled by the HandleDownloadRequest.
 // This function is concurrent-safe.
-func (s *Handler) NewFileWriter(tempFilePattern string) (*FileWriter, error) {
+func (s *Controller) NewFileWriter(tempFilePattern string) (*FileWriter, error) {
 	file, err := ioutil.TempFile("", tempFilePattern)
 	if err != nil {
 		return nil, err
 	}
 
-	w, err := sio.EncryptWriter(file, sio.Config{Key: s.downloadServer.Secret()})
+	w, err := sio.EncryptWriter(file, sio.Config{Key: s.downloadCtl.Secret()})
 	if err != nil {
 		_ = file.Close()
 		_ = os.Remove(file.Name())
@@ -53,7 +53,7 @@ func (s *Handler) NewFileWriter(tempFilePattern string) (*FileWriter, error) {
 
 	return &FileWriter{
 		WriteCloser:    w,
-		downloadServer: s.downloadServer,
+		downloadServer: s.downloadCtl,
 		filePath:       file.Name(),
 	}, nil
 }
@@ -67,9 +67,9 @@ type downloadTokenClaims struct {
 // HandleDownloadRequest handles a gin Request for serving the file in the FS by using a download token.
 // The file will be removed after it is successfully served to the user.
 // This function is concurrent-safe.
-func (s *Handler) HandleDownloadRequest(c *gin.Context) {
+func (s *Controller) HandleDownloadRequest(c *gin.Context) {
 	var claims downloadTokenClaims
-	err := s.downloadServer.HandleDownloadToken(c.Query("token"), &claims)
+	err := s.downloadCtl.HandleDownloadToken(c.Query("token"), &claims)
 	if err != nil {
 		_ = c.Error(rest.ErrBadRequest.Wrap(err, "Invalid download request"))
 		return
@@ -94,7 +94,7 @@ func (s *Handler) HandleDownloadRequest(c *gin.Context) {
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, claims.DownloadFileName))
 
 	_, err = sio.Decrypt(c.Writer, file, sio.Config{
-		Key: s.downloadServer.Secret(),
+		Key: s.downloadCtl.Secret(),
 	})
 	if err != nil {
 		_ = c.Error(err)
@@ -106,7 +106,7 @@ type FileWriter struct {
 	nocopy.NoCopy
 	io.WriteCloser
 
-	downloadServer *download.Server
+	downloadServer *download.Controller
 	filePath       string
 }
 
@@ -116,7 +116,7 @@ func (fw *FileWriter) Remove() {
 }
 
 // GetDownloadToken generates a download token for downloading this file later.
-// The downloading can be handled by the Handler.HandleDownloadRequest.
+// The downloading can be handled by the Controller.HandleDownloadRequest.
 // This function is concurrent-safe.
 func (fw *FileWriter) GetDownloadToken(downloadFileName string, expireIn time.Duration) (string, error) {
 	claims := downloadTokenClaims{

@@ -30,14 +30,14 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 type Service struct {
 	httpClients clientbundle.HTTPClientBundle
 	resolver    *endpoint.RequestPayloadResolver
-	fSwap       *fileswap.Handler
+	fSwap       *fileswap.Controller
 }
 
 func newService(httpClients clientbundle.HTTPClientBundle) *Service {
 	return &Service{
 		httpClients: httpClients,
 		resolver:    endpoint.NewRequestPayloadResolver(apiEndpoints, httpClients),
-		fSwap:       fileswap.New(),
+		fSwap:       fileswap.NewController(),
 	}
 }
 

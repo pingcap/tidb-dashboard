@@ -1,6 +1,6 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
-package model
+package view
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ const (
 	OpGetBundleData
 )
 
-type Backend interface {
+type Model interface {
 	// AuthFn authenticates the request.
 	AuthFn(...Operation) []gin.HandlerFunc
 
@@ -32,7 +32,7 @@ type Backend interface {
 	ListTargets() (ListTargetsResp, error)
 
 	// StartBundle starts a new profiling bundle.
-	// The backend must verify whether the signed component descriptor is valid.
+	// The model must verify whether the signed component descriptor is valid.
 	StartBundle(StartBundleReq) (StartBundleResp, error)
 
 	// ListBundles returns all profiling bundles ordered by creation time in descending order.
@@ -48,8 +48,8 @@ type Backend interface {
 	GetBundleData(GetBundleDataReq) (GetBundleDataResp, error)
 }
 
-//go:generate mockery --name Backend --inpackage
-var _ Backend = (*MockBackend)(nil)
+//go:generate mockery --name Model --inpackage
+var _ Model = (*MockModel)(nil)
 
 type ListTargetsResp struct {
 	Targets []topo.CompInfoWithSignature

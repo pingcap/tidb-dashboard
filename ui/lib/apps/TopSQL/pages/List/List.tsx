@@ -164,6 +164,7 @@ export function TopSQLList() {
         {!isConfigLoading && !topSQLConfig?.enable && haveHistoryData && (
           <Card noMarginBottom>
             <Alert
+              data-e2e="topsql-not-enabled-alert"
               message={t(`topsql.alert_header.title`)}
               description={
                 <>
@@ -218,7 +219,10 @@ export function TopSQLList() {
 
             <Space>
               <Tooltip title={t('topsql.settings.title')} placement="bottom">
-                <SettingOutlined onClick={() => setShowSettings(true)} />
+                <SettingOutlined
+                  data-e2e="topsql-settings"
+                  onClick={() => setShowSettings(true)}
+                />
               </Tooltip>
             </Space>
           </Toolbar>

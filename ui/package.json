@@ -8,8 +8,8 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@baurine/grafana-value-formats": "^1.0.0",
-    "@elastic/charts": "^20.0.0",
     "@duorou_xu/speedscope": "1.14.1",
+    "@elastic/charts": "^20.0.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@g07cha/flexbox-react": "^5.0.0",
     "@sentry/react": "^6.3.2",
@@ -62,8 +62,8 @@
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
     "storybook": "start-storybook -p 9009 -s public",
-    "run:e2e-test:compat-features": "cypress run --spec cypress/integration/compatibility-features/**/*_spec.js",
-    "run:e2e-test:common-features": "cypress run --spec cypress/integration/common-features/**/*_spec.js",
+    "run:e2e-test:compat-features": "cypress run --parallel --spec cypress/integration/compatibility-features/**/*.compatibility.spec.js",
+    "run:e2e-test:common-features": "cypress run --parallel --spec cypress/integration/common-features/**/*.spec.js",
     "open:cypress": "cypress open"
   },
   "husky": {
@@ -105,6 +105,7 @@
     "browserslist-useragent-regexp": "^2.1.0",
     "customize-cra": "^1.0.0",
     "cypress": "8.5.0",
+    "cypress-plugin-snapshots": "^1.4.4",
     "esm": "^3.2.25",
     "fs-extra": "^10.0.0",
     "gulp": "^4.0.2",

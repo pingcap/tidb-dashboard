@@ -4,6 +4,10 @@
   "screenshotOnRunFailure": false,
   "video": false,
   "env": {
-    "FEATURE_VERSION": "6.0.0"
-  }
+    "FEATURE_VERSION": "6.0.0",
+    "cypress-plugin-snapshots": {
+      "autoCleanUp": true
+    }
+  },
+  "ignoreTestFiles": ["**/__snapshots__/*", "**/__image_snapshots__/*"]
 }

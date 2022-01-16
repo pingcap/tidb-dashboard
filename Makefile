@@ -51,11 +51,13 @@ e2e_test: e2e_compat_features_test e2e_common_features_test
 .PHONY: e2e_compat_features_test
 e2e_compat_features_test:
 	cd ui &&\
+	yarn &&\
 	yarn run:e2e-test:compat-features --env FEATURE_VERSION=$(FEATURE_VERSION)
 
 .PHONY: e2e_common_features_test
 e2e_common_features_test:
 	cd ui &&\
+	yarn &&\
 	yarn run:e2e-test:common-features
 
 .PHONY: dev

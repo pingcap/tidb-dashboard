@@ -75,7 +75,10 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
             extra={t('topsql.settings.enable_tooltip')}
           >
             <Form.Item noStyle name="enable" valuePropName="checked">
-              <Switch disabled={!isWriteable} />
+              <Switch
+                data-e2e="topsql-settings-enable"
+                disabled={!isWriteable}
+              />
             </Form.Item>
           </Form.Item>
           <Form.Item>
@@ -85,6 +88,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
                 htmlType="submit"
                 loading={submitting}
                 disabled={!isWriteable}
+                data-e2e="topsql-settings-save"
               >
                 {t('topsql.settings.actions.save')}
               </Button>

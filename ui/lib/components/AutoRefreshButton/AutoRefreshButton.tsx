@@ -135,6 +135,7 @@ export function AutoRefreshButton({
 
   return (
     <Dropdown.Button
+      data-e2e="auto-refresh-button"
       className={styles.auto_refresh_btn}
       disabled={disabled}
       onClick={handleRefresh}

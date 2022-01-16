@@ -84,6 +84,7 @@ export function InstanceSelect({
         onChange(instance)
       }}
       disabled={disabled}
+      data-e2e="instance-selector"
     >
       {instanceGroups.map((instanceGroup) => (
         <Select.OptGroup label={instanceGroup.name} key={instanceGroup.name}>

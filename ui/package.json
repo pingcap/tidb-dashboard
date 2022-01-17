@@ -62,8 +62,8 @@
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
     "storybook": "start-storybook -p 9009 -s public",
-    "run:e2e-test:compat-features": "cypress run --spec cypress/integration/compatibility-features/**/*_spec.js",
-    "run:e2e-test:common-features": "cypress run --spec cypress/integration/common-features/**/*_spec.js",
+    "run:e2e-test:compat-features": "cypress run --spec cypress/integration/**/*.compat_spec.js",
+    "run:e2e-test:common-features": "cypress run --spec cypress/integration/**/*.spec.js",
     "open:cypress": "cypress open"
   },
   "husky": {

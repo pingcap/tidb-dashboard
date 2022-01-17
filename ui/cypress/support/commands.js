@@ -20,8 +20,10 @@ Cypress.Commands.add('login', (username, password = '') => {
       // root login
       cy.visit('/')
       cy.get('[data-e2e=signin_submit]').click()
-      const dashboardAuthToken = localStorage.getItem('dashboard_auth_token')
-      window.localStorage.setItem('dashboard_auth_token', dashboardAuthToken)
+
+      // Wait for the post-login redirect to ensure that the
+      // session actually exists to be cached
+      cy.url().should('include', '/overview')
     },
     {
       validate() {

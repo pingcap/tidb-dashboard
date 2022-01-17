@@ -70,14 +70,25 @@ describe('SlowQuery list page', () => {
       cy.task('queryDB', { ...queryData })
 
       const workloads = [
-        'SELECT SLEEP(1);',
-        'SELECT SLEEP(0);',
         'SELECT SLEEP(0.8);',
+        'SELECT SLEEP(0);',
+        'SELECT SLEEP(1);',
       ]
 
-      workloads.forEach((query) => {
-        cy.task('queryDB', { query }).as('query')
-        cy.get('@query')
+      const waitOneSecond = (query, idx) =>
+        new Promise((resolve) => {
+          // return a promise that resolves after 1 second
+          setTimeout(() => {
+            resolve(query)
+          }, 1000 * idx)
+        })
+
+      workloads.forEach((query, idx) => {
+        cy.wrap(waitOneSecond(query, idx)).then((query) => {
+          // return a promise to cy.then() that
+          // is awaited until it resolves
+          cy.task('queryDB', { query })
+        })
       })
     })
 
@@ -85,7 +96,7 @@ describe('SlowQuery list page', () => {
       const now = dayjs().unix()
       let defaultSlowQueryList
       let firstSlowQueryTimeStamp
-      let firstSec, secondSec, thirdSec
+      let firstSec, secondSec, thirdSec, fourthSec
 
       it('Default time range is 30 mins', () => {
         cy.get('[data-e2e=selected_timerange]').should(
@@ -124,6 +135,9 @@ describe('SlowQuery list page', () => {
             thirdSec = dayjs
               .unix(firstSlowQueryTimeStamp + 2)
               .format('YYYY-MM-DD HH:mm:ss')
+            fourthSec = dayjs
+              .unix(firstSlowQueryTimeStamp + 3)
+              .format('YYYY-MM-DD HH:mm:ss')
           }
         })
       })
@@ -142,7 +156,7 @@ describe('SlowQuery list page', () => {
               )
               cy.get('[data-automation-key=query]')
                 .should('has.length', 1)
-                .and('has.text', 'SELECT SLEEP(1);')
+                .and('has.text', 'SELECT SLEEP(0.8);')
             })
         })
 
@@ -158,13 +172,29 @@ describe('SlowQuery list page', () => {
                 `${thirdSec}{leftarrow}{leftarrow}{backspace}{enter}`
               )
 
-              cy.get('[data-automation-key=query]')
-                .should('has.length', 1)
-                .and('has.text', 'SELECT SLEEP(0.8);')
+              cy.get('[data-automation-key=query]').should('has.length', 0)
             })
         })
 
-        it('Check slow query in the latest 2 seconds time range', () => {
+        it('Check slow query in the 3rd second time range', () => {
+          cy.get('[data-e2e=timerange-selector]')
+            .click()
+            .then(() => {
+              cy.get('.ant-picker-range').click()
+              cy.get('.ant-picker-input-active > input').type(
+                `${thirdSec}{leftarrow}{leftarrow}{backspace}{enter}`
+              )
+              cy.get('.ant-picker-input-active > input').type(
+                `${fourthSec}{leftarrow}{leftarrow}{backspace}{enter}`
+              )
+
+              cy.get('[data-automation-key=query]')
+                .should('has.length', 1)
+                .and('has.text', 'SELECT SLEEP(1);')
+            })
+        })
+
+        it('Check slow query in the latest 3 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
             .click()
             .then(() => {
@@ -173,7 +203,7 @@ describe('SlowQuery list page', () => {
                 `${firstSec}{leftarrow}{leftarrow}{backspace}{enter}`
               )
               cy.get('.ant-picker-input-active > input').type(
-                `${thirdSec}{leftarrow}{leftarrow}{backspace}{enter}`
+                `${fourthSec}{leftarrow}{leftarrow}{backspace}{enter}`
               )
 
               cy.get('[data-automation-key=query]').should('has.length', 2)

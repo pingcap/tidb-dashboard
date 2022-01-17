@@ -83,10 +83,11 @@ export default function ReportGenerator() {
             encodeURIComponent(resp.data),
         },
       })
-    } catch (e: any) {
+    } catch (e) {
+      const err = e as any
       Modal.error({
         title: 'Error',
-        content: <Pre>{e?.response?.data?.message ?? e.message}</Pre>,
+        content: <Pre>{err?.response?.data?.message ?? err.message}</Pre>,
       })
     }
 

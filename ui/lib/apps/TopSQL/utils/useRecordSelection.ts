@@ -77,7 +77,7 @@ export function useRecordSelection<T>({
       !!selectedRecordKey &&
       selection.getItems().find((tr) => getKey(tr as T) === selectedRecordKey)
     if (!selection.getSelection().length && isRecordInSelections) {
-      selection.selectToKey(selectedRecordKey)
+      selection.selectToKey(selectedRecordKey!)
     }
   }, [selections])
 

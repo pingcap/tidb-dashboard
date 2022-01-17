@@ -35,7 +35,7 @@ var (
 type StartRequest struct {
 	Targets                []model.RequestTargetNode `json:"targets"`
 	DurationSecs           uint                      `json:"duration_secs"`
-	RequstedProfilingTypes TaskProfilingTypeList     `json:"requsted_profiling_types"`
+	RequstedProfilingTypes TaskProfilingTypeList     `json:"requsted_profiling_types" swaggertype:"array,string"`
 }
 
 type StartRequestSession struct {

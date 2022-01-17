@@ -84,7 +84,7 @@ type TaskGroupModel struct {
 	ProfileDurationSecs    uint                          `json:"profile_duration_secs"`
 	TargetStats            model.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
 	StartedAt              int64                         `json:"started_at"`
-	RequstedProfilingTypes TaskProfilingTypeList         `json:"requsted_profiling_types"`
+	RequstedProfilingTypes TaskProfilingTypeList         `json:"requsted_profiling_types" swaggertype:"array,string"`
 }
 
 func (TaskGroupModel) TableName() string {

@@ -9,5 +9,8 @@
       "autoCleanUp": true
     }
   },
+  "experimentalSessionSupport": true,
+  "viewportWidth": 1500,
+  "viewportHeight": 1000,
   "ignoreTestFiles": ["**/__snapshots__/*", "**/__image_snapshots__/*"]
 }

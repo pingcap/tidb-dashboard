@@ -1,4 +1,5 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+import dayjs from 'dayjs'
 
 function setCustomTimeRange(timeRange) {
   cy.get('[data-e2e="timerange-selector"]').click()
@@ -101,16 +102,18 @@ describe('Top SQL page', function () {
 
   describe('Refresh', () => {
     it('click refresh button with the recent x time range, fetch the recent x time range data', () => {
-      cy.get('[data-e2e="timerange-selector"]').click()
-      cy.get('[data-e2e="timerange-300"]').click()
+      const recent = 300
 
-      const now = Date.now()
-      cy.clock(now)
+      cy.get('[data-e2e="timerange-selector"]').click()
+      cy.get(`[data-e2e="timerange-${recent}"]`).click()
+
+      const now = dayjs().unix()
+      cy.clock(now * 1000)
       cy.get('[data-e2e="auto-refresh-button"]').first().click()
       cy.wait('@getTopsqlSummary')
         .its('request.url')
-        .should('include', `start=${(now / 1000 - 300).toFixed(0)}`)
-        .and('include', `end=${(now / 1000).toFixed(0)}`)
+        .should('include', `start=${now - recent}`)
+        .and('include', `end=${now}`)
     })
 
     it("click refresh button after custom the time range, the data won't change", () => {

@@ -15,12 +15,12 @@ interface Props<T> {
   canSelectItem?: (s: T) => boolean
 }
 
-export const useRecordSelection = <T>({
+export function useRecordSelection<T>({
   storageKey,
   selections,
   getKey = () => 'key',
   canSelectItem = () => true,
-}: Props<T>) => {
+}: Props<T>) {
   const [selectedRecordKey, _setSelectedRecordKey] = useSessionStorage<
     string | null
   >(storageKey, null)

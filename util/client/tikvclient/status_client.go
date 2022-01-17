@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Package tikvclient provides a flexible TiKV API access to any TiKV instance.
 package tikvclient
@@ -15,4 +15,8 @@ type StatusClient struct {
 func NewStatusClient(config httpclient.Config) *StatusClient {
 	config.KindTag = distro.R().TiKV
 	return &StatusClient{httpclient.New(config)}
+}
+
+func (c *StatusClient) Clone() *StatusClient {
+	return &StatusClient{c.Client.Clone()}
 }

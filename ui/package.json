@@ -11,6 +11,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@baurine/grafana-value-formats": "^1.0.0",
+    "@elastic/charts": "^20.0.0",
     "@duorou_xu/speedscope": "1.14.1",
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@g07cha/flexbox-react": "^5.0.0",
@@ -21,6 +22,7 @@
     "ahooks": "^2.9.2",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
+    "babel-plugin-istanbul": "^6.1.1",
     "bulma": "^0.9.0",
     "classnames": "^2.2.6",
     "d3": "^5.16.0",
@@ -34,6 +36,7 @@
     "i18next-browser-languagedetector": "^5.0.0",
     "lodash": "^4.17.21",
     "moize": "^5.4.7",
+    "moment-timezone": "^0.5.33",
     "nprogress": "^0.2.0",
     "office-ui-fabric-react": "^7.123.10",
     "path-browserify": "^1.0.1",
@@ -65,7 +68,10 @@
     "test": "react-app-rewired test",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
-    "storybook": "start-storybook -p 9009 -s public"
+    "storybook": "start-storybook -p 9009 -s public",
+    "run:e2e-test:compat-features": "cypress run --spec cypress/integration/compatibility-features/**/*_spec.js",
+    "run:e2e-test:common-features": "cypress run --spec cypress/integration/common-features/**/*_spec.js",
+    "open:cypress": "cypress open"
   },
   "husky": {
     "hooks": {
@@ -88,6 +94,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.10.5",
     "@baurine/esbuild-plugin-postcss3": "^0.2.3",
+    "@cypress/code-coverage": "^3.9.12",
     "@openapitools/openapi-generator-cli": "^1.0.15-4.3.1",
     "@storybook/addon-actions": "^6.3.12",
     "@storybook/addon-links": "^6.3.12",
@@ -109,6 +116,7 @@
     "customize-cra": "^1.0.0",
     "esbuild-plugin-svgr": "^0.0.3",
     "esbuild-plugin-yaml": "^0.0.1",
+    "cypress": "8.5.0",
     "esm": "^3.2.25",
     "fs-extra": "^10.0.0",
     "gulp": "^4.0.2",
@@ -119,6 +127,7 @@
     "less": "^4.1.2",
     "less-loader": "^5.0.0",
     "live-server": "^1.2.1",
+    "mysql2": "^2.3.3",
     "prettier": "2.4.1",
     "pretty-quick": "^2.0.1",
     "react-app-rewire-alias": "^0.1.6",

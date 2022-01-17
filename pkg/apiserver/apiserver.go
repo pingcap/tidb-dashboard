@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package apiserver
 
@@ -24,6 +24,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/queryeditor"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/topsql"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code/codeauth"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
@@ -31,6 +32,11 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
+	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 
@@ -39,6 +45,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -103,6 +110,7 @@ func (s *Service) Start(ctx context.Context) error {
 		fx.Supply(featureflag.NewRegistry(s.config.FeatureVersion)),
 		fx.Provide(
 			newAPIHandlerEngine,
+			newClients,
 			s.provideLocals,
 			dbstore.NewDBStore,
 			httpc.NewHTTPClient,
@@ -112,7 +120,8 @@ func (s *Service) Start(ctx context.Context) error {
 			tidb.NewTiDBClient,
 			tikv.NewTiKVClient,
 			tiflash.NewTiFlashClient,
-			utils.NewSysSchema,
+			utils.ProvideSysSchema,
+			apiutils.NewNgmProxy,
 			info.NewService,
 			clusterinfo.NewService,
 			logsearch.NewService,
@@ -135,6 +144,7 @@ func (s *Service) Start(ctx context.Context) error {
 		statement.Module,
 		slowquery.Module,
 		debugapi.Module,
+		topsql.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			info.RegisterRouter,
@@ -161,6 +171,32 @@ func (s *Service) Start(ctx context.Context) error {
 	version.Print()
 
 	return nil
+}
+
+// TODO: Find a better place to put these client bundles.
+func newClients(lc fx.Lifecycle, config *config.Config) (
+	dbClient *tidbclient.StatusClient,
+	kvClient *tikvclient.StatusClient,
+	csClient *tiflashclient.StatusClient,
+	pdClient *pdclient.APIClient,
+) {
+	httpConfig := httpclient.Config{
+		TLSConfig: config.ClusterTLSConfig,
+	}
+	dbClient = tidbclient.NewStatusClient(httpConfig)
+	kvClient = tikvclient.NewStatusClient(httpConfig)
+	csClient = tiflashclient.NewStatusClient(httpConfig)
+	pdClient = pdclient.NewAPIClient(httpConfig)
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			dbClient.SetDefaultCtx(ctx)
+			kvClient.SetDefaultCtx(ctx)
+			csClient.SetDefaultCtx(ctx)
+			pdClient.SetDefaultCtx(ctx)
+			return nil
+		},
+	})
+	return
 }
 
 func (s *Service) cleanAfterError() {

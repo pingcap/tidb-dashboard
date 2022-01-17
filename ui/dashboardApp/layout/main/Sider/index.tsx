@@ -50,7 +50,6 @@ function Sider({
 
   const whoAmI = store.useState((s) => s.whoAmI)
   const appInfo = store.useState((s) => s.appInfo)
-  const supportConprof = useIsFeatureSupport('conprof')
 
   const instanceProfilingMenuItem = useAppMenuItem(
     registry,
@@ -58,14 +57,9 @@ function Sider({
     '',
     true
   )
-  const conprofMenuItem = useAppMenuItem(
-    registry,
-    'continuous_profiling',
-    '',
-    true
-  )
+  const conprofMenuItem = useAppMenuItem(registry, 'conprof', '', true)
   const profilingSubMenuItems = [instanceProfilingMenuItem]
-  if (supportConprof) {
+  if (useIsFeatureSupport('conprof')) {
     profilingSubMenuItems.push(conprofMenuItem)
   }
 
@@ -123,11 +117,13 @@ function Sider({
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
+    useIsFeatureSupport('topsql') ? useAppMenuItem(registry, 'topsql') : null,
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'system_report'),
-    useAppMenuItem(registry, 'diagnose'),
+    // warning: "diagnose" app doesn't release yet
+    // useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
     // useAppMenuItem(registry, '__APP_NAME__'),
     // NOTE: Don't remove above comment line, it is a placeholder for code generator

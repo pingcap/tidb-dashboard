@@ -32,7 +32,7 @@ fi
 echo "+ Embed UI assets"
 
 cd "$PROJECT_DIR/scripts"
-go run generate_assets.go "$PROJECT_DIR/ui/build" $BUILD_TAG_PARAMETER
+go run generate_assets.go "$PROJECT_DIR/ui/build" "$BUILD_TAG_PARAMETER"
 
 HANDLER_PATH=$PROJECT_DIR/pkg/uiserver/embedded_assets_handler.go
 mv assets_vfsdata.go $HANDLER_PATH

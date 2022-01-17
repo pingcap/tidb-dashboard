@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package pdclient_test
 
@@ -15,7 +15,7 @@ import (
 func TestAPIClient_GetConfigReplicate(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	resp, err := apiClient.GetConfigReplicate(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetConfigReplicateResponse{
 		LocationLabels: "",
 	}, resp)
@@ -24,7 +24,7 @@ func TestAPIClient_GetConfigReplicate(t *testing.T) {
 func TestAPIClient_GetHealth(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	resp, err := apiClient.GetHealth(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetHealthResponse{
 		pdclient.GetHealthResponseMember{MemberID: 0x28cb7236f465dbeb, Health: true},
 		pdclient.GetHealthResponseMember{MemberID: 0x79cc97f3bcb16deb, Health: true},
@@ -35,7 +35,7 @@ func TestAPIClient_GetHealth(t *testing.T) {
 func TestAPIClient_GetMembers(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	resp, err := apiClient.GetMembers(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetMembersResponse{
 		Members: []pdclient.GetMembersResponseMember{
 			pdclient.GetMembersResponseMember{
@@ -64,7 +64,7 @@ func TestAPIClient_GetMembers(t *testing.T) {
 func TestAPIClient_GetStatus(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	resp, err := apiClient.GetStatus(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetStatusResponse{
 		StartTimestamp: 1635762685,
 	}, resp)
@@ -73,7 +73,7 @@ func TestAPIClient_GetStatus(t *testing.T) {
 func TestAPIClient_GetStores(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	resp, err := apiClient.GetStores(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetStoresResponse{
 		Stores: []pdclient.GetStoresResponseStoresElem{
 			pdclient.GetStoresResponseStoresElem{

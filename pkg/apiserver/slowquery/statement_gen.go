@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package slowquery
 
@@ -11,7 +11,7 @@ import (
 
 var ErrUnknownColumn = ErrNS.NewType("unknown_column")
 
-func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, error) {
+func genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, error) {
 	fields := getFieldsAndTags()
 
 	// use required fields filter when not all fields are requested
@@ -43,7 +43,7 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 	return strings.Join(stmt, ", "), nil
 }
 
-func (s *Service) genOrderStmt(tableColumns []string, orderBy string, isDesc bool) (string, error) {
+func genOrderStmt(tableColumns []string, orderBy string, isDesc bool) (string, error) {
 	var order string
 	// to handle the special case: timestamp
 	// Order by column instead of expression, see related optimization in TiDB: https://github.com/pingcap/tidb/pull/20750

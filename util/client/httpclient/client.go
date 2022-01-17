@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Copyright (c) 2015-2021 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
@@ -62,6 +62,17 @@ func New(config Config) *Client {
 	}
 }
 
+// Clone creates a new client with the same configuration. Subsequent SetXxx() calls will not
+// affect the current client. The transport will be shared unless it is changed to something else later.
+func (c *Client) Clone() *Client {
+	return &Client{
+		kindTag:        c.kindTag,
+		transport:      c.transport,
+		defaultCtx:     c.defaultCtx,
+		defaultBaseURL: c.defaultBaseURL,
+	}
+}
+
 // SetDefaultTransport sets the default HTTP transport for subsequent new requests.
 // This function should be used only when you want to mock the request.
 // In other cases, there is usually no need to use a customized HTTP transport.
@@ -88,7 +99,7 @@ func (c *Client) LR() *LazyRequest {
 		lReq.SetContext(c.defaultCtx)
 	}
 	if len(c.defaultBaseURL) > 0 {
-		lReq.SetBaseURL(c.defaultBaseURL)
+		lReq.SetTLSAwareBaseURL(c.defaultBaseURL)
 	}
 	return lReq
 }

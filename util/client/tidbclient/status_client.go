@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Package tidbclient provides a flexible TiDB API access to any TiDB instance.
 package tidbclient
@@ -15,4 +15,8 @@ type StatusClient struct {
 func NewStatusClient(config httpclient.Config) *StatusClient {
 	config.KindTag = distro.R().TiDB
 	return &StatusClient{httpclient.New(config)}
+}
+
+func (c *StatusClient) Clone() *StatusClient {
+	return &StatusClient{c.Client.Clone()}
 }

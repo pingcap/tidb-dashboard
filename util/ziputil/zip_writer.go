@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package ziputil
 
@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // WriteZipFromFiles compresses `files` using zip and write the zip in a streaming way to the io Writer `w`.
@@ -25,7 +26,6 @@ func WriteZipFromFiles(w io.Writer, files []string, compress bool) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -48,8 +48,9 @@ func writeZipFromFile(zw *zip.Writer, file string, compress bool) error {
 		zipMethod = zip.Deflate // compress
 	}
 	zipFile, err := zw.CreateHeader(&zip.FileHeader{
-		Name:   fileInfo.Name(),
-		Method: zipMethod,
+		Name:     fileInfo.Name(),
+		Method:   zipMethod,
+		Modified: time.Now(),
 	})
 	if err != nil {
 		return err

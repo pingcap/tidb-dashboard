@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package model
 
@@ -28,7 +28,7 @@ func (n *RequestTargetNode) String() string {
 }
 
 func (n *RequestTargetNode) FileName() string {
-	displayName := strings.NewReplacer(".", "_", ":", "_").Replace(n.DisplayName)
+	displayName := strings.NewReplacer(":", "_").Replace(n.DisplayName)
 	return fmt.Sprintf("%s_%s", n.Kind, displayName)
 }
 

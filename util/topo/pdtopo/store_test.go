@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package pdtopo_test
 
@@ -16,9 +16,9 @@ import (
 func TestGetStoreInstances(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	tiKvStores, tiFlashStores, err := pdtopo.GetStoreInstances(context.Background(), apiClient)
-	require.Nil(t, err)
-	require.Equal(t, []topo.StoreInfo{
-		topo.StoreInfo{
+	require.NoError(t, err)
+	require.Equal(t, []topo.TiKVStoreInfo{
+		{
 			GitHash:        "d7dc4fff51ca71c76a928a0780a069efaaeaae70",
 			Version:        "v4.0.14",
 			IP:             "172.16.5.141",
@@ -29,7 +29,7 @@ func TestGetStoreInstances(t *testing.T) {
 			Labels:         map[string]string{},
 			StartTimestamp: 1636421301,
 		},
-		topo.StoreInfo{
+		{
 			GitHash:        "d7dc4fff51ca71c76a928a0780a069efaaeaae70",
 			Version:        "v4.0.14",
 			IP:             "172.16.5.218",
@@ -40,7 +40,7 @@ func TestGetStoreInstances(t *testing.T) {
 			Labels:         map[string]string{},
 			StartTimestamp: 1636421304,
 		},
-		topo.StoreInfo{
+		{
 			GitHash:        "d7dc4fff51ca71c76a928a0780a069efaaeaae70",
 			Version:        "v4.0.14",
 			IP:             "172.16.6.168",
@@ -52,5 +52,5 @@ func TestGetStoreInstances(t *testing.T) {
 			StartTimestamp: 1636421304,
 		},
 	}, tiKvStores)
-	require.Equal(t, []topo.StoreInfo{}, tiFlashStores)
+	require.Equal(t, []topo.TiFlashStoreInfo{}, tiFlashStores)
 }

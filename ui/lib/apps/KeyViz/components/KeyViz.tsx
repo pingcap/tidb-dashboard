@@ -121,6 +121,7 @@ const KeyViz = () => {
     if (getAutoRefreshSeconds() > 0) {
       setRemainingRefreshSeconds(getAutoRefreshSeconds())
     }
+
     try {
       setLoading(true)
       setOnBrush(false)
@@ -182,9 +183,6 @@ const KeyViz = () => {
   }, [])
 
   useEffect(() => {
-    if (getRemainingRefreshSeconds() > getAutoRefreshSeconds()) {
-      setRemainingRefreshSeconds(getAutoRefreshSeconds())
-    }
     if (getAutoRefreshSeconds() > 0) {
       onResetZoom()
       setOnBrush(false)
@@ -198,17 +196,6 @@ const KeyViz = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, getSelection(), getDateRange(), getMetricType()])
-
-  useInterval(() => {
-    if (getAutoRefreshSeconds() === 0) {
-      return
-    }
-    if (getRemainingRefreshSeconds() === 0) {
-      updateHeatmap()
-    } else {
-      setRemainingRefreshSeconds((c) => c - 1)
-    }
-  }, 1000)
 
   const disabledPage = isLoading ? null : (
     <Result
@@ -238,12 +225,12 @@ const KeyViz = () => {
     <div className="PD-KeyVis">
       <KeyVizToolbar
         enabled={enabled}
+        isLoading={isLoading}
         dateRange={getDateRange()}
         metricType={getMetricType()}
         brightLevel={getBrightLevel()}
         onToggleBrush={onToggleBrush}
         onResetZoom={onResetZoom}
-        isLoading={isLoading}
         autoRefreshSeconds={getAutoRefreshSeconds()}
         remainingRefreshSeconds={getRemainingRefreshSeconds()}
         isOnBrush={getOnBrush()}
@@ -251,6 +238,7 @@ const KeyViz = () => {
         onChangeMetric={setMetricType}
         onChangeDateRange={onChangeDateRange}
         onChangeAutoRefresh={setAutoRefreshSeconds}
+        onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}
         onRefresh={updateHeatmap}
         onShowSettings={openSettings}
       />

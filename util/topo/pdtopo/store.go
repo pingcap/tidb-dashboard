@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package pdtopo
 
@@ -15,7 +15,7 @@ import (
 )
 
 // GetStoreInstances returns TiKV info and TiFlash info.
-func GetStoreInstances(ctx context.Context, pdAPI *pdclient.APIClient) ([]topo.StoreInfo, []topo.StoreInfo, error) {
+func GetStoreInstances(ctx context.Context, pdAPI *pdclient.APIClient) ([]topo.TiKVStoreInfo, []topo.TiFlashStoreInfo, error) {
 	stores, err := pdAPI.HLGetStores(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -37,7 +37,19 @@ func GetStoreInstances(ctx context.Context, pdAPI *pdclient.APIClient) ([]topo.S
 		}
 	}
 
-	return buildStoreTopology(tiKVStores), buildStoreTopology(tiFlashStores), nil
+	siTiKV := buildStoreTopology(tiKVStores)
+	storesTiKV := make([]topo.TiKVStoreInfo, 0, len(siTiKV))
+	for _, si := range siTiKV {
+		storesTiKV = append(storesTiKV, topo.TiKVStoreInfo(si))
+	}
+
+	siTiFlash := buildStoreTopology(tiFlashStores)
+	storesTiFlash := make([]topo.TiFlashStoreInfo, 0, len(siTiFlash))
+	for _, si := range siTiFlash {
+		storesTiFlash = append(storesTiFlash, topo.TiFlashStoreInfo(si))
+	}
+
+	return storesTiKV, storesTiFlash, nil
 }
 
 func buildStoreTopology(stores []pdclient.GetStoresResponseStore) []topo.StoreInfo {

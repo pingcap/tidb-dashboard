@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Package tiflashclient provides a flexible TiFlash API access to any TiFlash instance.
 package tiflashclient
@@ -15,4 +15,8 @@ type StatusClient struct {
 func NewStatusClient(config httpclient.Config) *StatusClient {
 	config.KindTag = distro.R().TiFlash
 	return &StatusClient{httpclient.New(config)}
+}
+
+func (c *StatusClient) Clone() *StatusClient {
+	return &StatusClient{c.Client.Clone()}
 }

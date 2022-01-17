@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package topo
 
@@ -9,8 +9,8 @@ import (
 type TopologyProvider interface {
 	GetPD(ctx context.Context) ([]PDInfo, error)
 	GetTiDB(ctx context.Context) ([]TiDBInfo, error)
-	GetTiKV(ctx context.Context) ([]StoreInfo, error)
-	GetTiFlash(ctx context.Context) ([]StoreInfo, error)
+	GetTiKV(ctx context.Context) ([]TiKVStoreInfo, error)
+	GetTiFlash(ctx context.Context) ([]TiFlashStoreInfo, error)
 	GetPrometheus(ctx context.Context) (*PrometheusInfo, error)
 	GetGrafana(ctx context.Context) (*GrafanaInfo, error)
 	GetAlertManager(ctx context.Context) (*AlertManagerInfo, error)

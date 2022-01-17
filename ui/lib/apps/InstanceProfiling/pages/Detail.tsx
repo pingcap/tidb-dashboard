@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { usePersistFn } from 'ahooks'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
+import { upperFirst } from 'lodash'
 
 import client, { ProfilingTaskModel } from '@lib/client'
 import {
@@ -70,7 +71,7 @@ function mapData(data) {
         ViewOptions.Download,
       ]
     } else if (task.raw_data_type === RawDataType.Text) {
-      task.view_options = [ViewOptions.Text]
+      task.view_options = [ViewOptions.Text, ViewOptions.Download]
     } else if (task.raw_data_type === '') {
       switch (task.target.kind) {
         case 'tidb':
@@ -144,13 +145,15 @@ export default function Page() {
         }
       })
 
-      newGroups.push({
-        key: InstanceKindName[instanceKind],
-        name: InstanceKindName[instanceKind],
-        startIndex: startIndex,
-        count: newRows.length - startIndex,
-      })
-      startIndex = newRows.length
+      if (newRows.length - startIndex > 0) {
+        newGroups.push({
+          key: InstanceKindName[instanceKind],
+          name: InstanceKindName[instanceKind],
+          startIndex: startIndex,
+          count: newRows.length - startIndex,
+        })
+        startIndex = newRows.length
+      }
     }
     return [newRows, newGroups]
   }, [data])
@@ -162,7 +165,7 @@ export default function Page() {
 
     switch (openAs) {
       case ViewOptions.Download:
-        token = await getActionToken(rec.id, 'single_download')
+        token = await getActionToken(rec.id + '', 'single_download')
         if (!token) {
           return
         }
@@ -170,14 +173,14 @@ export default function Page() {
         window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
         break
       case ViewOptions.FlameGraph:
-        token = await getActionToken(rec.id, 'single_view')
+        token = await getActionToken(rec.id + '', 'single_view')
         if (!token) {
           return
         }
         profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
         if (isProtobuf) {
           const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
-          profileURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
+          profileURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
             // protobuf can be rendered to flamegraph by speedscope
             profileURL + `&output_type=protobuf`
           )}&title=${titleOnTab}`
@@ -187,7 +190,7 @@ export default function Page() {
         break
       case ViewOptions.Graph:
       case ViewOptions.Text:
-        token = await getActionToken(rec.id, 'single_view')
+        token = await getActionToken(rec.id + '', 'single_view')
         if (!token) {
           return
         }
@@ -204,27 +207,27 @@ export default function Page() {
         name: t('instance_profiling.detail.table.columns.instance'),
         key: 'instance',
         minWidth: 150,
-        maxWidth: 250,
+        maxWidth: 300,
         onRender: (record) => record.target.display_name,
       },
       {
         name: t('instance_profiling.detail.table.columns.content'),
         key: 'content',
         minWidth: 150,
-        maxWidth: 250,
+        maxWidth: 300,
         onRender: (record) => {
           if (record.profiling_type === 'cpu') {
-            return `${record.profiling_type} - ${profileDuration}s`
+            return `CPU - ${profileDuration}s`
           } else {
-            return `${record.profiling_type}`
+            return upperFirst(record.profiling_type)
           }
         },
       },
       {
         name: t('instance_profiling.detail.table.columns.status'),
         key: 'status',
-        minWidth: 100,
-        maxWidth: 150,
+        minWidth: 150,
+        maxWidth: 200,
         onRender: (record) => {
           if (record.state === taskState.Running) {
             return (
@@ -243,11 +246,17 @@ export default function Page() {
               </Tooltip>
             )
           } else if (record.state == taskState.Skipped) {
+            let tooltipTransKey =
+              'instance_profiling.detail.table.tooltip.skipped'
+            if (record.profiling_type === 'heap') {
+              tooltipTransKey =
+                'instance_profiling.detail.table.tooltip.to_be_supported'
+            }
             return (
               <Tooltip
-                title={t('instance_profiling.detail.table.tooltip.skipped', {
-                  kind: record.target.kind,
-                  type: record.profiling_type,
+                title={t(tooltipTransKey, {
+                  kind: InstanceKindName[record.target.kind],
+                  type: upperFirst(record.profiling_type),
                 })}
               >
                 <Badge
@@ -342,9 +351,6 @@ export default function Page() {
             items={tableData}
             errors={[error]}
             groups={groupData}
-            groupProps={{
-              showEmptyGroups: true,
-            }}
             hideLoadingWhenNotEmpty
             extendLastColumn
           />

@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package tidb
 
@@ -112,12 +112,12 @@ func (p *proxy) serve(in net.Conn) {
 	}
 	// bidirectional copy
 	go func() {
-		//nolint
+		// nolint
 		io.Copy(in, out)
 		_ = in.Close()
 		_ = out.Close()
 	}()
-	//nolint
+	// nolint
 	io.Copy(out, in)
 	_ = out.Close()
 	_ = in.Close()

@@ -79,7 +79,7 @@ function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
           return (
             <TextWrap>
               <Tooltip title={label}>
-                <span>{label}</span>
+                <span data-e2e="multi_select_options_label">{label}</span>
               </Tooltip>
             </TextWrap>
           )

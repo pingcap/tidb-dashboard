@@ -16,7 +16,7 @@ function useAppMenuItem(registry, appId, title?: string, hideIcon?: boolean) {
     return null
   }
   return (
-    <Menu.Item key={appId}>
+    <Menu.Item key={appId} data-e2e={`menu_item_${appId}`}>
       <Link to={app.indexRoute} id={appId}>
         {!hideIcon && app.icon ? <app.icon /> : null}
         <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>

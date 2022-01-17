@@ -7,6 +7,7 @@ const { watch } = require('chokidar')
 const { build } = require('esbuild')
 const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
+const autoprefixer = require('autoprefixer')
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -93,8 +94,6 @@ function genDefine() {
   define['process.env.REACT_APP_RELEASE_VERSION'] = JSON.stringify(
     getInternalVersion()
   )
-  define['process.env.REACT_APP_DISTRO_BUILD_TAG'] =
-    process.env.DISTRO_BUILD_TAG
   return define
 }
 
@@ -139,6 +138,7 @@ const esbuildParams = {
         javascriptEnabled: true,
       },
       enableCache: true,
+      plugins: [autoprefixer],
     }),
     yamlPlugin(),
     logTime(),

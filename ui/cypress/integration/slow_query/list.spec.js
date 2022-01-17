@@ -53,7 +53,7 @@ describe('SlowQuery list page', () => {
         `${Cypress.env('apiUrl')}slow_query/list*`,
         staticResponse
       ).as('slow_query_list')
-      cy.wait('@slow_query_list').then((res) => {
+      cy.wait('@slow_query_list').then(() => {
         cy.get('[data-e2e=alert_error_bar] > span:nth-child(2)').should(
           'has.text',
           staticResponse.body.message
@@ -71,20 +71,20 @@ describe('SlowQuery list page', () => {
 
       const workloads = [
         'SELECT SLEEP(0.8);',
-        'SELECT SLEEP(0);',
+        'SELECT SLEEP(0.4);',
         'SELECT SLEEP(1);',
       ]
 
-      const waitOneSecond = (query, idx) =>
+      const waitTwoSecond = (query, idx) =>
         new Promise((resolve) => {
-          // return a promise that resolves after 1 second
+          // run workload every 3 seconds
           setTimeout(() => {
             resolve(query)
-          }, 1000 * idx)
+          }, 3000 * idx)
         })
 
       workloads.forEach((query, idx) => {
-        cy.wrap(waitOneSecond(query, idx)).then((query) => {
+        cy.wrap(waitTwoSecond(query, idx)).then((query) => {
           // return a promise to cy.then() that
           // is awaited until it resolves
           cy.task('queryDB', { query })
@@ -95,8 +95,11 @@ describe('SlowQuery list page', () => {
     describe('Filter slow query by changing time range', () => {
       const now = dayjs().unix()
       let defaultSlowQueryList
-      let firstSlowQueryTimeStamp
-      let firstSec, secondSec, thirdSec, fourthSec
+      let lastSlowQueryTimeStamp
+      let firstQueryTimeRangeStart,
+        secondQueryTimeRangeStart,
+        thirdQueryTimeRangeStart,
+        thirdQueryTimeRangeEnd
 
       it('Default time range is 30 mins', () => {
         cy.get('[data-e2e=selected_timerange]').should(
@@ -123,36 +126,35 @@ describe('SlowQuery list page', () => {
         cy.get('@slow_query').then((response) => {
           defaultSlowQueryList = response.body
           if (defaultSlowQueryList.length > 0) {
-            firstSlowQueryTimeStamp =
-              defaultSlowQueryList[defaultSlowQueryList.length - 1].timestamp
+            lastSlowQueryTimeStamp = defaultSlowQueryList[0].timestamp
 
-            firstSec = dayjs
-              .unix(firstSlowQueryTimeStamp)
+            firstQueryTimeRangeStart = dayjs
+              .unix(lastSlowQueryTimeStamp - 7)
               .format('YYYY-MM-DD HH:mm:ss')
-            secondSec = dayjs
-              .unix(firstSlowQueryTimeStamp + 1)
+            secondQueryTimeRangeStart = dayjs
+              .unix(lastSlowQueryTimeStamp - 4)
               .format('YYYY-MM-DD HH:mm:ss')
-            thirdSec = dayjs
-              .unix(firstSlowQueryTimeStamp + 2)
+            thirdQueryTimeRangeStart = dayjs
+              .unix(lastSlowQueryTimeStamp - 1)
               .format('YYYY-MM-DD HH:mm:ss')
-            fourthSec = dayjs
-              .unix(firstSlowQueryTimeStamp + 3)
+            thirdQueryTimeRangeEnd = dayjs
+              .unix(lastSlowQueryTimeStamp + (3 - 1))
               .format('YYYY-MM-DD HH:mm:ss')
           }
         })
       })
 
       describe('Check slow query', () => {
-        it('Check slow query in the 1st second time range', () => {
+        it('Check slow query in the 1st 3 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
             .click()
             .then(() => {
               cy.get('.ant-picker-range').click()
               cy.get('.ant-picker-input-active > input').type(
-                `${firstSec}{leftarrow}{leftarrow}{backspace}{enter}`
+                `${firstQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
               cy.get('.ant-picker-input-active > input').type(
-                `${secondSec}{leftarrow}{leftarrow}{backspace}{enter}`
+                `${secondQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
               cy.get('[data-automation-key=query]')
                 .should('has.length', 1)
@@ -160,32 +162,32 @@ describe('SlowQuery list page', () => {
             })
         })
 
-        it('Check slow query in the 2nd second time range', () => {
+        it('Check slow query in the 2nd 3 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
             .click()
             .then(() => {
               cy.get('.ant-picker-range').click()
               cy.get('.ant-picker-input-active > input').type(
-                `${secondSec}{leftarrow}{leftarrow}{backspace}{enter}`
+                `${secondQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
               cy.get('.ant-picker-input-active > input').type(
-                `${thirdSec}{leftarrow}{leftarrow}{backspace}{enter}`
+                `${thirdQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
 
               cy.get('[data-automation-key=query]').should('has.length', 0)
             })
         })
 
-        it('Check slow query in the 3rd second time range', () => {
+        it('Check slow query in the 3rd 3 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
             .click()
             .then(() => {
               cy.get('.ant-picker-range').click()
               cy.get('.ant-picker-input-active > input').type(
-                `${thirdSec}{leftarrow}{leftarrow}{backspace}{enter}`
+                `${thirdQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
               cy.get('.ant-picker-input-active > input').type(
-                `${fourthSec}{leftarrow}{leftarrow}{backspace}{enter}`
+                `${thirdQueryTimeRangeEnd}{leftarrow}{leftarrow}{backspace}{enter}`
               )
 
               cy.get('[data-automation-key=query]')
@@ -194,16 +196,16 @@ describe('SlowQuery list page', () => {
             })
         })
 
-        it('Check slow query in the latest 3 seconds time range', () => {
+        it('Check slow query in the latest 9 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
             .click()
             .then(() => {
               cy.get('.ant-picker-range').click()
               cy.get('.ant-picker-input-active > input').type(
-                `${firstSec}{leftarrow}{leftarrow}{backspace}{enter}`
+                `${firstQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
               cy.get('.ant-picker-input-active > input').type(
-                `${fourthSec}{leftarrow}{leftarrow}{backspace}{enter}`
+                `${thirdQueryTimeRangeEnd}{leftarrow}{leftarrow}{backspace}{enter}`
               )
 
               cy.get('[data-automation-key=query]').should('has.length', 2)

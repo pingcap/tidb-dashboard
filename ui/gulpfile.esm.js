@@ -31,6 +31,11 @@ task('esbuild:dev', shell.task('node builder.js'))
 
 task('esbuild:build', shell.task('NODE_ENV=production node builder.js'))
 
+task('tsc:watch', shell.task('yarn tsc --watch'))
+
+// TODO: add eslint
+task('lint', parallel('tsc:watch'))
+
 task(
   'speedscope:copy_static_assets',
   shell.task(
@@ -65,7 +70,7 @@ task(
       'distro:generate',
       'speedscope:copy_static_assets'
     ),
-    parallel('swagger:watch', 'speedscope:watch', 'esbuild:dev')
+    parallel('swagger:watch', 'speedscope:watch', 'lint', 'esbuild:dev')
   )
 )
 

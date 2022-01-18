@@ -129,14 +129,20 @@ function List() {
               onSearch={(searchText) =>
                 setQueryOptions({ ...queryOptions, searchText })
               }
+              data-e2e="slow_query_search"
             />
             <Select
               value={queryOptions.limit}
               style={{ width: 150 }}
               onChange={(limit) => setQueryOptions({ ...queryOptions, limit })}
+              data-e2e="slow_query_limit_select"
             >
               {LIMITS.map((item) => (
-                <Option value={item} key={item}>
+                <Option
+                  value={item}
+                  key={item}
+                  data-e2e="slow_query_limit_option"
+                >
                   Limit {item}
                 </Option>
               ))}

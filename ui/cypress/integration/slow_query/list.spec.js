@@ -1,6 +1,7 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 import dayjs from 'dayjs'
+import { describe } from 'mocha'
 
 describe('SlowQuery list page', () => {
   before(() => {
@@ -225,18 +226,113 @@ describe('SlowQuery list page', () => {
 
       it('Show all databases', () => {
         cy.request(options).as('databases')
+        let databaseList
 
-        cy.get('@databases').then((response) => {
-          const databaseList = response.body
-          cy.get('[data-e2e=base_select_input]')
-            .click()
-            .then(() => {
-              cy.get('[data-e2e=multi_select_options_label]').should(
-                'have.length',
-                databaseList.length
-              )
-            })
-        })
+        cy.get('@databases')
+          .then((response) => {
+            databaseList = response.body
+            cy.get('[data-e2e=base_select_input]')
+              .click()
+              .then(() => {
+                cy.get('[data-e2e=multi_select_options_label]').should(
+                  'have.length',
+                  databaseList.length
+                )
+              })
+          })
+          .then(() => {
+            // check configs after reload
+            cy.get('[data-e2e=multi_select_options_label]').should(
+              'have.length',
+              databaseList.length
+            )
+            console.log('databaseList', databaseList)
+          })
+      })
+
+      it('Run workload without use database', () => {
+        let queryData = {
+          query: 'SELECT sleep(0.5);',
+          database: '',
+        }
+        cy.task('queryDB', { ...queryData })
+
+        cy.reload()
+        // global and use database queries will be listed
+        cy.get('[data-automation-key=query]').should('has.length', 3)
+
+        cy.get('[data-e2e=base_select_input]')
+          .click()
+          .then(() => {
+            cy.get('.ms-DetailsHeader-checkTooltip')
+              .click()
+              .then(() => {
+                // global query will not be listed
+                cy.get('[data-automation-key=query]').should('has.length', 2)
+              })
+          })
+      })
+    })
+
+    describe('Search function', () => {
+      it('Default search text', () => {
+        cy.get('[data-e2e=slow_query_search]').should('be.empty')
+      })
+
+      it('Search item with space', () => {
+        cy.get('[data-e2e=slow_query_search]')
+          .type(' select sleep\\(1\\) {enter}')
+          .then(() => {
+            cy.get('[data-automation-key=query]').should('has.length', 1)
+          })
+
+        // clear search text
+        cy.get('[data-e2e=slow_query_search]')
+          .clear()
+          .type('{enter}')
+          .then(() => {
+            cy.get('[data-automation-key=query]').should('has.length', 3)
+          })
+      })
+
+      it('Type search without pressing enter then reload', () => {
+        cy.get('[data-e2e=slow_query_search]').type(' select sleep\\(1\\)')
+
+        cy.reload()
+        cy.get('[data-automation-key=query]').should('has.length', 3)
+      })
+    })
+
+    describe('Slow query list limitation', () => {
+      it('Default limit', () => {
+        cy.get('[data-e2e=slow_query_limit_select]').contains('100')
+      })
+
+      const limitOptions = ['100', '200', '500', '1000']
+
+      it('Check limit options', () => {
+        cy.get('[data-e2e=slow_query_limit_select]')
+          .click()
+          .then(() => {
+            cy.get('[data-e2e=slow_query_limit_option]')
+              .should('have.length', 4)
+              .each(($option, $idx) => {
+                cy.wrap($option).contains(limitOptions[$idx])
+              })
+          })
+      })
+
+      it('Check config remembered', () => {
+        cy.get('[data-e2e=slow_query_limit_select]')
+          .click()
+          .then(() => {
+            cy.get('[data-e2e=slow_query_limit_option]')
+              .eq(1)
+              .click()
+              .then(() => {
+                cy.get('[data-automation-key=query]').should('has.length', 3)
+              })
+          })
       })
     })
   })

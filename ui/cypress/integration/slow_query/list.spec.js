@@ -1,7 +1,6 @@
 // Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
 
 import dayjs from 'dayjs'
-import { describe } from 'mocha'
 
 describe('SlowQuery list page', () => {
   before(() => {
@@ -332,6 +331,18 @@ describe('SlowQuery list page', () => {
               .then(() => {
                 cy.get('[data-automation-key=query]').should('has.length', 3)
               })
+          })
+      })
+    })
+
+    describe('Selected Columns', () => {
+      const defaultColumns = ['Query', 'Finish Time', 'Latency']
+      it('Default selected columns', () => {
+        cy.get('[role=columnheader]')
+          .should('have.length', 4)
+          .each(($column, $idx) => {
+            console.log('de', defaultColumns[$idx])
+            cy.wrap($column).contains(defaultColumns[$idx])
           })
       })
     })

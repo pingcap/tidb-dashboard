@@ -10,7 +10,7 @@ describe('Login session', () => {
   it('Redirect to sigin page when user not login', function () {
     cy.visit(this.uri.overview)
     expect(localStorage.getItem('dashboard_auth_token')).to.be.null
-    cy.url().should('include', `${this.uri.login}`)
+    cy.url().should('include', this.uri.login)
   })
 
   // Use fake token to indicate session expired.
@@ -19,7 +19,7 @@ describe('Login session', () => {
     localStorage.setItem('dashboard_auth_token', 'invalid_auth_token')
     cy.visit(this.uri.overview)
 
-    cy.url().should('include', `${this.uri.login}`)
+    cy.url().should('include', this.uri.login)
     cy.get('.ant-message').should('be.visible')
     cy.get('.ant-message-error > span:last-child').should(
       'has.text',

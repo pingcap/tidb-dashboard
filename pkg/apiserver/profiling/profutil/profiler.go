@@ -121,7 +121,12 @@ func (p profilerCPU) fetch(config Config, w io.Writer) (resultType ProfDataType,
 	if config.DurationSec > 5*60 {
 		config.DurationSec = 5 * 60
 	}
-	_, _, err = config.Client.LR().
+	req := config.Client.LR()
+	if config.Target.Kind == topo.KindTiKV || config.Target.Kind == topo.KindTiFlash {
+		// pprof-rs only produce .proto file with this header.
+		req.SetHeader("Content-Type", "application/protobuf")
+	}
+	_, _, err = req.
 		SetContext(config.Context).
 		SetTLSAwareBaseURL(fmt.Sprintf("http://%s:%d", ip, port)).
 		SetQueryParam("seconds", fmt.Sprintf("%d", config.DurationSec)).

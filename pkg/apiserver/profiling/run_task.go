@@ -7,9 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
-
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/profutil"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/view"
 	"github.com/pingcap/tidb-dashboard/util/topo"
@@ -24,11 +21,6 @@ type profileTask struct {
 }
 
 func (t *profileTask) run() {
-	log.Info("profileTask.run", zap.Uint("id", t.ID))
-	defer func() {
-		log.Info("profileTask.runFinish", zap.Uint("id", t.ID))
-	}()
-
 	client := t.model.HTTPClientBundle.GetHTTPClientByComponentKind(t.Target.Kind)
 	if client == nil {
 		// We cannot send request to this component kind
@@ -91,10 +83,6 @@ func (model *StandardModelImpl) createAndRunBundle(
 	durationSec uint,
 	targets []topo.CompDescriptor,
 	profilingKinds []profutil.ProfKind) (*bundleTask, error) {
-	log.Info("createAndRunBundle")
-	defer func() {
-		log.Info("createAndRunBundle Finish")
-	}()
 
 	now := time.Now()
 
@@ -124,7 +112,6 @@ func (model *StandardModelImpl) createAndRunBundle(
 
 	model.bundleTaskWg.Add(1)
 	go func() {
-		log.Info("createAndRunBundle async goroutine")
 		defer model.bundleTaskWg.Done()
 
 		var taskTg sync.WaitGroup

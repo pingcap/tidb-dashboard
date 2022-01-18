@@ -2,6 +2,20 @@ profiling:
   nav_title: 实例性能分析
 instance_profiling:
   nav_title: 手动分析
+  common:
+    profile_state:
+      skipped: 不适用
+      skipped_tooltip: 该分析当前暂不支持
+      suceeded: 成功
+      unknown: 未知
+      running: 分析中
+      error: 错误
+    bundle_state:
+      running: 分析中
+      all_succeeded: 成功
+      partial_succeeded: 部分成功
+      all_failed: 失败
+      unknown: 未知
   list:
     control_form:
       title: 开始性能分析

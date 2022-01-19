@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package pdtopo_test
 
@@ -16,7 +16,7 @@ import (
 func TestGetStoreInstances(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	tiKvStores, tiFlashStores, err := pdtopo.GetStoreInstances(context.Background(), apiClient)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, []topo.TiKVStoreInfo{
 		{
 			GitHash:        "d7dc4fff51ca71c76a928a0780a069efaaeaae70",

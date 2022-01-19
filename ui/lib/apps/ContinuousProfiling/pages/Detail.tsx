@@ -67,13 +67,15 @@ export default function Page() {
         }
       })
 
-      newGroups.push({
-        key: InstanceKindName[instanceKind],
-        name: InstanceKindName[instanceKind],
-        startIndex: startIndex,
-        count: newRows.length - startIndex,
-      })
-      startIndex = newRows.length
+      if (newRows.length - startIndex > 0) {
+        newGroups.push({
+          key: InstanceKindName[instanceKind],
+          name: InstanceKindName[instanceKind],
+          startIndex: startIndex,
+          count: newRows.length - startIndex,
+        })
+        startIndex = newRows.length
+      }
     }
 
     return [newRows, newGroups]
@@ -235,9 +237,6 @@ export default function Page() {
         columns={columns}
         items={tableData}
         groups={groupData}
-        groupProps={{
-          showEmptyGroups: true,
-        }}
         errors={[groupDetailError]}
         hideLoadingWhenNotEmpty
         extendLastColumn

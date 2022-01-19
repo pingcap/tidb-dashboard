@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package csvutil
 
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type foo struct {
@@ -27,7 +27,7 @@ func TestCSVWriter(t *testing.T) {
 	buf := bytes.Buffer{}
 	w := NewCSVWriter(&buf)
 	err := w.WriteAsHeader(&foo{})
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	rec := foo{
 		Digest:          "digest_foo",
@@ -42,7 +42,7 @@ func TestCSVWriter(t *testing.T) {
 		privateField:    "pfxyz",
 	}
 	err = w.WriteAsRow(&rec)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	rec = foo{
 		ConnectionID:    "id123",
@@ -57,7 +57,7 @@ func TestCSVWriter(t *testing.T) {
 		DB:              "dbAbc",
 	}
 	err = w.WriteAsRow(&rec)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	w.Flush()
 	expected := `
@@ -65,7 +65,7 @@ Digest,Query,Instance,DB,ConnectionID,Success,Timestamp,TimestampAsTime,QueryTim
 digest_foo,query_bar,instance_box,db_abc,id_123,1,456,2021-10-01 16:46:40 UTC,789
 digestFoo,queryBar,instanceBox,dbAbc,id123,2,0,1970-01-01 00:00:00 UTC,123
 `
-	assert.Equal(t, strings.TrimSpace(expected), strings.TrimSpace(buf.String()))
+	require.Equal(t, strings.TrimSpace(expected), strings.TrimSpace(buf.String()))
 }
 
 func TestCSVWriterWriteTimeTag(t *testing.T) {
@@ -81,9 +81,9 @@ func TestCSVWriterWriteTimeTag(t *testing.T) {
 	buf := bytes.Buffer{}
 	w := NewCSVWriter(&buf)
 	err := w.WriteAsRow(fooStruct{})
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	w.Flush()
-	assert.Equal(t, "0,0,0,0,0,1970-01-01 00:00:00 UTC\n", buf.String())
+	require.Equal(t, "0,0,0,0,0,1970-01-01 00:00:00 UTC\n", buf.String())
 
 	type barStruct struct {
 		FieldInt     int     `csv:",time"`
@@ -96,9 +96,9 @@ func TestCSVWriterWriteTimeTag(t *testing.T) {
 		FieldUint64:  1633106801,
 		FieldFloat32: 1633106802,
 	})
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	w.Flush()
-	assert.Equal(t, "2021-10-01 16:46:40 UTC,2021-10-01 16:46:41 UTC,2021-10-01 16:46:42 UTC\n", buf.String())
+	require.Equal(t, "2021-10-01 16:46:40 UTC,2021-10-01 16:46:41 UTC,2021-10-01 16:46:42 UTC\n", buf.String())
 }
 
 func BenchmarkCSVWriterWriteAsHeader(b *testing.B) {

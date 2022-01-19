@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package topo
 
@@ -44,32 +44,32 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 
 	// Error response should not be cached
 	v, err := cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 1)
 
 	v, err = cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 2)
 
 	// Non error response should be cached
 	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey1, true))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 3)
 
 	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey1, true))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 3)
 
 	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey2, true))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "192.168.35.10", v.IP) // Unchanged since it is cached
 	require.Equal(t, uint(1234), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 3)
@@ -77,13 +77,13 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 	// Wait until expired
 	time.Sleep(time.Millisecond * 550)
 	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey2, true))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "192.168.100.5", v.IP)
 	require.Equal(t, uint(5414), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 4)
 
 	v, err = cp.GetPrometheus(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "192.168.100.5", v.IP)
 	require.Equal(t, uint(5414), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 4)
@@ -91,25 +91,25 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 	// Wait until expired
 	time.Sleep(time.Millisecond * 550)
 	v, err = cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 5)
 
 	v, err = cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 6)
 
 	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey1, true))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 7)
 
 	v, err = cp.GetPrometheus(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 7)
@@ -118,21 +118,21 @@ func TestCachedTopologyCacheValue(t *testing.T) {
 	time.Sleep(time.Millisecond * 550)
 	tBegin := time.Now()
 	v, err = cp.GetPrometheus(context.WithValue(context.Background(), mockKey1, true))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 8)
 
 	time.Sleep(time.Millisecond * 400)
 	v, err = cp.GetPrometheus(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "192.168.35.10", v.IP)
 	require.Equal(t, uint(1234), v.Port)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 8)
 
 	time.Sleep(time.Millisecond * 150) // 550ms has passed since first put, so we should expect cache to expire
 	v, err = cp.GetPrometheus(context.Background())
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Equal(t, err.Error(), "some error")
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 9)
@@ -153,13 +153,13 @@ func TestCachedTopologyCacheNil(t *testing.T) {
 	cp := NewCachedTopology(mp, time.Millisecond*500)
 
 	v, err := cp.GetPrometheus(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 1)
 
 	// Nil (but success) result is cached.
 	v, err = cp.GetPrometheus(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Nil(t, v)
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 1)
 
@@ -181,7 +181,7 @@ func TestCachedTopologyConcurrentGet(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			v, err := cp.GetPrometheus(context.Background())
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Nil(t, v)
 		}()
 	}
@@ -191,7 +191,7 @@ func TestCachedTopologyConcurrentGet(t *testing.T) {
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 5)
 
 	v, err := cp.GetPrometheus(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Nil(t, v)
 
 	mp.AssertNumberOfCalls(t, "GetPrometheus", 5)
@@ -214,14 +214,14 @@ func TestCachedTopologyAllMethods(t *testing.T) {
 	cp := NewCachedTopology(mp, time.Millisecond*500)
 	{
 		v, err := cp.GetPD(context.Background())
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, v)
 		require.Equal(t, 1, len(v))
 		require.Equal(t, "addr-pd.internal", v[0].IP)
 	}
 	{
 		v, err := cp.GetTiDB(context.Background())
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, v)
 		require.Equal(t, 2, len(v))
 		require.Equal(t, "addr-tidb-2.internal", v[0].IP)
@@ -229,31 +229,31 @@ func TestCachedTopologyAllMethods(t *testing.T) {
 	}
 	{
 		v, err := cp.GetTiKV(context.Background())
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, v)
 		require.Equal(t, 1, len(v))
 		require.Equal(t, "addr-tikv-3.internal", v[0].IP)
 	}
 	{
 		v, err := cp.GetTiFlash(context.Background())
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, v)
 		require.Equal(t, 0, len(v))
 	}
 	{
 		v, err := cp.GetPrometheus(context.Background())
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.Nil(t, v)
 	}
 	{
 		v, err := cp.GetGrafana(context.Background())
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, v)
 		require.Equal(t, "addr-grafana.internal", v.IP)
 	}
 	{
 		v, err := cp.GetAlertManager(context.Background())
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, v)
 		require.Equal(t, "addr-am-x.internal", v.IP)
 	}

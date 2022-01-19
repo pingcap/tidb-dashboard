@@ -4,6 +4,8 @@ BUILD_TAGS ?=
 
 LDFLAGS ?=
 
+FEATURE_VERSION ?= 6.0.0
+
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
 endif
@@ -71,4 +73,14 @@ endif
 
 .PHONY: run
 run:
-	bin/tidb-dashboard --debug --experimental --feature-version "6.0.0"
+	bin/tidb-dashboard --debug --experimental --feature-version "$(FEATURE_VERSION)"
+
+test_e2e_compat_features:
+	cd ui &&\
+	yarn run:e2e-test:compat-features --env FEATURE_VERSION=$(FEATURE_VERSION) TIDB_VERSION=$(TIDB_VERSION)
+
+test_e2e_common_features:
+	cd ui &&\
+	yarn run:e2e-test:common-features TIDB_VERSION=$(TIDB_VERSION)
+
+test_e2e: test_e2e_compat_features test_e2e_common_features

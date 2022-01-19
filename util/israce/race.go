@@ -1,5 +1,6 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
+//go:build race
 // +build race
 
 // Package israce reports if the Go race detector is enabled.

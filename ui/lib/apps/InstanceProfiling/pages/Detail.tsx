@@ -71,7 +71,7 @@ function mapData(data) {
         ViewOptions.Download,
       ]
     } else if (task.raw_data_type === RawDataType.Text) {
-      task.view_options = [ViewOptions.Text]
+      task.view_options = [ViewOptions.Text, ViewOptions.Download]
     } else if (task.raw_data_type === '') {
       switch (task.target.kind) {
         case 'tidb':
@@ -145,13 +145,15 @@ export default function Page() {
         }
       })
 
-      newGroups.push({
-        key: InstanceKindName[instanceKind],
-        name: InstanceKindName[instanceKind],
-        startIndex: startIndex,
-        count: newRows.length - startIndex,
-      })
-      startIndex = newRows.length
+      if (newRows.length - startIndex > 0) {
+        newGroups.push({
+          key: InstanceKindName[instanceKind],
+          name: InstanceKindName[instanceKind],
+          startIndex: startIndex,
+          count: newRows.length - startIndex,
+        })
+        startIndex = newRows.length
+      }
     }
     return [newRows, newGroups]
   }, [data])
@@ -178,7 +180,7 @@ export default function Page() {
         profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
         if (isProtobuf) {
           const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
-          profileURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
+          profileURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
             // protobuf can be rendered to flamegraph by speedscope
             profileURL + `&output_type=protobuf`
           )}&title=${titleOnTab}`
@@ -248,13 +250,13 @@ export default function Page() {
               'instance_profiling.detail.table.tooltip.skipped'
             if (record.profiling_type === 'heap') {
               tooltipTransKey =
-                'instance_profiling.detail.table.tooltip.temp_skipped'
+                'instance_profiling.detail.table.tooltip.to_be_supported'
             }
             return (
               <Tooltip
                 title={t(tooltipTransKey, {
-                  kind: record.target.kind,
-                  type: record.profiling_type,
+                  kind: InstanceKindName[record.target.kind],
+                  type: upperFirst(record.profiling_type),
                 })}
               >
                 <Badge
@@ -349,9 +351,6 @@ export default function Page() {
             items={tableData}
             errors={[error]}
             groups={groupData}
-            groupProps={{
-              showEmptyGroups: true,
-            }}
             hideLoadingWhenNotEmpty
             extendLastColumn
           />

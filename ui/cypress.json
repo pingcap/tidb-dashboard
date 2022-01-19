@@ -1,0 +1,14 @@
+{
+  "defaultCommandTimeout": 120000,
+  "responseTimeout": 60000,
+  "requestTimeout": 60000,
+  "screenshotOnRunFailure": false,
+  "video": false,
+  "env": {
+    "FEATURE_VERSION": "6.0.0",
+    "TIDB_VERSION": "nightly"
+  },
+  "experimentalSessionSupport": true,
+  "viewportWidth": 1500,
+  "viewportHeight": 1000
+}

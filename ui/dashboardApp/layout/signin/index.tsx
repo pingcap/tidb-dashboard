@@ -181,9 +181,10 @@ function useSignInSubmit(
       singleSpa.navigateToUrl(successRoute)
       onSuccess(form)
     } catch (e) {
-      if (!e.handled) {
-        const errMsg = t('signin.message.error', { msg: e.message })
-        if (isDistro || e.errCode !== 'api.user.signin.insufficient_priv') {
+      const { handled, message, errCode } = e as any
+      if (!handled) {
+        const errMsg = t('signin.message.error', { msg: message })
+        if (isDistro || errCode !== 'api.user.signin.insufficient_priv') {
           setError(errMsg)
         } else {
           // only add help link for TiDB distro when meeting insufficient_privileges error
@@ -215,6 +216,7 @@ const LAST_LOGIN_USERNAME_KEY = 'dashboard_last_login_username'
 
 function TiDBSignInForm({ successRoute, onClickAlternative }) {
   const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
+
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
@@ -270,6 +272,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
             tooltip={!supportNonRootLogin && t('signin.form.username_tooltip')}
           >
             <Input
+              data-e2e="signin_username_input"
               onInput={clearErrorMsg}
               prefix={<UserOutlined />}
               disabled={!supportNonRootLogin}

@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package pdtopo_test
 
@@ -16,7 +16,7 @@ import (
 func TestGetPDInstances(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	resp, err := pdtopo.GetPDInstances(context.Background(), apiClient)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, []topo.PDInfo{
 		topo.PDInfo{
 			GitHash:        "0c1246dd219fd16b4b2ff5108941e5d3e958922d",

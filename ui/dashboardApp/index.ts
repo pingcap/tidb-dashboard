@@ -2,7 +2,7 @@ import '@lib/utils/wdyr'
 
 import * as singleSpa from 'single-spa'
 import i18next from 'i18next'
-import { Modal } from 'antd'
+import { Modal, notification } from 'antd'
 import NProgress from 'nprogress'
 import './nprogress.less'
 
@@ -25,6 +25,7 @@ import AppUserProfile from '@lib/apps/UserProfile/index.meta'
 import AppOverview from '@lib/apps/Overview/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppKeyViz from '@lib/apps/KeyViz/index.meta'
+import AppTopSQL from '@lib/apps/TopSQL/index.meta'
 import AppStatement from '@lib/apps/Statement/index.meta'
 import AppSystemReport from '@lib/apps/SystemReport/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
@@ -36,7 +37,7 @@ import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
 import AppDebugAPI from '@lib/apps/DebugAPI/index.meta'
 import { handleSSOCallback, isSSOCallback } from '@lib/utils/authSSO'
-import { mustLoadAppInfo, reloadWhoAmI } from '@lib/utils/store'
+import { mustLoadAppInfo, reloadWhoAmI, NgmState } from '@lib/utils/store'
 // import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
 // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
@@ -77,6 +78,15 @@ async function webPageStart() {
     applySentryTracingInterceptor(instance)
   }
 
+  if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
+    notification.error({
+      key: 'ngm_not_started',
+      message: i18next.t('health_check.failed_notification_title'),
+      description: i18next.t('health_check.ngm_not_started'),
+      duration: null,
+    })
+  }
+
   const registry = new AppRegistry(options)
 
   NProgress.configure({
@@ -112,6 +122,7 @@ async function webPageStart() {
     .register(AppOverview)
     .register(AppClusterInfo)
     .register(AppKeyViz)
+    .register(AppTopSQL)
     .register(AppStatement)
     .register(AppSystemReport)
     .register(AppSlowQuery)
@@ -156,14 +167,15 @@ async function main() {
   if (routing.isPortalPage()) {
     // the portal page is only used to receive options
     function handlePortalEvent(event) {
-      const { type, token, lang, hideNav, redirectPath } = event.data
+      const { type, token, lang, hideNav, skipNgmCheck, redirectPath } =
+        event.data
       // the event type must be "DASHBOARD_PORTAL_EVENT"
       if (type !== 'DASHBOARD_PORTAL_EVENT') {
         return
       }
 
       auth.setAuthToken(token)
-      saveAppOptions({ hideNav, lang })
+      saveAppOptions({ hideNav, lang, skipNgmCheck })
       window.location.hash = `#${redirectPath}`
       window.location.reload()
 

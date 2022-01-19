@@ -1,5 +1,6 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
+//go:build integration
 // +build integration
 
 package datatype
@@ -54,7 +55,7 @@ func (suite *IntORMSuite) TestScanFromInt() {
 		A Int
 	}
 	err := suite.db.Gorm().Table(suite.tableName).Select("a").Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(Int(73371569), r.A)
 }
 
@@ -63,7 +64,7 @@ func (suite *IntORMSuite) TestScanFromDouble() {
 		B Int
 	}
 	err := suite.db.Gorm().Table(suite.tableName).Select("b").Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(Int(965511), r.B)
 }
 
@@ -72,7 +73,7 @@ func (suite *IntORMSuite) TestScanFromString() {
 		C Int
 	}
 	err := suite.db.Gorm().Table(suite.tableName).Select("c").Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(Int(123456), r.C)
 }
 
@@ -81,7 +82,7 @@ func (suite *IntORMSuite) TestScanFromBoolean() {
 		D Int
 	}
 	err := suite.db.Gorm().Table(suite.tableName).Select("d").Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(Int(1), r.D)
 }
 
@@ -90,7 +91,7 @@ func (suite *IntORMSuite) TestScanFromNonNumericString() {
 		E Int
 	}
 	err := suite.db.Gorm().Table(suite.tableName).Select("e").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 // Scanning double into int is invalid. That's why we need Int.
@@ -99,7 +100,7 @@ func (suite *IntORMSuite) TestScanDoubleToStdInt() {
 		B int
 	}
 	err := suite.db.Gorm().Table(suite.tableName).Select("b").Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 }
 
 func (suite *IntORMSuite) TestWhere() {
@@ -111,7 +112,7 @@ func (suite *IntORMSuite) TestWhere() {
 		Select("a").
 		Where("a = ?", Int(73371569)).
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(Int(73371569), r.A)
 
 	err = suite.db.Gorm().
@@ -119,7 +120,7 @@ func (suite *IntORMSuite) TestWhere() {
 		Select("a").
 		Where("a > ?", Int(0)).
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(Int(73371569), r.A)
 
 	err = suite.db.Gorm().
@@ -127,7 +128,7 @@ func (suite *IntORMSuite) TestWhere() {
 		Select("a").
 		Where("a = ?", Int(123)).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 
 	err = suite.db.Gorm().
@@ -135,7 +136,7 @@ func (suite *IntORMSuite) TestWhere() {
 		Select("a").
 		Where("a > ?", Int(73371570)).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 
 	err = suite.db.Gorm().
@@ -143,7 +144,7 @@ func (suite *IntORMSuite) TestWhere() {
 		Select("a").
 		Where("a = ?", "73371569").
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(Int(73371569), r.A)
 
 	// Matching a double field will never succeed, since int lose precision
@@ -153,7 +154,7 @@ func (suite *IntORMSuite) TestWhere() {
 		Select("b").
 		Where("b = ?", Int(val)).
 		Take(&r).Error
-	suite.Require().NotNil(err)
+	suite.Require().Error(err)
 	suite.Require().Equal(gorm.ErrRecordNotFound, err)
 }
 
@@ -180,7 +181,7 @@ func (suite *IntORMSuite) TestWhereInIndex() {
 		Select("val").
 		Where("val = ?", Int(42160690)).
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(Int(42160690), r.Val)
 
 	// Verify Plan is Index Scan
@@ -207,11 +208,11 @@ func (suite *IntORMSuite) TestInsert() {
 		ID:  10,
 		Val: Int(12346),
 	}).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 
 	var r model
 	err = suite.db.Gorm().Table(tableName).Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(10, r.ID)
 	suite.Require().Equal(Int(12346), r.Val)
 }
@@ -237,7 +238,7 @@ func (suite *IntORMSuite) TestScanNull() {
 		Table(tableName).
 		Select("val").
 		Take(&r).Error
-	suite.Require().Nil(err)
+	suite.Require().NoError(err)
 	suite.Require().Equal(Int(0), r.Val)
 }
 

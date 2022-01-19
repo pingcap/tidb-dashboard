@@ -1,23 +1,24 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package profiling
 
 import (
+	"archive/zip"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/util/rest"
-	"github.com/pingcap/tidb-dashboard/util/ziputil"
 )
 
 // Register register the handlers to the service.
@@ -221,12 +222,24 @@ func (s *Service) downloadGroup(c *gin.Context) {
 		filePathes[i] = task.FilePath
 	}
 
-	fileName := fmt.Sprintf("profiling_pack_%d.zip", taskGroupID)
+	fileName := fmt.Sprintf("profiling_%s.zip", time.Now().Format("2006-01-02_15-04-05"))
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-	err = ziputil.WriteZipFromFiles(c.Writer, filePathes, true)
+	zw := zip.NewWriter(c.Writer)
+	defer func() {
+		_ = zw.Close()
+	}()
+
+	err = writeZipFromFiles(zw, filePathes, true)
 	if err != nil {
-		log.Error("Stream zip pack failed", zap.Error(err))
+		_ = c.Error(err)
+		return
+	}
+
+	err = zipREADME(zw)
+	if err != nil {
+		_ = c.Error(err)
+		return
 	}
 }
 
@@ -260,13 +273,92 @@ func (s *Service) downloadSingle(c *gin.Context) {
 		return
 	}
 
-	fileName := fmt.Sprintf("profiling_%d.zip", taskID)
+	fileName := fmt.Sprintf("profiling_%s.zip", time.Now().Format("2006-01-02_15-04-05"))
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-	err = ziputil.WriteZipFromFiles(c.Writer, []string{task.FilePath}, true)
+	zw := zip.NewWriter(c.Writer)
+	defer func() {
+		_ = zw.Close()
+	}()
+
+	err = writeZipFromFiles(zw, []string{task.FilePath}, true)
 	if err != nil {
-		log.Error("Stream zip pack failed", zap.Error(err))
+		_ = c.Error(err)
+		return
 	}
+
+	err = zipREADME(zw)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+}
+
+func writeZipFromFiles(zw *zip.Writer, files []string, compress bool) error {
+	for _, file := range files {
+		err := writeZipFromFile(zw, file, compress)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func writeZipFromFile(zw *zip.Writer, file string, compress bool) error {
+	f, err := os.Open(filepath.Clean(file))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+
+	fileInfo, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	zipMethod := zip.Store // no compress
+	if compress {
+		zipMethod = zip.Deflate // compress
+	}
+	zipFile, err := zw.CreateHeader(&zip.FileHeader{
+		Name:     fileInfo.Name(),
+		Method:   zipMethod,
+		Modified: time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(zipFile, f)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func zipREADME(zw *zip.Writer) error {
+	const downloadREADME = `
+To review the CPU profiling or heap profiling result interactively:
+
+$ go tool pprof --http=0.0.0.0:1234 cpu_xxx.proto
+`
+	zipFile, err := zw.CreateHeader(&zip.FileHeader{
+		Name:     "README.md",
+		Method:   zip.Deflate,
+		Modified: time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = zipFile.Write([]byte(downloadREADME))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type ViewOutputType string

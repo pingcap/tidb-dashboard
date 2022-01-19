@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package apiserver
 
@@ -24,6 +24,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/queryeditor"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/topsql"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code/codeauth"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
@@ -44,6 +45,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -119,6 +121,7 @@ func (s *Service) Start(ctx context.Context) error {
 			tikv.NewTiKVClient,
 			tiflash.NewTiFlashClient,
 			utils.ProvideSysSchema,
+			apiutils.NewNgmProxy,
 			info.NewService,
 			clusterinfo.NewService,
 			logsearch.NewService,
@@ -141,6 +144,7 @@ func (s *Service) Start(ctx context.Context) error {
 		statement.Module,
 		slowquery.Module,
 		debugapi.Module,
+		topsql.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			info.RegisterRouter,

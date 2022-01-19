@@ -1,13 +1,12 @@
-import { Button, Form, Input, InputNumber, Select, Switch } from 'antd'
+import { Button, Form, Input, InputNumber, Select, Switch, Modal } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import React from 'react'
+import React, { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client from '@lib/client'
-import { Card } from '@lib/components'
-import { DatePicker } from '@lib/components'
+import { Card, Pre, DatePicker } from '@lib/components'
 
 import ReportHistory from '../components/ReportHistory'
 
@@ -44,10 +43,61 @@ export default function ReportGenerator() {
   const navigate = useNavigate()
   const handleFinish = useFinishHandler(navigate)
 
+  const [form] = Form.useForm()
+  const [isGenerateRelationPosting, setGenerateRelationPosting] =
+    useState(false)
+
+  const handleMetricsRelation = useCallback(async () => {
+    try {
+      await form.validateFields()
+    } catch (e) {
+      return
+    }
+
+    const fieldsValue = form.getFieldsValue()
+
+    const start_time = fieldsValue['rangeBegin'].unix()
+    let range_duration = fieldsValue['rangeDuration']
+    if (fieldsValue['rangeDuration'] === 0) {
+      range_duration = fieldsValue['rangeDurationCustom']
+    }
+    const end_time = start_time + range_duration * 60
+
+    try {
+      setGenerateRelationPosting(true)
+
+      const resp = await client
+        .getInstance()
+        .diagnoseGenerateMetricsRelationship({
+          start_time,
+          end_time,
+          type: 'sum',
+        })
+      Modal.success({
+        title: t('system_report.metrics_relation.success.title'),
+        okText: t('system_report.metrics_relation.success.button'),
+        okButtonProps: {
+          target: '_blank',
+          href:
+            `${client.getBasePath()}/diagnose/metrics_relation/view?token=` +
+            encodeURIComponent(resp.data),
+        },
+      })
+    } catch (e: any) {
+      Modal.error({
+        title: 'Error',
+        content: <Pre>{e?.response?.data?.message ?? e.message}</Pre>,
+      })
+    }
+
+    setGenerateRelationPosting(false)
+  }, [t, form])
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Card title={t('system_report.generate.title')}>
         <Form
+          form={form}
           layout="inline"
           onFinish={handleFinish}
           initialValues={{ rangeDuration: 10, rangeDurationCustom: 10 }}
@@ -136,6 +186,14 @@ export default function ReportGenerator() {
           <Form.Item>
             <Button type="primary" htmlType="submit">
               {t('system_report.generate.submit')}
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button
+              onClick={handleMetricsRelation}
+              loading={isGenerateRelationPosting}
+            >
+              {t('system_report.generate.metrics_relation')}
             </Button>
           </Form.Item>
         </Form>

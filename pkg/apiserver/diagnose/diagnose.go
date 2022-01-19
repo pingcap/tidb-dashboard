@@ -1,13 +1,20 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package diagnose
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-graphviz"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
@@ -23,6 +30,8 @@ import (
 const (
 	timeLayout = "2006-01-02 15:04:05"
 )
+
+var graphvizMutex sync.Mutex
 
 type Service struct {
 	// FIXME: Use fx.In
@@ -61,10 +70,114 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		auth.MWAuthRequired(),
 		s.reportStatusHandler)
 
+	endpoint.POST("/metrics_relation/generate", auth.MWAuthRequired(), s.metricsRelationHandler)
+	endpoint.GET("/metrics_relation/view", s.metricsRelationViewHandler)
+
 	endpoint.POST("/diagnosis",
 		auth.MWAuthRequired(),
 		utils.MWConnectTiDB((s.tidbClient)),
 		s.genDiagnosisHandler)
+}
+
+func (s *Service) generateMetricsRelation(startTime, endTime time.Time, graphType string) (string, error) {
+	params := url.Values{}
+	params.Add("start", startTime.Format(time.RFC3339))
+	params.Add("end", endTime.Format(time.RFC3339))
+	params.Add("type", graphType)
+	encodedParams := params.Encode()
+
+	data, err := s.tidbClient.SendGetRequest("/metrics/profile?" + encodedParams)
+	if err != nil {
+		return "", err
+	}
+
+	file, err := ioutil.TempFile("", "metrics*.svg")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp file: %v", err)
+	}
+	_ = file.Close()
+
+	g := graphviz.New()
+	// FIXME: should share a global mutex for profiling.
+	graphvizMutex.Lock()
+	defer graphvizMutex.Unlock()
+	graph, err := graphviz.ParseBytes(data)
+	if err != nil {
+		_ = os.Remove(file.Name())
+		return "", fmt.Errorf("failed to parse DOT file: %v", err)
+	}
+
+	if err := g.RenderFilename(graph, graphviz.SVG, file.Name()); err != nil {
+		_ = os.Remove(file.Name())
+		return "", fmt.Errorf("failed to render SVG: %v", err)
+	}
+
+	return file.Name(), nil
+}
+
+type GenerateMetricsRelationRequest struct {
+	StartTime int64  `json:"start_time"`
+	EndTime   int64  `json:"end_time"`
+	Type      string `json:"type"`
+}
+
+// @Id diagnoseGenerateMetricsRelationship
+// @Summary Generate metrics relationship graph.
+// @Param request body GenerateMetricsRelationRequest true "Request body"
+// @Router /diagnose/metrics_relation/generate [post]
+// @Success 200 {string} string
+// @Security JwtAuth
+// @Failure 401 {object} rest.ErrorResponse
+func (s *Service) metricsRelationHandler(c *gin.Context) {
+	var req GenerateMetricsRelationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		return
+	}
+
+	startTime := time.Unix(req.StartTime, 0)
+	endTime := time.Unix(req.EndTime, 0)
+
+	path, err := s.generateMetricsRelation(startTime, endTime, req.Type)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	token, err := utils.NewJWTString("diagnose/metrics", path)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, token)
+}
+
+// @Summary View metrics relationship graph.
+// @Produce image/svg
+// @Param token query string true "token"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
+// @Router /diagnose/metrics_relation/view [get]
+func (s *Service) metricsRelationViewHandler(c *gin.Context) {
+	token := c.Query("token")
+	path, err := utils.ParseJWTString("diagnose/metrics", token)
+	if err != nil {
+		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		return
+	}
+
+	data, err := ioutil.ReadFile(filepath.Clean(path))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	// Do not remove it? Otherwise the link will just expire..
+	// _ = os.Remove(path)
+
+	c.Data(http.StatusOK, "image/svg+xml", data)
 }
 
 type GenerateReportRequest struct {

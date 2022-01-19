@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package profiling
 
@@ -81,7 +81,7 @@ type tidbFetcher struct {
 }
 
 func (f *tidbFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithStatusAPIAddress(op.ip, op.port).WithStatusAPITimeout(maxProfilingTimeout).SendGetRequest(op.path)
+	return f.client.WithEnforcedStatusAPIAddress(op.ip, op.port).WithStatusAPITimeout(maxProfilingTimeout).SendGetRequest(op.path)
 }
 
 type pdFetcher struct {

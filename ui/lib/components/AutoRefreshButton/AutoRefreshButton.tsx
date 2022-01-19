@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import { DownOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons'
-import { Spin, Dropdown, Menu, Space } from 'antd'
+import { DownOutlined, SyncOutlined } from '@ant-design/icons'
+import { Dropdown, Menu } from 'antd'
 import { useSpring, animated } from 'react-spring'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import { addTranslationResource } from '@lib/utils/i18n'
-import { useGetSet } from 'react-use'
+
+import styles from './index.module.less'
 
 interface AutoRefreshButtonProps {
   autoRefreshSecondsOptions: number[]
@@ -134,11 +135,23 @@ export function AutoRefreshButton({
 
   return (
     <Dropdown.Button
+      className={styles.auto_refresh_btn}
       disabled={disabled}
       onClick={handleRefresh}
       overlay={autoRefreshMenu}
       trigger={['click']}
-      icon={<DownOutlined />}
+      icon={
+        <>
+          {autoRefreshSeconds ? (
+            <span className={styles.auto_refresh_secs}>
+              {getValueFormat('s')(autoRefreshSeconds, 0)}
+            </span>
+          ) : (
+            ''
+          )}
+          <DownOutlined />
+        </>
+      }
     >
       {autoRefreshSeconds ? (
         <RefreshProgress

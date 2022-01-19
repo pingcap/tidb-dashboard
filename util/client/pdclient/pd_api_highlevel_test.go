@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 package pdclient_test
 
@@ -15,14 +15,14 @@ import (
 func TestAPIClient_HLGetLocationLabels(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	resp, err := apiClient.HLGetLocationLabels(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, []string{}, resp)
 }
 
 func TestAPIClient_HLGetStoreLocations(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	resp, err := apiClient.HLGetStoreLocations(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, &pdclient.StoreLocations{
 		LocationLabels: []string{},
 		Stores: []pdclient.StoreLabels{
@@ -36,7 +36,7 @@ func TestAPIClient_HLGetStoreLocations(t *testing.T) {
 func TestAPIClient_HLGetStores(t *testing.T) {
 	apiClient := fixture.NewAPIAPIClientFixture()
 	resp, err := apiClient.HLGetStores(context.Background())
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, []pdclient.GetStoresResponseStore{
 		pdclient.GetStoresResponseStore{
 			Address:        "172.16.5.141:20160",

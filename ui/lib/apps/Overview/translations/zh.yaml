@@ -1,7 +1,7 @@
 overview:
   nav_title: 概况
   top_statements:
-    title: Top SQL 语句
+    title: 最耗时的 SQL 语句
   recent_slow_query:
     title: 最近慢查询
   instances:

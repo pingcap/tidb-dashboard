@@ -104,6 +104,7 @@ export default function ColumnsSelector({
         indeterminate={indeterminate}
         checked={checkedAll}
         onChange={handleCheckAllChange}
+        data-e2e="slow_query_schema_table_column_tile"
       >
         {t('component.columnsSelector.select')}
       </Checkbox>
@@ -111,6 +112,7 @@ export default function ColumnsSelector({
         <Button
           type="link"
           onClick={() => onChange && onChange(defaultVisibleColumnKeys)}
+          data-e2e="slow_query_schema_table_column_reset"
         >
           {t('component.columnsSelector.reset')}
         </Button>
@@ -128,12 +130,14 @@ export default function ColumnsSelector({
           paddingTop: 8,
           paddingBottom: 8,
         }}
+        data-e2e="slow_query_popover_content"
       >
         {filteredColumns.map((column) => (
           <Checkbox
             key={column.key}
             checked={visibleKeys[column.key]}
             onChange={(e) => handleCheckChange(e, column)}
+            data-e2e="slow_query_schema_table_columns"
           >
             {column.name}
           </Checkbox>
@@ -145,7 +149,7 @@ export default function ColumnsSelector({
 
   return (
     <Popover content={content} title={title} placement="bottomLeft">
-      <span style={{ cursor: 'pointer' }}>
+      <span style={{ cursor: 'pointer' }} data-e2e="slow_query_popover">
         {t('component.columnsSelector.trigger_text')} <DownOutlined />
       </span>
     </Popover>

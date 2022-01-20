@@ -160,6 +160,7 @@ function List() {
                   <Checkbox
                     checked={showFullSQL}
                     onChange={(e) => setShowFullSQL(e.target.checked)}
+                    data-e2e="slow_query_show_full_sql"
                   >
                     {t('slow_query.toolbar.select_columns.show_full_sql')}
                   </Checkbox>

@@ -1,5 +1,5 @@
 {
-  "defaultCommandTimeout": 120000,
+  "defaultCommandTimeout": 5000,
   "responseTimeout": 60000,
   "requestTimeout": 60000,
   "screenshotOnRunFailure": false,

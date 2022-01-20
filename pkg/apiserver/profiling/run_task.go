@@ -83,7 +83,6 @@ func (model *StandardModelImpl) createAndRunBundle(
 	durationSec uint,
 	targets []topo.CompDescriptor,
 	profilingKinds []profutil.ProfKind) (*bundleTask, error) {
-
 	now := time.Now()
 
 	bundleTask := &bundleTask{

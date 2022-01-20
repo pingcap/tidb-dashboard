@@ -13,7 +13,7 @@ jobs:
   backend_ut:
     name: Backend Unit Test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -70,7 +70,7 @@ jobs:
   e2e_test:
     name: E2E Test
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       matrix:
         # test latest features and compatibility of lower version

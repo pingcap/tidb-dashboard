@@ -64,7 +64,7 @@ type Service struct {
 	createImpersonationLock sync.Mutex
 }
 
-func newService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Service, error) {
+func NewService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Service, error) {
 	if err := autoMigrate(p.LocalStore); err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func newService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Servi
 }
 
 var Module = fx.Options(
-	fx.Provide(newService),
+	fx.Provide(NewService),
 	fx.Invoke(registerRouter),
 )
 

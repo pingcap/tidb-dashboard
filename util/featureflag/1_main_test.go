@@ -5,9 +5,9 @@ package featureflag
 import (
 	"testing"
 
-	"github.com/pingcap/tidb-dashboard/util/testutil"
+	"github.com/pingcap/tidb-dashboard/util/testutil/testdefault"
 )
 
 func TestMain(m *testing.M) {
-	testutil.TestMain(m)
+	testdefault.TestMain(m)
 }

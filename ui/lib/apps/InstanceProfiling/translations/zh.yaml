@@ -9,7 +9,7 @@ instance_profiling:
       suceeded: 成功
       unknown: 未知
       running: 分析中
-      error: 错误
+      error: 失败
     bundle_state:
       running: 分析中
       all_succeeded: 成功
@@ -49,6 +49,7 @@ instance_profiling:
       flamegraph: 火焰图
       graph: 关系图
       raw: 原始数据
+      error: 错误信息
     table:
       columns:
         instance: 实例

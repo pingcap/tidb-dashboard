@@ -22,9 +22,9 @@ conprof:
         status: 状态
       status:
         running: 分析中
-        finished: 完成
+        finished: 成功
         failed: 失败
-        partial_finished: 部分完成
+        partial_finished: 部分成功
         unknown: 未知
       actions:
         detail: 详情
@@ -34,15 +34,21 @@ conprof:
       title: 性能分析详情
       start_at: 开始时间
     download: 下载性能分析结果
+    view_as:
+      flamegraph: 火焰图
+      graph: 关系图
+      raw: 原始数据
+      error: 错误信息
     table:
       columns:
         instance: 实例
         kind: 组件
         content: 内容
         status: 状态
-        actions: 操作
+        view_as: 查看方式
       status:
-        finished: 完成
+        finished: 成功
+        failed: 失败
       actions:
         view_flamegraph: 查看火焰图
         view_graph: 查看关系图

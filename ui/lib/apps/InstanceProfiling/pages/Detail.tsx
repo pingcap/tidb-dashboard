@@ -1,4 +1,4 @@
-import { Badge, Button, Progress, Space, Tooltip } from 'antd'
+import { Badge, Button, Modal, Progress, Space, Tooltip } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -149,7 +149,7 @@ export default function Page() {
         name: t('instance_profiling.detail.table.columns.content'),
         key: 'content',
         minWidth: 100,
-        maxWidth: 150,
+        maxWidth: 100,
         onRender: (record: ViewProfile) => {
           if (record.kind === 'cpu') {
             return `CPU - ${profileDuration}s`
@@ -161,8 +161,8 @@ export default function Page() {
       {
         name: t('instance_profiling.detail.table.columns.status'),
         key: 'status',
-        minWidth: 150,
-        maxWidth: 200,
+        minWidth: 100,
+        maxWidth: 100,
         onRender: (record: ViewProfile) => {
           if (record.state === ProfileState.Running) {
             return (
@@ -180,9 +180,6 @@ export default function Page() {
                 status="error"
                 text={t('instance_profiling.common.profile_state.error')}
               />
-              // <Tooltip title={record.error}>
-              //   <Badge status="error" text={record.error} />
-              // </Tooltip>
             )
           } else if (record.state == ProfileState.Skipped) {
             return (
@@ -222,11 +219,23 @@ export default function Page() {
       {
         name: t('instance_profiling.detail.table.columns.view_as'),
         key: 'view_as',
-        minWidth: 150,
-        maxWidth: 200,
+        minWidth: 250,
+        maxWidth: 400,
         onRender: (record: ViewProfile) => {
           if (record.state === ProfileState.Error) {
-            return <a href="javascript:;">Error</a>
+            return (
+              <a
+                href="javascript:;"
+                onClick={() => {
+                  Modal.error({
+                    title: 'Profile Error',
+                    content: record.error,
+                  })
+                }}
+              >
+                {t('instance_profiling.detail.view_as.error')}
+              </a>
+            )
           }
 
           if (record.state !== ProfileState.Succeeded) {

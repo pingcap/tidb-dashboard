@@ -1,27 +1,23 @@
-import { Badge, Button, Dropdown, Menu } from 'antd'
+import { Badge, Button, Modal, Space } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { usePersistFn } from 'ahooks'
 import { upperFirst } from 'lodash'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
-
 import client, { ConprofProfileDetail } from '@lib/client'
-import {
-  CardTable,
-  DateTime,
-  Descriptions,
-  Head,
-  ActionsButton,
-} from '@lib/components'
+import { CardTable, DateTime, Descriptions, Head } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 
-const COMMON_ACTIONS: string[] = ['view_flamegraph', 'view_graph', 'download']
-const TEXT_ACTIONS: string[] = ['view_text', 'download']
+// TODO: Share common code with Instance Profiling
+enum ViewAsOptions {
+  FlameGraph = 'flamegraph',
+  Graph = 'graph',
+  Raw = 'raw',
+}
 
 const profileTypeSortOrder: { [key: string]: number } = {
   profile: 1,
@@ -93,8 +89,8 @@ export default function Page() {
       {
         name: t('conprof.detail.table.columns.content'),
         key: 'content',
-        minWidth: 150,
-        maxWidth: 300,
+        minWidth: 100,
+        maxWidth: 100,
         onRender: (record) => {
           const profileType = record.profile_type
           if (profileType === 'profile') {
@@ -106,8 +102,8 @@ export default function Page() {
       {
         name: t('conprof.detail.table.columns.status'),
         key: 'status',
-        minWidth: 150,
-        maxWidth: 200,
+        minWidth: 100,
+        maxWidth: 100,
         onRender: (record) => {
           if (record.state === 'finished' || record.state === 'success') {
             return (
@@ -118,32 +114,65 @@ export default function Page() {
             )
           }
           if (record.state === 'failed') {
-            return <Badge status="error" text={record.error} />
+            return (
+              <Badge
+                status="error"
+                text={t('conprof.detail.table.status.failed')}
+              />
+            )
           }
           return <Badge text={t('conprof.list.table.status.unknown')} />
         },
       },
       {
-        name: t('conprof.detail.table.columns.actions'),
-        key: 'actions',
-        minWidth: 150,
-        maxWidth: 200,
+        name: t('conprof.detail.table.columns.view_as'),
+        key: 'view_as',
+        minWidth: 250,
+        maxWidth: 400,
         onRender: (record) => {
-          const rec = record as ConprofProfileDetail
-          let actionsKey = TEXT_ACTIONS
-          if (rec.profile_type !== 'goroutine') {
-            actionsKey = COMMON_ACTIONS
+          if (record.state === 'failed') {
+            return (
+              <a
+                href="javascript:;"
+                onClick={() => {
+                  Modal.error({
+                    title: 'Profile Error',
+                    content: record.error,
+                  })
+                }}
+              >
+                {t('conprof.detail.view_as.error')}
+              </a>
+            )
           }
-          const actions = actionsKey.map((key) => ({
-            key,
-            text: t(`conprof.detail.table.actions.${key}`),
-          }))
+
+          let actions: ViewAsOptions[] = []
+          if (
+            record.profile_type === 'profile' ||
+            record.profile_type === 'heap'
+          ) {
+            actions = [
+              ViewAsOptions.FlameGraph,
+              ViewAsOptions.Graph,
+              ViewAsOptions.Raw,
+            ]
+          } else {
+            actions = [ViewAsOptions.Raw]
+          }
           return (
-            <ActionsButton
-              actions={actions}
-              disabled={rec.state !== 'finished' && rec.state !== 'success'}
-              onClick={(act) => handleClick(act, rec)}
-            />
+            <Space>
+              {actions.map((action) => {
+                return (
+                  <a
+                    href="javascript:;"
+                    onClick={() => openResult(action, record)}
+                    key={action}
+                  >
+                    {t(`conprof.detail.view_as.${action}`)}
+                  </a>
+                )
+              })}
+            </Space>
           )
         },
       },
@@ -151,12 +180,15 @@ export default function Page() {
     [t, profileDuration]
   )
 
-  const handleClick = usePersistFn(
-    async (action: string, rec: ConprofProfileDetail) => {
+  const openResult = useCallback(
+    async (view_as: ViewAsOptions, rec: ConprofProfileDetail) => {
       const { profile_type, target } = rec
       const { component, address } = target!
       let dataFormat = ''
-      if (action === 'view_flamegraph' || action === 'download') {
+      if (
+        view_as === ViewAsOptions.FlameGraph ||
+        view_as === ViewAsOptions.Raw
+      ) {
         dataFormat = 'protobuf'
       }
       const res = await client
@@ -169,28 +201,24 @@ export default function Page() {
         return
       }
 
-      if (action === 'view_graph' || action === 'view_text') {
+      if (view_as === ViewAsOptions.Graph || view_as === ViewAsOptions.Raw) {
         const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
         window.open(profileURL, '_blank')
         return
       }
 
-      if (action === 'view_flamegraph') {
+      if (view_as === ViewAsOptions.FlameGraph) {
         // view flamegraph by speedscope
-        const speedscopeTitle = `${rec.target?.component}_${rec.target?.address}_${rec.profile_type}`
-        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
-        const speedscopeURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
-          profileURL
-        )}&title=${speedscopeTitle}`
-        window.open(speedscopeURL, '_blank')
+        const titleOnTab = `${rec.target?.component} - ${rec.target?.address} (${rec.profile_type})`
+        const protoURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
+        const url = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
+          protoURL
+        )}&title=${encodeURIComponent(titleOnTab)}`
+        window.open(url, '_blank')
         return
       }
-
-      if (action === 'download') {
-        window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
-        return
-      }
-    }
+    },
+    []
   )
 
   const handleDownloadGroup = useCallback(async () => {

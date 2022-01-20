@@ -20,9 +20,9 @@ conprof:
         status: Status
       status:
         running: Running
-        finished: Finished
+        finished: Succeeded
         failed: Failed
-        partial_finished: Partial Finished
+        partial_finished: Partial Succeeded
         unknown: Unknown
       actions:
         detail: Detail
@@ -32,15 +32,21 @@ conprof:
       title: Profiling Detail
       start_at: Start At
     download: Download Profiling Result
+    view_as:
+      flamegraph: FlameGraph
+      graph: DotGraph
+      raw: RawData
+      error: Error Information
     table:
       columns:
         instance: Instance
         kind: Component
         content: Content
         status: Status
-        actions: Actions
+        view_as: View As
       status:
-        finished: Finished
+        finished: Succeeded
+        failed: Failed
       actions:
         view_flamegraph: View FlameGraph
         view_graph: View Graph

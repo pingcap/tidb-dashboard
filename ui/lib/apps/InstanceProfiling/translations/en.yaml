@@ -9,7 +9,7 @@ instance_profiling:
       suceeded: Succeeded
       unknown: Unknown
       running: Running
-      error: Error
+      error: Failed
     bundle_state:
       running: Running
       all_succeeded: Succeeded
@@ -49,6 +49,7 @@ instance_profiling:
       flamegraph: FlameGraph
       graph: DotGraph
       raw: RawData
+      error: Error Information
     table:
       columns:
         instance: Instance

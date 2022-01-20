@@ -78,7 +78,7 @@ async function webPageStart() {
     applySentryTracingInterceptor(instance)
   }
 
-  if (info?.ngm_state === NgmState.NotStarted) {
+  if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
     notification.error({
       key: 'ngm_not_started',
       message: i18next.t('health_check.failed_notification_title'),
@@ -167,14 +167,15 @@ async function main() {
   if (routing.isPortalPage()) {
     // the portal page is only used to receive options
     function handlePortalEvent(event) {
-      const { type, token, lang, hideNav, redirectPath } = event.data
+      const { type, token, lang, hideNav, skipNgmCheck, redirectPath } =
+        event.data
       // the event type must be "DASHBOARD_PORTAL_EVENT"
       if (type !== 'DASHBOARD_PORTAL_EVENT') {
         return
       }
 
       auth.setAuthToken(token)
-      saveAppOptions({ hideNav, lang })
+      saveAppOptions({ hideNav, lang, skipNgmCheck })
       window.location.hash = `#${redirectPath}`
       window.location.reload()
 

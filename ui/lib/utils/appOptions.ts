@@ -1,10 +1,12 @@
 export type AppOptions = {
   hideNav: boolean
+  skipNgmCheck: boolean
   lang: string
 }
 
 const defAppOptions: AppOptions = {
   hideNav: false,
+  skipNgmCheck: false,
   lang: '',
 }
 

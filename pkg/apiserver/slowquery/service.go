@@ -51,7 +51,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
 
-			endpoint.GET("/table_columns", s.queryTableColumns)
+			endpoint.GET("/available_fields", s.getAvailableFields)
 		}
 	}
 }
@@ -165,19 +165,20 @@ func (s *Service) downloadHandler(c *gin.Context) {
 	utils.DownloadByToken(token, "slowquery/download", c)
 }
 
-// @Summary Query table columns
-// @Description Query slowquery table columns
+// @Summary Get available field names
+// @Description Get available field names by slowquery table columns
 // @Success 200 {array} string
 // @Failure 400 {object} rest.ErrorResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Security JwtAuth
-// @Router /slow_query/table_columns [get]
-func (s *Service) queryTableColumns(c *gin.Context) {
+// @Router /slow_query/available_fields [get]
+func (s *Service) getAvailableFields(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cs, err := QueryTableColumns(s.params.SysSchema, db)
+	jsonNames, err := GetAvailableFields(s.params.SysSchema, db)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, cs)
+
+	c.JSON(http.StatusOK, jsonNames)
 }

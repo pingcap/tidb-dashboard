@@ -6,7 +6,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 export const useSchemaColumns = () => {
   const [schemaColumns, setSchemaColumns] = useState<string[]>([])
   const { data, isLoading } = useClientRequest((options) => {
-    return client.getInstance().slowQueryTableColumnsGet(options)
+    return client.getInstance().slowQueryAvailableFieldsGet(options)
   })
 
   useEffect(() => {

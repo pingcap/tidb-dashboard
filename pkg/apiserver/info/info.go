@@ -55,7 +55,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/info")
 	endpoint.GET("/info", s.infoHandler)
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.GET("/whoami", s.whoamiHandler)
+	endpoint.GET("/whoami", s.WhoamiHandler)
 
 	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.GET("/databases", s.databasesHandler)
@@ -122,7 +122,7 @@ type WhoAmIResponse struct {
 // @Router /info/whoami [get]
 // @Security JwtAuth
 // @Failure 401 {object} rest.ErrorResponse
-func (s *Service) whoamiHandler(c *gin.Context) {
+func (s *Service) WhoamiHandler(c *gin.Context) {
 	sessionUser := utils.GetSession(c)
 	resp := WhoAmIResponse{
 		DisplayName: sessionUser.DisplayName,

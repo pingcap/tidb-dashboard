@@ -174,13 +174,13 @@ function TimeRangeSelector({
     >
       <Button icon={<ClockCircleOutlined />} data-e2e="timerange-selector">
         {value && value.type === 'recent' && (
-          <span>
+          <span data-e2e="selected_timerange">
             {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
             {getValueFormat('s')(value.value, 0)}
           </span>
         )}
         {value && value.type === 'absolute' && (
-          <span>
+          <span data-e2e="selected_timerange">
             {value.value
               .map((v) => dayjs.unix(v).format('MM-DD HH:mm:ss'))
               .join(' ~ ')}

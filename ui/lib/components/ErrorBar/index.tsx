@@ -19,7 +19,14 @@ export default function ErrorBar({ errors }: IErrorBarProps) {
   if (errorMsgs.length === 0) {
     return null
   } else if (errorMsgs.length === 1) {
-    return <Alert message={errorMsgs[0]} showIcon type="error" />
+    return (
+      <Alert
+        message={errorMsgs[0]}
+        showIcon
+        type="error"
+        data-e2e="alert_error_bar"
+      />
+    )
   } else {
     return (
       <Alert
@@ -33,6 +40,7 @@ export default function ErrorBar({ errors }: IErrorBarProps) {
             ))}
           </ul>
         }
+        data-e2e="alert_error_bar"
       />
     )
   }

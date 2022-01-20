@@ -8,9 +8,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/pingcap/tidb-dashboard/util/testutil"
 )
 
 func Test_convertProtoToDot(t *testing.T) {
+	// Our test data is generated under a specific tz.
+	restoreTz := testutil.SetDefaultTimeZone("Asia/Shanghai")
+	defer restoreTz()
+
 	proto, err := ioutil.ReadFile("testdata/sample_cpu.proto")
 	require.NoError(t, err)
 
@@ -24,6 +30,10 @@ func Test_convertProtoToDot(t *testing.T) {
 }
 
 func TestConvertProtoToGraphSVG(t *testing.T) {
+	// Our test data is generated under a specific tz.
+	restoreTz := testutil.SetDefaultTimeZone("Asia/Shanghai")
+	defer restoreTz()
+
 	proto, err := ioutil.ReadFile("testdata/sample_cpu.proto")
 	require.NoError(t, err)
 

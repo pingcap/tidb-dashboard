@@ -198,7 +198,8 @@ sampling period=10
 	}, &w)
 	require.Equal(t, ProfDataTypeText, resultType)
 	require.Error(t, err)
-	require.Contains(t, err.Error(), `Get "http://abc.internal:2379/debug/pprof/mutex?debug=1": no responder found`)
+	require.Contains(t, err.Error(), `no responder found`)
+	require.Contains(t, err.Error(), `http://abc.internal:2379/debug/pprof/mutex?debug=1`)
 
 	w.Reset()
 	resultType, err = FetchProfile(Config{
@@ -213,7 +214,8 @@ sampling period=10
 	}, &w)
 	require.Equal(t, ProfDataTypeProtobuf, resultType)
 	require.Error(t, err)
-	require.Contains(t, err.Error(), `Get "http://def.internal:20180/debug/pprof/profile?seconds=10": no responder found`)
+	require.Contains(t, err.Error(), `no responder found`)
+	require.Contains(t, err.Error(), `http://def.internal:20180/debug/pprof/profile?seconds=10`)
 
 	w.Reset()
 	resultType, err = FetchProfile(Config{
@@ -258,7 +260,8 @@ sampling period=10
 	}, &w)
 	require.Equal(t, ProfDataTypeProtobuf, resultType)
 	require.Error(t, err)
-	require.Contains(t, err.Error(), `Get "http://xyz.internal:5678/debug/pprof/heap": no responder found`)
+	require.Contains(t, err.Error(), `no responder found`)
+	require.Contains(t, err.Error(), `http://xyz.internal:5678/debug/pprof/heap`)
 
 	w.Reset()
 	resultType, err = FetchProfile(Config{
@@ -273,5 +276,6 @@ sampling period=10
 	}, &w)
 	require.Equal(t, ProfDataTypeText, resultType)
 	require.Error(t, err)
-	require.Contains(t, err.Error(), `Get "http://foo.internal:1234/debug/pprof/goroutine?debug=1": no responder found`)
+	require.Contains(t, err.Error(), `no responder found`)
+	require.Contains(t, err.Error(), `http://foo.internal:1234/debug/pprof/goroutine?debug=1`)
 }

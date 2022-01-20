@@ -16,7 +16,7 @@ function useAppMenuItem(registry, appId, title?: string, hideIcon?: boolean) {
     return null
   }
   return (
-    <Menu.Item key={appId}>
+    <Menu.Item key={appId} data-e2e={`menu_item_${appId}`}>
       <Link to={app.indexRoute} id={appId}>
         {!hideIcon && app.icon ? <app.icon /> : null}
         <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
@@ -122,7 +122,8 @@ function Sider({
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'system_report'),
-    useAppMenuItem(registry, 'diagnose'),
+    // warning: "diagnose" app doesn't release yet
+    // useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
     // useAppMenuItem(registry, '__APP_NAME__'),
     // NOTE: Don't remove above comment line, it is a placeholder for code generator

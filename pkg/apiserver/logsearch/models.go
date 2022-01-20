@@ -130,7 +130,7 @@ type PreviewModel struct {
 	TaskID      uint                   `json:"task_id" gorm:"index:task"`
 	TaskGroupID uint                   `json:"task_group_id" gorm:"index:task_group"`
 	Time        int64                  `json:"time" gorm:"index:task,task_group"`
-	Level       diagnosticspb.LogLevel `json:"level" gorm:"type:integer"`
+	Level       diagnosticspb.LogLevel `json:"level" gorm:"type:integer" swaggertype:"integer"`
 	Message     string                 `json:"message" gorm:"type:text"`
 }
 

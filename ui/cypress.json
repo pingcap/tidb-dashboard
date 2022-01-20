@@ -1,10 +1,12 @@
 {
-  "defaultCommandTimeout": 60000,
+  "defaultCommandTimeout": 120000,
   "responseTimeout": 60000,
+  "requestTimeout": 60000,
   "screenshotOnRunFailure": false,
   "video": false,
   "env": {
     "FEATURE_VERSION": "6.0.0",
+    "TIDB_VERSION": "nightly",
     "cypress-plugin-snapshots": {
       "autoCleanUp": true
     }

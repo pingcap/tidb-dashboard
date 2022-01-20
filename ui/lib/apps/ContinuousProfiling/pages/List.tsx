@@ -201,13 +201,18 @@ export default function Page() {
                 name="rangeEndTime"
                 label={t('conprof.list.toolbar.range_end')}
               >
-                <DatePicker showTime />
+                <DatePicker showTime disabled={conprofIsDisabled} />
               </Form.Item>
               <Form.Item label={t('conprof.list.toolbar.range_duration')}>
                 <span>-2h</span>
               </Form.Item>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={listLoading}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={listLoading}
+                  disabled={conprofIsDisabled}
+                >
                   {t('conprof.list.toolbar.query')}
                 </Button>
               </Form.Item>

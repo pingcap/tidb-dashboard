@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Test User login
 describe('Root User Login', () => {
@@ -18,7 +18,7 @@ describe('Root User Login', () => {
   it('root login with no pwd', function () {
     cy.get('[data-e2e=signin_username_input]').should('have.value', 'root')
     cy.get('[data-e2e=signin_submit]').click()
-    cy.url().should('include', `${this.uri.overview}`)
+    cy.url().should('include', this.uri.overview)
   })
 
   it('remember last succeeded login username', () => {
@@ -40,16 +40,19 @@ describe('Root User Login', () => {
 
   it('root login with correct pwd', function () {
     // set password for root
-    let query = "SET PASSWORD FOR 'root'@'%' = 'root_pwd'"
-    let password = ''
-    cy.task('queryDB', { query, password })
+    let queryData = {
+      query: 'SET PASSWORD FOR "root"@"%" = "root_pwd"',
+    }
+    cy.task('queryDB', { ...queryData })
 
     cy.get('[data-e2e="signin_password_input"]').type('root_pwd{enter}')
-    cy.url().should('include', `${this.uri.overview}`)
+    cy.url().should('include', this.uri.overview)
 
     // set empty password for root
-    query = "SET PASSWORD FOR 'root'@'%' = ''"
-    password = 'root_pwd'
-    cy.task('queryDB', { query, password })
+    queryData = {
+      query: 'SET PASSWORD FOR "root"@"%" = ""',
+      password: 'root_pwd',
+    }
+    cy.task('queryDB', { ...queryData })
   })
 })

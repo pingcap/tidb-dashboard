@@ -6,6 +6,7 @@ import (
 	"context"
 )
 
+// TopologyProvider provides the topology information for different components.
 type TopologyProvider interface {
 	GetPD(ctx context.Context) ([]PDInfo, error)
 	GetTiDB(ctx context.Context) ([]TiDBInfo, error)

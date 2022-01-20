@@ -3,23 +3,19 @@
 package fixture
 
 import (
-	"strings"
-
 	"github.com/jarcoal/httpmock"
 
 	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
 	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
+	"github.com/pingcap/tidb-dashboard/util/testutil/httpmockutil"
 )
 
-func newResponder(body string) httpmock.Responder {
-	return httpmock.NewStringResponder(200, strings.TrimSpace(body))
-}
+const BaseURL = "http://172.16.6.171:2379"
 
-func NewPDServerFixture() (mockTransport *httpmock.MockTransport, baseURL string) {
-	baseURL = "http://172.16.6.171:2379"
+func NewPDServerFixture() (mockTransport *httpmock.MockTransport) {
 	mockTransport = httpmock.NewMockTransport()
 	mockTransport.RegisterResponder("GET", "http://172.16.6.171:2379/pd/api/v1/status",
-		newResponder(`
+		httpmockutil.StringResponder(`
 {
   "build_ts": "2021-07-17 05:37:05",
   "version": "v4.0.14",
@@ -28,7 +24,7 @@ func NewPDServerFixture() (mockTransport *httpmock.MockTransport, baseURL string
 }
 `))
 	mockTransport.RegisterResponder("GET", "http://172.16.6.171:2379/pd/api/v1/health",
-		newResponder(`
+		httpmockutil.StringResponder(`
 [
   {
     "name": "pd-172.16.6.170-2379",
@@ -57,7 +53,7 @@ func NewPDServerFixture() (mockTransport *httpmock.MockTransport, baseURL string
 ]
 `))
 	mockTransport.RegisterResponder("GET", "http://172.16.6.171:2379/pd/api/v1/members",
-		newResponder(`
+		httpmockutil.StringResponder(`
 {
   "header": {
     "cluster_id": 6973530669239952773
@@ -129,7 +125,7 @@ func NewPDServerFixture() (mockTransport *httpmock.MockTransport, baseURL string
 }
 `))
 	mockTransport.RegisterResponder("GET", "http://172.16.6.171:2379/pd/api/v1/stores",
-		newResponder(`
+		httpmockutil.StringResponder(`
 {
   "count": 3,
   "stores": [
@@ -224,7 +220,7 @@ func NewPDServerFixture() (mockTransport *httpmock.MockTransport, baseURL string
 }
 `))
 	mockTransport.RegisterResponder("GET", "http://172.16.6.171:2379/pd/api/v1/config",
-		newResponder(`
+		httpmockutil.StringResponder(`
 {
   "client-urls": "http://0.0.0.0:2379",
   "peer-urls": "http://0.0.0.0:2380",
@@ -418,7 +414,7 @@ func NewPDServerFixture() (mockTransport *httpmock.MockTransport, baseURL string
 }
 `))
 	mockTransport.RegisterResponder("GET", "http://172.16.6.171:2379/pd/api/v1/config/replicate",
-		newResponder(`
+		httpmockutil.StringResponder(`
 {
   "max-replicas": 3,
   "location-labels": "",
@@ -429,12 +425,11 @@ func NewPDServerFixture() (mockTransport *httpmock.MockTransport, baseURL string
 	return
 }
 
-func NewAPIAPIClientFixture() *pdclient.APIClient {
-	mockTransport, baseURL := NewPDServerFixture()
+// NewAPIClientFixture returns a PD client whose default Base URL is pointing to a mock PD server.
+func NewAPIClientFixture() *pdclient.APIClient {
+	mockTransport := NewPDServerFixture()
 	apiClient := pdclient.NewAPIClient(httpclient.Config{})
-	apiClient.
-		SetDefaultTransport(mockTransport).
-		SetDefaultBaseURL(baseURL)
-
+	apiClient.SetDefaultBaseURL(BaseURL)
+	apiClient.SetDefaultTransport(mockTransport)
 	return apiClient
 }

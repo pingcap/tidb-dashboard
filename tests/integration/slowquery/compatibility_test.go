@@ -109,20 +109,20 @@ func (s *testCompatibilitySuite) TestQueryTableColumns() {
 	if util.CheckTiDBVersion(s.Require(), "< 5.0.0") {
 		cls, err := slowquery.GetAvailableFields(s.sysSchema, s.dbSession())
 		s.Require().NoError(err)
-		s.Require().NotContains(cls, "Rocksdb_delete_skipped_count")
-		s.Require().NotContains(cls, "Rocksdb_key_skipped_count")
-		s.Require().NotContains(cls, "Rocksdb_block_cache_hit_count")
-		s.Require().NotContains(cls, "Rocksdb_block_read_count")
-		s.Require().NotContains(cls, "Rocksdb_block_read_byte")
+		s.Require().NotContains(cls, "rocksdb_delete_skipped_count")
+		s.Require().NotContains(cls, "rocksdb_key_skipped_count")
+		s.Require().NotContains(cls, "rocksdb_block_cache_hit_count")
+		s.Require().NotContains(cls, "rocksdb_block_read_count")
+		s.Require().NotContains(cls, "rocksdb_block_read_byte")
 	}
 
 	if util.CheckTiDBVersion(s.Require(), ">= 5.0.0") {
 		cls, err := slowquery.GetAvailableFields(s.sysSchema, s.dbSession())
 		s.Require().NoError(err)
-		s.Require().Contains(cls, "Rocksdb_delete_skipped_count")
-		s.Require().Contains(cls, "Rocksdb_key_skipped_count")
-		s.Require().Contains(cls, "Rocksdb_block_cache_hit_count")
-		s.Require().Contains(cls, "Rocksdb_block_read_count")
-		s.Require().Contains(cls, "Rocksdb_block_read_byte")
+		s.Require().Contains(cls, "rocksdb_delete_skipped_count")
+		s.Require().Contains(cls, "rocksdb_key_skipped_count")
+		s.Require().Contains(cls, "rocksdb_block_cache_hit_count")
+		s.Require().Contains(cls, "rocksdb_block_read_count")
+		s.Require().Contains(cls, "rocksdb_block_read_byte")
 	}
 }

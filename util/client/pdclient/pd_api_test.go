@@ -13,7 +13,7 @@ import (
 )
 
 func TestAPIClient_GetConfigReplicate(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	resp, err := apiClient.GetConfigReplicate(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetConfigReplicateResponse{
@@ -22,7 +22,7 @@ func TestAPIClient_GetConfigReplicate(t *testing.T) {
 }
 
 func TestAPIClient_GetHealth(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	resp, err := apiClient.GetHealth(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetHealthResponse{
@@ -33,7 +33,7 @@ func TestAPIClient_GetHealth(t *testing.T) {
 }
 
 func TestAPIClient_GetMembers(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	resp, err := apiClient.GetMembers(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetMembersResponse{
@@ -62,7 +62,7 @@ func TestAPIClient_GetMembers(t *testing.T) {
 }
 
 func TestAPIClient_GetStatus(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	resp, err := apiClient.GetStatus(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetStatusResponse{
@@ -71,7 +71,7 @@ func TestAPIClient_GetStatus(t *testing.T) {
 }
 
 func TestAPIClient_GetStores(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	resp, err := apiClient.GetStores(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetStoresResponse{

@@ -2,7 +2,9 @@
 
 package pdclient
 
-import "context"
+import (
+	"context"
+)
 
 // TODO: Switch to use swagger.
 
@@ -13,7 +15,7 @@ type GetStatusResponse struct {
 }
 
 // GetStatus returns the content from /status PD API.
-// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+// You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetStatus(ctx context.Context) (resp *GetStatusResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/status").ReadBodyAsJSON(&resp)
 	return
@@ -27,7 +29,7 @@ type GetHealthResponseMember struct {
 type GetHealthResponse []GetHealthResponseMember
 
 // GetHealth returns the content from /health PD API.
-// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+// You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetHealth(ctx context.Context) (resp *GetHealthResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/health").ReadBodyAsJSON(&resp)
 	return
@@ -46,7 +48,7 @@ type GetMembersResponse struct {
 }
 
 // GetMembers returns the content from /members PD API.
-// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+// You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetMembers(ctx context.Context) (resp *GetMembersResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/members").ReadBodyAsJSON(&resp)
 	return
@@ -57,7 +59,7 @@ type GetConfigReplicateResponse struct {
 }
 
 // GetConfigReplicate returns the content from /config/replicate PD API.
-// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+// You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetConfigReplicate(ctx context.Context) (resp *GetConfigReplicateResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/config/replicate").ReadBodyAsJSON(&resp)
 	return
@@ -89,7 +91,7 @@ type GetStoresResponse struct {
 }
 
 // GetStores returns the content from /stores PD API.
-// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+// You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetStores(ctx context.Context) (resp *GetStoresResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/stores").ReadBodyAsJSON(&resp)
 	return

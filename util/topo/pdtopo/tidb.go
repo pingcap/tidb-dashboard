@@ -81,7 +81,7 @@ func GetTiDBInstances(ctx context.Context, etcdClient *clientv3.Client) ([]topo.
 
 	for addr, info := range nodesInfo {
 		if _, ok := nodesAlive[addr]; ok {
-			info.Status = topo.ComponentStatusUp
+			info.Status = topo.CompStatusUp
 		}
 		nodes = append(nodes, *info)
 	}
@@ -123,7 +123,7 @@ func parseTiDBInfo(address string, value []byte) (*topo.TiDBInfo, error) {
 		IP:             hostname,
 		Port:           port,
 		DeployPath:     ds.DeployPath,
-		Status:         topo.ComponentStatusUnreachable,
+		Status:         topo.CompStatusUnreachable,
 		StatusPort:     ds.StatusPort,
 		StartTimestamp: ds.StartTimestamp,
 	}, nil

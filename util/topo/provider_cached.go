@@ -19,7 +19,7 @@ type CachedTopology struct {
 
 var _ TopologyProvider = (*CachedTopology)(nil)
 
-func NewCachedTopology(p TopologyProvider, ttl time.Duration) *CachedTopology {
+func NewCachedTopology(p TopologyProvider, ttl time.Duration) TopologyProvider {
 	cache := ttlcache.NewCache()
 	cache.SkipTTLExtensionOnHit(true)
 	_ = cache.SetTTL(ttl)

@@ -19,7 +19,9 @@ type TopologyFromPD struct {
 
 var _ topo.TopologyProvider = (*TopologyFromPD)(nil)
 
-func NewTopologyProviderFromPD(etcdClient *clientv3.Client, pdAPI *pdclient.APIClient) *TopologyFromPD {
+// NewTopologyProviderFromPD creates a provider that gets topology information from PD.
+// The base URL of the PD API client must be correctly set.
+func NewTopologyProviderFromPD(etcdClient *clientv3.Client, pdAPI *pdclient.APIClient) topo.TopologyProvider {
 	return &TopologyFromPD{
 		etcdClient: etcdClient,
 		pdAPI:      pdAPI,

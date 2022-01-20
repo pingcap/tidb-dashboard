@@ -20,7 +20,7 @@ var (
 	ErrInvalidTopologyData = ErrNS.NewType("invalid_topology_data")
 )
 
-func fetchStandardComponentTopology(ctx context.Context, componentName string, etcdClient *clientv3.Client) (*topo.StandardComponentInfo, error) {
+func fetchStandardComponentTopology(ctx context.Context, componentName string, etcdClient *clientv3.Client) (*topo.StandardDeployInfo, error) {
 	key := "/topology/" + componentName
 	resp, err := etcdClient.Get(ctx, key, clientv3.WithPrefix())
 	if err != nil {
@@ -29,7 +29,7 @@ func fetchStandardComponentTopology(ctx context.Context, componentName string, e
 	if resp.Count == 0 {
 		return nil, nil
 	}
-	info := topo.StandardComponentInfo{}
+	info := topo.StandardDeployInfo{}
 	kv := resp.Kvs[0]
 	if err = json.Unmarshal(kv.Value, &info); err != nil {
 		log.Warn("Failed to unmarshal topology value",

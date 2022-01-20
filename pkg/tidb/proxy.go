@@ -45,7 +45,7 @@ type proxy struct {
 
 	noAliveRemote *atomic.Bool
 	remotes       sync.Map
-	current       string
+	current       *atomic.String
 }
 
 func newProxy(l net.Listener, endpoints map[string]string, checkInterval time.Duration, timeout time.Duration) *proxy {
@@ -61,6 +61,7 @@ func newProxy(l net.Listener, endpoints map[string]string, checkInterval time.Du
 		dialTimeout:   timeout,
 		checkInterval: checkInterval,
 		noAliveRemote: atomic.NewBool(len(endpoints) == 0),
+		current:       atomic.NewString(""),
 	}
 	for key, e := range endpoints {
 		p.remotes.Store(key, &remote{addr: e, inactive: atomic.NewBool(true)})
@@ -137,7 +138,7 @@ func (p *proxy) pickActiveConn() (out net.Conn) {
 		if err == nil {
 			break
 		}
-		p.current = ""
+		p.current.Store("")
 		picked.becomeInactive()
 		log.Warn("remote become inactive", zap.String("remote", picked.addr))
 	}
@@ -148,12 +149,12 @@ func (p *proxy) pickActiveConn() (out net.Conn) {
 // pick returns an active remote if there is any.
 func (p *proxy) pick() *remote {
 	var picked *remote
-	if p.current == "" {
+	if p.current.Load() == "" {
 		p.remotes.Range(func(key, value interface{}) bool {
 			id := key.(string)
 			r := value.(*remote)
 			if r.isActive() {
-				p.current = id
+				p.current.Store(id)
 				picked = r
 				return false
 			}
@@ -163,12 +164,13 @@ func (p *proxy) pick() *remote {
 	if picked != nil {
 		return picked
 	}
-	if p.current != "" {
-		r, ok := p.remotes.Load(p.current)
+	curRemote := p.current.Load()
+	if curRemote != "" {
+		r, ok := p.remotes.Load(curRemote)
 		if ok {
 			picked = r.(*remote)
 		} else {
-			p.current = ""
+			p.current.Store("")
 		}
 	}
 	return picked

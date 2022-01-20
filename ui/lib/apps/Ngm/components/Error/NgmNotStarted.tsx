@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 import React, { ReactNode } from 'react'
 import { Result } from 'antd'
 import { useTranslation } from 'react-i18next'

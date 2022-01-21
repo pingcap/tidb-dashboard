@@ -69,6 +69,10 @@ jobs:
         run: |
           yarn prettier --check . || (echo "::error ::Please format your code by using 'yarn fmt'"; exit 1)
         working-directory: ui
+      - name: Lint
+        run: |
+          yarn lint || (echo "::error ::Please lint your code by using 'yarn lint'"; exit 1)
+        working-directory: ui
       - name: Build UI
         run: |
           make ui

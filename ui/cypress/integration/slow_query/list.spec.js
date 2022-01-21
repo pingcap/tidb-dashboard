@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 import dayjs from 'dayjs'
 
@@ -334,6 +334,7 @@ describe('SlowQuery list page', () => {
 
     describe('Selected Columns', () => {
       const defaultColumns = ['Query', 'Finish Time', 'Latency']
+      const defaultColumnsKeys = ['query', 'timestamp', 'query_time']
       it('Default selected columns', () => {
         cy.get('[role=columnheader]')
           .not('.is-empty')
@@ -344,19 +345,19 @@ describe('SlowQuery list page', () => {
       })
 
       it('Hover selected columns', () => {
-        cy.get('[data-e2e=slow_query_popover]')
+        cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
-            cy.get('[data-e2e=slow_query_popover_content]')
+            cy.get('[data-e2e=columns_selector_popover_content]')
               .should('be.visible')
               .within(() => {
                 // check default selectedColumns checked
-                defaultColumns.forEach((c) => {
+                defaultColumns.forEach((c, idx) => {
                   cy.contains(c)
                     .parent()
                     .within(() => {
                       cy.get(
-                        '[data-e2e=slow_query_schema_table_columns]'
+                        `[data-e2e=columns_selector_field_${defaultColumnsKeys[idx]}`
                       ).should('be.checked')
                     })
                 })
@@ -365,7 +366,7 @@ describe('SlowQuery list page', () => {
       })
 
       it('Check all columns', () => {
-        cy.get('[data-e2e=slow_query_popover]')
+        cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
             cy.get('[data-e2e=slow_query_schema_table_column_tile]')
@@ -379,7 +380,7 @@ describe('SlowQuery list page', () => {
       })
 
       it('Reset selected columns', () => {
-        cy.get('[data-e2e=slow_query_popover]')
+        cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
             cy.get('[data-e2e=slow_query_schema_table_column_reset]')
@@ -393,12 +394,14 @@ describe('SlowQuery list page', () => {
       })
 
       it('Check orbitary column', () => {
-        cy.get('[data-e2e=slow_query_popover]')
+        cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
             cy.contains('TiDB Instance')
               .within(() => {
-                cy.get('[data-e2e=slow_query_schema_table_columns]').check()
+                cy.get(
+                  `[data-e2e=columns_selector_field_${defaultColumnsKeys[idx]}`
+                ).check()
               })
               .then(() => {
                 cy.get('[role=columnheader]')
@@ -409,12 +412,14 @@ describe('SlowQuery list page', () => {
       })
 
       it('Uncheck last select orbitary column', () => {
-        cy.get('[data-e2e=slow_query_popover]')
+        cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
             cy.contains('TiDB Instance')
               .within(() => {
-                cy.get('[data-e2e=slow_query_schema_table_columns]').uncheck()
+                cy.get(
+                  `[data-e2e=columns_selector_field_${defaultColumnsKeys[idx]}`
+                ).uncheck()
               })
               .then(() => {
                 cy.get('[role=columnheader]')
@@ -425,7 +430,7 @@ describe('SlowQuery list page', () => {
       })
 
       it('Check SLOW_QUERY_SHOW_FULL_SQL', () => {
-        cy.get('[data-e2e=slow_query_popover]')
+        cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
             cy.get('[data-e2e=slow_query_show_full_sql]')

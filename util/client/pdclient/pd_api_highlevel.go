@@ -11,7 +11,7 @@ import (
 )
 
 // HLGetStores returns all stores in PD in order.
-// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+// You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) HLGetStores(ctx context.Context) ([]GetStoresResponseStore, error) {
 	resp, err := api.GetStores(ctx)
 	if err != nil {
@@ -28,7 +28,7 @@ func (api *APIClient) HLGetStores(ctx context.Context) ([]GetStoresResponseStore
 }
 
 // HLGetLocationLabels returns the location label config in PD.
-// An optional ctx can be passed in to override the default context. To keep the default context, pass nil.
+// You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) HLGetLocationLabels(ctx context.Context) ([]string, error) {
 	resp, err := api.GetConfigReplicate(ctx)
 	if err != nil {
@@ -51,6 +51,8 @@ type StoreLocations struct {
 	Stores         []StoreLabels `json:"stores"`
 }
 
+// HLGetStoreLocations returns the stores and their locations.
+// You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) HLGetStoreLocations(ctx context.Context) (*StoreLocations, error) {
 	locationLabels, err := api.HLGetLocationLabels(ctx)
 	if err != nil {

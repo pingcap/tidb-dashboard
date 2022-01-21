@@ -74,7 +74,7 @@ func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string)
 	return &SignOutInfo{}, nil
 }
 
-func newAuthService(featureFlags *featureflag.Registry) *AuthService {
+func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -225,8 +225,8 @@ func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
 
 func registerRouter(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
-	endpoint.GET("/login_info", s.getLoginInfoHandler)
-	endpoint.POST("/login", s.loginHandler)
+	endpoint.GET("/login_info", s.GetLoginInfoHandler)
+	endpoint.POST("/login", s.LoginHandler)
 	endpoint.GET("/sign_out_info", s.MWAuthRequired(), s.getSignOutInfoHandler)
 }
 
@@ -285,7 +285,7 @@ type GetLoginInfoResponse struct {
 // @Summary Get log in information, like supported authenticate types
 // @Success 200 {object} GetLoginInfoResponse
 // @Router /user/login_info [get]
-func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
+func (s *AuthService) GetLoginInfoHandler(c *gin.Context) {
 	supportedAuth := make([]int, 0)
 	for typeID, a := range s.authenticators {
 		enabled, err := a.IsEnabled()
@@ -310,7 +310,7 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 // @Success 200 {object} TokenResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Router /user/login [post]
-func (s *AuthService) loginHandler(c *gin.Context) {
+func (s *AuthService) LoginHandler(c *gin.Context) {
 	s.middleware.LoginHandler(c)
 }
 

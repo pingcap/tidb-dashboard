@@ -13,14 +13,14 @@ import (
 )
 
 func TestAPIClient_HLGetLocationLabels(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	resp, err := apiClient.HLGetLocationLabels(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, []string{}, resp)
 }
 
 func TestAPIClient_HLGetStoreLocations(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	resp, err := apiClient.HLGetStoreLocations(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, &pdclient.StoreLocations{
@@ -34,7 +34,7 @@ func TestAPIClient_HLGetStoreLocations(t *testing.T) {
 }
 
 func TestAPIClient_HLGetStores(t *testing.T) {
-	apiClient := fixture.NewAPIAPIClientFixture()
+	apiClient := fixture.NewAPIClientFixture()
 	resp, err := apiClient.HLGetStores(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, []pdclient.GetStoresResponseStore{

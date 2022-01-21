@@ -130,14 +130,14 @@ export default function ColumnsSelector({
           paddingTop: 8,
           paddingBottom: 8,
         }}
-        data-e2e="slow_query_popover_content"
+        data-e2e="columns_selector_popover_content"
       >
         {filteredColumns.map((column) => (
           <Checkbox
+            data-e2e={`columns_selector_field_${column.key}`}
             key={column.key}
             checked={visibleKeys[column.key]}
             onChange={(e) => handleCheckChange(e, column)}
-            data-e2e="slow_query_schema_table_columns"
           >
             {column.name}
           </Checkbox>
@@ -149,7 +149,7 @@ export default function ColumnsSelector({
 
   return (
     <Popover content={content} title={title} placement="bottomLeft">
-      <span style={{ cursor: 'pointer' }} data-e2e="slow_query_popover">
+      <span data-e2e="columns_selector_popover" style={{ cursor: 'pointer' }}>
         {t('component.columnsSelector.trigger_text')} <DownOutlined />
       </span>
     </Popover>

@@ -3,7 +3,7 @@
 package slowquery
 
 import (
-	"github.com/thoas/go-funk"
+	"strings"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/util/reflectutil"
@@ -112,12 +112,19 @@ func getFieldsAndTags() (slowQueryFields []Field) {
 	return
 }
 
-func getVirtualFields() []string {
-	fields := getFieldsAndTags()
-	vFields := funk.Filter(fields, func(f Field) bool {
-		return f.Projection != ""
-	}).([]Field)
-	return funk.Map(vFields, func(f Field) string {
-		return f.ColumnName
-	}).([]string)
+func filterFieldsByColumns(fields []Field, columns []string) []Field {
+	colMap := map[string]struct{}{}
+	for _, c := range columns {
+		colMap[strings.ToLower(c)] = struct{}{}
+	}
+
+	filteredFields := []Field{}
+	for _, f := range fields {
+		_, ok := colMap[strings.ToLower(f.ColumnName)]
+		if ok || (f.Projection != "") {
+			filteredFields = append(filteredFields, f)
+		}
+	}
+
+	return filteredFields
 }

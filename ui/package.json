@@ -8,6 +8,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@baurine/grafana-value-formats": "^1.0.0",
+    "@cypress/skip-test": "^2.6.1",
     "@duorou_xu/speedscope": "1.14.1",
     "@elastic/charts": "^20.0.0",
     "@fortawesome/fontawesome-free": "^5.14.0",

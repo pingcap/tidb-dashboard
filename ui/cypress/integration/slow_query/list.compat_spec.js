@@ -91,7 +91,6 @@ describe('SlowQuery list compatibility test', () => {
 
         cy.get('[data-e2e="columns_selector_popover"]').trigger('mouseover')
         availableFields.forEach((f) => {
-          cy.log(f)
           cy.get(`[data-e2e="columns_selector_field_${f}"]`).should('exist')
         })
       })

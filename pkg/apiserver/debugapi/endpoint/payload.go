@@ -35,7 +35,7 @@ type HTTPClients struct {
 	TiFlashStatusClient *tiflashclient.StatusClient
 }
 
-func (c HTTPClients) GetHTTPClientByNodeKind(kind topo.ComponentKind) *httpclient.Client {
+func (c HTTPClients) GetHTTPClientByNodeKind(kind topo.Kind) *httpclient.Client {
 	switch kind {
 	case topo.KindPD:
 		if c.PDAPIClient == nil {

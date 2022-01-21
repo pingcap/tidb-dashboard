@@ -7,6 +7,13 @@ describe('SlowQuery list page', () => {
     cy.fixture('uri.json').then(function (uri) {
       this.uri = uri
     })
+
+    cy.exec(
+      `bash ../scripts/start_tiup.sh ${Cypress.env('TIDB_VERSION')} restart`,
+      { log: true }
+    )
+
+    cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
   })
 
   beforeEach(function () {
@@ -16,17 +23,6 @@ describe('SlowQuery list page', () => {
   })
 
   describe('Initialize slow query page', () => {
-    it('Restart tiup', () => {
-      cy.exec(
-        `bash ../scripts/start_tiup.sh ${Cypress.env('TIDB_VERSION')} restart`,
-        { log: true }
-      )
-    })
-
-    it('Wait TiUP Playground', () => {
-      cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
-    })
-
     it('Slow query side bar highlighted', () => {
       cy.get('[data-e2e=menu_item_slow_query]').should(
         'has.class',
@@ -432,8 +428,45 @@ describe('SlowQuery list page', () => {
         cy.get('[data-e2e=slow_query_popover]')
           .trigger('mouseover')
           .then(() => {
-            cy.get('[data-automation-key=query]').eq(0)
+            cy.get('[data-e2e=slow_query_show_full_sql]')
+              .check()
+              .then(() => {
+                cy.get('[data-automation-key=query]')
+                  .eq(0)
+                  .find('[data-e2e=text_wrap_multiline]')
+              })
+
+            cy.get('[data-e2e=slow_query_show_full_sql]')
+              .uncheck()
+              .then(() => {
+                cy.get('[data-automation-key=query]')
+                  .eq(0)
+                  .find('[data-e2e=text_wrap_singleline_with_tooltip]')
+              })
           })
+      })
+    })
+
+    describe('Table list order', () => {
+      it('Default order', () => {
+        cy.get('[data-automation-key=timestamp]')
+          .each(($query, $idx, $queries) => {
+            cy.wrap($query).invoke('text').as(`time${$idx}`)
+          })
+          .then(() => {
+            const time1 = dayjs(cy.get('@time1'))
+            const time2 = dayjs(cy.get('@time2'))
+            cy.get('@time0').should('be.gt', time1)
+            cy.get('@time1').should('be.gt', time2)
+          })
+      })
+    })
+
+    describe('Refresh table list', () => {
+      it('Click refresh will fetch new list', () => {
+        cy.get('[data-e2e=slow_query_refresh]')
+          .click()
+          .then(() => {})
       })
     })
   })

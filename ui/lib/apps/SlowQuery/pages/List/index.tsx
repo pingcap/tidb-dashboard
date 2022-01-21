@@ -171,7 +171,10 @@ function List() {
               {loadingSlowQueries ? (
                 <LoadingOutlined />
               ) : (
-                <ReloadOutlined onClick={refresh} />
+                <ReloadOutlined
+                  onClick={refresh}
+                  data-e2e="slow_query_refresh"
+                />
               )}
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">

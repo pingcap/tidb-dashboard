@@ -100,15 +100,16 @@ export default function useSlowQueryTableController(
     () => (needSave ? sessionQueryOptions : memoryQueryOptions),
     [needSave, memoryQueryOptions, sessionQueryOptions]
   )
-  const queryTimeRange = useMemo(() => {
-    const [beginTime, endTime] = calcTimeRange(queryOptions.timeRange)
-    return { beginTime, endTime }
-  }, [queryOptions])
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(false)
   const [slowQueries, setSlowQueries] = useState<SlowqueryModel[]>([])
   const [refreshTimes, setRefreshTimes] = useState(0)
+
+  const queryTimeRange = useMemo(() => {
+    const [beginTime, endTime] = calcTimeRange(queryOptions.timeRange)
+    return { beginTime, endTime }
+  }, [queryOptions, refreshTimes])
 
   function setQueryOptions(newOptions: ISlowQueryOptions) {
     if (needSave) {

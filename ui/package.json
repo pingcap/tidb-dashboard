@@ -63,7 +63,7 @@
     "start": "gulp dev",
     "build": "gulp build",
     "fmt": "prettier --write .",
-    "lint": "esw --ext tsx,ts .",
+    "lint": "esw --cache --ext tsx,ts .",
     "gen:browserlist": "gulp gen:browserlist",
     "storybook": "start-storybook -p 9009 -s public",
     "run:e2e-test:compat-features": "cypress run --spec cypress/integration/**/*.compat_spec.js",

@@ -17,7 +17,6 @@ import {
   Card,
   AutoRefreshButton,
   TimeRangeSelector,
-  TimeRange,
   calcTimeRange,
   DEFAULT_TIME_RANGE,
   Toolbar,

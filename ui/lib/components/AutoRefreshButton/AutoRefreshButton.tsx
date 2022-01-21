@@ -80,7 +80,12 @@ export function AutoRefreshButton({
         </Menu.ItemGroup>
       </Menu>
     ),
-    [autoRefreshSeconds, autoRefreshSecondsOptions, onAutoRefreshSecondsChange]
+    [
+      t,
+      autoRefreshSeconds,
+      autoRefreshSecondsOptions,
+      onAutoRefreshSecondsChange,
+    ]
   )
 
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)

@@ -242,9 +242,8 @@ export class TableColumnFactory {
           <Tooltip
             title={<HighlightSQL sql={rec[fieldName]!} theme="dark" />}
             placement="right"
-            data-e2e="text_wrap_singleline_with_tooltip"
           >
-            <TextWrap>
+            <TextWrap data-e2e="text_wrap_singleline_with_tooltip">
               <HighlightSQL sql={rec[fieldName]!} compact />
             </TextWrap>
           </Tooltip>

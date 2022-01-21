@@ -60,11 +60,6 @@ describe('SlowQuery list page', () => {
 
   describe('Filter slow query list', () => {
     it('Run workload', () => {
-      let queryData = {
-        query: 'SET tidb_slow_log_threshold = 500',
-      }
-      cy.task('queryDB', { ...queryData })
-
       const workloads = [
         'SELECT SLEEP(0.8);',
         'SELECT SLEEP(0.4);',
@@ -333,8 +328,13 @@ describe('SlowQuery list page', () => {
     })
 
     describe('Selected Columns', () => {
-      const defaultColumns = ['Query', 'Finish Time', 'Latency']
-      const defaultColumnsKeys = ['query', 'timestamp', 'query_time']
+      const defaultColumns = ['Query', 'Finish Time', 'Latency', 'Max Memory']
+      const defaultColumnsKeys = [
+        'query',
+        'timestamp',
+        'query_time',
+        'memory_max',
+      ]
       it('Default selected columns', () => {
         cy.get('[role=columnheader]')
           .not('.is-empty')
@@ -357,7 +357,7 @@ describe('SlowQuery list page', () => {
                     .parent()
                     .within(() => {
                       cy.get(
-                        `[data-e2e=columns_selector_field_${defaultColumnsKeys[idx]}`
+                        `[data-e2e=columns_selector_field_${defaultColumnsKeys[idx]}]`
                       ).should('be.checked')
                     })
                 })
@@ -372,9 +372,9 @@ describe('SlowQuery list page', () => {
             cy.get('[data-e2e=slow_query_schema_table_column_tile]')
               .check()
               .then(() => {
-                cy.get('[role=columnheader')
-                  .not('is-empty')
-                  .should('have.length', 42)
+                cy.get('[role=columnheader]')
+                  .not('.is-empty')
+                  .should('have.length', 44)
               })
           })
       })
@@ -386,8 +386,8 @@ describe('SlowQuery list page', () => {
             cy.get('[data-e2e=slow_query_schema_table_column_reset]')
               .click()
               .then(() => {
-                cy.get('[role=columnheader')
-                  .not('is-empty')
+                cy.get('[role=columnheader]')
+                  .not('.is-empty')
                   .should('have.length', 4)
               })
           })
@@ -397,16 +397,15 @@ describe('SlowQuery list page', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
-            cy.contains('TiDB Instance')
+            cy.contains('Max Disk')
               .within(() => {
-                cy.get(
-                  `[data-e2e=columns_selector_field_${defaultColumnsKeys[idx]}`
-                ).check()
+                cy.get('[data-e2e=columns_selector_field_disk_max]').check()
               })
               .then(() => {
                 cy.get('[role=columnheader]')
-                  .eq(1)
-                  .should('have.text', 'TiDB Instance ')
+                  .not('.is-empty')
+                  .last()
+                  .should('have.text', 'Max Disk ')
               })
           })
       })
@@ -415,11 +414,9 @@ describe('SlowQuery list page', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
-            cy.contains('TiDB Instance')
+            cy.contains('Max Disk')
               .within(() => {
-                cy.get(
-                  `[data-e2e=columns_selector_field_${defaultColumnsKeys[idx]}`
-                ).uncheck()
+                cy.get('[data-e2e=columns_selector_field_disk_max]').uncheck()
               })
               .then(() => {
                 cy.get('[role=columnheader]')
@@ -446,6 +443,7 @@ describe('SlowQuery list page', () => {
               .then(() => {
                 cy.get('[data-automation-key=query]')
                   .eq(0)
+                  .trigger('mouseover')
                   .find('[data-e2e=text_wrap_singleline_with_tooltip]')
               })
           })
@@ -467,9 +465,31 @@ describe('SlowQuery list page', () => {
       })
     })
 
-    describe('Refresh table list', () => {
-      it('Click refresh will fetch new list', () => {
-        cy.get('[data-e2e=slow_query_refresh]')
+    it('Click refresh will update table list', () => {
+      cy.get('[data-automation-key=query]').should('have.length', 3)
+
+      const queryData = {
+        query: 'SELECT sleep(0.6)',
+      }
+
+      cy.task('queryDB', { ...queryData })
+      cy.wait(500)
+
+      cy.get('[data-e2e=slow_query_refresh]')
+        .click()
+        .then(() => {
+          cy.get('[data-automation-key=query]').should('have.length', 4)
+        })
+    })
+
+    describe('Go to detail page', () => {
+      it('', () => {
+        cy.get('[data-automation-key=query]').eq(0).as('firstSlowQuery')
+        cy.get('[data-automation-key=timestamp]')
+          .eq(0)
+          .as('firstSlowQueryTimeStamp')
+        cy.get('[data-automationid=ListCell]')
+          .eq(0)
           .click()
           .then(() => {})
       })

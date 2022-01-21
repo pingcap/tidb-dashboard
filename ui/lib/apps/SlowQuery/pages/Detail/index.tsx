@@ -105,7 +105,10 @@ function DetailPage() {
                       <HighlightSQL sql={data.query!} compact />
                     }
                   >
-                    <HighlightSQL sql={data.query!} />
+                    <HighlightSQL
+                      sql={data.query!}
+                      data-e2e="detail_expand_query"
+                    />
                   </Expand>
                 </Descriptions.Item>
                 {(() => {

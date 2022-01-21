@@ -15,7 +15,7 @@ import (
 // APIDefinition can be "resolved" to become a request when its parameter values are given via RequestPayload.
 type APIDefinition struct {
 	ID          string               `json:"id"`
-	Component   topo.ComponentKind   `json:"component"`
+	Component   topo.Kind            `json:"component"`
 	Path        string               `json:"path"`
 	Method      string               `json:"method"`
 	PathParams  []APIParamDefinition `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table

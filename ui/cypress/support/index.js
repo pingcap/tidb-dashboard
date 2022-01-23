@@ -14,9 +14,11 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
 import '@cypress/code-coverage/support'
+import '@cypress/skip-test/support'
 import 'cypress-plugin-snapshots/commands'
+
+import './commands'
 
 // https://github.com/cypress-io/cypress/issues/8418
 Cypress.on(

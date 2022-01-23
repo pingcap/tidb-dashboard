@@ -50,6 +50,15 @@ Cypress.Commands.overwrite('request', (originalFn, ...options) => {
   return originalFn(...options)
 })
 
+// We overwrite the command, so it does not take a sceenshot if we run the tests inside the test runner
+Cypress.Commands.overwrite('toMatchImageSnapshot', (originalFn, options) => {
+  if (Cypress.env('ALLOW_SCREENSHOT')) {
+    originalFn(options)
+  } else {
+    cy.log(`Screenshot comparison is disabled`)
+  }
+})
+
 //
 //
 // -- This is a child command --
@@ -60,5 +69,3 @@ Cypress.Commands.overwrite('request', (originalFn, ...options) => {
 // Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
 //
 //
-
-import './login'

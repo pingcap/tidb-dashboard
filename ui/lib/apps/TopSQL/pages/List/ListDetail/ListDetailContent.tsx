@@ -33,10 +33,10 @@ export function ListDetailContent({
   const togglePlanExpanded = () => setPlanExpanded((prev) => !prev)
 
   return (
-    <Card>
+    <Card data-e2e="topsql_listdetail_content">
       <Descriptions>
         <Descriptions.Item
-          className="e2e-topsql-listdetail-content-sql_text"
+          className="sql_text"
           span={2}
           multiline={sqlExpanded}
           label={
@@ -64,7 +64,7 @@ export function ListDetailContent({
           </Expand>
         </Descriptions.Item>
         <Descriptions.Item
-          className="e2e-topsql-listdetail-content-sql_digest"
+          className="sql_digest"
           label={
             <Space size="middle">
               <TextWithInfo.TransKey transKey="topsql.detail_content.fields.sql_digest" />
@@ -78,7 +78,7 @@ export function ListDetailContent({
         !isOverallRecord(planRecord) &&
         !isNoPlanRecord(planRecord) ? (
           <Descriptions.Item
-            className="e2e-topsql-listdetail-content-plan_digest"
+            className="plan_digest"
             label={
               <Space size="middle">
                 <TextWithInfo.TransKey transKey="topsql.detail_content.fields.plan_digest" />
@@ -91,7 +91,7 @@ export function ListDetailContent({
         ) : null}
         {!!planRecord?.plan_text ? (
           <Descriptions.Item
-            className="e2e-topsql-listdetail-content-plan_text"
+            className="plan_text"
             span={2}
             multiline={planExpanded}
             label={

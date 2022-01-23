@@ -166,7 +166,7 @@ export function ListDetailTable({
       <CardTable
         listProps={
           {
-            'data-e2e': 'topsql-listdetail-table',
+            'data-e2e': 'topsql_listdetail_table',
           } as any
         }
         cardNoMarginTop

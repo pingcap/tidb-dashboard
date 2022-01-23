@@ -76,7 +76,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
           >
             <Form.Item noStyle name="enable" valuePropName="checked">
               <Switch
-                data-e2e="topsql-settings-enable"
+                data-e2e="topsql_settings_enable"
                 disabled={!isWriteable}
               />
             </Form.Item>
@@ -88,7 +88,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
                 htmlType="submit"
                 loading={submitting}
                 disabled={!isWriteable}
-                data-e2e="topsql-settings-save"
+                data-e2e="topsql_settings_save"
               >
                 {t('topsql.settings.actions.save')}
               </Button>

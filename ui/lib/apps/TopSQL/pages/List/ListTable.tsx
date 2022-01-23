@@ -77,7 +77,7 @@ export function ListTable({
                   fontStyle: 'italic',
                   color: '#aaa',
                 }}
-                data-e2e="topsql-listtable-row-others"
+                data-e2e="topsql_listtable_row_others"
               >
                 {t('topsql.table.others')} <QuestionCircleOutlined />
               </span>
@@ -114,7 +114,7 @@ export function ListTable({
       <CardTable
         listProps={
           {
-            'data-e2e': 'topsql-list-table',
+            'data-e2e': 'topsql_list_table',
           } as any
         }
         cardNoMarginTop

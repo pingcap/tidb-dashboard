@@ -1,6 +1,6 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
-import { useMemo, useEffect, useCallback } from 'react'
+import { useMemo, useEffect } from 'react'
 import {
   Selection,
   SelectionMode,

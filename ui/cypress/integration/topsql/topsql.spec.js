@@ -51,6 +51,11 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
       cy.intercept('/dashboard/api/topsql/instances?*').as('getInstance')
       cy.intercept('/dashboard/api/topsql/config').as('getTopsqlConfig')
 
+      cy.wait('@getTopsqlConfig').then((interception) => {
+        if (!interception.response.body.enable) {
+          enableTopSQL()
+        }
+      })
       cy.wait('@getInstance')
         .its('response.body.data')
         .then((d) => {
@@ -58,12 +63,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
             cy.wait('@getTopsqlSummary')
           }
         })
-
-      cy.wait('@getTopsqlConfig').then((interception) => {
-        if (!interception.response.body.enable) {
-          enableTopSQL()
-        }
-      })
     })
 
     describe('Update time range', () => {

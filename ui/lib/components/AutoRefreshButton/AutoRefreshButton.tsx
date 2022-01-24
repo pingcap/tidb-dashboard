@@ -94,7 +94,7 @@ export function AutoRefreshButton({
     clearTimeout(timer.current!)
     timer.current = undefined
     onRemainingRefreshSecondsChange(autoRefreshSeconds)
-  }, [autoRefreshSeconds])
+  }, [autoRefreshSeconds, onRemainingRefreshSecondsChange])
 
   useEffect(() => {
     clearTimeout(timer.current!)
@@ -107,6 +107,7 @@ export function AutoRefreshButton({
     ) {
       onRemainingRefreshSecondsChange(autoRefreshSeconds)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefreshSeconds])
 
   const handleRefresh = useCallback(async () => {
@@ -136,6 +137,7 @@ export function AutoRefreshButton({
       }
     }, 1000)
     return () => clearTimeout(timer.current!)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefreshSeconds, disabled, remainingRefreshSeconds])
 
   return (

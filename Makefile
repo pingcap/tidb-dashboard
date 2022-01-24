@@ -58,7 +58,7 @@ e2e_compat_features_test:
 e2e_common_features_test:
 	cd ui &&\
 	yarn &&\
-	yarn run:e2e-test:common-features TIDB_VERSION=$(TIDB_VERSION)
+	yarn run:e2e-test:common-features --env TIDB_VERSION=$(TIDB_VERSION)
 
 .PHONY: dev
 dev: lint default

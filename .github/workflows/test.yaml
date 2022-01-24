@@ -153,6 +153,7 @@ jobs:
           CI: true
           FEATURE_VERSION: ${{ matrix.feature_version }}
           TIDB_VERSION: ${{ matrix.tidb_version }}
+          ALLOW_SCREENSHOT: true
       - name: Archive Test Results
         if: always()
         run: |

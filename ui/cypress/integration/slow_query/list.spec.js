@@ -54,7 +54,7 @@ describe('SlowQuery list page', () => {
         staticResponse
       ).as('slow_query_list')
       cy.wait('@slow_query_list').then(() => {
-        cy.get('[data-e2e=alert_error_bar] > span:nth-child(2)').should(
+        cy.get('[data-e2e=alert_error_bar]').should(
           'has.text',
           staticResponse.body.message
         )

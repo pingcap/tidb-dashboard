@@ -13,7 +13,7 @@
 // the project's config changing)
 
 import mysql from 'mysql2'
-import { initPlugin as initSnapshotsPlugin } from 'cypress-plugin-snapshots/plugin'
+import { addMatchImageSnapshotPlugin } from 'cypress-image-snapshot/plugin'
 import codecovTaskPlugin from '@cypress/code-coverage/task'
 
 function queryTestDB(query, password, database) {
@@ -49,7 +49,7 @@ module.exports = (on, config) => {
   // `config` is the resolved Cypress config
 
   codecovTaskPlugin(on, config)
-  initSnapshotsPlugin(on, config)
+  addMatchImageSnapshotPlugin(on, config)
 
   config.baseUrl =
     (process.env.SERVER_URL || 'http://localhost:3001/dashboard') + '#'

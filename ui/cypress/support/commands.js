@@ -51,13 +51,16 @@ Cypress.Commands.overwrite('request', (originalFn, ...options) => {
 })
 
 // We overwrite the command, so it does not take a sceenshot if we run the tests inside the test runner
-Cypress.Commands.overwrite('toMatchImageSnapshot', (originalFn, options) => {
-  if (Cypress.env('ALLOW_SCREENSHOT')) {
-    originalFn(options)
-  } else {
-    cy.log(`Screenshot comparison is disabled`)
+Cypress.Commands.overwrite(
+  'matchImageSnapshot',
+  (originalFn, snapshotName, options) => {
+    if (Cypress.env('ALLOW_SCREENSHOT')) {
+      originalFn(snapshotName, options)
+    } else {
+      cy.log(`Screenshot comparison is disabled`)
+    }
   }
-})
+)
 
 //
 //

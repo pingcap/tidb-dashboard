@@ -7,10 +7,7 @@
   "env": {
     "FEATURE_VERSION": "6.0.0",
     "TIDB_VERSION": "nightly",
-    "ALLOW_SCREENSHOT": false,
-    "cypress-plugin-snapshots": {
-      "autoCleanUp": true
-    }
+    "ALLOW_SCREENSHOT": false
   },
   "experimentalSessionSupport": true,
   "viewportWidth": 1500,

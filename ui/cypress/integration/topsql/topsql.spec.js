@@ -46,11 +46,19 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
           query: { start: '1641916800', end: '1641934800' },
         },
         { fixture: 'topsql_instance:end=1641934800&start=1641916800.json' }
-      ).as('getInstance_0112')
+      )
 
+      cy.intercept('/dashboard/api/topsql/instances?*').as('getInstance')
       cy.intercept('/dashboard/api/topsql/config').as('getTopsqlConfig')
 
-      cy.wait('@getTopsqlSummary')
+      cy.wait('@getInstance')
+        .its('response.body.data')
+        .then((d) => {
+          if (d.length) {
+            cy.wait('@getTopsqlSummary')
+          }
+        })
+
       cy.wait('@getTopsqlConfig').then((interception) => {
         if (!interception.response.body.enable) {
           enableTopSQL()

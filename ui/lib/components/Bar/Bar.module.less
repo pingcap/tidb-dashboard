@@ -1,4 +1,4 @@
-@import '~antd/es/style/themes/default.less';
+@import 'antd/es/style/themes/default.less';
 
 @bar-height: 8px;
 @bar-color: lighten(@primary-color, 10%);
@@ -40,7 +40,7 @@
   position: absolute;
   top: 50%;
   height: @error-line-width;
-  margin-top: -@error-line-width / 2;
+  margin-top: -(@error-line-width / 2); // https://github.com/less/less.js/issues/3608#issuecomment-811086683
   background-color: @error-bar-color;
 
   &::before {
@@ -48,7 +48,7 @@
     position: absolute;
     height: @error-bar-height;
     width: @error-line-width;
-    margin-top: -@error-bar-height / 2;
+    margin-top: -(@error-bar-height / 2);
     background-color: @error-bar-color;
     top: 50%;
   }

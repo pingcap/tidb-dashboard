@@ -9,7 +9,6 @@ import { distro } from '@lib/utils/i18n'
 
 import DiagnosisReport from './components/DiagnosisReport'
 import translations from './translations'
-
 import './index.css'
 
 function refineDiagnosisData() {

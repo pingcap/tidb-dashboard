@@ -60,11 +60,9 @@ task(
     parallel(
       'swagger:generate',
       'distro:generate',
-      'speedscope:copy_static_assets',
-      'tsc:check',
-      'lint:check'
+      'speedscope:copy_static_assets'
     ),
-    'esbuild:build'
+    parallel('tsc:check', 'lint:check', 'esbuild:build')
   )
 )
 

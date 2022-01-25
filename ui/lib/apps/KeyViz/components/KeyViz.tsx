@@ -13,13 +13,6 @@ import KeyVizToolbar from './KeyVizToolbar'
 
 import './KeyViz.less'
 
-// type CacheEntry = {
-//   metricType: DataTag
-//   dateRange: number
-//   expireTime: number
-//   data: HeatmapData
-// }
-
 // const CACHE_EXPRIE_SECS = 10
 
 class HeatmapCache {

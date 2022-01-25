@@ -69,17 +69,9 @@ jobs:
         run: |
           yarn prettier --check . || (echo "::error ::Please format your code by using 'yarn fmt'"; exit 1)
         working-directory: ui
-      - name: Lint
-        run: |
-          yarn lint || (echo "::error ::Please lint your code by using 'yarn lint'"; exit 1)
-        working-directory: ui
       - name: Build UI
         run: |
           make ui
         env:
           NO_MINIMIZE: true
           CI: true
-      - name: Check type
-        run: |
-          yarn tsc || (echo "::error ::Please check your code type by using 'yarn tsc'"; exit 1)
-        working-directory: ui

@@ -1,4 +1,4 @@
-@import '~antd/es/style/themes/default.less';
+@import 'antd/es/style/themes/default.less';
 
 @sider-background: #f7f7fa;
 
@@ -19,6 +19,10 @@
       display: flex;
       flex-direction: column;
       padding-bottom: 20px;
+
+      .ant-menu.ant-menu-inline-collapsed {
+        width: @menu-collapsed-width; // 80px
+      }
     }
 
     .ant-menu {
@@ -56,6 +60,17 @@
           color: #000;
         }
       }
+    }
+  }
+}
+
+:global {
+  .ant-menu-inline-collapsed-tooltip {
+    a {
+      color: @text-color-dark; // hsla(0, 0%, 100%, 0.85)
+    }
+    .anticon {
+      display: none;
     }
   }
 }

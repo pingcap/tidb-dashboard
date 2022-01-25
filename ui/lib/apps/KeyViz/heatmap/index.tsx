@@ -2,15 +2,6 @@ import React, { useRef, useEffect } from 'react'
 import * as d3 from 'd3'
 import { useEventListener } from 'ahooks'
 import { heatmapChart } from './chart'
-import { HeatmapData, DataTag, HeatmapRange } from './types'
-
-type HeatmapProps = {
-  data: HeatmapData
-  dataTag: DataTag
-  onBrush: (selection: HeatmapRange) => void
-  onZoom: () => void
-  onChartInit: (any) => void
-}
 
 function _Heatmap(props) {
   const divRef: React.RefObject<HTMLDivElement> = useRef(null)

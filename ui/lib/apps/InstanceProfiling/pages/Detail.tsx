@@ -245,7 +245,7 @@ export default function Page() {
                 <Badge status="error" text={record.error} />
               </Tooltip>
             )
-          } else if (record.state == taskState.Skipped) {
+          } else if (record.state === taskState.Skipped) {
             let tooltipTransKey =
               'instance_profiling.detail.table.tooltip.skipped'
             if (record.profiling_type === 'heap') {
@@ -291,14 +291,14 @@ export default function Page() {
           return (
             <ActionsButton
               actions={actions}
-              disabled={rec.state != taskState.Success}
+              disabled={rec.state !== taskState.Success}
               onClick={(act) => openResult(act, rec)}
             />
           )
         },
       },
     ],
-    [t, profileDuration]
+    [t, profileDuration, openResult]
   )
 
   const handleDownloadGroup = useCallback(async () => {

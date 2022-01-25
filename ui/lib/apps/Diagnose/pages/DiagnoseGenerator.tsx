@@ -103,7 +103,9 @@ export default function DiagnoseGenerator() {
                           min={1}
                           max={30 * 24 * 60}
                           formatter={(value) => `${value} min`}
-                          parser={(value) => value?.replace(/[^\d]/g, '') || ''}
+                          parser={(value) =>
+                            parseInt(value?.replace(/[^\d]/g, '') || '')
+                          }
                           style={{ width: 120 }}
                           onChange={(val) => setDuration(val as number)}
                         />

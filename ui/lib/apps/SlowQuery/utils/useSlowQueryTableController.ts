@@ -109,6 +109,7 @@ export default function useSlowQueryTableController(
   const queryTimeRange = useMemo(() => {
     const [beginTime, endTime] = calcTimeRange(queryOptions.timeRange)
     return { beginTime, endTime }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryOptions, refreshTimes])
 
   function setQueryOptions(newOptions: ISlowQueryOptions) {

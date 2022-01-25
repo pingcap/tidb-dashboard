@@ -1,6 +1,9 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 import dayjs from 'dayjs'
+import { validateCsvList, validateCsvFile } from '../utils'
+
+const path = require('path')
 
 describe('SlowQuery list page', () => {
   before(() => {
@@ -26,10 +29,9 @@ describe('SlowQuery list page', () => {
 
   describe('Initialize slow query page', () => {
     it('Slow query side bar highlighted', () => {
-      cy.get('[data-e2e=menu_item_slow_query]').should(
-        'has.class',
-        'ant-menu-item-selected'
-      )
+      cy.get('[data-e2e=menu_item_slow_query]')
+        .should('be.visible')
+        .and('has.class', 'ant-menu-item-selected')
     })
 
     it('Has Toolbar', function () {
@@ -63,9 +65,9 @@ describe('SlowQuery list page', () => {
   describe('Filter slow query list', () => {
     it('Run workload', () => {
       const workloads = [
-        'SELECT SLEEP(1);',
-        'SELECT SLEEP(0.4);',
-        'SELECT SLEEP(2);',
+        'SELECT sleep(1);',
+        'SELECT sleep(0.4);',
+        'SELECT sleep(2);',
       ]
 
       const waitTwoSecond = (query, idx) =>
@@ -153,7 +155,7 @@ describe('SlowQuery list page', () => {
             .then(() => {
               cy.get('[data-automation-key=query]')
                 .should('has.length', 1)
-                .and('has.text', 'SELECT SLEEP(1);')
+                .and('has.text', 'SELECT sleep(1);')
             })
         })
 
@@ -189,7 +191,7 @@ describe('SlowQuery list page', () => {
             .then(() => {
               cy.get('[data-automation-key=query]')
                 .should('has.length', 1)
-                .and('has.text', 'SELECT SLEEP(2);')
+                .and('has.text', 'SELECT sleep(2);')
             })
         })
 
@@ -239,7 +241,7 @@ describe('SlowQuery list page', () => {
 
       it('Run workload without use database', () => {
         let queryData = {
-          query: 'SELECT sleep(0.5);',
+          query: 'SELECT sleep(1.5);',
           database: '',
         }
         cy.task('queryDB', { ...queryData })
@@ -269,7 +271,7 @@ describe('SlowQuery list page', () => {
 
       it('Search item with space', () => {
         cy.get('[data-e2e=slow_query_search]')
-          .type(' select sleep\\(1\\) {enter}')
+          .type(' SELECT sleep\\(1\\) {enter}')
           .then(() => {
             cy.get('[data-automation-key=query]').should('has.length', 1)
           })
@@ -284,7 +286,7 @@ describe('SlowQuery list page', () => {
       })
 
       it('Type search without pressing enter then reload', () => {
-        cy.get('[data-e2e=slow_query_search]').type(' select sleep\\(1\\)')
+        cy.get('[data-e2e=slow_query_search]').type(' SELECT sleep\\(1\\)')
 
         cy.reload()
         cy.get('[data-automation-key=query]').should('has.length', 3)
@@ -341,7 +343,7 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Hover selected columns', () => {
+      it('Hover on columns selector and check selected fileds ', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
@@ -362,7 +364,7 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Check all columns', () => {
+      it('Select all column fileds', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
@@ -376,7 +378,7 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Reset selected columns', () => {
+      it('Reset selected column fields', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
@@ -390,7 +392,7 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Check orbitary column', () => {
+      it('Select an orbitary column field', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
@@ -407,7 +409,7 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Uncheck last select orbitary column', () => {
+      it('UnCheck last selected orbitary column field', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
@@ -446,27 +448,14 @@ describe('SlowQuery list page', () => {
           })
       })
     })
+  })
 
-    describe('Table list order', () => {
-      it('Default order', () => {
-        cy.get('[data-automation-key=timestamp]')
-          .each(($query, $idx, $queries) => {
-            cy.wrap($query).invoke('text').as(`time${$idx}`)
-          })
-          .then(() => {
-            const time1 = dayjs(cy.get('@time1'))
-            const time2 = dayjs(cy.get('@time2'))
-            cy.get('@time0').should('be.gt', time1)
-            cy.get('@time1').should('be.gt', time2)
-          })
-      })
-    })
-
+  describe('Refresh table list', () => {
     it('Click refresh will update table list', () => {
       cy.get('[data-automation-key=query]').should('have.length', 3)
 
       const queryData = {
-        query: 'SELECT sleep(0.6)',
+        query: 'SELECT sleep(1.2)',
       }
 
       cy.task('queryDB', { ...queryData })
@@ -478,18 +467,126 @@ describe('SlowQuery list page', () => {
           cy.get('[data-automation-key=query]').should('have.length', 4)
         })
     })
+  })
 
-    describe('Go to detail page', () => {
-      it('', () => {
-        cy.get('[data-automation-key=query]').eq(0).as('firstSlowQuery')
-        cy.get('[data-automation-key=timestamp]')
-          .eq(0)
-          .as('firstSlowQueryTimeStamp')
-        cy.get('[data-automationid=ListCell]')
-          .eq(0)
-          .click()
-          .then(() => {})
-      })
+  describe('Table list order', () => {
+    it('Default order(desc) by Timestamp', () => {
+      cy.get('[data-automation-key=query]')
+        .eq(0)
+        .should('have.text', 'SELECT sleep(1.2);')
+      cy.get('[data-automation-key=query]')
+        .eq(1)
+        .should('have.text', 'SELECT sleep(1.5);')
+      cy.get('[data-automation-key=query]')
+        .eq(2)
+        .should('have.text', 'SELECT sleep(2);')
+      cy.get('[data-automation-key=query]')
+        .eq(3)
+        .should('have.text', 'SELECT sleep(1);')
+    })
+
+    it('Asc order by Timestamp', () => {
+      cy.get('[data-item-key=timestamp]')
+        .should('be.visible')
+        .click()
+        .then(() => {
+          cy.get('[data-automation-key=query]')
+            .eq(0)
+            .should('have.text', 'SELECT sleep(1);')
+          cy.get('[data-automation-key=query]')
+            .eq(1)
+            .should('have.text', 'SELECT sleep(2);')
+          cy.get('[data-automation-key=query]')
+            .eq(2)
+            .should('have.text', 'SELECT sleep(1.5);')
+          cy.get('[data-automation-key=query]')
+            .eq(3)
+            .should('have.text', 'SELECT sleep(1.2);')
+        })
+    })
+
+    it('Desc/Asc order by Latency', () => {
+      cy.get('[data-item-key=query_time]')
+        .should('be.visible')
+        .click()
+        .then(() => {
+          // Desc order by Latency
+          cy.get('[data-automation-key=query]')
+            .eq(0)
+            .should('have.text', 'SELECT sleep(2);')
+          cy.get('[data-automation-key=query]')
+            .eq(1)
+            .should('have.text', 'SELECT sleep(1.5);')
+          cy.get('[data-automation-key=query]')
+            .eq(2)
+            .should('have.text', 'SELECT sleep(1.2);')
+          cy.get('[data-automation-key=query]')
+            .eq(3)
+            .should('have.text', 'SELECT sleep(1);')
+        })
+        .then(() => {
+          // Asc order by Latency
+          cy.get('[data-item-key=query_time]')
+            .should('be.visible')
+            .click()
+            .then(() => {
+              cy.get('[data-automation-key=query]')
+                .eq(0)
+                .should('have.text', 'SELECT sleep(1);')
+              cy.get('[data-automation-key=query]')
+                .eq(1)
+                .should('have.text', 'SELECT sleep(1.2);')
+              cy.get('[data-automation-key=query]')
+                .eq(2)
+                .should('have.text', 'SELECT sleep(1.5);')
+              cy.get('[data-automation-key=query]')
+                .eq(3)
+                .should('have.text', 'SELECT sleep(2);')
+            })
+        })
     })
   })
+
+  describe('Go to slow query detail page', () => {
+    it('Click first slow query and go to detail page', () => {
+      cy.get('[data-automationid=ListCell]')
+        .eq(0)
+        .click()
+        .then(() => {
+          cy.url().should('include', 'slow_query/detail')
+          cy.get('[data-e2e=syntax_highlighter]').should(
+            'have.text',
+            'SELECT sleep(1.2);'
+          )
+        })
+    })
+  })
+
+  // describe('Export slow query CSV ', () => {
+  //   it('validate Csv File', () => {
+  //     const downloadsFolder = Cypress.config('downloadsFolder')
+  //     const downloadedFilename = path.join(downloadsFolder, '*.csv')
+
+  //     console.log('downloadedFilename', downloadedFilename)
+  //     cy.get('[data-e2e=slow_query_export_menu]')
+  //       .trigger('mouseover')
+  //       .then(() => {
+  //         cy.get('[data-e2e=slow_query_export_btn]').click().then(() => {
+  //           cy.reload()
+  //         })
+  //         cy.log('**read downloaded file**')
+
+  //         // file path is relative to the working folder
+  //         console.log('inside, ownloadedFilename', downloadedFilename)
+
+  //         // browser might take a while to download the file,
+  //         // so use "cy.readFile" to retry until the file exists
+  //         // and has length - and we assume that it has finished downloading then
+  //         cy.readFile(downloadedFilename, { timeout: 15000 })
+  //           .should('have.length.gt', 1)
+  //           // parse CSV text into objects
+  //           .then(validateCsvList)
+  //       })
+  //   })
+  // })
 })

@@ -38,6 +38,22 @@ function queryTestDB(query, password, database) {
   })
 }
 
+function deleteTestFolder(folderName) {
+  console.log('deleting folder %s', folderName)
+
+  return new Promise((resolve, reject) => {
+    rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
+      if (err && err.code !== 'ENOENT') {
+        console.error(err)
+
+        return reject(err)
+      }
+
+      resolve(null)
+    })
+  })
+}
+
 /**
  * @type {Cypress.PluginConfig}
  */
@@ -57,6 +73,10 @@ module.exports = (on, config) => {
   on('task', {
     queryDB: ({ query, password = '', database = 'mysql' }) => {
       return queryTestDB(query, password, database)
+    },
+
+    deleteFolder: (folderName) => {
+      return deleteTestFolder(folderName)
     },
   })
 

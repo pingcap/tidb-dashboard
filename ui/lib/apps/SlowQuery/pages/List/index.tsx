@@ -88,7 +88,12 @@ function List() {
 
   const dropdownMenu = (
     <Menu onClick={menuItemClick}>
-      <Menu.Item key="export" disabled={downloading} icon={<ExportOutlined />}>
+      <Menu.Item
+        key="export"
+        disabled={downloading}
+        icon={<ExportOutlined />}
+        data-e2e="slow_query_export_btn"
+      >
         {downloading
           ? t('slow_query.toolbar.exporting')
           : t('slow_query.toolbar.export')}
@@ -178,7 +183,10 @@ function List() {
               )}
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
-              <div style={{ cursor: 'pointer' }}>
+              <div
+                style={{ cursor: 'pointer' }}
+                data-e2e="slow_query_export_menu"
+              >
                 <MenuOutlined />
               </div>
             </Dropdown>

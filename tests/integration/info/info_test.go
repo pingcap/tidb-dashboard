@@ -137,6 +137,7 @@ func (s *testInfoSuite) getTokenBySQLRoot() string {
 	}{}
 	err := json.Unmarshal(w.Body.Bytes(), &res)
 	s.Require().Nil(err)
+
 	return res.Token
 }
 
@@ -157,6 +158,7 @@ func (s *testInfoSuite) getTokenByShareCode(shareCode string) string {
 	}{}
 	err := json.Unmarshal(w.Body.Bytes(), &res)
 	s.Require().Nil(err)
+
 	return res.Token
 }
 
@@ -193,5 +195,6 @@ func (s *testInfoSuite) requestWhoami(token string) info.WhoAmIResponse {
 	res := info.WhoAmIResponse{}
 	err := json.Unmarshal(w.Body.Bytes(), &res)
 	s.Require().Nil(err)
+
 	return res
 }

@@ -40,8 +40,9 @@ export function NgmNotStarted() {
 }
 
 export function NgmNotStartedGuard({ children }: { children: ReactNode }) {
+  const ngmState = useNgmState()
   if (React.isValidElement(children)) {
-    return useNgmState() === NgmState.Started ? children : <NgmNotStarted />
+    return ngmState === NgmState.Started ? children : <NgmNotStarted />
   }
   return null
 }

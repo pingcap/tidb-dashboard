@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { SelectionMode, IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -40,6 +40,8 @@ const shortFormat = (v: number = 0) => {
 const msFormat = (v: number = 0) => {
   return getValueFormat('ms')(formatZero(v), 1)
 }
+
+const emptyFn = () => {}
 
 export function ListDetailTable({
   record: sqlRecord,
@@ -143,14 +145,18 @@ export function ListDetailTable({
           ),
         },
       ].filter((c) => !!c) as IColumn[],
-    [capacity, instanceType]
+    [capacity, instanceType, t]
   )
+
+  const getKey = useCallback((r: PlanRecord) => r?.plan_digest!, [])
 
   const { selectedRecord, selection } = useRecordSelection<PlanRecord>({
     storageKey: 'topsql.list_detail_table_selected_key',
     selections: planRecords,
-    getKey: (r) => r.plan_digest!,
-    canSelectItem: (r) => !isNoPlanRecord(r) && !isOverallRecord(r),
+    options: {
+      getKey,
+      canSelectItem: (r) => !isNoPlanRecord(r) && !isOverallRecord(r),
+    },
   })
 
   const planRecord = useMemo(() => {
@@ -165,12 +171,12 @@ export function ListDetailTable({
     <>
       <CardTable
         cardNoMarginTop
-        getKey={(r: PlanRecord) => r?.plan_digest!}
+        getKey={getKey}
         items={planRecords}
         columns={tableColumns}
         selectionMode={SelectionMode.single}
         selectionPreservedOnEmptyClick
-        onRowClicked={() => {}}
+        onRowClicked={emptyFn}
         selection={selection}
       />
       {!sqlRecord.is_other && (

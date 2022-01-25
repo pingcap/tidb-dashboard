@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Select, Tooltip } from 'antd'
+import { Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import client from '@lib/client'

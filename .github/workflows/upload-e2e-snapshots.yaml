@@ -24,7 +24,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with: ${{ github.event.inputs.ref }}
+        with:
+          ref: ${{ github.event.inputs.ref }}
       - uses: actions/setup-node@v1
         with:
           node-version: "12.x"

@@ -8,11 +8,13 @@ describe('SlowQuery list page', () => {
       this.uri = uri
     })
 
+    // Restart tiup
     cy.exec(
       `bash ../scripts/start_tiup.sh ${Cypress.env('TIDB_VERSION')} restart`,
       { log: true }
     )
 
+    // Wait TiUP Playground
     cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
   })
 
@@ -50,7 +52,7 @@ describe('SlowQuery list page', () => {
         staticResponse
       ).as('slow_query_list')
       cy.wait('@slow_query_list').then(() => {
-        cy.get('[data-e2e=alert_error_bar] > span:nth-child(2)').should(
+        cy.get('[data-e2e=alert_error_bar]').should(
           'has.text',
           staticResponse.body.message
         )
@@ -61,17 +63,17 @@ describe('SlowQuery list page', () => {
   describe('Filter slow query list', () => {
     it('Run workload', () => {
       const workloads = [
-        'SELECT SLEEP(0.8);',
-        'SELECT SLEEP(0.4);',
         'SELECT SLEEP(1);',
+        'SELECT SLEEP(0.4);',
+        'SELECT SLEEP(2);',
       ]
 
       const waitTwoSecond = (query, idx) =>
         new Promise((resolve) => {
-          // run workload every 3 seconds
+          // run workload every 5 seconds
           setTimeout(() => {
             resolve(query)
-          }, 3000 * idx)
+          }, 5000 * idx)
         })
 
       workloads.forEach((query, idx) => {
@@ -120,85 +122,90 @@ describe('SlowQuery list page', () => {
             lastSlowQueryTimeStamp = defaultSlowQueryList[0].timestamp
 
             firstQueryTimeRangeStart = dayjs
-              .unix(lastSlowQueryTimeStamp - 7)
+              .unix(lastSlowQueryTimeStamp - 12)
               .format('YYYY-MM-DD HH:mm:ss')
             secondQueryTimeRangeStart = dayjs
-              .unix(lastSlowQueryTimeStamp - 4)
+              .unix(lastSlowQueryTimeStamp - 7)
               .format('YYYY-MM-DD HH:mm:ss')
             thirdQueryTimeRangeStart = dayjs
-              .unix(lastSlowQueryTimeStamp - 1)
+              .unix(lastSlowQueryTimeStamp - 2)
               .format('YYYY-MM-DD HH:mm:ss')
             thirdQueryTimeRangeEnd = dayjs
-              .unix(lastSlowQueryTimeStamp + (3 - 1))
+              .unix(lastSlowQueryTimeStamp + (5 - 2))
               .format('YYYY-MM-DD HH:mm:ss')
           }
         })
       })
 
       describe('Check slow query', () => {
-        it('Check slow query in the 1st 3 seconds time range', () => {
+        it('Check slow query in the 1st 5 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
             .click()
             .then(() => {
               cy.get('.ant-picker-range').click()
-              cy.get('.ant-picker-input-active > input').type(
+              cy.get('.ant-picker-input-active').type(
                 `${firstQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
-              cy.get('.ant-picker-input-active > input').type(
+              cy.get('.ant-picker-input-active').type(
                 `${secondQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
-              cy.get('[data-automation-key=query]')
-                .should('has.length', 1)
-                .and('has.text', 'SELECT SLEEP(0.8);')
             })
-        })
-
-        it('Check slow query in the 2nd 3 seconds time range', () => {
-          cy.get('[data-e2e=timerange-selector]')
-            .click()
             .then(() => {
-              cy.get('.ant-picker-range').click()
-              cy.get('.ant-picker-input-active > input').type(
-                `${secondQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
-              )
-              cy.get('.ant-picker-input-active > input').type(
-                `${thirdQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
-              )
-
-              cy.get('[data-automation-key=query]').should('has.length', 0)
-            })
-        })
-
-        it('Check slow query in the 3rd 3 seconds time range', () => {
-          cy.get('[data-e2e=timerange-selector]')
-            .click()
-            .then(() => {
-              cy.get('.ant-picker-range').click()
-              cy.get('.ant-picker-input-active > input').type(
-                `${thirdQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
-              )
-              cy.get('.ant-picker-input-active > input').type(
-                `${thirdQueryTimeRangeEnd}{leftarrow}{leftarrow}{backspace}{enter}`
-              )
-
               cy.get('[data-automation-key=query]')
                 .should('has.length', 1)
                 .and('has.text', 'SELECT SLEEP(1);')
             })
         })
 
-        it('Check slow query in the latest 9 seconds time range', () => {
+        it('Check slow query in the 2nd 5 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
             .click()
             .then(() => {
               cy.get('.ant-picker-range').click()
-              cy.get('.ant-picker-input-active > input').type(
-                `${firstQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
+              cy.get('.ant-picker-input-active').type(
+                `${secondQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
-              cy.get('.ant-picker-input-active > input').type(
+              cy.get('.ant-picker-input-active').type(
+                `${thirdQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
+              )
+            })
+            .then(() => {
+              cy.get('[data-automation-key=query]').should('has.length', 0)
+            })
+        })
+
+        it('Check slow query in the 3rd 5 seconds time range', () => {
+          cy.get('[data-e2e=timerange-selector]')
+            .click()
+            .then(() => {
+              cy.get('.ant-picker-range').click()
+              cy.get('.ant-picker-input-active').type(
+                `${thirdQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
+              )
+              cy.get('.ant-picker-input-active').type(
                 `${thirdQueryTimeRangeEnd}{leftarrow}{leftarrow}{backspace}{enter}`
               )
+            })
+            .then(() => {
+              cy.get('[data-automation-key=query]')
+                .should('has.length', 1)
+                .and('has.text', 'SELECT SLEEP(2);')
+            })
+        })
 
+        it('Check slow query in the latest 15 seconds time range', () => {
+          cy.get('[data-e2e=timerange-selector]')
+            .click()
+            .then(() => {
+              cy.get('.ant-picker-range').click()
+              cy.get('.ant-picker-input-active').type(
+                `${firstQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
+              )
+              cy.get('.ant-picker-input-active').type(
+                `${thirdQueryTimeRangeEnd}{leftarrow}{leftarrow}{backspace}{enter}`
+              )
+            })
+            .then(() => {
               cy.get('[data-automation-key=query]').should('has.length', 2)
             })
         })
@@ -216,28 +223,18 @@ describe('SlowQuery list page', () => {
 
       it('Show all databases', () => {
         cy.request(options).as('databases')
-        let databaseList
 
-        cy.get('@databases')
-          .then((response) => {
-            databaseList = response.body
-            cy.get('[data-e2e=base_select_input]')
-              .click()
-              .then(() => {
-                cy.get('[data-e2e=multi_select_options_label]').should(
-                  'have.length',
-                  databaseList.length
-                )
-              })
-          })
-          .then(() => {
-            // check configs after reload
-            cy.get('[data-e2e=multi_select_options_label]').should(
-              'have.length',
-              databaseList.length
-            )
-            console.log('databaseList', databaseList)
-          })
+        cy.get('@databases').then((response) => {
+          const databaseList = response.body
+          cy.get('[data-e2e=base_selector]')
+            .click()
+            .then(() => {
+              cy.get('[data-e2e=multi_select_options]').should(
+                'have.length',
+                databaseList.length
+              )
+            })
+        })
       })
 
       it('Run workload without use database', () => {

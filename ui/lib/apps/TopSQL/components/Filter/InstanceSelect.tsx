@@ -72,6 +72,7 @@ export function InstanceSelect({
     if (firstInstance) {
       onChange(firstInstance)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instanceGroups])
 
   return (

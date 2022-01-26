@@ -50,9 +50,9 @@ func GetPDInstances(ctx context.Context, pdAPI *pdclient.APIClient) ([]topo.PDIn
 			tsResp = &pdclient.GetStatusResponse{}
 		}
 
-		storeStatus := topo.ComponentStatusUnreachable
+		storeStatus := topo.CompStatusUnreachable
 		if _, ok := healthMap[ds.MemberID]; ok {
-			storeStatus = topo.ComponentStatusUp
+			storeStatus = topo.CompStatusUp
 		}
 
 		nodes = append(nodes, topo.PDInfo{

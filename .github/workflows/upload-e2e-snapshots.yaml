@@ -1,7 +1,12 @@
 # Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 name: Upload E2E Snapshots
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "The branch, tag or SHA to create snapshots"
+        required: true
 
 jobs:
   e2e_test_snapshots:
@@ -19,6 +24,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.ref }}
       - uses: actions/setup-node@v1
         with:
           node-version: "12.x"
@@ -90,7 +97,7 @@ jobs:
           CI: true
           FEATURE_VERSION: ${{ matrix.feature_version }}
           TIDB_VERSION: ${{ matrix.tidb_version }}
-          ALLOW_SCREENSHOT: true
+          CYPRESS_ALLOW_SCREENSHOT: true
       - name: Archive Test Results
         if: always()
         run: |

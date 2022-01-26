@@ -17,7 +17,6 @@ import {
   Card,
   AutoRefreshButton,
   TimeRangeSelector,
-  TimeRange,
   calcTimeRange,
   DEFAULT_TIME_RANGE,
   Toolbar,
@@ -84,6 +83,7 @@ export function TopSQLList() {
     const timeRangeTimestamp = calcTimeRange(timeRange)
     const delta = timeRangeTimestamp[1] - timeRangeTimestamp[0]
     computeTimeWindowSize(containerWidth, delta)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerWidth, timeRange])
 
   const handleUpdateTopSQLData = useCallback(() => {
@@ -107,40 +107,44 @@ export function TopSQLList() {
     instance,
     timeRange,
     timeWindowSize,
-    topN,
     autoRefreshSeconds,
     containerRef,
     containerWidth,
+    updateTopSQLData,
   ])
 
   // fetch data when instance id / time window size update
   useEffect(() => {
     handleUpdateTopSQLData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instance, timeWindowSize])
 
-  const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
-    if (!v.x) {
-      return
-    }
+  const handleBrushEnd: BrushEndListener = useCallback(
+    (v: XYBrushArea) => {
+      if (!v.x) {
+        return
+      }
 
-    const tr = v.x.map((d) => d / 1000)
-    const delta = tr[1] - tr[0]
-    if (delta < 60) {
-      const offset = Math.floor(delta / 2)
-      const start = tr[0] + offset - 30
-      const end = tr[1] - offset + 30
+      const tr = v.x.map((d) => d / 1000)
+      const delta = tr[1] - tr[0]
+      if (delta < 60) {
+        const offset = Math.floor(delta / 2)
+        const start = tr[0] + offset - 30
+        const end = tr[1] - offset + 30
+        setTimeRange({
+          type: 'absolute',
+          value: [Math.ceil(start), Math.floor(end)],
+        })
+        return
+      }
+
       setTimeRange({
         type: 'absolute',
-        value: [Math.ceil(start), Math.floor(end)],
+        value: [Math.ceil(tr[0]), Math.floor(tr[1])],
       })
-      return
-    }
-
-    setTimeRange({
-      type: 'absolute',
-      value: [Math.ceil(tr[0]), Math.floor(tr[1])],
-    })
-  }, [])
+    },
+    [setTimeRange]
+  )
 
   const zoomOut = useCallback(() => {
     const [start, end] = calcTimeRange(timeRange)
@@ -153,7 +157,7 @@ export function TopSQLList() {
     let computedEnd = end + Math.floor(expand / 2)
 
     setTimeRange({ type: 'absolute', value: [computedStart, computedEnd] })
-  }, [timeRange])
+  }, [timeRange, setTimeRange])
 
   const chartRef = useRef<any>(null)
 
@@ -417,11 +421,11 @@ const useInstances = (queryTimestampRange: [number, number] | null) => {
     } finally {
       setLoading(false)
     }
-  }, [String(queryTimestampRange)])
+  }, [queryTimestampRange])
 
   useEffect(() => {
     updateInstances()
-  }, [String(queryTimestampRange)])
+  }, [updateInstances])
 
   return {
     instances,

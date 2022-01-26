@@ -10,10 +10,7 @@ BIN="${PROJECT_DIR}/bin"
 download_tools() {
   echo "+ Download tools"
 
-  if ! command -v tiup >/dev/null 2>&1; then
-    echo "  - Downloading tiup..."
-    curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
-  fi
+  download_tiup
 
   mkdir -p $BIN
 
@@ -28,4 +25,11 @@ download_tools() {
   fi
 
   echo "+ All binaries are now available."
+}
+
+download_tiup() {
+  if ! command -v tiup >/dev/null 2>&1; then
+    echo "  - Downloading tiup..."
+    curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+  fi
 }

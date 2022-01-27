@@ -16,7 +16,7 @@ import (
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/user/share")
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.POST("/code", auth.MWRequireSharePriv(), s.shareHandler)
+	endpoint.POST("/code", auth.MWRequireSharePriv(), s.ShareHandler)
 }
 
 type ShareRequest struct {
@@ -34,7 +34,7 @@ type ShareResponse struct {
 // @Security JwtAuth
 // @Success 200 {object} ShareResponse
 // @Router /user/share/code [post]
-func (s *Service) shareHandler(c *gin.Context) {
+func (s *Service) ShareHandler(c *gin.Context) {
 	var req ShareRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())

@@ -13,6 +13,7 @@
 // the project's config changing)
 
 const mysql = require('mysql2')
+const { rmdir } = require('fs')
 
 function queryTestDB(query, password, database) {
   const dbConfig = {
@@ -38,11 +39,9 @@ function queryTestDB(query, password, database) {
   })
 }
 
-function deleteTestFolder(folderName) {
-  console.log('deleting folder %s', folderName)
-
+function deleteTestFolder(folderPath) {
   return new Promise((resolve, reject) => {
-    rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
+    rmdir(folderPath, { maxRetries: 10, recursive: true }, (err) => {
       if (err && err.code !== 'ENOENT') {
         console.error(err)
 
@@ -69,14 +68,15 @@ module.exports = (on, config) => {
 
   config.env.apiUrl = 'http://127.0.0.1:12333/dashboard/api/'
 
-  // Usage: cy.task('queryDB', { ...queryData })
   on('task', {
+    // Usage: cy.task('queryDB', { ...queryData })
     queryDB: ({ query, password = '', database = 'mysql' }) => {
       return queryTestDB(query, password, database)
     },
 
-    deleteFolder: (folderName) => {
-      return deleteTestFolder(folderName)
+    // Usage: cy.task('deleteFolder', deleteFolderPath)
+    deleteFolder: (folderPath) => {
+      return deleteTestFolder(folderPath)
     },
   })
 

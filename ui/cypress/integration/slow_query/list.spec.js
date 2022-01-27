@@ -1,8 +1,9 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 import dayjs from 'dayjs'
-import { validateCsvList, validateCsvFile } from '../utils'
+import { validateCSVList, deleteDownloadsFolder } from '../utils'
 
+const neatCSV = require('neat-csv')
 const path = require('path')
 
 describe('SlowQuery list page', () => {
@@ -19,6 +20,8 @@ describe('SlowQuery list page', () => {
 
     // Wait TiUP Playground
     cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
+
+    deleteDownloadsFolder()
   })
 
   beforeEach(function () {
@@ -459,7 +462,7 @@ describe('SlowQuery list page', () => {
       }
 
       cy.task('queryDB', { ...queryData })
-      cy.wait(500)
+      cy.wait(1000)
 
       cy.get('[data-e2e=slow_query_refresh]')
         .click()
@@ -562,31 +565,47 @@ describe('SlowQuery list page', () => {
     })
   })
 
-  // describe('Export slow query CSV ', () => {
-  //   it('validate Csv File', () => {
-  //     const downloadsFolder = Cypress.config('downloadsFolder')
-  //     const downloadedFilename = path.join(downloadsFolder, '*.csv')
+  describe('Export slow query CSV ', () => {
+    it('validate CSV File', () => {
+      const downloadsFolder = Cypress.config('downloadsFolder')
+      let downloadedFilename
 
-  //     console.log('downloadedFilename', downloadedFilename)
-  //     cy.get('[data-e2e=slow_query_export_menu]')
-  //       .trigger('mouseover')
-  //       .then(() => {
-  //         cy.get('[data-e2e=slow_query_export_btn]').click().then(() => {
-  //           cy.reload()
-  //         })
-  //         cy.log('**read downloaded file**')
+      cy.get('[data-e2e=slow_query_export_menu]')
+        .trigger('mouseover')
+        .then(() => {
+          cy.window()
+            .document()
+            .then(function (doc) {
+              // Clicking link to download file causes page load timeout
+              // it's a workround that fires a new page load event to skip this issue
+              doc.addEventListener('click', () => {
+                setTimeout(function () {
+                  doc.location.reload()
+                }, 5000)
+              })
 
-  //         // file path is relative to the working folder
-  //         console.log('inside, ownloadedFilename', downloadedFilename)
+              // Make sure the file exists
+              cy.intercept(
+                `${Cypress.env('apiUrl')}slow_query/download?token=*`
+              ).as('download_slow_query')
 
-  //         // browser might take a while to download the file,
-  //         // so use "cy.readFile" to retry until the file exists
-  //         // and has length - and we assume that it has finished downloading then
-  //         cy.readFile(downloadedFilename, { timeout: 15000 })
-  //           .should('have.length.gt', 1)
-  //           // parse CSV text into objects
-  //           .then(validateCsvList)
-  //       })
-  //   })
-  // })
+              cy.get('[data-e2e=slow_query_export_btn]').click()
+            })
+        })
+        .then(() => {
+          cy.wait('@download_slow_query').then((res) => {
+            // join downloadFolder with CSV filename
+            downloadedFilename = path.join(
+              downloadsFolder,
+              res.response.headers['content-disposition'].match(filenameRegx)[1]
+            )
+
+            cy.readFile(downloadedFilename, { timeout: 15000 })
+              // parse CSV text into objects
+              .then(neatCSV)
+              .then(validateCSVList)
+          })
+        })
+    })
+  })
 })

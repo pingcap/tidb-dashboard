@@ -1,7 +1,3 @@
-// @ts-check
-const path = require('path')
-// const neatCSV = require('neat-csv')
-
 /**
  * Delete the downloads folder to make sure the test has "clean"
  * slate before starting.
@@ -13,22 +9,13 @@ export const deleteDownloadsFolder = () => {
 }
 
 /**
- * @param {string} csv
+ * @param {string[]} list List parsed from CSV file
  */
-export const validateCsv = (csv) => {
-  cy.wrap(csv).then(validateCsvList)
-}
+export const validateCSVList = (list) => {
+  expect(list).to.have.length(4)
 
-export const validateCsvList = (list) => {
-  console.log('list is', list)
-}
-
-/**
- * @param {string} name File name in the downloads folder
- */
-export const validateCsvFile = (name) => {
-  const downloadsFolder = Cypress.config('downloadsFolder')
-  const filename = path.join(downloadsFolder, name)
-
-  cy.readFile(filename, 'utf8').then(validateCsv)
+  expect(list[0].query).to.equal('SELECT sleep(1.2);')
+  expect(list[1].query).to.equal('SELECT sleep(1.5);')
+  expect(list[2].query).to.equal('SELECT sleep(2);')
+  expect(list[3].query).to.equal('SELECT sleep(1);')
 }

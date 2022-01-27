@@ -474,89 +474,80 @@ describe('SlowQuery list page', () => {
 
   describe('Table list order', () => {
     it('Default order(desc) by Timestamp', () => {
-      cy.get('[data-automation-key=query]')
-        .eq(0)
-        .should('have.text', 'SELECT sleep(1.2);')
-      cy.get('[data-automation-key=query]')
-        .eq(1)
-        .should('have.text', 'SELECT sleep(1.5);')
-      cy.get('[data-automation-key=query]')
-        .eq(2)
-        .should('have.text', 'SELECT sleep(2);')
-      cy.get('[data-automation-key=query]')
-        .eq(3)
-        .should('have.text', 'SELECT sleep(1);')
+      const defaultOrderByTimestamp = [
+        'SELECT sleep(1.2);',
+        'SELECT sleep(1.5);',
+        'SELECT sleep(2);',
+        'SELECT sleep(1);',
+      ]
+      cy.get('[data-automation-key=query]').each(($query, $idx) => {
+        cy.wrap($query).should('have.text', defaultOrderByTimestamp[$idx])
+      })
     })
 
     it('Asc order by Timestamp', () => {
+      const AscOrderByTimestamp = [
+        'SELECT sleep(1);',
+        'SELECT sleep(2);',
+        'SELECT sleep(1.5);',
+        'SELECT sleep(1.2);',
+      ]
+
       cy.get('[data-item-key=timestamp]')
         .should('be.visible')
         .click()
         .then(() => {
-          cy.get('[data-automation-key=query]')
-            .eq(0)
-            .should('have.text', 'SELECT sleep(1);')
-          cy.get('[data-automation-key=query]')
-            .eq(1)
-            .should('have.text', 'SELECT sleep(2);')
-          cy.get('[data-automation-key=query]')
-            .eq(2)
-            .should('have.text', 'SELECT sleep(1.5);')
-          cy.get('[data-automation-key=query]')
-            .eq(3)
-            .should('have.text', 'SELECT sleep(1.2);')
+          cy.get('[data-automation-key=query]').each(($query, $idx) => {
+            cy.wrap($query).should('have.text', AscOrderByTimestamp[$idx])
+          })
         })
     })
 
     it('Desc/Asc order by Latency', () => {
+      const DescOrderByLatency = [
+        'SELECT sleep(2);',
+        'SELECT sleep(1.5);',
+        'SELECT sleep(1.2);',
+        'SELECT sleep(1);',
+      ]
+
       cy.get('[data-item-key=query_time]')
         .should('be.visible')
         .click()
         .then(() => {
           // Desc order by Latency
-          cy.get('[data-automation-key=query]')
-            .eq(0)
-            .should('have.text', 'SELECT sleep(2);')
-          cy.get('[data-automation-key=query]')
-            .eq(1)
-            .should('have.text', 'SELECT sleep(1.5);')
-          cy.get('[data-automation-key=query]')
-            .eq(2)
-            .should('have.text', 'SELECT sleep(1.2);')
-          cy.get('[data-automation-key=query]')
-            .eq(3)
-            .should('have.text', 'SELECT sleep(1);')
+          cy.get('[data-automation-key=query]').each(($query, $idx) => {
+            cy.wrap($query).should('have.text', DescOrderByLatency[$idx])
+          })
         })
         .then(() => {
+          const AscOrderByLatency = [
+            'SELECT sleep(1);',
+            'SELECT sleep(1.2);',
+            'SELECT sleep(1.5);',
+            'SELECT sleep(2);',
+          ]
+
           // Asc order by Latency
           cy.get('[data-item-key=query_time]')
             .should('be.visible')
             .click()
             .then(() => {
-              cy.get('[data-automation-key=query]')
-                .eq(0)
-                .should('have.text', 'SELECT sleep(1);')
-              cy.get('[data-automation-key=query]')
-                .eq(1)
-                .should('have.text', 'SELECT sleep(1.2);')
-              cy.get('[data-automation-key=query]')
-                .eq(2)
-                .should('have.text', 'SELECT sleep(1.5);')
-              cy.get('[data-automation-key=query]')
-                .eq(3)
-                .should('have.text', 'SELECT sleep(2);')
+              cy.get('[data-automation-key=query]').each(($query, $idx) => {
+                cy.wrap($query).should('have.text', AscOrderByLatency[$idx])
+              })
             })
         })
     })
   })
 
   describe('Go to slow query detail page', () => {
-    it('Click first slow query and go to detail page', () => {
+    it('Click first slow query and go to detail page', function () {
       cy.get('[data-automationid=ListCell]')
         .eq(0)
         .click()
         .then(() => {
-          cy.url().should('include', 'slow_query/detail')
+          cy.url().should('include', `${this.uri.slow_query}/detail`)
           cy.get('[data-e2e=syntax_highlighter]').should(
             'have.text',
             'SELECT sleep(1.2);'

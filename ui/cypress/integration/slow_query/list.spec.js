@@ -595,6 +595,7 @@ describe('SlowQuery list page', () => {
         .then(() => {
           cy.wait('@download_slow_query').then((res) => {
             // join downloadFolder with CSV filename
+            const filenameRegx = /"(.*)"/
             downloadedFilename = path.join(
               downloadsFolder,
               res.response.headers['content-disposition'].match(filenameRegx)[1]

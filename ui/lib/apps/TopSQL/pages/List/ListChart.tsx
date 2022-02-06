@@ -8,6 +8,7 @@ import {
   timeFormatter,
   BrushEndListener,
   PartialTheme,
+  DomainRange,
 } from '@elastic/charts'
 import { orderBy, toPairs } from 'lodash'
 import React, { useEffect, useMemo, useState, forwardRef } from 'react'
@@ -55,11 +56,13 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
           theme={theme}
           legendPosition={Position.Bottom}
           onBrushEnd={onBrushEnd}
-          xDomain={{
-            minInterval: wall.timeWindowSize === 1 ? 1000 : null,
-            min: wall.timeRangeTimestamp[0] * 1000,
-            max: wall.timeRangeTimestamp[1] * 1000,
-          }}
+          xDomain={
+            {
+              minInterval: wall.timeWindowSize === 1 ? 1000 : null,
+              min: wall.timeRangeTimestamp[0] * 1000,
+              max: wall.timeRangeTimestamp[1] * 1000,
+            } as DomainRange
+          }
         />
         <Axis
           id="bottom"

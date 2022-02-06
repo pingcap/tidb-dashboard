@@ -3,15 +3,17 @@ import dayjs from 'dayjs'
 import { skipOn } from '@cypress/skip-test'
 
 function setCustomTimeRange(timeRange) {
-  cy.get('[data-e2e="timerange-selector"]').click()
+  if (!document.querySelector('[data-e2e="common-timeranges"]')) {
+    cy.get('[data-e2e="timerange-selector"]').click()
+  }
   cy.get('.ant-picker.ant-picker-range').type(timeRange)
-  cy.wait(1000)
 }
 
 function clearCustomTimeRange() {
-  cy.get('[data-e2e="timerange-selector"]').click()
+  if (!document.querySelector('[data-e2e="common-timeranges"]')) {
+    cy.get('[data-e2e="timerange-selector"]').click()
+  }
   cy.get('.ant-picker-clear').click()
-  cy.wait(1000)
 }
 
 function enableTopSQL() {
@@ -149,13 +151,18 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
     describe('Refresh', () => {
       it('click refresh button with the recent x time range, fetch the recent x time range data', () => {
         cy.get('[data-e2e="timerange-selector"]').click()
-        cy.wait(1000)
+        cy.get('[data-e2e="common-timeranges"]').should('be.visible')
 
         const recent = 300
         const now = dayjs().unix()
         cy.clock(now * 1000)
 
-        cy.get(`[data-e2e="timerange-${recent}"]`).click()
+        cy.get(`[data-e2e="timerange-${recent}"]`).click({ force: true })
+        cy.wait('@getTopsqlSummary')
+          .its('request.url')
+          .should('include', `start=${now - recent}`)
+          .and('include', `end=${now}`)
+
         cy.get('[data-e2e="auto-refresh-button"]').first().click()
         cy.wait('@getTopsqlSummary')
           .its('request.url')
@@ -183,13 +190,19 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         cy.get('[data-e2e="auto-refresh-button"]').should('contain', '30 s')
       })
 
-      it('set auto refresh, show auto refresh secs aside button', () => {
+      it('set auto refresh, it will be refreshed automatically after the time', () => {
         cy.get('[data-e2e="auto-refresh-button"]').children().eq(1).click()
+        // cy.get('[data-e2e="auto_refresh_time_30"]').should('be.visible')
+        // cy.get('[data-e2e="auto_refresh_time_30"]')
+        //   .parents()
+        //   .should('not.have.css', 'pointer-events: none')
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(1000)
 
         cy.clock()
         cy.get('[data-e2e="auto_refresh_time_30"]').click()
-        cy.tick(31000)
+        // TODO: figure out why the tick is not working
+        cy.tick(30000)
         cy.clock().invoke('restore')
         cy.wait('@getTopsqlSummary')
           .its('response.statusCode')

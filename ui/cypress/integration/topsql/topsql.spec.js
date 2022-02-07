@@ -9,6 +9,7 @@ function setCustomTimeRange(timeRange) {
   cy.get(
     '[data-e2e="timerange_selector_dropdown"] .ant-picker.ant-picker-range'
   ).type(timeRange)
+  cy.get('[data-e2e="timerange_selector_dropdown"]').should('not.be.visible')
 }
 
 function clearCustomTimeRange() {
@@ -16,6 +17,7 @@ function clearCustomTimeRange() {
     cy.get('[data-e2e="timerange-selector"]').click()
   }
   cy.get('[data-e2e="timerange_selector_dropdown"] .ant-picker-clear').click()
+  cy.get('[data-e2e="timerange_selector_dropdown"]').should('not.be.visible')
 }
 
 function enableTopSQL() {

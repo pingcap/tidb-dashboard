@@ -121,7 +121,7 @@ jobs:
         env:
           NO_MINIMIZE: true
           CI: true
-          REACT_APP_MIXPANEL_TOKEN: ""
+          E2E_TEST: true
       - name: Wait TiUP Playground
         run: |
           chmod u+x scripts/wait_tiup_playground.sh

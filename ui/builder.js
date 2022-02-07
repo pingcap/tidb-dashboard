@@ -11,7 +11,7 @@ const { yamlPlugin } = require('esbuild-plugin-yaml')
 const babelPlugin = require('@baurine/esbuild-plugin-babel')
 
 const isDev = process.env.NODE_ENV !== 'production'
-const isCI = process.env.CI === 'true'
+const isE2E = process.env.E2E_TEST === 'true'
 
 // handle .env
 if (isDev) {
@@ -148,7 +148,7 @@ const esbuildParams = {
   define: genDefine(),
   inject: ['./process-shim.js'], // fix runtime crash
 }
-if (isCI) {
+if (isE2E) {
   // use babel and istanbul to report test coverage for e2e test
   esbuildParams.plugins.push(
     babelPlugin({

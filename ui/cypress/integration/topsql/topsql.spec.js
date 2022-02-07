@@ -224,10 +224,14 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
           .children()
           .should('have.length', 6)
 
-        cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').each((item) => {
-          cy.wrap(item).trigger('mouseover')
-          cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
-        })
+        cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').each(
+          (item, index) => {
+            cy.wrap(item).trigger('mouseover')
+            cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot({
+              overwrite: true,
+            })
+          }
+        )
       })
 
       it('table can only be single selected', () => {

@@ -64,13 +64,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
           enableTopSQL()
         }
       })
-      cy.wait('@getInstance')
-        .its('response.body.data')
-        .then((d) => {
-          if (d.length) {
-            cy.wait('@getTopsqlSummary')
-          }
-        })
     })
 
     describe('Update time range', () => {
@@ -78,16 +71,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
-        cy.wait('@getTopsqlSummary')
-          .its('request.url')
-          .should(
-            'include',
-            `start=${new Date('2022-01-12 00:00:00').getTime() / 1000}`
-          )
-          .and(
-            'include',
-            `end=${new Date('2022-01-12 05:00:00').getTime() / 1000}`
-          )
         cy.get('.echCanvasRenderer').matchImageSnapshot()
       })
 
@@ -98,16 +81,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         cy.wait('@getTopsqlSummary')
 
         cy.get('.anticon-zoom-out').click()
-        cy.wait('@getTopsqlSummary')
-          .its('request.url')
-          .should(
-            'include',
-            `start=${new Date('2022-01-11 22:45:00').getTime() / 1000}`
-          )
-          .and(
-            'include',
-            `end=${new Date('2022-01-12 06:15:00').getTime() / 1000}`
-          )
 
         cy.get('[data-e2e="timerange-selector"]').should(
           'contain',
@@ -156,6 +129,11 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
     describe('Refresh', () => {
       it('click refresh button with the recent x time range, fetch the recent x time range data', () => {
+        cy.intercept('/dashboard/api/topsql/summary?*', {
+          fixture:
+            'topsql_summary:end=1641934800&instance=127.0.0.1%3A10080&instance_type=tidb&start=1641916800&top=5&window=123s.json',
+        }).as('getTopsqlSummary1')
+
         cy.get('[data-e2e="timerange-selector"]').click()
         cy.get('[data-e2e="timerange_selector_dropdown"]').should('be.visible')
 
@@ -164,13 +142,13 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         cy.clock(now * 1000)
 
         cy.get(`[data-e2e="timerange-${recent}"]`).click({ force: true })
-        cy.wait('@getTopsqlSummary')
+        cy.wait('@getTopsqlSummary1')
           .its('request.url')
           .should('include', `start=${now - recent}`)
           .and('include', `end=${now}`)
 
         cy.get('[data-e2e="auto-refresh-button"]').first().click()
-        cy.wait('@getTopsqlSummary')
+        cy.wait('@getTopsqlSummary1')
           .its('request.url')
           .should('include', `start=${now - recent}`)
           .and('include', `end=${now}`)

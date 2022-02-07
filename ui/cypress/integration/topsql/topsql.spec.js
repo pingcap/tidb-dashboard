@@ -78,7 +78,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
-        cy.wait('@getTopsqlSummary')
 
         cy.get('.anticon-zoom-out').click()
 
@@ -112,18 +111,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         cy.get('[data-e2e="instance-selector"]').click()
         // No instances available
         cy.get('.ant-select-dropdown-empty').should('have.length', 1)
-
-        // There're `tidb - 127.0.0.1:10080` data in the time range
-        clearCustomTimeRange()
-        setCustomTimeRange(
-          '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
-        )
-        cy.get('[data-e2e="instance-selector"]').should(
-          'contain',
-          'tidb - 127.0.0.1:10080'
-        )
-        cy.get('[data-e2e="instance-selector"]').click()
-        cy.get('.ant-select-dropdown').should('contain', '127.0.0.1:10080')
       })
     })
 

@@ -245,7 +245,10 @@ export function TopSQLList() {
           />
         ) : (
           <>
-            <div className={styles.chart_container}>
+            <div
+              className={styles.chart_container}
+              data-e2e="topsql_list_chart"
+            >
               {!!queryTimestampRange && (
                 <ListChart
                   onBrushEnd={handleBrushEnd}

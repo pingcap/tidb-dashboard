@@ -71,7 +71,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
-        cy.get('.echCanvasRenderer').matchImageSnapshot()
+        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
       })
 
       it('zoom out the time range, chart displays the data that extends the 50% time range', () => {
@@ -86,7 +86,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
           'contain',
           '01-11 22:45:00 ~ 01-12 06:15:00'
         )
-        cy.get('.echCanvasRenderer').matchImageSnapshot()
+        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
       })
     })
 
@@ -165,7 +165,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
           '01-12 00:00:00 ~ 01-12 05:00:00'
         )
         cy.wait('@getTopsqlSummary')
-        cy.get('.echCanvasRenderer').matchImageSnapshot()
+        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
       })
 
       it('set auto refresh, show auto refresh secs aside button', () => {
@@ -185,7 +185,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
         cy.clock()
         cy.get('[data-e2e="auto_refresh_time_30"]').click()
-        // TODO: figure out why the tick is not working
         cy.tick(30000)
         cy.clock().invoke('restore')
         cy.wait('@getTopsqlSummary')
@@ -204,7 +203,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-07 00:00:00{enter}2022-01-12 00:00:00{enter}'
         )
-        cy.get('.echCanvasRenderer').matchImageSnapshot()
+        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
       })
 
       it('when the time range is small, the chart interval is small', () => {
@@ -216,7 +215,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 01:00:00{enter}2022-01-12 01:01:00{enter}'
         )
-        cy.get('.echCanvasRenderer').matchImageSnapshot()
+        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
       })
 
       it('the last item in the table list is others', () => {
@@ -240,7 +239,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
         cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').each((item) => {
           cy.wrap(item).trigger('mouseover')
-          cy.get('.echCanvasRenderer').matchImageSnapshot()
+          cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
         })
       })
 

@@ -89,6 +89,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.10.5",
+    "@baurine/esbuild-plugin-babel": "^0.3.0",
     "@baurine/esbuild-plugin-postcss3": "^0.2.3",
     "@cypress/code-coverage": "^3.9.12",
     "@openapitools/openapi-generator-cli": "^1.0.15-4.3.1",

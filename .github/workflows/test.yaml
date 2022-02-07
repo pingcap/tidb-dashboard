@@ -159,10 +159,10 @@ jobs:
           cat ui/start_tiup.log
           echo "==============="
           cat ui/wait_tiup.log
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v2
-      #   with:
-      #     files: ./ui/.nyc_output/out.json
-      #     fail_ci_if_error: true
-      #     flags: e2e_test
-      #     verbose: true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./ui/.nyc_output/out.json
+          fail_ci_if_error: true
+          flags: e2e_test
+          verbose: true

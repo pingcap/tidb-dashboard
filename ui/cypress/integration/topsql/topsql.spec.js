@@ -90,6 +90,16 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
     })
 
     describe('Select instance', () => {
+      it('default time range with instance', () => {
+        setCustomTimeRange(
+          '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
+        )
+        cy.get('[data-e2e="instance-selector"]').should(
+          'contain',
+          'tidb - 127.0.0.1:10080'
+        )
+      })
+
       it('change time range, keep the selected instance', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
@@ -227,9 +237,9 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').each(
           (item, index) => {
             cy.wrap(item).trigger('mouseover')
-            cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot({
-              overwrite: true,
-            })
+            cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot(
+              `Top SQL page -- Chart and table -- table has top 5 records and the others record - ${index}`
+            )
           }
         )
       })

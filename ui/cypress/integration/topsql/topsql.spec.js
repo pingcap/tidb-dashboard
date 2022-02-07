@@ -3,17 +3,19 @@ import dayjs from 'dayjs'
 import { skipOn } from '@cypress/skip-test'
 
 function setCustomTimeRange(timeRange) {
-  if (!document.querySelector('[data-e2e="common-timeranges"]')) {
+  if (!document.querySelector('[data-e2e="timerange_selector_dropdown"]')) {
     cy.get('[data-e2e="timerange-selector"]').click()
   }
-  cy.get('.ant-picker.ant-picker-range').type(timeRange)
+  cy.get(
+    '[data-e2e="timerange_selector_dropdown"] .ant-picker.ant-picker-range'
+  ).type(timeRange)
 }
 
 function clearCustomTimeRange() {
-  if (!document.querySelector('[data-e2e="common-timeranges"]')) {
+  if (!document.querySelector('[data-e2e="timerange_selector_dropdown"]')) {
     cy.get('[data-e2e="timerange-selector"]').click()
   }
-  cy.get('.ant-picker-clear').click()
+  cy.get('[data-e2e="timerange_selector_dropdown"] .ant-picker-clear').click()
 }
 
 function enableTopSQL() {
@@ -34,8 +36,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
     beforeEach(() => {
       cy.login('root')
-      cy.window().then((win) => win.sessionStorage.clear())
-      cy.visit(this.uri.topsql)
 
       // mock summary and instance data from 2022-01-12 00:00:00 to 2022-01-12 05:00:00
       cy.intercept('/dashboard/api/topsql/summary?*', {
@@ -52,6 +52,10 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
       cy.intercept('/dashboard/api/topsql/instances?*').as('getInstance')
       cy.intercept('/dashboard/api/topsql/config').as('getTopsqlConfig')
+
+      // visit top sql page
+      cy.window().then((win) => win.sessionStorage.clear())
+      cy.visit(this.uri.topsql)
 
       cy.wait('@getTopsqlConfig').then((interception) => {
         if (!interception.response.body.enable) {
@@ -151,7 +155,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
     describe('Refresh', () => {
       it('click refresh button with the recent x time range, fetch the recent x time range data', () => {
         cy.get('[data-e2e="timerange-selector"]').click()
-        cy.get('[data-e2e="common-timeranges"]').should('be.visible')
+        cy.get('[data-e2e="timerange_selector_dropdown"]').should('be.visible')
 
         const recent = 300
         const now = dayjs().unix()

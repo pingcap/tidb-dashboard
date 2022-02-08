@@ -323,7 +323,7 @@ func (s *Service) getAvailableFields(c *gin.Context) {
 	}
 
 	fields := filterFieldsByColumns(getFieldsAndTags(), cs)
-	jsonNames := []string{}
+	jsonNames := make([]string, 0, len(fields))
 	for _, f := range fields {
 		jsonNames = append(jsonNames, f.JSONName)
 	}

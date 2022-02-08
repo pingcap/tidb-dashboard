@@ -127,7 +127,7 @@ func GetAvailableFields(sysSchema *utils.SysSchema, db *gorm.DB) ([]string, erro
 	}
 
 	fields := filterFieldsByColumns(getFieldsAndTags(), cs)
-	jsonNames := []string{}
+	jsonNames := make([]string, 0, len(fields))
 	for _, f := range fields {
 		jsonNames = append(jsonNames, f.JSONName)
 	}

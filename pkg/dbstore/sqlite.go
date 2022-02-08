@@ -54,6 +54,6 @@ func (db *DB) Close() error {
 func (db *DB) MustClose() {
 	err := db.Close()
 	if err != nil {
-		log.Panic("Close db failed", zap.Error(err))
+		log.Fatal("Close db failed", zap.Error(err))
 	}
 }

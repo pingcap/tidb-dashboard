@@ -13,7 +13,7 @@ import (
 	"moul.io/zapgorm2"
 )
 
-// NewMemoryDBStore creates a in-memory sqlite database. This is mostly useful in tests.
+// NewMemoryDBStore creates an in-memory sqlite database. This is mostly useful in tests.
 func NewMemoryDBStore() (*DB, error) {
 	instanceID := uuid.New().String()
 
@@ -31,4 +31,14 @@ func NewMemoryDBStore() (*DB, error) {
 	db := &DB{gormDB}
 
 	return db, nil
+}
+
+// MustNewMemoryStore creates an in-memory sqlite database.
+// When the creation is failed, the program will be exited. It should only be used in tests.
+func MustNewMemoryStore() *DB {
+	db, err := NewMemoryDBStore()
+	if err != nil {
+		log.Fatal("Failed to create memory storage", zap.Error(err))
+	}
+	return db
 }

@@ -44,6 +44,7 @@ func TestUserSuite(t *testing.T) {
 	authService := &user.AuthService{}
 	infoService := &info.Service{}
 	codeService := &code.Service{}
+	localStore := dbstore.MustNewMemoryStore()
 
 	app := fx.New(
 		fx.Supply(featureflag.NewRegistry(tidbVersion)),
@@ -54,7 +55,6 @@ func TestUserSuite(t *testing.T) {
 			tidb.NewTiDBClient,
 
 			config.NewDynamicConfigManager,
-			dbstore.NewDBStore,
 
 			code.NewService,
 			sso.NewService,
@@ -67,6 +67,7 @@ func TestUserSuite(t *testing.T) {
 		fx.Populate(&authService),
 		fx.Populate(&infoService),
 		fx.Populate(&codeService),
+		fx.Populate(localStore),
 	)
 	ctx := context.Background()
 	_ = app.Start(ctx)

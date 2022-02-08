@@ -10,7 +10,6 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/joomcode/errorx"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/fx/fxtest"
 
@@ -62,9 +61,7 @@ func mapProfilesDataByIPAndKind(profiles []view.ProfileWithData) map[string]view
 }
 
 func (suite *ModelSuite) SetupTest() {
-	db, err := dbstore.NewMemoryDBStore()
-	require.NoError(suite.T(), err)
-	suite.db = db
+	suite.db = dbstore.MustNewMemoryStore()
 
 	suite.lifecycle = fxtest.NewLifecycle(suite.T())
 
@@ -85,7 +82,7 @@ func (suite *ModelSuite) SetupTest() {
 	suite.signer = topo.NewHS256Signer()
 
 	suite.model = NewStandardModelImpl(suite.lifecycle, Params{
-		LocalStore:   db,
+		LocalStore:   suite.db,
 		TopoProvider: suite.mockTopoProvider,
 		CompSigner:   suite.signer,
 	}, clientbundle.HTTPClientBundle{

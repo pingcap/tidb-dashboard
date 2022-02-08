@@ -24,6 +24,7 @@ const dashboardApiPrefix =
   process.env.REACT_APP_DASHBOARD_API_URL || 'http://127.0.0.1:12333'
 const devServerPort = process.env.PORT
 const devServerParams = {
+  logLevel: 0,
   port: devServerPort,
   root: 'build',
   open: '/dashboard',

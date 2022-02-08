@@ -36,9 +36,12 @@ task('tsc:watch', shell.task('yarn tsc --watch'))
 task('tsc:check', shell.task('yarn tsc'))
 
 // https://www.npmjs.com/package/eslint-watch
-task('lint:watch', shell.task('yarn esw --watch --cache --ext .tsx,.ts .'))
+task(
+  'lint:watch',
+  shell.task('yarn esw --color --watch --cache --ext .tsx,.ts .')
+)
 
-task('lint:check', shell.task('esw --cache --ext tsx,ts .'))
+task('lint:check', shell.task('yarn esw --cache --ext tsx,ts .'))
 
 task(
   'speedscope:copy_static_assets',

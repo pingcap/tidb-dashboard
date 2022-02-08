@@ -136,6 +136,7 @@ export default function InstanceSelectV2(props: IInstanceSelectProps) {
       sel.resetAllSelection(internalVal)
     }
     sel.setChangeEvents(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instances])
 
   const renderValue = useCallback(

@@ -51,6 +51,7 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
 
     useEffect(() => {
       setWall({ data, timeWindowSize, timeRangeTimestamp })
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data])
 
     return (

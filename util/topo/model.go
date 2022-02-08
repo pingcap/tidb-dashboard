@@ -5,7 +5,7 @@ package topo
 type CompStatus string
 
 const (
-	CompStatusUnknown     CompStatus = ""
+	CompStatusUnknown     CompStatus = "unknown"
 	CompStatusUnreachable CompStatus = "unreachable"
 	CompStatusUp          CompStatus = "up"
 	CompStatusTombstone   CompStatus = "tombstone"

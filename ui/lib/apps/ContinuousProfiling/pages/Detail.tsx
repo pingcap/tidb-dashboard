@@ -77,6 +77,58 @@ export default function Page() {
     return [newRows, newGroups]
   }, [groupProfileDetail])
 
+  const openResult = useCallback(
+    async (view_as: ViewAsOptions, rec: ConprofProfileDetail) => {
+      const { profile_type, target } = rec
+      const { component, address } = target!
+      let dataFormat = ''
+      if (
+        view_as === ViewAsOptions.FlameGraph ||
+        view_as === ViewAsOptions.Raw
+      ) {
+        dataFormat = 'protobuf'
+      }
+      const res = await client
+        .getInstance()
+        .continuousProfilingActionTokenGet(
+          `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}&data_format=${dataFormat}`
+        )
+      const token = res.data
+      if (!token) {
+        return
+      }
+
+      if (view_as === ViewAsOptions.Graph || view_as === ViewAsOptions.Raw) {
+        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
+        window.open(profileURL, '_blank')
+        return
+      }
+
+      if (view_as === ViewAsOptions.FlameGraph) {
+        // view flamegraph by speedscope
+        const titleOnTab = `${rec.target?.component} - ${rec.target?.address} (${rec.profile_type})`
+        const protoURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
+        const url = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
+          protoURL
+        )}&title=${encodeURIComponent(titleOnTab)}`
+        window.open(url, '_blank')
+        return
+      }
+    },
+    [ts]
+  )
+
+  const handleDownloadGroup = useCallback(async () => {
+    const res = await client
+      .getInstance()
+      .continuousProfilingActionTokenGet(`ts=${ts}&data_format=protobuf`)
+    const token = res.data
+    if (!token) {
+      return
+    }
+    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
+  }, [ts])
+
   const columns = useMemo(
     () => [
       {
@@ -177,60 +229,8 @@ export default function Page() {
         },
       },
     ],
-    [t, profileDuration]
+    [t, profileDuration, openResult]
   )
-
-  const openResult = useCallback(
-    async (view_as: ViewAsOptions, rec: ConprofProfileDetail) => {
-      const { profile_type, target } = rec
-      const { component, address } = target!
-      let dataFormat = ''
-      if (
-        view_as === ViewAsOptions.FlameGraph ||
-        view_as === ViewAsOptions.Raw
-      ) {
-        dataFormat = 'protobuf'
-      }
-      const res = await client
-        .getInstance()
-        .continuousProfilingActionTokenGet(
-          `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}&data_format=${dataFormat}`
-        )
-      const token = res.data
-      if (!token) {
-        return
-      }
-
-      if (view_as === ViewAsOptions.Graph || view_as === ViewAsOptions.Raw) {
-        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
-        window.open(profileURL, '_blank')
-        return
-      }
-
-      if (view_as === ViewAsOptions.FlameGraph) {
-        // view flamegraph by speedscope
-        const titleOnTab = `${rec.target?.component} - ${rec.target?.address} (${rec.profile_type})`
-        const protoURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
-        const url = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
-          protoURL
-        )}&title=${encodeURIComponent(titleOnTab)}`
-        window.open(url, '_blank')
-        return
-      }
-    },
-    []
-  )
-
-  const handleDownloadGroup = useCallback(async () => {
-    const res = await client
-      .getInstance()
-      .continuousProfilingActionTokenGet(`ts=${ts}&data_format=protobuf`)
-    const token = res.data
-    if (!token) {
-      return
-    }
-    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
-  }, [ts])
 
   return (
     <div>

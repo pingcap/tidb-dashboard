@@ -181,7 +181,7 @@ export default function Page() {
                 text={t('instance_profiling.common.profile_state.error')}
               />
             )
-          } else if (record.state == ProfileState.Skipped) {
+          } else if (record.state === ProfileState.Skipped) {
             return (
               <Tooltip
                 title={t(
@@ -199,7 +199,7 @@ export default function Page() {
                 />
               </Tooltip>
             )
-          } else if (record.state == ProfileState.Succeeded) {
+          } else if (record.state === ProfileState.Succeeded) {
             return (
               <Badge
                 status="success"
@@ -243,13 +243,13 @@ export default function Page() {
           }
 
           let actions: ViewAsOptions[] = []
-          if (record.data_type == ProfDataType.Protobuf) {
+          if (record.data_type === ProfDataType.Protobuf) {
             actions = [
               ViewAsOptions.FlameGraph,
               ViewAsOptions.Graph,
               ViewAsOptions.Raw,
             ]
-          } else if (record.data_type == ProfDataType.Text) {
+          } else if (record.data_type === ProfDataType.Text) {
             actions = [ViewAsOptions.Raw]
           }
           return (
@@ -270,7 +270,7 @@ export default function Page() {
         },
       },
     ],
-    [t, profileDuration]
+    [t, profileDuration, openResult]
   )
 
   const handleDownloadGroup = useCallback(async () => {

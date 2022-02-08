@@ -73,7 +73,7 @@ endif
 
 .PHONY: run
 run:
-	bin/tidb-dashboard --debug --experimental --feature-version "$(FEATURE_VERSION)"
+	bin/tidb-dashboard --debug --experimental --feature-version "$(FEATURE_VERSION)" --host 0.0.0.0
 
 test_e2e_compat_features:
 	cd ui &&\

@@ -1,4 +1,5 @@
-import './publicPath'
+import './style.less'
+
 import './sentry'
 
-import '@dashboard'
+import '../dashboardApp'

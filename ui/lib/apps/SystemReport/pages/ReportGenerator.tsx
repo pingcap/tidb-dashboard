@@ -83,10 +83,11 @@ export default function ReportGenerator() {
             encodeURIComponent(resp.data),
         },
       })
-    } catch (e: any) {
+    } catch (e) {
+      const err = e as any
       Modal.error({
         title: 'Error',
-        content: <Pre>{e?.response?.data?.message ?? e.message}</Pre>,
+        content: <Pre>{err?.response?.data?.message ?? err.message}</Pre>,
       })
     }
 
@@ -148,7 +149,9 @@ export default function ReportGenerator() {
                           min={1}
                           max={30 * 24 * 60}
                           formatter={(value) => `${value} min`}
-                          parser={(value) => value?.replace(/[^\d]/g, '') || ''}
+                          parser={(value) =>
+                            parseInt(value?.replace(/[^\d]/g, '') || '')
+                          }
                           style={{ width: 120 }}
                         />
                       </Form.Item>

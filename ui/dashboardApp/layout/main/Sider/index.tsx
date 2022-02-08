@@ -114,10 +114,13 @@ function Sider({
     </Menu.SubMenu>
   )
 
+  const topSQLSupport = useIsFeatureSupport('topsql')
+  const topSQLMenu = useAppMenuItem(registry, 'topsql')
+
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
-    useIsFeatureSupport('topsql') ? useAppMenuItem(registry, 'topsql') : null,
+    // topSQL
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),
@@ -129,6 +132,9 @@ function Sider({
     // NOTE: Don't remove above comment line, it is a placeholder for code generator
     debugSubMenu,
   ]
+  if (topSQLSupport) {
+    menuItems.splice(2, 0, topSQLMenu)
+  }
 
   if (appInfo?.enable_experimental) {
     menuItems.push(experimentalSubMenu)

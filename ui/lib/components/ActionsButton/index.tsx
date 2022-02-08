@@ -38,12 +38,10 @@ export default function ActionsButton({
   // actions.length > 1
   const menu = (
     <Menu onClick={(e) => onClick(e.key as string)}>
-      {actions.map((act, idx) => {
+      {actions.map((act, idx) =>
         // skip the first option in menu since it has been show on the button.
-        if (idx !== 0) {
-          return <Menu.Item key={act.key}>{act.text}</Menu.Item>
-        }
-      })}
+        idx === 0 ? null : <Menu.Item key={act.key}>{act.text}</Menu.Item>
+      )}
     </Menu>
   )
   return (

@@ -37,7 +37,7 @@ type testInfoSuite struct {
 	codeService *code.Service
 }
 
-func TestUserSuite(t *testing.T) {
+func TestInfoSuite(t *testing.T) {
 	db := testutil.OpenTestDB(t)
 	tidbVersion := util.GetTiDBVersion(t, db)
 
@@ -49,6 +49,7 @@ func TestUserSuite(t *testing.T) {
 	app := fx.New(
 		fx.Supply(featureflag.NewRegistry(tidbVersion)),
 		fx.Supply(config.Default()),
+		fx.Supply(localStore),
 		fx.Provide(
 			httpc.NewHTTPClient,
 			pd.NewEtcdClient,
@@ -67,7 +68,6 @@ func TestUserSuite(t *testing.T) {
 		fx.Populate(&authService),
 		fx.Populate(&infoService),
 		fx.Populate(&codeService),
-		fx.Populate(localStore),
 	)
 	ctx := context.Background()
 	_ = app.Start(ctx)

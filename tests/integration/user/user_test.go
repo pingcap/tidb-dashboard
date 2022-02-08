@@ -49,6 +49,7 @@ func TestUserSuite(t *testing.T) {
 	app := fx.New(
 		fx.Supply(featureflag.NewRegistry(tidbVersion)),
 		fx.Supply(config.Default()),
+		fx.Supply(localStore),
 		fx.Provide(
 			httpc.NewHTTPClient,
 			pd.NewEtcdClient,
@@ -66,7 +67,6 @@ func TestUserSuite(t *testing.T) {
 		ssoauth.Module,
 		fx.Populate(&authService),
 		fx.Populate(&infoService),
-		fx.Populate(localStore),
 	)
 	ctx := context.Background()
 	_ = app.Start(ctx)

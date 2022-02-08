@@ -19,12 +19,11 @@ instance_profiling:
   list:
     control_form:
       title: Start Profiling Instances
-      instances:
-        label: Select instances
       profiling_type:
-        label: Select Profiling Type
         placeholder: Select Profiling Type
         columnTitle: Profiling Type
+        selected: '{{n}} Profiling Types'
+        selected_all: All Profiling Types
       duration:
         label: Duration
       submit: Start Profiling

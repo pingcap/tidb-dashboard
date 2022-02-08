@@ -19,12 +19,11 @@ instance_profiling:
   list:
     control_form:
       title: 开始性能分析
-      instances:
-        label: 选择实例
       profiling_type:
-        label: 选择分析类型
         placeholder: 选择分析类型
         columnTitle: 分析类型
+        selected: '{{n}} 种分析'
+        selected_all: 所有分析
       duration:
         label: 分析时长
       submit: 开始分析

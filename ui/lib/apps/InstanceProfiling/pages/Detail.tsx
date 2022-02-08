@@ -161,12 +161,12 @@ export default function Page() {
       {
         name: t('instance_profiling.detail.table.columns.status'),
         key: 'status',
-        minWidth: 100,
-        maxWidth: 100,
+        minWidth: 150,
+        maxWidth: 200,
         onRender: (record: ViewProfile) => {
           if (record.state === ProfileState.Running) {
             return (
-              <div style={{ width: 200 }}>
+              <div style={{ width: 150 }}>
                 <Progress
                   percent={~~((record.progress ?? 0) * 100)}
                   size="small"

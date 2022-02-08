@@ -154,8 +154,8 @@ export default function Page() {
       {
         name: t('conprof.detail.table.columns.status'),
         key: 'status',
-        minWidth: 100,
-        maxWidth: 100,
+        minWidth: 150,
+        maxWidth: 200,
         onRender: (record) => {
           if (record.state === 'finished' || record.state === 'success') {
             return (

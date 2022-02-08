@@ -44,6 +44,7 @@ export interface IMultiSelectProps<T>
   filterFn?: (keyword: string, item: T) => boolean
   onChange?: (value: string[]) => void
   selectedValueTransKey?: string
+  selectedAllValueTransKey?: string
   columnTitle?: string
 }
 
@@ -54,6 +55,7 @@ function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
     items,
     filterFn,
     selectedValueTransKey,
+    selectedAllValueTransKey,
     columnTitle,
     placeholder,
     value, // only to exclude from restProps
@@ -111,6 +113,7 @@ function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
     selection.current?.resetAllSelection(internalVal ?? [])
   }, [internalVal])
 
+  // TODO: Needs tests to ensure the behavior is correct when items are changed
   useEffect(() => {
     selection.current?.setAllItems(items ?? [])
     // We may receive value first and then receive items. In this case, we need to re-assign
@@ -144,10 +147,29 @@ function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
     if (placeholder && (!internalVal || internalVal.length === 0)) {
       return null
     }
-    return t(selectedValueTransKey ?? 'component.multiSelect.selected', {
-      n: internalVal?.length ?? 0,
+    const n = internalVal?.length ?? 0
+    const allN = items?.length ?? 0
+
+    let transKey
+    if (n !== allN) {
+      transKey = selectedValueTransKey ?? 'component.multiSelect.selected'
+    } else {
+      transKey =
+        selectedAllValueTransKey ??
+        selectedValueTransKey ??
+        'component.multiSelect.selected'
+    }
+    return t(transKey, {
+      n,
     })
-  }, [t, internalVal, selectedValueTransKey, placeholder])
+  }, [
+    t,
+    internalVal,
+    selectedValueTransKey,
+    selectedAllValueTransKey,
+    items,
+    placeholder,
+  ])
 
   return (
     <BaseSelect

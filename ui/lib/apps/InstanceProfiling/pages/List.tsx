@@ -182,29 +182,22 @@ export default function Page() {
           layout="inline"
           initialValues={{
             instances: [],
+            type: [...profilingTypeOptions],
             duration: defaultProfilingDuration,
           }}
         >
-          <Form.Item
-            name="instances"
-            label={t('instance_profiling.list.control_form.instances.label')}
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="instances" rules={[{ required: true }]}>
             <InstanceSelectV2
               disabled={conprofEnable || targetsResp.isLoading}
               instances={targetsResp.data?.targets}
               style={{ width: 200 }}
             />
           </Form.Item>
-          <Form.Item
-            name="type"
-            label={t(
-              'instance_profiling.list.control_form.profiling_type.label'
-            )}
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="type" rules={[{ required: true }]}>
             <MultiSelect.Plain
               disabled={conprofEnable}
+              selectedValueTransKey="instance_profiling.list.control_form.profiling_type.selected"
+              selectedAllValueTransKey="instance_profiling.list.control_form.profiling_type.selected_all"
               placeholder={t(
                 'instance_profiling.list.control_form.profiling_type.placeholder'
               )}

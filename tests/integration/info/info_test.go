@@ -4,13 +4,14 @@ package info
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -37,7 +38,7 @@ type testInfoSuite struct {
 	codeService *code.Service
 }
 
-func TestUserSuite(t *testing.T) {
+func TestInfoSuite(t *testing.T) {
 	db := testutil.OpenTestDB(t)
 	tidbVersion := util.GetTiDBVersion(t, db)
 
@@ -45,7 +46,8 @@ func TestUserSuite(t *testing.T) {
 	infoService := &info.Service{}
 	codeService := &code.Service{}
 
-	app := fx.New(
+	app := fxtest.New(
+		t,
 		fx.Supply(featureflag.NewRegistry(tidbVersion)),
 		fx.Supply(config.Default()),
 		fx.Provide(
@@ -68,8 +70,9 @@ func TestUserSuite(t *testing.T) {
 		fx.Populate(&infoService),
 		fx.Populate(&codeService),
 	)
-	ctx := context.Background()
-	_ = app.Start(ctx)
+	app.RequireStart()
+	// Waiting for some dynamic configuration fetched from pd
+	time.Sleep(5 * time.Second)
 
 	suite.Run(t, &testInfoSuite{
 		db:          db,
@@ -78,7 +81,7 @@ func TestUserSuite(t *testing.T) {
 		codeService: codeService,
 	})
 
-	_ = app.Stop(ctx)
+	app.RequireStop()
 }
 
 func (s *testInfoSuite) TestWithNotLoginUser() {

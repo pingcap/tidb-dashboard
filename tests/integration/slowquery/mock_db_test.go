@@ -51,6 +51,11 @@ func (s *testMockDBSuite) mustQuerySlowLogList(req *slowquery.GetListRequest) []
 	return d
 }
 
+func (s *testMockDBSuite) mustQuerySlowLogDetail(req *slowquery.GetDetailRequest) (*slowquery.Model, error) {
+	d, err := slowquery.QuerySlowLogDetail(req, s.mockDBSession())
+	return d, err
+}
+
 func (s *testMockDBSuite) mockDBSession() *gorm.DB {
 	return s.db.Gorm().Debug().Table(TestSlowQueryTableName)
 }
@@ -137,6 +142,14 @@ func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	s.Require().NotEmpty(d.WriteSize)
 }
 
+func (s *testMockDBSuite) TestGetListTimeRangeRequest() {
+	// 1639928730 - 2021-12-19T23:45:30+08:00
+	// 1639928987 - 2021-12-19T23:49:48+08:00
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{BeginTime: 1639928730, EndTime: 1639928988})
+
+	s.Require().Len(ds, 8)
+}
+
 func (s *testMockDBSuite) TestGetListLimitRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{Limit: 5})
 
@@ -211,4 +224,63 @@ func (s *testMockDBSuite) TestGetListPlansRequest() {
 
 	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{Plans: []string{"not_exist_plan"}})
 	s.Require().Empty(ds2)
+}
+
+func (s *testMockDBSuite) TestGetListAllRequest() {
+	digest := "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df"
+	txnStartTS := "429897544566046725"
+	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{
+		BeginTime: 1639928730,
+		EndTime:   1639928988,
+		Limit:     5,
+		IsDesc:    true,
+		OrderBy:   "txn_start_ts",
+		DB:        []string{"test"},
+		Fields:    "digest,txn_start_ts",
+		Text:      fmt.Sprintf("%s %s", digest, txnStartTS),
+	})
+
+	s.Require().NotEmpty(ds)
+	s.Require().LessOrEqual(len(ds), 5)
+	s.Require().Contains(ds[0].Digest, digest)
+	s.Require().Contains(ds[0].TxnStartTS, txnStartTS)
+
+	ds2 := s.mustQuerySlowLogList(&slowquery.GetListRequest{
+		BeginTime: 1639928730,
+		EndTime:   1639928988,
+		Limit:     5,
+		IsDesc:    true,
+		OrderBy:   "timestamp",
+		DB:        []string{},
+		Fields:    "query,timestamp,query_time,memory_max,digest",
+		Digest:    digest,
+		Plans:     []string{"a5e33155313418557311d13039dbf20aa54df3b825d062bdca92f1a271e5778a"},
+	})
+
+	s.Require().NotEmpty(ds2)
+	s.Require().LessOrEqual(len(ds2), 5)
+	s.Require().Contains(ds2[0].Digest, digest)
+}
+
+// detail
+func (s *testMockDBSuite) TestGetDetailRequest() {
+	ds, err := s.mustQuerySlowLogDetail(&slowquery.GetDetailRequest{
+		Digest:    "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df",
+		Timestamp: 1639928730,
+		ConnectID: "0",
+	})
+	s.Require().Error(err)
+	s.Require().Nil(ds)
+	s.Require().Contains(err.Error(), "record not found")
+
+	ds2, err := s.mustQuerySlowLogDetail(&slowquery.GetDetailRequest{
+		Digest:    "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df",
+		Timestamp: 1639928987.802016,
+		ConnectID: "7",
+	})
+	s.Require().Nil(err)
+	s.Require().NotNil(ds2)
+	s.Require().Equal(ds2.Timestamp, 1639928987.802016)
+	s.Require().Equal(ds2.Digest, "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df")
+	s.Require().Equal(ds2.ConnectionID, "7")
 }

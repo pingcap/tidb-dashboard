@@ -4,6 +4,7 @@ package info
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/fx"
-	"go.uber.org/fx/fxtest"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -46,8 +46,7 @@ func TestInfoSuite(t *testing.T) {
 	infoService := &info.Service{}
 	codeService := &code.Service{}
 
-	app := fxtest.New(
-		t,
+	app := fx.New(
 		fx.Supply(featureflag.NewRegistry(tidbVersion)),
 		fx.Supply(config.Default()),
 		fx.Provide(
@@ -70,7 +69,8 @@ func TestInfoSuite(t *testing.T) {
 		fx.Populate(&infoService),
 		fx.Populate(&codeService),
 	)
-	app.RequireStart()
+	ctx := context.Background()
+	_ = app.Start(ctx)
 	// Waiting for some dynamic configuration fetched from pd
 	time.Sleep(5 * time.Second)
 
@@ -81,7 +81,7 @@ func TestInfoSuite(t *testing.T) {
 		codeService: codeService,
 	})
 
-	app.RequireStop()
+	_ = app.Stop(ctx)
 }
 
 func (s *testInfoSuite) TestWithNotLoginUser() {

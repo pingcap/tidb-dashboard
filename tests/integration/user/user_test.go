@@ -4,6 +4,7 @@ package user
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -12,7 +13,6 @@ import (
 	"github.com/joomcode/errorx"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/fx"
-	"go.uber.org/fx/fxtest"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -46,7 +46,7 @@ func TestUserSuite(t *testing.T) {
 	authService := &user.AuthService{}
 	infoService := &info.Service{}
 
-	app := fxtest.New(t,
+	app := fx.New(
 		fx.Supply(featureflag.NewRegistry(tidbVersion)),
 		fx.Supply(config.Default()),
 		fx.Provide(
@@ -68,7 +68,8 @@ func TestUserSuite(t *testing.T) {
 		fx.Populate(&authService),
 		fx.Populate(&infoService),
 	)
-	app.RequireStart()
+	ctx := context.Background()
+	_ = app.Start(ctx)
 	// Waiting for some dynamic configuration fetched from pd
 	time.Sleep(5 * time.Second)
 
@@ -78,7 +79,7 @@ func TestUserSuite(t *testing.T) {
 		infoService: infoService,
 	})
 
-	app.RequireStop()
+	_ = app.Stop(ctx)
 }
 
 func (s *testUserSuite) supportNonRootLogin() bool {

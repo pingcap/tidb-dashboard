@@ -55,6 +55,8 @@ Cypress.Commands.overwrite(
   'matchImageSnapshot',
   (originalFn, snapshotName, options) => {
     if (Cypress.env('ALLOW_SCREENSHOT')) {
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(1000)
       originalFn(snapshotName, options)
     } else {
       cy.log(`Screenshot comparison is disabled`)

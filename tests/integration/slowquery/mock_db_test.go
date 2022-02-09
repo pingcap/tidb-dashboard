@@ -262,7 +262,6 @@ func (s *testMockDBSuite) TestGetListAllRequest() {
 	s.Require().Contains(ds2[0].Digest, digest)
 }
 
-// detail
 func (s *testMockDBSuite) TestGetDetailRequest() {
 	ds, err := s.mustQuerySlowLogDetail(&slowquery.GetDetailRequest{
 		Digest:    "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df",

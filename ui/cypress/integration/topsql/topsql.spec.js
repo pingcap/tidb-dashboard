@@ -31,9 +31,7 @@ function enableTopSQL() {
 skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
   describe('Top SQL page', function () {
     before(() => {
-      cy.fixture('uri.json').then((uri) => {
-        this.uri = uri
-      })
+      cy.fixture('uri.json').then((uri) => (this.uri = uri))
     })
 
     beforeEach(() => {

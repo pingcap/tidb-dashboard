@@ -48,7 +48,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNoError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		OK(c, 200, gin.H{
+		OK(c, gin.H{
 			"foo": "bar",
 		})
 	})
@@ -114,7 +114,7 @@ func (suite *ErrorHandlerFnTestSuite) TestResponseAfterError() {
 	engine.GET("/test", func(c *gin.Context) {
 		Error(c, ErrBadRequest.NewWithNoMessage())
 		// If normal response is returned, no error message will be generated
-		OK(c, http.StatusNotFound, gin.H{
+		JSON(c, http.StatusNotFound, gin.H{
 			"foo": "bar",
 		})
 	})

@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/keyviz',
   icon: EyeOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_keyviz" */ '.'),
+  reactRoot: () => import('.'),
 }

@@ -26,6 +26,7 @@ require (
 	github.com/jarcoal/httpmock v1.0.8
 	github.com/joho/godotenv v1.4.0
 	github.com/joomcode/errorx v1.0.1
+	github.com/json-iterator/go v1.1.12
 	github.com/minio/sio v0.3.0
 	github.com/oleiade/reflections v1.0.1
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12

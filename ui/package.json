@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=16.0.0"
   },
   "browser": {
     "path": "path-browserify"
@@ -63,7 +63,6 @@
     "build": "gulp build",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
-    "storybook": "start-storybook -p 9009 -s public",
     "run:e2e-test:compat-features": "cypress run --spec cypress/integration/**/*.compat_spec.js",
     "run:e2e-test:common-features": "cypress run --spec cypress/integration/**/*.spec.js",
     "open:cypress": "cypress open"
@@ -73,7 +72,6 @@
       "pre-commit": "pretty-quick --staged"
     }
   },
-  "homepage": "/dashboard",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -110,7 +108,6 @@
     "babel-plugin-istanbul": "^6.1.1",
     "browserslist-useragent-regexp": "^2.1.0",
     "chokidar": "^3.5.2",
-    "customize-cra": "^1.0.0",
     "cypress": "8.5.0",
     "esbuild": "^0.13.14",
     "esbuild-plugin-svgr": "^0.0.3",
@@ -132,15 +129,7 @@
     "path-browserify": "^1.0.1",
     "prettier": "2.4.1",
     "pretty-quick": "^2.0.1",
-    "react-app-rewire-alias": "^0.1.6",
-    "react-app-rewire-html-webpack-plugin": "^1.0.3",
-    "react-app-rewire-multiple-entry": "^2.1.0",
-    "react-app-rewire-yaml": "^1.1.0",
-    "react-app-rewired": "^2.1.5",
-    "react-scripts": "^4.0.3",
-    "typescript": "^3.9.7",
-    "webpack-bundle-analyzer": "^3.7.0",
-    "webpackbar": "^4.0.0"
+    "typescript": "^3.9.7"
   },
   "resolutions": {
     "babel-loader": "8.1.0"

@@ -53,6 +53,12 @@ func (f *FeatureFlag) VersionGuard() gin.HandlerFunc {
 // pdVersion, standaloneVersion examples: "v5.2.2", "v5.3.0", "v5.4.0-alpha-xxx", "5.3.0" (semver can handle `v` prefix by itself)
 // constraints examples: "~5.2.2", ">= 5.3.0", see semver docs to get more information.
 func (f *FeatureFlag) isSupportedIn(targetVersion string) bool {
+	// The targetVersion value is "N/A" when running `make && bin/tidb-dashboard`
+	// The targetVersion value is "Unknown" when running `go run cmd/tidb-dashboard/main.go`
+	if targetVersion == "N/A" || targetVersion == "Unknown" {
+		return true
+	}
+
 	// drop "-alpha-xxx" suffix
 	versionWithoutSuffix := strings.Split(targetVersion, "-")[0]
 	v, err := semver.NewVersion(versionWithoutSuffix)

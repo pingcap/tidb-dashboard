@@ -78,26 +78,10 @@ type InfoResponse struct { // nolint
 // @Failure 401 {object} rest.ErrorResponse
 func (s *Service) infoHandler(c *gin.Context) {
 	// Checking ngm deployments
-	// drop "-alpha-xxx" suffix
-	versionWithoutSuffix := strings.Split(s.params.Config.FeatureVersion, "-")[0]
-	v, err := semver.NewVersion(versionWithoutSuffix)
+	ngmState, err := s.checkNgmState()
 	if err != nil {
 		_ = c.Error(err)
 		return
-	}
-	constraint, err := semver.NewConstraint(">= v5.4.0")
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	ngmState := utils.NgmStateNotSupported
-	if constraint.Check(v) {
-		ngmState = utils.NgmStateNotStarted
-		addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
-		if err == nil && addr != "" {
-			ngmState = utils.NgmStateStarted
-		}
 	}
 
 	resp := InfoResponse{
@@ -108,6 +92,37 @@ func (s *Service) infoHandler(c *gin.Context) {
 		NgmState:           ngmState,
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+func (s *Service) checkNgmState() (utils.NgmState, error) {
+	ngmState := utils.NgmStateNotSupported
+
+	// The FeatureVersion value is "N/A" when running `make && bin/tidb-dashboard`
+	// The FeatureVersion value is "Unknown" when running `go run cmd/tidb-dashboard/main.go`
+	featureSupported :=
+		s.params.Config.FeatureVersion == "N/A" ||
+			s.params.Config.FeatureVersion == "Unknown"
+	if !featureSupported {
+		// drop "-alpha-xxx" suffix
+		versionWithoutSuffix := strings.Split(s.params.Config.FeatureVersion, "-")[0]
+		v, err := semver.NewVersion(versionWithoutSuffix)
+		if err != nil {
+			return ngmState, err
+		}
+		constraint, _ := semver.NewConstraint(">= v5.4.0")
+		featureSupported = constraint.Check(v)
+	}
+	if !featureSupported {
+		return ngmState, nil
+	}
+
+	ngmState = utils.NgmStateNotStarted
+	addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
+	if err == nil && addr != "" {
+		ngmState = utils.NgmStateStarted
+	}
+
+	return ngmState, nil
 }
 
 type WhoAmIResponse struct {

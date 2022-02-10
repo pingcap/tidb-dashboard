@@ -95,7 +95,7 @@ func (s *Service) stopService() {
 func (s *Service) getDynamicConfig(c *gin.Context) {
 	dc, err := s.cfgManager.Get()
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, dc.KeyVisual)
@@ -112,14 +112,14 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.KeyVisualConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
 		dc.KeyVisual = req
 	}
 	if err := s.cfgManager.Modify(opt); err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, req)

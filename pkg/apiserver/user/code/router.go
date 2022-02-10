@@ -37,21 +37,21 @@ type ShareResponse struct {
 func (s *Service) ShareHandler(c *gin.Context) {
 	var req ShareRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	expiry := time.Second * time.Duration(req.ExpireInSeconds)
 
 	if expiry > MaxSessionShareExpiry || expiry < 0 {
-		rest.AppendError(c, rest.ErrBadRequest.New("Invalid share expiry"))
+		rest.Error(c, rest.ErrBadRequest.New("Invalid share expiry"))
 		return
 	}
 
 	sessionUser := utils.GetSession(c)
 	code := s.SharingCodeFromSession(sessionUser, expiry, req.RevokeWritePriv)
 	if code == nil {
-		rest.AppendError(c, ErrShareFailed.New("Share session failed"))
+		rest.Error(c, ErrShareFailed.New("Share session failed"))
 		return
 	}
 

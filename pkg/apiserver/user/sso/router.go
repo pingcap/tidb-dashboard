@@ -38,12 +38,12 @@ type GetAuthURLRequest struct {
 func (s *Service) getAuthURLHandler(c *gin.Context) {
 	var req GetAuthURLRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	authURL, err := s.buildOAuthURL(req.RedirectURL, req.State, req.CodeVerifier)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.String(http.StatusOK, authURL)
@@ -59,7 +59,7 @@ func (s *Service) listImpersonationHandler(c *gin.Context) {
 	var resp []SSOImpersonationModel
 	err := s.params.LocalStore.Find(&resp).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -82,13 +82,13 @@ type CreateImpersonationRequest struct {
 func (s *Service) createImpersonationHandler(c *gin.Context) {
 	var req CreateImpersonationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	rec, err := s.createImpersonation(req.SQLUser, req.Password)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		if errorx.IsOfType(err, ErrUnsupportedUser) || errorx.IsOfType(err, ErrInvalidImpersonateCredential) {
 			c.Status(http.StatusBadRequest)
 		}
@@ -108,7 +108,7 @@ func (s *Service) createImpersonationHandler(c *gin.Context) {
 func (s *Service) getConfig(c *gin.Context) {
 	dc, err := s.params.ConfigManager.Get()
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, dc.SSO.CoreConfig)
@@ -130,7 +130,7 @@ type SetConfigRequest struct {
 func (s *Service) setConfig(c *gin.Context) {
 	var req SetConfigRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -138,7 +138,7 @@ func (s *Service) setConfig(c *gin.Context) {
 	if req.Config.Enabled {
 		wellKnownConfig, err := s.discoverOIDC(req.Config.DiscoveryURL)
 		if err != nil {
-			rest.AppendError(c, rest.ErrBadRequest.WrapWithNoMessage(err))
+			rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 			return
 		}
 		dConfig.AuthURL = wellKnownConfig.AuthURL
@@ -148,7 +148,7 @@ func (s *Service) setConfig(c *gin.Context) {
 	} else {
 		err := s.revokeAllImpersonations()
 		if err != nil {
-			rest.AppendError(c, err)
+			rest.Error(c, err)
 			return
 		}
 	}
@@ -157,7 +157,7 @@ func (s *Service) setConfig(c *gin.Context) {
 		dc.SSO = dConfig
 	}
 	if err := s.params.ConfigManager.Modify(opt); err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, req.Config)

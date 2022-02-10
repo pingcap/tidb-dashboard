@@ -131,7 +131,7 @@ type GenerateMetricsRelationRequest struct {
 func (s *Service) metricsRelationHandler(c *gin.Context) {
 	var req GenerateMetricsRelationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -140,13 +140,13 @@ func (s *Service) metricsRelationHandler(c *gin.Context) {
 
 	path, err := s.generateMetricsRelation(startTime, endTime, req.Type)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
 	token, err := utils.NewJWTString("diagnose/metrics", path)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -164,13 +164,13 @@ func (s *Service) metricsRelationViewHandler(c *gin.Context) {
 	token := c.Query("token")
 	path, err := utils.ParseJWTString("diagnose/metrics", token)
 	if err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	data, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -196,7 +196,7 @@ type GenerateReportRequest struct {
 func (s *Service) reportsHandler(c *gin.Context) {
 	reports, err := GetReports(s.db)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, reports)
@@ -213,7 +213,7 @@ func (s *Service) reportsHandler(c *gin.Context) {
 func (s *Service) genReportHandler(c *gin.Context) {
 	var req GenerateReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -229,7 +229,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 
 	reportID, err := NewReport(s.db, startTime, endTime, compareStartTime, compareEndTime)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -268,7 +268,7 @@ func (s *Service) reportStatusHandler(c *gin.Context) {
 	id := c.Param("id")
 	report, err := GetReport(s.db, id)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, &report)
@@ -299,7 +299,7 @@ func (s *Service) reportDataHandler(c *gin.Context) {
 	id := c.Param("id")
 	report, err := GetReport(s.db, id)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -324,7 +324,7 @@ type GenDiagnosisReportRequest struct {
 func (s *Service) genDiagnosisHandler(c *gin.Context) {
 	var req GenDiagnosisReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.WrapWithNoMessage(err))
+		rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 

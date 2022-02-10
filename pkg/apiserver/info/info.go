@@ -83,12 +83,12 @@ func (s *Service) infoHandler(c *gin.Context) {
 	versionWithoutSuffix := strings.Split(s.params.Config.FeatureVersion, "-")[0]
 	v, err := semver.NewVersion(versionWithoutSuffix)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	constraint, err := semver.NewConstraint(">= v5.4.0")
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -147,7 +147,7 @@ func (s *Service) databasesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	err := db.Raw("SHOW DATABASES").Scan(&result).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	strs := []string{}
@@ -182,7 +182,7 @@ func (s *Service) tablesHandler(c *gin.Context) {
 
 	err := tx.Order("TABLE_NAME").Scan(&result).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 

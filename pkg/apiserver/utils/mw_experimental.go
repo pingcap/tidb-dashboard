@@ -14,7 +14,7 @@ func MWForbidByExperimentalFlag(enableExp bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !enableExp {
 			c.Status(http.StatusForbidden)
-			rest.AppendError(c, ErrExpNotEnabled.NewWithNoMessage())
+			rest.Error(c, ErrExpNotEnabled.NewWithNoMessage())
 			c.Abort()
 			return
 		}

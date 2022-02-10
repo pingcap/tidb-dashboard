@@ -48,7 +48,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNoError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		Render(c, 200, gin.H{
+		OK(c, 200, gin.H{
 			"foo": "bar",
 		})
 	})
@@ -69,7 +69,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNormalError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		AppendError(c, fmt.Errorf("some error"))
+		Error(c, fmt.Errorf("some error"))
 	})
 
 	r := httptest.NewRecorder()
@@ -83,7 +83,7 @@ func (suite *ErrorHandlerFnTestSuite) TestBuiltinError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		AppendError(c, ErrBadRequest.NewWithNoMessage())
+		Error(c, ErrBadRequest.NewWithNoMessage())
 	})
 
 	r := httptest.NewRecorder()
@@ -97,7 +97,7 @@ func (suite *ErrorHandlerFnTestSuite) TestOverrideStatusCode() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		AppendError(c, ErrBadRequest.NewWithNoMessage())
+		Error(c, ErrBadRequest.NewWithNoMessage())
 		c.Status(http.StatusBadGateway)
 	})
 
@@ -112,9 +112,9 @@ func (suite *ErrorHandlerFnTestSuite) TestResponseAfterError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		AppendError(c, ErrBadRequest.NewWithNoMessage())
+		Error(c, ErrBadRequest.NewWithNoMessage())
 		// If normal response is returned, no error message will be generated
-		Render(c, http.StatusNotFound, gin.H{
+		OK(c, http.StatusNotFound, gin.H{
 			"foo": "bar",
 		})
 	})
@@ -138,7 +138,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNextMiddleware() {
 		middlewareCalled.Store(true)
 	})
 	engine.GET("/test", func(c *gin.Context) {
-		AppendError(c, ErrBadRequest.NewWithNoMessage())
+		Error(c, ErrBadRequest.NewWithNoMessage())
 	})
 
 	r := httptest.NewRecorder()

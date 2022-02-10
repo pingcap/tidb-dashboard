@@ -31,7 +31,7 @@ func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 		if !sessionUser.HasTiDBAuth {
 			// Only TiDBAuth is able to access. Raise error in this case.
 			// The error is privilege error instead of authorization error so that user will not be redirected.
-			rest.AppendError(c, rest.ErrForbidden.NewWithNoMessage())
+			rest.Error(c, rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -41,11 +41,11 @@ func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				// If TiDB conn is ok when login but fail this time, it means TiDB credential has been changed since
 				// login. In this case, we return unauthorized error, so that the front-end can let user to login again.
-				rest.AppendError(c, rest.ErrUnauthenticated.NewWithNoMessage())
+				rest.Error(c, rest.ErrUnauthenticated.NewWithNoMessage())
 			} else {
 				// For other kind of connection errors, for example, PD goes away, return these errors directly.
 				// In front-end we will simply display these errors but not ask user to login again.
-				rest.AppendError(c, err)
+				rest.Error(c, err)
 			}
 			c.Abort()
 			return

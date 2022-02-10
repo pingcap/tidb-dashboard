@@ -80,7 +80,7 @@ func (s *Service) configHandler(c *gin.Context) {
 	cfg := &EditableConfig{}
 	err := db.Raw(buildGlobalConfigProjectionSelectSQL(cfg)).Find(cfg).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, cfg)
@@ -95,7 +95,7 @@ func (s *Service) configHandler(c *gin.Context) {
 func (s *Service) modifyConfigHandler(c *gin.Context) {
 	var config EditableConfig
 	if err := c.ShouldBindJSON(&config); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -108,7 +108,7 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 	}
 	err := db.Exec(sqlWithNamedArgument, &config).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -124,7 +124,7 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	timeRanges, err := queryTimeRanges(db)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, timeRanges)
@@ -139,7 +139,7 @@ func (s *Service) stmtTypesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	stmtTypes, err := queryStmtTypes(db)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, stmtTypes)
@@ -164,7 +164,7 @@ type GetStatementsRequest struct {
 func (s *Service) listHandler(c *gin.Context) {
 	var req GetStatementsRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -180,7 +180,7 @@ func (s *Service) listHandler(c *gin.Context) {
 		req.Text,
 		fields)
 	if err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	c.JSON(http.StatusOK, overviews)
@@ -202,13 +202,13 @@ type GetPlansRequest struct {
 func (s *Service) plansHandler(c *gin.Context) {
 	var req GetPlansRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
 	plans, err := s.queryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, plans)
@@ -228,13 +228,13 @@ type GetPlanDetailRequest struct {
 func (s *Service) planDetailHandler(c *gin.Context) {
 	var req GetPlanDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
 	result, err := s.queryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, result)
@@ -251,7 +251,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetStatementsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -267,11 +267,11 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		req.Text,
 		fields)
 	if err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(overviews) == 0 {
-		rest.AppendError(c, ErrNoData.NewWithNoMessage())
+		rest.Error(c, ErrNoData.NewWithNoMessage())
 		return
 	}
 
@@ -292,7 +292,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime),
 		"statements/download")
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -319,7 +319,7 @@ func (s *Service) queryTableColumns(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	cs, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, funk.UniqString(append(cs, getVirtualFields(cs)...)))

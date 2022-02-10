@@ -105,11 +105,11 @@ type TaskGroupResponse struct {
 func (s *Service) CreateTaskGroup(c *gin.Context) {
 	var req CreateTaskGroupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(req.Targets) == 0 {
-		rest.AppendError(c, rest.ErrBadRequest.New("Expect at least 1 target"))
+		rest.Error(c, rest.ErrBadRequest.New("Expect at least 1 target"))
 		return
 	}
 	stats := model.NewRequestTargetStatisticsFromArray(&req.Targets)
@@ -119,7 +119,7 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 		TargetStats:   stats,
 	}
 	if err := s.db.Create(&taskGroup).Error; err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	tasks := make([]*TaskModel, 0, len(req.Targets))
@@ -154,7 +154,7 @@ func (s *Service) GetAllTaskGroups(c *gin.Context) {
 	var taskGroups []*TaskGroupModel
 	err := s.db.Find(&taskGroups).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -174,12 +174,12 @@ func (s *Service) GetTaskGroup(c *gin.Context) {
 	var tasks []*TaskModel
 	err := s.db.First(&taskGroup, "id = ?", taskGroupID).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	err = s.db.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	resp := TaskGroupResponse{
@@ -205,7 +205,7 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 		Limit(TaskMaxPreviewLines).
 		Find(&lines).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, lines)
@@ -222,20 +222,20 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 func (s *Service) RetryTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	// Currently we can only retry finished task group.
 	taskGroup := TaskGroupModel{}
 	if err := s.db.Where("id = ? AND state = ?", taskGroupID, TaskGroupStateFinished).First(&taskGroup).Error; err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
 	tasks := make([]*TaskModel, 0)
 	if err := s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateError).Find(&tasks).Error; err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -270,17 +270,17 @@ func (s *Service) RetryTask(c *gin.Context) {
 func (s *Service) CancelTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskGroup := TaskGroupModel{}
 	err = s.db.First(&taskGroup, taskGroupID).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	if taskGroup.State != TaskGroupStateRunning {
-		rest.AppendError(c, rest.ErrBadRequest.New("Task is not running"))
+		rest.Error(c, rest.ErrBadRequest.New("Task is not running"))
 		return
 	}
 	s.scheduler.AsyncAbort(uint(taskGroupID))
@@ -299,7 +299,7 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 	taskGroup := TaskGroupModel{}
 	err := s.db.Where("id = ? AND state != ?", taskGroupID, TaskGroupStateRunning).First(&taskGroup).Error
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	taskGroup.Delete(s.db)
@@ -319,7 +319,7 @@ func (s *Service) GetDownloadToken(c *gin.Context) {
 	str := strings.Join(ids, ",")
 	token, err := utils.NewJWTString("logs/download", str)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -336,7 +336,7 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("logs/download", token)
 	if err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	ids := strings.Split(str, ",")
@@ -354,7 +354,7 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 
 	switch len(tasks) {
 	case 0:
-		rest.AppendError(c, rest.ErrBadRequest.New("Expect at least 1 target"))
+		rest.Error(c, rest.ErrBadRequest.New("Expect at least 1 target"))
 	case 1:
 		serveTaskForDownload(tasks[0], c)
 	default:

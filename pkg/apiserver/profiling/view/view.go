@@ -50,10 +50,10 @@ $ go tool pprof --http=127.0.0.1:1234 cpu_xxx.proto
 func (s *View) ListTargets(c *gin.Context) {
 	ret, err := s.model.ListTargets()
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
-	rest.Render(c, http.StatusOK, ret)
+	rest.OK(c, ret)
 }
 
 // StartBundle godoc
@@ -70,16 +70,16 @@ func (s *View) StartBundle(c *gin.Context) {
 		return
 	}
 	if len(req.Targets) == 0 {
-		rest.AppendError(c, rest.ErrBadRequest.New("Expect at least 1 target"))
+		rest.Error(c, rest.ErrBadRequest.New("Expect at least 1 target"))
 		return
 	}
 	if len(req.Kinds) == 0 {
-		rest.AppendError(c, rest.ErrBadRequest.New("Expect at least 1 profiling kind"))
+		rest.Error(c, rest.ErrBadRequest.New("Expect at least 1 profiling kind"))
 		return
 	}
 	for _, k := range req.Kinds {
 		if !profutil.IsProfKindValid(k) {
-			rest.AppendError(c, rest.ErrBadRequest.New("Unsupported profiling kind %s", k))
+			rest.Error(c, rest.ErrBadRequest.New("Unsupported profiling kind %s", k))
 			return
 		}
 	}
@@ -91,10 +91,10 @@ func (s *View) StartBundle(c *gin.Context) {
 	}
 	ret, err := s.model.StartBundle(req)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
-	rest.Render(c, http.StatusOK, ret)
+	rest.OK(c, ret)
 }
 
 // ListBundles godoc
@@ -107,10 +107,10 @@ func (s *View) StartBundle(c *gin.Context) {
 func (s *View) ListBundles(c *gin.Context) {
 	ret, err := s.model.ListBundles()
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
-	rest.Render(c, http.StatusOK, ret)
+	rest.OK(c, ret)
 }
 
 // GetBundle godoc
@@ -128,10 +128,10 @@ func (s *View) GetBundle(c *gin.Context) {
 	}
 	ret, err := s.model.GetBundle(req)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
-	rest.Render(c, http.StatusOK, ret)
+	rest.OK(c, ret)
 }
 
 type getBundleDataReqClaim struct {
@@ -162,7 +162,7 @@ func (s *View) GetTokenForBundleData(c *gin.Context) {
 		},
 	})
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -180,17 +180,17 @@ func (s *View) DownloadBundleData(c *gin.Context) {
 	token := c.Query("token")
 	err := s.downloadCtl.HandleDownloadToken(token, &claim)
 	if err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.WrapWithNoMessage(err))
+		rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 	if !claim.VerifyAudience(audienceBundleData, true) {
-		rest.AppendError(c, rest.ErrBadRequest.New("download token is invalid"))
+		rest.Error(c, rest.ErrBadRequest.New("download token is invalid"))
 		return
 	}
 
 	ret, err := s.model.GetBundleData(claim.GetBundleDataReq)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -278,7 +278,7 @@ func (s *View) GetTokenForProfileData(c *gin.Context) {
 		},
 	})
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -296,22 +296,22 @@ func (s *View) RenderProfileData(c *gin.Context) {
 	token := c.Query("token")
 	err := s.downloadCtl.HandleDownloadToken(token, &claim)
 	if err != nil {
-		rest.AppendError(c, rest.ErrBadRequest.WrapWithNoMessage(err))
+		rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 	if !claim.VerifyAudience(audienceProfileData, true) {
-		rest.AppendError(c, rest.ErrBadRequest.New("download token is invalid"))
+		rest.Error(c, rest.ErrBadRequest.New("download token is invalid"))
 		return
 	}
 
 	ret, err := s.model.GetProfileData(claim.GetProfileDataReq)
 	if err != nil {
-		rest.AppendError(c, err)
+		rest.Error(c, err)
 		return
 	}
 
 	if ret.Profile.State != ProfileStateSucceeded {
-		rest.AppendError(c, fmt.Errorf("the profile is not generated successfully"))
+		rest.Error(c, fmt.Errorf("the profile is not generated successfully"))
 		return
 	}
 
@@ -327,19 +327,19 @@ func (s *View) RenderProfileData(c *gin.Context) {
 		return
 	case RenderTypeSVGGraph:
 		if ret.Profile.DataType != profutil.ProfDataTypeProtobuf {
-			rest.AppendError(c, rest.ErrBadRequest.New("cannot render %s as %s", ret.Profile.DataType, claim.RenderAs))
+			rest.Error(c, rest.ErrBadRequest.New("cannot render %s as %s", ret.Profile.DataType, claim.RenderAs))
 			return
 		}
 		svgData, err := profutil.ConvertProtoToGraphSVG(ret.Profile.Data)
 		if err != nil {
-			rest.AppendError(c, err)
+			rest.Error(c, err)
 			return
 		}
 		c.Writer.Header().Set("Content-type", "image/svg+xml")
 		_, _ = c.Writer.Write(svgData)
 		return
 	default:
-		rest.AppendError(c, rest.ErrBadRequest.New("unsupported render type %s", claim.RenderAs))
+		rest.Error(c, rest.ErrBadRequest.New("unsupported render type %s", claim.RenderAs))
 		return
 	}
 }

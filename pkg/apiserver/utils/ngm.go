@@ -66,7 +66,7 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ngmAddr, err := n.getNgmAddrFromCache()
 		if err != nil {
-			rest.AppendError(c, err)
+			rest.Error(c, err)
 			return
 		}
 

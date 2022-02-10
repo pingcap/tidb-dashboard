@@ -4,7 +4,6 @@ package info
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -15,17 +14,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code/codeauth"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
-	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap/tidb-dashboard/pkg/httpc"
-	"github.com/pingcap/tidb-dashboard/pkg/pd"
-	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/tests/util"
-	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/testutil"
 )
 
@@ -37,7 +27,7 @@ type testInfoSuite struct {
 	codeService *code.Service
 }
 
-func TestUserSuite(t *testing.T) {
+func TestInfoSuite(t *testing.T) {
 	db := testutil.OpenTestDB(t)
 	tidbVersion := util.GetTiDBVersion(t, db)
 
@@ -45,31 +35,14 @@ func TestUserSuite(t *testing.T) {
 	infoService := &info.Service{}
 	codeService := &code.Service{}
 
-	app := fx.New(
-		fx.Supply(featureflag.NewRegistry(tidbVersion)),
-		fx.Supply(config.Default()),
-		fx.Provide(
-			httpc.NewHTTPClient,
-			pd.NewEtcdClient,
-			tidb.NewTiDBClient,
-
-			config.NewDynamicConfigManager,
-			dbstore.NewDBStore,
-
-			code.NewService,
-			sso.NewService,
-			user.NewAuthService,
-			info.NewService,
-		),
-		sqlauth.Module,
-		codeauth.Module,
-		ssoauth.Module,
+	app := util.NewMockApp(t,
+		tidbVersion,
+		config.Default(),
 		fx.Populate(&authService),
 		fx.Populate(&infoService),
 		fx.Populate(&codeService),
 	)
-	ctx := context.Background()
-	_ = app.Start(ctx)
+	app.RequireStart()
 
 	suite.Run(t, &testInfoSuite{
 		db:          db,
@@ -78,7 +51,7 @@ func TestUserSuite(t *testing.T) {
 		codeService: codeService,
 	})
 
-	_ = app.Stop(ctx)
+	app.RequireStop()
 }
 
 func (s *testInfoSuite) TestWithNotLoginUser() {

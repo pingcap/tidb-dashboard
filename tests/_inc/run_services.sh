@@ -3,8 +3,8 @@
 set -euo pipefail
 
 INTEGRATION_LOG_PATH=/tmp/dashboard-integration-test.log
+INTEGRATION_PID_LOG_PATH=/tmp/dashboard-integration-test-pid.log
 TIUP_BIN_DIR=$HOME/.tiup/bin
-PLAYGROUND_TAG="integration_test"
 
 PROJECT_DIR="$(dirname "$0")/.."
 BIN="${PROJECT_DIR}/bin"
@@ -14,7 +14,8 @@ start_tidb() {
 
   rm -rf $INTEGRATION_LOG_PATH
   TIDB_VERSION=${1:-latest}
-  $TIUP_BIN_DIR/tiup playground --tag $PLAYGROUND_TAG $TIDB_VERSION > $INTEGRATION_LOG_PATH &
+  $TIUP_BIN_DIR/tiup playground $TIDB_VERSION > $INTEGRATION_LOG_PATH &
+  echo $! > $INTEGRATION_PID_LOG_PATH
   ensure_tidb
 
   echo "  - Start TiDB@$TIDB_VERSION Success!"
@@ -22,7 +23,7 @@ start_tidb() {
 
 stop_tidb() {
   echo "+ Waiting for TiDB teardown..."
-  $TIUP_BIN_DIR/tiup clean $PLAYGROUND_TAG >/dev/null 2>&1
+  kill `cat $INTEGRATION_PID_LOG_PATH`
 }
 
 ensure_tidb() {

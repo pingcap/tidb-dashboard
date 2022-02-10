@@ -61,7 +61,7 @@ func extractHTTPCodeFromError(err error) int {
 }
 
 // ErrorHandlerFn creates a handler func that turns (last) error in the context into an APIError json response.
-// In handlers, `c.Error(err)` can be used to attach the error to the context.
+// In handlers, `rest.Error(c, err)` can be used to attach the error to the context.
 // When error is attached in the context:
 // - The handler can optionally assign the HTTP status code.
 // - The handler must not self-generate a response body.

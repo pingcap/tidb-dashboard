@@ -2871,6 +2871,11 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     to-fast-properties "^2.0.0"
 
+"@baurine/esbuild-plugin-babel@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@baurine/esbuild-plugin-babel/-/esbuild-plugin-babel-0.3.0.tgz#b7409eb2a388fb03a5dacbf333154ae3604abcc7"
+  integrity sha512-AKa/svOQUhHE7HNa8vU3qEXL+U1ln211Sl5mCBX+AQIldEEcvA80udzVENGh6VEztUtbpsXRsPdP9VI8tyX96w==
+
 "@baurine/esbuild-plugin-postcss3@^0.2.3":
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/@baurine/esbuild-plugin-postcss3/-/esbuild-plugin-postcss3-0.2.3.tgz#c5bf3bbec4c5696cb23b854b6c82cbd7e5837efb"

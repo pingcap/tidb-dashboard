@@ -4,7 +4,6 @@ package user
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -15,18 +14,9 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code/codeauth"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
-	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap/tidb-dashboard/pkg/httpc"
-	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/tests/util"
-	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/testutil"
 )
@@ -44,32 +34,14 @@ func TestUserSuite(t *testing.T) {
 
 	authService := &user.AuthService{}
 	infoService := &info.Service{}
-	localStore := dbstore.MustNewMemoryStore()
 
-	app := fx.New(
-		fx.Supply(featureflag.NewRegistry(tidbVersion)),
-		fx.Supply(config.Default()),
-		fx.Supply(localStore),
-		fx.Provide(
-			httpc.NewHTTPClient,
-			pd.NewEtcdClient,
-			tidb.NewTiDBClient,
-
-			config.NewDynamicConfigManager,
-
-			code.NewService,
-			sso.NewService,
-			user.NewAuthService,
-			info.NewService,
-		),
-		sqlauth.Module,
-		codeauth.Module,
-		ssoauth.Module,
+	app := util.NewMockApp(t,
+		tidbVersion,
+		config.Default(),
 		fx.Populate(&authService),
 		fx.Populate(&infoService),
 	)
-	ctx := context.Background()
-	_ = app.Start(ctx)
+	app.RequireStart()
 
 	suite.Run(t, &testUserSuite{
 		db:          db,
@@ -77,7 +49,7 @@ func TestUserSuite(t *testing.T) {
 		infoService: infoService,
 	})
 
-	_ = app.Stop(ctx)
+	app.RequireStop()
 }
 
 func (s *testUserSuite) supportNonRootLogin() bool {

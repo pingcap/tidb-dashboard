@@ -1,2 +1,2 @@
 comment:
-  layout: "diff,flags,files,footer"
+  layout: "diff,flags,footer"

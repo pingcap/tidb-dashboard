@@ -11,22 +11,29 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/jsonserde/ginadapter"
 )
 
-// TODO: Add tests.
+// Error appends an error to the context, which will later becomes an error message returned to the client.
+// You should not write any other body to the client before or after calling this function.
+// Otherwise there will be no error message written to the client.
+// See `ErrorHandlerFn` for more details.
 func Error(c *gin.Context, err error) {
 	_ = c.Error(errorx.EnsureStackTrace(err))
 }
 
-// TODO: Add tests.
+// JSON writes a JSON string to the client with the given status code.
+// The key of te `obj` will be serialized in snake_case by default (see `jsonserde` package).
 func JSON(c *gin.Context, code int, obj interface{}) {
 	c.Render(code, ginadapter.Renderer{Data: obj})
 }
 
-// TODO: Add tests.
+// OK writes a JSON string to the client with the status code 200.
+// The key of te `obj` will be serialized in snake_case by default (see `jsonserde` package).
 func OK(c *gin.Context, obj interface{}) {
 	JSON(c, http.StatusOK, obj)
 }
 
-// TODO: Add tests.
+// MustBind decodes the request body to the passed struct pointer.
+// If error occurs, `ErrBadRequest` will be recorded in the context and `false` will be returned. You should early
+// return the handler in this case.
 func MustBind(c *gin.Context, obj interface{}) bool {
 	if err := c.ShouldBindWith(obj, ginadapter.Binding); err != nil {
 		Error(c, ErrBadRequest.WrapWithNoMessage(err))

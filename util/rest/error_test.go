@@ -114,16 +114,14 @@ func (suite *ErrorHandlerFnTestSuite) TestResponseAfterError() {
 	engine.GET("/test", func(c *gin.Context) {
 		Error(c, ErrBadRequest.NewWithNoMessage())
 		// If normal response is returned, no error message will be generated
-		JSON(c, http.StatusNotFound, gin.H{
-			"foo": "bar",
-		})
+		c.String(http.StatusNotFound, "foobar")
 	})
 
 	r := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/test", nil)
 	engine.ServeHTTP(r, req)
 	suite.Require().Equal(http.StatusNotFound, r.Code)
-	suite.Require().JSONEq(`{"foo":"bar"}`, r.Body.String())
+	suite.Require().Equal(`foobar`, r.Body.String())
 }
 
 func (suite *ErrorHandlerFnTestSuite) TestNextMiddleware() {

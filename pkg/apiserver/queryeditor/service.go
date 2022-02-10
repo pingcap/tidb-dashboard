@@ -123,7 +123,7 @@ func executeStatements(context context.Context, db *sql.DB, statements string) (
 func (s *Service) runHandler(c *gin.Context) {
 	var req RunRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 

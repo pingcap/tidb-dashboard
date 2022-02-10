@@ -2,7 +2,7 @@
 
 // Copyright 2014 Manu Martinez-Almeida.
 
-package ginjson
+package ginadapter
 
 import (
 	"bytes"

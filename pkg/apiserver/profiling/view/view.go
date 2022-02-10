@@ -15,7 +15,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/profutil"
-	"github.com/pingcap/tidb-dashboard/util/jsonserde/ginjson"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/rest/download"
 )
@@ -51,10 +50,10 @@ $ go tool pprof --http=127.0.0.1:1234 cpu_xxx.proto
 func (s *View) ListTargets(c *gin.Context) {
 	ret, err := s.model.ListTargets()
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
-	ginjson.Render(c, http.StatusOK, ret)
+	rest.Render(c, http.StatusOK, ret)
 }
 
 // StartBundle godoc
@@ -67,21 +66,20 @@ func (s *View) ListTargets(c *gin.Context) {
 // @Router /profiling/bundle/start [post]
 func (s *View) StartBundle(c *gin.Context) {
 	var req StartBundleReq
-	if err := c.ShouldBindWith(&req, ginjson.Binding); err != nil {
-		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+	if !rest.MustBind(c, &req) {
 		return
 	}
 	if len(req.Targets) == 0 {
-		_ = c.Error(rest.ErrBadRequest.New("Expect at least 1 target"))
+		rest.AppendError(c, rest.ErrBadRequest.New("Expect at least 1 target"))
 		return
 	}
 	if len(req.Kinds) == 0 {
-		_ = c.Error(rest.ErrBadRequest.New("Expect at least 1 profiling kind"))
+		rest.AppendError(c, rest.ErrBadRequest.New("Expect at least 1 profiling kind"))
 		return
 	}
 	for _, k := range req.Kinds {
 		if !profutil.IsProfKindValid(k) {
-			_ = c.Error(rest.ErrBadRequest.New("Unsupported profiling kind %s", k))
+			rest.AppendError(c, rest.ErrBadRequest.New("Unsupported profiling kind %s", k))
 			return
 		}
 	}
@@ -93,10 +91,10 @@ func (s *View) StartBundle(c *gin.Context) {
 	}
 	ret, err := s.model.StartBundle(req)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
-	ginjson.Render(c, http.StatusOK, ret)
+	rest.Render(c, http.StatusOK, ret)
 }
 
 // ListBundles godoc
@@ -109,10 +107,10 @@ func (s *View) StartBundle(c *gin.Context) {
 func (s *View) ListBundles(c *gin.Context) {
 	ret, err := s.model.ListBundles()
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
-	ginjson.Render(c, http.StatusOK, ret)
+	rest.Render(c, http.StatusOK, ret)
 }
 
 // GetBundle godoc
@@ -125,16 +123,15 @@ func (s *View) ListBundles(c *gin.Context) {
 // @Router /profiling/bundle/get [post]
 func (s *View) GetBundle(c *gin.Context) {
 	var req GetBundleReq
-	if err := c.ShouldBindWith(&req, ginjson.Binding); err != nil {
-		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+	if !rest.MustBind(c, &req) {
 		return
 	}
 	ret, err := s.model.GetBundle(req)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
-	ginjson.Render(c, http.StatusOK, ret)
+	rest.Render(c, http.StatusOK, ret)
 }
 
 type getBundleDataReqClaim struct {
@@ -154,8 +151,7 @@ const audienceBundleData = "BundleData"
 // @Router /profiling/bundle/download_token [post]
 func (s *View) GetTokenForBundleData(c *gin.Context) {
 	var req GetBundleDataReq
-	if err := c.ShouldBindWith(&req, ginjson.Binding); err != nil {
-		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+	if !rest.MustBind(c, &req) {
 		return
 	}
 	token, err := s.downloadCtl.GetDownloadToken(getBundleDataReqClaim{
@@ -166,7 +162,7 @@ func (s *View) GetTokenForBundleData(c *gin.Context) {
 		},
 	})
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -184,17 +180,17 @@ func (s *View) DownloadBundleData(c *gin.Context) {
 	token := c.Query("token")
 	err := s.downloadCtl.HandleDownloadToken(token, &claim)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+		rest.AppendError(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 	if !claim.VerifyAudience(audienceBundleData, true) {
-		_ = c.Error(rest.ErrBadRequest.New("download token is invalid"))
+		rest.AppendError(c, rest.ErrBadRequest.New("download token is invalid"))
 		return
 	}
 
 	ret, err := s.model.GetBundleData(claim.GetBundleDataReq)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 
@@ -271,8 +267,7 @@ const audienceProfileData = "ProfileData"
 // @Router /profiling/profile/download_token [post]
 func (s *View) GetTokenForProfileData(c *gin.Context) {
 	var req RenderProfileDataReq
-	if err := c.ShouldBindWith(&req, ginjson.Binding); err != nil {
-		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+	if !rest.MustBind(c, &req) {
 		return
 	}
 	token, err := s.downloadCtl.GetDownloadToken(renderProfileDataReqClaim{
@@ -283,7 +278,7 @@ func (s *View) GetTokenForProfileData(c *gin.Context) {
 		},
 	})
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -301,22 +296,22 @@ func (s *View) RenderProfileData(c *gin.Context) {
 	token := c.Query("token")
 	err := s.downloadCtl.HandleDownloadToken(token, &claim)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+		rest.AppendError(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 	if !claim.VerifyAudience(audienceProfileData, true) {
-		_ = c.Error(rest.ErrBadRequest.New("download token is invalid"))
+		rest.AppendError(c, rest.ErrBadRequest.New("download token is invalid"))
 		return
 	}
 
 	ret, err := s.model.GetProfileData(claim.GetProfileDataReq)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 
 	if ret.Profile.State != ProfileStateSucceeded {
-		_ = c.Error(fmt.Errorf("the profile is not generated successfully"))
+		rest.AppendError(c, fmt.Errorf("the profile is not generated successfully"))
 		return
 	}
 
@@ -332,19 +327,19 @@ func (s *View) RenderProfileData(c *gin.Context) {
 		return
 	case RenderTypeSVGGraph:
 		if ret.Profile.DataType != profutil.ProfDataTypeProtobuf {
-			_ = c.Error(rest.ErrBadRequest.New("cannot render %s as %s", ret.Profile.DataType, claim.RenderAs))
+			rest.AppendError(c, rest.ErrBadRequest.New("cannot render %s as %s", ret.Profile.DataType, claim.RenderAs))
 			return
 		}
 		svgData, err := profutil.ConvertProtoToGraphSVG(ret.Profile.Data)
 		if err != nil {
-			_ = c.Error(err)
+			rest.AppendError(c, err)
 			return
 		}
 		c.Writer.Header().Set("Content-type", "image/svg+xml")
 		_, _ = c.Writer.Write(svgData)
 		return
 	default:
-		_ = c.Error(rest.ErrBadRequest.New("unsupported render type %s", claim.RenderAs))
+		rest.AppendError(c, rest.ErrBadRequest.New("unsupported render type %s", claim.RenderAs))
 		return
 	}
 }

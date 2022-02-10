@@ -1,6 +1,6 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
-package ginjson
+package ginadapter
 
 import (
 	"net/http/httptest"
@@ -20,7 +20,7 @@ func TestRenderer(t *testing.T) {
 		Age:      18,
 	}
 
-	err := (jsonRenderer{data}).Render(w)
+	err := (Renderer{data}).Render(w)
 
 	require.NoError(t, err)
 	require.Equal(t, `{"full_name":"zoo","age":18}`, w.Body.String())
@@ -31,6 +31,6 @@ func TestRendererError(t *testing.T) {
 	w := httptest.NewRecorder()
 	data := make(chan int)
 
-	err := (jsonRenderer{data}).Render(w)
+	err := (Renderer{data}).Render(w)
 	require.EqualError(t, err, "chan int is unsupported type")
 }

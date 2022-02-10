@@ -6,13 +6,15 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 func MWForbidByExperimentalFlag(enableExp bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !enableExp {
 			c.Status(http.StatusForbidden)
-			_ = c.Error(ErrExpNotEnabled.NewWithNoMessage())
+			rest.AppendError(c, ErrExpNotEnabled.NewWithNoMessage())
 			c.Abort()
 			return
 		}

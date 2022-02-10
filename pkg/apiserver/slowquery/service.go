@@ -66,14 +66,14 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 func (s *Service) getList(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
 	results, err := QuerySlowLogList(&req, s.params.SysSchema, db.Table(SlowQueryTable))
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -89,14 +89,14 @@ func (s *Service) getList(c *gin.Context) {
 func (s *Service) getDetails(c *gin.Context) {
 	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
 	result, err := QuerySlowLogDetail(&req, db.Table(SlowQueryTable))
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, *result)
@@ -113,7 +113,7 @@ func (s *Service) getDetails(c *gin.Context) {
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	fields := []string{}
@@ -123,11 +123,11 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	list, err := QuerySlowLogList(&req, s.params.SysSchema, db.Table(SlowQueryTable))
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(list) == 0 {
-		_ = c.Error(ErrNoData.NewWithNoMessage())
+		rest.AppendError(c, ErrNoData.NewWithNoMessage())
 		return
 	}
 
@@ -148,7 +148,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		fmt.Sprintf("slowquery_%s_%s_*.csv", beginTime, endTime),
 		"slowquery/download")
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -176,7 +176,7 @@ func (s *Service) queryTableColumns(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	cs, err := QueryTableColumns(s.params.SysSchema, db)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, cs)

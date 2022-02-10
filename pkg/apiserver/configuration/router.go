@@ -33,7 +33,7 @@ func (s *Service) getHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	r, err := s.getAllConfigItems(db)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, r)
@@ -62,14 +62,14 @@ type EditResponse struct {
 func (s *Service) editHandler(c *gin.Context) {
 	var req EditRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
 	warnings, err := s.editConfig(db, req.Kind, req.ID, req.NewValue)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 

@@ -205,7 +205,7 @@ func (s *Service) GenConprofActionToken(c *gin.Context) {
 	q := c.Query("q")
 	token, err := utils.NewJWTString("conprof", q)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -226,7 +226,7 @@ func (s *Service) parseJWTToken(c *gin.Context) {
 	token := c.Query("token")
 	queryStr, err := utils.ParseJWTString("conprof", token)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+		rest.AppendError(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 	c.Request.URL.RawQuery = queryStr

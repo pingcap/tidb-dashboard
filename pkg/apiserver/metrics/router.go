@@ -45,17 +45,17 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 func (s *Service) queryMetrics(c *gin.Context) {
 	var req QueryRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	addr, err := s.getPromAddressFromCache()
 	if err != nil {
-		_ = c.Error(ErrLoadPrometheusAddressFailed.Wrap(err, "Load prometheus address failed"))
+		rest.AppendError(c, ErrLoadPrometheusAddressFailed.Wrap(err, "Load prometheus address failed"))
 		return
 	}
 	if addr == "" {
-		_ = c.Error(ErrPrometheusNotFound.New("Prometheus is not deployed in the cluster"))
+		rest.AppendError(c, ErrPrometheusNotFound.New("Prometheus is not deployed in the cluster"))
 		return
 	}
 
@@ -68,25 +68,25 @@ func (s *Service) queryMetrics(c *gin.Context) {
 	uri := fmt.Sprintf("%s/api/v1/query_range?%s", addr, params.Encode())
 	promReq, err := http.NewRequestWithContext(s.lifecycleCtx, http.MethodGet, uri, nil)
 	if err != nil {
-		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to build Prometheus request"))
+		rest.AppendError(c, ErrPrometheusQueryFailed.Wrap(err, "failed to build Prometheus request"))
 		return
 	}
 
 	promResp, err := s.params.HTTPClient.WithTimeout(defaultPromQueryTimeout).Do(promReq)
 	if err != nil {
-		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to send requests to Prometheus"))
+		rest.AppendError(c, ErrPrometheusQueryFailed.Wrap(err, "failed to send requests to Prometheus"))
 		return
 	}
 
 	defer promResp.Body.Close()
 	if promResp.StatusCode != http.StatusOK {
-		_ = c.Error(ErrPrometheusQueryFailed.New("failed to query Prometheus"))
+		rest.AppendError(c, ErrPrometheusQueryFailed.New("failed to query Prometheus"))
 		return
 	}
 
 	body, err := ioutil.ReadAll(promResp.Body)
 	if err != nil {
-		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to read Prometheus query result"))
+		rest.AppendError(c, ErrPrometheusQueryFailed.Wrap(err, "failed to read Prometheus query result"))
 		return
 	}
 
@@ -107,12 +107,12 @@ type GetPromAddressConfigResponse struct {
 func (s *Service) getPromAddressConfig(c *gin.Context) {
 	cAddr, err := s.resolveCustomizedPromAddress(true)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	dAddr, err := s.resolveDeployedPromAddress()
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, GetPromAddressConfigResponse{
@@ -139,12 +139,12 @@ type PutCustomPromAddressResponse struct {
 func (s *Service) putCustomPromAddress(c *gin.Context) {
 	var req PutCustomPromAddressRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.AppendError(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	addr, err := s.setCustomPromAddress(req.Addr)
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, PutCustomPromAddressResponse{

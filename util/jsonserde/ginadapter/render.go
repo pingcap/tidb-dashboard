@@ -2,12 +2,10 @@
 
 // Copyright 2014 Manu Martinez-Almeida.
 
-package ginjson
+package ginadapter
 
 import (
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 
 	"github.com/pingcap/tidb-dashboard/util/jsonserde"
 )
@@ -21,11 +19,11 @@ func writeContentType(w http.ResponseWriter, value []string) {
 	}
 }
 
-type jsonRenderer struct {
+type Renderer struct {
 	Data interface{}
 }
 
-func (j jsonRenderer) Render(w http.ResponseWriter) error {
+func (j Renderer) Render(w http.ResponseWriter) error {
 	writeContentType(w, jsonContentType)
 	jsonBytes, err := jsonserde.Default.Marshal(j.Data)
 	if err != nil {
@@ -35,10 +33,6 @@ func (j jsonRenderer) Render(w http.ResponseWriter) error {
 	return err
 }
 
-func (j jsonRenderer) WriteContentType(w http.ResponseWriter) {
+func (j Renderer) WriteContentType(w http.ResponseWriter) {
 	writeContentType(w, jsonContentType)
-}
-
-func Render(c *gin.Context, code int, obj interface{}) {
-	c.Render(code, jsonRenderer{Data: obj})
 }

@@ -71,7 +71,7 @@ func (s *Controller) HandleDownloadRequest(c *gin.Context) {
 	var claims downloadTokenClaims
 	err := s.downloadCtl.HandleDownloadToken(c.Query("token"), &claims)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.Wrap(err, "Invalid download request"))
+		rest.AppendError(c, rest.ErrBadRequest.Wrap(err, "Invalid download request"))
 		return
 	}
 
@@ -79,9 +79,9 @@ func (s *Controller) HandleDownloadRequest(c *gin.Context) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			// It is possible that token is reused. In this case, raise invalid request error.
-			_ = c.Error(rest.ErrBadRequest.Wrap(err, "Download file not found. Please retry."))
+			rest.AppendError(c, rest.ErrBadRequest.Wrap(err, "Download file not found. Please retry."))
 		} else {
-			_ = c.Error(err)
+			rest.AppendError(c, err)
 		}
 		return
 	}
@@ -97,7 +97,7 @@ func (s *Controller) HandleDownloadRequest(c *gin.Context) {
 		Key: s.downloadCtl.Secret(),
 	})
 	if err != nil {
-		_ = c.Error(err)
+		rest.AppendError(c, err)
 		return
 	}
 }

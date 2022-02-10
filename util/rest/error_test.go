@@ -15,7 +15,6 @@ import (
 	"go.uber.org/atomic"
 
 	"github.com/pingcap/tidb-dashboard/util/assertutil"
-	"github.com/pingcap/tidb-dashboard/util/jsonserde/ginjson"
 )
 
 func TestExtractHTTPCodeFromError(t *testing.T) {
@@ -49,7 +48,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNoError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		ginjson.Render(c, 200, gin.H{
+		Render(c, 200, gin.H{
 			"foo": "bar",
 		})
 	})
@@ -70,7 +69,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNormalError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(fmt.Errorf("some error"))
+		AppendError(c, fmt.Errorf("some error"))
 	})
 
 	r := httptest.NewRecorder()
@@ -84,7 +83,7 @@ func (suite *ErrorHandlerFnTestSuite) TestBuiltinError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(ErrBadRequest.NewWithNoMessage())
+		AppendError(c, ErrBadRequest.NewWithNoMessage())
 	})
 
 	r := httptest.NewRecorder()
@@ -98,7 +97,7 @@ func (suite *ErrorHandlerFnTestSuite) TestOverrideStatusCode() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(ErrBadRequest.NewWithNoMessage())
+		AppendError(c, ErrBadRequest.NewWithNoMessage())
 		c.Status(http.StatusBadGateway)
 	})
 
@@ -113,9 +112,9 @@ func (suite *ErrorHandlerFnTestSuite) TestResponseAfterError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(ErrBadRequest.NewWithNoMessage())
+		AppendError(c, ErrBadRequest.NewWithNoMessage())
 		// If normal response is returned, no error message will be generated
-		ginjson.Render(c, http.StatusNotFound, gin.H{
+		Render(c, http.StatusNotFound, gin.H{
 			"foo": "bar",
 		})
 	})
@@ -139,7 +138,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNextMiddleware() {
 		middlewareCalled.Store(true)
 	})
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(ErrBadRequest.NewWithNoMessage())
+		AppendError(c, ErrBadRequest.NewWithNoMessage())
 	})
 
 	r := httptest.NewRecorder()

@@ -7,6 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 )
 
 var (
@@ -82,6 +84,12 @@ func ErrorHandlerFn() gin.HandlerFunc {
 			statusCode = extractHTTPCodeFromError(err.Err)
 		}
 
-		c.AbortWithStatusJSON(statusCode, NewErrorResponse(err.Err))
+		errResponse := NewErrorResponse(err.Err)
+
+		log.Warn("Error when handling request",
+			zap.String("uri", c.Request.RequestURI),
+			zap.String("remoteAddr", c.Request.RemoteAddr),
+			zap.String("errorFullText", errResponse.FullText))
+		c.AbortWithStatusJSON(statusCode, errResponse)
 	}
 }

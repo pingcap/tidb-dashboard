@@ -33,15 +33,16 @@ type ServiceParams struct {
 }
 
 type Service struct {
-	params         ServiceParams
-	featureFlagNgm *featureflag.FeatureFlag
-	lifecycleCtx   context.Context
+	params     ServiceParams
+	featureNgm *featureflag.FeatureFlag
+
+	lifecycleCtx context.Context
 }
 
 func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
 	s := &Service{
-		params:         p,
-		featureFlagNgm: p.FeatureFlags.Register("ngm", ">= 5.4.0"),
+		params:     p,
+		featureNgm: p.FeatureFlags.Register("ngm", ">= 5.4.0"),
 	}
 
 	lc.Append(fx.Hook{
@@ -94,7 +95,7 @@ func (s *Service) infoHandler(c *gin.Context) {
 func (s *Service) checkNgmState() utils.NgmState {
 	ngmState := utils.NgmStateNotSupported
 
-	if s.featureFlagNgm.IsSupported() {
+	if s.featureNgm.IsSupported() {
 		ngmState = utils.NgmStateNotStarted
 		addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
 		if err == nil && addr != "" {

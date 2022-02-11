@@ -53,10 +53,6 @@ func (f *FeatureFlag) VersionGuard() gin.HandlerFunc {
 // pdVersion, standaloneVersion examples: "v5.2.2", "v5.3.0", "v5.4.0-alpha-xxx", "5.3.0" (semver can handle `v` prefix by itself)
 // constraints examples: "~5.2.2", ">= 5.3.0", see semver docs to get more information.
 func (f *FeatureFlag) isSupportedIn(targetVersion string) bool {
-	if targetVersion == "" {
-		return true
-	}
-
 	// drop "-alpha-xxx" suffix
 	versionWithoutSuffix := strings.Split(targetVersion, "-")[0]
 	v, err := semver.NewVersion(versionWithoutSuffix)

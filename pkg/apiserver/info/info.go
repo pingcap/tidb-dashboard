@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Masterminds/semver"
 	"github.com/gin-gonic/gin"
 	"github.com/thoas/go-funk"
 	"go.etcd.io/etcd/clientv3"
@@ -34,12 +33,16 @@ type ServiceParams struct {
 }
 
 type Service struct {
-	params       ServiceParams
-	lifecycleCtx context.Context
+	params         ServiceParams
+	featureFlagNgm *featureflag.FeatureFlag
+	lifecycleCtx   context.Context
 }
 
 func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
-	s := &Service{params: p}
+	s := &Service{
+		params:         p,
+		featureFlagNgm: p.FeatureFlags.Register("ngm", ">= 5.4.0"),
+	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -77,48 +80,29 @@ type InfoResponse struct { // nolint
 // @Security JwtAuth
 // @Failure 401 {object} rest.ErrorResponse
 func (s *Service) infoHandler(c *gin.Context) {
-	// Checking ngm deployments
-	ngmState, err := s.checkNgmState()
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
 	resp := InfoResponse{
 		Version:            version.GetInfo(),
 		EnableTelemetry:    s.params.Config.EnableTelemetry,
 		EnableExperimental: s.params.Config.EnableExperimental,
 		SupportedFeatures:  s.params.FeatureFlags.SupportedFeatures(),
-		NgmState:           ngmState,
+		NgmState:           s.checkNgmState(),
 	}
 	c.JSON(http.StatusOK, resp)
 }
 
-func (s *Service) checkNgmState() (utils.NgmState, error) {
+// Checking ngm deployments
+func (s *Service) checkNgmState() utils.NgmState {
 	ngmState := utils.NgmStateNotSupported
 
-	featureSupported := s.params.Config.FeatureVersion == ""
-	if !featureSupported {
-		// drop "-alpha-xxx" suffix
-		versionWithoutSuffix := strings.Split(s.params.Config.FeatureVersion, "-")[0]
-		v, err := semver.NewVersion(versionWithoutSuffix)
-		if err != nil {
-			return ngmState, err
+	if s.featureFlagNgm.IsSupported() {
+		ngmState = utils.NgmStateNotStarted
+		addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
+		if err == nil && addr != "" {
+			ngmState = utils.NgmStateStarted
 		}
-		constraint, _ := semver.NewConstraint(">= v5.4.0")
-		featureSupported = constraint.Check(v)
-	}
-	if !featureSupported {
-		return ngmState, nil
 	}
 
-	ngmState = utils.NgmStateNotStarted
-	addr, err := topology.FetchNgMonitoringTopology(s.lifecycleCtx, s.params.EtcdClient)
-	if err == nil && addr != "" {
-		ngmState = utils.NgmStateStarted
-	}
-
-	return ngmState, nil
+	return ngmState
 }
 
 type WhoAmIResponse struct {

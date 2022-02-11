@@ -4,7 +4,9 @@ BUILD_TAGS ?=
 
 LDFLAGS ?=
 
-FEATURE_VERSION ?= 6.0.0
+PD_VERSION ?= 6.0.0
+
+TIDB_VERSION ?= latest
 
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
@@ -12,11 +14,9 @@ endif
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(shell grep -v '^\#' ./release-version)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.Standalone=Yes"
-LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=N/A"
+LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=$(PD_VERSION)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildGitHash=$(shell git rev-parse HEAD)"
-
-TIDB_VERSION ?= latest
 
 default: server
 

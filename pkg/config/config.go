@@ -6,8 +6,6 @@ import (
 	"crypto/tls"
 	"net/url"
 	"strings"
-
-	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
 const (
@@ -29,16 +27,9 @@ type Config struct {
 
 	EnableTelemetry    bool
 	EnableExperimental bool
-	FeatureVersion     string // assign the target TiDB version when running TiDB Dashboard as standalone mode
 }
 
 func Default() *Config {
-	// The PDVersion value is "N/A" when running `make && bin/tidb-dashboard`
-	// The PDVersion value is "Unknown" when running `go run cmd/tidb-dashboard/main.go`
-	featureVersion := version.PDVersion
-	if featureVersion == "N/A" || featureVersion == "Unknown" {
-		featureVersion = ""
-	}
 	return &Config{
 		DataDir:            "/tmp/dashboard-data",
 		TempDir:            "",
@@ -48,7 +39,6 @@ func Default() *Config {
 		TiDBTLSConfig:      nil,
 		EnableTelemetry:    true,
 		EnableExperimental: false,
-		FeatureVersion:     featureVersion,
 	}
 }
 

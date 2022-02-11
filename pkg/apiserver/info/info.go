@@ -97,11 +97,7 @@ func (s *Service) infoHandler(c *gin.Context) {
 func (s *Service) checkNgmState() (utils.NgmState, error) {
 	ngmState := utils.NgmStateNotSupported
 
-	// The FeatureVersion value is "N/A" when running `make && bin/tidb-dashboard`
-	// The FeatureVersion value is "Unknown" when running `go run cmd/tidb-dashboard/main.go`
-	featureSupported :=
-		s.params.Config.FeatureVersion == "N/A" ||
-			s.params.Config.FeatureVersion == "Unknown"
+	featureSupported := s.params.Config.FeatureVersion == ""
 	if !featureSupported {
 		// drop "-alpha-xxx" suffix
 		versionWithoutSuffix := strings.Split(s.params.Config.FeatureVersion, "-")[0]

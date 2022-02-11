@@ -33,6 +33,12 @@ type Config struct {
 }
 
 func Default() *Config {
+	// The PDVersion value is "N/A" when running `make && bin/tidb-dashboard`
+	// The PDVersion value is "Unknown" when running `go run cmd/tidb-dashboard/main.go`
+	featureVersion := version.PDVersion
+	if featureVersion == "N/A" || featureVersion == "Unknown" {
+		featureVersion = ""
+	}
 	return &Config{
 		DataDir:            "/tmp/dashboard-data",
 		TempDir:            "",
@@ -42,7 +48,7 @@ func Default() *Config {
 		TiDBTLSConfig:      nil,
 		EnableTelemetry:    true,
 		EnableExperimental: false,
-		FeatureVersion:     version.PDVersion,
+		FeatureVersion:     featureVersion,
 	}
 }
 

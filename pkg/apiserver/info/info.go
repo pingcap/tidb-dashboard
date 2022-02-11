@@ -21,6 +21,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 type ServiceParams struct {
@@ -142,7 +143,7 @@ func (s *Service) databasesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	err := db.Raw("SHOW DATABASES").Scan(&result).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	strs := []string{}
@@ -177,7 +178,7 @@ func (s *Service) tablesHandler(c *gin.Context) {
 
 	err := tx.Order("TABLE_NAME").Scan(&result).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 

@@ -187,7 +187,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 				// The remaining error comes from checking tokens for protected endpoints.
 				err = rest.ErrUnauthenticated.NewWithNoMessage()
 			}
-			_ = c.Error(err)
+			rest.Error(c, err)
 			return err.Error()
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
@@ -242,12 +242,12 @@ func (s *AuthService) MWRequireSharePriv() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := utils.GetSession(c)
 		if u == nil {
-			_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
+			rest.Error(c, rest.ErrUnauthenticated.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 		if !u.IsShareable {
-			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
+			rest.Error(c, rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -259,12 +259,12 @@ func (s *AuthService) MWRequireWritePriv() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := utils.GetSession(c)
 		if u == nil {
-			_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
+			rest.Error(c, rest.ErrUnauthenticated.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 		if !u.IsWriteable {
-			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
+			rest.Error(c, rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -290,7 +290,7 @@ func (s *AuthService) GetLoginInfoHandler(c *gin.Context) {
 	for typeID, a := range s.authenticators {
 		enabled, err := a.IsEnabled()
 		if err != nil {
-			_ = c.Error(err)
+			rest.Error(c, err)
 			return
 		}
 		if enabled {
@@ -329,19 +329,19 @@ type GetSignOutInfoRequest struct {
 func (s *AuthService) getSignOutInfoHandler(c *gin.Context) {
 	var req GetSignOutInfoRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	u := utils.GetSession(c)
 	a, ok := s.authenticators[u.AuthFrom]
 	if !ok {
-		_ = c.Error(ErrUnsupportedAuthType.NewWithNoMessage())
+		rest.Error(c, ErrUnsupportedAuthType.NewWithNoMessage())
 		return
 	}
 	si, err := a.SignOutInfo(u, req.RedirectURL)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, si)

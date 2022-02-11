@@ -48,7 +48,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNoError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		c.JSON(200, gin.H{
+		OK(c, gin.H{
 			"foo": "bar",
 		})
 	})
@@ -69,7 +69,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNormalError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(fmt.Errorf("some error"))
+		Error(c, fmt.Errorf("some error"))
 	})
 
 	r := httptest.NewRecorder()
@@ -83,7 +83,7 @@ func (suite *ErrorHandlerFnTestSuite) TestBuiltinError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(ErrBadRequest.NewWithNoMessage())
+		Error(c, ErrBadRequest.NewWithNoMessage())
 	})
 
 	r := httptest.NewRecorder()
@@ -97,7 +97,7 @@ func (suite *ErrorHandlerFnTestSuite) TestOverrideStatusCode() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(ErrBadRequest.NewWithNoMessage())
+		Error(c, ErrBadRequest.NewWithNoMessage())
 		c.Status(http.StatusBadGateway)
 	})
 
@@ -112,18 +112,16 @@ func (suite *ErrorHandlerFnTestSuite) TestResponseAfterError() {
 	engine := gin.New()
 	engine.Use(ErrorHandlerFn())
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(ErrBadRequest.NewWithNoMessage())
+		Error(c, ErrBadRequest.NewWithNoMessage())
 		// If normal response is returned, no error message will be generated
-		c.JSON(http.StatusNotFound, gin.H{
-			"foo": "bar",
-		})
+		c.String(http.StatusNotFound, "foobar")
 	})
 
 	r := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/test", nil)
 	engine.ServeHTTP(r, req)
 	suite.Require().Equal(http.StatusNotFound, r.Code)
-	suite.Require().JSONEq(`{"foo":"bar"}`, r.Body.String())
+	suite.Require().Equal(`foobar`, r.Body.String())
 }
 
 func (suite *ErrorHandlerFnTestSuite) TestNextMiddleware() {
@@ -138,7 +136,7 @@ func (suite *ErrorHandlerFnTestSuite) TestNextMiddleware() {
 		middlewareCalled.Store(true)
 	})
 	engine.GET("/test", func(c *gin.Context) {
-		_ = c.Error(ErrBadRequest.NewWithNoMessage())
+		Error(c, ErrBadRequest.NewWithNoMessage())
 	})
 
 	r := httptest.NewRecorder()

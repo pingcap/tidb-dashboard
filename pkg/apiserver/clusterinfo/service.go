@@ -103,7 +103,7 @@ func (s *Service) deleteTiDBTopology(c *gin.Context) {
 	close(errorChannel)
 
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, nil)
@@ -118,7 +118,7 @@ func (s *Service) deleteTiDBTopology(c *gin.Context) {
 func (s *Service) getTiDBTopology(c *gin.Context) {
 	instances, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, instances)
@@ -138,7 +138,7 @@ type StoreTopologyResponse struct {
 func (s *Service) getStoreTopology(c *gin.Context) {
 	tikvInstances, tiFlashInstances, err := topology.FetchStoreTopology(s.params.PDClient)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, StoreTopologyResponse{
@@ -156,7 +156,7 @@ func (s *Service) getStoreTopology(c *gin.Context) {
 func (s *Service) getStoreLocationTopology(c *gin.Context) {
 	storeLocation, err := topology.FetchStoreLocation(s.params.PDClient)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, storeLocation)
@@ -171,7 +171,7 @@ func (s *Service) getStoreLocationTopology(c *gin.Context) {
 func (s *Service) getPDTopology(c *gin.Context) {
 	instances, err := topology.FetchPDTopology(s.params.PDClient)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, instances)
@@ -186,7 +186,7 @@ func (s *Service) getPDTopology(c *gin.Context) {
 func (s *Service) getAlertManagerTopology(c *gin.Context) {
 	instance, err := topology.FetchAlertManagerTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, instance)
@@ -201,7 +201,7 @@ func (s *Service) getAlertManagerTopology(c *gin.Context) {
 func (s *Service) getGrafanaTopology(c *gin.Context) {
 	instance, err := topology.FetchGrafanaTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, instance)
@@ -218,7 +218,7 @@ func (s *Service) getAlertManagerCounts(c *gin.Context) {
 	address := c.Param("address")
 	cnt, err := fetchAlertManagerCounts(s.lifecycleCtx, address, s.params.HTTPClient)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, cnt)
@@ -240,7 +240,7 @@ func (s *Service) getHostsInfo(c *gin.Context) {
 
 	info, err := s.fetchAllHostsInfo(db)
 	if err != nil && info == nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -265,7 +265,7 @@ func (s *Service) getStatistics(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	stats, err := s.calculateStatistics(db)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, stats)

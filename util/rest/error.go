@@ -7,6 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 )
 
 var (
@@ -59,7 +61,7 @@ func extractHTTPCodeFromError(err error) int {
 }
 
 // ErrorHandlerFn creates a handler func that turns (last) error in the context into an APIError json response.
-// In handlers, `c.Error(err)` can be used to attach the error to the context.
+// In handlers, `rest.Error(c, err)` can be used to attach the error to the context.
 // When error is attached in the context:
 // - The handler can optionally assign the HTTP status code.
 // - The handler must not self-generate a response body.
@@ -82,6 +84,12 @@ func ErrorHandlerFn() gin.HandlerFunc {
 			statusCode = extractHTTPCodeFromError(err.Err)
 		}
 
-		c.AbortWithStatusJSON(statusCode, NewErrorResponse(err.Err))
+		errResponse := NewErrorResponse(err.Err)
+
+		log.Warn("Error when handling request",
+			zap.String("uri", c.Request.RequestURI),
+			zap.String("remoteAddr", c.Request.RemoteAddr),
+			zap.String("errorFullText", errResponse.FullText))
+		c.AbortWithStatusJSON(statusCode, errResponse)
 	}
 }

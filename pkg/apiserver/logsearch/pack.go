@@ -19,7 +19,7 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 		logPath = task.SlowLogStorePath
 	}
 	if logPath == nil {
-		_ = c.Error(rest.ErrBadRequest.New("Log is not ready"))
+		rest.Error(c, rest.ErrBadRequest.New("Log is not ready"))
 		return
 	}
 	c.FileAttachment(*logPath, fmt.Sprintf("logs-%s.zip", task.Target.FileName()))
@@ -33,7 +33,7 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 			logPath = task.SlowLogStorePath
 		}
 		if logPath == nil {
-			_ = c.Error(rest.ErrBadRequest.New("Some logs are not available"))
+			rest.Error(c, rest.ErrBadRequest.New("Some logs are not available"))
 			return
 		}
 		filePaths = append(filePaths, *logPath)

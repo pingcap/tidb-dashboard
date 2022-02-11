@@ -17,6 +17,7 @@ import (
 	"golang.org/x/sync/singleflight"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 var (
@@ -65,7 +66,7 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ngmAddr, err := n.getNgmAddrFromCache()
 		if err != nil {
-			_ = c.Error(err)
+			rest.Error(c, err)
 			return
 		}
 

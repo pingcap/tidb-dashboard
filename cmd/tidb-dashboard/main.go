@@ -26,6 +26,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/Masterminds/semver"
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
 	"go.etcd.io/etcd/pkg/transport"
@@ -53,6 +54,10 @@ type DashboardCLIConfig struct {
 
 // NewCLIConfig generates the configuration of the dashboard in standalone mode.
 func NewCLIConfig() *DashboardCLIConfig {
+	if _, err := semver.NewVersion(version.PDVersion); err != nil {
+		log.Fatal("Invalid sematic PD Version", zap.Error(err), zap.String("pd_version", version.PDVersion))
+	}
+
 	cfg := &DashboardCLIConfig{}
 	cfg.CoreConfig = config.Default()
 

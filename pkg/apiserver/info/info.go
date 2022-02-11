@@ -92,7 +92,7 @@ func (s *Service) infoHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// Checking ngm deployments
+// Checking ngm deployments.
 func (s *Service) checkNgmState() utils.NgmState {
 	ngmState := utils.NgmStateNotSupported
 

@@ -10,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
-	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -57,7 +56,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
 
-			endpoint.GET("/table_columns", s.queryTableColumns)
+			endpoint.GET("/available_fields", s.getAvailableFields)
 		}
 	}
 }
@@ -309,18 +308,25 @@ func (s *Service) downloadHandler(c *gin.Context) {
 	utils.DownloadByToken(token, "statements/download", c)
 }
 
-// @Summary Query table columns
-// @Description Query statements table columns
+// @Summary Get available field names
+// @Description Get available field names by statements table columns
 // @Success 200 {array} string
 // @Failure 401 {object} rest.ErrorResponse
 // @Security JwtAuth
-// @Router /statements/table_columns [get]
-func (s *Service) queryTableColumns(c *gin.Context) {
+// @Router /statements/available_fields [get]
+func (s *Service) getAvailableFields(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	cs, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		rest.Error(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, funk.UniqString(append(cs, getVirtualFields(cs)...)))
+
+	fields := filterFieldsByColumns(getFieldsAndTags(), cs)
+	jsonNames := make([]string, 0, len(fields))
+	for _, f := range fields {
+		jsonNames = append(jsonNames, f.JSONName)
+	}
+
+	c.JSON(http.StatusOK, jsonNames)
 }

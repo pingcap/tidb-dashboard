@@ -52,11 +52,11 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 func (s *Service) handleStartGroup(c *gin.Context) {
 	var req StartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(req.Targets) == 0 {
-		_ = c.Error(rest.ErrBadRequest.New("Expect at least 1 target"))
+		rest.Error(c, rest.ErrBadRequest.New("Expect at least 1 target"))
 		return
 	}
 
@@ -75,12 +75,12 @@ func (s *Service) handleStartGroup(c *gin.Context) {
 	select {
 	case <-session.ch:
 		if session.err != nil {
-			_ = c.Error(session.err)
+			rest.Error(c, session.err)
 		} else {
 			c.JSON(http.StatusOK, session.taskGroup.TaskGroupModel)
 		}
 	case <-time.After(Timeout):
-		_ = c.Error(ErrTimeout.NewWithNoMessage())
+		rest.Error(c, ErrTimeout.NewWithNoMessage())
 	}
 }
 
@@ -95,7 +95,7 @@ func (s *Service) getGroupList(c *gin.Context) {
 	var resp []TaskGroupModel
 	err := s.params.LocalStore.Order("id DESC").Find(&resp).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -119,20 +119,20 @@ type GroupDetailResponse struct {
 func (s *Service) getGroupDetail(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var taskGroup TaskGroupModel
 	err = s.params.LocalStore.Where("id = ?", taskGroupID).Find(&taskGroup).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
 	var tasks []TaskModel
 	err = s.params.LocalStore.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -155,11 +155,11 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 func (s *Service) handleCancelGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, rest.EmptyResponse{})
@@ -182,7 +182,7 @@ func (s *Service) getActionToken(c *gin.Context) {
 	action := c.Query("action") // group_download, single_download, single_view
 	token, err := utils.NewJWTString("profiling/"+action, id)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -202,18 +202,18 @@ func (s *Service) downloadGroup(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/group_download", token)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskGroupID, err := strconv.Atoi(str)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var tasks []TaskModel
 	err = s.params.LocalStore.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateFinish).Find(&tasks).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -232,13 +232,13 @@ func (s *Service) downloadGroup(c *gin.Context) {
 
 	err = writeZipFromFiles(zw, filePathes, true)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
 	err = zipREADME(zw)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 }
@@ -258,18 +258,18 @@ func (s *Service) downloadSingle(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/single_download", token)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskID, err := strconv.Atoi(str)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	task := TaskModel{}
 	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -283,13 +283,13 @@ func (s *Service) downloadSingle(c *gin.Context) {
 
 	err = writeZipFromFiles(zw, []string{task.FilePath}, true)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
 	err = zipREADME(zw)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 }
@@ -384,24 +384,24 @@ func (s *Service) viewSingle(c *gin.Context) {
 	outputType := c.Query("output_type")
 	str, err := utils.ParseJWTString("profiling/single_view", token)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	taskID, err := strconv.Atoi(str)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	task := TaskModel{}
 	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
 	content, err := ioutil.ReadFile(task.FilePath)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -413,7 +413,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 		case string(ViewOutputTypeGraph):
 			svgContent, err := convertProtobufToSVG(content, task)
 			if err != nil {
-				_ = c.Error(err)
+				rest.Error(c, err)
 				return
 			}
 			content = svgContent
@@ -422,7 +422,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 			contentType = "application/protobuf"
 		default:
 			// Will not handle converting protobuf to other formats except flamegraph and graph
-			_ = c.Error(rest.ErrBadRequest.New("Cannot output protobuf as %s", outputType))
+			rest.Error(c, rest.ErrBadRequest.New("Cannot output protobuf as %s", outputType))
 			return
 		}
 	} else if task.RawDataType == RawDataTypeText {
@@ -431,7 +431,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 			contentType = "text/plain"
 		default:
 			// Will not handle converting text to other formats
-			_ = c.Error(rest.ErrBadRequest.New("Cannot output text as %s", outputType))
+			rest.Error(c, rest.ErrBadRequest.New("Cannot output text as %s", outputType))
 			return
 		}
 	}
@@ -451,20 +451,20 @@ func (s *Service) viewSingle(c *gin.Context) {
 func (s *Service) deleteGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
 	if err = s.params.LocalStore.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error; err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	if err = s.params.LocalStore.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error; err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, rest.EmptyResponse{})
@@ -479,7 +479,7 @@ func (s *Service) deleteGroup(c *gin.Context) {
 func (s *Service) getDynamicConfig(c *gin.Context) {
 	dc, err := s.params.ConfigManager.Get()
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, dc.Profiling)
@@ -496,14 +496,14 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.ProfilingConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
 		dc.Profiling = req
 	}
 	if err := s.params.ConfigManager.Modify(opt); err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, req)

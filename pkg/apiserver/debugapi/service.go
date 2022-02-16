@@ -91,19 +91,19 @@ func getExtFromContentTypeHeader(contentType string) string {
 func (s *Service) RequestEndpoint(c *gin.Context) {
 	var req endpoint.RequestPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	resolved, err := s.resolver.ResolvePayload(req)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
 	writer, err := s.fSwap.NewFileWriter("debug_api")
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	defer func() {
@@ -112,7 +112,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 
 	resp, err := resolved.SendRequestAndPipe(s.httpClients, writer)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -121,7 +121,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	downloadToken, err := writer.GetDownloadToken(fileName, time.Minute*5)
 	if err != nil {
 		// This shall never happen
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 

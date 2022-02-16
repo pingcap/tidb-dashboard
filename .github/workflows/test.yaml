@@ -121,7 +121,7 @@ jobs:
         env:
           NO_MINIMIZE: true
           CI: true
-          REACT_APP_MIXPANEL_TOKEN: ""
+          E2E_TEST: true
       - name: Wait TiUP Playground
         run: |
           chmod u+x scripts/wait_tiup_playground.sh
@@ -159,10 +159,10 @@ jobs:
           cat ui/start_tiup.log
           echo "==============="
           cat ui/wait_tiup.log
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v2
-      #   with:
-      #     files: ./ui/.nyc_output/out.json
-      #     fail_ci_if_error: true
-      #     flags: e2e_test
-      #     verbose: true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./ui/.nyc_output/out.json
+          fail_ci_if_error: true
+          flags: e2e_test
+          verbose: true

@@ -28,7 +28,7 @@ jobs:
           ref: ${{ github.event.inputs.ref }}
       - uses: actions/setup-node@v1
         with:
-          node-version: "12.x"
+          node-version: "16.x"
       - uses: actions/setup-go@v1
         with:
           go-version: "1.13.5"
@@ -65,7 +65,6 @@ jobs:
         env:
           NO_MINIMIZE: true
           CI: true
-          REACT_APP_MIXPANEL_TOKEN: ""
       - name: Wait TiUP Playground
         run: |
           chmod u+x scripts/wait_tiup_playground.sh
@@ -108,4 +107,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: e2e-snapshots-${{ matrix.feature_version }}
-          path: ${{ github.workspace }}/ui/cypress/screenshots/**/*
+          path: ${{ github.workspace }}/ui/cypress/snapshots/**/*

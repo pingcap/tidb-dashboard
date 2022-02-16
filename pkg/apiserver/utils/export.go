@@ -105,29 +105,29 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 	tokenPlain, err := ParseJWTString(tokenNamespace, token)
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+		rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 	arr := strings.Fields(tokenPlain)
 	if len(arr) != 2 {
-		_ = c.Error(rest.ErrBadRequest.New("invalid token"))
+		rest.Error(c, rest.ErrBadRequest.New("invalid token"))
 		return
 	}
 	secretKey, err := base64.StdEncoding.DecodeString(arr[0])
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.WrapWithNoMessage(err))
+		rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
 
 	filePath := arr[1]
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	f, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 

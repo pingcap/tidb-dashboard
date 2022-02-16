@@ -57,7 +57,9 @@
     "single-spa-react": "^3.0.1",
     "sql-formatter": "^4.0.2",
     "sql-formatter-plus-plus": "^1.4.0",
-    "string-template": "^1.0.0"
+    "string-template": "^1.0.0",
+    "svg-pan-zoom": "^3.6.1",
+    "viz.js": "^2.1.2"
   },
   "scripts": {
     "start": "gulp dev",
@@ -105,6 +107,7 @@
     "@types/react": "^16.9.43",
     "@types/react-copy-to-clipboard": "^5.0.1",
     "@types/react-dom": "^16.9.8",
+    "@types/viz.js": "^2.1.2",
     "@types/webpack-env": "^1.15.2",
     "babel-plugin-dynamic-import-node": "^2.3.0",
     "babel-plugin-import": "^1.13.0",

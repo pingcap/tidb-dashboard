@@ -53,7 +53,7 @@ describe('SlowQuery list page', () => {
 
       // stub out a response body
       cy.intercept(
-        `${Cypress.env('apiUrl')}slow_query/list*`,
+        `${Cypress.env('apiBasePath')}slow_query/list*`,
         staticResponse
       ).as('slow_query_list')
       cy.wait('@slow_query_list').then(() => {
@@ -108,7 +108,7 @@ describe('SlowQuery list page', () => {
 
       it('Show all slow_query', () => {
         const options = {
-          url: `${Cypress.env('apiUrl')}slow_query/list`,
+          url: `${Cypress.env('apiBasePath')}slow_query/list`,
           qs: {
             begin_time: now - 1800,
             desc: true,
@@ -223,7 +223,7 @@ describe('SlowQuery list page', () => {
       })
 
       const options = {
-        url: `${Cypress.env('apiUrl')}info/databases/`,
+        url: `${Cypress.env('apiBasePath')}info/databases/`,
       }
 
       it('Show all databases', () => {
@@ -577,7 +577,7 @@ describe('SlowQuery list page', () => {
 
               // Make sure the file exists
               cy.intercept(
-                `${Cypress.env('apiUrl')}slow_query/download?token=*`
+                `${Cypress.env('apiBasePath')}slow_query/download?token=*`
               ).as('download_slow_query')
 
               cy.get('[data-e2e=slow_query_export_btn]').click()

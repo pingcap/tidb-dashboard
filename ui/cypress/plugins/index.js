@@ -66,7 +66,7 @@ module.exports = (on, config) => {
   config.baseUrl =
     (process.env.SERVER_URL || 'http://localhost:3001/dashboard') + '#'
 
-  config.env.apiUrl = 'http://localhost:12333/dashboard/api/'
+  config.env.apiBasePath = '/dashboard/api/'
 
   on('task', {
     // Usage: cy.task('queryDB', { ...queryData })

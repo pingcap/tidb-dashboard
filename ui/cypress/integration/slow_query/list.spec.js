@@ -554,6 +554,7 @@ describe('SlowQuery list page', () => {
             .then(function (doc) {
               // Clicking link to download file causes page load timeout
               // it's a workround that fires a new page load event to skip this issue
+              // Related issue: https://github.com/cypress-io/cypress/issues/14857
               doc.addEventListener('click', () => {
                 setTimeout(function () {
                   doc.location.reload()

@@ -91,7 +91,6 @@ describe('SlowQuery list page', () => {
     })
 
     describe('Filter slow query by changing time range', () => {
-      const now = dayjs().unix()
       let defaultSlowQueryList
       let lastSlowQueryTimeStamp
       let firstQueryTimeRangeStart,
@@ -107,37 +106,25 @@ describe('SlowQuery list page', () => {
       })
 
       it('Show all slow_query', () => {
-        const options = {
-          url: `${Cypress.env('apiBasePath')}slow_query/list`,
-          qs: {
-            begin_time: now - 1800,
-            desc: true,
-            end_time: now + 100,
-            fields: 'query,timestamp,query_time,memory_max',
-            limit: 100,
-            orderBy: 'timestamp',
-          },
-        }
+        cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`).as(
+          'slow_query'
+        )
 
-        cy.request(options).as('slow_query')
+        cy.wait('@slow_query').then((res) => {
+          defaultSlowQueryList = res.response.body
 
-        cy.get('@slow_query').then((response) => {
-          defaultSlowQueryList = response.body
           if (defaultSlowQueryList.length > 0) {
             lastSlowQueryTimeStamp = defaultSlowQueryList[0].timestamp
 
-            firstQueryTimeRangeStart = dayjs
-              .unix(lastSlowQueryTimeStamp - 12)
-              .format('YYYY-MM-DD HH:mm:ss')
-            secondQueryTimeRangeStart = dayjs
-              .unix(lastSlowQueryTimeStamp - 7)
-              .format('YYYY-MM-DD HH:mm:ss')
-            thirdQueryTimeRangeStart = dayjs
-              .unix(lastSlowQueryTimeStamp - 2)
-              .format('YYYY-MM-DD HH:mm:ss')
-            thirdQueryTimeRangeEnd = dayjs
-              .unix(lastSlowQueryTimeStamp + (5 - 2))
-              .format('YYYY-MM-DD HH:mm:ss')
+            const calTimestamp = (timestampDiff) => {
+              return dayjs
+                .unix(lastSlowQueryTimeStamp - timestampDiff)
+                .format('YYYY-MM-DD HH:mm:ss')
+            }
+            firstQueryTimeRangeStart = calTimestamp(12)
+            secondQueryTimeRangeStart = calTimestamp(7)
+            thirdQueryTimeRangeStart = calTimestamp(2)
+            thirdQueryTimeRangeEnd = calTimestamp(-3)
           }
         })
       })
@@ -222,15 +209,13 @@ describe('SlowQuery list page', () => {
         cy.get('[data-e2e=base_select_input]').should('has.text', '')
       })
 
-      const options = {
-        url: `${Cypress.env('apiBasePath')}info/databases/`,
-      }
-
       it('Show all databases', () => {
-        cy.request(options).as('databases')
+        cy.intercept(`${Cypress.env('apiBasePath')}info/databases`).as(
+          'databases'
+        )
 
-        cy.get('@databases').then((response) => {
-          const databaseList = response.body
+        cy.wait('@databases').then((res) => {
+          const databaseList = res.response.body
           cy.get('[data-e2e=base_selector]')
             .click()
             .then(() => {

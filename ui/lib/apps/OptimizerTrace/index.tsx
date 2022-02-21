@@ -6,18 +6,8 @@ import svgPanZoom from 'svg-pan-zoom'
 import { Button, Upload, Space } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 
-import {
-  Card,
-  AutoRefreshButton,
-  TimeRangeSelector,
-  calcTimeRange,
-  DEFAULT_TIME_RANGE,
-  Toolbar,
-  Root,
-} from '@lib/components'
+import { Card, Toolbar, Root } from '@lib/components'
 import styles from './index.module.less'
-
-import { test_data } from './test_data'
 
 export default function () {
   return (
@@ -30,89 +20,111 @@ export default function () {
     </Root>
   )
 }
+const buildNodeTree = (namespace: string, ns: OptimizeNode[]): Node => {
+  const nodes = ns.map((node, index) => new Node(`${namespace}_${index}`, node))
+  const nodesMap = nodes.reduce((acc, node) => {
+    acc[node.props.id] = node
+    return acc
+  }, {} as { [id: string]: Node })
+
+  nodes.forEach((n) => {
+    n.props.children.forEach((c) => n.dedge(nodesMap[c]))
+  })
+
+  return nodes[0].getRoot() as Node
+}
 
 function OptimizerTrace() {
   const [viz] = useState(new Viz(workerURL))
   const containerRef = useRef<HTMLDivElement>(null)
+  const [currentFile, setCurrentFile] = useState<any>(null)
 
   useEffect(() => {
-    viz
-      .renderSVGElement(
-        `digraph g {
+    if (!currentFile) {
+      return
+    }
 
-					graph [fontsize=14 fontname="Verdana" compound=true rankdir=LR splines=line];
-					node [shape=circle fontsize=10 fontname="Verdana"];
+    const logical = currentFile.logical
 
-						{ rank=same;
-								0 [style = invis];
-								02 [style=invis];
+    logical.steps.sort((a, b) => a.index - b.index)
 
-						}
+    const logicalCluster = new Cluster('logical', { label: 'logical optimize' })
+    const ths: { tail: Node; head: Node; cluster: Cluster }[] = []
 
-						02 -> "0A" [style=invis];
-						0 -> "0C" [style=invis];
-
-						subgraph logical {
-								label="logical";
-
-								subgraph clusterA {
-										"0A" -> "1A" -> "2A" [constraint=false];
-										label="A";
-								}
-
-								subgraph clusterB {
-										"0B" -> "1B" -> "2B" [constraint=false];
-										label="B";
-								}
-
-								subgraph clusterCC {
-										"0CC" -> "1CC" -> "2CC" [constraint=false];
-										label="CC";
-								}
-
-								"0A" -> "0B" [ltail=clusterA lhead=clusterB];
-								"0B" -> "0CC" [ltail=clusterB lhead=clusterCC];
-						}
-
-						subgraph physical {
-								label="physical";
-
-								subgraph clusterC {
-										"0C" -> "1C" -> "2C";
-										label="C";
-										color=blue;
-								}
-
-								subgraph clusterD {
-										"0D" -> "1D" -> "2D";
-										label="D";
-								}
-
-								"2C" -> "0D"[style=invis];
-						}
-
-						// edges between clusters
-						// edge[constraint=false, style=solid];
-						// "0A" -> "1B" [label=a]
-						// "1A" -> "2B" [label=a]
-						// "0B" -> "1C" [label=b]
-						// "1B" -> "2C" [label=b]
-				}
-			`
-      )
-      .then((el) => {
-        if (!containerRef.current) {
-          return
-        }
-        containerRef.current.appendChild(el)
-        svgPanZoom(el, {
-          controlIconsEnabled: true,
-        })
+    logical.steps.forEach((step) => {
+      const cluster = new Cluster(`logical_${step.name}_${step.index}`, {
+        label: `${step.index}`,
       })
-  }, [containerRef])
+      const root = buildNodeTree('logical_steps', step.before as OptimizeNode[])
 
-  const handleBeforeUpload = useCallback((file) => {
-    console.log(file)
+      const th = { head: root, tail: null as any, cluster }
+
+      root.forEach((node) => {
+        cluster.add(node as Node)
+        if (!node.children.length) {
+          th.tail = node as Node
+        }
+      })
+      logicalCluster.add(cluster)
+      ths.push(th)
+    })
+
+    const finalCluster = new Cluster('final', { label: 'final', color: 'blue' })
+    const finalRoot = buildNodeTree(
+      'logical_final',
+      logical.final as OptimizeNode[]
+    )
+    const th = {
+      head: finalRoot,
+      tail: null as any,
+      cluster: finalCluster,
+    }
+
+    finalRoot.forEach((node) => {
+      finalCluster.add(node as Node)
+      if (!node.children.length) {
+        th.tail = node as Node
+      }
+    })
+    logicalCluster.add(finalCluster)
+    ths.push(th)
+
+    for (let i = 0; i < ths.length - 1; i++) {
+      const current = ths[i]
+      const next = ths[i + 1]
+      logicalCluster.add(
+        new ClusterEdge(
+          current.tail.id,
+          next.head.id,
+          current.cluster.id,
+          next.cluster.id
+        )
+      )
+    }
+
+    const physical = currentFile.physical
+    const physicalCluster = new Cluster('physical', {
+      label: 'physical optimize',
+    })
+
+    const root = new RootGraph([logicalCluster])
+
+    // console.log(root.draw())
+
+    viz.renderSVGElement(root.draw()).then((el) => {
+      if (!containerRef.current) {
+        return
+      }
+      containerRef.current.appendChild(el)
+      svgPanZoom(el, {
+        controlIconsEnabled: true,
+      })
+    })
+  }, [containerRef, currentFile])
+
+  const handleBeforeUpload = useCallback(async (file: File) => {
+    const t = await file.text()
+    setCurrentFile(JSON.parse(t))
     return false
   }, [])
 
@@ -136,46 +148,144 @@ function OptimizerTrace() {
   )
 }
 
-// class RootGraph {
-//   constructor(public g: Graph) {}
+class RootGraph {
+  constructor(public gs: Graph[]) {}
 
-//   build() {
-//     return this.g.build()
-//   }
-// }
+  draw() {
+    return `
+digraph optimizer_trace {
 
-// interface Graph {
-//   dedgeop(g: Graph): Graph
-//   uedgeop(g: Graph): Graph
+	graph [labeljust=l fontsize=14 fontname="Verdana" compound=true rankdir=LR splines=line];
+	node [shape=ellipse fontsize=10 fontname="Verdana"];
 
-//   combine(g: Graph): Graph
-//   build(): string
-// }
+	${this.gs.map((g) => g.draw()).join('\n')}
 
-// interface Node extends Graph {}
+}
+		`
+  }
+}
+
+class Edge implements Graph {
+  constructor(
+    private from: string | number,
+    private to: string | number,
+    private direct = true
+  ) {}
+
+  draw(): string {
+    return `${this.from} -${this.direct ? '>' : '-'} ${this.to};`
+  }
+}
+
+class ClusterEdge implements Graph {
+  constructor(
+    private from: string | number,
+    private to: string | number,
+    private fromCluster: string,
+    private toCluster: string,
+    private direct = true
+  ) {}
+
+  draw(): string {
+    return `${this.from} -${this.direct ? '>' : '-'} ${this.to} [ltail=${
+      this.fromCluster
+    } lhead=${this.toCluster}];`
+  }
+}
+
+class TreeNode {
+  parent: TreeNode | null = null
+  children: TreeNode[] = []
+
+  getRoot(): TreeNode {
+    return this.parent ? this.parent.getRoot() : this
+  }
+
+  forEach(fn: (n: TreeNode) => void): void {
+    fn(this)
+    this.children.forEach((c) => c.forEach(fn))
+  }
+
+  protected addChild(n: TreeNode) {
+    n.parent = this
+    this.children.push(n)
+  }
+}
+
+class Node extends TreeNode implements Graph {
+  public id: string
+
+  constructor(
+    private namespace: string,
+    public props: OptimizeNode,
+    private gs: Graph[] = []
+  ) {
+    super()
+    this.id = `${this.namespace}_${this.props.id}`
+  }
+
+  dedge(g: Node): Node {
+    this.addChild(g)
+    this.gs.push(new Edge(this.id, g.id))
+    return this
+  }
+
+  draw(): string {
+    return `
+			${this.id} [label="${this.props.type}"];
+			${this.gs.map((g) => g.draw()).join('\n')}
+		`
+  }
+}
+
+class Cluster implements Graph {
+  private gs: Graph[] = []
+  public id: string
+
+  constructor(_id: string, private props: { label: string; color?: string }) {
+    this.id = `cluster_${_id}`
+  }
+
+  add(g: Graph): Cluster {
+    this.gs.push(g)
+    return this
+  }
+
+  draw(): string {
+    return `
+subgraph ${this.id} {
+	graph [${Object.entries(this.props)
+    .filter(([k, v]) => !!v)
+    .map(([k, v]) => `${k}="${v}"`)
+    .join(' ')}];
+
+	${this.gs.map((g) => g.draw()).join('\n')}
+}`
+  }
+}
+
+interface Graph {
+  draw(): string
+}
 
 // interface TreeNode extends Graph {
 //   nodes: TreeNode[]
 // }
 
-// interface LogicalOptimize extends Graph {
-//   steps: TreeNode[]
-// }
+interface OptimizeNode {
+  id: number
+  children: number[] // children id
+  type: string
+  cost: number
+  selected: boolean
+  property: string
+  info: string
+}
 
-// interface OptimizeNode extends TreeNode {
-//   id: number
-//   children: number[] // children id
-//   type: string
-//   cost: number
-//   selected: boolean
-//   property: string
-//   info: string
-// }
-
-// interface StepNode extends TreeNode {
-//   id: number
-//   index: number
-//   action: string
-//   reason: string
-//   type: string
-// }
+interface StepNode {
+  id: number
+  index: number
+  action: string
+  reason: string
+  type: string
+}

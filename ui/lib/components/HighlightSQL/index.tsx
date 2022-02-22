@@ -48,6 +48,7 @@ function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
         overflowX: 'hidden',
       }}
       PreTag={Pre}
+      data-e2e="syntax_highlighter"
     >
       {formattedSql}
     </SyntaxHighlighter>

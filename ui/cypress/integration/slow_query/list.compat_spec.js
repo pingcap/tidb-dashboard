@@ -17,9 +17,9 @@ describe('SlowQuery list compatibility test', () => {
   describe('Available fields', () => {
     skipOn(Cypress.env('FEATURE_VERSION') !== '6.0.0', () => {
       it('Show all available fields', () => {
-        cy.intercept('/dashboard/api/slow_query/available_fields').as(
-          'getAvailableFields'
-        )
+        cy.intercept(
+          `${Cypress.env('apiBasePath')}slow_query/available_fields`
+        ).as('getAvailableFields')
         cy.wait('@getAvailableFields')
 
         const availableFields = [

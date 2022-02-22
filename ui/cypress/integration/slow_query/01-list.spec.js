@@ -1,7 +1,8 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 import dayjs from 'dayjs'
-import { validateCSVList, deleteDownloadsFolder } from '../utils'
+import { restartTiUP, validateCSVList, deleteDownloadsFolder } from '../utils'
+import { checkBaseSelector } from '../components'
 
 const neatCSV = require('neat-csv')
 const path = require('path')
@@ -13,13 +14,7 @@ describe('SlowQuery list page', () => {
     })
 
     // Restart tiup
-    cy.exec(
-      `bash ../scripts/start_tiup.sh ${Cypress.env('TIDB_VERSION')} restart`,
-      { log: true }
-    )
-
-    // Wait TiUP Playground
-    cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
+    restartTiUP()
 
     deleteDownloadsFolder()
   })
@@ -216,14 +211,7 @@ describe('SlowQuery list page', () => {
 
         cy.wait('@databases').then((res) => {
           const databaseList = res.response.body
-          cy.get('[data-e2e=base_selector]')
-            .click()
-            .then(() => {
-              cy.get('[data-e2e=multi_select_options]').should(
-                'have.length',
-                databaseList.length
-              )
-            })
+          checkBaseSelector(databaseList, 0)
         })
       })
 
@@ -308,7 +296,8 @@ describe('SlowQuery list page', () => {
               .eq(1)
               .click()
               .then(() => {
-                cy.get('[data-automation-key=query]').should('has.length', 3)
+                cy.reload()
+                cy.get('[data-e2e=slow_query_limit_select]').contains('200')
               })
           })
       })
@@ -422,7 +411,7 @@ describe('SlowQuery list page', () => {
               .then(() => {
                 cy.get('[data-automation-key=query]')
                   .eq(0)
-                  .find('[data-e2e=text_wrap_multiline]')
+                  .find('[data-e2e=syntax_highlighter_original]')
               })
 
             cy.get('[data-e2e=slow_query_show_full_sql]')
@@ -431,7 +420,7 @@ describe('SlowQuery list page', () => {
                 cy.get('[data-automation-key=query]')
                   .eq(0)
                   .trigger('mouseover')
-                  .find('[data-e2e=text_wrap_singleline_with_tooltip]')
+                  .find('[data-e2e=syntax_highlighter_compact]')
               })
           })
       })

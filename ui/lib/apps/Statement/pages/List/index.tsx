@@ -105,7 +105,7 @@ export default function StatementsOverview() {
   return (
     <div className={styles.list_container}>
       <Card>
-        <Toolbar className={styles.list_toolbar}>
+        <Toolbar className={styles.list_toolbar} data-e2e="statement_toolbar">
           <Space>
             <TimeRangeSelector
               value={queryOptions.timeRange}
@@ -202,7 +202,10 @@ export default function StatementsOverview() {
       </Card>
 
       {enable ? (
-        <div style={{ height: '100%', position: 'relative' }}>
+        <div
+          style={{ height: '100%', position: 'relative' }}
+          data-e2e="statements_table"
+        >
           <ScrollablePane>
             <StatementsTable cardNoMarginTop controller={controller} />
           </ScrollablePane>

@@ -19,3 +19,14 @@ export const validateCSVList = (list) => {
   expect(list[2].query).to.equal('SELECT sleep(2);')
   expect(list[3].query).to.equal('SELECT sleep(1);')
 }
+
+export const restartTiUP = () => {
+  // Restart tiup
+  cy.exec(
+    `bash ../scripts/start_tiup.sh ${Cypress.env('TIDB_VERSION')} restart`,
+    { log: true }
+  )
+
+  // Wait TiUP Playground
+  cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
+}

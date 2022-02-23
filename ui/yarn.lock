@@ -1885,6 +1885,11 @@
     tunnel-agent "^0.6.0"
     uuid "^8.3.2"
 
+"@cypress/skip-test@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@cypress/skip-test/-/skip-test-2.6.1.tgz#44a4bc4c2b2e369a7661177c9b38e50d417a36ea"
+  integrity sha512-X+ibefBiuOmC5gKG91wRIT0/OqXeETYvu7zXktjZ3yLeO186Y8ia0K7/gQUpAwuUi28DuqMd1+7tBQVtPkzbPA==
+
 "@cypress/xvfb@^1.2.4":
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@cypress/xvfb/-/xvfb-1.2.4.tgz#2daf42e8275b39f4aa53c14214e557bd14e7748a"
@@ -4452,6 +4457,14 @@ csstype@^2.2.0, csstype@^2.5.5:
   version "2.6.10"
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-2.6.10.tgz#e63af50e66d7c266edb6b32909cfd0aabe03928b"
   integrity sha512-D34BqZU4cIlMCY93rZHbrq9pjTAQJ3U8S8rfBqjwHxkGPThWFjzZDQpgMJY0QViLxth6ZKYiwFBo14RdN44U/w==
+
+csv-parser@^2.3.0:
+  version "2.3.5"
+  resolved "https://registry.yarnpkg.com/csv-parser/-/csv-parser-2.3.5.tgz#6b3bf0907684914ff2c5abfbadab111a69eae5db"
+  integrity sha512-LCHolC4AlNwL+5EuD5LH2VVNKpD8QixZW2zzK1XmrVYUaslFY4c5BooERHOCIubG9iv/DAyFjs4x0HvWNZuyWg==
+  dependencies:
+    minimist "^1.2.0"
+    through2 "^3.0.1"
 
 cypress@8.5.0:
   version "8.5.0"
@@ -8725,6 +8738,15 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha1-Sr6/7tdUHywnrPspvbvRXI1bpPc=
 
+neat-csv@5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/neat-csv/-/neat-csv-5.1.0.tgz#521492a49dfed1577b3fc3cf7397c81e802659bb"
+  integrity sha512-P5rOGmHN6P/h0ZxEnVUhSuOMcyv2X95Q+dQxMEvqg+Qb0tw8VmHuhQmNFNv1xjD4+OCD1oWKN5rC022gGULXcA==
+  dependencies:
+    csv-parser "^2.3.0"
+    get-stream "^5.1.0"
+    to-readable-stream "^2.1.0"
+
 needle@^2.5.2:
   version "2.9.1"
   resolved "https://registry.yarnpkg.com/needle/-/needle-2.9.1.tgz#22d1dffbe3490c2b83e301f7709b6736cd8f2684"
@@ -11630,6 +11652,11 @@ to-object-path@^0.3.0:
   integrity sha1-KXWIt7Dn4KwI4E5nL4XB9JmeF68=
   dependencies:
     kind-of "^3.0.2"
+
+to-readable-stream@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/to-readable-stream/-/to-readable-stream-2.1.0.tgz#82880316121bea662cdc226adb30addb50cb06e8"
+  integrity sha512-o3Qa6DGg1CEXshSdvWNX2sN4QHqg03SPq7U6jPXRahlQdl5dK8oXjkU/2/sGrnOZKeGV1zLSO8qPwyKklPPE7w==
 
 to-regex-range@^2.1.0:
   version "2.1.1"

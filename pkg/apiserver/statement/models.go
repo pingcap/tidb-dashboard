@@ -5,7 +5,6 @@ package statement
 import (
 	"strings"
 
-	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
@@ -156,12 +155,21 @@ func getFieldsAndTags() (stmtFields []Field) {
 	return
 }
 
-func getVirtualFields(tableFields []string) []string {
-	fields := getFieldsAndTags()
-	vFields := funk.Filter(fields, func(f Field) bool {
-		return len(f.Related) != 0 && utils.IsSubsets(tableFields, f.Related)
-	}).([]Field)
-	return funk.Map(vFields, func(f Field) string {
-		return f.JSONName
-	}).([]string)
+func filterFieldsByColumns(fields []Field, columns []string) []Field {
+	colMap := map[string]struct{}{}
+	for _, c := range columns {
+		colMap[strings.ToLower(c)] = struct{}{}
+	}
+
+	filteredFields := []Field{}
+	for _, f := range fields {
+		// The json name of Statement is currently exactly the same as the table column name
+		// TODO: use util.VirtualView instead of the convention in the comment
+		_, ok := colMap[strings.ToLower(f.JSONName)]
+		if ok || (len(f.Related) != 0 && utils.IsSubsets(columns, f.Related)) {
+			filteredFields = append(filteredFields, f)
+		}
+	}
+
+	return filteredFields
 }

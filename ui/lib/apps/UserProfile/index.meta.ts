@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/user_profile',
   icon: UserOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_user_profile" */ '.'),
+  reactRoot: () => import('.'),
 }

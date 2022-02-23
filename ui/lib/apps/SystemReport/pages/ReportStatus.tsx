@@ -37,7 +37,7 @@ function ReportStatus() {
       titleExtra={
         report && (
           <Button type="primary" disabled={report?.progress! < 100}>
-            {/* Not using client basePath intentionally so that it can be handled by webpack-dev-server */}
+            {/* Not using client basePath intentionally so that it can be handled by dev server */}
             <a
               href={`${publicPathPrefix}/api/diagnose/reports/${report.id}/detail`}
               target="_blank"

@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/diagnose',
   icon: SafetyCertificateOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_diagnose" */ '.'),
+  reactRoot: () => import('.'),
 }

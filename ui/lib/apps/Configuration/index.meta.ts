@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/configuration',
   icon: ToolOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_configuration" */ '.'),
+  reactRoot: () => import('.'),
 }

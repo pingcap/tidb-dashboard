@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/cluster_info',
   icon: ClusterOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_cluster_info" */ '.'),
+  reactRoot: () => import('.'),
 }

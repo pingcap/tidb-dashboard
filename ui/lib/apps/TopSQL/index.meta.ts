@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/topsql',
   icon: BarChartOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_topsql" */ '.'),
+  reactRoot: () => import('.'),
 }

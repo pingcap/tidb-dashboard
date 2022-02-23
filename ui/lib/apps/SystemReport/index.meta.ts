@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/system_report',
   icon: SnippetsOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_system_report" */ '.'),
+  reactRoot: () => import('.'),
 }

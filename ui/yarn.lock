@@ -2538,6 +2538,11 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.6.tgz#250a7b16c3b91f672a24552ec64678eeb1d3a08d"
   integrity sha512-PBjIUxZHOuj0R15/xuwJYjFi+KZdNFrehocChv4g5hu6aFroHue8m0lBP0POdK2nKzbw0cgV1mws8+V/JAcEkQ==
 
+"@types/viz.js@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.npmmirror.com/@types/viz.js/-/viz.js-2.1.2.tgz#6ad50289e5c516c4a7f9058e1deda91b3518a8c0"
+  integrity sha512-qoiKEOoOSPwZbDGPoVnJwSPO/cirMT01KkvknXuZGIGNC+UPcrB97NgAOz1pbcXDrpL7Z/kn1Ojci1TozNy0/w==
+
 "@types/yauzl@^2.9.1":
   version "2.9.2"
   resolved "https://registry.yarnpkg.com/@types/yauzl/-/yauzl-2.9.2.tgz#c48e5d56aff1444409e39fa164b0b4d4552a7b7a"
@@ -11483,6 +11488,11 @@ sver-compat@^1.5.0:
     es6-iterator "^2.0.1"
     es6-symbol "^3.1.1"
 
+svg-pan-zoom@^3.6.1:
+  version "3.6.1"
+  resolved "https://registry.npmmirror.com/svg-pan-zoom/-/svg-pan-zoom-3.6.1.tgz#f880a1bb32d18e9c625d7715350bebc269b450cf"
+  integrity sha512-JaKkGHHfGvRrcMPdJWkssLBeWqM+Isg/a09H7kgNNajT1cX5AztDTNs+C8UzpCxjCTRrG34WbquwaovZbmSk9g==
+
 syntax-error@^1.1.1:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/syntax-error/-/syntax-error-1.4.0.tgz#2d9d4ff5c064acb711594a3e3b95054ad51d907c"
@@ -12223,6 +12233,11 @@ vinyl@^2.0.0:
     cloneable-readable "^1.0.0"
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
+
+viz.js@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.npmmirror.com/viz.js/-/viz.js-2.1.2.tgz#6f09cd4e10af28754a6d50b055bd2e4a7693983a"
+  integrity sha512-UO6CPAuEMJ8oNR0gLLNl+wUiIzQUsyUOp8SyyDKTqVRBtq7kk1VnFmIZW8QufjxGrGEuI+LVR7p/C7uEKy0LQw==
 
 vm-browserify@^1.0.0:
   version "1.1.2"

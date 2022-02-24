@@ -235,7 +235,7 @@ export class TableColumnFactory {
       isMultiline: showFullSQL,
       onRender: (rec: U) =>
         showFullSQL ? (
-          <TextWrap multiline data-e2e="text_wrap_multiline">
+          <TextWrap multiline>
             <HighlightSQL sql={rec[fieldName]!} />
           </TextWrap>
         ) : (
@@ -243,7 +243,7 @@ export class TableColumnFactory {
             title={<HighlightSQL sql={rec[fieldName]!} theme="dark" />}
             placement="right"
           >
-            <TextWrap data-e2e="text_wrap_singleline_with_tooltip">
+            <TextWrap>
               <HighlightSQL sql={rec[fieldName]!} compact />
             </TextWrap>
           </Tooltip>

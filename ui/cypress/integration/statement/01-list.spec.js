@@ -1,7 +1,10 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 import { restartTiUP, deleteDownloadsFolder } from '../utils'
-import { checkBaseSelector } from '../components'
+import {
+  testBaseSelectorOptions,
+  checkAllOptionsInBaseSelector,
+} from '../components'
 
 describe('SlowQuery list page', () => {
   before(() => {
@@ -57,6 +60,57 @@ describe('SlowQuery list page', () => {
         )
       })
     })
+
+    it('Statements which executed by default when starting TiDB', () => {
+      const defaultExecStmtList = [
+        'SHOW DATABASES',
+        'SELECT DISTINCT `stmt_type` FROM `information_schema`.`cluster_statements_summary_history` ORDER BY `stmt_type` ASC',
+        'SELECT `version` ()',
+      ]
+
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+        'statements_list'
+      )
+
+      cy.wait('@statements_list').then((res) => {
+        const response = res.response.body
+
+        cy.get('[data-e2e=syntax_highlighter_compact]')
+          .should('have.length', response.length)
+          .then(($stmts) => {
+            // we get a list of jQuery elements
+            // let's convert the jQuery object into a plain array
+            return (
+              Cypress.$.makeArray($stmts)
+                // and extract inner text from each
+                .map((stmt) => stmt.innerText)
+            )
+          })
+          // make sure there exists the default executed statements
+          .should('to.include.members', defaultExecStmtList)
+      })
+    })
+  })
+
+  describe('Filter slow query by changing database', () => {
+    it('No database selected by default', () => {
+      cy.get('[data-e2e=base_select_input]').should('has.text', '')
+    })
+
+    it('Show all databases', () => {
+      cy.intercept(`${Cypress.env('apiBasePath')}info/databases`).as(
+        'databases'
+      )
+
+      cy.wait('@databases').then((res) => {
+        const databases = res.response.body
+        testBaseSelectorOptions(databases, 0)
+      })
+    })
+
+    it('Filter statements without use database', () => {
+      checkAllOptionsInBaseSelector(0)
+    })
   })
 
   describe('', () => {
@@ -67,7 +121,7 @@ describe('SlowQuery list page', () => {
 
       cy.wait('@databases').then((res) => {
         const databaseList = res.response.body
-        checkBaseSelector(databaseList, 0)
+        testBaseSelectorOptions(databaseList, 0)
       })
     })
   })
@@ -80,7 +134,7 @@ describe('SlowQuery list page', () => {
 
       cy.wait('@stmt_types').then((res) => {
         const stmtTypesList = res.response.body
-        checkBaseSelector(stmtTypesList, 1)
+        testBaseSelectorOptions(stmtTypesList, 1)
       })
     })
   })

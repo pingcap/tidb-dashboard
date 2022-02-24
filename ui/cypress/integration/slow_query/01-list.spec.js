@@ -2,7 +2,7 @@
 
 import dayjs from 'dayjs'
 import { restartTiUP, validateCSVList, deleteDownloadsFolder } from '../utils'
-import { checkBaseSelector } from '../components'
+import { testBaseSelectorOptions } from '../components'
 
 const neatCSV = require('neat-csv')
 const path = require('path')
@@ -211,7 +211,7 @@ describe('SlowQuery list page', () => {
 
         cy.wait('@databases').then((res) => {
           const databaseList = res.response.body
-          checkBaseSelector(databaseList, 0)
+          testBaseSelectorOptions(databaseList, 0)
         })
       })
 
@@ -345,7 +345,7 @@ describe('SlowQuery list page', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
-            cy.get('[data-e2e=slow_query_schema_table_column_tile]')
+            cy.get('[data-e2e=column_selector_title]')
               .check()
               .then(() => {
                 cy.get('[role=columnheader]')
@@ -359,7 +359,7 @@ describe('SlowQuery list page', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
-            cy.get('[data-e2e=slow_query_schema_table_column_reset]')
+            cy.get('[data-e2e=column_selector_reset]')
               .click()
               .then(() => {
                 cy.get('[role=columnheader]')

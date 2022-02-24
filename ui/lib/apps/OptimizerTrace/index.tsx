@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { Button, Upload, Space } from 'antd'
-import { UploadOutlined, SwapRightOutlined } from '@ant-design/icons'
+import { UploadOutlined, ArrowRightOutlined } from '@ant-design/icons'
 
 import { Card, Toolbar, Root } from '@lib/components'
 
@@ -89,7 +89,7 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
             className={styles.operator_tree}
             data={s.before}
           />
-          <SwapRightOutlined
+          <ArrowRightOutlined
             style={{ fontSize: '30px' }}
             className={styles.arrow}
           />

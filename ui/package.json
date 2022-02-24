@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=16.0.0"
   },
   "browser": {
     "path": "path-browserify"
@@ -11,6 +11,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@baurine/grafana-value-formats": "^1.0.0",
+    "@cypress/skip-test": "^2.6.1",
     "@duorou_xu/speedscope": "1.14.1",
     "@elastic/charts": "^20.0.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
@@ -63,7 +64,6 @@
     "build": "gulp build",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
-    "storybook": "start-storybook -p 9009 -s public",
     "run:e2e-test:compat-features": "cypress run --spec cypress/integration/**/*.compat_spec.js",
     "run:e2e-test:common-features": "cypress run --spec cypress/integration/**/*.spec.js",
     "open:cypress": "cypress open"
@@ -73,7 +73,6 @@
       "pre-commit": "pretty-quick --staged"
     }
   },
-  "homepage": "/dashboard",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -87,16 +86,10 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-decorators": "^7.10.5",
     "@baurine/esbuild-plugin-babel": "^0.3.0",
     "@baurine/esbuild-plugin-postcss3": "^0.2.3",
     "@cypress/code-coverage": "^3.9.12",
     "@openapitools/openapi-generator-cli": "^1.0.15-4.3.1",
-    "@storybook/addon-actions": "^6.3.12",
-    "@storybook/addon-links": "^6.3.12",
-    "@storybook/addons": "^6.3.12",
-    "@storybook/preset-create-react-app": "^3.1.4",
-    "@storybook/react": "^6.3.12",
     "@types/d3": "^5.7.2",
     "@types/live-server": "^1.2.1",
     "@types/lodash": "^4.14.158",
@@ -104,16 +97,12 @@
     "@types/react": "^16.9.43",
     "@types/react-copy-to-clipboard": "^5.0.1",
     "@types/react-dom": "^16.9.8",
-    "@types/webpack-env": "^1.15.2",
-    "babel-plugin-dynamic-import-node": "^2.3.0",
-    "babel-plugin-import": "^1.13.0",
     "babel-plugin-istanbul": "^6.1.1",
     "browserslist-useragent-regexp": "^2.1.0",
     "chokidar": "^3.5.2",
-    "customize-cra": "^1.0.0",
     "cypress": "8.5.0",
+    "dotenv": "^16.0.0",
     "esbuild": "^0.13.14",
-    "esbuild-plugin-svgr": "^0.0.3",
     "esbuild-plugin-yaml": "^0.0.1",
     "eslint": "^8.7.0",
     "eslint-config-react-app": "^7.0.0",
@@ -126,23 +115,12 @@
     "http-proxy-middleware": "^1.0.5",
     "husky": "^4.2.5",
     "less": "^4.1.2",
-    "less-loader": "^5.0.0",
     "live-server": "^1.2.1",
     "mysql2": "^2.3.3",
+    "neat-csv": "5.1.0",
     "path-browserify": "^1.0.1",
     "prettier": "2.4.1",
     "pretty-quick": "^2.0.1",
-    "react-app-rewire-alias": "^0.1.6",
-    "react-app-rewire-html-webpack-plugin": "^1.0.3",
-    "react-app-rewire-multiple-entry": "^2.1.0",
-    "react-app-rewire-yaml": "^1.1.0",
-    "react-app-rewired": "^2.1.5",
-    "react-scripts": "^4.0.3",
-    "typescript": "^3.9.7",
-    "webpack-bundle-analyzer": "^3.7.0",
-    "webpackbar": "^4.0.0"
-  },
-  "resolutions": {
-    "babel-loader": "8.1.0"
+    "typescript": "^3.9.7"
   }
 }

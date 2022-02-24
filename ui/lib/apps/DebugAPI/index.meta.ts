@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/debug_api',
   icon: ApiOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_debug_api" */ '.'),
+  reactRoot: () => import('.'),
 }

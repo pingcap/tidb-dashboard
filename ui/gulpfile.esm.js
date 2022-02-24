@@ -23,10 +23,6 @@ task('swagger:watch', () =>
 
 task('distro:generate', shell.task('../scripts/distro/write_strings.sh'))
 
-task('webpack:dev', shell.task('yarn react-app-rewired start'))
-
-task('webpack:build', shell.task('yarn react-app-rewired build'))
-
 task('esbuild:dev', shell.task('node builder.js'))
 
 task('esbuild:build', shell.task('NODE_ENV=production node builder.js'))

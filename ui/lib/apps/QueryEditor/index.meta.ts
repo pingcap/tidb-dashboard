@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/query_editor',
   icon: ConsoleSqlOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "query_editor" */ '.'),
+  reactRoot: () => import('.'),
 }

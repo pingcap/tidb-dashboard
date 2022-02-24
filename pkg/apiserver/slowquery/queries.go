@@ -5,7 +5,6 @@ package slowquery
 import (
 	"strings"
 
-	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils"
@@ -121,10 +120,17 @@ func QuerySlowLogDetail(req *GetDetailRequest, db *gorm.DB) (*Model, error) {
 	return &result, nil
 }
 
-func QueryTableColumns(sysSchema *utils.SysSchema, db *gorm.DB) ([]string, error) {
+func GetAvailableFields(sysSchema *utils.SysSchema, db *gorm.DB) ([]string, error) {
 	cs, err := sysSchema.GetTableColumnNames(db, SlowQueryTable)
 	if err != nil {
 		return nil, err
 	}
-	return funk.UniqString(append(cs, getVirtualFields()...)), nil
+
+	fields := filterFieldsByColumns(getFieldsAndTags(), cs)
+	jsonNames := make([]string, 0, len(fields))
+	for _, f := range fields {
+		jsonNames = append(jsonNames, f.JSONName)
+	}
+
+	return jsonNames, nil
 }

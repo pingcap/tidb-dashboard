@@ -84,9 +84,8 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
   const Steps = () => (
     <>
       {logicalData.steps.map((s) => (
-        <>
+        <React.Fragment key={s.index}>
           <LogicalOperatorTree
-            key={s.index}
             className={styles.operator_tree}
             data={s.before}
           />
@@ -94,7 +93,7 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
             style={{ fontSize: '30px' }}
             className={styles.arrow}
           />
-        </>
+        </React.Fragment>
       ))}
     </>
   )
@@ -154,13 +153,15 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
 
   const OperatorCandidates = () => (
     <>
-      {rootOperatorCandidates.map((m) => (
-        <>
+      {rootOperatorCandidates.map((m, index) => (
+        <div key={index}>
           <span>{m[0]}</span>
-          {m[1].map((c) => (
-            <PhysicalOperatorTree key={c.id} data={c} />
-          ))}
-        </>
+          <div style={{ display: 'flex“' }}>
+            {m[1].map((c) => (
+              <PhysicalOperatorTree key={c.id} data={c} />
+            ))}
+          </div>
+        </div>
       ))}
     </>
   )
@@ -169,7 +170,7 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
     <Card className={styles.container}>
       <>
         <h2>Physical</h2>
-        <div className={styles.logical_optimize}>
+        <div>
           <OperatorCandidates />
         </div>
       </>

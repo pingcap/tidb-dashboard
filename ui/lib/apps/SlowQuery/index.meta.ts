@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/slow_query',
   icon: RocketOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_slow_query" */ '.'),
+  reactRoot: () => import('.'),
 }

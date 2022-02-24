@@ -26,7 +26,7 @@ describe('Root User Login', () => {
   })
 
   it('root login with incorrect pwd', () => {
-    cy.intercept('POST', `${Cypress.env('apiUrl')}/user/login`).as('login')
+    cy.intercept('POST', `${Cypress.env('apiBasePath')}user/login`).as('login')
 
     // {enter} causes the form to submit
     cy.get('[data-e2e="signin_password_input"]').type(

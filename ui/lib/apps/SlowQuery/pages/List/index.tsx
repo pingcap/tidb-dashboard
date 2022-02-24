@@ -88,7 +88,12 @@ function List() {
 
   const dropdownMenu = (
     <Menu onClick={menuItemClick}>
-      <Menu.Item key="export" disabled={downloading} icon={<ExportOutlined />}>
+      <Menu.Item
+        key="export"
+        disabled={downloading}
+        icon={<ExportOutlined />}
+        data-e2e="slow_query_export_btn"
+      >
         {downloading
           ? t('slow_query.toolbar.exporting')
           : t('slow_query.toolbar.export')}
@@ -129,14 +134,20 @@ function List() {
               onSearch={(searchText) =>
                 setQueryOptions({ ...queryOptions, searchText })
               }
+              data-e2e="slow_query_search"
             />
             <Select
               value={queryOptions.limit}
               style={{ width: 150 }}
               onChange={(limit) => setQueryOptions({ ...queryOptions, limit })}
+              data-e2e="slow_query_limit_select"
             >
               {LIMITS.map((item) => (
-                <Option value={item} key={item}>
+                <Option
+                  value={item}
+                  key={item}
+                  data-e2e="slow_query_limit_option"
+                >
                   Limit {item}
                 </Option>
               ))}
@@ -154,6 +165,7 @@ function List() {
                   <Checkbox
                     checked={showFullSQL}
                     onChange={(e) => setShowFullSQL(e.target.checked)}
+                    data-e2e="slow_query_show_full_sql"
                   >
                     {t('slow_query.toolbar.select_columns.show_full_sql')}
                   </Checkbox>
@@ -164,11 +176,17 @@ function List() {
               {loadingSlowQueries ? (
                 <LoadingOutlined />
               ) : (
-                <ReloadOutlined onClick={refresh} />
+                <ReloadOutlined
+                  onClick={refresh}
+                  data-e2e="slow_query_refresh"
+                />
               )}
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
-              <div style={{ cursor: 'pointer' }}>
+              <div
+                style={{ cursor: 'pointer' }}
+                data-e2e="slow_query_export_menu"
+              >
                 <MenuOutlined />
               </div>
             </Dropdown>

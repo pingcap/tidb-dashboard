@@ -124,7 +124,7 @@ export class TableColumnFactory {
       ...this.getDefaultColumnConfig(fieldName),
       maxWidth: 150,
       onRender: (rec: U) => (
-        <Tooltip title={rec[fieldName]}>
+        <Tooltip title={rec[fieldName]} data-e2e="text_with_tooltip">
           <TextWrap>{rec[fieldName]}</TextWrap>
         </Tooltip>
       ),
@@ -235,7 +235,7 @@ export class TableColumnFactory {
       isMultiline: showFullSQL,
       onRender: (rec: U) =>
         showFullSQL ? (
-          <TextWrap multiline>
+          <TextWrap multiline data-e2e="text_wrap_multiline">
             <HighlightSQL sql={rec[fieldName]!} />
           </TextWrap>
         ) : (
@@ -243,7 +243,7 @@ export class TableColumnFactory {
             title={<HighlightSQL sql={rec[fieldName]!} theme="dark" />}
             placement="right"
           >
-            <TextWrap>
+            <TextWrap data-e2e="text_wrap_singleline_with_tooltip">
               <HighlightSQL sql={rec[fieldName]!} compact />
             </TextWrap>
           </Tooltip>

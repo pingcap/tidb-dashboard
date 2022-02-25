@@ -55,7 +55,7 @@ export default function PhysicalOperatorTree({
 
     viz
       .renderSVGElement(
-        `digraph {
+        `graph {
   node [shape=ellipse fontsize=8 fontname="Verdana"];
   ${define}\n${link}\n}`
       )

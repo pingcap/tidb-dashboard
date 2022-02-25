@@ -180,24 +180,40 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
 
   const OperatorCandidates = () => (
     <>
-      {rootOperatorCandidates.map((m, index) => (
-        <div key={index} className={styles.physical_operator_tree_container}>
-          <span>{m[0]}</span>
-          <ArrowRightOutlined
-            style={{ fontSize: '30px' }}
-            className={styles.arrow}
-          />
-          <>
-            {m[1].map((c) => (
-              <PhysicalOperatorTree
-                key={c.id}
-                data={c}
-                className={styles.operator_tree}
-              />
-            ))}
-          </>
-        </div>
-      ))}
+      {rootOperatorCandidates.map((m, index) => {
+        const selectedCandidates = m[1].filter((c) => c.selected)
+        const unselectedCandidates = m[1].filter((c) => !c.selected)
+        return (
+          <div key={index} className={styles.physical_operator_tree_container}>
+            <span>{m[0]}</span>
+            <ArrowRightOutlined
+              style={{ fontSize: '30px' }}
+              className={styles.arrow}
+            />
+            <>
+              {selectedCandidates.map((c) => (
+                <PhysicalOperatorTree
+                  key={c.id}
+                  data={c}
+                  className={styles.operator_tree}
+                />
+              ))}
+            </>
+            {!!unselectedCandidates.length && (
+              <div className={styles.unselected_candidates}>
+                <p>unselected candidates</p>
+                {unselectedCandidates.map((c) => (
+                  <PhysicalOperatorTree
+                    key={c.id}
+                    data={c}
+                    className={styles.operator_tree}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </>
   )
 

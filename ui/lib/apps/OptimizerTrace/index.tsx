@@ -28,12 +28,7 @@ export default function OptimizeTraceApp() {
 interface OptimizerData {
   logical: {
     final: LogicalOperatorNode[]
-    steps: {
-      index: number
-      name: string
-      before: LogicalOperatorNode[]
-      steps: any[]
-    }[]
+    steps: LogicalOptimizeActionStep[]
   }
   physical: {
     final: LogicalOperatorNode
@@ -42,6 +37,19 @@ interface OptimizerData {
   }
   final: LogicalOperatorNode[]
   isFastPlan: boolean
+}
+
+interface LogicalOptimizeActionStep {
+  index: number
+  name: string
+  before: LogicalOperatorNode[]
+  steps: {
+    id: number
+    index: number
+    action: string
+    reason: string
+    type: string
+  }[]
 }
 
 function OptimizerTrace() {

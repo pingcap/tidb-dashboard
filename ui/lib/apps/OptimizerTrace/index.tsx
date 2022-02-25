@@ -83,18 +83,36 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
   const logicalData = data.logical
   const Steps = () => (
     <>
-      {logicalData.steps.map((s) => (
-        <React.Fragment key={s.index}>
-          <LogicalOperatorTree
-            className={styles.operator_tree}
-            data={s.before}
-          />
-          <ArrowRightOutlined
-            style={{ fontSize: '30px' }}
-            className={styles.arrow}
-          />
-        </React.Fragment>
-      ))}
+      {logicalData.steps.map((s) => {
+        const Action = () => (
+          <div className={styles.step}>
+            <h3>{s.name}</h3>
+            {s.steps.map((actionStep, index) => (
+              <p key={index}>
+                action {actionStep.index}: {actionStep.action}, reason:{' '}
+                {actionStep.reason}
+              </p>
+            ))}
+          </div>
+        )
+        return (
+          <React.Fragment key={s.index}>
+            <LogicalOperatorTree
+              className={styles.operator_tree}
+              data={s.before}
+            />
+            <ArrowRightOutlined
+              style={{ fontSize: '30px' }}
+              className={styles.arrow}
+            />
+            <Action />
+            <ArrowRightOutlined
+              style={{ fontSize: '30px' }}
+              className={styles.arrow}
+            />
+          </React.Fragment>
+        )
+      })}
     </>
   )
 
@@ -154,13 +172,21 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
   const OperatorCandidates = () => (
     <>
       {rootOperatorCandidates.map((m, index) => (
-        <div key={index}>
+        <div key={index} className={styles.physical_operator_tree_container}>
           <span>{m[0]}</span>
-          <div style={{ display: 'flex“' }}>
+          <ArrowRightOutlined
+            style={{ fontSize: '30px' }}
+            className={styles.arrow}
+          />
+          <>
             {m[1].map((c) => (
-              <PhysicalOperatorTree key={c.id} data={c} />
+              <PhysicalOperatorTree
+                key={c.id}
+                data={c}
+                className={styles.operator_tree}
+              />
             ))}
-          </div>
+          </>
         </div>
       ))}
     </>

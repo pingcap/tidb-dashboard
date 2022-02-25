@@ -16,6 +16,7 @@
 // Import commands.js using ES2015 syntax:
 import '@cypress/code-coverage/support'
 import '@cypress/skip-test/support'
+import 'cypress-real-events/support'
 import { addMatchImageSnapshotCommand } from 'cypress-image-snapshot/command'
 
 addMatchImageSnapshotCommand()

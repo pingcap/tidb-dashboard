@@ -13,8 +13,10 @@
 // the project's config changing)
 
 import mysql from 'mysql2'
+import { rmdir } from 'fs'
 import { addMatchImageSnapshotPlugin } from 'cypress-image-snapshot/plugin'
 import codecovTaskPlugin from '@cypress/code-coverage/task'
+import clipboardy from 'clipboardy'
 
 function queryTestDB(query, password, database) {
   const dbConfig = {
@@ -40,6 +42,20 @@ function queryTestDB(query, password, database) {
   })
 }
 
+function deleteTestFolder(folderPath) {
+  return new Promise((resolve, reject) => {
+    rmdir(folderPath, { maxRetries: 10, recursive: true }, (err) => {
+      if (err && err.code !== 'ENOENT') {
+        console.error(err)
+
+        return reject(err)
+      }
+
+      resolve(null)
+    })
+  })
+}
+
 /**
  * @type {Cypress.PluginConfig}
  */
@@ -54,12 +70,22 @@ module.exports = (on, config) => {
   config.baseUrl =
     (process.env.SERVER_URL || 'http://localhost:3001/dashboard') + '#'
 
-  config.env.apiUrl = 'http://127.0.0.1:12333/dashboard/api/'
+  config.env.apiBasePath = '/dashboard/api/'
 
-  // Usage: cy.task('queryDB', { ...queryData })
   on('task', {
+    // Usage: cy.task('queryDB', { ...queryData })
     queryDB: ({ query, password = '', database = 'mysql' }) => {
       return queryTestDB(query, password, database)
+    },
+
+    // Usage: cy.task('deleteFolder', deleteFolderPath)
+    deleteFolder: (folderPath) => {
+      return deleteTestFolder(folderPath)
+    },
+
+    // Usage: cy.task('getClipboard')
+    getClipboard: () => {
+      return clipboardy.readSync()
     },
   })
 

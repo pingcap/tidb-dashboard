@@ -14,6 +14,7 @@
 
 const mysql = require('mysql2')
 const { rmdir } = require('fs')
+const clipboardy = require('clipboardy')
 
 function queryTestDB(query, password, database) {
   const dbConfig = {
@@ -77,6 +78,11 @@ module.exports = (on, config) => {
     // Usage: cy.task('deleteFolder', deleteFolderPath)
     deleteFolder: (folderPath) => {
       return deleteTestFolder(folderPath)
+    },
+
+    // Usage: cy.task('getClipboard')
+    getClipboard: () => {
+      return clipboardy.readSync()
     },
   })
 

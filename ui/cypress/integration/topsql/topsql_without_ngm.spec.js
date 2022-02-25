@@ -13,7 +13,7 @@ describe('TopSQL without ngm', function () {
   onlyOn(Cypress.env('TIDB_VERSION') === '5.0.0', () => {
     describe('Ngm not supported', () => {
       it('can not see top sql menu', () => {
-        cy.get('[data-e2e]="menu_item_topsql"').should('not.exist')
+        cy.get('[data-e2e="menu_item_topsql"]').should('not.exist')
       })
     })
   })

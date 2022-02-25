@@ -40,7 +40,7 @@ export default function LogicalOperatorTree({
           `${n.id} ${createLabels({
             label: `${n.type}_${n.id}`,
             color: labels.color || '',
-            tooltip: n.info,
+            tooltip: `info: ${n.info}`,
           })};\n`
       )
       .join('')

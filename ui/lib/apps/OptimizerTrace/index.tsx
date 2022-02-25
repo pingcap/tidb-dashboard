@@ -93,12 +93,12 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
     <>
       {logicalData.steps.map((s) => {
         const Action = () => (
-          <div className={styles.step}>
+          <div className={styles.steps}>
             <h3>{s.name}</h3>
             {s.steps.map((actionStep, index) => (
-              <p key={index}>
-                action {actionStep.index}: {actionStep.action}, reason:{' '}
-                {actionStep.reason}
+              <p key={index} className={styles.step_info}>
+                action {actionStep.index}: {actionStep.action}
+                {actionStep.reason && `, reason: ${actionStep.reason}`}
               </p>
             ))}
           </div>

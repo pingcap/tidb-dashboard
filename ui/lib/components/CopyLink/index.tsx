@@ -59,14 +59,14 @@ function CopyLink({ data, displayVariant = 'default' }: ICopyLinkProps) {
     <span>
       {!showCopied && (
         <CopyToClipboard text={data ?? ''} onCopy={handleCopy}>
-          <a>
+          <a data-e2e={`copy_${displayVariant}_to_clipboard`}>
             {t(`component.copyLink.${transKeys[displayVariant]}`)}{' '}
             <CopyOutlined />
           </a>
         </CopyToClipboard>
       )}
       {showCopied && (
-        <span className={styles.copiedText}>
+        <span className={styles.copiedText} data-e2e="copied_success">
           <CheckOutlined /> {t('component.copyLink.success')}
         </span>
       )}

@@ -291,18 +291,18 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
         cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').eq(0).click()
         cy.get('[data-e2e="topsql_listdetail_table"]').should('exist')
-        cy.get('[data-e2e="topsql_listdetail_content"] .sql_text').should(
-          'exist'
-        )
-        cy.get('[data-e2e="topsql_listdetail_content"] .sql_digest').should(
-          'exist'
-        )
-        cy.get('[data-e2e="topsql_listdetail_content"] .plan_text').should(
-          'not.exist'
-        )
-        cy.get('[data-e2e="topsql_listdetail_content"] .plan_digest').should(
-          'not.exist'
-        )
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_text"]'
+        ).should('exist')
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_digest"]'
+        ).should('exist')
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_text"]'
+        ).should('not.exist')
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_digest"]'
+        ).should('not.exist')
       })
 
       it('if the list detail table has more than one plan, only the real plans can be selected', () => {
@@ -332,18 +332,18 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         cy.get(
           '[data-e2e="topsql_listdetail_table"] .ms-DetailsRow-check[aria-checked="true"]'
         ).should('have.length', 1)
-        cy.get('[data-e2e="topsql_listdetail_content"] .sql_text').should(
-          'exist'
-        )
-        cy.get('[data-e2e="topsql_listdetail_content"] .sql_digest').should(
-          'exist'
-        )
-        cy.get('[data-e2e="topsql_listdetail_content"] .plan_text').should(
-          'exist'
-        )
-        cy.get('[data-e2e="topsql_listdetail_content"] .plan_digest').should(
-          'exist'
-        )
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_text"]'
+        ).should('exist')
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_digest"]'
+        ).should('exist')
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_text"]'
+        ).should('exist')
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_digest"]'
+        ).should('exist')
       })
 
       it("if there's only one plan in the list detail table, show the plan information directly", () => {
@@ -353,18 +353,18 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
         cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').eq(1).click()
 
-        cy.get('[data-e2e="topsql_listdetail_content"] .sql_text').should(
-          'exist'
-        )
-        cy.get('[data-e2e="topsql_listdetail_content"] .sql_digest').should(
-          'exist'
-        )
-        cy.get('[data-e2e="topsql_listdetail_content"] .plan_text').should(
-          'exist'
-        )
-        cy.get('[data-e2e="topsql_listdetail_content"] .plan_digest').should(
-          'exist'
-        )
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_text"]'
+        ).should('exist')
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_digest"]'
+        ).should('exist')
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_text"]'
+        ).should('exist')
+        cy.get(
+          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_digest"]'
+        ).should('exist')
       })
     })
   })

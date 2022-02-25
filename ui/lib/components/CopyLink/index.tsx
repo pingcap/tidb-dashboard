@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, forwardRef } from 'react'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { useTranslation } from 'react-i18next'
 import { useTimeoutFn } from 'react-use'
@@ -42,36 +42,38 @@ for (const key in translations) {
   })
 }
 
-function CopyLink({ data, displayVariant = 'default' }: ICopyLinkProps) {
-  const { t } = useTranslation()
-  const [showCopied, setShowCopied] = useState(false)
+const CopyLink = forwardRef<HTMLSpanElement, ICopyLinkProps>(
+  ({ data, displayVariant = 'default' }: ICopyLinkProps, ref) => {
+    const { t } = useTranslation()
+    const [showCopied, setShowCopied] = useState(false)
 
-  const reset = useTimeoutFn(() => {
-    setShowCopied(false)
-  }, 1500)[2]
+    const reset = useTimeoutFn(() => {
+      setShowCopied(false)
+    }, 1500)[2]
 
-  const handleCopy = () => {
-    setShowCopied(true)
-    reset()
+    const handleCopy = () => {
+      setShowCopied(true)
+      reset()
+    }
+
+    return (
+      <span ref={ref}>
+        {!showCopied && (
+          <CopyToClipboard text={data ?? ''} onCopy={handleCopy}>
+            <a data-e2e={`copy_${displayVariant}_to_clipboard`}>
+              {t(`component.copyLink.${transKeys[displayVariant]}`)}{' '}
+              <CopyOutlined />
+            </a>
+          </CopyToClipboard>
+        )}
+        {showCopied && (
+          <span className={styles.copiedText} data-e2e="copied_success">
+            <CheckOutlined /> {t('component.copyLink.success')}
+          </span>
+        )}
+      </span>
+    )
   }
-
-  return (
-    <span>
-      {!showCopied && (
-        <CopyToClipboard text={data ?? ''} onCopy={handleCopy}>
-          <a data-e2e={`copy_${displayVariant}_to_clipboard`}>
-            {t(`component.copyLink.${transKeys[displayVariant]}`)}{' '}
-            <CopyOutlined />
-          </a>
-        </CopyToClipboard>
-      )}
-      {showCopied && (
-        <span className={styles.copiedText} data-e2e="copied_success">
-          <CheckOutlined /> {t('component.copyLink.success')}
-        </span>
-      )}
-    </span>
-  )
-}
+)
 
 export default React.memo(CopyLink)

@@ -81,6 +81,7 @@ function OptimizerTrace() {
         <>
           <LogicalOptimization data={data} />
           <PhysicalOptimization data={data} />
+          <Final data={data} />
         </>
       )}
     </div>
@@ -127,7 +128,7 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
   return (
     <Card className={styles.container}>
       <>
-        <h2>Logical</h2>
+        <h2>Logical Optimization</h2>
         <div className={styles.logical_optimize}>
           <Steps />
           <LogicalOperatorTree
@@ -202,12 +203,25 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
 
   return (
     <Card className={styles.container}>
-      <>
-        <h2>Physical</h2>
-        <div>
-          <OperatorCandidates />
-        </div>
-      </>
+      <h2>Physical Optimization</h2>
+      <div>
+        <OperatorCandidates />
+      </div>
+    </Card>
+  )
+}
+
+function Final({ data }: { data: OptimizerData }) {
+  const finalData = data.final
+
+  return (
+    <Card className={styles.container}>
+      <h2>Final</h2>
+      <LogicalOperatorTree
+        className={styles.operator_tree}
+        data={finalData}
+        labels={{ color: 'blue' }}
+      />
     </Card>
   )
 }

@@ -36,6 +36,7 @@ export default function PhysicalOperatorTree({
           `${n.id} ${createLabels({
             label: `${n.type}_${n.id}`,
             color: n.selected ? 'blue' : '',
+            tooltip: n.info,
           })};\n`
       )
       .join('')

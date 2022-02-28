@@ -158,6 +158,7 @@ export default function StatementsOverview() {
               onSearch={(searchText) =>
                 setQueryOptions({ ...queryOptions, searchText })
               }
+              data-e2e="sql_statements_search"
             />
           </Space>
 

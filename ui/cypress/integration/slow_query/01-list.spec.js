@@ -201,7 +201,10 @@ describe('SlowQuery list page', () => {
 
     describe('Filter slow query by changing database', () => {
       it('No database selected by default', () => {
-        cy.get('[data-e2e=base_select_input]').should('has.text', '')
+        cy.get('[data-e2e=base_select_input_text]').should(
+          'has.text',
+          'All Databases'
+        )
       })
 
       it('Show all databases', () => {
@@ -227,7 +230,7 @@ describe('SlowQuery list page', () => {
         // global and use database queries will be listed
         cy.get('[data-automation-key=query]').should('has.length', 3)
 
-        cy.get('[data-e2e=base_select_input]')
+        cy.get('[data-e2e=base_select_input_text]')
           .click()
           .then(() => {
             cy.get('.ms-DetailsHeader-checkTooltip')

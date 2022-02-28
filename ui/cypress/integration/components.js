@@ -16,33 +16,14 @@ export const checkAllOptionsInBaseSelector = (index) => {
     .eq(index)
     .click()
     .then(() => {
-      cy.get('.ant-dropdown').within(() => {
-        cy.get('[role=columnheader]')
-          .eq(0)
-          .within(() => {
-            cy.get('.ant-checkbox-input').check()
-          })
-          .then(() => {
-            cy.get('[data-automationid=ListCell]').each(($option) => {
-              cy.wrap($option).within(() => {
-                cy.get('.ant-checkbox-input').should('be.checked')
-              })
+      if (cy.get('.ant-dropdown').should('exist')) {
+        cy.get('.ant-dropdown').within(() => {
+          cy.get('[role=columnheader]')
+            .eq(0)
+            .within(() => {
+              cy.get('.ant-checkbox').click()
             })
-          })
-      })
+        })
+      }
     })
-
-  // .click()
-  // .then(($selector) => {
-  //   console.log('selector', $selector)
-  //   cy.wrap($selector).within(() => {
-  //     cy.get('[role=columnheader]')
-  //       .click()
-  //       .then(() => {
-  //         cy.get('[data-e2e=multi_select_options]').each(($option) => {
-  //           cy.wrap($option).should('be.checked')
-  //         })
-  //       })
-  //   })
-  // })
 }

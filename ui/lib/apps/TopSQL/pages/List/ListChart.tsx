@@ -79,6 +79,7 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
         />
         <Axis
           id="left"
+          title="CPU Time"
           position={Position.Left}
           tickFormat={(v) => getValueFormat('ms')(v, 2)}
         />

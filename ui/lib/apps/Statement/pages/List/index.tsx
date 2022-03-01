@@ -173,6 +173,7 @@ export default function StatementsOverview() {
                   <Checkbox
                     checked={showFullSQL}
                     onChange={(e) => setShowFullSQL(e.target.checked)}
+                    data-e2e="statement_show_full_sql"
                   >
                     {t(
                       'statement.pages.overview.toolbar.select_columns.show_full_sql'
@@ -184,14 +185,20 @@ export default function StatementsOverview() {
             {enable && (
               <RefreshTooltip isOutdated={isTimeRangeOutdated}>
                 {loadingStatements ? (
-                  <LoadingOutlined />
+                  <LoadingOutlined data-e2e="statement_refresh" />
                 ) : (
-                  <ReloadOutlined onClick={refresh} />
+                  <ReloadOutlined
+                    onClick={refresh}
+                    data-e2e="statement_refresh"
+                  />
                 )}
               </RefreshTooltip>
             )}
             <Tooltip title={t('statement.settings.title')} placement="bottom">
-              <SettingOutlined onClick={() => setShowSettings(true)} />
+              <SettingOutlined
+                onClick={() => setShowSettings(true)}
+                data-e2e="statement_setting"
+              />
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
               <div style={{ cursor: 'pointer' }}>

@@ -17,6 +17,7 @@ import {
   applySentryTracingInterceptor,
 } from '@lib/utils/sentryHelpers'
 import client, { InfoInfoResponse } from '@lib/client'
+import * as telemetry from '@lib/utils/telemetry'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
@@ -73,6 +74,8 @@ async function webPageStart() {
   }
 
   if (info?.enable_telemetry) {
+    await telemetry.init(info)
+
     initSentryRoutingInstrument()
     const instance = client.getAxiosInstance()
     applySentryTracingInterceptor(instance)
@@ -156,6 +159,17 @@ async function webPageStart() {
 
   window.addEventListener('single-spa:first-mount', () => {
     removeSpinner()
+  })
+  let preRoute = ''
+  window.addEventListener('single-spa:routing-event', () => {
+    const curRoute = routing.getPathInLocationHash()
+    if (curRoute !== preRoute) {
+      telemetry.mixpanel.register({
+        $current_url: curRoute,
+      })
+      telemetry.mixpanel.track('PageChange')
+      preRoute = curRoute
+    }
   })
 
   singleSpa.start()

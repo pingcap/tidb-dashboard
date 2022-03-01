@@ -19,6 +19,8 @@ topsql:
       close: Disable
       cancel: Cancel
   refresh: Refresh
+  chart:
+    cpu_time: CPU Time
   table:
     description: The following table shows which top {{topN}} queries are contributing the most to load in the current time range. Click one to see details.
     others: Other Statements

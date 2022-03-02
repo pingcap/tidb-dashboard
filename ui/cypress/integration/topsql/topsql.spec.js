@@ -38,22 +38,22 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
       cy.login('root')
 
       // mock summary and instance data from 2022-01-12 00:00:00 to 2022-01-12 05:00:00
-      cy.intercept(`${Cypress.env('apiUrl')}/topsql/summary?*`, {
+      cy.intercept(`${Cypress.env('apiBasePath')}/topsql/summary?*`, {
         fixture:
           'topsql_summary:end=1641934800&instance=127.0.0.1%3A10080&instance_type=tidb&start=1641916800&top=5&window=123s.json',
       }).as('getTopsqlSummary')
       cy.intercept(
         {
-          url: `${Cypress.env('apiUrl')}/topsql/instances`,
+          url: `${Cypress.env('apiBasePath')}/topsql/instances`,
           query: { start: '1641916800', end: '1641934800' },
         },
         { fixture: 'topsql_instance:end=1641934800&start=1641916800.json' }
       )
 
-      cy.intercept(`${Cypress.env('apiUrl')}/topsql/instances?*`).as(
+      cy.intercept(`${Cypress.env('apiBasePath')}/topsql/instances?*`).as(
         'getInstance'
       )
-      cy.intercept(`${Cypress.env('apiUrl')}/topsql/config`).as(
+      cy.intercept(`${Cypress.env('apiBasePath')}/topsql/config`).as(
         'getTopsqlConfig'
       )
 
@@ -128,7 +128,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
     describe('Refresh', () => {
       it('click refresh button with the recent x time range, fetch the recent x time range data', () => {
-        cy.intercept(`${Cypress.env('apiUrl')}/topsql/summary?*`, {
+        cy.intercept(`${Cypress.env('apiBasePath')}/topsql/summary?*`, {
           fixture:
             'topsql_summary:end=1641934800&instance=127.0.0.1%3A10080&instance_type=tidb&start=1641916800&top=5&window=123s.json',
         }).as('getTopsqlSummary1')
@@ -194,7 +194,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
     describe('Chart and table', () => {
       it('when the time range is large, the chart interval is large', () => {
-        cy.intercept(`${Cypress.env('apiUrl')}/topsql/summary?*`, {
+        cy.intercept(`${Cypress.env('apiBasePath')}/topsql/summary?*`, {
           fixture:
             'topsql_summary_large_timerange:end=1641916800&instance=127.0.0.1%3A10080&instance_type=tidb&start=1641484800&top=5&window=2929s.json',
         }).as('getTopsqlSummaryLargeTimerange')
@@ -206,7 +206,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
       })
 
       it('when the time range is small, the chart interval is small', () => {
-        cy.intercept(`${Cypress.env('apiUrl')}/topsql/summary?*`, {
+        cy.intercept(`${Cypress.env('apiBasePath')}/topsql/summary?*`, {
           fixture:
             'topsql_summary_small_timerange:end=1641920460&instance=127.0.0.1%3A10080&instance_type=tidb&start=1641920400&top=5&window=1s.json',
         }).as('getTopsqlSummarySmallTimerange')

@@ -1,5 +1,5 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
-import mixpanel from 'mixpanel-browser'
+import mixpanel, { Config } from 'mixpanel-browser'
 import { InfoInfoResponse } from '@lib/client'
 import { getPathInLocationHash } from './routing'
 
@@ -8,7 +8,7 @@ export { mixpanel }
 export async function init(info: InfoInfoResponse) {
   const token =
     process.env.REACT_APP_MIXPANEL_TOKEN || '00000000000000000000000000000000'
-  let options = {
+  let options: Partial<Config> = {
     autotrack: false,
     opt_out_tracking_by_default: true,
     batch_requests: true,
@@ -19,6 +19,7 @@ export async function init(info: InfoInfoResponse) {
       '$referrer',
       '$referring_domain',
     ],
+    debug: process.env.NODE_ENV === 'development',
   }
   const apiHost = process.env.REACT_APP_MIXPANEL_HOST
   if (apiHost) {

@@ -23,6 +23,7 @@ import {
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
+import { telemetry } from '../../utils/telemetry'
 import { InstanceSelect } from '../../components/Filter'
 import styles from './List.module.less'
 import { ListTable } from './ListTable'
@@ -155,8 +156,10 @@ export function TopSQLList() {
 
     let computedStart = start - expand
     let computedEnd = end + expand
+    const v: [number, number] = [computedStart, computedEnd]
 
-    setTimeRange({ type: 'absolute', value: [computedStart, computedEnd] })
+    setTimeRange({ type: 'absolute', value: v })
+    telemetry.clickZoomOut(v)
   }, [timeRange, setTimeRange])
 
   const chartRef = useRef<any>(null)
@@ -188,15 +191,29 @@ export function TopSQLList() {
             <Space>
               <InstanceSelect
                 value={instance}
-                onChange={setInstance}
+                onChange={(inst) => {
+                  setInstance(inst)
+                  if (inst) {
+                    telemetry.finishSelectInstance(inst?.instance_type!)
+                  }
+                }}
                 instances={instances}
                 disabled={isLoading || isInstancesLoading}
+                onDropdownVisibleChange={(open) =>
+                  open && telemetry.openSelectInstance()
+                }
               />
               <Button.Group>
                 <TimeRangeSelector
                   value={timeRange}
-                  onChange={setTimeRange}
+                  onChange={(v) => {
+                    setTimeRange(v)
+                    telemetry.selectTimeRange(v)
+                  }}
                   disabled={isLoading}
+                  onVisibleChange={(visible) =>
+                    visible && telemetry.openTimeRangePicker()
+                  }
                 />
                 <Button
                   icon={<ZoomOutOutlined />}
@@ -207,10 +224,16 @@ export function TopSQLList() {
               <AutoRefreshButton
                 disabled={isLoading}
                 autoRefreshSeconds={autoRefreshSeconds}
-                onAutoRefreshSecondsChange={setAutoRefreshSeconds}
+                onAutoRefreshSecondsChange={(sec) => {
+                  setAutoRefreshSeconds(sec)
+                  telemetry.selectAutoRefreshOption(sec)
+                }}
                 remainingRefreshSeconds={remainingRefreshSeconds}
                 onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}
-                onRefresh={handleUpdateTopSQLData}
+                onRefresh={() => {
+                  handleUpdateTopSQLData()
+                  telemetry.clickAutoRefresh()
+                }}
                 autoRefreshSecondsOptions={autoRefreshOptions}
               />
               {isLoading && (
@@ -222,7 +245,12 @@ export function TopSQLList() {
 
             <Space>
               <Tooltip title={t('topsql.settings.title')} placement="bottom">
-                <SettingOutlined onClick={() => setShowSettings(true)} />
+                <SettingOutlined
+                  onClick={() => {
+                    setShowSettings(true)
+                    telemetry.clickSettings()
+                  }}
+                />
               </Tooltip>
             </Space>
           </Toolbar>

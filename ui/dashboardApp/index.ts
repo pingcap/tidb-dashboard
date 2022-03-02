@@ -74,8 +74,21 @@ async function webPageStart() {
   }
 
   if (info?.enable_telemetry) {
+    // mixpanel
     await telemetry.init(info)
+    let preRoute = ''
+    window.addEventListener('single-spa:routing-event', () => {
+      const curRoute = routing.getPathInLocationHash()
+      if (curRoute !== preRoute) {
+        telemetry.mixpanel.register({
+          $current_url: curRoute,
+        })
+        telemetry.mixpanel.track('Page Change')
+        preRoute = curRoute
+      }
+    })
 
+    // sentry
     initSentryRoutingInstrument()
     const instance = client.getAxiosInstance()
     applySentryTracingInterceptor(instance)
@@ -159,17 +172,6 @@ async function webPageStart() {
 
   window.addEventListener('single-spa:first-mount', () => {
     removeSpinner()
-  })
-  let preRoute = ''
-  window.addEventListener('single-spa:routing-event', () => {
-    const curRoute = routing.getPathInLocationHash()
-    if (curRoute !== preRoute) {
-      telemetry.mixpanel.register({
-        $current_url: curRoute,
-      })
-      telemetry.mixpanel.track('PageChange')
-      preRoute = curRoute
-    }
   })
 
   singleSpa.start()

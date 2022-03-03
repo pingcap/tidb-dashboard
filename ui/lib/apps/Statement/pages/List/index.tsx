@@ -116,6 +116,7 @@ export default function StatementsOverview() {
                   timeRange,
                 })
               }
+              data-e2e="statement_time_range_selector"
             />
             <MultiSelect.Plain
               placeholder={t(

@@ -92,6 +92,65 @@ describe('SQL statements list page', () => {
     })
   })
 
+  describe('Time range selector', () => {
+    it('Default time range', () => {
+      cy.get('[data-e2e=statement_timerange_selector]').should(
+        'have.text',
+        'Recent 30 min'
+      )
+    })
+
+    it('Time range options', () => {
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+        'statements_list'
+      )
+
+      // select last_seen column field
+      cy.get('[data-e2e=columns_selector_popover]')
+        .trigger('mouseover')
+        .then(() => {
+          cy.contains('Last Seen').within(() => {
+            cy.get('[data-e2e=columns_selector_field_last_seen]').check()
+          })
+        })
+      cy.wait('@statements_list').then((res) => {
+        const response = res.response.body
+        console.log('response', response)
+        let lastSeenTimeStampList = []
+        response.forEach((stmt) => {
+          console.log('stmt.last_seen', stmt, stmt.last_seen)
+          lastSeenTimeStampList.push(stmt['last_seen'])
+        })
+        console.log('lastSeenTimeStampList', lastSeenTimeStampList)
+        cy.get('[data-e2e=statement_time_range_option]')
+          .should('have.length', 12)
+          .each(($option, $idx) => {
+            if ($idx == 0) {
+              // Recent 15 min is enabled
+              cy.wrap($option)
+                .invoke('attr', 'class')
+                .should('not.contain', 'time_range_item_disabled')
+            } else if ($idx == 1) {
+              // Recent 30 min is active
+              cy.wrap($option)
+                .invoke('attr', 'class')
+                .should('contain', 'time_range_item_active')
+            } else {
+              // the reset options are disabled
+              cy.wrap($option)
+                .invoke('attr', 'class')
+                .should('contain', 'time_range_item_disabled')
+            }
+          })
+
+        cy.get('[data-automation-key=digest_text]').should(
+          'have.length',
+          response.length
+        )
+      })
+    })
+  })
+
   describe('Filter statements by changing database', () => {
     it('No database selected by default', () => {
       cy.get('[data-e2e=base_select_input_text]')
@@ -276,7 +335,7 @@ describe('SQL statements list page', () => {
         })
     })
 
-    it('Hover on columns selector and check selected fileds ', () => {
+    it('Hover on columns selector and check selected fields', () => {
       cy.get('[data-e2e=columns_selector_popover]')
         .trigger('mouseover')
         .then(() => {
@@ -296,7 +355,7 @@ describe('SQL statements list page', () => {
         })
     })
 
-    it('Select all column fileds', () => {
+    it('Select all column fields', () => {
       cy.get('[data-e2e=columns_selector_popover]')
         .trigger('mouseover')
         .then(() => {

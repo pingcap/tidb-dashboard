@@ -323,7 +323,7 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Hover on columns selector and check selected fileds ', () => {
+      it('Hover on columns selector and check selected fields ', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
@@ -344,7 +344,7 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Select all column fileds', () => {
+      it('Select all column fields', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {

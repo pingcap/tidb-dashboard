@@ -214,6 +214,7 @@ export default function TimeRangeSelector({
                   curTimeRange.value === seconds,
               })}
               onClick={() => enabled && handleRecentChange(seconds)}
+              data-e2e="statement_time_range_option"
             >
               {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
               {getValueFormat('s')(seconds, 0)}
@@ -250,10 +251,13 @@ export default function TimeRangeSelector({
       disabled={timeRanges.length === 0}
       overlay={dropdownContent}
       trigger={['click']}
-      visible={dropdownVisible}
+      visible={true}
       onVisibleChange={setDropdownVisible}
     >
-      <Button icon={<ClockCircleOutlined />}>
+      <Button
+        icon={<ClockCircleOutlined />}
+        data-e2e="statement_timerange_selector"
+      >
         {curTimeRange.type === 'recent' ? (
           <span>
             {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}

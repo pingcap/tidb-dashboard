@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -ex
 tidb_version=$1
-mode=$2
+without_monitor=$2
+mode=$3
 
 TIUP_BIN_DIR=$HOME/.tiup/bin/tiup
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -26,5 +27,5 @@ else
     $TIUP_BIN_DIR update playground
 
     # Run Tiup
-    $TIUP_BIN_DIR playground ${tidb_version} --tiflash=0 &> start_tiup.log &
+    $TIUP_BIN_DIR playground ${tidb_version} --tiflash=0 --without-monitor=${without_monitor} &> start_tiup.log &
 fi

@@ -14,7 +14,9 @@ describe('SlowQuery list page', () => {
 
     // Restart tiup
     cy.exec(
-      `bash ../scripts/start_tiup.sh ${Cypress.env('TIDB_VERSION')} restart`,
+      `bash ../scripts/start_tiup.sh ${Cypress.env(
+        'TIDB_VERSION'
+      )} false restart`,
       { log: true }
     )
 

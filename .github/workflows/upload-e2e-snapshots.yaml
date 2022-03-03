@@ -58,7 +58,7 @@ jobs:
       - name: Install and run TiUP in the background
         run: |
           chmod u+x scripts/start_tiup.sh
-          scripts/start_tiup.sh ${{ matrix.tidb_version }}
+          scripts/start_tiup.sh ${{ matrix.tidb_version }} false
       - name: Build UI
         run: |
           make ui

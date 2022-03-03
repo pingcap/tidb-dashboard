@@ -77,8 +77,13 @@ jobs:
         include:
           - feature_version: 6.0.0
             tidb_version: nightly
+            without_monitor: false
+          - feature_version: 6.0.0
+            tidb_version: nightly
+            without_monitor: true
           - feature_version: 5.0.0
             tidb_version: v5.0.0
+            without_monitor: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -114,7 +119,7 @@ jobs:
       - name: Install and run TiUP in the background
         run: |
           chmod u+x scripts/start_tiup.sh
-          scripts/start_tiup.sh ${{ matrix.tidb_version }}
+          scripts/start_tiup.sh ${{ matrix.tidb_version }} ${{ matrix.without_monitor }}
       - name: Build UI
         run: |
           make ui
@@ -154,6 +159,7 @@ jobs:
           FEATURE_VERSION: ${{ matrix.feature_version }}
           TIDB_VERSION: ${{ matrix.tidb_version }}
           CYPRESS_ALLOW_SCREENSHOT: true
+          WITHOUT_MONITOR: ${{ matrix.without_monitor }}
       - name: Archive Test Results
         if: always()
         run: |

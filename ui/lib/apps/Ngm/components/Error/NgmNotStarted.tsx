@@ -30,7 +30,7 @@ for (const key in translations) {
 export function NgmNotStarted() {
   const { t } = useTranslation()
   return (
-    <Card>
+    <Card data-e2e="ngm_not_started">
       <Result
         title={t('component.ngmNotStarted.title')}
         subTitle={t('component.ngmNotStarted.subTitle')}

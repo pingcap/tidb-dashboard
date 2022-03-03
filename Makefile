@@ -6,6 +6,8 @@ LDFLAGS ?=
 
 FEATURE_VERSION ?= 6.0.0
 
+WITHOUT_MONITOR ?= false
+
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
 endif
@@ -52,7 +54,7 @@ e2e_test:
 	else\
 		make e2e_compat_features_test;\
 		make e2e_common_features_test;\
-	fi\
+	fi
 
 .PHONY: e2e_compat_features_test
 e2e_compat_features_test:

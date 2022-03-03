@@ -116,9 +116,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
           'contain',
           'tidb - 127.0.0.1:10080'
         )
-        cy.get('[data-e2e="instance-selector"]').click()
-        // No instances available
-        cy.get('.ant-select-dropdown-empty').should('have.length', 1)
       })
     })
 

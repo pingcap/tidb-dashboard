@@ -1,6 +1,6 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 import dayjs from 'dayjs'
-import { skipOn } from '@cypress/skip-test'
+import { skipOn, onlyOn } from '@cypress/skip-test'
 
 function setCustomTimeRange(timeRange) {
   if (!document.querySelector('[data-e2e="timerange_selector_dropdown"]')) {
@@ -370,6 +370,22 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
           '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_digest"]'
         ).should('exist')
       })
+    })
+  })
+})
+
+onlyOn(Cypress.env('TIDB_VERSION') === '5.0.0', () => {
+  describe('Ngm not supported', () => {
+    before(() => {
+      cy.fixture('uri.json').then((uri) => (this.uri = uri))
+    })
+
+    beforeEach(() => {
+      cy.login('root')
+    })
+
+    it('can not see top sql menu', () => {
+      cy.get('[data-e2e="menu_item_topsql"]').should('not.exist')
     })
   })
 })

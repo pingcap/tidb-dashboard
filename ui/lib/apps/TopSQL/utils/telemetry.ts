@@ -34,4 +34,12 @@ export const telemetry = {
   saveSettings(settings: TopsqlEditableConfig) {
     mixpanel.track('TopSQL: Save Settings', { settings })
   },
+  clickStatement(index: number) {
+    mixpanel.track('TopSQL: Click Statement', {
+      rank: index === 5 ? 'other' : index + 1,
+    })
+  },
+  clickPlan(index: number) {
+    mixpanel.track('TopSQL: Click Plan', { rank: index + 1 })
+  },
 }

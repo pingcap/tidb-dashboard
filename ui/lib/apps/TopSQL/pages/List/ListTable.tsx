@@ -23,6 +23,7 @@ import { ListDetail } from './ListDetail'
 import { isOthersRecord, isUnknownSQLRecord } from '../../utils/specialRecord'
 import { InstanceType } from './ListDetail/ListDetailTable'
 import { usePersistFn } from 'ahooks'
+import { telemetry } from '../../utils/telemetry'
 
 interface ListTableProps {
   data: TopsqlSummaryItem[]
@@ -114,6 +115,7 @@ export function ListTable({
     <div
       onMouseEnter={() => onRowOver(props.item.sql_digest)}
       onMouseLeave={onRowLeave}
+      onClick={() => telemetry.clickStatement(props.itemIndex)}
     >
       <DetailsRow {...props} />
     </div>

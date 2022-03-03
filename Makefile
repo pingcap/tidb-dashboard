@@ -47,7 +47,7 @@ integration_test:
 
 .PHONY: e2e_test
 e2e_test:
-	@if [ $(WITHOUT_MONITOR) = true ]; then\
+	@if $(WITHOUT_MONITOR); then\
 		make e2e_without_monitor_test;\
 	else\
 		make e2e_compat_features_test;\

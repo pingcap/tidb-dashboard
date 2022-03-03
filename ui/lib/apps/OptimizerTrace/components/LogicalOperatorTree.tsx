@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useMemo } from 'react'
-import Viz from 'viz.js'
-import workerURL from 'viz.js/full.render'
+import React, { useEffect, useRef } from 'react'
+import { graphviz } from 'd3-graphviz'
 
 import styles from './OperatorTree.module.less'
 
@@ -26,7 +25,6 @@ export default function LogicalOperatorTree({
   className,
 }: LogicalOperatorTreeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const viz = useMemo(() => new Viz(workerURL), [])
 
   useEffect(() => {
     const containerEl = containerRef.current
@@ -52,22 +50,12 @@ export default function LogicalOperatorTree({
       )
       .join('')
 
-    viz
-      .renderSVGElement(
-        `digraph {
-  node [shape=ellipse fontsize=8 fontname="Verdana"];
-  ${define}\n${link}\n}`
-      )
-      .then((el) => {
-        if (!containerEl) {
-          return
-        }
-        while (containerEl.firstChild) {
-          containerEl.removeChild(containerEl.firstChild)
-        }
-        containerEl.appendChild(el)
-      })
-  }, [containerRef, data, viz, labels])
+    graphviz(containerEl).renderDot(
+      `digraph {
+node [shape=ellipse fontsize=8 fontname="Verdana"];
+${define}\n${link}\n}`
+    )
+  }, [containerRef, data, labels])
 
   return (
     <div

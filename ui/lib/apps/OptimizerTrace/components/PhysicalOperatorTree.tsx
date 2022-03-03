@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useMemo } from 'react'
-import Viz from 'viz.js'
-import workerURL from 'viz.js/full.render'
+import React, { useEffect, useRef } from 'react'
+import { graphviz } from 'd3-graphviz'
 
 import styles from './OperatorTree.module.less'
 import { LogicalOperatorNode, createLabels } from './LogicalOperatorTree'
@@ -21,7 +20,6 @@ export default function PhysicalOperatorTree({
   className,
 }: PhysicalOperatorTreeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const viz = useMemo(() => new Viz(workerURL), [])
 
   useEffect(() => {
     const containerEl = containerRef.current
@@ -34,7 +32,7 @@ export default function PhysicalOperatorTree({
       .map(
         (n) =>
           `${n.id} ${createLabels({
-            label: `${n.type}_${n.id}`,
+            label: `${n.type}_${n.id}\ncost: ${n.cost}`,
             color: n.selected ? 'blue' : '',
             tooltip: `info: ${n.info}`,
           })};\n`
@@ -53,22 +51,12 @@ export default function PhysicalOperatorTree({
       )
       .join('')
 
-    viz
-      .renderSVGElement(
-        `graph {
+    graphviz(containerEl).renderDot(
+      `graph {
   node [shape=ellipse fontsize=8 fontname="Verdana"];
   ${define}\n${link}\n}`
-      )
-      .then((el) => {
-        if (!containerEl) {
-          return
-        }
-        while (containerEl.firstChild) {
-          containerEl.removeChild(containerEl.firstChild)
-        }
-        containerEl.appendChild(el)
-      })
-  }, [containerRef, data, viz])
+    )
+  }, [containerRef, data])
 
   return (
     <div

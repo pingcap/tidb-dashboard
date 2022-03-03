@@ -160,12 +160,6 @@ jobs:
           TIDB_VERSION: ${{ matrix.tidb_version }}
           CYPRESS_ALLOW_SCREENSHOT: true
           WITHOUT_MONITOR: ${{ matrix.without_monitor }}
-      - name: Archive Test Results
-        if: always()
-        run: |
-          cat ui/start_tiup.log
-          echo "==============="
-          cat ui/wait_tiup.log
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:

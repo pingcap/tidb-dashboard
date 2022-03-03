@@ -291,6 +291,8 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
         cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').eq(0).click()
         cy.get('[data-e2e="topsql_listdetail_table"]').should('exist')
+
+        // content
         cy.get(
           '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_text"]'
         ).should('exist')
@@ -303,6 +305,12 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         cy.get(
           '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_digest"]'
         ).should('not.exist')
+
+        // table columns
+        cy.get('[data-item-key="cpuTime"]').should('exist')
+        cy.get('[data-item-key="plan"]').should('exist')
+        cy.get('[data-item-key="exec_count_per_sec"]').should('exist')
+        cy.get('[data-item-key="latency"]').should('exist')
       })
 
       it('if the list detail table has more than one plan, only the real plans can be selected', () => {

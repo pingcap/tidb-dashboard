@@ -44,15 +44,11 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
       }).as('getTopsqlSummary')
       cy.intercept(
         {
-          url: `${Cypress.env('apiBasePath')}/topsql/instances`,
-          query: { start: '1641916800', end: '1641934800' },
+          url: `${Cypress.env('apiBasePath')}/topsql/instances?*`,
         },
         { fixture: 'topsql_instance:end=1641934800&start=1641916800.json' }
       )
 
-      cy.intercept(`${Cypress.env('apiBasePath')}/topsql/instances?*`).as(
-        'getInstance'
-      )
       cy.intercept(`${Cypress.env('apiBasePath')}/topsql/config`).as(
         'getTopsqlConfig'
       )

@@ -5,7 +5,7 @@ import { getPathInLocationHash } from './routing'
 
 export { mixpanel }
 
-export async function init(info: InfoInfoResponse) {
+export function init() {
   const token =
     process.env.REACT_APP_MIXPANEL_TOKEN || '00000000000000000000000000000000'
   let options: Partial<Config> = {
@@ -28,11 +28,12 @@ export async function init(info: InfoInfoResponse) {
   mixpanel.init(token, options)
   // disable mixpanel to report data immediately
   mixpanel.opt_out_tracking()
-  if (info?.enable_telemetry) {
-    mixpanel.register({
-      $current_url: getPathInLocationHash(),
-      dashboard_version: info.version?.internal_version,
-    })
-    mixpanel.opt_in_tracking()
-  }
+}
+
+export function enableTelemetry(info: InfoInfoResponse) {
+  mixpanel.register({
+    $current_url: getPathInLocationHash(),
+    dashboard_version: info.version?.internal_version,
+  })
+  mixpanel.opt_in_tracking()
 }

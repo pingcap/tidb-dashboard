@@ -73,9 +73,10 @@ async function webPageStart() {
     return
   }
 
+  telemetry.init()
   if (info?.enable_telemetry) {
     // mixpanel
-    await telemetry.init(info)
+    telemetry.enableTelemetry(info)
     let preRoute = ''
     window.addEventListener('single-spa:routing-event', () => {
       const curRoute = routing.getPathInLocationHash()

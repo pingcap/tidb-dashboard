@@ -175,7 +175,12 @@ export function TopSQLList() {
               description={
                 <>
                   {t(`topsql.alert_header.body`)}
-                  <a onClick={() => setShowSettings(true)}>
+                  <a
+                    onClick={() => {
+                      setShowSettings(true)
+                      telemetry.clickSettings('bannerTips')
+                    }}
+                  >
                     {` ${t('topsql.alert_header.settings')}`}
                   </a>
                 </>
@@ -248,7 +253,7 @@ export function TopSQLList() {
                 <SettingOutlined
                   onClick={() => {
                     setShowSettings(true)
-                    telemetry.clickSettings()
+                    telemetry.clickSettings('settingIcon')
                   }}
                 />
               </Tooltip>
@@ -262,7 +267,13 @@ export function TopSQLList() {
             title={t('topsql.settings.disabled_result.title')}
             subTitle={t('topsql.settings.disabled_result.sub_title')}
             extra={
-              <Button type="primary" onClick={() => setShowSettings(true)}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  setShowSettings(true)
+                  telemetry.clickSettings('firstTimeTips')
+                }}
+              >
                 {t('conprof.settings.open_settings')}
               </Button>
             }

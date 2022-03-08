@@ -28,8 +28,8 @@ export const telemetry = {
   selectAutoRefreshOption(v: number) {
     mixpanel.track('TopSQL: Select Auto Refresh Option', { option: v })
   },
-  clickSettings() {
-    mixpanel.track('TopSQL: Click Settings')
+  clickSettings(type: 'firstTimeTips' | 'settingIcon' | 'bannerTips') {
+    mixpanel.track('TopSQL: Click Settings', { type })
   },
   saveSettings(settings: TopsqlEditableConfig) {
     mixpanel.track('TopSQL: Save Settings', { settings })

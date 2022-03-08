@@ -118,20 +118,26 @@ describe('SQL statements list page', () => {
 
     const getNearTime = () => {
       const cur = dayjs()
+      let endTime, startTime
       if (cur.get('minute') > 30) {
-        const endTime = cur.set('hour', cur.get('hour') + 1).set('minute', 0)
-        console.log('endTime', endTime, dayjs(endTime).unix())
+        endTime = dayjs(
+          cur
+            .set('hour', cur.get('hour') + 1)
+            .set('minute', 0)
+            .set('second', 0)
+        ).unix()
+        startTime = dayjs(cur.set('minute', 30).set('second', 0)).unix()
       } else {
-        const endTime = cur.set('minute', 0)
-        console.log('s endTime', endTime, dayjs(endTime).unix())
+        endTime = dayjs(cur.set('minute', 30).set('second', 0)).unix()
+        startTime = dayjs(cur.set('minute', 0).set('second', 0)).unix()
       }
+      return [startTime, endTime]
     }
 
     const checkStmtListWithTimeRange = (stmtList, timeDiff) => {
       const now = dayjs().unix()
 
       stmtList.forEach((stmt) => {
-        console.log('stmt.last_seen', stmt.last_seen)
         cy.wrap(stmt.last_seen)
           .should('be.lte', now)
           .and('be.gt', now - timeDiff)
@@ -174,18 +180,19 @@ describe('SQL statements list page', () => {
       })
 
       it('Custom time range selector', () => {
+        const [startTime, endTime] = getNearTime()
         cy.get('[data-e2e=statement_timerange_selector]')
           .click()
           .then(() => {
             cy.get('.ant-slider').within(() => {
               cy.get('[role=slider]')
                 .eq(0)
-                .should('have.attr', 'aria-valuemin', '1646645400')
-                .and('have.attr', 'aria-valuemax', '1646647200')
+                .should('have.attr', 'aria-valuemin', startTime)
+                .and('have.attr', 'aria-valuemax', endTime)
               cy.get('[role=slider]')
                 .eq(1)
-                .should('have.attr', 'aria-valuemin', '1646645400')
-                .and('have.attr', 'aria-valuemax', '1646647200')
+                .should('have.attr', 'aria-valuemin', startTime)
+                .and('have.attr', 'aria-valuemax', endTime)
             })
           })
       })
@@ -533,6 +540,14 @@ describe('SQL statements list page', () => {
     })
   })
 
+  const calcStmtHistorySize = (refreshInterval, historySize) => {
+    const totalMins = refreshInterval * historySize
+    const day = Math.floor(totalMins / (24 * 60))
+    const hour = Math.floor((totalMins - day * 24 * 60) / 60)
+    const min = totalMins - day * 24 * 60 - hour * 60
+    return `${day} day ${hour} hour ${min} min`
+  }
+
   describe('Statement Setting', () => {
     it('Close setting panel', () => {
       cy.get('[data-e2e=statement_setting]')
@@ -580,85 +595,112 @@ describe('SQL statements list page', () => {
       cy.get('[data-e2e=statements_table]').should('exist')
     })
 
-    const checkSilder = (sizeList, defaultValueNow, dataE2EValue) => {
-      cy.get('[data-e2e=statement_setting]')
-        .click()
-        .then(() => {
-          cy.get(`[data-e2e=${dataE2EValue}]`).within(() => {
-            cy.get('.ant-slider-handle').should(
-              'have.attr',
-              'aria-valuenow',
-              defaultValueNow
-            )
-
-            cy.get('.ant-slider-mark-text')
-              .then(($marks) => {
-                return Cypress.$.makeArray($marks).map((mark) => mark.innerText)
-              })
-              // make sure there exists the default executed statements
-              .should('to.deep.eq', sizeList)
-          })
-        })
-    }
-
-    it('Statement setting max size', () => {
-      const sizeList = ['200', '1000', '2000', '5000']
-      checkSilder(sizeList, '3000', 'statement_setting_max_size')
-    })
-
-    it('Statement setting window size', () => {
-      const sizeList = ['1', '5', '15', '30', '60']
-      checkSilder(sizeList, '30', 'statement_setting_refresh_interval')
-    })
-
-    it('Statement setting number of windows', () => {
-      const sizeList = ['1', '255']
-      checkSilder(sizeList, '24', 'statement_setting_history_size')
-    })
-
-    describe('SQL Statement History Size', () => {
+    describe('Default statement setting', () => {
       beforeEach(() => {
-        cy.get('[data-e2e=statement_setting]')
-          .click()
-          .then(() => {
-            // get refresh_interval value
-            cy.get(`[data-e2e=statement_setting_refresh_interval]`).within(
-              () => {
-                cy.get('.ant-slider-handle')
-                  .invoke('attr', 'aria-valuenow')
-                  .as('refreshIntervalVal')
-              }
-            )
+        cy.get('[data-e2e=statement_setting]').click()
 
-            // get history_size value
-            cy.get(`[data-e2e=statement_setting_history_size]`).within(() => {
-              cy.get('.ant-slider-handle')
-                .invoke('attr', 'aria-valuenow')
-                .as('historySizeVal')
-            })
-          })
+        // get refresh_interval value
+        cy.get(`[data-e2e=statement_setting_refresh_interval]`).within(() => {
+          cy.get('.ant-slider-handle')
+            .invoke('attr', 'aria-valuenow')
+            .as('refreshIntervalVal')
+        })
+
+        // get history_size value
+        cy.get(`[data-e2e=statement_setting_history_size]`).within(() => {
+          cy.get('.ant-slider-handle')
+            .invoke('attr', 'aria-valuenow')
+            .as('historySizeVal')
+        })
       })
 
-      const calcStmtHistorySize = (refreshInterval, historySize) => {
-        const totalMins = refreshInterval * historySize
-        const day = Math.floor(totalMins / (24 * 60))
-        const hour = Math.floor((totalMins - day * 24 * 60) / 60)
-        const min = totalMins - day * 24 * 60 - hour * 60
-        return `${day} day ${hour} hour ${min} min`
+      const checkSilder = (sizeList, defaultValueNow, dataE2EValue) => {
+        cy.get(`[data-e2e=${dataE2EValue}]`).within(() => {
+          cy.get('.ant-slider-handle').should(
+            'have.attr',
+            'aria-valuenow',
+            defaultValueNow
+          )
+
+          cy.get('.ant-slider-mark-text')
+            .then(($marks) => {
+              return Cypress.$.makeArray($marks).map((mark) => mark.innerText)
+            })
+            // make sure there exists the default executed statements
+            .should('to.deep.eq', sizeList)
+        })
       }
+
+      it('Statement setting max size', () => {
+        const sizeList = ['200', '1000', '2000', '5000']
+        checkSilder(sizeList, '3000', 'statement_setting_max_size')
+      })
+
+      it('Statement setting window size', () => {
+        const sizeList = ['1', '5', '15', '30', '60']
+        checkSilder(sizeList, '30', 'statement_setting_refresh_interval')
+      })
+
+      it('Statement setting number of windows', () => {
+        const sizeList = ['1', '255']
+        checkSilder(sizeList, '24', 'statement_setting_history_size')
+      })
 
       it('Check History Size', function () {
         const stmtHistorySize = calcStmtHistorySize(
           this.refreshIntervalVal,
           this.historySizeVal
         )
-        console.log('stmtHistorySize', stmtHistorySize)
-
         cy.get('[data-e2e=statement_setting_keep_duration]').within(() => {
           cy.get('.ant-form-item-control-input-content').should(
             'have.text',
-            calcStmtHistorySize(this.refreshIntervalVal, this.historySizeVal)
+            stmtHistorySize
           )
+        })
+      })
+    })
+
+    describe('Update statement setting', () => {
+      beforeEach(() => {
+        cy.get('[data-e2e=statement_setting]').click()
+      })
+
+      it('Update window size and number of windows', () => {
+        cy.get('[data-e2e=statement_setting_refresh_interval]').within(() => {
+          cy.get('.ant-slider-step')
+            .find('.ant-slider-dot')
+            .eq(0)
+            .click()
+            .then(() => {
+              cy.get('.ant-slider-handle')
+                .invoke('attr', 'aria-valuenow')
+                .as('refreshIntervalVal')
+            })
+        })
+
+        cy.get('[data-e2e=statement_setting_history_size]').within(() => {
+          cy.get('.ant-slider-step')
+            .find('.ant-slider-dot')
+            .eq(0)
+            .click()
+            .then(() => {
+              cy.get('.ant-slider-handle')
+                .invoke('attr', 'aria-valuenow')
+                .as('historySizeVal')
+            })
+        })
+
+        cy.get(['@refreshIntervalVal', '@historySizeVal']).then(() => {
+          cy.get('[data-e2e=statement_setting_keep_duration]').within(() => {
+            const stmtHistorySize = calcStmtHistorySize(
+              this.refreshIntervalVal,
+              this.historySizeVal
+            )
+            cy.get('.ant-form-item-control-input-content').should(
+              'have.text',
+              stmtHistorySize
+            )
+          })
         })
       })
     })

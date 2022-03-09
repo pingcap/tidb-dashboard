@@ -533,7 +533,7 @@ describe('SlowQuery list page', () => {
         .click()
         .then(() => {
           cy.url().should('include', `${this.uri.slow_query}/detail`)
-          cy.get('[data-e2e=syntax_highlighter]').should(
+          cy.get('[data-e2e=syntax_highlighter_compact]').should(
             'have.text',
             'SELECT sleep(1.2);'
           )

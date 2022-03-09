@@ -16,8 +16,11 @@ export const telemetry = {
   selectTimeRange(v: TimeRange) {
     mixpanel.track('TopSQL: Select Time Range', v)
   },
-  clickZoomOut(v) {
-    mixpanel.track('TopSQL: Zoom Out Time Range', { timestamps: v })
+  clickZoomOut(timestamps: [number, number]) {
+    mixpanel.track('TopSQL: Click Zoom Out Button', { timestamps })
+  },
+  dndZoomIn(timestamps: [number, number]) {
+    mixpanel.track('TopSQL: Drag & Drop Zoom In', { timestamps })
   },
   clickRefresh() {
     mixpanel.track('TopSQL: Click Refresh')

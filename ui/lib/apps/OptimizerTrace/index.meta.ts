@@ -4,5 +4,5 @@ export default {
   id: 'optimizer_trace',
   routerPrefix: '/optimizer_trace',
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_optimizer_trace" */ '.'),
+  reactRoot: () => import('.'),
 }

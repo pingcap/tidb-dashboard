@@ -17,7 +17,7 @@ export const telemetry = {
     mixpanel.track('TopSQL: Select Time Range', v)
   },
   clickZoomOut(v) {
-    mixpanel.track('TopSQL: Zomm Out Time Range', { timestamps: v })
+    mixpanel.track('TopSQL: Zoom Out Time Range', { timestamps: v })
   },
   clickRefresh() {
     mixpanel.track('TopSQL: Click Refresh')
@@ -25,8 +25,8 @@ export const telemetry = {
   clickAutoRefresh() {
     mixpanel.track('TopSQL: Click Auto Refresh Dropdown')
   },
-  selectAutoRefreshOption(v: number) {
-    mixpanel.track('TopSQL: Select Auto Refresh Option', { option: v })
+  selectAutoRefreshOption(seconds: number) {
+    mixpanel.track('TopSQL: Select Auto Refresh Option', { seconds })
   },
   clickSettings(type: 'firstTimeTips' | 'settingIcon' | 'bannerTips') {
     mixpanel.track('TopSQL: Click Settings', { type })

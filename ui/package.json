@@ -60,8 +60,7 @@
     "single-spa-react": "^3.0.1",
     "sql-formatter": "^4.0.2",
     "sql-formatter-plus-plus": "^1.4.0",
-    "string-template": "^1.0.0",
-    "svg-pan-zoom": "^3.6.1"
+    "string-template": "^1.0.0"
   },
   "scripts": {
     "start": "gulp dev",

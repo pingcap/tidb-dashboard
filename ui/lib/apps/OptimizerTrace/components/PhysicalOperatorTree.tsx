@@ -32,7 +32,7 @@ export default function PhysicalOperatorTree({
       .map(
         (n) =>
           `${n.id} ${createLabels({
-            label: `${n.type}_${n.id}\ncost: ${n.cost}`,
+            label: `${n.type}_${n.id}\ncost: ${n.cost.toFixed(4)}`,
             color: n.selected ? 'blue' : '',
             tooltip: `info: ${n.info}`,
           })};\n`

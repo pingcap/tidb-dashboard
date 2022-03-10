@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import { Button, Upload, Space, Alert } from 'antd'
+import { Button, Upload, Space, Alert, Tooltip } from 'antd'
 import { UploadOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { ErrorBoundary } from 'react-error-boundary'
 
@@ -115,12 +115,17 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
         const Action = () => (
           <div className={styles.steps}>
             <h3>{s.name}</h3>
-            {s.steps.map((actionStep, index) => (
-              <p key={index} className={styles.step_info}>
-                action {actionStep.index}: {actionStep.action}
-                {actionStep.reason && `, reason: ${actionStep.reason}`}
-              </p>
-            ))}
+            {s.steps.map((actionStep, index) => {
+              const content = `action ${actionStep.index}: ${actionStep.action}
+              ${actionStep.reason && `, reason: ${actionStep.reason}`}`
+              return (
+                <Tooltip title={content}>
+                  <p key={index} className={styles.step_info}>
+                    {content}
+                  </p>
+                </Tooltip>
+              )
+            })}
           </div>
         )
         return (

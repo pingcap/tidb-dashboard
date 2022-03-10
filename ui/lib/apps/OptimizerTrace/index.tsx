@@ -1,7 +1,8 @@
 import React, { useCallback, useState } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import { Button, Upload, Space } from 'antd'
+import { Button, Upload, Space, Alert } from 'antd'
 import { UploadOutlined, ArrowRightOutlined } from '@ant-design/icons'
+import { ErrorBoundary } from 'react-error-boundary'
 
 import { Card, Toolbar, Root } from '@lib/components'
 
@@ -53,11 +54,14 @@ interface LogicalOptimizeActionStep {
 }
 
 function OptimizerTrace() {
-  const [data, setData] = useState<OptimizerData | null>(null)
+  const [importedData, setImportedData] = useState<OptimizerData | null>(null)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const handleBeforeUpload = useCallback(async (file: File) => {
+    setErrorMsg('')
+
     const t = await file.text()
-    setData(JSON.parse(t))
+    setImportedData(JSON.parse(t))
     return false
   }, [])
 
@@ -77,13 +81,28 @@ function OptimizerTrace() {
         </Toolbar>
       </Card>
 
-      {data && (
-        <>
-          <LogicalOptimization data={data} />
-          <PhysicalOptimization data={data} />
-          <Final data={data} />
-        </>
+      {errorMsg && (
+        <Card>
+          <Alert showIcon type="error" message="Error" description={errorMsg} />
+        </Card>
       )}
+
+      <ErrorBoundary
+        FallbackComponent={({ error, resetErrorBoundary }) => {
+          setImportedData(null)
+          setErrorMsg(error.message)
+          resetErrorBoundary()
+          return null
+        }}
+      >
+        {importedData && (
+          <>
+            <LogicalOptimization data={importedData} />
+            <PhysicalOptimization data={importedData} />
+            <Final data={importedData} />
+          </>
+        )}
+      </ErrorBoundary>
     </div>
   )
 }

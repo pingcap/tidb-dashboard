@@ -62,6 +62,14 @@ Cypress.Commands.overwrite(
   }
 )
 
+Cypress.Commands.add('getByTestId', (selector, ...args) => {
+  return cy.get(`[data-e2e="${selector}"]`, ...args)
+})
+
+Cypress.Commands.add('getByTestIdLike', (selector, ...args) => {
+  return cy.get(`[data-e2e*="${selector}"]`, ...args)
+})
+
 //
 //
 // -- This is a child command --

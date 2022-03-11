@@ -4,28 +4,34 @@ import { skipOn, onlyOn } from '@cypress/skip-test'
 
 function setCustomTimeRange(timeRange) {
   if (!document.querySelector('[data-e2e="timerange_selector_dropdown"]')) {
-    cy.get('[data-e2e="timerange-selector"]').click()
+    cy.getByTestId('timerange-selector').click()
   }
-  cy.get(
-    '[data-e2e="timerange_selector_dropdown"] .ant-picker.ant-picker-range'
-  ).type(timeRange)
-  cy.get('[data-e2e="timerange_selector_dropdown"]').should('not.be.visible')
+  cy.getByTestId('timerange_selector_dropdown').should('be.visible')
+
+  cy.getByTestId('timerange_selector_dropdown')
+    .find('.ant-picker.ant-picker-range')
+    .type(timeRange)
+  cy.getByTestId('timerange_selector_dropdown').should('be.not.visible')
 }
 
 function clearCustomTimeRange() {
   if (!document.querySelector('[data-e2e="timerange_selector_dropdown"]')) {
-    cy.get('[data-e2e="timerange-selector"]').click()
+    cy.getByTestId('timerange-selector').click()
   }
-  cy.get('[data-e2e="timerange_selector_dropdown"] .ant-picker-clear').click()
-  cy.get('[data-e2e="timerange_selector_dropdown"]').should('not.be.visible')
+  cy.getByTestId('timerange_selector_dropdown').should('be.visible')
+
+  cy.getByTestId('timerange_selector_dropdown')
+    .find('.ant-picker-clear')
+    .click()
+  cy.getByTestId('timerange_selector_dropdown').should('be.not.visible')
 }
 
 function enableTopSQL() {
-  cy.get('[data-e2e="topsql_settings"]').click()
+  cy.getByTestId('topsql_settings').click()
   cy.wait('@getTopsqlConfig')
 
-  cy.get('[data-e2e="topsql_settings_enable"]').click()
-  cy.get('[data-e2e="topsql_settings_save"]').click()
+  cy.getByTestId('topsql_settings_enable').click()
+  cy.getByTestId('topsql_settings_save').click()
 }
 
 skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
@@ -58,10 +64,11 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
       cy.visit(this.uri.topsql)
 
       cy.wait('@getTopsqlConfig').then((interception) => {
-        if (!interception.response.body.enable) {
+        if (!interception.response?.body.enable) {
           enableTopSQL()
         }
       })
+      cy.wait('@getTopsqlSummary')
     })
 
     describe('Update time range', () => {
@@ -69,21 +76,24 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
-        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
+
+        cy.wait('@getTopsqlSummary')
+        cy.getByTestId('topsql_list_chart').matchImageSnapshot()
       })
 
       it('zoom out the time range, chart displays the data that extends the 50% time range', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
+        cy.wait('@getTopsqlSummary')
 
         cy.get('.anticon-zoom-out').click()
 
-        cy.get('[data-e2e="timerange-selector"]').should(
+        cy.getByTestId('timerange-selector').should(
           'contain',
           '01-11 22:45:00 ~ 01-12 06:15:00'
         )
-        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
+        cy.getByTestId('topsql_list_chart').matchImageSnapshot()
       })
     })
 
@@ -92,7 +102,9 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
-        cy.get('[data-e2e="instance-selector"]').should(
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('instance-selector').should(
           'contain',
           'tidb - 127.0.0.1:10080'
         )
@@ -102,17 +114,23 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
-        cy.get('[data-e2e="instance-selector"]').should(
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('instance-selector').should(
           'contain',
           'tidb - 127.0.0.1:10080'
         )
 
         // No `tidb - 127.0.0.1:10080` data in the time range
         clearCustomTimeRange()
+        cy.wait('@getTopsqlSummary')
+
         setCustomTimeRange(
           '1970-01-01 08:00:00{enter}1970-01-01 09:00:00{enter}'
         )
-        cy.get('[data-e2e="instance-selector"]').should(
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('instance-selector').should(
           'contain',
           'tidb - 127.0.0.1:10080'
         )
@@ -126,20 +144,20 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
             'topsql_summary:end=1641934800&instance=127.0.0.1%3A10080&instance_type=tidb&start=1641916800&top=5&window=123s.json',
         }).as('getTopsqlSummary1')
 
-        cy.get('[data-e2e="timerange-selector"]').click()
-        cy.get('[data-e2e="timerange_selector_dropdown"]').should('be.visible')
+        cy.getByTestId('timerange-selector').click()
+        cy.getByTestId('timerange_selector_dropdown').should('be.visible')
 
         const recent = 300
         const now = dayjs().unix()
         cy.clock(now * 1000)
 
-        cy.get(`[data-e2e="timerange-${recent}"]`).click({ force: true })
+        cy.getByTestId(`timerange-${recent}`).click({ force: true })
         cy.wait('@getTopsqlSummary1')
           .its('request.url')
           .should('include', `start=${now - recent}`)
           .and('include', `end=${now}`)
 
-        cy.get('[data-e2e="auto-refresh-button"]').first().click()
+        cy.getByTestId('auto-refresh-button').first().click()
         cy.wait('@getTopsqlSummary1')
           .its('request.url')
           .should('include', `start=${now - recent}`)
@@ -150,33 +168,34 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
+        cy.wait('@getTopsqlSummary')
 
-        cy.get('[data-e2e="auto-refresh-button"]').first().click()
-        cy.get('[data-e2e="timerange-selector"]').should(
+        cy.getByTestId('auto-refresh-button').first().click()
+        cy.getByTestId('timerange-selector').should(
           'contain',
           '01-12 00:00:00 ~ 01-12 05:00:00'
         )
         cy.wait('@getTopsqlSummary')
-        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
+        cy.getByTestId('topsql_list_chart').matchImageSnapshot()
       })
 
       it('set auto refresh, show auto refresh secs aside button', () => {
-        cy.get('[data-e2e="auto-refresh-button"]').children().eq(1).click()
-        cy.get('[data-e2e="auto_refresh_time_30"]').click()
-        cy.get('[data-e2e="auto-refresh-button"]').should('contain', '30 s')
+        cy.getByTestId('auto-refresh-button').children().eq(1).click()
+        cy.getByTestId('auto_refresh_time_30').click()
+        cy.getByTestId('auto-refresh-button').should('contain', '30 s')
       })
 
       it('set auto refresh, it will be refreshed automatically after the time', () => {
-        cy.get('[data-e2e="auto-refresh-button"]').children().eq(1).click()
-        // cy.get('[data-e2e="auto_refresh_time_30"]').should('be.visible')
-        // cy.get('[data-e2e="auto_refresh_time_30"]')
-        //   .parents()
-        //   .should('not.have.css', 'pointer-events: none')
+        cy.getByTestId('auto-refresh-button').children().eq(1).click()
+        cy.getByTestId('auto_refresh_time_30').should('be.visible')
+        cy.getByTestId('auto_refresh_time_30')
+          .parents()
+          .should('not.have.css', 'pointer-events: none')
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(1000)
 
+        cy.getByTestId('auto_refresh_time_30').click()
         cy.clock()
-        cy.get('[data-e2e="auto_refresh_time_30"]').click()
         cy.tick(30000)
         cy.clock().invoke('restore')
         cy.wait('@getTopsqlSummary')
@@ -195,7 +214,9 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-07 00:00:00{enter}2022-01-12 00:00:00{enter}'
         )
-        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
+        cy.wait('@getTopsqlSummaryLargeTimerange')
+
+        cy.getByTestId('topsql_list_chart').matchImageSnapshot()
       })
 
       it('when the time range is small, the chart interval is small', () => {
@@ -207,14 +228,19 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 01:00:00{enter}2022-01-12 01:01:00{enter}'
         )
-        cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot()
+        cy.wait('@getTopsqlSummarySmallTimerange')
+
+        cy.getByTestId('topsql_list_chart').matchImageSnapshot()
       })
 
       it('the last item in the table list is others', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
-        cy.get('[data-e2e="topsql_list_table"] .ms-List-cell')
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('topsql_list_table')
+          .find('.ms-List-cell')
           .children()
           .eq(5)
           .find('[data-e2e="topsql_listtable_row_others"]')
@@ -224,44 +250,49 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
+        cy.wait('@getTopsqlSummary')
 
-        cy.get('[data-e2e="topsql_list_table"] .ms-List-cell')
+        cy.getByTestId('topsql_list_table')
+          .find('.ms-List-cell')
           .children()
           .should('have.length', 6)
 
-        cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').each(
-          (item, index) => {
+        cy.getByTestId('topsql_list_table')
+          .find('.ms-List-cell')
+          .each((item, index) => {
             cy.wrap(item).trigger('mouseover')
-            cy.get('[data-e2e="topsql_list_chart"]').matchImageSnapshot(
+            cy.getByTestId('topsql_list_chart').matchImageSnapshot(
               `Top SQL page -- Chart and table -- table has top 5 records and the others record - ${index}`
             )
-          }
-        )
+          })
       })
 
       it('table can only be single selected', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
+        cy.wait('@getTopsqlSummary')
 
-        cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').each((item) => {
-          cy.wrap(item).click()
-          cy.get(
-            '[data-e2e="topsql_list_table"] .ms-DetailsRow-check[aria-checked="true"]'
-          ).should('have.length', 1)
-        })
+        cy.getByTestId('topsql_list_table')
+          .find('.ms-List-cell')
+          .each((item) => {
+            cy.wrap(item).click()
+            cy.getByTestId('topsql_list_table')
+              .find('.ms-DetailsRow-check[aria-checked="true"]')
+              .should('have.length', 1)
+          })
       })
     })
 
     describe('Top SQL settings', () => {
       it('close Top SQL by settings panel, the chart and table will still work', () => {
-        cy.get('[data-e2e="topsql_settings"]').click()
+        cy.getByTestId('topsql_settings').click()
         cy.wait('@getTopsqlConfig')
 
-        cy.get('[data-e2e="topsql_settings_enable"]').click()
-        cy.get('[data-e2e="topsql_settings_save"]').click()
+        cy.getByTestId('topsql_settings_enable').click()
+        cy.getByTestId('topsql_settings_save').click()
         cy.get('.ant-btn-primary.ant-btn-dangerous').click()
-        cy.get('[data-e2e="topsql_not_enabled_alert"]').should('exist')
+        cy.getByTestId('topsql_not_enabled_alert').should('exist')
 
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
@@ -272,7 +303,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
         enableTopSQL()
         cy.wait('@getTopsqlConfig')
-        cy.get('[data-e2e="topsql_not_enabled_alert"]').should('not.exist')
+        cy.getByTestId('topsql_not_enabled_alert').should('not.exist')
       })
     })
 
@@ -281,23 +312,16 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
+        cy.wait('@getTopsqlSummary')
 
-        cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').eq(0).click()
-        cy.get('[data-e2e="topsql_listdetail_table"]').should('exist')
+        cy.getByTestId('topsql_list_table').find('.ms-List-cell').eq(0).click()
+        cy.getByTestId('topsql_listdetail_table').should('exist')
 
         // content
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_text"]'
-        ).should('exist')
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_digest"]'
-        ).should('exist')
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_text"]'
-        ).should('not.exist')
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_digest"]'
-        ).should('not.exist')
+        cy.getByTestId('sql_text').should('exist')
+        cy.getByTestId('sql_digest').should('exist')
+        cy.getByTestId('plan_text').should('not.exist')
+        cy.getByTestId('plan_digest').should('not.exist')
 
         // table columns
         cy.get('[data-item-key="cpuTime"]').should('exist')
@@ -310,69 +334,58 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
+        cy.wait('@getTopsqlSummary')
 
-        cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').eq(0).click()
+        cy.getByTestId('topsql_list_table').find('.ms-List-cell').eq(0).click()
 
-        cy.get('[data-e2e="topsql_listdetail_table"] .ms-List-cell')
+        cy.getByTestId('topsql_listdetail_table')
+          .find('.ms-List-cell')
           .eq(0)
           .click()
-        cy.get(
-          '[data-e2e="topsql_listdetail_table"] .ms-DetailsRow-check[aria-checked="true"]'
-        ).should('have.length', 0)
+        cy.getByTestId('topsql_listdetail_table')
+          .find('.ms-DetailsRow-check[aria-checked="true"]')
+          .should('have.length', 0)
 
-        cy.get('[data-e2e="topsql_listdetail_table"] .ms-List-cell')
+        cy.getByTestId('topsql_listdetail_table')
+          .find('.ms-List-cell')
           .eq(1)
           .click()
-        cy.get(
-          '[data-e2e="topsql_listdetail_table"] .ms-DetailsRow-check[aria-checked="true"]'
-        ).should('have.length', 0)
+        cy.getByTestId('topsql_listdetail_table')
+          .find('.ms-DetailsRow-check[aria-checked="true"]')
+          .should('have.length', 0)
 
-        cy.get('[data-e2e="topsql_listdetail_table"] .ms-List-cell')
+        cy.getByTestId('topsql_listdetail_table')
+          .find('.ms-List-cell')
           .eq(2)
           .click()
-        cy.get(
-          '[data-e2e="topsql_listdetail_table"] .ms-DetailsRow-check[aria-checked="true"]'
-        ).should('have.length', 1)
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_text"]'
-        ).should('exist')
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_digest"]'
-        ).should('exist')
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_text"]'
-        ).should('exist')
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_digest"]'
-        ).should('exist')
+        cy.getByTestId('topsql_listdetail_table')
+          .find('.ms-DetailsRow-check[aria-checked="true"]')
+          .should('have.length', 1)
+        cy.getByTestId('sql_text').should('exist')
+        cy.getByTestId('sql_digest').should('exist')
+        cy.getByTestId('plan_text').should('exist')
+        cy.getByTestId('plan_digest').should('exist')
       })
 
       it("if there's only one plan in the list detail table, show the plan information directly", () => {
         setCustomTimeRange(
           '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
         )
+        cy.wait('@getTopsqlSummary')
 
-        cy.get('[data-e2e="topsql_list_table"] .ms-List-cell').eq(1).click()
+        cy.getByTestId('topsql_list_table').find('.ms-List-cell').eq(1).click()
 
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_text"]'
-        ).should('exist')
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="sql_digest"]'
-        ).should('exist')
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_text"]'
-        ).should('exist')
-        cy.get(
-          '[data-e2e="topsql_listdetail_content"] [data-e2e="plan_digest"]'
-        ).should('exist')
+        cy.getByTestId('sql_text').should('exist')
+        cy.getByTestId('sql_digest').should('exist')
+        cy.getByTestId('plan_text').should('exist')
+        cy.getByTestId('plan_digest').should('exist')
       })
     })
   })
 })
 
 onlyOn(Cypress.env('TIDB_VERSION') === '5.0.0', () => {
-  describe('Ngm not supported', () => {
+  describe('Ngm not supported', function () {
     before(() => {
       cy.fixture('uri.json').then((uri) => (this.uri = uri))
     })
@@ -382,7 +395,7 @@ onlyOn(Cypress.env('TIDB_VERSION') === '5.0.0', () => {
     })
 
     it('can not see top sql menu', () => {
-      cy.get('[data-e2e="menu_item_topsql"]').should('not.exist')
+      cy.getByTestId('menu_item_topsql').should('not.exist')
     })
   })
 })

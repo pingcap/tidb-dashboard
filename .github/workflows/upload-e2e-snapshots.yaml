@@ -98,12 +98,12 @@ jobs:
           TIDB_VERSION: ${{ matrix.tidb_version }}
           CYPRESS_ALLOW_SCREENSHOT: true
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-      - name: Archive Test Results
+      - name: Archive Test Video
         if: always()
-        run: |
-          cat ui/start_tiup.log
-          echo "==============="
-          cat ui/wait_tiup.log
+        uses: actions/upload-artifact@v2
+        with:
+          name: e2e-video-${{ matrix.feature_version }}
+          path: ${{ github.workspace }}/ui/cypress/videos/**/*
       - name: Upload snapshots artifact
         uses: actions/upload-artifact@v2
         with:

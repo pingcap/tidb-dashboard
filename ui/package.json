@@ -65,9 +65,9 @@
     "build": "gulp build",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
-    "run:e2e-test:compat-features": "cypress run --spec cypress/integration/**/*.compat_spec.js --record",
-    "run:e2e-test:common-features": "cypress run --spec cypress/integration/**/*.spec.js --record",
-    "run:e2e-test:without-monitor": "cypress run --spec cypress/integration/**/*.without_monitor_spec.js --record",
+    "run:e2e-test:compat-features": "cypress run --spec cypress/integration/**/*.compat_spec.js",
+    "run:e2e-test:common-features": "cypress run --spec cypress/integration/**/*.spec.js",
+    "run:e2e-test:without-monitor": "cypress run --spec cypress/integration/**/*.without_monitor_spec.js",
     "open:cypress": "cypress open"
   },
   "husky": {

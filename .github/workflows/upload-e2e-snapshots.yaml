@@ -97,7 +97,6 @@ jobs:
           FEATURE_VERSION: ${{ matrix.feature_version }}
           TIDB_VERSION: ${{ matrix.tidb_version }}
           CYPRESS_ALLOW_SCREENSHOT: true
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
       - name: Archive Test Video
         if: always()
         uses: actions/upload-artifact@v2

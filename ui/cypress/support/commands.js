@@ -19,7 +19,7 @@ Cypress.Commands.add('login', (username, password = '') => {
     () => {
       // root login
       cy.visit('/')
-      cy.get('[data-e2e=signin_submit]').click({ force: true })
+      cy.get('[data-e2e=signin_submit]').click()
 
       // Wait for the post-login redirect to ensure that the
       // session actually exists to be cached

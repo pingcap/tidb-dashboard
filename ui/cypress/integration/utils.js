@@ -33,8 +33,7 @@ export const validateStatementCSVList = (allStatementList) => {
   allStatementList.forEach((stmt) => {
     allStatementDigestText.push(stmt.digest_text)
   })
-  console.log('allStatementList', allStatementList, defaultExecStmtList)
-  expect(allStatementList).to.include.members(defaultExecStmtList)
+  expect(allStatementDigestText).to.include.members(defaultExecStmtList)
 }
 
 export const restartTiUP = () => {

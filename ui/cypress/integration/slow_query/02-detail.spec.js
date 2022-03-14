@@ -13,7 +13,7 @@ describe('Slow query detail page E2E test', () => {
       'slow_query_detail'
     )
 
-    cy.get('[data-automation-key=query]').eq(0).click({ force: true })
+    cy.get('[data-automation-key=query]').eq(0).click()
   })
 
   describe('Query descriptions', () => {
@@ -28,7 +28,7 @@ describe('Slow query detail page E2E test', () => {
 
     it('Expand sql', () => {
       // expand sql
-      cy.get('[data-e2e=expandText]').eq(0).click({ force: true })
+      cy.get('[data-e2e=expandText]').eq(0).click()
 
       // sql is collapsed by default
       cy.get('[data-e2e=collapseText]').eq(0).should('have.text', 'Collapse')
@@ -104,17 +104,17 @@ describe('Slow query detail page E2E test', () => {
     })
 
     it('Time table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(1).click({ force: true })
+      cy.get('.ant-tabs-tab').eq(1).click()
       cy.get('.ms-List-cell').should('have.length', 21)
     })
 
     it('Coprocessor table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(2).click({ force: true })
+      cy.get('.ant-tabs-tab').eq(2).click()
       cy.get('.ms-List-cell').should('have.length', 10)
     })
 
     it('Transaction table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(3).click({ force: true })
+      cy.get('.ant-tabs-tab').eq(3).click()
       cy.get('.ms-List-cell').should('have.length', 5)
     })
   })

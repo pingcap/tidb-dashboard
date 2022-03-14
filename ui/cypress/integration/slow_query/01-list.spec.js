@@ -131,9 +131,9 @@ describe('SlowQuery list page', () => {
       describe('Check slow query', () => {
         it('Check slow query in the 1st 5 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
-            .click({ force: true })
+            .click()
             .then(() => {
-              cy.get('.ant-picker-range').click({ force: true })
+              cy.get('.ant-picker-range').click()
               cy.get('.ant-picker-input-active').type(
                 `${firstQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
@@ -150,9 +150,9 @@ describe('SlowQuery list page', () => {
 
         it('Check slow query in the 2nd 5 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
-            .click({ force: true })
+            .click()
             .then(() => {
-              cy.get('.ant-picker-range').click({ force: true })
+              cy.get('.ant-picker-range').click()
               cy.get('.ant-picker-input-active').type(
                 `${secondQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
@@ -167,9 +167,9 @@ describe('SlowQuery list page', () => {
 
         it('Check slow query in the 3rd 5 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
-            .click({ force: true })
+            .click()
             .then(() => {
-              cy.get('.ant-picker-range').click({ force: true })
+              cy.get('.ant-picker-range').click()
               cy.get('.ant-picker-input-active').type(
                 `${thirdQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
@@ -186,9 +186,9 @@ describe('SlowQuery list page', () => {
 
         it('Check slow query in the latest 15 seconds time range', () => {
           cy.get('[data-e2e=timerange-selector]')
-            .click({ force: true })
+            .click()
             .then(() => {
-              cy.get('.ant-picker-range').click({ force: true })
+              cy.get('.ant-picker-range').click()
               cy.get('.ant-picker-input-active').type(
                 `${firstQueryTimeRangeStart}{leftarrow}{leftarrow}{backspace}{enter}`
               )
@@ -235,10 +235,10 @@ describe('SlowQuery list page', () => {
         cy.get('[data-automation-key=query]').should('has.length', 3)
 
         cy.get('[data-e2e=base_select_input_text]')
-          .click({ force: true })
+          .click()
           .then(() => {
             cy.get('.ms-DetailsHeader-checkTooltip')
-              .click({ force: true })
+              .click()
               .then(() => {
                 // global query will not be listed
                 cy.get('[data-automation-key=query]').should('has.length', 2)
@@ -285,7 +285,7 @@ describe('SlowQuery list page', () => {
 
       it('Check limit options', () => {
         cy.get('[data-e2e=slow_query_limit_select]')
-          .click({ force: true })
+          .click()
           .then(() => {
             cy.get('[data-e2e=slow_query_limit_option]')
               .should('have.length', 4)
@@ -297,11 +297,11 @@ describe('SlowQuery list page', () => {
 
       it('Check config remembered', () => {
         cy.get('[data-e2e=slow_query_limit_select]')
-          .click({ force: true })
+          .click()
           .then(() => {
             cy.get('[data-e2e=slow_query_limit_option]')
               .eq(1)
-              .click({ force: true })
+              .click()
               .then(() => {
                 cy.reload()
                 cy.get('[data-e2e=slow_query_limit_select]').contains('200')
@@ -367,7 +367,7 @@ describe('SlowQuery list page', () => {
           .trigger('mouseover')
           .then(() => {
             cy.get('[data-e2e=column_selector_reset]')
-              .click({ force: true })
+              .click()
               .then(() => {
                 cy.get('[role=columnheader]')
                   .not('.is-empty')
@@ -446,7 +446,7 @@ describe('SlowQuery list page', () => {
       cy.wait(1000)
 
       cy.get('[data-e2e=slow_query_refresh]')
-        .click({ force: true })
+        .click()
         .then(() => {
           cy.get('[data-automation-key=query]').should('have.length', 4)
         })
@@ -476,7 +476,7 @@ describe('SlowQuery list page', () => {
 
       cy.get('[data-item-key=timestamp]')
         .should('be.visible')
-        .click({ force: true })
+        .click()
         .then(() => {
           cy.get('[data-automation-key=query]').each(($query, $idx) => {
             cy.wrap($query).should('have.text', AscOrderByTimestamp[$idx])
@@ -494,7 +494,7 @@ describe('SlowQuery list page', () => {
 
       cy.get('[data-item-key=query_time]')
         .should('be.visible')
-        .click({ force: true })
+        .click()
         .then(() => {
           // Desc order by Latency
           cy.get('[data-automation-key=query]').each(($query, $idx) => {
@@ -512,7 +512,7 @@ describe('SlowQuery list page', () => {
           // Asc order by Latency
           cy.get('[data-item-key=query_time]')
             .should('be.visible')
-            .click({ force: true })
+            .click()
             .then(() => {
               cy.get('[data-automation-key=query]').each(($query, $idx) => {
                 cy.wrap($query).should('have.text', AscOrderByLatency[$idx])
@@ -526,7 +526,7 @@ describe('SlowQuery list page', () => {
     it('Click first slow query and go to detail page', function () {
       cy.get('[data-automationid=ListCell]')
         .eq(0)
-        .click({ force: true })
+        .click()
         .then(() => {
           cy.url().should('include', `${this.uri.slow_query}/detail`)
           cy.get('[data-e2e=syntax_highlighter_compact]').should(
@@ -562,7 +562,7 @@ describe('SlowQuery list page', () => {
                 `${Cypress.env('apiBasePath')}slow_query/download?token=*`
               ).as('download_slow_query')
 
-              cy.get('[data-e2e=slow_query_export_btn]').click({ force: true })
+              cy.get('[data-e2e=slow_query_export_btn]').click()
             })
         })
         .then(() => {

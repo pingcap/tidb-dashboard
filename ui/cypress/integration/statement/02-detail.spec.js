@@ -20,14 +20,16 @@ describe('Statement detail page E2E test', () => {
     cy.login('root')
     cy.visit(this.uri.statement)
     cy.url().should('include', this.uri.statement)
-    cy.intercept(`${Cypress.env('apiBasePath')}statement/detail?*`).as(
-      'statement_detail'
+
+    cy.intercept(
+      `${Cypress.env('apiBasePath')}statements/plans?begin_time=*`
+    ).as('statements_plans')
+
+    cy.intercept(`${Cypress.env('apiBasePath')}statements/plan/detail?*`).as(
+      'statements_plan_detail'
     )
 
-    cy.get('[data-automation-key=plan_count]')
-      .contains(2)
-      .eq(0)
-      .click({ force: true })
+    cy.get('[data-automation-key=plan_count]').contains(2).eq(0).click()
   })
 
   describe('Statement Template', () => {
@@ -42,7 +44,7 @@ describe('Statement detail page E2E test', () => {
 
     it('Expand sql', () => {
       // expand sql
-      cy.get('[data-e2e=expandText]').eq(0).click({ force: true })
+      cy.get('[data-e2e=expandText]').eq(0).click()
 
       // sql is collapsed by default
       cy.get('[data-e2e=collapseText]').eq(0).should('have.text', 'Collapse')
@@ -89,25 +91,48 @@ describe('Statement detail page E2E test', () => {
 
   describe('Query Template', () => {
     it('Check sql and default format', () => {
-      // sql is collapsed by default
-      cy.get('[data-e2e=expandText]').eq(1).should('have.text', 'Expand')
-
-      cy.wait('@statement_detail').then((res) => {
-        const responseBody = res.response.body
-        cy.get('[data-e2e=statement_query_detail_page_query]')
-          .eq(1)
-          .and('have.text', responseBody.digest)
+      cy.wait('@statements_plan_detail').then((res) => {
+        const response = res.response.body
+        cy.get('.ant-descriptions-row')
+          .eq(3)
+          .within(() => {
+            cy.get('.ant-descriptions-item')
+              .eq(0)
+              .and('have.text', response.digest)
+          })
       })
     })
   })
 
   describe('Plans', () => {
+    beforeEach(() => {})
     it('Has multiple execution plans', () => {
-      cy.get('[data-e2e=statement_multiple_execution_plans]')
-        .should('be.visible')
-        .within(() => {
-          cy.get('[data-automationid=ListCell]').should('have.length', 2)
-        })
+      cy.wait('@statements_plans').then((res) => {
+        const response = res.response.body
+        const plansDigest = []
+
+        response.forEach((plan) => plansDigest.push(plan.plan_digest))
+
+        cy.get('[data-e2e=statement_multiple_execution_plans]')
+          .should('be.visible')
+          .within(() => {
+            // check digest of each plan
+            cy.get('[data-automation-key=plan_digest]')
+              .should('have.length', 2)
+              .then(($plans) => {
+                return Cypress.$.makeArray($plans).map((plan) => plan.innerText)
+              })
+              .should('to.deep.equal', plansDigest)
+
+            // all plans are checked
+            cy.get('.ms-DetailsList-headerWrapper').within(() => {
+              cy.get('.ant-checkbox').should(
+                'have.class',
+                'ant-checkbox-checked'
+              )
+            })
+          })
+      })
     })
   })
 
@@ -116,7 +141,7 @@ describe('Statement detail page E2E test', () => {
       const tabList = [
         'Basic',
         'Time',
-        'Coprocessor',
+        'Coprocessor Read',
         'Transaction',
         'Slow Query',
       ]
@@ -131,41 +156,51 @@ describe('Statement detail page E2E test', () => {
 
   describe('Detail table tabs', () => {
     it('Basic table rows count', () => {
-      cy.get('[data-e2e=statement_pages_detail_tabs_basic]').within(() => {
-        cy.get('.ms-List-cell').should('have.length', 13)
-      })
+      cy.get('[data-e2e=memo_details_list]')
+        .eq(1)
+        .within(() => {
+          cy.get('.ms-List-cell').should('have.length', 13)
+        })
     })
 
     it('Time table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(1).click({ force: true })
+      cy.get('.ant-tabs-tab').eq(1).click()
 
-      cy.get('[data-e2e=statement_pages_detail_tabs_time]').within(() => {
-        cy.get('.ms-List-cell').should('have.length', 12)
-      })
+      cy.get('[data-e2e=memo_details_list]')
+        .eq(1)
+        .within(() => {
+          cy.get('.ms-List-cell').should('have.length', 12)
+        })
     })
 
     it('Coprocessor table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(2).click({ force: true })
+      cy.get('.ant-tabs-tab').eq(2).click()
 
-      cy.get('[data-e2e=statement_pages_detail_tabs_copr]').within(() => {
-        cy.get('.ms-List-cell').should('have.length', 15)
-      })
+      cy.get('[data-e2e=memo_details_list]')
+        .eq(1)
+        .within(() => {
+          cy.get('.ms-List-cell').should('have.length', 15)
+        })
     })
 
     it('Transaction table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(3).click({ force: true })
+      cy.get('.ant-tabs-tab').eq(3).click()
 
-      cy.get('[data-e2e=statement_pages_detail_tabs_txn]').within(() => {
-        cy.get('.ms-List-cell').should('have.length', 10)
-      })
+      cy.get('[data-e2e=memo_details_list]')
+        .eq(1)
+        .within(() => {
+          cy.get('.ms-List-cell').should('have.length', 10)
+        })
     })
 
     it('Slow query table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(4).click({ force: true })
+      cy.get('.ant-tabs-tab').eq(4).click()
 
-      cy.get('[data-e2e=detail_tabs_slow_query]').within(() => {
-        cy.get('.ms-List-cell').should('have.length', 0)
-      })
+      cy.get('[data-e2e=memo_details_list]')
+        .eq(1)
+        .within(() => {
+          cy.get('.ms-List-cell').should('have.length', 0)
+        })
     })
   })
 })

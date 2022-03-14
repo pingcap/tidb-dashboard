@@ -245,6 +245,7 @@ export default function CardTable(props: ICardTableProps) {
       noMarginTop={cardNoMarginTop}
       noMarginBottom={cardNoMarginBottom}
       extra={cardExtra}
+      data-e2e="memo_details_list"
     >
       <ErrorBar errors={errors} />
       <AnimatedSkeleton

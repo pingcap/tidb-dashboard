@@ -235,10 +235,10 @@ describe('SlowQuery list page', () => {
         cy.get('[data-automation-key=query]').should('has.length', 3)
 
         cy.get('[data-e2e=base_select_input_text]')
-          .click()
+          .click({ force: true })
           .then(() => {
             cy.get('.ms-DetailsHeader-checkTooltip')
-              .click()
+              .click({ force: true })
               .then(() => {
                 // global query will not be listed
                 cy.get('[data-automation-key=query]').should('has.length', 2)

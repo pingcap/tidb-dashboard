@@ -384,16 +384,20 @@ describe('SQL statements list page', () => {
       cy.get('[data-e2e=sql_statements_search]').type(' SELECT version{enter}')
 
       cy.wait('@statements_list').then(() => {
-        cy.get('[data-e2e=syntax_highlighter_compact]').should('has.length', 1)
+        cy.get('[data-e2e=syntax_highlighter_compact]').each(($stmt) => {
+          cy.wrap($stmt).contains('SELECT')
+        })
       })
 
       // check search text remembered after reload page
       cy.reload()
-      cy.get('[data-e2e=sql_statements_search]').contains('SELECT version')
+      cy.get('[data-e2e=syntax_highlighter_compact]').each(($stmt) => {
+        cy.wrap($stmt).contains('SELECT')
+      })
     })
 
     it('Type search without pressing enter then reload', () => {
-      cy.get('[data-e2e=sql_statements_search]').type('SELECT version')
+      cy.get('[data-e2e=sql_statements_search]').type('SELECT \\`version\\` ()')
 
       cy.reload()
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
@@ -517,7 +521,7 @@ describe('SQL statements list page', () => {
 
     it('Check SHOW_FULL_QUERY_TEXT', () => {
       cy.get('[data-e2e=columns_selector_popover]')
-        .trigger('mouseover')
+        .trigger('mouseover', { force: true })
         .then(() => {
           cy.get('[data-e2e=statement_show_full_sql]')
             .check()
@@ -532,7 +536,7 @@ describe('SQL statements list page', () => {
             .then(() => {
               cy.get('[data-automation-key=digest_text]')
                 .eq(0)
-                .trigger('mouseover')
+                .trigger('mouseover', { force: true })
                 .find('[data-e2e=syntax_highlighter_compact]')
             })
         })

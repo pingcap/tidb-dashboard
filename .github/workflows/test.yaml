@@ -3,7 +3,11 @@ name: Test
 on:
   push:
     branches:
-      - addE2E_statementListPage
+      - master
+  pull_request:
+    branches:
+      - master
+      - release
 
 jobs:
   backend_ut:

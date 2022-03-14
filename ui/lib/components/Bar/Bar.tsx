@@ -70,7 +70,11 @@ function Bar({
   return (
     <div className={cx(styles.container, className)} {...rest}>
       {children && (
-        <div className={styles.text} style={{ width: textWidth }}>
+        <div
+          className={styles.text}
+          style={{ width: textWidth }}
+          data-e2e="table_bar_value"
+        >
           {children}
         </div>
       )}

@@ -3,5 +3,6 @@
   "login": "/signin",
   "overview": "/overview",
   "slow_query": "/slow_query",
-  "statement": "/statement"
+  "statement": "/statement",
+  "configuration": "/configuration"
 }

@@ -1,12 +1,19 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
-import { restartTiUP, deleteDownloadsFolder } from '../utils'
+import dayjs from 'dayjs'
+
+import {
+  restartTiUP,
+  validateStatementCSVList,
+  deleteDownloadsFolder,
+} from '../utils'
 import {
   testBaseSelectorOptions,
   checkAllOptionsInBaseSelector,
 } from '../components'
 
-import dayjs from 'dayjs'
+const neatCSV = require('neat-csv')
+const path = require('path')
 
 describe('SQL statements list page', () => {
   before(() => {
@@ -103,7 +110,7 @@ describe('SQL statements list page', () => {
       cy.wait('@init_statements_list')
 
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
-        'statements_list_with_last_seen'
+        'statements_list_with_last_seen_field'
       )
 
       // select last_seen column field
@@ -111,7 +118,9 @@ describe('SQL statements list page', () => {
         .trigger('mouseover')
         .then(() => {
           cy.contains('Last Seen').within(() => {
-            cy.get('[data-e2e=columns_selector_field_last_seen]').check()
+            cy.get('[data-e2e=columns_selector_field_last_seen]').check({
+              force: true,
+            })
           })
         })
     })
@@ -154,7 +163,7 @@ describe('SQL statements list page', () => {
 
       it('Common time range options', () => {
         cy.get('[data-e2e=statement_timerange_selector]')
-          .click()
+          .click({ force: true })
           .then(() => {
             cy.get('[data-e2e=statement_time_range_option]')
               .should('have.length', 12)
@@ -182,7 +191,7 @@ describe('SQL statements list page', () => {
       it('Custom time range selector', () => {
         const [startTime, endTime] = getNearTime()
         cy.get('[data-e2e=statement_timerange_selector]')
-          .click()
+          .click({ force: true })
           .then(() => {
             cy.get('.ant-slider').within(() => {
               cy.get('[role=slider]')
@@ -198,7 +207,7 @@ describe('SQL statements list page', () => {
       })
 
       it('Init statement list', () => {
-        cy.wait('@statements_list_with_last_seen').then((res) => {
+        cy.wait('@statements_list_with_last_seen_field').then((res) => {
           const response = res.response.body
 
           cy.get('[data-automation-key=digest_text]').should(
@@ -213,15 +222,24 @@ describe('SQL statements list page', () => {
       it('Select time range as recent 15 mins', () => {
         // select recent 15 mins
         cy.get('[data-e2e=statement_timerange_selector]')
-          .click()
+          .click({ force: true })
           .then(() => {
-            cy.get('[data-e2e=statement_time_range_option]').eq(0).click()
+            cy.get('[data-e2e=statement_time_range_option]')
+              .eq(0)
+              .click({ force: true })
           })
 
-        cy.wait('@statements_list_with_last_seen').then((res) => {
+        cy.wait('@statements_list_with_last_seen_field').then((res) => {
           const response = res.response.body
           checkStmtListWithTimeRange(response, 900)
         })
+
+        // time rage will be remebered after reload page
+        cy.reload()
+        cy.get('[data-e2e=statement_timerange_selector]').should(
+          'have.text',
+          'Recent 15 min'
+        )
       })
     })
   })
@@ -273,10 +291,10 @@ describe('SQL statements list page', () => {
       cy.wait('@databases').then(() => {
         cy.get('[data-e2e=base_selector]')
           .eq(0)
-          .click()
+          .click({ force: true })
           .then(() => {
             cy.get('.ant-dropdown').within(() => {
-              cy.get('.ant-checkbox-input').eq(3).click()
+              cy.get('.ant-checkbox-input').eq(3).click({ force: true })
             })
           })
           .then(() => {
@@ -338,10 +356,10 @@ describe('SQL statements list page', () => {
       cy.wait('@stmt_types').then(() => {
         cy.get('[data-e2e=base_selector]')
           .eq(1)
-          .click()
+          .click({ force: true })
           .then(() => {
             cy.get('.ant-dropdown').within(() => {
-              cy.get('.ant-checkbox-input').eq(2).click()
+              cy.get('.ant-checkbox-input').eq(2).click({ force: true })
             })
           })
           .then(() => {
@@ -368,6 +386,10 @@ describe('SQL statements list page', () => {
       cy.wait('@statements_list').then(() => {
         cy.get('[data-e2e=syntax_highlighter_compact]').should('has.length', 1)
       })
+
+      // check search text remembered after reload page
+      cy.reload()
+      cy.get('[data-e2e=sql_statements_search]').contains('SELECT version')
     })
 
     it('Type search without pressing enter then reload', () => {
@@ -435,7 +457,7 @@ describe('SQL statements list page', () => {
         .trigger('mouseover')
         .then(() => {
           cy.get('[data-e2e=column_selector_title]')
-            .check()
+            .check({ force: true })
             .then(() => {
               cy.get('[role=columnheader]')
                 .not('.is-empty')
@@ -449,7 +471,7 @@ describe('SQL statements list page', () => {
         .trigger('mouseover')
         .then(() => {
           cy.get('[data-e2e=column_selector_reset]')
-            .click()
+            .click({ force: true })
             .then(() => {
               cy.get('[role=columnheader]')
                 .not('.is-empty')
@@ -466,7 +488,7 @@ describe('SQL statements list page', () => {
             .within(() => {
               cy.get(
                 '[data-e2e=columns_selector_field_sum_cop_task_num]'
-              ).check()
+              ).check({ force: true })
             })
             .then(() => {
               cy.get('[data-item-key=sum_cop_task_num]').should(
@@ -485,7 +507,7 @@ describe('SQL statements list page', () => {
             .within(() => {
               cy.get(
                 '[data-e2e=columns_selector_field_sum_cop_task_num]'
-              ).uncheck()
+              ).uncheck({ force: true })
             })
             .then(() => {
               cy.get('[data-item-key=sum_cop_task_num]').should('not.exist')
@@ -498,7 +520,7 @@ describe('SQL statements list page', () => {
         .trigger('mouseover')
         .then(() => {
           cy.get('[data-e2e=statement_show_full_sql]')
-            .check()
+            .check({ force: true })
             .then(() => {
               cy.get('[data-automation-key=digest_text]')
                 .eq(0)
@@ -506,7 +528,7 @@ describe('SQL statements list page', () => {
             })
 
           cy.get('[data-e2e=statement_show_full_sql]')
-            .uncheck()
+            .uncheck({ force: true })
             .then(() => {
               cy.get('[data-automation-key=digest_text]')
                 .eq(0)
@@ -530,7 +552,7 @@ describe('SQL statements list page', () => {
       )
       cy.wait('@statements_list').then(() => {
         cy.get('[data-e2e=statement_refresh]')
-          .click()
+          .click({ force: true })
           .then(() => {
             cy.get('[data-automation-key=digest_text]').contains(
               'SELECT count (?) FROM tidb;'
@@ -548,23 +570,25 @@ describe('SQL statements list page', () => {
     return `${day} day ${hour} hour ${min} min`
   }
 
-  describe('Statement Setting', () => {
+  describe('Statement Setting', function () {
     it('Close setting panel', () => {
+      // close panel by clicking mask
       cy.get('[data-e2e=statement_setting]')
-        .click()
+        .click({ force: true })
         .then(() => {
           cy.get('.ant-drawer-mask')
-            .click()
+            .click({ force: true })
             .then(() => {
               cy.get('.ant-drawer-content').should('not.be.visible')
             })
         })
 
+      // close panel by clicking close icon
       cy.get('[data-e2e=statement_setting]')
-        .click()
+        .click({ force: true })
         .then(() => {
           cy.get('.ant-drawer-close')
-            .click()
+            .click({ force: true })
             .then(() => {
               cy.get('.ant-drawer-content').should('not.be.visible')
             })
@@ -573,20 +597,22 @@ describe('SQL statements list page', () => {
 
     const siwtchStatement = (isEnabled) => {
       cy.get('[data-e2e=statement_setting]')
-        .click()
+        .click({ force: true })
         .then(() => {
           cy.get('.ant-drawer-content').should('exist')
           cy.get('[data-e2e=statemen_enbale_switcher]')
             // the current of switcher is isEnabled
             .should('have.attr', 'aria-checked', isEnabled)
-            .click()
-          cy.get('[data-e2e=submit_btn]').click()
+            .click({ force: true })
+          cy.get('[data-e2e=submit_btn]').click({ force: true })
         })
     }
 
     it('Disable statement feature', () => {
       siwtchStatement('true')
-      cy.get('.ant-modal-confirm-btns').find('.ant-btn-dangerous').click()
+      cy.get('.ant-modal-confirm-btns')
+        .find('.ant-btn-dangerous')
+        .click({ force: true })
       cy.get('[data-e2e=statements_table]').should('not.exist')
     })
 
@@ -597,7 +623,7 @@ describe('SQL statements list page', () => {
 
     describe('Default statement setting', () => {
       beforeEach(() => {
-        cy.get('[data-e2e=statement_setting]').click()
+        cy.get('[data-e2e=statement_setting]').click({ force: true })
 
         // get refresh_interval value
         cy.get(`[data-e2e=statement_setting_refresh_interval]`).within(() => {
@@ -631,22 +657,22 @@ describe('SQL statements list page', () => {
         })
       }
 
-      it('Statement setting max size', () => {
+      it('Default statement setting max size', () => {
         const sizeList = ['200', '1000', '2000', '5000']
         checkSilder(sizeList, '3000', 'statement_setting_max_size')
       })
 
-      it('Statement setting window size', () => {
+      it('Default statement setting window size', () => {
         const sizeList = ['1', '5', '15', '30', '60']
         checkSilder(sizeList, '30', 'statement_setting_refresh_interval')
       })
 
-      it('Statement setting number of windows', () => {
+      it('Default Statement setting number of windows', () => {
         const sizeList = ['1', '255']
         checkSilder(sizeList, '24', 'statement_setting_history_size')
       })
 
-      it('Check History Size', function () {
+      it('Default Check History Size', function () {
         const stmtHistorySize = calcStmtHistorySize(
           this.refreshIntervalVal,
           this.historySizeVal
@@ -660,17 +686,18 @@ describe('SQL statements list page', () => {
       })
     })
 
-    describe('Update statement setting', () => {
-      beforeEach(() => {
-        cy.get('[data-e2e=statement_setting]').click()
+    describe('Update statement setting', function () {
+      beforeEach(function () {
+        cy.get('[data-e2e=statement_setting]').click({ force: true })
       })
 
-      it('Update window size and number of windows', () => {
+      it('Update window size and number of windows', function () {
+        // change window size
         cy.get('[data-e2e=statement_setting_refresh_interval]').within(() => {
           cy.get('.ant-slider-step')
             .find('.ant-slider-dot')
-            .eq(0)
-            .click()
+            .eq(2)
+            .click({ force: true })
             .then(() => {
               cy.get('.ant-slider-handle')
                 .invoke('attr', 'aria-valuenow')
@@ -678,11 +705,12 @@ describe('SQL statements list page', () => {
             })
         })
 
+        // change number of windows
         cy.get('[data-e2e=statement_setting_history_size]').within(() => {
           cy.get('.ant-slider-step')
             .find('.ant-slider-dot')
-            .eq(0)
-            .click()
+            .eq(1)
+            .click({ force: true })
             .then(() => {
               cy.get('.ant-slider-handle')
                 .invoke('attr', 'aria-valuenow')
@@ -690,19 +718,149 @@ describe('SQL statements list page', () => {
             })
         })
 
-        cy.get(['@refreshIntervalVal', '@historySizeVal']).then(() => {
-          cy.get('[data-e2e=statement_setting_keep_duration]').within(() => {
-            const stmtHistorySize = calcStmtHistorySize(
-              this.refreshIntervalVal,
-              this.historySizeVal
-            )
-            cy.get('.ant-form-item-control-input-content').should(
-              'have.text',
-              stmtHistorySize
+        cy.get('@refreshIntervalVal').then((refreshIntervalVal) => {
+          cy.get('@historySizeVal').then((historySizeVal) => {
+            cy.get('[data-e2e=statement_setting_keep_duration]').within(() => {
+              // check statement history size by calculating window size and # windows
+              const stmtHistorySize = calcStmtHistorySize(
+                refreshIntervalVal,
+                historySizeVal
+              )
+              cy.get('.ant-form-item-control-input-content').should(
+                'have.text',
+                stmtHistorySize
+              )
+            })
+
+            cy.intercept(
+              'POST',
+              `${Cypress.env('apiBasePath')}statements/config`
+            ).as('update_config')
+            cy.get('[data-e2e=submit_btn]').click({ force: true })
+
+            cy.wait('@update_config').then(() => {
+              // check configuration whether come to effect or not
+              cy.visit(this.uri.configuration)
+              cy.url().should('include', this.uri.configuration)
+
+              cy.get('[data-e2e=search_config]').type(
+                'tidb_stmt_summary_refresh_interval'
+              )
+              cy.wait(1000)
+              cy.get('[data-automation-key=key]').contains(
+                'tidb_stmt_summary_refresh_interval'
+              )
+              cy.get('[data-automation-key=value]').contains(
+                refreshIntervalVal * 60
+              )
+
+              cy.get('[data-e2e=search_config]')
+                .clear()
+                .type('tidb_stmt_summary_history_size')
+              cy.wait(1000)
+              cy.get('[data-automation-key=key]').contains(
+                'tidb_stmt_summary_history_size'
+              )
+              cy.get('[data-automation-key=value]').contains(historySizeVal)
+            })
+          })
+        })
+      })
+
+      it('Get config list bad request', () => {
+        const staticResponse = {
+          statusCode: 400,
+          body: {
+            code: 'common.bad_request',
+            error: true,
+            message: 'common.bad_request',
+          },
+        }
+
+        // stub out a response body
+        cy.intercept(
+          `${Cypress.env('apiBasePath')}statements/config`,
+          staticResponse
+        ).as('statements_config')
+        cy.wait('@statements_config').then(() => {
+          // get error alert on panel
+          cy.get('.ant-drawer-body').within(() => {
+            cy.get('[data-e2e=alert_error_bar]').should(
+              'has.text',
+              staticResponse.body.message
             )
           })
         })
       })
+
+      it('Failed to save config list', () => {
+        const staticResponse = {
+          statusCode: 400,
+          body: {
+            code: 'common.bad_request',
+            error: true,
+            message: 'common.bad_request',
+          },
+        }
+
+        // stub out a response body
+        cy.intercept(
+          'POST',
+          `${Cypress.env('apiBasePath')}statements/config`,
+          staticResponse
+        ).as('statements_config')
+        cy.get('[data-e2e=submit_btn]').click({ force: true })
+        cy.wait('@statements_config').then(() => {
+          // get error notifitcation on modal
+          cy.get('.ant-modal-confirm-content').should(
+            'has.text',
+            staticResponse.body.message
+          )
+        })
+      })
+    })
+  })
+
+  describe('Export statement CSV ', () => {
+    it('validate CSV File', () => {
+      const downloadsFolder = Cypress.config('downloadsFolder')
+      let downloadedFilename
+
+      cy.get('[data-e2e=statement_export_menu]')
+        .trigger('mouseover')
+        .then(() => {
+          cy.window()
+            .document()
+            .then(function (doc) {
+              doc.addEventListener('click', () => {
+                setTimeout(function () {
+                  doc.location.reload()
+                }, 5000)
+              })
+
+              // Make sure the file exists
+              cy.intercept(
+                `${Cypress.env('apiBasePath')}statements/download?token=*`
+              ).as('download_statement')
+
+              cy.get('[data-e2e=statement_export_btn]').click({ force: true })
+            })
+        })
+        .then(() => {
+          cy.wait('@download_statement').then((res) => {
+            // join downloadFolder with CSV filename
+            const filenameRegx = /"(.*)"/
+            downloadedFilename = path.join(
+              downloadsFolder,
+              res.response.headers['content-disposition'].match(filenameRegx)[1]
+            )
+
+            cy.readFile(downloadedFilename, { timeout: 15000 })
+              // parse CSV text into objects
+              .then(neatCSV)
+              .then(validateStatementCSVList)
+          })
+        })
     })
   })
 })

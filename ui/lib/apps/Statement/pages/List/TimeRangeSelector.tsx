@@ -251,7 +251,7 @@ export default function TimeRangeSelector({
       disabled={timeRanges.length === 0}
       overlay={dropdownContent}
       trigger={['click']}
-      visible={true}
+      visible={dropdownVisible}
       onVisibleChange={setDropdownVisible}
     >
       <Button

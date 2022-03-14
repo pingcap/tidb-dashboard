@@ -94,7 +94,12 @@ export default function StatementsOverview() {
 
   const dropdownMenu = (
     <Menu onClick={menuItemClick}>
-      <Menu.Item key="export" disabled={downloading} icon={<ExportOutlined />}>
+      <Menu.Item
+        key="export"
+        disabled={downloading}
+        icon={<ExportOutlined />}
+        data-e2e="statement_export_btn"
+      >
         {downloading
           ? t('statement.pages.overview.toolbar.exporting')
           : t('statement.pages.overview.toolbar.export')}
@@ -202,7 +207,10 @@ export default function StatementsOverview() {
               />
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
-              <div style={{ cursor: 'pointer' }}>
+              <div
+                style={{ cursor: 'pointer' }}
+                data-e2e="statement_export_menu"
+              >
                 <MenuOutlined />
               </div>
             </Dropdown>

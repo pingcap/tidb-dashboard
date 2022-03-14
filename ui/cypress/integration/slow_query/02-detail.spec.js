@@ -13,14 +13,14 @@ describe('Slow query detail page E2E test', () => {
       'slow_query_detail'
     )
 
-    cy.get('[data-automation-key=query]').eq(0).click()
+    cy.get('[data-automation-key=query]').eq(0).click({ force: true })
   })
 
   describe('Query descriptions', () => {
     it('Check sql and default format', () => {
       // sql is collapsed by default
       cy.get('[data-e2e=expandText]').eq(0).should('have.text', 'Expand')
-      cy.get('[data-e2e=slow_query_detail_page_query]')
+      cy.get('[data-e2e=statement_query_detail_page_query]')
         .eq(0)
         .find('[data-e2e=syntax_highlighter_compact]')
         .and('have.text', 'SELECT sleep(1.2);')
@@ -28,11 +28,11 @@ describe('Slow query detail page E2E test', () => {
 
     it('Expand sql', () => {
       // expand sql
-      cy.get('[data-e2e=expandText]').eq(0).click()
+      cy.get('[data-e2e=expandText]').eq(0).click({ force: true })
 
       // sql is collapsed by default
       cy.get('[data-e2e=collapseText]').eq(0).should('have.text', 'Collapse')
-      cy.get('[data-e2e=slow_query_detail_page_query]')
+      cy.get('[data-e2e=statement_query_detail_page_query]')
         .eq(0)
         .find('[data-e2e=syntax_highlighter_original]')
         .and('have.text', 'SELECT\n  sleep(1.2);')
@@ -79,7 +79,7 @@ describe('Slow query detail page E2E test', () => {
 
       cy.wait('@slow_query_detail').then((res) => {
         const responseBody = res.response.body
-        cy.get('[data-e2e=slow_query_detail_page_query]')
+        cy.get('[data-e2e=statement_query_detail_page_query]')
           .eq(1)
           .and('have.text', responseBody.plan)
       })
@@ -104,17 +104,17 @@ describe('Slow query detail page E2E test', () => {
     })
 
     it('Time table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(1).click()
+      cy.get('.ant-tabs-tab').eq(1).click({ force: true })
       cy.get('.ms-List-cell').should('have.length', 21)
     })
 
     it('Coprocessor table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(2).click()
+      cy.get('.ant-tabs-tab').eq(2).click({ force: true })
       cy.get('.ms-List-cell').should('have.length', 10)
     })
 
     it('Transaction table rows count', () => {
-      cy.get('.ant-tabs-tab').eq(3).click()
+      cy.get('.ant-tabs-tab').eq(3).click({ force: true })
       cy.get('.ms-List-cell').should('have.length', 5)
     })
   })

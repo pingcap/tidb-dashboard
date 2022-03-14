@@ -11,7 +11,7 @@ export interface IExpandProps {
 function Expand({ collapsedContent, children, expanded }: IExpandProps) {
   // FIXME: Animations
   return (
-    <div data-e2e="slow_query_detail_page_query">
+    <div data-e2e="statement_query_detail_page_query">
       {expanded ? children : collapsedContent ?? children}
     </div>
   )

@@ -17,7 +17,7 @@ describe('Root User Login', () => {
 
   it('root login with no pwd', function () {
     cy.get('[data-e2e=signin_username_input]').should('have.value', 'root')
-    cy.get('[data-e2e=signin_submit]').click()
+    cy.get('[data-e2e=signin_submit]').click({ force: true })
     cy.url().should('include', this.uri.overview)
   })
 

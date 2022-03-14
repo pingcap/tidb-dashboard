@@ -376,6 +376,8 @@ describe('SQL statements list page', () => {
       cy.get('[data-e2e=sql_statements_search]').should('be.empty')
     })
 
+    // test will fail caused by existing TiDB bug
+    // https://github.com/pingcap/tidb/issues/32783
     it('Search item with space', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'

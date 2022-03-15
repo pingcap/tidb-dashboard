@@ -109,7 +109,7 @@ export default function Page() {
         // view flamegraph by speedscope
         const speedscopeTitle = `${rec.target?.component}_${rec.target?.address}_${rec.profile_type}`
         const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
-        const speedscopeURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
+        const speedscopeURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
           profileURL
         )}&title=${speedscopeTitle}`
         window.open(speedscopeURL, '_blank')

@@ -19,6 +19,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
+import { telemetry } from '../utils/telemetry'
 
 const COMMON_ACTIONS: string[] = ['view_flamegraph', 'view_graph', 'download']
 const TEXT_ACTIONS: string[] = ['view_text', 'download']
@@ -99,6 +100,12 @@ export default function Page() {
         return
       }
 
+      telemetry.clickAction({
+        action,
+        profile_type: rec.profile_type!,
+        component: component!,
+      })
+
       if (action === 'view_graph' || action === 'view_text') {
         const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
         window.open(profileURL, '_blank')
@@ -131,6 +138,7 @@ export default function Page() {
     if (!token) {
       return
     }
+    telemetry.downloadProfilingGroupResult()
     window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
   }, [ts])
 

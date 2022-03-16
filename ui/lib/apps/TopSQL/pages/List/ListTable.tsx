@@ -115,7 +115,9 @@ export function ListTable({
     <div
       onMouseEnter={() => onRowOver(props.item.sql_digest)}
       onMouseLeave={onRowLeave}
-      onClick={() => telemetry.clickStatement(props.itemIndex)}
+      onClick={() =>
+        telemetry.clickStatement(props.itemIndex, props.itemIndex === topN)
+      }
     >
       <DetailsRow {...props} />
     </div>

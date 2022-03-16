@@ -13,6 +13,7 @@ cypress/screeshots
 cypress/integration/1-getting-started
 cypress/integration/2-advanced-examples
 .nyc_output
+*.log
 
 # production
 build/
@@ -30,3 +31,5 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+.eslintcache

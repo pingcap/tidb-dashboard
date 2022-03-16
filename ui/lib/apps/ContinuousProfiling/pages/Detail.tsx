@@ -1,4 +1,4 @@
-import { Badge, Button, Dropdown, Menu } from 'antd'
+import { Badge, Button } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -19,6 +19,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
+import { telemetry } from '../utils/telemetry'
 
 const COMMON_ACTIONS: string[] = ['view_flamegraph', 'view_graph', 'download']
 const TEXT_ACTIONS: string[] = ['view_text', 'download']
@@ -80,6 +81,66 @@ export default function Page() {
 
     return [newRows, newGroups]
   }, [groupProfileDetail])
+
+  const handleClick = usePersistFn(
+    async (action: string, rec: ConprofProfileDetail) => {
+      const { profile_type, target } = rec
+      const { component, address } = target!
+      let dataFormat = ''
+      if (action === 'view_flamegraph' || action === 'download') {
+        dataFormat = 'protobuf'
+      }
+      const res = await client
+        .getInstance()
+        .continuousProfilingActionTokenGet(
+          `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}&data_format=${dataFormat}`
+        )
+      const token = res.data
+      if (!token) {
+        return
+      }
+
+      telemetry.clickAction({
+        action,
+        profile_type: rec.profile_type!,
+        component: component!,
+      })
+
+      if (action === 'view_graph' || action === 'view_text') {
+        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
+        window.open(profileURL, '_blank')
+        return
+      }
+
+      if (action === 'view_flamegraph') {
+        // view flamegraph by speedscope
+        const speedscopeTitle = `${rec.target?.component}_${rec.target?.address}_${rec.profile_type}`
+        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
+        const speedscopeURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
+          profileURL
+        )}&title=${speedscopeTitle}`
+        window.open(speedscopeURL, '_blank')
+        return
+      }
+
+      if (action === 'download') {
+        window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
+        return
+      }
+    }
+  )
+
+  const handleDownloadGroup = useCallback(async () => {
+    const res = await client
+      .getInstance()
+      .continuousProfilingActionTokenGet(`ts=${ts}&data_format=protobuf`)
+    const token = res.data
+    if (!token) {
+      return
+    }
+    telemetry.downloadProfilingGroupResult()
+    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
+  }, [ts])
 
   const columns = useMemo(
     () => [
@@ -148,61 +209,8 @@ export default function Page() {
         },
       },
     ],
-    [t, profileDuration]
+    [t, profileDuration, handleClick]
   )
-
-  const handleClick = usePersistFn(
-    async (action: string, rec: ConprofProfileDetail) => {
-      const { profile_type, target } = rec
-      const { component, address } = target!
-      let dataFormat = ''
-      if (action === 'view_flamegraph' || action === 'download') {
-        dataFormat = 'protobuf'
-      }
-      const res = await client
-        .getInstance()
-        .continuousProfilingActionTokenGet(
-          `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}&data_format=${dataFormat}`
-        )
-      const token = res.data
-      if (!token) {
-        return
-      }
-
-      if (action === 'view_graph' || action === 'view_text') {
-        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
-        window.open(profileURL, '_blank')
-        return
-      }
-
-      if (action === 'view_flamegraph') {
-        // view flamegraph by speedscope
-        const speedscopeTitle = `${rec.target?.component}_${rec.target?.address}_${rec.profile_type}`
-        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
-        const speedscopeURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
-          profileURL
-        )}&title=${speedscopeTitle}`
-        window.open(speedscopeURL, '_blank')
-        return
-      }
-
-      if (action === 'download') {
-        window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
-        return
-      }
-    }
-  )
-
-  const handleDownloadGroup = useCallback(async () => {
-    const res = await client
-      .getInstance()
-      .continuousProfilingActionTokenGet(`ts=${ts}&data_format=protobuf`)
-    const token = res.data
-    if (!token) {
-      return
-    }
-    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
-  }, [ts])
 
   return (
     <div>

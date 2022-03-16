@@ -71,7 +71,7 @@ func Test_VersionGuard(t *testing.T) {
 		c.Next()
 
 		handled = true
-		r.Equal(true, errorx.IsOfType(c.Errors.Last().Err, ErrFeatureUnsupported))
+		r.True(errorx.IsOfType(c.Errors.Last().Err, ErrFeatureUnsupported))
 	})
 	e2.Use(f1.VersionGuard(), f2.VersionGuard())
 	e2.GET("/ping", func(c *gin.Context) {

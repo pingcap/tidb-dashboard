@@ -136,7 +136,7 @@ func (s *Service) GetConfig(c *gin.Context) {
 	cfg := &EditableConfig{}
 	err := db.Raw("SELECT @@GLOBAL.tidb_enable_top_sql as tidb_enable_top_sql").Find(cfg).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, cfg)
@@ -152,14 +152,14 @@ func (s *Service) GetConfig(c *gin.Context) {
 func (s *Service) UpdateConfig(c *gin.Context) {
 	var cfg EditableConfig
 	if err := c.ShouldBindJSON(&cfg); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
 	err := db.Exec("SET @@GLOBAL.tidb_enable_top_sql = @Enable", &cfg).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 

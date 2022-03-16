@@ -16,7 +16,7 @@ import (
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/user/share")
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.POST("/code", auth.MWRequireSharePriv(), s.shareHandler)
+	endpoint.POST("/code", auth.MWRequireSharePriv(), s.ShareHandler)
 }
 
 type ShareRequest struct {
@@ -34,24 +34,24 @@ type ShareResponse struct {
 // @Security JwtAuth
 // @Success 200 {object} ShareResponse
 // @Router /user/share/code [post]
-func (s *Service) shareHandler(c *gin.Context) {
+func (s *Service) ShareHandler(c *gin.Context) {
 	var req ShareRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	expiry := time.Second * time.Duration(req.ExpireInSeconds)
 
 	if expiry > MaxSessionShareExpiry || expiry < 0 {
-		_ = c.Error(rest.ErrBadRequest.New("Invalid share expiry"))
+		rest.Error(c, rest.ErrBadRequest.New("Invalid share expiry"))
 		return
 	}
 
 	sessionUser := utils.GetSession(c)
 	code := s.SharingCodeFromSession(sessionUser, expiry, req.RevokeWritePriv)
 	if code == nil {
-		_ = c.Error(ErrShareFailed.New("Share session failed"))
+		rest.Error(c, ErrShareFailed.New("Share session failed"))
 		return
 	}
 

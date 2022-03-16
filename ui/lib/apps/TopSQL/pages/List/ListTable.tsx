@@ -22,6 +22,8 @@ import { useRecordSelection } from '../../utils/useRecordSelection'
 import { ListDetail } from './ListDetail'
 import { isOthersRecord, isUnknownSQLRecord } from '../../utils/specialRecord'
 import { InstanceType } from './ListDetail/ListDetailTable'
+import { usePersistFn } from 'ahooks'
+import { telemetry } from '../../utils/telemetry'
 
 interface ListTableProps {
   data: TopsqlSummaryItem[]
@@ -30,6 +32,8 @@ interface ListTableProps {
   onRowOver: (key: string) => void
   onRowLeave: () => void
 }
+
+const emptyFn = () => {}
 
 export type SQLRecord = TopsqlSummaryItem & {
   cpuTime: number
@@ -94,14 +98,30 @@ export function ListTable({
         },
       },
     ],
-    [capacity]
+    [capacity, t, topN]
   )
+
+  const getKey = usePersistFn((r: SQLRecord) => r.sql_digest!)
 
   const { selectedRecord, selection } = useRecordSelection<SQLRecord>({
     storageKey: 'topsql.list_table_selected_key',
     selections: tableRecords,
-    getKey: (r) => r.sql_digest!,
+    options: {
+      getKey,
+    },
   })
+
+  const onRenderRow = usePersistFn((props: any) => (
+    <div
+      onMouseEnter={() => onRowOver(props.item.sql_digest)}
+      onMouseLeave={onRowLeave}
+      onClick={() =>
+        telemetry.clickStatement(props.itemIndex, props.itemIndex === topN)
+      }
+    >
+      <DetailsRow {...props} />
+    </div>
+  ))
 
   return tableRecords.length ? (
     <>
@@ -113,21 +133,14 @@ export function ListTable({
       <CardTable
         cardNoMarginTop
         cardNoMarginBottom
-        getKey={(r: SQLRecord) => r.sql_digest!}
+        getKey={getKey}
         items={tableRecords || []}
         columns={tableColumns}
         selection={selection}
         selectionMode={SelectionMode.single}
         selectionPreservedOnEmptyClick
-        onRowClicked={() => {}}
-        onRenderRow={(props: any) => (
-          <div
-            onMouseEnter={() => onRowOver(props.item.sql_digest)}
-            onMouseLeave={onRowLeave}
-          >
-            <DetailsRow {...props} />
-          </div>
-        )}
+        onRowClicked={emptyFn}
+        onRenderRow={onRenderRow}
       />
       <AppearAnimate motionName="contentAnimation">
         {selectedRecord && (

@@ -51,7 +51,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
 
-			endpoint.GET("/table_columns", s.queryTableColumns)
+			endpoint.GET("/available_fields", s.getAvailableFields)
 		}
 	}
 }
@@ -66,14 +66,14 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 func (s *Service) getList(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
 	results, err := QuerySlowLogList(&req, s.params.SysSchema, db.Table(SlowQueryTable))
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
@@ -89,14 +89,14 @@ func (s *Service) getList(c *gin.Context) {
 func (s *Service) getDetails(c *gin.Context) {
 	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
 	result, err := QuerySlowLogDetail(&req, db.Table(SlowQueryTable))
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, *result)
@@ -113,7 +113,7 @@ func (s *Service) getDetails(c *gin.Context) {
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	fields := []string{}
@@ -123,11 +123,11 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	list, err := QuerySlowLogList(&req, s.params.SysSchema, db.Table(SlowQueryTable))
 	if err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 	if len(list) == 0 {
-		_ = c.Error(ErrNoData.NewWithNoMessage())
+		rest.Error(c, ErrNoData.NewWithNoMessage())
 		return
 	}
 
@@ -148,7 +148,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		fmt.Sprintf("slowquery_%s_%s_*.csv", beginTime, endTime),
 		"slowquery/download")
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -165,19 +165,20 @@ func (s *Service) downloadHandler(c *gin.Context) {
 	utils.DownloadByToken(token, "slowquery/download", c)
 }
 
-// @Summary Query table columns
-// @Description Query slowquery table columns
+// @Summary Get available field names
+// @Description Get available field names by slowquery table columns
 // @Success 200 {array} string
 // @Failure 400 {object} rest.ErrorResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Security JwtAuth
-// @Router /slow_query/table_columns [get]
-func (s *Service) queryTableColumns(c *gin.Context) {
+// @Router /slow_query/available_fields [get]
+func (s *Service) getAvailableFields(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cs, err := QueryTableColumns(s.params.SysSchema, db)
+	jsonNames, err := GetAvailableFields(s.params.SysSchema, db)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, cs)
+
+	c.JSON(http.StatusOK, jsonNames)
 }

@@ -77,7 +77,7 @@ function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
             label = node.key
           }
           return (
-            <TextWrap>
+            <TextWrap data-e2e="multi_select_options">
               <Tooltip title={label}>
                 <span>{label}</span>
               </Tooltip>

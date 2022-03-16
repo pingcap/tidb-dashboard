@@ -214,6 +214,7 @@ function BaseSelect<T>({
       onKeyDown={handleContainerKeyDown}
       ref={containerRef}
       {...restProps}
+      data-e2e="base_selector"
     >
       <Trigger
         prefixCls="ant-dropdown"
@@ -221,7 +222,7 @@ function BaseSelect<T>({
         showAction={[]}
         hideAction={[]}
         popupPlacement="bottomLeft"
-        popupTransitionName="slide-down"
+        popupTransitionName="ant-slide-up"
         popup={overlay}
         popupVisible={dropdownVisible}
         onPopupVisibleChange={handlePopupVisibleChange}
@@ -241,6 +242,7 @@ function BaseSelect<T>({
               tabIndex={tabIndex}
               autoFocus={autoFocus}
               readOnly
+              data-e2e="base_select_input"
             />
             <div
               className={cx(styles.baseSelectValueDisplay, {

@@ -29,6 +29,7 @@ export default function DetailTabs({ data }: { data: SlowqueryModel }) {
             columns={columns}
             items={items}
             extendLastColumn
+            data-e2e="details_list"
           />
         )
       },

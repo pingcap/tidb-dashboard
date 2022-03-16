@@ -69,8 +69,8 @@ func buildCode(err error) string {
 			break
 		}
 		if causeEx.Type().RootNamespace().FullName() == "synthetic" {
-			// Ignore standard transparent types..
-			// User-defined transparent types are not detectable however.
+			// Ignore standard transparent types.
+			// User-defined transparent types are not detectable, however.
 			cause = causeEx.Cause()
 		} else {
 			return causeEx.Type().FullName()
@@ -86,11 +86,18 @@ func removeErrorPrefix(code string) string {
 	return strings.TrimPrefix(code, "error.")
 }
 
+func buildDetailMessage(err error) string {
+	if err == nil {
+		return ""
+	}
+	return fmt.Sprintf("%+v", errorx.EnsureStackTrace(err))
+}
+
 func NewErrorResponse(err error) ErrorResponse {
 	return ErrorResponse{
 		Error:    true,
 		Message:  buildSimpleMessage(err),
 		Code:     removeErrorPrefix(buildCode(err)),
-		FullText: fmt.Sprintf("%+v", err),
+		FullText: buildDetailMessage(err),
 	}
 }

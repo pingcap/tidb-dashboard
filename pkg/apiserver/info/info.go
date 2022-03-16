@@ -22,6 +22,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
+	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 type ServiceParams struct {
@@ -55,7 +56,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/info")
 	endpoint.GET("/info", s.infoHandler)
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.GET("/whoami", s.whoamiHandler)
+	endpoint.GET("/whoami", s.WhoamiHandler)
 
 	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.GET("/databases", s.databasesHandler)
@@ -82,12 +83,12 @@ func (s *Service) infoHandler(c *gin.Context) {
 	versionWithoutSuffix := strings.Split(s.params.Config.FeatureVersion, "-")[0]
 	v, err := semver.NewVersion(versionWithoutSuffix)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	constraint, err := semver.NewConstraint(">= v5.4.0")
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 
@@ -122,7 +123,7 @@ type WhoAmIResponse struct {
 // @Router /info/whoami [get]
 // @Security JwtAuth
 // @Failure 401 {object} rest.ErrorResponse
-func (s *Service) whoamiHandler(c *gin.Context) {
+func (s *Service) WhoamiHandler(c *gin.Context) {
 	sessionUser := utils.GetSession(c)
 	resp := WhoAmIResponse{
 		DisplayName: sessionUser.DisplayName,
@@ -146,7 +147,7 @@ func (s *Service) databasesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	err := db.Raw("SHOW DATABASES").Scan(&result).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	strs := []string{}
@@ -181,7 +182,7 @@ func (s *Service) tablesHandler(c *gin.Context) {
 
 	err := tx.Order("TABLE_NAME").Scan(&result).Error
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 

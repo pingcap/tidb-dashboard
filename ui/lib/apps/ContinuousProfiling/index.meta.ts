@@ -6,6 +6,5 @@ export default {
   routerPrefix: '/continuous_profiling',
   icon: AimOutlined,
   translations,
-  reactRoot: () =>
-    import(/* webpackChunkName: "app_continuous_profiling" */ '.'),
+  reactRoot: () => import('.'),
 }

@@ -23,9 +23,18 @@ task('swagger:watch', () =>
 
 task('distro:generate', shell.task('../scripts/distro/write_strings.sh'))
 
-task('webpack:dev', shell.task('yarn react-app-rewired start'))
+task('esbuild:dev', shell.task('node builder.js'))
 
-task('webpack:build', shell.task('yarn react-app-rewired build'))
+task('esbuild:build', shell.task('NODE_ENV=production node builder.js'))
+
+task('tsc:watch', shell.task('yarn tsc --watch'))
+
+task('tsc:check', shell.task('yarn tsc'))
+
+// https://www.npmjs.com/package/eslint-watch
+task('lint:watch', shell.task('yarn esw --watch --cache --ext .tsx,.ts .'))
+
+task('lint:check', shell.task('esw --cache --ext tsx,ts .'))
 
 task(
   'speedscope:copy_static_assets',
@@ -49,7 +58,7 @@ task(
       'distro:generate',
       'speedscope:copy_static_assets'
     ),
-    'webpack:build'
+    parallel('tsc:check', 'lint:check', 'esbuild:build')
   )
 )
 
@@ -61,7 +70,13 @@ task(
       'distro:generate',
       'speedscope:copy_static_assets'
     ),
-    parallel('swagger:watch', 'speedscope:watch', 'webpack:dev')
+    parallel(
+      'swagger:watch',
+      'speedscope:watch',
+      'tsc:watch',
+      'lint:watch',
+      'esbuild:dev'
+    )
   )
 )
 

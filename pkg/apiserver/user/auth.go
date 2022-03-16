@@ -74,7 +74,7 @@ func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string)
 	return &SignOutInfo{}, nil
 }
 
-func newAuthService(featureFlags *featureflag.Registry) *AuthService {
+func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -187,7 +187,7 @@ func newAuthService(featureFlags *featureflag.Registry) *AuthService {
 				// The remaining error comes from checking tokens for protected endpoints.
 				err = rest.ErrUnauthenticated.NewWithNoMessage()
 			}
-			_ = c.Error(err)
+			rest.Error(c, err)
 			return err.Error()
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
@@ -225,8 +225,8 @@ func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
 
 func registerRouter(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
-	endpoint.GET("/login_info", s.getLoginInfoHandler)
-	endpoint.POST("/login", s.loginHandler)
+	endpoint.GET("/login_info", s.GetLoginInfoHandler)
+	endpoint.POST("/login", s.LoginHandler)
 	endpoint.GET("/sign_out_info", s.MWAuthRequired(), s.getSignOutInfoHandler)
 }
 
@@ -242,12 +242,12 @@ func (s *AuthService) MWRequireSharePriv() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := utils.GetSession(c)
 		if u == nil {
-			_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
+			rest.Error(c, rest.ErrUnauthenticated.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 		if !u.IsShareable {
-			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
+			rest.Error(c, rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -259,12 +259,12 @@ func (s *AuthService) MWRequireWritePriv() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u := utils.GetSession(c)
 		if u == nil {
-			_ = c.Error(rest.ErrUnauthenticated.NewWithNoMessage())
+			rest.Error(c, rest.ErrUnauthenticated.NewWithNoMessage())
 			c.Abort()
 			return
 		}
 		if !u.IsWriteable {
-			_ = c.Error(rest.ErrForbidden.NewWithNoMessage())
+			rest.Error(c, rest.ErrForbidden.NewWithNoMessage())
 			c.Abort()
 			return
 		}
@@ -285,12 +285,12 @@ type GetLoginInfoResponse struct {
 // @Summary Get log in information, like supported authenticate types
 // @Success 200 {object} GetLoginInfoResponse
 // @Router /user/login_info [get]
-func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
+func (s *AuthService) GetLoginInfoHandler(c *gin.Context) {
 	supportedAuth := make([]int, 0)
 	for typeID, a := range s.authenticators {
 		enabled, err := a.IsEnabled()
 		if err != nil {
-			_ = c.Error(err)
+			rest.Error(c, err)
 			return
 		}
 		if enabled {
@@ -310,7 +310,7 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 // @Success 200 {object} TokenResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Router /user/login [post]
-func (s *AuthService) loginHandler(c *gin.Context) {
+func (s *AuthService) LoginHandler(c *gin.Context) {
 	s.middleware.LoginHandler(c)
 }
 
@@ -329,19 +329,19 @@ type GetSignOutInfoRequest struct {
 func (s *AuthService) getSignOutInfoHandler(c *gin.Context) {
 	var req GetSignOutInfoRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
 	u := utils.GetSession(c)
 	a, ok := s.authenticators[u.AuthFrom]
 	if !ok {
-		_ = c.Error(ErrUnsupportedAuthType.NewWithNoMessage())
+		rest.Error(c, ErrUnsupportedAuthType.NewWithNoMessage())
 		return
 	}
 	si, err := a.SignOutInfo(u, req.RedirectURL)
 	if err != nil {
-		_ = c.Error(err)
+		rest.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, si)

@@ -7,5 +7,5 @@ export default {
   icon: AppstoreOutlined,
   isDefaultRouter: true,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_overview" */ '.'),
+  reactRoot: () => import('.'),
 }

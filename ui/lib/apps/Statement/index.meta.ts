@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/statement',
   icon: ThunderboltOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_statement" */ '.'),
+  reactRoot: () => import('.'),
 }

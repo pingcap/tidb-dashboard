@@ -17,13 +17,13 @@ import {
   Card,
   AutoRefreshButton,
   TimeRangeSelector,
-  TimeRange,
   calcTimeRange,
   DEFAULT_TIME_RANGE,
   Toolbar,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
+import { telemetry } from '../../utils/telemetry'
 import { InstanceSelect } from '../../components/Filter'
 import styles from './List.module.less'
 import { ListTable } from './ListTable'
@@ -84,6 +84,7 @@ export function TopSQLList() {
     const timeRangeTimestamp = calcTimeRange(timeRange)
     const delta = timeRangeTimestamp[1] - timeRangeTimestamp[0]
     computeTimeWindowSize(containerWidth, delta)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerWidth, timeRange])
 
   const handleUpdateTopSQLData = useCallback(() => {
@@ -107,40 +108,50 @@ export function TopSQLList() {
     instance,
     timeRange,
     timeWindowSize,
-    topN,
     autoRefreshSeconds,
     containerRef,
     containerWidth,
+    updateTopSQLData,
   ])
 
   // fetch data when instance id / time window size update
   useEffect(() => {
     handleUpdateTopSQLData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instance, timeWindowSize])
 
-  const handleBrushEnd: BrushEndListener = useCallback((v: XYBrushArea) => {
-    if (!v.x) {
-      return
-    }
+  const handleBrushEnd: BrushEndListener = useCallback(
+    (v: XYBrushArea) => {
+      if (!v.x) {
+        return
+      }
 
-    const tr = v.x.map((d) => d / 1000)
-    const delta = tr[1] - tr[0]
-    if (delta < 60) {
-      const offset = Math.floor(delta / 2)
-      const start = tr[0] + offset - 30
-      const end = tr[1] - offset + 30
+      const tr = v.x.map((d) => d / 1000)
+      const delta = tr[1] - tr[0]
+      if (delta < 60) {
+        const offset = Math.floor(delta / 2)
+        const value: [number, number] = [
+          Math.ceil(tr[0] + offset - 30),
+          Math.floor(tr[1] - offset + 30),
+        ]
+
+        setTimeRange({
+          type: 'absolute',
+          value,
+        })
+        telemetry.dndZoomIn(value)
+        return
+      }
+
+      const value: [number, number] = [Math.ceil(tr[0]), Math.floor(tr[1])]
       setTimeRange({
         type: 'absolute',
-        value: [Math.ceil(start), Math.floor(end)],
+        value,
       })
-      return
-    }
-
-    setTimeRange({
-      type: 'absolute',
-      value: [Math.ceil(tr[0]), Math.floor(tr[1])],
-    })
-  }, [])
+      telemetry.dndZoomIn(value)
+    },
+    [setTimeRange]
+  )
 
   const zoomOut = useCallback(() => {
     const [start, end] = calcTimeRange(timeRange)
@@ -151,9 +162,11 @@ export function TopSQLList() {
 
     let computedStart = start - expand
     let computedEnd = end + expand
+    const v: [number, number] = [computedStart, computedEnd]
 
-    setTimeRange({ type: 'absolute', value: [computedStart, computedEnd] })
-  }, [timeRange])
+    setTimeRange({ type: 'absolute', value: v })
+    telemetry.clickZoomOut(v)
+  }, [timeRange, setTimeRange])
 
   const chartRef = useRef<any>(null)
 
@@ -168,7 +181,12 @@ export function TopSQLList() {
               description={
                 <>
                   {t(`topsql.alert_header.body`)}
-                  <a onClick={() => setShowSettings(true)}>
+                  <a
+                    onClick={() => {
+                      setShowSettings(true)
+                      telemetry.clickSettings('bannerTips')
+                    }}
+                  >
                     {` ${t('topsql.alert_header.settings')}`}
                   </a>
                 </>
@@ -184,15 +202,29 @@ export function TopSQLList() {
             <Space>
               <InstanceSelect
                 value={instance}
-                onChange={setInstance}
+                onChange={(inst) => {
+                  setInstance(inst)
+                  if (inst) {
+                    telemetry.finishSelectInstance(inst?.instance_type!)
+                  }
+                }}
                 instances={instances}
                 disabled={isLoading || isInstancesLoading}
+                onDropdownVisibleChange={(open) =>
+                  open && telemetry.openSelectInstance()
+                }
               />
               <Button.Group>
                 <TimeRangeSelector
                   value={timeRange}
-                  onChange={setTimeRange}
+                  onChange={(v) => {
+                    setTimeRange(v)
+                    telemetry.selectTimeRange(v)
+                  }}
                   disabled={isLoading}
+                  onVisibleChange={(visible) =>
+                    visible && telemetry.openTimeRangePicker()
+                  }
                 />
                 <Button
                   icon={<ZoomOutOutlined />}
@@ -203,10 +235,16 @@ export function TopSQLList() {
               <AutoRefreshButton
                 disabled={isLoading}
                 autoRefreshSeconds={autoRefreshSeconds}
-                onAutoRefreshSecondsChange={setAutoRefreshSeconds}
+                onAutoRefreshSecondsChange={(sec) => {
+                  setAutoRefreshSeconds(sec)
+                  telemetry.selectAutoRefreshOption(sec)
+                }}
                 remainingRefreshSeconds={remainingRefreshSeconds}
                 onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}
-                onRefresh={handleUpdateTopSQLData}
+                onRefresh={() => {
+                  handleUpdateTopSQLData()
+                  telemetry.clickAutoRefresh()
+                }}
                 autoRefreshSecondsOptions={autoRefreshOptions}
               />
               {isLoading && (
@@ -218,7 +256,12 @@ export function TopSQLList() {
 
             <Space>
               <Tooltip title={t('topsql.settings.title')} placement="bottom">
-                <SettingOutlined onClick={() => setShowSettings(true)} />
+                <SettingOutlined
+                  onClick={() => {
+                    setShowSettings(true)
+                    telemetry.clickSettings('settingIcon')
+                  }}
+                />
               </Tooltip>
             </Space>
           </Toolbar>
@@ -230,7 +273,13 @@ export function TopSQLList() {
             title={t('topsql.settings.disabled_result.title')}
             subTitle={t('topsql.settings.disabled_result.sub_title')}
             extra={
-              <Button type="primary" onClick={() => setShowSettings(true)}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  setShowSettings(true)
+                  telemetry.clickSettings('firstTimeTips')
+                }}
+              >
                 {t('conprof.settings.open_settings')}
               </Button>
             }
@@ -413,11 +462,11 @@ const useInstances = (queryTimestampRange: [number, number] | null) => {
     } finally {
       setLoading(false)
     }
-  }, [String(queryTimestampRange)])
+  }, [queryTimestampRange])
 
   useEffect(() => {
     updateInstances()
-  }, [String(queryTimestampRange)])
+  }, [updateInstances])
 
   return {
     instances,

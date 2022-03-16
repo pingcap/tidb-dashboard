@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/instance_profiling',
   icon: AimOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_instance_profiling" */ '.'),
+  reactRoot: () => import('.'),
 }

@@ -6,5 +6,5 @@ export default {
   routerPrefix: '/search_logs',
   icon: FileSearchOutlined,
   translations,
-  reactRoot: () => import(/* webpackChunkName: "app_search_logs" */ '.'),
+  reactRoot: () => import('.'),
 }

@@ -21,6 +21,7 @@ import client, {
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ErrorBar, InstanceSelect } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
+import { telemetry } from '../utils/telemetry'
 
 const ONE_DAY_SECONDS = 24 * 60 * 60
 const RETENTION_SECONDS = [
@@ -92,6 +93,7 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
           await client.getInstance().continuousProfilingConfigPost({
             continuous_profiling: newConfig,
           })
+          telemetry.saveSettings(newConfig)
           onClose()
           onConfigUpdated()
         } finally {

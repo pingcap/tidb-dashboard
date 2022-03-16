@@ -16,7 +16,7 @@ function useAppMenuItem(registry, appId, title?: string, hideIcon?: boolean) {
     return null
   }
   return (
-    <Menu.Item key={appId}>
+    <Menu.Item key={appId} data-e2e={`menu_item_${appId}`}>
       <Link to={app.indexRoute} id={appId}>
         {!hideIcon && app.icon ? <app.icon /> : null}
         <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
@@ -114,10 +114,13 @@ function Sider({
     </Menu.SubMenu>
   )
 
+  const topSQLSupport = useIsFeatureSupport('topsql')
+  const topSQLMenu = useAppMenuItem(registry, 'topsql')
+
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
-    useIsFeatureSupport('topsql') ? useAppMenuItem(registry, 'topsql') : null,
+    // topSQL
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),
@@ -129,6 +132,9 @@ function Sider({
     // NOTE: Don't remove above comment line, it is a placeholder for code generator
     debugSubMenu,
   ]
+  if (topSQLSupport) {
+    menuItems.splice(2, 0, topSQLMenu)
+  }
 
   if (appInfo?.enable_experimental) {
     menuItems.push(experimentalSubMenu)

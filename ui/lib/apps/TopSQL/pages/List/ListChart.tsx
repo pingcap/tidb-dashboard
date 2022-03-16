@@ -51,6 +51,7 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
 
     useEffect(() => {
       setWall({ data, timeWindowSize, timeRangeTimestamp })
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data])
 
     return (
@@ -78,6 +79,7 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
         />
         <Axis
           id="left"
+          title={t('topsql.chart.cpu_time')}
           position={Position.Left}
           tickFormat={(v) => getValueFormat('ms')(v, 2)}
         />

@@ -13,12 +13,15 @@
 // the project's config changing)
 
 const mysql = require('mysql2')
+const { rmdir } = require('fs')
+const clipboardy = require('clipboardy')
 
-function queryTestDB(query, password) {
+function queryTestDB(query, password, database) {
   const dbConfig = {
     host: '127.0.0.1',
     port: '4000',
     user: 'root',
+    database: database,
     password: password,
   }
   // creates a new mysql connection
@@ -37,6 +40,20 @@ function queryTestDB(query, password) {
   })
 }
 
+function deleteTestFolder(folderPath) {
+  return new Promise((resolve, reject) => {
+    rmdir(folderPath, { maxRetries: 10, recursive: true }, (err) => {
+      if (err && err.code !== 'ENOENT') {
+        console.error(err)
+
+        return reject(err)
+      }
+
+      resolve(null)
+    })
+  })
+}
+
 /**
  * @type {Cypress.PluginConfig}
  */
@@ -50,12 +67,22 @@ module.exports = (on, config) => {
   config.baseUrl =
     (process.env.SERVER_URL || 'http://localhost:3001/dashboard') + '#'
 
-  config.env.apiUrl = 'http://127.0.0.1:12333/dashboard/api/'
+  config.env.apiBasePath = '/dashboard/api/'
 
-  // Usage: cy.task('queryDB', {query, password})
   on('task', {
-    queryDB: ({ query, password }) => {
-      return queryTestDB(query, password)
+    // Usage: cy.task('queryDB', { ...queryData })
+    queryDB: ({ query, password = '', database = 'mysql' }) => {
+      return queryTestDB(query, password, database)
+    },
+
+    // Usage: cy.task('deleteFolder', deleteFolderPath)
+    deleteFolder: (folderPath) => {
+      return deleteTestFolder(folderPath)
+    },
+
+    // Usage: cy.task('getClipboard')
+    getClipboard: () => {
+      return clipboardy.readSync()
     },
   })
 

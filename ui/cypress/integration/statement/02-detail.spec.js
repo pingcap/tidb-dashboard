@@ -105,7 +105,6 @@ describe('Statement detail page E2E test', () => {
   })
 
   describe('Plans', () => {
-    beforeEach(() => {})
     it('Has multiple execution plans', () => {
       cy.wait('@statements_plans').then((res) => {
         const response = res.response.body
@@ -156,51 +155,48 @@ describe('Statement detail page E2E test', () => {
 
   describe('Detail table tabs', () => {
     it('Basic table rows count', () => {
-      cy.get('[data-e2e=memo_details_list]')
-        .eq(1)
-        .within(() => {
+      cy.wait('@statements_plan_detail').then(() => {
+        cy.get('[data-e2e=statement_pages_detail_tabs_basic]').within(() => {
           cy.get('.ms-List-cell').should('have.length', 13)
         })
+      })
     })
 
     it('Time table rows count', () => {
       cy.get('.ant-tabs-tab').eq(1).click()
 
-      cy.get('[data-e2e=memo_details_list]')
-        .eq(1)
-        .within(() => {
+      cy.wait('@statements_plan_detail').then(() => {
+        cy.get('[data-e2e=statement_pages_detail_tabs_time]').within(() => {
           cy.get('.ms-List-cell').should('have.length', 12)
         })
+      })
     })
 
     it('Coprocessor table rows count', () => {
       cy.get('.ant-tabs-tab').eq(2).click()
-
-      cy.get('[data-e2e=memo_details_list]')
-        .eq(1)
-        .within(() => {
+      cy.wait('@statements_plan_detail').then(() => {
+        cy.get('[data-e2e=statement_pages_detail_tabs_copr]').within(() => {
           cy.get('.ms-List-cell').should('have.length', 15)
         })
+      })
     })
 
     it('Transaction table rows count', () => {
       cy.get('.ant-tabs-tab').eq(3).click()
-
-      cy.get('[data-e2e=memo_details_list]')
-        .eq(1)
-        .within(() => {
+      cy.wait('@statements_plan_detail').then(() => {
+        cy.get('[data-e2e=statement_pages_detail_tabs_txn]').within(() => {
           cy.get('.ms-List-cell').should('have.length', 10)
         })
+      })
     })
 
     it('Slow query table rows count', () => {
       cy.get('.ant-tabs-tab').eq(4).click()
-
-      cy.get('[data-e2e=memo_details_list]')
-        .eq(1)
-        .within(() => {
+      cy.wait('@statements_plan_detail').then(() => {
+        cy.get('[data-e2e=detail_tabs_slow_query]').within(() => {
           cy.get('.ms-List-cell').should('have.length', 0)
         })
+      })
     })
   })
 })

@@ -256,7 +256,7 @@ describe('SQL statements list page', () => {
 
       cy.wait('@databases').then((res) => {
         const databases = res.response.body
-        testBaseSelectorOptions(databases, 0)
+        testBaseSelectorOptions(databases, 'execution_database_name')
       })
     })
 
@@ -267,12 +267,19 @@ describe('SQL statements list page', () => {
 
       cy.wait('@databases').then(() => {
         // check all options in databases selector
-        checkAllOptionsInBaseSelector(0)
-      })
 
-      // check the existence of statements without use database
-      cy.contains(defaultExecStmtList[0]).should('not.exist')
-      cy.contains(defaultExecStmtList[2]).should('not.exist')
+        cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+          'statements_list'
+        )
+
+        checkAllOptionsInBaseSelector('execution_database_name')
+
+        cy.wait('@statements_list').then(() => {
+          // check the existence of statements without use database
+          cy.contains(defaultExecStmtList[0]).should('not.exist')
+          cy.contains(defaultExecStmtList[2]).should('not.exist')
+        })
+      })
     })
 
     it('Filter statements with use database (mysql)', () => {
@@ -287,7 +294,7 @@ describe('SQL statements list page', () => {
       )
 
       cy.wait('@databases').then(() => {
-        cy.get('[data-e2e=base_selector]')
+        cy.get('[data-e2e=execution_database_name]')
           .eq(0)
           .click()
           .then(() => {
@@ -322,7 +329,7 @@ describe('SQL statements list page', () => {
 
       cy.wait('@stmt_types').then((res) => {
         const stmtTypesList = res.response.body
-        testBaseSelectorOptions(stmtTypesList, 1)
+        testBaseSelectorOptions(stmtTypesList, 'statement_types')
       })
     })
 
@@ -337,7 +344,7 @@ describe('SQL statements list page', () => {
 
       cy.wait(['@stmt_types', '@statements_list']).then((interceptions) => {
         // check all options in kind selector
-        checkAllOptionsInBaseSelector(1)
+        checkAllOptionsInBaseSelector('statement_types')
         const statementsList = interceptions[1].response.body
         cy.get('[data-e2e=syntax_highlighter_compact]').should(
           'have.length',
@@ -352,8 +359,7 @@ describe('SQL statements list page', () => {
       )
 
       cy.wait('@stmt_types').then(() => {
-        cy.get('[data-e2e=base_selector]')
-          .eq(1)
+        cy.get('[data-e2e=statement_types]')
           .click()
           .then(() => {
             cy.get('.ant-dropdown').within(() => {
@@ -382,9 +388,7 @@ describe('SQL statements list page', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'
       )
-
       cy.get('[data-e2e=sql_statements_search]').type(' SELECT version{enter}')
-
       cy.wait('@statements_list').then(() => {
         cy.get('[data-e2e=syntax_highlighter_compact]').each(($stmt) => {
           cy.wrap($stmt).contains('SELECT')
@@ -392,9 +396,12 @@ describe('SQL statements list page', () => {
       })
 
       // check search text remembered after reload page
+
       cy.reload()
-      cy.get('[data-e2e=syntax_highlighter_compact]').each(($stmt) => {
-        cy.wrap($stmt).contains('SELECT')
+      cy.wait('@statements_list').then(() => {
+        cy.get('[data-e2e=syntax_highlighter_compact]').each(($stmt) => {
+          cy.wrap($stmt).contains('SELECT')
+        })
       })
     })
 

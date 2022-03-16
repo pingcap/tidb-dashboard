@@ -218,7 +218,7 @@ describe('SlowQuery list page', () => {
 
         cy.wait('@databases').then((res) => {
           const databaseList = res.response.body
-          testBaseSelectorOptions(databaseList, 0)
+          testBaseSelectorOptions(databaseList, 'execution_database_name')
         })
       })
 

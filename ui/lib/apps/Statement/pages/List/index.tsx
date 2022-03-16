@@ -140,6 +140,7 @@ export default function StatementsOverview() {
                 })
               }
               items={allSchemas}
+              data-e2e="execution_database_name"
             />
             <MultiSelect.Plain
               placeholder={t(
@@ -158,6 +159,7 @@ export default function StatementsOverview() {
                 })
               }
               items={allStmtTypes}
+              data-e2e="statement_types"
             />
             <Search
               defaultValue={queryOptions.searchText}

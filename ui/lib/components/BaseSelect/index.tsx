@@ -214,7 +214,6 @@ function BaseSelect<T>({
       onKeyDown={handleContainerKeyDown}
       ref={containerRef}
       {...restProps}
-      data-e2e="base_selector"
     >
       <Trigger
         prefixCls="ant-dropdown"

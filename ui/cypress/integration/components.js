@@ -1,8 +1,7 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
-export const testBaseSelectorOptions = (optionsList, index) => {
-  cy.get('[data-e2e=base_selector]')
-    .eq(index)
+export const testBaseSelectorOptions = (optionsList, dataE2EValue) => {
+  cy.get(`[data-e2e=${dataE2EValue}]`)
     .click()
     .then(() => {
       cy.get('[data-e2e=multi_select_options]')
@@ -13,9 +12,8 @@ export const testBaseSelectorOptions = (optionsList, index) => {
     })
 }
 
-export const checkAllOptionsInBaseSelector = (index) => {
-  cy.get('[data-e2e=base_selector]')
-    .eq(index)
+export const checkAllOptionsInBaseSelector = (dataE2EValue) => {
+  cy.get(`[data-e2e=${dataE2EValue}]`)
     .click()
     .then(() => {
       if (cy.get('.ant-dropdown').should('exist')) {

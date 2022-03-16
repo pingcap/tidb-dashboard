@@ -19,12 +19,14 @@ topsql:
       close: 确认
       cancel: 取消
   refresh: 刷新
+  chart:
+    cpu_time: CPU 耗时
   table:
     description: 以下表格展示了当前时间范围内消耗负载最多的 {{topN}} 类 SQL 查询，点击后可进一步显示详情。
     others: 其他语句
     others_tooltip: 所有其他非 Top {{topN}} 的语句
     fields:
-      cpu_time: CPU
+      cpu_time: 累计 CPU 耗时
       sql: SQL 语句
   detail:
     title: SQL 详情
@@ -33,7 +35,7 @@ topsql:
     no_plan: 无执行计划
     no_plan_tooltip: 该语句不是查询语句，或当时执行计划正在生成中
     fields:
-      cpu_time: CPU
+      cpu_time: 累计 CPU 耗时
       plan: 执行计划
       exec_count_per_sec: Call/sec
       scan_records_per_sec: Scan Rows/sec

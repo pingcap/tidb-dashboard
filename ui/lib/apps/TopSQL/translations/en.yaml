@@ -19,12 +19,14 @@ topsql:
       close: Disable
       cancel: Cancel
   refresh: Refresh
+  chart:
+    cpu_time: CPU Time
   table:
     description: The following table shows which top {{topN}} queries are contributing the most to load in the current time range. Click one to see details.
     others: Other Statements
     others_tooltip: All of other non Top {{topN}} statements
     fields:
-      cpu_time: CPU
+      cpu_time: Total CPU Time
       sql: SQL Statement
   detail:
     title: SQL Statement Details by Plan
@@ -33,7 +35,7 @@ topsql:
     no_plan: Plan Not Available
     no_plan_tooltip: This statement is not a query or the statement plan was being generated
     fields:
-      cpu_time: CPU
+      cpu_time: Total CPU Time
       plan: Plan
       exec_count_per_sec: Call/sec
       scan_records_per_sec: Scan Rows/sec

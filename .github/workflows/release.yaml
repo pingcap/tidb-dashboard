@@ -39,6 +39,8 @@ jobs:
         run: |
           echo "::set-output name=release_version::$(grep -v '^#' ./release-version)"
       - name: Build UI
+        env:
+          REACT_APP_MIXPANEL_TOKEN: ${{ secrets.REACT_APP_MIXPANEL_TOKEN }}
         run: |
           make ui
       - name: Pack UI assets for release

@@ -38,7 +38,7 @@ describe('SQL statements list page', () => {
     'SELECT `version` ()',
   ]
 
-  describe('Initialize statemen list page', () => {
+  describe('Initialize statement list page', () => {
     it('Statement side bar highlighted', () => {
       cy.get('[data-e2e=menu_item_statement]')
         .should('be.visible')

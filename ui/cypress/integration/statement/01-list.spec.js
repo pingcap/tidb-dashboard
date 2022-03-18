@@ -634,6 +634,10 @@ describe('SQL statements list page', () => {
 
     describe('Default statement setting', () => {
       beforeEach(() => {
+        cy.intercept(`${Cypress.env('apiBasePath')}statements/config`).as(
+          'statements_config'
+        )
+
         cy.get('[data-e2e=statement_setting]').click()
 
         // get refresh_interval value
@@ -652,19 +656,21 @@ describe('SQL statements list page', () => {
       })
 
       const checkSilder = (sizeList, defaultValueNow, dataE2EValue) => {
-        cy.get(`[data-e2e=${dataE2EValue}]`).within(() => {
-          cy.get('.ant-slider-handle').should(
-            'have.attr',
-            'aria-valuenow',
-            defaultValueNow
-          )
+        cy.wait('@statements_config').then(() => {
+          cy.get(`[data-e2e=${dataE2EValue}]`).within(() => {
+            cy.get('.ant-slider-handle').should(
+              'have.attr',
+              'aria-valuenow',
+              defaultValueNow
+            )
 
-          cy.get('.ant-slider-mark-text')
-            .then(($marks) => {
-              return Cypress.$.makeArray($marks).map((mark) => mark.innerText)
-            })
-            // make sure there exists the default executed statements
-            .should('to.deep.eq', sizeList)
+            cy.get('.ant-slider-mark-text')
+              .then(($marks) => {
+                return Cypress.$.makeArray($marks).map((mark) => mark.innerText)
+              })
+              // make sure there exists the default executed statements
+              .should('to.deep.eq', sizeList)
+          })
         })
       }
 

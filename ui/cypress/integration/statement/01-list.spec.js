@@ -283,15 +283,15 @@ describe('SQL statements list page', () => {
     })
 
     it('Filter statements with use database (mysql)', () => {
+      cy.intercept(`${Cypress.env('apiBasePath')}info/databases`).as(
+        'databases'
+      )
+
       let queryData = {
         query: 'SELECT count(*) from user;',
         database: 'mysql',
       }
       cy.task('queryDB', { ...queryData })
-
-      cy.intercept(`${Cypress.env('apiBasePath')}info/databases`).as(
-        'databases'
-      )
 
       cy.wait('@databases').then(() => {
         cy.get('[data-e2e=execution_database_name]')
@@ -676,7 +676,9 @@ describe('SQL statements list page', () => {
 
       it('Default statement setting max size', () => {
         const sizeList = ['200', '1000', '2000', '5000']
-        checkSilder(sizeList, '3000', 'statement_setting_max_size')
+        const defaultMaxSizeValue =
+          Cypress.env('TIDB_VERSION') === 'v5.0.0' ? '200' : '3000'
+        checkSilder(sizeList, defaultMaxSizeValue, 'statement_setting_max_size')
       })
 
       it('Default statement setting window size', () => {

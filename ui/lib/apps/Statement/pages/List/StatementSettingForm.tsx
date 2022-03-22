@@ -206,7 +206,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
               >
                 {t('statement.settings.actions.save')}
               </Button>
-              <Button onClick={onClose} data-e2e="cancel_btn">
+              <Button onClick={onClose}>
                 {t('statement.settings.actions.cancel')}
               </Button>
             </Space>

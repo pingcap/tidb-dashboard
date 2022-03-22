@@ -245,6 +245,7 @@ export default function CardTable(props: ICardTableProps) {
       noMarginTop={cardNoMarginTop}
       noMarginBottom={cardNoMarginBottom}
       extra={cardExtra}
+      {...restProps}
     >
       <ErrorBar errors={errors} />
       <AnimatedSkeleton

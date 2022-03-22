@@ -94,7 +94,12 @@ export default function StatementsOverview() {
 
   const dropdownMenu = (
     <Menu onClick={menuItemClick}>
-      <Menu.Item key="export" disabled={downloading} icon={<ExportOutlined />}>
+      <Menu.Item
+        key="export"
+        disabled={downloading}
+        icon={<ExportOutlined />}
+        data-e2e="statement_export_btn"
+      >
         {downloading
           ? t('statement.pages.overview.toolbar.exporting')
           : t('statement.pages.overview.toolbar.export')}
@@ -105,7 +110,7 @@ export default function StatementsOverview() {
   return (
     <div className={styles.list_container}>
       <Card>
-        <Toolbar className={styles.list_toolbar}>
+        <Toolbar className={styles.list_toolbar} data-e2e="statement_toolbar">
           <Space>
             <TimeRangeSelector
               value={queryOptions.timeRange}
@@ -116,6 +121,7 @@ export default function StatementsOverview() {
                   timeRange,
                 })
               }
+              data-e2e="statement_time_range_selector"
             />
             <MultiSelect.Plain
               placeholder={t(
@@ -134,6 +140,7 @@ export default function StatementsOverview() {
                 })
               }
               items={allSchemas}
+              data-e2e="execution_database_name"
             />
             <MultiSelect.Plain
               placeholder={t(
@@ -152,12 +159,14 @@ export default function StatementsOverview() {
                 })
               }
               items={allStmtTypes}
+              data-e2e="statement_types"
             />
             <Search
               defaultValue={queryOptions.searchText}
               onSearch={(searchText) =>
                 setQueryOptions({ ...queryOptions, searchText })
               }
+              data-e2e="sql_statements_search"
             />
           </Space>
 
@@ -172,6 +181,7 @@ export default function StatementsOverview() {
                   <Checkbox
                     checked={showFullSQL}
                     onChange={(e) => setShowFullSQL(e.target.checked)}
+                    data-e2e="statement_show_full_sql"
                   >
                     {t(
                       'statement.pages.overview.toolbar.select_columns.show_full_sql'
@@ -183,17 +193,26 @@ export default function StatementsOverview() {
             {enable && (
               <RefreshTooltip isOutdated={isTimeRangeOutdated}>
                 {loadingStatements ? (
-                  <LoadingOutlined />
+                  <LoadingOutlined data-e2e="statement_refresh" />
                 ) : (
-                  <ReloadOutlined onClick={refresh} />
+                  <ReloadOutlined
+                    onClick={refresh}
+                    data-e2e="statement_refresh"
+                  />
                 )}
               </RefreshTooltip>
             )}
             <Tooltip title={t('statement.settings.title')} placement="bottom">
-              <SettingOutlined onClick={() => setShowSettings(true)} />
+              <SettingOutlined
+                onClick={() => setShowSettings(true)}
+                data-e2e="statement_setting"
+              />
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
-              <div style={{ cursor: 'pointer' }}>
+              <div
+                style={{ cursor: 'pointer' }}
+                data-e2e="statement_export_menu"
+              >
                 <MenuOutlined />
               </div>
             </Dropdown>
@@ -202,7 +221,10 @@ export default function StatementsOverview() {
       </Card>
 
       {enable ? (
-        <div style={{ height: '100%', position: 'relative' }}>
+        <div
+          style={{ height: '100%', position: 'relative' }}
+          data-e2e="statements_table"
+        >
           <ScrollablePane>
             <StatementsTable cardNoMarginTop controller={controller} />
           </ScrollablePane>

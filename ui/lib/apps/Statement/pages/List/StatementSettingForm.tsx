@@ -99,7 +99,10 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
             extra={t('statement.settings.switch_tooltip')}
           >
             <Form.Item noStyle name="enable" valuePropName="checked">
-              <Switch disabled={!isWriteable} />
+              <Switch
+                disabled={!isWriteable}
+                data-e2e="statemen_enbale_switcher"
+              />
             </Form.Item>
           </Form.Item>
           <Form.Item
@@ -112,6 +115,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     label={t('statement.settings.max_size')}
                     extra={t('statement.settings.max_size_tooltip')}
+                    data-e2e="statement_setting_max_size"
                   >
                     <Input.Group>
                       <Form.Item noStyle name="max_size">
@@ -128,6 +132,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     label={t('statement.settings.refresh_interval')}
                     extra={t('statement.settings.refresh_interval_tooltip')}
+                    data-e2e="statement_setting_refresh_interval"
                   >
                     <Input.Group>
                       <Form.Item noStyle name="refresh_interval">
@@ -144,6 +149,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     label={t('statement.settings.history_size')}
                     extra={t('statement.settings.history_size_tooltip')}
+                    data-e2e="statement_setting_history_size"
                   >
                     <Input.Group>
                       <Form.Item noStyle name="history_size">
@@ -163,6 +169,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                       prev.refresh_interval !== cur.refresh_interval ||
                       prev.history_size !== cur.history_size
                     }
+                    data-e2e="statement_setting_keep_duration"
                   >
                     {({ getFieldValue }) => {
                       const refreshInterval =
@@ -180,6 +187,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                     extra={t('statement.settings.internal_query_tooltip')}
                     name="internal_query"
                     valuePropName="checked"
+                    data-e2e="statement_setting_internal_query"
                   >
                     <Switch disabled={!isWriteable} />
                   </Form.Item>
@@ -194,6 +202,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                 htmlType="submit"
                 loading={submitting}
                 disabled={!isWriteable}
+                data-e2e="submit_btn"
               >
                 {t('statement.settings.actions.save')}
               </Button>

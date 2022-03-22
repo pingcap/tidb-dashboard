@@ -168,6 +168,7 @@ function DetailPage() {
                 style={{
                   display: plans && plans.length > 1 ? 'block' : 'none',
                 }}
+                data-e2e="statement_multiple_execution_plans"
               >
                 <Alert
                   message={t(`statement.pages.detail.desc.plans.note`)}

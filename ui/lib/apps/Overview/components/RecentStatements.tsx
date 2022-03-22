@@ -13,7 +13,6 @@ const visibleColumnKeys: IColumnKeys = {
   digest_text: true,
   sum_latency: true,
   avg_latency: true,
-  related_schemas: true,
 }
 
 export default function RecentStatements() {

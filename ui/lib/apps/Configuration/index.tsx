@@ -200,7 +200,11 @@ export default function () {
         <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
           <div style={{ display: 'flow-root' }}>
             <Card>
-              <Input placeholder="Filter" onChange={handleFilterChange} />
+              <Input
+                placeholder="Filter"
+                onChange={handleFilterChange}
+                data-e2e="search_config"
+              />
             </Card>
           </div>
         </Sticky>

@@ -1,5 +1,5 @@
-import React from 'react'
-import { Space } from 'antd'
+import React, { useState } from 'react'
+import { Space, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -18,10 +18,13 @@ import {
   HighlightSQL,
   Pre,
   TextWithInfo,
+  VisualPlan,
 } from '@lib/components'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import DetailTabs from './DetailTabs'
+
+import styles from './index.module.less'
 
 export interface IPageQuery {
   connectId?: string
@@ -62,6 +65,12 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
   const togglePlan = () =>
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
+
+  const [vpVisible, setVpVisable] = useState(false)
+
+  const openVisualPlan = () => {
+    setVpVisable(!vpVisible)
+  }
 
   return (
     <div>
@@ -160,6 +169,24 @@ function DetailPage() {
                   <Expand expanded={detailExpand.plan}>
                     <Pre noWrap>{data.plan}</Pre>
                   </Expand>
+                </Descriptions.Item>
+                <Descriptions.Item
+                  span={2}
+                  label={
+                    <Space size="middle">
+                      <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
+                    </Space>
+                  }
+                >
+                  <Modal
+                    title="Modal 1000px width"
+                    centered
+                    visible={true}
+                    onCancel={() => openVisualPlan()}
+                    width={1000}
+                  >
+                    <VisualPlan />
+                  </Modal>
                 </Descriptions.Item>
               </Descriptions>
 

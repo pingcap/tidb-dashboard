@@ -1,5 +1,5 @@
-import React from 'react'
-import { Space } from 'antd'
+import React, { useState } from 'react'
+import { Space, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,
@@ -11,6 +11,7 @@ import {
   HighlightSQL,
   Pre,
   TextWithInfo,
+  TreeDiagram,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
@@ -76,6 +77,11 @@ function PlanDetail({ query }: IPlanDetailProps) {
     titleKey = 'all'
   } else {
     titleKey = 'some'
+  }
+
+  const [vpVisible, setVpVisable] = useState(false)
+  const openVisualPlan = () => {
+    setVpVisable(!vpVisible)
   }
 
   return (
@@ -168,6 +174,26 @@ function PlanDetail({ query }: IPlanDetailProps) {
                 <Expand expanded={detailExpand.plan}>
                   <Pre noWrap>{data.plan}</Pre>
                 </Expand>
+              </Descriptions.Item>
+
+              <Descriptions.Item
+                span={2}
+                label={
+                  <Space size="middle" onClick={openVisualPlan}>
+                    <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
+                  </Space>
+                }
+              >
+                <Modal
+                  title="Visual Plan Tree Diagram"
+                  centered
+                  visible={vpVisible}
+                  width={window.innerWidth}
+                  onCancel={openVisualPlan}
+                  footer={null}
+                >
+                  <TreeDiagram data={JSON.parse(data.visual_plan).main} />
+                </Modal>
               </Descriptions.Item>
             </Descriptions>
 

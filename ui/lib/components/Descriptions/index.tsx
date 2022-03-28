@@ -11,12 +11,14 @@ export interface IDescriptionsProps {
     | (React.ReactElement<IDescriptionsItemProps> | null | undefined)[]
     | React.ReactElement<IDescriptionsItemProps>
   column?: number
+  onClick?: () => void
 }
 
 export interface IDescriptionsItemProps extends DescriptionsItemProps {
   className?: string
   children: React.ReactNode
   multiline?: boolean
+  onClick?: () => void
 }
 
 // FIXME: This logic duplicates to <TextWrap>

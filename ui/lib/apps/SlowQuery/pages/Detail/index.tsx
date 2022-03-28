@@ -1,5 +1,5 @@
-import React from 'react'
-import { Space } from 'antd'
+import React, { useEffect, useState } from 'react'
+import { Space, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -18,11 +18,11 @@ import {
   HighlightSQL,
   Pre,
   TextWithInfo,
+  TreeDiagram,
 } from '@lib/components'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import DetailTabs from './DetailTabs'
-
 export interface IPageQuery {
   connectId?: string
   digest?: string
@@ -62,6 +62,12 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
   const togglePlan = () =>
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
+
+  const [vpVisible, setVpVisable] = useState(false)
+
+  const openVisualPlan = () => {
+    setVpVisable(!vpVisible)
+  }
 
   return (
     <div>
@@ -143,26 +149,58 @@ function DetailPage() {
                       </Descriptions.Item>
                     )
                 })()}
-                <Descriptions.Item
-                  span={2}
-                  multiline={detailExpand.plan}
-                  label={
-                    <Space size="middle">
-                      <TextWithInfo.TransKey transKey="slow_query.detail.head.plan" />
-                      <Expand.Link
-                        expanded={detailExpand.plan}
-                        onClick={togglePlan}
-                      />
-                      <CopyLink data={data.plan ?? ''} />
-                    </Space>
-                  }
-                >
-                  <Expand expanded={detailExpand.plan}>
-                    <Pre noWrap>{data.plan}</Pre>
-                  </Expand>
-                </Descriptions.Item>
-              </Descriptions>
+                {(() => {
+                  if (data.plan)
+                    return (
+                      <Descriptions.Item
+                        span={2}
+                        multiline={detailExpand.plan}
+                        label={
+                          <Space size="middle">
+                            <TextWithInfo.TransKey transKey="slow_query.detail.head.plan" />
+                            <Expand.Link
+                              expanded={detailExpand.plan}
+                              onClick={togglePlan}
+                            />
+                            <CopyLink data={data.plan ?? ''} />
+                          </Space>
+                        }
+                      >
+                        <Expand expanded={detailExpand.plan}>
+                          <Pre noWrap>{data.plan}</Pre>
+                        </Expand>
+                      </Descriptions.Item>
+                    )
+                })()}
 
+                {(() => {
+                  if (data.visual_plan)
+                    return (
+                      <Descriptions.Item
+                        span={2}
+                        label={
+                          <Space size="middle" onClick={openVisualPlan}>
+                            <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
+                          </Space>
+                        }
+                      >
+                        <Modal
+                          title="Visual Plan Tree Diagram"
+                          centered
+                          visible={vpVisible}
+                          width={window.innerWidth}
+                          onCancel={openVisualPlan}
+                          footer={null}
+                          bodyStyle={{ background: '#f5f5f5' }}
+                        >
+                          <TreeDiagram
+                            data={JSON.parse(data.visual_plan).main}
+                          />
+                        </Modal>
+                      </Descriptions.Item>
+                    )
+                })()}
+              </Descriptions>
               <DetailTabs data={data} />
             </>
           )}

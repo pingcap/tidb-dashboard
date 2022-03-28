@@ -6,14 +6,17 @@ export default function VisualPlan() {
   const d3Container = useRef(null)
   let chart = new OrgChart()
 
+  let minCost = Infinity,
+    maxCost = 0
+
   const treeData = {
     name: 'HashJoin_9',
     cost: '101530.25',
     est_rows: '4162.50',
     act_rows: '0',
-    access_table: '',
-    access_index: '',
-    access_partition: '',
+    access_table: 'access_table',
+    access_index: 'access_index',
+    access_partition: 'access_partition',
     time_us: '628.9µs',
     run_at: 'root',
     children: [
@@ -22,9 +25,9 @@ export default function VisualPlan() {
         cost: '43608.83',
         est_rows: '3330.00',
         act_rows: '0',
-        access_table: '',
-        access_index: '',
-        access_partition: '',
+        access_table: 'access_table',
+        access_index: 'access_index',
+        access_partition: 'access_partition',
         time_us: '65.9µs',
         run_at: 'root',
         children: [
@@ -33,9 +36,9 @@ export default function VisualPlan() {
             cost: '600020.00',
             est_rows: '3330.00',
             act_rows: '0',
-            access_table: '',
-            access_index: '',
-            access_partition: '',
+            access_table: 'access_table',
+            access_index: 'access_index',
+            access_partition: 'access_partition',
             time_us: '0s',
             run_at: 'cop[tikv]',
             children: [
@@ -44,7 +47,9 @@ export default function VisualPlan() {
                 cost: '570020.00',
                 est_rows: '10000.00',
                 act_rows: '0',
-                access_object: 'table:t1',
+                access_table: 'access_table',
+                access_index: 'access_index',
+                access_partition: 'access_partition',
                 time_us: '0s',
                 run_at: 'cop[tikv]',
               },
@@ -55,9 +60,9 @@ export default function VisualPlan() {
             cost: '600020.00',
             est_rows: '3330.00',
             act_rows: '0',
-            access_table: '',
-            access_index: '',
-            access_partition: '',
+            access_table: 'access_table',
+            access_index: 'access_index',
+            access_partition: 'access_partition',
             time_us: '0s',
             run_at: 'cop[tikv]',
             children: [
@@ -66,7 +71,9 @@ export default function VisualPlan() {
                 cost: '570020.00',
                 est_rows: '10000.00',
                 act_rows: '0',
-                access_object: 'table:t1',
+                access_table: 'access_table',
+                access_index: 'access_index',
+                access_partition: 'access_partition',
                 time_us: '0s',
                 run_at: 'cop[tikv]',
               },
@@ -79,9 +86,9 @@ export default function VisualPlan() {
         cost: '45412.58',
         est_rows: '9990.00',
         act_rows: '0',
-        access_table: '',
-        access_index: '',
-        access_partition: '',
+        access_table: 'access_table',
+        access_index: 'access_index',
+        access_partition: 'access_partition',
         time_us: '236.6µs',
         run_at: 'root',
         children: [
@@ -90,9 +97,9 @@ export default function VisualPlan() {
             cost: '600020.00',
             est_rows: '9990.00',
             act_rows: '0',
-            access_table: '',
-            access_index: '',
-            access_partition: '',
+            access_table: 'access_table',
+            access_index: 'access_index',
+            access_partition: 'access_partition',
             time_us: '0s',
             run_at: 'cop[tikv]',
             children: [
@@ -101,7 +108,9 @@ export default function VisualPlan() {
                 est_rows: '10000.00',
                 cost: '570020.00',
                 act_rows: '0',
-                access_object: 'table:t2',
+                access_table: 'access_table',
+                access_index: 'access_index',
+                access_partition: 'access_partition',
                 time_us: '0s',
                 run_at: 'cop[tikv]',
               },
@@ -114,10 +123,8 @@ export default function VisualPlan() {
 
   const recursivefn = (obj, name) => {
     if (obj == undefined) {
-      // console.log("test", obj)
       return
     }
-    //console.log(Object.keys(obj))
     if (Array.isArray(obj)) {
       obj.map((el) => {
         el['parentNodeId'] = name
@@ -129,12 +136,13 @@ export default function VisualPlan() {
     } else {
       obj['parentNodeId'] = name
       obj['nodeId'] = obj.name
-      obj['width'] = 300
+      obj['width'] = 500
       obj['height'] = 100
       recursivefn(obj.children, obj.name)
     }
   }
   recursivefn(treeData, '')
+  console.log('treeData', treeData)
   const arr: Object[] = []
   const flattenObject = (obj) => {
     if (obj == undefined) {
@@ -146,12 +154,20 @@ export default function VisualPlan() {
       Object.keys(obj).forEach((key) => {
         const value = obj[key]
 
-        if (key == 'children' && Array.isArray(value)) {
+        if (key === 'children' && Array.isArray(value)) {
           value.map((el) => {
             flattenObject(el)
           })
         } else {
           flattened[key] = value
+          // console.log('not children obj', obj)
+          if (key === 'cost') {
+            if (Number(obj[key]) < Number(minCost)) {
+              minCost = obj[key]
+            } else if (Number(obj[key]) > Number(maxCost)) {
+              maxCost = obj[key]
+            }
+          }
         }
       })
       flattened['expanded'] = true
@@ -160,31 +176,69 @@ export default function VisualPlan() {
   }
   flattenObject(treeData)
 
+  const scale = (inputCost: number): number => {
+    const [minC, maxC] = [minCost, maxCost]
+    const [rangeMin, rangeMax] = [0, 1]
+
+    const percent = (rangeMin - rangeMax) / (minC - maxC)
+    const costInRange = percent * inputCost
+
+    return costInRange
+  }
+
+  console.log('result arr =====', arr)
+
   useLayoutEffect(() => {
     if (d3Container.current) {
       chart
-        .container(d3Container.current)
+        .container(d3Container.current as any)
         .data(arr)
-        .nodeWidth((d) => 200)
-        .nodeHeight((d) => 120)
-        .onNodeClick((d, i, arr) => {
-          console.log(d, 'Id of clicked node ')
+        // .nodeWidth((d) => {
+        //   console.log('d in ==== ', d)
+        //   return
+        // })
+        // .nodeHeight((d) => 150)
+        .onNodeClick((d) => {
+          console.log('click d is', d, d.id)
         })
-        .nodeContent(function (d, i, arr, state) {
+        .nodeContent(function (d: any, i, arr, state) {
+          console.log('d', d, d.height, d.width)
           const color = '#FFFFFF'
           return `
-                    <div style="font-family: 'Inter', sans-serif;background-color:${color}; position:absolute;margin-top:-1px; margin-left:-1px;width:${d.width}px;height:${d.height}px;border-radius:10px;border: 1px solid #E4E2E9">
-                      
-                      <div style="color:#08011E;position:absolute;right:20px;top:17px;font-size:10px;"><i class="fas fa-ellipsis-h"></i></div>
-        
-                      <div style="font-size:15px;color:#08011E;margin-left:20px;margin-top:32px"> ${d.data.name} </div>
-                      <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> cost: ${d.data.cost} </div>
-                     
-                      <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> run_at: ${d.data.run_at} </div>
-                      <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> time_us: ${d.data.time_us} </div>
-        
-        
-                   </div>
+              <div style="font-family: 'Inter', sans-serif;background-color:${color}; position:absolute;margin-top:-1px; margin-left:-1px;width:${d.width}px;height:${d.height}px; border: 1px solid #E4E2E9">
+
+              <div style="width:100%;position:relative;background-color:${d3.interpolateReds(
+                scale(d.data.cost)
+              )}; display: flex;">
+                <div style="padding: 15px;"> ${d.data.name} </div>
+                <div style="padding: 15px 0;">${d.data.time_us} | 100%</div>
+              </div>
+
+              <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> cost: ${
+                d.data.act_rows
+              } </div>
+
+              <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> run_at: ${
+                d.data.est_rows
+              } </div>
+              <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> time_us: ${
+                d.data.run_at
+              } </div>
+              <div style="visibility: hidden;">
+                <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> cost: ${
+                  d.data.cost
+                } </div>
+                <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> run_at: ${
+                  d.data.access_table
+                } </div>
+                <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> time_us: ${
+                  d.data.access_index
+                } </div>
+                <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> time_us: ${
+                  d.data.access_partition
+                } </div>
+              </div>
+            </div>
           `
         })
         .render()

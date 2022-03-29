@@ -136,7 +136,7 @@ export default function VisualPlan() {
     } else {
       obj['parentNodeId'] = name
       obj['nodeId'] = obj.name
-      obj['width'] = 500
+      obj['width'] = 300
       obj['height'] = 100
       recursivefn(obj.children, obj.name)
     }
@@ -193,53 +193,57 @@ export default function VisualPlan() {
       chart
         .container(d3Container.current as any)
         .data(arr)
-        // .nodeWidth((d) => {
-        //   console.log('d in ==== ', d)
-        //   return
-        // })
-        // .nodeHeight((d) => 150)
-        .onNodeClick((d) => {
-          console.log('click d is', d, d.id)
-        })
         .nodeContent(function (d: any, i, arr, state) {
-          console.log('d', d, d.height, d.width)
+          console.log(
+            'd',
+            d,
+            d.height,
+            d.width,
+            i,
+            arr,
+            state,
+            state.isNodeDetailVisible
+          )
           const color = '#FFFFFF'
           return `
-              <div style="font-family: 'Inter', sans-serif;background-color:${color}; position:absolute;margin-top:-1px; margin-left:-1px;width:${d.width}px;height:${d.height}px; border: 1px solid #E4E2E9">
+              <div style="font-family: 'Inter', sans-serif;background-color:${color}; position:absolute; width:${d.width}px;height:${d.height}px; border: 1px solid #E4E2E9">
+                <div style="width:100%;position:relative;background-color:${d3.interpolateReds(
+                  scale(d.data.cost)
+                )}; display: flex; color: ${d3.interpolateGreys(1 - scale(d.data.cost))}">
+                  <div style="padding: 15px; font-weight: 600;"> ${
+                    d.data.name
+                  } </div>
+                  <div style="padding: 15px 0;">${d.data.time_us} | 100%</div>
+                </div>
 
-              <div style="width:100%;position:relative;background-color:${d3.interpolateReds(
-                scale(d.data.cost)
-              )}; display: flex;">
-                <div style="padding: 15px;"> ${d.data.name} </div>
-                <div style="padding: 15px 0;">${d.data.time_us} | 100%</div>
+                <div style="margin: 8px 15px; font-size:12px;"> <span style="color:#716E7B;">Actual Rows</span>: ${
+                  d.data.act_rows
+                } </div>
+
+                <div style="color:#716E7B;margin: 8px 15px;font-size:12px;"> <span style="color:#716E7B;">Estimate Rows</span>: ${
+                  d.data.est_rows
+                } </div>
+                <div style="color:#716E7B;margin: 8px 15px;font-size:12px;"> <span style="color:#716E7B;">Run at</span>: ${
+                  d.data.run_at
+                } </div>
+                <div style="visibility: ${
+                  state.isNodeDetailVisible ? 'visible' : 'hidden'
+                }">
+                  <div style="color:#716E7B;margin: 8px 15px;font-size:12px;"> <span style="color:#716E7B;">Cost</span>: ${
+                    d.data.cost
+                  } </div>
+                  <div style="color:#716E7B;margin: 8px 15px;font-size:12px;"> <span style="color:#716E7B;">Access Table</span>: ${
+                    d.data.access_table
+                  } </div>
+                  <div style="color:#716E7B;margin: 8px 15px;font-size:12px;"> <span style="color:#716E7B;">Access Index</span>: ${
+                    d.data.access_index
+                  } </div>
+                  <div style="color:#716E7B;margin: 8px 15px;font-size:12px;"> <span style="color:#716E7B;">Access Partition</span>: ${
+                    d.data.access_partition
+                  } </div>
+                </div>
               </div>
-
-              <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> cost: ${
-                d.data.act_rows
-              } </div>
-
-              <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> run_at: ${
-                d.data.est_rows
-              } </div>
-              <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> time_us: ${
-                d.data.run_at
-              } </div>
-              <div style="visibility: hidden;">
-                <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> cost: ${
-                  d.data.cost
-                } </div>
-                <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> run_at: ${
-                  d.data.access_table
-                } </div>
-                <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> time_us: ${
-                  d.data.access_index
-                } </div>
-                <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:12px;"> time_us: ${
-                  d.data.access_partition
-                } </div>
-              </div>
-            </div>
-          `
+            `
         })
         .render()
     }

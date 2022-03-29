@@ -179,7 +179,7 @@ function DetailPage() {
                   }
                 >
                   <Modal
-                    title="Modal 1000px width"
+                    title="Visual Plan Tree Diagram"
                     centered
                     visible={true}
                     onCancel={() => openVisualPlan()}

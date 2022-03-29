@@ -227,7 +227,7 @@ export default function VisualPlan() {
                   d.data.run_at
                 } </div>
                 <div style="visibility: ${
-                  state.isNodeDetailVisible ? 'visible' : 'hidden'
+                  d.data.isNodeDetailVisible ? 'visible' : 'hidden'
                 }">
                   <div style="color:#716E7B;margin: 8px 15px;font-size:12px;"> <span style="color:#716E7B;">Cost</span>: ${
                     d.data.cost

@@ -209,6 +209,9 @@ async function main() {
     start(devServerParams)
 
     const tsConfig = require('./tsconfig.json')
+    watch(`node_modules/**/*`, { ignoreInitial: true }).on('all', () => {
+      builder.rebuild()
+    })
     tsConfig.include.forEach((folder) => {
       watch(`${folder}/**/*`, { ignoreInitial: true }).on('all', () => {
         builder.rebuild()

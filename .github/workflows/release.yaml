@@ -89,7 +89,7 @@ jobs:
     needs: release
     strategy:
       matrix:
-        branch: [master, release-5.3, release-5.4]
+        branch: [master, release-6.0]
     steps:
       - name: Check out PD code base
         uses: actions/checkout@master

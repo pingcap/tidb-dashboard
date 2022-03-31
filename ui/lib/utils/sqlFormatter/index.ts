@@ -9,5 +9,12 @@
 import { format } from 'sql-formatter'
 
 export default function formatSql(sql?: string): string {
-  return format(sql || '', { uppercase: true, language: 'mysql' })
+  let formatedSQL = sql || ''
+  try {
+    formatedSQL = format(sql || '', { uppercase: true, language: 'mysql' })
+  } catch (err) {
+    console.log(err)
+    console.log(sql)
+  }
+  return formatedSQL
 }

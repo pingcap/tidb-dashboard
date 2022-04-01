@@ -205,13 +205,17 @@ async function main() {
   const builder = await build(esbuildParams)
   handleAssets()
 
+  function rebuild() {
+    builder.rebuild().catch((err) => console.log(err))
+  }
+
   if (isDev) {
     start(devServerParams)
 
     const tsConfig = require('./tsconfig.json')
     tsConfig.include.forEach((folder) => {
       watch(`${folder}/**/*`, { ignoreInitial: true }).on('all', () => {
-        builder.rebuild()
+        rebuild()
       })
     })
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {

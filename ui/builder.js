@@ -164,15 +164,15 @@ if (isE2E) {
 function buildHtml(inputFilename, outputFilename) {
   let result = fs.readFileSync(inputFilename).toString()
 
-  let placeholders = ['PUBLIC_URL']
+  const placeholders = ['PUBLIC_URL']
   placeholders.forEach((key) => {
     result = result.replace(new RegExp(`%${key}%`, 'g'), process.env[key])
   })
-
-  placeholders = ['TIME_PLACE_HOLDER']
-  placeholders.forEach((key) => {
-    result = result.replace(new RegExp(`%${key}%`, 'g'), new Date().valueOf())
-  })
+  // replace TIME_PLACE_HOLDER
+  result = result.replace(
+    new RegExp(`%TIME_PLACE_HOLDER%`, 'g'),
+    new Date().valueOf()
+  )
 
   // handle distro strings res, only for dev mode
   const distroStringsResFilePath = './build/distro-res/strings.json'

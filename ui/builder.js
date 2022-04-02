@@ -171,7 +171,7 @@ function buildHtml(inputFilename, outputFilename) {
 
   placeholders = ['TIME_PLACE_HOLDER']
   placeholders.forEach((key) => {
-    result = result.replace(new RegExp(key, 'g'), new Date().valueOf())
+    result = result.replace(new RegExp(`%${key}%`, 'g'), new Date().valueOf())
   })
 
   // handle distro strings res, only for dev mode

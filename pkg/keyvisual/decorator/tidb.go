@@ -67,11 +67,11 @@ func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {}
 func (s *tidbLabelStrategy) Background(ctx context.Context) {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
-	for {
+	for ; true; <-ticker.C {
 		select {
 		case <-ctx.Done():
 			return
-		case <-ticker.C:
+		default:
 			s.updateMap(ctx)
 		}
 	}

@@ -8,7 +8,7 @@ import { TFunction } from 'i18next'
 
 import { InfoInfoResponse } from '@lib/client'
 import { store } from '@lib/utils/store'
-import publicPathPrefix from '@lib/utils/publicPathPrefix'
+import { lightLogoSvg } from '@lib/utils/distroAssets'
 
 import styles from './Banner.module.less'
 
@@ -82,10 +82,7 @@ export default function ToggleBanner({
         >
           <Flexbox flexDirection="row">
             <div className={styles.bannerLogo}>
-              <img
-                src={`${publicPathPrefix}/distro-res/logo-icon-light.svg`}
-                style={{ height: 30 }}
-              />
+              <img src={lightLogoSvg} style={{ height: 30 }} />
             </div>
             <div className={styles.bannerContent}>
               <div className={styles.bannerTitle}>

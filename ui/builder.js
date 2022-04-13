@@ -169,10 +169,14 @@ function buildHtml(inputFilename, outputFilename) {
     result = result.replace(new RegExp(`%${key}%`, 'g'), process.env[key])
   })
   // replace TIME_PLACE_HOLDER
-  result = result.replace(
-    new RegExp(`%TIME_PLACE_HOLDER%`, 'g'),
-    new Date().valueOf()
-  )
+  const nowTime = new Date().valueOf()
+  result = result.replace(new RegExp(`%TIME_PLACE_HOLDER%`, 'g'), nowTime)
+  if (isDev) {
+    result = result.replace(
+      new RegExp('__DISTRO_ASSETS_RES_TIMESTAMP__', 'g'),
+      nowTime
+    )
+  }
 
   // handle distro strings res, only for dev mode
   const distroStringsResFilePath = './build/distro-res/strings.json'

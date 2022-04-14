@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html"
 	"io"
 	"io/ioutil"
@@ -15,6 +16,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/pingcap/log"
 	"github.com/shurcooL/httpgzip"
@@ -51,6 +53,7 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, distroResFolderPath s
 
 		distroStrings, _ := json.Marshal(distro.R()) // this will never fail
 		updated = strings.ReplaceAll(updated, "__DISTRO_STRINGS_RES__", base64.StdEncoding.EncodeToString(distroStrings))
+		updated = strings.ReplaceAll(updated, "__DISTRO_ASSETS_RES_TIMESTAMP__", fmt.Sprintf("%d", time.Now().Unix()))
 
 		var b bytes.Buffer
 		w := gzip.NewWriter(&b)

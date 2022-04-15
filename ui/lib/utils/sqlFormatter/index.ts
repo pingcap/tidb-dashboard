@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === 'development' || process.env.E2E_TEST === 'true') {
     ]
 
     const formatedSQLs = [
-      'SELECT\n  DISTINCT `floor` (`unix_timestamp` (`summary_begin_time`)) AS `begin_time`,\n  `floor` (`unix_timestamp` (`summary_end_time`)) AS `end_time`\nFROM\n  `information_schema`.`cluster_statements_summary_history`\nORDER BY\n  `begin_time` DESC,\n  `end_time` DESC',
+      'SELECT\n  DISTINCT `floor` (`unix_timestamp` (`summary_begin_time`)) AS `begin_time`,\n  `floor` (`unix_timestamp` (`summary_end_time`)) AS `end_time`\nFROM\n  `information_schema`.`cluster_statements_summary_history`\nORDER BY\n  `begin_time` desc,\n  `end_time` desc',
 
       'SELECT\n  `topics`.`id`\nFROM\n  `topics`\n  LEFT OUTER JOIN `categories`\n  ON `categories`.`id` = `topics`.`category_id`\nWHERE\n  (`topics`.`archetype` <> ?)\n  AND (\n    COALESCE (`categories`.`topic_id`, ?) <> `topics`.`id`\n  )\n  AND `topics`.`visible` = TRUE\n  AND (`topics`.`deleted_at` IS ?)\n  AND (\n    `topics`.`category_id` IS ?\n    OR `topics`.`category_id` IN (...)\n  )\n  AND (`topics`.`category_id` != ?)\n  AND `topics`.`closed` = FALSE\n  AND `topics`.`archived` = FALSE\n  AND (`topics`.`created_at` > ?)\nORDER BY\n  `rand` ()\nLIMIT\n  ?',
 

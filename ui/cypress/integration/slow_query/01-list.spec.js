@@ -67,9 +67,9 @@ describe('SlowQuery list page', () => {
   describe('Filter slow query list', () => {
     it('Run workload', () => {
       const workloads = [
-        'SELECT SLEEP(1);',
-        'SELECT SLEEP(0.4);',
-        'SELECT SLEEP(2);',
+        'SELECT sleep(1);',
+        'SELECT sleep(0.4);',
+        'SELECT sleep(2);',
       ]
 
       const waitTwoSecond = (query, idx) =>
@@ -144,7 +144,7 @@ describe('SlowQuery list page', () => {
             .then(() => {
               cy.get('[data-automation-key=query]')
                 .should('has.length', 1)
-                .and('has.text', 'SELECT SLEEP(1);')
+                .and('has.text', 'SELECT sleep(1);')
             })
         })
 
@@ -180,7 +180,7 @@ describe('SlowQuery list page', () => {
             .then(() => {
               cy.get('[data-automation-key=query]')
                 .should('has.length', 1)
-                .and('has.text', 'SELECT SLEEP(2);')
+                .and('has.text', 'SELECT sleep(2);')
             })
         })
 
@@ -224,7 +224,7 @@ describe('SlowQuery list page', () => {
 
       it('Run workload without use database', () => {
         let queryData = {
-          query: 'SELECT SLEEP(1.5);',
+          query: 'SELECT sleep(1.5);',
           database: '',
         }
         cy.task('queryDB', { ...queryData })
@@ -254,7 +254,7 @@ describe('SlowQuery list page', () => {
 
       it('Search item with space', () => {
         cy.get('[data-e2e=slow_query_search]')
-          .type(' SELECT SLEEP\\(1\\) {enter}')
+          .type(' SELECT sleep\\(1\\) {enter}')
           .then(() => {
             cy.get('[data-automation-key=query]').should('has.length', 1)
           })
@@ -269,7 +269,7 @@ describe('SlowQuery list page', () => {
       })
 
       it('Type search without pressing enter then reload', () => {
-        cy.get('[data-e2e=slow_query_search]').type(' SELECT SLEEP\\(1\\)')
+        cy.get('[data-e2e=slow_query_search]').type(' SELECT sleep\\(1\\)')
 
         cy.reload()
         cy.get('[data-automation-key=query]').should('has.length', 3)
@@ -439,7 +439,7 @@ describe('SlowQuery list page', () => {
       cy.get('[data-automation-key=query]').should('have.length', 3)
 
       const queryData = {
-        query: 'SELECT SLEEP(1.2)',
+        query: 'SELECT sleep(1.2)',
       }
 
       cy.task('queryDB', { ...queryData })
@@ -456,10 +456,10 @@ describe('SlowQuery list page', () => {
   describe('Table list order', () => {
     it('Default order(desc) by Timestamp', () => {
       const defaultOrderByTimestamp = [
-        'SELECT SLEEP(1.2);',
-        'SELECT SLEEP(1.5);',
-        'SELECT SLEEP(2);',
-        'SELECT SLEEP(1);',
+        'SELECT sleep(1.2);',
+        'SELECT sleep(1.5);',
+        'SELECT sleep(2);',
+        'SELECT sleep(1);',
       ]
       cy.get('[data-automation-key=query]').each(($query, $idx) => {
         cy.wrap($query).should('have.text', defaultOrderByTimestamp[$idx])
@@ -468,10 +468,10 @@ describe('SlowQuery list page', () => {
 
     it('Asc order by Timestamp', () => {
       const AscOrderByTimestamp = [
-        'SELECT SLEEP(1);',
-        'SELECT SLEEP(2);',
-        'SELECT SLEEP(1.5);',
-        'SELECT SLEEP(1.2);',
+        'SELECT sleep(1);',
+        'SELECT sleep(2);',
+        'SELECT sleep(1.5);',
+        'SELECT sleep(1.2);',
       ]
 
       cy.get('[data-item-key=timestamp]')
@@ -486,10 +486,10 @@ describe('SlowQuery list page', () => {
 
     it('Desc/Asc order by Latency', () => {
       const DescOrderByLatency = [
-        'SELECT SLEEP(2);',
-        'SELECT SLEEP(1.5);',
-        'SELECT SLEEP(1.2);',
-        'SELECT SLEEP(1);',
+        'SELECT sleep(2);',
+        'SELECT sleep(1.5);',
+        'SELECT sleep(1.2);',
+        'SELECT sleep(1);',
       ]
 
       cy.get('[data-item-key=query_time]')
@@ -503,10 +503,10 @@ describe('SlowQuery list page', () => {
         })
         .then(() => {
           const AscOrderByLatency = [
-            'SELECT SLEEP(1);',
-            'SELECT SLEEP(1.2);',
-            'SELECT SLEEP(1.5);',
-            'SELECT SLEEP(2);',
+            'SELECT sleep(1);',
+            'SELECT sleep(1.2);',
+            'SELECT sleep(1.5);',
+            'SELECT sleep(2);',
           ]
 
           // Asc order by Latency
@@ -531,7 +531,7 @@ describe('SlowQuery list page', () => {
           cy.url().should('include', `${this.uri.slow_query}/detail`)
           cy.get('[data-e2e=syntax_highlighter_compact]').should(
             'have.text',
-            'SELECT SLEEP(1.2);'
+            'SELECT sleep(1.2);'
           )
         })
     })

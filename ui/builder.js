@@ -96,7 +96,6 @@ function genDefine() {
   define['process.env.REACT_APP_RELEASE_VERSION'] = JSON.stringify(
     getInternalVersion()
   )
-  define['process.env.E2E_TEST'] = JSON.stringify(process.env.E2E_TEST)
   return define
 }
 

@@ -16,10 +16,10 @@ export const deleteDownloadsFolder = () => {
 export const validateSlowQueryCSVList = (list) => {
   expect(list).to.have.length(4)
 
-  expect(list[0].query).to.equal('SELECT SLEEP(1.2);')
-  expect(list[1].query).to.equal('SELECT SLEEP(1.5);')
-  expect(list[2].query).to.equal('SELECT SLEEP(2);')
-  expect(list[3].query).to.equal('SELECT SLEEP(1);')
+  expect(list[0].query).to.equal('SELECT sleep(1.2);')
+  expect(list[1].query).to.equal('SELECT sleep(1.5);')
+  expect(list[2].query).to.equal('SELECT sleep(2);')
+  expect(list[3].query).to.equal('SELECT sleep(1);')
 }
 
 export const validateStatementCSVList = (allStatementList) => {

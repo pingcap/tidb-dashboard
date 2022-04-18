@@ -23,7 +23,7 @@ describe('Slow query detail page E2E test', () => {
       cy.get('[data-e2e=statement_query_detail_page_query]')
         .eq(0)
         .find('[data-e2e=syntax_highlighter_compact]')
-        .and('have.text', 'SELECT SLEEP(1.2);')
+        .and('have.text', 'SELECT sleep(1.2);')
     })
 
     it('Expand sql', () => {
@@ -65,7 +65,7 @@ describe('Slow query detail page E2E test', () => {
       cy.get('[data-e2e=copy_original_sql_to_clipboard]')
         .realClick()
         .then(() => {
-          cy.task('getClipboard').should('eq', 'SELECT SLEEP(1.2);')
+          cy.task('getClipboard').should('eq', 'SELECT sleep(1.2);')
         })
 
       cy.get('[data-e2e=copied_success]').should('exist')

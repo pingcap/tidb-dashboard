@@ -1817,6 +1817,15 @@
   resolved "https://registry.yarnpkg.com/@baurine/grafana-value-formats/-/grafana-value-formats-1.0.2.tgz#f1129cf19ca0a887b77451cdefa31f94afc8500a"
   integrity sha512-LdT/B7mHGSQ/k+o6B0oEjGpRRqMlLvnTezerp71wWW8Io89eePd1q/Lk0JWj/Vspv2RIdQzhE1Z7HZJtjc3IFg==
 
+"@baurine/sql-formatter-plus@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@baurine/sql-formatter-plus/-/sql-formatter-plus-1.5.0.tgz#ba375ba7787826231b5703da1da6b5585bf8a1a9"
+  integrity sha512-Act+3YVepNzSqno1mqW+eGe+WvvB8vsMR/xfQG1NAi1N3cGQ9oMnASwDMvtUWVrKdJuOncsC7/JlG+odVA7yQw==
+  dependencies:
+    "@babel/polyfill" "^7.7.0"
+    lodash "^4.17.15"
+    regexpu-core "^4.7.0"
+
 "@ctrl/tinycolor@^3.4.0":
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/@ctrl/tinycolor/-/tinycolor-3.4.0.tgz#c3c5ae543c897caa9c2a68630bed355be5f9990f"
@@ -9731,13 +9740,6 @@ prelude-ls@^1.2.1:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
-prettier-sql@^5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/prettier-sql/-/prettier-sql-5.1.1.tgz#48bb66a10858d13d478bfc693a19f31260a7d44f"
-  integrity sha512-LBktl+zf8ClZTsbPGbK+5a3khsmsKdYbR1keOq1J2oGCzAXP64m27ZBnuWBFDLXV10i6xTfClV+nT9ecH8PMiA==
-  dependencies:
-    argparse "^2.0.1"
-
 prettier@2.4.1:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.4.1.tgz#671e11c89c14a4cfc876ce564106c4a6726c9f5c"
@@ -11380,22 +11382,6 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
-
-sql-formatter-plus-plus@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/sql-formatter-plus-plus/-/sql-formatter-plus-plus-1.4.0.tgz#e7b329ed572a4b804fd7f8ceb9960811af0b8656"
-  integrity sha512-AEXMcq+jwTTS/Ol1cD83eSRMdJje6yb5vWOFtl0drF9sGl7yVjc7tmJnDWaLStAOcalv/9BIk/91KKcw++ZjOA==
-  dependencies:
-    "@babel/polyfill" "^7.7.0"
-    lodash "^4.17.15"
-    regexpu-core "^4.7.0"
-
-sql-formatter@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/sql-formatter/-/sql-formatter-4.0.2.tgz#2b359e5a4c611498d327b9659da7329d71724607"
-  integrity sha512-R6u9GJRiXZLr/lDo8p56L+OyyN2QFJPCDnsyEOsbdIpsnDKL8gubYFo7lNR7Zx7hfdWT80SfkoVS0CMaF/DE2w==
-  dependencies:
-    argparse "^2.0.1"
 
 sqlstring@^2.3.2:
   version "2.3.2"

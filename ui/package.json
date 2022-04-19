@@ -11,6 +11,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@baurine/grafana-value-formats": "^1.0.0",
+    "@baurine/sql-formatter-plus": "^1.5.3",
     "@cypress/skip-test": "^2.6.1",
     "@duorou_xu/speedscope": "1.14.1",
     "@elastic/charts": "^20.0.0",
@@ -60,8 +61,6 @@
     "react-use": "^15.3.3",
     "single-spa": "^5.9.2",
     "single-spa-react": "^3.0.1",
-    "sql-formatter": "^4.0.2",
-    "sql-formatter-plus-plus": "^1.4.0",
     "string-template": "^1.0.0"
   },
   "scripts": {

@@ -38,8 +38,8 @@ if (process.env.NODE_ENV === 'development' || process.env.E2E_TEST === 'true') {
     oriSQLs.forEach((s, idx) => {
       const f = formatSql(s)
       if (f !== expects[idx]) {
-        console.log(expects[idx])
-        console.log(f)
+        console.log('expected:', expects[idx])
+        console.log('received:', f)
         throw new Error(`Format sql failed!, idx: ${idx}`)
       }
     })

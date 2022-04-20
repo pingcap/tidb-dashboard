@@ -207,7 +207,6 @@ export default function Page() {
               >
                 <DatePicker
                   showTime
-                  disabled={conprofIsDisabled}
                   onOpenChange={(open) =>
                     open && telemetry.openTimeRangePicker()
                   }
@@ -218,12 +217,7 @@ export default function Page() {
                 <span>-2h</span>
               </Form.Item>
               <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={listLoading}
-                  disabled={conprofIsDisabled}
-                >
+                <Button type="primary" htmlType="submit" loading={listLoading}>
                   {t('conprof.list.toolbar.query')}
                 </Button>
               </Form.Item>

@@ -1,4 +1,13 @@
-import { Badge, Tooltip, Space, Drawer, Button, Alert, Form } from 'antd'
+import {
+  Badge,
+  Tooltip,
+  Space,
+  Drawer,
+  Result,
+  Button,
+  Alert,
+  Form,
+} from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -198,6 +207,7 @@ export default function Page() {
               >
                 <DatePicker
                   showTime
+                  disabled={conprofIsDisabled}
                   onOpenChange={(open) =>
                     open && telemetry.openTimeRangePicker()
                   }
@@ -208,7 +218,12 @@ export default function Page() {
                 <span>-2h</span>
               </Form.Item>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={listLoading}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={listLoading}
+                  disabled={conprofIsDisabled}
+                >
                   {t('conprof.list.toolbar.query')}
                 </Button>
               </Form.Item>
@@ -240,7 +255,7 @@ export default function Page() {
         </Toolbar>
       </Card>
 
-      {conprofIsDisabled && (
+      {conprofIsDisabled && historyTable && historyTable.length > 0 && (
         <div className={styles.alert_container}>
           <Alert
             message={t('conprof.settings.disabled_with_history')}
@@ -250,18 +265,36 @@ export default function Page() {
         </div>
       )}
 
-      <div style={{ height: '100%', position: 'relative' }}>
-        <ScrollablePane>
-          <CardTable
-            cardNoMarginTop
-            loading={listLoading}
-            items={historyTable || []}
-            columns={historyTableColumns}
-            errors={[historyError]}
-            onRowClicked={handleRowClick}
-          />
-        </ScrollablePane>
-      </div>
+      {conprofIsDisabled && historyTable?.length === 0 ? (
+        <Result
+          title={t('conprof.settings.disabled_result.title')}
+          subTitle={t('conprof.settings.disabled_result.sub_title')}
+          extra={
+            <Button
+              type="primary"
+              onClick={() => {
+                setShowSettings(true)
+                telemetry.clickSettings('firstTimeTips')
+              }}
+            >
+              {t('conprof.settings.open_settings')}
+            </Button>
+          }
+        />
+      ) : (
+        <div style={{ height: '100%', position: 'relative' }}>
+          <ScrollablePane>
+            <CardTable
+              cardNoMarginTop
+              loading={listLoading}
+              items={historyTable || []}
+              columns={historyTableColumns}
+              errors={[historyError]}
+              onRowClicked={handleRowClick}
+            />
+          </ScrollablePane>
+        </div>
+      )}
 
       <Drawer
         title={t('conprof.settings.title')}

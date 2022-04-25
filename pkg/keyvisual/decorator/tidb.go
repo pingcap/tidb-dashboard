@@ -66,7 +66,6 @@ func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {}
 
 func (s *tidbLabelStrategy) Background(ctx context.Context) {
 	ticker := time.NewTicker(time.Minute)
-	s.updateMap(ctx)
 	defer ticker.Stop()
 	for {
 		select {

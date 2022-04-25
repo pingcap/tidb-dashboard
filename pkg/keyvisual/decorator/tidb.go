@@ -68,11 +68,12 @@ func (s *tidbLabelStrategy) Background(ctx context.Context) {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
+		s.updateMap(ctx)
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			s.updateMap(ctx)
+			continue
 		}
 	}
 }

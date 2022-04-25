@@ -66,6 +66,7 @@ func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {}
 
 func (s *tidbLabelStrategy) Background(ctx context.Context) {
 	ticker := time.NewTicker(time.Minute)
+	s.updateMap(ctx)
 	defer ticker.Stop()
 	for {
 		select {
@@ -137,6 +138,7 @@ func (e *tidbLabeler) label(key string) (label LabelKey) {
 		label.Labels = append(label.Labels, detail.DB, detail.Name)
 	} else {
 		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", tableID))
+		label.HaveUnknownLabel = true
 	}
 
 	if isCommonHandle, rowID := keyInfo.RowInfo(); isCommonHandle {

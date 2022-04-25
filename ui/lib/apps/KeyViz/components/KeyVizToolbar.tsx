@@ -8,7 +8,16 @@ import {
   LoadingOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
-import { Slider, Spin, Select, Dropdown, Button, Tooltip, Space } from 'antd'
+import {
+  Slider,
+  Spin,
+  Select,
+  Dropdown,
+  Button,
+  Tooltip,
+  Space,
+  Checkbox,
+} from 'antd'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import Flexbox from '@g07cha/flexbox-react'
 import { Card, Toolbar, AutoRefreshButton } from '@lib/components'
@@ -23,6 +32,7 @@ export interface IKeyVizToolbarProps {
   metricType: string
   brightLevel: number
   dateRange: number
+  hideUnknownAxis: boolean
   onResetZoom: () => void
   onToggleBrush: () => void
   onChangeMetric: (string) => void
@@ -32,6 +42,7 @@ export interface IKeyVizToolbarProps {
   onRemainingRefreshSecondsChange: (number) => void
   onRefresh: () => void
   onShowSettings: () => any
+  onChangeHideUnknownAxis: (boolean) => void
 }
 
 class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
@@ -80,7 +91,9 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
       metricType,
       remainingRefreshSeconds = 0,
       autoRefreshSeconds,
+      hideUnknownAxis,
       onShowSettings,
+      onChangeHideUnknownAxis,
     } = this.props
 
     // in hours
@@ -184,6 +197,15 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
                 </Select.Option>
               ))}
             </Select>
+
+            <Button onClick={() => onChangeHideUnknownAxis(!hideUnknownAxis)}>
+              <Checkbox
+                checked={hideUnknownAxis}
+                style={{ pointerEvents: 'none' }}
+              >
+                Hide Unknown Axis
+              </Checkbox>
+            </Button>
 
             <AutoRefreshButton
               autoRefreshSeconds={autoRefreshSeconds}

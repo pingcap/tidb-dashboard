@@ -11,8 +11,9 @@ import (
 
 // LabelKey is the decoration key.
 type LabelKey struct {
-	Key    string   `json:"key" binding:"required"`
-	Labels []string `json:"labels" binding:"required"`
+	Key              string   `json:"key" binding:"required"`
+	Labels           []string `json:"labels" binding:"required"`
+	HaveUnknownLabel bool     `json:"have_unknown_label" binding:"required"`
 }
 
 // LabelStrategy requires cross-border determination and key decoration scheme.

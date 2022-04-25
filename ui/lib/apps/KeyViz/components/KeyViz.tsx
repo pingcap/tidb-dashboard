@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Button, Drawer, Result } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useGetSet, useMount } from 'react-use'
@@ -89,6 +89,7 @@ const KeyViz = () => {
     { setTrue: openSettings, setFalse: closeSettings },
   ] = useBoolean(false)
   const { t } = useTranslation()
+  const [hideUnknownAxis, setHideUnknownAxis] = useState(true)
 
   const enabled = config?.auto_collection_disabled !== true
 
@@ -202,11 +203,16 @@ const KeyViz = () => {
     />
   )
 
+  const heatmapData = useValidHeatmapData(
+    chartState?.heatmapData!,
+    hideUnknownAxis
+  )
+
   const mainPart = !enabled
     ? disabledPage
     : chartState && (
         <Heatmap
-          data={chartState.heatmapData}
+          data={heatmapData}
           dataTag={chartState.metricType}
           onBrush={onBrush}
           onChartInit={onChartInit}
@@ -222,6 +228,8 @@ const KeyViz = () => {
         dateRange={getDateRange()}
         metricType={getMetricType()}
         brightLevel={getBrightLevel()}
+        hideUnknownAxis={hideUnknownAxis}
+        onChangeHideUnknownAxis={setHideUnknownAxis}
         onToggleBrush={onToggleBrush}
         onResetZoom={onResetZoom}
         autoRefreshSeconds={getAutoRefreshSeconds()}
@@ -253,6 +261,41 @@ const KeyViz = () => {
       </Drawer>
     </div>
   )
+}
+
+// hide no table name's axis
+function useValidHeatmapData(_data: HeatmapData, needFilter: boolean) {
+  const returns = useMemo<HeatmapData>(() => {
+    if (!needFilter || !_data) {
+      return _data
+    }
+
+    const { data, keyAxis } = _data
+
+    const filteredIndexes: number[] = []
+    const newKeyAxis = keyAxis.filter((key, index) => {
+      const label = key.labels[0]
+      if (label && key.have_unknown_label) {
+        filteredIndexes.push(index)
+        return false
+      }
+      return true
+    })
+    const newData = Object.entries(data).reduce((prev, [k, v]) => {
+      return {
+        ...prev,
+        [k]: v.map((vv) => vv.filter((vvv, i) => !filteredIndexes.includes(i))),
+      }
+    }, {})
+
+    return {
+      ..._data,
+      data: newData,
+      keyAxis: newKeyAxis,
+    }
+  }, [_data, needFilter])
+
+  return returns
 }
 
 export default KeyViz

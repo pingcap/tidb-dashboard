@@ -13,6 +13,10 @@ import (
 
 // GenerateVisualPlanFromStr.
 func GenerateVisualPlanFromStr(visualPlanStr string) (string, error) {
+	if visualPlanStr == "" {
+		return "", nil
+	}
+
 	// base64 decode
 	compressVisualBytes, err := base64.StdEncoding.DecodeString(visualPlanStr)
 	if err != nil {

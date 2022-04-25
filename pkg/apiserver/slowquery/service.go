@@ -101,13 +101,12 @@ func (s *Service) getDetails(c *gin.Context) {
 	}
 
 	// get visual plan
-	if result.VisualPlan != "" {
-		result.VisualPlan, err = utils.GenerateVisualPlanFromStr(result.VisualPlan)
-		if err != nil {
-			rest.Error(c, err)
-			return
-		}
+	result.VisualPlan, err = utils.GenerateVisualPlanFromStr(result.VisualPlan)
+	if err != nil {
+		rest.Error(c, err)
+		return
 	}
+
 	c.JSON(http.StatusOK, *result)
 }
 

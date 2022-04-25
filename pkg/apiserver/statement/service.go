@@ -238,13 +238,12 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 	}
 
 	// get visual plan
-	if result.AggVisualPlan != "" {
-		result.AggVisualPlan, err = utils.GenerateVisualPlanFromStr(result.AggVisualPlan)
-		if err != nil {
-			rest.Error(c, err)
-			return
-		}
+	result.AggVisualPlan, err = utils.GenerateVisualPlanFromStr(result.AggVisualPlan)
+	if err != nil {
+		rest.Error(c, err)
+		return
 	}
+
 	c.JSON(http.StatusOK, result)
 }
 

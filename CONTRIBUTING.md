@@ -2,9 +2,7 @@
 
 Thanks for your interest in contributing to TiDB Dashboard! This document outlines some of the conventions on building, running, and testing TiDB Dashboard, the development workflow, commit message formatting, contact points and other resources.
 
-If you need any help (for example, mentoring getting started or understanding the codebase), feel free to join the discussion of [Diagnosis SIG] (Special Interest Group):
-
-- Slack: [#sig-diagnosis](https://slack.tidb.io/invite?team=tidb-community&channel=sig-diagnosis&ref=github_dashboard_repo)
+If you need any help (for example, mentoring getting started or understanding the codebase), feel free to reach out on the [TiDB Internals forum](https://internals.tidb.io/).
 
 ## Setting up a development workspace
 

@@ -11,36 +11,45 @@ import (
 	"github.com/pingcap/tipb/go-tipb"
 )
 
-// GenerateVisualPlanFromStr.
-func GenerateVisualPlanFromStr(visualPlanStr string) (string, error) {
-	if visualPlanStr == "" {
-		return "", nil
+// GenerateVisualPlan generate visual plan from raw data.
+func GenerateVisualPlan(v string) (*tipb.VisualData, error) {
+	if v == "" {
+		return nil, nil
 	}
 
 	// base64 decode
-	compressVisualBytes, err := base64.StdEncoding.DecodeString(visualPlanStr)
+	compressVPBytes, err := base64.StdEncoding.DecodeString(v)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// snappy uncompress
-	visualBytes, err := snappy.Decode(nil, compressVisualBytes)
+	vpBytes, err := snappy.Decode(nil, compressVPBytes)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// proto unmarshal
 	visual := &tipb.VisualData{}
-	err = visual.Unmarshal(visualBytes)
+	err = visual.Unmarshal(vpBytes)
+	if err != nil {
+		return nil, err
+	}
+	return visual, nil
+}
+
+func GenerateVisualPlanJSON(v string) (string, error) {
+	// generate vp
+	vp, err := GenerateVisualPlan(v)
 	if err != nil {
 		return "", err
 	}
 
 	// json marshal
-	visualJSON, err := json.Marshal(visual)
+	vpJSON, err := json.Marshal(vp)
 	if err != nil {
 		return "", err
 	}
 
-	return string(visualJSON), nil
+	return string(vpJSON), nil
 }

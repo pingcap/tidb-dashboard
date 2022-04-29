@@ -101,7 +101,7 @@ func (s *Service) getDetails(c *gin.Context) {
 	}
 
 	// get visual plan
-	result.VisualPlan, err = utils.GenerateVisualPlanFromStr(result.VisualPlan)
+	result.VisualPlan, err = utils.GenerateVisualPlanJSON(result.VisualPlan)
 	if err != nil {
 		rest.Error(c, err)
 		return

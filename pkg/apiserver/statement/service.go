@@ -238,7 +238,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 	}
 
 	// get visual plan
-	result.AggVisualPlan, err = utils.GenerateVisualPlanFromStr(result.AggVisualPlan)
+	result.AggVisualPlan, err = utils.GenerateVisualPlanJSON(result.AggVisualPlan)
 	if err != nil {
 		rest.Error(c, err)
 		return

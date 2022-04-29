@@ -15,6 +15,7 @@ export interface InstanceSelectProps {
   onChange: (instance: TopsqlInstanceItem) => void
   instances: TopsqlInstanceItem[]
   disabled?: boolean
+  onDropdownVisibleChange?: (visible: boolean) => void
 }
 
 const splitter = ' - '
@@ -36,6 +37,7 @@ export function InstanceSelect({
   onChange,
   instances,
   disabled = false,
+  ...otherProps
 }: InstanceSelectProps) {
   const instanceGroups: InstanceGroup[] = useMemo(() => {
     if (!instances) {
@@ -85,6 +87,7 @@ export function InstanceSelect({
         onChange(instance)
       }}
       disabled={disabled}
+      {...otherProps}
     >
       {instanceGroups.map((instanceGroup) => (
         <Select.OptGroup label={instanceGroup.name} key={instanceGroup.name}>

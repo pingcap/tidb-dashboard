@@ -28,7 +28,6 @@ export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
   avg_latency: true,
   exec_count: true,
   plan_count: true,
-  related_schemas: true,
 }
 
 const QUERY_OPTIONS = 'statement.query_options'

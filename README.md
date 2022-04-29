@@ -16,7 +16,7 @@ TiDB Dashboard is a Web UI for monitoring, diagnosing and managing the TiDB clus
 Feel free to [open GitHub issues](https://github.com/pingcap/tidb-dashboard/issues/new/choose)
 for questions, support and suggestions.
 
-You may also consider join our community chat in the Slack channel [#sig-diagnosis].
+You may also consider to reach out on the [TiDB Internals forum](https://internals.tidb.io/) if you encounter any problems about TiDB development.
 
 For Chinese users, you can visit the PingCAP official user forum [AskTUG.com] to make life easier.
 
@@ -37,7 +37,7 @@ for a list of recommended tasks, in which we have also marked the difficulty lev
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed step-by-step contributing guide, or steps to
 build TiDB Dashboard from source.
 
-If you need any help, feel free to community chat in the Slack channel [#sig-diagnosis].
+If you need any help, feel free to reach out on the [TiDB Internals forum](https://internals.tidb.io/).
 
 Thank you to all the people who already contributed to TiDB Dashboard!
 
@@ -86,5 +86,4 @@ TiDB Dashboard can also be integrated into PD, as follows:
 Copyright 2020 PingCAP, Inc.
 
 [pd]: https://github.com/pingcap/pd
-[#sig-diagnosis]: https://slack.tidb.io/invite?team=tidb-community&channel=sig-diagnosis&ref=github_dashboard_repo
 [asktug.com]: https://asktug.com/

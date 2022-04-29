@@ -30,6 +30,7 @@ import { InstanceKindName } from '@lib/utils/instanceTable'
 import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
+import { telemetry } from '../utils/telemetry'
 
 export default function Page() {
   const [endTime, setEndTime] = useSessionStorageState<Dayjs | string>(
@@ -80,6 +81,7 @@ export default function Page() {
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      telemetry.clickProfilingListRecord(rec)
       openLink(`/continuous_profiling/detail?ts=${rec.ts}`, ev, navigate)
     }
   )
@@ -178,12 +180,14 @@ export default function Page() {
   function refresh() {
     reloadConfig()
     reloadGroupProfiles()
+    telemetry.clickReloadIcon(rangeEndTime)
   }
 
   function handleFinish(fieldsValues) {
     setEndTime(fieldsValues['rangeEndTime'] || '')
     setTimeout(() => {
       reloadGroupProfiles()
+      telemetry.clickQueryButton(rangeEndTime)
     }, 0)
   }
 
@@ -201,18 +205,19 @@ export default function Page() {
                 name="rangeEndTime"
                 label={t('conprof.list.toolbar.range_end')}
               >
-                <DatePicker showTime disabled={conprofIsDisabled} />
+                <DatePicker
+                  showTime
+                  onOpenChange={(open) =>
+                    open && telemetry.openTimeRangePicker()
+                  }
+                  onChange={(v) => telemetry.selectTimeRange(v?.toString())}
+                />
               </Form.Item>
               <Form.Item label={t('conprof.list.toolbar.range_duration')}>
                 <span>-2h</span>
               </Form.Item>
               <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={listLoading}
-                  disabled={conprofIsDisabled}
-                >
+                <Button type="primary" htmlType="submit" loading={listLoading}>
                   {t('conprof.list.toolbar.query')}
                 </Button>
               </Form.Item>
@@ -233,7 +238,12 @@ export default function Page() {
               title={t('conprof.list.toolbar.settings')}
               placement="bottom"
             >
-              <SettingOutlined onClick={() => setShowSettings(true)} />
+              <SettingOutlined
+                onClick={() => {
+                  setShowSettings(true)
+                  telemetry.clickSettings('settingIcon')
+                }}
+              />
             </Tooltip>
           </Space>
         </Toolbar>
@@ -254,7 +264,13 @@ export default function Page() {
           title={t('conprof.settings.disabled_result.title')}
           subTitle={t('conprof.settings.disabled_result.sub_title')}
           extra={
-            <Button type="primary" onClick={() => setShowSettings(true)}>
+            <Button
+              type="primary"
+              onClick={() => {
+                setShowSettings(true)
+                telemetry.clickSettings('firstTimeTips')
+              }}
+            >
               {t('conprof.settings.open_settings')}
             </Button>
           }

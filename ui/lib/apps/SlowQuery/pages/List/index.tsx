@@ -128,6 +128,7 @@ function List() {
                 })
               }
               items={allSchemas}
+              data-e2e="execution_database_name"
             />
             <Search
               defaultValue={queryOptions.searchText}

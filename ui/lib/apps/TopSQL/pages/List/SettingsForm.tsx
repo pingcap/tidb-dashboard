@@ -6,6 +6,7 @@ import client, { TopsqlEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
+import { telemetry } from '../../utils/telemetry'
 
 interface Props {
   onClose: () => void
@@ -34,6 +35,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         try {
           setSubmitting(true)
           await client.getInstance().topsqlConfigPost(newConfig)
+          telemetry.saveSettings(newConfig)
           onClose()
           onConfigUpdated()
         } finally {

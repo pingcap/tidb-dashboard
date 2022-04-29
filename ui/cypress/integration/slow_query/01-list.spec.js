@@ -1,7 +1,12 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 import dayjs from 'dayjs'
-import { validateCSVList, deleteDownloadsFolder } from '../utils'
+import {
+  restartTiUP,
+  validateSlowQueryCSVList,
+  deleteDownloadsFolder,
+} from '../utils'
+import { testBaseSelectorOptions } from '../components'
 
 const neatCSV = require('neat-csv')
 const path = require('path')
@@ -13,13 +18,7 @@ describe('SlowQuery list page', () => {
     })
 
     // Restart tiup
-    cy.exec(
-      `bash ../scripts/start_tiup.sh ${Cypress.env('TIDB_VERSION')} restart`,
-      { log: true }
-    )
-
-    // Wait TiUP Playground
-    cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
+    restartTiUP()
 
     deleteDownloadsFolder()
   })
@@ -206,7 +205,10 @@ describe('SlowQuery list page', () => {
 
     describe('Filter slow query by changing database', () => {
       it('No database selected by default', () => {
-        cy.get('[data-e2e=base_select_input]').should('has.text', '')
+        cy.get('[data-e2e=base_select_input_text]').should(
+          'has.text',
+          'All Databases'
+        )
       })
 
       it('Show all databases', () => {
@@ -216,14 +218,7 @@ describe('SlowQuery list page', () => {
 
         cy.wait('@databases').then((res) => {
           const databaseList = res.response.body
-          cy.get('[data-e2e=base_selector]')
-            .click()
-            .then(() => {
-              cy.get('[data-e2e=multi_select_options]').should(
-                'have.length',
-                databaseList.length
-              )
-            })
+          testBaseSelectorOptions(databaseList, 'execution_database_name')
         })
       })
 
@@ -239,11 +234,11 @@ describe('SlowQuery list page', () => {
         // global and use database queries will be listed
         cy.get('[data-automation-key=query]').should('has.length', 3)
 
-        cy.get('[data-e2e=base_select_input]')
-          .click()
+        cy.get('[data-e2e=base_select_input_text]')
+          .click({ force: true })
           .then(() => {
             cy.get('.ms-DetailsHeader-checkTooltip')
-              .click()
+              .click({ force: true })
               .then(() => {
                 // global query will not be listed
                 cy.get('[data-automation-key=query]').should('has.length', 2)
@@ -308,7 +303,8 @@ describe('SlowQuery list page', () => {
               .eq(1)
               .click()
               .then(() => {
-                cy.get('[data-automation-key=query]').should('has.length', 3)
+                cy.reload()
+                cy.get('[data-e2e=slow_query_limit_select]').contains('200')
               })
           })
       })
@@ -331,7 +327,7 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Hover on columns selector and check selected fileds ', () => {
+      it('Hover on columns selector and check selected fields ', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
@@ -352,11 +348,11 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Select all column fileds', () => {
+      it('Select all column fields', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
-            cy.get('[data-e2e=slow_query_schema_table_column_tile]')
+            cy.get('[data-e2e=column_selector_title]')
               .check()
               .then(() => {
                 cy.get('[role=columnheader]')
@@ -370,7 +366,7 @@ describe('SlowQuery list page', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
-            cy.get('[data-e2e=slow_query_schema_table_column_reset]')
+            cy.get('[data-e2e=column_selector_reset]')
               .click()
               .then(() => {
                 cy.get('[role=columnheader]')
@@ -422,7 +418,7 @@ describe('SlowQuery list page', () => {
               .then(() => {
                 cy.get('[data-automation-key=query]')
                   .eq(0)
-                  .find('[data-e2e=text_wrap_multiline]')
+                  .find('[data-e2e=syntax_highlighter_original]')
               })
 
             cy.get('[data-e2e=slow_query_show_full_sql]')
@@ -431,7 +427,7 @@ describe('SlowQuery list page', () => {
                 cy.get('[data-automation-key=query]')
                   .eq(0)
                   .trigger('mouseover')
-                  .find('[data-e2e=text_wrap_singleline_with_tooltip]')
+                  .find('[data-e2e=syntax_highlighter_compact]')
               })
           })
       })
@@ -581,7 +577,7 @@ describe('SlowQuery list page', () => {
             cy.readFile(downloadedFilename, { timeout: 15000 })
               // parse CSV text into objects
               .then(neatCSV)
-              .then(validateCSVList)
+              .then(validateSlowQueryCSVList)
           })
         })
     })

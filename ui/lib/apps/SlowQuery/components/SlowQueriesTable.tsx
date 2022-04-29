@@ -53,6 +53,7 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
       onRowClicked={handleRowClick}
       clickedRowIndex={getClickedItemIndex()}
       getKey={getKey}
+      data-e2e="detail_tabs_slow_query"
     />
   )
 }

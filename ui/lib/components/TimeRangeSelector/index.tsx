@@ -67,6 +67,7 @@ export interface ITimeRangeSelectorProps {
   onChange?: (val: TimeRange) => void
   disabled?: boolean
   disabledDate?: (currentDate: Dayjs) => boolean
+  onVisibleChange?: (visible: boolean) => void
 }
 
 function TimeRangeSelector({
@@ -74,6 +75,7 @@ function TimeRangeSelector({
   onChange,
   disabled = false,
   disabledDate = () => false,
+  onVisibleChange,
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -169,7 +171,10 @@ function TimeRangeSelector({
       overlay={dropdownContent}
       trigger={['click']}
       visible={dropdownVisible}
-      onVisibleChange={setDropdownVisible}
+      onVisibleChange={(visible) => {
+        setDropdownVisible(visible)
+        onVisibleChange?.(visible)
+      }}
       disabled={disabled}
     >
       <Button icon={<ClockCircleOutlined />} data-e2e="timerange-selector">

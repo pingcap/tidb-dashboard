@@ -45,6 +45,10 @@ func GenerateVisualPlanJSON(v string) (string, error) {
 		return "", err
 	}
 
+	if vp == nil {
+		return "", nil
+	}
+
 	// json marshal
 	vpJSON, err := json.Marshal(vp)
 	if err != nil {

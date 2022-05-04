@@ -13,7 +13,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { StatementEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { ErrorBar } from '@lib/components'
+import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 
 interface Props {
@@ -195,7 +195,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
               )
             }
           </Form.Item>
-          <Form.Item>
+          <DrawerFooter>
             <Space>
               <Button
                 type="primary"
@@ -210,7 +210,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                 {t('statement.settings.actions.cancel')}
               </Button>
             </Space>
-          </Form.Item>
+          </DrawerFooter>
         </Form>
       )}
     </>

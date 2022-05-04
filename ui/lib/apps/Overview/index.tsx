@@ -7,8 +7,6 @@ import { MetricChart, Root } from '@lib/components'
 
 import MonitorAlert from './components/MonitorAlert'
 import Instances from './components/Instances'
-import RecentStatements from './components/RecentStatements'
-import RecentSlowQueries from './components/RecentSlowQueries'
 
 function QPS() {
   const { t } = useTranslation()
@@ -65,8 +63,6 @@ export default function App() {
           <Col span={18}>
             <QPS />
             <Latency />
-            <RecentStatements />
-            <RecentSlowQueries />
           </Col>
           <Col span={6}>
             <Instances />

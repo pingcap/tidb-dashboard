@@ -139,11 +139,13 @@ function DetailPage() {
                   }
                 >
                   <DateTime.Calendar
-                    unixTimestampMs={Number(query.beginTime!) * 1000}
-                  />{' '}
-                  ~{' '}
+                    unixTimestampMs={
+                      Number(plans[0].summary_begin_time!) * 1000
+                    }
+                  />
+                  {' ~ '}
                   <DateTime.Calendar
-                    unixTimestampMs={Number(query.endTime!) * 1000}
+                    unixTimestampMs={Number(plans[0].summary_end_time!) * 1000}
                   />
                 </Descriptions.Item>
                 <Descriptions.Item

@@ -1,4 +1,4 @@
-import { XYBrushArea, BrushEndListener } from '@elastic/charts'
+import { BrushEndListener, BrushEvent } from '@elastic/charts'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
 import {
@@ -121,7 +121,7 @@ export function TopSQLList() {
   }, [instance, timeWindowSize])
 
   const handleBrushEnd: BrushEndListener = useCallback(
-    (v: XYBrushArea) => {
+    (v: BrushEvent) => {
       if (!v.x) {
         return
       }

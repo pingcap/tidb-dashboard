@@ -77,7 +77,7 @@ export interface ISlowQueryTableController {
 }
 
 export default function useSlowQueryTableController(
-  cacheMgr: CacheMgr | null,
+  cacheMgr: CacheMgr | undefined,
   visibleColumnKeys: IColumnKeys,
   showFullSQL: boolean,
   options?: ISlowQueryOptions,

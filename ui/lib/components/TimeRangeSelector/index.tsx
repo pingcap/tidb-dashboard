@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Dropdown, Button } from 'antd'
 import DatePicker from '../DatePicker'
 import { ClockCircleOutlined, DownOutlined } from '@ant-design/icons'
@@ -8,6 +8,8 @@ import dayjs, { Dayjs } from 'dayjs'
 import { useTranslation } from 'react-i18next'
 
 import styles from './index.module.less'
+import { useChange } from '@lib/utils/useChange'
+import { useMemoizedFn } from 'ahooks'
 
 const { RangePicker } = DatePicker
 
@@ -80,12 +82,10 @@ function TimeRangeSelector({
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
 
-  useEffect(() => {
+  useChange(() => {
     if (!value) {
       onChange?.(DEFAULT_TIME_RANGE)
     }
-    // ignore [onChange]
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   const rangePickerValue = useMemo(() => {
@@ -95,31 +95,25 @@ function TimeRangeSelector({
     return value.value.map((sec) => dayjs(sec * 1000)) as [Dayjs, Dayjs]
   }, [value])
 
-  const handleRecentChange = useCallback(
-    (seconds: number) => {
-      onChange?.({
-        type: 'recent',
-        value: seconds,
-      })
-      setDropdownVisible(false)
-    },
-    [onChange]
-  )
+  const handleRecentChange = useMemoizedFn((seconds: number) => {
+    onChange?.({
+      type: 'recent',
+      value: seconds,
+    })
+    setDropdownVisible(false)
+  })
 
-  const handleRangePickerChange = useCallback(
-    (values) => {
-      if (values === null) {
-        onChange?.(DEFAULT_TIME_RANGE)
-      } else {
-        onChange?.({
-          type: 'absolute',
-          value: values.map((v) => v.unix()),
-        })
-      }
-      setDropdownVisible(false)
-    },
-    [onChange]
-  )
+  const handleRangePickerChange = useMemoizedFn((values) => {
+    if (values === null) {
+      onChange?.(DEFAULT_TIME_RANGE)
+    } else {
+      onChange?.({
+        type: 'absolute',
+        value: values.map((v) => v.unix()),
+      })
+    }
+    setDropdownVisible(false)
+  })
 
   const dropdownContent = (
     <div className={styles.dropdown_content_container}>

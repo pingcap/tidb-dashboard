@@ -80,7 +80,7 @@ export interface IStatementTableController {
 }
 
 export default function useStatementTableController(
-  cacheMgr: CacheMgr | null,
+  cacheMgr: CacheMgr | undefined,
   visibleColumnKeys: IColumnKeys,
   showFullSQL: boolean,
   options?: IStatementQueryOptions,

@@ -55,6 +55,7 @@ export function calcTimeRange(timeRange?: TimeRange): [number, number] {
   }
 }
 
+// Maybe JSON.stringify() is enough
 export function stringifyTimeRange(timeRange?: TimeRange): string {
   let t2 = timeRange ?? DEFAULT_TIME_RANGE
   if (t2.type === 'absolute') {

@@ -155,55 +155,10 @@ describe('SQL statements list page', () => {
 
     describe('Common time range selector', () => {
       it('Default time range', () => {
-        cy.get('[data-e2e=statement_timerange_selector]').should(
+        cy.get('[data-e2e=timerange-selector]').should(
           'have.text',
           'Recent 30 min'
         )
-      })
-
-      it('Common time range options', () => {
-        cy.get('[data-e2e=statement_timerange_selector]')
-          .click()
-          .then(() => {
-            cy.get('[data-e2e=statement_time_range_option]')
-              .should('have.length', 12)
-              .each(($option, $idx) => {
-                if ($idx == 0) {
-                  // Recent 15 min is enabled
-                  cy.wrap($option)
-                    .invoke('attr', 'class')
-                    .should('not.contain', 'time_range_item_disabled')
-                } else if ($idx == 1) {
-                  // Recent 30 min is active
-                  cy.wrap($option)
-                    .invoke('attr', 'class')
-                    .should('contain', 'time_range_item_active')
-                } else {
-                  // the remained options are disabled
-                  cy.wrap($option)
-                    .invoke('attr', 'class')
-                    .should('contain', 'time_range_item_disabled')
-                }
-              })
-          })
-      })
-
-      it('Custom time range selector', () => {
-        const [startTime, endTime] = getNearTime()
-        cy.get('[data-e2e=statement_timerange_selector]')
-          .click()
-          .then(() => {
-            cy.get('.ant-slider').within(() => {
-              cy.get('[role=slider]')
-                .eq(0)
-                .should('have.attr', 'aria-valuemin', startTime)
-                .and('have.attr', 'aria-valuemax', endTime)
-              cy.get('[role=slider]')
-                .eq(1)
-                .should('have.attr', 'aria-valuemin', startTime)
-                .and('have.attr', 'aria-valuemax', endTime)
-            })
-          })
       })
 
       it('Init statement list', () => {
@@ -221,11 +176,12 @@ describe('SQL statements list page', () => {
 
       it('Select time range as recent 15 mins', () => {
         // select recent 15 mins
-        cy.get('[data-e2e=statement_timerange_selector]')
+        cy.get('[data-e2e=selected_timerange]')
           .click()
           .then(() => {
-            cy.get('[data-e2e=statement_time_range_option]').eq(0).click()
+            cy.get('[data-e2e=timerange-900]').click()
           })
+          .wait(500)
 
         cy.wait('@statements_list_with_last_seen_field').then((res) => {
           const response = res.response.body
@@ -234,7 +190,7 @@ describe('SQL statements list page', () => {
 
         // time rage will be remebered after reload page
         cy.reload()
-        cy.get('[data-e2e=statement_timerange_selector]').should(
+        cy.get('[data-e2e=selected_timerange]').should(
           'have.text',
           'Recent 15 min'
         )
@@ -302,6 +258,7 @@ describe('SQL statements list page', () => {
               cy.get('.ant-checkbox-input').eq(3).click()
             })
           })
+          .wait(500)
           .then(() => {
             cy.contains('SELECT count (?) FROM user;').should('exist')
           })
@@ -368,6 +325,7 @@ describe('SQL statements list page', () => {
                 .click({ force: true })
             })
           })
+          .wait(500)
           .then(() => {
             cy.get('[data-e2e=syntax_highlighter_compact]').each(($sql) => {
               cy.wrap($sql).contains('SELECT')
@@ -388,7 +346,9 @@ describe('SQL statements list page', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'
       )
-      cy.get('[data-e2e=sql_statements_search]').type(' SELECT version{enter}')
+      cy.get('[data-e2e=sql_statements_search]')
+        .type(' SELECT version')
+        .wait(500)
       cy.wait('@statements_list').then(() => {
         cy.get('[data-e2e=syntax_highlighter_compact]').each(($stmt) => {
           cy.wrap($stmt).contains('SELECT')
@@ -405,15 +365,15 @@ describe('SQL statements list page', () => {
       })
     })
 
-    it('Type search without pressing enter then reload', () => {
-      cy.get('[data-e2e=sql_statements_search]').type('SELECT \\`version\\` ()')
+    it('Type search then reload', () => {
+      cy.get('[data-e2e=sql_statements_search]')
+        .type('SELECT `version` ()')
+        .wait(500)
 
       cy.reload()
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'
       )
-
-      cy.get('[data-e2e=sql_statements_search]').clear().type('{enter}')
 
       cy.wait('@statements_list').then((res) => {
         const statementsList = res.response.body
@@ -471,6 +431,7 @@ describe('SQL statements list page', () => {
         .then(() => {
           cy.get('[data-e2e=column_selector_title]')
             .check()
+            .wait(500)
             .then(() => {
               cy.get('[role=columnheader]')
                 .not('.is-empty')
@@ -485,6 +446,7 @@ describe('SQL statements list page', () => {
         .then(() => {
           cy.get('[data-e2e=column_selector_reset]')
             .click()
+            .wait(500)
             .then(() => {
               cy.get('[role=columnheader]')
                 .not('.is-empty')
@@ -553,7 +515,7 @@ describe('SQL statements list page', () => {
   })
 
   describe('Reload statement', () => {
-    it('Reload statement table after execute a query', () => {
+    it.only('Reload statement table after execute a query', () => {
       let queryData = {
         query: 'select count(*) from tidb;',
         database: 'mysql',
@@ -564,7 +526,9 @@ describe('SQL statements list page', () => {
         'statements_list'
       )
       cy.wait('@statements_list').then(() => {
-        cy.get('[data-e2e=statement_refresh]')
+        cy.get('[data-e2e=sql_statements_search]')
+          .siblings()
+          .find('button')
           .click()
           .then(() => {
             cy.get('[data-automation-key=digest_text]').contains(

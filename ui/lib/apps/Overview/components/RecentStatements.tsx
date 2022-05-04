@@ -18,7 +18,7 @@ const visibleColumnKeys: IColumnKeys = {
 export default function RecentStatements() {
   const { t } = useTranslation()
   const controller = useStatementTableController(
-    null,
+    undefined,
     visibleColumnKeys,
     false,
     undefined,

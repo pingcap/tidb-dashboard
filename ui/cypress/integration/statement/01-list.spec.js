@@ -104,44 +104,20 @@ describe('SQL statements list page', () => {
   describe('Time range selector', () => {
     beforeEach(() => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
-        'init_statements_list'
+        'statements_list'
       )
 
-      cy.wait('@init_statements_list')
-
-      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
-        'statements_list_with_last_seen_field'
-      )
+      cy.wait('@statements_list')
 
       // select last_seen column field
-      cy.get('[data-e2e=columns_selector_popover]')
-        .trigger('mouseover')
-        .then(() => {
-          cy.contains('Last Seen').within(() => {
-            cy.get('[data-e2e=columns_selector_field_last_seen]').check({
-              force: true,
-            })
-          })
-        })
-    })
+      cy.get('[data-e2e=columns_selector_popover]').trigger('mouseover')
 
-    const getNearTime = () => {
-      const cur = dayjs()
-      let endTime, startTime
-      if (cur.get('minute') > 30) {
-        endTime = dayjs(
-          cur
-            .set('hour', cur.get('hour') + 1)
-            .set('minute', 0)
-            .set('second', 0)
-        ).unix()
-        startTime = dayjs(cur.set('minute', 30).set('second', 0)).unix()
-      } else {
-        endTime = dayjs(cur.set('minute', 30).set('second', 0)).unix()
-        startTime = dayjs(cur.set('minute', 0).set('second', 0)).unix()
-      }
-      return [startTime, endTime]
-    }
+      cy.contains('Last Seen').within(() => {
+        cy.get('[data-e2e=columns_selector_field_last_seen]').check({
+          force: true,
+        })
+      })
+    })
 
     const checkStmtListWithTimeRange = (stmtList, timeDiff) => {
       const now = dayjs().unix()
@@ -162,7 +138,7 @@ describe('SQL statements list page', () => {
       })
 
       it('Init statement list', () => {
-        cy.wait('@statements_list_with_last_seen_field').then((res) => {
+        cy.wait('@statements_list').then((res) => {
           const response = res.response.body
 
           cy.get('[data-automation-key=digest_text]').should(
@@ -175,15 +151,16 @@ describe('SQL statements list page', () => {
       })
 
       it('Select time range as recent 15 mins', () => {
+        cy.wait('@statements_list')
+
         // select recent 15 mins
         cy.get('[data-e2e=selected_timerange]')
           .click()
           .then(() => {
             cy.get('[data-e2e=timerange-900]').click()
           })
-          .wait(500)
 
-        cy.wait('@statements_list_with_last_seen_field').then((res) => {
+        cy.wait('@statements_list').then((res) => {
           const response = res.response.body
           checkStmtListWithTimeRange(response, 900)
         })
@@ -220,49 +197,48 @@ describe('SQL statements list page', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}info/databases`).as(
         'databases'
       )
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+        'statements_list'
+      )
 
-      cy.wait('@databases').then(() => {
-        // check all options in databases selector
+      cy.wait('@databases').wait('@statements_list')
 
-        cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
-          'statements_list'
-        )
+      // check all options in databases selector
+      checkAllOptionsInBaseSelector('execution_database_name')
 
-        checkAllOptionsInBaseSelector('execution_database_name')
-
-        cy.wait('@statements_list').then(() => {
-          // check the existence of statements without use database
-          cy.contains(defaultExecStmtList[0]).should('not.exist')
-          cy.contains(defaultExecStmtList[2]).should('not.exist')
-        })
-      })
+      // check the existence of statements without use database
+      cy.wait('@statements_list')
+      cy.contains(defaultExecStmtList[0]).should('not.exist')
+      cy.contains(defaultExecStmtList[2]).should('not.exist')
     })
 
     it('Filter statements with use database (mysql)', () => {
-      cy.intercept(`${Cypress.env('apiBasePath')}info/databases`).as(
-        'databases'
-      )
-
       let queryData = {
         query: 'SELECT count(*) from user;',
         database: 'mysql',
       }
       cy.task('queryDB', { ...queryData })
+      cy.reload()
 
-      cy.wait('@databases').then(() => {
-        cy.get('[data-e2e=execution_database_name]')
-          .eq(0)
-          .click()
-          .then(() => {
-            cy.get('.ant-dropdown').within(() => {
-              cy.get('.ant-checkbox-input').eq(3).click()
-            })
-          })
-          .wait(500)
-          .then(() => {
-            cy.contains('SELECT count (?) FROM user;').should('exist')
-          })
-      })
+      cy.intercept(`${Cypress.env('apiBasePath')}info/databases`).as(
+        'databases'
+      )
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+        'statements_list'
+      )
+
+      cy.wait('@databases').wait('@statements_list')
+
+      cy.get('[data-e2e=execution_database_name]')
+        .eq(0)
+        .click()
+        .get('.ant-dropdown')
+        .within(() => {
+          cy.get('.ant-checkbox-input').eq(3).click()
+        })
+
+      cy.wait('@statements_list')
+      cy.contains('SELECT count (?) FROM user;').should('exist')
 
       // Use databases config remembered
       cy.reload()
@@ -314,24 +290,26 @@ describe('SQL statements list page', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/stmt_types`).as(
         'stmt_types'
       )
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+        'statements_list'
+      )
 
-      cy.wait('@stmt_types').then(() => {
-        cy.get('[data-e2e=statement_types]')
-          .click()
-          .then(() => {
-            cy.get('.ant-dropdown').within(() => {
-              cy.get('[data-e2e=multi_select_options]')
-                .contains('Select')
-                .click({ force: true })
-            })
-          })
-          .wait(500)
-          .then(() => {
-            cy.get('[data-e2e=syntax_highlighter_compact]').each(($sql) => {
-              cy.wrap($sql).contains('SELECT')
-            })
-          })
-      })
+      cy.wait('@stmt_types').wait('@statements_list')
+
+      cy.get('[data-e2e=statement_types]')
+        .click()
+        .get('.ant-dropdown')
+        .within(() => {
+          cy.get('[data-e2e=multi_select_options]')
+            .contains('Select')
+            .click({ force: true })
+        })
+
+      cy.wait('@statements_list')
+        .get('[data-e2e=syntax_highlighter_compact]')
+        .each(($sql) => {
+          cy.wrap($sql).contains('SELECT')
+        })
     })
   })
 
@@ -346,18 +324,21 @@ describe('SQL statements list page', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'
       )
-      cy.get('[data-e2e=sql_statements_search]')
-        .type(' SELECT version')
-        .wait(500)
-      cy.wait('@statements_list').then(() => {
-        cy.get('[data-e2e=syntax_highlighter_compact]').each(($stmt) => {
+
+      cy.wait('@statements_list')
+
+      cy.get('[data-e2e=sql_statements_search]').type(' SELECT version')
+
+      cy.wait('@statements_list')
+        .get('[data-e2e=syntax_highlighter_compact]')
+        .each(($stmt) => {
           cy.wrap($stmt).contains('SELECT')
         })
-      })
 
       // check search text remembered after reload page
 
       cy.reload()
+
       cy.wait('@statements_list').then(() => {
         cy.get('[data-e2e=syntax_highlighter_compact]').each(($stmt) => {
           cy.wrap($stmt).contains('SELECT')
@@ -366,14 +347,17 @@ describe('SQL statements list page', () => {
     })
 
     it('Type search then reload', () => {
-      cy.get('[data-e2e=sql_statements_search]')
-        .type('SELECT `version` ()')
-        .wait(500)
-
-      cy.reload()
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'
       )
+
+      cy.wait('@statements_list')
+
+      cy.get('[data-e2e=sql_statements_search]')
+        .type('SELECT `version` ()')
+        .wait('@statements_list')
+
+      cy.reload()
 
       cy.wait('@statements_list').then((res) => {
         const statementsList = res.response.body
@@ -426,33 +410,57 @@ describe('SQL statements list page', () => {
     })
 
     it('Select all column fields', () => {
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+        'statements_list'
+      )
+
+      cy.wait('@statements_list')
+
       cy.get('[data-e2e=columns_selector_popover]')
         .trigger('mouseover')
-        .then(() => {
-          cy.get('[data-e2e=column_selector_title]')
-            .check()
-            .wait(500)
-            .then(() => {
-              cy.get('[role=columnheader]')
-                .not('.is-empty')
-                .should('have.length', 43)
-            })
-        })
+        .get('[data-e2e=column_selector_title]')
+        .check()
+
+      cy.wait('@statements_list')
+        .get('[role=columnheader]')
+        .not('.is-empty')
+        .should('have.length', 43)
+
+      // Columns should be remembered
+      cy.reload()
+
+      cy.wait('@statements_list')
+        .get('[role=columnheader]')
+        .not('.is-empty')
+        .should('have.length', 43)
     })
 
     it('Reset selected column fields', () => {
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+        'statements_list'
+      )
+
+      cy.wait('@statements_list')
+
       cy.get('[data-e2e=columns_selector_popover]')
         .trigger('mouseover')
-        .then(() => {
-          cy.get('[data-e2e=column_selector_reset]')
-            .click()
-            .wait(500)
-            .then(() => {
-              cy.get('[role=columnheader]')
-                .not('.is-empty')
-                .should('have.length', 5)
-            })
-        })
+        .get('[data-e2e=column_selector_title]')
+        .check()
+
+      cy.wait('@statements_list')
+        .get('[role=columnheader]')
+        .not('.is-empty')
+        .should('have.length', 43)
+
+      cy.get('[data-e2e=columns_selector_popover]')
+        .trigger('mouseover')
+        .get('[data-e2e=column_selector_reset]')
+        .click()
+
+      cy.wait('@statements_list')
+        .get('[role=columnheader]')
+        .not('.is-empty')
+        .should('have.length', 5)
     })
 
     it('Select an orbitary column field', () => {
@@ -515,7 +523,7 @@ describe('SQL statements list page', () => {
   })
 
   describe('Reload statement', () => {
-    it.only('Reload statement table after execute a query', () => {
+    it('Reload statement table after execute a query', () => {
       let queryData = {
         query: 'select count(*) from tidb;',
         database: 'mysql',

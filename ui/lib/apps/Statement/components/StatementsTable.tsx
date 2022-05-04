@@ -1,4 +1,4 @@
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -36,7 +36,7 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
   } = controller
 
   const navigate = useNavigate()
-  const handleRowClick = usePersistFn(
+  const handleRowClick = useMemoizedFn(
     (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
       // the evicted record's digest is empty string
       if (!rec.digest) {

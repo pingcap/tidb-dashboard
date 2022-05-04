@@ -11,7 +11,7 @@ import {
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
 import { addTranslationResource } from '@lib/utils/i18n'
-import { usePersistFn, useControllableValue } from 'ahooks'
+import { useMemoizedFn, useControllableValue } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import {
   buildInstanceTable,
@@ -82,7 +82,7 @@ function InstanceSelect(
   ref: React.Ref<IInstanceSelectRefProps>
 ) {
   const [internalVal, setInternalVal] = useControllableValue<string[]>(props)
-  const setInternalValPersist = usePersistFn(setInternalVal)
+  const setInternalValPersist = useMemoizedFn(setInternalVal)
   const {
     enableTiFlash,
     defaultSelectAll,
@@ -199,7 +199,7 @@ function InstanceSelect(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableItems])
 
-  const getInstanceByKeys = usePersistFn((keys: string[]) => {
+  const getInstanceByKeys = useMemoizedFn((keys: string[]) => {
     const keyToItemMap = {}
     for (const item of tableItems) {
       keyToItemMap[item.key] = item
@@ -207,7 +207,7 @@ function InstanceSelect(
     return keys.map((key) => keyToItemMap[key])
   })
 
-  const getInstanceByKey = usePersistFn((key: string) => {
+  const getInstanceByKey = useMemoizedFn((key: string) => {
     return getInstanceByKeys([key])[0]
   })
 

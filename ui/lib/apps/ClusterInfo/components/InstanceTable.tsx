@@ -1,5 +1,5 @@
 import { DeleteOutlined } from '@ant-design/icons'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import { Divider, Popconfirm, Tooltip } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -23,7 +23,7 @@ function StatusColumn({
 }) {
   const { t } = useTranslation()
 
-  const onConfirm = usePersistFn(() => {
+  const onConfirm = useMemoizedFn(() => {
     onHideTiDB && onHideTiDB(node)
   })
 

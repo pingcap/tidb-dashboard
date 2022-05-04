@@ -22,7 +22,7 @@ import { useRecordSelection } from '../../utils/useRecordSelection'
 import { ListDetail } from './ListDetail'
 import { isOthersRecord, isUnknownSQLRecord } from '../../utils/specialRecord'
 import { InstanceType } from './ListDetail/ListDetailTable'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import { telemetry } from '../../utils/telemetry'
 
 interface ListTableProps {
@@ -101,7 +101,7 @@ export function ListTable({
     [capacity, t, topN]
   )
 
-  const getKey = usePersistFn((r: SQLRecord) => r.sql_digest!)
+  const getKey = useMemoizedFn((r: SQLRecord) => r.sql_digest!)
 
   const { selectedRecord, selection } = useRecordSelection<SQLRecord>({
     storageKey: 'topsql.list_table_selected_key',
@@ -111,7 +111,7 @@ export function ListTable({
     },
   })
 
-  const onRenderRow = usePersistFn((props: any) => (
+  const onRenderRow = useMemoizedFn((props: any) => (
     <div
       onMouseEnter={() => onRowOver(props.item.sql_digest)}
       onMouseLeave={onRowLeave}

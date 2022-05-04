@@ -27,12 +27,18 @@ function useAppMenuItem(registry, appId, title?: string, hideIcon?: boolean) {
 
 function useActiveAppId(registry) {
   const [appId, set] = useState('')
-  useEventListener('single-spa:routing-event', () => {
-    const activeApp = registry.getActiveApp()
-    if (activeApp) {
-      set(activeApp.id)
+  useEventListener(
+    'single-spa:routing-event',
+    () => {
+      const activeApp = registry.getActiveApp()
+      if (activeApp) {
+        set(activeApp.id)
+      }
+    },
+    {
+      target: window,
     }
-  })
+  )
   return appId
 }
 

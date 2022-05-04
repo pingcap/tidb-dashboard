@@ -22,7 +22,7 @@
     "@types/mixpanel-browser": "^2.38.0",
     "@welldone-software/why-did-you-render": "^4.2.7",
     "ace-builds": "^1.4.12",
-    "ahooks": "^2.9.2",
+    "ahooks": "^3.3.10",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
     "bulma": "^0.9.0",

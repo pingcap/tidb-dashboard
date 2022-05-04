@@ -97,7 +97,7 @@ export default function useStatementTableController(
   )
   const [sessionQueryOptions, setSessionQueryOptions] = useSessionStorageState(
     QUERY_OPTIONS,
-    options || DEF_STMT_QUERY_OPTIONS
+    { defaultValue: options || DEF_STMT_QUERY_OPTIONS }
   )
   const queryOptions = useMemo(
     () => (needSave ? sessionQueryOptions : memoryQueryOptions),

@@ -4,7 +4,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { TopsqlEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { ErrorBar } from '@lib/components'
+import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 import { telemetry } from '../../utils/telemetry'
 
@@ -80,7 +80,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
               <Switch disabled={!isWriteable} />
             </Form.Item>
           </Form.Item>
-          <Form.Item>
+          <DrawerFooter>
             <Space>
               <Button
                 type="primary"
@@ -94,7 +94,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
                 {t('topsql.settings.actions.cancel')}
               </Button>
             </Space>
-          </Form.Item>
+          </DrawerFooter>
         </Form>
       )}
     </>

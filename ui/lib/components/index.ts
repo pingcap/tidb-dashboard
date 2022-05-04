@@ -55,6 +55,8 @@ export * from './Blink'
 export { default as Blink } from './Blink'
 export * from './ActionsButton'
 export { default as ActionsButton } from './ActionsButton'
+export * from './DrawerFooter'
+export { default as DrawerFooter } from './DrawerFooter'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'

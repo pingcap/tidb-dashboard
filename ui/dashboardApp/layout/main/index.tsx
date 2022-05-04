@@ -2,8 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { Root } from '@lib/components'
 import { HashRouter as Router } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
-
-import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
+import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 
 import Sider from './Sider'
 import styles from './index.module.less'
@@ -43,9 +42,9 @@ const useContentLeftOffset = (collapsed) => {
 }
 
 export default function App({ registry }) {
-  const [collapsed, setCollapsed] = useLocalStorageState(
+  const [collapsed, setCollapsed] = useVersionedLocalStorageState(
     'layout.sider.collapsed',
-    false
+    { defaultValue: false }
   )
   const [defaultCollapsed] = useState(collapsed)
   const { contentLeftOffset, onAnimationStart, onAnimationFrame } =

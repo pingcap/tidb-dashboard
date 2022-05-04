@@ -2,7 +2,7 @@ import { IBaseSelectProps, BaseSelect, TextWrap } from '..'
 import { ITableWithFilterRefProps } from '../InstanceSelect/TableWithFilter'
 import React, { useMemo, useRef, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { usePersistFn, useControllableValue } from 'ahooks'
+import { useMemoizedFn, useControllableValue } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import SelectionWithFilter from '@lib/utils/selectionWithFilter'
 import { useShallowCompareEffect } from 'react-use'
@@ -49,7 +49,7 @@ export interface IMultiSelectProps<T>
 
 function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
   const [internalVal, setInternalVal] = useControllableValue<string[]>(props)
-  const setInternalValPersist = usePersistFn(setInternalVal)
+  const setInternalValPersist = useMemoizedFn(setInternalVal)
   const {
     items,
     filterFn,

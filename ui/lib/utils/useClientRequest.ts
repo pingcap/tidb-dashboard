@@ -1,4 +1,4 @@
-import { useMount, useUnmount, usePersistFn } from 'ahooks'
+import { useMount, useUnmount, useMemoizedFn } from 'ahooks'
 import { useState, useRef, useEffect } from 'react'
 import axios, { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 
@@ -43,7 +43,7 @@ export function useClientRequest<T>(
   const cancelTokenSource = useRef<CancelTokenSource | null>(null)
   const mounted = useRef(false)
 
-  const sendRequest = usePersistFn(async () => {
+  const sendRequest = useMemoizedFn(async () => {
     if (!mounted.current) {
       return
     }
@@ -156,7 +156,7 @@ export function useBatchClientRequest<T>(
     }
   }
 
-  const sendRequest = usePersistFn(async () => {
+  const sendRequest = useMemoizedFn(async () => {
     if (!mounted.current) {
       return
     }

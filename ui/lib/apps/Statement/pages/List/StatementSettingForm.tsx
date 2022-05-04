@@ -17,8 +17,8 @@ import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 
 interface Props {
-  onClose: () => void
-  onConfigUpdated: () => any
+  onClose?: () => void
+  onConfigUpdated?: () => any
 }
 
 const convertArrToObj = (arr: number[]) =>
@@ -53,8 +53,8 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         try {
           setSubmitting(true)
           await client.getInstance().statementsConfigPost(newConfig)
-          onClose()
-          onConfigUpdated()
+          onClose?.()
+          onConfigUpdated?.()
         } finally {
           setSubmitting(false)
         }

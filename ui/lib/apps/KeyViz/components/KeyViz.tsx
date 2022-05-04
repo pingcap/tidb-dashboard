@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState } from 'react'
 import { Button, Drawer, Result } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useGetSet, useMount } from 'react-use'
-import { useBoolean } from 'ahooks'
+import { useBoolean, useMemoizedFn } from 'ahooks'
 
 import client, { ConfigKeyVisualConfig } from '@lib/client'
 import { Heatmap } from '../heatmap'
@@ -12,6 +12,7 @@ import KeyVizSettingForm from './KeyVizSettingForm'
 import KeyVizToolbar from './KeyVizToolbar'
 
 import './KeyViz.less'
+import { useChange } from '@lib/utils/useChange'
 
 // const CACHE_EXPRIE_SECS = 10
 
@@ -92,7 +93,7 @@ const KeyViz = () => {
 
   const enabled = config?.auto_collection_disabled !== true
 
-  const updateServiceStatus = useCallback(async function () {
+  const updateServiceStatus = useMemoizedFn(async function () {
     try {
       setLoading(true)
       const resp = await client.getInstance().keyvisualConfigGet()
@@ -105,12 +106,11 @@ const KeyViz = () => {
     } finally {
       setLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
   useMount(updateServiceStatus)
 
-  const updateHeatmap = useCallback(async () => {
+  const updateHeatmap = useMemoizedFn(async () => {
     if (getAutoRefreshSeconds() > 0) {
       setRemainingRefreshSeconds(getAutoRefreshSeconds())
     }
@@ -127,67 +127,57 @@ const KeyViz = () => {
     } finally {
       setLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
-  const onChangeBrightLevel = useCallback((val) => {
+  const onChangeBrightLevel = useMemoizedFn((val) => {
     if (!_chart) return
     setBrightLevel(val)
     _chart.brightness(val)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
-  const onChangeDateRange = useCallback((v: number) => {
+  const onChangeDateRange = useMemoizedFn((v: number) => {
     setDateRange(v)
     setSelection(null)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
-  const onResetZoom = useCallback(() => {
+  const onResetZoom = useMemoizedFn(() => {
     setSelection(null)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
-  const onToggleBrush = useCallback(() => {
+  const onToggleBrush = useMemoizedFn(() => {
     const newOnBrush = !getOnBrush()
     setAutoRefreshSeconds(0)
     setOnBrush(newOnBrush)
     _chart.brush(newOnBrush)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
-  const onBrush = useCallback((selection: HeatmapRange) => {
+  const onBrush = useMemoizedFn((selection: HeatmapRange) => {
     setOnBrush(false)
     setAutoRefreshSeconds(0)
     setSelection(selection)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
-  const onZoom = useCallback(() => {
+  const onZoom = useMemoizedFn(() => {
     setAutoRefreshSeconds(0)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
-  const onChartInit = useCallback((chart) => {
+  const onChartInit = useMemoizedFn((chart) => {
     _chart = chart
     setLoading(false)
     _chart.brightness(getBrightLevel())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
-  useEffect(() => {
+  useChange(() => {
     if (getAutoRefreshSeconds() > 0) {
       onResetZoom()
       setOnBrush(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getAutoRefreshSeconds()])
 
-  useEffect(() => {
+  useChange(() => {
     if (enabled) {
       updateHeatmap()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, getSelection(), getDateRange(), getMetricType()])
 
   const disabledPage = isLoading ? null : (

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useMemo, useEffect } from 'react'
+import React, { useCallback, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallowCompareEffect } from 'react-use'
 import { Tooltip } from 'antd'
@@ -22,6 +22,7 @@ import SelectionWithFilter from '@lib/utils/selectionWithFilter'
 import DropOverlay from './DropOverlay'
 import ValueDisplay from './ValueDisplay'
 import { ITableWithFilterRefProps } from './TableWithFilter'
+import { useChange } from '@lib/utils/useChange'
 
 export interface IInstanceSelectProps
   extends Omit<IBaseSelectProps<string[]>, 'dropdownRender' | 'valueRender'> {
@@ -175,7 +176,7 @@ function InstanceSelect(
 
   const dataHasLoaded = useRef(false)
 
-  useEffect(() => {
+  useChange(() => {
     // When data is loaded for the first time, we need to:
     // - Select all if `defaultSelectAll` is set and value is not given.
     // - Update selection according to value
@@ -195,8 +196,6 @@ function InstanceSelect(
     }
     sel.setChangeEvents(true)
     dataHasLoaded.current = true
-    // [defaultSelectAll, internalVal] is not needed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableItems])
 
   const getInstanceByKeys = useMemoizedFn((keys: string[]) => {

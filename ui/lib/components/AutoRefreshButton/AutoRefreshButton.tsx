@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { addTranslationResource } from '@lib/utils/i18n'
 
 import styles from './index.module.less'
+import { useChange } from '@lib/utils/useChange'
 
 interface AutoRefreshButtonProps {
   autoRefreshSecondsOptions: number[]
@@ -96,7 +97,7 @@ export function AutoRefreshButton({
     onRemainingRefreshSecondsChange(autoRefreshSeconds)
   }, [autoRefreshSeconds, onRemainingRefreshSecondsChange])
 
-  useEffect(() => {
+  useChange(() => {
     clearTimeout(timer.current!)
     timer.current = undefined
     if (
@@ -107,7 +108,6 @@ export function AutoRefreshButton({
     ) {
       onRemainingRefreshSecondsChange(autoRefreshSeconds)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefreshSeconds])
 
   const handleRefresh = useCallback(async () => {

@@ -3,7 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import { upperFirst } from 'lodash'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 
@@ -82,7 +82,7 @@ export default function Page() {
     return [newRows, newGroups]
   }, [groupProfileDetail])
 
-  const handleClick = usePersistFn(
+  const handleClick = useMemoizedFn(
     async (action: string, rec: ConprofProfileDetail) => {
       const { profile_type, target } = rec
       const { component, address } = target!

@@ -6,7 +6,7 @@ import { IGroup, IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import InlineEditor from './InlineEditor'
 import { Modal, Spin, Tooltip, Input } from 'antd'
-import { usePersistFn, useDebounce } from 'ahooks'
+import { useMemoizedFn, useDebounce } from 'ahooks'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import { useTranslation } from 'react-i18next'
@@ -23,7 +23,7 @@ interface IValueProps {
 const loadingSpinner = <LoadingOutlined style={{ fontSize: 48 }} spin />
 
 function Value({ item, onSaved }: IValueProps) {
-  const handleSave = usePersistFn(async (newValue) => {
+  const handleSave = useMemoizedFn(async (newValue) => {
     try {
       const resp = await client.getInstance().configurationEdit({
         id: item.id,

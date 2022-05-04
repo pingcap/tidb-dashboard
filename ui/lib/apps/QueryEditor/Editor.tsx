@@ -24,8 +24,8 @@ function Editor({ ...props }: IEditorProps, ref: React.Ref<AceEditor>) {
         showPrintMargin={false}
         showGutter={true}
         highlightActiveLine={true}
-        width={`${containerSize.width}px`}
-        height={`${containerSize.height}px`}
+        width={`${containerSize?.width ?? 0}px`}
+        height={`${containerSize?.height ?? 0}px`}
         ref={ref}
         {...props}
       />

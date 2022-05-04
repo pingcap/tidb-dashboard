@@ -1,5 +1,5 @@
 import { IRenderFunction } from '@uifabric/utilities'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
@@ -171,7 +171,7 @@ export default function CardTable(props: ICardTableProps) {
     onRenderRow
   )
 
-  const onColumnClick = usePersistFn(
+  const onColumnClick = useMemoizedFn(
     (_ev: React.MouseEvent<HTMLElement>, column: IColumn) => {
       if (!onChangeOrder) {
         return

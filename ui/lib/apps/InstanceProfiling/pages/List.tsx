@@ -3,7 +3,7 @@ import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 
 import client, {
   ProfilingStartRequest,
@@ -103,7 +103,7 @@ export default function Page() {
     [navigate]
   )
 
-  const handleRowClick = usePersistFn(
+  const handleRowClick = useMemoizedFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
       openLink(`/instance_profiling/detail?id=${rec.id}`, ev, navigate)
     }

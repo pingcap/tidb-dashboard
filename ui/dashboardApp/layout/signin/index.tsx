@@ -22,7 +22,7 @@ import { Form, Input, Button, message, Typography, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 
 import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
 import { getAuthURL } from '@lib/utils/authSSO'
@@ -169,7 +169,7 @@ function useSignInSubmit(
     setError(null)
   }, [])
 
-  const handleSubmit = usePersistFn(async (form) => {
+  const handleSubmit = useMemoizedFn(async (form) => {
     try {
       clearErrorMsg()
       setLoading(true)

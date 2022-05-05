@@ -114,6 +114,7 @@
     "esbuild-plugin-yaml": "^0.0.1",
     "eslint": "^8.7.0",
     "eslint-config-react-app": "^7.0.0",
+    "eslint-plugin-cypress": "^2.12.1",
     "eslint-watch": "^8.0.0",
     "esm": "^3.2.25",
     "fs-extra": "^10.0.0",

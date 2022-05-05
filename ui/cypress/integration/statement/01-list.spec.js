@@ -317,7 +317,7 @@ describe('SQL statements list page', () => {
       cy.get('[data-e2e=sql_statements_search]').should('be.empty')
     })
 
-    it.only('Search item with space', () => {
+    it('Search item with space', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'
       )
@@ -525,7 +525,7 @@ describe('SQL statements list page', () => {
   })
 
   describe('Reload statement', () => {
-    it.only('Reload statement table shows new query', () => {
+    it('Reload statement table shows new query', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'
       )
@@ -836,7 +836,7 @@ describe('SQL statements list page', () => {
       cy.contains(slowNetworkText).should('not.exist')
     })
 
-    it.only('Show slow information', () => {
+    it('Show slow information', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`, (req) => {
         req.on('response', (res) => {
           res.setDelay(3000)
@@ -847,7 +847,7 @@ describe('SQL statements list page', () => {
       cy.contains(slowNetworkText)
     })
 
-    it.only('Does not send request automatically when network is slow', () => {
+    it('Does not send request automatically when network is slow', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`, (req) => {
         req.on('response', (res) => {
           res.setDelay(3000)
@@ -873,7 +873,7 @@ describe('SQL statements list page', () => {
         .should('not.exist')
     })
 
-    it.only('Updates the info when network is no longer slow', () => {
+    it('Updates the info when network is no longer slow', () => {
       let shouldDelay = true
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`, (req) => {
         req.on('response', (res) => {

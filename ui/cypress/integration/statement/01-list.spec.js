@@ -270,7 +270,6 @@ describe('SQL statements list page', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/stmt_types`).as(
         'stmt_types'
       )
-
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'
       )
@@ -318,32 +317,35 @@ describe('SQL statements list page', () => {
       cy.get('[data-e2e=sql_statements_search]').should('be.empty')
     })
 
-    // test will fail caused by existing TiDB bug
-    // https://github.com/pingcap/tidb/issues/32783
-    it('Search item with space', () => {
+    it.only('Search item with space', () => {
       cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
         'statements_list'
       )
 
       cy.wait('@statements_list')
+      cy.get('[data-e2e=syntax_highlighter_compact]').contains('SHOW DATABASES')
 
-      cy.get('[data-e2e=sql_statements_search]').type(' SELECT version')
+      cy.get('[data-e2e=sql_statements_search]').type('SELECT version')
 
       cy.wait('@statements_list')
         .get('[data-e2e=syntax_highlighter_compact]')
-        .each(($stmt) => {
-          cy.wrap($stmt).contains('SELECT')
-        })
+        .contains('SELECT `version` ()')
+
+      cy.get('[data-e2e=syntax_highlighter_compact]')
+        .contains('SHOW DATABASES')
+        .should('not.exist')
 
       // check search text remembered after reload page
-
       cy.reload()
 
-      cy.wait('@statements_list').then(() => {
-        cy.get('[data-e2e=syntax_highlighter_compact]').each(($stmt) => {
-          cy.wrap($stmt).contains('SELECT')
-        })
-      })
+      cy.wait('@statements_list')
+      cy.get('[data-e2e=syntax_highlighter_compact]').contains(
+        'SELECT `version` ()'
+      )
+      // this should be filtered away
+      cy.get('[data-e2e=syntax_highlighter_compact]')
+        .contains('SHOW DATABASES')
+        .should('not.exist')
     })
 
     it('Type search then reload', () => {
@@ -523,27 +525,28 @@ describe('SQL statements list page', () => {
   })
 
   describe('Reload statement', () => {
-    it('Reload statement table after execute a query', () => {
+    it.only('Reload statement table shows new query', () => {
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+        'statements_list'
+      )
+      cy.wait('@statements_list')
+      cy.get('[data-e2e=syntax_highlighter_compact]')
+        .contains('SELECT count (?) FROM tidb')
+        .should('not.exist')
+
+      // send a query now
       let queryData = {
         query: 'select count(*) from tidb;',
         database: 'mysql',
       }
       cy.task('queryDB', { ...queryData })
 
-      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
-        'statements_list'
+      // refresh!
+      cy.get('[data-e2e=sql_statements_search]').type('{enter}')
+      cy.wait('@statements_list')
+      cy.get('[data-e2e=syntax_highlighter_compact]').contains(
+        'SELECT count (?) FROM tidb'
       )
-      cy.wait('@statements_list').then(() => {
-        cy.get('[data-e2e=sql_statements_search]')
-          .siblings()
-          .find('button')
-          .click()
-          .then(() => {
-            cy.get('[data-automation-key=digest_text]').contains(
-              'SELECT count (?) FROM tidb;'
-            )
-          })
-      })
     })
   })
 
@@ -816,6 +819,93 @@ describe('SQL statements list page', () => {
           )
         })
       })
+    })
+  })
+
+  describe('Slow network condition', () => {
+    const slowNetworkText = 'On-the-fly update is disabled'
+
+    it('Does not show slow information when network is fast', () => {
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+        'statements_list'
+      )
+
+      cy.wait('@statements_list')
+
+      cy.wait(500)
+      cy.contains(slowNetworkText).should('not.exist')
+    })
+
+    it.only('Show slow information', () => {
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`, (req) => {
+        req.on('response', (res) => {
+          res.setDelay(3000)
+        })
+      }).as('statements_list')
+
+      cy.wait('@statements_list')
+      cy.contains(slowNetworkText)
+    })
+
+    it.only('Does not send request automatically when network is slow', () => {
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`, (req) => {
+        req.on('response', (res) => {
+          res.setDelay(3000)
+        })
+      }).as('statements_list')
+
+      cy.wait('@statements_list')
+      cy.contains(slowNetworkText)
+
+      cy.get('[data-e2e=sql_statements_search]').type('SELECT version')
+
+      cy.wait(1000)
+      cy.get('[data-e2e=syntax_highlighter_compact]').contains('SHOW DATABASES')
+
+      // request is sent only after a manual refresh
+      cy.get('[data-e2e=sql_statements_search]').type('{enter}')
+      cy.wait('@statements_list')
+      cy.get('[data-e2e=syntax_highlighter_compact]').contains(
+        'SELECT `version` ()'
+      )
+      cy.get('[data-e2e=syntax_highlighter_compact]')
+        .contains('SHOW DATABASES')
+        .should('not.exist')
+    })
+
+    it.only('Updates the info when network is no longer slow', () => {
+      let shouldDelay = true
+      cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`, (req) => {
+        req.on('response', (res) => {
+          if (shouldDelay) {
+            res.setDelay(3000)
+          }
+        })
+      }).as('statements_list')
+
+      cy.wait('@statements_list')
+      cy.contains(slowNetworkText)
+      cy.get('[data-e2e=syntax_highlighter_compact]')
+        .contains('SHOW DATABASES')
+        .then(() => {
+          shouldDelay = false
+        })
+
+      cy.get('[data-e2e=sql_statements_search]').type('{enter}')
+      cy.wait('@statements_list')
+
+      cy.wait(500)
+      cy.contains(slowNetworkText).should('not.exist')
+
+      // On-the-fly request should be recovered
+      cy.get('[data-e2e=sql_statements_search]').type('SELECT version')
+      cy.wait('@statements_list')
+      cy.get('[data-e2e=syntax_highlighter_compact]').contains(
+        'SELECT `version` ()'
+      )
+      cy.get('[data-e2e=syntax_highlighter_compact]')
+        .contains('SHOW DATABASES')
+        .should('not.exist')
     })
   })
 

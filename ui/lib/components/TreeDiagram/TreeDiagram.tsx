@@ -1,104 +1,61 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { TreeProps } from './types'
-import { RawNodeDatum, TreeNodeDatum, Translate } from './types'
-import { hierarchy, HierarchyPointNode, HierarchyPointLink } from 'd3-hierarchy'
-
-import { flextree } from 'd3-flextree'
-
-import * as d3 from 'd3'
 import _ from 'lodash'
-import { select, event } from 'd3-selection'
-import { zoom as d3zoom, zoomIdentity } from 'd3-zoom'
-import { v4 as uuidv4 } from 'uuid'
-
-import LinksWrapper from './LinksWrapper'
-import NodesWrapper from './NodesWrapper'
-
+import { AssignInternalProperties } from './utlis'
 import styles from './index.module.less'
-import { Button } from 'antd'
+import {
+  TreeDiagramProps,
+  RawNodeDatum,
+  TreeNodeDatum,
+  Translate,
+  nodeMarginType,
+} from './types'
 
-const TreeDiagram = (props: TreeProps) => {
-  const {
-    data,
-    dimensions,
-    scaleExtent,
-    nodeSize,
-    collapsiableButtonSize,
-    nodeMargin,
-    minimapScale,
-  } = props
+import NodeWrapper from './NodeWrapper'
+import LinkWrapper from './LinkWrapper'
+import Minimap from './Minimap'
 
-  const { width: viewPortWidth, height: viewPortHeight } = dimensions!
-  const { width: nodeSizeWidth, height: nodeSizeHeight } = nodeSize!
+// import d3 APIs
+import { flextree } from 'd3-flextree'
+import { hierarchy, HierarchyPointNode, HierarchyPointLink } from 'd3-hierarchy'
+import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
+import { select, event } from 'd3-selection'
 
-  const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>()
+const TreeDiagram = ({
+  data,
+  nodeSize,
+  nodeMargin,
+  viewPort,
+  showMinimap,
+  minimapScale,
+  translate,
+  customNodeElement,
+  customLinkElement,
+}: TreeDiagramProps) => {
+  const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
   const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
-  const [initTreeRectBound, setInitTreeRectBound] = useState({
-    width: 0,
-    height: 0,
-  })
-  const [translate, setTranslate] = useState<Translate>({
-    x: viewPortWidth / 2,
+  const [chartTranslate, setChartTranslate] = useState(translate)
+  const [initDraw, setInitDraw] = useState(true)
+  const [initTranslate, setInitTranslate] = useState({
+    x: 0,
     y: 0,
     k: 1,
   })
-  const [isAllNodesExpanded, setIsAllNodesExpanded] = useState(true)
-  const [worldSize, setWorldSize] = useState([viewPortWidth, viewPortHeight])
-
-  const treeRef = useRef(null)
-  const mainChartContainerSVGRef = useRef(null)
-  const mainChartGroupRef = useRef(null)
-  const minimapContainerSVGRef = useRef(null)
-  const minimapChartGroupRef = useRef(null)
-  const gBrushRef = useRef(null)
-
-  const mainChartContainerSVG = select(mainChartContainerSVGRef.current)
-  const mainChartGroup = select(mainChartGroupRef.current)
-  const gBrush = select(gBrushRef.current)
-  const nodeSizeWithDetails = {
-    width: 250,
-    height: 200,
-  }
-
-  const totalTime = Array.isArray(data) ? data[0].time_us : data.time_us
-
-  const assignInternalProperties = (
-    data: RawNodeDatum[] | RawNodeDatum
-  ): TreeNodeDatum[] => {
-    const d = Array.isArray(data) ? data : [data]
-    return d.map((n) => {
-      const nodeDatum = n as TreeNodeDatum
-      nodeDatum.__node_attrs = {
-        id: '',
-        collapsed: false,
-        collapsiable: false,
-        isNodeDetailVisible: false,
-        nodeFlexSize: {
-          width: nodeSizeWidth,
-          height: nodeSizeHeight,
-        },
-      }
-      nodeDatum.__node_attrs.id = uuidv4()
-
-      // If there are children, recursively assign properties to them too.
-      if (nodeDatum.children && nodeDatum.children.length > 0) {
-        nodeDatum.__node_attrs.collapsiable = true
-        nodeDatum.children = assignInternalProperties(nodeDatum.children)
-      }
-      return nodeDatum
-    })
-  }
+  const mainChartSVG = select('.mainChartSVG')
+  const mainChartGroup = select('.mainChartGroup')
 
   // Generates nodes and links
-  const generateNodesAndLinks = () => {
+  const generateNodesAndLinks = (
+    treeNodeDatum: TreeNodeDatum[],
+    nodeMargin: nodeMarginType
+  ) => {
     const tree = flextree({
       nodeSize: (node) => {
         const _nodeSize = node.data.__node_attrs.nodeFlexSize
 
         return [
-          _nodeSize.width + nodeMargin!.siblingMargin,
-          _nodeSize.height + nodeMargin!.childrenMargin,
+          _nodeSize.width + nodeMargin.siblingMargin,
+          _nodeSize.height + nodeMargin.childrenMargin,
         ]
       },
     })
@@ -111,135 +68,29 @@ const TreeDiagram = (props: TreeProps) => {
     )
 
     const nodes = rootNode.descendants()
-
     const links = rootNode.links()
 
-    setNodes(nodes)
-    setLinks(links)
+    return { nodes, links }
   }
 
-  // Gets main chart bound by calculating dx and dy
-  const getInitTreeRectBound = () => {
-    const calcHeight = (nodes) => {
-      let y0 = Infinity
-      let y1 = -y0
-      let x0 = Infinity
-      let x1 = -x0
-
-      nodes.forEach((d) => {
-        if (d.y > y1) y1 = d.y
-        if (d.y < y0) y0 = d.y
-        if (d.x > x1) x1 = d.x
-        if (d.x < x0) x0 = d.x
-      })
-
-      const boundRect = {
-        width: x1 - x0,
-        height: y1 - y0,
-      }
-
-      return boundRect
-    }
-
-    const boundRect = calcHeight(nodes)
-    const boundRectWidth = boundRect.width + nodeSizeWidth
-    const boundRectHeight = boundRect.height + nodeSizeHeight
-
-    // WARNING: *world size* should be larger than or equal to *viewport size*
-    // if the world is smaller than viewport, the zoom action will yield weird coordinates.
-    const worldWidth =
-      boundRectWidth > viewPortWidth ? boundRectWidth : viewPortWidth
-    const worldHeight =
-      boundRectHeight > viewPortHeight ? boundRectHeight : viewPortHeight
-
-    setWorldSize([worldWidth, worldHeight])
-    setInitTreeRectBound({ width: boundRectWidth, height: boundRectHeight })
-  }
-
-  const zoomBehavior = d3zoom()
-    .scaleExtent([scaleExtent!.min!, scaleExtent!.max!])
-    // .translateExtent([0,0], [initTreeRectBound.width, initTreeRectBound.height])
-    // .translateExtent([[0, 0], [worldSize[0], worldSize[1]]]) // world extent
-    .extent([
-      [0, 0],
-      [viewPortWidth, viewPortHeight],
-    ]) // viewport extent
-    .on('zoom', () => onZoom())
-
-  const onZoom = () => {
-    if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush')
-      return null
-
-    const t = event.transform
-    setTranslate({ x: t.x, y: t.y, k: t.k })
-
-    const scaleX = minimapScaleX(t.k)
-    const scaleY = minimapScaleY(t.k)
-
-    brushBehavior.move(gBrush as any, [
-      [scaleX.invert(-t.x + viewPortWidth / 2), scaleY.invert(-t.y)],
-      [
-        scaleX.invert(-t.x + viewPortWidth / 2 + viewPortWidth),
-        scaleY.invert(-t.y + viewPortHeight),
-      ],
-    ])
-  }
-
-  const bindZoomListener = () => {
+  // Binds MainChart container
+  const bindZoomListener = (initTranslate) => {
     // Sets initial offset, so that first pan and zoom does not jump back to default [0,0] coords.
-    mainChartContainerSVG.call(
-      d3zoom().transform as any,
-      zoomIdentity.translate(translate.x, translate.y).scale(translate.k)
+    // @ts-ignore
+    mainChartSVG.call(
+      d3Zoom().transform as any,
+      zoomIdentity
+        .translate(initTranslate.x, initTranslate.y)
+        .scale(initTranslate.k)
     )
 
-    mainChartContainerSVG.call(zoomBehavior as any)
-  }
-
-  const onBrush = () => {
-    if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom')
-      return null
-
-    if (Array.isArray(d3.event.selection)) {
-      const [[brushX, brushY], [brushX2, brushY2]] = d3.event.selection
-      const zoomScale = d3.zoomTransform(mainChartContainerSVG.node() as any).k
-
-      const scaleX = minimapScaleX(zoomScale)
-      const scaleY = minimapScaleY(zoomScale)
-
-      mainChartContainerSVG.call(
-        zoomBehavior.transform as any,
-        d3.zoomIdentity
-          // .translate(attrs.svgWidth, attrs.svgHeight)
-          .translate(-brushX + viewPortWidth / 2, -brushY)
-          .scale(zoomScale)
-      )
-
-      mainChartGroup.attr(
-        'transform',
-        `translate(${scaleX(-brushX + viewPortWidth / 2)}, ${scaleY(
-          -brushY
-        )}) scale(${zoomScale})`
-      )
-    }
-  }
-
-  const brushBehavior = d3
-    .brush()
-    .extent([
-      [0, 0],
-      [worldSize[0], worldSize[1]],
-    ])
-    .on('brush', onBrush)
-
-  const bindBrushListener = () => {
-    gBrush.call(brushBehavior as any)
-
-    drawMinimap()
-
-    brushBehavior.move(gBrush as any, [
-      [0, 0],
-      [worldSize[0], worldSize[1]],
-    ])
+    mainChartSVG.call(
+      d3Zoom()
+        .scaleExtent([0.2, 2])
+        .on('zoom', () => {
+          setChartTranslate(event.transform)
+        }) as any
+    )
   }
 
   const findNodesById = (
@@ -275,16 +126,7 @@ const TreeDiagram = (props: TreeProps) => {
     }
   }
 
-  const expandAllDescentantNodes = (nodeDatum: TreeNodeDatum) => {
-    nodeDatum.__node_attrs.collapsed = false
-    if (nodeDatum.children && nodeDatum.children.length > 0) {
-      nodeDatum.children.forEach((child) => {
-        expandAllDescentantNodes(child)
-      })
-    }
-  }
-
-  const handleNodeExpandBtnToggle = (nodeId: string) => {
+  function handleNodeExpandBtnToggle(nodeId: string) {
     const data = _.clone(treeNodeDatum)
 
     // @ts-ignore
@@ -298,235 +140,125 @@ const TreeDiagram = (props: TreeProps) => {
     }
 
     setTreeNodeDatum(data)
-    // setTargetNode(targetNodeDatum)
   }
 
-  const handleExpandNodeToggle = (nodeId: string) => {
-    const data = _.clone(treeNodeDatum)
+  const getInitTreeDiagramBound = () => {
+    const tmp = mainChartGroup.node() as SVGGraphicsElement
+    const { x, y, width, height } = tmp.getBBox()
 
-    // @ts-ignore
-    const matches = findNodesById(nodeId, data, [])
-    const targetNodeDatum = matches[0]
+    const tw = document.getElementById('tree-diagram-container')?.clientWidth
+    const th = document.getElementById('tree-diagram-container')?.clientHeight
+    console.log('tree-diagram-container', tw, th)
+    const zoomToFitViewportScale = Math.min(tw! / width, th! / height)
 
-    targetNodeDatum.__node_attrs.isNodeDetailVisible =
-      !targetNodeDatum.__node_attrs.isNodeDetailVisible
-
-    if (targetNodeDatum.__node_attrs.isNodeDetailVisible) {
-      targetNodeDatum.__node_attrs.nodeFlexSize = nodeSizeWithDetails
-    } else {
-      targetNodeDatum.__node_attrs.nodeFlexSize = nodeSize
-    }
-
-    setTreeNodeDatum(data)
-  }
-
-  const centerNode = (
-    hierarchyPointNode: HierarchyPointNode<TreeNodeDatum>
-  ) => {
-    const scale = translate.k
-    const x = -hierarchyPointNode.x * scale + viewPortWidth / 2
-    const y = -hierarchyPointNode.y * scale + viewPortHeight / 2
-
-    mainChartGroup.attr('transform', `translate(${x}, ${y}) scale(${scale})`)
-
-    mainChartContainerSVG.call(
-      d3zoom().transform as any,
-      zoomIdentity.translate(x, y).scale(scale)
+    console.log('x', x, y, width, height)
+    console.log(
+      'viewPort!.width / width',
+      viewPort!.width / width,
+      viewPort!.height / height,
+      zoomToFitViewportScale
     )
-  }
-
-  const minimapScaleX = (zoomScale) => {
-    return d3
-      .scaleLinear()
-      .domain([0, worldSize[0]])
-      .range([0, worldSize[0] * zoomScale])
-  }
-
-  const minimapScaleY = (zoomScale) => {
-    return d3
-      .scaleLinear()
-      .domain([0, worldSize[1]])
-      .range([0, worldSize[1] * zoomScale])
-  }
-
-  const drawMinimap = () => {
-    const minimapChartContainerSVG = select(minimapContainerSVGRef.current)
-    const minimapChartGroup = select(minimapChartGroupRef.current)
-
-    const worldWidth = worldSize[0]
-    const worldHeight = worldSize[1]
-
-    minimapChartContainerSVG
-      .attr('width', minimapScaleX(minimapScale)(worldWidth))
-      .attr('height', minimapScaleX(minimapScale)(worldHeight))
-      .attr('viewBox', [0, 0, worldWidth, worldHeight].join(' '))
-      .attr('preserveAspectRatio', 'xMidYMid meet')
-      .style('position', 'absolute')
-      .style('top', 0)
-      .style('right', 20)
-      .style('border', '1px solid grey')
-      .style('background', 'white')
-
-    select('.minimap-rect')
-      .attr('width', worldWidth)
-      .attr('height', worldHeight)
-      .attr('fill', 'white')
-
-    minimapChartGroup
-      .attr('transform', `translate(${worldWidth / 2}, 0) scale(1)`)
-      .attr('width', worldWidth)
-      .attr('height', worldHeight)
-  }
-
-  const expandAllNodes = (node: TreeNodeDatum) => {
-    expandAllDescentantNodes(node)
-  }
-
-  const collapseAllNodes = (node: TreeNodeDatum) => {
-    collapseAllDescententNodes(node)
-  }
-
-  const handleToggleAllNodesOnClick = () => {
-    const targetNodeDatum = _.clone(treeNodeDatum)
-
-    if (isAllNodesExpanded) {
-      collapseAllNodes(targetNodeDatum![0])
-      setIsAllNodesExpanded(false)
-    } else {
-      expandAllNodes(targetNodeDatum![0])
-      setIsAllNodesExpanded(true)
+    const initTranslate = {
+      x: -x * zoomToFitViewportScale,
+      y: y,
+      k: zoomToFitViewportScale,
     }
 
-    setTreeNodeDatum(targetNodeDatum!)
+    setInitTranslate(initTranslate)
+    setChartTranslate(initTranslate)
+    bindZoomListener(initTranslate)
   }
 
   useEffect(() => {
-    if (treeNodeDatum) {
-      generateNodesAndLinks()
-      bindZoomListener()
-    }
-  }, [treeNodeDatum])
+    const treeNodes = AssignInternalProperties(data, nodeSize!)
+    setTreeNodeDatum(treeNodes)
+  }, [data, nodeSize])
 
   useEffect(() => {
-    if (nodes.length > 0 && initTreeRectBound.width === 0) {
-      getInitTreeRectBound()
+    if (treeNodeDatum.length > 0) {
+      const { nodes, links } = generateNodesAndLinks(treeNodeDatum, nodeMargin!)
+      setNodes(nodes)
+      setLinks(links)
     }
-  }, [nodes])
+  }, [nodeMargin, treeNodeDatum])
 
   useEffect(() => {
-    // init minimap
-    if (initTreeRectBound.width > 0) {
-      bindBrushListener()
-      // drawMinimap()
+    if (links.length > 0 && nodes.length > 0 && initDraw) {
+      getInitTreeDiagramBound()
+      setInitDraw(false)
     }
-  }, [initTreeRectBound])
-
-  useEffect(() => {
-    const d = assignInternalProperties(data)
-    setTreeNodeDatum(d)
-  }, [])
+  }, [links, nodes])
 
   return (
-    <>
-      <div className={styles.shortCuts}>
-        <Button onClick={handleToggleAllNodesOnClick}>
-          {isAllNodesExpanded ? 'Collapse all nodes' : 'Expand all nodes'}
-        </Button>
-        {/* <Button>{isAllExpandedNodesShowDetails ? 'Collapse details': 'Expand details'}</Button> */}
-      </div>
-      <div
-        ref={treeRef}
-        style={{ overflow: 'hidden' }}
-        className={styles.treeContainer}
+    <div className={styles.treeDiagramContainer} id="tree-diagram-container">
+      <svg
+        className="mainChartSVG"
+        width={viewPort!.width}
+        height={viewPort!.height}
       >
-        <svg
-          ref={mainChartContainerSVGRef}
-          className={styles.mainChartContainerSVG}
-          width={viewPortWidth}
-          height={viewPortHeight}
+        <g
+          className="mainChartGroup"
+          transform={`translate(${chartTranslate.x}, ${chartTranslate.y}) scale(${chartTranslate.k})`}
         >
-          <g
-            ref={mainChartGroupRef}
-            className="main-chart-group"
-            transform={`translate(${translate.x}, ${translate.y}) scale(${translate.k})`}
-          >
-            <g className="links-wrapper">
-              {links.length > 0 &&
-                links.map((link, i) => (
-                  <LinksWrapper
+          <g className="linksWrapper">
+            {links &&
+              links.map((link, i) => {
+                return (
+                  <LinkWrapper
                     key={i}
                     data={link}
-                    collapsiableButtonSize={collapsiableButtonSize}
-                  ></LinksWrapper>
-                ))}
-            </g>
-            <g className="nodes-wrapper">
-              {nodes.length > 0 &&
-                nodes.map((node) => (
-                  <NodesWrapper
-                    key={node.data.name}
-                    data={node}
-                    collapsiableButtonSize={collapsiableButtonSize}
-                    handleNodeExpandBtnToggle={handleNodeExpandBtnToggle}
-                    centerNode={centerNode}
-                    handleExpandNodeToggle={handleExpandNodeToggle}
-                    totalTime={totalTime}
-                  ></NodesWrapper>
-                ))}
-            </g>
+                    collapsiableButtonSize={{ width: 60, height: 30 }}
+                    renderCustomLinkElement={customLinkElement}
+                  />
+                )
+              })}
           </g>
-        </svg>
 
-        <svg
-          ref={minimapContainerSVGRef}
-          className={styles.minimapChartContainer}
-        >
-          <rect className="minimap-rect"></rect>
-          <g ref={minimapChartGroupRef} className="minimap-chart-group">
-            <g className="links-wrapper">
-              {links.length > 0 &&
-                links.map((link, i) => (
-                  <LinksWrapper
-                    key={i}
-                    data={link}
-                    collapsiableButtonSize={collapsiableButtonSize}
-                  ></LinksWrapper>
-                ))}
-            </g>
-            <g className="nodes-wrapper">
-              {nodes.length > 0 &&
-                nodes.map((node) => (
-                  <NodesWrapper
-                    key={node.data.name}
-                    data={node}
-                    collapsiableButtonSize={collapsiableButtonSize}
-                    totalTime={totalTime}
-                    isMinimap={true}
-                  ></NodesWrapper>
-                ))}
-            </g>
+          <g className="nodesWrapper">
+            {nodes &&
+              nodes.map((hierarchyPointNode, i) => {
+                const { data, x, y } = hierarchyPointNode
+                return (
+                  <NodeWrapper
+                    data={data}
+                    key={data.name}
+                    renderCustomNodeElement={customNodeElement}
+                    hierarchyPointNode={hierarchyPointNode}
+                    zoomScale={translate.k}
+                    onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
+                  />
+                )
+              })}
           </g>
-          <g ref={gBrushRef} className="g-brush"></g>
-        </svg>
-      </div>
-    </>
+        </g>
+      </svg>
+      {/* {showMinimap && (
+        <Minimap
+          viewPort={viewPort!}
+          links={links}
+          nodes={nodes}
+          initTranslate={initTranslate}
+          customLinkElement={customLinkElement}
+          customNodeElement={customNodeElement}
+          minimapScale={minimapScale!}
+        />
+      )} */}
+    </div>
   )
 }
 
 TreeDiagram.defaultProps = {
-  dimensions: {
-    width: window.innerWidth,
-    height: window.innerHeight - 150,
-  },
-  scaleExtent: { min: 0.5, max: 2 },
   nodeSize: { width: 250, height: 150 },
-  collapsiableButtonSize: { width: 60, height: 30 },
+  showMinimap: false,
+  minimapScale: 0.2,
   nodeMargin: {
     siblingMargin: 40,
     childrenMargin: 60,
   },
-  transitionDuration: 800,
-  minimapScale: 0.2,
+  viewPort: {
+    width: window.innerWidth,
+    height: window.innerHeight - 200,
+  },
 }
 
 export default TreeDiagram

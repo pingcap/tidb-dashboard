@@ -56,8 +56,8 @@ export { default as Blink } from './Blink'
 export * from './ActionsButton'
 export { default as ActionsButton } from './ActionsButton'
 
-export * from './TreeDiagram'
-export { default as TreeDiagram } from './TreeDiagram'
+export * from './TreeDiagramView'
+export { default as TreeDiagramView } from './TreeDiagramView'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'

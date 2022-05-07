@@ -18,11 +18,13 @@ import {
   HighlightSQL,
   Pre,
   TextWithInfo,
-  TreeDiagram,
+  TreeDiagramView,
 } from '@lib/components'
 import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import DetailTabs from './DetailTabs'
+
+import vpData from './example'
 export interface IPageQuery {
   connectId?: string
   digest?: string
@@ -63,10 +65,9 @@ function DetailPage() {
   const togglePlan = () =>
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
-  const [vpVisible, setVpVisable] = useState(false)
-
-  const openVisualPlan = () => {
-    setVpVisable(!vpVisible)
+  const [isVpVisible, setIsVpVisable] = useState(false)
+  const toggleVisualPlan = () => {
+    setIsVpVisable(!isVpVisible)
   }
 
   return (
@@ -174,31 +175,33 @@ function DetailPage() {
                 })()}
 
                 {(() => {
-                  if (data.visual_plan)
-                    return (
-                      <Descriptions.Item
-                        span={2}
-                        label={
-                          <Space size="middle" onClick={openVisualPlan}>
-                            <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
-                          </Space>
-                        }
+                  // if (data.visual_plan)
+                  return (
+                    <Descriptions.Item
+                      span={2}
+                      label={
+                        <Space size="middle" onClick={toggleVisualPlan}>
+                          <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
+                        </Space>
+                      }
+                    >
+                      <Modal
+                        title="Visual Plan Tree Diagram"
+                        centered
+                        visible={isVpVisible}
+                        width={window.innerWidth}
+                        onCancel={toggleVisualPlan}
+                        footer={null}
+                        bodyStyle={{ background: '#f5f5f5' }}
                       >
-                        <Modal
-                          title="Visual Plan Tree Diagram"
-                          centered
-                          visible={vpVisible}
-                          width={window.innerWidth}
-                          onCancel={openVisualPlan}
-                          footer={null}
-                          bodyStyle={{ background: '#f5f5f5' }}
-                        >
-                          <TreeDiagram
-                            data={JSON.parse(data.visual_plan).main}
-                          />
-                        </Modal>
-                      </Descriptions.Item>
-                    )
+                        <TreeDiagramView
+                          // data={JSON.parse(data.visual_plan).main}
+                          data={vpData.main}
+                          showMinimap={true}
+                        />
+                      </Modal>
+                    </Descriptions.Item>
+                  )
                 })()}
               </Descriptions>
               <DetailTabs data={data} />

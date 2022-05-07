@@ -2,6 +2,7 @@ import React from 'react'
 import styles from './index.module.less'
 
 // Draws lines between parent and child node
+// Generates horizontal diagonal - play with it here - https://observablehq.com/@bumbeishvili/curved-edges-horizontal-d3-v3-v4-v5-v6
 function diagonal(s, t) {
   const x = s.x
   const y = s.y
@@ -41,6 +42,7 @@ const LinksWrapper = (props) => {
     <path
       className={styles.pathLink}
       d={diagonal(
+        // source node
         {
           x: link.source.x,
           y:
@@ -48,6 +50,7 @@ const LinksWrapper = (props) => {
             link.source.data.__node_attrs.nodeFlexSize.height +
             collapsiableButtonSize.height,
         },
+        // target node
         { x: link.target.x, y: link.target.y }
       )}
     />

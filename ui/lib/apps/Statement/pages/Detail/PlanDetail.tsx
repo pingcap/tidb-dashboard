@@ -11,7 +11,7 @@ import {
   HighlightSQL,
   Pre,
   TextWithInfo,
-  TreeDiagram,
+  TreeDiagramView,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
@@ -79,9 +79,9 @@ function PlanDetail({ query }: IPlanDetailProps) {
     titleKey = 'some'
   }
 
-  const [vpVisible, setVpVisable] = useState(false)
-  const openVisualPlan = () => {
-    setVpVisable(!vpVisible)
+  const [isVpVisible, setIsVpVisable] = useState(false)
+  const toggleVisualPlan = () => {
+    setIsVpVisable(!isVpVisible)
   }
 
   return (
@@ -176,25 +176,30 @@ function PlanDetail({ query }: IPlanDetailProps) {
                 </Expand>
               </Descriptions.Item>
 
-              <Descriptions.Item
-                span={2}
-                label={
-                  <Space size="middle" onClick={openVisualPlan}>
-                    <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
-                  </Space>
-                }
-              >
-                <Modal
-                  title="Visual Plan Tree Diagram"
-                  centered
-                  visible={vpVisible}
-                  width={window.innerWidth}
-                  onCancel={openVisualPlan}
-                  footer={null}
+              {data.visual_plan ? (
+                <Descriptions.Item
+                  span={2}
+                  label={
+                    <Space size="middle" onClick={toggleVisualPlan}>
+                      <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
+                    </Space>
+                  }
                 >
-                  <TreeDiagram data={JSON.parse(data.visual_plan).main} />
-                </Modal>
-              </Descriptions.Item>
+                  <Modal
+                    title="Visual Plan Tree Diagram"
+                    centered
+                    visible={isVpVisible}
+                    width={window.innerWidth}
+                    onCancel={toggleVisualPlan}
+                    footer={null}
+                  >
+                    <TreeDiagramView
+                      data={JSON.parse(data.visual_plan).main}
+                      showMinimap={true}
+                    />
+                  </Modal>
+                </Descriptions.Item>
+              ) : null}
             </Descriptions>
 
             <DetailTabs data={data} query={query} />

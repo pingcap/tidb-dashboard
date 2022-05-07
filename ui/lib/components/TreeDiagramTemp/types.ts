@@ -1,15 +1,7 @@
-import { AnyPtrRecord } from 'dns'
-import { ReactElement } from 'react-markdown/lib/react-markdown'
-
 export interface Translate {
   x: number
   y: number
   k: number
-}
-
-export interface nodeMarginType {
-  siblingMargin: number
-  childrenMargin: number
 }
 
 // Raw node data get from /api/slow_query/detail.
@@ -41,7 +33,7 @@ export interface TreeNodeDatum extends RawNodeDatum {
   }
 }
 
-export interface TreeDiagramProps {
+export interface TreeProps {
   /**
    * The root node object, in which child nodes (also of type `RawNodeDatum`)
    * are recursively defined in the `children` key.
@@ -94,21 +86,12 @@ export interface TreeDiagramProps {
   /**
    * Margins between slibings and children.
    */
-  nodeMargin?: nodeMarginType
-
+  nodeMargin?: {
+    siblingMargin: number
+    childrenMargin: number
+  }
   /**
    * The ration of minimap and main chart.
    */
-  minimapScale?: number
-
-  /**
-   * Indicate whether show a minimap for the main chart or not.
-   */
-  showMinimap?: boolean
-
-  customNodeElement: any
-
-  customLinkElement: any
-
-  translate: Translate
+  minimapScale: number
 }

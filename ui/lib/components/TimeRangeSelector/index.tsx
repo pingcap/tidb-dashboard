@@ -10,22 +10,24 @@ import { useTranslation } from 'react-i18next'
 import styles from './index.module.less'
 import { useChange } from '@lib/utils/useChange'
 import { useMemoizedFn } from 'ahooks'
+import { WithZoomOut } from './WithZoomOut'
 
 const { RangePicker } = DatePicker
 
+// These presets are aligned with Grafana
 const RECENT_SECONDS = [
   5 * 60,
   15 * 60,
   30 * 60,
   60 * 60,
-  2 * 60 * 60,
+  3 * 60 * 60,
   6 * 60 * 60,
   12 * 60 * 60,
   24 * 60 * 60,
   2 * 24 * 60 * 60,
   7 * 24 * 60 * 60,
-  14 * 24 * 60 * 60,
-  28 * 24 * 60 * 60,
+  30 * 24 * 60 * 60,
+  90 * 24 * 60 * 60,
 ]
 
 export const DEFAULT_TIME_RANGE: TimeRange = {
@@ -33,29 +35,49 @@ export const DEFAULT_TIME_RANGE: TimeRange = {
   value: 30 * 60,
 }
 
-interface RecentSecTime {
+export interface RelativeTimeRange {
   type: 'recent'
   value: number // unit: seconds
 }
 
-interface RangeTime {
+export interface AbsoluteTimeRange {
   type: 'absolute'
-  value: [number, number] // unit: seconds
+  value: TimeRangeValue // unit: seconds
 }
 
-export type TimeRange = RecentSecTime | RangeTime
+export type TimeRangeValue = [minSecond: number, maxSecond: number]
 
-export function calcTimeRange(timeRange?: TimeRange): [number, number] {
+export type TimeRange = RelativeTimeRange | AbsoluteTimeRange
+
+export function toTimeRangeValue(timeRange?: TimeRange): TimeRangeValue {
   let t2 = timeRange ?? DEFAULT_TIME_RANGE
   if (t2.type === 'absolute') {
-    return t2.value
+    return [...t2.value]
   } else {
     const now = dayjs().unix()
     return [now - t2.value, now]
   }
 }
 
-// Maybe JSON.stringify() is enough
+export function fromTimeRangeValue(v: TimeRangeValue): AbsoluteTimeRange {
+  return {
+    type: 'absolute',
+    value: [...v],
+  }
+}
+
+/**
+ * @deprecated
+ */
+// TODO: Compatibility alias. To be removed.
+export function calcTimeRange(timeRange?: TimeRange): TimeRangeValue {
+  return toTimeRangeValue(timeRange)
+}
+
+/**
+ * @deprecated
+ */
+// TODO: JSON.stringify() is enough. To be removed.
 export function stringifyTimeRange(timeRange?: TimeRange): string {
   let t2 = timeRange ?? DEFAULT_TIME_RANGE
   if (t2.type === 'absolute') {
@@ -69,16 +91,12 @@ export interface ITimeRangeSelectorProps {
   value?: TimeRange
   onChange?: (val: TimeRange) => void
   disabled?: boolean
-  disabledDate?: (currentDate: Dayjs) => boolean
-  onVisibleChange?: (visible: boolean) => void
 }
 
 function TimeRangeSelector({
   value,
   onChange,
   disabled = false,
-  disabledDate = () => false,
-  onVisibleChange,
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -154,7 +172,6 @@ function TimeRangeSelector({
             format="YYYY-MM-DD HH:mm:ss"
             value={rangePickerValue}
             onChange={handleRangePickerChange}
-            disabledDate={disabledDate}
           />
         </div>
       </div>
@@ -166,10 +183,7 @@ function TimeRangeSelector({
       overlay={dropdownContent}
       trigger={['click']}
       visible={dropdownVisible}
-      onVisibleChange={(visible) => {
-        setDropdownVisible(visible)
-        onVisibleChange?.(visible)
-      }}
+      onVisibleChange={setDropdownVisible}
       disabled={disabled}
     >
       <Button icon={<ClockCircleOutlined />} data-e2e="timerange-selector">
@@ -193,4 +207,8 @@ function TimeRangeSelector({
   )
 }
 
-export default React.memo(TimeRangeSelector)
+const c = Object.assign(React.memo(TimeRangeSelector), {
+  WithZoomOut: React.memo(WithZoomOut),
+})
+
+export default c

@@ -1,29 +1,40 @@
-import 'echarts/lib/chart/bar'
-import 'echarts/lib/chart/line'
-import 'echarts/lib/component/grid'
-import 'echarts/lib/component/legend'
-import 'echarts/lib/component/tooltip'
-
 import { Space } from 'antd'
-import dayjs from 'dayjs'
-import ReactEchartsCore from 'echarts-for-react/lib/core'
-import echarts from 'echarts/lib/echarts'
 import _ from 'lodash'
-import React, { useMemo, useRef } from 'react'
-import { useInterval } from 'react-use'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import format from 'string-template'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-
-import client from '@lib/client'
-import { AnimatedSkeleton, Card } from '@lib/components'
-import { useBatchClientRequest } from '@lib/utils/useClientRequest'
+import client, { ErrorStrategy } from '@lib/client'
+import { AnimatedSkeleton } from '@lib/components'
 import ErrorBar from '../ErrorBar'
 import { addTranslationResource } from '@lib/utils/i18n'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import {
+  Axis,
+  BrushEvent,
+  Chart,
+  LineSeries,
+  Position,
+  ScaleType,
+  Settings,
+} from '@elastic/charts'
+import { GraphType, QueryData, renderQueryData } from './seriesRenderer'
+import {
+  alignRange,
+  DEFAULT_CHART_SETTINGS,
+  timeTickFormatter,
+  useChartHandle,
+} from '@lib/utils/charts'
+import { useChange } from '@lib/utils/useChange'
+import { TimeRangeValue } from '../TimeRangeSelector'
+import {
+  processRawData,
+  PromMatrixData,
+  QueryOptions,
+  resolveQueryTemplate,
+} from '@lib/utils/prometheus'
 
-export type GraphType = 'bar' | 'line'
+export type { GraphType }
 
 const translations = {
   en: {
@@ -61,212 +72,168 @@ for (const key in translations) {
   addTranslationResource(key, translations[key])
 }
 
-export interface ISeries {
+export interface IQueryOption {
   query: string
   name: string
+  color?: string
 }
 
 export interface IMetricChartProps {
-  title: React.ReactNode
+  // When object ref changed, there will be a data reload.
+  range: TimeRangeValue
 
-  series: ISeries[]
-  // stepSec: number
-  // beginTimeSec: number
-  // endTimeSec: number
+  queries: IQueryOption[]
   unit: string
   type: GraphType
+
+  height?: number
+
+  onRangeChange?: (newRange: TimeRangeValue) => void
+  onLoadingStateChange?: (isLoading: boolean) => void
 }
 
-const HEIGHT = 250
-
-function getSeriesProps(type: GraphType) {
-  if (type === 'bar') {
-    return {
-      stack: 'bar_stack',
-    }
-  } else if (type === 'line') {
-    return {
-      showSymbol: false,
-    }
+type Data = {
+  meta: {
+    queryOptions: QueryOptions
   }
-}
-
-// FIXME
-function getTimeParams() {
-  return {
-    beginTimeSec: Math.floor((Date.now() - 60 * 60 * 1000) / 1000),
-    endTimeSec: Math.floor(Date.now() / 1000),
-  }
+  values: QueryData[]
 }
 
 export default function MetricChart({
-  title,
-  series,
-  // stepSec,
-  // beginTimeSec,
-  // endTimeSec,
+  queries,
+  range,
   unit,
   type,
+  height = 250,
+  onRangeChange,
+  onLoadingStateChange,
 }: IMetricChartProps) {
-  const timeParams = useRef(getTimeParams())
-  const { t } = useTranslation()
+  const chartContainerRef = useRef<HTMLDivElement>(null)
+  const [chartHandle] = useChartHandle(chartContainerRef, 150)
+  const [isLoading, setLoading] = useState(false)
+  const [data, setData] = useState<Data | null>(null)
+  const [error, setError] = useState<any>(null)
 
-  const { isLoading, data, error, sendRequest } = useBatchClientRequest(
-    series.map(
-      (s) => (reqConfig) =>
-        client
+  useChange(() => {
+    onLoadingStateChange?.(isLoading)
+  }, [isLoading])
+
+  useChange(() => {
+    const interval = chartHandle.calcIntervalSec(range)
+    const rangeSnapshot = alignRange(range, interval) // Align the range according to calculated interval
+    const queryOptions: QueryOptions = {
+      start: rangeSnapshot[0],
+      end: rangeSnapshot[1],
+      step: interval,
+    }
+
+    async function queryMetric(
+      queryTemplate: string,
+      fillIdx: number,
+      fillInto: (PromMatrixData | null)[]
+    ) {
+      const query = resolveQueryTemplate(queryTemplate, queryOptions)
+      try {
+        const resp = await client
           .getInstance()
           .metricsQueryGet(
-            timeParams.current.endTimeSec,
-            s.query,
-            timeParams.current.beginTimeSec,
-            30,
-            reqConfig
+            queryOptions.end,
+            query,
+            queryOptions.start,
+            queryOptions.step,
+            {
+              errorStrategy: ErrorStrategy.Custom,
+            }
           )
-    )
-  )
-
-  const update = () => {
-    timeParams.current = getTimeParams()
-    sendRequest()
-  }
-
-  useInterval(update, 60 * 1000)
-
-  const valueFormatter = useMemo(() => getValueFormat(unit), [unit])
-
-  const opt = useMemo(() => {
-    const s: any[] = []
-    data.forEach((dataBySeries, seriesIdx) => {
-      if (!dataBySeries) {
-        return
+        let data: PromMatrixData | null = null
+        if (resp.data.status === 'success') {
+          data = resp.data.data as any
+          if (data?.resultType !== 'matrix') {
+            // unsupported
+            data = null
+          }
+        }
+        fillInto[fillIdx] = data
+      } catch (e) {
+        fillInto[fillIdx] = null
+        setError((existingErr) => existingErr || e)
       }
-      if (dataBySeries.status !== 'success') {
-        return
+    }
+
+    async function queryAllMetrics() {
+      setLoading(true)
+      setError(null)
+      const dataSets: (PromMatrixData | null)[] = []
+      try {
+        await Promise.all(
+          queries.map((q, idx) => queryMetric(q.query, idx, dataSets))
+        )
+      } finally {
+        setLoading(false)
       }
-      const r = (dataBySeries.data as any)?.result
-      if (!r) {
-        return
-      }
-      r.forEach((rData) => {
-        s.push({
-          name: format(series[seriesIdx].name, rData.metric),
-          data:
-            rData.values.map(([ts, value]) => {
-              return [ts * 1000, value]
-            }) ?? [],
-          type,
-          ...getSeriesProps(type),
+
+      // Transform response into data
+      const sd: QueryData[] = []
+      dataSets.forEach((data, queryIdx) => {
+        if (!data) {
+          return
+        }
+        data.result.forEach((promResult, seriesIdx) => {
+          const data = processRawData(promResult, queryOptions)
+          if (data === null) {
+            return
+          }
+          sd.push({
+            id: `${queryIdx}_${seriesIdx}`,
+            name: format(queries[queryIdx].name, promResult.metric),
+            data,
+            color: queries[queryIdx].color,
+          })
         })
       })
-    })
-
-    return {
-      xAxis: {
-        type: 'time',
-        splitLine: {
-          show: true,
+      setData({
+        meta: {
+          queryOptions,
         },
-        minorSplitLine: {
-          show: true,
-        },
-        splitNumber: 10,
-        boundaryGap: false,
-        axisLabel: {
-          formatter: (v) => {
-            return dayjs(v).format('HH:mm')
-          },
-          showMinLabel: false,
-          showMaxLabel: false,
-        },
-        axisLine: {
-          lineStyle: {
-            width: 0,
-          },
-        },
-        axisTick: {
-          lineStyle: {
-            width: 0,
-          },
-        },
-      },
-      legend: {
-        orient: 'horizontal',
-        x: 'left', // 'center' | 'left' | {number},
-        y: 'bottom',
-      },
-      yAxis: {
-        type: 'value',
-        axisLabel: {
-          formatter: (v) => {
-            return valueFormatter(v, 1)
-          },
-        },
-        splitLine: {
-          show: true,
-        },
-        axisLine: {
-          lineStyle: {
-            width: 0,
-          },
-        },
-        axisTick: {
-          lineStyle: {
-            width: 0,
-          },
-        },
-      },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'line',
-          animation: false,
-          snap: true,
-        },
-        formatter: (series) => {
-          let tooltip = ''
-
-          const title = dayjs(series[0].axisValue).format('YYYY-MM-DD HH:mm:ss')
-          tooltip += `<div>${title}</div>`
-
-          series.forEach((s) => {
-            tooltip += `<div>${s.marker} ${s.seriesName}: ${valueFormatter(
-              s.value[1],
-              1
-            )}</div>`
-          })
-
-          return tooltip
-        },
-      },
-      animation: false,
-      grid: {
-        top: 10,
-        left: 10,
-        right: 0,
-        bottom: 60,
-        containLabel: true,
-      },
-      series: s,
+        values: sd,
+      })
     }
-  }, [data, valueFormatter, series, type])
 
-  const showSkeleton = isLoading && _.every(data, (d) => d === null)
+    queryAllMetrics()
+  }, [range])
+
+  const handleBrushEnd = useCallback(
+    (ev: BrushEvent) => {
+      if (!ev.x) {
+        return
+      }
+      const timeRange: TimeRangeValue = [
+        Math.floor((ev.x[0] as number) / 1000),
+        Math.floor((ev.x[1] as number) / 1000),
+      ]
+      onRangeChange?.(alignRange(timeRange))
+    },
+    [onRangeChange]
+  )
+
+  const { t } = useTranslation()
+
+  const hasMetricData = useMemo(() => {
+    return (
+      (data?.values.length ?? 0) > 0 &&
+      _.some(data?.values ?? [], (ds) => ds !== null)
+    )
+  }, [data])
+  const showSkeleton = isLoading && !hasMetricData
 
   let inner
-
   if (showSkeleton) {
     inner = null
-  } else if (
-    _.every(
-      _.zip(data, error),
-      ([data, err]) => err || !data || data?.status !== 'success'
-    )
-  ) {
+  } else if (!hasMetricData && error) {
     inner = (
-      <div style={{ height: HEIGHT }}>
+      <div style={{ height }}>
         <Space direction="vertical">
-          <ErrorBar errors={error} />
+          <ErrorBar errors={[error]} />
           <Link to="/user_profile?blink=profile.prometheus">
             {t('components.metricChart.changePromButton')}
           </Link>
@@ -275,30 +242,48 @@ export default function MetricChart({
     )
   } else {
     inner = (
-      <ReactEchartsCore
-        echarts={echarts}
-        lazyUpdate={true}
-        style={{ height: HEIGHT }}
-        option={opt}
-        theme={'light'}
-      />
+      <Chart size={{ height }}>
+        <Settings
+          {...DEFAULT_CHART_SETTINGS}
+          legendPosition={Position.Right}
+          legendSize={150}
+          onBrushEnd={handleBrushEnd}
+        />
+        <Axis
+          id="bottom"
+          position={Position.Bottom}
+          showOverlappingTicks
+          tickFormat={timeTickFormatter(range)}
+        />
+        <Axis
+          id="left"
+          position={Position.Left}
+          showOverlappingTicks
+          tickFormat={(v) => getValueFormat(unit)(v, 2)}
+          ticks={5}
+        />
+        {data?.values.map((qd) => renderQueryData(type, qd))}
+        {data && (
+          <LineSeries // An empty series to avoid "no data" notice
+            id="_placeholder"
+            xScaleType={ScaleType.Time}
+            yScaleType={ScaleType.Linear}
+            xAccessor={0}
+            yAccessors={[1]}
+            hideInLegend
+            data={[
+              [data.meta.queryOptions.start * 1000, null],
+              [data.meta.queryOptions.end * 1000, null],
+            ]}
+          />
+        )}
+      </Chart>
     )
   }
 
-  const subTitle = (
-    <Space>
-      <a onClick={update}>
-        <ReloadOutlined />
-      </a>
-      {isLoading ? <LoadingOutlined /> : null}
-    </Space>
-  )
-
   return (
-    <Card title={title} subTitle={subTitle}>
-      <AnimatedSkeleton showSkeleton={showSkeleton} style={{ height: HEIGHT }}>
-        {inner}
-      </AnimatedSkeleton>
-    </Card>
+    <AnimatedSkeleton showSkeleton={showSkeleton} style={{ height }}>
+      <div ref={chartContainerRef}>{inner}</div>
+    </AnimatedSkeleton>
   )
 }

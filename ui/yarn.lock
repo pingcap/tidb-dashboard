@@ -1906,12 +1906,13 @@
   dependencies:
     open "7.2.0"
 
-"@elastic/charts@^46.0.1":
-  version "46.0.1"
-  resolved "https://registry.yarnpkg.com/@elastic/charts/-/charts-46.0.1.tgz#2d3bd3de9e4f294ddd9d9969dca1dc1ed5c6f278"
-  integrity sha512-CWiyEHaxEk9zKOPOm4ISyAluXSxu6pqLdG+ARBu4jQx0t1ROe93vssICHq6JIrQdiMHn44pleQnWZzKzanZtDw==
+"@elastic/charts@^46.1.0":
+  version "46.1.0"
+  resolved "https://registry.yarnpkg.com/@elastic/charts/-/charts-46.1.0.tgz#9cfb2963da7198f0104a88deb3c542712c1aa81c"
+  integrity sha512-UZZxc52hWvu1HhD3/82fTobU6NAfMMJJ7hV9yPyt8YLR8nVWO4Dfc0Rmm8k4bWNKWlOoQyiiaemd0IDbSpBcIw==
   dependencies:
     "@popperjs/core" "^2.4.0"
+    bezier-easing "^2.1.0"
     chroma-js "^2.1.0"
     classnames "^2.2.6"
     d3-array "^1.2.4"
@@ -3523,6 +3524,11 @@ bcryptjs@^2.3.0:
   version "2.4.3"
   resolved "https://registry.yarnpkg.com/bcryptjs/-/bcryptjs-2.4.3.tgz#9ab5627b93e60621ff7cdac5da9733027df1d0cb"
   integrity sha1-mrVie5PmBiH/fNrF2pczAn3x0Ms=
+
+bezier-easing@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/bezier-easing/-/bezier-easing-2.1.0.tgz#c04dfe8b926d6ecaca1813d69ff179b7c2025d86"
+  integrity sha1-wE3+i5JtbsrKGBPWn/F5t8ICXYY=
 
 big.js@^5.2.2:
   version "5.2.2"
@@ -5405,21 +5411,6 @@ ecc-jsbn@~0.1.1:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
 
-echarts-for-react@^2.0.16:
-  version "2.0.16"
-  resolved "https://registry.yarnpkg.com/echarts-for-react/-/echarts-for-react-2.0.16.tgz#8134a53dff90882c1e6a95c45ceab21e00f6c9f5"
-  integrity sha512-VmHCktay2qKt/+wpL/C7thbvIa7dYBEey0/U4Zaqo+qeA4wx+uiCd5NeCsPIhD/0Pv+2qqNswqiNiUCtcgccOw==
-  dependencies:
-    fast-deep-equal "^2.0.1"
-    size-sensor "^1.0.0"
-
-echarts@^4.8.0:
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/echarts/-/echarts-4.8.0.tgz#b2c1cfb9229b13d368ee104fc8eea600b574d4c4"
-  integrity sha512-YwShpug8fWngj/RlgxDaYrLBoD+LsZUArrusjNPHpAF+is+gGe38xx4W848AwWMGoi745t3OXM52JedNrv+F6g==
-  dependencies:
-    zrender "4.3.1"
-
 ee-first@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
@@ -6221,11 +6212,6 @@ fancy-log@^1.3.2, fancy-log@^1.3.3:
     color-support "^1.1.3"
     parse-node-version "^1.0.0"
     time-stamp "^1.0.0"
-
-fast-deep-equal@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
-  integrity sha1-ewUhjd+WZ79/Nwv3/bLLFf3Qqkk=
 
 fast-deep-equal@^3.1.1:
   version "3.1.1"
@@ -11444,11 +11430,6 @@ single-spa@^5.9.2:
   resolved "https://registry.npm.taobao.org/single-spa/download/single-spa-5.9.2.tgz#4bb9a6eb6c90e3198b1549d8cdeb03241401b15b"
   integrity sha1-S7mm62yQ4xmLFUnYzesDJBQBsVs=
 
-size-sensor@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/size-sensor/-/size-sensor-1.0.1.tgz#f84e46206d3e259faff1d548e4b3beca93219dbb"
-  integrity sha512-QTy7MnuugCFXIedXRpUSk9gUnyNiaxIdxGfUjr8xxXOqIB3QvBUYP9+b51oCg2C4dnhaeNk/h57TxjbvoJrJUA==
-
 slash@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
@@ -13059,8 +13040,3 @@ yauzl@^2.10.0:
   dependencies:
     buffer-crc32 "~0.2.3"
     fd-slicer "~1.1.0"
-
-zrender@4.3.1:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/zrender/-/zrender-4.3.1.tgz#baf8aa6dc8187a2f819692d7d5f9bedfa2b90fa3"
-  integrity sha512-CeH2TpJeCdG0TAGYoPSAcFX2ogdug1K7LIn9UO/q9HWqQ54gWhrMAlDP9AwWYMUDhrPe4VeazQ4DW3msD96nUQ==

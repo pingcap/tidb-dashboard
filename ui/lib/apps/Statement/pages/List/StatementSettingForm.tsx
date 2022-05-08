@@ -60,7 +60,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         }
       }
 
-      if (!values.enable) {
+      if (!values.enable && (initialConfig?.enable ?? true)) {
         // warning
         Modal.confirm({
           title: t('statement.settings.close_statement'),
@@ -75,7 +75,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated]
+    [t, onClose, onConfigUpdated, initialConfig]
   )
 
   return (

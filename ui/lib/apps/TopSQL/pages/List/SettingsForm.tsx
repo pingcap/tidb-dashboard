@@ -1,6 +1,9 @@
 import React, { useState, useCallback } from 'react'
 import { Form, Skeleton, Switch, Space, Button, Modal } from 'antd'
-import { ExclamationCircleOutlined } from '@ant-design/icons'
+import {
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { TopsqlEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -38,12 +41,19 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
           telemetry.saveSettings(newConfig)
           onClose()
           onConfigUpdated()
+
+          if (values.enable && !initialConfig?.enable) {
+            Modal.success({
+              title: t('topsql.settings.enable_info.title'),
+              content: t('topsql.settings.enable_info.content'),
+            })
+          }
         } finally {
           setSubmitting(false)
         }
       }
 
-      if (!values.enable) {
+      if (!values.enable && (initialConfig?.enable ?? true)) {
         // warning
         Modal.confirm({
           title: t('topsql.settings.disable_feature'),
@@ -58,7 +68,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated]
+    [t, onClose, onConfigUpdated, initialConfig]
   )
 
   return (

@@ -78,6 +78,82 @@ function Latency(props: IChartProps) {
   )
 }
 
+function CPU(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>{t('overview.metrics.cpu')}</Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query:
+              '100 - avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[$__rate_interval]) ) * 100',
+            name: '{instance}',
+          },
+        ]}
+        yDomain={{ min: 0, max: 100 }}
+        unit="percent"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+function Memory(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.memory')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query: `100 - (
+              avg_over_time(node_memory_MemAvailable_bytes[$__rate_interval]) or
+                (
+                  avg_over_time(node_memory_Buffers_bytes[$__rate_interval]) +
+                  avg_over_time(node_memory_Cached_bytes[$__rate_interval]) +
+                  avg_over_time(node_memory_MemFree_bytes[$__rate_interval]) +
+                  avg_over_time(node_memory_Slab_bytes[$__rate_interval])
+                )
+              ) /
+              avg_over_time(node_memory_MemTotal_bytes[$__rate_interval]) * 100`,
+            name: '{instance}',
+          },
+        ]}
+        yDomain={{ min: 0, max: 100 }}
+        unit="percent"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+function IO(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>{t('overview.metrics.io')}</Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query:
+              'irate(node_disk_io_time_seconds_total[$__rate_interval]) * 100',
+            name: '{instance} - {device}',
+          },
+        ]}
+        yDomain={{ min: 0, max: 100 }}
+        unit="percent"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
 export default function Metrics() {
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
   const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
@@ -86,6 +162,15 @@ export default function Metrics() {
   const isSomeLoading = useMemo(() => {
     return some(Object.values(isLoading))
   }, [isLoading])
+
+  function metricProps(id: string): IChartProps {
+    return {
+      range: chartRange,
+      onRangeChange: setChartRange,
+      onLoadingStateChange: (loading) =>
+        setIsLoading((v) => ({ ...v, [id]: loading })),
+    }
+  }
 
   return (
     <>
@@ -105,20 +190,11 @@ export default function Metrics() {
         </Toolbar>
       </Card>
       <Stack tokens={{ childrenGap: 16 }}>
-        <QPS
-          range={chartRange}
-          onRangeChange={setChartRange}
-          onLoadingStateChange={(loading) =>
-            setIsLoading((v) => ({ ...v, qps: loading }))
-          }
-        />
-        <Latency
-          range={chartRange}
-          onRangeChange={setChartRange}
-          onLoadingStateChange={(loading) =>
-            setIsLoading((v) => ({ ...v, latency: loading }))
-          }
-        />
+        <QPS {...metricProps('qps')} />
+        <Latency {...metricProps('latency')} />
+        <CPU {...metricProps('cpu')} />
+        <Memory {...metricProps('memory')} />
+        <IO {...metricProps('io')} />
       </Stack>
     </>
   )

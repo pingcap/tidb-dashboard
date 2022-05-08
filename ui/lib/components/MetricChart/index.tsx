@@ -13,6 +13,7 @@ import {
   Axis,
   BrushEvent,
   Chart,
+  DomainRange,
   LineSeries,
   Position,
   ScaleType,
@@ -82,6 +83,7 @@ export interface IMetricChartProps {
   // When object ref changed, there will be a data reload.
   range: TimeRangeValue
 
+  yDomain?: DomainRange
   queries: IQueryOption[]
   unit: string
   type: GraphType
@@ -102,9 +104,10 @@ type Data = {
 export default function MetricChart({
   queries,
   range,
+  yDomain,
   unit,
   type,
-  height = 250,
+  height = 200,
   onRangeChange,
   onLoadingStateChange,
 }: IMetricChartProps) {
@@ -261,6 +264,7 @@ export default function MetricChart({
           showOverlappingTicks
           tickFormat={(v) => getValueFormat(unit)(v, 2)}
           ticks={5}
+          domain={yDomain}
         />
         {data?.values.map((qd) => renderQueryData(type, qd))}
         {data && (

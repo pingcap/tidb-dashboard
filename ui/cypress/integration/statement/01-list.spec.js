@@ -583,27 +583,46 @@ describe('SQL statements list page', () => {
         })
     })
 
-    const siwtchStatement = (isEnabled) => {
+    const switchStatement = (isCurrentlyEnabled) => {
       cy.get('[data-e2e=statement_setting]')
         .click()
         .then(() => {
           cy.get('.ant-drawer-content').should('exist')
           cy.get('[data-e2e=statemen_enbale_switcher]')
             // the current of switcher is isEnabled
-            .should('have.attr', 'aria-checked', isEnabled)
+            .should('have.attr', 'aria-checked', isCurrentlyEnabled)
             .click()
           cy.get('[data-e2e=submit_btn]').click()
         })
     }
 
     it('Disable statement feature', () => {
-      siwtchStatement('true')
+      switchStatement('true')
+      cy.contains('Current statement history will be cleared.')
       cy.get('.ant-modal-confirm-btns').find('.ant-btn-dangerous').click()
       cy.get('[data-e2e=statements_table]').should('not.exist')
     })
 
+    it.only('Save again when statement feature is disabled', () => {
+      switchStatement('true')
+      cy.contains('Current statement history will be cleared.')
+      cy.get('.ant-modal-confirm-btns').find('.ant-btn-dangerous').click()
+      cy.get('[data-e2e=statements_table]').should('not.exist')
+
+      cy.get('[data-e2e=statement_setting]')
+        .click()
+        .then(() => {
+          cy.get('.ant-drawer-content').should('exist')
+          cy.get('[data-e2e=submit_btn]').click()
+        })
+      cy.wait(500)
+      cy.contains('Current statement history will be cleared.').should(
+        'not.exist'
+      )
+    })
+
     it('Enable statement feature', () => {
-      siwtchStatement('false')
+      switchStatement('false')
       cy.get('[data-e2e=statements_table]').should('exist')
     })
 

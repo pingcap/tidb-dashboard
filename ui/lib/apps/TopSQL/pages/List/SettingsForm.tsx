@@ -1,9 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { Form, Skeleton, Switch, Space, Button, Modal } from 'antd'
-import {
-  CheckCircleOutlined,
-  ExclamationCircleOutlined,
-} from '@ant-design/icons'
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { TopsqlEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'

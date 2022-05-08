@@ -3,10 +3,10 @@ import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import client, { ErrorStrategy, StatementModel } from '@lib/client'
 import {
-  calcTimeRange,
   DEFAULT_TIME_RANGE,
   IColumnKeys,
   TimeRange,
+  toTimeRangeValue,
 } from '@lib/components'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { CacheMgr } from '@lib/utils/useCache'
@@ -234,7 +234,7 @@ export default function useStatementTableController({
       const requestBeginAt = performance.now()
       setDataLoading(true)
 
-      const timeRange = calcTimeRange(queryOptions.timeRange)
+      const timeRange = toTimeRangeValue(queryOptions.timeRange)
 
       try {
         const res = await client

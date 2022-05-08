@@ -78,8 +78,7 @@ const KeyViz = () => {
   const [chartState, setChartState] = useState<ChartState>()
   const [getSelection, setSelection] = useGetSet<HeatmapRange | null>(null)
   const [isLoading, setLoading] = useState(true)
-  const [getAutoRefreshSeconds, setAutoRefreshSeconds] = useGetSet(0)
-  const [getRemainingRefreshSeconds, setRemainingRefreshSeconds] = useGetSet(0)
+  const [autoRefreshSeconds, setAutoRefreshSeconds] = useState(0)
   const [getOnBrush, setOnBrush] = useGetSet(false)
   const [getDateRange, setDateRange] = useGetSet(3600 * 6)
   const [getBrightLevel, setBrightLevel] = useGetSet(1)
@@ -98,10 +97,6 @@ const KeyViz = () => {
       setLoading(true)
       const resp = await client.getInstance().keyvisualConfigGet()
       const config = resp.data
-      const enabled = config?.auto_collection_disabled !== true
-      if (!enabled) {
-        setAutoRefreshSeconds(0)
-      }
       setConfig(config)
     } finally {
       setLoading(false)
@@ -111,10 +106,6 @@ const KeyViz = () => {
   useMount(updateServiceStatus)
 
   const updateHeatmap = useMemoizedFn(async () => {
-    if (getAutoRefreshSeconds() > 0) {
-      setRemainingRefreshSeconds(getAutoRefreshSeconds())
-    }
-
     try {
       setLoading(true)
       setOnBrush(false)
@@ -168,11 +159,11 @@ const KeyViz = () => {
   })
 
   useChange(() => {
-    if (getAutoRefreshSeconds() > 0) {
+    if (autoRefreshSeconds > 0) {
       onResetZoom()
       setOnBrush(false)
     }
-  }, [getAutoRefreshSeconds()])
+  }, [autoRefreshSeconds])
 
   useChange(() => {
     if (enabled) {
@@ -214,14 +205,12 @@ const KeyViz = () => {
         brightLevel={getBrightLevel()}
         onToggleBrush={onToggleBrush}
         onResetZoom={onResetZoom}
-        autoRefreshSeconds={getAutoRefreshSeconds()}
-        remainingRefreshSeconds={getRemainingRefreshSeconds()}
+        autoRefreshSeconds={autoRefreshSeconds}
         isOnBrush={getOnBrush()}
         onChangeBrightLevel={onChangeBrightLevel}
         onChangeMetric={setMetricType}
         onChangeDateRange={onChangeDateRange}
         onChangeAutoRefresh={setAutoRefreshSeconds}
-        onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}
         onRefresh={updateHeatmap}
         onShowSettings={openSettings}
       />

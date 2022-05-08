@@ -18,6 +18,9 @@ topsql:
       save: 保存
       close: 确认
       cancel: 取消
+    enable_info:
+      title: 成功
+      content: Top SQL 功能现在已启用，正在收集数据。您需要等待大约 1 分钟时间以便看到该数据。
   refresh: 刷新
   chart:
     cpu_time: CPU 耗时

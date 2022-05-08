@@ -29,6 +29,10 @@ describe('Statement detail page E2E test', () => {
       'statements_plan_detail'
     )
 
+    cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+      'statements_list'
+    )
+    cy.wait('@statements_list')
     cy.get('[data-automation-key=plan_count]').contains(2).eq(0).click()
   })
 

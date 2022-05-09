@@ -13,12 +13,12 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { StatementEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { ErrorBar } from '@lib/components'
+import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 
 interface Props {
-  onClose: () => void
-  onConfigUpdated: () => any
+  onClose?: () => void
+  onConfigUpdated?: () => any
 }
 
 const convertArrToObj = (arr: number[]) =>
@@ -53,14 +53,14 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         try {
           setSubmitting(true)
           await client.getInstance().statementsConfigPost(newConfig)
-          onClose()
-          onConfigUpdated()
+          onClose?.()
+          onConfigUpdated?.()
         } finally {
           setSubmitting(false)
         }
       }
 
-      if (!values.enable) {
+      if (!values.enable && (initialConfig?.enable ?? true)) {
         // warning
         Modal.confirm({
           title: t('statement.settings.close_statement'),
@@ -75,7 +75,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated]
+    [t, onClose, onConfigUpdated, initialConfig]
   )
 
   return (
@@ -99,7 +99,10 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
             extra={t('statement.settings.switch_tooltip')}
           >
             <Form.Item noStyle name="enable" valuePropName="checked">
-              <Switch disabled={!isWriteable} />
+              <Switch
+                disabled={!isWriteable}
+                data-e2e="statemen_enbale_switcher"
+              />
             </Form.Item>
           </Form.Item>
           <Form.Item
@@ -112,6 +115,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     label={t('statement.settings.max_size')}
                     extra={t('statement.settings.max_size_tooltip')}
+                    data-e2e="statement_setting_max_size"
                   >
                     <Input.Group>
                       <Form.Item noStyle name="max_size">
@@ -128,6 +132,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     label={t('statement.settings.refresh_interval')}
                     extra={t('statement.settings.refresh_interval_tooltip')}
+                    data-e2e="statement_setting_refresh_interval"
                   >
                     <Input.Group>
                       <Form.Item noStyle name="refresh_interval">
@@ -144,6 +149,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     label={t('statement.settings.history_size')}
                     extra={t('statement.settings.history_size_tooltip')}
+                    data-e2e="statement_setting_history_size"
                   >
                     <Input.Group>
                       <Form.Item noStyle name="history_size">
@@ -163,6 +169,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                       prev.refresh_interval !== cur.refresh_interval ||
                       prev.history_size !== cur.history_size
                     }
+                    data-e2e="statement_setting_keep_duration"
                   >
                     {({ getFieldValue }) => {
                       const refreshInterval =
@@ -180,6 +187,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                     extra={t('statement.settings.internal_query_tooltip')}
                     name="internal_query"
                     valuePropName="checked"
+                    data-e2e="statement_setting_internal_query"
                   >
                     <Switch disabled={!isWriteable} />
                   </Form.Item>
@@ -187,13 +195,14 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
               )
             }
           </Form.Item>
-          <Form.Item>
+          <DrawerFooter>
             <Space>
               <Button
                 type="primary"
                 htmlType="submit"
                 loading={submitting}
                 disabled={!isWriteable}
+                data-e2e="submit_btn"
               >
                 {t('statement.settings.actions.save')}
               </Button>
@@ -201,7 +210,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                 {t('statement.settings.actions.cancel')}
               </Button>
             </Space>
-          </Form.Item>
+          </DrawerFooter>
         </Form>
       )}
     </>

@@ -56,13 +56,11 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
           theme={theme}
           legendPosition={Position.Bottom}
           onBrushEnd={onBrushEnd}
-          xDomain={
-            {
-              minInterval: wall.timeWindowSize === 1 ? 1000 : null,
-              min: wall.timeRangeTimestamp[0] * 1000,
-              max: wall.timeRangeTimestamp[1] * 1000,
-            } as DomainRange
-          }
+          xDomain={{
+            minInterval: wall.timeWindowSize * 1000,
+            min: wall.timeRangeTimestamp[0] * 1000,
+            max: wall.timeRangeTimestamp[1] * 1000,
+          }}
         />
         <Axis
           id="bottom"
@@ -77,10 +75,11 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
         />
         <Axis
           id="left"
+          title={t('topsql.chart.cpu_time')}
           position={Position.Left}
           tickFormat={(v) => getValueFormat('ms')(v, 2)}
         />
-        <BarSeries
+        <BarSeries<any>
           key="PLACEHOLDER"
           id="PLACEHOLDER"
           xScaleType={ScaleType.Time}

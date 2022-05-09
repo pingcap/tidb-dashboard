@@ -104,7 +104,7 @@ export default function ColumnsSelector({
         indeterminate={indeterminate}
         checked={checkedAll}
         onChange={handleCheckAllChange}
-        data-e2e="slow_query_schema_table_column_tile"
+        data-e2e="column_selector_title"
       >
         {t('component.columnsSelector.select')}
       </Checkbox>
@@ -112,7 +112,7 @@ export default function ColumnsSelector({
         <Button
           type="link"
           onClick={() => onChange && onChange(defaultVisibleColumnKeys)}
-          data-e2e="slow_query_schema_table_column_reset"
+          data-e2e="column_selector_reset"
         >
           {t('component.columnsSelector.reset')}
         </Button>

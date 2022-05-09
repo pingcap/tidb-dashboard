@@ -1,4 +1,4 @@
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import React, { useCallback } from 'react'
 import { CardTable, ICardTableProps } from '@lib/components'
 import DetailPage from '../pages/Detail'
@@ -25,7 +25,7 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
   } = controller
 
   const navigate = useNavigate()
-  const handleRowClick = usePersistFn(
+  const handleRowClick = useMemoizedFn(
     (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
       saveClickedItemIndex(idx)
       const qs = DetailPage.buildQuery({
@@ -53,6 +53,7 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
       onRowClicked={handleRowClick}
       clickedRowIndex={getClickedItemIndex()}
       getKey={getKey}
+      data-e2e="detail_tabs_slow_query"
     />
   )
 }

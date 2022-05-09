@@ -1,8 +1,8 @@
 import { IBaseSelectProps, BaseSelect, TextWrap } from '..'
 import { ITableWithFilterRefProps } from '../InstanceSelect/TableWithFilter'
-import React, { useMemo, useRef, useCallback, useEffect } from 'react'
+import React, { useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { usePersistFn, useControllableValue } from 'ahooks'
+import { useMemoizedFn, useControllableValue } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import SelectionWithFilter from '@lib/utils/selectionWithFilter'
 import { useShallowCompareEffect } from 'react-use'
@@ -11,6 +11,7 @@ import { Tooltip } from 'antd'
 
 import DropOverlay from './DropOverlay'
 import PlainMultiSelect from './Plain'
+import { useChange } from '@lib/utils/useChange'
 
 const translations = {
   en: {
@@ -49,7 +50,7 @@ export interface IMultiSelectProps<T>
 
 function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
   const [internalVal, setInternalVal] = useControllableValue<string[]>(props)
-  const setInternalValPersist = usePersistFn(setInternalVal)
+  const setInternalValPersist = useMemoizedFn(setInternalVal)
   const {
     items,
     filterFn,
@@ -111,14 +112,12 @@ function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
     selection.current?.resetAllSelection(internalVal ?? [])
   }, [internalVal])
 
-  useEffect(() => {
+  useChange(() => {
     selection.current?.setAllItems(items ?? [])
     // We may receive value first and then receive items. In this case, we need to re-assign
     // the selection according to value after receiving new items, so that values in newly appeared
     // items can be selected.
     selection.current?.resetAllSelection(internalVal ?? [])
-    // internalVal is not needed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items])
 
   const filterTableRef = useRef<ITableWithFilterRefProps>(null)

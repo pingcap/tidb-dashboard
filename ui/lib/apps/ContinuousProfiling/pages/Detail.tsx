@@ -3,7 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import { upperFirst } from 'lodash'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 
@@ -19,6 +19,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
+import { telemetry } from '../utils/telemetry'
 
 const COMMON_ACTIONS: string[] = ['view_flamegraph', 'view_graph', 'download']
 const TEXT_ACTIONS: string[] = ['view_text', 'download']
@@ -81,7 +82,7 @@ export default function Page() {
     return [newRows, newGroups]
   }, [groupProfileDetail])
 
-  const handleClick = usePersistFn(
+  const handleClick = useMemoizedFn(
     async (action: string, rec: ConprofProfileDetail) => {
       const { profile_type, target } = rec
       const { component, address } = target!
@@ -99,6 +100,12 @@ export default function Page() {
         return
       }
 
+      telemetry.clickAction({
+        action,
+        profile_type: rec.profile_type!,
+        component: component!,
+      })
+
       if (action === 'view_graph' || action === 'view_text') {
         const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
         window.open(profileURL, '_blank')
@@ -109,7 +116,7 @@ export default function Page() {
         // view flamegraph by speedscope
         const speedscopeTitle = `${rec.target?.component}_${rec.target?.address}_${rec.profile_type}`
         const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
-        const speedscopeURL = `${publicPathPrefix}/speedscope#profileURL=${encodeURIComponent(
+        const speedscopeURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
           profileURL
         )}&title=${speedscopeTitle}`
         window.open(speedscopeURL, '_blank')
@@ -131,6 +138,7 @@ export default function Page() {
     if (!token) {
       return
     }
+    telemetry.downloadProfilingGroupResult()
     window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
   }, [ts])
 

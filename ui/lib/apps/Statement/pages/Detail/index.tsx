@@ -22,7 +22,7 @@ import CopyLink from '@lib/components/CopyLink'
 import formatSql from '@lib/utils/sqlFormatter'
 import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
+import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 
 import { planColumns as genPlanColumns } from '../../utils/tableColumns'
 import PlanDetail from './PlanDetail'
@@ -66,9 +66,9 @@ function DetailPage() {
     })
   )
 
-  const [sqlExpanded, setSqlExpanded] = useLocalStorageState(
+  const [sqlExpanded, setSqlExpanded] = useVersionedLocalStorageState(
     STMT_DETAIL_EXPAND,
-    false
+    { defaultValue: false }
   )
   const toggleSqlExpanded = () => setSqlExpanded((prev) => !prev)
 
@@ -139,11 +139,13 @@ function DetailPage() {
                   }
                 >
                   <DateTime.Calendar
-                    unixTimestampMs={Number(query.beginTime!) * 1000}
-                  />{' '}
-                  ~{' '}
+                    unixTimestampMs={
+                      Number(plans[0].summary_begin_time!) * 1000
+                    }
+                  />
+                  {' ~ '}
                   <DateTime.Calendar
-                    unixTimestampMs={Number(query.endTime!) * 1000}
+                    unixTimestampMs={Number(plans[0].summary_end_time!) * 1000}
                   />
                 </Descriptions.Item>
                 <Descriptions.Item
@@ -168,6 +170,7 @@ function DetailPage() {
                 style={{
                   display: plans && plans.length > 1 ? 'block' : 'none',
                 }}
+                data-e2e="statement_multiple_execution_plans"
               >
                 <Alert
                   message={t(`statement.pages.detail.desc.plans.note`)}

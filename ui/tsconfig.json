@@ -2,11 +2,8 @@
   "extends": "./tsconfig.paths.json",
   "compilerOptions": {
     "target": "es6",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["cypress"],
     "allowJs": true,
     "skipLibCheck": true,
     "noImplicitAny": false,
@@ -24,10 +21,5 @@
     "jsx": "react",
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src",
-    "lib",
-    "dashboardApp",
-    "diagnoseReportApp"
-  ]
+  "include": ["src", "lib", "dashboardApp", "diagnoseReportApp", "cypress"]
 }

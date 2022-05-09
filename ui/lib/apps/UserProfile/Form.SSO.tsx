@@ -2,6 +2,7 @@ import { CheckCircleFilled } from '@ant-design/icons'
 import client, { SsoSSOImpersonationModel } from '@lib/client'
 import { AnimatedSkeleton, ErrorBar } from '@lib/components'
 import { useIsFeatureSupport, useIsWriteable } from '@lib/utils/store'
+import { useChange } from '@lib/utils/useChange'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import {
   Alert,
@@ -15,7 +16,6 @@ import {
   Typography,
 } from 'antd'
 import React from 'react'
-import { useEffect } from 'react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DEFAULT_FORM_ITEM_STYLE } from './constants'
@@ -182,16 +182,14 @@ export function SSOForm() {
   const initialForm = useRef<any>(null) // Used for "Cancel" behaviour
   const isWriteable = useIsWriteable()
 
-  useEffect(() => {
+  useChange(() => {
     if (config) {
       form.setFieldsValue(config)
       initialForm.current = { ...config }
     }
-    // ignore form
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config])
 
-  useEffect(() => {
+  useChange(() => {
     if (impData) {
       let rootImp: SsoSSOImpersonationModel | undefined = impData[0]
       const update = { user_authenticated: rootImp }
@@ -201,8 +199,6 @@ export function SSOForm() {
         ...update,
       }
     }
-    // ignore form
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [impData])
 
   // TODO: Extract common logic

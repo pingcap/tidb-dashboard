@@ -22,7 +22,7 @@ import { Form, Input, Button, message, Typography, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 
 import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
 import { getAuthURL } from '@lib/utils/authSSO'
@@ -30,8 +30,8 @@ import { AuthTypes } from '@lib/utils/auth'
 import { isDistro } from '@lib/utils/i18n'
 import * as auth from '@lib/utils/auth'
 import { useIsFeatureSupport } from '@lib/utils/store'
-import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
+import { landingSvg, logoSvg } from '@lib/utils/distroAssets'
 
 import styles from './index.module.less'
 
@@ -169,7 +169,7 @@ function useSignInSubmit(
     setError(null)
   }, [])
 
-  const handleSubmit = usePersistFn(async (form) => {
+  const handleSubmit = useMemoizedFn(async (form) => {
     try {
       clearErrorMsg()
       setLoading(true)
@@ -258,10 +258,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
           initialValues={{ username: lastLoginUsername }}
           form={refForm}
         >
-          <img
-            src={`${publicPathPrefix}/distro-res/logo.svg`}
-            className={styles.logo}
-          />
+          <img src={logoSvg} className={styles.logo} />
           <Form.Item>
             <h2>{t('signin.form.tidb_auth.title')}</h2>
           </Form.Item>
@@ -346,10 +343,7 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
         <Form onFinish={handleSubmit} layout="vertical" form={refForm}>
-          <img
-            src={`${publicPathPrefix}/distro-res/logo.svg`}
-            className={styles.logo}
-          />
+          <img src={logoSvg} className={styles.logo} />
           <Form.Item>
             <h2>{t('signin.form.code_auth.title')}</h2>
           </Form.Item>
@@ -409,10 +403,7 @@ function SSOSignInForm({ successRoute, onClickAlternative }) {
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
         <Form>
-          <img
-            src={`${publicPathPrefix}/distro-res/logo.svg`}
-            className={styles.logo}
-          />
+          <img src={logoSvg} className={styles.logo} />
           <Form.Item>
             <Button
               type="primary"
@@ -526,7 +517,7 @@ function App({ registry }) {
         >
           <div
             style={{
-              backgroundImage: `url(${publicPathPrefix}/distro-res/landing.svg)`,
+              backgroundImage: `url(${landingSvg})`,
             }}
             className={styles.landing}
           />

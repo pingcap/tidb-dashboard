@@ -11,14 +11,13 @@ import {
 import { Slider, Spin, Select, Dropdown, Button, Tooltip, Space } from 'antd'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import Flexbox from '@g07cha/flexbox-react'
-import { Card, Toolbar, AutoRefreshButton } from '@lib/components'
+import { AutoRefreshButton, Card, Toolbar } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 export interface IKeyVizToolbarProps {
   enabled: boolean
   isLoading: boolean
   autoRefreshSeconds: number
-  remainingRefreshSeconds?: number
   isOnBrush: boolean
   metricType: string
   brightLevel: number
@@ -29,7 +28,6 @@ export interface IKeyVizToolbarProps {
   onChangeDateRange: (number) => void
   onChangeBrightLevel: (number) => void
   onChangeAutoRefresh: (number) => void
-  onRemainingRefreshSecondsChange: (number) => void
   onRefresh: () => void
   onShowSettings: () => any
 }
@@ -45,10 +43,6 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
 
   handleAutoRefreshMenuClick = (key) => {
     this.props.onChangeAutoRefresh(key)
-  }
-
-  handleRemainingRefreshSecondsChange = (v: number) => {
-    this.props.onRemainingRefreshSecondsChange(v)
   }
 
   handleDateRange = (value) => {
@@ -78,7 +72,6 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
       dateRange,
       isOnBrush,
       metricType,
-      remainingRefreshSeconds = 0,
       autoRefreshSeconds,
       onShowSettings,
     } = this.props
@@ -96,9 +89,6 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
       { text: t('keyviz.toolbar.view_type.write_keys'), value: 'written_keys' },
       { text: t('keyviz.toolbar.view_type.all'), value: 'integration' },
     ]
-
-    // in seconds
-    const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
 
     return (
       <Card>
@@ -186,14 +176,9 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
             </Select>
 
             <AutoRefreshButton
-              autoRefreshSeconds={autoRefreshSeconds}
-              onAutoRefreshSecondsChange={this.handleAutoRefreshMenuClick}
-              remainingRefreshSeconds={remainingRefreshSeconds}
-              onRemainingRefreshSecondsChange={
-                this.handleRemainingRefreshSecondsChange
-              }
+              value={autoRefreshSeconds}
+              onChange={this.handleAutoRefreshMenuClick}
               onRefresh={this.handleRefreshClick}
-              autoRefreshSecondsOptions={autoRefreshOptions}
               disabled={!enabled || isLoading}
             />
 

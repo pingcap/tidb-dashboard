@@ -17,6 +17,7 @@ import {
   isNoPlanRecord,
   isOverallRecord,
 } from '@lib/apps/TopSQL/utils/specialRecord'
+import { telemetry } from '@lib/apps/TopSQL/utils/telemetry'
 
 export type InstanceType = 'tidb' | 'tikv'
 
@@ -40,8 +41,6 @@ const shortFormat = (v: number = 0) => {
 const msFormat = (v: number = 0) => {
   return getValueFormat('ms')(formatZero(v), 1)
 }
-
-const emptyFn = () => {}
 
 export function ListDetailTable({
   record: sqlRecord,
@@ -181,7 +180,14 @@ export function ListDetailTable({
         columns={tableColumns}
         selectionMode={SelectionMode.single}
         selectionPreservedOnEmptyClick
-        onRowClicked={emptyFn}
+        onRowClicked={(item) => {
+          const index = planRecords
+            .filter((r) => !isOverallRecord(r) && !isNoPlanRecord(r))
+            .findIndex((r) => r.plan_digest === item.plan_digest)
+          if (index > -1) {
+            telemetry.clickPlan(index)
+          }
+        }}
         selection={selection}
       />
       {!sqlRecord.is_other && (

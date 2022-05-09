@@ -1,28 +1,22 @@
-import { XYBrushArea, BrushEndListener } from '@elastic/charts'
+import { BrushEndListener, BrushEvent } from '@elastic/charts'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
-import {
-  ZoomOutOutlined,
-  LoadingOutlined,
-  SettingOutlined,
-} from '@ant-design/icons'
+import { LoadingOutlined, SettingOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useSessionStorage } from 'react-use'
-
-import '@elastic/charts/dist/theme_only_light.css'
-
 import formatSql from '@lib/utils/sqlFormatter'
 import client, { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import {
   Card,
-  AutoRefreshButton,
   TimeRangeSelector,
   calcTimeRange,
   DEFAULT_TIME_RANGE,
   Toolbar,
+  AutoRefreshButton,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
+import { telemetry } from '../../utils/telemetry'
 import { InstanceSelect } from '../../components/Filter'
 import styles from './List.module.less'
 import { ListTable } from './ListTable'
@@ -32,8 +26,6 @@ import { SettingsForm } from './SettingsForm'
 import { onLegendItemOver, onLegendItemOut } from './legendAction'
 import { InstanceType } from './ListDetail/ListDetailTable'
 
-const autoRefreshOptions = [30, 60, 2 * 60, 5 * 60, 10 * 60]
-const zoomOutRate = 0.5
 const useTimeWindowSize = createUseTimeWindowSize(8)
 const topN = 5
 
@@ -42,11 +34,6 @@ export function TopSQLList() {
   const { topSQLConfig, isConfigLoading, updateConfig, haveHistoryData } =
     useTopSQLConfig()
   const [showSettings, setShowSettings] = useState(false)
-  const [remainingRefreshSeconds, setRemainingRefreshSeconds] = useState(0)
-  const [autoRefreshSeconds, setAutoRefreshSeconds] = useSessionStorage(
-    'topsql.auto_refresh',
-    0
-  )
   const [instance, setInstance] = useSessionStorage<TopsqlInstanceItem>(
     'topsql.instance',
     null as any
@@ -101,13 +88,11 @@ export function TopSQLList() {
       return
     }
 
-    setRemainingRefreshSeconds(autoRefreshSeconds)
     updateTopSQLData({ instance, timestamps, timeWindowSize, topN })
   }, [
     instance,
     timeRange,
     timeWindowSize,
-    autoRefreshSeconds,
     containerRef,
     containerWidth,
     updateTopSQLData,
@@ -120,7 +105,7 @@ export function TopSQLList() {
   }, [instance, timeWindowSize])
 
   const handleBrushEnd: BrushEndListener = useCallback(
-    (v: XYBrushArea) => {
+    (v: BrushEvent) => {
       if (!v.x) {
         return
       }
@@ -129,35 +114,28 @@ export function TopSQLList() {
       const delta = tr[1] - tr[0]
       if (delta < 60) {
         const offset = Math.floor(delta / 2)
-        const start = tr[0] + offset - 30
-        const end = tr[1] - offset + 30
+        const value: [number, number] = [
+          Math.ceil(tr[0] + offset - 30),
+          Math.floor(tr[1] - offset + 30),
+        ]
+
         setTimeRange({
           type: 'absolute',
-          value: [Math.ceil(start), Math.floor(end)],
+          value,
         })
+        telemetry.dndZoomIn(value)
         return
       }
 
+      const value: [number, number] = [Math.ceil(tr[0]), Math.floor(tr[1])]
       setTimeRange({
         type: 'absolute',
-        value: [Math.ceil(tr[0]), Math.floor(tr[1])],
+        value,
       })
+      telemetry.dndZoomIn(value)
     },
     [setTimeRange]
   )
-
-  const zoomOut = useCallback(() => {
-    const [start, end] = calcTimeRange(timeRange)
-    let expand = (end - start) * zoomOutRate
-    if (expand < 300) {
-      expand = 300
-    }
-
-    let computedStart = start - Math.floor(expand / 2)
-    let computedEnd = end + Math.floor(expand / 2)
-
-    setTimeRange({ type: 'absolute', value: [computedStart, computedEnd] })
-  }, [timeRange, setTimeRange])
 
   const chartRef = useRef<any>(null)
 
@@ -173,7 +151,12 @@ export function TopSQLList() {
               description={
                 <>
                   {t(`topsql.alert_header.body`)}
-                  <a onClick={() => setShowSettings(true)}>
+                  <a
+                    onClick={() => {
+                      setShowSettings(true)
+                      telemetry.clickSettings('bannerTips')
+                    }}
+                  >
                     {` ${t('topsql.alert_header.settings')}`}
                   </a>
                 </>
@@ -189,30 +172,29 @@ export function TopSQLList() {
             <Space>
               <InstanceSelect
                 value={instance}
-                onChange={setInstance}
+                onChange={(inst) => {
+                  setInstance(inst)
+                  if (inst) {
+                    telemetry.finishSelectInstance(inst?.instance_type!)
+                  }
+                }}
                 instances={instances}
                 disabled={isLoading || isInstancesLoading}
+                onDropdownVisibleChange={(open) =>
+                  open && telemetry.openSelectInstance()
+                }
               />
-              <Button.Group>
-                <TimeRangeSelector
-                  value={timeRange}
-                  onChange={setTimeRange}
-                  disabled={isLoading}
-                />
-                <Button
-                  icon={<ZoomOutOutlined />}
-                  onClick={zoomOut}
-                  disabled={isLoading}
-                />
-              </Button.Group>
+              <TimeRangeSelector.WithZoomOut
+                value={timeRange}
+                onChange={(v) => {
+                  setTimeRange(v)
+                  telemetry.selectTimeRange(v)
+                }}
+                disabled={isLoading}
+              />
               <AutoRefreshButton
                 disabled={isLoading}
-                autoRefreshSeconds={autoRefreshSeconds}
-                onAutoRefreshSecondsChange={setAutoRefreshSeconds}
-                remainingRefreshSeconds={remainingRefreshSeconds}
-                onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}
                 onRefresh={handleUpdateTopSQLData}
-                autoRefreshSecondsOptions={autoRefreshOptions}
               />
               {isLoading && (
                 <Spin
@@ -225,7 +207,10 @@ export function TopSQLList() {
               <Tooltip title={t('topsql.settings.title')} placement="bottom">
                 <SettingOutlined
                   data-e2e="topsql_settings"
-                  onClick={() => setShowSettings(true)}
+                  onClick={() => {
+                    setShowSettings(true)
+                    telemetry.clickSettings('settingIcon')
+                  }}
                 />
               </Tooltip>
             </Space>
@@ -238,7 +223,13 @@ export function TopSQLList() {
             title={t('topsql.settings.disabled_result.title')}
             subTitle={t('topsql.settings.disabled_result.sub_title')}
             extra={
-              <Button type="primary" onClick={() => setShowSettings(true)}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  setShowSettings(true)
+                  telemetry.clickSettings('firstTimeTips')
+                }}
+              >
                 {t('conprof.settings.open_settings')}
               </Button>
             }

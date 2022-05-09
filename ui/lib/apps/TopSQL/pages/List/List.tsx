@@ -1,18 +1,25 @@
 import { BrushEndListener, BrushEvent } from '@elastic/charts'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
 import { LoadingOutlined, SettingOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import { useSessionStorage } from 'react-use'
+import { useMount, useSessionStorage } from 'react-use'
 import formatSql from '@lib/utils/sqlFormatter'
 import client, { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import {
   Card,
   TimeRangeSelector,
-  calcTimeRange,
+  toTimeRangeValue,
   DEFAULT_TIME_RANGE,
   Toolbar,
   AutoRefreshButton,
+  TimeRange,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
@@ -34,9 +41,9 @@ export function TopSQLList() {
   const { topSQLConfig, isConfigLoading, updateConfig, haveHistoryData } =
     useTopSQLConfig()
   const [showSettings, setShowSettings] = useState(false)
-  const [instance, setInstance] = useSessionStorage<TopsqlInstanceItem>(
+  const [instance, setInstance] = useSessionStorage<TopsqlInstanceItem | null>(
     'topsql.instance',
-    null as any
+    null
   )
   const [timeRange, setTimeRange] = useSessionStorage(
     'topsql.recent_time_range',
@@ -51,58 +58,43 @@ export function TopSQLList() {
   const isLoading = isConfigLoading || isDataLoading
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
-  const [queryTimestampRange, setQueryTimestampRange] = useState<
-    [number, number] | null
-  >(null)
-  const { instances, isLoading: isInstancesLoading } =
-    useInstances(queryTimestampRange)
+  const {
+    instances,
+    isLoading: isInstancesLoading,
+    updateInstances,
+  } = useInstances()
 
-  useEffect(() => {
-    setContainerWidth(containerRef.current?.offsetWidth || 0)
-  }, [containerRef])
+  const updateData = useCallback(
+    (_instance: TopsqlInstanceItem | null, _timeRange: TimeRange) => {
+      if (!_instance) {
+        return
+      }
 
-  // Calculate time window size by container width and time range.
-  useEffect(() => {
-    if (!containerWidth) {
-      return
-    }
+      // Update container width when refresh, then trigger the update of time window size to refresh.
+      const cw = containerRef.current?.offsetWidth || containerWidth
+      if (cw !== containerWidth) {
+        setContainerWidth(containerRef.current?.offsetWidth || 0)
+      }
 
-    const timeRangeTimestamp = calcTimeRange(timeRange)
-    const delta = timeRangeTimestamp[1] - timeRangeTimestamp[0]
-    computeTimeWindowSize(containerWidth, delta)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerWidth, timeRange])
+      const timestamps = toTimeRangeValue(_timeRange)
+      const _timeWindowSize = computeTimeWindowSize(cw, timestamps)
 
-  const handleUpdateTopSQLData = useCallback(() => {
-    // Update container width when refresh, then trigger the update of time window size to refresh.
-    const cw = containerRef.current?.offsetWidth || 0
-    if (cw !== containerWidth) {
-      setContainerWidth(containerRef.current?.offsetWidth || 0)
-      return
-    }
-
-    const timestamps = calcTimeRange(timeRange)
-    setQueryTimestampRange(timestamps)
-
-    if (!instance || !timeWindowSize) {
-      return
-    }
-
-    updateTopSQLData({ instance, timestamps, timeWindowSize, topN })
-  }, [
-    instance,
-    timeRange,
-    timeWindowSize,
-    containerRef,
-    containerWidth,
-    updateTopSQLData,
-  ])
-
-  // fetch data when instance id / time window size update
-  useEffect(() => {
-    handleUpdateTopSQLData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instance, timeWindowSize])
+      updateInstances(_timeRange)
+      updateTopSQLData({
+        instance: _instance,
+        timestamps,
+        timeWindowSize: _timeWindowSize,
+        topN,
+      })
+    },
+    [
+      containerRef,
+      containerWidth,
+      updateTopSQLData,
+      computeTimeWindowSize,
+      updateInstances,
+    ]
+  )
 
   const handleBrushEnd: BrushEndListener = useCallback(
     (v: BrushEvent) => {
@@ -110,32 +102,45 @@ export function TopSQLList() {
         return
       }
 
+      let value: [number, number]
       const tr = v.x.map((d) => d / 1000)
       const delta = tr[1] - tr[0]
       if (delta < 60) {
         const offset = Math.floor(delta / 2)
-        const value: [number, number] = [
+        value = [
           Math.ceil(tr[0] + offset - 30),
           Math.floor(tr[1] - offset + 30),
         ]
-
-        setTimeRange({
-          type: 'absolute',
-          value,
-        })
-        telemetry.dndZoomIn(value)
-        return
+      } else {
+        value = [Math.ceil(tr[0]), Math.floor(tr[1])]
       }
 
-      const value: [number, number] = [Math.ceil(tr[0]), Math.floor(tr[1])]
-      setTimeRange({
+      const _timeRange: TimeRange = {
         type: 'absolute',
         value,
-      })
+      }
+
+      setTimeRange(_timeRange)
+      updateData(instance, _timeRange)
       telemetry.dndZoomIn(value)
     },
-    [setTimeRange]
+    [setTimeRange, updateData, instance]
   )
+
+  useLayoutEffect(() => {
+    setContainerWidth(containerRef.current?.offsetWidth || 0)
+  }, [containerRef])
+
+  useMount(async () => {
+    let _instance: TopsqlInstanceItem | null = instance
+
+    const _instances = await updateInstances(timeRange)
+    if (!_instance) {
+      _instance = _instances[0]
+      setInstance(_instance)
+    }
+    updateData(_instance, timeRange)
+  })
 
   const chartRef = useRef<any>(null)
 
@@ -173,6 +178,7 @@ export function TopSQLList() {
                 value={instance}
                 onChange={(inst) => {
                   setInstance(inst)
+                  updateData(inst, timeRange)
                   if (inst) {
                     telemetry.finishSelectInstance(inst?.instance_type!)
                   }
@@ -187,13 +193,14 @@ export function TopSQLList() {
                 value={timeRange}
                 onChange={(v) => {
                   setTimeRange(v)
+                  updateData(instance, v)
                   telemetry.selectTimeRange(v)
                 }}
                 disabled={isLoading}
               />
               <AutoRefreshButton
                 disabled={isLoading}
-                onRefresh={handleUpdateTopSQLData}
+                onRefresh={() => updateData(instance, timeRange)}
               />
               {isLoading && (
                 <Spin
@@ -235,15 +242,13 @@ export function TopSQLList() {
         ) : (
           <>
             <div className={styles.chart_container}>
-              {!!queryTimestampRange && (
-                <ListChart
-                  onBrushEnd={handleBrushEnd}
-                  data={topSQLData}
-                  timeRangeTimestamp={queryTimestampRange}
-                  timeWindowSize={timeWindowSize}
-                  ref={chartRef}
-                />
-              )}
+              <ListChart
+                onBrushEnd={handleBrushEnd}
+                data={topSQLData}
+                timeRangeTimestamp={toTimeRangeValue(timeRange)}
+                timeWindowSize={timeWindowSize}
+                ref={chartRef}
+              />
             </div>
             {!!topSQLData?.length && (
               <ListTable
@@ -252,7 +257,7 @@ export function TopSQLList() {
                 }
                 onRowLeave={() => onLegendItemOut(chartRef.current)}
                 topN={topN}
-                instanceType={instance.instance_type as InstanceType}
+                instanceType={instance?.instance_type as InstanceType}
                 data={topSQLData}
               />
             )}
@@ -387,37 +392,42 @@ const useTopSQLConfig = () => {
   }
 }
 
-const useInstances = (queryTimestampRange: [number, number] | null) => {
+const useInstances = () => {
   const [instances, setInstances] = useState<TopsqlInstanceItem[]>([])
   const [isLoading, setLoading] = useState(false)
-  const updateInstances = useCallback(async () => {
-    if (!queryTimestampRange) {
-      return
-    }
-
-    const [start, end] = queryTimestampRange
-
-    setLoading(true)
-    try {
-      const resp = await client
-        .getInstance()
-        .topsqlInstancesGet(String(end), String(start))
-      const instances = resp.data.data
-      if (!instances) {
-        return
+  const updateInstances = useCallback(
+    async (timeRange: TimeRange | null): Promise<TopsqlInstanceItem[]> => {
+      if (!timeRange) {
+        return []
       }
-      setInstances(instances)
-    } finally {
-      setLoading(false)
-    }
-  }, [queryTimestampRange])
 
-  useEffect(() => {
-    updateInstances()
-  }, [updateInstances])
+      const [start, end] = toTimeRangeValue(timeRange)
+
+      setLoading(true)
+      try {
+        const resp = await client
+          .getInstance()
+          .topsqlInstancesGet(String(end), String(start))
+        const instances = resp.data.data || []
+        instances.sort((a, b) => {
+          const localCompare = a.instance_type!.localeCompare(b.instance_type!)
+          if (localCompare === 0) {
+            return a.instance!.localeCompare(b.instance!)
+          }
+          return localCompare
+        })
+        setInstances(instances)
+        return instances
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
 
   return {
     instances,
     isLoading,
+    updateInstances,
   }
 }

@@ -1,3 +1,4 @@
+import { TimeRangeValue } from '@lib/components'
 import { useState } from 'react'
 
 // Calculate time window size by total time range, bar width, screen width.
@@ -8,10 +9,11 @@ export const createUseTimeWindowSize = (barWidth: number) => {
     const [timeWindowSize, setTimeWindowSize] = useState<number>(0)
     const computeTimeWindowSize = (
       screenWidth: number,
-      totalTimeRange: number
+      [min, max]: TimeRangeValue
     ) => {
-      const windowSize = (barWidth * totalTimeRange) / screenWidth
-      setTimeWindowSize(Math.ceil(windowSize))
+      const windowSize = Math.ceil((barWidth * (max - min)) / screenWidth)
+      setTimeWindowSize(windowSize)
+      return windowSize
     }
 
     return {

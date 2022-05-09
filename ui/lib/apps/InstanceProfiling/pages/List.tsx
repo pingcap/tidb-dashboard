@@ -85,12 +85,14 @@ export default function Page() {
         })
         .filter((i) => i.port != null)
 
+      // Default to all types if non is selected
+      const types = !fieldsValue.type?.length
+        ? [...profilingTypeOptions]
+        : fieldsValue.type
       const req: ProfilingStartRequest = {
         targets,
         duration_secs: fieldsValue.duration,
-        requsted_profiling_types: fieldsValue.type.map((type) =>
-          type.toLowerCase()
-        ),
+        requsted_profiling_types: types.map((type) => type.toLowerCase()),
       }
       try {
         setSubmitting(true)
@@ -205,11 +207,12 @@ export default function Page() {
           initialValues={{
             instances: [],
             duration: defaultProfilingDuration,
+            type: [],
           }}
         >
           <Form.Item
             name="instances"
-            label={t('instance_profiling.list.control_form.instances.label')}
+            // label={t('instance_profiling.list.control_form.instances.label')}
             rules={[{ required: true }]}
           >
             <InstanceSelect
@@ -217,15 +220,10 @@ export default function Page() {
               enableTiFlash={true}
               ref={instanceSelect}
               style={{ width: 200 }}
+              defaultSelectAll
             />
           </Form.Item>
-          <Form.Item
-            name="type"
-            label={t(
-              'instance_profiling.list.control_form.profiling_type.label'
-            )}
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="type">
             <MultiSelect.Plain
               disabled={conprofEnable}
               placeholder={t(

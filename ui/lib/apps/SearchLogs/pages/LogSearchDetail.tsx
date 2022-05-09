@@ -1,6 +1,6 @@
-import { Col, Row } from 'antd'
+import { Button, Drawer } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -16,6 +16,8 @@ export default function LogSearchingDetail() {
   const { t } = useTranslation()
   const { id } = useQueryParams()
   const [reloadKey, setReloadKey] = useState(false)
+  const [taskWasUnfinished, setTaskUnfinished] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState<boolean | undefined>(undefined)
 
   function toggleReload() {
     setReloadKey(!reloadKey)
@@ -45,10 +47,18 @@ export default function LogSearchingDetail() {
 
   const tasks = useMemo(() => data?.tasks ?? [], [data])
 
+  useEffect(() => {
+    for (const task of data?.tasks ?? []) {
+      if (task.state !== TaskState.Finished) {
+        setTaskUnfinished(true)
+        break
+      }
+    }
+  }, [data])
+
   return (
-    <Row>
-      <Col
-        span={18}
+    <>
+      <div
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -61,6 +71,11 @@ export default function LogSearchingDetail() {
             <Link to={`/search_logs`}>
               <ArrowLeftOutlined /> {t('search_logs.nav.search_logs')}
             </Link>
+          }
+          titleExtra={
+            <Button type="primary" onClick={() => setSidebarOpen(true)}>
+              {t('search_logs.nav.show_sidebar')}
+            </Button>
           }
         ></Head>
         <div style={{ height: '100%', position: 'relative', marginRight: 4 }}>
@@ -75,15 +90,21 @@ export default function LogSearchingDetail() {
             />
           </ScrollablePane>
         </div>
-      </Col>
-      <Col span={6}>
+      </div>
+      <Drawer
+        mask={false}
+        visible={sidebarOpen ?? taskWasUnfinished}
+        width={350}
+        title={t('search_logs.common.progress')}
+        onClose={() => setSidebarOpen(false)}
+      >
         <SearchProgress
           key={`${reloadKey}`}
           toggleReload={toggleReload}
           taskGroupID={taskGroupID}
           tasks={tasks}
         />
-      </Col>
-    </Row>
+      </Drawer>
+    </>
   )
 }

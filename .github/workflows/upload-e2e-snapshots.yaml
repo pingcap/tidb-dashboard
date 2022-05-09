@@ -19,6 +19,8 @@ jobs:
         include:
           - feature_version: 6.0.0
             tidb_version: nightly
+          - feature_version: 5.4.0
+            tidb_version: v5.4.0
           - feature_version: 5.0.0
             tidb_version: v5.0.0
     steps:

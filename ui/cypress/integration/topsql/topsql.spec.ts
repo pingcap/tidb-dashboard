@@ -33,7 +33,7 @@ function enableTopSQL() {
   cy.getByTestId('topsql_settings_enable').click()
   cy.getByTestId('topsql_settings_save').click()
 
-  // confirm the tips about the data will be delayed
+  // confirm the tips which about the data will be delayed
   cy.get('.ant-modal-body').should('be.visible')
   cy.get('.ant-modal-body .ant-btn-primary').click()
 }
@@ -205,7 +205,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
         cy.clock()
         cy.getByTestId('auto_refresh_time_30').click()
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 35; i++) {
           cy.tick(1000)
           // eslint-disable-next-line cypress/no-unnecessary-waiting
           cy.wait(0) // yield to react hooks

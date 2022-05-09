@@ -8,7 +8,6 @@ import {
   timeFormatter,
   BrushEndListener,
   PartialTheme,
-  DomainRange,
 } from '@elastic/charts'
 import { orderBy, toPairs } from 'lodash'
 import React, { useEffect, useMemo, useState, forwardRef } from 'react'

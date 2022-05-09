@@ -603,12 +603,7 @@ describe('SQL statements list page', () => {
       cy.get('[data-e2e=statements_table]').should('not.exist')
     })
 
-    it.only('Save again when statement feature is disabled', () => {
-      switchStatement('true')
-      cy.contains('Current statement history will be cleared.')
-      cy.get('.ant-modal-confirm-btns').find('.ant-btn-dangerous').click()
-      cy.get('[data-e2e=statements_table]').should('not.exist')
-
+    it('Save again when statement feature is disabled', () => {
       cy.get('[data-e2e=statement_setting]')
         .click()
         .then(() => {
@@ -941,7 +936,7 @@ describe('SQL statements list page', () => {
             .then(function (doc) {
               doc.addEventListener('click', () => {
                 setTimeout(function () {
-                  doc.location.reload()
+                  doc.location?.reload()
                 }, 5000)
               })
 

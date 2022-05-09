@@ -32,17 +32,41 @@ function enableTopSQL() {
 
   cy.getByTestId('topsql_settings_enable').click()
   cy.getByTestId('topsql_settings_save').click()
+
+  // confirm the tips about the data will be delayed
+  cy.get('.ant-modal-body').should('be.visible')
+  cy.get('.ant-modal-body .ant-btn-primary').click()
 }
 
 skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
   describe('Top SQL page', function () {
     before(() => {
-      cy.fixture('uri.json').then((uri) => (this.uri = uri))
+      cy.intercept(`${Cypress.env('apiBasePath')}/topsql/config`).as(
+        'getTopsqlConfig'
+      )
+
+      cy.fixture('uri.json').then((uri) => {
+        this.uri = uri
+
+        cy.login('root')
+        cy.visit(this.uri.topsql)
+
+        cy.wait('@getTopsqlConfig').then((interception) => {
+          if (!interception.response?.body.enable) {
+            enableTopSQL()
+          }
+        })
+
+        cy.visit(this.uri.overview)
+      })
     })
 
     beforeEach(() => {
       cy.login('root')
 
+      cy.intercept(`${Cypress.env('apiBasePath')}/topsql/config`).as(
+        'getTopsqlConfig'
+      )
       // mock summary and instance data from 2022-01-12 00:00:00 to 2022-01-12 05:00:00
       cy.intercept(`${Cypress.env('apiBasePath')}/topsql/summary?*`, {
         fixture:
@@ -55,20 +79,13 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         { fixture: 'topsql_instance:end=1641934800&start=1641916800.json' }
       )
 
-      cy.intercept(`${Cypress.env('apiBasePath')}/topsql/config`).as(
-        'getTopsqlConfig'
-      )
-
-      // visit top sql page
+      // clear the user preference before visit top sql page
       cy.window().then((win) => win.sessionStorage.clear())
       cy.visit(this.uri.topsql)
 
-      cy.wait('@getTopsqlConfig').then((interception) => {
-        if (!interception.response?.body.enable) {
-          enableTopSQL()
-        }
-      })
+      // consume the first screen intercepted request when page loaded
       cy.wait('@getTopsqlSummary')
+      cy.wait('@getTopsqlConfig')
     })
 
     describe('Update time range', () => {
@@ -91,7 +108,7 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
         cy.getByTestId('timerange-selector').should(
           'contain',
-          '01-11 22:45:00 ~ 01-12 06:15:00'
+          '01-11 21:30:00 ~ 01-12 07:30:00'
         )
         cy.getByTestId('topsql_list_chart').matchImageSnapshot()
       })
@@ -139,11 +156,6 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
 
     describe('Refresh', () => {
       it('click refresh button with the recent x time range, fetch the recent x time range data', () => {
-        cy.intercept(`${Cypress.env('apiBasePath')}/topsql/summary?*`, {
-          fixture:
-            'topsql_summary:end=1641934800&instance=127.0.0.1%3A10080&instance_type=tidb&start=1641916800&top=5&window=123s.json',
-        }).as('getTopsqlSummary1')
-
         cy.getByTestId('timerange-selector').click()
         cy.getByTestId('timerange_selector_dropdown').should('be.visible')
 
@@ -152,13 +164,13 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         cy.clock(now * 1000)
 
         cy.getByTestId(`timerange-${recent}`).click({ force: true })
-        cy.wait('@getTopsqlSummary1')
+        cy.wait('@getTopsqlSummary')
           .its('request.url')
           .should('include', `start=${now - recent}`)
           .and('include', `end=${now}`)
 
         cy.getByTestId('auto-refresh-button').first().click()
-        cy.wait('@getTopsqlSummary1')
+        cy.wait('@getTopsqlSummary')
           .its('request.url')
           .should('include', `start=${now - recent}`)
           .and('include', `end=${now}`)
@@ -188,15 +200,16 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
       it('set auto refresh, it will be refreshed automatically after the time', () => {
         cy.getByTestId('auto-refresh-button').children().eq(1).click()
         cy.getByTestId('auto_refresh_time_30').should('be.visible')
-        cy.getByTestId('auto_refresh_time_30')
-          .parents()
-          .should('not.have.css', 'pointer-events: none')
         // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(1000)
+        cy.wait(1000) // wait auto_refresh_time_30 item can be clicked before clock freeze the animate
 
-        cy.getByTestId('auto_refresh_time_30').click()
         cy.clock()
-        cy.tick(30000)
+        cy.getByTestId('auto_refresh_time_30').click()
+        for (let i = 0; i < 30; i++) {
+          cy.tick(1000)
+          // eslint-disable-next-line cypress/no-unnecessary-waiting
+          cy.wait(0) // yield to react hooks
+        }
         cy.clock().invoke('restore')
         cy.wait('@getTopsqlSummary')
           .its('response.statusCode')

@@ -81,7 +81,7 @@ export function AutoRefreshButton({
         <Menu.Divider />
         {options.map((sec) => {
           return (
-            <Menu.Item key={String(sec)}>
+            <Menu.Item key={String(sec)} data-e2e={`auto_refresh_time_${sec}`}>
               {getValueFormat('s')(sec, 0)}
             </Menu.Item>
           )

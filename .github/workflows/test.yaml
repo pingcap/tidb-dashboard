@@ -78,16 +78,16 @@ jobs:
         include:
           - feature_version: 6.0.0
             tidb_version: nightly
-            without_monitor: false
+            without_ngm: false
           - feature_version: 6.0.0
             tidb_version: nightly
-            without_monitor: true
+            without_ngm: true
           - feature_version: 5.4.0
             tidb_version: v5.4.0
-            without_monitor: false
+            without_ngm: false
           - feature_version: 5.0.0
             tidb_version: v5.0.0
-            without_monitor: false
+            without_ngm: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -123,7 +123,7 @@ jobs:
       - name: Install and run TiUP in the background
         run: |
           chmod u+x scripts/start_tiup.sh
-          scripts/start_tiup.sh ${{ matrix.tidb_version }} ${{ matrix.without_monitor }}
+          scripts/start_tiup.sh ${{ matrix.tidb_version }} ${{ matrix.without_ngm }}
       - name: Build UI
         run: |
           make ui
@@ -163,7 +163,7 @@ jobs:
           FEATURE_VERSION: ${{ matrix.feature_version }}
           TIDB_VERSION: ${{ matrix.tidb_version }}
           CYPRESS_ALLOW_SCREENSHOT: true
-          WITHOUT_MONITOR: ${{ matrix.without_monitor }}
+          WITHOUT_NGM: ${{ matrix.without_ngm }}
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:

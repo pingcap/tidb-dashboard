@@ -6,7 +6,7 @@ LDFLAGS ?=
 
 FEATURE_VERSION ?= 6.0.0
 
-WITHOUT_MONITOR ?= false
+WITHOUT_NGM ?= false
 
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
@@ -49,8 +49,8 @@ integration_test:
 
 .PHONY: e2e_test
 e2e_test:
-	@if $(WITHOUT_MONITOR); then\
-		make e2e_without_monitor_test;\
+	@if $(WITHOUT_NGM); then\
+		make e2e_without_ngm_test;\
 	else\
 		make e2e_compat_features_test;\
 		make e2e_common_features_test;\
@@ -68,11 +68,11 @@ e2e_common_features_test:
 	yarn &&\
 	yarn run:e2e-test:common-features --env TIDB_VERSION=$(TIDB_VERSION)
 
-.PHONY: e2e_without_monitor_test
-e2e_without_monitor_test:
+.PHONY: e2e_without_ngm_test
+e2e_without_ngm_test:
 	cd ui &&\
 	yarn &&\
-	yarn run:e2e-test:without-monitor --env TIDB_VERSION=$(TIDB_VERSION) WITHOUT_MONITOR=$(WITHOUT_MONITOR)
+	yarn run:e2e-test:without-ngm --env TIDB_VERSION=$(TIDB_VERSION) WITHOUT_NGM=$(WITHOUT_NGM)
 
 .PHONY: dev
 dev: lint default

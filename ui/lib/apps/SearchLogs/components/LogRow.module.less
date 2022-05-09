@@ -6,6 +6,15 @@
   padding-top: 11px;
   padding-bottom: 11px;
   border-bottom: 1px solid rgb(243, 242, 241); // hardcode from Fluentui
+  animation-duration: 0.367s; // hardcode from Fluentui
+  animation-timing-function: cubic-bezier(
+    0.1,
+    0.25,
+    0.75,
+    0.9
+  ); // hardcode from Fluentui
+  animation-fill-mode: both; // hardcode from Fluentui
+  animation-name: fadeIn;
 
   font-size: 0.9rem;
   cursor: pointer;
@@ -24,6 +33,15 @@
   &.isExpanded pre {
     -webkit-line-clamp: initial;
     line-clamp: initial;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

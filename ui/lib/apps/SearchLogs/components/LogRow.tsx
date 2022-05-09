@@ -1,6 +1,7 @@
 import cx from 'classnames'
 import { ModelRequestTargetNode } from '@lib/client'
 import {
+  ICellStyleProps,
   IColumn,
   IDetailsRowProps,
 } from 'office-ui-fabric-react/lib/DetailsList'
@@ -10,6 +11,7 @@ import styles from './LogRow.module.less'
 import { Pre } from '@lib/components'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import { hsluvToHex } from 'hsluv'
+import moize from 'moize'
 
 export interface ComponentWithSortIndex extends ModelRequestTargetNode {
   sortIndex: number // range from [0, 1), used to determine component color
@@ -23,7 +25,7 @@ export interface ILogItem {
   log?: string
 }
 
-export interface IRowProps extends Omit<IDetailsRowProps, 'item'> {
+export interface IRowProps extends IDetailsRowProps {
   item: ILogItem
 
   patterns: string[]
@@ -42,39 +44,67 @@ export function LogRow(props: IRowProps) {
       className={cx(styles.logRow, { [styles.isExpanded]: expanded })}
       data-level={props.item.level}
     >
-      <Pre>
-        {props.columns.map((column, columnIdx) => {
-          const colProps: IColProps = {
-            column,
-            columnIdx,
-            ...props,
-          }
-          switch (column.key) {
-            case 'component':
-              return <ColumnComponent {...colProps} key={column.key} />
-            case 'log':
-              return <ColumnMessage {...colProps} key={column.key} />
-            default:
-              return (
-                <BaseInfoColumn {...colProps} key={column.key}>
-                  {props.item[column.key]}
-                </BaseInfoColumn>
-              )
-          }
-        })}
-      </Pre>
+      <LogRowCacheable
+        item={props.item}
+        patterns={props.patterns}
+        cellStyleProps={props.cellStyleProps}
+        columns={props.columns}
+      />
     </div>
   )
 }
 
-interface IColProps extends IRowProps {
+interface IRowCacheableProps {
+  // A subset of IRowProps for better caching
+  item: ILogItem
+  patterns: string[]
+  cellStyleProps?: ICellStyleProps
+  columns: IColumn[]
+}
+
+// This component is cached globally (instead of per-instance as React.memo) so that
+// it will work in virtualized lists.
+// When the props are unchanged, this function will always return the same vDOM.
+function LogRowCacheable_(props: IRowCacheableProps) {
+  return (
+    <Pre>
+      {props.columns.map((column, columnIdx) => {
+        const colProps: IColProps = {
+          column,
+          columnIdx,
+          ...props,
+        }
+        switch (column.key) {
+          case 'component':
+            return <ColumnComponent {...colProps} key={column.key} />
+          case 'log':
+            return <ColumnMessage {...colProps} key={column.key} />
+          default:
+            return (
+              <BaseInfoColumn {...colProps} key={column.key}>
+                {props.item[column.key]}
+              </BaseInfoColumn>
+            )
+        }
+      })}
+    </Pre>
+  )
+}
+
+const LogRowCacheable = moize(LogRowCacheable_, {
+  isShallowEqual: true,
+  maxArgs: 2,
+  maxSize: 1000,
+})
+
+interface IColProps extends IRowCacheableProps {
   column: IColumn
   columnIdx: number
   children?: React.ReactNode
   htmlAttributes?: React.HTMLAttributes<HTMLDivElement>
 }
 
-function BaseInfoColumn_({
+function BaseInfoColumn({
   column,
   columnIdx,
   children,
@@ -105,9 +135,7 @@ function BaseInfoColumn_({
   )
 }
 
-const BaseInfoColumn = React.memo(BaseInfoColumn_)
-
-function BaseTextColumn_({ column, children, htmlAttributes }: IColProps) {
+function BaseTextColumn({ column, children, htmlAttributes }: IColProps) {
   const { className, ...restHtmlAttributes } = htmlAttributes ?? {}
   return (
     <div
@@ -120,9 +148,7 @@ function BaseTextColumn_({ column, children, htmlAttributes }: IColProps) {
   )
 }
 
-const BaseTextColumn = React.memo(BaseTextColumn_)
-
-function ColumnMessage_(props: IColProps) {
+function ColumnMessage(props: IColProps) {
   return (
     <BaseTextColumn {...props}>
       <TextHighlighter
@@ -134,9 +160,7 @@ function ColumnMessage_(props: IColProps) {
   )
 }
 
-export const ColumnMessage = React.memo(ColumnMessage_)
-
-function ColumnComponent_(props: IColProps) {
+function ColumnComponent(props: IColProps) {
   const { item } = props
   if (!item.component) {
     return null
@@ -155,5 +179,3 @@ function ColumnComponent_(props: IColProps) {
     </BaseInfoColumn>
   )
 }
-
-export const ColumnComponent = React.memo(ColumnComponent_)

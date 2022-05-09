@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client, { LogsearchTaskModel } from '@lib/client'
-import { AnimatedSkeleton, Card } from '@lib/components'
+import { AnimatedSkeleton } from '@lib/components'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import { TaskState } from '../utils'
 
@@ -188,55 +188,47 @@ export default function SearchProgress({
   }, [])
 
   return (
-    <Card
-      id="search_progress"
-      style={{ marginLeft: -48 }}
-      title={t('search_logs.common.progress')}
-    >
-      <AnimatedSkeleton showSkeleton={isLoading}>
-        {tasks && (
-          <>
-            <div>{describeProgress(tasks)}</div>
-            <div className={styles.buttons}>
-              <Button
-                type="primary"
-                onClick={handleDownload}
-                disabled={checkedKeys.length < 1}
-              >
-                {t('search_logs.common.download_selected')}
-              </Button>
-              <Button
-                danger
-                onClick={handleCancel}
-                disabled={
-                  !tasks.some((task) => task.state === TaskState.Running)
-                }
-              >
-                {t('search_logs.common.cancel')}
-              </Button>
-              <Button
-                onClick={handleRetry}
-                disabled={
-                  tasks.some((task) => task.state === TaskState.Running) ||
-                  !tasks.some((task) => task.state === TaskState.Error)
-                }
-              >
-                {t('search_logs.common.retry')}
-              </Button>
-            </div>
-            <Tree
-              checkable
-              expandedKeys={[...InstanceKinds]}
-              selectable={false}
-              defaultExpandAll
-              showIcon
-              onCheck={handleCheck}
-              style={{ overflowX: 'hidden' }}
-              treeData={treeData}
-            />
-          </>
-        )}
-      </AnimatedSkeleton>
-    </Card>
+    <AnimatedSkeleton showSkeleton={isLoading}>
+      {tasks && (
+        <>
+          <div>{describeProgress(tasks)}</div>
+          <div className={styles.buttons}>
+            <Button
+              type="primary"
+              onClick={handleDownload}
+              disabled={checkedKeys.length < 1}
+            >
+              {t('search_logs.common.download_selected')}
+            </Button>
+            <Button
+              danger
+              onClick={handleCancel}
+              disabled={!tasks.some((task) => task.state === TaskState.Running)}
+            >
+              {t('search_logs.common.cancel')}
+            </Button>
+            <Button
+              onClick={handleRetry}
+              disabled={
+                tasks.some((task) => task.state === TaskState.Running) ||
+                !tasks.some((task) => task.state === TaskState.Error)
+              }
+            >
+              {t('search_logs.common.retry')}
+            </Button>
+          </div>
+          <Tree
+            checkable
+            expandedKeys={[...InstanceKinds]}
+            selectable={false}
+            defaultExpandAll
+            showIcon
+            onCheck={handleCheck}
+            style={{ overflowX: 'hidden' }}
+            treeData={treeData}
+          />
+        </>
+      )}
+    </AnimatedSkeleton>
   )
 }

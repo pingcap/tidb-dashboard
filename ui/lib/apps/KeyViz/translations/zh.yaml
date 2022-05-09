@@ -10,6 +10,8 @@ keyviz:
       write_bytes: 写入字节量
       read_keys: 读取次数
       write_keys: 写入次数
+      read_query_num: 读查询次数
+      write_query_num: 写查询次数
       all: 所有
   settings:
     title: 设置

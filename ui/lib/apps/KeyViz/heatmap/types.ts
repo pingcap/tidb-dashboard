@@ -9,6 +9,8 @@ export type DataTag =
   | 'read_bytes'
   | 'written_keys'
   | 'read_keys'
+  | `write_query_num`
+  | `read_query_num`
 
 export type HeatmapRange = {
   starttime?: number

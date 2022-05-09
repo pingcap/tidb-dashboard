@@ -10,6 +10,8 @@ keyviz:
       write_bytes: Write (bytes)
       read_keys: Read (keys)
       write_keys: Write (keys)
+      read_query_num: Read(qps)
+      write_query_num: Write(qps)
       all: All
   settings:
     title: Settings

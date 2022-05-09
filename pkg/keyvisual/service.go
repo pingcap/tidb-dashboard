@@ -222,7 +222,7 @@ func (s *Service) Stop(ctx context.Context) error {
 // @Param endkey query string false "The end of the key range"
 // @Param starttime query int false "The start of the time range (Unix)"
 // @Param endtime query int false "The end of the time range (Unix)"
-// @Param type query string false "Main types of data" Enums(written_bytes, read_bytes, written_keys, read_keys, integration)
+// @Param type query string false "Main types of data" Enums(written_bytes, read_bytes, written_keys, read_keys, write_query_num, read_query_num, integration)
 // @Success 200 {object} matrix.Matrix
 // @Router /keyvisual/heatmaps [get]
 // @Security JwtAuth

@@ -16,6 +16,10 @@ const (
 	WrittenKeys
 	// ReadKeys is the number of keys read to the data per minute.
 	ReadKeys
+	// WriteQueryNum is write query num from this region
+	WriteQueryNum
+	// ReadQueryNum is read query num from this region
+	ReadQueryNum
 )
 
 // IntoTag converts a string into a StatTag.
@@ -33,6 +37,10 @@ func IntoTag(typ string) StatTag {
 		return WrittenKeys
 	case "read_keys":
 		return ReadKeys
+	case "write_query_num":
+		return WriteQueryNum
+	case "read_query_num":
+		return ReadQueryNum
 	default:
 		return WrittenBytes
 	}
@@ -50,13 +58,17 @@ func (tag StatTag) String() string {
 		return "written_keys"
 	case ReadKeys:
 		return "read_keys"
+	case WriteQueryNum:
+		return "write_query_num"
+	case ReadQueryNum:
+		return "read_query_num"
 	default:
 		panic("unreachable")
 	}
 }
 
 // StorageTags is the order of tags during storage.
-var StorageTags = []StatTag{WrittenBytes, ReadBytes, WrittenKeys, ReadKeys}
+var StorageTags = []StatTag{WrittenBytes, ReadBytes, WrittenKeys, ReadKeys, WriteQueryNum, ReadQueryNum}
 
 // ResponseTags is the order of tags when responding.
 var ResponseTags = append([]StatTag{Integration}, StorageTags...)

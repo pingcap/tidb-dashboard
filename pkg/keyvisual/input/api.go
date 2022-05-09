@@ -29,6 +29,8 @@ type RegionInfo struct {
 	ReadBytes       uint64 `json:"read_bytes"`
 	WrittenKeys     uint64 `json:"written_keys"`
 	ReadKeys        uint64 `json:"read_keys"`
+	WriteQueryNum   uint64 `json:"write_query_num"`
+	ReadQueryNum    uint64 `json:"read_query_num"`
 	ApproximateSize int64  `json:"approximate_size"`
 	ApproximateKeys int64  `json:"approximate_keys"`
 }
@@ -71,6 +73,14 @@ func (rs *RegionsInfo) GetValues(tag regionpkg.StatTag) []uint64 {
 	case regionpkg.ReadKeys:
 		for i, region := range rs.Regions {
 			values[i] = region.ReadKeys
+		}
+	case regionpkg.WriteQueryNum:
+		for i, region := range rs.Regions {
+			values[i] = region.WriteQueryNum
+		}
+	case regionpkg.ReadQueryNum:
+		for i, region := range rs.Regions {
+			values[i] = region.ReadQueryNum
 		}
 	case regionpkg.Integration:
 		for i, region := range rs.Regions {

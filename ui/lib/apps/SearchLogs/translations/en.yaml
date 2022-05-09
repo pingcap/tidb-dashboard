@@ -4,6 +4,7 @@ search_logs:
     search_logs: Search Logs
     detail: Search Result
     history: History
+    show_sidebar: Download or Show Progress
   page:
     intro: Preview and download logs by clicking Search
     tip: The preview shows only the first 500 logs

@@ -12,8 +12,9 @@ jobs:
   e2e_test_snapshots:
     name: Take E2E Test Snapshots
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
+      fail-fast: false
       matrix:
         # test latest features and compatibility of lower version
         include:

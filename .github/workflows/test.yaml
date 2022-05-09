@@ -70,13 +70,16 @@ jobs:
   e2e_test:
     name: E2E Test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
+      fail-fast: false
       matrix:
         # test latest features and compatibility of lower version
         include:
           - feature_version: 6.0.0
             tidb_version: nightly
+          - feature_version: 5.4.0
+            tidb_version: v5.4.0
           - feature_version: 5.0.0
             tidb_version: v5.0.0
     steps:

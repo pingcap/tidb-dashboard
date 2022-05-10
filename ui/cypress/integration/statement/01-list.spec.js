@@ -776,6 +776,10 @@ describe('SQL statements list page', () => {
       })
 
       it('Failed to save config list', () => {
+        cy.on('uncaught:exception', function () {
+          return false
+        })
+
         const staticResponse = {
           statusCode: 400,
           body: {

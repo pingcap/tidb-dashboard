@@ -7,7 +7,7 @@ import TableWithFilter, {
 import { IItem } from '.'
 
 const containerProps: React.HTMLAttributes<HTMLDivElement> = {
-  style: { fontSize: '0.8rem' },
+  style: { fontSize: '0.9rem' },
 }
 
 export interface IDropOverlayProps<T> {

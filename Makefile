@@ -8,6 +8,8 @@ FEATURE_VERSION ?= 6.0.0
 
 WITHOUT_NGM ?= false
 
+E2E_SPEC ?=
+
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
 endif
@@ -73,6 +75,12 @@ e2e_without_ngm_test:
 	cd ui &&\
 	yarn &&\
 	yarn run:e2e-test:without-ngm --env TIDB_VERSION=$(TIDB_VERSION) WITHOUT_NGM=$(WITHOUT_NGM)
+
+.PHONY: e2e_test_specify
+e2e_test_specify:
+	cd ui &&\
+	yarn &&\
+	yarn run:e2e-test:specify --env TIDB_VERSION=$(TIDB_VERSION) -- --spec $(E2E_SPEC)
 
 .PHONY: dev
 dev: lint default

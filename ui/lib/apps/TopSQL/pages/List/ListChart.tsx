@@ -10,7 +10,7 @@ import {
   PartialTheme,
 } from '@elastic/charts'
 import { orderBy, toPairs } from 'lodash'
-import React, { useEffect, useMemo, useState, forwardRef } from 'react'
+import React, { useMemo, useState, forwardRef } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlSummaryItem } from '@lib/client'
 import { useTranslation } from 'react-i18next'

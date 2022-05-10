@@ -108,6 +108,7 @@ jobs:
           path: ${{ github.workspace }}/ui/cypress/videos/**/*
       - name: Upload snapshots artifact
         uses: actions/upload-artifact@v2
+        if: always()
         with:
           name: e2e-snapshots-${{ matrix.feature_version }}
           path: ${{ github.workspace }}/ui/cypress/snapshots/**/*

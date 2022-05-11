@@ -18,6 +18,9 @@ topsql:
       save: Save
       close: Disable
       cancel: Cancel
+    enable_info:
+      title: Success
+      content: Top SQL is enabled now and is collecting data. You need to wait for about 1 minute to view this data.
   refresh: Refresh
   chart:
     cpu_time: CPU Time

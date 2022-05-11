@@ -1,7 +1,7 @@
 import { Badge, Button, Progress, Tooltip } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { upperFirst } from 'lodash'
@@ -158,7 +158,7 @@ export default function Page() {
     return [newRows, newGroups]
   }, [data])
 
-  const openResult = usePersistFn(async (openAs: string, rec: IRecord) => {
+  const openResult = useMemoizedFn(async (openAs: string, rec: IRecord) => {
     const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
     let token: string | undefined
     let profileURL: string

@@ -53,7 +53,7 @@ export default function ToggleBanner({
   const bannerSize = useSize(bannerRef)
   const transBanner = useSpring({
     opacity: collapsed ? 0 : 1,
-    height: collapsed ? toggleHeight : bannerSize.height || 0,
+    height: collapsed ? toggleHeight : bannerSize?.height ?? 0,
   })
   const transButton = useSpring({
     left: collapsed ? 0 : fullWidth - toggleWidth,

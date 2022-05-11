@@ -83,7 +83,7 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
           position={Position.Left}
           tickFormat={(v) => getValueFormat('ms')(v, 2)}
         />
-        <BarSeries
+        <BarSeries<any>
           key="PLACEHOLDER"
           id="PLACEHOLDER"
           xScaleType={ScaleType.Time}

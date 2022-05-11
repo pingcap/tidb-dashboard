@@ -12,13 +12,9 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/reflectutil"
 )
 
-// TimeRange represents a range of time.
-type TimeRange struct {
-	BeginTime int64 `json:"begin_time"`
-	EndTime   int64 `json:"end_time"`
-}
-
 type Model struct {
+	AggBeginTime             int    `json:"summary_begin_time" agg:"FLOOR(UNIX_TIMESTAMP(MIN(summary_begin_time)))"`
+	AggEndTime               int    `json:"summary_end_time" agg:"FLOOR(UNIX_TIMESTAMP(MAX(summary_end_time)))"`
 	AggDigestText            string `json:"digest_text" agg:"ANY_VALUE(digest_text)"`
 	AggDigest                string `json:"digest" agg:"ANY_VALUE(digest)"`
 	AggExecCount             int    `json:"exec_count" agg:"SUM(exec_count)"`

@@ -1,18 +1,16 @@
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getTheme } from 'office-ui-fabric-react/lib/Styling'
+import openLink from '@lib/utils/openLink'
+import { CardTable, ICardTableProps } from '@lib/components'
+import DetailPage from '../pages/Detail'
+import { IStatementTableController } from '../utils/useStatementTableController'
 import {
   DetailsRow,
   IDetailsListProps,
   IDetailsRowStyles,
-} from 'office-ui-fabric-react'
-import { getTheme } from 'office-ui-fabric-react/lib/Styling'
-
-import openLink from '@lib/utils/openLink'
-import { CardTable, ICardTableProps } from '@lib/components'
-
-import DetailPage from '../pages/Detail'
-import { IStatementTableController } from '../utils/useStatementTableController'
+} from 'office-ui-fabric-react/lib/DetailsList'
 
 interface Props extends Partial<ICardTableProps> {
   controller: IStatementTableController
@@ -21,33 +19,19 @@ interface Props extends Partial<ICardTableProps> {
 const theme = getTheme()
 
 export default function StatementsTable({ controller, ...restPrpos }: Props) {
-  const {
-    orderOptions,
-    changeOrder,
-    statementsTimeRange: { begin_time, end_time },
-    loadingStatements,
-    statements,
-    errors,
-    tableColumns,
-    visibleColumnKeys,
-
-    getClickedItemIndex,
-    saveClickedItemIndex,
-  } = controller
-
   const navigate = useNavigate()
-  const handleRowClick = usePersistFn(
+  const handleRowClick = useMemoizedFn(
     (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
       // the evicted record's digest is empty string
       if (!rec.digest) {
         return
       }
-      saveClickedItemIndex(idx)
+      controller.saveClickedItemIndex(idx)
       const qs = DetailPage.buildQuery({
         digest: rec.digest,
         schema: rec.schema_name,
-        beginTime: begin_time,
-        endTime: end_time,
+        beginTime: controller.data!.timeRange[0],
+        endTime: controller.data!.timeRange[1],
       })
       openLink(`/statement/detail?${qs}`, ev, navigate)
     }
@@ -58,17 +42,17 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
   return (
     <CardTable
       {...restPrpos}
-      loading={loadingStatements}
-      columns={tableColumns}
-      items={statements}
-      orderBy={orderOptions.orderBy}
-      desc={orderOptions.desc}
-      onChangeOrder={changeOrder}
-      errors={errors}
-      visibleColumnKeys={visibleColumnKeys}
+      loading={controller.isLoading}
+      columns={controller.availableColumnsInTable}
+      items={controller.data?.list ?? []}
+      orderBy={controller.orderOptions.orderBy}
+      desc={controller.orderOptions.desc}
+      onChangeOrder={controller.changeOrder}
+      errors={controller.errors}
+      visibleColumnKeys={controller.queryOptions.visibleColumnKeys}
       onRowClicked={handleRowClick}
       getKey={getKey}
-      clickedRowIndex={getClickedItemIndex()}
+      clickedRowIndex={controller.getClickedItemIndex()}
       onRenderRow={renderRow}
     />
   )

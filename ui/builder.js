@@ -123,7 +123,7 @@ const esbuildParams = {
     dashboardApp: 'src/index.ts',
     diagnoseReport: 'diagnoseReportApp/index.tsx',
   },
-  loader: { '.ts': 'tsx' },
+  loader: { '.ts': 'ts' },
   outdir: 'build',
   minify: !isDev,
   format: 'esm',

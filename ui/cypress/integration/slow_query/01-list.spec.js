@@ -553,7 +553,7 @@ describe('SlowQuery list page', () => {
               // Related issue: https://github.com/cypress-io/cypress/issues/14857
               doc.addEventListener('click', () => {
                 setTimeout(function () {
-                  doc.location.reload()
+                  doc.location?.reload()
                 }, 5000)
               })
 

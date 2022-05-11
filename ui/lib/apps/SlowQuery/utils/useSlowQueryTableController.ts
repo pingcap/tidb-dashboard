@@ -77,7 +77,7 @@ export interface ISlowQueryTableController {
 }
 
 export default function useSlowQueryTableController(
-  cacheMgr: CacheMgr | null,
+  cacheMgr: CacheMgr | undefined,
   visibleColumnKeys: IColumnKeys,
   showFullSQL: boolean,
   options?: ISlowQueryOptions,
@@ -94,7 +94,7 @@ export default function useSlowQueryTableController(
   )
   const [sessionQueryOptions, setSessionQueryOptions] = useSessionStorageState(
     QUERY_OPTIONS,
-    options || DEF_SLOW_QUERY_OPTIONS
+    { defaultValue: options || DEF_SLOW_QUERY_OPTIONS }
   )
   const queryOptions = useMemo(
     () => (needSave ? sessionQueryOptions : memoryQueryOptions),

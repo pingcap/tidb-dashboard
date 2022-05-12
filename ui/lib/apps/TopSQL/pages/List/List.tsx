@@ -4,6 +4,8 @@ import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
 import { LoadingOutlined, SettingOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useMount, useSessionStorage } from 'react-use'
+import { useMemoizedFn } from 'ahooks'
+import { sortBy } from 'lodash'
 import formatSql from '@lib/utils/sqlFormatter'
 import client, { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import {
@@ -29,6 +31,7 @@ import { onLegendItemOver, onLegendItemOut } from './legendAction'
 import { InstanceType } from './ListDetail/ListDetailTable'
 
 const TOP_N = 5
+const CHART_BAR_WIDTH = 8
 
 export function TopSQLList() {
   const { t } = useTranslation()
@@ -43,15 +46,29 @@ export function TopSQLList() {
     'topsql.recent_time_range',
     DEFAULT_TIME_RANGE
   )
+  const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
+  const computeTimeWindowSize = useMemoizedFn(
+    ([min, max]: TimeRangeValue): number => {
+      const screenWidth = containerRef.current?.offsetWidth || 0
+      const windowSize = Math.ceil(
+        (CHART_BAR_WIDTH * (max - min)) / screenWidth
+      )
+      setTimeWindowSize(windowSize)
+      return windowSize
+    }
+  )
   const {
     topSQLData,
-    timeWindowSize,
     isLoading: isDataLoading,
     updateTopSQLData,
-  } = useTopSQLData(containerRef, instance, timeRange)
+  } = useTopSQLData(instance, timeRange, computeTimeWindowSize)
   const isLoading = isConfigLoading || isDataLoading
-  const { instances, isLoading: isInstancesLoading } = useInstances(timeRange)
+  const {
+    instances,
+    isLoading: isInstancesLoading,
+    fetchInstances,
+  } = useInstances(timeRange)
 
   const handleBrushEnd: BrushEndListener = useCallback(
     (v: BrushEvent) => {
@@ -78,13 +95,18 @@ export function TopSQLList() {
     [setTimeRange]
   )
 
-  useMount(async () => {
+  const fetchInstancesAndSelectInstance = useMemoizedFn(async () => {
+    const [firstInstance] = await fetchInstances(timeRange)
+
+    // Select the first instance if there not instance selected
     if (!!instance) {
       return
     }
-
-    const [firstInstance] = await fetchInstances(timeRange)
     setInstance(firstInstance)
+  })
+
+  useMount(() => {
+    fetchInstancesAndSelectInstance()
   })
 
   const chartRef = useRef<any>(null)
@@ -143,7 +165,10 @@ export function TopSQLList() {
               />
               <AutoRefreshButton
                 disabled={isLoading}
-                onRefresh={() => updateTopSQLData(instance, timeRange)}
+                onRefresh={async () => {
+                  await fetchInstancesAndSelectInstance()
+                  updateTopSQLData(instance, timeRange)
+                }}
               />
               {isLoading && (
                 <Spin
@@ -225,36 +250,24 @@ export function TopSQLList() {
   )
 }
 
-const computeTimeWindowSize = (
-  screenWidth: number,
-  [min, max]: TimeRangeValue
-) => {
-  const barWidth = 8
-  const windowSize = Math.ceil((barWidth * (max - min)) / screenWidth)
-  return windowSize
-}
-
 const useTopSQLData = (
-  containerRef: React.RefObject<HTMLDivElement>,
-  instance,
-  timeRange
+  instance: TopsqlInstanceItem | null,
+  timeRange: TimeRange,
+  computeTimeWindowSize: (ts: TimeRangeValue) => number
 ) => {
   const [topSQLData, setTopSQLData] = useState<TopsqlSummaryItem[]>([])
-  const [timeWindowSize, setTimeWindowSize] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const updateTopSQLData = useCallback(
+  const updateTopSQLData = useMemoizedFn(
     async (_instance: TopsqlInstanceItem | null, _timeRange: TimeRange) => {
       if (!_instance) {
         return
       }
 
       let data: TopsqlSummaryItem[]
-      const cw = containerRef.current?.offsetWidth || 0
-      const timestamps = toTimeRangeValue(_timeRange)
-      const _timeWindowSize = computeTimeWindowSize(cw, timestamps)
-      setTimeWindowSize(_timeWindowSize)
+      const ts = toTimeRangeValue(_timeRange)
+      const timeWindowSize = computeTimeWindowSize(ts)
 
-      const [start, end] = timestamps
+      const [start, end] = ts
       try {
         setIsLoading(true)
         const resp = await client
@@ -265,7 +278,7 @@ const useTopSQLData = (
             _instance.instance_type,
             String(start),
             String(TOP_N),
-            `${_timeWindowSize}s` as any
+            `${timeWindowSize}s`
           )
         data = resp.data.data ?? []
       } finally {
@@ -290,15 +303,14 @@ const useTopSQLData = (
       })
 
       setTopSQLData(data)
-    },
-    [containerRef]
+    }
   )
 
   useEffect(() => {
     updateTopSQLData(instance, timeRange)
   }, [instance, timeRange, updateTopSQLData])
 
-  return { topSQLData, timeWindowSize, isLoading, updateTopSQLData }
+  return { topSQLData, isLoading, updateTopSQLData }
 }
 
 const useTopSQLConfig = () => {
@@ -352,46 +364,37 @@ const useTopSQLConfig = () => {
   }
 }
 
-const fetchInstances = async (
-  _timeRange: TimeRange | null
-): Promise<TopsqlInstanceItem[]> => {
-  if (!_timeRange) {
-    return []
-  }
-
-  const [start, end] = toTimeRangeValue(_timeRange)
-
-  const resp = await client
-    .getInstance()
-    .topsqlInstancesGet(String(end), String(start))
-  const instances = resp.data.data || []
-  instances.sort((a, b) => {
-    const localCompare = a.instance_type!.localeCompare(b.instance_type!)
-    if (localCompare === 0) {
-      return a.instance!.localeCompare(b.instance!)
-    }
-    return localCompare
-  })
-  return instances
-}
-
 const useInstances = (timeRange: TimeRange) => {
   const [instances, setInstances] = useState<TopsqlInstanceItem[]>([])
   const [isLoading, setLoading] = useState(false)
 
+  const fetchInstances = async (
+    _timeRange: TimeRange | null
+  ): Promise<TopsqlInstanceItem[]> => {
+    if (!_timeRange) {
+      return []
+    }
+
+    const [start, end] = toTimeRangeValue(_timeRange)
+    const resp = await client
+      .getInstance()
+      .topsqlInstancesGet(String(end), String(start))
+    const data = sortBy(resp.data.data || [], ['instance_type', 'instance'])
+
+    setInstances(data)
+    return data
+  }
+
   useEffect(() => {
     setLoading(true)
-    try {
-      fetchInstances(timeRange).then((data) => {
-        setInstances(data)
-      })
-    } finally {
+    fetchInstances(timeRange).finally(() => {
       setLoading(false)
-    }
+    })
   }, [timeRange])
 
   return {
     instances,
+    fetchInstances,
     isLoading,
   }
 }

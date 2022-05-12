@@ -10,11 +10,12 @@ import {
   PartialTheme,
 } from '@elastic/charts'
 import { orderBy, toPairs } from 'lodash'
-import React, { useEffect, useMemo, useState, forwardRef } from 'react'
+import React, { useMemo, useState, forwardRef } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlSummaryItem } from '@lib/client'
 import { useTranslation } from 'react-i18next'
 import { isOthersDigest } from '../../utils/specialRecord'
+import { useChange } from '@lib/utils/useChange'
 
 export interface ListChartProps {
   data: TopsqlSummaryItem[]
@@ -36,17 +37,16 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
   ({ onBrushEnd, data, timeWindowSize, timeRangeTimestamp }, ref) => {
     const { t } = useTranslation()
     // And we need update all the data at the same time and let the chart refresh only once for a better experience.
-    const [wall, setWall] = useState({
+    const [bundle, setBundle] = useState({
       data,
       timeWindowSize,
       timeRangeTimestamp,
     })
-    const { chartData } = useChartData(wall.data)
-    const { digestMap } = useDigestMap(wall.data)
+    const { chartData } = useChartData(bundle.data)
+    const { digestMap } = useDigestMap(bundle.data)
 
-    useEffect(() => {
-      setWall({ data, timeWindowSize, timeRangeTimestamp })
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    useChange(() => {
+      setBundle({ data, timeWindowSize, timeRangeTimestamp })
     }, [data])
 
     return (
@@ -56,9 +56,9 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
           legendPosition={Position.Bottom}
           onBrushEnd={onBrushEnd}
           xDomain={{
-            minInterval: wall.timeWindowSize * 1000,
-            min: wall.timeRangeTimestamp[0] * 1000,
-            max: wall.timeRangeTimestamp[1] * 1000,
+            minInterval: bundle.timeWindowSize * 1000,
+            min: bundle.timeRangeTimestamp[0] * 1000,
+            max: bundle.timeRangeTimestamp[1] * 1000,
           }}
         />
         <Axis
@@ -66,7 +66,7 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
           position={Position.Bottom}
           showOverlappingTicks
           tickFormat={
-            wall.timeRangeTimestamp[1] - wall.timeRangeTimestamp[0] <
+            bundle.timeRangeTimestamp[1] - bundle.timeRangeTimestamp[0] <
             24 * 60 * 60
               ? timeFormatter('HH:mm:ss')
               : timeFormatter('MM-DD HH:mm')
@@ -81,13 +81,14 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
         <BarSeries<any>
           key="PLACEHOLDER"
           id="PLACEHOLDER"
+          name="PLACEHOLDER"
+          hideInLegend
           xScaleType={ScaleType.Time}
           yScaleType={ScaleType.Linear}
           xAccessor={0}
           yAccessors={[1]}
           stackAccessors={[0]}
-          data={[timeRangeTimestamp[0], 0]}
-          name="PLACEHOLDER"
+          data={[timeRangeTimestamp[0], null]}
         />
         {Object.keys(chartData).map((digest) => {
           const sql = digestMap?.[digest] || ''

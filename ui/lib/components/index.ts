@@ -53,8 +53,6 @@ export * from './AppearAnimate'
 export { default as AppearAnimate } from './AppearAnimate'
 export * from './Blink'
 export { default as Blink } from './Blink'
-export * from './ActionsButton'
-export { default as ActionsButton } from './ActionsButton'
 export * from './DrawerFooter'
 export { default as DrawerFooter } from './DrawerFooter'
 

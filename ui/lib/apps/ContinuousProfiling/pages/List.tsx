@@ -280,6 +280,7 @@ export default function Page() {
           <ScrollablePane>
             <CardTable
               cardNoMarginTop
+              cardNoMarginBottom
               loading={listLoading}
               items={historyTable || []}
               columns={historyTableColumns}

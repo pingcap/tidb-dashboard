@@ -38,14 +38,16 @@ conprof:
         kind: Component
         content: Content
         status: Status
-        actions: Actions
+        view_as:
+          title: View As
+          error: Error Information
+          view_flamegraph: FlameGraph
+          view_graph: DotGraph
+          download: RawData
+          view_text: RawData
       status:
         finished: Finished
-      actions:
-        view_flamegraph: View FlameGraph
-        view_graph: View Graph
-        view_text: View Text
-        download: Download Raw Data
+        error: Error
   settings:
     title: Settings
     disabled_result:

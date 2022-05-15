@@ -28,8 +28,8 @@ import {
   MultiSelect,
   TimeRangeSelector,
   TimeRange,
-  calcTimeRange,
   DateTime,
+  toTimeRangeValue,
 } from '@lib/components'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { StatementsTable } from '../../components'
@@ -161,12 +161,12 @@ export default function StatementsOverview() {
 
   const downloadCSV = useMemoizedFn(async () => {
     // use last effective query options
-    const realTimeRange = calcTimeRange(controller.queryOptions.timeRange)
+    const timeRangeValue = toTimeRangeValue(controller.queryOptions.timeRange)
     try {
       setDownloading(true)
       const res = await client.getInstance().statementsDownloadTokenPost({
-        begin_time: realTimeRange[0],
-        end_time: realTimeRange[1],
+        begin_time: timeRangeValue[0],
+        end_time: timeRangeValue[1],
         fields: '*',
         schemas: controller.queryOptions.schemas,
         stmt_types: controller.queryOptions.stmtTypes,

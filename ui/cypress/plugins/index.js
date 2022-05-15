@@ -26,16 +26,17 @@ function queryTestDB(query, password, database) {
   }
   // creates a new mysql connection
   const connection = mysql.createConnection(dbConfig)
-  // start connection to db
-  connection.connect()
   // exec query + disconnect to db as a Promise
   return new Promise((resolve, reject) => {
     connection.query(query, (error, results) => {
-      if (error) reject(error)
-      else {
-        connection.end()
-        return resolve(results)
-      }
+      setTimeout(() => {
+        if (error) {
+          reject(error)
+        } else {
+          connection.end()
+          return resolve(results)
+        }
+      }, 500) // wait a few more moments for statements and slow query to finish.
     })
   })
 }

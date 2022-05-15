@@ -55,7 +55,7 @@ export function toTimeRangeValue(timeRange?: TimeRange): TimeRangeValue {
     return [...t2.value]
   } else {
     const now = dayjs().unix()
-    return [now - t2.value, now]
+    return [now - t2.value, now + 1]
   }
 }
 

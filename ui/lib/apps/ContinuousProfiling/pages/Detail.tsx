@@ -1,4 +1,4 @@
-import { Badge, Button } from 'antd'
+import { Badge, Button, Modal, Space } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -9,20 +9,22 @@ import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 
 import client, { ConprofProfileDetail } from '@lib/client'
 import {
+  Card,
   CardTable,
   DateTime,
   Descriptions,
   Head,
-  ActionsButton,
+  // ActionsButton,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { telemetry } from '../utils/telemetry'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 
 const COMMON_ACTIONS: string[] = ['view_flamegraph', 'view_graph', 'download']
-const TEXT_ACTIONS: string[] = ['view_text', 'download']
+const TEXT_ACTIONS: string[] = ['view_text']
 
 const profileTypeSortOrder: { [key: string]: number } = {
   profile: 1,
@@ -147,15 +149,15 @@ export default function Page() {
       {
         name: t('conprof.detail.table.columns.instance'),
         key: 'instance',
-        minWidth: 150,
-        maxWidth: 300,
+        minWidth: 100,
+        maxWidth: 200,
         onRender: (record) => record.target.address,
       },
       {
         name: t('conprof.detail.table.columns.content'),
         key: 'content',
-        minWidth: 150,
-        maxWidth: 300,
+        minWidth: 100,
+        maxWidth: 100,
         onRender: (record) => {
           const profileType = record.profile_type
           if (profileType === 'profile') {
@@ -167,8 +169,8 @@ export default function Page() {
       {
         name: t('conprof.detail.table.columns.status'),
         key: 'status',
-        minWidth: 150,
-        maxWidth: 200,
+        minWidth: 100,
+        maxWidth: 150,
         onRender: (record) => {
           if (record.state === 'finished' || record.state === 'success') {
             return (
@@ -179,32 +181,62 @@ export default function Page() {
             )
           }
           if (record.state === 'failed') {
-            return <Badge status="error" text={record.error} />
+            return (
+              <Badge
+                status="error"
+                text={t('conprof.detail.table.status.error')}
+              />
+            )
           }
           return <Badge text={t('conprof.list.table.status.unknown')} />
         },
       },
       {
-        name: t('conprof.detail.table.columns.actions'),
-        key: 'actions',
-        minWidth: 150,
-        maxWidth: 200,
+        name: t('conprof.detail.table.columns.view_as.title'),
+        key: 'view_as',
+        minWidth: 250,
+        maxWidth: 400,
         onRender: (record) => {
+          if (record.state === 'failed') {
+            return (
+              <a
+                href="javascript:;"
+                onClick={() => {
+                  Modal.error({
+                    title: 'Profile Error',
+                    content: record.error,
+                  })
+                }}
+              >
+                {t('conprof.detail.table.columns.view_as.error')}
+              </a>
+            )
+          }
+
+          if (record.state !== 'finished' && record.state !== 'success') {
+            return <></>
+          }
+
           const rec = record as ConprofProfileDetail
           let actionsKey = TEXT_ACTIONS
           if (rec.profile_type !== 'goroutine') {
             actionsKey = COMMON_ACTIONS
           }
-          const actions = actionsKey.map((key) => ({
-            key,
-            text: t(`conprof.detail.table.actions.${key}`),
-          }))
+
           return (
-            <ActionsButton
-              actions={actions}
-              disabled={rec.state !== 'finished' && rec.state !== 'success'}
-              onClick={(act) => handleClick(act, rec)}
-            />
+            <Space>
+              {actionsKey.map((action) => {
+                return (
+                  <a
+                    href="javascript:;"
+                    onClick={() => handleClick(action, record)}
+                    key={action}
+                  >
+                    {t(`conprof.detail.table.columns.view_as.${action}`)}
+                  </a>
+                )
+              })}
+            </Space>
           )
         },
       },
@@ -213,7 +245,7 @@ export default function Page() {
   )
 
   return (
-    <div>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head
         title={t('conprof.detail.head.title')}
         back={
@@ -226,29 +258,38 @@ export default function Page() {
             {t('conprof.detail.download')}
           </Button>
         }
-      >
-        {groupProfileDetail && (
-          <Descriptions>
-            <Descriptions.Item
-              span={2}
-              label={t('conprof.detail.head.start_at')}
-            >
-              <DateTime.Long unixTimestampMs={groupProfileDetail.ts! * 1000} />
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Head>
-
-      <CardTable
-        disableSelectionZone
-        loading={groupDetailLoading}
-        columns={columns}
-        items={tableData}
-        groups={groupData}
-        errors={[groupDetailError]}
-        hideLoadingWhenNotEmpty
-        extendLastColumn
       />
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          {groupProfileDetail && (
+            <Card noMarginTop noMarginBottom>
+              <Descriptions>
+                <Descriptions.Item
+                  span={2}
+                  label={t('conprof.detail.head.start_at')}
+                >
+                  <DateTime.Long
+                    unixTimestampMs={groupProfileDetail.ts! * 1000}
+                  />
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+          )}
+          <CardTable
+            cardNoMarginTop
+            cardNoMarginBottom
+            disableSelectionZone
+            loading={groupDetailLoading}
+            columns={columns}
+            items={tableData}
+            groups={groupData}
+            errors={[groupDetailError]}
+            hideLoadingWhenNotEmpty
+            extendLastColumn
+            compact
+          />
+        </ScrollablePane>
+      </div>
     </div>
   )
 }

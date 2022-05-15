@@ -13,5 +13,6 @@ module.exports = {
           '^use(Async|AsyncFn|AsyncRetry|UpdateEffect|IsomorphicLayoutEffect|DeepCompareEffect|ShallowCompareEffect)$',
       },
     ],
+    'no-script-url': 'off',
   },
 }

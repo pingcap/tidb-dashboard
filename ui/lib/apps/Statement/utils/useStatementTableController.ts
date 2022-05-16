@@ -255,6 +255,7 @@ export default function useStatementTableController({
           timeRange,
         }
         setData(data)
+        setErrors([])
 
         const elapsed = performance.now() - requestBeginAt
         const isLoadSlow = elapsed >= SLOW_DATA_LOAD_THRESHOLD
@@ -266,6 +267,7 @@ export default function useStatementTableController({
         }
         cacheMgr?.set(cacheKey, cacheEntity)
       } catch (e) {
+        setData(undefined)
         setErrors((prev) => prev.concat(e))
       } finally {
         setDataLoading(false)

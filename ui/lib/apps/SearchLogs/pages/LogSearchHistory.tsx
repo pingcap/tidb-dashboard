@@ -215,6 +215,7 @@ export default function LogSearchingHistory() {
         <ScrollablePane>
           <CardTable
             cardNoMarginTop
+            cardNoMarginBottom
             columns={columns}
             items={taskGroups || []}
             selection={rowSelection}

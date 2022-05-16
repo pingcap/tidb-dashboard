@@ -40,16 +40,16 @@ instance_profiling:
         kind: 组件
         content: 内容
         status: 状态
-        selection:
-          actions: 操作
-          types:
-            flamegraph: 查看火焰图
-            graph: 查看关系图
-            download: 下载原始文件
-            text: 查看文本
+        view_as:
+          title: 查看方式
+          error: 错误信息
+          flamegraph: 火焰图
+          graph: 关系图
+          download: 原始数据
+          text: 原始数据
       status:
         finished: 完成
         skipped: 不适用
-      tooltip:
-        skipped: '{{kind}} 不支持 {{type}} 分析'
-        to_be_supported: '{{kind}} 暂不支持 {{type}} 分析'
+        skipped_tooltip: 该分析当前暂不支持
+        running: 分析中
+        error: 错误

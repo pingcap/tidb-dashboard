@@ -4,5 +4,6 @@
   "overview": "/overview",
   "slow_query": "/slow_query",
   "statement": "/statement",
-  "configuration": "/configuration"
+  "configuration": "/configuration",
+  "topsql": "/topsql"
 }

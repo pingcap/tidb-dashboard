@@ -67,6 +67,7 @@ export function InstanceSelect({
         onChange(instance)
       }}
       disabled={disabled}
+      data-e2e="instance-selector"
       {...otherProps}
     >
       {instanceGroups.map((instanceGroup) => (

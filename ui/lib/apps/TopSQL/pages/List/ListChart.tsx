@@ -36,11 +36,6 @@ const theme: PartialTheme = {
 export const ListChart = forwardRef<Chart, ListChartProps>(
   ({ onBrushEnd, data, timeWindowSize, timeRangeTimestamp }, ref) => {
     const { t } = useTranslation()
-    // We need to update data and xDomain.minInterval at same time on the legacy @elastic/charts
-    // to avoid `Error: custom xDomain is invalid, custom minInterval is greater than computed minInterval`
-    // https://github.com/elastic/elastic-charts/pull/933
-    // TODO: update @elastic/charts
-
     // And we need update all the data at the same time and let the chart refresh only once for a better experience.
     const [bundle, setBundle] = useState({
       data,

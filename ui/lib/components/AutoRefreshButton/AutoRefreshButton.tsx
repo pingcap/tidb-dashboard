@@ -81,7 +81,7 @@ export function AutoRefreshButton({
         <Menu.Divider />
         {options.map((sec) => {
           return (
-            <Menu.Item key={String(sec)}>
+            <Menu.Item key={String(sec)} data-e2e={`auto_refresh_time_${sec}`}>
               {getValueFormat('s')(sec, 0)}
             </Menu.Item>
           )
@@ -142,6 +142,7 @@ export function AutoRefreshButton({
 
   return (
     <Dropdown.Button
+      data-e2e="auto-refresh-button"
       className={styles.auto_refresh_btn}
       disabled={disabled}
       onClick={handleRefresh}

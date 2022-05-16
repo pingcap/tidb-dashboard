@@ -12,8 +12,9 @@ jobs:
     name: Create PD PR
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        branch: [master, release-5.3, release-5.4]
+        branch: [master, release-5.4, release-6.1]
     steps:
       - name: Check out PD code base
         uses: actions/checkout@master

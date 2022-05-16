@@ -17,3 +17,6 @@ overview:
   metrics:
     total_requests: QPS
     latency: Latency
+    cpu: CPU Utilization
+    memory: Memory Utilization
+    io: IO Utilization

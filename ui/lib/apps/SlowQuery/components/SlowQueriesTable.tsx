@@ -1,4 +1,4 @@
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import React, { useCallback } from 'react'
 import { CardTable, ICardTableProps } from '@lib/components'
 import DetailPage from '../pages/Detail'
@@ -11,23 +11,10 @@ interface Props extends Partial<ICardTableProps> {
 }
 
 function SlowQueriesTable({ controller, ...restProps }: Props) {
-  const {
-    loadingSlowQueries,
-    tableColumns,
-    slowQueries,
-    orderOptions: { orderBy, desc },
-    changeOrder,
-    errors,
-    visibleColumnKeys,
-
-    saveClickedItemIndex,
-    getClickedItemIndex,
-  } = controller
-
   const navigate = useNavigate()
-  const handleRowClick = usePersistFn(
+  const handleRowClick = useMemoizedFn(
     (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
-      saveClickedItemIndex(idx)
+      controller.saveClickedItemIndex(idx)
       const qs = DetailPage.buildQuery({
         digest: rec.digest,
         connectId: rec.connection_id,
@@ -42,16 +29,16 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
   return (
     <CardTable
       {...restProps}
-      loading={loadingSlowQueries}
-      columns={tableColumns}
-      items={slowQueries}
-      orderBy={orderBy}
-      desc={desc}
-      onChangeOrder={changeOrder}
-      errors={errors}
-      visibleColumnKeys={visibleColumnKeys}
+      loading={controller.isLoading}
+      columns={controller.availableColumnsInTable}
+      items={controller.data ?? []}
+      orderBy={controller.orderOptions.orderBy}
+      desc={controller.orderOptions.desc}
+      onChangeOrder={controller.changeOrder}
+      errors={controller.errors}
+      visibleColumnKeys={controller.queryOptions.visibleColumnKeys}
       onRowClicked={handleRowClick}
-      clickedRowIndex={getClickedItemIndex()}
+      clickedRowIndex={controller.getClickedItemIndex()}
       getKey={getKey}
       data-e2e="detail_tabs_slow_query"
     />

@@ -1,21 +1,31 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { DownOutlined, SyncOutlined } from '@ant-design/icons'
 import { Dropdown, Menu } from 'antd'
 import { useSpring, animated } from 'react-spring'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import { addTranslationResource } from '@lib/utils/i18n'
-
 import styles from './index.module.less'
+import { useChange } from '@lib/utils/useChange'
+import { useControllableValue, useMemoizedFn } from 'ahooks'
 
-interface AutoRefreshButtonProps {
-  autoRefreshSecondsOptions: number[]
+export const DEFAULT_AUTO_REFRESH_OPTIONS = [
+  30,
+  60,
+  5 * 60,
+  15 * 60,
+  30 * 60,
+  1 * 60 * 60,
+  2 * 60 * 60,
+]
+
+export interface IAutoRefreshButtonProps {
+  options?: number[]
   // set to 0 will stop the auto refresh
-  autoRefreshSeconds: number
-  onAutoRefreshSecondsChange: (v: number) => void
-  remainingRefreshSeconds: number
-  onRemainingRefreshSecondsChange: (v: number) => void
-  onRefresh: () => void
+  defaultValue?: number
+  value?: number
+  onChange?: (number) => void
+  onRefresh?: () => void
   // set to false will pause the auto refresh
   disabled?: boolean
 }
@@ -46,81 +56,72 @@ for (const key in translations) {
 }
 
 export function AutoRefreshButton({
-  autoRefreshSecondsOptions,
-  autoRefreshSeconds,
-  onAutoRefreshSecondsChange,
-  remainingRefreshSeconds,
-  onRemainingRefreshSecondsChange,
+  options = DEFAULT_AUTO_REFRESH_OPTIONS,
   onRefresh,
   disabled = false,
-}: AutoRefreshButtonProps) {
+  ...props
+}: IAutoRefreshButtonProps) {
   const { t } = useTranslation()
-  const autoRefreshMenu = useMemo(
-    () => (
-      <Menu
-        onClick={({ key }) =>
-          onAutoRefreshSecondsChange(parseInt(key as string))
-        }
-        selectedKeys={[String(autoRefreshSeconds || 0)]}
+  const [interval, setInterval] = useControllableValue<number>(props, {
+    defaultValue: 60,
+  })
+  const [remaining, setRemaining] = useState<number>(0)
+
+  const autoRefreshMenu = (
+    <Menu
+      onClick={({ key }) => setInterval(parseInt(key as string))}
+      selectedKeys={[String(interval || 0)]}
+    >
+      <Menu.ItemGroup
+        title={t('component.autoRefreshButton.auto_refresh.title')}
       >
-        <Menu.ItemGroup
-          title={t('component.autoRefreshButton.auto_refresh.title')}
-        >
-          <Menu.Item key="0">
-            {t('component.autoRefreshButton.auto_refresh.off')}
-          </Menu.Item>
-          <Menu.Divider />
-          {autoRefreshSecondsOptions.map((sec) => {
-            return (
-              <Menu.Item key={String(sec)}>
-                {getValueFormat('s')(sec, 0)}
-              </Menu.Item>
-            )
-          })}
-        </Menu.ItemGroup>
-      </Menu>
-    ),
-    [
-      t,
-      autoRefreshSeconds,
-      autoRefreshSecondsOptions,
-      onAutoRefreshSecondsChange,
-    ]
+        <Menu.Item key="0">
+          {t('component.autoRefreshButton.auto_refresh.off')}
+        </Menu.Item>
+        <Menu.Divider />
+        {options.map((sec) => {
+          return (
+            <Menu.Item key={String(sec)} data-e2e={`auto_refresh_time_${sec}`}>
+              {getValueFormat('s')(sec, 0)}
+            </Menu.Item>
+          )
+        })}
+      </Menu.ItemGroup>
+    </Menu>
   )
 
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  const resetTimer = useCallback(() => {
+  const resetTimer = useMemoizedFn(() => {
     clearTimeout(timer.current!)
     timer.current = undefined
-    onRemainingRefreshSecondsChange(autoRefreshSeconds)
-  }, [autoRefreshSeconds, onRemainingRefreshSecondsChange])
+    setRemaining(interval)
+  })
 
-  useEffect(() => {
+  useChange(() => {
     clearTimeout(timer.current!)
     timer.current = undefined
     if (
-      // If remaining seconds is less than the new autoRefreshSeconds, keep the current remaining seconds.
-      // Otherwise, set remaining seconds to new autoRefreshSeconds.
-      remainingRefreshSeconds > autoRefreshSeconds ||
-      remainingRefreshSeconds === 0
+      // If remaining seconds is less than the new interval, keep the current remaining seconds.
+      // Otherwise, set remaining seconds to new interval.
+      remaining > interval ||
+      remaining === 0
     ) {
-      onRemainingRefreshSecondsChange(autoRefreshSeconds)
+      setRemaining(interval)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoRefreshSeconds])
+  }, [interval])
 
-  const handleRefresh = useCallback(async () => {
+  const handleRefresh = useMemoizedFn(async () => {
     if (disabled) {
       return
     }
     resetTimer()
-    onRefresh()
-  }, [disabled, resetTimer, onRefresh])
+    onRefresh?.()
+  })
 
   useEffect(() => {
     // stop or pause auto refresh need to clear timer
-    if (!autoRefreshSeconds || disabled) {
+    if (!interval || disabled) {
       if (!!timer.current) {
         clearTimeout(timer.current)
         timer.current = undefined
@@ -129,19 +130,19 @@ export function AutoRefreshButton({
     }
 
     timer.current = setTimeout(() => {
-      if (remainingRefreshSeconds === 0) {
-        onRemainingRefreshSecondsChange(autoRefreshSeconds)
+      if (remaining === 0) {
+        setRemaining(interval)
         handleRefresh()
       } else {
-        onRemainingRefreshSecondsChange(remainingRefreshSeconds - 1)
+        setRemaining((r) => r - 1)
       }
     }, 1000)
     return () => clearTimeout(timer.current!)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoRefreshSeconds, disabled, remainingRefreshSeconds])
+  }, [interval, disabled, remaining, /* unchange */ handleRefresh])
 
   return (
     <Dropdown.Button
+      data-e2e="auto-refresh-button"
       className={styles.auto_refresh_btn}
       disabled={disabled}
       onClick={handleRefresh}
@@ -149,21 +150,17 @@ export function AutoRefreshButton({
       trigger={['click']}
       icon={
         <>
-          {autoRefreshSeconds ? (
+          {Boolean(interval) && (
             <span className={styles.auto_refresh_secs}>
-              {getValueFormat('s')(autoRefreshSeconds, 0)}
+              {getValueFormat('s')(interval, 0)}
             </span>
-          ) : (
-            ''
           )}
           <DownOutlined />
         </>
       }
     >
-      {autoRefreshSeconds ? (
-        <RefreshProgress
-          value={1 - remainingRefreshSeconds / autoRefreshSeconds}
-        />
+      {Boolean(interval) ? (
+        <RefreshProgress value={1 - remaining / interval} />
       ) : (
         <SyncOutlined />
       )}

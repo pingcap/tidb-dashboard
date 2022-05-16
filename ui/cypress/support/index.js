@@ -14,9 +14,17 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
 import '@cypress/code-coverage/support'
+import '@cypress/skip-test/support'
 import 'cypress-real-events/support'
+import { addMatchImageSnapshotCommand } from 'cypress-image-snapshot/command'
 
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+addMatchImageSnapshotCommand()
+
+require('./commands')
+
+// https://github.com/cypress-io/cypress/issues/8418
+Cypress.on(
+  'uncaught:exception',
+  (err) => !err.message.includes('ResizeObserver loop limit exceeded')
+)

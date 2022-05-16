@@ -48,7 +48,6 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		{
 			endpoint.GET("/config", s.configHandler)
 			endpoint.POST("/config", auth.MWRequireWritePriv(), s.modifyConfigHandler)
-			endpoint.GET("/time_ranges", s.timeRangesHandler)
 			endpoint.GET("/stmt_types", s.stmtTypesHandler)
 			endpoint.GET("/list", s.listHandler)
 			endpoint.GET("/plans", s.plansHandler)
@@ -112,21 +111,6 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
-}
-
-// @Summary Get available statement time ranges
-// @Success 200 {array} statement.TimeRange
-// @Router /statements/time_ranges [get]
-// @Security JwtAuth
-// @Failure 401 {object} rest.ErrorResponse
-func (s *Service) timeRangesHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
-	timeRanges, err := queryTimeRanges(db)
-	if err != nil {
-		rest.Error(c, err)
-		return
-	}
-	c.JSON(http.StatusOK, timeRanges)
 }
 
 // @Summary Get all statement types

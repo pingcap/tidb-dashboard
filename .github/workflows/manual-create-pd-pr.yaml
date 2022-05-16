@@ -28,6 +28,9 @@ jobs:
         run: |
           go get -d "github.com/pingcap/tidb-dashboard@${{ github.event.inputs.release_version }}"
           go mod tidy
+          cd tests/client
+          go mod tidy
+          cd ../..
           make pd-server
           go mod tidy
       - name: Commit PD code base change
@@ -55,6 +58,8 @@ jobs:
           title: Update TiDB Dashboard to ${{ github.event.inputs.release_version }} [${{ matrix.branch }}]
           body: |
             ### What problem does this PR solve?
+
+            Issue Number: ref #4257
 
             Update TiDB Dashboard to ${{ github.event.inputs.release_version }}.
 

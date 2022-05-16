@@ -14,7 +14,11 @@ const transKeys: { [K in DisplayVariant]: string } = {
   formatted_sql: 'copyFormatted',
 }
 
-export interface ICopyLinkProps {
+export interface ICopyLinkProps
+  extends React.DetailedHTMLProps<
+    React.HTMLAttributes<HTMLSpanElement>,
+    HTMLSpanElement
+  > {
   data?: string
   displayVariant?: DisplayVariant
 }
@@ -42,7 +46,11 @@ for (const key in translations) {
   })
 }
 
-function CopyLink({ data, displayVariant = 'default' }: ICopyLinkProps) {
+function CopyLink({
+  data,
+  displayVariant = 'default',
+  ...otherProps
+}: ICopyLinkProps) {
   const { t } = useTranslation()
   const [showCopied, setShowCopied] = useState(false)
 
@@ -56,7 +64,7 @@ function CopyLink({ data, displayVariant = 'default' }: ICopyLinkProps) {
   }
 
   return (
-    <span>
+    <span {...otherProps}>
       {!showCopied && (
         <CopyToClipboard text={data ?? ''} onCopy={handleCopy}>
           <a data-e2e={`copy_${displayVariant}_to_clipboard`}>

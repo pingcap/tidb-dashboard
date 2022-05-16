@@ -135,7 +135,10 @@ function TimeRangeSelector({
   })
 
   const dropdownContent = (
-    <div className={styles.dropdown_content_container}>
+    <div
+      className={styles.dropdown_content_container}
+      data-e2e="timerange_selector_dropdown"
+    >
       <div className={styles.usual_time_ranges}>
         <span>
           {t(

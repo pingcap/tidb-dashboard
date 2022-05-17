@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react'
-import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
+import { CaretRightOutlined, CaretLeftOutlined } from '@ant-design/icons'
 import { useSize } from 'ahooks'
 import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
@@ -97,9 +97,9 @@ export default function ToggleBanner({
       </animated.div>
       <animated.div style={transButton} className={styles.bannerRight}>
         {collapsed ? (
-          <MenuUnfoldOutlined style={{ margin: 'auto' }} />
+          <CaretRightOutlined style={{ margin: 'auto' }} />
         ) : (
-          <MenuFoldOutlined style={{ margin: 'auto' }} />
+          <CaretLeftOutlined style={{ margin: 'auto' }} />
         )}
       </animated.div>
     </div>

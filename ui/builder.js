@@ -47,7 +47,7 @@ const devServerParams = {
 }
 
 const lessModifyVars = {
-  '@primary-color': '#3351ff',
+  '@primary-color': '#4263eb',
   '@body-background': '#fff',
   '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
   '@tooltip-max-width': '500px',

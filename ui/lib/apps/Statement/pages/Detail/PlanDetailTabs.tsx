@@ -36,6 +36,7 @@ export default function DetailTabs({
             columns={columns}
             items={items}
             extendLastColumn
+            data-e2e="statement_pages_detail_tabs_basic"
           />
         )
       },
@@ -52,6 +53,7 @@ export default function DetailTabs({
             columns={columns}
             items={items}
             extendLastColumn
+            data-e2e="statement_pages_detail_tabs_time"
           />
         )
       },
@@ -70,6 +72,7 @@ export default function DetailTabs({
             columns={columns}
             items={items}
             extendLastColumn
+            data-e2e="statement_pages_detail_tabs_copr"
           />
         )
       },
@@ -86,6 +89,7 @@ export default function DetailTabs({
             columns={columns}
             items={items}
             extendLastColumn
+            data-e2e="statement_pages_detail_tabs_txn"
           />
         )
       },

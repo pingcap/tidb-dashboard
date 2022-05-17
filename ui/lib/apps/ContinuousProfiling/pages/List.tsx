@@ -12,7 +12,7 @@ import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { usePersistFn, useSessionStorageState } from 'ahooks'
+import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import {
   LoadingOutlined,
   ReloadOutlined,
@@ -35,7 +35,7 @@ import { telemetry } from '../utils/telemetry'
 export default function Page() {
   const [endTime, setEndTime] = useSessionStorageState<Dayjs | string>(
     'conprof.end_time',
-    ''
+    { defaultValue: '' }
   )
   const rangeEndTime: Dayjs | undefined = useMemo(() => {
     let _rangeEndTime: Dayjs | undefined
@@ -79,7 +79,7 @@ export default function Page() {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const handleRowClick = usePersistFn(
+  const handleRowClick = useMemoizedFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
       telemetry.clickProfilingListRecord(rec)
       openLink(`/continuous_profiling/detail?ts=${rec.ts}`, ev, navigate)
@@ -207,7 +207,6 @@ export default function Page() {
               >
                 <DatePicker
                   showTime
-                  disabled={conprofIsDisabled}
                   onOpenChange={(open) =>
                     open && telemetry.openTimeRangePicker()
                   }
@@ -218,12 +217,7 @@ export default function Page() {
                 <span>-2h</span>
               </Form.Item>
               <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={listLoading}
-                  disabled={conprofIsDisabled}
-                >
+                <Button type="primary" htmlType="submit" loading={listLoading}>
                   {t('conprof.list.toolbar.query')}
                 </Button>
               </Form.Item>
@@ -286,6 +280,7 @@ export default function Page() {
           <ScrollablePane>
             <CardTable
               cardNoMarginTop
+              cardNoMarginBottom
               loading={listLoading}
               items={historyTable || []}
               columns={historyTableColumns}

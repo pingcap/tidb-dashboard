@@ -30,12 +30,12 @@ export const useIsFeatureSupport = (feature: string) =>
 
 export const useNgmState = () => store.useState((s) => s.appInfo?.ngm_state)
 
-export async function reloadWhoAmI() {
+export async function reloadWhoAmI(): Promise<boolean> {
   if (!getAuthToken()) {
     store.update((s) => {
       s.whoAmI = undefined
     })
-    return
+    return false
   }
 
   try {
@@ -45,10 +45,12 @@ export async function reloadWhoAmI() {
     store.update((s) => {
       s.whoAmI = resp.data
     })
+    return true
   } catch (ex) {
     store.update((s) => {
       s.whoAmI = undefined
     })
+    return false
   }
 }
 

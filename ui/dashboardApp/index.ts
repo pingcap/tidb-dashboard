@@ -156,9 +156,9 @@ async function webPageStart() {
   // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
   try {
-    await reloadWhoAmI()
+    const ok = await reloadWhoAmI()
 
-    if (routing.isLocationMatch('/')) {
+    if (routing.isLocationMatch('/') && ok) {
       singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
     }
   } catch (e) {

@@ -37,7 +37,7 @@ function DropOverlay({
   const { style: containerStyle, ...restContainerProps } = containerProps ?? {}
   const finalContainerProps = useMemo(() => {
     const style: React.CSSProperties = {
-      fontSize: '0.8rem',
+      fontSize: '0.9rem',
       ...containerStyle,
     }
     return {

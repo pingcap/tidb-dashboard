@@ -11,9 +11,10 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@baurine/grafana-value-formats": "^1.0.0",
+    "@baurine/sql-formatter-plus": "^1.5.3",
     "@cypress/skip-test": "^2.6.1",
     "@duorou_xu/speedscope": "1.14.1",
-    "@elastic/charts": "^20.0.0",
+    "@elastic/charts": "^46.1.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@g07cha/flexbox-react": "^5.0.0",
     "@sentry/react": "^6.3.2",
@@ -21,7 +22,7 @@
     "@types/mixpanel-browser": "^2.38.0",
     "@welldone-software/why-did-you-render": "^4.2.7",
     "ace-builds": "^1.4.12",
-    "ahooks": "^2.9.2",
+    "ahooks": "^3.3.10",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
     "bulma": "^0.9.0",
@@ -30,15 +31,14 @@
     "d3": "^5.16.0",
     "d3-graphviz": "^4.1.0",
     "dayjs": "^1.10.7",
-    "echarts": "^4.8.0",
-    "echarts-for-react": "^2.0.16",
     "eventemitter2": "^6.4.4",
     "history": "^5.0.0",
+    "hsluv": "^0.1.0",
     "i18next": "^19.6.3",
     "i18next-browser-languagedetector": "^5.0.0",
     "lodash": "^4.17.21",
     "mixpanel-browser": "^2.45.0",
-    "moize": "^5.4.7",
+    "moize": "^6.1.1",
     "moment-timezone": "^0.5.33",
     "nprogress": "^0.2.0",
     "office-ui-fabric-react": "^7.123.10",
@@ -51,6 +51,7 @@
     "react-error-boundary": "^3.1.4",
     "react-highlight-words": "^0.16.0",
     "react-i18next": "^11.7.0",
+    "react-intersection-observer": "^9.1.0",
     "react-markdown": "^7.1.0",
     "react-router": "^6.0.0-alpha.3",
     "react-router-dom": "^6.0.0-alpha.3",
@@ -60,8 +61,6 @@
     "react-use": "^15.3.3",
     "single-spa": "^5.9.2",
     "single-spa-react": "^3.0.1",
-    "sql-formatter": "^4.0.2",
-    "sql-formatter-plus-plus": "^1.4.0",
     "string-template": "^1.0.0"
   },
   "scripts": {
@@ -69,9 +68,11 @@
     "build": "gulp build",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
-    "run:e2e-test:compat-features": "cypress run --spec cypress/integration/**/*.compat_spec.js",
-    "run:e2e-test:common-features": "cypress run --spec cypress/integration/**/*.spec.js",
-    "open:cypress": "cypress open"
+    "run:e2e-test:compat-features": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.compat_spec.[jt]s",
+    "run:e2e-test:common-features": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.spec.[jt]s",
+    "run:e2e-test:without-ngm": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.without_ngm_spec.[jt]s",
+    "run:e2e-test:specify": "TZ=Asia/Shanghai cypress run",
+    "open:cypress": "TZ=Asia/Shanghai cypress open"
   },
   "husky": {
     "hooks": {
@@ -94,7 +95,8 @@
     "@baurine/esbuild-plugin-babel": "^0.3.0",
     "@baurine/esbuild-plugin-postcss3": "^0.2.3",
     "@cypress/code-coverage": "^3.9.12",
-    "@openapitools/openapi-generator-cli": "^1.0.15-4.3.1",
+    "@cypress/skip-test": "^2.6.1",
+    "@openapitools/openapi-generator-cli": "^2.5.1",
     "@types/d3": "^5.7.2",
     "@types/d3-graphviz": "^2.6.7",
     "@types/live-server": "^1.2.1",
@@ -109,11 +111,13 @@
     "clipboardy": "2.3.0",
     "customize-cra": "^1.0.0",
     "cypress": "8.5.0",
+    "cypress-image-snapshot": "^4.0.1",
     "dotenv": "^16.0.0",
-    "esbuild": "^0.13.14",
+    "esbuild": "^0.14.38",
     "esbuild-plugin-yaml": "^0.0.1",
     "eslint": "^8.7.0",
     "eslint-config-react-app": "^7.0.0",
+    "eslint-plugin-cypress": "^2.12.1",
     "eslint-watch": "^8.0.0",
     "esm": "^3.2.25",
     "fs-extra": "^10.0.0",
@@ -129,6 +133,6 @@
     "path-browserify": "^1.0.1",
     "prettier": "2.4.1",
     "pretty-quick": "^2.0.1",
-    "typescript": "^3.9.7"
+    "typescript": "^4.6.4"
   }
 }

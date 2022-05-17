@@ -55,6 +55,8 @@ function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
   )
 }
 
-export default moize.react(HighlightSQL, {
+export default moize(HighlightSQL, {
+  isShallowEqual: true,
+  maxArgs: 2,
   maxSize: 1000,
 })

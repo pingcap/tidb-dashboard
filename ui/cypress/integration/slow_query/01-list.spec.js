@@ -1,7 +1,12 @@
 // Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 
 import dayjs from 'dayjs'
-import { validateCSVList, deleteDownloadsFolder } from '../utils'
+import {
+  restartTiUP,
+  validateSlowQueryCSVList,
+  deleteDownloadsFolder,
+} from '../utils'
+import { testBaseSelectorOptions } from '../components'
 
 const neatCSV = require('neat-csv')
 const path = require('path')
@@ -13,13 +18,7 @@ describe('SlowQuery list page', () => {
     })
 
     // Restart tiup
-    cy.exec(
-      `bash ../scripts/start_tiup.sh ${Cypress.env('TIDB_VERSION')} restart`,
-      { log: true }
-    )
-
-    // Wait TiUP Playground
-    cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
+    restartTiUP()
 
     deleteDownloadsFolder()
   })
@@ -206,7 +205,10 @@ describe('SlowQuery list page', () => {
 
     describe('Filter slow query by changing database', () => {
       it('No database selected by default', () => {
-        cy.get('[data-e2e=base_select_input]').should('has.text', '')
+        cy.get('[data-e2e=base_select_input_text]').should(
+          'has.text',
+          'All Databases'
+        )
       })
 
       it('Show all databases', () => {
@@ -216,14 +218,7 @@ describe('SlowQuery list page', () => {
 
         cy.wait('@databases').then((res) => {
           const databaseList = res.response.body
-          cy.get('[data-e2e=base_selector]')
-            .click()
-            .then(() => {
-              cy.get('[data-e2e=multi_select_options]').should(
-                'have.length',
-                databaseList.length
-              )
-            })
+          testBaseSelectorOptions(databaseList, 'execution_database_name')
         })
       })
 
@@ -239,11 +234,11 @@ describe('SlowQuery list page', () => {
         // global and use database queries will be listed
         cy.get('[data-automation-key=query]').should('has.length', 3)
 
-        cy.get('[data-e2e=base_select_input]')
-          .click()
+        cy.get('[data-e2e=base_select_input_text]')
+          .click({ force: true })
           .then(() => {
             cy.get('.ms-DetailsHeader-checkTooltip')
-              .click()
+              .click({ force: true })
               .then(() => {
                 // global query will not be listed
                 cy.get('[data-automation-key=query]').should('has.length', 2)
@@ -258,26 +253,37 @@ describe('SlowQuery list page', () => {
       })
 
       it('Search item with space', () => {
-        cy.get('[data-e2e=slow_query_search]')
-          .type(' SELECT sleep\\(1\\) {enter}')
-          .then(() => {
-            cy.get('[data-automation-key=query]').should('has.length', 1)
-          })
+        cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`).as(
+          'slow_query_list'
+        )
+        cy.wait('@slow_query_list')
+
+        cy.get('[data-e2e=slow_query_search]').type(
+          ' SELECT sleep\\(1\\) {enter}'
+        )
+
+        cy.wait('@slow_query_list')
+        cy.get('[data-automation-key=query]').should('has.length', 1)
 
         // clear search text
-        cy.get('[data-e2e=slow_query_search]')
-          .clear()
-          .type('{enter}')
-          .then(() => {
-            cy.get('[data-automation-key=query]').should('has.length', 3)
-          })
+        cy.get('[data-e2e=slow_query_search]').clear().type('{enter}')
+
+        cy.wait('@slow_query_list')
+        cy.get('[data-automation-key=query]').should('has.length', 3)
       })
 
       it('Type search without pressing enter then reload', () => {
+        cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`).as(
+          'slow_query_list'
+        )
+        cy.wait('@slow_query_list')
+
         cy.get('[data-e2e=slow_query_search]').type(' SELECT sleep\\(1\\)')
+        cy.wait('@slow_query_list')
+        cy.get('[data-automation-key=query]').should('has.length', 1)
 
         cy.reload()
-        cy.get('[data-automation-key=query]').should('has.length', 3)
+        cy.get('[data-automation-key=query]').should('has.length', 1)
       })
     })
 
@@ -301,16 +307,17 @@ describe('SlowQuery list page', () => {
       })
 
       it('Check config remembered', () => {
-        cy.get('[data-e2e=slow_query_limit_select]')
-          .click()
-          .then(() => {
-            cy.get('[data-e2e=slow_query_limit_option]')
-              .eq(1)
-              .click()
-              .then(() => {
-                cy.get('[data-automation-key=query]').should('has.length', 3)
-              })
-          })
+        cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`).as(
+          'slow_query_list'
+        )
+        cy.wait('@slow_query_list')
+
+        cy.get('[data-e2e=slow_query_limit_select]').click()
+        cy.get('[data-e2e=slow_query_limit_option]').eq(1).click()
+
+        cy.wait('@slow_query_list')
+        cy.reload()
+        cy.get('[data-e2e=slow_query_limit_select]').contains('200')
       })
     })
 
@@ -331,7 +338,7 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Hover on columns selector and check selected fileds ', () => {
+      it('Hover on columns selector and check selected fields ', () => {
         cy.get('[data-e2e=columns_selector_popover]')
           .trigger('mouseover')
           .then(() => {
@@ -352,65 +359,56 @@ describe('SlowQuery list page', () => {
           })
       })
 
-      it('Select all column fileds', () => {
-        cy.get('[data-e2e=columns_selector_popover]')
-          .trigger('mouseover')
-          .then(() => {
-            cy.get('[data-e2e=slow_query_schema_table_column_tile]')
-              .check()
-              .then(() => {
-                cy.get('[role=columnheader]')
-                  .not('.is-empty')
-                  .should('have.length', 44)
-              })
-          })
+      it('Select all column fields and then reset', () => {
+        cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`).as(
+          'slow_query_list'
+        )
+        cy.wait('@slow_query_list')
+
+        cy.get('[data-e2e=columns_selector_popover]').trigger('mouseover')
+        cy.get('[data-e2e=column_selector_title]').check()
+
+        cy.wait('@slow_query_list')
+        cy.get('[role=columnheader]').not('.is-empty').should('have.length', 44)
+
+        // Columns should be remembered
+        cy.reload()
+        cy.wait('@slow_query_list')
+        cy.get('[role=columnheader]').not('.is-empty').should('have.length', 44)
+
+        // Click reset
+        cy.get('[data-e2e=columns_selector_popover]').trigger('mouseover')
+        cy.get('[data-e2e=column_selector_reset]').click()
+
+        cy.wait('@slow_query_list')
+        cy.get('[role=columnheader]').not('.is-empty').should('have.length', 4)
       })
 
-      it('Reset selected column fields', () => {
-        cy.get('[data-e2e=columns_selector_popover]')
-          .trigger('mouseover')
-          .then(() => {
-            cy.get('[data-e2e=slow_query_schema_table_column_reset]')
-              .click()
-              .then(() => {
-                cy.get('[role=columnheader]')
-                  .not('.is-empty')
-                  .should('have.length', 4)
-              })
-          })
-      })
+      it('Select an arbitary column field', () => {
+        cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`).as(
+          'slow_query_list'
+        )
+        cy.wait('@slow_query_list')
 
-      it('Select an orbitary column field', () => {
-        cy.get('[data-e2e=columns_selector_popover]')
-          .trigger('mouseover')
-          .then(() => {
-            cy.contains('Max Disk')
-              .within(() => {
-                cy.get('[data-e2e=columns_selector_field_disk_max]').check()
-              })
-              .then(() => {
-                cy.get('[role=columnheader]')
-                  .not('.is-empty')
-                  .last()
-                  .should('have.text', 'Max Disk ')
-              })
-          })
-      })
+        cy.get('[data-e2e=columns_selector_popover]').trigger('mouseover')
 
-      it('UnCheck last selected orbitary column field', () => {
-        cy.get('[data-e2e=columns_selector_popover]')
-          .trigger('mouseover')
-          .then(() => {
-            cy.contains('Max Disk')
-              .within(() => {
-                cy.get('[data-e2e=columns_selector_field_disk_max]').uncheck()
-              })
-              .then(() => {
-                cy.get('[role=columnheader]')
-                  .eq(1)
-                  .should('have.text', 'Finish Time ')
-              })
-          })
+        cy.contains('Max Disk').within(() => {
+          cy.get('[data-e2e=columns_selector_field_disk_max]').check()
+        })
+
+        cy.wait('@slow_query_list')
+        cy.get('[role=columnheader]')
+          .not('.is-empty')
+          .last()
+          .should('have.text', 'Max Disk ')
+
+        // FIXME: the next contains should be performed over the popup only
+        // cy.contains('Max Disk').within(() => {
+        //   cy.get('[data-e2e=columns_selector_field_disk_max]').uncheck()
+        // })
+
+        // cy.wait('@slow_query_list')
+        // cy.get('[role=columnheader]').eq(1).should('have.text', 'Finish Time ')
       })
 
       it('Check SLOW_QUERY_SHOW_FULL_SQL', () => {
@@ -422,7 +420,7 @@ describe('SlowQuery list page', () => {
               .then(() => {
                 cy.get('[data-automation-key=query]')
                   .eq(0)
-                  .find('[data-e2e=text_wrap_multiline]')
+                  .find('[data-e2e=syntax_highlighter_original]')
               })
 
             cy.get('[data-e2e=slow_query_show_full_sql]')
@@ -431,7 +429,7 @@ describe('SlowQuery list page', () => {
                 cy.get('[data-automation-key=query]')
                   .eq(0)
                   .trigger('mouseover')
-                  .find('[data-e2e=text_wrap_singleline_with_tooltip]')
+                  .find('[data-e2e=syntax_highlighter_compact]')
               })
           })
       })
@@ -440,20 +438,19 @@ describe('SlowQuery list page', () => {
 
   describe('Refresh table list', () => {
     it('Click refresh will update table list', () => {
-      cy.get('[data-automation-key=query]').should('have.length', 3)
+      cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`).as(
+        'slow_query_list'
+      )
+      cy.wait('@slow_query_list')
+      cy.contains('SELECT sleep(1.2)').should('not.exist')
 
       const queryData = {
         query: 'SELECT sleep(1.2)',
       }
-
       cy.task('queryDB', { ...queryData })
-      cy.wait(1000)
-
-      cy.get('[data-e2e=slow_query_refresh]')
-        .click()
-        .then(() => {
-          cy.get('[data-automation-key=query]').should('have.length', 4)
-        })
+      cy.get('[data-e2e=slow_query_search]').type('{enter}')
+      cy.wait('@slow_query_list')
+      cy.contains('SELECT sleep(1.2)')
     })
   })
 
@@ -541,6 +538,102 @@ describe('SlowQuery list page', () => {
     })
   })
 
+  // FIXME: The following tests will break slow-query details E2E since it executes a SQL.
+  // Fix the slow-query details E2E first.
+
+  // describe('Slow network condition', () => {
+  //   const slowNetworkText = 'On-the-fly update is disabled'
+
+  //   it('Does not show slow information when network is fast', () => {
+  //     cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`).as(
+  //       'slow_query_list'
+  //     )
+
+  //     cy.wait('@slow_query_list')
+
+  //     cy.wait(500)
+  //     cy.contains(slowNetworkText).should('not.exist')
+  //   })
+
+  //   it('Show slow information', () => {
+  //     cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`, (req) => {
+  //       req.on('response', (res) => {
+  //         res.setDelay(3000)
+  //       })
+  //     }).as('slow_query_list')
+
+  //     cy.wait('@slow_query_list')
+  //     cy.contains(slowNetworkText)
+  //   })
+
+  //   it('Does not send request automatically when network is slow', () => {
+  //     cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`, (req) => {
+  //       req.on('response', (res) => {
+  //         res.setDelay(3000)
+  //       })
+  //     }).as('slow_query_list')
+
+  //     cy.wait('@slow_query_list')
+  //     cy.contains(slowNetworkText)
+
+  //     const queryData = {
+  //       query: 'SELECT 41212, sleep(1)',
+  //     }
+  //     cy.task('queryDB', { ...queryData })
+  //     cy.reload()
+  //     cy.wait('@slow_query_list')
+  //     cy.contains(slowNetworkText)
+
+  //     cy.get('[data-e2e=slow_query_search]').type('SELECT 41212')
+
+  //     cy.wait(1000)
+  //     cy.get('[data-e2e=syntax_highlighter_compact]').contains(
+  //       'SELECT sleep(1.2)'
+  //     ) // TODO: this depends on a previous test to finish..
+
+  //     // request is sent only after a manual refresh
+  //     cy.get('[data-e2e=slow_query_search]').type('{enter}')
+  //     cy.wait('@slow_query_list')
+  //     cy.get('[data-e2e=syntax_highlighter_compact]').contains('SELECT 41212')
+  //     cy.get('[data-e2e=syntax_highlighter_compact]')
+  //       .contains('SELECT sleep(1.2)')
+  //       .should('not.exist')
+  //   })
+
+  //   it('Updates the info when network is no longer slow', () => {
+  //     let shouldDelay = true
+  //     cy.intercept(`${Cypress.env('apiBasePath')}slow_query/list*`, (req) => {
+  //       req.on('response', (res) => {
+  //         if (shouldDelay) {
+  //           res.setDelay(3000)
+  //         }
+  //       })
+  //     }).as('slow_query_list')
+
+  //     cy.wait('@slow_query_list')
+  //     cy.contains(slowNetworkText)
+  //     cy.get('[data-e2e=syntax_highlighter_compact]')
+  //       .contains('SELECT sleep(1.2)')
+  //       .then(() => {
+  //         shouldDelay = false
+  //       })
+
+  //     cy.get('[data-e2e=slow_query_search]').type('{enter}')
+  //     cy.wait('@slow_query_list')
+
+  //     cy.wait(500)
+  //     cy.contains(slowNetworkText).should('not.exist')
+
+  //     // On-the-fly request should be recovered
+  //     cy.get('[data-e2e=slow_query_search]').type('SELECT 41212')
+  //     cy.wait('@slow_query_list')
+  //     cy.get('[data-e2e=syntax_highlighter_compact]').contains('SELECT 41212')
+  //     cy.get('[data-e2e=syntax_highlighter_compact]')
+  //       .contains('SELECT sleep(1.2)')
+  //       .should('not.exist')
+  //   })
+  // })
+
   describe('Export slow query CSV ', () => {
     it('validate CSV File', () => {
       const downloadsFolder = Cypress.config('downloadsFolder')
@@ -557,7 +650,7 @@ describe('SlowQuery list page', () => {
               // Related issue: https://github.com/cypress-io/cypress/issues/14857
               doc.addEventListener('click', () => {
                 setTimeout(function () {
-                  doc.location.reload()
+                  doc.location?.reload()
                 }, 5000)
               })
 
@@ -581,7 +674,7 @@ describe('SlowQuery list page', () => {
             cy.readFile(downloadedFilename, { timeout: 15000 })
               // parse CSV text into objects
               .then(neatCSV)
-              .then(validateCSVList)
+              .then(validateSlowQueryCSVList)
           })
         })
     })

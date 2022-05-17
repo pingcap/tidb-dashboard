@@ -1,0 +1,19 @@
+@import 'antd/es/style/themes/default.less';
+
+.container {
+  position: sticky;
+  bottom: -@drawer-body-padding;
+  margin: -@drawer-body-padding;
+  background: @drawer-bg;
+  padding: @drawer-body-padding;
+
+  transition: box-shadow 0.1s linear;
+
+  &.withShadow {
+    box-shadow: 0 -5px 10px rgba(#000, 0.1);
+  }
+}
+
+.mark {
+  height: 1px;
+}

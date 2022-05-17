@@ -14,19 +14,6 @@ const (
 	statementsTable = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
 )
 
-func queryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
-	err = db.
-		Select(`
-			DISTINCT
-			FLOOR(UNIX_TIMESTAMP(summary_begin_time)) AS begin_time,
-			FLOOR(UNIX_TIMESTAMP(summary_end_time)) AS end_time
-		`).
-		Table(statementsTable).
-		Order("begin_time DESC, end_time DESC").
-		Find(&result).Error
-	return
-}
-
 func queryStmtTypes(db *gorm.DB) (result []string, err error) {
 	// why should put DISTINCT inside the `Pluck()` method, see here:
 	// https://github.com/jinzhu/gorm/issues/496
@@ -64,7 +51,8 @@ func (s *Service) queryStatements(
 	query := db.
 		Select(selectStmt).
 		Table(statementsTable).
-		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
+		// https://stackoverflow.com/questions/3269434/whats-the-most-efficient-way-to-test-if-two-ranges-overlap
+		Where("summary_begin_time <= FROM_UNIXTIME(?) AND summary_end_time >= FROM_UNIXTIME(?)", endTime, beginTime).
 		Group("schema_name, digest").
 		Order("agg_sum_latency DESC")
 
@@ -130,7 +118,7 @@ func (s *Service) queryPlans(
 	query := db.
 		Select(selectStmt).
 		Table(statementsTable).
-		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
+		Where("summary_begin_time <= FROM_UNIXTIME(?) AND summary_end_time >= FROM_UNIXTIME(?)", endTime, beginTime).
 		Group("plan_digest")
 
 	if digest == "" {
@@ -167,7 +155,7 @@ func (s *Service) queryPlanDetail(
 	query := db.
 		Select(selectStmt).
 		Table(statementsTable).
-		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime)
+		Where("summary_begin_time <= FROM_UNIXTIME(?) AND summary_end_time >= FROM_UNIXTIME(?)", endTime, beginTime)
 
 	if digest == "" {
 		// the evicted record's digest will be NULL

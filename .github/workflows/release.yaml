@@ -88,8 +88,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: release
     strategy:
+      fail-fast: false
       matrix:
-        branch: [master, release-6.0]
+        branch: [master, release-5.4, release-6.1]
     steps:
       - name: Check out PD code base
         uses: actions/checkout@master
@@ -103,6 +104,9 @@ jobs:
         run: |
           go get -d "github.com/pingcap/tidb-dashboard@${{ needs.release.outputs.release_version }}"
           go mod tidy
+          cd tests/client
+          go mod tidy
+          cd ../..
           make pd-server
           go mod tidy
       - name: Commit PD code base change
@@ -130,6 +134,8 @@ jobs:
           title: Update TiDB Dashboard to ${{ needs.release.outputs.release_version }} [${{ matrix.branch }}]
           body: |
             ### What problem does this PR solve?
+
+            Issue Number: ref #4257
 
             This is an automatic updating PR for TiDB Dashboard. See #4257 for details.
 

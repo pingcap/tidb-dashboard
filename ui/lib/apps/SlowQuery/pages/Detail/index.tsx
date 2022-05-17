@@ -19,7 +19,7 @@ import {
   Pre,
   TextWithInfo,
 } from '@lib/components'
-import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
+import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 
 import DetailTabs from './DetailTabs'
 
@@ -47,12 +47,14 @@ function DetailPage() {
       )
   )
 
-  const [detailExpand, setDetailExpand] = useLocalStorageState(
+  const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     SLOW_QUERY_DETAIL_EXPAND,
     {
-      prev_query: false,
-      query: false,
-      plan: false,
+      defaultValue: {
+        prev_query: false,
+        query: false,
+        plan: false,
+      },
     }
   )
 

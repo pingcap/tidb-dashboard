@@ -7,7 +7,7 @@ import {
   IObjectWithKey,
 } from 'office-ui-fabric-react/lib/Selection'
 import { useGetSet, useSessionStorage } from 'react-use'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 
 interface Props<T> {
   storageKey: string
@@ -36,7 +36,7 @@ export function useRecordSelection<T>({
     string | null
   >(storageKey, null)
   const [getInternalKey, setInternalKey] = useGetSet(selectedRecordKey)
-  const setSelectedRecordKey = usePersistFn((k: string) => {
+  const setSelectedRecordKey = useMemoizedFn((k: string) => {
     _setSelectedRecordKey(k)
     setInternalKey(k)
   })

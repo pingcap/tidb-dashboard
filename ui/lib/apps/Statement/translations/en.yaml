@@ -6,7 +6,7 @@ statement:
         back: List
         title: Statement Information
       desc:
-        time_range: Selected Time Range
+        time_range: Time Range
         plans:
           note: There are multiple execution plans for this kind of SQL statement. You can choose to view one or multiple of them.
           title:
@@ -31,8 +31,9 @@ statement:
           columnTitle: Statement Kind
         select_columns:
           show_full_sql: Show Full Query Text
-        refresh: Refresh
-        refresh_outdated: This list is outdated. To see latest data, click "Refresh".
+        query: Query
+        keyword:
+          placeholder: Filter keyword
         time_range_selector:
           name: Select Time Range
           recent: Recent
@@ -40,6 +41,8 @@ statement:
           custom_time_ranges: Custom
         export: Export
         exporting: Exporting
+      actual_range: 'Due to time window and expiration configurations, currently displaying data in time range: '
+      slow_load_info: On-the-fly update is disabled due to slow data loading. You can initiate query manually by clicking the "Query" button.
   settings:
     title: Settings
     disabled_result:

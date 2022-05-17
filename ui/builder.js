@@ -47,7 +47,7 @@ const devServerParams = {
 }
 
 const lessModifyVars = {
-  '@primary-color': '#3351ff',
+  '@primary-color': '#4263eb',
   '@body-background': '#fff',
   '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
   '@tooltip-max-width': '500px',
@@ -96,6 +96,7 @@ function genDefine() {
   define['process.env.REACT_APP_RELEASE_VERSION'] = JSON.stringify(
     getInternalVersion()
   )
+  define['process.env.E2E_TEST'] = JSON.stringify(process.env.E2E_TEST)
   return define
 }
 
@@ -122,7 +123,7 @@ const esbuildParams = {
     dashboardApp: 'src/index.ts',
     diagnoseReport: 'diagnoseReportApp/index.tsx',
   },
-  loader: { '.ts': 'tsx' },
+  loader: { '.ts': 'ts' },
   outdir: 'build',
   minify: !isDev,
   format: 'esm',
@@ -168,6 +169,15 @@ function buildHtml(inputFilename, outputFilename) {
   placeholders.forEach((key) => {
     result = result.replace(new RegExp(`%${key}%`, 'g'), process.env[key])
   })
+  // replace TIME_PLACE_HOLDER
+  const nowTime = new Date().valueOf()
+  result = result.replace(new RegExp(`%TIME_PLACE_HOLDER%`, 'g'), nowTime)
+  if (isDev) {
+    result = result.replace(
+      new RegExp('__DISTRO_ASSETS_RES_TIMESTAMP__', 'g'),
+      nowTime
+    )
+  }
 
   // handle distro strings res, only for dev mode
   const distroStringsResFilePath = './build/distro-res/strings.json'
@@ -205,13 +215,17 @@ async function main() {
   const builder = await build(esbuildParams)
   handleAssets()
 
+  function rebuild() {
+    builder.rebuild().catch((err) => console.log(err))
+  }
+
   if (isDev) {
     start(devServerParams)
 
     const tsConfig = require('./tsconfig.json')
     tsConfig.include.forEach((folder) => {
       watch(`${folder}/**/*`, { ignoreInitial: true }).on('all', () => {
-        builder.rebuild()
+        rebuild()
       })
     })
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Select } from 'antd'
 
 import { TopsqlInstanceItem } from '@lib/client'
@@ -11,7 +11,7 @@ interface InstanceGroup {
 }
 
 export interface InstanceSelectProps {
-  value: TopsqlInstanceItem
+  value: TopsqlInstanceItem | null
   onChange: (instance: TopsqlInstanceItem) => void
   instances: TopsqlInstanceItem[]
   disabled?: boolean
@@ -20,7 +20,7 @@ export interface InstanceSelectProps {
 
 const splitter = ' - '
 
-const combineSelectValue = (item: TopsqlInstanceItem) => {
+const combineSelectValue = (item: TopsqlInstanceItem | null) => {
   if (!item) {
     return ''
   }
@@ -44,14 +44,6 @@ export function InstanceSelect({
       return []
     }
 
-    instances.sort((a, b) => {
-      const localCompare = a.instance_type!.localeCompare(b.instance_type!)
-      if (localCompare === 0) {
-        return a.instance!.localeCompare(b.instance!)
-      }
-      return localCompare
-    })
-
     // Depend on the ordered instances
     return instances.reduce((prev, instance) => {
       const lastGroup = prev[prev.length - 1]
@@ -65,18 +57,6 @@ export function InstanceSelect({
     }, [] as InstanceGroup[])
   }, [instances])
 
-  useEffect(() => {
-    if (!!value) {
-      return
-    }
-
-    const firstInstance = instanceGroups[0]?.instances[0]
-    if (firstInstance) {
-      onChange(firstInstance)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instanceGroups])
-
   return (
     <Select
       style={{ width: 200 }}
@@ -87,6 +67,7 @@ export function InstanceSelect({
         onChange(instance)
       }}
       disabled={disabled}
+      data-e2e="instance-selector"
       {...otherProps}
     >
       {instanceGroups.map((instanceGroup) => (

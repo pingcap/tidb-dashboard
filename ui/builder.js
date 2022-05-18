@@ -145,7 +145,7 @@ const esbuildParams = {
       enableCache: true,
       plugins: [autoprefixer],
       // work same as the webpack NormalModuleReplacementPlugin
-      modulesReplacements: {
+      moduleReplacements: {
         [path.resolve(__dirname, 'node_modules/antd/es/style/index.less')]:
           path.resolve(__dirname, 'lib/antd.less'),
       },

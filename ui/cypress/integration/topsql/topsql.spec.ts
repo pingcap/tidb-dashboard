@@ -38,7 +38,7 @@ function enableTopSQL() {
   cy.get('.ant-modal-body .ant-btn-primary').click()
 }
 
-skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
+skipOn(Cypress.env('TIDB_VERSION') !== 'latest', () => {
   describe('Top SQL page', function () {
     before(() => {
       cy.intercept(`${Cypress.env('apiBasePath')}/topsql/config`).as(
@@ -167,13 +167,11 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
         cy.wait('@getTopsqlSummary')
           .its('request.url')
           .should('include', `start=${now - recent}`)
-          .and('include', `end=${now}`)
 
         cy.getByTestId('auto-refresh-button').first().click()
         cy.wait('@getTopsqlSummary')
           .its('request.url')
           .should('include', `start=${now - recent}`)
-          .and('include', `end=${now}`)
       })
 
       it("click refresh button after custom the time range, the data won't change", () => {

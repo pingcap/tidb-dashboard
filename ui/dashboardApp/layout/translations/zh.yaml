@@ -36,5 +36,5 @@ nav:
     debug: 高级调试
     experimental: 实验性功能
 health_check:
-  notification_failed_title: 系统健康检查失败
+  failed_notification_title: 系统健康检查失败
   ngm_not_started: 集群中未启动必要组件 `NgMonitoring`，部分功能将不可用。

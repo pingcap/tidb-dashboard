@@ -32,7 +32,10 @@ describe('Statement detail page E2E test', () => {
     cy.visit(this.uri.statement)
     cy.url().should('include', this.uri.statement)
     cy.wait('@statements_list')
-    cy.get('[data-automation-key=plan_count]').contains(2).eq(0).click()
+    cy.get('[data-automation-key=plan_count]')
+      .contains(2)
+      .eq(0)
+      .click({ force: true })
   })
 
   describe('Statement Template', () => {

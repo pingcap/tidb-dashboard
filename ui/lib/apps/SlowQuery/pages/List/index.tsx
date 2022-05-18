@@ -9,11 +9,13 @@ import {
   Menu,
   Dropdown,
   Alert,
+  Tooltip,
 } from 'antd'
 import {
   LoadingOutlined,
   ExportOutlined,
   MenuOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import {
@@ -36,6 +38,7 @@ import styles from './List.module.less'
 import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 import client from '@lib/client'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 const { Option } = Select
 
@@ -229,6 +232,20 @@ function List() {
                 <MenuOutlined />
               </div>
             </Dropdown>
+            {!isDistro && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('slow_query.toolbar.help')}
+                placement="bottom"
+              >
+                <QuestionCircleOutlined
+                  onClick={() => {
+                    window.open(t('slow_query.toolbar.help_url'), '_blank')
+                  }}
+                />
+              </Tooltip>
+            )}
           </Space>
         </Toolbar>
       </Card>

@@ -15,7 +15,7 @@ describe('TopSQL without ngm', function () {
     it('show global notification about ngm not deployed', () => {
       cy.get('.ant-notification-notice-message').should(
         'contain',
-        'System Health Check Falied'
+        'System Health Check Failed'
       )
 
       cy.get('[data-e2e="ngm_not_started"]').should('exist')

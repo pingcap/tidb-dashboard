@@ -13,6 +13,8 @@ const babelPlugin = require('@baurine/esbuild-plugin-babel')
 const isDev = process.env.NODE_ENV !== 'production'
 const isE2E = process.env.E2E_TEST === 'true'
 
+const path = require('path')
+
 // handle .env
 if (isDev) {
   fs.copyFileSync('./.env.development', './.env')
@@ -218,6 +220,8 @@ async function main() {
   function rebuild() {
     builder.rebuild().catch((err) => console.log(err))
   }
+
+  console.log('========', path.resolve(__dirname, 'lib/antd.less'))
 
   if (isDev) {
     start(devServerParams)

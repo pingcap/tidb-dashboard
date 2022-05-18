@@ -144,6 +144,11 @@ const esbuildParams = {
       },
       enableCache: true,
       plugins: [autoprefixer],
+      // work same as the webpack NormalModuleReplacementPlugin
+      modulesReplacements: {
+        [path.resolve(__dirname, 'node_modules/antd/es/style/index.less')]:
+          path.resolve(__dirname, 'lib/antd.less'),
+      },
     }),
     yamlPlugin(),
     logTime(),
@@ -220,8 +225,6 @@ async function main() {
   function rebuild() {
     builder.rebuild().catch((err) => console.log(err))
   }
-
-  console.log('========', path.resolve(__dirname, 'lib/antd.less'))
 
   if (isDev) {
     start(devServerParams)

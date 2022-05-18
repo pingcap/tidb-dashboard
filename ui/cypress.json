@@ -6,11 +6,9 @@
   "video": true,
   "env": {
     "FEATURE_VERSION": "6.0.0",
-    "TIDB_VERSION": "nightly",
+    "TIDB_VERSION": "latest",
     "ALLOW_SCREENSHOT": false
   },
   "experimentalSessionSupport": true,
-  "viewportWidth": 1500,
-  "viewportHeight": 1000,
   "ignoreTestFiles": ["**/__snapshots__/*", "**/__image_snapshots__/*"]
 }

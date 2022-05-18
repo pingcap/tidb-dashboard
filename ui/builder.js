@@ -1,5 +1,6 @@
 const fs = require('fs-extra')
 const os = require('os')
+const path = require('path')
 const chalk = require('chalk')
 const { start } = require('live-server')
 const { createProxyMiddleware } = require('http-proxy-middleware')
@@ -12,8 +13,6 @@ const babelPlugin = require('@baurine/esbuild-plugin-babel')
 
 const isDev = process.env.NODE_ENV !== 'production'
 const isE2E = process.env.E2E_TEST === 'true'
-
-const path = require('path')
 
 // handle .env
 if (isDev) {

@@ -6,7 +6,7 @@
   "video": true,
   "env": {
     "FEATURE_VERSION": "6.0.0",
-    "TIDB_VERSION": "nightly",
+    "TIDB_VERSION": "latest",
     "ALLOW_SCREENSHOT": false
   },
   "experimentalSessionSupport": true,

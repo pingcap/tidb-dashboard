@@ -38,7 +38,7 @@ function enableTopSQL() {
   cy.get('.ant-modal-body .ant-btn-primary').click()
 }
 
-skipOn(Cypress.env('TIDB_VERSION') !== 'nightly', () => {
+skipOn(Cypress.env('TIDB_VERSION') !== 'latest', () => {
   describe('Top SQL page', function () {
     before(() => {
       cy.intercept(`${Cypress.env('apiBasePath')}/topsql/config`).as(

@@ -35,5 +35,5 @@ nav:
     debug: Advanced Debugging
     experimental: Experimental Features
 health_check:
-  failed_notification_title: System Health Check Falied
+  failed_notification_title: System Health Check Failed
   ngm_not_started: A required component `NgMonitoring` is not started in this cluster. Some features may not work.

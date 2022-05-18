@@ -23,11 +23,12 @@ const (
 )
 
 type Client struct {
-	httpScheme   string
-	baseURL      string
-	httpClient   *httpc.Client
-	lifecycleCtx context.Context
-	timeout      time.Duration
+	httpScheme    string
+	baseURL       string
+	withoutPrefix bool
+	httpClient    *httpc.Client
+	lifecycleCtx  context.Context
+	timeout       time.Duration
 }
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
@@ -64,13 +65,25 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 	return &c
 }
 
+func (c Client) WithoutPrefix() *Client {
+	c.withoutPrefix = true
+	return &c
+}
+
+func (c Client) getPrefix() string {
+	if c.withoutPrefix {
+		return ""
+	}
+	return "/pd/api/v1"
+}
+
 func (c Client) AddRequestHeader(key, value string) *Client {
 	c.httpClient = c.httpClient.CloneAndAddRequestHeader(key, value)
 	return &c
 }
 
 func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
+	uri := fmt.Sprintf("%s%s%s", c.baseURL, c.getPrefix(), relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, distro.R().PD)
 }
 
@@ -83,6 +96,6 @@ func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
 }
 
 func (c *Client) SendPostRequest(relativeURI string, body io.Reader) ([]byte, error) {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
+	uri := fmt.Sprintf("%s%s%s", c.baseURL, c.getPrefix(), relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrPDClientRequestFailed, distro.R().PD)
 }

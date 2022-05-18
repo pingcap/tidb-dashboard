@@ -94,6 +94,6 @@ func (f *pdFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	return f.client.
 		WithTimeout(maxProfilingTimeout).
 		WithBaseURL(baseURL).
-		AddRequestHeader("PD-Allow-follower-handle", "true").
+		WithoutPrefix(). // pprof API does not have /pd/api/v1 prefix
 		SendGetRequest(op.path)
 }

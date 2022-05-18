@@ -10,9 +10,9 @@ require (
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 	github.com/swaggo/swag v1.7.6
-	github.com/vektra/mockery/v2 v2.12.2
+	github.com/vektra/mockery/v2 v2.9.4
 	go.uber.org/zap v1.19.0
-	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3
+	golang.org/x/mod v0.5.1
 )
 
 replace github.com/pingcap/tidb-dashboard => ../

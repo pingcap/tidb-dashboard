@@ -33,3 +33,5 @@ keyviz:
       save: 保存
       close: 确认
       cancel: 取消
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-key-visualizer

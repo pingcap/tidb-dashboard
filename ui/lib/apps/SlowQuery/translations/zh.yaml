@@ -137,3 +137,5 @@ slow_query:
     query: 查询
     export: 导出
     exporting: 正在导出
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-slow-query

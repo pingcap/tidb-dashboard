@@ -2,6 +2,9 @@ profiling:
   nav_title: 实例性能分析
 instance_profiling:
   nav_title: 手动分析
+  settings:
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-profiling
   list:
     control_form:
       title: 开始性能分析

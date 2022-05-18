@@ -6,7 +6,7 @@ topsql:
     settings: 设置
   settings:
     title: 设置
-    open_setting: 打开设置
+    open_settings: 打开设置
     disable_feature: 关闭 Top SQL 功能
     disable_warning: 确认要关闭该功能吗？
     enable: 启用功能
@@ -21,6 +21,8 @@ topsql:
     enable_info:
       title: 成功
       content: Top SQL 功能现在已启用，正在收集数据。您需要等待大约 1 分钟时间以便看到该数据。
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/top-sql
   refresh: 刷新
   chart:
     cpu_time: CPU 耗时

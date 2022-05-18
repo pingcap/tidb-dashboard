@@ -73,3 +73,5 @@ conprof:
     actions:
       close: Disable
       cancel: Cancel
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/continuous-profiling

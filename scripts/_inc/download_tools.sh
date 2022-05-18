@@ -16,12 +16,12 @@ download_tools() {
 
   if [ ! -e "$BIN/toolkit.tar.gz" ]; then
     echo "  - Downloading toolkit..."
-    curl -L -f -o "$BIN/toolkit.tar.gz" "https://download.pingcap.org/tidb-toolkit-nightly-linux-amd64.tar.gz"
+    curl -L -f -o "$BIN/toolkit.tar.gz" "https://download.pingcap.org/tidb-toolkit-v6.0.0-linux-amd64.tar.gz"
   fi
 
   if [ ! -e "$BIN/dumpling" ]; then
-    tar -x -f "$BIN/toolkit.tar.gz" -C "$BIN/" tidb-toolkit-nightly-linux-amd64/bin/dumpling
-    mv "$BIN"/tidb-toolkit-nightly-linux-amd64/bin/dumpling "$BIN/dumpling"
+    tar -x -f "$BIN/toolkit.tar.gz" -C "$BIN/" tidb-toolkit-v6.0.0-linux-amd64/bin/dumpling
+    mv "$BIN"/tidb-toolkit-v6.0.0-linux-amd64/bin/dumpling "$BIN/dumpling"
   fi
 
   echo "+ All binaries are now available."

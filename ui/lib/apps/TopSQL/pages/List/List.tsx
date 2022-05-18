@@ -1,7 +1,11 @@
 import { BrushEndListener, BrushEvent } from '@elastic/charts'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
-import { LoadingOutlined, SettingOutlined } from '@ant-design/icons'
+import {
+  LoadingOutlined,
+  QuestionCircleOutlined,
+  SettingOutlined,
+} from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useMount, useSessionStorage } from 'react-use'
 import { useMemoizedFn } from 'ahooks'
@@ -29,6 +33,7 @@ import { ListChart } from './ListChart'
 import { SettingsForm } from './SettingsForm'
 import { onLegendItemOver, onLegendItemOut } from './legendAction'
 import { InstanceType } from './ListDetail/ListDetailTable'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 const TOP_N = 5
 const CHART_BAR_WIDTH = 8
@@ -123,13 +128,14 @@ export function TopSQLList() {
               description={
                 <>
                   {t(`topsql.alert_header.body`)}
+                  {` `}
                   <a
                     onClick={() => {
                       setShowSettings(true)
                       telemetry.clickSettings('bannerTips')
                     }}
                   >
-                    {` ${t('topsql.alert_header.settings')}`}
+                    {t('topsql.alert_header.settings')}
                   </a>
                 </>
               }
@@ -179,7 +185,12 @@ export function TopSQLList() {
             </Space>
 
             <Space>
-              <Tooltip title={t('topsql.settings.title')} placement="bottom">
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('topsql.settings.title')}
+                placement="bottom"
+              >
                 <SettingOutlined
                   data-e2e="topsql_settings"
                   onClick={() => {
@@ -188,6 +199,20 @@ export function TopSQLList() {
                   }}
                 />
               </Tooltip>
+              {!isDistro && (
+                <Tooltip
+                  mouseEnterDelay={0}
+                  mouseLeaveDelay={0}
+                  title={t('topsql.settings.help')}
+                  placement="bottom"
+                >
+                  <QuestionCircleOutlined
+                    onClick={() => {
+                      window.open(t('topsql.settings.help_url'), '_blank')
+                    }}
+                  />
+                </Tooltip>
+              )}
             </Space>
           </Toolbar>
         </Card>
@@ -198,15 +223,26 @@ export function TopSQLList() {
             title={t('topsql.settings.disabled_result.title')}
             subTitle={t('topsql.settings.disabled_result.sub_title')}
             extra={
-              <Button
-                type="primary"
-                onClick={() => {
-                  setShowSettings(true)
-                  telemetry.clickSettings('firstTimeTips')
-                }}
-              >
-                {t('conprof.settings.open_settings')}
-              </Button>
+              <Space>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    setShowSettings(true)
+                    telemetry.clickSettings('firstTimeTips')
+                  }}
+                >
+                  {t('topsql.settings.open_settings')}
+                </Button>
+                {!isDistro && (
+                  <Button
+                    onClick={() => {
+                      window.open(t('topsql.settings.help_url'), '_blank')
+                    }}
+                  >
+                    {t('topsql.settings.help')}
+                  </Button>
+                )}
+              </Space>
             }
           />
         ) : (

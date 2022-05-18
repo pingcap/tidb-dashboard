@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Drawer, Result } from 'antd'
+import { Button, Drawer, Result, Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useGetSet, useMount } from 'react-use'
 import { useBoolean, useMemoizedFn } from 'ahooks'
@@ -13,6 +13,7 @@ import KeyVizToolbar from './KeyVizToolbar'
 
 import './KeyViz.less'
 import { useChange } from '@lib/utils/useChange'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 // const CACHE_EXPRIE_SECS = 10
 
@@ -176,9 +177,20 @@ const KeyViz = () => {
       title={t('keyviz.settings.disabled_result.title')}
       subTitle={t('keyviz.settings.disabled_result.sub_title')}
       extra={
-        <Button type="primary" onClick={openSettings}>
-          {t('keyviz.settings.open_setting')}
-        </Button>
+        <Space>
+          <Button type="primary" onClick={openSettings}>
+            {t('keyviz.settings.open_setting')}
+          </Button>
+          {!isDistro && (
+            <Button
+              onClick={() => {
+                window.open(t('keyviz.settings.help_url'), '_blank')
+              }}
+            >
+              {t('keyviz.settings.help')}
+            </Button>
+          )}
+        </Space>
       }
     />
   )

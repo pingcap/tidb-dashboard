@@ -17,6 +17,7 @@ import {
   SettingOutlined,
   ExportOutlined,
   MenuOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
@@ -42,6 +43,7 @@ import styles from './List.module.less'
 import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 import client, { StatementModel } from '@lib/client'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'
@@ -257,7 +259,12 @@ export default function StatementsOverview() {
                 }
               />
             )}
-            <Tooltip title={t('statement.settings.title')} placement="bottom">
+            <Tooltip
+              mouseEnterDelay={0}
+              mouseLeaveDelay={0}
+              title={t('statement.settings.title')}
+              placement="bottom"
+            >
               <SettingOutlined
                 onClick={() => setShowSettings(true)}
                 data-e2e="statement_setting"
@@ -271,6 +278,20 @@ export default function StatementsOverview() {
                 <MenuOutlined />
               </div>
             </Dropdown>
+            {!isDistro && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('statement.settings.help')}
+                placement="bottom"
+              >
+                <QuestionCircleOutlined
+                  onClick={() => {
+                    window.open(t('statement.settings.help_url'), '_blank')
+                  }}
+                />
+              </Tooltip>
+            )}
           </Space>
         </Toolbar>
       </Card>
@@ -312,9 +333,20 @@ export default function StatementsOverview() {
           title={t('statement.settings.disabled_result.title')}
           subTitle={t('statement.settings.disabled_result.sub_title')}
           extra={
-            <Button type="primary" onClick={() => setShowSettings(true)}>
-              {t('statement.settings.open_setting')}
-            </Button>
+            <Space>
+              <Button type="primary" onClick={() => setShowSettings(true)}>
+                {t('statement.settings.open_setting')}
+              </Button>
+              {!isDistro && (
+                <Button
+                  onClick={() => {
+                    window.open(t('statement.settings.help_url'), '_blank')
+                  }}
+                >
+                  {t('statement.settings.help')}
+                </Button>
+              )}
+            </Space>
           }
         />
       )}

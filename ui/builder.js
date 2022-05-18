@@ -1,5 +1,6 @@
 const fs = require('fs-extra')
 const os = require('os')
+const path = require('path')
 const chalk = require('chalk')
 const { start } = require('live-server')
 const { createProxyMiddleware } = require('http-proxy-middleware')
@@ -142,6 +143,11 @@ const esbuildParams = {
       },
       enableCache: true,
       plugins: [autoprefixer],
+      // work same as the webpack NormalModuleReplacementPlugin
+      moduleReplacements: {
+        [path.resolve(__dirname, 'node_modules/antd/es/style/index.less')]:
+          path.resolve(__dirname, 'lib/antd.less'),
+      },
     }),
     yamlPlugin(),
     logTime(),

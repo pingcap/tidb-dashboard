@@ -77,11 +77,14 @@ jobs:
         # test latest features and compatibility of lower version
         include:
           - feature_version: 6.0.0
-            tidb_version: nightly
+            tidb_version: latest
             without_ngm: false
           - feature_version: 6.0.0
-            tidb_version: nightly
+            tidb_version: latest
             without_ngm: true
+          - feature_version: 6.0.0
+            tidb_version: nightly
+            without_ngm: false
           - feature_version: 5.4.0
             tidb_version: v5.4.0
             without_ngm: false

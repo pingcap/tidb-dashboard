@@ -69,6 +69,8 @@ statement:
       save: 保存
       close: 确认
       cancel: 取消
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-statement-list
   fields:
     related_schemas: 数据库
     related_schemas_tooltip: SQL 语句涉及的数据库

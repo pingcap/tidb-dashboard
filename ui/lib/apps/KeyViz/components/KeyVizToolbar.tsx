@@ -6,6 +6,7 @@ import {
   ClockCircleOutlined,
   DownOutlined,
   LoadingOutlined,
+  QuestionCircleOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
 import { Slider, Spin, Select, Dropdown, Button, Tooltip, Space } from 'antd'
@@ -13,6 +14,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import Flexbox from '@g07cha/flexbox-react'
 import { AutoRefreshButton, Card, Toolbar } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 export interface IKeyVizToolbarProps {
   enabled: boolean
@@ -190,9 +192,27 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
           </Space>
 
           <Space>
-            <Tooltip title={t('keyviz.settings.title')}>
+            <Tooltip
+              mouseEnterDelay={0}
+              mouseLeaveDelay={0}
+              title={t('keyviz.settings.title')}
+            >
               <SettingOutlined onClick={onShowSettings} />
             </Tooltip>
+            {!isDistro && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('keyviz.settings.help')}
+                placement="bottom"
+              >
+                <QuestionCircleOutlined
+                  onClick={() => {
+                    window.open(t('keyviz.settings.help_url'), '_blank')
+                  }}
+                />
+              </Tooltip>
+            )}
           </Space>
         </Toolbar>
       </Card>

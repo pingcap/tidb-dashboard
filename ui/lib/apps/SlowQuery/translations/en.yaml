@@ -134,3 +134,5 @@ slow_query:
     query: Query
     export: Export
     exporting: Exporting
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/dashboard-slow-query

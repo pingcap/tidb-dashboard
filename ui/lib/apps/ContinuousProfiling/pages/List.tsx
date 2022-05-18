@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import {
   LoadingOutlined,
+  QuestionCircleOutlined,
   ReloadOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
@@ -31,6 +32,7 @@ import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
 import { telemetry } from '../utils/telemetry'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 export default function Page() {
   const [endTime, setEndTime] = useSessionStorageState<Dayjs | string>(
@@ -225,6 +227,8 @@ export default function Page() {
           </Space>
           <Space>
             <Tooltip
+              mouseEnterDelay={0}
+              mouseLeaveDelay={0}
               title={t('conprof.list.toolbar.refresh')}
               placement="bottom"
             >
@@ -235,6 +239,8 @@ export default function Page() {
               )}
             </Tooltip>
             <Tooltip
+              mouseEnterDelay={0}
+              mouseLeaveDelay={0}
               title={t('conprof.list.toolbar.settings')}
               placement="bottom"
             >
@@ -245,6 +251,20 @@ export default function Page() {
                 }}
               />
             </Tooltip>
+            {!isDistro && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('conprof.settings.help')}
+                placement="bottom"
+              >
+                <QuestionCircleOutlined
+                  onClick={() => {
+                    window.open(t('conprof.settings.help_url'), '_blank')
+                  }}
+                />
+              </Tooltip>
+            )}
           </Space>
         </Toolbar>
       </Card>
@@ -264,15 +284,26 @@ export default function Page() {
           title={t('conprof.settings.disabled_result.title')}
           subTitle={t('conprof.settings.disabled_result.sub_title')}
           extra={
-            <Button
-              type="primary"
-              onClick={() => {
-                setShowSettings(true)
-                telemetry.clickSettings('firstTimeTips')
-              }}
-            >
-              {t('conprof.settings.open_settings')}
-            </Button>
+            <Space>
+              <Button
+                type="primary"
+                onClick={() => {
+                  setShowSettings(true)
+                  telemetry.clickSettings('firstTimeTips')
+                }}
+              >
+                {t('conprof.settings.open_settings')}
+              </Button>
+              {!isDistro && (
+                <Button
+                  onClick={() => {
+                    window.open(t('conprof.settings.help_url'), '_blank')
+                  }}
+                >
+                  {t('conprof.settings.help')}
+                </Button>
+              )}
+            </Space>
           }
         />
       ) : (

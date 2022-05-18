@@ -69,6 +69,8 @@ statement:
       save: Save
       close: Disable
       cancel: Cancel
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/dashboard-statement-list
   fields:
     table_names: Table Names
     related_schemas: Database

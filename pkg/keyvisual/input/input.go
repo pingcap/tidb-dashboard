@@ -9,6 +9,7 @@ import (
 
 	"github.com/pingcap/log"
 
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/storage"
 )
@@ -19,12 +20,12 @@ type StatInput interface {
 	Background(ctx context.Context, stat *storage.Stat)
 }
 
-func NewStatInput(provider *region.DataProvider) StatInput {
+func NewStatInput(provider *region.DataProvider, cfg *config.Config) StatInput {
 	if provider.FileStartTime == 0 && provider.FileEndTime == 0 {
 		if provider.PeriodicGetter == nil {
 			log.Fatal("Empty DataProvider is not allowed")
 		}
-		return PeriodicInput(provider.PeriodicGetter)
+		return PeriodicInput(provider.PeriodicGetter, cfg.KeyVisualDataFetchInterval)
 	}
 	startTime := time.Unix(provider.FileStartTime, 0)
 	endTime := time.Unix(provider.FileEndTime, 0)

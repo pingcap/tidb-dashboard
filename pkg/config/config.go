@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
@@ -27,22 +28,24 @@ type Config struct {
 	ClusterTLSConfig *tls.Config // TLS config for mTLS authentication between TiDB components.
 	TiDBTLSConfig    *tls.Config // TLS config for mTLS authentication between TiDB and MySQL client.
 
-	EnableTelemetry    bool
-	EnableExperimental bool
-	FeatureVersion     string // assign the target TiDB version when running TiDB Dashboard as standalone mode
+	EnableTelemetry            bool
+	EnableExperimental         bool
+	FeatureVersion             string        // assign the target TiDB version when running TiDB Dashboard as standalone mode
+	KeyVisualDataFetchInterval time.Duration // interval of fetching key visual data
 }
 
 func Default() *Config {
 	return &Config{
-		DataDir:            "/tmp/dashboard-data",
-		TempDir:            "",
-		PDEndPoint:         "http://127.0.0.1:2379",
-		PublicPathPrefix:   defaultPublicPathPrefix,
-		ClusterTLSConfig:   nil,
-		TiDBTLSConfig:      nil,
-		EnableTelemetry:    true,
-		EnableExperimental: false,
-		FeatureVersion:     version.PDVersion,
+		DataDir:                    "/tmp/dashboard-data",
+		TempDir:                    "",
+		PDEndPoint:                 "http://127.0.0.1:2379",
+		PublicPathPrefix:           defaultPublicPathPrefix,
+		ClusterTLSConfig:           nil,
+		TiDBTLSConfig:              nil,
+		EnableTelemetry:            true,
+		EnableExperimental:         false,
+		FeatureVersion:             version.PDVersion,
+		KeyVisualDataFetchInterval: time.Minute,
 	}
 }
 

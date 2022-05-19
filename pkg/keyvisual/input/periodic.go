@@ -15,11 +15,13 @@ import (
 
 type periodicInput struct {
 	PeriodicGetter region.RegionsInfoGenerator
+	interval       time.Duration
 }
 
-func PeriodicInput(periodicGetter region.RegionsInfoGenerator) StatInput {
+func PeriodicInput(periodicGetter region.RegionsInfoGenerator, interval time.Duration) StatInput {
 	return &periodicInput{
 		PeriodicGetter: periodicGetter,
+		interval:       interval,
 	}
 }
 
@@ -28,7 +30,8 @@ func (input *periodicInput) GetStartTime() time.Time {
 }
 
 func (input *periodicInput) Background(ctx context.Context, stat *storage.Stat) {
-	ticker := time.NewTicker(time.Minute)
+	ticker := time.NewTicker(input.interval)
+	log.Info("keyvisual load regions from periodic input", zap.Duration("interval", input.interval))
 	defer ticker.Stop()
 	for {
 		select {

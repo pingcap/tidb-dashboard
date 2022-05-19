@@ -10,6 +10,6 @@ if (timestamp === '__DISTRO_ASSETS_RES_TIMESTAMP__') {
 
 const logoSvg = `${publicPathPrefix}/distro-res/logo.svg?t=${timestamp}`
 const lightLogoSvg = `${publicPathPrefix}/distro-res/logo-icon-light.svg?t=${timestamp}`
-const landingSvg = `${publicPathPrefix}/distro-res/landing.svg?t=${timestamp}`
+const landingSvg = `${publicPathPrefix}/distro-res/landing.png?t=${timestamp}`
 
 export { logoSvg, lightLogoSvg, landingSvg }

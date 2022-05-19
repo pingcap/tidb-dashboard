@@ -132,5 +132,10 @@ slow_query:
     select_columns:
       show_full_sql: 显示完整 SQL 文本
     refresh: 刷新
+    keyword:
+      placeholder: 关键字过滤
+    query: 查询
     export: 导出
     exporting: 正在导出
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-slow-query

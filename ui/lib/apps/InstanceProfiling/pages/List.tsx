@@ -1,4 +1,4 @@
-import { Badge, Button, Form, Select, Modal, Alert } from 'antd'
+import { Badge, Button, Form, Select, Modal, Alert, Space, Tooltip } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -15,6 +15,7 @@ import {
   InstanceSelect,
   IInstanceSelectRefProps,
   MultiSelect,
+  Toolbar,
 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
@@ -23,6 +24,8 @@ import { combineTargetStats } from '../utils'
 
 import styles from './List.module.less'
 import { upperFirst } from 'lodash'
+import { QuestionCircleOutlined } from '@ant-design/icons'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
@@ -201,72 +204,108 @@ export default function Page() {
   return (
     <div className={styles.list_container}>
       <Card>
-        <Form
-          onFinish={handleFinish}
-          layout="inline"
-          initialValues={{
-            instances: [],
-            duration: defaultProfilingDuration,
-            type: [],
-          }}
-        >
-          <Form.Item
-            name="instances"
-            // label={t('instance_profiling.list.control_form.instances.label')}
-            rules={[{ required: true }]}
-          >
-            <InstanceSelect
-              disabled={conprofEnable}
-              enableTiFlash={true}
-              ref={instanceSelect}
-              style={{ width: 200 }}
-              defaultSelectAll
-            />
-          </Form.Item>
-          <Form.Item name="type">
-            <MultiSelect.Plain
-              disabled={conprofEnable}
-              placeholder={t(
-                'instance_profiling.list.control_form.profiling_type.placeholder'
-              )}
-              columnTitle={t(
-                'instance_profiling.list.control_form.profiling_type.columnTitle'
-              )}
-              style={{ width: 200 }}
-              items={profilingTypeOptions}
-            ></MultiSelect.Plain>
-          </Form.Item>
-          <Form.Item
-            name="duration"
-            label={t('instance_profiling.list.control_form.duration.label')}
-            rules={[{ required: true }]}
-          >
-            <Select style={{ width: 120 }} disabled={conprofEnable}>
-              {profilingDurationsSec.map((sec) => (
-                <Select.Option value={sec} key={sec}>
-                  {sec}s
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={submitting}
-              disabled={conprofEnable}
+        <Toolbar>
+          <Space>
+            <Form
+              onFinish={handleFinish}
+              layout="inline"
+              initialValues={{
+                instances: [],
+                duration: defaultProfilingDuration,
+                type: [],
+              }}
             >
-              {t('instance_profiling.list.control_form.submit')}
-            </Button>
-          </Form.Item>
-        </Form>
+              <Form.Item
+                name="instances"
+                // label={t('instance_profiling.list.control_form.instances.label')}
+                rules={[{ required: true }]}
+              >
+                <InstanceSelect
+                  disabled={conprofEnable}
+                  enableTiFlash={true}
+                  ref={instanceSelect}
+                  style={{ width: 200 }}
+                  defaultSelectAll
+                />
+              </Form.Item>
+              <Form.Item name="type">
+                <MultiSelect.Plain
+                  disabled={conprofEnable}
+                  placeholder={t(
+                    'instance_profiling.list.control_form.profiling_type.placeholder'
+                  )}
+                  columnTitle={t(
+                    'instance_profiling.list.control_form.profiling_type.columnTitle'
+                  )}
+                  style={{ width: 200 }}
+                  items={profilingTypeOptions}
+                ></MultiSelect.Plain>
+              </Form.Item>
+              <Form.Item
+                name="duration"
+                label={t('instance_profiling.list.control_form.duration.label')}
+                rules={[{ required: true }]}
+              >
+                <Select style={{ width: 120 }} disabled={conprofEnable}>
+                  {profilingDurationsSec.map((sec) => (
+                    <Select.Option value={sec} key={sec}>
+                      {sec}s
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={submitting}
+                  disabled={conprofEnable}
+                >
+                  {t('instance_profiling.list.control_form.submit')}
+                </Button>
+              </Form.Item>
+            </Form>
+          </Space>
+          <Space>
+            {!isDistro && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('instance_profiling.settings.help')}
+                placement="bottom"
+              >
+                <QuestionCircleOutlined
+                  onClick={() => {
+                    window.open(
+                      t('instance_profiling.settings.help_url'),
+                      '_blank'
+                    )
+                  }}
+                />
+              </Tooltip>
+            )}
+          </Space>
+        </Toolbar>
       </Card>
 
       {conprofEnable && (
         <div className={styles.alert_container}>
           <Alert
             type="warning"
-            message={t('instance_profiling.list.disable_warning')}
+            message={
+              <>
+                {t('instance_profiling.list.disable_warning')}{' '}
+                {!isDistro && (
+                  <a
+                    target="_blank"
+                    href={t('instance_profiling.settings.help_url')}
+                    rel="noreferrer"
+                  >
+                    {t('instance_profiling.settings.help')}
+                  </a>
+                )}
+              </>
+            }
             showIcon
           />
         </div>
@@ -276,6 +315,7 @@ export default function Page() {
         <ScrollablePane>
           <CardTable
             cardNoMarginTop
+            cardNoMarginBottom
             loading={listLoading}
             items={historyTable || []}
             columns={historyTableColumns}

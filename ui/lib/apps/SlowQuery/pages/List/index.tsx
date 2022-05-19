@@ -1,42 +1,46 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Select,
   Space,
-  Tooltip,
   Input,
   Checkbox,
   message,
   Menu,
   Dropdown,
+  Alert,
+  Tooltip,
 } from 'antd'
 import {
-  ReloadOutlined,
   LoadingOutlined,
   ExportOutlined,
   MenuOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-
 import {
   Card,
   ColumnsSelector,
   TimeRangeSelector,
   Toolbar,
   MultiSelect,
+  TimeRange,
+  toTimeRangeValue,
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
-
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQueryTableController, {
   DEF_SLOW_QUERY_COLUMN_KEYS,
+  DEF_SLOW_QUERY_OPTIONS,
 } from '../../utils/useSlowQueryTableController'
-
 import styles from './List.module.less'
+import { useDebounceFn, useMemoizedFn } from 'ahooks'
+import { useDeepCompareChange } from '@lib/utils/useChange'
+import client from '@lib/client'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 const { Option } = Select
-const { Search } = Input
 
 const SLOW_QUERY_VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
 const SLOW_QUERY_SHOW_FULL_SQL = 'slow_query.show_full_sql'
@@ -45,7 +49,7 @@ const LIMITS = [100, 200, 500, 1000]
 function List() {
   const { t } = useTranslation()
 
-  const slowQueryCacheMgr = useContext(CacheContext)
+  const cacheMgr = useContext(CacheContext)
 
   const [visibleColumnKeys, setVisibleColumnKeys] =
     useVersionedLocalStorageState(SLOW_QUERY_VISIBLE_COLUMN_KEYS, {
@@ -55,32 +59,25 @@ function List() {
     SLOW_QUERY_SHOW_FULL_SQL,
     { defaultValue: false }
   )
+  const [downloading, setDownloading] = useState(false)
 
-  const controller = useSlowQueryTableController(
-    slowQueryCacheMgr,
-    visibleColumnKeys,
-    showFullSQL
-  )
-  const {
-    queryOptions,
-    setQueryOptions,
-    refresh,
-    allSchemas,
-    loadingSlowQueries,
-    tableColumns,
-    downloadCSV,
-    downloading,
-  } = controller
-
-  function exportCSV() {
-    const hide = message.loading(t('slow_query.toolbar.exporting') + '...', 0)
-    downloadCSV().finally(hide)
-  }
+  const controller = useSlowQueryTableController({
+    cacheMgr,
+    showFullSQL,
+    initialQueryOptions: {
+      ...DEF_SLOW_QUERY_OPTIONS,
+      visibleColumnKeys,
+    },
+  })
 
   function menuItemClick({ key }) {
     switch (key) {
       case 'export':
-        exportCSV()
+        const hide = message.loading(
+          t('slow_query.toolbar.exporting') + '...',
+          0
+        )
+        downloadCSV().finally(hide)
         break
     }
   }
@@ -100,46 +97,93 @@ function List() {
     </Menu>
   )
 
+  const [timeRange, setTimeRange] = useState<TimeRange>(
+    controller.queryOptions.timeRange
+  )
+  const [filterSchema, setFilterSchema] = useState<string[]>(
+    controller.queryOptions.schemas
+  )
+  const [filterLimit, setFilterLimit] = useState<number>(
+    controller.queryOptions.limit
+  )
+  const [filterText, setFilterText] = useState<string>(
+    controller.queryOptions.searchText
+  )
+
+  const sendQueryNow = useMemoizedFn(() => {
+    cacheMgr?.clear()
+    controller.setQueryOptions({
+      timeRange,
+      schemas: filterSchema,
+      limit: filterLimit,
+      searchText: filterText,
+      visibleColumnKeys,
+      digest: '',
+      plans: [],
+    })
+  })
+
+  const sendQueryDebounced = useDebounceFn(sendQueryNow, {
+    wait: 300,
+  }).run
+
+  useDeepCompareChange(() => {
+    if (
+      controller.isDataLoadedSlowly || // if data was loaded slowly
+      controller.isDataLoadedSlowly === null // or a request is not yet finished (which means slow network)..
+    ) {
+      // do not send requests on-the-fly.
+      return
+    }
+    sendQueryDebounced()
+  }, [timeRange, filterSchema, filterLimit, filterText, visibleColumnKeys])
+
+  const downloadCSV = useMemoizedFn(async () => {
+    // use last effective query options
+    const timeRangeValue = toTimeRangeValue(controller.queryOptions.timeRange)
+    try {
+      setDownloading(true)
+      const res = await client.getInstance().slowQueryDownloadTokenPost({
+        fields: '*',
+        begin_time: timeRangeValue[0],
+        end_time: timeRangeValue[1],
+        db: controller.queryOptions.schemas,
+        text: controller.queryOptions.searchText,
+        orderBy: controller.orderOptions.orderBy,
+        desc: controller.orderOptions.desc,
+        limit: 10000,
+        digest: '',
+        plans: [],
+      })
+      const token = res.data
+      if (token) {
+        window.location.href = `${client.getBasePath()}/slow_query/download?token=${token}`
+      }
+    } finally {
+      setDownloading(false)
+    }
+  })
+
   return (
     <div className={styles.list_container}>
       <Card>
         <Toolbar className={styles.list_toolbar} data-e2e="slow_query_toolbar">
           <Space>
-            <TimeRangeSelector
-              value={queryOptions.timeRange}
-              onChange={(timeRange) =>
-                setQueryOptions({
-                  ...queryOptions,
-                  timeRange,
-                })
-              }
-            />
+            <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
             <MultiSelect.Plain
               placeholder={t('slow_query.toolbar.schemas.placeholder')}
               selectedValueTransKey="slow_query.toolbar.schemas.selected"
               columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
-              value={queryOptions.schemas}
+              value={filterSchema}
               style={{ width: 150 }}
-              onChange={(schemas) =>
-                setQueryOptions({
-                  ...queryOptions,
-                  schemas,
-                })
-              }
-              items={allSchemas}
+              onChange={setFilterSchema}
+              items={controller.allSchemas}
               data-e2e="execution_database_name"
             />
-            <Search
-              defaultValue={queryOptions.searchText}
-              onSearch={(searchText) =>
-                setQueryOptions({ ...queryOptions, searchText })
-              }
-              data-e2e="slow_query_search"
-            />
             <Select
-              value={queryOptions.limit}
               style={{ width: 150 }}
-              onChange={(limit) => setQueryOptions({ ...queryOptions, limit })}
+              value={filterLimit}
+              onChange={setFilterLimit}
               data-e2e="slow_query_limit_select"
             >
               {LIMITS.map((item) => (
@@ -152,12 +196,20 @@ function List() {
                 </Option>
               ))}
             </Select>
+            <Input.Search
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              onSearch={sendQueryNow}
+              placeholder={t('slow_query.toolbar.keyword.placeholder')}
+              data-e2e="slow_query_search"
+              enterButton={t('slow_query.toolbar.query')}
+            />
+            {controller.isLoading && <LoadingOutlined />}
           </Space>
-
           <Space>
-            {tableColumns.length > 0 && (
+            {controller.availableColumnsInTable.length > 0 && (
               <ColumnsSelector
-                columns={tableColumns}
+                columns={controller.availableColumnsInTable}
                 visibleColumnKeys={visibleColumnKeys}
                 defaultVisibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
                 onChange={setVisibleColumnKeys}
@@ -172,16 +224,6 @@ function List() {
                 }
               />
             )}
-            <Tooltip title={t('slow_query.toolbar.refresh')} placement="bottom">
-              {loadingSlowQueries ? (
-                <LoadingOutlined />
-              ) : (
-                <ReloadOutlined
-                  onClick={refresh}
-                  data-e2e="slow_query_refresh"
-                />
-              )}
-            </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
               <div
                 style={{ cursor: 'pointer' }}
@@ -190,12 +232,34 @@ function List() {
                 <MenuOutlined />
               </div>
             </Dropdown>
+            {!isDistro && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('slow_query.toolbar.help')}
+                placement="bottom"
+              >
+                <QuestionCircleOutlined
+                  onClick={() => {
+                    window.open(t('slow_query.toolbar.help_url'), '_blank')
+                  }}
+                />
+              </Tooltip>
+            )}
           </Space>
         </Toolbar>
       </Card>
-
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
+          {controller.isDataLoadedSlowly && (
+            <Card noMarginBottom noMarginTop>
+              <Alert
+                message={t('statement.pages.overview.slow_load_info')}
+                type="info"
+                showIcon
+              />
+            </Card>
+          )}
           <SlowQueriesTable cardNoMarginTop controller={controller} />
         </ScrollablePane>
       </div>

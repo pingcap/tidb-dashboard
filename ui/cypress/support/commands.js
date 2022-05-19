@@ -50,12 +50,24 @@ Cypress.Commands.overwrite('request', (originalFn, ...options) => {
   return originalFn(...options)
 })
 
-const resizeObserverLoopErrRe = /^[^(ResizeObserver loop limit exceeded)]/
-Cypress.on('uncaught:exception', (err) => {
-  /* returning false here prevents Cypress from failing the test */
-  if (resizeObserverLoopErrRe.test(err.message)) {
-    return false
+// We overwrite the command, so it does not take a sceenshot if we run the tests inside the test runner
+Cypress.Commands.overwrite(
+  'matchImageSnapshot',
+  (originalFn, snapshotName, options) => {
+    if (Cypress.env('ALLOW_SCREENSHOT')) {
+      originalFn(snapshotName, options)
+    } else {
+      cy.log(`Screenshot comparison is disabled`)
+    }
   }
+)
+
+Cypress.Commands.add('getByTestId', (selector, ...args) => {
+  return cy.get(`[data-e2e="${selector}"]`, ...args)
+})
+
+Cypress.Commands.add('getByTestIdLike', (selector, ...args) => {
+  return cy.get(`[data-e2e*="${selector}"]`, ...args)
 })
 
 //

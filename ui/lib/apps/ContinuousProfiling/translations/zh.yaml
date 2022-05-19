@@ -40,14 +40,16 @@ conprof:
         kind: 组件
         content: 内容
         status: 状态
-        actions: 操作
+        view_as:
+          title: 查看方式
+          error: 错误信息
+          view_flamegraph: 火焰图
+          view_graph: 关系图
+          download: 原始数据
+          view_text: 原始数据
       status:
         finished: 完成
-      actions:
-        view_flamegraph: 查看火焰图
-        view_graph: 查看关系图
-        view_text: 查看文本
-        download: 下载原始文件
+        error: 错误
   settings:
     title: 设置
     disabled_result:
@@ -73,3 +75,5 @@ conprof:
     actions:
       close: 确认
       cancel: 取消
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/continuous-profiling

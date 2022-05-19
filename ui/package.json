@@ -68,9 +68,11 @@
     "build": "gulp build",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
-    "run:e2e-test:compat-features": "cypress run --spec cypress/integration/**/*.compat_spec.js",
-    "run:e2e-test:common-features": "cypress run --spec cypress/integration/**/*.spec.js",
-    "open:cypress": "cypress open"
+    "run:e2e-test:compat-features": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.compat_spec.[jt]s",
+    "run:e2e-test:common-features": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.spec.[jt]s",
+    "run:e2e-test:without-ngm": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.without_ngm_spec.[jt]s",
+    "run:e2e-test:specify": "TZ=Asia/Shanghai cypress run",
+    "open:cypress": "TZ=Asia/Shanghai cypress open"
   },
   "husky": {
     "hooks": {
@@ -91,8 +93,9 @@
   },
   "devDependencies": {
     "@baurine/esbuild-plugin-babel": "^0.3.0",
-    "@baurine/esbuild-plugin-postcss3": "^0.2.3",
+    "@baurine/esbuild-plugin-postcss3": "^0.3.3",
     "@cypress/code-coverage": "^3.9.12",
+    "@cypress/skip-test": "^2.6.1",
     "@openapitools/openapi-generator-cli": "^2.5.1",
     "@types/d3": "^5.7.2",
     "@types/d3-graphviz": "^2.6.7",
@@ -108,6 +111,7 @@
     "clipboardy": "2.3.0",
     "customize-cra": "^1.0.0",
     "cypress": "8.5.0",
+    "cypress-image-snapshot": "^4.0.1",
     "dotenv": "^16.0.0",
     "esbuild": "^0.14.38",
     "esbuild-plugin-yaml": "^0.0.1",

@@ -184,20 +184,25 @@ function useSignInSubmit(
       const { handled, message, errCode } = e as any
       if (!handled) {
         const errMsg = t('signin.message.error', { msg: message })
-        if (isDistro || errCode !== 'api.user.signin.insufficient_priv') {
+        if (errCode !== 'api.user.signin.insufficient_priv') {
           setError(errMsg)
         } else {
           // only add help link for TiDB distro when meeting insufficient_privileges error
           const errComp = (
             <>
               {errMsg}
-              <a
-                href={t('signin.message.access_doc_link')}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t('signin.message.access_doc')}
-              </a>
+              {!isDistro && (
+                <>
+                  {' '}
+                  <a
+                    href={t('signin.message.access_doc_link')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t('signin.message.access_doc')}
+                  </a>
+                </>
+              )}
             </>
           )
           setError(errComp)

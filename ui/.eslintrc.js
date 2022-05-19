@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['react-app'],
+  extends: ['react-app', 'plugin:cypress/recommended'],
   ignorePatterns: ['lib/client/api/*.ts'],
   rules: {
     'react/react-in-jsx-scope': 'error',
@@ -13,5 +13,6 @@ module.exports = {
           '^use(Async|AsyncFn|AsyncRetry|UpdateEffect|IsomorphicLayoutEffect|DeepCompareEffect|ShallowCompareEffect)$',
       },
     ],
+    'no-script-url': 'off',
   },
 }

@@ -2,6 +2,9 @@ profiling:
   nav_title: Profiling Instances
 instance_profiling:
   nav_title: Manual Profiling
+  settings:
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/dashboard-profiling
   list:
     control_form:
       title: Start Profiling Instances
@@ -40,16 +43,16 @@ instance_profiling:
         kind: Component
         content: Content
         status: Status
-        selection:
-          actions: Actions
-          types:
-            flamegraph: View FlameGraph
-            graph: View Graph
-            download: Download Raw Data
-            text: View Text
+        view_as:
+          title: View As
+          error: Error Information
+          flamegraph: FlameGraph
+          graph: DotGraph
+          download: RawData
+          text: RawData
       status:
         finished: Finished
         skipped: Not Applicable
-      tooltip:
-        skipped: The {{kind}} does not support {{type}} profiling
-        to_be_supported: The {{kind}} does not support {{type}} profiling temporary
+        skipped_tooltip: This profiling kind is currently not supported
+        running: Running
+        error: Error

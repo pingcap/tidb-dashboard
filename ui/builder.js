@@ -1,5 +1,6 @@
 const fs = require('fs-extra')
 const os = require('os')
+const path = require('path')
 const chalk = require('chalk')
 const { start } = require('live-server')
 const { createProxyMiddleware } = require('http-proxy-middleware')
@@ -47,7 +48,7 @@ const devServerParams = {
 }
 
 const lessModifyVars = {
-  '@primary-color': '#3351ff',
+  '@primary-color': '#4263eb',
   '@body-background': '#fff',
   '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
   '@tooltip-max-width': '500px',
@@ -142,6 +143,11 @@ const esbuildParams = {
       },
       enableCache: true,
       plugins: [autoprefixer],
+      // work same as the webpack NormalModuleReplacementPlugin
+      moduleReplacements: {
+        [path.resolve(__dirname, 'node_modules/antd/es/style/index.less')]:
+          path.resolve(__dirname, 'lib/antd.less'),
+      },
     }),
     yamlPlugin(),
     logTime(),

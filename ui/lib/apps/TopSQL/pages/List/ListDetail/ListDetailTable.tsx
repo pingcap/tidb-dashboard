@@ -169,6 +169,11 @@ export function ListDetailTable({
   return (
     <>
       <CardTable
+        listProps={
+          {
+            'data-e2e': 'topsql_listdetail_table',
+          } as any
+        }
         cardNoMarginTop
         getKey={getKey}
         items={planRecords}

@@ -1,19 +1,13 @@
-import { Badge, Button, Progress, Tooltip } from 'antd'
+import { Badge, Button, Modal, Progress, Space, Tooltip } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMemoizedFn } from 'ahooks'
 import { Link } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { upperFirst } from 'lodash'
 
 import client, { ProfilingTaskModel } from '@lib/client'
-import {
-  CardTable,
-  DateTime,
-  Head,
-  Descriptions,
-  ActionsButton,
-} from '@lib/components'
+import { CardTable, DateTime, Head, Descriptions, Card } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { InstanceKindName } from '@lib/utils/instanceTable'
@@ -71,7 +65,7 @@ function mapData(data) {
         ViewOptions.Download,
       ]
     } else if (task.raw_data_type === RawDataType.Text) {
-      task.view_options = [ViewOptions.Text, ViewOptions.Download]
+      task.view_options = [ViewOptions.Text]
     } else if (task.raw_data_type === '') {
       switch (task.target.kind) {
         case 'tidb':
@@ -206,15 +200,15 @@ export default function Page() {
       {
         name: t('instance_profiling.detail.table.columns.instance'),
         key: 'instance',
-        minWidth: 150,
-        maxWidth: 300,
+        minWidth: 100,
+        maxWidth: 200,
         onRender: (record) => record.target.display_name,
       },
       {
         name: t('instance_profiling.detail.table.columns.content'),
         key: 'content',
-        minWidth: 150,
-        maxWidth: 300,
+        minWidth: 100,
+        maxWidth: 100,
         onRender: (record) => {
           if (record.profiling_type === 'cpu') {
             return `CPU - ${profileDuration}s`
@@ -226,43 +220,37 @@ export default function Page() {
       {
         name: t('instance_profiling.detail.table.columns.status'),
         key: 'status',
-        minWidth: 150,
-        maxWidth: 200,
+        minWidth: 100,
+        maxWidth: 150,
         onRender: (record) => {
           if (record.state === taskState.Running) {
             return (
-              <div style={{ width: 200 }}>
-                <Progress
-                  percent={Math.round(record.progress * 100)}
-                  size="small"
-                  width={200}
-                />
-              </div>
+              <Badge
+                status="processing"
+                text={t('instance_profiling.detail.table.status.running')}
+              />
             )
           } else if (record.state === taskState.Error) {
             return (
-              <Tooltip title={record.error}>
-                <Badge status="error" text={record.error} />
-              </Tooltip>
+              <Badge
+                status="error"
+                text={t('instance_profiling.detail.table.status.error')}
+              />
             )
           } else if (record.state === taskState.Skipped) {
-            let tooltipTransKey =
-              'instance_profiling.detail.table.tooltip.skipped'
-            if (record.profiling_type === 'heap') {
-              tooltipTransKey =
-                'instance_profiling.detail.table.tooltip.to_be_supported'
-            }
             return (
               <Tooltip
-                title={t(tooltipTransKey, {
-                  kind: InstanceKindName[record.target.kind],
-                  type: upperFirst(record.profiling_type),
-                })}
+                title={t(
+                  'instance_profiling.detail.table.status.skipped_tooltip'
+                )}
               >
-                <Badge
-                  status="default"
-                  text={t('instance_profiling.detail.table.status.skipped')}
-                />
+                <Space>
+                  <Badge
+                    status="default"
+                    text={t('instance_profiling.detail.table.status.skipped')}
+                  />
+                  <QuestionCircleOutlined />
+                </Space>
               </Tooltip>
             )
           } else {
@@ -276,24 +264,60 @@ export default function Page() {
         },
       },
       {
-        name: t('instance_profiling.detail.table.columns.selection.actions'),
-        key: 'output_type',
-        minWidth: 150,
-        maxWidth: 200,
+        name: t('instance_profiling.detail.table.columns.view_as.title'),
+        key: 'view_as',
+        minWidth: 250,
+        maxWidth: 400,
         onRender: (record) => {
+          if (record.state === taskState.Error) {
+            return (
+              <a
+                href="javascript:;"
+                onClick={() => {
+                  Modal.error({
+                    title: 'Profile Error',
+                    content: record.error,
+                  })
+                }}
+              >
+                {t('instance_profiling.detail.table.columns.view_as.error')}
+              </a>
+            )
+          }
+
+          if (record.state === taskState.Running) {
+            return (
+              <div style={{ width: 150 }}>
+                <Progress
+                  percent={Math.round(record.progress * 100)}
+                  size="small"
+                  width={200}
+                />
+              </div>
+            )
+          }
+
+          if (record.state !== taskState.Success) {
+            return <></>
+          }
+
           const rec = record as IRecord
-          const actions = rec.view_options.map((key) => ({
-            key,
-            text: t(
-              `instance_profiling.detail.table.columns.selection.types.${key}`
-            ),
-          }))
           return (
-            <ActionsButton
-              actions={actions}
-              disabled={rec.state !== taskState.Success}
-              onClick={(act) => openResult(act, rec)}
-            />
+            <Space>
+              {rec.view_options.map((action) => {
+                return (
+                  <a
+                    href="javascript:;"
+                    onClick={() => openResult(action, record)}
+                    key={action}
+                  >
+                    {t(
+                      `instance_profiling.detail.table.columns.view_as.${action}`
+                    )}
+                  </a>
+                )
+              })}
+            </Space>
           )
         },
       },
@@ -328,23 +352,28 @@ export default function Page() {
             {t('instance_profiling.detail.download')}
           </Button>
         }
-      >
-        {respData && (
-          <Descriptions>
-            <Descriptions.Item
-              span={2}
-              label={t('instance_profiling.detail.head.start_at')}
-            >
-              <DateTime.Calendar
-                unixTimestampMs={respData.task_group_status!.started_at! * 1000}
-              />
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Head>
+      />
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
+          {respData && (
+            <Card noMarginTop noMarginBottom>
+              <Descriptions>
+                <Descriptions.Item
+                  span={2}
+                  label={t('instance_profiling.detail.head.start_at')}
+                >
+                  <DateTime.Calendar
+                    unixTimestampMs={
+                      respData.task_group_status!.started_at! * 1000
+                    }
+                  />
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+          )}
           <CardTable
+            cardNoMarginTop
+            cardNoMarginBottom
             disableSelectionZone
             loading={isLoading}
             columns={columns}
@@ -353,6 +382,7 @@ export default function Page() {
             groups={groupData}
             hideLoadingWhenNotEmpty
             extendLastColumn
+            compact
           />
         </ScrollablePane>
       </div>

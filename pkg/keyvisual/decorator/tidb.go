@@ -64,7 +64,7 @@ type TableInOrder struct {
 	tables []*tableDetail
 }
 
-// BuildFromTableMap build order map from a table map.
+// BuildFromTableMap build ordered tables from a table map.
 func (inOrder *TableInOrder) BuildFromTableMap(m *sync.Map) {
 	tables := []*tableDetail{}
 	m.Range(func(key, value interface{}) bool {

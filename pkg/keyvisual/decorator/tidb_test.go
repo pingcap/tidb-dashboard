@@ -46,4 +46,5 @@ func TestTableInOrderFindOne(t *testing.T) {
 	require.Nil(t, tableInOrder.FindOne(3, 4))
 	require.Nil(t, tableInOrder.FindOne(8, 0))
 	require.Nil(t, tableInOrder.FindOne(8, 8))
+	require.Nil(t, tableInOrder.FindOne(80, 81))
 }

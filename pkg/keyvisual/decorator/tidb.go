@@ -25,6 +25,7 @@ func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, etcdClient *clientv3
 		EtcdClient:    etcdClient,
 		tidbClient:    tidbClient,
 		SchemaVersion: -1,
+		tableInOrder:  &tableInOrder{},
 	}
 
 	lc.Append(fx.Hook{
@@ -60,12 +61,16 @@ type tidbLabelStrategy struct {
 }
 
 type tableInOrder struct {
-	rwMu   sync.RWMutex
+	mu     sync.RWMutex
 	tables []*tableDetail
 }
 
 // BuildFromTableMap build ordered tables from a table map.
 func (inOrder *tableInOrder) buildFromTableMap(m *sync.Map) {
+	if m == nil {
+		return
+	}
+
 	tables := []*tableDetail{}
 	m.Range(func(key, value interface{}) bool {
 		t := value.(*tableDetail)
@@ -75,22 +80,26 @@ func (inOrder *tableInOrder) buildFromTableMap(m *sync.Map) {
 
 	sort.Sort(&tableSorter{tables: tables})
 
-	inOrder.rwMu.Lock()
-	defer inOrder.rwMu.Unlock()
+	inOrder.mu.Lock()
+	defer inOrder.mu.Unlock()
 	inOrder.tables = tables
 }
 
 // FindOne will find first table detail which id is between [fromId, toId).
-// Returns nil if not found any
+// Returns nil if not found any.
 func (inOrder *tableInOrder) findOne(fromID, toID int64) *tableDetail {
 	if fromID >= toID {
 		return nil
 	}
 
-	inOrder.rwMu.RLock()
-	defer inOrder.rwMu.RUnlock()
+	inOrder.mu.RLock()
+	defer inOrder.mu.RUnlock()
 
 	tLen := len(inOrder.tables)
+	if tLen == 0 {
+		return nil
+	}
+
 	pivot := tLen / 2
 	left := 0
 	right := tLen
@@ -115,7 +124,7 @@ func (inOrder *tableInOrder) findOne(fromID, toID int64) *tableDetail {
 	}
 
 	id := inOrder.tables[pivot].ID
-	if id < fromID || id >= toID {
+	if id < fromID || id > toID {
 		return nil
 	}
 
@@ -203,40 +212,40 @@ func (e *tidbLabeler) Label(keys []string) []LabelKey {
 	return labelKeys
 }
 
-func (e *tidbLabeler) label(startKey, endKey string) (label LabelKey) {
-	startKeyBytes := region.Bytes(startKey)
-	label.Key = hex.EncodeToString(startKeyBytes)
-	startKeyInfo, _ := e.Buffer.DecodeKey(startKeyBytes)
+func (e *tidbLabeler) label(lKey, rKey string) (label LabelKey) {
+	lKeyBytes := region.Bytes(lKey)
+	label.Key = hex.EncodeToString(lKeyBytes)
+	lKeyInfo, _ := e.Buffer.DecodeKey(lKeyBytes)
 
-	isMeta, startTableID := startKeyInfo.MetaOrTable()
+	isMeta, lTableID := lKeyInfo.MetaOrTable()
 	if isMeta {
 		label.Labels = append(label.Labels, "meta")
 		return
 	}
 
 	var detail *tableDetail
-	if v, ok := e.TableMap.Load(startTableID); ok {
+	if v, ok := e.TableMap.Load(lTableID); ok {
 		detail = v.(*tableDetail)
 		label.Labels = append(label.Labels, detail.DB, detail.Name)
 	} else {
-		endKeyBytes := region.Bytes(endKey)
-		endKeyInfo, _ := e.Buffer.DecodeKey(endKeyBytes)
-		_, endTableID := endKeyInfo.MetaOrTable()
-		detail := e.tableInOrder.findOne(startTableID, endTableID)
+		rKeyBytes := region.Bytes(rKey)
+		rKeyInfo, _ := e.Buffer.DecodeKey(rKeyBytes)
+		_, rTableID := rKeyInfo.MetaOrTable()
+		detail := e.tableInOrder.findOne(lTableID, rTableID)
 
 		if detail != nil {
 			label.Labels = append(label.Labels, detail.DB, detail.Name)
 			// can't find the row/index info if the table info was came from a range
 			return
 		}
-		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", startTableID))
+		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", lTableID))
 	}
 
-	if isCommonHandle, rowID := startKeyInfo.RowInfo(); isCommonHandle {
+	if isCommonHandle, rowID := lKeyInfo.RowInfo(); isCommonHandle {
 		label.Labels = append(label.Labels, "row")
 	} else if rowID != 0 {
 		label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
-	} else if indexID := startKeyInfo.IndexInfo(); indexID != 0 {
+	} else if indexID := lKeyInfo.IndexInfo(); indexID != 0 {
 		if detail == nil {
 			label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
 		} else if name, ok := detail.Indices[indexID]; ok {

@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -52,14 +53,95 @@ type tidbLabelStrategy struct {
 	EtcdClient *clientv3.Client
 
 	TableMap      sync.Map
+	TableInOrder  *TableInOrder
 	tidbClient    *tidb.Client
 	SchemaVersion int64
 	TidbAddress   []string
 }
 
+type TableInOrder struct {
+	rwMu   sync.RWMutex
+	tables []*tableDetail
+}
+
+// BuildFromTableMap build order map from a table map.
+func (inOrder *TableInOrder) BuildFromTableMap(m *sync.Map) {
+	tables := []*tableDetail{}
+	m.Range(func(key, value interface{}) bool {
+		t := value.(*tableDetail)
+		tables = append(tables, t)
+		return true
+	})
+
+	sort.Sort(&tableSorter{tables: tables})
+
+	inOrder.rwMu.Lock()
+	defer inOrder.rwMu.Unlock()
+	inOrder.tables = tables
+}
+
+// FindOne will find first table detail which id is between [fromId, toId).
+// Returns nil if not found any
+func (inOrder *TableInOrder) FindOne(fromId, toId int64) *tableDetail {
+	if fromId >= toId {
+		return nil
+	}
+
+	inOrder.rwMu.RLock()
+	defer inOrder.rwMu.RUnlock()
+
+	tLen := len(inOrder.tables)
+	var pivot int = tLen / 2
+	left := 0
+	right := tLen
+	for pivot > left {
+		prevId := inOrder.tables[pivot-1].ID
+		id := inOrder.tables[pivot].ID
+		// find approaching id near the fromId
+		// table_1 ------- table_3 ------- table_5
+		//           	^
+		//       search table_2
+		// approaching result: table_3
+		if prevId < fromId && id >= fromId {
+			break
+		}
+
+		if id < fromId {
+			left = pivot
+		} else {
+			right = pivot
+		}
+		pivot = (left + right) / 2
+	}
+
+	id := inOrder.tables[pivot].ID
+	if id < fromId || id >= toId {
+		return nil
+	}
+
+	return inOrder.tables[pivot]
+}
+
+type tableSorter struct {
+	tables []*tableDetail
+}
+
+func (ts *tableSorter) Len() int {
+	return len(ts.tables)
+}
+
+func (ts *tableSorter) Swap(i, j int) {
+	ts.tables[i], ts.tables[j] = ts.tables[j], ts.tables[i]
+}
+
+func (ts *tableSorter) Less(i, j int) bool {
+	return ts.tables[i].ID < ts.tables[j].ID
+}
+
 type tidbLabeler struct {
-	TableMap *sync.Map
-	Buffer   model.KeyInfoBuffer
+	TableMap     *sync.Map
+	TableInOrder *TableInOrder
+	Buffer       model.KeyInfoBuffer
 }
 
 func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {}
@@ -79,7 +161,8 @@ func (s *tidbLabelStrategy) Background(ctx context.Context) {
 
 func (s *tidbLabelStrategy) NewLabeler() Labeler {
 	return &tidbLabeler{
-		TableMap: &s.TableMap,
+		TableMap:     &s.TableMap,
+		TableInOrder: s.TableInOrder,
 	}
 }
 
@@ -105,8 +188,8 @@ func (e *tidbLabeler) CrossBorder(startKey, endKey string) bool {
 // Label will parse the ID information of the table and index.
 func (e *tidbLabeler) Label(keys []string) []LabelKey {
 	labelKeys := make([]LabelKey, len(keys))
-	for i, key := range keys {
-		labelKeys[i] = e.label(key)
+	for i := 1; i < len(keys); i++ {
+		labelKeys[i-1] = e.label(keys[i-1], keys[i])
 	}
 
 	if keys[0] == "" {
@@ -120,30 +203,41 @@ func (e *tidbLabeler) Label(keys []string) []LabelKey {
 	return labelKeys
 }
 
-func (e *tidbLabeler) label(key string) (label LabelKey) {
-	keyBytes := region.Bytes(key)
-	label.Key = hex.EncodeToString(keyBytes)
-	keyInfo, _ := e.Buffer.DecodeKey(keyBytes)
+func (e *tidbLabeler) label(startKey, endKey string) (label LabelKey) {
+	startKeyBytes := region.Bytes(startKey)
+	label.Key = hex.EncodeToString(startKeyBytes)
+	startKeyInfo, _ := e.Buffer.DecodeKey(startKeyBytes)
 
-	isMeta, tableID := keyInfo.MetaOrTable()
+	isMeta, startTableID := startKeyInfo.MetaOrTable()
 	if isMeta {
 		label.Labels = append(label.Labels, "meta")
 		return
 	}
 
 	var detail *tableDetail
-	if v, ok := e.TableMap.Load(tableID); ok {
+	if v, ok := e.TableMap.Load(startTableID); ok {
 		detail = v.(*tableDetail)
 		label.Labels = append(label.Labels, detail.DB, detail.Name)
 	} else {
-		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", tableID))
+		endKeyBytes := region.Bytes(endKey)
+		endKeyInfo, _ := e.Buffer.DecodeKey(endKeyBytes)
+		_, endTableID := endKeyInfo.MetaOrTable()
+		detail := e.TableInOrder.FindOne(startTableID, endTableID)
+
+		if detail != nil {
+			label.Labels = append(label.Labels, detail.DB, detail.Name)
+			// can't find the row/index info if the table info was came from a range
+			return
+		} else {
+			label.Labels = append(label.Labels, fmt.Sprintf("table_%d", startTableID))
+		}
 	}
 
-	if isCommonHandle, rowID := keyInfo.RowInfo(); isCommonHandle {
+	if isCommonHandle, rowID := startKeyInfo.RowInfo(); isCommonHandle {
 		label.Labels = append(label.Labels, "row")
 	} else if rowID != 0 {
 		label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
-	} else if indexID := keyInfo.IndexInfo(); indexID != 0 {
+	} else if indexID := startKeyInfo.IndexInfo(); indexID != 0 {
 		if detail == nil {
 			label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
 		} else if name, ok := detail.Indices[indexID]; ok {

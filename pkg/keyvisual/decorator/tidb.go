@@ -53,19 +53,19 @@ type tidbLabelStrategy struct {
 	EtcdClient *clientv3.Client
 
 	TableMap      sync.Map
-	TableInOrder  *TableInOrder
+	tableInOrder  *tableInOrder
 	tidbClient    *tidb.Client
 	SchemaVersion int64
 	TidbAddress   []string
 }
 
-type TableInOrder struct {
+type tableInOrder struct {
 	rwMu   sync.RWMutex
 	tables []*tableDetail
 }
 
 // BuildFromTableMap build ordered tables from a table map.
-func (inOrder *TableInOrder) BuildFromTableMap(m *sync.Map) {
+func (inOrder *tableInOrder) buildFromTableMap(m *sync.Map) {
 	tables := []*tableDetail{}
 	m.Range(func(key, value interface{}) bool {
 		t := value.(*tableDetail)
@@ -82,8 +82,8 @@ func (inOrder *TableInOrder) BuildFromTableMap(m *sync.Map) {
 
 // FindOne will find first table detail which id is between [fromId, toId).
 // Returns nil if not found any
-func (inOrder *TableInOrder) FindOne(fromId, toId int64) *tableDetail {
-	if fromId >= toId {
+func (inOrder *tableInOrder) findOne(fromID, toID int64) *tableDetail {
+	if fromID >= toID {
 		return nil
 	}
 
@@ -91,22 +91,22 @@ func (inOrder *TableInOrder) FindOne(fromId, toId int64) *tableDetail {
 	defer inOrder.rwMu.RUnlock()
 
 	tLen := len(inOrder.tables)
-	var pivot int = tLen / 2
+	pivot := tLen / 2
 	left := 0
 	right := tLen
 	for pivot > left {
-		prevId := inOrder.tables[pivot-1].ID
+		prevID := inOrder.tables[pivot-1].ID
 		id := inOrder.tables[pivot].ID
 		// find approaching id near the fromId
 		// table_1 ------- table_3 ------- table_5
 		//           	^
 		//       search table_2
 		// approaching result: table_3
-		if prevId < fromId && id >= fromId {
+		if prevID < fromID && id >= fromID {
 			break
 		}
 
-		if id < fromId {
+		if id < fromID {
 			left = pivot
 		} else {
 			right = pivot
@@ -115,7 +115,7 @@ func (inOrder *TableInOrder) FindOne(fromId, toId int64) *tableDetail {
 	}
 
 	id := inOrder.tables[pivot].ID
-	if id < fromId || id >= toId {
+	if id < fromID || id >= toID {
 		return nil
 	}
 
@@ -140,7 +140,7 @@ func (ts *tableSorter) Less(i, j int) bool {
 
 type tidbLabeler struct {
 	TableMap     *sync.Map
-	TableInOrder *TableInOrder
+	tableInOrder *tableInOrder
 	Buffer       model.KeyInfoBuffer
 }
 
@@ -162,7 +162,7 @@ func (s *tidbLabelStrategy) Background(ctx context.Context) {
 func (s *tidbLabelStrategy) NewLabeler() Labeler {
 	return &tidbLabeler{
 		TableMap:     &s.TableMap,
-		TableInOrder: s.TableInOrder,
+		tableInOrder: s.tableInOrder,
 	}
 }
 
@@ -222,15 +222,14 @@ func (e *tidbLabeler) label(startKey, endKey string) (label LabelKey) {
 		endKeyBytes := region.Bytes(endKey)
 		endKeyInfo, _ := e.Buffer.DecodeKey(endKeyBytes)
 		_, endTableID := endKeyInfo.MetaOrTable()
-		detail := e.TableInOrder.FindOne(startTableID, endTableID)
+		detail := e.tableInOrder.findOne(startTableID, endTableID)
 
 		if detail != nil {
 			label.Labels = append(label.Labels, detail.DB, detail.Name)
 			// can't find the row/index info if the table info was came from a range
 			return
-		} else {
-			label.Labels = append(label.Labels, fmt.Sprintf("table_%d", startTableID))
 		}
+		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", startTableID))
 	}
 
 	if isCommonHandle, rowID := startKeyInfo.RowInfo(); isCommonHandle {

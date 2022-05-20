@@ -33,18 +33,21 @@ func TestTableInOrderBuild(t *testing.T) {
 }
 
 func TestTableInOrderFindOne(t *testing.T) {
-	tableInOrder := &tableInOrder{
+	table := &tableInOrder{
 		tables: []*tableDetail{{ID: 1}, {ID: 2}, {ID: 4}, {ID: 8}},
 	}
+	require.Equal(t, table.findOne(1, 2).ID, int64(1))
+	require.Equal(t, table.findOne(2, 3).ID, int64(2))
+	require.Equal(t, table.findOne(3, 5).ID, int64(4))
+	require.Equal(t, table.findOne(8, 18).ID, int64(8))
+	require.Equal(t, table.findOne(3, 4).ID, int64(4))
 
-	require.Equal(t, tableInOrder.findOne(1, 2).ID, int64(1))
-	require.Equal(t, tableInOrder.findOne(2, 3).ID, int64(2))
-	require.Equal(t, tableInOrder.findOne(3, 5).ID, int64(4))
-	require.Equal(t, tableInOrder.findOne(2, 8).ID, int64(2))
-	require.Equal(t, tableInOrder.findOne(8, 18).ID, int64(8))
+	require.Nil(t, table.findOne(8, 0))
+	require.Nil(t, table.findOne(8, 8))
+	require.Nil(t, table.findOne(80, 81))
 
-	require.Nil(t, tableInOrder.findOne(3, 4))
-	require.Nil(t, tableInOrder.findOne(8, 0))
-	require.Nil(t, tableInOrder.findOne(8, 8))
-	require.Nil(t, tableInOrder.findOne(80, 81))
+	emptyTable := &tableInOrder{
+		tables: []*tableDetail{},
+	}
+	require.Nil(t, emptyTable.findOne(1, 2))
 }

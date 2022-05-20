@@ -99,6 +99,14 @@ func (s *Service) getDetails(c *gin.Context) {
 		rest.Error(c, err)
 		return
 	}
+
+	// get visual plan
+	result.VisualPlan, err = utils.GenerateVisualPlanJSON(result.VisualPlan)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, *result)
 }
 

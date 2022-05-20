@@ -1,25 +1,18 @@
-import { XYBrushArea, BrushEndListener } from '@elastic/charts'
+import { BrushEndListener, BrushEvent } from '@elastic/charts'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
-import {
-  ZoomOutOutlined,
-  LoadingOutlined,
-  SettingOutlined,
-} from '@ant-design/icons'
+import { LoadingOutlined, SettingOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useSessionStorage } from 'react-use'
-
-import '@elastic/charts/dist/theme_only_light.css'
-
 import formatSql from '@lib/utils/sqlFormatter'
 import client, { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import {
   Card,
-  AutoRefreshButton,
   TimeRangeSelector,
   calcTimeRange,
   DEFAULT_TIME_RANGE,
   Toolbar,
+  AutoRefreshButton,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
@@ -33,8 +26,6 @@ import { SettingsForm } from './SettingsForm'
 import { onLegendItemOver, onLegendItemOut } from './legendAction'
 import { InstanceType } from './ListDetail/ListDetailTable'
 
-const autoRefreshOptions = [30, 60, 2 * 60, 5 * 60, 10 * 60]
-const zoomOutRate = 0.5
 const useTimeWindowSize = createUseTimeWindowSize(8)
 const topN = 5
 
@@ -43,11 +34,6 @@ export function TopSQLList() {
   const { topSQLConfig, isConfigLoading, updateConfig, haveHistoryData } =
     useTopSQLConfig()
   const [showSettings, setShowSettings] = useState(false)
-  const [remainingRefreshSeconds, setRemainingRefreshSeconds] = useState(0)
-  const [autoRefreshSeconds, setAutoRefreshSeconds] = useSessionStorage(
-    'topsql.auto_refresh',
-    0
-  )
   const [instance, setInstance] = useSessionStorage<TopsqlInstanceItem>(
     'topsql.instance',
     null as any
@@ -102,13 +88,11 @@ export function TopSQLList() {
       return
     }
 
-    setRemainingRefreshSeconds(autoRefreshSeconds)
     updateTopSQLData({ instance, timestamps, timeWindowSize, topN })
   }, [
     instance,
     timeRange,
     timeWindowSize,
-    autoRefreshSeconds,
     containerRef,
     containerWidth,
     updateTopSQLData,
@@ -121,7 +105,7 @@ export function TopSQLList() {
   }, [instance, timeWindowSize])
 
   const handleBrushEnd: BrushEndListener = useCallback(
-    (v: XYBrushArea) => {
+    (v: BrushEvent) => {
       if (!v.x) {
         return
       }
@@ -152,21 +136,6 @@ export function TopSQLList() {
     },
     [setTimeRange]
   )
-
-  const zoomOut = useCallback(() => {
-    const [start, end] = calcTimeRange(timeRange)
-    let expand = (end - start) * zoomOutRate
-    if (expand < 300) {
-      expand = 300
-    }
-
-    let computedStart = start - expand
-    let computedEnd = end + expand
-    const v: [number, number] = [computedStart, computedEnd]
-
-    setTimeRange({ type: 'absolute', value: v })
-    telemetry.clickZoomOut(v)
-  }, [timeRange, setTimeRange])
 
   const chartRef = useRef<any>(null)
 
@@ -214,38 +183,17 @@ export function TopSQLList() {
                   open && telemetry.openSelectInstance()
                 }
               />
-              <Button.Group>
-                <TimeRangeSelector
-                  value={timeRange}
-                  onChange={(v) => {
-                    setTimeRange(v)
-                    telemetry.selectTimeRange(v)
-                  }}
-                  disabled={isLoading}
-                  onVisibleChange={(visible) =>
-                    visible && telemetry.openTimeRangePicker()
-                  }
-                />
-                <Button
-                  icon={<ZoomOutOutlined />}
-                  onClick={zoomOut}
-                  disabled={isLoading}
-                />
-              </Button.Group>
+              <TimeRangeSelector.WithZoomOut
+                value={timeRange}
+                onChange={(v) => {
+                  setTimeRange(v)
+                  telemetry.selectTimeRange(v)
+                }}
+                disabled={isLoading}
+              />
               <AutoRefreshButton
                 disabled={isLoading}
-                autoRefreshSeconds={autoRefreshSeconds}
-                onAutoRefreshSecondsChange={(sec) => {
-                  setAutoRefreshSeconds(sec)
-                  telemetry.selectAutoRefreshOption(sec)
-                }}
-                remainingRefreshSeconds={remainingRefreshSeconds}
-                onRemainingRefreshSecondsChange={setRemainingRefreshSeconds}
-                onRefresh={() => {
-                  handleUpdateTopSQLData()
-                  telemetry.clickAutoRefresh()
-                }}
-                autoRefreshSecondsOptions={autoRefreshOptions}
+                onRefresh={handleUpdateTopSQLData}
               />
               {isLoading && (
                 <Spin

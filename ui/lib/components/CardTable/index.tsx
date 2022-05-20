@@ -1,5 +1,5 @@
 import { IRenderFunction } from '@uifabric/utilities'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
@@ -13,8 +13,9 @@ import {
   IDetailsRowProps,
   SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
+import { ScrollToMode } from 'office-ui-fabric-react/lib/List'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
 
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
@@ -171,7 +172,12 @@ export default function CardTable(props: ICardTableProps) {
     onRenderRow
   )
 
-  const onColumnClick = usePersistFn(
+  const activeIdx = useRef<number>(-1)
+  const handleActiveItemChange = useCallback((_, index?: number) => {
+    activeIdx.current = index ?? -1
+  }, [])
+
+  const onColumnClick = useMemoizedFn(
     (_ev: React.MouseEvent<HTMLElement>, column: IColumn) => {
       if (!onChangeOrder) {
         return
@@ -227,11 +233,19 @@ export default function CardTable(props: ICardTableProps) {
   }, [visibleItemsCount, items, orderBy, finalColumns])
 
   const tableRef = useRef<IDetailsList>(null)
-  useEffect(() => {
-    if ((clickedRowIndex ?? -1) > 0) {
-      tableRef.current?.scrollToIndex(clickedRowIndex!)
+
+  useLayoutEffect(() => {
+    if (activeIdx.current === -1 && (clickedRowIndex ?? -1) >= 0) {
+      setTimeout(() => {
+        tableRef.current?.focusIndex(
+          clickedRowIndex!,
+          true,
+          undefined,
+          ScrollToMode.center
+        )
+      }, 50)
     }
-  })
+  }, [clickedRowIndex, finalItems])
 
   return (
     <Card
@@ -263,6 +277,7 @@ export default function CardTable(props: ICardTableProps) {
             items={finalItems}
             componentRef={tableRef}
             selectionMode={selectionMode}
+            onActiveItemChanged={handleActiveItemChange}
             {...restProps}
           />
         </div>

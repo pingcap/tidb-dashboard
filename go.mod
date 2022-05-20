@@ -19,6 +19,8 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-graphviz v0.0.9
 	github.com/golang-jwt/jwt v3.2.1+incompatible
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/snappy v0.0.4
 	github.com/google/pprof v0.0.0-20211122183932-1daafda22083
 	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
@@ -33,6 +35,7 @@ require (
 	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
 	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
+	github.com/pingcap/tipb v0.0.0-20220314125451-bfb5c2c55188
 	github.com/rs/cors v1.7.0
 	github.com/shhdgit/testfixtures/v3 v3.6.2-0.20211219171712-c4f264d673d3
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
@@ -50,8 +53,11 @@ require (
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
+	google.golang.org/protobuf v1.28.0 // indirect
 	gorm.io/driver/mysql v1.0.6
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.9
 	moul.io/zapgorm2 v1.1.0
 )
+
+replace github.com/pingcap/tipb => github.com/time-and-fate/tipb v0.0.0-20220422062657-6cbe68f6f792

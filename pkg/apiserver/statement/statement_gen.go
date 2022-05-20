@@ -19,8 +19,11 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 
 	// use required fields filter when not all fields are requested
 	if reqJSONColumns[0] != "*" {
-		// "schema_name", "digest" for group, "sum_latency" for order
-		requiredFields := funk.UniqString(append(reqJSONColumns, "schema_name", "digest", "sum_latency"))
+		requiredFields := funk.UniqString(append(reqJSONColumns,
+			"schema_name", "digest", // required by group by
+			"sum_latency", // required by order
+			"summary_begin_time", "summary_end_time",
+		))
 		fields = funk.Filter(fields, func(f Field) bool {
 			return funk.Contains(requiredFields, f.JSONName)
 		}).([]Field)

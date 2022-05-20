@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import React from 'react'
 import { EditOutlined } from '@ant-design/icons'
 import { Input, Popover, Button, Space, Tooltip } from 'antd'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 
 interface IInlineEditorProps {
   title?: string
@@ -55,7 +55,7 @@ function InlineEditor({
     setInputVal(displayValue)
   }, [displayValue])
 
-  const handleSave = usePersistFn(async () => {
+  const handleSave = useMemoizedFn(async () => {
     if (!onSave) {
       setIsVisible(false)
       return
@@ -88,7 +88,7 @@ function InlineEditor({
     setInputVal(displayValue)
   }, [displayValue])
 
-  const renderPopover = usePersistFn(() => {
+  const renderPopover = useMemoizedFn(() => {
     return (
       <Space direction="vertical" style={{ width: '100%' }}>
         <div>

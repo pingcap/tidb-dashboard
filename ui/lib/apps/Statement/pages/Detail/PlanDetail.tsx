@@ -16,7 +16,7 @@ import {
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
 import formatSql from '@lib/utils/sqlFormatter'
-import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
+import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 
 import type { IPageQuery } from '.'
 import DetailTabs from './PlanDetailTabs'
@@ -54,12 +54,14 @@ function PlanDetail({ query }: IPlanDetailProps) {
   const { isLoading: isSchemaLoading } = useSchemaColumns()
   const isLoading = isDataLoading || isSchemaLoading
 
-  const [detailExpand, setDetailExpand] = useLocalStorageState(
+  const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     STMT_DETAIL_PLAN_EXPAND,
     {
-      prev_query: false,
-      query: false,
-      plan: false,
+      defaultValue: {
+        prev_query: false,
+        query: false,
+        plan: false,
+      },
     }
   )
 

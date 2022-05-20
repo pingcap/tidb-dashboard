@@ -20,7 +20,7 @@ import { getStyles } from 'office-ui-fabric-react/lib/components/GroupedList/Gro
 
 import { Icon } from 'office-ui-fabric-react/lib/Icon'
 import { Checkbox } from 'antd'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 
 const getClassNames = classNamesFunction<
   IGroupHeaderStyleProps,
@@ -36,13 +36,13 @@ function BaseAntCheckboxGroupHeader(props: IGroupHeaderProps) {
     compact: props.compact,
   })
 
-  const _onHeaderClick = usePersistFn(() => {
+  const _onHeaderClick = useMemoizedFn(() => {
     if (props.onToggleSelectGroup) {
       props.onToggleSelectGroup(props.group!)
     }
   })
 
-  const _onToggleSelectGroupClick = usePersistFn(
+  const _onToggleSelectGroupClick = useMemoizedFn(
     (ev: React.MouseEvent<HTMLElement>) => {
       if (props.onToggleSelectGroup) {
         props.onToggleSelectGroup(props.group!)
@@ -52,7 +52,7 @@ function BaseAntCheckboxGroupHeader(props: IGroupHeaderProps) {
     }
   )
 
-  const _onToggleCollapse = usePersistFn(
+  const _onToggleCollapse = useMemoizedFn(
     (ev: React.MouseEvent<HTMLElement>) => {
       if (props.onToggleCollapse) {
         props.onToggleCollapse(props.group!)

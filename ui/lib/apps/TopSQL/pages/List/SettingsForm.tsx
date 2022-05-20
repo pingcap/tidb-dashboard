@@ -4,7 +4,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { TopsqlEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { ErrorBar } from '@lib/components'
+import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 import { telemetry } from '../../utils/telemetry'
 
@@ -38,12 +38,19 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
           telemetry.saveSettings(newConfig)
           onClose()
           onConfigUpdated()
+
+          if (values.enable && !initialConfig?.enable) {
+            Modal.success({
+              title: t('topsql.settings.enable_info.title'),
+              content: t('topsql.settings.enable_info.content'),
+            })
+          }
         } finally {
           setSubmitting(false)
         }
       }
 
-      if (!values.enable) {
+      if (!values.enable && (initialConfig?.enable ?? true)) {
         // warning
         Modal.confirm({
           title: t('topsql.settings.disable_feature'),
@@ -58,7 +65,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated]
+    [t, onClose, onConfigUpdated, initialConfig]
   )
 
   return (
@@ -80,7 +87,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
               <Switch disabled={!isWriteable} />
             </Form.Item>
           </Form.Item>
-          <Form.Item>
+          <DrawerFooter>
             <Space>
               <Button
                 type="primary"
@@ -94,7 +101,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
                 {t('topsql.settings.actions.cancel')}
               </Button>
             </Space>
-          </Form.Item>
+          </DrawerFooter>
         </Form>
       )}
     </>

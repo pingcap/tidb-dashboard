@@ -55,6 +55,8 @@ export * from './Blink'
 export { default as Blink } from './Blink'
 export * from './ActionsButton'
 export { default as ActionsButton } from './ActionsButton'
+export * from './DrawerFooter'
+export { default as DrawerFooter } from './DrawerFooter'
 
 export * from './TreeDiagramView'
 export { default as TreeDiagramView } from './TreeDiagramView'

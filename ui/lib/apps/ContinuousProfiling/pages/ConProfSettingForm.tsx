@@ -19,7 +19,7 @@ import client, {
   ConprofContinuousProfilingConfig,
 } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { ErrorBar, InstanceSelect } from '@lib/components'
+import { DrawerFooter, ErrorBar, InstanceSelect } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 import { telemetry } from '../utils/telemetry'
 
@@ -187,7 +187,7 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
               )
             }
           </Form.Item>
-          <Form.Item>
+          <DrawerFooter>
             <Space>
               <Button
                 type="primary"
@@ -201,7 +201,7 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
                 {t('statement.settings.actions.cancel')}
               </Button>
             </Space>
-          </Form.Item>
+          </DrawerFooter>
         </Form>
       )}
     </>

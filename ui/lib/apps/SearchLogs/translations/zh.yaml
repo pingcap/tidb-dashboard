@@ -4,6 +4,7 @@ search_logs:
     search_logs: 日志搜索
     detail: 搜索结果
     history: 历史搜索
+    show_sidebar: 下载或显示进度
   page:
     intro: 点击搜索预览和下载日志
     tip: 预览仅显示前 500 项日志

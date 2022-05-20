@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 
-import { useLocalStorageState } from './useLocalStorageState'
+import { useVersionedLocalStorageState } from './useVersionedLocalStorageState'
 
 export interface IOrderOptions {
   orderBy: string
@@ -14,11 +14,8 @@ export default function useOrderState(
 ) {
   const storeKey = `${storeKeyPrefix}.order_options`
   const [memoryOrderOptions, setMemoryOrderOptions] = useState(options)
-  const [localOrderOptions, setLocalOrderOptions] = useLocalStorageState(
-    storeKey,
-    options,
-    true
-  )
+  const [localOrderOptions, setLocalOrderOptions] =
+    useVersionedLocalStorageState(storeKey, { defaultValue: options })
   const orderOptions = useMemo(
     () => (needSave ? localOrderOptions : memoryOrderOptions),
     [needSave, memoryOrderOptions, localOrderOptions]

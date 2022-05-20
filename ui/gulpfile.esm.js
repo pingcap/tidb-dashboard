@@ -8,7 +8,7 @@ task('swagger:generate_spec', shell.task('../scripts/generate_swagger_spec.sh'))
 task(
   'swagger:generate_client',
   shell.task(
-    'yarn openapi-generator generate -i ../swaggerspec/swagger.yaml -g typescript-axios -c .openapi_config.yaml -o lib/client/api'
+    'yarn openapi-generator-cli generate -i ../swaggerspec/swagger.yaml -g typescript-axios -c .openapi_config.yaml -o lib/client/api'
   )
 )
 

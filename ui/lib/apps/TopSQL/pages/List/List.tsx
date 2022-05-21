@@ -259,7 +259,7 @@ export function TopSQLList() {
                 ref={chartRef}
               />
             </div>
-            {!!topSQLData?.length && (
+            {Boolean(topSQLData?.length) && (
               <ListTable
                 onRowOver={(key: string) =>
                   onLegendItemOver(chartRef.current, key)
@@ -269,6 +269,13 @@ export function TopSQLList() {
                 instanceType={instance?.instance_type as InstanceType}
                 data={topSQLData}
               />
+            )}
+            {Boolean(!topSQLData?.length && timeRange.type === 'recent') && (
+              <Card noMarginBottom noMarginTop>
+                <p className="ant-form-item-extra">
+                  {t('topsql.table.description_no_recent_data')}
+                </p>
+              </Card>
             )}
           </>
         )}

@@ -11,7 +11,7 @@ on:
 
 jobs:
   backend_ut:
-    name: Backend Unit Test
+    name: Backend - Unit
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -46,7 +46,7 @@ jobs:
     strategy:
       matrix:
         tidb_version: [nightly, ^6.0, ^5.4, ^5.0]
-    name: Backend Integration Test - TiDB@${{ matrix.tidb_version }}
+    name: Backend - Integration - TiDB@${{ matrix.tidb_version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -62,6 +62,13 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: Load TiUP cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.tiup/components
+          key: ${{ runner.os }}-tiup-${{ matrix.tidb_version }}
+          restore-keys: |
+            ${{ runner.os }}-tiup-${{ matrix.tidb_version }}
       - name: Run integration test
         run: |
           make integration_test TIDB_VERSION=${{ matrix.tidb_version }}
@@ -99,15 +106,24 @@ jobs:
           - feature_version: 5.0.0
             tidb_version: ^5.0
             without_ngm: false
-    name: E2E Test - TiDB@${{ matrix.tidb_version }}${{ !matrix.without_ngm && '+ngm' || '' }}
+    name: E2E - TiDB@${{ matrix.tidb_version }}${{ !matrix.without_ngm && '+ngm' || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: "16"
-          cache: "yarn"
-          cache-dependency-path: "ui/yarn.lock"
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+        working-directory: ui
+      - uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - uses: actions/setup-go@v3
         with:
           go-version: "1.13.5"
@@ -124,9 +140,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.tiup/components
-          key: ${{ runner.os }}-tiup
+          key: ${{ runner.os }}-tiup-${{ matrix.tidb_version }}
           restore-keys: |
-            ${{ runner.os }}-tiup
+            ${{ runner.os }}-tiup-${{ matrix.tidb_version }}
       - name: Install and run TiUP in the background
         run: |
           chmod u+x scripts/start_tiup.sh

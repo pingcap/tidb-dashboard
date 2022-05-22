@@ -45,7 +45,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        tidb_version: [latest, v4.0.1]
+        tidb_version: [nightly, ^6.0, ^5.4, ^5.0]
     name: Backend Integration Test - TiDB@${{ matrix.tidb_version }}
     steps:
       - name: Checkout code
@@ -82,21 +82,24 @@ jobs:
         # test latest features and compatibility of lower version
         include:
           - feature_version: 6.0.0
-            tidb_version: latest
-            without_ngm: false
-          - feature_version: 6.0.0
-            tidb_version: latest
-            without_ngm: true
-          - feature_version: 6.0.0
             tidb_version: nightly
             without_ngm: false
+          - feature_version: 6.0.0
+            tidb_version: nightly
+            without_ngm: true
+          - feature_version: 6.0.0
+            tidb_version: ^6.0
+            without_ngm: false
+          - feature_version: 6.0.0
+            tidb_version: ^6.0
+            without_ngm: true
           - feature_version: 5.4.0
-            tidb_version: v5.4.0
+            tidb_version: ^5.4
             without_ngm: false
           - feature_version: 5.0.0
-            tidb_version: v5.0.0
+            tidb_version: ^5.0
             without_ngm: false
-    name: E2E Test - TiDB@${{ matrix.tidb_version }}, Feature@${{ matrix.feature_version }}, WithoutNgm=${{ matrix.without_ngm }}
+    name: E2E Test - TiDB@${{ matrix.tidb_version }}, Feature@${{ matrix.feature_version }}, NoNgm=${{ matrix.without_ngm }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -104,7 +107,7 @@ jobs:
         with:
           node-version: "16"
           cache: "yarn"
-          cache-dependency-path: "ui/package-lock.json"
+          cache-dependency-path: "ui/yarn.lock"
       - uses: actions/setup-go@v3
         with:
           go-version: "1.13.5"

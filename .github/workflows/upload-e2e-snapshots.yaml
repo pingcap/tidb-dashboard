@@ -29,33 +29,37 @@ jobs:
             tidb_version: v5.0.0
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
-      - uses: actions/setup-go@v1
+          node-version: "16"
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+        working-directory: ui
+      - uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - uses: actions/setup-go@v3
         with:
           go-version: "1.13.5"
-      - name: Lookup yarn cache
-        id: yarn_cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.yarn_cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-e2e-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-e2e
       - name: Load go module cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
-          path: ~/go/pkg/mod
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Load TiUP cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.tiup/components
           key: ${{ runner.os }}-tiup

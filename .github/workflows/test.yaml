@@ -99,7 +99,7 @@ jobs:
           - feature_version: 5.0.0
             tidb_version: ^5.0
             without_ngm: false
-    name: E2E Test - TiDB@${{ matrix.tidb_version }} ${{ !matrix.without_ngm && '(+ngm)' || '' }}
+    name: E2E Test - TiDB@${{ matrix.tidb_version }}${{ !matrix.without_ngm && '+ngm' || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

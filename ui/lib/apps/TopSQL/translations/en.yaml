@@ -28,6 +28,7 @@ topsql:
     cpu_time: CPU Time
   table:
     description: The following table shows which top {{topN}} queries are contributing the most to load in the current time range. Click one to see details.
+    description_no_recent_data: There is no data currently. You need to wait for about 1 minute for new data being collected.
     others: Other Statements
     others_tooltip: All of other non Top {{topN}} statements
     fields:

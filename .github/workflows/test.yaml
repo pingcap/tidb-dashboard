@@ -67,8 +67,6 @@ jobs:
         with:
           path: ~/.tiup/components
           key: ${{ runner.os }}-tiup-${{ matrix.tidb_version }}
-          restore-keys: |
-            ${{ runner.os }}-tiup-${{ matrix.tidb_version }}
       - name: Run integration test
         run: |
           make integration_test TIDB_VERSION=${{ matrix.tidb_version }}
@@ -141,8 +139,6 @@ jobs:
         with:
           path: ~/.tiup/components
           key: ${{ runner.os }}-tiup-${{ matrix.tidb_version }}
-          restore-keys: |
-            ${{ runner.os }}-tiup-${{ matrix.tidb_version }}
       - name: Install and run TiUP in the background
         run: |
           chmod u+x scripts/start_tiup.sh

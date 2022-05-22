@@ -13,24 +13,21 @@ jobs:
       release_version: v${{ steps.lookup_release_version.outputs.release_version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
-      - uses: actions/setup-go@v1
+          node-version: "16"
+          cache: "yarn"
+          cache-dependency-path: "ui/package-lock.json"
+      - uses: actions/setup-go@v3
         with:
           go-version: "1.13.5"
-      - id: yarn_cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-      - uses: actions/cache@v1
+      - name: Load go module cache
+        uses: actions/cache@v3
         with:
-          path: ${{ steps.yarn_cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - uses: actions/cache@v1
-        with:
-          path: ~/go/pkg/mod
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
@@ -93,22 +90,31 @@ jobs:
         branch: [master, release-5.4, release-6.1]
     steps:
       - name: Check out PD code base
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
         with:
           repository: tikv/pd
           ref: ${{ matrix.branch }}
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: "1.18.1"
+      - name: Load go module cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-pd-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-pd-
       - name: Update TiDB Dashboard in PD code base
         run: |
           go get -d "github.com/pingcap/tidb-dashboard@${{ needs.release.outputs.release_version }}"
           go mod tidy
+          make pd-server
+          go mod tidy
           cd tests/client
           go mod tidy
           cd ../..
-          make pd-server
-          go mod tidy
       - name: Commit PD code base change
         id: git_commit
         run: |

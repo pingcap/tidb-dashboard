@@ -9,30 +9,39 @@ on:
 
 jobs:
   pd_pr:
-    name: Create PD PR
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         branch: [master, release-5.4, release-6.1]
+    name: Create PD PR - ${{ matrix.branch }}
     steps:
       - name: Check out PD code base
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
         with:
           repository: tikv/pd
           ref: ${{ matrix.branch }}
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: "1.18.1"
+      - name: Load go module cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-pd-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-pd-
       - name: Update TiDB Dashboard in PD code base
         run: |
           go get -d "github.com/pingcap/tidb-dashboard@${{ github.event.inputs.release_version }}"
           go mod tidy
+          make pd-server
+          go mod tidy
           cd tests/client
           go mod tidy
           cd ../..
-          make pd-server
-          go mod tidy
       - name: Commit PD code base change
         id: git_commit
         run: |

@@ -48,5 +48,7 @@ export const restartTiUP = () => {
   )
 
   // Wait TiUP Playground
-  cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
+  cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log', {
+    timeout: 300000,
+  })
 }

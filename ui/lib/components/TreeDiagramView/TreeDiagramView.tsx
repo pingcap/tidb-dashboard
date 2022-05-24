@@ -2,7 +2,7 @@ import React from 'react'
 import { RawNodeDatum, TreeDiagramProps } from './types'
 import TreeDigram from '../TreeDiagram'
 import styles from './index.module.less'
-import { Button, Progress } from 'antd'
+import { Button } from 'antd'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 interface TreeDiagramViewProps extends TreeDiagramProps {

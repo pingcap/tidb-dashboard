@@ -10,6 +10,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/codeskyblue/go-sh"
 	"github.com/olekukonko/tablewriter"
@@ -91,6 +92,18 @@ func lookupDashboardRelease(gitCommit string) string {
 	return ""
 }
 
+func lookupPDTagUpdateTime(pdTag string) string {
+	output, err := sh.Command(
+		"git", "log", "-1", "--format=%cI", pdTag,
+		sh.Dir(pdGitDir)).Output()
+	mustSuccess(err)
+
+	t, err := time.Parse(time.RFC3339, strings.TrimSpace(string(output)))
+	mustSuccess(err)
+
+	return t.UTC().Format("2006-01-02")
+}
+
 func main() {
 	flag.Parse()
 
@@ -111,6 +124,7 @@ func main() {
 		if semver.Compare(pdTag, "v4.0.0") < 0 {
 			continue
 		}
+		tagAt := lookupPDTagUpdateTime(pdTag)
 		dashboardCommit := lookupDashboardCommit(pdTag)
 		if dashboardCommit == "" {
 			continue
@@ -120,25 +134,25 @@ func main() {
 			continue
 		}
 
-		output = append(output, []string{pdTag, dashboardRelease})
+		output = append(output, []string{pdTag, tagAt, dashboardRelease})
 	}
 
 	switch *outputFormat {
 	case "mdtable", "mdtable-link":
 		if *outputFormat == "mdtable-link" {
 			for _, row := range output {
-				row[1] = fmt.Sprintf("[%s](https://github.com/pingcap/tidb-dashboard/releases/tag/v%s)", row[1], row[1])
+				row[2] = fmt.Sprintf("[%s](https://github.com/pingcap/tidb-dashboard/releases/tag/v%s)", row[2], row[2])
 			}
 		}
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"PD Version", "TiDB Dashboard Version"})
+		table.SetHeader([]string{"PD Version", "PD Commit At", "TiDB Dashboard Version"})
 		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 		table.SetCenterSeparator("|")
 		table.AppendBulk(output)
 		table.Render()
 	default:
 		for _, row := range output {
-			fmt.Printf("%s: %s\n", row[0], row[1])
+			fmt.Printf("%s: %s\n", row[0], row[1], row[2])
 		}
 	}
 }

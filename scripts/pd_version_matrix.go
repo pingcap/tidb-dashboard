@@ -105,6 +105,9 @@ func main() {
 
 	pdTags := listPDTags()
 	for _, pdTag := range pdTags {
+		if strings.Count(pdTag, "-") > 0 {
+			continue
+		}
 		if semver.Compare(pdTag, "v4.0.0") < 0 {
 			continue
 		}

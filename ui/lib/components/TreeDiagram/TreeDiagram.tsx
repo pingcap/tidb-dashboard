@@ -245,6 +245,7 @@ const TreeDiagram = ({
       {showMinimap && (
         <Minimap
           mainChartGroupBound={mainChartGroupBound}
+          viewPort={viewPort}
           links={links}
           nodes={nodes}
           minimapTranslate={minimapTranslate}

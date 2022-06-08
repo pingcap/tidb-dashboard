@@ -12,6 +12,11 @@ export interface nodeMarginType {
   childrenMargin: number
 }
 
+export interface rectBound {
+  width: number
+  height: number
+}
+
 // Raw node data get from /api/slow_query/detail.
 export interface RawNodeDatum {
   name: string
@@ -51,10 +56,7 @@ export interface TreeDiagramProps {
   /**
    * The dimensions of the tree container,
    */
-  viewPort?: {
-    width: number
-    height: number
-  }
+  viewPort?: rectBound
 
   /**
    * Sets the time (in milliseconds) for the transition to center a node once clicked.
@@ -78,18 +80,12 @@ export interface TreeDiagramProps {
   /**
    * The amount of space each node element occupies.
    */
-  nodeSize?: {
-    width: number
-    height: number
-  }
+  nodeSize?: rectBound
 
   /**
    * The size of button, which is attached on collapsiable node.
    */
-  collapsiableButtonSize?: {
-    width: number
-    height: number
-  }
+  collapsiableButtonSize?: rectBound
 
   /**
    * Margins between slibings and children.

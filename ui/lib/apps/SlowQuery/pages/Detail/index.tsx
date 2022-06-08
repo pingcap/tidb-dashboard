@@ -24,6 +24,8 @@ import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStora
 
 import DetailTabs from './DetailTabs'
 
+import vpData from './example'
+
 export interface IPageQuery {
   connectId?: string
   digest?: string
@@ -176,32 +178,33 @@ function DetailPage() {
                 })()}
 
                 {(() => {
-                  if (data.visual_plan)
-                    return (
-                      <Descriptions.Item
-                        span={2}
-                        label={
-                          <Space size="middle" onClick={toggleVisualPlan}>
-                            <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
-                          </Space>
-                        }
+                  // if (data.visual_plan)
+                  return (
+                    <Descriptions.Item
+                      span={2}
+                      label={
+                        <Space size="middle" onClick={toggleVisualPlan}>
+                          <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
+                        </Space>
+                      }
+                    >
+                      <Modal
+                        title="Visual Plan Tree Diagram"
+                        centered
+                        visible={isVpVisible}
+                        width={window.innerWidth}
+                        onCancel={toggleVisualPlan}
+                        footer={null}
+                        bodyStyle={{ background: '#f5f5f5' }}
                       >
-                        <Modal
-                          title="Visual Plan Tree Diagram"
-                          centered
-                          visible={isVpVisible}
-                          width={window.innerWidth}
-                          onCancel={toggleVisualPlan}
-                          footer={null}
-                          bodyStyle={{ background: '#f5f5f5' }}
-                        >
-                          <TreeDiagramView
-                            data={JSON.parse(data.visual_plan).main}
-                            showMinimap={true}
-                          />
-                        </Modal>
-                      </Descriptions.Item>
-                    )
+                        <TreeDiagramView
+                          // data={JSON.parse(data.visual_plan).main}
+                          data={vpData.main}
+                          showMinimap={true}
+                        />
+                      </Modal>
+                    </Descriptions.Item>
+                  )
                 })()}
               </Descriptions>
               <DetailTabs data={data} />

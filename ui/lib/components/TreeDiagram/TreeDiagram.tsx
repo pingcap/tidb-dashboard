@@ -8,6 +8,7 @@ import {
   TreeNodeDatum,
   Translate,
   nodeMarginType,
+  rectBound,
 } from './types'
 
 import NodeWrapper from './NodeWrapper'
@@ -24,7 +25,7 @@ const TreeDiagram = ({
   data,
   nodeSize,
   nodeMargin,
-  viewPort,
+  // viewPort,
   showMinimap,
   minimapScale,
   translate,
@@ -36,13 +37,22 @@ const TreeDiagram = ({
   const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
   const [chartTranslate, setChartTranslate] = useState(translate)
   const [initDraw, setInitDraw] = useState(true)
-  const [initTranslate, setInitTranslate] = useState({
+  const [viewPort, setViewPort] = useState<rectBound>({ width: 0, height: 0 })
+  const [mainChartGroupBound, setMainChartGroupBound] = useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  })
+  const [minimapTranslate, setMinimapTranslate] = useState({
     x: 0,
     y: 0,
     k: 1,
   })
   const mainChartSVG = select('.mainChartSVG')
   const mainChartGroup = select('.mainChartGroup')
+
+  const treeDiagramContainerRef = useRef<HTMLDivElement>(null)
 
   // Generates nodes and links
   const generateNodesAndLinks = (
@@ -74,14 +84,14 @@ const TreeDiagram = ({
   }
 
   // Binds MainChart container
-  const bindZoomListener = (initTranslate) => {
+  const bindZoomListener = () => {
     // Sets initial offset, so that first pan and zoom does not jump back to default [0,0] coords.
     // @ts-ignore
     mainChartSVG.call(
       d3Zoom().transform as any,
       zoomIdentity
-        .translate(initTranslate.x, initTranslate.y)
-        .scale(initTranslate.k)
+        .translate(chartTranslate.x, chartTranslate.y)
+        .scale(chartTranslate.k)
     )
 
     mainChartSVG.call(
@@ -143,30 +153,17 @@ const TreeDiagram = ({
   }
 
   const getInitTreeDiagramBound = () => {
-    const tmp = mainChartGroup.node() as SVGGraphicsElement
-    const { x, y, width, height } = tmp.getBBox()
+    const mainChartGroupNode = mainChartGroup.node() as SVGGraphicsElement
+    const { x, y, width, height } = mainChartGroupNode.getBBox()
+    setMainChartGroupBound({ x: x, y: y, width: width, height: height })
 
-    const tw = document.getElementById('tree-diagram-container')?.clientWidth
-    const th = document.getElementById('tree-diagram-container')?.clientHeight
-    console.log('tree-diagram-container', tw, th)
-    const zoomToFitViewportScale = Math.min(tw! / width, th! / height)
-
-    console.log('x', x, y, width, height)
-    console.log(
-      'viewPort!.width / width',
-      viewPort!.width / width,
-      viewPort!.height / height,
-      zoomToFitViewportScale
-    )
-    const initTranslate = {
-      x: -x * zoomToFitViewportScale,
+    const minimapTranslate = {
+      x: -x,
       y: y,
-      k: zoomToFitViewportScale,
+      k: 1,
     }
 
-    setInitTranslate(initTranslate)
-    setChartTranslate(initTranslate)
-    bindZoomListener(initTranslate)
+    setMinimapTranslate(minimapTranslate)
   }
 
   useEffect(() => {
@@ -184,13 +181,26 @@ const TreeDiagram = ({
 
   useEffect(() => {
     if (links.length > 0 && nodes.length > 0 && initDraw) {
+      bindZoomListener()
+      setChartTranslate(translate)
       getInitTreeDiagramBound()
       setInitDraw(false)
     }
   }, [links, nodes])
 
+  useEffect(() => {
+    if (treeDiagramContainerRef.current) {
+      const w = treeDiagramContainerRef.current?.clientWidth
+
+      setViewPort({
+        width: w,
+        height: window.innerHeight - 200,
+      })
+    }
+  }, [])
+
   return (
-    <div className={styles.treeDiagramContainer} id="tree-diagram-container">
+    <div className={styles.treeDiagramContainer} ref={treeDiagramContainerRef}>
       <svg
         className="mainChartSVG"
         width={viewPort!.width}
@@ -232,17 +242,17 @@ const TreeDiagram = ({
           </g>
         </g>
       </svg>
-      {/* {showMinimap && (
+      {showMinimap && (
         <Minimap
-          viewPort={viewPort!}
+          mainChartGroupBound={mainChartGroupBound}
           links={links}
           nodes={nodes}
-          initTranslate={initTranslate}
+          minimapTranslate={minimapTranslate}
           customLinkElement={customLinkElement}
           customNodeElement={customNodeElement}
           minimapScale={minimapScale!}
         />
-      )} */}
+      )}
     </div>
   )
 }
@@ -250,15 +260,15 @@ const TreeDiagram = ({
 TreeDiagram.defaultProps = {
   nodeSize: { width: 250, height: 150 },
   showMinimap: false,
-  minimapScale: 0.2,
+  minimapScale: 0.15,
   nodeMargin: {
     siblingMargin: 40,
     childrenMargin: 60,
   },
-  viewPort: {
-    width: window.innerWidth,
-    height: window.innerHeight - 200,
-  },
+  // viewPort: {
+  //   width: window.innerWidth,
+  //   height: window.innerHeight - 200,
+  // },
 }
 
 export default TreeDiagram

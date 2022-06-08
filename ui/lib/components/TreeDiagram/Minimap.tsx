@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { Translate } from './types'
+import { Translate, rectBound } from './types'
 
 import NodeWrapper from './NodeWrapper'
 import LinkWrapper from './LinkWrapper'
@@ -8,13 +8,11 @@ import styles from './index.module.less'
 // import d3 APIs
 import { select, event } from 'd3-selection'
 import { scaleLinear } from 'd3-scale'
+import { brush as d3Brush } from 'd3-brush'
 
 interface MinimapProps {
-  viewPort: {
-    width: number
-    height: number
-  }
-  initTranslate: Translate
+  mainChartGroupBound: rectBound
+  minimapTranslate: Translate
   links: any
   nodes: any
   customLinkElement: any
@@ -23,20 +21,22 @@ interface MinimapProps {
 }
 
 const Minimap = ({
-  viewPort,
+  mainChartGroupBound,
   links,
   nodes,
-  initTranslate,
+  minimapTranslate,
   customLinkElement,
   customNodeElement,
   minimapScale,
 }: MinimapProps) => {
   const minimapSVG = select('.minimapSVG')
   const minimapGroup = select('.minimapGroup')
-  console.log('initTranslate', minimapScale, initTranslate)
-  const { width: mainChartWidth, height: mainChartHeight } = viewPort
+  const { width: mainChartWidth, height: mainChartHeight } = mainChartGroupBound
+  console.log('viewPort in minimap', mainChartGroupBound, minimapTranslate)
   const minimapContainerWidth = mainChartWidth * minimapScale
   const minimapContainerHeight = mainChartHeight * minimapScale
+
+  const gBrushRef = useRef(null)
 
   const minimapScaleX = (zoomScale) => {
     return scaleLinear()
@@ -48,6 +48,24 @@ const Minimap = ({
     return scaleLinear()
       .domain([0, mainChartWidth])
       .range([0, mainChartWidth * zoomScale])
+  }
+
+  const brushBehavior = d3Brush()
+    .extent([
+      [0, 0],
+      [worldSize[0], worldSize[1]],
+    ])
+    .on('brush', onBrush)
+
+  const bindBrushListener = () => {
+    gBrush.call(brushBehavior as any)
+
+    drawMinimap()
+
+    brushBehavior.move(gBrush as any, [
+      [0, 0],
+      [worldSize[0], worldSize[1]],
+    ])
   }
 
   const drawMinimap = () => {
@@ -71,9 +89,11 @@ const Minimap = ({
       .attr('fill', 'white')
 
     minimapGroup
-      .attr('transform', `translate(${mainChartWidth / 2}, 0) scale(1)`)
+      .attr('transform', `translate(${minimapTranslate.x}, 0) scale(1)`)
       .attr('width', mainChartWidth)
       .attr('height', mainChartHeight)
+
+    bindBrushListener()
   }
 
   useEffect(() => {
@@ -86,10 +106,10 @@ const Minimap = ({
         width={minimapContainerWidth}
         height={minimapContainerHeight}
       >
-        <rect></rect>
+        <rect className="minimap-rect"></rect>
         <g
           className="minimapGroup"
-          transform={`translate(${initTranslate.x}, ${initTranslate.y}) scale(${initTranslate.k})`}
+          transform={`translate(${minimapTranslate.x}, ${minimapTranslate.y}) scale(${minimapTranslate.k})`}
         >
           <g className="linksWrapper">
             {links &&
@@ -115,12 +135,13 @@ const Minimap = ({
                     key={data.name}
                     renderCustomNodeElement={customNodeElement}
                     hierarchyPointNode={hierarchyPointNode}
-                    zoomScale={initTranslate.k}
+                    zoomScale={minimapTranslate.k}
                   />
                 )
               })}
           </g>
         </g>
+        <g ref={gBrushRef}></g>
       </svg>
     </div>
   )

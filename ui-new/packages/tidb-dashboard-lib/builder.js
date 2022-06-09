@@ -48,7 +48,7 @@ const { dependencies } = require('./package.json')
 const esbuildParams = {
   color: true,
   entryPoints: ['src/index.ts'],
-  outfile: 'dist/index.esm.js',
+  outfile: 'dist/index.js',
   target: ['esnext'],
   format: 'esm',
   bundle: true,

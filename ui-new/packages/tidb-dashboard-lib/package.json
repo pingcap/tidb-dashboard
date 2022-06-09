@@ -2,11 +2,11 @@
   "name": "@pingcap/tidb-dashboard-lib",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.esm.js",
-  "module": "dist/index.esm.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build-dashboard": "node builder.js && mv dist/index.esm.css dist/index.css && tsc && tsc-alias",
+    "build-dashboard": "node builder.js && tsc && tsc-alias",
     "build": "pnpm build-dashboard"
   },
   "author": "",

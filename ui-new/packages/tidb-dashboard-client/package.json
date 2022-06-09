@@ -10,5 +10,11 @@
     "build": "tsc"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.5.1"
+  }
 }

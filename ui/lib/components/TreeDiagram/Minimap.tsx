@@ -19,6 +19,7 @@ interface MinimapProps {
   customLinkElement: any
   customNodeElement: any
   minimapScale: number
+  brushGroup: any
 }
 
 const Minimap = ({
@@ -30,21 +31,19 @@ const Minimap = ({
   customLinkElement,
   customNodeElement,
   minimapScale,
+  brushGroup,
 }: MinimapProps) => {
   const minimapSVG = select('.minimapSVG')
   const minimapGroup = select('.minimapGroup')
   const { width: mainChartWidth, height: mainChartHeight } = mainChartGroupBound
-  console.log(
-    'viewPort in minimap',
-    mainChartGroupBound,
-    minimapTranslate,
-    viewPort
-  )
+
+  console.log('mainChartGroupBound', mainChartGroupBound)
+
   const minimapContainerWidth = mainChartWidth * minimapScale
   const minimapContainerHeight = mainChartHeight * minimapScale
 
-  const gBrushRef = useRef(null)
-  const gBrush = select(gBrushRef.current)
+  // const gBrushRef = useRef(null)
+  // const gBrush = select(gBrushRef.current)
 
   const minimapScaleX = (zoomScale) => {
     return scaleLinear()
@@ -58,60 +57,56 @@ const Minimap = ({
       .range([0, mainChartWidth * zoomScale])
   }
 
-  const onBrush = () => {
-    if (event.sourceEvent && event.sourceEvent.type === 'zoom') return null
+  // const onBrush = () => {
+  //   if (event.sourceEvent && event.sourceEvent.type === 'zoom') return null
 
-    if (Array.isArray(event.selection)) {
-      const [[brushX, brushY], [brushX2, brushY2]] = event.selection
-      console.log('on brush event', event, event.selection)
-      // const zoomScale = zoomTransform(mainChartContainerSVG.node() as any).k
+  //   if (Array.isArray(event.selection)) {
+  //     const [[brushX, brushY], [brushX2, brushY2]] = event.selection
+  //     console.log('on brush event', event, event.selection)
+  //     // const zoomScale = zoomTransform(mainChartContainerSVG.node() as any).k
 
-      // const scaleX = minimapScaleX(zoomScale)
-      // const scaleY = minimapScaleY(zoomScale)
+  //     // const scaleX = minimapScaleX(zoomScale)
+  //     // const scaleY = minimapScaleY(zoomScale)
 
-      //   mainChartContainerSVG.call(
-      //     zoomBehavior.transform as any,
-      //     d3.zoomIdentity
-      //       // .translate(attrs.svgWidth, attrs.svgHeight)
-      //       .translate(-brushX + viewPortWidth / 2, -brushY)
-      //       .scale(zoomScale)
-      //   )
+  //     //   mainChartContainerSVG.call(
+  //     //     zoomBehavior.transform as any,
+  //     //     d3.zoomIdentity
+  //     //       // .translate(attrs.svgWidth, attrs.svgHeight)
+  //     //       .translate(-brushX + viewPortWidth / 2, -brushY)
+  //     //       .scale(zoomScale)
+  //     //   )
 
-      //   mainChartGroup.attr(
-      //     'transform',
-      //     `translate(${scaleX(-brushX + viewPortWidth / 2)}, ${scaleY(
-      //       -brushY
-      //     )}) scale(${zoomScale})`
-      //   )
-      // }
-    }
-  }
+  //     //   mainChartGroup.attr(
+  //     //     'transform',
+  //     //     `translate(${scaleX(-brushX + viewPortWidth / 2)}, ${scaleY(
+  //     //       -brushY
+  //     //     )}) scale(${zoomScale})`
+  //     //   )
+  //     // }
+  //   }
+  // }
 
-  const brushBehavior = d3Brush()
-    .extent([
-      [0, 0],
-      [viewPort.width, viewPort.height],
-    ])
-    .on('brush', onBrush)
+  // const brushBehavior = d3Brush()
+  //   .extent([
+  //     [0, 0],
+  //     [viewPort.width, viewPort.height],
+  //   ])
+  //   .on('brush', onBrush)
 
-  const bindBrushListener = () => {
-    console.log('bind brush listener')
-    gBrush.call(brushBehavior as any)
+  // const bindBrushListener = () => {
+  //   console.log('bind brush listener')
+  //   gBrush.call(brushBehavior as any)
 
-    brushBehavior.move(gBrush as any, [
-      [0, 0],
-      [viewPort.width, viewPort.height],
-    ])
-  }
+  //   brushBehavior.move(gBrush as any, [
+  //     [0, 0],
+  //     [viewPort.width, viewPort.height],
+  //   ])
+  // }
 
   const drawMinimap = () => {
-    // const worldWidth = worldSize[0]
-    // const worldHeight = worldSize[1]
-    console.log('draw mini map')
-
     minimapSVG
       .attr('width', minimapScaleX(minimapScale)(mainChartWidth))
-      .attr('height', minimapScaleX(minimapScale)(mainChartHeight))
+      .attr('height', minimapScaleY(minimapScale)(mainChartHeight))
       .attr('viewBox', [0, 0, mainChartWidth, mainChartHeight].join(' '))
       .attr('preserveAspectRatio', 'xMidYMid meet')
       .style('position', 'absolute')
@@ -137,6 +132,7 @@ const Minimap = ({
 
   // useEffect(() => {
   //   if(gBrushRef.current) {
+  //     console.log('gBrushRef.current', gBrushRef.current)
   //     bindBrushListener()
   //   }
   // }, [])
@@ -182,7 +178,7 @@ const Minimap = ({
               })}
           </g>
         </g>
-        <g ref={gBrushRef}></g>
+        {brushGroup()}
       </svg>
     </div>
   )

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, Fragment } from 'react'
 import _ from 'lodash'
 import { AssignInternalProperties } from './utlis'
 import styles from './index.module.less'
@@ -19,13 +19,22 @@ import Minimap from './Minimap'
 import { flextree } from 'd3-flextree'
 import { hierarchy, HierarchyPointNode, HierarchyPointLink } from 'd3-hierarchy'
 import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
+import { brush as d3Brush } from 'd3-brush'
 import { select, event } from 'd3-selection'
+import { scaleLinear } from 'd3-scale'
+
+const BrushGroup = (gBrushRef) => {
+  return (
+    <React.Fragment>
+      <g ref={gBrushRef}></g>
+    </React.Fragment>
+  )
+}
 
 const TreeDiagram = ({
   data,
   nodeSize,
   nodeMargin,
-  // viewPort,
   showMinimap,
   minimapScale,
   translate,
@@ -51,6 +60,9 @@ const TreeDiagram = ({
   })
   const mainChartSVG = select('.mainChartSVG')
   const mainChartGroup = select('.mainChartGroup')
+
+  const gBrushRef = useRef(null)
+  const gBrush = select(gBrushRef.current)
 
   const treeDiagramContainerRef = useRef<HTMLDivElement>(null)
 
@@ -83,6 +95,70 @@ const TreeDiagram = ({
     return { nodes, links }
   }
 
+  const brushBehavior = d3Brush().on('brush', () => onBrush())
+
+  const onBrush = () => {
+    console.log('onbrush...')
+  }
+
+  const minimapScaleX = (zoomScale) => {
+    return scaleLinear()
+      .domain([0, mainChartGroupBound.width])
+      .range([0, mainChartGroupBound.width * zoomScale])
+  }
+
+  const minimapScaleY = (zoomScale) => {
+    return scaleLinear()
+      .domain([0, mainChartGroupBound.height])
+      .range([0, mainChartGroupBound.height * zoomScale])
+  }
+
+  const bindBrushListener = () => {
+    gBrush.call(brushBehavior as any)
+
+    // init brush seletion
+    brushBehavior.move(gBrush as any, [
+      [(-mainChartGroupBound.x - chartTranslate.x) / chartTranslate.k, 0],
+      [
+        (-mainChartGroupBound.x - chartTranslate.x + viewPort.width) /
+          chartTranslate.k,
+        viewPort.height / chartTranslate.k,
+      ],
+    ])
+  }
+
+  const zoomBehavior = d3Zoom()
+    .scaleExtent([0.2, 2])
+    .on('zoom', () => onZoom())
+
+  const onZoom = () => {
+    const t = event.transform
+    setChartTranslate(t)
+    console.log('onzoom gbrush is', t, mainChartGroupBound)
+
+    const scaleX = minimapScaleX(t.k)
+    const scaleY = minimapScaleY(t.k)
+
+    console.log(
+      'scalex',
+      -mainChartGroupBound.x - scaleX.invert(t.x),
+      -scaleY.invert(t.y)
+    )
+    console.log(
+      'scaley',
+      -mainChartGroupBound.x - scaleX.invert(t.x + viewPort.width),
+      -scaleY.invert(t.y + viewPort.height)
+    )
+
+    brushBehavior.move(gBrush as any, [
+      [-mainChartGroupBound.x - scaleX.invert(t.x), -scaleY.invert(t.y)],
+      [
+        -mainChartGroupBound.x - scaleX.invert(t.x + viewPort.width),
+        -scaleY.invert(t.y + viewPort.height),
+      ],
+    ])
+  }
+
   // Binds MainChart container
   const bindZoomListener = () => {
     // Sets initial offset, so that first pan and zoom does not jump back to default [0,0] coords.
@@ -94,13 +170,7 @@ const TreeDiagram = ({
         .scale(chartTranslate.k)
     )
 
-    mainChartSVG.call(
-      d3Zoom()
-        .scaleExtent([0.2, 2])
-        .on('zoom', () => {
-          setChartTranslate(event.transform)
-        }) as any
-    )
+    mainChartSVG.call(zoomBehavior as any)
   }
 
   const findNodesById = (
@@ -167,12 +237,14 @@ const TreeDiagram = ({
   }
 
   useEffect(() => {
+    console.log('1')
     const treeNodes = AssignInternalProperties(data, nodeSize!)
     setTreeNodeDatum(treeNodes)
   }, [data, nodeSize])
 
   useEffect(() => {
     if (treeNodeDatum.length > 0) {
+      console.log('2')
       const { nodes, links } = generateNodesAndLinks(treeNodeDatum, nodeMargin!)
       setNodes(nodes)
       setLinks(links)
@@ -180,8 +252,8 @@ const TreeDiagram = ({
   }, [nodeMargin, treeNodeDatum])
 
   useEffect(() => {
-    if (links.length > 0 && nodes.length > 0 && initDraw) {
-      bindZoomListener()
+    if (links.length > 0 && nodes.length > 0 && initDraw && gBrushRef.current) {
+      console.log('3')
       setChartTranslate(translate)
       getInitTreeDiagramBound()
       setInitDraw(false)
@@ -189,7 +261,14 @@ const TreeDiagram = ({
   }, [links, nodes])
 
   useEffect(() => {
+    console.log('5', mainChartGroupBound)
+    bindZoomListener()
+    bindBrushListener()
+  }, [mainChartGroupBound])
+
+  useEffect(() => {
     if (treeDiagramContainerRef.current) {
+      console.log('4')
       const w = treeDiagramContainerRef.current?.clientWidth
 
       setViewPort({
@@ -252,6 +331,7 @@ const TreeDiagram = ({
           customLinkElement={customLinkElement}
           customNodeElement={customNodeElement}
           minimapScale={minimapScale!}
+          brushGroup={() => BrushGroup(gBrushRef)}
         />
       )}
     </div>

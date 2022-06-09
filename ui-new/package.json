@@ -1,0 +1,34 @@
+{
+  "name": "tidb-dashboard-ui",
+  "private": "true",
+  "version": "1.0.0",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "prepare": "husky install",
+    "gen:api": "pnpm -r --parallel gen:api",
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build"
+  },
+  "devDependencies": {
+    "eslint": "^8.9.0",
+    "eslint-config-react-app": "^7.0.0",
+    "husky": "^7.0.2",
+    "lint-staged": "^11.1.2",
+    "prettier": "^2.4.0"
+  },
+  "lint-staged": {
+    "*.+(ts|tsx)": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.+(json|css|md)": "prettier --write"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  }
+}

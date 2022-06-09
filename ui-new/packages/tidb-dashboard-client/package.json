@@ -4,6 +4,7 @@
   "description": "",
   "private": true,
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "gen:api": "./swagger/gen_api.sh",
     "dev": "tsc -w",

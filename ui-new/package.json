@@ -7,7 +7,7 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "cd .. && husky install ui-new/.husky",
     "gen:api": "pnpm -r --parallel gen:api",
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build"
@@ -15,9 +15,10 @@
   "devDependencies": {
     "eslint": "^8.9.0",
     "eslint-config-react-app": "^7.0.0",
-    "husky": "^7.0.2",
+    "husky": "^8.0.0",
     "lint-staged": "^11.1.2",
-    "prettier": "^2.4.0"
+    "prettier": "^2.4.0",
+    "typescript": "^4.7.3"
   },
   "lint-staged": {
     "*.+(ts|tsx)": [

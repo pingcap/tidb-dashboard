@@ -1,0 +1,5 @@
+enumPropertyNaming: original
+modelPropertyNaming: original
+supportsES6: true
+withInterfaces: true
+# withSeparateModelsAndApi: true

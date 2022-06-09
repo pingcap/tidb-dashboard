@@ -1,0 +1,14 @@
+{
+  "name": "@pingcap/tidb-dashboard-client",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "gen:api": "./swagger/gen_api.sh",
+    "dev": "tsc -w",
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC"
+}

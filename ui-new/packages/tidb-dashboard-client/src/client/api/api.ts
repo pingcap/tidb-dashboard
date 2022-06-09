@@ -9702,6 +9702,1147 @@ export interface DefaultApiInterface {
 }
 
 /**
+ * Request parameters for cancelProfilingGroup operation in DefaultApi.
+ * @export
+ * @interface DefaultApiCancelProfilingGroupRequest
+ */
+export interface DefaultApiCancelProfilingGroupRequest {
+    /**
+     * group ID
+     * @type {string}
+     * @memberof DefaultApiCancelProfilingGroup
+     */
+    readonly groupId: string
+}
+
+/**
+ * Request parameters for configurationEdit operation in DefaultApi.
+ * @export
+ * @interface DefaultApiConfigurationEditRequest
+ */
+export interface DefaultApiConfigurationEditRequest {
+    /**
+     * Request body
+     * @type {ConfigurationEditRequest}
+     * @memberof DefaultApiConfigurationEdit
+     */
+    readonly request: ConfigurationEditRequest
+}
+
+/**
+ * Request parameters for continuousProfilingActionTokenGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiContinuousProfilingActionTokenGetRequest
+ */
+export interface DefaultApiContinuousProfilingActionTokenGetRequest {
+    /**
+     * target query string
+     * @type {string}
+     * @memberof DefaultApiContinuousProfilingActionTokenGet
+     */
+    readonly q: string
+}
+
+/**
+ * Request parameters for continuousProfilingConfigPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiContinuousProfilingConfigPostRequest
+ */
+export interface DefaultApiContinuousProfilingConfigPostRequest {
+    /**
+     * Request body
+     * @type {ConprofNgMonitoringConfig}
+     * @memberof DefaultApiContinuousProfilingConfigPost
+     */
+    readonly request: ConprofNgMonitoringConfig
+}
+
+/**
+ * Request parameters for continuousProfilingDownloadGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiContinuousProfilingDownloadGetRequest
+ */
+export interface DefaultApiContinuousProfilingDownloadGetRequest {
+    /**
+     * timestamp
+     * @type {number}
+     * @memberof DefaultApiContinuousProfilingDownloadGet
+     */
+    readonly ts: number
+}
+
+/**
+ * Request parameters for continuousProfilingGroupProfileDetailGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiContinuousProfilingGroupProfileDetailGetRequest
+ */
+export interface DefaultApiContinuousProfilingGroupProfileDetailGetRequest {
+    /**
+     * timestamp
+     * @type {number}
+     * @memberof DefaultApiContinuousProfilingGroupProfileDetailGet
+     */
+    readonly ts: number
+}
+
+/**
+ * Request parameters for continuousProfilingGroupProfilesGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiContinuousProfilingGroupProfilesGetRequest
+ */
+export interface DefaultApiContinuousProfilingGroupProfilesGetRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiContinuousProfilingGroupProfilesGet
+     */
+    readonly beginTime?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiContinuousProfilingGroupProfilesGet
+     */
+    readonly endTime?: number
+}
+
+/**
+ * Request parameters for continuousProfilingSingleProfileViewGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiContinuousProfilingSingleProfileViewGetRequest
+ */
+export interface DefaultApiContinuousProfilingSingleProfileViewGetRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiContinuousProfilingSingleProfileViewGet
+     */
+    readonly address?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiContinuousProfilingSingleProfileViewGet
+     */
+    readonly component?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiContinuousProfilingSingleProfileViewGet
+     */
+    readonly profileType?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiContinuousProfilingSingleProfileViewGet
+     */
+    readonly ts?: number
+}
+
+/**
+ * Request parameters for debugAPIRequestEndpoint operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDebugAPIRequestEndpointRequest
+ */
+export interface DefaultApiDebugAPIRequestEndpointRequest {
+    /**
+     * request payload
+     * @type {EndpointRequestPayload}
+     * @memberof DefaultApiDebugAPIRequestEndpoint
+     */
+    readonly req: EndpointRequestPayload
+}
+
+/**
+ * Request parameters for debugApiDownloadGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDebugApiDownloadGetRequest
+ */
+export interface DefaultApiDebugApiDownloadGetRequest {
+    /**
+     * download token
+     * @type {string}
+     * @memberof DefaultApiDebugApiDownloadGet
+     */
+    readonly token: string
+}
+
+/**
+ * Request parameters for deleteProfilingGroup operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDeleteProfilingGroupRequest
+ */
+export interface DefaultApiDeleteProfilingGroupRequest {
+    /**
+     * group ID
+     * @type {string}
+     * @memberof DefaultApiDeleteProfilingGroup
+     */
+    readonly groupId: string
+}
+
+/**
+ * Request parameters for diagnoseDiagnosisPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDiagnoseDiagnosisPostRequest
+ */
+export interface DefaultApiDiagnoseDiagnosisPostRequest {
+    /**
+     * Request body
+     * @type {DiagnoseGenDiagnosisReportRequest}
+     * @memberof DefaultApiDiagnoseDiagnosisPost
+     */
+    readonly request: DiagnoseGenDiagnosisReportRequest
+}
+
+/**
+ * Request parameters for diagnoseGenerateMetricsRelationship operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDiagnoseGenerateMetricsRelationshipRequest
+ */
+export interface DefaultApiDiagnoseGenerateMetricsRelationshipRequest {
+    /**
+     * Request body
+     * @type {DiagnoseGenerateMetricsRelationRequest}
+     * @memberof DefaultApiDiagnoseGenerateMetricsRelationship
+     */
+    readonly request: DiagnoseGenerateMetricsRelationRequest
+}
+
+/**
+ * Request parameters for diagnoseMetricsRelationViewGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDiagnoseMetricsRelationViewGetRequest
+ */
+export interface DefaultApiDiagnoseMetricsRelationViewGetRequest {
+    /**
+     * token
+     * @type {string}
+     * @memberof DefaultApiDiagnoseMetricsRelationViewGet
+     */
+    readonly token: string
+}
+
+/**
+ * Request parameters for diagnoseReportsIdDataJsGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDiagnoseReportsIdDataJsGetRequest
+ */
+export interface DefaultApiDiagnoseReportsIdDataJsGetRequest {
+    /**
+     * report id
+     * @type {string}
+     * @memberof DefaultApiDiagnoseReportsIdDataJsGet
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for diagnoseReportsIdDetailGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDiagnoseReportsIdDetailGetRequest
+ */
+export interface DefaultApiDiagnoseReportsIdDetailGetRequest {
+    /**
+     * report id
+     * @type {string}
+     * @memberof DefaultApiDiagnoseReportsIdDetailGet
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for diagnoseReportsIdStatusGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDiagnoseReportsIdStatusGetRequest
+ */
+export interface DefaultApiDiagnoseReportsIdStatusGetRequest {
+    /**
+     * report id
+     * @type {string}
+     * @memberof DefaultApiDiagnoseReportsIdStatusGet
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for diagnoseReportsPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDiagnoseReportsPostRequest
+ */
+export interface DefaultApiDiagnoseReportsPostRequest {
+    /**
+     * Request body
+     * @type {DiagnoseGenerateReportRequest}
+     * @memberof DefaultApiDiagnoseReportsPost
+     */
+    readonly request: DiagnoseGenerateReportRequest
+}
+
+/**
+ * Request parameters for downloadProfilingGroup operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDownloadProfilingGroupRequest
+ */
+export interface DefaultApiDownloadProfilingGroupRequest {
+    /**
+     * download token
+     * @type {string}
+     * @memberof DefaultApiDownloadProfilingGroup
+     */
+    readonly token: string
+}
+
+/**
+ * Request parameters for downloadProfilingSingle operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDownloadProfilingSingleRequest
+ */
+export interface DefaultApiDownloadProfilingSingleRequest {
+    /**
+     * download token
+     * @type {string}
+     * @memberof DefaultApiDownloadProfilingSingle
+     */
+    readonly token: string
+}
+
+/**
+ * Request parameters for getActionToken operation in DefaultApi.
+ * @export
+ * @interface DefaultApiGetActionTokenRequest
+ */
+export interface DefaultApiGetActionTokenRequest {
+    /**
+     * group or task ID
+     * @type {string}
+     * @memberof DefaultApiGetActionToken
+     */
+    readonly id?: string
+
+    /**
+     * action
+     * @type {string}
+     * @memberof DefaultApiGetActionToken
+     */
+    readonly action?: string
+}
+
+/**
+ * Request parameters for getAlertManagerCounts operation in DefaultApi.
+ * @export
+ * @interface DefaultApiGetAlertManagerCountsRequest
+ */
+export interface DefaultApiGetAlertManagerCountsRequest {
+    /**
+     * ip:port
+     * @type {string}
+     * @memberof DefaultApiGetAlertManagerCounts
+     */
+    readonly address: string
+}
+
+/**
+ * Request parameters for getProfilingGroupDetail operation in DefaultApi.
+ * @export
+ * @interface DefaultApiGetProfilingGroupDetailRequest
+ */
+export interface DefaultApiGetProfilingGroupDetailRequest {
+    /**
+     * group ID
+     * @type {string}
+     * @memberof DefaultApiGetProfilingGroupDetail
+     */
+    readonly groupId: string
+}
+
+/**
+ * Request parameters for infoListTables operation in DefaultApi.
+ * @export
+ * @interface DefaultApiInfoListTablesRequest
+ */
+export interface DefaultApiInfoListTablesRequest {
+    /**
+     * Database name
+     * @type {string}
+     * @memberof DefaultApiInfoListTables
+     */
+    readonly databaseName?: string
+}
+
+/**
+ * Request parameters for keyvisualConfigPut operation in DefaultApi.
+ * @export
+ * @interface DefaultApiKeyvisualConfigPutRequest
+ */
+export interface DefaultApiKeyvisualConfigPutRequest {
+    /**
+     * Request body
+     * @type {ConfigKeyVisualConfig}
+     * @memberof DefaultApiKeyvisualConfigPut
+     */
+    readonly request: ConfigKeyVisualConfig
+}
+
+/**
+ * Request parameters for keyvisualHeatmapsGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiKeyvisualHeatmapsGetRequest
+ */
+export interface DefaultApiKeyvisualHeatmapsGetRequest {
+    /**
+     * The start of the key range
+     * @type {string}
+     * @memberof DefaultApiKeyvisualHeatmapsGet
+     */
+    readonly startkey?: string
+
+    /**
+     * The end of the key range
+     * @type {string}
+     * @memberof DefaultApiKeyvisualHeatmapsGet
+     */
+    readonly endkey?: string
+
+    /**
+     * The start of the time range (Unix)
+     * @type {number}
+     * @memberof DefaultApiKeyvisualHeatmapsGet
+     */
+    readonly starttime?: number
+
+    /**
+     * The end of the time range (Unix)
+     * @type {number}
+     * @memberof DefaultApiKeyvisualHeatmapsGet
+     */
+    readonly endtime?: number
+
+    /**
+     * Main types of data
+     * @type {'written_bytes' | 'read_bytes' | 'written_keys' | 'read_keys' | 'integration'}
+     * @memberof DefaultApiKeyvisualHeatmapsGet
+     */
+    readonly type?: 'written_bytes' | 'read_bytes' | 'written_keys' | 'read_keys' | 'integration'
+}
+
+/**
+ * Request parameters for logsDownloadAcquireTokenGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiLogsDownloadAcquireTokenGetRequest
+ */
+export interface DefaultApiLogsDownloadAcquireTokenGetRequest {
+    /**
+     * task id
+     * @type {Array<string>}
+     * @memberof DefaultApiLogsDownloadAcquireTokenGet
+     */
+    readonly id?: Array<string>
+}
+
+/**
+ * Request parameters for logsDownloadGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiLogsDownloadGetRequest
+ */
+export interface DefaultApiLogsDownloadGetRequest {
+    /**
+     * download token
+     * @type {string}
+     * @memberof DefaultApiLogsDownloadGet
+     */
+    readonly token: string
+}
+
+/**
+ * Request parameters for logsTaskgroupPut operation in DefaultApi.
+ * @export
+ * @interface DefaultApiLogsTaskgroupPutRequest
+ */
+export interface DefaultApiLogsTaskgroupPutRequest {
+    /**
+     * Request body
+     * @type {LogsearchCreateTaskGroupRequest}
+     * @memberof DefaultApiLogsTaskgroupPut
+     */
+    readonly request: LogsearchCreateTaskGroupRequest
+}
+
+/**
+ * Request parameters for logsTaskgroupsIdCancelPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiLogsTaskgroupsIdCancelPostRequest
+ */
+export interface DefaultApiLogsTaskgroupsIdCancelPostRequest {
+    /**
+     * task group id
+     * @type {string}
+     * @memberof DefaultApiLogsTaskgroupsIdCancelPost
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for logsTaskgroupsIdDelete operation in DefaultApi.
+ * @export
+ * @interface DefaultApiLogsTaskgroupsIdDeleteRequest
+ */
+export interface DefaultApiLogsTaskgroupsIdDeleteRequest {
+    /**
+     * task group id
+     * @type {string}
+     * @memberof DefaultApiLogsTaskgroupsIdDelete
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for logsTaskgroupsIdGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiLogsTaskgroupsIdGetRequest
+ */
+export interface DefaultApiLogsTaskgroupsIdGetRequest {
+    /**
+     * Task Group ID
+     * @type {string}
+     * @memberof DefaultApiLogsTaskgroupsIdGet
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for logsTaskgroupsIdPreviewGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiLogsTaskgroupsIdPreviewGetRequest
+ */
+export interface DefaultApiLogsTaskgroupsIdPreviewGetRequest {
+    /**
+     * task group id
+     * @type {string}
+     * @memberof DefaultApiLogsTaskgroupsIdPreviewGet
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for logsTaskgroupsIdRetryPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiLogsTaskgroupsIdRetryPostRequest
+ */
+export interface DefaultApiLogsTaskgroupsIdRetryPostRequest {
+    /**
+     * task group id
+     * @type {string}
+     * @memberof DefaultApiLogsTaskgroupsIdRetryPost
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for metricsQueryGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiMetricsQueryGetRequest
+ */
+export interface DefaultApiMetricsQueryGetRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMetricsQueryGet
+     */
+    readonly endTimeSec?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiMetricsQueryGet
+     */
+    readonly query?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMetricsQueryGet
+     */
+    readonly startTimeSec?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMetricsQueryGet
+     */
+    readonly stepSec?: number
+}
+
+/**
+ * Request parameters for metricsSetCustomPromAddress operation in DefaultApi.
+ * @export
+ * @interface DefaultApiMetricsSetCustomPromAddressRequest
+ */
+export interface DefaultApiMetricsSetCustomPromAddressRequest {
+    /**
+     * Request body
+     * @type {MetricsPutCustomPromAddressRequest}
+     * @memberof DefaultApiMetricsSetCustomPromAddress
+     */
+    readonly request: MetricsPutCustomPromAddressRequest
+}
+
+/**
+ * Request parameters for profilingConfigPut operation in DefaultApi.
+ * @export
+ * @interface DefaultApiProfilingConfigPutRequest
+ */
+export interface DefaultApiProfilingConfigPutRequest {
+    /**
+     * Request body
+     * @type {ConfigProfilingConfig}
+     * @memberof DefaultApiProfilingConfigPut
+     */
+    readonly request: ConfigProfilingConfig
+}
+
+/**
+ * Request parameters for queryEditorRun operation in DefaultApi.
+ * @export
+ * @interface DefaultApiQueryEditorRunRequest
+ */
+export interface DefaultApiQueryEditorRunRequest {
+    /**
+     * Request body
+     * @type {QueryeditorRunRequest}
+     * @memberof DefaultApiQueryEditorRun
+     */
+    readonly request: QueryeditorRunRequest
+}
+
+/**
+ * Request parameters for slowQueryDetailGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiSlowQueryDetailGetRequest
+ */
+export interface DefaultApiSlowQueryDetailGetRequest {
+    /**
+     * TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
+     * @type {string}
+     * @memberof DefaultApiSlowQueryDetailGet
+     */
+    readonly connectId?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiSlowQueryDetailGet
+     */
+    readonly digest?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiSlowQueryDetailGet
+     */
+    readonly timestamp?: number
+}
+
+/**
+ * Request parameters for slowQueryDownloadGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiSlowQueryDownloadGetRequest
+ */
+export interface DefaultApiSlowQueryDownloadGetRequest {
+    /**
+     * download token
+     * @type {string}
+     * @memberof DefaultApiSlowQueryDownloadGet
+     */
+    readonly token: string
+}
+
+/**
+ * Request parameters for slowQueryDownloadTokenPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiSlowQueryDownloadTokenPostRequest
+ */
+export interface DefaultApiSlowQueryDownloadTokenPostRequest {
+    /**
+     * Request body
+     * @type {SlowqueryGetListRequest}
+     * @memberof DefaultApiSlowQueryDownloadTokenPost
+     */
+    readonly request: SlowqueryGetListRequest
+}
+
+/**
+ * Request parameters for slowQueryListGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiSlowQueryListGetRequest
+ */
+export interface DefaultApiSlowQueryListGetRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly beginTime?: number
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly db?: Array<string>
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly desc?: boolean
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly digest?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly endTime?: number
+
+    /**
+     * example: \&quot;Query,Digest\&quot;
+     * @type {string}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly fields?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly limit?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly orderBy?: string
+
+    /**
+     * for showing slow queries in the statement detail page
+     * @type {Array<string>}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly plans?: Array<string>
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly text?: string
+}
+
+/**
+ * Request parameters for startProfiling operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStartProfilingRequest
+ */
+export interface DefaultApiStartProfilingRequest {
+    /**
+     * profiling request
+     * @type {ProfilingStartRequest}
+     * @memberof DefaultApiStartProfiling
+     */
+    readonly req: ProfilingStartRequest
+}
+
+/**
+ * Request parameters for statementsConfigPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStatementsConfigPostRequest
+ */
+export interface DefaultApiStatementsConfigPostRequest {
+    /**
+     * Request body
+     * @type {StatementEditableConfig}
+     * @memberof DefaultApiStatementsConfigPost
+     */
+    readonly request: StatementEditableConfig
+}
+
+/**
+ * Request parameters for statementsDownloadGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStatementsDownloadGetRequest
+ */
+export interface DefaultApiStatementsDownloadGetRequest {
+    /**
+     * download token
+     * @type {string}
+     * @memberof DefaultApiStatementsDownloadGet
+     */
+    readonly token: string
+}
+
+/**
+ * Request parameters for statementsDownloadTokenPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStatementsDownloadTokenPostRequest
+ */
+export interface DefaultApiStatementsDownloadTokenPostRequest {
+    /**
+     * Request body
+     * @type {StatementGetStatementsRequest}
+     * @memberof DefaultApiStatementsDownloadTokenPost
+     */
+    readonly request: StatementGetStatementsRequest
+}
+
+/**
+ * Request parameters for statementsListGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStatementsListGetRequest
+ */
+export interface DefaultApiStatementsListGetRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiStatementsListGet
+     */
+    readonly beginTime?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiStatementsListGet
+     */
+    readonly endTime?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiStatementsListGet
+     */
+    readonly fields?: string
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiStatementsListGet
+     */
+    readonly schemas?: Array<string>
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiStatementsListGet
+     */
+    readonly stmtTypes?: Array<string>
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiStatementsListGet
+     */
+    readonly text?: string
+}
+
+/**
+ * Request parameters for statementsPlanDetailGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStatementsPlanDetailGetRequest
+ */
+export interface DefaultApiStatementsPlanDetailGetRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiStatementsPlanDetailGet
+     */
+    readonly beginTime?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiStatementsPlanDetailGet
+     */
+    readonly digest?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiStatementsPlanDetailGet
+     */
+    readonly endTime?: number
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiStatementsPlanDetailGet
+     */
+    readonly plans?: Array<string>
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiStatementsPlanDetailGet
+     */
+    readonly schemaName?: string
+}
+
+/**
+ * Request parameters for statementsPlansGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStatementsPlansGetRequest
+ */
+export interface DefaultApiStatementsPlansGetRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiStatementsPlansGet
+     */
+    readonly beginTime?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiStatementsPlansGet
+     */
+    readonly digest?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiStatementsPlansGet
+     */
+    readonly endTime?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiStatementsPlansGet
+     */
+    readonly schemaName?: string
+}
+
+/**
+ * Request parameters for topologyTidbAddressDelete operation in DefaultApi.
+ * @export
+ * @interface DefaultApiTopologyTidbAddressDeleteRequest
+ */
+export interface DefaultApiTopologyTidbAddressDeleteRequest {
+    /**
+     * ip:port
+     * @type {string}
+     * @memberof DefaultApiTopologyTidbAddressDelete
+     */
+    readonly address: string
+}
+
+/**
+ * Request parameters for topsqlConfigPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiTopsqlConfigPostRequest
+ */
+export interface DefaultApiTopsqlConfigPostRequest {
+    /**
+     * Request body
+     * @type {TopsqlEditableConfig}
+     * @memberof DefaultApiTopsqlConfigPost
+     */
+    readonly request: TopsqlEditableConfig
+}
+
+/**
+ * Request parameters for topsqlInstancesGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiTopsqlInstancesGetRequest
+ */
+export interface DefaultApiTopsqlInstancesGetRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlInstancesGet
+     */
+    readonly end?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlInstancesGet
+     */
+    readonly start?: string
+}
+
+/**
+ * Request parameters for topsqlSummaryGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiTopsqlSummaryGetRequest
+ */
+export interface DefaultApiTopsqlSummaryGetRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlSummaryGet
+     */
+    readonly end?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlSummaryGet
+     */
+    readonly instance?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlSummaryGet
+     */
+    readonly instanceType?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlSummaryGet
+     */
+    readonly start?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlSummaryGet
+     */
+    readonly top?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlSummaryGet
+     */
+    readonly window?: string
+}
+
+/**
+ * Request parameters for userGetSignOutInfo operation in DefaultApi.
+ * @export
+ * @interface DefaultApiUserGetSignOutInfoRequest
+ */
+export interface DefaultApiUserGetSignOutInfoRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiUserGetSignOutInfo
+     */
+    readonly redirectUrl?: string
+}
+
+/**
+ * Request parameters for userLogin operation in DefaultApi.
+ * @export
+ * @interface DefaultApiUserLoginRequest
+ */
+export interface DefaultApiUserLoginRequest {
+    /**
+     * Credentials
+     * @type {UserAuthenticateForm}
+     * @memberof DefaultApiUserLogin
+     */
+    readonly message: UserAuthenticateForm
+}
+
+/**
+ * Request parameters for userSSOCreateImpersonation operation in DefaultApi.
+ * @export
+ * @interface DefaultApiUserSSOCreateImpersonationRequest
+ */
+export interface DefaultApiUserSSOCreateImpersonationRequest {
+    /**
+     * Request body
+     * @type {SsoCreateImpersonationRequest}
+     * @memberof DefaultApiUserSSOCreateImpersonation
+     */
+    readonly request: SsoCreateImpersonationRequest
+}
+
+/**
+ * Request parameters for userSSOGetAuthURL operation in DefaultApi.
+ * @export
+ * @interface DefaultApiUserSSOGetAuthURLRequest
+ */
+export interface DefaultApiUserSSOGetAuthURLRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiUserSSOGetAuthURL
+     */
+    readonly codeVerifier?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiUserSSOGetAuthURL
+     */
+    readonly redirectUrl?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiUserSSOGetAuthURL
+     */
+    readonly state?: string
+}
+
+/**
+ * Request parameters for userSSOSetConfig operation in DefaultApi.
+ * @export
+ * @interface DefaultApiUserSSOSetConfigRequest
+ */
+export interface DefaultApiUserSSOSetConfigRequest {
+    /**
+     * Request body
+     * @type {SsoSetConfigRequest}
+     * @memberof DefaultApiUserSSOSetConfig
+     */
+    readonly request: SsoSetConfigRequest
+}
+
+/**
+ * Request parameters for userShareSession operation in DefaultApi.
+ * @export
+ * @interface DefaultApiUserShareSessionRequest
+ */
+export interface DefaultApiUserShareSessionRequest {
+    /**
+     * Request body
+     * @type {CodeShareRequest}
+     * @memberof DefaultApiUserShareSession
+     */
+    readonly request: CodeShareRequest
+}
+
+/**
+ * Request parameters for viewProfilingSingle operation in DefaultApi.
+ * @export
+ * @interface DefaultApiViewProfilingSingleRequest
+ */
+export interface DefaultApiViewProfilingSingleRequest {
+    /**
+     * download token
+     * @type {string}
+     * @memberof DefaultApiViewProfilingSingle
+     */
+    readonly token: string
+}
+
+/**
  * DefaultApi - object-oriented interface
  * @export
  * @class DefaultApi
@@ -9711,13 +10852,13 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * Cancel all profling tasks with a given group ID
      * @summary Cancel all tasks with a given group ID
-     * @param {string} groupId group ID
+     * @param {DefaultApiCancelProfilingGroupRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public cancelProfilingGroup(groupId: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).cancelProfilingGroup(groupId, options).then((request) => request(this.axios, this.basePath));
+    public cancelProfilingGroup(requestParameters: DefaultApiCancelProfilingGroupRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).cancelProfilingGroup(requestParameters.groupId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9745,13 +10886,13 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Edit a configuration
-     * @param {ConfigurationEditRequest} request Request body
+     * @param {DefaultApiConfigurationEditRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public configurationEdit(request: ConfigurationEditRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).configurationEdit(request, options).then((request) => request(this.axios, this.basePath));
+    public configurationEdit(requestParameters: DefaultApiConfigurationEditRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).configurationEdit(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9768,13 +10909,13 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Get action token for download or view profile
-     * @param {string} q target query string
+     * @param {DefaultApiContinuousProfilingActionTokenGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public continuousProfilingActionTokenGet(q: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).continuousProfilingActionTokenGet(q, options).then((request) => request(this.axios, this.basePath));
+    public continuousProfilingActionTokenGet(requestParameters: DefaultApiContinuousProfilingActionTokenGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).continuousProfilingActionTokenGet(requestParameters.q, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9802,25 +10943,25 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Update Continuous Profiling Config
-     * @param {ConprofNgMonitoringConfig} request Request body
+     * @param {DefaultApiContinuousProfilingConfigPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public continuousProfilingConfigPost(request: ConprofNgMonitoringConfig, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).continuousProfilingConfigPost(request, options).then((request) => request(this.axios, this.basePath));
+    public continuousProfilingConfigPost(requestParameters: DefaultApiContinuousProfilingConfigPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).continuousProfilingConfigPost(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Download Group Profile files
-     * @param {number} ts timestamp
+     * @param {DefaultApiContinuousProfilingDownloadGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public continuousProfilingDownloadGet(ts: number, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).continuousProfilingDownloadGet(ts, options).then((request) => request(this.axios, this.basePath));
+    public continuousProfilingDownloadGet(requestParameters: DefaultApiContinuousProfilingDownloadGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).continuousProfilingDownloadGet(requestParameters.ts, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9837,41 +10978,37 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Get Group Profile Detail
-     * @param {number} ts timestamp
+     * @param {DefaultApiContinuousProfilingGroupProfileDetailGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public continuousProfilingGroupProfileDetailGet(ts: number, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).continuousProfilingGroupProfileDetailGet(ts, options).then((request) => request(this.axios, this.basePath));
+    public continuousProfilingGroupProfileDetailGet(requestParameters: DefaultApiContinuousProfilingGroupProfileDetailGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).continuousProfilingGroupProfileDetailGet(requestParameters.ts, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Get Group Profiles
-     * @param {number} [beginTime] 
-     * @param {number} [endTime] 
+     * @param {DefaultApiContinuousProfilingGroupProfilesGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public continuousProfilingGroupProfilesGet(beginTime?: number, endTime?: number, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).continuousProfilingGroupProfilesGet(beginTime, endTime, options).then((request) => request(this.axios, this.basePath));
+    public continuousProfilingGroupProfilesGet(requestParameters: DefaultApiContinuousProfilingGroupProfilesGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).continuousProfilingGroupProfilesGet(requestParameters.beginTime, requestParameters.endTime, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary View Single Profile files
-     * @param {string} [address] 
-     * @param {string} [component] 
-     * @param {string} [profileType] 
-     * @param {number} [ts] 
+     * @param {DefaultApiContinuousProfilingSingleProfileViewGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public continuousProfilingSingleProfileViewGet(address?: string, component?: string, profileType?: string, ts?: number, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).continuousProfilingSingleProfileViewGet(address, component, profileType, ts, options).then((request) => request(this.axios, this.basePath));
+    public continuousProfilingSingleProfileViewGet(requestParameters: DefaultApiContinuousProfilingSingleProfileViewGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).continuousProfilingSingleProfileViewGet(requestParameters.address, requestParameters.component, requestParameters.profileType, requestParameters.ts, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9888,73 +11025,73 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Send request remote endpoint and return a token for downloading results
-     * @param {EndpointRequestPayload} req request payload
+     * @param {DefaultApiDebugAPIRequestEndpointRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public debugAPIRequestEndpoint(req: EndpointRequestPayload, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).debugAPIRequestEndpoint(req, options).then((request) => request(this.axios, this.basePath));
+    public debugAPIRequestEndpoint(requestParameters: DefaultApiDebugAPIRequestEndpointRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).debugAPIRequestEndpoint(requestParameters.req, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Download a finished request result
-     * @param {string} token download token
+     * @param {DefaultApiDebugApiDownloadGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public debugApiDownloadGet(token: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).debugApiDownloadGet(token, options).then((request) => request(this.axios, this.basePath));
+    public debugApiDownloadGet(requestParameters: DefaultApiDebugApiDownloadGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).debugApiDownloadGet(requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Delete all finished profiling tasks with a given group ID
      * @summary Delete all tasks with a given group ID
-     * @param {string} groupId group ID
+     * @param {DefaultApiDeleteProfilingGroupRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public deleteProfilingGroup(groupId: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).deleteProfilingGroup(groupId, options).then((request) => request(this.axios, this.basePath));
+    public deleteProfilingGroup(requestParameters: DefaultApiDeleteProfilingGroupRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).deleteProfilingGroup(requestParameters.groupId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Generate sql diagnosis report
      * @summary SQL diagnosis report
-     * @param {DiagnoseGenDiagnosisReportRequest} request Request body
+     * @param {DefaultApiDiagnoseDiagnosisPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public diagnoseDiagnosisPost(request: DiagnoseGenDiagnosisReportRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).diagnoseDiagnosisPost(request, options).then((request) => request(this.axios, this.basePath));
+    public diagnoseDiagnosisPost(requestParameters: DefaultApiDiagnoseDiagnosisPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).diagnoseDiagnosisPost(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Generate metrics relationship graph.
-     * @param {DiagnoseGenerateMetricsRelationRequest} request Request body
+     * @param {DefaultApiDiagnoseGenerateMetricsRelationshipRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public diagnoseGenerateMetricsRelationship(request: DiagnoseGenerateMetricsRelationRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).diagnoseGenerateMetricsRelationship(request, options).then((request) => request(this.axios, this.basePath));
+    public diagnoseGenerateMetricsRelationship(requestParameters: DefaultApiDiagnoseGenerateMetricsRelationshipRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).diagnoseGenerateMetricsRelationship(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary View metrics relationship graph.
-     * @param {string} token token
+     * @param {DefaultApiDiagnoseMetricsRelationViewGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public diagnoseMetricsRelationViewGet(token: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).diagnoseMetricsRelationViewGet(token, options).then((request) => request(this.axios, this.basePath));
+    public diagnoseMetricsRelationViewGet(requestParameters: DefaultApiDiagnoseMetricsRelationViewGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).diagnoseMetricsRelationViewGet(requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9971,98 +11108,97 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * Get sql diagnosis report data
      * @summary SQL diagnosis report data
-     * @param {string} id report id
+     * @param {DefaultApiDiagnoseReportsIdDataJsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public diagnoseReportsIdDataJsGet(id: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).diagnoseReportsIdDataJsGet(id, options).then((request) => request(this.axios, this.basePath));
+    public diagnoseReportsIdDataJsGet(requestParameters: DefaultApiDiagnoseReportsIdDataJsGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).diagnoseReportsIdDataJsGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get sql diagnosis report HTML
      * @summary SQL diagnosis report
-     * @param {string} id report id
+     * @param {DefaultApiDiagnoseReportsIdDetailGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public diagnoseReportsIdDetailGet(id: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).diagnoseReportsIdDetailGet(id, options).then((request) => request(this.axios, this.basePath));
+    public diagnoseReportsIdDetailGet(requestParameters: DefaultApiDiagnoseReportsIdDetailGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).diagnoseReportsIdDetailGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get diagnosis report status
      * @summary Diagnosis report status
-     * @param {string} id report id
+     * @param {DefaultApiDiagnoseReportsIdStatusGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public diagnoseReportsIdStatusGet(id: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).diagnoseReportsIdStatusGet(id, options).then((request) => request(this.axios, this.basePath));
+    public diagnoseReportsIdStatusGet(requestParameters: DefaultApiDiagnoseReportsIdStatusGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).diagnoseReportsIdStatusGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Generate sql diagnosis report
      * @summary SQL diagnosis report
-     * @param {DiagnoseGenerateReportRequest} request Request body
+     * @param {DefaultApiDiagnoseReportsPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public diagnoseReportsPost(request: DiagnoseGenerateReportRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).diagnoseReportsPost(request, options).then((request) => request(this.axios, this.basePath));
+    public diagnoseReportsPost(requestParameters: DefaultApiDiagnoseReportsPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).diagnoseReportsPost(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Download all finished profiling results of a task group
      * @summary Download all results of a task group
-     * @param {string} token download token
+     * @param {DefaultApiDownloadProfilingGroupRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public downloadProfilingGroup(token: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).downloadProfilingGroup(token, options).then((request) => request(this.axios, this.basePath));
+    public downloadProfilingGroup(requestParameters: DefaultApiDownloadProfilingGroupRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).downloadProfilingGroup(requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Download the finished profiling result of a task
      * @summary Download the result of a task
-     * @param {string} token download token
+     * @param {DefaultApiDownloadProfilingSingleRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public downloadProfilingSingle(token: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).downloadProfilingSingle(token, options).then((request) => request(this.axios, this.basePath));
+    public downloadProfilingSingle(requestParameters: DefaultApiDownloadProfilingSingleRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).downloadProfilingSingle(requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get token with a given group ID or task ID and action type
      * @summary Get action token for download or view
-     * @param {string} [id] group or task ID
-     * @param {string} [action] action
+     * @param {DefaultApiGetActionTokenRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public getActionToken(id?: string, action?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).getActionToken(id, action, options).then((request) => request(this.axios, this.basePath));
+    public getActionToken(requestParameters: DefaultApiGetActionTokenRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getActionToken(requestParameters.id, requestParameters.action, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Get current alert count from AlertManager
-     * @param {string} address ip:port
+     * @param {DefaultApiGetAlertManagerCountsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public getAlertManagerCounts(address: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).getAlertManagerCounts(address, options).then((request) => request(this.axios, this.basePath));
+    public getAlertManagerCounts(requestParameters: DefaultApiGetAlertManagerCountsRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getAlertManagerCounts(requestParameters.address, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10101,13 +11237,13 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * List all profiling tasks with a given group ID
      * @summary List all tasks with a given group ID
-     * @param {string} groupId group ID
+     * @param {DefaultApiGetProfilingGroupDetailRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public getProfilingGroupDetail(groupId: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).getProfilingGroupDetail(groupId, options).then((request) => request(this.axios, this.basePath));
+    public getProfilingGroupDetail(requestParameters: DefaultApiGetProfilingGroupDetailRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getProfilingGroupDetail(requestParameters.groupId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10179,13 +11315,13 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary List tables by database name
-     * @param {string} [databaseName] Database name
+     * @param {DefaultApiInfoListTablesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public infoListTables(databaseName?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).infoListTables(databaseName, options).then((request) => request(this.axios, this.basePath));
+    public infoListTables(requestParameters: DefaultApiInfoListTablesRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).infoListTables(requestParameters.databaseName, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10213,65 +11349,61 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Set Key Visual Dynamic Config
-     * @param {ConfigKeyVisualConfig} request Request body
+     * @param {DefaultApiKeyvisualConfigPutRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public keyvisualConfigPut(request: ConfigKeyVisualConfig, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).keyvisualConfigPut(request, options).then((request) => request(this.axios, this.basePath));
+    public keyvisualConfigPut(requestParameters: DefaultApiKeyvisualConfigPutRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).keyvisualConfigPut(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Heatmaps in a given range to visualize TiKV usage
      * @summary Key Visual Heatmaps
-     * @param {string} [startkey] The start of the key range
-     * @param {string} [endkey] The end of the key range
-     * @param {number} [starttime] The start of the time range (Unix)
-     * @param {number} [endtime] The end of the time range (Unix)
-     * @param {'written_bytes' | 'read_bytes' | 'written_keys' | 'read_keys' | 'integration'} [type] Main types of data
+     * @param {DefaultApiKeyvisualHeatmapsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public keyvisualHeatmapsGet(startkey?: string, endkey?: string, starttime?: number, endtime?: number, type?: 'written_bytes' | 'read_bytes' | 'written_keys' | 'read_keys' | 'integration', options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).keyvisualHeatmapsGet(startkey, endkey, starttime, endtime, type, options).then((request) => request(this.axios, this.basePath));
+    public keyvisualHeatmapsGet(requestParameters: DefaultApiKeyvisualHeatmapsGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).keyvisualHeatmapsGet(requestParameters.startkey, requestParameters.endkey, requestParameters.starttime, requestParameters.endtime, requestParameters.type, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Generate a download token for downloading logs
-     * @param {Array<string>} [id] task id
+     * @param {DefaultApiLogsDownloadAcquireTokenGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public logsDownloadAcquireTokenGet(id?: Array<string>, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).logsDownloadAcquireTokenGet(id, options).then((request) => request(this.axios, this.basePath));
+    public logsDownloadAcquireTokenGet(requestParameters: DefaultApiLogsDownloadAcquireTokenGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).logsDownloadAcquireTokenGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Download logs
-     * @param {string} token download token
+     * @param {DefaultApiLogsDownloadGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public logsDownloadGet(token: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).logsDownloadGet(token, options).then((request) => request(this.axios, this.basePath));
+    public logsDownloadGet(requestParameters: DefaultApiLogsDownloadGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).logsDownloadGet(requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Create and run a new log search task group
-     * @param {LogsearchCreateTaskGroupRequest} request Request body
+     * @param {DefaultApiLogsTaskgroupPutRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public logsTaskgroupPut(request: LogsearchCreateTaskGroupRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).logsTaskgroupPut(request, options).then((request) => request(this.axios, this.basePath));
+    public logsTaskgroupPut(requestParameters: DefaultApiLogsTaskgroupPutRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).logsTaskgroupPut(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10288,61 +11420,61 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Cancel running tasks in a log search task group
-     * @param {string} id task group id
+     * @param {DefaultApiLogsTaskgroupsIdCancelPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public logsTaskgroupsIdCancelPost(id: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).logsTaskgroupsIdCancelPost(id, options).then((request) => request(this.axios, this.basePath));
+    public logsTaskgroupsIdCancelPost(requestParameters: DefaultApiLogsTaskgroupsIdCancelPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).logsTaskgroupsIdCancelPost(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Delete a log search task group
-     * @param {string} id task group id
+     * @param {DefaultApiLogsTaskgroupsIdDeleteRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public logsTaskgroupsIdDelete(id: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).logsTaskgroupsIdDelete(id, options).then((request) => request(this.axios, this.basePath));
+    public logsTaskgroupsIdDelete(requestParameters: DefaultApiLogsTaskgroupsIdDeleteRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).logsTaskgroupsIdDelete(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary List tasks in a log search task group
-     * @param {string} id Task Group ID
+     * @param {DefaultApiLogsTaskgroupsIdGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public logsTaskgroupsIdGet(id: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).logsTaskgroupsIdGet(id, options).then((request) => request(this.axios, this.basePath));
+    public logsTaskgroupsIdGet(requestParameters: DefaultApiLogsTaskgroupsIdGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).logsTaskgroupsIdGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Preview a log search task group
-     * @param {string} id task group id
+     * @param {DefaultApiLogsTaskgroupsIdPreviewGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public logsTaskgroupsIdPreviewGet(id: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).logsTaskgroupsIdPreviewGet(id, options).then((request) => request(this.axios, this.basePath));
+    public logsTaskgroupsIdPreviewGet(requestParameters: DefaultApiLogsTaskgroupsIdPreviewGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).logsTaskgroupsIdPreviewGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Retry failed tasks in a log search task group
-     * @param {string} id task group id
+     * @param {DefaultApiLogsTaskgroupsIdRetryPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public logsTaskgroupsIdRetryPost(id: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).logsTaskgroupsIdRetryPost(id, options).then((request) => request(this.axios, this.basePath));
+    public logsTaskgroupsIdRetryPost(requestParameters: DefaultApiLogsTaskgroupsIdRetryPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).logsTaskgroupsIdRetryPost(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10359,28 +11491,25 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * Query metrics in the given range
      * @summary Query metrics
-     * @param {number} [endTimeSec] 
-     * @param {string} [query] 
-     * @param {number} [startTimeSec] 
-     * @param {number} [stepSec] 
+     * @param {DefaultApiMetricsQueryGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public metricsQueryGet(endTimeSec?: number, query?: string, startTimeSec?: number, stepSec?: number, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).metricsQueryGet(endTimeSec, query, startTimeSec, stepSec, options).then((request) => request(this.axios, this.basePath));
+    public metricsQueryGet(requestParameters: DefaultApiMetricsQueryGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).metricsQueryGet(requestParameters.endTimeSec, requestParameters.query, requestParameters.startTimeSec, requestParameters.stepSec, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Set or clear the customized Prometheus address
-     * @param {MetricsPutCustomPromAddressRequest} request Request body
+     * @param {DefaultApiMetricsSetCustomPromAddressRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public metricsSetCustomPromAddress(request: MetricsPutCustomPromAddressRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).metricsSetCustomPromAddress(request, options).then((request) => request(this.axios, this.basePath));
+    public metricsSetCustomPromAddress(requestParameters: DefaultApiMetricsSetCustomPromAddressRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).metricsSetCustomPromAddress(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10397,25 +11526,25 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Set Profiling Dynamic Config
-     * @param {ConfigProfilingConfig} request Request body
+     * @param {DefaultApiProfilingConfigPutRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public profilingConfigPut(request: ConfigProfilingConfig, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).profilingConfigPut(request, options).then((request) => request(this.axios, this.basePath));
+    public profilingConfigPut(requestParameters: DefaultApiProfilingConfigPutRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).profilingConfigPut(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Run statements
-     * @param {QueryeditorRunRequest} request Request body
+     * @param {DefaultApiQueryEditorRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public queryEditorRun(request: QueryeditorRunRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).queryEditorRun(request, options).then((request) => request(this.axios, this.basePath));
+    public queryEditorRun(requestParameters: DefaultApiQueryEditorRunRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).queryEditorRun(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10432,72 +11561,61 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Get details of a slow query
-     * @param {string} [connectId] TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
-     * @param {string} [digest] 
-     * @param {number} [timestamp] 
+     * @param {DefaultApiSlowQueryDetailGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public slowQueryDetailGet(connectId?: string, digest?: string, timestamp?: number, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).slowQueryDetailGet(connectId, digest, timestamp, options).then((request) => request(this.axios, this.basePath));
+    public slowQueryDetailGet(requestParameters: DefaultApiSlowQueryDetailGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).slowQueryDetailGet(requestParameters.connectId, requestParameters.digest, requestParameters.timestamp, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Download slow query statements
-     * @param {string} token download token
+     * @param {DefaultApiSlowQueryDownloadGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public slowQueryDownloadGet(token: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).slowQueryDownloadGet(token, options).then((request) => request(this.axios, this.basePath));
+    public slowQueryDownloadGet(requestParameters: DefaultApiSlowQueryDownloadGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).slowQueryDownloadGet(requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Generate a download token for exported slow query statements
-     * @param {SlowqueryGetListRequest} request Request body
+     * @param {DefaultApiSlowQueryDownloadTokenPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public slowQueryDownloadTokenPost(request: SlowqueryGetListRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).slowQueryDownloadTokenPost(request, options).then((request) => request(this.axios, this.basePath));
+    public slowQueryDownloadTokenPost(requestParameters: DefaultApiSlowQueryDownloadTokenPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).slowQueryDownloadTokenPost(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary List all slow queries
-     * @param {number} [beginTime] 
-     * @param {Array<string>} [db] 
-     * @param {boolean} [desc] 
-     * @param {string} [digest] 
-     * @param {number} [endTime] 
-     * @param {string} [fields] example: \&quot;Query,Digest\&quot;
-     * @param {number} [limit] 
-     * @param {string} [orderBy] 
-     * @param {Array<string>} [plans] for showing slow queries in the statement detail page
-     * @param {string} [text] 
+     * @param {DefaultApiSlowQueryListGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public slowQueryListGet(beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, text?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).slowQueryListGet(beginTime, db, desc, digest, endTime, fields, limit, orderBy, plans, text, options).then((request) => request(this.axios, this.basePath));
+    public slowQueryListGet(requestParameters: DefaultApiSlowQueryListGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).slowQueryListGet(requestParameters.beginTime, requestParameters.db, requestParameters.desc, requestParameters.digest, requestParameters.endTime, requestParameters.fields, requestParameters.limit, requestParameters.orderBy, requestParameters.plans, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Start a profiling task group
      * @summary Start profiling
-     * @param {ProfilingStartRequest} req profiling request
+     * @param {DefaultApiStartProfilingRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public startProfiling(req: ProfilingStartRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).startProfiling(req, options).then((request) => request(this.axios, this.basePath));
+    public startProfiling(requestParameters: DefaultApiStartProfilingRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).startProfiling(requestParameters.req, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10525,85 +11643,73 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Update statement configurations
-     * @param {StatementEditableConfig} request Request body
+     * @param {DefaultApiStatementsConfigPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public statementsConfigPost(request: StatementEditableConfig, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).statementsConfigPost(request, options).then((request) => request(this.axios, this.basePath));
+    public statementsConfigPost(requestParameters: DefaultApiStatementsConfigPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).statementsConfigPost(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Download statements
-     * @param {string} token download token
+     * @param {DefaultApiStatementsDownloadGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public statementsDownloadGet(token: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).statementsDownloadGet(token, options).then((request) => request(this.axios, this.basePath));
+    public statementsDownloadGet(requestParameters: DefaultApiStatementsDownloadGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).statementsDownloadGet(requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Generate a download token for exported statements
-     * @param {StatementGetStatementsRequest} request Request body
+     * @param {DefaultApiStatementsDownloadTokenPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public statementsDownloadTokenPost(request: StatementGetStatementsRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).statementsDownloadTokenPost(request, options).then((request) => request(this.axios, this.basePath));
+    public statementsDownloadTokenPost(requestParameters: DefaultApiStatementsDownloadTokenPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).statementsDownloadTokenPost(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Get a list of statements
-     * @param {number} [beginTime] 
-     * @param {number} [endTime] 
-     * @param {string} [fields] 
-     * @param {Array<string>} [schemas] 
-     * @param {Array<string>} [stmtTypes] 
-     * @param {string} [text] 
+     * @param {DefaultApiStatementsListGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public statementsListGet(beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).statementsListGet(beginTime, endTime, fields, schemas, stmtTypes, text, options).then((request) => request(this.axios, this.basePath));
+    public statementsListGet(requestParameters: DefaultApiStatementsListGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).statementsListGet(requestParameters.beginTime, requestParameters.endTime, requestParameters.fields, requestParameters.schemas, requestParameters.stmtTypes, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Get details of a statement in an execution plan
-     * @param {number} [beginTime] 
-     * @param {string} [digest] 
-     * @param {number} [endTime] 
-     * @param {Array<string>} [plans] 
-     * @param {string} [schemaName] 
+     * @param {DefaultApiStatementsPlanDetailGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public statementsPlanDetailGet(beginTime?: number, digest?: string, endTime?: number, plans?: Array<string>, schemaName?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).statementsPlanDetailGet(beginTime, digest, endTime, plans, schemaName, options).then((request) => request(this.axios, this.basePath));
+    public statementsPlanDetailGet(requestParameters: DefaultApiStatementsPlanDetailGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).statementsPlanDetailGet(requestParameters.beginTime, requestParameters.digest, requestParameters.endTime, requestParameters.plans, requestParameters.schemaName, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Get execution plans of a statement
-     * @param {number} [beginTime] 
-     * @param {string} [digest] 
-     * @param {number} [endTime] 
-     * @param {string} [schemaName] 
+     * @param {DefaultApiStatementsPlansGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public statementsPlansGet(beginTime?: number, digest?: string, endTime?: number, schemaName?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).statementsPlansGet(beginTime, digest, endTime, schemaName, options).then((request) => request(this.axios, this.basePath));
+    public statementsPlansGet(requestParameters: DefaultApiStatementsPlansGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).statementsPlansGet(requestParameters.beginTime, requestParameters.digest, requestParameters.endTime, requestParameters.schemaName, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10631,13 +11737,13 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Hide a TiDB instance
-     * @param {string} address ip:port
+     * @param {DefaultApiTopologyTidbAddressDeleteRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public topologyTidbAddressDelete(address: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).topologyTidbAddressDelete(address, options).then((request) => request(this.axios, this.basePath));
+    public topologyTidbAddressDelete(requestParameters: DefaultApiTopologyTidbAddressDeleteRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).topologyTidbAddressDelete(requestParameters.address, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10654,43 +11760,37 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Update Top SQL config
-     * @param {TopsqlEditableConfig} request Request body
+     * @param {DefaultApiTopsqlConfigPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public topsqlConfigPost(request: TopsqlEditableConfig, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).topsqlConfigPost(request, options).then((request) => request(this.axios, this.basePath));
+    public topsqlConfigPost(requestParameters: DefaultApiTopsqlConfigPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).topsqlConfigPost(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Get availiable instances
-     * @param {string} [end] 
-     * @param {string} [start] 
+     * @param {DefaultApiTopsqlInstancesGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public topsqlInstancesGet(end?: string, start?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).topsqlInstancesGet(end, start, options).then((request) => request(this.axios, this.basePath));
+    public topsqlInstancesGet(requestParameters: DefaultApiTopsqlInstancesGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).topsqlInstancesGet(requestParameters.end, requestParameters.start, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Get summaries
-     * @param {string} [end] 
-     * @param {string} [instance] 
-     * @param {string} [instanceType] 
-     * @param {string} [start] 
-     * @param {string} [top] 
-     * @param {string} [window] 
+     * @param {DefaultApiTopsqlSummaryGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public topsqlSummaryGet(end?: string, instance?: string, instanceType?: string, start?: string, top?: string, window?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).topsqlSummaryGet(end, instance, instanceType, start, top, window, options).then((request) => request(this.axios, this.basePath));
+    public topsqlSummaryGet(requestParameters: DefaultApiTopsqlSummaryGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).topsqlSummaryGet(requestParameters.end, requestParameters.instance, requestParameters.instanceType, requestParameters.start, requestParameters.top, requestParameters.window, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10707,51 +11807,49 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Get sign out info
-     * @param {string} [redirectUrl] 
+     * @param {DefaultApiUserGetSignOutInfoRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public userGetSignOutInfo(redirectUrl?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userGetSignOutInfo(redirectUrl, options).then((request) => request(this.axios, this.basePath));
+    public userGetSignOutInfo(requestParameters: DefaultApiUserGetSignOutInfoRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userGetSignOutInfo(requestParameters.redirectUrl, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Log in
-     * @param {UserAuthenticateForm} message Credentials
+     * @param {DefaultApiUserLoginRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public userLogin(message: UserAuthenticateForm, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userLogin(message, options).then((request) => request(this.axios, this.basePath));
+    public userLogin(requestParameters: DefaultApiUserLoginRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userLogin(requestParameters.message, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Create an impersonation
-     * @param {SsoCreateImpersonationRequest} request Request body
+     * @param {DefaultApiUserSSOCreateImpersonationRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public userSSOCreateImpersonation(request: SsoCreateImpersonationRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userSSOCreateImpersonation(request, options).then((request) => request(this.axios, this.basePath));
+    public userSSOCreateImpersonation(requestParameters: DefaultApiUserSSOCreateImpersonationRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userSSOCreateImpersonation(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Get SSO Auth URL
-     * @param {string} [codeVerifier] 
-     * @param {string} [redirectUrl] 
-     * @param {string} [state] 
+     * @param {DefaultApiUserSSOGetAuthURLRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public userSSOGetAuthURL(codeVerifier?: string, redirectUrl?: string, state?: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userSSOGetAuthURL(codeVerifier, redirectUrl, state, options).then((request) => request(this.axios, this.basePath));
+    public userSSOGetAuthURL(requestParameters: DefaultApiUserSSOGetAuthURLRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userSSOGetAuthURL(requestParameters.codeVerifier, requestParameters.redirectUrl, requestParameters.state, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10779,37 +11877,37 @@ export class DefaultApi extends BaseAPI implements DefaultApiInterface {
     /**
      * 
      * @summary Set SSO config
-     * @param {SsoSetConfigRequest} request Request body
+     * @param {DefaultApiUserSSOSetConfigRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public userSSOSetConfig(request: SsoSetConfigRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userSSOSetConfig(request, options).then((request) => request(this.axios, this.basePath));
+    public userSSOSetConfig(requestParameters: DefaultApiUserSSOSetConfigRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userSSOSetConfig(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Share current session and generate a sharing code
-     * @param {CodeShareRequest} request Request body
+     * @param {DefaultApiUserShareSessionRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public userShareSession(request: CodeShareRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userShareSession(request, options).then((request) => request(this.axios, this.basePath));
+    public userShareSession(requestParameters: DefaultApiUserShareSessionRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userShareSession(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * View the finished profiling result of a task
      * @summary View the result of a task
-     * @param {string} token download token
+     * @param {DefaultApiViewProfilingSingleRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public viewProfilingSingle(token: string, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).viewProfilingSingle(token, options).then((request) => request(this.axios, this.basePath));
+    public viewProfilingSingle(requestParameters: DefaultApiViewProfilingSingleRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).viewProfilingSingle(requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

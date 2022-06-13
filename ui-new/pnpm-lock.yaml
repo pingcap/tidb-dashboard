@@ -29,6 +29,14 @@ importers:
       '@openapitools/openapi-generator-cli': 2.5.1
       typescript: 4.7.3
 
+  packages/tidb-dashboard-for-op:
+    specifiers:
+      '@pingcap/tidb-dashboard-client': workspace:^1.0.0
+      '@pingcap/tidb-dashboard-lib': workspace:^1.0.0
+    dependencies:
+      '@pingcap/tidb-dashboard-client': link:../tidb-dashboard-client
+      '@pingcap/tidb-dashboard-lib': link:../tidb-dashboard-lib
+
   packages/tidb-dashboard-lib:
     specifiers:
       '@ant-design/icons': ^4.7.0

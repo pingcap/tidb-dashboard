@@ -37,3 +37,5 @@ nav:
 health_check:
   failed_notification_title: System Health Check Failed
   ngm_not_started: A required component `NgMonitoring` is not started in this cluster. Some features may not work.
+  help_text: Help
+  help_url: https://docs.pingcap.com/tidb/dev/dashboard-faq#a-required-component-ngmonitoring-is-not-started-error-is-shown

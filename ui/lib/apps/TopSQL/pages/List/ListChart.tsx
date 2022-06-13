@@ -5,9 +5,7 @@ import {
   Position,
   ScaleType,
   Settings,
-  timeFormatter,
   BrushEndListener,
-  PartialTheme,
 } from '@elastic/charts'
 import { orderBy, toPairs } from 'lodash'
 import React, { useMemo, useState, forwardRef } from 'react'
@@ -16,21 +14,13 @@ import { TopsqlSummaryItem } from '@lib/client'
 import { useTranslation } from 'react-i18next'
 import { isOthersDigest } from '../../utils/specialRecord'
 import { useChange } from '@lib/utils/useChange'
+import { DEFAULT_CHART_SETTINGS, timeTickFormatter } from '@lib/utils/charts'
 
 export interface ListChartProps {
   data: TopsqlSummaryItem[]
   timeWindowSize: number
   timeRangeTimestamp: [number, number]
   onBrushEnd: BrushEndListener
-}
-
-const theme: PartialTheme = {
-  chartPaddings: {
-    right: 0,
-  },
-  chartMargins: {
-    right: 0,
-  },
 }
 
 export const ListChart = forwardRef<Chart, ListChartProps>(
@@ -52,10 +42,12 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
     return (
       <Chart ref={ref}>
         <Settings
-          theme={theme}
-          legendPosition={Position.Bottom}
+          {...DEFAULT_CHART_SETTINGS}
+          showLegend={false}
           onBrushEnd={onBrushEnd}
           xDomain={{
+            // Why do we want this? Because some data point may be missing. ech cannot know an
+            // accurate interval.
             minInterval: bundle.timeWindowSize * 1000,
             min: bundle.timeRangeTimestamp[0] * 1000,
             max: bundle.timeRangeTimestamp[1] * 1000,
@@ -65,30 +57,15 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
           id="bottom"
           position={Position.Bottom}
           showOverlappingTicks
-          tickFormat={
-            bundle.timeRangeTimestamp[1] - bundle.timeRangeTimestamp[0] <
-            24 * 60 * 60
-              ? timeFormatter('HH:mm:ss')
-              : timeFormatter('MM-DD HH:mm')
-          }
+          tickFormat={timeTickFormatter(bundle.timeRangeTimestamp)}
         />
         <Axis
           id="left"
           title={t('topsql.chart.cpu_time')}
           position={Position.Left}
-          tickFormat={(v) => getValueFormat('ms')(v, 2)}
-        />
-        <BarSeries<any>
-          key="PLACEHOLDER"
-          id="PLACEHOLDER"
-          name="PLACEHOLDER"
-          hideInLegend
-          xScaleType={ScaleType.Time}
-          yScaleType={ScaleType.Linear}
-          xAccessor={0}
-          yAccessors={[1]}
-          stackAccessors={[0]}
-          data={[timeRangeTimestamp[0], null]}
+          showOverlappingTicks
+          tickFormat={(v) => getValueFormat('ms')(v, 1)}
+          ticks={5}
         />
         {Object.keys(chartData).map((digest) => {
           const sql = digestMap?.[digest] || ''
@@ -117,6 +94,21 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
             />
           )
         })}
+        {Object.keys(chartData).length === 0 && (
+          // When there is no data, supply an empty one to preserve the axis.
+          <BarSeries
+            id="_placeholder"
+            hideInLegend
+            xScaleType={ScaleType.Time}
+            yScaleType={ScaleType.Linear}
+            xAccessor={0}
+            yAccessors={[1]}
+            data={[
+              [bundle.timeRangeTimestamp[0] * 1000, null],
+              [bundle.timeRangeTimestamp[1] * 1000, null],
+            ]}
+          />
+        )}
       </Chart>
     )
   }
@@ -169,11 +161,9 @@ function useChartData(seriesData: TopsqlSummaryItem[]) {
     })
 
     // Order by digest
-    const orderedDigests = orderBy(
-      toPairs(sumValueByDigest),
-      ['1'],
-      ['desc']
-    ).map((v) => v[0])
+    const orderedDigests = orderBy(toPairs(sumValueByDigest), ['1'], ['desc'])
+      .filter((v) => v[1] > 0)
+      .map((v) => v[0])
 
     const datumByDigest: Record<string, Array<[number, number]>> = {}
     for (const digest of orderedDigests) {

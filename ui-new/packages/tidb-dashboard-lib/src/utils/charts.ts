@@ -9,7 +9,8 @@ import {
   TooltipValue
 } from '@elastic/charts'
 import { TimeRangeValue } from '@lib/components'
-import moment from 'moment'
+// import moment from 'moment'
+import dayjs from 'dayjs'
 import React, { useRef } from 'react'
 import { DEFAULT_MIN_INTERVAL_SEC } from './prometheus'
 import '@elastic/charts/dist/theme_only_light.css'
@@ -18,8 +19,12 @@ import '@elastic/charts/dist/theme_only_light.css'
  * A human readable tick label formatter for time series data. It scales according to the data domain.
  */
 export function timeTickFormatter(range: TimeRangeValue): TickFormatter {
-  const minDate = moment(range[0] * 1000)
-  const maxDate = moment(range[1] * 1000)
+  // const minDate = moment(range[0] * 1000)
+  // const maxDate = moment(range[1] * 1000)
+  // const diff = maxDate.diff(minDate, 'minutes')
+
+  const minDate = dayjs(range[0] * 1000)
+  const maxDate = dayjs(range[1] * 1000)
   const diff = maxDate.diff(minDate, 'minutes')
   const format = niceTimeFormatByDay(diff)
   return timeFormatter(format)

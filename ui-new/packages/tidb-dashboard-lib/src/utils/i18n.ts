@@ -38,7 +38,7 @@ i18next
       }
     },
     fallbackLng: 'en', // fallbackLng won't change the detected language
-    whitelist: ['zh', 'en'], // whitelist will change the detected lanuage
+    // whitelist: ['zh', 'en'], // whitelist will change the detected lanuage
     interpolation: {
       escapeValue: false,
       defaultVariables: { distro }

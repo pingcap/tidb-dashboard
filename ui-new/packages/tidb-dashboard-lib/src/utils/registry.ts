@@ -22,7 +22,7 @@ export default class AppRegistry {
         }
         return component
       },
-      domElementGetter: () => document.getElementById(targetDomId)
+      domElementGetter: () => document.getElementById(targetDomId)!
     })
     return {
       bootstrap: [reactLifecycles.bootstrap],

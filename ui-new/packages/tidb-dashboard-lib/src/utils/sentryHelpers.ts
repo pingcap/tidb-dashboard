@@ -82,18 +82,18 @@ export function applySentryTracingInterceptor(instance: AxiosInstance) {
       const { pathname } = url.parse(config.url)
       const transaction = markStart(pathname!, 'http')
       transaction.setTag('http.method', config.method.toUpperCase())
-      config.headers['x-sentry-trace'] = transaction.traceId
+      config.headers!['x-sentry-trace'] = transaction.traceId
     }
     return config
   })
 
   instance.interceptors.response.use(
     (response) => {
-      const id = response.config?.headers['x-sentry-trace']
+      const id = response.config?.headers!['x-sentry-trace']
       if (id) {
         const { pathname } = url.parse(response.config.url!)
-        markTag('http.status', response.status, id)
-        markEnd(pathname!, id)
+        markTag('http.status', response.status, id as string)
+        markEnd(pathname!, id as string)
       }
       return response
     },

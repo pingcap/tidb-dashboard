@@ -70,7 +70,7 @@ const esbuildParams = {
     yamlPlugin(),
     logTime()
   ],
-  inject: ['./process-shim.js'] // fix runtime crash
+  // inject: ['./process-shim.js'] // fix runtime crash
 }
 
 async function main() {

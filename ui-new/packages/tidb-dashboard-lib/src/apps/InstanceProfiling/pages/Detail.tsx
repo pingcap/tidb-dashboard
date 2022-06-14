@@ -272,7 +272,6 @@ export default function Page() {
           if (record.state === taskState.Error) {
             return (
               <a
-                href="javascript:;"
                 onClick={() => {
                   Modal.error({
                     title: 'Profile Error',
@@ -306,11 +305,7 @@ export default function Page() {
             <Space>
               {rec.view_options.map((action) => {
                 return (
-                  <a
-                    href="javascript:;"
-                    onClick={() => openResult(action, record)}
-                    key={action}
-                  >
+                  <a onClick={() => openResult(action, record)} key={action}>
                     {t(
                       `instance_profiling.detail.table.columns.view_as.${action}`
                     )}

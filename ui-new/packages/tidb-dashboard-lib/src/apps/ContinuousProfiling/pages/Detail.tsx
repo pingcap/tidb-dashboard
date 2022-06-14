@@ -200,7 +200,6 @@ export default function Page() {
           if (record.state === 'failed') {
             return (
               <a
-                href="javascript:;"
                 onClick={() => {
                   Modal.error({
                     title: 'Profile Error',
@@ -227,11 +226,7 @@ export default function Page() {
             <Space>
               {actionsKey.map((action) => {
                 return (
-                  <a
-                    href="javascript:;"
-                    onClick={() => handleClick(action, record)}
-                    key={action}
-                  >
+                  <a onClick={() => handleClick(action, record)} key={action}>
                     {t(`conprof.detail.table.columns.view_as.${action}`)}
                   </a>
                 )

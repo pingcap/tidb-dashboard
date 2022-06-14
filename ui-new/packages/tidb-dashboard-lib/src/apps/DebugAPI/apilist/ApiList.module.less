@@ -1,0 +1,31 @@
+.collapse_panel {
+  &:not(:last-child) {
+    border-bottom: 1px solid #eee;
+  }
+
+  :global {
+    .ant-collapse-header {
+      padding-left: 40px !important;
+    }
+
+    .ant-collapse-arrow {
+      position: absolute;
+      top: 17px;
+      left: 16px;
+    }
+  }
+}
+
+.header {
+  user-select: none;
+  h4 {
+    margin-bottom: 0;
+  }
+  p {
+    margin-bottom: 0;
+  }
+}
+
+.schema {
+  color: #999;
+}

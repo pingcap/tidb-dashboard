@@ -1,0 +1,33 @@
+system_report:
+  nav_title: 集群诊断
+  generate:
+    title: 生成诊断报告
+    range_begin: 区间起始时间
+    range_duration: 区间长度
+    is_compare: 与基线区间对比
+    compare_range_begin: 基线区间起始时间
+    submit: 开始
+    metrics_relation: 生成监控关系图
+  list_table:
+    id: 报告 ID
+    report_create_time: 诊断时间
+    status: 状态
+    status_running: 诊断中
+    status_finish: 完成
+    range: 诊断区间
+    compare_range: 对比区间
+  status:
+    head:
+      title: 诊断状态
+      back: 生成诊断报告
+      view: 查看完整诊断报告
+    range_begin: 区间起始时间
+    range_end: 区间结束时间
+    baseline_begin: 基线区间起始时间
+    progress: 生成进度
+  time_duration:
+    custom: 自定义
+  metrics_relation:
+    success:
+      title: 监控耗时关系图生成成功
+      button: 查看关系图

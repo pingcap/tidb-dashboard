@@ -1,0 +1,37 @@
+keyviz:
+  nav_title: Key Visualizer
+  toolbar:
+    brightness: Brightness
+    zoom:
+      select: Select & Zoom
+      reset: Reset
+    view_type:
+      read_bytes: Read (bytes)
+      write_bytes: Write (bytes)
+      read_keys: Read (keys)
+      write_keys: Write (keys)
+      all: All
+  settings:
+    title: Settings
+    disabled_result:
+      title: Feature Not Enabled
+      sub_title: |
+        Key Visualizer feature is not enabled so that visual reports cannot be viewed.
+        You can modify settings to enable the feature and wait for new data being collected.
+    open_setting: Open Settings
+    close_keyviz: Disable Key Visualizer Feature
+    close_keyviz_warning: Are you sure want to disable this feature? Current visual reports will be cleared.
+    switch: Enable Feature
+    switch_tooltip: Whether Key Visualizer feature is enabled. When enabled, there will be small overhead.
+    policy: Policy
+    policy_db: '{{distro.tidb}}'
+    policy_kv: Raw KV
+    separator: Separator
+    separator_placeholder: The separator used to split Key
+    separator_empty_warning: If left blank, Key will not be split
+    actions:
+      save: Save
+      close: Disable
+      cancel: Cancel
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/dashboard-key-visualizer

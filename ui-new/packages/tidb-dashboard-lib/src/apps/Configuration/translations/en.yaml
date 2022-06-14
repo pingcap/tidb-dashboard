@@ -1,0 +1,8 @@
+configuration:
+  nav_title: Configurations
+  common:
+    kind:
+      tidb_variable: '{{distro.tidb}} Variables'
+      pd_config: '{{distro.pd}} Configurations'
+      tikv_config: '{{distro.tikv}} Configurations'
+      tidb_config: '{{distro.tidb}} Configurations'

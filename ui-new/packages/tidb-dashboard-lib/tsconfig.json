@@ -5,6 +5,7 @@
     "emitDeclarationOnly": true,
     "outDir": "./dist",
     "noImplicitAny": false,
+    "noImplicitThis": false,
     "baseUrl": ".",
     "paths": {
       "@lib/*": ["src/*"]

@@ -1,7 +1,8 @@
 const fs = require('fs-extra')
 const chalk = require('chalk')
+const { watch } = require('chokidar')
 
-const { build } = require('esbuild')
+const esbuild = require('esbuild')
 const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const autoprefixer = require('autoprefixer')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
@@ -69,15 +70,27 @@ const esbuildParams = {
     }),
     yamlPlugin(),
     logTime()
-  ],
+  ]
   // inject: ['./process-shim.js'] // fix runtime crash
 }
 
 async function main() {
   fs.removeSync('./dist')
 
-  await build(esbuildParams)
-  process.exit(0)
+  const builder = await esbuild.build(esbuildParams)
+
+  function rebuild() {
+    builder.rebuild().catch((err) => console.log(err))
+  }
+
+  const isDev = process.env.NODE_ENV !== 'production'
+  if (isDev) {
+    watch('src/**/*', { ignoreInitial: true }).on('all', () => {
+      rebuild()
+    })
+  } else {
+    process.exit(0)
+  }
 }
 
 main()

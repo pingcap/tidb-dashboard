@@ -12,7 +12,7 @@ task('tsc:build', shell.task('tsc && tsc-alias'))
 task('lint:watch', shell.task('esw --watch --cache --ext .tsx,.ts src/'))
 task('lint:check', shell.task('esw --cache --ext tsx,ts src/'))
 
-task('esbuild:dev', shell.task('node builder.js'))
+task('esbuild:dev', shell.task('NODE_ENV=development node builder.js'))
 task('esbuild:build', shell.task('NODE_ENV=production node builder.js'))
 
 task('dev', parallel('tsc:dev', 'lint:watch', 'esbuild:dev'))

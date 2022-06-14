@@ -73,7 +73,7 @@ function BaseAntCheckboxGroupHeader(props: IGroupHeaderProps) {
         direction={FocusZoneDirection.horizontal}
       >
         <button
-          type='button'
+          type="button"
           className={_classNames.check}
           onClick={_onToggleSelectGroupClick}
           {...props.selectAllButtonProps}
@@ -86,7 +86,7 @@ function BaseAntCheckboxGroupHeader(props: IGroupHeaderProps) {
           count={props.groupLevel!}
         />
         <button
-          type='button'
+          type="button"
           className={_classNames.expand}
           onClick={_onToggleCollapse}
           {...props.expandButtonProps}

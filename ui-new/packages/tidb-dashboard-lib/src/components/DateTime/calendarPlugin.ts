@@ -18,8 +18,7 @@
 
 declare module 'dayjs' {
   interface Dayjs {
-    // calendar(referenceTime?: ConfigType, formats?: object): string
-    calendar(referenceTime?: any, formats?: object): string
+    calendar(referenceTime?: ConfigType, formats?: object): string
   }
 }
 

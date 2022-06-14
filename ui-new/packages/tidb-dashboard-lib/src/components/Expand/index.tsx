@@ -10,7 +10,11 @@ export interface IExpandProps {
 
 function Expand({ collapsedContent, children, expanded }: IExpandProps) {
   // FIXME: Animations
-  return <div>{expanded ? children : collapsedContent ?? children}</div>
+  return (
+    <div data-e2e="statement_query_detail_page_query">
+      {expanded ? children : collapsedContent ?? children}
+    </div>
+  )
 }
 
 const translations = {
@@ -40,7 +44,7 @@ export interface IExpandLinkProps
 function Link({ expanded, ...restProps }: IExpandLinkProps) {
   const { t } = useTranslation()
   return (
-    <a {...restProps}>
+    <a {...restProps} data-e2e={`${expanded ? 'collapseText' : 'expandText'}`}>
       {expanded
         ? t('component.expandLink.collapseText')
         : t('component.expandLink.expandText')}

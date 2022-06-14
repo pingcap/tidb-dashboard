@@ -104,15 +104,15 @@ export default function ColumnsSelector({
         indeterminate={indeterminate}
         checked={checkedAll}
         onChange={handleCheckAllChange}
-        data-e2e='slow_query_schema_table_column_tile'
+        data-e2e="column_selector_title"
       >
         {t('component.columnsSelector.select')}
       </Checkbox>
       {defaultVisibleColumnKeys && (
         <Button
-          type='link'
+          type="link"
           onClick={() => onChange && onChange(defaultVisibleColumnKeys)}
-          data-e2e='slow_query_schema_table_column_reset'
+          data-e2e="column_selector_reset"
         >
           {t('component.columnsSelector.reset')}
         </Button>
@@ -123,14 +123,14 @@ export default function ColumnsSelector({
   const content = (
     <div style={{ marginTop: -12 }}>
       <Space
-        direction='vertical'
+        direction="vertical"
         style={{
           maxHeight: 400,
           overflow: 'auto',
           paddingTop: 8,
           paddingBottom: 8
         }}
-        data-e2e='columns_selector_popover_content'
+        data-e2e="columns_selector_popover_content"
       >
         {filteredColumns.map((column) => (
           <Checkbox
@@ -148,8 +148,8 @@ export default function ColumnsSelector({
   )
 
   return (
-    <Popover content={content} title={title} placement='bottomLeft'>
-      <span data-e2e='columns_selector_popover' style={{ cursor: 'pointer' }}>
+    <Popover content={content} title={title} placement="bottomLeft">
+      <span data-e2e="columns_selector_popover" style={{ cursor: 'pointer' }}>
         {t('component.columnsSelector.trigger_text')} <DownOutlined />
       </span>
     </Popover>

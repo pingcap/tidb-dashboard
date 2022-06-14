@@ -44,6 +44,7 @@ function CardTabs({
         onChange={changeTab}
         renderTabBar={renderTabBar || renderCardTabBar}
         {...restProps}
+        data-e2e="tabs"
       >
         {tabs.map((tab) => (
           <Tabs.TabPane tab={tab.title} key={tab.key} />

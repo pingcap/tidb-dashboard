@@ -214,15 +214,14 @@ function BaseSelect<T>({
       onKeyDown={handleContainerKeyDown}
       ref={containerRef}
       {...restProps}
-      data-e2e='base_selector'
     >
       <Trigger
-        prefixCls='ant-dropdown'
+        prefixCls="ant-dropdown"
         builtinPlacements={builtinPlacements}
         showAction={[]}
         hideAction={[]}
-        popupPlacement='bottomLeft'
-        popupTransitionName='ant-slide-up'
+        popupPlacement="bottomLeft"
+        popupTransitionName="ant-slide-up"
         popup={overlay}
         popupVisible={dropdownVisible}
         onPopupVisibleChange={handlePopupVisibleChange}
@@ -236,20 +235,19 @@ function BaseSelect<T>({
             })}
           >
             <input
-              autoComplete='off'
+              autoComplete="off"
               className={styles.baseSelectInput}
               disabled={disabled}
               tabIndex={tabIndex}
               autoFocus={autoFocus}
               readOnly
-              data-e2e='base_select_input'
             />
             <div
               className={cx(styles.baseSelectValueDisplay, {
                 [styles.isPlaceholder]: displayAsPlaceholder
               })}
             >
-              <TextWrap>
+              <TextWrap data-e2e="base_select_input_text">
                 {displayAsPlaceholder ? placeholder : renderedValue}
               </TextWrap>
             </div>

@@ -40,7 +40,7 @@ function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
 
   return (
     <SyntaxHighlighter
-      language='sql'
+      language="sql"
       style={theme === 'light' ? lightTheme : darkTheme}
       customStyle={{
         background: 'none',
@@ -48,13 +48,15 @@ function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
         overflowX: 'hidden'
       }}
       PreTag={Pre}
-      data-e2e='syntax_highlighter'
+      data-e2e={`syntax_highlighter_${compact ? 'compact' : 'original'}`}
     >
       {formattedSql}
     </SyntaxHighlighter>
   )
 }
 
-export default moize.react(HighlightSQL, {
+export default moize(HighlightSQL, {
+  isShallowEqual: true,
+  maxArgs: 2,
   maxSize: 1000
 })

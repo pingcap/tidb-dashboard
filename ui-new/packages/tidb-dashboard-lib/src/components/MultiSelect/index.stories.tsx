@@ -35,7 +35,7 @@ const MultiSelectRegion = () => {
 }
 
 export const uncontrolled = () => (
-  <MultiSelect placeholder='Uncontrolled Value' items={items} />
+  <MultiSelect placeholder="Uncontrolled Value" items={items} />
 )
 
 export const controlled = () => <MultiSelectRegion />

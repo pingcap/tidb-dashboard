@@ -2,11 +2,11 @@
   :global {
     .ms-DetailsRow {
       .ms-DetailsRow-fields {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
       }
       > :first-child.ms-DetailsRow-fields {
         > :first-child {
-          padding-left: @primary-color;
+          padding-left: @padding-page;
         }
       }
       > .ms-DetailsRow-cellCheck + .ms-DetailsRow-fields {
@@ -23,7 +23,7 @@
     .ms-DetailsRow {
       > :first-child.ms-DetailsRow-fields {
         > :last-child {
-          padding-right: @primary-color;
+          padding-right: @padding-page;
         }
       }
       > .ms-DetailsRow-cellCheck + .ms-DetailsRow-fields {
@@ -41,7 +41,7 @@
       padding-top: 0;
 
       > :first-child .ms-DetailsHeader-cellTitle {
-        padding-left: @primary-color;
+        padding-left: @padding-page;
       }
       > :first-child.ms-DetailsHeader-cellIsCheck
         + .ms-DetailsHeader-cell
@@ -53,12 +53,12 @@
       // need to add padding right.
 
       // > :nth-last-child(2) .ms-DetailsHeader-cellTitle {
-      //   padding-right: @primary-color;
+      //   padding-right: @padding-page;
       // }
 
       // &.is-resizingColumn > :nth-last-child(3) .ms-DetailsHeader-cellTitle {
       //   // FIXME: This is highly magical
-      //   padding-right: @primary-color;
+      //   padding-right: @padding-page;
       // }
     }
   }
@@ -73,6 +73,6 @@
 }
 
 .cardTableContent {
-  margin-left: -@primary-color;
-  margin-right: -@primary-color;
+  margin-left: -@padding-page;
+  margin-right: -@padding-page;
 }

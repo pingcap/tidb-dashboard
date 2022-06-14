@@ -1,16 +1,14 @@
 import { useMount, useUnmount, useMemoizedFn } from 'ahooks'
 import { useState, useRef, useEffect } from 'react'
-import axios, {
-  AxiosPromise,
-  CancelTokenSource,
-  AxiosRequestConfig
-} from 'axios'
+import axios, { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 
-// export interface ReqConfig {
-//   cancelToken: CancelToken
-//   errorStrategy: ErrorStrategy
-// }
-type ReqConfig = AxiosRequestConfig
+import { ErrorStrategy } from '@lib/client'
+
+export interface ReqConfig {
+  cancelToken: CancelToken
+  errorStrategy: ErrorStrategy
+}
+
 export interface RequestFactory<T> {
   (reqConfig: ReqConfig): AxiosPromise<T>
 }
@@ -66,9 +64,7 @@ export function useClientRequest<T>(
     try {
       const reqConfig: ReqConfig = {
         cancelToken: cancelTokenSource.current.token,
-        data: {
-          errorStrategy: 'custom' // handle the error by component self
-        }
+        errorStrategy: ErrorStrategy.Custom // handle the error by component self
       }
       const resp = await reqFactory(reqConfig)
       if (mounted.current) {
@@ -102,110 +98,6 @@ export function useClientRequest<T>(
     mounted.current = false
     if (cancelTokenSource.current != null) {
       cancelTokenSource.current.cancel()
-      cancelTokenSource.current = null
-    }
-  })
-
-  return {
-    ...state,
-    sendRequest
-  }
-}
-
-export interface BatchState<T> {
-  isLoading: boolean
-  data: (T | null)[]
-  error: (any | null)[]
-}
-
-export function useBatchClientRequest<T>(
-  reqFactories: RequestFactory<T>[],
-  options?: Options
-) {
-  const {
-    immediate = true,
-    afterRequest = null,
-    beforeRequest = null
-  } = options || {}
-
-  const [state, setState] = useState<BatchState<T>>({
-    isLoading: immediate,
-    data: reqFactories.map((_) => null),
-    error: reqFactories.map((_) => null)
-  })
-
-  const cancelTokenSource = useRef<CancelTokenSource[] | null>(null)
-  const mounted = useRef(false)
-
-  const sendRequestEach = async (idx) => {
-    try {
-      const reqConfig: ReqConfig = {
-        cancelToken: cancelTokenSource.current![idx].token,
-        data: {
-          errorStrategy: 'custom'
-        }
-      }
-      const resp = await reqFactories[idx](reqConfig)
-      if (mounted.current) {
-        setState((s) => {
-          s.data[idx] = resp.data
-          return { ...s, data: [...s.data] }
-        })
-      }
-    } catch (e) {
-      if (mounted.current) {
-        setState((s) => {
-          s.error[idx] = e
-          return { ...s, error: [...s.error] }
-        })
-      }
-    }
-  }
-
-  const sendRequest = useMemoizedFn(async () => {
-    if (!mounted.current) {
-      return
-    }
-    if (cancelTokenSource.current) {
-      return
-    }
-
-    beforeRequest && beforeRequest()
-
-    cancelTokenSource.current = reqFactories.map((_) =>
-      axios.CancelToken.source()
-    )
-    setState((s) => ({
-      ...s,
-      isLoading: true,
-      error: reqFactories.map((_) => null)
-    }))
-
-    const p = reqFactories.map((_, idx) => sendRequestEach(idx))
-    await Promise.all(p)
-    if (mounted.current) {
-      setState((s) => ({
-        ...s,
-        isLoading: false
-      }))
-    }
-
-    cancelTokenSource.current = null
-
-    afterRequest && afterRequest()
-  })
-
-  useMount(() => {
-    mounted.current = true
-    if (immediate) {
-      sendRequest()
-    }
-  })
-
-  useUnmount(() => {
-    mounted.current = false
-    if (cancelTokenSource.current != null) {
-      cancelTokenSource.current.forEach((c) => c.cancel())
       cancelTokenSource.current = null
     }
   })

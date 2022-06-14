@@ -21,7 +21,7 @@ function LanguageDropdown({ children }: { children: ReactNode }) {
   )
 
   return (
-    <Dropdown overlay={menu} placement='bottomRight'>
+    <Dropdown overlay={menu} placement="bottomRight">
       {children}
     </Dropdown>
   )

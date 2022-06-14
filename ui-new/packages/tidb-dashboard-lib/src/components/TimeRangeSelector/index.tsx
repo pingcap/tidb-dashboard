@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Dropdown, Button } from 'antd'
 import DatePicker from '../DatePicker'
 import { ClockCircleOutlined, DownOutlined } from '@ant-design/icons'
@@ -8,22 +8,26 @@ import dayjs, { Dayjs } from 'dayjs'
 import { useTranslation } from 'react-i18next'
 
 import styles from './index.module.less'
+import { useChange } from '@lib/utils/useChange'
+import { useMemoizedFn } from 'ahooks'
+import { WithZoomOut } from './WithZoomOut'
 
 const { RangePicker } = DatePicker
 
+// These presets are aligned with Grafana
 const RECENT_SECONDS = [
   5 * 60,
   15 * 60,
   30 * 60,
   60 * 60,
-  2 * 60 * 60,
+  3 * 60 * 60,
   6 * 60 * 60,
   12 * 60 * 60,
   24 * 60 * 60,
   2 * 24 * 60 * 60,
   7 * 24 * 60 * 60,
-  14 * 24 * 60 * 60,
-  28 * 24 * 60 * 60
+  30 * 24 * 60 * 60,
+  90 * 24 * 60 * 60
 ]
 
 export const DEFAULT_TIME_RANGE: TimeRange = {
@@ -31,28 +35,49 @@ export const DEFAULT_TIME_RANGE: TimeRange = {
   value: 30 * 60
 }
 
-interface RecentSecTime {
+export interface RelativeTimeRange {
   type: 'recent'
   value: number // unit: seconds
 }
 
-interface RangeTime {
+export interface AbsoluteTimeRange {
   type: 'absolute'
-  value: [number, number] // unit: seconds
+  value: TimeRangeValue // unit: seconds
 }
 
-export type TimeRange = RecentSecTime | RangeTime
+export type TimeRangeValue = [minSecond: number, maxSecond: number]
 
-export function calcTimeRange(timeRange?: TimeRange): [number, number] {
+export type TimeRange = RelativeTimeRange | AbsoluteTimeRange
+
+export function toTimeRangeValue(timeRange?: TimeRange): TimeRangeValue {
   let t2 = timeRange ?? DEFAULT_TIME_RANGE
   if (t2.type === 'absolute') {
-    return t2.value
+    return [...t2.value]
   } else {
     const now = dayjs().unix()
-    return [now - t2.value, now]
+    return [now - t2.value, now + 1]
   }
 }
 
+export function fromTimeRangeValue(v: TimeRangeValue): AbsoluteTimeRange {
+  return {
+    type: 'absolute',
+    value: [...v]
+  }
+}
+
+/**
+ * @deprecated
+ */
+// TODO: Compatibility alias. To be removed.
+export function calcTimeRange(timeRange?: TimeRange): TimeRangeValue {
+  return toTimeRangeValue(timeRange)
+}
+
+/**
+ * @deprecated
+ */
+// TODO: JSON.stringify() is enough. To be removed.
 export function stringifyTimeRange(timeRange?: TimeRange): string {
   let t2 = timeRange ?? DEFAULT_TIME_RANGE
   if (t2.type === 'absolute') {
@@ -66,24 +91,20 @@ export interface ITimeRangeSelectorProps {
   value?: TimeRange
   onChange?: (val: TimeRange) => void
   disabled?: boolean
-  disabledDate?: (currentDate: Dayjs) => boolean
 }
 
 function TimeRangeSelector({
   value,
   onChange,
-  disabled = false,
-  disabledDate = () => false
+  disabled = false
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
 
-  useEffect(() => {
+  useChange(() => {
     if (!value) {
       onChange?.(DEFAULT_TIME_RANGE)
     }
-    // ignore [onChange]
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   const rangePickerValue = useMemo(() => {
@@ -93,41 +114,38 @@ function TimeRangeSelector({
     return value.value.map((sec) => dayjs(sec * 1000)) as [Dayjs, Dayjs]
   }, [value])
 
-  const handleRecentChange = useCallback(
-    (seconds: number) => {
-      onChange?.({
-        type: 'recent',
-        value: seconds
-      })
-      setDropdownVisible(false)
-    },
-    [onChange]
-  )
+  const handleRecentChange = useMemoizedFn((seconds: number) => {
+    onChange?.({
+      type: 'recent',
+      value: seconds
+    })
+    setDropdownVisible(false)
+  })
 
-  const handleRangePickerChange = useCallback(
-    (values) => {
-      if (values === null) {
-        onChange?.(DEFAULT_TIME_RANGE)
-      } else {
-        onChange?.({
-          type: 'absolute',
-          value: values.map((v) => v.unix())
-        })
-      }
-      setDropdownVisible(false)
-    },
-    [onChange]
-  )
+  const handleRangePickerChange = useMemoizedFn((values) => {
+    if (values === null) {
+      onChange?.(DEFAULT_TIME_RANGE)
+    } else {
+      onChange?.({
+        type: 'absolute',
+        value: values.map((v) => v.unix())
+      })
+    }
+    setDropdownVisible(false)
+  })
 
   const dropdownContent = (
-    <div className={styles.dropdown_content_container}>
+    <div
+      className={styles.dropdown_content_container}
+      data-e2e="timerange_selector_dropdown"
+    >
       <div className={styles.usual_time_ranges}>
         <span>
           {t(
-            'slow_query.statement.pages.overview.toolbar.time_range_selector.usual_time_ranges'
+            'statement.pages.overview.toolbar.time_range_selector.usual_time_ranges'
           )}
         </span>
-        <div className={styles.time_range_items} data-e2e='common-timeranges'>
+        <div className={styles.time_range_items} data-e2e="common-timeranges">
           {RECENT_SECONDS.map((seconds) => (
             <div
               tabIndex={-1}
@@ -139,9 +157,7 @@ function TimeRangeSelector({
               onClick={() => handleRecentChange(seconds)}
               data-e2e={`timerange-${seconds}`}
             >
-              {t(
-                'slow_query.statement.pages.overview.toolbar.time_range_selector.recent'
-              )}{' '}
+              {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
               {getValueFormat('s')(seconds, 0)}
             </div>
           ))}
@@ -150,16 +166,15 @@ function TimeRangeSelector({
       <div className={styles.custom_time_ranges}>
         <span>
           {t(
-            'slow_query.statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
+            'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
           )}
         </span>
         <div style={{ marginTop: 8 }}>
           <RangePicker
             showTime
-            format='YYYY-MM-DD HH:mm:ss'
+            format="YYYY-MM-DD HH:mm:ss"
             value={rangePickerValue}
             onChange={handleRangePickerChange}
-            disabledDate={disabledDate}
           />
         </div>
       </div>
@@ -174,17 +189,15 @@ function TimeRangeSelector({
       onVisibleChange={setDropdownVisible}
       disabled={disabled}
     >
-      <Button icon={<ClockCircleOutlined />} data-e2e='timerange-selector'>
+      <Button icon={<ClockCircleOutlined />} data-e2e="timerange-selector">
         {value && value.type === 'recent' && (
-          <span data-e2e='selected_timerange'>
-            {t(
-              'slow_query.statement.pages.overview.toolbar.time_range_selector.recent'
-            )}{' '}
+          <span data-e2e="selected_timerange">
+            {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
             {getValueFormat('s')(value.value, 0)}
           </span>
         )}
         {value && value.type === 'absolute' && (
-          <span data-e2e='selected_timerange'>
+          <span data-e2e="selected_timerange">
             {value.value
               .map((v) => dayjs.unix(v).format('MM-DD HH:mm:ss'))
               .join(' ~ ')}
@@ -197,4 +210,8 @@ function TimeRangeSelector({
   )
 }
 
-export default React.memo(TimeRangeSelector)
+const c = Object.assign(React.memo(TimeRangeSelector), {
+  WithZoomOut: React.memo(WithZoomOut)
+})
+
+export default c

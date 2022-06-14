@@ -51,7 +51,7 @@ function Descriptions({
   }
   return (
     <AntDescriptions
-      layout='vertical'
+      layout="vertical"
       colon={false}
       className={c}
       column={column ?? 2}

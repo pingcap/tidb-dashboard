@@ -1,69 +1,76 @@
-import { useRef, createContext } from 'react'
+import { createContext, useRef } from 'react'
 
 type CacheItem = {
   expireAt: number
   data: any
 }
 
-type Cache = Record<string, CacheItem>
+type CacheStorage = Record<string, CacheItem>
 
 const ONE_HOUR_TIME = 1 * 60 * 60 * 1000
 
-export type CacheMgr = {
-  get: (key: string) => any
-  set: (key: string, val: any, expire?: number) => void
-  remove: (key: string) => void
-}
+export const CacheContext = createContext<CacheMgr | undefined>(undefined)
 
-export const CacheContext = createContext<CacheMgr | null>(null)
+export class CacheMgr {
+  private cache: CacheStorage = {}
+  private cacheItemKeys: string[] = []
+  private capacity: number
+  private globalExpire: number
 
-export default function useCache(
-  capacity: number = 1,
-  globalExpire: number = ONE_HOUR_TIME
-): CacheMgr {
-  const cache = useRef<Cache>({})
-  const cacheItemKeys = useRef<string[]>([])
+  constructor(capacity: number = 1, globalExpire: number = ONE_HOUR_TIME) {
+    this.capacity = capacity
+    this.globalExpire = globalExpire
+  }
 
-  function get(key: string): any {
-    const item = cache.current[key]
+  get(key: string): any {
+    const item = this.cache[key]
     if (item === undefined) {
       return undefined
     }
     if (item.expireAt < new Date().valueOf()) {
-      remove(key)
+      this.remove(key)
       return undefined
     }
     return item.data
   }
 
-  function set(key: string, val: any, expire?: number) {
+  set(key: string, val: any, expire?: number) {
     const curTime = new Date().valueOf()
     let expireAt: number
     if (expire) {
       expireAt = curTime + expire
     } else {
-      expireAt = curTime + globalExpire
+      expireAt = curTime + this.globalExpire
     }
-    cache.current[key] = {
+    this.cache[key] = {
       expireAt,
       data: val
     }
 
     // put the latest key in the end of cacheItemKeys
-    cacheItemKeys.current = cacheItemKeys.current
-      .filter((k) => k !== key)
-      .concat(key)
+    this.cacheItemKeys = this.cacheItemKeys.filter((k) => k !== key).concat(key)
     // if size beyonds the capacity
     // remove the old ones
-    while (capacity > 0 && cacheItemKeys.current.length > capacity) {
-      remove(cacheItemKeys.current[0])
+    while (this.capacity > 0 && this.cacheItemKeys.length > this.capacity) {
+      this.remove(this.cacheItemKeys[0])
     }
   }
 
-  function remove(key: string) {
-    delete cache.current[key]
-    cacheItemKeys.current = cacheItemKeys.current.filter((k) => k !== key)
+  remove(key: string) {
+    delete this.cache[key]
+    this.cacheItemKeys = this.cacheItemKeys.filter((k) => k !== key)
   }
 
-  return { get, set, remove }
+  clear() {
+    this.cache = {}
+    this.cacheItemKeys = []
+  }
+}
+
+export default function useCache(
+  capacity: number = 1,
+  globalExpire: number = ONE_HOUR_TIME
+): CacheMgr {
+  const cache = useRef(new CacheMgr(capacity, globalExpire))
+  return cache.current
 }

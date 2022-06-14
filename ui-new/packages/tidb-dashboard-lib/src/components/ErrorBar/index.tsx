@@ -23,16 +23,16 @@ export default function ErrorBar({ errors }: IErrorBarProps) {
       <Alert
         message={errorMsgs[0]}
         showIcon
-        type='error'
-        data-e2e='alert_error_bar'
+        type="error"
+        data-e2e="alert_error_bar"
       />
     )
   } else {
     return (
       <Alert
-        message='Errors'
+        message="Errors"
         showIcon
-        type='error'
+        type="error"
         description={
           <ul>
             {errorMsgs.map((msg, idx) => (
@@ -40,7 +40,7 @@ export default function ErrorBar({ errors }: IErrorBarProps) {
             ))}
           </ul>
         }
-        data-e2e='alert_error_bar'
+        data-e2e="alert_error_bar"
       />
     )
   }

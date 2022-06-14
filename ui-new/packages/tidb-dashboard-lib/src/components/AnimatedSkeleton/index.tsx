@@ -44,7 +44,7 @@ function AnimatedSkeleton({
         </div>
       )}
       {!showSkeleton && (
-        <AppearAnimate motionName='contentAnimation'>{children}</AppearAnimate>
+        <AppearAnimate motionName="contentAnimation">{children}</AppearAnimate>
       )}
     </div>
   )

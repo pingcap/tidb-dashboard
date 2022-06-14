@@ -1,4 +1,4 @@
-import { NavigateFunction } from 'react-router-dom'
+import { NavigateFunction } from 'react-router'
 import React from 'react'
 
 // the url param starts with '/', for example: '/statement/detail'

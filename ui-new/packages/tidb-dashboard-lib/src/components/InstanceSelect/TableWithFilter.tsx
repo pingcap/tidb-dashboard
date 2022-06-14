@@ -65,11 +65,11 @@ function TableWithFilter(
     () =>
       ({
         position: 'relative',
-        height: containerSize!.height,
+        height: containerSize?.height,
         maxHeight: tableMaxHeight ?? 400,
         width: tableWidth ?? 400
       } as React.CSSProperties),
-    [containerSize!.height, tableMaxHeight, tableWidth]
+    [containerSize?.height, tableMaxHeight, tableWidth]
   )
 
   const {
@@ -99,7 +99,7 @@ function TableWithFilter(
               selection={selection}
               selectionPreservedOnEmptyClick
               layoutMode={DetailsListLayoutMode.justified}
-              setKey='set'
+              setKey="set"
               compact
               {...restProps}
             />

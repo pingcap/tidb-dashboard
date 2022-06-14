@@ -5,6 +5,8 @@ import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
+import { distro, isDistro } from './distroStringsRes'
+
 i18next.on('languageChanged', function (lng) {
   dayjs.locale(lng.toLowerCase())
 })
@@ -24,21 +26,23 @@ export const ALL_LANGUAGES = {
   en: 'English'
 }
 
-const distro = {
-  tidb: 'TiDB',
-  tikv: 'TiKV',
-  pd: 'PD',
-  tiflash: 'TiFlash'
-}
-
 i18next
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: {},
-    fallbackLng: 'en',
+    resources: {
+      en: {
+        translation: {
+          distro
+        }
+      }
+    },
+    fallbackLng: 'en', // fallbackLng won't change the detected language
+    whitelist: ['zh', 'en'], // whitelist will change the detected lanuage
     interpolation: {
       escapeValue: false,
       defaultVariables: { distro }
     }
   })
+
+export { distro, isDistro }

@@ -1,4 +1,4 @@
-// import './style.less'
+import './style.less'
 
 import './sentry'
 

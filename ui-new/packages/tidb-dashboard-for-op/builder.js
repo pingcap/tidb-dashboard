@@ -144,10 +144,10 @@ const esbuildParams = {
       enableCache: true,
       plugins: [autoprefixer],
       // work same as the webpack NormalModuleReplacementPlugin
-      moduleReplacements: {
-        [path.resolve(__dirname, 'node_modules/antd/es/style/index.less')]:
-          path.resolve(__dirname, 'lib/antd.less'),
-      },
+      // moduleReplacements: {
+      //   [path.resolve(__dirname, 'node_modules/antd/es/style/index.less')]:
+      //     path.resolve(__dirname, 'lib/antd.less'),
+      // },
     }),
     yamlPlugin(),
     logTime(),
@@ -237,12 +237,12 @@ async function main() {
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {
       handleAssets()
     })
-    watch('node_modules/@pingcap/tidb-dashboard-lib/dist/**/*', { ignoreInitial: true }).on(
-      'all',
-      () => {
-        rebuild()
-      }
-    )
+    // watch('node_modules/@pingcap/tidb-dashboard-lib/dist/**/*', { ignoreInitial: true }).on(
+    //   'all',
+    //   () => {
+    //     rebuild()
+    //   }
+    // )
   } else {
     process.exit(0)
   }

@@ -75,7 +75,7 @@ const esbuildParams = {
 }
 
 async function main() {
-  fs.removeSync('./dist')
+  // fs.removeSync('./dist')
 
   const builder = await esbuild.build(esbuildParams)
 

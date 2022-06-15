@@ -1,8 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { Root } from '@lib/components'
+// import { Root } from '@lib/components'
 import { HashRouter as Router } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
-import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
+// import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
+
+import {
+  Root,
+  useVersionedLocalStorageState
+} from '@pingcap/tidb-dashboard-lib'
 
 import Sider from './Sider'
 import styles from './index.module.less'

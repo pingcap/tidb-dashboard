@@ -7,7 +7,9 @@ import { useTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
 import Banner from './Banner'
 import styles from './index.module.less'
-import { store, useIsFeatureSupport } from '@lib/utils/store'
+// import { store, useIsFeatureSupport } from '@lib/utils/store'
+
+import { store, useIsFeatureSupport } from '@pingcap/tidb-dashboard-lib'
 
 function useAppMenuItem(registry, appId, title?: string, hideIcon?: boolean) {
   const { t } = useTranslation()

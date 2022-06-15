@@ -46,3 +46,11 @@ i18next
   })
 
 export { distro, isDistro }
+
+export default {
+  distro,
+  isDistro,
+  addTranslations,
+  addTranslationResource,
+  ALL_LANGUAGES
+}

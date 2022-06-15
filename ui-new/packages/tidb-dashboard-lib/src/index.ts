@@ -1,5 +1,8 @@
 export * from './components'
 
-export * from './utils/i18n'
+export * from './utils'
 
-// export * from './apps'
+export { default as client } from './client'
+export * from './client'
+
+export * from './apps'

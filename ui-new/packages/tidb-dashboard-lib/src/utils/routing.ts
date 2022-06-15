@@ -33,3 +33,13 @@ export function getPathInLocationHash(): string {
   }
   return hash.substring(0, pos)
 }
+
+export default {
+  signInRoute,
+  portalRoute,
+  isLocationMatch,
+  isLocationMatchPrefix,
+  isSignInPage,
+  isPortalPage,
+  getPathInLocationHash
+}

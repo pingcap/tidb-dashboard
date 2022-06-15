@@ -6,9 +6,20 @@ import { useSpring, animated } from 'react-spring'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 
-import { InfoInfoResponse } from '@lib/client'
-import { store } from '@lib/utils/store'
-import { lightLogoSvg } from '@lib/utils/distroAssets'
+// import { InfoInfoResponse } from '@lib/client'
+// import { store } from '@lib/utils/store'
+// import { lightLogoSvg } from '@lib/utils/distroAssets'
+
+import {
+  // client
+  InfoInfoResponse,
+
+  // store
+  store,
+
+  // assets
+  lightLogoSvg
+} from '@pingcap/tidb-dashboard-lib'
 
 import styles from './Banner.module.less'
 

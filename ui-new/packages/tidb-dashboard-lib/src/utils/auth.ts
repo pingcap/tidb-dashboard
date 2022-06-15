@@ -39,3 +39,13 @@ export enum AuthTypes {
   SharingCode = 1,
   SSO = 2
 }
+
+export default {
+  authEvents,
+  EVENT_TOKEN_CHANGED,
+  getAuthToken,
+  setAuthToken,
+  clearAuthToken,
+  getAuthTokenAsBearer,
+  AuthTypes
+}

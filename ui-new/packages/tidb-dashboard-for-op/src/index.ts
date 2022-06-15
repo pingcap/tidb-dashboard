@@ -1,5 +1,5 @@
 // import './style.less'
 
-// import './sentry'
+import './sentry'
 
 import './dashboardApp'

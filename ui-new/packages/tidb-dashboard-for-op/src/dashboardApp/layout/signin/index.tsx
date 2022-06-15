@@ -18,20 +18,48 @@ import {
   ArrowRightOutlined,
   CloseOutlined
 } from '@ant-design/icons'
-import { Form, Input, Button, message, Typography, Modal } from 'antd'
+import { Form, Input, InputRef, Button, message, Typography, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
 import { useMemoizedFn } from 'ahooks'
 
-import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
-import { getAuthURL } from '@lib/utils/authSSO'
-import { AuthTypes } from '@lib/utils/auth'
-import { isDistro } from '@lib/utils/i18n'
-import * as auth from '@lib/utils/auth'
-import { useIsFeatureSupport } from '@lib/utils/store'
-import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
-import { landingSvg, logoSvg } from '@lib/utils/distroAssets'
+// import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
+// import { getAuthURL } from '@lib/utils/authSSO'
+// import { AuthTypes } from '@lib/utils/auth'
+// import { isDistro } from '@lib/utils/i18n'
+// import * as auth from '@lib/utils/auth'
+// import { useIsFeatureSupport } from '@lib/utils/store'
+// import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
+// import { landingSvg, logoSvg } from '@lib/utils/distroAssets'
+
+import {
+  // client
+  client,
+  ErrorStrategy,
+  UserAuthenticateForm,
+
+  // auth sso
+  getAuthURL,
+
+  // auth
+  auth,
+
+  // i18n
+  i18n,
+
+  // store
+  useIsFeatureSupport,
+
+  // components
+  Root,
+  AppearAnimate,
+  LanguageDropdown,
+
+  // assets
+  landingSvg,
+  logoSvg
+} from '@pingcap/tidb-dashboard-lib'
 
 import styles from './index.module.less'
 
@@ -138,7 +166,7 @@ function AlternativeAuthForm({
                 onClick={() => onSwitchForm(DisplayFormType.shareCode)}
               />
             </Form.Item>
-            {Boolean(supportedAuthTypes.indexOf(AuthTypes.SSO) > -1) && (
+            {Boolean(supportedAuthTypes.indexOf(auth.AuthTypes.SSO) > -1) && (
               <Form.Item>
                 <AlternativeFormButton
                   title={t('signin.form.sso.switch.title')}
@@ -191,7 +219,7 @@ function useSignInSubmit(
           const errComp = (
             <>
               {errMsg}
-              {!isDistro && (
+              {!i18n.isDistro && (
                 <>
                   {' '}
                   <a
@@ -225,14 +253,14 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
-  const refPassword = useRef<Input>(null)
+  const refPassword = useRef<InputRef>(null)
 
   const { handleSubmit, loading, errorMsg, clearErrorMsg } = useSignInSubmit(
     successRoute,
     (form) => ({
       username: form.username,
       password: form.password,
-      type: AuthTypes.SQLUser
+      type: auth.AuthTypes.SQLUser
     }),
     (form) => {
       localStorage.setItem(LAST_LOGIN_USERNAME_KEY, form.username)
@@ -323,13 +351,13 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
   const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
-  const refPassword = useRef<Input>(null)
+  const refPassword = useRef<InputRef>(null)
 
   const { handleSubmit, loading, errorMsg, clearErrorMsg } = useSignInSubmit(
     successRoute,
     (form) => ({
       password: form.code,
-      type: AuthTypes.SharingCode
+      type: auth.AuthTypes.SharingCode
     }),
     () => {},
     () => {
@@ -460,7 +488,8 @@ function App({ registry }) {
         const resp = await client.getInstance().userGetLoginInfo()
         const loginInfo = resp.data
         if (
-          (loginInfo.supported_auth_types?.indexOf(AuthTypes.SSO) ?? -1) > -1
+          (loginInfo.supported_auth_types?.indexOf(auth.AuthTypes.SSO) ?? -1) >
+          -1
         ) {
           setFormType(DisplayFormType.sso)
         } else {

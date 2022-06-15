@@ -37,3 +37,9 @@ export function enableTelemetry(info: InfoInfoResponse) {
   })
   mixpanel.opt_in_tracking()
 }
+
+export default {
+  init,
+  enableTelemetry,
+  mixpanel
+}

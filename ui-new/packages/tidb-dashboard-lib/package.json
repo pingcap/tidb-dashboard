@@ -21,6 +21,7 @@
     "@sentry/react": "^7.1.1",
     "@sentry/types": "^7.1.1",
     "@uifabric/utilities": "^7.33.5",
+    "ace-builds": "^1.6.0",
     "ahooks": "^3.1.9",
     "antd": "^4.18.7",
     "axios": "^0.27.2",

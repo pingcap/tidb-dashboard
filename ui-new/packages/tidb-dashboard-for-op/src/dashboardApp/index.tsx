@@ -33,8 +33,22 @@ import {
   NgmState,
 
   // apps
+  ClusterInfoAppMeta as AppClusterInfo,
+  StatementAppMeta as AppStatement,
   SlowQueryAppMeta as AppSlowQuery,
-  StatementAppMeta as AppStatement
+  UserProfileAppMeta as AppUserProfile,
+  OverviewAppMeta as AppOverview,
+  KeyVizAppMeta as AppKeyViz,
+  TopSQLAppMeta as AppTopSQL,
+  SystemReportAppMeta as AppSystemReport,
+  DiagnoseAppMeta as AppDiagnose,
+  SearchLogsAppMeta as AppSearchLogs,
+  InstanceProfilingAppMeta as AppInstanceProfiling,
+  ConprofAppMeta as AppContinuousProfiling,
+  QueryEditorAppMeta as AppQueryEditor,
+  ConfigurationAppMeta as AppConfiguration,
+  DebugAPIAppMeta as AppDebugAPI,
+  OptimizerTraceAppMeta as AppOptimizerTrace
 } from '@pingcap/tidb-dashboard-lib'
 
 // import AppRegistry from '@lib/utils/registry'
@@ -184,22 +198,22 @@ async function webPageStart() {
   )
 
   registry
-    // .register(AppUserProfile)
-    // .register(AppOverview)
-    // .register(AppClusterInfo)
-    // .register(AppKeyViz)
-    // .register(AppTopSQL)
+    .register(AppUserProfile)
+    .register(AppOverview)
+    .register(AppClusterInfo)
+    .register(AppKeyViz)
+    .register(AppTopSQL)
     .register(AppStatement)
-    // .register(AppSystemReport)
+    .register(AppSystemReport)
     .register(AppSlowQuery)
-  // .register(AppDiagnose)
-  // .register(AppSearchLogs)
-  // .register(AppInstanceProfiling)
-  // .register(AppContinuousProfiling)
-  // .register(AppQueryEditor)
-  // .register(AppConfiguration)
-  // .register(AppDebugAPI)
-  // .register(AppOptimizerTrace)
+    .register(AppDiagnose)
+    .register(AppSearchLogs)
+    .register(AppInstanceProfiling)
+    .register(AppContinuousProfiling)
+    .register(AppQueryEditor)
+    .register(AppConfiguration)
+    .register(AppDebugAPI)
+    .register(AppOptimizerTrace)
 
   try {
     const ok = await reloadWhoAmI()

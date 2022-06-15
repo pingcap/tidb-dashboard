@@ -133,6 +133,7 @@ importers:
       '@typescript-eslint/eslint-plugin': ^4.31.0
       '@typescript-eslint/parser': ^4.31.0
       '@uifabric/utilities': ^7.33.5
+      ace-builds: ^1.6.0
       ahooks: ^3.1.9
       antd: ^4.18.7
       autoprefixer: ^10.4.2
@@ -198,6 +199,7 @@ importers:
       '@sentry/react': 7.1.1_react@17.0.2
       '@sentry/types': 7.1.1
       '@uifabric/utilities': 7.34.1_zn5uodkvigq2cma2dm4r3u5424
+      ace-builds: 1.6.0
       ahooks: 3.4.1_react@17.0.2
       antd: 4.21.0_sfoxds7t5ydpegc3knd667wn6m
       axios: 0.27.2

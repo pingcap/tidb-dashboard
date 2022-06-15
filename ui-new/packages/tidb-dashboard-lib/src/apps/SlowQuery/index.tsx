@@ -21,9 +21,3 @@ export default function () {
     </Root>
   )
 }
-
-// export * from './components'
-// export * from './pages'
-// export * from './utils/useSlowQueryTableController'
-// export { default as useSlowQueryTableController } from './utils/useSlowQueryTableController'
-export { default as SlowQueryAppMeta } from './index.meta'

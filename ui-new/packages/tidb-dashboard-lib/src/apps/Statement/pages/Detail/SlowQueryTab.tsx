@@ -1,10 +1,11 @@
 import React from 'react'
-import SlowQueriesTable from '@lib/apps/SlowQuery/components/SlowQueriesTable'
-import { IQuery } from './PlanDetail'
+import { fromTimeRangeValue } from '@lib/components'
 import useSlowQueryTableController, {
   DEF_SLOW_QUERY_OPTIONS
 } from '@lib/apps/SlowQuery/utils/useSlowQueryTableController'
-import { fromTimeRangeValue } from '@lib/components'
+import SlowQueriesTable from '@lib/apps/SlowQuery/components/SlowQueriesTable'
+
+import { IQuery } from './PlanDetail'
 
 export interface ISlowQueryTabProps {
   query: IQuery

@@ -98,7 +98,17 @@ const TreeDiagram = ({
   const brushBehavior = d3Brush().on('brush', () => onBrush())
 
   const onBrush = () => {
-    console.log('onbrush...')
+    if (event.sourceEvent && event.sourceEvent.type === 'zoom') return null
+    const [[brushx, brushy], [brushx2, brushy2]] = event.selection
+
+    const scaleX = minimapScaleX(chartTranslate.k)
+    const scaleY = minimapScaleY(chartTranslate.k)
+
+    setChartTranslate({
+      x: -mainChartGroupBound.x + scaleX(-brushx),
+      y: scaleY(-brushy),
+      k: chartTranslate.k,
+    })
   }
 
   const minimapScaleX = (zoomScale) => {
@@ -118,9 +128,9 @@ const TreeDiagram = ({
 
     // init brush seletion
     brushBehavior.move(gBrush as any, [
-      [(-mainChartGroupBound.x - chartTranslate.x) / chartTranslate.k, 0],
+      [(-mainChartGroupBound.x - viewPort.width / 2) / chartTranslate.k, 0],
       [
-        (-mainChartGroupBound.x - chartTranslate.x + viewPort.width) /
+        (-mainChartGroupBound.x - viewPort.width / 2 + viewPort.width) /
           chartTranslate.k,
         viewPort.height / chartTranslate.k,
       ],
@@ -134,27 +144,15 @@ const TreeDiagram = ({
   const onZoom = () => {
     const t = event.transform
     setChartTranslate(t)
-    console.log('onzoom gbrush is', t, mainChartGroupBound)
 
     const scaleX = minimapScaleX(t.k)
     const scaleY = minimapScaleY(t.k)
 
-    console.log(
-      'scalex',
-      -mainChartGroupBound.x - scaleX.invert(t.x),
-      -scaleY.invert(t.y)
-    )
-    console.log(
-      'scaley',
-      -mainChartGroupBound.x - scaleX.invert(t.x + viewPort.width),
-      -scaleY.invert(t.y + viewPort.height)
-    )
-
     brushBehavior.move(gBrush as any, [
-      [-mainChartGroupBound.x - scaleX.invert(t.x), -scaleY.invert(t.y)],
+      [-mainChartGroupBound.x + scaleX.invert(-t.x), scaleY.invert(-t.y)],
       [
-        -mainChartGroupBound.x - scaleX.invert(t.x + viewPort.width),
-        -scaleY.invert(t.y + viewPort.height),
+        -mainChartGroupBound.x + scaleX.invert(-t.x + viewPort.width),
+        scaleY.invert(-t.y + viewPort.height),
       ],
     ])
   }
@@ -237,14 +235,12 @@ const TreeDiagram = ({
   }
 
   useEffect(() => {
-    console.log('1')
     const treeNodes = AssignInternalProperties(data, nodeSize!)
     setTreeNodeDatum(treeNodes)
   }, [data, nodeSize])
 
   useEffect(() => {
     if (treeNodeDatum.length > 0) {
-      console.log('2')
       const { nodes, links } = generateNodesAndLinks(treeNodeDatum, nodeMargin!)
       setNodes(nodes)
       setLinks(links)
@@ -253,7 +249,6 @@ const TreeDiagram = ({
 
   useEffect(() => {
     if (links.length > 0 && nodes.length > 0 && initDraw && gBrushRef.current) {
-      console.log('3')
       setChartTranslate(translate)
       getInitTreeDiagramBound()
       setInitDraw(false)
@@ -261,7 +256,6 @@ const TreeDiagram = ({
   }, [links, nodes])
 
   useEffect(() => {
-    console.log('5', mainChartGroupBound)
     bindZoomListener()
     bindBrushListener()
   }, [mainChartGroupBound])

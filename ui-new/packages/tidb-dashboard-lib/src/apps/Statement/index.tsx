@@ -23,7 +23,9 @@ export default function () {
   )
 }
 
-export * from './components'
-export * from './pages'
-export * from './utils/useStatementTableController'
-export { default as useStatementTableController } from './utils/useStatementTableController'
+// export * from './components'
+// export * from './pages'
+// export * from './utils/useStatementTableController'
+// export { default as useStatementTableController } from './utils/useStatementTableController'
+
+export { default as StatementAppMeta } from './index.meta'

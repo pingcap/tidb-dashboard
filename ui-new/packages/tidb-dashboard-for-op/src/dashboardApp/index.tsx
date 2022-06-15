@@ -33,7 +33,8 @@ import {
   NgmState,
 
   // apps
-  SlowQueryAppMeta as AppSlowQuery
+  SlowQueryAppMeta as AppSlowQuery,
+  StatementAppMeta as AppStatement
 } from '@pingcap/tidb-dashboard-lib'
 
 // import AppRegistry from '@lib/utils/registry'
@@ -188,7 +189,7 @@ async function webPageStart() {
     // .register(AppClusterInfo)
     // .register(AppKeyViz)
     // .register(AppTopSQL)
-    // .register(AppStatement)
+    .register(AppStatement)
     // .register(AppSystemReport)
     .register(AppSlowQuery)
   // .register(AppDiagnose)

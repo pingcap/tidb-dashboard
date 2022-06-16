@@ -1,4 +1,3 @@
-const fs = require('fs-extra')
 const chalk = require('chalk')
 const { watch } = require('chokidar')
 
@@ -71,12 +70,9 @@ const esbuildParams = {
     yamlPlugin(),
     logTime()
   ]
-  // inject: ['./process-shim.js'] // fix runtime crash
 }
 
 async function main() {
-  // fs.removeSync('./dist')
-
   const builder = await esbuild.build(esbuildParams)
 
   function rebuild() {

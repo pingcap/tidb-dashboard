@@ -18,7 +18,7 @@ function Editor({ ...props }: IEditorProps, ref: React.Ref<AceEditor>) {
     <div className={styles.editorContainer} ref={containerRef}>
       <AceEditor
         mode="sql"
-        theme="oneHalfLight"
+        // theme="oneHalfLight"
         name="query_editor"
         fontSize={14}
         showPrintMargin={false}

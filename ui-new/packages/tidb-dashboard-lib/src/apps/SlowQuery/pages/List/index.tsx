@@ -37,8 +37,8 @@ import useSlowQueryTableController, {
 import styles from './List.module.less'
 import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
-import client from '@lib/client'
 import { isDistro } from '@lib/utils/distroStringsRes'
+import { SlowQueryContext } from '../../context'
 
 const { Option } = Select
 
@@ -48,6 +48,8 @@ const LIMITS = [100, 200, 500, 1000]
 
 function List() {
   const { t } = useTranslation()
+
+  const ctx = useContext(SlowQueryContext)
 
   const cacheMgr = useContext(CacheContext)
 
@@ -143,7 +145,7 @@ function List() {
     const timeRangeValue = toTimeRangeValue(controller.queryOptions.timeRange)
     try {
       setDownloading(true)
-      const res = await client.getInstance().slowQueryDownloadTokenPost({
+      const res = await ctx!.ds.slowQueryDownloadTokenPost({
         fields: '*',
         begin_time: timeRangeValue[0],
         end_time: timeRangeValue[1],
@@ -157,7 +159,9 @@ function List() {
       })
       const token = res.data
       if (token) {
-        window.location.href = `${client.getBasePath()}/slow_query/download?token=${token}`
+        window.location.href = `${
+          ctx!.config.basePath
+        }/slow_query/download?token=${token}`
       }
     } finally {
       setDownloading(false)

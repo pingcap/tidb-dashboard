@@ -62,7 +62,7 @@ class DataSource implements ISlowQueryDataSource {
   }
 
   slowQueryDownloadTokenPost(request: any, options?: AxiosRequestConfig) {
-    return client.getInstance().slowQueryDownloadTokenPost(request, options)
+    return client.getInstance().slowQueryDownloadTokenPost({ request }, options)
   }
 }
 

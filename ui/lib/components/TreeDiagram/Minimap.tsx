@@ -40,11 +40,34 @@ const Minimap = ({
   const minimapContainerWidth = viewPort.width * minimapScale
   const minimapContainerHeight = viewPort.height * minimapScale
 
+  const longSide = mainChartWidth > mainChartHeight ? 'x' : 'y'
+  const chartLongSideSize = Math.max(mainChartWidth, mainChartHeight)
+  const chartMinimapScale =
+    chartLongSideSize /
+    (longSide === 'x' ? minimapContainerWidth : minimapContainerHeight)
+
   const drawMinimap = () => {
     minimapSVG
       .attr('width', minimapContainerWidth)
       .attr('height', minimapContainerHeight)
-      .attr('viewBox', [0, 0, mainChartWidth, mainChartHeight].join(' '))
+      .attr(
+        'viewBox',
+        (longSide === 'x'
+          ? [
+              0,
+              -(minimapContainerHeight * chartMinimapScale - mainChartHeight) /
+                2,
+              mainChartWidth,
+              minimapContainerHeight * chartMinimapScale,
+            ]
+          : [
+              -(minimapContainerWidth * chartMinimapScale - mainChartWidth) / 2,
+              0,
+              minimapContainerWidth * chartMinimapScale,
+              mainChartHeight,
+            ]
+        ).join(' ')
+      )
       .attr('preserveAspectRatio', 'xMidYMid meet')
       .style('position', 'absolute')
       .style('top', 0)

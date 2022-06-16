@@ -1,12 +1,24 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Root } from '@lib/components'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import useCache, { CacheContext } from '@lib/utils/useCache'
+import { addTranslations } from '@lib/utils/i18n'
 
 import { List, Detail } from './pages'
 
+import { SlowQueryContext } from './context'
+
+import translations from './translations'
+
+addTranslations(translations)
+
 export default function () {
   const slowQueryCacheMgr = useCache(2)
+
+  const context = useContext(SlowQueryContext)
+  // if (context === null) {
+  //   throw new Error('SlowQueryContext must not be null')
+  // }
 
   return (
     <Root>
@@ -21,3 +33,5 @@ export default function () {
     </Root>
   )
 }
+
+export * from './context'

@@ -6,7 +6,6 @@
     "noImplicitThis": false,
     "baseUrl": ".",
     "paths": {
-      "@lib": ["@pingcap/tidb-dashboard-lib"],
       "@dashboard/*": ["src/dashboardApp/*"],
       "@diagnoseReport/*": ["src/diagnoseReportApp/*"]
     }

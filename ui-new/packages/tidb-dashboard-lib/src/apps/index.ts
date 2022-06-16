@@ -33,7 +33,8 @@ export { default as SearchLogsApp } from './SearchLogs'
 export { default as SearchLogsAppMeta } from './SearchLogs/index.meta'
 
 export { default as SlowQueryApp } from './SlowQuery'
-export { default as SlowQueryAppMeta } from './SlowQuery/index.meta'
+export * from './SlowQuery'
+// export { default as SlowQueryAppMeta } from './SlowQuery/index.meta'
 
 export { default as StatementApp } from './Statement'
 export { default as StatementAppMeta } from './Statement/index.meta'

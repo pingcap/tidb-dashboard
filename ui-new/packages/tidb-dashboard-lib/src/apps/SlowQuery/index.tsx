@@ -16,9 +16,9 @@ export default function () {
   const slowQueryCacheMgr = useCache(2)
 
   const context = useContext(SlowQueryContext)
-  // if (context === null) {
-  //   throw new Error('SlowQueryContext must not be null')
-  // }
+  if (context === null) {
+    throw new Error('SlowQueryContext must not be null')
+  }
 
   return (
     <Root>

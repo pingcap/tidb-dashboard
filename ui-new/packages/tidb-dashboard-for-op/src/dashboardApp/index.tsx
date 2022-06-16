@@ -66,8 +66,8 @@ import { default as AppSlowQuery } from '../apps/SlowQuery/meta'
 // import client, { InfoInfoResponse } from '@lib/client'
 // import * as telemetry from '@lib/utils/telemetry'
 
-import LayoutMain from '@dashboard/layout/main'
-import LayoutSignIn from '@dashboard/layout/signin'
+import LayoutMain from './layout/main'
+import LayoutSignIn from './layout/signin'
 
 // import AppUserProfile from '@lib/apps/UserProfile/index.meta'
 // import AppOverview from '@lib/apps/Overview/index.meta'

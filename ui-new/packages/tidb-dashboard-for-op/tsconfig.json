@@ -6,8 +6,7 @@
     "noImplicitThis": false,
     "baseUrl": ".",
     "paths": {
-      "@dashboard/*": ["src/dashboardApp/*"],
-      "@diagnoseReport/*": ["src/diagnoseReportApp/*"]
+      "~/*": ["src/*"]
     }
   },
   "include": ["src"]

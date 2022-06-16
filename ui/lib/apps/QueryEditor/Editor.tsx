@@ -4,8 +4,8 @@ import { useSize } from 'ahooks'
 
 import 'ace-builds/src-noconflict/mode-sql'
 import 'ace-builds/src-noconflict/ext-searchbox'
-// import './editorThemes/oneHalfDark'
-// import './editorThemes/oneHalfLight'
+import './editorThemes/oneHalfDark'
+import './editorThemes/oneHalfLight'
 
 import styles from './Editor.module.less'
 

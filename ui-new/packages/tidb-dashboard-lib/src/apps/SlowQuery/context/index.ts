@@ -1,15 +1,16 @@
 import { createContext } from 'react'
 
-import { AxiosRequestConfig, AxiosPromise } from 'axios'
+import { AxiosPromise } from 'axios'
 
-import { SlowqueryModel, SlowqueryGetListRequest } from './model'
+// import { SlowqueryModel, SlowqueryGetListRequest } from './model'
+import { SlowqueryModel, SlowqueryGetListRequest } from '@lib/client'
+
+import { ReqConfig } from '@lib/utils'
 
 export interface ISlowQueryDataSource {
-  infoListDatabases(options?: AxiosRequestConfig): AxiosPromise<Array<string>>
+  infoListDatabases(options?: ReqConfig): AxiosPromise<Array<string>>
 
-  slowQueryAvailableFieldsGet(
-    options?: AxiosRequestConfig
-  ): AxiosPromise<Array<string>>
+  slowQueryAvailableFieldsGet(options?: ReqConfig): AxiosPromise<Array<string>>
 
   slowQueryListGet(
     beginTime?: number,
@@ -22,19 +23,19 @@ export interface ISlowQueryDataSource {
     orderBy?: string,
     plans?: Array<string>,
     text?: string,
-    options?: AxiosRequestConfig
+    options?: ReqConfig
   ): AxiosPromise<Array<SlowqueryModel>>
 
   slowQueryDetailGet(
     connectId?: string,
     digest?: string,
     timestamp?: number,
-    options?: AxiosRequestConfig
+    options?: ReqConfig
   ): AxiosPromise<SlowqueryModel>
 
   slowQueryDownloadTokenPost(
     request: SlowqueryGetListRequest,
-    options?: AxiosRequestConfig
+    options?: ReqConfig
   ): AxiosPromise<string>
 }
 

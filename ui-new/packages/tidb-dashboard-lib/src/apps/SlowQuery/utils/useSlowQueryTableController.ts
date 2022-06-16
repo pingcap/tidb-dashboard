@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import client, { ErrorStrategy, SlowqueryModel } from '@lib/client'
+// import client, { ErrorStrategy, SlowqueryModel } from '@lib/client'
 import {
   TimeRange,
   IColumnKeys,
@@ -15,6 +15,8 @@ import useCacheItemIndex from '@lib/utils/useCacheItemIndex'
 import { derivedFields, slowQueryColumns } from './tableColumns'
 import { useSchemaColumns } from './useSchemaColumns'
 import { useChange } from '@lib/utils/useChange'
+import { ISlowQueryDataSource } from '../context'
+import { SlowqueryModel } from '@lib/client'
 
 const SLOW_DATA_LOAD_THRESHOLD = 2000
 
@@ -94,6 +96,8 @@ export interface ISlowQueryTableControllerOpts {
   showFullSQL?: boolean
   initialQueryOptions?: ISlowQueryOptions
   persistQueryInSession?: boolean
+
+  ds: ISlowQueryDataSource
 }
 
 export interface ISlowQueryTableController {
@@ -120,8 +124,11 @@ export default function useSlowQueryTableController({
   cacheMgr,
   showFullSQL = false,
   initialQueryOptions,
-  persistQueryInSession = true
+  persistQueryInSession = true,
+  ds
 }: ISlowQueryTableControllerOpts): ISlowQueryTableController {
+  // const ctx = useContext(SlowQueryContext)
+
   const { orderOptions, changeOrder } = useOrderState(
     'slow_query',
     persistQueryInSession,
@@ -147,8 +154,9 @@ export default function useSlowQueryTableController({
   useChange(() => {
     async function querySchemas() {
       try {
-        const res = await client.getInstance().infoListDatabases({
-          errorStrategy: ErrorStrategy.Custom
+        const res = await ds.infoListDatabases({
+          // errorStrategy: ErrorStrategy.Custom
+          handleError: 'custom'
         })
         setAllSchemas(res?.data || [])
       } catch (e) {
@@ -210,9 +218,10 @@ export default function useSlowQueryTableController({
       const timeRange = toTimeRangeValue(queryOptions.timeRange)
 
       try {
-        const res = await client
-          .getInstance()
-          .slowQueryListGet(
+        const res =
+          // await client
+          //   .getInstance()
+          await ds.slowQueryListGet(
             timeRange[0],
             queryOptions.schemas,
             orderOptions.desc,
@@ -223,8 +232,11 @@ export default function useSlowQueryTableController({
             orderOptions.orderBy,
             queryOptions.plans,
             queryOptions.searchText,
+            // {
+            //   errorStrategy: ErrorStrategy.Custom
+            // }
             {
-              errorStrategy: ErrorStrategy.Custom
+              handleError: 'custom'
             }
           )
         const data = res?.data || []

@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
-import client from '@lib/client'
+// import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 import formatSql from '@lib/utils/sqlFormatter'
@@ -22,6 +22,7 @@ import {
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 
 import DetailTabs from './DetailTabs'
+import { SlowQueryContext } from '../../context'
 
 export interface IPageQuery {
   connectId?: string
@@ -32,19 +33,21 @@ export interface IPageQuery {
 const SLOW_QUERY_DETAIL_EXPAND = 'slow_query.detail_expand'
 
 function DetailPage() {
+  const ctx = useContext(SlowQueryContext)
+
   const query = DetailPage.parseQuery(useLocation().search)
 
   const { t } = useTranslation()
 
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
-    client
-      .getInstance()
-      .slowQueryDetailGet(
-        query.connectId!,
-        query.digest!,
-        query.timestamp!,
-        reqConfig
-      )
+    // client
+    // .getInstance()
+    ctx!.ds.slowQueryDetailGet(
+      query.connectId!,
+      query.digest!,
+      query.timestamp!,
+      reqConfig
+    )
   )
 
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(

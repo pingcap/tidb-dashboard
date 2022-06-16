@@ -69,7 +69,8 @@ function List() {
     initialQueryOptions: {
       ...DEF_SLOW_QUERY_OPTIONS,
       visibleColumnKeys
-    }
+    },
+    ds: ctx!.ds
   })
 
   function menuItemClick({ key }) {

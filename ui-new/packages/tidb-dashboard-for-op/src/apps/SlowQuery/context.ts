@@ -1,17 +1,17 @@
 import {
   ISlowQueryDataSource,
-  ISlowQueryContext
+  ISlowQueryContext,
+  ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
-import { AxiosRequestConfig } from 'axios'
 import client from '~/client'
 
 class DataSource implements ISlowQueryDataSource {
-  infoListDatabases(options?: any) {
+  infoListDatabases(options?: ReqConfig) {
     return client.getInstance().infoListDatabases(options)
   }
 
-  slowQueryAvailableFieldsGet(options?: any) {
+  slowQueryAvailableFieldsGet(options?: ReqConfig) {
     return client.getInstance().slowQueryAvailableFieldsGet(options)
   }
 
@@ -26,7 +26,7 @@ class DataSource implements ISlowQueryDataSource {
     orderBy?: string,
     plans?: Array<string>,
     text?: string,
-    options?: AxiosRequestConfig
+    options?: ReqConfig
   ) {
     return client.getInstance().slowQueryListGet(
       {
@@ -49,7 +49,7 @@ class DataSource implements ISlowQueryDataSource {
     connectId?: string,
     digest?: string,
     timestamp?: number,
-    options?: AxiosRequestConfig
+    options?: ReqConfig
   ) {
     return client.getInstance().slowQueryDetailGet(
       {
@@ -61,7 +61,7 @@ class DataSource implements ISlowQueryDataSource {
     )
   }
 
-  slowQueryDownloadTokenPost(request: any, options?: AxiosRequestConfig) {
+  slowQueryDownloadTokenPost(request: any, options?: ReqConfig) {
     return client.getInstance().slowQueryDownloadTokenPost({ request }, options)
   }
 }

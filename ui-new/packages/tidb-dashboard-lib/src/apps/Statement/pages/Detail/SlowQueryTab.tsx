@@ -12,16 +12,17 @@ export interface ISlowQueryTabProps {
 }
 
 export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
-  const controller = useSlowQueryTableController({
-    initialQueryOptions: {
-      ...DEF_SLOW_QUERY_OPTIONS,
-      timeRange: fromTimeRangeValue([query.beginTime!, query.endTime!]),
-      limit: 100,
-      digest: query.digest!,
-      plans: query.plans
-    },
-    persistQueryInSession: false
-  })
+  // const controller = useSlowQueryTableController({
+  //   initialQueryOptions: {
+  //     ...DEF_SLOW_QUERY_OPTIONS,
+  //     timeRange: fromTimeRangeValue([query.beginTime!, query.endTime!]),
+  //     limit: 100,
+  //     digest: query.digest!,
+  //     plans: query.plans
+  //   },
+  //   persistQueryInSession: false
+  // })
 
-  return <SlowQueriesTable cardNoMargin controller={controller} />
+  // return <SlowQueriesTable cardNoMargin controller={controller} />
+  return <div></div>
 }

@@ -88,6 +88,8 @@ const Minimap = ({
 
   useEffect(() => {
     drawMinimap()
+    minimapSVG.selectAll('.handle').remove()
+    minimapSVG.selectAll('.overlay').remove()
   })
 
   return (

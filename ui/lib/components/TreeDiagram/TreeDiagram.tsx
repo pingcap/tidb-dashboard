@@ -95,22 +95,6 @@ const TreeDiagram = ({
     return { nodes, links }
   }
 
-  const brushBehavior = d3Brush().on('brush', () => onBrush())
-
-  const onBrush = () => {
-    if (event.sourceEvent && event.sourceEvent.type === 'zoom') return null
-    const [[brushx, brushy], [brushx2, brushy2]] = event.selection
-
-    const scaleX = minimapScaleX(chartTranslate.k)
-    const scaleY = minimapScaleY(chartTranslate.k)
-
-    setChartTranslate({
-      x: -mainChartGroupBound.x + scaleX(-brushx),
-      y: scaleY(-brushy),
-      k: chartTranslate.k,
-    })
-  }
-
   const minimapScaleX = (zoomScale) => {
     return scaleLinear()
       .domain([0, mainChartGroupBound.width])
@@ -123,22 +107,70 @@ const TreeDiagram = ({
       .range([0, mainChartGroupBound.height * zoomScale])
   }
 
+  const ScaleX = minimapScaleX(1)
+  const ScaleY = minimapScaleY(1)
+
+  const brushBehavior = d3Brush()
+    .extent([
+      [ScaleX(-viewPort.width / 2), ScaleY(-viewPort.height / 2)],
+      [
+        ScaleX(mainChartGroupBound.width + viewPort.width / 2),
+        ScaleY(mainChartGroupBound.height + viewPort.height / 2),
+      ],
+    ])
+    .on('brush', () => onBrush())
+
+  const onBrush = () => {
+    if (event.sourceEvent && event.sourceEvent.type === 'zoom') return null
+    if (Array.isArray(event.selection)) {
+      const [[brushX, brushY], [brushX2, brushY2]] = event.selection
+
+      const zoomScale = zoomTransform(mainChartSVG.node() as any)
+
+      const scaleX = minimapScaleX(zoomScale.k)
+      const scaleY = minimapScaleY(zoomScale.k)
+
+      // Sets initial offset, so that first pan and zoom does not jump back to default [0,0] coords.
+      // @ts-ignore
+      mainChartSVG.call(
+        d3Zoom().transform as any,
+        zoomIdentity
+          .translate(scaleX(-mainChartGroupBound.x - brushX), scaleX(-brushY))
+          .scale(zoomScale.k)
+      )
+
+      setChartTranslate({
+        x: scaleX(-mainChartGroupBound.x - brushX),
+        y: scaleY(-brushY),
+        k: zoomScale.k,
+      })
+    }
+  }
+
   const bindBrushListener = () => {
     gBrush.call(brushBehavior as any)
 
+    const scaleX = minimapScaleX(1)
+
     // init brush seletion
     brushBehavior.move(gBrush as any, [
-      [(-mainChartGroupBound.x - viewPort.width / 2) / chartTranslate.k, 0],
+      [-mainChartGroupBound.x - scaleX(chartTranslate.x), 0],
       [
-        (-mainChartGroupBound.x - viewPort.width / 2 + viewPort.width) /
-          chartTranslate.k,
-        viewPort.height / chartTranslate.k,
+        -mainChartGroupBound.x - scaleX(chartTranslate.x) + viewPort.width,
+        viewPort.height,
       ],
     ])
   }
 
   const zoomBehavior = d3Zoom()
-    .scaleExtent([0.2, 2])
+    .scaleExtent([0.5, 2])
+    .translateExtent([
+      [mainChartGroupBound.x - viewPort.width / 2, -viewPort.height / 2],
+      [
+        mainChartGroupBound.x + mainChartGroupBound.width + viewPort.width / 2,
+        mainChartGroupBound.height + viewPort.height / 2,
+      ],
+    ])
     .on('zoom', () => onZoom())
 
   const onZoom = () => {
@@ -159,15 +191,6 @@ const TreeDiagram = ({
 
   // Binds MainChart container
   const bindZoomListener = () => {
-    // Sets initial offset, so that first pan and zoom does not jump back to default [0,0] coords.
-    // @ts-ignore
-    mainChartSVG.call(
-      d3Zoom().transform as any,
-      zoomIdentity
-        .translate(chartTranslate.x, chartTranslate.y)
-        .scale(chartTranslate.k)
-    )
-
     mainChartSVG.call(zoomBehavior as any)
   }
 
@@ -262,7 +285,6 @@ const TreeDiagram = ({
 
   useEffect(() => {
     if (treeDiagramContainerRef.current) {
-      console.log('4')
       const w = treeDiagramContainerRef.current?.clientWidth
 
       setViewPort({

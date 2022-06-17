@@ -1,5 +1,5 @@
 import { Space, Typography } from 'antd'
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AutoRefreshButton,
@@ -15,11 +15,22 @@ import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { LoadingOutlined } from '@ant-design/icons'
 import { some } from 'lodash'
+import { ReqConfig } from '@lib/types'
+import { MetricsQueryResponse } from '@lib/client'
+import { AxiosPromise } from 'axios'
+import { OverviewContext } from '../context'
 
 interface IChartProps {
   range: Range
   onRangeChange?: (newRange: Range) => void
   onLoadingStateChange?: (isLoading: boolean) => void
+  getMetrics: (
+    endTimeSec?: number,
+    query?: string,
+    startTimeSec?: number,
+    stepSec?: number,
+    options?: ReqConfig
+  ) => AxiosPromise<MetricsQueryResponse>
 }
 
 function QPS(props: IChartProps) {
@@ -155,6 +166,8 @@ function IO(props: IChartProps) {
 }
 
 export default function Metrics() {
+  const ctx = useContext(OverviewContext)
+
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
   const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({})
@@ -168,7 +181,8 @@ export default function Metrics() {
       range: chartRange,
       onRangeChange: setChartRange,
       onLoadingStateChange: (loading) =>
-        setIsLoading((v) => ({ ...v, [id]: loading }))
+        setIsLoading((v) => ({ ...v, [id]: loading })),
+      getMetrics: ctx!.ds.metricsQueryGet
     }
   }
 

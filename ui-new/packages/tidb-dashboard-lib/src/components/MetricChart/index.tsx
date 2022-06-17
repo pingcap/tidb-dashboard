@@ -1,9 +1,9 @@
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Space } from 'antd'
 import _ from 'lodash'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
 import format from 'string-template'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import client, { ErrorStrategy } from '@lib/client'
+import { MetricsQueryResponse } from '@lib/client'
 import { AnimatedSkeleton } from '@lib/components'
 import ErrorBar from '../ErrorBar'
 import { addTranslationResource } from '@lib/utils/i18n'
@@ -34,6 +34,8 @@ import {
   QueryOptions,
   resolveQueryTemplate
 } from '@lib/utils/prometheus'
+import { AxiosPromise } from 'axios'
+import { ReqConfig } from '@lib/types'
 
 export type { GraphType }
 
@@ -92,6 +94,13 @@ export interface IMetricChartProps {
 
   onRangeChange?: (newRange: TimeRangeValue) => void
   onLoadingStateChange?: (isLoading: boolean) => void
+  getMetrics: (
+    endTimeSec?: number,
+    query?: string,
+    startTimeSec?: number,
+    stepSec?: number,
+    options?: ReqConfig
+  ) => AxiosPromise<MetricsQueryResponse>
 }
 
 type Data = {
@@ -109,7 +118,8 @@ export default function MetricChart({
   type,
   height = 200,
   onRangeChange,
-  onLoadingStateChange
+  onLoadingStateChange,
+  getMetrics
 }: IMetricChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const [chartHandle] = useChartHandle(chartContainerRef, 150)
@@ -137,17 +147,16 @@ export default function MetricChart({
     ) {
       const query = resolveQueryTemplate(queryTemplate, queryOptions)
       try {
-        const resp = await client
-          .getInstance()
-          .metricsQueryGet(
-            queryOptions.end,
-            query,
-            queryOptions.start,
-            queryOptions.step,
-            {
-              errorStrategy: ErrorStrategy.Custom
-            }
-          )
+        const resp = await getMetrics(
+          queryOptions.end,
+          query,
+          queryOptions.start,
+          queryOptions.step,
+          {
+            // errorStrategy: ErrorStrategy.Custom
+            handleError: 'custom'
+          }
+        )
         let data: PromMatrixData | null = null
         if (resp.data.status === 'success') {
           data = resp.data.data as any

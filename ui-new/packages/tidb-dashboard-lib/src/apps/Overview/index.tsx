@@ -1,12 +1,25 @@
+import React, { useContext } from 'react'
 import { Col, Row } from 'antd'
-import React from 'react'
 import { HashRouter as Router } from 'react-router-dom'
+
 import { Root } from '@lib/components'
+import { addTranslations } from '@lib/utils/i18n'
+
 import MonitorAlert from './components/MonitorAlert'
 import Instances from './components/Instances'
 import Metrics from './components/Metrics'
 
+import translations from './translations'
+import { OverviewContext } from './context'
+
+addTranslations(translations)
+
 export default function App() {
+  const ctx = useContext(OverviewContext)
+  if (ctx === null) {
+    throw new Error('OverviewContext must not be null')
+  }
+
   return (
     <Root>
       <Router>
@@ -23,3 +36,5 @@ export default function App() {
     </Root>
   )
 }
+
+export * from './context'

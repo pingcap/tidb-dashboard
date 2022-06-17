@@ -39,7 +39,7 @@ import {
   // StatementAppMeta as AppStatement,
   // SlowQueryAppMeta as AppSlowQuery,
   UserProfileAppMeta as AppUserProfile,
-  OverviewAppMeta as AppOverview,
+  // OverviewAppMeta as AppOverview,
   KeyVizAppMeta as AppKeyViz,
   TopSQLAppMeta as AppTopSQL,
   SystemReportAppMeta as AppSystemReport,
@@ -55,6 +55,7 @@ import {
 
 import { default as AppSlowQuery } from '~/apps/SlowQuery/meta'
 import { default as AppStatement } from '~/apps/Statement/meta'
+import { default as AppOverview } from '~/apps/Overview/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

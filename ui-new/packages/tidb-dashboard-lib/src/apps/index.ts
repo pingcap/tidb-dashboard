@@ -23,7 +23,7 @@ export { default as OptimizerTraceApp } from './OptimizerTrace'
 export { default as OptimizerTraceAppMeta } from './OptimizerTrace/index.meta'
 
 export { default as OverviewApp } from './Overview'
-export { default as OverviewAppMeta } from './Overview/index.meta'
+export * from './Overview'
 
 export { default as QueryEditorApp } from './QueryEditor'
 export { default as QueryEditorAppMeta } from './QueryEditor/index.meta'

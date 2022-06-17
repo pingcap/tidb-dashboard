@@ -1,10 +1,14 @@
 import { useMemo } from 'react'
-import client from '@lib/client'
+// import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import { AxiosPromise } from 'axios'
+import { ReqConfig } from '@lib/utils'
 
-export function useSchemaColumns() {
+export function useSchemaColumns(
+  getAvaiableFields: (options?: ReqConfig) => AxiosPromise<Array<string>>
+) {
   const { data, isLoading } = useClientRequest((options) => {
-    return client.getInstance().statementsAvailableFieldsGet(options)
+    return getAvaiableFields(options)
   })
 
   const schemaColumns = useMemo(() => {

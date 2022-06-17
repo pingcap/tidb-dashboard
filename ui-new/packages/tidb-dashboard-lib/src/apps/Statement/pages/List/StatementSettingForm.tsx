@@ -11,14 +11,26 @@ import {
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import client, { StatementEditableConfig } from '@lib/client'
+// import client, { StatementEditableConfig } from '@lib/client'
+import { StatementEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
+import { ReqConfig } from '@lib/utils'
+
+import { AxiosPromise } from 'axios'
 
 interface Props {
   onClose?: () => void
   onConfigUpdated?: () => any
+
+  getStatementConfig: (
+    reqConfig: ReqConfig
+  ) => AxiosPromise<StatementEditableConfig>
+  updateStatementConfig: (
+    request: StatementEditableConfig,
+    options?: ReqConfig
+  ) => AxiosPromise<string>
 }
 
 const convertArrToObj = (arr: number[]) =>
@@ -27,7 +39,12 @@ const convertArrToObj = (arr: number[]) =>
     return acc
   }, {})
 
-function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
+function StatementSettingForm({
+  onClose,
+  onConfigUpdated,
+  getStatementConfig,
+  updateStatementConfig
+}: Props) {
   const [submitting, setSubmitting] = useState(false)
   const { t } = useTranslation()
   const isWriteable = useIsWriteable()
@@ -36,9 +53,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
     data: initialConfig,
     isLoading: loading,
     error
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().statementsConfigGet(reqConfig)
-  )
+  } = useClientRequest((reqConfig) => getStatementConfig(reqConfig))
 
   const handleSubmit = useCallback(
     (values) => {
@@ -52,7 +67,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         }
         try {
           setSubmitting(true)
-          await client.getInstance().statementsConfigPost(newConfig)
+          await updateStatementConfig(newConfig)
           onClose?.()
           onConfigUpdated?.()
         } finally {

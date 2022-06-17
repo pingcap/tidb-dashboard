@@ -42,8 +42,10 @@ import useStatementTableController, {
 import styles from './List.module.less'
 import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
-import client, { StatementModel } from '@lib/client'
+// import client, { StatementModel } from '@lib/client'
+import { StatementModel } from '@lib/client'
 import { isDistro } from '@lib/utils/distroStringsRes'
+import { StatementContext } from '../../context'
 
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'
@@ -73,6 +75,8 @@ function getDataTimeRange(
 export default function StatementsOverview() {
   const { t } = useTranslation()
 
+  const ctx = useContext(StatementContext)
+
   const cacheMgr = useContext(CacheContext)
 
   const [showSettings, setShowSettings] = useState(false)
@@ -92,7 +96,8 @@ export default function StatementsOverview() {
     initialQueryOptions: {
       ...DEF_STMT_QUERY_OPTIONS,
       visibleColumnKeys
-    }
+    },
+    ds: ctx!.ds
   })
 
   function menuItemClick({ key }) {
@@ -166,7 +171,7 @@ export default function StatementsOverview() {
     const timeRangeValue = toTimeRangeValue(controller.queryOptions.timeRange)
     try {
       setDownloading(true)
-      const res = await client.getInstance().statementsDownloadTokenPost({
+      const res = await ctx!.ds.statementsDownloadTokenPost({
         begin_time: timeRangeValue[0],
         end_time: timeRangeValue[1],
         fields: '*',
@@ -176,7 +181,9 @@ export default function StatementsOverview() {
       })
       const token = res.data
       if (token) {
-        window.location.href = `${client.getBasePath()}/statements/download?token=${token}`
+        window.location.href = `${
+          ctx!.config.basePath
+        }/statements/download?token=${token}`
       }
     } finally {
       setDownloading(false)
@@ -362,6 +369,8 @@ export default function StatementsOverview() {
         <StatementSettingForm
           onClose={() => setShowSettings(false)}
           onConfigUpdated={sendQueryNow}
+          getStatementConfig={ctx!.ds.statementsConfigGet}
+          updateStatementConfig={ctx!.ds.statementsConfigPost}
         />
       </Drawer>
     </div>

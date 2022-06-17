@@ -1,12 +1,13 @@
 import { Alert, Space } from 'antd'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
-import client, { StatementModel } from '@lib/client'
+// import client, { StatementModel } from '@lib/client'
+import { StatementModel } from '@lib/client'
 import {
   AnimatedSkeleton,
   CardTable,
@@ -26,6 +27,7 @@ import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStora
 
 import { planColumns as genPlanColumns } from '../../utils/tableColumns'
 import PlanDetail from './PlanDetail'
+import { StatementContext } from '../../context'
 
 export interface IPageQuery {
   digest?: string
@@ -37,21 +39,23 @@ export interface IPageQuery {
 const STMT_DETAIL_EXPAND = 'statement.detail_expand'
 
 function DetailPage() {
+  const ctx = useContext(StatementContext)
+
   const query = DetailPage.parseQuery(useLocation().search)
   const {
     data: plans,
     isLoading,
     error
   } = useClientRequest((reqConfig) =>
-    client
-      .getInstance()
-      .statementsPlansGet(
-        query.beginTime!,
-        query.digest!,
-        query.endTime!,
-        query.schema!,
-        reqConfig
-      )
+    // client
+    //   .getInstance()
+    ctx!.ds.statementsPlansGet(
+      query.beginTime!,
+      query.digest!,
+      query.endTime!,
+      query.schema!,
+      reqConfig
+    )
   )
   const { t } = useTranslation()
   const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])

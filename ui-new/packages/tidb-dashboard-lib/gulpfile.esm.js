@@ -5,7 +5,7 @@ import shell from 'gulp-shell'
 // task('tsc:dev', parallel(shell.task('tsc -w'), shell.task('tsc-alias -w')))
 
 // https://stackoverflow.com/a/47305304/2998877
-task('tsc:dev', shell.task('tsc-watch --onSuccess "tsc-alias"'))
+task('tsc:dev', shell.task('tsc-watch --onCompilationComplete "tsc-alias"'))
 task('tsc:build', shell.task('tsc && tsc-alias'))
 
 // https://www.npmjs.com/package/eslint-watch

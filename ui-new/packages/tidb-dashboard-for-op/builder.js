@@ -42,16 +42,16 @@ const devServerParams = {
     },
     createProxyMiddleware('/dashboard/api/diagnose/reports/*/data.js', {
       target: dashboardApiPrefix,
-      changeOrigin: true,
-    }),
-  ],
+      changeOrigin: true
+    })
+  ]
 }
 
 const lessModifyVars = {
   '@primary-color': '#4263eb',
   '@body-background': '#fff',
   '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
-  '@tooltip-max-width': '500px',
+  '@tooltip-max-width': '500px'
 }
 const lessGlobalVars = {
   '@padding-page': '48px',
@@ -64,7 +64,7 @@ const lessGlobalVars = {
   '@gray-7': '#8c8c8c',
   '@gray-8': '#595959',
   '@gray-9': '#262626',
-  '@gray-10': '#000',
+  '@gray-10': '#000'
 }
 
 function getInternalVersion() {
@@ -115,13 +115,13 @@ const logTime = (_options = {}) => ({
     build.onEnd(() => {
       console.log(`Build ended: ${chalk.yellow(`${new Date() - time}ms`)}`)
     })
-  },
+  }
 })
 
 const esbuildParams = {
   color: true,
   entryPoints: {
-    dashboardApp: 'src/index.ts',
+    dashboardApp: 'src/index.ts'
     // diagnoseReport: 'diagnoseReportApp/index.tsx',
   },
   // loader: { '.ts': 'ts' },
@@ -139,21 +139,16 @@ const esbuildParams = {
       lessOptions: {
         modifyVars: lessModifyVars,
         globalVars: lessGlobalVars,
-        javascriptEnabled: true,
+        javascriptEnabled: true
       },
       enableCache: true,
-      plugins: [autoprefixer],
-      // work same as the webpack NormalModuleReplacementPlugin
-      // moduleReplacements: {
-      //   [path.resolve(__dirname, 'node_modules/antd/es/style/index.less')]:
-      //     path.resolve(__dirname, 'lib/antd.less'),
-      // },
+      plugins: [autoprefixer]
     }),
     yamlPlugin(),
-    logTime(),
+    logTime()
   ],
   define: genDefine(),
-  inject: ['./process-shim.js'], // fix runtime crash
+  inject: ['./process-shim.js'] // fix runtime crash
 }
 // if (isE2E) {
 //   // use babel and istanbul to report test coverage for e2e test

@@ -70,5 +70,5 @@ const ds = new DataSource()
 
 export const ctx: ISlowQueryContext = {
   ds,
-  config: { basePath: client.getBasePath() }
+  cfg: { basePath: client.getBasePath() }
 }

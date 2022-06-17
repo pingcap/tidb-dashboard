@@ -182,7 +182,7 @@ export default function StatementsOverview() {
       const token = res.data
       if (token) {
         window.location.href = `${
-          ctx!.config.basePath
+          ctx!.cfg.basePath
         }/statements/download?token=${token}`
       }
     } finally {

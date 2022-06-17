@@ -163,5 +163,5 @@ const ds = new DataSource()
 
 export const ctx: IStatementContext = {
   ds,
-  config: { basePath: client.getBasePath() }
+  cfg: { basePath: client.getBasePath() }
 }

@@ -62,7 +62,7 @@ export interface IStatementDataSource extends ISlowQueryDataSource {
 
 export interface IStatementContext {
   ds: IStatementDataSource
-  config: IContextConfig
+  cfg: IContextConfig
 }
 
 export const StatementContext = createContext<IStatementContext | null>(null)

@@ -66,9 +66,9 @@ class DataSource implements ISlowQueryDataSource {
   }
 }
 
-const slowQueryDS = new DataSource()
+const ds = new DataSource()
 
 export const ctx: ISlowQueryContext = {
-  ds: slowQueryDS,
+  ds,
   config: { basePath: client.getBasePath() }
 }

@@ -18,6 +18,7 @@ import { getApiBasePath } from './baseUrl'
 import translations from './translations'
 
 // export * from './api'
+export * from '@pingcap/tidb-dashboard-client'
 
 //////////////////////////////
 
@@ -51,10 +52,10 @@ export default { getInstance, getBasePath, getAxiosInstance }
 
 //////////////////////////////
 
-export enum ErrorStrategy {
-  Default = 'default',
-  Custom = 'custom'
-}
+// export enum ErrorStrategy {
+//   Default = 'default',
+//   Custom = 'custom'
+// }
 
 // declare module 'axios' {
 //   interface AxiosRequestConfig {
@@ -62,10 +63,13 @@ export enum ErrorStrategy {
 //   }
 // }
 
+type HandleError = 'default' | 'custom'
+
 function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   instance.interceptors.response.use(undefined, async function (err) {
     const { response, config } = err
-    const errorStrategy = config.errorStrategy as ErrorStrategy
+    // const errorStrategy = config.errorStrategy as ErrorStrategy
+    const handleError = config.handleError as HandleError
     const method = (config.method as string).toLowerCase()
 
     let errCode: string
@@ -95,7 +99,7 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
       auth.clearAuthToken()
       singleSpa.navigateToUrl('#' + routing.signInRoute)
       err.handled = true
-    } else if (errorStrategy === ErrorStrategy.Default) {
+    } else if (handleError === 'default') {
       if (method === 'get') {
         const fullUrl = config.url as string
         const API = fullUrl.replace(getBasePath(), '').split('?')[0]
@@ -142,7 +146,7 @@ function init() {
       basePath,
       apiKey: () => auth.getAuthTokenAsBearer() || '',
       baseOptions: {
-        errorStrategy: ErrorStrategy.Default
+        handleError: 'default'
       }
     }),
     undefined,

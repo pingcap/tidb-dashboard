@@ -37,7 +37,8 @@ export * from './SlowQuery'
 // export { default as SlowQueryAppMeta } from './SlowQuery/index.meta'
 
 export { default as StatementApp } from './Statement'
-export { default as StatementAppMeta } from './Statement/index.meta'
+export * from './Statement'
+// export { default as StatementAppMeta } from '../../../tidb-dashboard-for-op/src/apps/Statement/meta'
 
 export { default as SystemReportApp } from './SystemReport'
 export { default as SystemReportAppMeta } from './SystemReport/index.meta'

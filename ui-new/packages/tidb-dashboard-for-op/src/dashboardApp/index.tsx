@@ -34,7 +34,7 @@ import {
 
   // apps
   ClusterInfoAppMeta as AppClusterInfo,
-  StatementAppMeta as AppStatement,
+  // StatementAppMeta as AppStatement,
   // SlowQueryAppMeta as AppSlowQuery,
   UserProfileAppMeta as AppUserProfile,
   OverviewAppMeta as AppOverview,
@@ -51,7 +51,8 @@ import {
   OptimizerTraceAppMeta as AppOptimizerTrace
 } from '@pingcap/tidb-dashboard-lib'
 
-import { default as AppSlowQuery } from '../apps/SlowQuery/meta'
+import { default as AppSlowQuery } from '~/apps/SlowQuery/meta'
+import { default as AppStatement } from '~/apps/Statement/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

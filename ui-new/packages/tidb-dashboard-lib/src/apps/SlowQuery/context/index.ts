@@ -4,7 +4,7 @@ import { AxiosPromise } from 'axios'
 
 import { SlowqueryModel, SlowqueryGetListRequest } from '@lib/client'
 
-import { ReqConfig } from '@lib/utils'
+import { IContextConfig, ReqConfig } from '@lib/types'
 
 export interface ISlowQueryDataSource {
   infoListDatabases(options?: ReqConfig): AxiosPromise<Array<string>>
@@ -38,13 +38,9 @@ export interface ISlowQueryDataSource {
   ): AxiosPromise<string>
 }
 
-export interface ISlowQueryConfig {
-  basePath: string
-}
-
 export interface ISlowQueryContext {
   ds: ISlowQueryDataSource
-  config: ISlowQueryConfig
+  config: IContextConfig
 }
 
 export const SlowQueryContext = createContext<ISlowQueryContext | null>(null)

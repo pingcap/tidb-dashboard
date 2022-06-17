@@ -10,5 +10,3 @@ export * from './authSSO'
 export * from './store'
 export * from './distroAssets'
 export * from './useVersionedLocalStorageState'
-
-export * from './reqConfig'

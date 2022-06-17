@@ -16,7 +16,7 @@ import { StatementEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
-import { ReqConfig } from '@lib/utils'
+import { ReqConfig } from '@lib/types'
 
 import { AxiosPromise } from 'axios'
 

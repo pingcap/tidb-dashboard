@@ -8,7 +8,7 @@ import {
   StatementModel
 } from '@lib/client'
 
-import { ReqConfig } from '@lib/utils'
+import { IContextConfig, ReqConfig } from '@lib/types'
 import { ISlowQueryDataSource } from '@lib/apps/SlowQuery'
 
 export interface IStatementDataSource extends ISlowQueryDataSource {
@@ -60,13 +60,9 @@ export interface IStatementDataSource extends ISlowQueryDataSource {
   statementsStmtTypesGet(options?: ReqConfig): AxiosPromise<Array<string>>
 }
 
-export interface IStatementConfig {
-  basePath: string
-}
-
 export interface IStatementContext {
   ds: IStatementDataSource
-  config: IStatementConfig
+  config: IContextConfig
 }
 
 export const StatementContext = createContext<IStatementContext | null>(null)

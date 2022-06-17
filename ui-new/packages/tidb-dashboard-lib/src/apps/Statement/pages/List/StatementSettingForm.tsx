@@ -90,7 +90,7 @@ function StatementSettingForm({
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated, initialConfig]
+    [t, onClose, onConfigUpdated, initialConfig, updateStatementConfig]
   )
 
   return (

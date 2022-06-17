@@ -2,6 +2,7 @@ import React, { useContext } from 'react'
 import { Root } from '@lib/components'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import useCache, { CacheContext } from '@lib/utils/useCache'
+
 import { addTranslations } from '@lib/utils/i18n'
 
 import { List, Detail } from './pages'

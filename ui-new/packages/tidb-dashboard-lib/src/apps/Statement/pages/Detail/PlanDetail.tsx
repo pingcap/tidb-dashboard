@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import {
@@ -13,13 +13,14 @@ import {
   TextWithInfo
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client from '@lib/client'
+// import client from '@lib/client'
 import formatSql from '@lib/utils/sqlFormatter'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 
 import type { IPageQuery } from '.'
 import DetailTabs from './PlanDetailTabs'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
+import { StatementContext } from '../../context'
 
 export interface IQuery extends IPageQuery {
   plans: string[]
@@ -33,24 +34,28 @@ export interface IPlanDetailProps {
 const STMT_DETAIL_PLAN_EXPAND = 'statement.detail_plan_expand'
 
 function PlanDetail({ query }: IPlanDetailProps) {
+  const ctx = useContext(StatementContext)
+
   const { t } = useTranslation()
   const {
     data,
     isLoading: isDataLoading,
     error
   } = useClientRequest((reqConfig) =>
-    client
-      .getInstance()
-      .statementsPlanDetailGet(
-        query.beginTime!,
-        query.digest!,
-        query.endTime!,
-        query.plans,
-        query.schema!,
-        reqConfig
-      )
+    // client
+    //   .getInstance()
+    ctx!.ds.statementsPlanDetailGet(
+      query.beginTime!,
+      query.digest!,
+      query.endTime!,
+      query.plans,
+      query.schema!,
+      reqConfig
+    )
   )
-  const { isLoading: isSchemaLoading } = useSchemaColumns()
+  const { isLoading: isSchemaLoading } = useSchemaColumns(
+    ctx!.ds.statementsAvailableFieldsGet
+  )
   const isLoading = isDataLoading || isSchemaLoading
 
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(

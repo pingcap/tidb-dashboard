@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CardTable, CardTabs } from '@lib/components'
 import { StatementModel } from '@lib/client'
@@ -11,6 +11,7 @@ import { tabTxnItems } from './PlanDetailTabTxn'
 import SlowQueryTab from './SlowQueryTab'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import type { IQuery } from './PlanDetail'
+import { StatementContext } from '../../context'
 
 export default function DetailTabs({
   data,
@@ -19,8 +20,12 @@ export default function DetailTabs({
   data: StatementModel
   query: IQuery
 }) {
+  const ctx = useContext(StatementContext)
+
   const { t } = useTranslation()
-  const { schemaColumns } = useSchemaColumns()
+  const { schemaColumns } = useSchemaColumns(
+    ctx!.ds.statementsAvailableFieldsGet
+  )
   const columnsSet = new Set(schemaColumns)
 
   const tabs = [

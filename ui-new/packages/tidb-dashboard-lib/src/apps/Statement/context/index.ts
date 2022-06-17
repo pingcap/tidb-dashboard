@@ -9,10 +9,9 @@ import {
 } from '@lib/client'
 
 import { ReqConfig } from '@lib/utils'
+import { ISlowQueryDataSource } from '@lib/apps/SlowQuery'
 
-export interface IStatementDataSource {
-  infoListDatabases(options?: ReqConfig): AxiosPromise<Array<string>>
-
+export interface IStatementDataSource extends ISlowQueryDataSource {
   statementsAvailableFieldsGet(options?: ReqConfig): AxiosPromise<Array<string>>
 
   statementsConfigGet(

@@ -2,7 +2,6 @@ import { createContext } from 'react'
 
 import { AxiosPromise } from 'axios'
 
-// import { SlowqueryModel, SlowqueryGetListRequest } from './model'
 import { SlowqueryModel, SlowqueryGetListRequest } from '@lib/client'
 
 import { ReqConfig } from '@lib/utils'

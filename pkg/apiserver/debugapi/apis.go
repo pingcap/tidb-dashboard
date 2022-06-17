@@ -387,7 +387,7 @@ var apiEndpoints = []endpoint.APIDefinition{
 	{
 		ID:        "pd_pprof",
 		Component: topo.KindPD,
-		Path:      "/pd/api/v1/debug/pprof/{kind}",
+		Path:      "/debug/pprof/{kind}",
 		Method:    resty.MethodGet,
 		PathParams: []endpoint.APIParamDefinition{
 			commomParamPprofKinds,

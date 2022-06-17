@@ -129,5 +129,10 @@ slow_query:
     select_columns:
       show_full_sql: Show Full Query Text
     refresh: Refresh
+    keyword:
+      placeholder: Filter keyword
+    query: Query
     export: Export
     exporting: Exporting
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/dashboard-slow-query

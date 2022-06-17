@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
 import {
   Space,
   Tooltip,
@@ -9,85 +9,100 @@ import {
   Input,
   Dropdown,
   Menu,
+  Alert,
   message,
 } from 'antd'
 import {
-  ReloadOutlined,
   LoadingOutlined,
   SettingOutlined,
   ExportOutlined,
   MenuOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
-
 import { CacheContext } from '@lib/utils/useCache'
-import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
-import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
-
+import {
+  Card,
+  ColumnsSelector,
+  Toolbar,
+  MultiSelect,
+  TimeRangeSelector,
+  TimeRange,
+  DateTime,
+  toTimeRangeValue,
+} from '@lib/components'
+import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
-import TimeRangeSelector from './TimeRangeSelector'
 import useStatementTableController, {
   DEF_STMT_COLUMN_KEYS,
+  DEF_STMT_QUERY_OPTIONS,
 } from '../../utils/useStatementTableController'
-
 import styles from './List.module.less'
-
-const { Search } = Input
+import { useDebounceFn, useMemoizedFn } from 'ahooks'
+import { useDeepCompareChange } from '@lib/utils/useChange'
+import client, { StatementModel } from '@lib/client'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'
 
+function getDataTimeRange(
+  list?: StatementModel[]
+): [number, number] | undefined {
+  if (!list || list?.length === 0) {
+    return
+  }
+  let min = list[0].summary_begin_time ?? 0
+  let max = list[0].summary_end_time ?? 0
+  for (const item of list) {
+    if ((item.summary_begin_time ?? 0) < min) {
+      min = item.summary_begin_time ?? 0
+    }
+    if ((item.summary_end_time ?? 0) > max) {
+      max = item.summary_end_time ?? 0
+    }
+  }
+  if (min === 0 || max === 0) {
+    return
+  }
+  return [min, max]
+}
+
 export default function StatementsOverview() {
   const { t } = useTranslation()
 
-  const statementCacheMgr = useContext(CacheContext)
+  const cacheMgr = useContext(CacheContext)
 
   const [showSettings, setShowSettings] = useState(false)
-  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
-    STMT_VISIBLE_COLUMN_KEYS,
-    DEF_STMT_COLUMN_KEYS,
-    true
-  )
-  const [showFullSQL, setShowFullSQL] = useLocalStorageState(
+  const [visibleColumnKeys, setVisibleColumnKeys] =
+    useVersionedLocalStorageState(STMT_VISIBLE_COLUMN_KEYS, {
+      defaultValue: DEF_STMT_COLUMN_KEYS,
+    })
+  const [showFullSQL, setShowFullSQL] = useVersionedLocalStorageState(
     STMT_SHOW_FULL_SQL,
-    false
+    { defaultValue: false }
   )
+  const [downloading, setDownloading] = useState(false)
 
-  const controller = useStatementTableController(
-    statementCacheMgr,
-    visibleColumnKeys,
-    showFullSQL
-  )
-  const {
-    queryOptions,
-    setQueryOptions,
-    refresh,
-    enable,
-    allTimeRanges,
-    allSchemas,
-    allStmtTypes,
-    loadingStatements,
-    tableColumns,
-    isTimeRangeOutdated,
-
-    downloadCSV,
-    downloading,
-  } = controller
-
-  function exportCSV() {
-    const hide = message.loading(
-      t('statement.pages.overview.toolbar.exporting') + '...',
-      0
-    )
-    downloadCSV().finally(hide)
-  }
+  const controller = useStatementTableController({
+    cacheMgr,
+    showFullSQL,
+    initialQueryOptions: {
+      ...DEF_STMT_QUERY_OPTIONS,
+      visibleColumnKeys,
+    },
+  })
 
   function menuItemClick({ key }) {
     switch (key) {
       case 'export':
-        exportCSV()
+        const hide = message.loading(
+          t('statement.pages.overview.toolbar.exporting') + '...',
+          0
+        )
+        downloadCSV().finally(hide)
         break
     }
   }
@@ -107,20 +122,79 @@ export default function StatementsOverview() {
     </Menu>
   )
 
+  const [timeRange, setTimeRange] = useState<TimeRange>(
+    controller.queryOptions.timeRange
+  )
+  const [filterSchema, setFilterSchema] = useState<string[]>(
+    controller.queryOptions.schemas
+  )
+  const [filterStmtType, setFilterStmtType] = useState<string[]>(
+    controller.queryOptions.stmtTypes
+  )
+  const [filterText, setFilterText] = useState<string>(
+    controller.queryOptions.searchText
+  )
+
+  const sendQueryNow = useMemoizedFn(() => {
+    cacheMgr?.clear()
+    controller.setQueryOptions({
+      timeRange,
+      schemas: filterSchema,
+      stmtTypes: filterStmtType,
+      searchText: filterText,
+      visibleColumnKeys,
+    })
+  })
+
+  const sendQueryDebounced = useDebounceFn(sendQueryNow, {
+    wait: 300,
+  }).run
+
+  useDeepCompareChange(() => {
+    if (
+      controller.isDataLoadedSlowly || // if data was loaded slowly
+      controller.isDataLoadedSlowly === null // or a request is not yet finished (which means slow network)..
+    ) {
+      // do not send requests on-the-fly.
+      return
+    }
+    sendQueryDebounced()
+  }, [timeRange, filterSchema, filterStmtType, filterText, visibleColumnKeys])
+
+  const downloadCSV = useMemoizedFn(async () => {
+    // use last effective query options
+    const timeRangeValue = toTimeRangeValue(controller.queryOptions.timeRange)
+    try {
+      setDownloading(true)
+      const res = await client.getInstance().statementsDownloadTokenPost({
+        begin_time: timeRangeValue[0],
+        end_time: timeRangeValue[1],
+        fields: '*',
+        schemas: controller.queryOptions.schemas,
+        stmt_types: controller.queryOptions.stmtTypes,
+        text: controller.queryOptions.searchText,
+      })
+      const token = res.data
+      if (token) {
+        window.location.href = `${client.getBasePath()}/statements/download?token=${token}`
+      }
+    } finally {
+      setDownloading(false)
+    }
+  })
+
+  const dataTimeRange = useMemo(() => {
+    return getDataTimeRange(controller.data?.list)
+  }, [controller.data])
+
   return (
     <div className={styles.list_container}>
       <Card>
         <Toolbar className={styles.list_toolbar} data-e2e="statement_toolbar">
           <Space>
             <TimeRangeSelector
-              value={queryOptions.timeRange}
-              timeRanges={allTimeRanges}
-              onChange={(timeRange) =>
-                setQueryOptions({
-                  ...queryOptions,
-                  timeRange,
-                })
-              }
+              value={timeRange}
+              onChange={setTimeRange}
               data-e2e="statement_time_range_selector"
             />
             <MultiSelect.Plain
@@ -131,15 +205,10 @@ export default function StatementsOverview() {
               columnTitle={t(
                 'statement.pages.overview.toolbar.schemas.columnTitle'
               )}
-              value={queryOptions.schemas}
+              value={filterSchema}
               style={{ width: 150 }}
-              onChange={(schemas) =>
-                setQueryOptions({
-                  ...queryOptions,
-                  schemas,
-                })
-              }
-              items={allSchemas}
+              onChange={setFilterSchema}
+              items={controller.allSchemas}
               data-e2e="execution_database_name"
             />
             <MultiSelect.Plain
@@ -150,30 +219,30 @@ export default function StatementsOverview() {
               columnTitle={t(
                 'statement.pages.overview.toolbar.statement_types.columnTitle'
               )}
-              value={queryOptions.stmtTypes}
+              value={filterStmtType}
               style={{ width: 150 }}
-              onChange={(stmtTypes) =>
-                setQueryOptions({
-                  ...queryOptions,
-                  stmtTypes,
-                })
-              }
-              items={allStmtTypes}
+              onChange={setFilterStmtType}
+              items={controller.allStmtTypes}
               data-e2e="statement_types"
             />
-            <Search
-              defaultValue={queryOptions.searchText}
-              onSearch={(searchText) =>
-                setQueryOptions({ ...queryOptions, searchText })
-              }
+            <Input.Search
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              onSearch={sendQueryNow}
+              placeholder={t(
+                'statement.pages.overview.toolbar.keyword.placeholder'
+              )}
               data-e2e="sql_statements_search"
+              enterButton={t('statement.pages.overview.toolbar.query')}
             />
+            {controller.isLoading && (
+              <LoadingOutlined data-e2e="statement_refresh" />
+            )}
           </Space>
-
           <Space>
-            {tableColumns.length > 0 && (
+            {controller.availableColumnsInTable.length > 0 && (
               <ColumnsSelector
-                columns={tableColumns}
+                columns={controller.availableColumnsInTable}
                 visibleColumnKeys={visibleColumnKeys}
                 defaultVisibleColumnKeys={DEF_STMT_COLUMN_KEYS}
                 onChange={setVisibleColumnKeys}
@@ -190,19 +259,12 @@ export default function StatementsOverview() {
                 }
               />
             )}
-            {enable && (
-              <RefreshTooltip isOutdated={isTimeRangeOutdated}>
-                {loadingStatements ? (
-                  <LoadingOutlined data-e2e="statement_refresh" />
-                ) : (
-                  <ReloadOutlined
-                    onClick={refresh}
-                    data-e2e="statement_refresh"
-                  />
-                )}
-              </RefreshTooltip>
-            )}
-            <Tooltip title={t('statement.settings.title')} placement="bottom">
+            <Tooltip
+              mouseEnterDelay={0}
+              mouseLeaveDelay={0}
+              title={t('statement.settings.title')}
+              placement="bottom"
+            >
               <SettingOutlined
                 onClick={() => setShowSettings(true)}
                 data-e2e="statement_setting"
@@ -216,16 +278,53 @@ export default function StatementsOverview() {
                 <MenuOutlined />
               </div>
             </Dropdown>
+            {!isDistro && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('statement.settings.help')}
+                placement="bottom"
+              >
+                <QuestionCircleOutlined
+                  onClick={() => {
+                    window.open(t('statement.settings.help_url'), '_blank')
+                  }}
+                />
+              </Tooltip>
+            )}
           </Space>
         </Toolbar>
       </Card>
 
-      {enable ? (
+      {controller.isEnabled ? (
         <div
           style={{ height: '100%', position: 'relative' }}
           data-e2e="statements_table"
         >
           <ScrollablePane>
+            {controller.isDataLoadedSlowly && (
+              <Card noMarginBottom noMarginTop>
+                <Alert
+                  message={t('statement.pages.overview.slow_load_info')}
+                  type="info"
+                  showIcon
+                />
+              </Card>
+            )}
+            {dataTimeRange && (
+              <Card noMarginBottom noMarginTop>
+                <p className="ant-form-item-extra">
+                  {t('statement.pages.overview.actual_range')}
+                  <DateTime.Calendar
+                    unixTimestampMs={dataTimeRange[0] * 1000}
+                  />
+                  {' ~ '}
+                  <DateTime.Calendar
+                    unixTimestampMs={dataTimeRange[1] * 1000}
+                  />
+                </p>
+              </Card>
+            )}
             <StatementsTable cardNoMarginTop controller={controller} />
           </ScrollablePane>
         </div>
@@ -234,9 +333,20 @@ export default function StatementsOverview() {
           title={t('statement.settings.disabled_result.title')}
           subTitle={t('statement.settings.disabled_result.sub_title')}
           extra={
-            <Button type="primary" onClick={() => setShowSettings(true)}>
-              {t('statement.settings.open_setting')}
-            </Button>
+            <Space>
+              <Button type="primary" onClick={() => setShowSettings(true)}>
+                {t('statement.settings.open_setting')}
+              </Button>
+              {!isDistro && (
+                <Button
+                  onClick={() => {
+                    window.open(t('statement.settings.help_url'), '_blank')
+                  }}
+                >
+                  {t('statement.settings.help')}
+                </Button>
+              )}
+            </Space>
           }
         />
       )}
@@ -251,30 +361,9 @@ export default function StatementsOverview() {
       >
         <StatementSettingForm
           onClose={() => setShowSettings(false)}
-          onConfigUpdated={refresh}
+          onConfigUpdated={sendQueryNow}
         />
       </Drawer>
     </div>
-  )
-}
-
-function RefreshTooltip({ isOutdated, children }) {
-  const { t } = useTranslation()
-  return isOutdated ? (
-    <Tooltip
-      arrowPointAtCenter
-      title={t('statement.pages.overview.toolbar.refresh_outdated')}
-      visible={isOutdated}
-      placement="bottomLeft"
-    >
-      {children}
-    </Tooltip>
-  ) : (
-    <Tooltip
-      title={t('statement.pages.overview.toolbar.refresh')}
-      placement="bottom"
-    >
-      {children}
-    </Tooltip>
   )
 }

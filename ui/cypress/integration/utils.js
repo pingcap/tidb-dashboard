@@ -16,6 +16,8 @@ export const deleteDownloadsFolder = () => {
 export const validateSlowQueryCSVList = (list) => {
   expect(list).to.have.length(4)
 
+  // FIXME: this check makes it extremely hard for adding new tests.
+
   expect(list[0].query).to.equal('SELECT sleep(1.2);')
   expect(list[1].query).to.equal('SELECT sleep(1.5);')
   expect(list[2].query).to.equal('SELECT sleep(2);')
@@ -39,10 +41,14 @@ export const validateStatementCSVList = (allStatementList) => {
 export const restartTiUP = () => {
   // Restart tiup
   cy.exec(
-    `bash ../scripts/start_tiup.sh ${Cypress.env('TIDB_VERSION')} restart`,
+    `bash ../scripts/start_tiup.sh ${Cypress.env(
+      'TIDB_VERSION'
+    )} false restart`,
     { log: true }
   )
 
   // Wait TiUP Playground
-  cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log')
+  cy.exec('bash ../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log', {
+    timeout: 300000,
+  })
 }

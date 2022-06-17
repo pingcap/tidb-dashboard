@@ -18,18 +18,24 @@ describe('Statement detail page E2E test', () => {
 
   beforeEach(function () {
     cy.login('root')
-    cy.visit(this.uri.statement)
-    cy.url().should('include', this.uri.statement)
 
     cy.intercept(
       `${Cypress.env('apiBasePath')}statements/plans?begin_time=*`
     ).as('statements_plans')
-
     cy.intercept(`${Cypress.env('apiBasePath')}statements/plan/detail?*`).as(
       'statements_plan_detail'
     )
+    cy.intercept(`${Cypress.env('apiBasePath')}statements/list*`).as(
+      'statements_list'
+    )
 
-    cy.get('[data-automation-key=plan_count]').contains(2).eq(0).click()
+    cy.visit(this.uri.statement)
+    cy.url().should('include', this.uri.statement)
+    cy.wait('@statements_list')
+    cy.get('[data-automation-key=plan_count]')
+      .contains(2)
+      .eq(0)
+      .click({ force: true })
   })
 
   describe('Statement Template', () => {

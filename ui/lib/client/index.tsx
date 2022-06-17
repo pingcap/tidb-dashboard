@@ -9,7 +9,7 @@ import * as routing from '@lib/utils/routing'
 import * as i18n from '@lib/utils/i18n'
 import { reportError } from '@lib/utils/sentryHelpers'
 
-import { DefaultApi } from './api'
+import { Configuration, DefaultApi } from './api'
 import { getApiBasePath } from './baseUrl'
 import translations from './translations'
 
@@ -50,6 +50,12 @@ export default { getInstance, getBasePath, getAxiosInstance }
 export enum ErrorStrategy {
   Default = 'default',
   Custom = 'custom',
+}
+
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    errorStrategy?: ErrorStrategy
+  }
 }
 
 function applyErrorHandlerInterceptor(instance: AxiosInstance) {
@@ -128,13 +134,13 @@ function init() {
   const basePath = getApiBasePath()
   const axiosInstance = initAxios()
   const dashboardClient = new DefaultApi(
-    {
+    new Configuration({
       basePath,
       apiKey: () => auth.getAuthTokenAsBearer() || '',
       baseOptions: {
         errorStrategy: ErrorStrategy.Default,
       },
-    },
+    }),
     undefined,
     axiosInstance
   )

@@ -1,26 +1,22 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useSessionStorageState } from 'ahooks'
+import React, { useMemo, useState } from 'react'
+import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-
-import client, {
-  ErrorStrategy,
-  StatementModel,
-  StatementTimeRange,
-} from '@lib/client'
-import { IColumnKeys, stringifyTimeRange } from '@lib/components'
+import client, { ErrorStrategy, StatementModel } from '@lib/client'
+import {
+  DEFAULT_TIME_RANGE,
+  IColumnKeys,
+  TimeRange,
+  toTimeRangeValue,
+} from '@lib/components'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { CacheMgr } from '@lib/utils/useCache'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 import useCacheItemIndex from '@lib/utils/useCacheItemIndex'
-
-import {
-  calcValidStatementTimeRange,
-  DEFAULT_TIME_RANGE,
-  TimeRange,
-} from '../pages/List/TimeRangeSelector'
 import { derivedFields, statementColumns } from './tableColumns'
 import { useSchemaColumns } from './useSchemaColumns'
-import { useStatements } from './useStatements'
+import { useChange } from '@lib/utils/useChange'
+
+const SLOW_DATA_LOAD_THRESHOLD = 2000
 
 export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
   digest_text: true,
@@ -37,129 +33,128 @@ const DEF_ORDER_OPTIONS: IOrderOptions = {
   desc: true,
 }
 
+interface RuntimeCacheEntity {
+  data: IStatementList
+  isDataLoadedSlowly: boolean
+}
+
 export interface IStatementQueryOptions {
+  visibleColumnKeys: IColumnKeys
   timeRange: TimeRange
   schemas: string[]
   stmtTypes: string[]
   searchText: string
 }
 
+export interface IStatementList {
+  list: StatementModel[]
+  timeRange: [number, number] // Useful for sending detail requests
+}
+
 export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
+  visibleColumnKeys: DEF_STMT_COLUMN_KEYS,
   timeRange: DEFAULT_TIME_RANGE,
   schemas: [],
   stmtTypes: [],
   searchText: '',
 }
 
+function useQueryOptions(
+  initial?: IStatementQueryOptions,
+  persistInSession: boolean = true
+) {
+  const [memoryQueryOptions, setMemoryQueryOptions] = useState(
+    initial || DEF_STMT_QUERY_OPTIONS
+  )
+  const [sessionQueryOptions, setSessionQueryOptions] = useSessionStorageState(
+    QUERY_OPTIONS,
+    { defaultValue: initial || DEF_STMT_QUERY_OPTIONS }
+  )
+  const queryOptions = persistInSession
+    ? sessionQueryOptions
+    : memoryQueryOptions
+  const setQueryOptions = useMemoizedFn(
+    (value: React.SetStateAction<IStatementQueryOptions>) => {
+      if (persistInSession) {
+        // as any is a workaround for https://github.com/alibaba/hooks/issues/1582
+        setSessionQueryOptions(value as any)
+      } else {
+        setMemoryQueryOptions(value)
+      }
+    }
+  )
+  return {
+    queryOptions,
+    setQueryOptions,
+  }
+}
+
+export interface IStatementTableControllerOpts {
+  cacheMgr?: CacheMgr
+  showFullSQL?: boolean
+  initialQueryOptions?: IStatementQueryOptions
+  persistQueryInSession?: boolean
+}
+
 export interface IStatementTableController {
   queryOptions: IStatementQueryOptions
-  setQueryOptions: (options: IStatementQueryOptions) => void
+  setQueryOptions: (value: React.SetStateAction<IStatementQueryOptions>) => void // Updating query options will result in a refresh
+
   orderOptions: IOrderOptions
   changeOrder: (orderBy: string, desc: boolean) => void
-  refresh: () => void
 
-  enable: boolean
-  allTimeRanges: StatementTimeRange[]
+  isEnabled: boolean // returned from backend
+  isLoading: boolean
+
+  data?: IStatementList
+  isDataLoadedSlowly: boolean | null // SLOW_DATA_LOAD_THRESHOLD. NULL = Unknown
   allSchemas: string[]
   allStmtTypes: string[]
-  statementsTimeRange: StatementTimeRange
-  loadingStatements: boolean
-  statements: StatementModel[]
-  isTimeRangeOutdated: boolean
-
   errors: Error[]
 
-  tableColumns: IColumn[]
-  visibleColumnKeys: IColumnKeys
-
-  downloadCSV: () => Promise<void>
-  downloading: boolean
+  availableColumnsInTable: IColumn[] // returned from backend
 
   saveClickedItemIndex: (idx: number) => void
   getClickedItemIndex: () => number
 }
 
-export default function useStatementTableController(
-  cacheMgr: CacheMgr | null,
-  visibleColumnKeys: IColumnKeys,
-  showFullSQL: boolean,
-  options?: IStatementQueryOptions,
-  needSave: boolean = true
-): IStatementTableController {
+export default function useStatementTableController({
+  cacheMgr,
+  showFullSQL = false,
+  initialQueryOptions,
+  persistQueryInSession = true,
+}: IStatementTableControllerOpts): IStatementTableController {
   const { orderOptions, changeOrder } = useOrderState(
     'statement',
-    needSave,
+    persistQueryInSession,
     DEF_ORDER_OPTIONS
   )
 
-  const [memoryQueryOptions, setMemoryQueryOptions] = useState(
-    options || DEF_STMT_QUERY_OPTIONS
-  )
-  const [sessionQueryOptions, setSessionQueryOptions] = useSessionStorageState(
-    QUERY_OPTIONS,
-    options || DEF_STMT_QUERY_OPTIONS
-  )
-  const queryOptions = useMemo(
-    () => (needSave ? sessionQueryOptions : memoryQueryOptions),
-    [needSave, memoryQueryOptions, sessionQueryOptions]
+  const { queryOptions, setQueryOptions } = useQueryOptions(
+    initialQueryOptions,
+    persistQueryInSession
   )
 
-  const [enable, setEnable] = useState(true)
-  const [allTimeRanges, setAllTimeRanges] = useState<StatementTimeRange[]>([])
+  const [isEnabled, setEnabled] = useState(true)
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [allStmtTypes, setAllStmtTypes] = useState<string[]>([])
-
-  const validTimeRange = useMemo(
-    () => calcValidStatementTimeRange(queryOptions.timeRange, allTimeRanges),
-    [queryOptions, allTimeRanges]
+  const [isOptionsLoading, setOptionsLoading] = useState(true)
+  const [data, setData] = useState<IStatementList | undefined>(undefined)
+  const [isDataLoading, setDataLoading] = useState(true)
+  const [isDataLoadedSlowly, setDataLoadedSlowly] = useState<boolean | null>(
+    null
   )
-
-  const [loading, setLoading] = useState(true)
-
-  const [refreshTimes, setRefreshTimes] = useState(0)
-
-  function setQueryOptions(newOptions: IStatementQueryOptions) {
-    if (needSave) {
-      setSessionQueryOptions(newOptions)
-    } else {
-      setMemoryQueryOptions(newOptions)
-    }
-  }
-
   const [errors, setErrors] = useState<any[]>([])
+  const { schemaColumns, isLoading: isColumnsLoading } = useSchemaColumns()
 
-  useEffect(() => {
-    errors.length && setLoading(false)
-  }, [errors])
-
-  const selectedFields = useMemo(
-    () => getSelectedFields(visibleColumnKeys, derivedFields).join(','),
-    [visibleColumnKeys]
-  )
-
-  const cacheKey = useMemo(() => {
-    const { schemas, stmtTypes, searchText, timeRange } = queryOptions
-    const cacheKey = `${schemas.join(',')}_${stmtTypes.join(
-      ','
-    )}_${searchText}_${stringifyTimeRange(timeRange)}_${selectedFields}`
-    return cacheKey
-  }, [queryOptions, selectedFields])
-
-  function refresh() {
-    cacheMgr?.remove(cacheKey)
-
-    setErrors([])
-    setLoading(true)
-    setRefreshTimes((prev) => prev + 1)
-  }
-
-  useEffect(() => {
+  // Reload these options when sending a new request.
+  useChange(() => {
     async function queryStatementStatus() {
       try {
         const res = await client.getInstance().statementsConfigGet({
           errorStrategy: ErrorStrategy.Custom,
         })
-        setEnable(res?.data.enable!)
+        setEnabled(res?.data.enable!)
       } catch (e) {
         setErrors((prev) => prev.concat(e))
       }
@@ -176,17 +171,6 @@ export default function useStatementTableController(
       }
     }
 
-    async function queryTimeRanges() {
-      try {
-        const res = await client.getInstance().statementsTimeRangesGet({
-          errorStrategy: ErrorStrategy.Custom,
-        })
-        setAllTimeRanges(res?.data || [])
-      } catch (e) {
-        setErrors((prev) => prev.concat(e))
-      }
-    }
-
     async function queryStmtTypes() {
       try {
         const res = await client.getInstance().statementsStmtTypesGet({
@@ -198,117 +182,126 @@ export default function useStatementTableController(
       }
     }
 
-    queryStatementStatus()
-    querySchemas()
-    queryTimeRanges()
-    queryStmtTypes()
-  }, [refreshTimes])
+    async function doRequest() {
+      setOptionsLoading(true)
+      try {
+        await Promise.all([
+          queryStatementStatus(),
+          querySchemas(),
+          queryStmtTypes(),
+        ])
+      } finally {
+        setOptionsLoading(false)
+      }
+    }
 
-  const { statements, setStatements, statementsTimeRange, queryStatements } =
-    useStatements(cacheKey)
-  const { schemaColumns, isLoading: isSchemaLoading } = useSchemaColumns()
-  const tableColumns = useMemo(
-    () => statementColumns(statements, schemaColumns, showFullSQL),
-    [statements, schemaColumns, showFullSQL]
-  )
+    doRequest()
+  }, [queryOptions])
 
-  useEffect(() => {
+  useChange(() => {
     async function queryStatementList() {
-      if (
-        !selectedFields.length ||
-        isSchemaLoading ||
-        allTimeRanges.length === 0
-      ) {
-        setStatements([])
-        setLoading(false)
+      // Try cache if options are unchanged.
+      // Note: When clicking "Query" manually, cache will be cleared before reach here. So that it
+      // will always send a request without looking up in the cache.
+
+      // The cache key is built over queryOptions, instead of evaluated one.
+      // So that when passing in same relative times options (e.g. Recent 15min)
+      // the cache can be reused.
+      const cacheKey = JSON.stringify(queryOptions)
+      {
+        const cache = cacheMgr?.get(cacheKey)
+        if (cache) {
+          const cacheCloned = JSON.parse(
+            JSON.stringify(cache)
+          ) as RuntimeCacheEntity
+          setData(cacheCloned.data)
+          setDataLoadedSlowly(cacheCloned.isDataLoadedSlowly)
+          setDataLoading(false)
+          return
+        }
+      }
+
+      // May be caused by visibleColumnKeys is empty (when available columns are not yet loaded)
+      // In this case, we don't send any requests.
+      const actualVisibleColumnKeys = getSelectedFields(
+        queryOptions.visibleColumnKeys,
+        derivedFields
+      ).join(',')
+      if (actualVisibleColumnKeys.length === 0) {
         return
       }
 
-      setLoading(true)
+      const requestBeginAt = performance.now()
+      setDataLoading(true)
+
+      const timeRange = toTimeRangeValue(queryOptions.timeRange)
+
       try {
-        await queryStatements(
-          validTimeRange.begin_time!,
-          validTimeRange.end_time!,
-          selectedFields,
-          queryOptions.schemas,
-          queryOptions.stmtTypes,
-          queryOptions.searchText,
-          {
-            errorStrategy: ErrorStrategy.Custom,
-          }
-        )
+        const res = await client
+          .getInstance()
+          .statementsListGet(
+            timeRange[0],
+            timeRange[1],
+            actualVisibleColumnKeys,
+            queryOptions.schemas,
+            queryOptions.stmtTypes,
+            queryOptions.searchText,
+            {
+              errorStrategy: ErrorStrategy.Custom,
+            }
+          )
+        const data = {
+          list: res?.data || [],
+          timeRange,
+        }
+        setData(data)
+        setErrors([])
+
+        const elapsed = performance.now() - requestBeginAt
+        const isLoadSlow = elapsed >= SLOW_DATA_LOAD_THRESHOLD
+        setDataLoadedSlowly(isLoadSlow)
+
+        const cacheEntity: RuntimeCacheEntity = {
+          data,
+          isDataLoadedSlowly: isLoadSlow,
+        }
+        cacheMgr?.set(cacheKey, cacheEntity)
       } catch (e) {
+        setData(undefined)
         setErrors((prev) => prev.concat(e))
       } finally {
-        setLoading(false)
+        setDataLoading(false)
       }
     }
 
     queryStatementList()
-    // eslint-disable-next-line
-  }, [
-    queryOptions,
-    allTimeRanges,
-    validTimeRange,
-    selectedFields,
-    cacheKey,
-    isSchemaLoading,
-  ])
+  }, [queryOptions])
 
-  const [downloading, setDownloading] = useState(false)
-
-  async function downloadCSV() {
-    try {
-      setDownloading(true)
-      const res = await client.getInstance().statementsDownloadTokenPost({
-        begin_time: validTimeRange.begin_time,
-        end_time: validTimeRange.end_time,
-        fields: '*',
-        schemas: queryOptions.schemas,
-        stmt_types: queryOptions.stmtTypes,
-        text: queryOptions.searchText,
-      })
-      const token = res.data
-      if (token) {
-        window.location.href = `${client.getBasePath()}/statements/download?token=${token}`
-      }
-    } finally {
-      setDownloading(false)
-    }
-  }
+  const availableColumnsInTable = useMemo(
+    () => statementColumns(data?.list ?? [], schemaColumns, showFullSQL),
+    [data, schemaColumns, showFullSQL]
+  )
 
   const { saveClickedItemIndex, getClickedItemIndex } =
     useCacheItemIndex(cacheMgr)
 
-  const isTimeRangeOutdated =
-    !!statementsTimeRange.begin_time &&
-    !!statementsTimeRange.end_time &&
-    (validTimeRange.begin_time !== statementsTimeRange.begin_time ||
-      validTimeRange.end_time !== statementsTimeRange.end_time)
-
   return {
     queryOptions,
     setQueryOptions,
+
     orderOptions,
     changeOrder,
-    refresh,
 
-    enable,
-    allTimeRanges,
+    isEnabled,
+    isLoading: isColumnsLoading || isDataLoading || isOptionsLoading,
+
+    data,
+    isDataLoadedSlowly,
     allSchemas,
     allStmtTypes,
-    statementsTimeRange,
-    loadingStatements: loading,
-    statements,
-    isTimeRangeOutdated,
-
     errors,
 
-    tableColumns,
-    visibleColumnKeys,
-
-    downloadCSV,
-    downloading,
+    availableColumnsInTable,
 
     saveClickedItemIndex,
     getClickedItemIndex,

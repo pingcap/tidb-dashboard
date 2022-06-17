@@ -31,8 +31,9 @@ statement:
           columnTitle: SQL 语句类型
         select_columns:
           show_full_sql: 显示完整 SQL 文本
-        refresh: 刷新
-        refresh_outdated: 列表数据已非最近数据，刷新以查看最新数据
+        query: 查询
+        keyword:
+          placeholder: 关键字过滤
         time_range_selector:
           name: 选择时间段
           recent: 最近
@@ -40,6 +41,8 @@ statement:
           custom_time_ranges: 自定义时间范围
         export: 导出
         exporting: 正在导出
+      actual_range: 基于设置的时间窗及过期时间，当前显示数据的时间范围：
+      slow_load_info: 数据加载耗时较长，已禁用即时更新。修改查询条件后，您可以手工点击”查询“按钮来发起查询。
   settings:
     title: 设置
     disabled_result:
@@ -66,6 +69,8 @@ statement:
       save: 保存
       close: 确认
       cancel: 取消
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-statement-list
   fields:
     related_schemas: 数据库
     related_schemas_tooltip: SQL 语句涉及的数据库

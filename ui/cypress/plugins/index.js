@@ -12,9 +12,11 @@
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
 
-const mysql = require('mysql2')
-const { rmdir } = require('fs')
-const clipboardy = require('clipboardy')
+import mysql from 'mysql2'
+import { rmdir } from 'fs'
+import { addMatchImageSnapshotPlugin } from 'cypress-image-snapshot/plugin'
+import codecovTaskPlugin from '@cypress/code-coverage/task'
+import clipboardy from 'clipboardy'
 
 function queryTestDB(query, password, database) {
   const dbConfig = {
@@ -26,16 +28,17 @@ function queryTestDB(query, password, database) {
   }
   // creates a new mysql connection
   const connection = mysql.createConnection(dbConfig)
-  // start connection to db
-  connection.connect()
   // exec query + disconnect to db as a Promise
   return new Promise((resolve, reject) => {
     connection.query(query, (error, results) => {
-      if (error) reject(error)
-      else {
-        connection.end()
-        return resolve(results)
-      }
+      setTimeout(() => {
+        if (error) {
+          reject(error)
+        } else {
+          connection.end()
+          return resolve(results)
+        }
+      }, 500) // wait a few more moments for statements and slow query to finish.
     })
   })
 }
@@ -62,7 +65,8 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
 
-  require('@cypress/code-coverage/task')(on, config)
+  codecovTaskPlugin(on, config)
+  addMatchImageSnapshotPlugin(on, config)
 
   config.baseUrl =
     (process.env.SERVER_URL || 'http://localhost:3001/dashboard') + '#'

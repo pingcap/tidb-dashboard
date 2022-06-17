@@ -6,7 +6,7 @@ topsql:
     settings: Settings
   settings:
     title: Settings
-    open_setting: Open Settings
+    open_settings: Open Settings
     disable_feature: Disable Top SQL Feature
     disable_warning: Are you sure want to disable this feature?
     enable: Enable Feature
@@ -18,11 +18,17 @@ topsql:
       save: Save
       close: Disable
       cancel: Cancel
+    enable_info:
+      title: Success
+      content: Top SQL is enabled now and is collecting data. You need to wait for about 1 minute to view this data.
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/top-sql
   refresh: Refresh
   chart:
     cpu_time: CPU Time
   table:
     description: The following table shows which top {{topN}} queries are contributing the most to load in the current time range. Click one to see details.
+    description_no_recent_data: There is no data currently. You need to wait for about 1 minute for new data being collected.
     others: Other Statements
     others_tooltip: All of other non Top {{topN}} statements
     fields:

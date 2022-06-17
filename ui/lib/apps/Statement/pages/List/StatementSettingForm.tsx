@@ -13,12 +13,12 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { StatementEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { ErrorBar } from '@lib/components'
+import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 
 interface Props {
-  onClose: () => void
-  onConfigUpdated: () => any
+  onClose?: () => void
+  onConfigUpdated?: () => any
 }
 
 const convertArrToObj = (arr: number[]) =>
@@ -53,14 +53,14 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         try {
           setSubmitting(true)
           await client.getInstance().statementsConfigPost(newConfig)
-          onClose()
-          onConfigUpdated()
+          onClose?.()
+          onConfigUpdated?.()
         } finally {
           setSubmitting(false)
         }
       }
 
-      if (!values.enable) {
+      if (!values.enable && (initialConfig?.enable ?? true)) {
         // warning
         Modal.confirm({
           title: t('statement.settings.close_statement'),
@@ -75,7 +75,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated]
+    [t, onClose, onConfigUpdated, initialConfig]
   )
 
   return (
@@ -195,7 +195,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
               )
             }
           </Form.Item>
-          <Form.Item>
+          <DrawerFooter>
             <Space>
               <Button
                 type="primary"
@@ -210,7 +210,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                 {t('statement.settings.actions.cancel')}
               </Button>
             </Space>
-          </Form.Item>
+          </DrawerFooter>
         </Form>
       )}
     </>

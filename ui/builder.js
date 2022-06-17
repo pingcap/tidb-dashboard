@@ -1,5 +1,6 @@
 const fs = require('fs-extra')
 const os = require('os')
+const path = require('path')
 const chalk = require('chalk')
 const { start } = require('live-server')
 const { createProxyMiddleware } = require('http-proxy-middleware')
@@ -47,7 +48,7 @@ const devServerParams = {
 }
 
 const lessModifyVars = {
-  '@primary-color': '#3351ff',
+  '@primary-color': '#4263eb',
   '@body-background': '#fff',
   '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
   '@tooltip-max-width': '500px',
@@ -96,6 +97,7 @@ function genDefine() {
   define['process.env.REACT_APP_RELEASE_VERSION'] = JSON.stringify(
     getInternalVersion()
   )
+  define['process.env.E2E_TEST'] = JSON.stringify(process.env.E2E_TEST)
   return define
 }
 
@@ -122,7 +124,7 @@ const esbuildParams = {
     dashboardApp: 'src/index.ts',
     diagnoseReport: 'diagnoseReportApp/index.tsx',
   },
-  loader: { '.ts': 'tsx' },
+  loader: { '.ts': 'ts' },
   outdir: 'build',
   minify: !isDev,
   format: 'esm',
@@ -141,6 +143,11 @@ const esbuildParams = {
       },
       enableCache: true,
       plugins: [autoprefixer],
+      // work same as the webpack NormalModuleReplacementPlugin
+      moduleReplacements: {
+        [path.resolve(__dirname, 'node_modules/antd/es/style/index.less')]:
+          path.resolve(__dirname, 'lib/antd.less'),
+      },
     }),
     yamlPlugin(),
     logTime(),
@@ -168,6 +175,15 @@ function buildHtml(inputFilename, outputFilename) {
   placeholders.forEach((key) => {
     result = result.replace(new RegExp(`%${key}%`, 'g'), process.env[key])
   })
+  // replace TIME_PLACE_HOLDER
+  const nowTime = new Date().valueOf()
+  result = result.replace(new RegExp(`%TIME_PLACE_HOLDER%`, 'g'), nowTime)
+  if (isDev) {
+    result = result.replace(
+      new RegExp('__DISTRO_ASSETS_RES_TIMESTAMP__', 'g'),
+      nowTime
+    )
+  }
 
   // handle distro strings res, only for dev mode
   const distroStringsResFilePath = './build/distro-res/strings.json'

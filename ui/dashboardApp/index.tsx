@@ -10,7 +10,7 @@ import AppRegistry from '@lib/utils/registry'
 import * as routing from '@lib/utils/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
-import { distro } from '@lib/utils/i18n'
+import { distro, isDistro } from '@lib/utils/i18n'
 import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
 import {
   initSentryRoutingInstrument,
@@ -44,6 +44,7 @@ import { mustLoadAppInfo, reloadWhoAmI, NgmState } from '@lib/utils/store'
 // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
 import translations from './layout/translations'
+import React from 'react'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -100,7 +101,23 @@ async function webPageStart() {
     notification.error({
       key: 'ngm_not_started',
       message: i18next.t('health_check.failed_notification_title'),
-      description: i18next.t('health_check.ngm_not_started'),
+      description: (
+        <span>
+          {i18next.t('health_check.ngm_not_started')}
+          {Boolean(!isDistro) && (
+            <>
+              {' '}
+              <a
+                href={i18next.t('health_check.help_url')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {i18next.t('health_check.help_text')}
+              </a>
+            </>
+          )}
+        </span>
+      ),
       duration: null,
     })
   }
@@ -156,9 +173,9 @@ async function webPageStart() {
   // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
   try {
-    await reloadWhoAmI()
+    const ok = await reloadWhoAmI()
 
-    if (routing.isLocationMatch('/')) {
+    if (routing.isLocationMatch('/') && ok) {
       singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
     }
   } catch (e) {

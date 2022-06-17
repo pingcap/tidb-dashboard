@@ -6,7 +6,7 @@ topsql:
     settings: 设置
   settings:
     title: 设置
-    open_setting: 打开设置
+    open_settings: 打开设置
     disable_feature: 关闭 Top SQL 功能
     disable_warning: 确认要关闭该功能吗？
     enable: 启用功能
@@ -18,11 +18,17 @@ topsql:
       save: 保存
       close: 确认
       cancel: 取消
+    enable_info:
+      title: 成功
+      content: Top SQL 功能现在已启用，正在收集数据。您需要等待大约 1 分钟时间以便看到该数据。
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/top-sql
   refresh: 刷新
   chart:
     cpu_time: CPU 耗时
   table:
     description: 以下表格展示了当前时间范围内消耗负载最多的 {{topN}} 类 SQL 查询，点击后可进一步显示详情。
+    description_no_recent_data: 当前暂无数据，您需要等待约 1 分钟完成新数据采集。
     others: 其他语句
     others_tooltip: 所有其他非 Top {{topN}} 的语句
     fields:

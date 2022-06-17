@@ -4,7 +4,7 @@ import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { usePersistFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import type { TFunction } from 'i18next'
 
 import client, { DiagnoseReport } from '@lib/client'
@@ -101,7 +101,7 @@ export default function ReportHistory() {
   )
   const columns = useMemo(() => tableColumns(t), [t])
 
-  const handleRowClick = usePersistFn(
+  const handleRowClick = useMemoizedFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
       openLink(`/system_report/detail?id=${rec.id}`, ev, navigate)
     }

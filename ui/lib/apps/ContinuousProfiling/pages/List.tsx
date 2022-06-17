@@ -12,9 +12,10 @@ import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { usePersistFn, useSessionStorageState } from 'ahooks'
+import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import {
   LoadingOutlined,
+  QuestionCircleOutlined,
   ReloadOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
@@ -31,11 +32,12 @@ import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
 import { telemetry } from '../utils/telemetry'
+import { isDistro } from '@lib/utils/distroStringsRes'
 
 export default function Page() {
   const [endTime, setEndTime] = useSessionStorageState<Dayjs | string>(
     'conprof.end_time',
-    ''
+    { defaultValue: '' }
   )
   const rangeEndTime: Dayjs | undefined = useMemo(() => {
     let _rangeEndTime: Dayjs | undefined
@@ -79,7 +81,7 @@ export default function Page() {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const handleRowClick = usePersistFn(
+  const handleRowClick = useMemoizedFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
       telemetry.clickProfilingListRecord(rec)
       openLink(`/continuous_profiling/detail?ts=${rec.ts}`, ev, navigate)
@@ -207,7 +209,6 @@ export default function Page() {
               >
                 <DatePicker
                   showTime
-                  disabled={conprofIsDisabled}
                   onOpenChange={(open) =>
                     open && telemetry.openTimeRangePicker()
                   }
@@ -218,12 +219,7 @@ export default function Page() {
                 <span>-2h</span>
               </Form.Item>
               <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={listLoading}
-                  disabled={conprofIsDisabled}
-                >
+                <Button type="primary" htmlType="submit" loading={listLoading}>
                   {t('conprof.list.toolbar.query')}
                 </Button>
               </Form.Item>
@@ -231,6 +227,8 @@ export default function Page() {
           </Space>
           <Space>
             <Tooltip
+              mouseEnterDelay={0}
+              mouseLeaveDelay={0}
               title={t('conprof.list.toolbar.refresh')}
               placement="bottom"
             >
@@ -241,6 +239,8 @@ export default function Page() {
               )}
             </Tooltip>
             <Tooltip
+              mouseEnterDelay={0}
+              mouseLeaveDelay={0}
               title={t('conprof.list.toolbar.settings')}
               placement="bottom"
             >
@@ -251,6 +251,20 @@ export default function Page() {
                 }}
               />
             </Tooltip>
+            {!isDistro && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('conprof.settings.help')}
+                placement="bottom"
+              >
+                <QuestionCircleOutlined
+                  onClick={() => {
+                    window.open(t('conprof.settings.help_url'), '_blank')
+                  }}
+                />
+              </Tooltip>
+            )}
           </Space>
         </Toolbar>
       </Card>
@@ -270,15 +284,26 @@ export default function Page() {
           title={t('conprof.settings.disabled_result.title')}
           subTitle={t('conprof.settings.disabled_result.sub_title')}
           extra={
-            <Button
-              type="primary"
-              onClick={() => {
-                setShowSettings(true)
-                telemetry.clickSettings('firstTimeTips')
-              }}
-            >
-              {t('conprof.settings.open_settings')}
-            </Button>
+            <Space>
+              <Button
+                type="primary"
+                onClick={() => {
+                  setShowSettings(true)
+                  telemetry.clickSettings('firstTimeTips')
+                }}
+              >
+                {t('conprof.settings.open_settings')}
+              </Button>
+              {!isDistro && (
+                <Button
+                  onClick={() => {
+                    window.open(t('conprof.settings.help_url'), '_blank')
+                  }}
+                >
+                  {t('conprof.settings.help')}
+                </Button>
+              )}
+            </Space>
           }
         />
       ) : (
@@ -286,6 +311,7 @@ export default function Page() {
           <ScrollablePane>
             <CardTable
               cardNoMarginTop
+              cardNoMarginBottom
               loading={listLoading}
               items={historyTable || []}
               columns={historyTableColumns}

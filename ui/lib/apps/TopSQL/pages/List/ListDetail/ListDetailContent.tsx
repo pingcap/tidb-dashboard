@@ -33,7 +33,7 @@ export function ListDetailContent({
   const togglePlanExpanded = () => setPlanExpanded((prev) => !prev)
 
   return (
-    <Card>
+    <Card data-e2e="topsql_listdetail_content">
       <Descriptions>
         <Descriptions.Item
           span={2}
@@ -49,6 +49,7 @@ export function ListDetailContent({
               <CopyLink
                 displayVariant="original_sql"
                 data={sqlRecord.sql_text}
+                data-e2e="sql_text"
               />
             </Space>
           }
@@ -66,7 +67,7 @@ export function ListDetailContent({
           label={
             <Space size="middle">
               <TextWithInfo.TransKey transKey="topsql.detail_content.fields.sql_digest" />
-              <CopyLink data={sqlRecord.sql_digest} />
+              <CopyLink data={sqlRecord.sql_digest} data-e2e="sql_digest" />
             </Space>
           }
         >
@@ -79,7 +80,10 @@ export function ListDetailContent({
             label={
               <Space size="middle">
                 <TextWithInfo.TransKey transKey="topsql.detail_content.fields.plan_digest" />
-                <CopyLink data={planRecord.plan_digest} />
+                <CopyLink
+                  data={planRecord.plan_digest}
+                  data-e2e="plan_digest"
+                />
               </Space>
             }
           >
@@ -97,7 +101,7 @@ export function ListDetailContent({
                   expanded={planExpanded}
                   onClick={togglePlanExpanded}
                 />
-                <CopyLink data={planRecord.plan_text} />
+                <CopyLink data={planRecord.plan_text} data-e2e="plan_text" />
               </Space>
             }
           >

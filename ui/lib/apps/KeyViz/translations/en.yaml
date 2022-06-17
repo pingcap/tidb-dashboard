@@ -35,3 +35,5 @@ keyviz:
       save: Save
       close: Disable
       cancel: Cancel
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/dashboard-key-visualizer

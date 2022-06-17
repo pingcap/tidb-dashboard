@@ -1,22 +1,22 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useSessionStorageState } from 'ahooks'
+import { useMemo, useState } from 'react'
+import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-
 import client, { ErrorStrategy, SlowqueryModel } from '@lib/client'
 import {
-  calcTimeRange,
   TimeRange,
   IColumnKeys,
-  stringifyTimeRange,
+  DEFAULT_TIME_RANGE,
+  toTimeRangeValue,
 } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
-
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { CacheMgr } from '@lib/utils/useCache'
 import useCacheItemIndex from '@lib/utils/useCacheItemIndex'
-
 import { derivedFields, slowQueryColumns } from './tableColumns'
 import { useSchemaColumns } from './useSchemaColumns'
+import { useChange } from '@lib/utils/useChange'
+
+const SLOW_DATA_LOAD_THRESHOLD = 2000
 
 export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
   query: true,
@@ -32,18 +32,26 @@ const DEF_ORDER_OPTIONS: IOrderOptions = {
   desc: true,
 }
 
+interface RuntimeCacheEntity {
+  data: SlowqueryModel[]
+  isDataLoadedSlowly: boolean
+}
+
 export interface ISlowQueryOptions {
-  timeRange?: TimeRange
+  visibleColumnKeys: IColumnKeys
+  timeRange: TimeRange
   schemas: string[]
   searchText: string
   limit: number
 
+  // below is for showing slow queries in the statement detail page
   digest: string
   plans: string[]
 }
 
 export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
-  timeRange: undefined,
+  visibleColumnKeys: DEF_SLOW_QUERY_COLUMN_KEYS,
+  timeRange: DEFAULT_TIME_RANGE,
   schemas: [],
   searchText: '',
   limit: 100,
@@ -52,101 +60,91 @@ export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
   plans: [],
 }
 
+function useQueryOptions(
+  initial?: ISlowQueryOptions,
+  persistInSession: boolean = true
+) {
+  const [memoryQueryOptions, setMemoryQueryOptions] = useState(
+    initial || DEF_SLOW_QUERY_OPTIONS
+  )
+  const [sessionQueryOptions, setSessionQueryOptions] = useSessionStorageState(
+    QUERY_OPTIONS,
+    { defaultValue: initial || DEF_SLOW_QUERY_OPTIONS }
+  )
+  const queryOptions = persistInSession
+    ? sessionQueryOptions
+    : memoryQueryOptions
+  const setQueryOptions = useMemoizedFn(
+    (value: React.SetStateAction<ISlowQueryOptions>) => {
+      if (persistInSession) {
+        setSessionQueryOptions(value as any)
+      } else {
+        setMemoryQueryOptions(value)
+      }
+    }
+  )
+  return {
+    queryOptions,
+    setQueryOptions,
+  }
+}
+
+export interface ISlowQueryTableControllerOpts {
+  cacheMgr?: CacheMgr
+  showFullSQL?: boolean
+  initialQueryOptions?: ISlowQueryOptions
+  persistQueryInSession?: boolean
+}
+
 export interface ISlowQueryTableController {
   queryOptions: ISlowQueryOptions
-  setQueryOptions: (options: ISlowQueryOptions) => void
+  setQueryOptions: (value: React.SetStateAction<ISlowQueryOptions>) => void // Updating query options will result in a refresh
+
   orderOptions: IOrderOptions
   changeOrder: (orderBy: string, desc: boolean) => void
-  refresh: () => void
 
+  isLoading: boolean
+
+  data?: SlowqueryModel[]
+  isDataLoadedSlowly: boolean | null // SLOW_DATA_LOAD_THRESHOLD. NULL = Unknown
   allSchemas: string[]
-  loadingSlowQueries: boolean
-  slowQueries: SlowqueryModel[]
-  queryTimeRange: { beginTime: number; endTime: number }
-
   errors: Error[]
 
-  tableColumns: IColumn[]
-  visibleColumnKeys: IColumnKeys
-
-  downloadCSV: () => Promise<void>
-  downloading: boolean
+  availableColumnsInTable: IColumn[] // returned from backend
 
   saveClickedItemIndex: (idx: number) => void
   getClickedItemIndex: () => number
 }
 
-export default function useSlowQueryTableController(
-  cacheMgr: CacheMgr | null,
-  visibleColumnKeys: IColumnKeys,
-  showFullSQL: boolean,
-  options?: ISlowQueryOptions,
-  needSave: boolean = true
-): ISlowQueryTableController {
+export default function useSlowQueryTableController({
+  cacheMgr,
+  showFullSQL = false,
+  initialQueryOptions,
+  persistQueryInSession = true,
+}: ISlowQueryTableControllerOpts): ISlowQueryTableController {
   const { orderOptions, changeOrder } = useOrderState(
     'slow_query',
-    needSave,
+    persistQueryInSession,
     DEF_ORDER_OPTIONS
   )
 
-  const [memoryQueryOptions, setMemoryQueryOptions] = useState(
-    options || DEF_SLOW_QUERY_OPTIONS
-  )
-  const [sessionQueryOptions, setSessionQueryOptions] = useSessionStorageState(
-    QUERY_OPTIONS,
-    options || DEF_SLOW_QUERY_OPTIONS
-  )
-  const queryOptions = useMemo(
-    () => (needSave ? sessionQueryOptions : memoryQueryOptions),
-    [needSave, memoryQueryOptions, sessionQueryOptions]
+  const { queryOptions, setQueryOptions } = useQueryOptions(
+    initialQueryOptions,
+    persistQueryInSession
   )
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
-  const [loadingSlowQueries, setLoadingSlowQueries] = useState(false)
-  const [slowQueries, setSlowQueries] = useState<SlowqueryModel[]>([])
-  const [refreshTimes, setRefreshTimes] = useState(0)
-
-  const queryTimeRange = useMemo(() => {
-    const [beginTime, endTime] = calcTimeRange(queryOptions.timeRange)
-    return { beginTime, endTime }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryOptions, refreshTimes])
-
-  function setQueryOptions(newOptions: ISlowQueryOptions) {
-    if (needSave) {
-      setSessionQueryOptions(newOptions)
-    } else {
-      setMemoryQueryOptions(newOptions)
-    }
-  }
-
-  const [errors, setErrors] = useState<Error[]>([])
-
-  const selectedFields = useMemo(
-    () => getSelectedFields(visibleColumnKeys, derivedFields).join(','),
-    [visibleColumnKeys]
+  const [isOptionsLoading, setOptionsLoading] = useState(true)
+  const [data, setData] = useState<SlowqueryModel[] | undefined>(undefined)
+  const [isDataLoading, setDataLoading] = useState(false)
+  const [isDataLoadedSlowly, setDataLoadedSlowly] = useState<boolean | null>(
+    null
   )
+  const [errors, setErrors] = useState<any[]>([])
+  const { schemaColumns, isLoading: isColumnsLoading } = useSchemaColumns()
 
-  const cacheKey = useMemo(() => {
-    const { schemas, digest, limit, plans, searchText, timeRange } =
-      queryOptions
-    const { desc, orderBy } = orderOptions
-    const cacheKey = `${schemas.join(',')}_${digest}_${limit}_${plans.join(
-      ','
-    )}_${searchText}_${stringifyTimeRange(
-      timeRange
-    )}_${desc}_${orderBy}_${selectedFields}`
-    return cacheKey
-  }, [queryOptions, orderOptions, selectedFields])
-
-  function refresh() {
-    cacheMgr?.remove(cacheKey)
-
-    setErrors([])
-    setRefreshTimes((prev) => prev + 1)
-  }
-
-  useEffect(() => {
+  // Reload these options when sending a new request.
+  useChange(() => {
     async function querySchemas() {
       try {
         const res = await client.getInstance().infoListDatabases({
@@ -158,41 +156,69 @@ export default function useSlowQueryTableController(
       }
     }
 
-    querySchemas()
-  }, [])
-
-  const { schemaColumns, isLoading: isSchemaLoading } = useSchemaColumns()
-
-  const tableColumns = useMemo(
-    () => slowQueryColumns(slowQueries, schemaColumns, showFullSQL),
-    [slowQueries, schemaColumns, showFullSQL]
-  )
-
-  useEffect(() => {
-    if (!selectedFields.length) {
-      setSlowQueries([])
-      setLoadingSlowQueries(false)
-      return
+    async function doRequest() {
+      setOptionsLoading(true)
+      try {
+        await Promise.all([
+          querySchemas(),
+          // Multiple query options can be added later
+        ])
+      } finally {
+        setOptionsLoading(false)
+      }
     }
 
+    doRequest()
+  }, [queryOptions])
+
+  useChange(() => {
     async function getSlowQueryList() {
-      const cacheItem = cacheMgr?.get(cacheKey)
-      if (cacheItem) {
-        setSlowQueries(cacheItem)
+      // Try cache if options are unchanged.
+      // Note: When clicking "Query" manually, cache will be cleared before reach here. So that it
+      // will always send a request without looking up in the cache.
+
+      // The cache key is built over queryOptions, instead of evaluated one.
+      // So that when passing in same relative times options (e.g. Recent 15min)
+      // the cache can be reused.
+      const cacheKey = JSON.stringify(queryOptions)
+      {
+        const cache = cacheMgr?.get(cacheKey)
+        if (cache) {
+          const cacheCloned = JSON.parse(
+            JSON.stringify(cache)
+          ) as RuntimeCacheEntity
+          setData(cacheCloned.data)
+          setDataLoadedSlowly(cacheCloned.isDataLoadedSlowly)
+          setDataLoading(false)
+          return
+        }
+      }
+
+      // May be caused by visibleColumnKeys is empty (when available columns are not yet loaded)
+      // In this case, we don't send any requests.
+      const actualVisibleColumnKeys = getSelectedFields(
+        queryOptions.visibleColumnKeys,
+        derivedFields
+      ).join(',')
+      if (actualVisibleColumnKeys.length === 0) {
         return
       }
 
-      setLoadingSlowQueries(true)
+      const requestBeginAt = performance.now()
+      setDataLoading(true)
+
+      const timeRange = toTimeRangeValue(queryOptions.timeRange)
+
       try {
         const res = await client
           .getInstance()
           .slowQueryListGet(
-            queryTimeRange.beginTime,
+            timeRange[0],
             queryOptions.schemas,
             orderOptions.desc,
             queryOptions.digest,
-            queryTimeRange.endTime,
-            selectedFields,
+            timeRange[1],
+            actualVisibleColumnKeys,
             queryOptions.limit,
             orderOptions.orderBy,
             queryOptions.plans,
@@ -201,54 +227,34 @@ export default function useSlowQueryTableController(
               errorStrategy: ErrorStrategy.Custom,
             }
           )
-        setSlowQueries(res.data || [])
-        cacheMgr?.set(cacheKey, res.data || [])
+        const data = res?.data || []
+        setData(data)
         setErrors([])
+
+        const elapsed = performance.now() - requestBeginAt
+        const isLoadSlow = elapsed >= SLOW_DATA_LOAD_THRESHOLD
+        setDataLoadedSlowly(isLoadSlow)
+
+        const cacheEntity: RuntimeCacheEntity = {
+          data,
+          isDataLoadedSlowly: isLoadSlow,
+        }
+        cacheMgr?.set(cacheKey, cacheEntity)
       } catch (e) {
-        setErrors((prev) => prev.concat(e as Error))
+        setData(undefined)
+        setErrors((prev) => prev.concat(e))
+      } finally {
+        setDataLoading(false)
       }
-      setLoadingSlowQueries(false)
     }
 
-    if (isSchemaLoading) {
-      return
-    }
     getSlowQueryList()
-  }, [
-    queryOptions,
-    orderOptions,
-    queryTimeRange,
-    selectedFields,
-    refreshTimes,
-    cacheKey,
-    cacheMgr,
-    isSchemaLoading,
-  ])
+  }, [queryOptions])
 
-  const [downloading, setDownloading] = useState(false)
-
-  async function downloadCSV() {
-    try {
-      setDownloading(true)
-      const res = await client.getInstance().slowQueryDownloadTokenPost({
-        fields: '*',
-        db: queryOptions.schemas,
-        digest: queryOptions.digest,
-        text: queryOptions.searchText,
-        plans: queryOptions.plans,
-        orderBy: orderOptions.orderBy,
-        desc: orderOptions.desc,
-        end_time: queryTimeRange.endTime,
-        begin_time: queryTimeRange.beginTime,
-      })
-      const token = res.data
-      if (token) {
-        window.location.href = `${client.getBasePath()}/slow_query/download?token=${token}`
-      }
-    } finally {
-      setDownloading(false)
-    }
-  }
+  const availableColumnsInTable = useMemo(
+    () => slowQueryColumns(data ?? [], schemaColumns, showFullSQL),
+    [data, schemaColumns, showFullSQL]
+  )
 
   const { saveClickedItemIndex, getClickedItemIndex } =
     useCacheItemIndex(cacheMgr)
@@ -256,22 +262,18 @@ export default function useSlowQueryTableController(
   return {
     queryOptions,
     setQueryOptions,
+
     orderOptions,
     changeOrder,
-    refresh,
 
+    isLoading: isColumnsLoading || isDataLoading || isOptionsLoading,
+
+    data,
+    isDataLoadedSlowly,
     allSchemas,
-    loadingSlowQueries,
-    slowQueries,
-    queryTimeRange,
-
     errors,
 
-    tableColumns,
-    visibleColumnKeys,
-
-    downloading,
-    downloadCSV,
+    availableColumnsInTable,
 
     saveClickedItemIndex,
     getClickedItemIndex,

@@ -1,6 +1,6 @@
 # E2E Test
 
-Since there are some features is different from version to version, we have `make test_e2e_compat_features` and `make test_e2e_common_features` to test features compatibility in different versions and common features in all versions, respectively.
+Since there are some features is different from version to version, we have `make e2e_compat_features_test` and `make e2e_common_features_test` to test features compatibility in different versions and common features in all versions, respectively.
 
 ## Install Cypress
 
@@ -44,5 +44,23 @@ make ui
 # start backend server
 UI=1 make && make run FEATURE_VERSION=${FEATURE_VERSION}
 # run e2e_compat_features and e2e_common_features tests
-make test_e2e FEATURE_VERSION=${FEATURE_VERSION}
+make e2e_test FEATURE_VERSION=${FEATURE_VERSION}
 ```
+
+### Upload Visual Test Snapshots
+
+> TODO: Use the official cypress docker image to make sure visual test stable between operating systems.
+
+Since there was no cypress image of m1 before. So we use github actions to generate the snapshots that we need for visual tests.
+
+#### How to generate snapshots in GitHub Actions
+
+1. Go to [tidb-dashboard Actions - Upload E2E Snapshots](https://github.com/pingcap/tidb-dashboard/actions/workflows/upload-e2e-snapshots.yaml)
+
+2. Click "Run workflow"
+
+3. Enter which git SHA you want the test to run on
+
+4. Specify the test specs to generate the snapshots, base path is `${PROJECT_DIR}/ui/cypress/integration`
+
+5. Enter the action after all jobs finished, download the e2e-snapshots artifact below.

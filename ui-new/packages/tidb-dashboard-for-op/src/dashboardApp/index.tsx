@@ -7,6 +7,8 @@ import { Modal, notification } from 'antd'
 import NProgress from 'nprogress'
 import './nprogress.less'
 
+import client, { InfoInfoResponse } from '~/client'
+
 import {
   AppRegistry,
   routing,
@@ -19,8 +21,8 @@ import {
   initSentryRoutingInstrument,
   applySentryTracingInterceptor,
   // api client
-  client,
-  InfoInfoResponse,
+  // client,
+  // InfoInfoResponse,
   // telemetry
   telemetry,
   // auth sso

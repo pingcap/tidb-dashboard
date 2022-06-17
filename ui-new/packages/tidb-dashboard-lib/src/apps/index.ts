@@ -4,7 +4,6 @@ export { default as ClusterInfoAppMeta } from './ClusterInfo/index.meta'
 export { default as ConfigurationApp } from './Configuration'
 export { default as ConfigurationAppMeta } from './Configuration/index.meta'
 
-// export {default as } from ''
 export { default as ConprofApp } from './ContinuousProfiling'
 export { default as ConprofAppMeta } from './ContinuousProfiling/index.meta'
 
@@ -34,11 +33,9 @@ export { default as SearchLogsAppMeta } from './SearchLogs/index.meta'
 
 export { default as SlowQueryApp } from './SlowQuery'
 export * from './SlowQuery'
-// export { default as SlowQueryAppMeta } from './SlowQuery/index.meta'
 
 export { default as StatementApp } from './Statement'
 export * from './Statement'
-// export { default as StatementAppMeta } from '../../../tidb-dashboard-for-op/src/apps/Statement/meta'
 
 export { default as SystemReportApp } from './SystemReport'
 export { default as SystemReportAppMeta } from './SystemReport/index.meta'

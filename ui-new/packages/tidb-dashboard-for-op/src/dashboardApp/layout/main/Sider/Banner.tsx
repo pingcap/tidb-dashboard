@@ -10,9 +10,11 @@ import { TFunction } from 'i18next'
 // import { store } from '@lib/utils/store'
 // import { lightLogoSvg } from '@lib/utils/distroAssets'
 
+import { InfoInfoResponse } from '~/client'
+
 import {
   // client
-  InfoInfoResponse,
+  // InfoInfoResponse,
 
   // store
   store,

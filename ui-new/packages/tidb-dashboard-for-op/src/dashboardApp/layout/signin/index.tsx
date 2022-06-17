@@ -33,11 +33,13 @@ import { useMemoizedFn } from 'ahooks'
 // import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
 // import { landingSvg, logoSvg } from '@lib/utils/distroAssets'
 
+import client, { UserAuthenticateForm } from '~/client'
+
 import {
   // client
-  client,
-  ErrorStrategy,
-  UserAuthenticateForm,
+  // client,
+  // ErrorStrategy,
+  // UserAuthenticateForm,
 
   // auth sso
   getAuthURL,
@@ -201,9 +203,11 @@ function useSignInSubmit(
     try {
       clearErrorMsg()
       setLoading(true)
-      const r = await client.getInstance().userLogin(fnLoginForm(form), {
-        errorStrategy: ErrorStrategy.Custom
-      })
+      const r = await client
+        .getInstance()
+        .userLogin({ message: fnLoginForm(form) }, {
+          handleError: 'custom'
+        } as any)
       auth.setAuthToken(r.data.token)
       message.success(t('signin.message.success'))
       singleSpa.navigateToUrl(successRoute)

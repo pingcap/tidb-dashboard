@@ -1,5 +1,6 @@
 export { default as ClusterInfoApp } from './ClusterInfo'
-export { default as ClusterInfoAppMeta } from './ClusterInfo/index.meta'
+export * from './ClusterInfo'
+// export { default as ClusterInfoAppMeta } from './ClusterInfo/index.meta'
 
 export { default as ConfigurationApp } from './Configuration'
 export { default as ConfigurationAppMeta } from './Configuration/index.meta'

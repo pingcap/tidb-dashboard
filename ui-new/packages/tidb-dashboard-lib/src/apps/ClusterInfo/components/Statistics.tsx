@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client, { ClusterinfoClusterStatisticsPartial } from '@lib/client'
+// import client, { ClusterinfoClusterStatisticsPartial } from '@lib/client'
+import { ClusterinfoClusterStatisticsPartial } from '@lib/client'
 import { AnimatedSkeleton, ErrorBar, Descriptions, Card } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -8,6 +9,7 @@ import { Alert } from 'antd'
 
 import styles from './Statistics.module.less'
 import { InstanceKinds, InstanceKindName } from '@lib/utils/instanceTable'
+import { ClusterInfoContext } from '../context'
 
 function PartialInfo({ data }: { data?: ClusterinfoClusterStatisticsPartial }) {
   const { t } = useTranslation()
@@ -48,8 +50,12 @@ function PartialInfo({ data }: { data?: ClusterinfoClusterStatisticsPartial }) {
 }
 
 export default function Statistics() {
-  const { data, isLoading, error } = useClientRequest((reqConfig) =>
-    client.getInstance().clusterInfoGetStatistics(reqConfig)
+  const ctx = useContext(ClusterInfoContext)
+
+  const { data, isLoading, error } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().clusterInfoGetStatistics(reqConfig)
+    ctx!.ds.clusterInfoGetStatistics
   )
   const { t } = useTranslation()
 

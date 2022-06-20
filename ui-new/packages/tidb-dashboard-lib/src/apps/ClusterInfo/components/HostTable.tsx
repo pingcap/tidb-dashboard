@@ -1,9 +1,10 @@
 import { Tooltip, Typography } from 'antd'
-import React, { useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import client, { HostinfoInfo } from '@lib/client'
+//import client, { HostinfoInfo } from '@lib/client'
+import { HostinfoInfo } from '@lib/client'
 import { Bar, CardTable, Pre } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
@@ -13,6 +14,7 @@ import {
   InstanceKindName
 } from '@lib/utils/instanceTable'
 import { WarningOutlined } from '@ant-design/icons'
+import { ClusterInfoContext } from '../context'
 
 interface IExpandedHostItem extends HostinfoInfo {
   key: string
@@ -48,8 +50,12 @@ function expandHostItems(rows: HostinfoInfo[]): IExpandedHostItem[] {
 export default function HostTable() {
   const { t } = useTranslation()
 
-  const { data, isLoading, error } = useClientRequest((reqConfig) =>
-    client.getInstance().clusterInfoGetHostsInfo(reqConfig)
+  const ctx = useContext(ClusterInfoContext)
+
+  const { data, isLoading, error } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().clusterInfoGetHostsInfo(reqConfig)
+    ctx!.ds.clusterInfoGetHostsInfo
   )
 
   const hostData = useMemo(() => expandHostItems(data?.hosts ?? []), [data])

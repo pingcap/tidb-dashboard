@@ -1,15 +1,19 @@
-import React, { useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client from '@lib/client'
+// import client from '@lib/client'
 import { AnimatedSkeleton, ErrorBar } from '@lib/components'
 import StoreLocationTree, {
   buildTreeData,
   getShortStrMap
 } from './StoreLocationTree'
+import { ClusterInfoContext } from '../context'
 
 export default function StoreLocation() {
+  const ctx = useContext(ClusterInfoContext)
+
   const { data, isLoading, error, sendRequest } = useClientRequest(
-    (reqConfig) => client.getInstance().getStoreLocationTopology(reqConfig)
+    // (reqConfig) => client.getInstance().getStoreLocationTopology(reqConfig)
+    ctx!.ds.getStoreLocationTopology
   )
   const treeData = useMemo(() => buildTreeData(data), [data])
   const shortStrMap = useMemo(() => getShortStrMap(data), [data])

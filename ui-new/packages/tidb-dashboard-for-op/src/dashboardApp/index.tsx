@@ -35,7 +35,8 @@ import {
   NgmState,
 
   // apps
-  ClusterInfoAppMeta as AppClusterInfo,
+  // ClusterInfoAppMeta as AppClusterInfo,
+
   // StatementAppMeta as AppStatement,
   // SlowQueryAppMeta as AppSlowQuery,
   UserProfileAppMeta as AppUserProfile,
@@ -56,6 +57,7 @@ import {
 import { default as AppSlowQuery } from '~/apps/SlowQuery/meta'
 import { default as AppStatement } from '~/apps/Statement/meta'
 import { default as AppOverview } from '~/apps/Overview/meta'
+import { default as AppClusterInfo } from '~/apps/ClusterInfo/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

@@ -1,10 +1,10 @@
 import { DeleteOutlined } from '@ant-design/icons'
 import { useMemoizedFn } from 'ahooks'
 import { Divider, Popconfirm, Tooltip } from 'antd'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import client from '@lib/client'
+// import client from '@lib/client'
 import { CardTable, InstanceStatusBadge } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import {
@@ -13,6 +13,7 @@ import {
   InstanceStatus
 } from '@lib/utils/instanceTable'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import { ClusterInfoContext } from '../context'
 
 function StatusColumn({
   node,
@@ -58,29 +59,37 @@ function StatusColumn({
 export default function ListPage() {
   const { t } = useTranslation()
 
+  const ctx = useContext(ClusterInfoContext)
+
   const {
     data: dataTiDB,
     isLoading: loadingTiDB,
     error: errTiDB,
     sendRequest
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getTiDBTopology(reqConfig)
+  } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().getTiDBTopology(reqConfig)
+    ctx!.ds.getTiDBTopology
   )
 
   const {
     data: dataStores,
     isLoading: loadingStores,
     error: errStores
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getStoreTopology(reqConfig)
+  } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().getStoreTopology(reqConfig)
+    ctx!.ds.getStoreTopology
   )
 
   const {
     data: dataPD,
     isLoading: loadingPD,
     error: errPD
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getPDTopology(reqConfig)
+  } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().getPDTopology(reqConfig)
+    ctx!.ds.getPDTopology
   )
 
   const [tableData, groupData] = useMemo(
@@ -97,9 +106,10 @@ export default function ListPage() {
 
   const handleHideTiDB = useCallback(
     async (node) => {
-      await client
-        .getInstance()
-        .topologyTidbAddressDelete(`${node.ip}:${node.port}`)
+      // await client
+      //   .getInstance()
+      //   .topologyTidbAddressDelete(`${node.ip}:${node.port}`)
+      await ctx!.ds.topologyTidbAddressDelete(`${node.ip}:${node.port}`)
       sendRequest()
     },
     [sendRequest]

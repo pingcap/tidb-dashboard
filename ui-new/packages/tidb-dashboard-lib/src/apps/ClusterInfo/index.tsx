@@ -1,10 +1,21 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
 
 import { Root } from '@lib/components'
 import ListPage from './pages/List'
 
+import translations from './translations'
+import { addTranslations } from '@lib/utils/i18n'
+import { ClusterInfoContext } from './context'
+
+addTranslations(translations)
+
 const App = () => {
+  const ctx = useContext(ClusterInfoContext)
+  if (ctx === null) {
+    throw new Error('ClusterInfoContext must not be null')
+  }
+
   return (
     <Root>
       <Router>
@@ -21,3 +32,5 @@ const App = () => {
 }
 
 export default App
+
+export * from './context'

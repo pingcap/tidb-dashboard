@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Button, Drawer, Result, Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useGetSet, useMount } from 'react-use'
 import { useBoolean, useMemoizedFn } from 'ahooks'
 
-import client, { ConfigKeyVisualConfig } from '@lib/client'
+// import client, { ConfigKeyVisualConfig } from '@lib/client'
+import { ConfigKeyVisualConfig } from '@lib/client'
 import { Heatmap } from '../heatmap'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
 import { fetchHeatmap } from '../utils'
@@ -14,6 +15,7 @@ import KeyVizToolbar from './KeyVizToolbar'
 import './KeyViz.less'
 import { useChange } from '@lib/utils/useChange'
 import { isDistro } from '@lib/utils/distroStringsRes'
+import { IKeyVizDataSource, KeyVizContext } from '../context'
 
 // const CACHE_EXPRIE_SECS = 10
 
@@ -22,6 +24,7 @@ class HeatmapCache {
   // latestFetchIdx = 0
 
   async fetch(
+    fetcher: IKeyVizDataSource['keyvisualHeatmapsGet'],
     range: number | HeatmapRange,
     metricType: DataTag
   ): Promise<HeatmapData | undefined> {
@@ -47,7 +50,7 @@ class HeatmapCache {
 
     // this.latestFetchIdx += 1
     // const fetchIdx = this.latestFetchIdx
-    const data = await fetchHeatmap(selection, metricType)
+    const data = await fetchHeatmap(fetcher, selection, metricType)
     // if (fetchIdx === this.latestFetchIdx) {
     // if (typeof range === 'number') {
     //   this.cache.push({
@@ -76,6 +79,8 @@ let _chart
 let cache = new HeatmapCache()
 
 const KeyViz = () => {
+  const ctx = useContext(KeyVizContext)
+
   const [chartState, setChartState] = useState<ChartState>()
   const [getSelection, setSelection] = useGetSet<HeatmapRange | null>(null)
   const [isLoading, setLoading] = useState(true)
@@ -96,7 +101,8 @@ const KeyViz = () => {
   const updateServiceStatus = useMemoizedFn(async function () {
     try {
       setLoading(true)
-      const resp = await client.getInstance().keyvisualConfigGet()
+      // const resp = await client.getInstance().keyvisualConfigGet()
+      const resp = await ctx!.ds.keyvisualConfigGet()
       const config = resp.data
       setConfig(config)
     } finally {
@@ -112,6 +118,7 @@ const KeyViz = () => {
       setOnBrush(false)
       const metricType = getMetricType()
       const data = await cache.fetch(
+        ctx!.ds.keyvisualHeatmapsGet,
         getSelection() || getDateRange(),
         metricType
       )

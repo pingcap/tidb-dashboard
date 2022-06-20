@@ -71,7 +71,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated, initialConfig]
+    [t, onClose, onConfigUpdated, initialConfig, ctx]
   )
 
   return (

@@ -416,7 +416,7 @@ const useTopSQLConfig = () => {
         setLoadingHistory(false)
       }
     })()
-  }, [topSQLConfig])
+  }, [topSQLConfig, ctx])
 
   return {
     topSQLConfig,

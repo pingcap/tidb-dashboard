@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useContext } from 'react'
 import {
   Form,
   Skeleton,
@@ -11,10 +11,11 @@ import {
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import client from '@lib/client'
+// import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
+import { KeyVizContext } from '../context'
 
 const policyConfigurable = process.env.NODE_ENV === 'development'
 
@@ -63,6 +64,8 @@ function getPolicyOptions(t) {
 }
 
 function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
+  const ctx = useContext(KeyVizContext)
+
   const [submitting, setSubmitting] = useState(false)
   const { t } = useTranslation()
   const isWriteable = useIsWriteable()
@@ -71,14 +74,17 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
     data: config,
     isLoading: loading,
     error
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().keyvisualConfigGet(reqConfig)
+  } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().keyvisualConfigGet(reqConfig)
+    ctx!.ds.keyvisualConfigGet
   )
 
   const onUpdateServiceStatus = async (values) => {
     try {
       setSubmitting(true)
-      await client.getInstance().keyvisualConfigPut(values)
+      // await client.getInstance().keyvisualConfigPut(values)
+      await ctx!.ds.keyvisualConfigPut(values)
       onClose()
       onConfigUpdated()
     } finally {

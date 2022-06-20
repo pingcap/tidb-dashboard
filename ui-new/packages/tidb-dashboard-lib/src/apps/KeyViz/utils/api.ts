@@ -1,19 +1,21 @@
-import client from '@lib/client'
+// import client from '@lib/client'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
+import { IKeyVizDataSource } from '../context'
 
 export async function fetchHeatmap(
+  fetcher: IKeyVizDataSource['keyvisualHeatmapsGet'],
   selection?: HeatmapRange,
   type: DataTag = 'written_bytes'
 ): Promise<HeatmapData> {
-  const resp = await client
-    .getInstance()
-    .keyvisualHeatmapsGet(
-      selection?.startkey,
-      selection?.endkey,
-      selection?.starttime,
-      selection?.endtime,
-      type
-    )
+  // const resp = await client
+  //   .getInstance()
+  const resp = await fetcher(
+    selection?.startkey,
+    selection?.endkey,
+    selection?.starttime,
+    selection?.endtime,
+    type
+  )
   reverse(resp.data)
   return resp.data
 }

@@ -18,7 +18,7 @@ export { default as InstanceProfilingApp } from './InstanceProfiling'
 export { default as InstanceProfilingAppMeta } from './InstanceProfiling/index.meta'
 
 export { default as KeyVizApp } from './KeyViz'
-export { default as KeyVizAppMeta } from './KeyViz/index.meta'
+export * from './KeyViz'
 
 export { default as OptimizerTraceApp } from './OptimizerTrace'
 export { default as OptimizerTraceAppMeta } from './OptimizerTrace/index.meta'
@@ -43,7 +43,6 @@ export { default as SystemReportAppMeta } from './SystemReport/index.meta'
 
 export { default as TopSQLApp } from './TopSQL'
 export * from './TopSQL'
-// export { default as TopSQLAppMeta } from './TopSQL/index.meta'
 
 export { default as UserProfileApp } from './UserProfile'
 export { default as UserProfileAppMeta } from './UserProfile/index.meta'

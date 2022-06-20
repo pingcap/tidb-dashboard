@@ -41,7 +41,7 @@ import {
   // SlowQueryAppMeta as AppSlowQuery,
   UserProfileAppMeta as AppUserProfile,
   // OverviewAppMeta as AppOverview,
-  KeyVizAppMeta as AppKeyViz,
+  // KeyVizAppMeta as AppKeyViz,
   // TopSQLAppMeta as AppTopSQL,
   SystemReportAppMeta as AppSystemReport,
   DiagnoseAppMeta as AppDiagnose,
@@ -59,6 +59,7 @@ import { default as AppStatement } from '~/apps/Statement/meta'
 import { default as AppOverview } from '~/apps/Overview/meta'
 import { default as AppClusterInfo } from '~/apps/ClusterInfo/meta'
 import { default as AppTopSQL } from '~/apps/TopSQL/meta'
+import { default as AppKeyViz } from '~/apps/KeyViz/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

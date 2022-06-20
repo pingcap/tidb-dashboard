@@ -3,7 +3,6 @@ import {
   IClusterInfoContext,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
-import { AxiosPromise } from 'axios'
 
 import client from '~/client'
 
@@ -30,6 +29,10 @@ class DataSource implements IClusterInfoDataSource {
 
   topologyTidbAddressDelete(address: string, options?: ReqConfig) {
     return client.getInstance().topologyTidbAddressDelete({ address }, options)
+  }
+
+  clusterInfoGetStatistics(options?: ReqConfig) {
+    return client.getInstance().clusterInfoGetStatistics(options)
   }
 }
 

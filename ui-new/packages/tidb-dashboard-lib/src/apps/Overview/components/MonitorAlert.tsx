@@ -36,7 +36,7 @@ export default function MonitorAlert() {
       setAlertCounter(resp.data)
     }
     fetch()
-  }, [amData])
+  }, [amData, ctx])
 
   return (
     <Card title={t('overview.monitor_alert.title')} noMarginLeft>

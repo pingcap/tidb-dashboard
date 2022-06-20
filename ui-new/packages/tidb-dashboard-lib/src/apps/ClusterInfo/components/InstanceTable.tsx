@@ -112,7 +112,7 @@ export default function ListPage() {
       await ctx!.ds.topologyTidbAddressDelete(`${node.ip}:${node.port}`)
       sendRequest()
     },
-    [sendRequest]
+    [sendRequest, ctx]
   )
 
   const columns = useMemo(

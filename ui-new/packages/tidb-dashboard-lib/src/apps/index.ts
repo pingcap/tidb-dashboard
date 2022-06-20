@@ -42,7 +42,8 @@ export { default as SystemReportApp } from './SystemReport'
 export { default as SystemReportAppMeta } from './SystemReport/index.meta'
 
 export { default as TopSQLApp } from './TopSQL'
-export { default as TopSQLAppMeta } from './TopSQL/index.meta'
+export * from './TopSQL'
+// export { default as TopSQLAppMeta } from './TopSQL/index.meta'
 
 export { default as UserProfileApp } from './UserProfile'
 export { default as UserProfileAppMeta } from './UserProfile/index.meta'

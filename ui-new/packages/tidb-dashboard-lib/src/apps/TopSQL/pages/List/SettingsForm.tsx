@@ -1,12 +1,13 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useContext } from 'react'
 import { Form, Skeleton, Switch, Space, Button, Modal } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import client, { TopsqlEditableConfig } from '@lib/client'
+import { TopsqlEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 import { telemetry } from '../../utils/telemetry'
+import { TopSQLContext } from '../../context'
 
 interface Props {
   onClose: () => void
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export function SettingsForm({ onClose, onConfigUpdated }: Props) {
+  const ctx = useContext(TopSQLContext)
+
   const [submitting, setSubmitting] = useState(false)
   const { t } = useTranslation()
   const isWriteable = useIsWriteable()
@@ -22,8 +25,10 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
     data: initialConfig,
     isLoading: loading,
     error
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().topsqlConfigGet(reqConfig)
+  } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().topsqlConfigGet(reqConfig)
+    ctx!.ds.topsqlConfigGet
   )
 
   const handleSubmit = useCallback(
@@ -34,7 +39,8 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         }
         try {
           setSubmitting(true)
-          await client.getInstance().topsqlConfigPost(newConfig)
+          // await client.getInstance().topsqlConfigPost(newConfig)
+          await ctx!.ds.topsqlConfigPost(newConfig)
           telemetry.saveSettings(newConfig)
           onClose()
           onConfigUpdated()

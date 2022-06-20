@@ -1,5 +1,11 @@
 import { BrushEndListener, BrushEvent } from '@elastic/charts'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
 import {
   LoadingOutlined,
@@ -11,7 +17,7 @@ import { useMount, useSessionStorage } from 'react-use'
 import { useMemoizedFn } from 'ahooks'
 import { sortBy } from 'lodash'
 import formatSql from '@lib/utils/sqlFormatter'
-import client, { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
+import { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import {
   Card,
   TimeRangeSelector,
@@ -34,6 +40,7 @@ import { SettingsForm } from './SettingsForm'
 import { onLegendItemOver, onLegendItemOut } from './legendAction'
 import { InstanceType } from './ListDetail/ListDetailTable'
 import { isDistro } from '@lib/utils/distroStringsRes'
+import { TopSQLContext } from '../../context'
 
 const TOP_N = 5
 const CHART_BAR_WIDTH = 8
@@ -303,6 +310,8 @@ const useTopSQLData = (
   timeRange: TimeRange,
   computeTimeWindowSize: (ts: TimeRangeValue) => number
 ) => {
+  const ctx = useContext(TopSQLContext)
+
   const [topSQLData, setTopSQLData] = useState<TopsqlSummaryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const updateTopSQLData = useMemoizedFn(
@@ -318,9 +327,10 @@ const useTopSQLData = (
       const [start, end] = ts
       try {
         setIsLoading(true)
-        const resp = await client
-          .getInstance()
-          .topsqlSummaryGet(
+        const resp =
+          // await client
+          //   .getInstance()
+          await ctx!.ds.topsqlSummaryGet(
             String(end),
             _instance.instance,
             _instance.instance_type,
@@ -362,13 +372,16 @@ const useTopSQLData = (
 }
 
 const useTopSQLConfig = () => {
+  const ctx = useContext(TopSQLContext)
   // Use the instance interface to query if historical data is available
   const {
     data: topSQLConfig,
     isLoading: isConfigLoading,
     sendRequest: updateConfig
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().topsqlConfigGet(reqConfig)
+  } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().topsqlConfigGet(reqConfig)
+    ctx!.ds.topsqlConfigGet
   )
   const [haveHistoryData, setHaveHistoryData] = useState(true)
   const [loadingHistory, setLoadingHistory] = useState(true)
@@ -389,9 +402,10 @@ const useTopSQLConfig = () => {
 
       setLoadingHistory(true)
       try {
-        const res = await client
-          .getInstance()
-          .topsqlInstancesGet(String(now), String(sevenDaysAgo))
+        const res =
+          // await client
+          //   .getInstance()
+          await ctx!.ds.topsqlInstancesGet(String(now), String(sevenDaysAgo))
         const data = res.data.data
         if (!!data?.length) {
           setHaveHistoryData(true)
@@ -413,6 +427,8 @@ const useTopSQLConfig = () => {
 }
 
 const useInstances = (timeRange: TimeRange) => {
+  const ctx = useContext(TopSQLContext)
+
   const [instances, setInstances] = useState<TopsqlInstanceItem[]>([])
   const [isLoading, setLoading] = useState(false)
 
@@ -424,9 +440,10 @@ const useInstances = (timeRange: TimeRange) => {
     }
 
     const [start, end] = toTimeRangeValue(_timeRange)
-    const resp = await client
-      .getInstance()
-      .topsqlInstancesGet(String(end), String(start))
+    const resp =
+      // await client
+      //   .getInstance()
+      await ctx!.ds.topsqlInstancesGet(String(end), String(start))
     const data = sortBy(resp.data.data || [], ['instance_type', 'instance'])
 
     setInstances(data)

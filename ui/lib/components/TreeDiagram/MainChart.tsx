@@ -9,7 +9,7 @@ interface MainChartProps {
     width: number
     height: number
   }
-  chartTranslate: Translate
+  treeTranslate: Translate
   links: any
   nodes: any
   customLinkElement: any
@@ -19,13 +19,14 @@ interface MainChartProps {
 
 const MainChart = ({
   viewPort,
-  chartTranslate,
+  treeTranslate,
   links,
   nodes,
   customLinkElement,
   customNodeElement,
   handleNodeExpandBtnToggle,
 }: MainChartProps) => {
+  console.log('in mainchat', treeTranslate)
   return (
     <svg
       className="mainChartSVG"
@@ -34,7 +35,7 @@ const MainChart = ({
     >
       <g
         className="mainChartGroup"
-        transform={`translate(${chartTranslate.x}, ${chartTranslate.y}) scale(${chartTranslate.k})`}
+        transform={`translate(${treeTranslate.x}, ${treeTranslate.y}) scale(${treeTranslate.k})`}
       >
         <g className="linksWrapper">
           {links &&
@@ -53,14 +54,13 @@ const MainChart = ({
         <g className="nodesWrapper">
           {nodes &&
             nodes.map((hierarchyPointNode, i) => {
-              const { data, x, y } = hierarchyPointNode
+              const { data } = hierarchyPointNode
               return (
                 <NodeWrapper
                   data={data}
                   key={data.name}
                   renderCustomNodeElement={customNodeElement}
                   hierarchyPointNode={hierarchyPointNode}
-                  zoomScale={chartTranslate.k}
                   onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
                 />
               )

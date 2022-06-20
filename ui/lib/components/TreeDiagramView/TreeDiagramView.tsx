@@ -16,8 +16,7 @@ const collapsableButtonSize = {
 }
 
 const customNodeElements = (nodeProps) => {
-  const { nodeDatum, hierarchyPointNode, zoomScale, onNodeExpandBtnToggle } =
-    nodeProps
+  const { nodeDatum, hierarchyPointNode, onNodeExpandBtnToggle } = nodeProps
   const { width: nodeWidth, height: nodeHeight } =
     nodeDatum.__node_attrs.nodeFlexSize
 
@@ -25,7 +24,7 @@ const customNodeElements = (nodeProps) => {
   const nodeTranslate = {
     x: x - nodeWidth / 2,
     y: y,
-    k: zoomScale,
+    k: 1,
   }
 
   const handleExpandBtnToggleOnClick = (e, node) => {
@@ -182,11 +181,9 @@ const customLinkElements = (linkProps) => {
 
 const TreeDiagramView = ({ data, showMinimap }: TreeDiagramViewProps) => {
   const nodeSize = { width: 250, height: 150 }
-  const viewPort = { width: window.innerWidth, height: window.innerHeight }
-  const translate = {
-    x: viewPort.width / 2,
-    y: 0,
-    k: 1,
+  const viewPort = {
+    width: window.innerWidth,
+    height: window.innerHeight - 150,
   }
 
   return (
@@ -196,7 +193,7 @@ const TreeDiagramView = ({ data, showMinimap }: TreeDiagramViewProps) => {
       nodeSize={nodeSize}
       customNodeElement={customNodeElements}
       customLinkElement={customLinkElements}
-      translate={translate}
+      viewPort={viewPort}
     />
   )
 }

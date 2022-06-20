@@ -1,21 +1,13 @@
-import React, { useEffect, useState, useRef, Fragment } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import _ from 'lodash'
 import { AssignInternalProperties } from './utlis'
 import styles from './index.module.less'
-import {
-  TreeDiagramProps,
-  RawNodeDatum,
-  TreeNodeDatum,
-  Translate,
-  nodeMarginType,
-  rectBound,
-} from './types'
+import { TreeDiagramProps, TreeNodeDatum, nodeMarginType } from './types'
 
-import NodeWrapper from './NodeWrapper'
-import LinkWrapper from './LinkWrapper'
 import Minimap from './Minimap'
+import MainChart from './MainChart'
 
-// import d3 APIs
+// imports d3 APIs
 import { flextree } from 'd3-flextree'
 import { hierarchy, HierarchyPointNode, HierarchyPointLink } from 'd3-hierarchy'
 import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
@@ -37,34 +29,45 @@ const TreeDiagram = ({
   nodeMargin,
   showMinimap,
   minimapScale,
-  translate,
+  viewPort,
   customNodeElement,
   customLinkElement,
 }: TreeDiagramProps) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
   const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
-  const [chartTranslate, setChartTranslate] = useState(translate)
-  const [initDraw, setInitDraw] = useState(true)
-  const [viewPort, setViewPort] = useState<rectBound>({ width: 0, height: 0 })
-  const [mainChartGroupBound, setMainChartGroupBound] = useState({
+
+  // Inits tree translate, the default position is on the top-middle of canvas
+  const [treeTranslate, setTreeTranslate] = useState({
+    x: viewPort.width / 2,
+    y: 0,
+    k: 1,
+  })
+
+  // Sets the bound of entire tree
+  const [treeBound, setTreeBound] = useState({
     x: 0,
     y: 0,
     width: 0,
     height: 0,
   })
+
+  // Sets initDraw to avoid re-calcuate the bound of entire tree
+  const [initDraw, setInitDraw] = useState(true)
   const [minimapTranslate, setMinimapTranslate] = useState({
     x: 0,
     y: 0,
     k: 1,
   })
+
+  const treeDiagramContainerRef = useRef<HTMLDivElement>(null)
+
+  // A SVG container for main chart
   const mainChartSVG = select('.mainChartSVG')
   const mainChartGroup = select('.mainChartGroup')
 
   const gBrushRef = useRef(null)
   const gBrush = select(gBrushRef.current)
-
-  const treeDiagramContainerRef = useRef<HTMLDivElement>(null)
 
   // Generates nodes and links
   const generateNodesAndLinks = (
@@ -95,27 +98,36 @@ const TreeDiagram = ({
     return { nodes, links }
   }
 
+  /**
+   *
+   * @param zoomScale
+   * @returns a continuous linear scale function to calculate the corresponding width in mainChart or minimap
+   *
+   * minimapScaleX(zoomScale)(widthOnMinimap) will return corresponding widthOnMainChart
+   * minimapScaleX(zoomScale).invert(widthOnMainChart) will return corresponding widthOnMinimap
+   */
   const minimapScaleX = (zoomScale) => {
     return scaleLinear()
-      .domain([0, mainChartGroupBound.width])
-      .range([0, mainChartGroupBound.width * zoomScale])
+      .domain([0, treeBound.width])
+      .range([0, treeBound.width * zoomScale])
   }
 
+  // Creates a continuous linear scale to calculate the corresponse height in mainChart or minimap
   const minimapScaleY = (zoomScale) => {
     return scaleLinear()
-      .domain([0, mainChartGroupBound.height])
-      .range([0, mainChartGroupBound.height * zoomScale])
+      .domain([0, treeBound.height])
+      .range([0, treeBound.height * zoomScale])
   }
-
-  const ScaleX = minimapScaleX(1)
-  const ScaleY = minimapScaleY(1)
 
   const brushBehavior = d3Brush()
     .extent([
-      [ScaleX(-viewPort.width / 2), ScaleY(-viewPort.height / 2)],
       [
-        ScaleX(mainChartGroupBound.width + viewPort.width / 2),
-        ScaleY(mainChartGroupBound.height + viewPort.height / 2),
+        minimapScaleX(1)(-viewPort.width / 2),
+        minimapScaleY(1)(-viewPort.height / 2),
+      ],
+      [
+        minimapScaleX(1)(treeBound.width + viewPort.width / 2),
+        minimapScaleY(1)(treeBound.height + viewPort.height / 2),
       ],
     ])
     .on('brush', () => onBrush())
@@ -127,21 +139,21 @@ const TreeDiagram = ({
 
       const zoomScale = zoomTransform(mainChartSVG.node() as any)
 
-      const scaleX = minimapScaleX(zoomScale.k)
-      const scaleY = minimapScaleY(zoomScale.k)
-
       // Sets initial offset, so that first pan and zoom does not jump back to default [0,0] coords.
       // @ts-ignore
       mainChartSVG.call(
         d3Zoom().transform as any,
         zoomIdentity
-          .translate(scaleX(-mainChartGroupBound.x - brushX), scaleX(-brushY))
+          .translate(
+            minimapScaleX(zoomScale.k)(-treeBound.x - brushX),
+            minimapScaleY(zoomScale.k)(-brushY)
+          )
           .scale(zoomScale.k)
       )
 
-      setChartTranslate({
-        x: scaleX(-mainChartGroupBound.x - brushX),
-        y: scaleY(-brushY),
+      setTreeTranslate({
+        x: minimapScaleX(zoomScale.k)(-treeBound.x - brushX),
+        y: minimapScaleY(zoomScale.k)(-brushY),
         k: zoomScale.k,
       })
     }
@@ -150,13 +162,11 @@ const TreeDiagram = ({
   const bindBrushListener = () => {
     gBrush.call(brushBehavior as any)
 
-    const scaleX = minimapScaleX(1)
-
     // init brush seletion
     brushBehavior.move(gBrush as any, [
-      [-mainChartGroupBound.x - scaleX(chartTranslate.x), 0],
+      [-treeBound.x - minimapScaleX(1)(treeTranslate.x), 0],
       [
-        -mainChartGroupBound.x - scaleX(chartTranslate.x) + viewPort.width,
+        -treeBound.x - minimapScaleX(1)(treeTranslate.x) + viewPort.width,
         viewPort.height,
       ],
     ])
@@ -165,26 +175,26 @@ const TreeDiagram = ({
   const zoomBehavior = d3Zoom()
     .scaleExtent([0.5, 2])
     .translateExtent([
-      [mainChartGroupBound.x - viewPort.width / 2, -viewPort.height / 2],
+      [treeBound.x - viewPort.width / 2, -viewPort.height / 2],
       [
-        mainChartGroupBound.x + mainChartGroupBound.width + viewPort.width / 2,
-        mainChartGroupBound.height + viewPort.height / 2,
+        treeBound.x + treeBound.width + viewPort.width / 2,
+        treeBound.height + viewPort.height / 2,
       ],
     ])
     .on('zoom', () => onZoom())
 
   const onZoom = () => {
     const t = event.transform
-    setChartTranslate(t)
-
-    const scaleX = minimapScaleX(t.k)
-    const scaleY = minimapScaleY(t.k)
+    setTreeTranslate(t)
 
     brushBehavior.move(gBrush as any, [
-      [-mainChartGroupBound.x + scaleX.invert(-t.x), scaleY.invert(-t.y)],
       [
-        -mainChartGroupBound.x + scaleX.invert(-t.x + viewPort.width),
-        scaleY.invert(-t.y + viewPort.height),
+        -treeBound.x + minimapScaleX(t.k).invert(-t.x),
+        minimapScaleY(t.k).invert(-t.y),
+      ],
+      [
+        -treeBound.x + minimapScaleX(t.k).invert(-t.x + viewPort.width),
+        minimapScaleY(t.k).invert(-t.y + viewPort.height),
       ],
     ])
   }
@@ -246,7 +256,7 @@ const TreeDiagram = ({
   const getInitTreeDiagramBound = () => {
     const mainChartGroupNode = mainChartGroup.node() as SVGGraphicsElement
     const { x, y, width, height } = mainChartGroupNode.getBBox()
-    setMainChartGroupBound({ x: x, y: y, width: width, height: height })
+    setTreeBound({ x: x, y: y, width: width, height: height })
 
     const minimapTranslate = {
       x: -x,
@@ -255,9 +265,11 @@ const TreeDiagram = ({
     }
 
     setMinimapTranslate(minimapTranslate)
+    setInitDraw(false)
   }
 
   useEffect(() => {
+    // Assigns all internal properties to tree node
     const treeNodes = AssignInternalProperties(data, nodeSize!)
     setTreeNodeDatum(treeNodes)
   }, [data, nodeSize])
@@ -271,75 +283,30 @@ const TreeDiagram = ({
   }, [nodeMargin, treeNodeDatum])
 
   useEffect(() => {
-    if (links.length > 0 && nodes.length > 0 && initDraw && gBrushRef.current) {
-      setChartTranslate(translate)
+    if (links.length > 0 && nodes.length > 0 && initDraw) {
       getInitTreeDiagramBound()
-      setInitDraw(false)
     }
-  }, [links, nodes])
+  }, [links, nodes, initDraw])
 
   useEffect(() => {
     bindZoomListener()
     bindBrushListener()
-  }, [mainChartGroupBound])
-
-  useEffect(() => {
-    if (treeDiagramContainerRef.current) {
-      const w = treeDiagramContainerRef.current?.clientWidth
-
-      setViewPort({
-        width: w,
-        height: window.innerHeight - 200,
-      })
-    }
-  }, [])
+  }, [treeBound])
 
   return (
     <div className={styles.treeDiagramContainer} ref={treeDiagramContainerRef}>
-      <svg
-        className="mainChartSVG"
-        width={viewPort!.width}
-        height={viewPort!.height}
-      >
-        <g
-          className="mainChartGroup"
-          transform={`translate(${chartTranslate.x}, ${chartTranslate.y}) scale(${chartTranslate.k})`}
-        >
-          <g className="linksWrapper">
-            {links &&
-              links.map((link, i) => {
-                return (
-                  <LinkWrapper
-                    key={i}
-                    data={link}
-                    collapsiableButtonSize={{ width: 60, height: 30 }}
-                    renderCustomLinkElement={customLinkElement}
-                  />
-                )
-              })}
-          </g>
-
-          <g className="nodesWrapper">
-            {nodes &&
-              nodes.map((hierarchyPointNode, i) => {
-                const { data, x, y } = hierarchyPointNode
-                return (
-                  <NodeWrapper
-                    data={data}
-                    key={data.name}
-                    renderCustomNodeElement={customNodeElement}
-                    hierarchyPointNode={hierarchyPointNode}
-                    zoomScale={translate.k}
-                    onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
-                  />
-                )
-              })}
-          </g>
-        </g>
-      </svg>
+      <MainChart
+        viewPort={viewPort}
+        treeTranslate={treeTranslate}
+        links={links}
+        nodes={nodes}
+        customLinkElement={customLinkElement}
+        customNodeElement={customNodeElement}
+        handleNodeExpandBtnToggle={handleNodeExpandBtnToggle}
+      />
       {showMinimap && (
         <Minimap
-          mainChartGroupBound={mainChartGroupBound}
+          treeBound={treeBound}
           viewPort={viewPort}
           links={links}
           nodes={nodes}
@@ -357,15 +324,11 @@ const TreeDiagram = ({
 TreeDiagram.defaultProps = {
   nodeSize: { width: 250, height: 150 },
   showMinimap: false,
-  minimapScale: 0.15,
+  minimapScale: 0.1,
   nodeMargin: {
     siblingMargin: 40,
     childrenMargin: 60,
   },
-  // viewPort: {
-  //   width: window.innerWidth,
-  //   height: window.innerHeight - 200,
-  // },
 }
 
 export default TreeDiagram

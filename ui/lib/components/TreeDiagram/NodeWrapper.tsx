@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import { TreeNodeDatum } from './types'
 import { HierarchyPointNode } from 'd3-hierarchy'
 
@@ -14,14 +14,12 @@ const NodeWrapper = ({
   data,
   renderCustomNodeElement,
   hierarchyPointNode,
-  zoomScale,
   onNodeExpandBtnToggle,
 }: NodeWrapperProps) => {
   const renderNode = () => {
     const nodeProps = {
       hierarchyPointNode: hierarchyPointNode,
       nodeDatum: data,
-      zoomScale: zoomScale,
       onNodeExpandBtnToggle: onNodeExpandBtnToggle,
     }
 

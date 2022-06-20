@@ -11,7 +11,7 @@ import { scaleLinear } from 'd3-scale'
 import { brush as d3Brush } from 'd3-brush'
 
 interface MinimapProps {
-  mainChartGroupBound: rectBound
+  treeBound: rectBound
   viewPort: rectBound
   minimapTranslate: Translate
   links: any
@@ -23,7 +23,7 @@ interface MinimapProps {
 }
 
 const Minimap = ({
-  mainChartGroupBound,
+  treeBound,
   viewPort,
   links,
   nodes,
@@ -33,9 +33,11 @@ const Minimap = ({
   minimapScale,
   brushGroup,
 }: MinimapProps) => {
+  console.log('in minimap========')
+
   const minimapSVG = select('.minimapSVG')
   const minimapGroup = select('.minimapGroup')
-  const { width: mainChartWidth, height: mainChartHeight } = mainChartGroupBound
+  const { width: mainChartWidth, height: mainChartHeight } = treeBound
 
   const minimapContainerWidth = viewPort.width * minimapScale
   const minimapContainerHeight = viewPort.height * minimapScale
@@ -121,7 +123,7 @@ const Minimap = ({
           <g className="nodesWrapper">
             {nodes &&
               nodes.map((hierarchyPointNode, i) => {
-                const { data, x, y } = hierarchyPointNode
+                const { data } = hierarchyPointNode
                 return (
                   <NodeWrapper
                     data={data}

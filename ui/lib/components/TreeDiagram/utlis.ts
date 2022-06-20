@@ -1,8 +1,4 @@
-import {
-  RawNodeDatum,
-  TreeNodeDatum,
-  Translate,
-} from '../TreeDiagramView/types'
+import { RawNodeDatum, TreeNodeDatum } from '../TreeDiagramView/types'
 import { v4 as uuidv4 } from 'uuid'
 
 type nodeFlexSize = {

@@ -1,16 +1,17 @@
 import { Badge } from 'antd'
 import dayjs from 'dayjs'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import React, { useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useMemoizedFn } from 'ahooks'
 import type { TFunction } from 'i18next'
 
-import client, { DiagnoseReport } from '@lib/client'
+import { DiagnoseReport } from '@lib/client'
 import { CardTable, DateTime } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import { SystemReportContext } from '../context'
 
 const tableColumns = (t: TFunction): IColumn[] => [
   {
@@ -94,10 +95,14 @@ const tableColumns = (t: TFunction): IColumn[] => [
 ]
 
 export default function ReportHistory() {
+  const ctx = useContext(SystemReportContext)
+
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { data, isLoading, error } = useClientRequest((reqConfig) =>
-    client.getInstance().diagnoseReportsGet(reqConfig)
+  const { data, isLoading, error } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().diagnoseReportsGet(reqConfig)
+    ctx!.ds.diagnoseReportsGet
   )
   const columns = useMemo(() => tableColumns(t), [t])
 

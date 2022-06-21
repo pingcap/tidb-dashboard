@@ -1,16 +1,19 @@
 import { Button, Descriptions, Progress } from 'antd'
-import React from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
-import client from '@lib/client'
+// import client from '@lib/client'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { AnimatedSkeleton, DateTime, ErrorBar, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import useQueryParams from '@lib/utils/useQueryParams'
+import { SystemReportContext } from '../context'
 
 function ReportStatus() {
+  const ctx = useContext(SystemReportContext)
+
   const { id } = useQueryParams()
   const { t } = useTranslation()
 
@@ -20,7 +23,8 @@ function ReportStatus() {
     error
   } = useClientRequestWithPolling(
     (reqConfig) =>
-      client.getInstance().diagnoseReportsIdStatusGet(id, reqConfig),
+      // client.getInstance().diagnoseReportsIdStatusGet(id, reqConfig),
+      ctx!.ds.diagnoseReportsIdStatusGet(id, reqConfig),
     {
       shouldPoll: (data) => data?.progress! < 100
     }

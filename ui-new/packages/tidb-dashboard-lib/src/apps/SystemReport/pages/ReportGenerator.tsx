@@ -1,16 +1,20 @@
 import { Button, Form, Input, InputNumber, Select, Switch, Modal } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import client from '@lib/client'
+// import client from '@lib/client'
 import { Card, Pre, DatePicker } from '@lib/components'
 
 import ReportHistory from '../components/ReportHistory'
+import { ISystemReportDataSource, SystemReportContext } from '../context'
 
-const useFinishHandler = (navigate) => {
+const useFinishHandler = (
+  navigate,
+  genReport: ISystemReportDataSource['diagnoseReportsPost']
+) => {
   return async (fieldsValue) => {
     const start_time = fieldsValue['rangeBegin'].unix()
     let range_duration = fieldsValue['rangeDuration']
@@ -26,12 +30,14 @@ const useFinishHandler = (navigate) => {
       ? compare_start_time + range_duration * 60
       : 0
 
-    const res = await client.getInstance().diagnoseReportsPost({
-      start_time,
-      end_time,
-      compare_start_time,
-      compare_end_time
-    })
+    const res =
+      // await client.getInstance().diagnoseReportsPost({
+      await genReport({
+        start_time,
+        end_time,
+        compare_start_time,
+        compare_end_time
+      })
     navigate(`/system_report/detail?id=${res.data}`)
   }
 }
@@ -39,9 +45,11 @@ const useFinishHandler = (navigate) => {
 const DURATIONS = [5, 10, 30, 60, 24 * 60]
 
 export default function ReportGenerator() {
+  const ctx = useContext(SystemReportContext)
+
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const handleFinish = useFinishHandler(navigate)
+  const handleFinish = useFinishHandler(navigate, ctx!.ds.diagnoseReportsPost)
 
   const [form] = Form.useForm()
   const [isGenerateRelationPosting, setGenerateRelationPosting] =
@@ -66,9 +74,10 @@ export default function ReportGenerator() {
     try {
       setGenerateRelationPosting(true)
 
-      const resp = await client
-        .getInstance()
-        .diagnoseGenerateMetricsRelationship({
+      const resp =
+        // await client
+        //   .getInstance()
+        await ctx!.ds.diagnoseGenerateMetricsRelationship({
           start_time,
           end_time,
           type: 'sum'
@@ -79,7 +88,7 @@ export default function ReportGenerator() {
         okButtonProps: {
           target: '_blank',
           href:
-            `${client.getBasePath()}/diagnose/metrics_relation/view?token=` +
+            `${ctx!.cfg.basePath}/diagnose/metrics_relation/view?token=` +
             encodeURIComponent(resp.data)
         }
       })
@@ -92,7 +101,7 @@ export default function ReportGenerator() {
     }
 
     setGenerateRelationPosting(false)
-  }, [t, form])
+  }, [t, form, ctx])
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>

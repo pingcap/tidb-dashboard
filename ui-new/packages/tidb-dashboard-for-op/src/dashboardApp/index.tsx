@@ -43,7 +43,7 @@ import {
   // OverviewAppMeta as AppOverview,
   // KeyVizAppMeta as AppKeyViz,
   // TopSQLAppMeta as AppTopSQL,
-  SystemReportAppMeta as AppSystemReport,
+  // SystemReportAppMeta as AppSystemReport,
   DiagnoseAppMeta as AppDiagnose,
   SearchLogsAppMeta as AppSearchLogs,
   InstanceProfilingAppMeta as AppInstanceProfiling,
@@ -60,6 +60,7 @@ import { default as AppOverview } from '~/apps/Overview/meta'
 import { default as AppClusterInfo } from '~/apps/ClusterInfo/meta'
 import { default as AppTopSQL } from '~/apps/TopSQL/meta'
 import { default as AppKeyViz } from '~/apps/KeyViz/meta'
+import { default as AppSystemReport } from '~/apps/SystemReport/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

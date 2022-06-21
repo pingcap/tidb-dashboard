@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, {
+  MutableRefObject,
+  Ref,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { select, event } from 'd3-selection'
 import { brush as d3Brush } from 'd3-brush'
 import { HierarchyPointLink, HierarchyPointNode } from 'd3'
@@ -17,13 +24,12 @@ interface MinimapProps {
   customLinkElement: any
   customNodeElement: any
   minimapScale: number
-  brushGroup: any
   minimapScaleX
   minimapScaleY
   mainChartSVG
   updateTreeTranslate
   brushBehavior
-  gBrush
+  brushRef?: Ref<SVGGElement>
 
   nodeMargin?: nodeMarginType
 }
@@ -36,17 +42,14 @@ const Minimap = ({
   customLinkElement,
   customNodeElement,
   minimapScale,
-  brushGroup,
   minimapScaleX,
   minimapScaleY,
   mainChartSVG,
   updateTreeTranslate,
-  gBrush,
+  brushRef,
 }: MinimapProps) => {
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
   const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
-  const minimapSVG = select('.minimapSVG')
-  const minimapGroup = select('.minimapGroup')
   const { width: mainChartWidth, height: mainChartHeight, x, y } = treeBound
   const translate: Translate = {
     x: -x,
@@ -61,9 +64,13 @@ const Minimap = ({
       },
     [nodeMargin]
   )
-
   const minimapContainerWidth = viewPort.width * minimapScale
   const minimapContainerHeight = viewPort.height * minimapScale
+  const _brushRef = useRef<SVGGElement>(null)
+
+  const gBrush = select(_brushRef.current)
+  const minimapSVG = select('.minimapSVG')
+  const minimapGroup = select('.minimapGroup')
 
   const longSide = mainChartWidth > mainChartHeight ? 'x' : 'y'
   const chartLongSideSize = Math.max(mainChartWidth, mainChartHeight)
@@ -181,6 +188,13 @@ const Minimap = ({
     bindBrushListener()
   }, [treeBound])
 
+  useEffect(() => {
+    if (!_brushRef.current || !brushRef) {
+      return
+    }
+    ;(brushRef as MutableRefObject<SVGElement>).current = _brushRef.current
+  }, [brushRef])
+
   return (
     <div className={styles.minimapContainer}>
       <svg
@@ -223,7 +237,7 @@ const Minimap = ({
               })}
           </g>
         </g>
-        {brushGroup()}
+        <g ref={_brushRef}></g>
       </svg>
     </div>
   )

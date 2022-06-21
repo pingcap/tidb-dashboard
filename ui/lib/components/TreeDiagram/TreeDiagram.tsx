@@ -15,14 +15,6 @@ import { brush as d3Brush } from 'd3-brush'
 import { select, event } from 'd3-selection'
 import { scaleLinear } from 'd3-scale'
 
-const BrushGroup = (gBrushRef) => {
-  return (
-    <React.Fragment>
-      <g ref={gBrushRef}></g>
-    </React.Fragment>
-  )
-}
-
 const TreeDiagram = ({
   data,
   nodeSize,
@@ -58,7 +50,7 @@ const TreeDiagram = ({
   const mainChartSVG = select('.mainChartSVG')
   const mainChartGroup = select('.mainChartGroup')
 
-  const gBrushRef = useRef(null)
+  const gBrushRef = useRef<SVGGElement>(null)
   const gBrush = select(gBrushRef.current)
 
   /**
@@ -204,7 +196,10 @@ const TreeDiagram = ({
   }, [data, nodeSize])
 
   useEffect(() => {
-    if (!isThumbnail) bindZoomListener()
+    if (isThumbnail) {
+      return
+    }
+    bindZoomListener()
   }, [treeBound])
 
   return (
@@ -229,8 +224,7 @@ const TreeDiagram = ({
           customLinkElement={customLinkElement}
           customNodeElement={customNodeElement}
           minimapScale={minimapScale!}
-          brushGroup={() => BrushGroup(gBrushRef)}
-          gBrush={gBrush}
+          brushRef={gBrushRef}
           minimapScaleX={minimapScaleX}
           minimapScaleY={minimapScaleY}
           mainChartSVG={mainChartSVG}

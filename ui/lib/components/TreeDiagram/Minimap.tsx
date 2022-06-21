@@ -9,9 +9,10 @@ import styles from './index.module.less'
 import { select, event } from 'd3-selection'
 import { scaleLinear } from 'd3-scale'
 import { brush as d3Brush } from 'd3-brush'
+import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 
 interface MinimapProps {
-  treeBound: rectBound
+  treeBound
   viewPort: rectBound
   minimapTranslate: Translate
   links: any
@@ -20,6 +21,12 @@ interface MinimapProps {
   customNodeElement: any
   minimapScale: number
   brushGroup: any
+  minimapScaleX
+  minimapScaleY
+  mainChartSVG
+  updateTreeTranslate
+  brushBehavior
+  gBrush
 }
 
 const Minimap = ({
@@ -32,12 +39,15 @@ const Minimap = ({
   customNodeElement,
   minimapScale,
   brushGroup,
+  minimapScaleX,
+  minimapScaleY,
+  mainChartSVG,
+  updateTreeTranslate,
+  gBrush,
 }: MinimapProps) => {
-  console.log('in minimap========')
-
   const minimapSVG = select('.minimapSVG')
   const minimapGroup = select('.minimapGroup')
-  const { width: mainChartWidth, height: mainChartHeight } = treeBound
+  const { width: mainChartWidth, height: mainChartHeight, x, y } = treeBound
 
   const minimapContainerWidth = viewPort.width * minimapScale
   const minimapContainerHeight = viewPort.height * minimapScale
@@ -88,11 +98,67 @@ const Minimap = ({
       .attr('height', mainChartHeight)
   }
 
+  const onBrush = () => {
+    if (event.sourceEvent && event.sourceEvent.type === 'zoom') return null
+    if (Array.isArray(event.selection)) {
+      const [[brushX, brushY]] = event.selection
+
+      const zoomScale = zoomTransform(mainChartSVG.node() as any)
+
+      // Sets initial offset, so that first pan and zoom does not jump back to default [0,0] coords.
+      // @ts-ignore
+      mainChartSVG.call(
+        d3Zoom().transform as any,
+        zoomIdentity
+          .translate(
+            minimapScaleX(zoomScale.k)(-treeBound.x - brushX),
+            minimapScaleY(zoomScale.k)(-brushY)
+          )
+          .scale(zoomScale.k)
+      )
+
+      // Handles tree translate update when brush moves
+      updateTreeTranslate(zoomScale, brushX, brushY)
+    }
+  }
+
+  // Limits brush move extent
+  const brushBehavior = d3Brush()
+    .extent([
+      [
+        minimapScaleX(1)(-viewPort.width / 2),
+        minimapScaleY(1)(-viewPort.height / 2),
+      ],
+      [
+        minimapScaleX(1)(treeBound.width + viewPort.width / 2),
+        minimapScaleY(1)(treeBound.height + viewPort.height / 2),
+      ],
+    ])
+    .on('brush', () => onBrush())
+
+  const bindBrushListener = () => {
+    gBrush.call(brushBehavior as any)
+
+    // init brush seletion
+    brushBehavior.move(gBrush as any, [
+      [-treeBound.x - minimapScaleX(1)(viewPort.width / 2), 0],
+      [
+        -treeBound.x - minimapScaleX(1)(viewPort.width / 2) + viewPort.width,
+        viewPort.height,
+      ],
+    ])
+  }
+
   useEffect(() => {
     drawMinimap()
+    // Removes these elements can avoid re-select brush on minimap
     minimapSVG.selectAll('.handle').remove()
     minimapSVG.selectAll('.overlay').remove()
   })
+
+  useEffect(() => {
+    bindBrushListener()
+  }, [treeBound])
 
   return (
     <div className={styles.minimapContainer}>

@@ -9,7 +9,7 @@ import {
   Form
 } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useMemoizedFn, useSessionStorageState } from 'ahooks'
@@ -21,7 +21,7 @@ import {
 } from '@ant-design/icons'
 import dayjs, { Dayjs } from 'dayjs'
 
-import client, { ErrorStrategy } from '@lib/client'
+// import { ErrorStrategy } from '@lib/client'
 import { Card, CardTable, Toolbar, DatePicker } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
@@ -33,8 +33,11 @@ import ConProfSettingForm from './ConProfSettingForm'
 import styles from './List.module.less'
 import { telemetry } from '../utils/telemetry'
 import { isDistro } from '@lib/utils/distroStringsRes'
+import { ConProfilingContext } from '../context'
 
 export default function Page() {
+  const ctx = useContext(ConProfilingContext)
+
   const [endTime, setEndTime] = useSessionStorageState<Dayjs | string>(
     'conprof.end_time',
     { defaultValue: '' }
@@ -67,15 +70,23 @@ export default function Page() {
     }
     const _rangeStartTime = _rangeEndTime.subtract(2, 'h')
 
-    return client
-      .getInstance()
-      .continuousProfilingGroupProfilesGet(
-        _rangeStartTime.unix(),
-        _rangeEndTime.unix(),
-        {
-          errorStrategy: ErrorStrategy.Custom
-        }
-      )
+    return ctx!.ds.continuousProfilingGroupProfilesGet(
+      _rangeStartTime.unix(),
+      _rangeEndTime.unix(),
+      {
+        handleError: 'custom'
+      }
+    )
+
+    // return client
+    //   .getInstance()
+    //   .continuousProfilingGroupProfilesGet(
+    //     _rangeStartTime.unix(),
+    //     _rangeEndTime.unix(),
+    //     {
+    //       errorStrategy: ErrorStrategy.Custom
+    //     }
+    //   )
   })
 
   const { t } = useTranslation()
@@ -171,8 +182,10 @@ export default function Page() {
   const [showSettings, setShowSettings] = useState(false)
 
   const { data: ngMonitoringConfig, sendRequest: reloadConfig } =
-    useClientRequest((reqConfig) =>
-      client.getInstance().continuousProfilingConfigGet(reqConfig)
+    useClientRequest(
+      // (reqConfig) =>
+      // client.getInstance().continuousProfilingConfigGet(reqConfig)
+      ctx!.ds.continuousProfilingConfigGet
     )
   const conprofIsDisabled = useMemo(
     () => ngMonitoringConfig?.continuous_profiling?.enable === false,

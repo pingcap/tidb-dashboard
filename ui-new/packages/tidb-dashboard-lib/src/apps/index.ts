@@ -25,8 +25,8 @@ export * from './SearchLogs'
 export { default as InstanceProfilingApp } from './InstanceProfiling'
 export * from './InstanceProfiling'
 
-export { default as ConprofApp } from './ContinuousProfiling'
-export { default as ConprofAppMeta } from './ContinuousProfiling/index.meta'
+export { default as ConProfilingApp } from './ContinuousProfiling'
+export * from './ContinuousProfiling'
 
 export { default as DebugAPIApp } from './DebugAPI'
 export { default as DebugAPIAppMeta } from './DebugAPI/index.meta'

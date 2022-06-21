@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useContext } from 'react'
 import {
   Form,
   Skeleton,
@@ -14,14 +14,15 @@ import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import client, {
-  ErrorStrategy,
+import {
+  // ErrorStrategy,
   ConprofContinuousProfilingConfig
 } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar, InstanceSelect } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 import { telemetry } from '../utils/telemetry'
+import { ConProfilingContext } from '../context'
 
 const ONE_DAY_SECONDS = 24 * 60 * 60
 const RETENTION_SECONDS = [
@@ -47,6 +48,8 @@ interface Props {
 }
 
 function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
+  const ctx = useContext(ConProfilingContext)
+
   const [submitting, setSubmitting] = useState(false)
   const { t } = useTranslation()
   const isWriteable = useIsWriteable()
@@ -55,16 +58,19 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
     data: initialConfig,
     isLoading: loading,
     error
-  } = useClientRequest(() =>
-    client.getInstance().continuousProfilingConfigGet({
-      errorStrategy: ErrorStrategy.Custom
-    })
+  } = useClientRequest(
+    // () =>
+    // client.getInstance().continuousProfilingConfigGet({
+    //   errorStrategy: ErrorStrategy.Custom
+    // })
+    () => ctx!.ds.continuousProfilingConfigGet({ handleError: 'custom' })
   )
 
   const { data: estimateSize } = useClientRequest(() =>
-    client.getInstance().continuousProfilingEstimateSizeGet({
-      errorStrategy: ErrorStrategy.Custom
-    })
+    // client.getInstance().continuousProfilingEstimateSizeGet({
+    //   errorStrategy: ErrorStrategy.Custom
+    // })
+    ctx!.ds.continuousProfilingEstimateSizeGet({ handleError: 'custom' })
   )
 
   const dataRetentionSeconds = useMemo(() => {
@@ -90,7 +96,10 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
         }
         try {
           setSubmitting(true)
-          await client.getInstance().continuousProfilingConfigPost({
+          // await client.getInstance().continuousProfilingConfigPost({
+          //   continuous_profiling: newConfig
+          // })
+          await ctx!.ds.continuousProfilingConfigPost({
             continuous_profiling: newConfig
           })
           telemetry.saveSettings(newConfig)

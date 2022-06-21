@@ -1,5 +1,5 @@
 import { Badge, Button, Modal, Space } from 'antd'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -7,7 +7,7 @@ import { useMemoizedFn } from 'ahooks'
 import { upperFirst } from 'lodash'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 
-import client, { ConprofProfileDetail } from '@lib/client'
+import { ConprofProfileDetail } from '@lib/client'
 import {
   Card,
   CardTable,
@@ -22,6 +22,7 @@ import useQueryParams from '@lib/utils/useQueryParams'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { telemetry } from '../utils/telemetry'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import { ConProfilingContext } from '../context'
 
 const COMMON_ACTIONS: string[] = ['view_flamegraph', 'view_graph', 'download']
 const TEXT_ACTIONS: string[] = ['view_text']
@@ -34,6 +35,8 @@ const profileTypeSortOrder: { [key: string]: number } = {
 }
 
 export default function Page() {
+  const ctx = useContext(ConProfilingContext)
+
   const { t } = useTranslation()
   const { ts } = useQueryParams()
 
@@ -41,9 +44,12 @@ export default function Page() {
     data: groupProfileDetail,
     isLoading: groupDetailLoading,
     error: groupDetailError
-  } = useClientRequest(() => {
-    return client.getInstance().continuousProfilingGroupProfileDetailGet(ts)
-  })
+  } = useClientRequest(
+    // () => {
+    // return client.getInstance().continuousProfilingGroupProfileDetailGet(ts)
+    (reqConfig) =>
+      ctx!.ds.continuousProfilingGroupProfileDetailGet(ts, reqConfig)
+  )
 
   const profileDuration = groupProfileDetail?.profile_duration_secs || 0
 
@@ -92,9 +98,10 @@ export default function Page() {
       if (action === 'view_flamegraph' || action === 'download') {
         dataFormat = 'protobuf'
       }
-      const res = await client
-        .getInstance()
-        .continuousProfilingActionTokenGet(
+      const res =
+        // await client
+        //   .getInstance()
+        await ctx!.ds.continuousProfilingActionTokenGet(
           `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}&data_format=${dataFormat}`
         )
       const token = res.data
@@ -109,7 +116,9 @@ export default function Page() {
       })
 
       if (action === 'view_graph' || action === 'view_text') {
-        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
+        const profileURL = `${
+          ctx!.cfg.basePath
+        }/continuous_profiling/single_profile/view?token=${token}`
         window.open(profileURL, '_blank')
         return
       }
@@ -117,7 +126,9 @@ export default function Page() {
       if (action === 'view_flamegraph') {
         // view flamegraph by speedscope
         const speedscopeTitle = `${rec.target?.component}_${rec.target?.address}_${rec.profile_type}`
-        const profileURL = `${client.getBasePath()}/continuous_profiling/single_profile/view?token=${token}`
+        const profileURL = `${
+          ctx!.cfg.basePath
+        }/continuous_profiling/single_profile/view?token=${token}`
         const speedscopeURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
           profileURL
         )}&title=${speedscopeTitle}`
@@ -126,22 +137,29 @@ export default function Page() {
       }
 
       if (action === 'download') {
-        window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
+        window.location.href = `${
+          ctx!.cfg.basePath
+        }/continuous_profiling/download?token=${token}`
         return
       }
     }
   )
 
   const handleDownloadGroup = useCallback(async () => {
-    const res = await client
-      .getInstance()
-      .continuousProfilingActionTokenGet(`ts=${ts}&data_format=protobuf`)
+    const res =
+      // await client
+      //   .getInstance()
+      await ctx!.ds.continuousProfilingActionTokenGet(
+        `ts=${ts}&data_format=protobuf`
+      )
     const token = res.data
     if (!token) {
       return
     }
     telemetry.downloadProfilingGroupResult()
-    window.location.href = `${client.getBasePath()}/continuous_profiling/download?token=${token}`
+    window.location.href = `${
+      ctx!.cfg.basePath
+    }/continuous_profiling/download?token=${token}`
   }, [ts])
 
   const columns = useMemo(

@@ -47,7 +47,7 @@ import {
   DiagnoseAppMeta as AppDiagnose,
   // SearchLogsAppMeta as AppSearchLogs,
   // InstanceProfilingAppMeta as AppInstanceProfiling,
-  ConprofAppMeta as AppContinuousProfiling,
+  // ConprofAppMeta as AppContinuousProfiling,
   QueryEditorAppMeta as AppQueryEditor,
   ConfigurationAppMeta as AppConfiguration,
   DebugAPIAppMeta as AppDebugAPI,
@@ -63,6 +63,7 @@ import AppKeyViz from '~/apps/KeyViz/meta'
 import AppSystemReport from '~/apps/SystemReport/meta'
 import AppSearchLogs from '~/apps/SearchLogs/meta'
 import AppInstanceProfiling from '~/apps/InstanceProfiling/meta'
+import AppConProfiling from '~/apps/ContinuousProfiling/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'
@@ -222,7 +223,7 @@ async function webPageStart() {
     .register(AppDiagnose)
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
-    .register(AppContinuousProfiling)
+    .register(AppConProfiling)
     .register(AppQueryEditor)
     .register(AppConfiguration)
     .register(AppDebugAPI)

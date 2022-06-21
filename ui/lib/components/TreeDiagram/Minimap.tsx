@@ -69,8 +69,8 @@ const Minimap = ({
   const _brushRef = useRef<SVGGElement>(null)
 
   const brushSelection = select(_brushRef.current!)
-  const minimapSVG = select('.minimapSVG')
-  const minimapGroup = select('.minimapGroup')
+  const minimapSelection = select('.minimapSVG')
+  const minimapGroupSelection = select('.minimapGroup')
 
   const longSide = mainChartWidth > mainChartHeight ? 'x' : 'y'
   const chartLongSideSize = Math.max(mainChartWidth, mainChartHeight)
@@ -79,7 +79,7 @@ const Minimap = ({
     (longSide === 'x' ? minimapContainerWidth : minimapContainerHeight)
 
   const drawMinimap = () => {
-    minimapSVG
+    minimapSelection
       .attr('width', minimapContainerWidth)
       .attr('height', minimapContainerHeight)
       .attr(
@@ -112,7 +112,7 @@ const Minimap = ({
       .attr('height', mainChartHeight)
       .attr('fill', 'white')
 
-    minimapGroup
+    minimapGroupSelection
       .attr('transform', `translate(${translate.x}, 0) scale(${translate.k})`)
       .attr('width', mainChartWidth)
       .attr('height', mainChartHeight)
@@ -180,8 +180,8 @@ const Minimap = ({
   useEffect(() => {
     drawMinimap()
     // Removes these elements can avoid re-select brush on minimap
-    minimapSVG.selectAll('.handle').remove()
-    minimapSVG.selectAll('.overlay').remove()
+    minimapSelection.selectAll('.handle').remove()
+    minimapSelection.selectAll('.overlay').remove()
   })
 
   useEffect(() => {

@@ -3,8 +3,6 @@ import {
   IDebugAPIContext,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
-import { TopologyTiDBInfo } from '@pingcap/tidb-dashboard-lib/dist/client'
-import { AxiosPromise } from 'axios'
 
 import client, { EndpointRequestPayload } from '~/client'
 

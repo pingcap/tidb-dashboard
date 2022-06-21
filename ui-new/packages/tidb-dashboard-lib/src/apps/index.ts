@@ -32,7 +32,7 @@ export { default as DebugAPIApp } from './DebugAPI'
 export * from './DebugAPI'
 
 export { default as QueryEditorApp } from './QueryEditor'
-export { default as QueryEditorAppMeta } from './QueryEditor/index.meta'
+export * from './QueryEditor'
 
 export { default as ConfigurationApp } from './Configuration'
 export { default as ConfigurationAppMeta } from './Configuration/index.meta'

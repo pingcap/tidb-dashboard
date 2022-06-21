@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useContext } from 'react'
 import cx from 'classnames'
 import { Root, Card } from '@lib/components'
 import Split from 'react-split'
@@ -14,13 +14,25 @@ import Editor from './Editor'
 import ResultTable from './ResultTable'
 
 import styles from './index.module.less'
-import client, { QueryeditorRunResponse } from '@lib/client'
+import { QueryeditorRunResponse } from '@lib/client'
 import ReactAce from 'react-ace/lib/ace'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
+import translations from './translations'
+import { addTranslations } from '@lib/utils/i18n'
+import { QueryEditorContext } from './context'
+
 const MAX_DISPLAY_ROWS = 1000
 
+addTranslations(translations)
+
 function App() {
+  const ctx = useContext(QueryEditorContext)
+
+  if (ctx === null) {
+    throw new Error('QueryEditorContext must not be null')
+  }
+
   const [results, setResults] = useState<QueryeditorRunResponse | undefined>()
   const [isRunning, setRunning] = useState(false)
   const editor = useRef<ReactAce>(null)
@@ -33,10 +45,12 @@ function App() {
     try {
       setRunning(true)
       setResults(undefined)
-      const resp = await client.getInstance().queryEditorRun({
-        max_rows: MAX_DISPLAY_ROWS,
-        statements: editor.current?.editor.getValue()
-      })
+      const resp =
+        // await client.getInstance().queryEditorRun
+        await ctx!.ds.queryEditorRun({
+          max_rows: MAX_DISPLAY_ROWS,
+          statements: editor.current?.editor.getValue()
+        })
       setResults(resp.data)
     } finally {
       setRunning(false)
@@ -105,3 +119,5 @@ function App() {
 }
 
 export default App
+
+export * from './context'

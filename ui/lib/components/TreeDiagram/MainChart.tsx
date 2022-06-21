@@ -15,6 +15,7 @@ interface MainChartProps {
   customLinkElement: any
   customNodeElement: any
   handleNodeExpandBtnToggle: any
+  handleOnNodeDetailClick: any
 }
 
 const MainChart = ({
@@ -25,8 +26,8 @@ const MainChart = ({
   customLinkElement,
   customNodeElement,
   handleNodeExpandBtnToggle,
+  handleOnNodeDetailClick,
 }: MainChartProps) => {
-  console.log('in mainchat', treeTranslate)
   return (
     <svg
       className="mainChartSVG"
@@ -62,6 +63,7 @@ const MainChart = ({
                   renderCustomNodeElement={customNodeElement}
                   hierarchyPointNode={hierarchyPointNode}
                   onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
+                  onNodeDetailClick={handleOnNodeDetailClick}
                 />
               )
             })}

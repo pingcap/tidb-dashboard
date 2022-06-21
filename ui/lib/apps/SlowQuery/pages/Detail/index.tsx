@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
+import { Tabs } from 'antd'
+
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
@@ -153,29 +155,24 @@ function DetailPage() {
                       </Descriptions.Item>
                     )
                 })()}
-                {(() => {
-                  if (data.plan)
-                    return (
-                      <Descriptions.Item
-                        span={2}
-                        multiline={detailExpand.plan}
-                        label={
-                          <Space size="middle">
-                            <TextWithInfo.TransKey transKey="slow_query.detail.head.plan" />
-                            <Expand.Link
-                              expanded={detailExpand.plan}
-                              onClick={togglePlan}
-                            />
-                            <CopyLink data={data.plan ?? ''} />
-                          </Space>
-                        }
-                      >
-                        <Expand expanded={detailExpand.plan}>
-                          <Pre noWrap>{data.plan}</Pre>
-                        </Expand>
-                      </Descriptions.Item>
-                    )
-                })()}
+                {/* <Descriptions.Item
+                  span={2}
+                  multiline={detailExpand.plan}
+                  label={
+                    <Space size="middle">
+                      <TextWithInfo.TransKey transKey="slow_query.detail.head.plan" />
+                      <Expand.Link
+                        expanded={detailExpand.plan}
+                        onClick={togglePlan}
+                      />
+                      <CopyLink data={data.plan ?? ''} />
+                    </Space>
+                  }
+                >
+                  <Expand expanded={detailExpand.plan}>
+                    <Pre noWrap>{data.plan}</Pre>
+                  </Expand>
+                </Descriptions.Item>
 
                 {(() => {
                   // if (data.visual_plan)
@@ -205,8 +202,65 @@ function DetailPage() {
                       </Modal>
                     </Descriptions.Item>
                   )
-                })()}
+                })()} */}
               </Descriptions>
+              <Tabs defaultActiveKey="visual_plan">
+                <Tabs.TabPane tab="Visual Plan" key="visual_plan">
+                  <Modal
+                    title="Visual Plan Tree Diagram"
+                    centered
+                    visible={isVpVisible}
+                    width={window.innerWidth}
+                    onCancel={toggleVisualPlan}
+                    footer={null}
+                    bodyStyle={{ background: '#f5f5f5' }}
+                  >
+                    <TreeDiagramView
+                      // data={JSON.parse(data.visual_plan).main}
+                      data={vpData.main}
+                      showMinimap={true}
+                    />
+                  </Modal>
+                  <Descriptions>
+                    <Descriptions.Item
+                      span={2}
+                      label={
+                        <Space size="middle" onClick={toggleVisualPlan}>
+                          <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
+                        </Space>
+                      }
+                    >
+                      {/* <TreeDiagramView
+                        // data={JSON.parse(data.visual_plan).main}
+                        data={vpData.main}
+                        showMinimap={false}
+                        isThumbnail={true}
+                      /> */}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="Text Plan" key="text_plan">
+                  <Descriptions>
+                    <Descriptions.Item
+                      span={2}
+                      multiline={detailExpand.plan}
+                      label={
+                        <Space size="middle">
+                          <Expand.Link
+                            expanded={detailExpand.plan}
+                            onClick={togglePlan}
+                          />
+                          <CopyLink data={data.plan ?? ''} />
+                        </Space>
+                      }
+                    >
+                      <Expand expanded={detailExpand.plan}>
+                        <Pre noWrap>{data.plan}</Pre>
+                      </Expand>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Tabs.TabPane>
+              </Tabs>
               <DetailTabs data={data} />
             </>
           )}

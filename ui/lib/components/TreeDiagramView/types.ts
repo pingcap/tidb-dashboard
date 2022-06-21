@@ -32,7 +32,10 @@ export interface TreeNodeDatum extends RawNodeDatum {
     }
   }
 }
-
+export interface rectBound {
+  width: number
+  height: number
+}
 export interface TreeDiagramProps {
   /**
    * The root node object, in which child nodes (also of type `RawNodeDatum`)

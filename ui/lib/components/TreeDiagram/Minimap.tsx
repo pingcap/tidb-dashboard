@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 import { Translate, rectBound } from './types'
 
 import NodeWrapper from './NodeWrapper'
@@ -7,7 +7,6 @@ import styles from './index.module.less'
 
 // import d3 APIs
 import { select, event } from 'd3-selection'
-import { scaleLinear } from 'd3-scale'
 import { brush as d3Brush } from 'd3-brush'
 import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 
@@ -83,7 +82,7 @@ const Minimap = ({
       .attr('preserveAspectRatio', 'xMidYMid meet')
       .style('position', 'absolute')
       .style('top', 0)
-      .style('right', 20)
+      .style('left', 20)
       .style('border', '1px solid grey')
       .style('background', 'white')
 
@@ -93,7 +92,10 @@ const Minimap = ({
       .attr('fill', 'white')
 
     minimapGroup
-      .attr('transform', `translate(${minimapTranslate.x}, 0) scale(1)`)
+      .attr(
+        'transform',
+        `translate(${minimapTranslate.x}, 0) scale(${minimapTranslate.k})`
+      )
       .attr('width', mainChartWidth)
       .attr('height', mainChartHeight)
   }

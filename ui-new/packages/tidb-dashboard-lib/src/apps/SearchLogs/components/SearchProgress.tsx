@@ -1,16 +1,24 @@
 import { Button, Modal, Tree } from 'antd'
 import _ from 'lodash'
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useContext
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import client, { LogsearchTaskModel } from '@lib/client'
+// import client, { LogsearchTaskModel } from '@lib/client'
+import { LogsearchTaskModel } from '@lib/client'
 import { AnimatedSkeleton } from '@lib/components'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import { TaskState } from '../utils'
 
 import styles from './Styles.module.less'
 import { InstanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
+import { SearchLogsContext } from '../context'
 
 const { confirm } = Modal
 const taskStateIcons = {
@@ -68,6 +76,8 @@ export default function SearchProgress({
   tasks,
   toggleReload
 }: Props) {
+  const ctx = useContext(SearchLogsContext)
+
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
@@ -148,12 +158,14 @@ export default function SearchProgress({
       (key) => !InstanceKinds.some((ik) => ik === key)
     )
 
-    const res = await client.getInstance().logsDownloadAcquireTokenGet(keys)
+    // const res = await client.getInstance().logsDownloadAcquireTokenGet(keys)
+    const res = await ctx!.ds.logsDownloadAcquireTokenGet(keys)
     const token = res.data
     if (!token) {
       return
     }
-    const url = `${client.getBasePath()}/logs/download?token=${token}`
+    // const url = `${client.getBasePath()}/logs/download?token=${token}`
+    const url = `${ctx!.cfg.basePath}/logs/download?token=${token}`
     window.location.href = url
   }
 
@@ -164,7 +176,8 @@ export default function SearchProgress({
     confirm({
       title: t('search_logs.confirm.cancel_tasks'),
       onOk() {
-        client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
+        // client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
+        ctx!.ds.logsTaskgroupsIdCancelPost(taskGroupID + '')
         toggleReload()
       }
     })
@@ -177,7 +190,8 @@ export default function SearchProgress({
     confirm({
       title: t('search_logs.confirm.retry_tasks'),
       onOk() {
-        client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
+        // client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
+        ctx!.ds.logsTaskgroupsIdRetryPost(taskGroupID + '')
         toggleReload()
       }
     })

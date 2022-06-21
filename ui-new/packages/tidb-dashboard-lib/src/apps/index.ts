@@ -20,7 +20,7 @@ export { default as SystemReportApp } from './SystemReport'
 export * from './SystemReport'
 
 export { default as SearchLogsApp } from './SearchLogs'
-export { default as SearchLogsAppMeta } from './SearchLogs/index.meta'
+export * from './SearchLogs'
 
 export { default as InstanceProfilingApp } from './InstanceProfiling'
 export { default as InstanceProfilingAppMeta } from './InstanceProfiling/index.meta'

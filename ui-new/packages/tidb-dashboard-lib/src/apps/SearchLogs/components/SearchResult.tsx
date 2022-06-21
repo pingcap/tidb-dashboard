@@ -1,8 +1,14 @@
-import client from '@lib/client'
+// import client from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
 import { CardTable, Card } from '@lib/components'
 import { Alert } from 'antd'
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useContext
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import { LogLevelText } from '../utils'
@@ -13,6 +19,7 @@ import {
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { ComponentWithSortIndex, ILogItem, LogRow } from './LogRow'
 import { sortBy } from 'lodash'
+import { SearchLogsContext } from '../context'
 
 interface Props {
   patterns: string[]
@@ -21,6 +28,8 @@ interface Props {
 }
 
 export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
+  const ctx = useContext(SearchLogsContext)
+
   const [logPreviews, setData] = useState<ILogItem[]>([])
   const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
@@ -52,9 +61,10 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
         return
       }
       try {
-        const res = await client
-          .getInstance()
-          .logsTaskgroupsIdPreviewGet(taskGroupID + '')
+        const res =
+          // await client
+          //   .getInstance()
+          await ctx!.ds.logsTaskgroupsIdPreviewGet(taskGroupID + '')
         setData(
           res.data.map((value, index): ILogItem => {
             return {

@@ -45,7 +45,7 @@ import {
   // TopSQLAppMeta as AppTopSQL,
   // SystemReportAppMeta as AppSystemReport,
   DiagnoseAppMeta as AppDiagnose,
-  SearchLogsAppMeta as AppSearchLogs,
+  // SearchLogsAppMeta as AppSearchLogs,
   InstanceProfilingAppMeta as AppInstanceProfiling,
   ConprofAppMeta as AppContinuousProfiling,
   QueryEditorAppMeta as AppQueryEditor,
@@ -54,13 +54,14 @@ import {
   OptimizerTraceAppMeta as AppOptimizerTrace
 } from '@pingcap/tidb-dashboard-lib'
 
-import { default as AppSlowQuery } from '~/apps/SlowQuery/meta'
-import { default as AppStatement } from '~/apps/Statement/meta'
-import { default as AppOverview } from '~/apps/Overview/meta'
-import { default as AppClusterInfo } from '~/apps/ClusterInfo/meta'
-import { default as AppTopSQL } from '~/apps/TopSQL/meta'
-import { default as AppKeyViz } from '~/apps/KeyViz/meta'
-import { default as AppSystemReport } from '~/apps/SystemReport/meta'
+import AppSlowQuery from '~/apps/SlowQuery/meta'
+import AppStatement from '~/apps/Statement/meta'
+import AppOverview from '~/apps/Overview/meta'
+import AppClusterInfo from '~/apps/ClusterInfo/meta'
+import AppTopSQL from '~/apps/TopSQL/meta'
+import AppKeyViz from '~/apps/KeyViz/meta'
+import AppSystemReport from '~/apps/SystemReport/meta'
+import AppSearchLogs from '~/apps/SearchLogs/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

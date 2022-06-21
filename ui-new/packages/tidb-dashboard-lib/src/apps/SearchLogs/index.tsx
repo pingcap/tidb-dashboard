@@ -1,10 +1,21 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Root, ParamsPageWrapper } from '@lib/components'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 
 import { LogSearch, LogSearchHistory, LogSearchDetail } from './pages'
 
+import translations from './translations'
+import { addTranslations } from '@lib/utils/i18n'
+import { SearchLogsContext } from './context'
+
+addTranslations(translations)
+
 export default function () {
+  const ctx = useContext(SearchLogsContext)
+  if (ctx === null) {
+    throw new Error('SearchLogsContext must not be null')
+  }
+
   return (
     <Root>
       <Router>
@@ -24,3 +35,5 @@ export default function () {
     </Root>
   )
 }
+
+export * from './context'

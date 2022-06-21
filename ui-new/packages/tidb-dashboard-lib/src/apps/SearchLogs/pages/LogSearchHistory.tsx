@@ -1,9 +1,9 @@
-import client from '@lib/client'
+// import client from '@lib/client'
 import { LogsearchTaskGroupModel } from '@lib/client'
 import { Head, CardTable, DateTime } from '@lib/components'
 import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { Badge, Button, Modal, Space } from 'antd'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
@@ -12,6 +12,7 @@ import {
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { LogLevelText } from '../utils'
+import { SearchLogsContext } from '../context'
 
 function componentRender({ target_stats: stats, t }) {
   // FIXME: Extract common util
@@ -51,6 +52,8 @@ function patternRender({ search_request: request }: LogsearchTaskGroupModel) {
 }
 
 export default function LogSearchingHistory() {
+  const ctx = useContext(SearchLogsContext)
+
   const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupModel[]>([])
   const [selectedRowKeys, setRowKeys] = useState<string[]>([])
 
@@ -58,7 +61,8 @@ export default function LogSearchingHistory() {
 
   useEffect(() => {
     async function getData() {
-      const res = await client.getInstance().logsTaskgroupsGet()
+      // const res = await client.getInstance().logsTaskgroupsGet()
+      const res = await ctx!.ds.logsTaskgroupsGet()
       setTaskGroups(res.data)
     }
 
@@ -101,9 +105,11 @@ export default function LogSearchingHistory() {
       okButtonProps: { danger: true },
       onOk: async () => {
         for (const taskGroupID of selectedRowKeys) {
-          await client.getInstance().logsTaskgroupsIdDelete(taskGroupID)
+          // await client.getInstance().logsTaskgroupsIdDelete(taskGroupID)
+          await ctx!.ds.logsTaskgroupsIdDelete(taskGroupID)
         }
-        const res = await client.getInstance().logsTaskgroupsGet()
+        // const res = await client.getInstance().logsTaskgroupsGet()
+        const res = await ctx!.ds.logsTaskgroupsGet()
         setTaskGroups(res.data)
       }
     })
@@ -123,9 +129,11 @@ export default function LogSearchingHistory() {
           if (key === undefined) {
             continue
           }
-          await client.getInstance().logsTaskgroupsIdDelete(String(key))
+          // await client.getInstance().logsTaskgroupsIdDelete(String(key))
+          await ctx!.ds.logsTaskgroupsIdDelete(String(key))
         }
-        const res = await client.getInstance().logsTaskgroupsGet()
+        // const res = await client.getInstance().logsTaskgroupsGet()
+        const res = await ctx!.ds.logsTaskgroupsGet()
         setTaskGroups(res.data)
       }
     })

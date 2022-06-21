@@ -1,32 +1,66 @@
-import React from 'react'
-import { Translate } from './types'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { HierarchyPointLink, HierarchyPointNode, select } from 'd3'
 
+import { nodeMarginType, Translate, TreeNodeDatum } from './types'
 import NodeWrapper from './NodeWrapper'
 import LinkWrapper from './LinkWrapper'
+import { generateNodesAndLinks } from './utlis'
 
 interface MainChartProps {
+  datum: TreeNodeDatum[]
   viewPort: {
     width: number
     height: number
   }
   treeTranslate: Translate
-  links: any
-  nodes: any
   customLinkElement: any
   customNodeElement: any
-  handleNodeExpandBtnToggle: any
+  onNodeExpandBtnToggle: any
+  onInit?: () => void
+
+  nodeMargin?: nodeMarginType
 }
 
 const MainChart = ({
+  datum,
+  nodeMargin,
   viewPort,
   treeTranslate,
-  links,
-  nodes,
   customLinkElement,
   customNodeElement,
-  handleNodeExpandBtnToggle,
+  onNodeExpandBtnToggle,
+  onInit,
 }: MainChartProps) => {
-  console.log('in mainchat', treeTranslate)
+  const inited = useRef(false)
+  const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
+  const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
+  const margin: nodeMarginType = useMemo(
+    () =>
+      nodeMargin || {
+        siblingMargin: 40,
+        childrenMargin: 60,
+      },
+    [nodeMargin]
+  )
+
+  useEffect(() => {
+    if (!datum.length) {
+      return
+    }
+    const { nodes, links } = generateNodesAndLinks(datum, margin)
+    setNodes(nodes)
+    setLinks(links)
+  }, [datum, margin])
+
+  // TODO: may be better to use svg event to emit render inited event
+  useEffect(() => {
+    if (!nodes.length || inited.current) {
+      return
+    }
+    inited.current = true
+    onInit?.()
+  }, [nodes, onInit])
+
   return (
     <svg
       className="mainChartSVG"
@@ -61,7 +95,7 @@ const MainChart = ({
                   key={data.name}
                   renderCustomNodeElement={customNodeElement}
                   hierarchyPointNode={hierarchyPointNode}
-                  onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
+                  onNodeExpandBtnToggle={onNodeExpandBtnToggle}
                 />
               )
             })}

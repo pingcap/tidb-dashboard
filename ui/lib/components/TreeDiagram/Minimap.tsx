@@ -1,21 +1,19 @@
-import React, { useEffect, useRef } from 'react'
-import { Translate, rectBound } from './types'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { select, event } from 'd3-selection'
+import { brush as d3Brush } from 'd3-brush'
+import { HierarchyPointLink, HierarchyPointNode } from 'd3'
+import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 
 import NodeWrapper from './NodeWrapper'
 import LinkWrapper from './LinkWrapper'
 import styles from './index.module.less'
-
-// import d3 APIs
-import { select, event } from 'd3-selection'
-import { scaleLinear } from 'd3-scale'
-import { brush as d3Brush } from 'd3-brush'
-import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
+import { Translate, rectBound, TreeNodeDatum, nodeMarginType } from './types'
+import { generateNodesAndLinks } from './utlis'
 
 interface MinimapProps {
+  datum: TreeNodeDatum[]
   treeBound
   viewPort: rectBound
-  links: any
-  nodes: any
   customLinkElement: any
   customNodeElement: any
   minimapScale: number
@@ -26,13 +24,15 @@ interface MinimapProps {
   updateTreeTranslate
   brushBehavior
   gBrush
+
+  nodeMargin?: nodeMarginType
 }
 
 const Minimap = ({
+  datum,
   treeBound,
   viewPort,
-  links,
-  nodes,
+  nodeMargin,
   customLinkElement,
   customNodeElement,
   minimapScale,
@@ -43,6 +43,8 @@ const Minimap = ({
   updateTreeTranslate,
   gBrush,
 }: MinimapProps) => {
+  const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
+  const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
   const minimapSVG = select('.minimapSVG')
   const minimapGroup = select('.minimapGroup')
   const { width: mainChartWidth, height: mainChartHeight, x, y } = treeBound
@@ -51,6 +53,14 @@ const Minimap = ({
     y,
     k: 1,
   }
+  const margin: nodeMarginType = useMemo(
+    () =>
+      nodeMargin || {
+        siblingMargin: 40,
+        childrenMargin: 60,
+      },
+    [nodeMargin]
+  )
 
   const minimapContainerWidth = viewPort.width * minimapScale
   const minimapContainerHeight = viewPort.height * minimapScale
@@ -151,6 +161,14 @@ const Minimap = ({
       ],
     ])
   }
+
+  useEffect(() => {
+    if (datum.length > 0) {
+      const { nodes, links } = generateNodesAndLinks(datum, margin)
+      setNodes(nodes)
+      setLinks(links)
+    }
+  }, [datum, margin])
 
   useEffect(() => {
     drawMinimap()

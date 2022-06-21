@@ -1,12 +1,15 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useContext, useRef, useState } from 'react'
 import { Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 
-import client, { InfoTableSchema } from '@lib/client'
+import { InfoTableSchema } from '@lib/client'
 import type { ApiFormWidget } from './index'
 import { useLimitSelection } from './useLimitSelection'
+import { DebugAPIContext } from '../../context'
 
 export const TableWidget: ApiFormWidget = ({ form, value, onChange }) => {
+  const ctx = useContext(DebugAPIContext)
+
   const { t } = useTranslation()
   const tips = t(`debug_api.widgets.table_dropdown`)
 
@@ -28,7 +31,8 @@ export const TableWidget: ApiFormWidget = ({ form, value, onChange }) => {
 
     setLoading(true)
     try {
-      const rst = await client.getInstance().infoListTables(dbValue)
+      // const rst = await client.getInstance().infoListTables(dbValue)
+      const rst = await ctx!.ds.infoListTables(dbValue)
       setOptions(rst.data)
     } finally {
       setLoading(false)

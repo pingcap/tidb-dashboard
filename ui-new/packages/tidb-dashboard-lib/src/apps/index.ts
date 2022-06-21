@@ -29,7 +29,7 @@ export { default as ConProfilingApp } from './ContinuousProfiling'
 export * from './ContinuousProfiling'
 
 export { default as DebugAPIApp } from './DebugAPI'
-export { default as DebugAPIAppMeta } from './DebugAPI/index.meta'
+export * from './DebugAPI'
 
 export { default as QueryEditorApp } from './QueryEditor'
 export { default as QueryEditorAppMeta } from './QueryEditor/index.meta'

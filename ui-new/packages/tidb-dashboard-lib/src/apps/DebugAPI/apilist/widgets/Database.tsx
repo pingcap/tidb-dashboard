@@ -1,12 +1,15 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 
-import client from '@lib/client'
+// import client from '@lib/client'
 import type { ApiFormWidget } from './index'
 import { useLimitSelection } from './useLimitSelection'
+import { DebugAPIContext } from '../../context'
 
 export const DatabaseWidget: ApiFormWidget = ({ value, onChange }) => {
+  const ctx = useContext(DebugAPIContext)
+
   const { t } = useTranslation()
   const tips = t(`debug_api.widgets.db_dropdown`)
 
@@ -19,7 +22,8 @@ export const DatabaseWidget: ApiFormWidget = ({ value, onChange }) => {
 
     setLoading(true)
     try {
-      const rst = await client.getInstance().infoListDatabases()
+      // const rst = await client.getInstance().infoListDatabases()
+      const rst = await ctx!.ds.infoListDatabases()
       setOptions(rst.data)
     } finally {
       setLoading(false)

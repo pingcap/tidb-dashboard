@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Collapse, Space, Input, Empty, Alert } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
@@ -9,12 +9,13 @@ import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 import { AnimatedSkeleton, Card, Root } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client, { EndpointAPIDefinition } from '@lib/client'
+import { EndpointAPIDefinition } from '@lib/client'
 
 import style from './ApiList.module.less'
 import ApiForm, { Topology } from './ApiForm'
 import { buildQueryString } from './widgets'
 import { distro } from '@lib/utils/i18n'
+import { DebugAPIContext } from '../context'
 
 const getEndpointTranslationKey = (endpoint: EndpointAPIDefinition) =>
   `debug_api.${endpoint.component}.endpoints.${endpoint.id}`
@@ -50,22 +51,29 @@ const useFilterEndpoints = (endpoints?: EndpointAPIDefinition[]) => {
 }
 
 export default function Page() {
+  const ctx = useContext(DebugAPIContext)
+
   const { t, i18n } = useTranslation()
   const { data: endpointData, isLoading: isEndpointLoading } = useClientRequest(
-    (reqConfig) => client.getInstance().debugAPIGetEndpoints(reqConfig)
+    // (reqConfig) => client.getInstance().debugAPIGetEndpoints(reqConfig)
+    ctx!.ds.debugAPIGetEndpoints
   )
   const { endpoints, filterBy } = useFilterEndpoints(endpointData)
 
   // TODO: refine with components/InstanceSelect
   const { data: tidbTopology = [], isLoading: isTiDBTopology } =
-    useClientRequest((reqConfig) =>
-      client.getInstance().getTiDBTopology(reqConfig)
+    useClientRequest(
+      // (reqConfig) =>
+      // client.getInstance().getTiDBTopology(reqConfig)
+      ctx!.ds.getTiDBTopology
     )
   const { data: pdTopology = [], isLoading: isPDLoading } = useClientRequest(
-    (reqConfig) => client.getInstance().getPDTopology(reqConfig)
+    // (reqConfig) => client.getInstance().getPDTopology(reqConfig)
+    ctx!.ds.getPDTopology
   )
   const { data: storeTopology, isLoading: isStoreLoading } = useClientRequest(
-    (reqConfig) => client.getInstance().getStoreTopology(reqConfig)
+    // (reqConfig) => client.getInstance().getStoreTopology(reqConfig)
+    ctx!.ds.getStoreTopology
   )
   const topology: Topology = {
     tidb: tidbTopology!,

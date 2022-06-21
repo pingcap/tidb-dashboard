@@ -1,9 +1,9 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Button, Space, Row, Col } from 'antd'
 import { isNull, isUndefined } from 'lodash'
 import { DownloadOutlined, UndoOutlined } from '@ant-design/icons'
-import client, {
+import {
   EndpointAPIDefinition,
   EndpointAPIParamDefinition,
   TopologyPDInfo,
@@ -12,6 +12,7 @@ import client, {
 } from '@lib/client'
 import { ApiFormWidgetConfig, createFormWidget } from './widgets'
 import { distro } from '@lib/utils/i18n'
+import { DebugAPIContext } from '../context'
 
 export interface Topology {
   tidb: TopologyTiDBInfo[]
@@ -27,6 +28,8 @@ export default function ApiForm({
   endpoint: EndpointAPIDefinition
   topology: Topology
 }) {
+  const ctx = useContext(DebugAPIContext)
+
   const { t } = useTranslation()
   const { id, path_params, query_params, component } = endpoint
   const endpointHostParamKey = useMemo(
@@ -55,14 +58,18 @@ export default function ApiForm({
           }
           return prev
         }, {})
-        const resp = await client.getInstance().debugAPIRequestEndpoint({
-          api_id: id,
-          host: hostname,
-          port: Number(port),
-          param_values
-        })
+        const resp =
+          // await client.getInstance().debugAPIRequestEndpoint
+          await ctx!.ds.debugAPIRequestEndpoint({
+            api_id: id,
+            host: hostname,
+            port: Number(port),
+            param_values
+          })
         const token = resp.data
-        window.location.href = `${client.getBasePath()}/debug_api/download?token=${token}`
+        window.location.href = `${
+          ctx!.cfg.basePath
+        }/debug_api/download?token=${token}`
       } catch (e) {
         console.error(e)
       } finally {

@@ -54,12 +54,6 @@ const TreeDiagram = ({
 
   // Sets initDraw to avoid re-calcuate the bound of entire tree
   const [initDraw, setInitDraw] = useState(true)
-  const [minimapTranslate, setMinimapTranslate] = useState({
-    x: 0,
-    y: 0,
-    k: 1,
-  })
-
   const treeDiagramContainerRef = useRef<HTMLDivElement>(null)
 
   // A SVG container for main chart
@@ -227,13 +221,6 @@ const TreeDiagram = ({
     const { x, y, width, height } = mainChartGroupNode.getBBox()
     setTreeBound({ x: x, y: y, width: width, height: height })
 
-    const minimapTranslate = {
-      x: -x,
-      y: y,
-      k: 1,
-    }
-
-    setMinimapTranslate(minimapTranslate)
     setInitDraw(false)
   }
 
@@ -278,7 +265,6 @@ const TreeDiagram = ({
           viewPort={viewPort}
           links={links}
           nodes={nodes}
-          minimapTranslate={minimapTranslate}
           customLinkElement={customLinkElement}
           customNodeElement={customNodeElement}
           minimapScale={minimapScale!}

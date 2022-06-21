@@ -14,7 +14,6 @@ import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 interface MinimapProps {
   treeBound
   viewPort: rectBound
-  minimapTranslate: Translate
   links: any
   nodes: any
   customLinkElement: any
@@ -34,7 +33,6 @@ const Minimap = ({
   viewPort,
   links,
   nodes,
-  minimapTranslate,
   customLinkElement,
   customNodeElement,
   minimapScale,
@@ -48,6 +46,11 @@ const Minimap = ({
   const minimapSVG = select('.minimapSVG')
   const minimapGroup = select('.minimapGroup')
   const { width: mainChartWidth, height: mainChartHeight, x, y } = treeBound
+  const translate: Translate = {
+    x: -x,
+    y,
+    k: 1,
+  }
 
   const minimapContainerWidth = viewPort.width * minimapScale
   const minimapContainerHeight = viewPort.height * minimapScale
@@ -93,7 +96,7 @@ const Minimap = ({
       .attr('fill', 'white')
 
     minimapGroup
-      .attr('transform', `translate(${minimapTranslate.x}, 0) scale(1)`)
+      .attr('transform', `translate(${translate.x}, 0) scale(1)`)
       .attr('width', mainChartWidth)
       .attr('height', mainChartHeight)
   }
@@ -170,7 +173,7 @@ const Minimap = ({
         <rect className="minimap-rect"></rect>
         <g
           className="minimapGroup"
-          transform={`translate(${minimapTranslate.x}, ${minimapTranslate.y}) scale(${minimapTranslate.k})`}
+          transform={`translate(${translate.x}, ${translate.y}) scale(${translate.k})`}
         >
           <g className="linksWrapper">
             {links &&
@@ -196,7 +199,7 @@ const Minimap = ({
                     key={data.name}
                     renderCustomNodeElement={customNodeElement}
                     hierarchyPointNode={hierarchyPointNode}
-                    zoomScale={minimapTranslate.k}
+                    zoomScale={translate.k}
                   />
                 )
               })}

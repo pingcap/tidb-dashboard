@@ -47,11 +47,11 @@ const TreeDiagram = ({
   const treeDiagramContainerRef = useRef<HTMLDivElement>(null)
 
   // A SVG container for main chart
-  const mainChartSVG = select('.mainChartSVG')
-  const mainChartGroup = select('.mainChartGroup')
+  const mainChartSelection = select('.mainChartSVG')
+  const mainChartGroupSelection = select('.mainChartGroup')
 
-  const gBrushRef = useRef<SVGGElement>(null)
-  const gBrush = select(gBrushRef.current)
+  const brushRef = useRef<SVGGElement>(null)
+  const brushSelection = select(brushRef.current!)
 
   /**
    *
@@ -99,7 +99,7 @@ const TreeDiagram = ({
     setTreeTranslate(t)
 
     // Moves brush on minimap when zoom behavior is triggered.
-    brushBehavior.move(gBrush as any, [
+    brushBehavior.move(brushSelection, [
       [
         -treeBound.x + minimapScaleX(t.k).invert(-t.x),
         minimapScaleY(t.k).invert(-t.y),
@@ -125,7 +125,7 @@ const TreeDiagram = ({
 
   // Binds MainChart container
   const bindZoomListener = () => {
-    mainChartSVG.call(zoomBehavior as any)
+    mainChartSelection.call(zoomBehavior as any)
   }
 
   const findNodesById = (
@@ -184,7 +184,8 @@ const TreeDiagram = ({
 
   // TODO: what will happen if data changes?
   const getInitTreeDiagramBound = () => {
-    const mainChartGroupNode = mainChartGroup.node() as SVGGraphicsElement
+    const mainChartGroupNode =
+      mainChartGroupSelection.node() as SVGGraphicsElement
     const { x, y, width, height } = mainChartGroupNode.getBBox()
     setTreeBound({ x: x, y: y, width: width, height: height })
   }
@@ -224,10 +225,10 @@ const TreeDiagram = ({
           customLinkElement={customLinkElement}
           customNodeElement={customNodeElement}
           minimapScale={minimapScale!}
-          brushRef={gBrushRef}
+          brushRef={brushRef}
           minimapScaleX={minimapScaleX}
           minimapScaleY={minimapScaleY}
-          mainChartSVG={mainChartSVG}
+          mainChartSVG={mainChartSelection}
           updateTreeTranslate={handleUpdateTreeTranslate}
           brushBehavior={brushBehavior}
         />

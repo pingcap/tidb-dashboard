@@ -68,7 +68,7 @@ const Minimap = ({
   const minimapContainerHeight = viewPort.height * minimapScale
   const _brushRef = useRef<SVGGElement>(null)
 
-  const gBrush = select(_brushRef.current)
+  const brushSelection = select(_brushRef.current!)
   const minimapSVG = select('.minimapSVG')
   const minimapGroup = select('.minimapGroup')
 
@@ -157,10 +157,10 @@ const Minimap = ({
     .on('brush', () => onBrush())
 
   const bindBrushListener = () => {
-    gBrush.call(brushBehavior as any)
+    brushSelection.call(brushBehavior)
 
     // init brush seletion
-    brushBehavior.move(gBrush as any, [
+    brushBehavior.move(brushSelection, [
       [-treeBound.x - minimapScaleX(1)(viewPort.width / 2), 0],
       [
         -treeBound.x - minimapScaleX(1)(viewPort.width / 2) + viewPort.width,

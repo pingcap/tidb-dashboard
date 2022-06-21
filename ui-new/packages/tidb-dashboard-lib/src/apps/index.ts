@@ -23,7 +23,7 @@ export { default as SearchLogsApp } from './SearchLogs'
 export * from './SearchLogs'
 
 export { default as InstanceProfilingApp } from './InstanceProfiling'
-export { default as InstanceProfilingAppMeta } from './InstanceProfiling/index.meta'
+export * from './InstanceProfiling'
 
 export { default as ConprofApp } from './ContinuousProfiling'
 export { default as ConprofAppMeta } from './ContinuousProfiling/index.meta'

@@ -1,12 +1,12 @@
 import { Badge, Button, Modal, Progress, Space, Tooltip } from 'antd'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMemoizedFn } from 'ahooks'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { upperFirst } from 'lodash'
 
-import client, { ProfilingTaskModel } from '@lib/client'
+import { ProfilingTaskModel } from '@lib/client'
 import { CardTable, DateTime, Head, Descriptions, Card } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
@@ -14,6 +14,10 @@ import { InstanceKindName } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import {
+  IInstanceProfilingDataSource,
+  InstanceProfilingContext
+} from '../context'
 
 enum ViewOptions {
   FlameGraph = 'flamegraph',
@@ -90,9 +94,11 @@ function isFinished(data) {
 
 async function getActionToken(
   id: string,
-  apiType: string
+  apiType: string,
+  fetcher: IInstanceProfilingDataSource['getActionToken']
 ): Promise<string | undefined> {
-  const res = await client.getInstance().getActionToken(id, apiType)
+  // const res = await client.getInstance().getActionToken(id, apiType)
+  const res = await fetcher(id, apiType)
   const token = res.data
   if (!token) {
     return
@@ -105,6 +111,8 @@ interface IRecord extends ProfilingTaskModel {
 }
 
 export default function Page() {
+  const ctx = useContext(InstanceProfilingContext)
+
   const { t } = useTranslation()
   const { id } = useQueryParams()
 
@@ -113,7 +121,8 @@ export default function Page() {
     isLoading,
     error
   } = useClientRequestWithPolling(
-    (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
+    // (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
+    (reqConfig) => ctx!.ds.getProfilingGroupDetail(id, reqConfig),
     {
       shouldPoll: (data) => !isFinished(data)
     }
@@ -159,19 +168,29 @@ export default function Page() {
 
     switch (openAs) {
       case ViewOptions.Download:
-        token = await getActionToken(rec.id + '', 'single_download')
+        token = await getActionToken(
+          rec.id + '',
+          'single_download',
+          ctx!.ds.getActionToken
+        )
         if (!token) {
           return
         }
 
-        window.location.href = `${client.getBasePath()}/profiling/single/download?token=${token}`
+        window.location.href = `${
+          ctx!.cfg.basePath
+        }/profiling/single/download?token=${token}`
         break
       case ViewOptions.FlameGraph:
-        token = await getActionToken(rec.id + '', 'single_view')
+        token = await getActionToken(
+          rec.id + '',
+          'single_view',
+          ctx!.ds.getActionToken
+        )
         if (!token) {
           return
         }
-        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}`
+        profileURL = `${ctx!.cfg.basePath}/profiling/single/view?token=${token}`
         if (isProtobuf) {
           const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
           profileURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
@@ -184,11 +203,17 @@ export default function Page() {
         break
       case ViewOptions.Graph:
       case ViewOptions.Text:
-        token = await getActionToken(rec.id + '', 'single_view')
+        token = await getActionToken(
+          rec.id + '',
+          'single_view',
+          ctx!.ds.getActionToken
+        )
         if (!token) {
           return
         }
-        profileURL = `${client.getBasePath()}/profiling/single/view?token=${token}&output_type=${openAs}`
+        profileURL = `${
+          ctx!.cfg.basePath
+        }/profiling/single/view?token=${token}&output_type=${openAs}`
 
         window.open(`${profileURL}`, '_blank')
         break
@@ -321,12 +346,22 @@ export default function Page() {
   )
 
   const handleDownloadGroup = useCallback(async () => {
-    const res = await client.getInstance().getActionToken(id, 'group_download')
-    const token = res.data
+    // const res = await client.getInstance().getActionToken(id, 'group_download')
+    // const token = res.data
+    // if (!token) {
+    //   return
+    // }
+    const token = await getActionToken(
+      id,
+      'group_download',
+      ctx!.ds.getActionToken
+    )
     if (!token) {
       return
     }
-    window.location.href = `${client.getBasePath()}/profiling/group/download?token=${token}`
+    window.location.href = `${
+      ctx!.cfg.basePath
+    }/profiling/group/download?token=${token}`
   }, [id])
 
   return (

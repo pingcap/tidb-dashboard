@@ -1,14 +1,18 @@
 import { Badge, Button, Form, Select, Modal, Alert, Space, Tooltip } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import React, { useMemo, useState, useCallback, useRef } from 'react'
+import React, {
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  useContext
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useMemoizedFn } from 'ahooks'
 
-import client, {
-  ProfilingStartRequest,
-  ModelRequestTargetNode
-} from '@lib/client'
+import { ProfilingStartRequest, ModelRequestTargetNode } from '@lib/client'
+
 import {
   Card,
   CardTable,
@@ -26,21 +30,28 @@ import styles from './List.module.less'
 import { upperFirst } from 'lodash'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { isDistro } from '@lib/utils/distroStringsRes'
+import { InstanceProfilingContext } from '../context'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
 const profilingTypeOptions = ['CPU', 'Heap', 'Goroutine', 'Mutex']
 
 export default function Page() {
+  const ctx = useContext(InstanceProfilingContext)
+
   const {
     data: historyTable,
     isLoading: listLoading,
     error: historyError
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getProfilingGroups(reqConfig)
+  } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().getProfilingGroups(reqConfig)
+    ctx!.ds.getProfilingGroups
   )
-  const { data: ngMonitoringConfig } = useClientRequest((reqConfig) =>
-    client.getInstance().continuousProfilingConfigGet(reqConfig)
+  const { data: ngMonitoringConfig } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().continuousProfilingConfigGet(reqConfig)
+    ctx!.ds.continuousProfilingConfigGet
   )
 
   const conprofEnable =
@@ -99,7 +110,8 @@ export default function Page() {
       }
       try {
         setSubmitting(true)
-        const res = await client.getInstance().startProfiling(req)
+        // const res = await client.getInstance().startProfiling(req)
+        const res = await ctx!.ds.startProfiling(req)
         navigate(`/instance_profiling/detail?id=${res.data.id}`)
       } finally {
         setSubmitting(false)

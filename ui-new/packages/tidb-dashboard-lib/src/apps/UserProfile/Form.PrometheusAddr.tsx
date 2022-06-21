@@ -1,21 +1,26 @@
-import client from '@lib/client'
+// import client from '@lib/client'
 import { AnimatedSkeleton, Blink, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { Button, Form, Input, Radio, Space, Typography } from 'antd'
-import React from 'react'
+import React, { useContext } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DEFAULT_FORM_ITEM_STYLE } from './constants'
+import { UserProfileContext } from './context'
 
 export function PrometheusAddressForm() {
+  const ctx = useContext(UserProfileContext)
+
   const { t } = useTranslation()
   const isWriteable = useIsWriteable()
   const [isChanged, setIsChanged] = useState(false)
   const [isPosting, setIsPosting] = useState(false)
   const handleValuesChange = useCallback(() => setIsChanged(true), [])
-  const { error, isLoading, data } = useClientRequest((reqConfig) =>
-    client.getInstance().metricsGetPromAddress(reqConfig)
+  const { error, isLoading, data } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().metricsGetPromAddress(reqConfig)
+    ctx!.ds.metricsGetPromAddress
   )
   const isInitialLoad = useRef(true)
   const initialForm = useRef<any>(null) // Used for "Cancel" behaviour
@@ -41,9 +46,10 @@ export function PrometheusAddressForm() {
       }
       try {
         setIsPosting(true)
-        const resp = await client.getInstance().metricsSetCustomPromAddress({
-          address
-        })
+        // const resp = await client.getInstance().metricsSetCustomPromAddress({
+        //   address
+        // })
+        const resp = await ctx!.ds.metricsSetCustomPromAddress({ address })
         const customAddr = resp?.data?.normalized_address ?? ''
         form.setFieldsValue({ customAddr })
         initialForm.current = { ...form.getFieldsValue() }

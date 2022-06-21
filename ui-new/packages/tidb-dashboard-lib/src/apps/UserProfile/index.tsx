@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HashRouter as Router } from 'react-router-dom'
 import { Card, Root } from '@lib/components'
@@ -8,7 +8,18 @@ import { PrometheusAddressForm } from './Form.PrometheusAddr'
 import { VersionForm } from './Form.Version'
 import { LanguageForm } from './Form.Language'
 
+import { addTranslations } from '@lib/utils/i18n'
+import translations from './translations'
+import { UserProfileContext } from './context'
+
+addTranslations(translations)
+
 function App() {
+  const ctx = useContext(UserProfileContext)
+  if (ctx === null) {
+    throw new Error('UserProfileContext must not be null')
+  }
+
   const { t } = useTranslation()
   return (
     <Root>
@@ -34,3 +45,5 @@ function App() {
 }
 
 export default App
+
+export * from './context'

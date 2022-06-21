@@ -6,7 +6,7 @@ import {
   QuestionCircleOutlined,
   ShareAltOutlined
 } from '@ant-design/icons'
-import client from '@lib/client'
+// import client from '@lib/client'
 import {
   Alert,
   Button,
@@ -17,7 +17,7 @@ import {
   Space,
   Tooltip
 } from 'antd'
-import React from 'react'
+import React, { useContext } from 'react'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Pre } from '@lib/components'
@@ -26,6 +26,7 @@ import * as auth from '@lib/utils/auth'
 import ReactMarkdown from 'react-markdown'
 import Checkbox from 'antd/lib/checkbox/Checkbox'
 import { store } from '@lib/utils/store'
+import { UserProfileContext } from './context'
 
 const SHARE_SESSION_EXPIRY_HOURS = [
   0.25,
@@ -42,6 +43,8 @@ const SHARE_SESSION_EXPIRY_HOURS = [
 ]
 
 function ShareSessionButton() {
+  const ctx = useContext(UserProfileContext)
+
   const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
   const [isPosting, setIsPosting] = useState(false)
@@ -63,10 +66,12 @@ function ShareSessionButton() {
   const handleFinish = useCallback(async (values) => {
     try {
       setIsPosting(true)
-      const r = await client.getInstance().userShareSession({
-        expire_in_sec: values.expire * 60 * 60,
-        revoke_write_priv: !!values.read_only
-      })
+      const r =
+        // await client.getInstance().userShareSession
+        await ctx!.ds.userShareSession({
+          expire_in_sec: values.expire * 60 * 60,
+          revoke_write_priv: !!values.read_only
+        })
       setCode(r.data.code)
     } finally {
       setIsPosting(false)
@@ -187,14 +192,16 @@ function ShareSessionButton() {
 }
 
 export function SessionForm() {
+  const ctx = useContext(UserProfileContext)
   const { t } = useTranslation()
 
   const handleLogout = useCallback(async () => {
     let signOutURL: string | undefined = undefined
     try {
-      const resp = await client
-        .getInstance()
-        .userGetSignOutInfo(
+      const resp =
+        // await client
+        //   .getInstance()
+        await ctx!.ds.userGetSignOutInfo(
           `${window.location.protocol}//${window.location.host}${window.location.pathname}`
         )
       signOutURL = resp.data.end_session_url

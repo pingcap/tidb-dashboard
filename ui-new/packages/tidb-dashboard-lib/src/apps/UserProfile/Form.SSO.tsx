@@ -1,5 +1,5 @@
 import { CheckCircleFilled } from '@ant-design/icons'
-import client, { SsoSSOImpersonationModel } from '@lib/client'
+import { SsoSSOImpersonationModel } from '@lib/client'
 import { AnimatedSkeleton, ErrorBar } from '@lib/components'
 import { useIsFeatureSupport, useIsWriteable } from '@lib/utils/store'
 import { useChange } from '@lib/utils/useChange'
@@ -15,10 +15,11 @@ import {
   Switch,
   Typography
 } from 'antd'
-import React from 'react'
+import React, { useContext } from 'react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DEFAULT_FORM_ITEM_STYLE } from './constants'
+import { UserProfileContext } from './context'
 
 interface IUserAuthInputProps {
   value?: SsoSSOImpersonationModel
@@ -34,6 +35,8 @@ function isImpersonationNotFailed(imp?: SsoSSOImpersonationModel) {
 }
 
 function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
+  const ctx = useContext(UserProfileContext)
+
   const { t } = useTranslation()
   const [modalVisible, setModalVisible] = useState(false)
   const [isPosting, setIsPosting] = useState(false)
@@ -52,10 +55,12 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
     async (data) => {
       setIsPosting(true)
       try {
-        const resp = await client.getInstance().userSSOCreateImpersonation({
-          sql_user: data.user,
-          password: data.password
-        })
+        const resp =
+          // await client.getInstance()
+          await ctx!.ds.userSSOCreateImpersonation({
+            sql_user: data.user,
+            password: data.password
+          })
         setModalVisible(false)
         onChange?.(resp.data)
       } finally {
@@ -158,6 +163,8 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
 const UserAuthInputMemo = React.memo(UserAuthInput)
 
 export function SSOForm() {
+  const ctx = useContext(UserProfileContext)
+
   const { t } = useTranslation()
   const [isChanged, setIsChanged] = useState(false)
   const [isPosting, setIsPosting] = useState(false)
@@ -168,16 +175,20 @@ export function SSOForm() {
     isLoading,
     data: config,
     sendRequest
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().userSSOGetConfig(reqConfig)
+  } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().userSSOGetConfig(reqConfig)
+    ctx!.ds.userSSOGetConfig
   )
   const {
     error: impError,
     isLoading: impIsLoading,
     data: impData,
     sendRequest: impSendRequest
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().userSSOListImpersonations(reqConfig)
+  } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().userSSOListImpersonations(reqConfig)
+    ctx!.ds.userSSOListImpersonations
   )
   const initialForm = useRef<any>(null) // Used for "Cancel" behaviour
   const isWriteable = useIsWriteable()
@@ -211,7 +222,8 @@ export function SSOForm() {
     async (data) => {
       setIsPosting(true)
       try {
-        await client.getInstance().userSSOSetConfig({ config: data })
+        // await client.getInstance()
+        await ctx!.ds.userSSOSetConfig({ config: data })
         sendRequest()
         setIsChanged(false)
       } finally {

@@ -39,7 +39,7 @@ import {
 
   // StatementAppMeta as AppStatement,
   // SlowQueryAppMeta as AppSlowQuery,
-  UserProfileAppMeta as AppUserProfile,
+  // UserProfileAppMeta as AppUserProfile,
   // OverviewAppMeta as AppOverview,
   // KeyVizAppMeta as AppKeyViz,
   // TopSQLAppMeta as AppTopSQL,
@@ -67,6 +67,7 @@ import AppConProfiling from '~/apps/ContinuousProfiling/meta'
 import AppDebugAPI from '~/apps/DebugAPI/meta'
 import AppQueryEditor from '~/apps/QueryEditor/meta'
 import AppConfiguration from '~/apps/Configuration/meta'
+import AppUserProfile from '~/apps/UserProfile/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

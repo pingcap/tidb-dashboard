@@ -8,6 +8,7 @@ interface NodeWrapperProps {
   hierarchyPointNode: HierarchyPointNode<TreeNodeDatum>
   zoomScale?: number
   onNodeExpandBtnToggle?: any
+  onNodeDetailClick?: any
 }
 
 const NodeWrapper = ({
@@ -15,12 +16,14 @@ const NodeWrapper = ({
   renderCustomNodeElement,
   hierarchyPointNode,
   onNodeExpandBtnToggle,
+  onNodeDetailClick,
 }: NodeWrapperProps) => {
   const renderNode = () => {
     const nodeProps = {
       hierarchyPointNode: hierarchyPointNode,
       nodeDatum: data,
       onNodeExpandBtnToggle: onNodeExpandBtnToggle,
+      onNodeDetailClick: onNodeDetailClick,
     }
 
     return renderCustomNodeElement(nodeProps)

@@ -1,5 +1,5 @@
 import React from 'react'
-import { RawNodeDatum, TreeDiagramProps } from './types'
+import { RawNodeDatum, TreeDiagramProps, rectBound } from './types'
 import TreeDigram from '../TreeDiagram'
 import styles from './index.module.less'
 import { Button } from 'antd'
@@ -8,6 +8,8 @@ import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 interface TreeDiagramViewProps extends TreeDiagramProps {
   data: RawNodeDatum | RawNodeDatum[]
   showMinimap: boolean
+  viewPort: rectBound
+  isThumbnail?: boolean
 }
 
 const collapsableButtonSize = {
@@ -16,7 +18,12 @@ const collapsableButtonSize = {
 }
 
 const customNodeElements = (nodeProps) => {
-  const { nodeDatum, hierarchyPointNode, onNodeExpandBtnToggle } = nodeProps
+  const {
+    nodeDatum,
+    hierarchyPointNode,
+    onNodeExpandBtnToggle,
+    onNodeDetailClick,
+  } = nodeProps
   const { width: nodeWidth, height: nodeHeight } =
     nodeDatum.__node_attrs.nodeFlexSize
 
@@ -29,6 +36,10 @@ const customNodeElements = (nodeProps) => {
 
   const handleExpandBtnToggleOnClick = (e, node) => {
     onNodeExpandBtnToggle(node.__node_attrs.id)
+  }
+
+  const handleOnNodeDetailClick = (e, node) => {
+    onNodeDetailClick(node)
   }
 
   return (
@@ -59,6 +70,7 @@ const customNodeElements = (nodeProps) => {
                 width: nodeWidth,
                 height: nodeHeight - collapsableButtonSize.height,
               }}
+              onClick={(e) => handleOnNodeDetailClick(e, nodeDatum)}
             >
               <div className={styles.nodeCardHeader}>
                 {nodeDatum.name}
@@ -179,12 +191,13 @@ const customLinkElements = (linkProps) => {
   )
 }
 
-const TreeDiagramView = ({ data, showMinimap }: TreeDiagramViewProps) => {
+const TreeDiagramView = ({
+  data,
+  showMinimap,
+  viewPort,
+  isThumbnail,
+}: TreeDiagramViewProps) => {
   const nodeSize = { width: 250, height: 150 }
-  const viewPort = {
-    width: window.innerWidth,
-    height: window.innerHeight - 150,
-  }
 
   return (
     <TreeDigram
@@ -194,8 +207,17 @@ const TreeDiagramView = ({ data, showMinimap }: TreeDiagramViewProps) => {
       customNodeElement={customNodeElements}
       customLinkElement={customLinkElements}
       viewPort={viewPort}
+      isThumbnail={isThumbnail}
     />
   )
+}
+
+TreeDiagramView.defaultProps = {
+  viewPort: {
+    width: window.innerWidth,
+    height: window.innerHeight - 150,
+  },
+  isThumbnail: false,
 }
 
 export default TreeDiagramView

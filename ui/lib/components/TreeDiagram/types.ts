@@ -107,4 +107,7 @@ export interface TreeDiagramProps {
   customLinkElement: any
 
   translate?: Translate
+
+  // Disables zoom behavior is isThumbnail is true
+  isThumbnail?: boolean
 }

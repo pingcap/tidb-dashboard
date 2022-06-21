@@ -7,6 +7,8 @@ import { TreeDiagramProps, TreeNodeDatum } from './types'
 import Minimap from './Minimap'
 import MainChart from './MainChart'
 
+import { Drawer } from 'antd'
+
 // imports d3 APIs
 import { zoom as d3Zoom } from 'd3-zoom'
 import { brush as d3Brush } from 'd3-brush'
@@ -30,8 +32,10 @@ const TreeDiagram = ({
   viewPort,
   customNodeElement,
   customLinkElement,
+  isThumbnail,
 }: TreeDiagramProps) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
+  const [showNodeDetail, setShowNodeDetail] = useState(false)
 
   // Inits tree translate, the default position is on the top-middle of canvas
   const [treeTranslate, setTreeTranslate] = useState({
@@ -89,12 +93,12 @@ const TreeDiagram = ({
   // Limits brush move extent
   const brushBehavior = d3Brush().extent([
     [
-      minimapScaleX(1)(-viewPort.width / 2),
-      minimapScaleY(1)(-viewPort.height / 2),
+      minimapScaleX(treeTranslate.k)(-viewPort.width / 2),
+      minimapScaleY(treeTranslate.k)(-viewPort.height / 2),
     ],
     [
-      minimapScaleX(1)(treeBound.width + viewPort.width / 2),
-      minimapScaleY(1)(treeBound.height + viewPort.height / 2),
+      minimapScaleX(treeTranslate.k)(treeBound.width + viewPort.width / 2),
+      minimapScaleY(treeTranslate.k)(treeBound.height + viewPort.height / 2),
     ],
   ])
 
@@ -181,6 +185,11 @@ const TreeDiagram = ({
     setTreeNodeDatum(data)
   }
 
+  function handleOnNodeDetailClick(node) {
+    setShowNodeDetail(true)
+    console.log('onNodeDetailClick', node)
+  }
+
   // TODO: what will happen if data changes?
   const getInitTreeDiagramBound = () => {
     const mainChartGroupNode = mainChartGroup.node() as SVGGraphicsElement
@@ -195,7 +204,7 @@ const TreeDiagram = ({
   }, [data, nodeSize])
 
   useEffect(() => {
-    bindZoomListener()
+    if (!isThumbnail) bindZoomListener()
   }, [treeBound])
 
   return (
@@ -208,6 +217,7 @@ const TreeDiagram = ({
         customLinkElement={customLinkElement}
         customNodeElement={customNodeElement}
         onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
+        onNodeDetailClick={handleOnNodeDetailClick}
         onInit={getInitTreeDiagramBound}
       />
       {showMinimap && (
@@ -228,6 +238,17 @@ const TreeDiagram = ({
           brushBehavior={brushBehavior}
         />
       )}
+      <Drawer
+        title="Basic Drawer"
+        placement="right"
+        closable={true}
+        visible={showNodeDetail}
+        key="right"
+      >
+        <p>Some contents...</p>
+        <p>Some contents...</p>
+        <p>Some contents...</p>
+      </Drawer>
     </div>
   )
 }

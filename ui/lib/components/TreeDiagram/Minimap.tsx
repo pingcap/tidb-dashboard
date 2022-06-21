@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { select, event } from 'd3-selection'
 import { brush as d3Brush } from 'd3-brush'
 import { HierarchyPointLink, HierarchyPointNode } from 'd3'
@@ -96,7 +96,7 @@ const Minimap = ({
       .attr('preserveAspectRatio', 'xMidYMid meet')
       .style('position', 'absolute')
       .style('top', 0)
-      .style('right', 20)
+      .style('left', 20)
       .style('border', '1px solid grey')
       .style('background', 'white')
 
@@ -106,7 +106,7 @@ const Minimap = ({
       .attr('fill', 'white')
 
     minimapGroup
-      .attr('transform', `translate(${translate.x}, 0) scale(1)`)
+      .attr('transform', `translate(${translate.x}, 0) scale(${translate.k})`)
       .attr('width', mainChartWidth)
       .attr('height', mainChartHeight)
   }

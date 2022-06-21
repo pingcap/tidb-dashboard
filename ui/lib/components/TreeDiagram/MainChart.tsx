@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { HierarchyPointLink, HierarchyPointNode, select } from 'd3'
+import { HierarchyPointLink, HierarchyPointNode } from 'd3'
 
 import { nodeMarginType, Translate, TreeNodeDatum } from './types'
 import NodeWrapper from './NodeWrapper'
@@ -15,7 +15,9 @@ interface MainChartProps {
   treeTranslate: Translate
   customLinkElement: any
   customNodeElement: any
+
   onNodeExpandBtnToggle: any
+  onNodeDetailClick: any
   onInit?: () => void
 
   nodeMargin?: nodeMarginType
@@ -29,6 +31,7 @@ const MainChart = ({
   customLinkElement,
   customNodeElement,
   onNodeExpandBtnToggle,
+  onNodeDetailClick,
   onInit,
 }: MainChartProps) => {
   const inited = useRef(false)
@@ -96,6 +99,7 @@ const MainChart = ({
                   renderCustomNodeElement={customNodeElement}
                   hierarchyPointNode={hierarchyPointNode}
                   onNodeExpandBtnToggle={onNodeExpandBtnToggle}
+                  onNodeDetailClick={onNodeDetailClick}
                 />
               )
             })}

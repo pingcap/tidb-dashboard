@@ -35,7 +35,7 @@ export { default as QueryEditorApp } from './QueryEditor'
 export * from './QueryEditor'
 
 export { default as ConfigurationApp } from './Configuration'
-export { default as ConfigurationAppMeta } from './Configuration/index.meta'
+export * from './Configuration'
 
 export { default as UserProfileApp } from './UserProfile'
 export { default as UserProfileAppMeta } from './UserProfile/index.meta'

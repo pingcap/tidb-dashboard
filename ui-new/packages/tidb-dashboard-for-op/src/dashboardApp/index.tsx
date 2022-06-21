@@ -49,7 +49,7 @@ import {
   // InstanceProfilingAppMeta as AppInstanceProfiling,
   // ConprofAppMeta as AppContinuousProfiling,
   // QueryEditorAppMeta as AppQueryEditor,
-  ConfigurationAppMeta as AppConfiguration,
+  // ConfigurationAppMeta as AppConfiguration,
   // DebugAPIAppMeta as AppDebugAPI,
   OptimizerTraceAppMeta as AppOptimizerTrace
 } from '@pingcap/tidb-dashboard-lib'
@@ -66,6 +66,7 @@ import AppInstanceProfiling from '~/apps/InstanceProfiling/meta'
 import AppConProfiling from '~/apps/ContinuousProfiling/meta'
 import AppDebugAPI from '~/apps/DebugAPI/meta'
 import AppQueryEditor from '~/apps/QueryEditor/meta'
+import AppConfiguration from '~/apps/Configuration/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

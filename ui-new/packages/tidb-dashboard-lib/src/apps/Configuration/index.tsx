@@ -1,7 +1,14 @@
-import React, { useMemo, useCallback, useRef, useState, useEffect } from 'react'
+import React, {
+  useMemo,
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  useContext
+} from 'react'
 import { Root, CardTable, Card, Pre } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client, { ConfigurationItem } from '@lib/client'
+import { ConfigurationItem } from '@lib/client'
 import { IGroup, IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import InlineEditor from './InlineEditor'
@@ -10,6 +17,12 @@ import { useMemoizedFn, useDebounce } from 'ahooks'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import { useTranslation } from 'react-i18next'
+
+import translations from './translations'
+import { addTranslations } from '@lib/utils/i18n'
+import { ConfigurationContext } from './context'
+
+addTranslations(translations)
 
 interface IRow extends ConfigurationItem {
   kind: string
@@ -23,13 +36,17 @@ interface IValueProps {
 const loadingSpinner = <LoadingOutlined style={{ fontSize: 48 }} spin />
 
 function Value({ item, onSaved }: IValueProps) {
+  const ctx = useContext(ConfigurationContext)
+
   const handleSave = useMemoizedFn(async (newValue) => {
     try {
-      const resp = await client.getInstance().configurationEdit({
-        id: item.id,
-        kind: item.kind,
-        new_value: newValue
-      })
+      const resp =
+        // await client.getInstance().configurationEdit
+        await ctx!.ds.configurationEdit({
+          id: item.id,
+          kind: item.kind,
+          new_value: newValue
+        })
       if ((resp?.data?.warnings?.length ?? 0) > 0) {
         Modal.warning({
           title: 'Edit configuration is partially done',
@@ -79,8 +96,14 @@ function getKey(item: IRow) {
 }
 
 export default function () {
+  const ctx = useContext(ConfigurationContext)
+  if (ctx === null) {
+    throw new Error('ConfigurationContext must not be null')
+  }
+
   const { data, isLoading, error, sendRequest } = useClientRequest(
-    (reqConfig) => client.getInstance().configurationGetAll(reqConfig)
+    // (reqConfig) => client.getInstance().configurationGetAll(reqConfig)
+    ctx!.ds.configurationGetAll
   )
 
   const { t } = useTranslation()
@@ -230,3 +253,5 @@ export default function () {
     </Root>
   )
 }
+
+export * from './context'

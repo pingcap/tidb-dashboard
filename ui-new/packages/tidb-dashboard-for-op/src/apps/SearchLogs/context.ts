@@ -45,6 +45,16 @@ class DataSource implements ISearchLogsDataSource {
   logsTaskgroupsIdRetryPost(id: string, options?: ReqConfig) {
     return client.getInstance().logsTaskgroupsIdRetryPost({ id }, options)
   }
+
+  getTiDBTopology(options?: ReqConfig) {
+    return client.getInstance().getTiDBTopology(options)
+  }
+  getStoreTopology(options?: ReqConfig) {
+    return client.getInstance().getStoreTopology(options)
+  }
+  getPDTopology(options?: ReqConfig) {
+    return client.getInstance().getPDTopology(options)
+  }
 }
 
 const ds = new DataSource()

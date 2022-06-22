@@ -19,9 +19,18 @@ class DataSource implements IInstanceProfilingDataSource {
   startProfiling(req: ProfilingStartRequest, options?: ReqConfig) {
     return client.getInstance().startProfiling({ req }, options)
   }
-
   continuousProfilingConfigGet(options?: ReqConfig) {
     return client.getInstance().continuousProfilingConfigGet(options)
+  }
+
+  getTiDBTopology(options?: ReqConfig) {
+    return client.getInstance().getTiDBTopology(options)
+  }
+  getStoreTopology(options?: ReqConfig) {
+    return client.getInstance().getStoreTopology(options)
+  }
+  getPDTopology(options?: ReqConfig) {
+    return client.getInstance().getPDTopology(options)
   }
 }
 

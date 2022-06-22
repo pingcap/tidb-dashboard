@@ -9,7 +9,6 @@ import {
   TextWrap
 } from '../'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client from '@lib/client'
 import { addTranslationResource } from '@lib/utils/i18n'
 import { useMemoizedFn, useControllableValue } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
@@ -24,12 +23,28 @@ import ValueDisplay from './ValueDisplay'
 import { ITableWithFilterRefProps } from './TableWithFilter'
 import { useChange } from '@lib/utils/useChange'
 
+import {
+  TopologyTiDBInfo,
+  ClusterinfoStoreTopologyResponse,
+  TopologyPDInfo
+} from '@lib/client'
+
+import { ReqConfig } from '@lib/types'
+
+import { AxiosPromise } from 'axios'
+
 export interface IInstanceSelectProps
   extends Omit<IBaseSelectProps<string[]>, 'dropdownRender' | 'valueRender'> {
   onChange?: (value: string[]) => void
   enableTiFlash?: boolean
   defaultSelectAll?: boolean
   dropContainerProps?: React.HTMLAttributes<HTMLDivElement>
+
+  getTiDBTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTiDBInfo>>
+  getStoreTopology(
+    options?: ReqConfig
+  ): AxiosPromise<ClusterinfoStoreTopologyResponse>
+  getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
 }
 
 export interface IInstanceSelectRefProps {
@@ -90,19 +105,26 @@ function InstanceSelect(
     dropContainerProps,
     value, // only to exclude from restProps
     onChange, // only to exclude from restProps
+    getTiDBTopology,
+    getPDTopology,
+    getStoreTopology,
     ...restProps
   } = props
 
   const { t } = useTranslation()
 
   const { data: dataTiDB, isLoading: loadingTiDB } = useClientRequest(
-    (reqConfig) => client.getInstance().getTiDBTopology(reqConfig)
+    // (reqConfig) => client.getInstance().getTiDBTopology(reqConfig)
+    getTiDBTopology
   )
   const { data: dataStores, isLoading: loadingStores } = useClientRequest(
-    (reqConfig) => client.getInstance().getStoreTopology(reqConfig)
+    // (reqConfig) => client.getInstance().getStoreTopology(reqConfig)
+    getStoreTopology
   )
-  const { data: dataPD, isLoading: loadingPD } = useClientRequest((reqConfig) =>
-    client.getInstance().getPDTopology(reqConfig)
+  const { data: dataPD, isLoading: loadingPD } = useClientRequest(
+    // (reqConfig) =>
+    // client.getInstance().getPDTopology(reqConfig)
+    getPDTopology
   )
 
   const columns: IColumn[] = useMemo(

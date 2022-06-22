@@ -7,7 +7,10 @@ import {
   ConprofNgMonitoringConfig,
   ConprofEstimateSizeRes,
   ConprofGroupProfileDetail,
-  ConprofGroupProfiles
+  ConprofGroupProfiles,
+  TopologyTiDBInfo,
+  ClusterinfoStoreTopologyResponse,
+  TopologyPDInfo
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
@@ -31,11 +34,6 @@ export interface IConProfilingDataSource {
     options?: ReqConfig
   ): AxiosPromise<string>
 
-  // continuousProfilingDownloadGet(
-  //   ts: number,
-  //   options?: ReqConfig
-  // ): AxiosPromise<void>
-
   continuousProfilingEstimateSizeGet(
     options?: ReqConfig
   ): AxiosPromise<ConprofEstimateSizeRes>
@@ -51,13 +49,13 @@ export interface IConProfilingDataSource {
     options?: ReqConfig
   ): AxiosPromise<Array<ConprofGroupProfiles>>
 
-  // continuousProfilingSingleProfileViewGet(
-  //   address?: string,
-  //   component?: string,
-  //   profileType?: string,
-  //   ts?: number,
-  //   options?: ReqConfig
-  // ): AxiosPromise<void>
+  getTiDBTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTiDBInfo>>
+
+  getStoreTopology(
+    options?: ReqConfig
+  ): AxiosPromise<ClusterinfoStoreTopologyResponse>
+
+  getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
 }
 
 export interface IConProfilingContext {

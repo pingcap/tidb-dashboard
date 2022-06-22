@@ -171,6 +171,9 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
                       enableTiFlash={true}
                       disabled={true}
                       style={{ width: 200 }}
+                      getTiDBTopology={ctx!.ds.getTiDBTopology}
+                      getStoreTopology={ctx!.ds.getStoreTopology}
+                      getPDTopology={ctx!.ds.getPDTopology}
                     />
                   </Form.Item>
 

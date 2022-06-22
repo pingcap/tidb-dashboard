@@ -238,6 +238,9 @@ export default function Page() {
                   ref={instanceSelect}
                   style={{ width: 200 }}
                   defaultSelectAll
+                  getTiDBTopology={ctx!.ds.getTiDBTopology}
+                  getStoreTopology={ctx!.ds.getStoreTopology}
+                  getPDTopology={ctx!.ds.getPDTopology}
                 />
               </Form.Item>
               <Form.Item name="type">

@@ -171,6 +171,9 @@ export default function SearchHeader({ taskGroupID }: Props) {
           dropContainerProps={
             { 'data-e2e': 'log_search_instances_drop' } as any
           }
+          getTiDBTopology={ctx!.ds.getTiDBTopology}
+          getStoreTopology={ctx!.ds.getStoreTopology}
+          getPDTopology={ctx!.ds.getPDTopology}
         />
       </Form.Item>
       <Form.Item name="keywords">

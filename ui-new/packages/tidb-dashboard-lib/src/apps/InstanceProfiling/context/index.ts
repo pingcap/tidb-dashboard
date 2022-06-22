@@ -6,7 +6,10 @@ import {
   ProfilingGroupDetailResponse,
   ProfilingTaskGroupModel,
   ProfilingStartRequest,
-  ConprofNgMonitoringConfig
+  ConprofNgMonitoringConfig,
+  TopologyTiDBInfo,
+  ClusterinfoStoreTopologyResponse,
+  TopologyPDInfo
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
@@ -35,6 +38,14 @@ export interface IInstanceProfilingDataSource {
   continuousProfilingConfigGet(
     options?: ReqConfig
   ): AxiosPromise<ConprofNgMonitoringConfig>
+
+  getTiDBTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTiDBInfo>>
+
+  getStoreTopology(
+    options?: ReqConfig
+  ): AxiosPromise<ClusterinfoStoreTopologyResponse>
+
+  getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
 }
 
 export interface IInstanceProfilingContext {

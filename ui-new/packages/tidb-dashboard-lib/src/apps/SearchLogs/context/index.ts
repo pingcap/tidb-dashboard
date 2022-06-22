@@ -6,7 +6,10 @@ import {
   LogsearchCreateTaskGroupRequest,
   LogsearchTaskGroupResponse,
   LogsearchTaskGroupModel,
-  LogsearchPreviewModel
+  LogsearchPreviewModel,
+  TopologyTiDBInfo,
+  ClusterinfoStoreTopologyResponse,
+  TopologyPDInfo
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
@@ -49,6 +52,14 @@ export interface ISearchLogsDataSource {
     id: string,
     options?: ReqConfig
   ): AxiosPromise<object>
+
+  getTiDBTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTiDBInfo>>
+
+  getStoreTopology(
+    options?: ReqConfig
+  ): AxiosPromise<ClusterinfoStoreTopologyResponse>
+
+  getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
 }
 
 export interface ISearchLogsContext {

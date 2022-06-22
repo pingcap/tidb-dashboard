@@ -41,7 +41,7 @@ export { default as UserProfileApp } from './UserProfile'
 export * from './UserProfile'
 
 export { default as DiagnoseApp } from './Diagnose'
-export { default as DiagnoseAppMeta } from './Diagnose/index.meta'
+export * from './Diagnose'
 
 export { default as OptimizerTraceApp } from './OptimizerTrace'
 export { default as OptimizerTraceAppMeta } from './OptimizerTrace/index.meta'

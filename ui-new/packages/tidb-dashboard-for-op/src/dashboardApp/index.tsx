@@ -44,7 +44,7 @@ import {
   // KeyVizAppMeta as AppKeyViz,
   // TopSQLAppMeta as AppTopSQL,
   // SystemReportAppMeta as AppSystemReport,
-  DiagnoseAppMeta as AppDiagnose,
+  // DiagnoseAppMeta as AppDiagnose,
   // SearchLogsAppMeta as AppSearchLogs,
   // InstanceProfilingAppMeta as AppInstanceProfiling,
   // ConprofAppMeta as AppContinuousProfiling,
@@ -68,6 +68,7 @@ import AppDebugAPI from '~/apps/DebugAPI/meta'
 import AppQueryEditor from '~/apps/QueryEditor/meta'
 import AppConfiguration from '~/apps/Configuration/meta'
 import AppUserProfile from '~/apps/UserProfile/meta'
+import AppDiagnose from '~/apps/Diagnose/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

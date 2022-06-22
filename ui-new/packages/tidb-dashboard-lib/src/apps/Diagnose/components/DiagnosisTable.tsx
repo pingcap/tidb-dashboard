@@ -1,13 +1,21 @@
 import { Button } from 'antd'
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  useContext
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { LoadingOutlined } from '@ant-design/icons'
 
-import client, { DiagnoseTableDef } from '@lib/client'
+import { DiagnoseTableDef } from '@lib/client'
 import { CardTable, DateTime } from '@lib/components'
 import { useClientRequest, RequestFactory } from '@lib/utils/useClientRequest'
 
 import { diagnosisColumns } from '../utils/tableColumns'
+import { DiagnoseContext } from '../context'
 
 // FIXME: use better naming
 // stableTimeRange: used to start diagnosing when triggering by clicking "Start" outside this component
@@ -45,6 +53,8 @@ export default function DiagnosisTable({
   unstableTimeRange,
   kind
 }: IDiagnosisTableProps) {
+  const ctx = useContext(DiagnoseContext)
+
   const { t } = useTranslation()
 
   const [internalTimeRange, setInternalTimeRange] = useState<[number, number]>([
@@ -64,7 +74,8 @@ export default function DiagnosisTable({
   const reqFn = useRef<ReqFnType | null>(null)
   useEffect(() => {
     reqFn.current = (reqConfig) =>
-      client.getInstance().diagnoseDiagnosisPost(
+      // client.getInstance()
+      ctx!.ds.diagnoseDiagnosisPost(
         {
           start_time: internalTimeRange[0],
           end_time: internalTimeRange[1],

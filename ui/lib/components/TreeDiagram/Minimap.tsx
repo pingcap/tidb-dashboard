@@ -1,55 +1,75 @@
-import React, { useEffect } from 'react'
-import { Translate, rectBound } from './types'
+import React, {
+  MutableRefObject,
+  Ref,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { select, event } from 'd3-selection'
+import { brush as d3Brush } from 'd3-brush'
+import { HierarchyPointLink, HierarchyPointNode } from 'd3'
+import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 
 import NodeWrapper from './NodeWrapper'
 import LinkWrapper from './LinkWrapper'
 import styles from './index.module.less'
-
-// import d3 APIs
-import { select, event } from 'd3-selection'
-import { brush as d3Brush } from 'd3-brush'
-import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
+import { Translate, rectBound, TreeNodeDatum, nodeMarginType } from './types'
+import { generateNodesAndLinks } from './utlis'
 
 interface MinimapProps {
+  datum: TreeNodeDatum[]
   treeBound
   viewPort: rectBound
-  minimapTranslate: Translate
-  links: any
-  nodes: any
   customLinkElement: any
   customNodeElement: any
   minimapScale: number
-  brushGroup: any
   minimapScaleX
   minimapScaleY
   mainChartSVG
   updateTreeTranslate
   brushBehavior
-  gBrush
+  brushRef?: Ref<SVGGElement>
+
+  nodeMargin?: nodeMarginType
 }
 
 const Minimap = ({
+  datum,
   treeBound,
   viewPort,
-  links,
-  nodes,
-  minimapTranslate,
+  nodeMargin,
   customLinkElement,
   customNodeElement,
   minimapScale,
-  brushGroup,
   minimapScaleX,
   minimapScaleY,
   mainChartSVG,
   updateTreeTranslate,
-  gBrush,
+  brushRef,
 }: MinimapProps) => {
-  const minimapSVG = select('.minimapSVG')
-  const minimapGroup = select('.minimapGroup')
+  const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
+  const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
   const { width: mainChartWidth, height: mainChartHeight, x, y } = treeBound
-
+  const translate: Translate = {
+    x: -x,
+    y,
+    k: 1,
+  }
+  const margin: nodeMarginType = useMemo(
+    () => ({
+      siblingMargin: nodeMargin?.childrenMargin || 40,
+      childrenMargin: nodeMargin?.siblingMargin || 60,
+    }),
+    [nodeMargin?.childrenMargin, nodeMargin?.siblingMargin]
+  )
   const minimapContainerWidth = viewPort.width * minimapScale
   const minimapContainerHeight = viewPort.height * minimapScale
+  const _brushRef = useRef<SVGGElement>(null)
+
+  const brushSelection = select(_brushRef.current!)
+  const minimapSelection = select('.minimapSVG')
+  const minimapGroupSelection = select('.minimapGroup')
 
   const longSide = mainChartWidth > mainChartHeight ? 'x' : 'y'
   const chartLongSideSize = Math.max(mainChartWidth, mainChartHeight)
@@ -58,7 +78,7 @@ const Minimap = ({
     (longSide === 'x' ? minimapContainerWidth : minimapContainerHeight)
 
   const drawMinimap = () => {
-    minimapSVG
+    minimapSelection
       .attr('width', minimapContainerWidth)
       .attr('height', minimapContainerHeight)
       .attr(
@@ -91,11 +111,8 @@ const Minimap = ({
       .attr('height', mainChartHeight)
       .attr('fill', 'white')
 
-    minimapGroup
-      .attr(
-        'transform',
-        `translate(${minimapTranslate.x}, 0) scale(${minimapTranslate.k})`
-      )
+    minimapGroupSelection
+      .attr('transform', `translate(${translate.x}, 0) scale(${translate.k})`)
       .attr('width', mainChartWidth)
       .attr('height', mainChartHeight)
   }
@@ -139,10 +156,10 @@ const Minimap = ({
     .on('brush', () => onBrush())
 
   const bindBrushListener = () => {
-    gBrush.call(brushBehavior as any)
+    brushSelection.call(brushBehavior)
 
     // init brush seletion
-    brushBehavior.move(gBrush as any, [
+    brushBehavior.move(brushSelection, [
       [-treeBound.x - minimapScaleX(1)(viewPort.width / 2), 0],
       [
         -treeBound.x - minimapScaleX(1)(viewPort.width / 2) + viewPort.width,
@@ -152,15 +169,30 @@ const Minimap = ({
   }
 
   useEffect(() => {
+    if (datum.length > 0) {
+      const { nodes, links } = generateNodesAndLinks(datum, margin)
+      setNodes(nodes)
+      setLinks(links)
+    }
+  }, [datum, margin])
+
+  useEffect(() => {
     drawMinimap()
     // Removes these elements can avoid re-select brush on minimap
-    minimapSVG.selectAll('.handle').remove()
-    minimapSVG.selectAll('.overlay').remove()
+    minimapSelection.selectAll('.handle').remove()
+    minimapSelection.selectAll('.overlay').remove()
   })
 
   useEffect(() => {
     bindBrushListener()
   }, [treeBound])
+
+  useEffect(() => {
+    if (!_brushRef.current || !brushRef) {
+      return
+    }
+    ;(brushRef as MutableRefObject<SVGElement>).current = _brushRef.current
+  }, [brushRef])
 
   return (
     <div className={styles.minimapContainer}>
@@ -172,7 +204,7 @@ const Minimap = ({
         <rect className="minimap-rect"></rect>
         <g
           className="minimapGroup"
-          transform={`translate(${minimapTranslate.x}, ${minimapTranslate.y}) scale(${minimapTranslate.k})`}
+          transform={`translate(${translate.x}, ${translate.y}) scale(${translate.k})`}
         >
           <g className="linksWrapper">
             {links &&
@@ -198,13 +230,13 @@ const Minimap = ({
                     key={data.name}
                     renderCustomNodeElement={customNodeElement}
                     hierarchyPointNode={hierarchyPointNode}
-                    zoomScale={minimapTranslate.k}
+                    zoomScale={translate.k}
                   />
                 )
               })}
           </g>
         </g>
-        {brushGroup()}
+        <g ref={_brushRef}></g>
       </svg>
     </div>
   )

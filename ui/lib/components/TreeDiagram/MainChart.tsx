@@ -1,33 +1,68 @@
-import React from 'react'
-import { Translate } from './types'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { HierarchyPointLink, HierarchyPointNode } from 'd3'
 
+import { nodeMarginType, Translate, TreeNodeDatum } from './types'
 import NodeWrapper from './NodeWrapper'
 import LinkWrapper from './LinkWrapper'
+import { generateNodesAndLinks } from './utlis'
 
 interface MainChartProps {
+  datum: TreeNodeDatum[]
   viewPort: {
     width: number
     height: number
   }
   treeTranslate: Translate
-  links: any
-  nodes: any
   customLinkElement: any
   customNodeElement: any
-  handleNodeExpandBtnToggle: any
-  handleOnNodeDetailClick: any
+
+  onNodeExpandBtnToggle: any
+  onNodeDetailClick: any
+  onInit?: () => void
+
+  nodeMargin?: nodeMarginType
 }
 
 const MainChart = ({
+  datum,
+  nodeMargin,
   viewPort,
   treeTranslate,
-  links,
-  nodes,
   customLinkElement,
   customNodeElement,
-  handleNodeExpandBtnToggle,
-  handleOnNodeDetailClick,
+  onNodeExpandBtnToggle,
+  onNodeDetailClick,
+  onInit,
 }: MainChartProps) => {
+  const inited = useRef(false)
+  const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
+  const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
+  const margin: nodeMarginType = useMemo(
+    () => ({
+      siblingMargin: nodeMargin?.childrenMargin || 40,
+      childrenMargin: nodeMargin?.siblingMargin || 60,
+    }),
+    [nodeMargin?.childrenMargin, nodeMargin?.siblingMargin]
+  )
+
+  useEffect(() => {
+    if (!datum.length) {
+      return
+    }
+    const { nodes, links } = generateNodesAndLinks(datum, margin)
+    setNodes(nodes)
+    setLinks(links)
+  }, [datum, margin])
+
+  // TODO: may be better to use svg event to emit render inited event
+  useEffect(() => {
+    if (!nodes.length || inited.current) {
+      return
+    }
+    inited.current = true
+    onInit?.()
+  }, [nodes, onInit])
+
   return (
     <svg
       className="mainChartSVG"
@@ -62,8 +97,8 @@ const MainChart = ({
                   key={data.name}
                   renderCustomNodeElement={customNodeElement}
                   hierarchyPointNode={hierarchyPointNode}
-                  onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
-                  onNodeDetailClick={handleOnNodeDetailClick}
+                  onNodeExpandBtnToggle={onNodeExpandBtnToggle}
+                  onNodeDetailClick={onNodeDetailClick}
                 />
               )
             })}

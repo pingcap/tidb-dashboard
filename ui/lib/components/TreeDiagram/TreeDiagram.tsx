@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import _ from 'lodash'
 import { AssignInternalProperties } from './utlis'
 import styles from './index.module.less'
-import { TreeDiagramProps, TreeNodeDatum, nodeMarginType } from './types'
+import { TreeDiagramProps, TreeNodeDatum } from './types'
 
 import Minimap from './Minimap'
 import MainChart from './MainChart'
@@ -10,20 +10,10 @@ import MainChart from './MainChart'
 import { Drawer } from 'antd'
 
 // imports d3 APIs
-import { flextree } from 'd3-flextree'
-import { hierarchy, HierarchyPointNode, HierarchyPointLink } from 'd3-hierarchy'
 import { zoom as d3Zoom } from 'd3-zoom'
 import { brush as d3Brush } from 'd3-brush'
 import { select, event } from 'd3-selection'
 import { scaleLinear } from 'd3-scale'
-
-const BrushGroup = (gBrushRef) => {
-  return (
-    <React.Fragment>
-      <g ref={gBrushRef}></g>
-    </React.Fragment>
-  )
-}
 
 const TreeDiagram = ({
   data,
@@ -37,8 +27,6 @@ const TreeDiagram = ({
   isThumbnail,
 }: TreeDiagramProps) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
-  const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
-  const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
   const [showNodeDetail, setShowNodeDetail] = useState(false)
 
   // Inits tree translate, the default position is on the top-middle of canvas
@@ -56,51 +44,14 @@ const TreeDiagram = ({
     height: 0,
   })
 
-  // Sets initDraw to avoid re-calcuate the bound of entire tree
-  const [initDraw, setInitDraw] = useState(true)
-  const [minimapTranslate, setMinimapTranslate] = useState({
-    x: 0,
-    y: 0,
-    k: 1,
-  })
-
   const treeDiagramContainerRef = useRef<HTMLDivElement>(null)
 
   // A SVG container for main chart
-  const mainChartSVG = select('.mainChartSVG')
-  const mainChartGroup = select('.mainChartGroup')
+  const mainChartSelection = select('.mainChartSVG')
+  const mainChartGroupSelection = select('.mainChartGroup')
 
-  const gBrushRef = useRef(null)
-  const gBrush = select(gBrushRef.current)
-
-  // Generates nodes and links
-  const generateNodesAndLinks = (
-    treeNodeDatum: TreeNodeDatum[],
-    nodeMargin: nodeMarginType
-  ) => {
-    const tree = flextree({
-      nodeSize: (node) => {
-        const _nodeSize = node.data.__node_attrs.nodeFlexSize
-
-        return [
-          _nodeSize.width + nodeMargin.siblingMargin,
-          _nodeSize.height + nodeMargin.childrenMargin,
-        ]
-      },
-    })
-
-    const rootNode = tree(
-      // @ts-ignore
-      hierarchy(treeNodeDatum[0], (d) =>
-        d.__node_attrs.collapsed ? null : d.children
-      )
-    )
-
-    const nodes = rootNode.descendants()
-    const links = rootNode.links()
-
-    return { nodes, links }
-  }
+  const brushRef = useRef<SVGGElement>(null)
+  const brushSelection = select(brushRef.current!)
 
   /**
    *
@@ -148,7 +99,7 @@ const TreeDiagram = ({
     setTreeTranslate(t)
 
     // Moves brush on minimap when zoom behavior is triggered.
-    brushBehavior.move(gBrush as any, [
+    brushBehavior.move(brushSelection, [
       [
         -treeBound.x + minimapScaleX(t.k).invert(-t.x),
         minimapScaleY(t.k).invert(-t.y),
@@ -174,7 +125,7 @@ const TreeDiagram = ({
 
   // Binds MainChart container
   const bindZoomListener = () => {
-    mainChartSVG.call(zoomBehavior as any)
+    mainChartSelection.call(zoomBehavior as any)
   }
 
   const findNodesById = (
@@ -231,19 +182,12 @@ const TreeDiagram = ({
     console.log('onNodeDetailClick', node)
   }
 
+  // TODO: what will happen if data changes?
   const getInitTreeDiagramBound = () => {
-    const mainChartGroupNode = mainChartGroup.node() as SVGGraphicsElement
+    const mainChartGroupNode =
+      mainChartGroupSelection.node() as SVGGraphicsElement
     const { x, y, width, height } = mainChartGroupNode.getBBox()
     setTreeBound({ x: x, y: y, width: width, height: height })
-
-    const minimapTranslate = {
-      x: -x,
-      y: y,
-      k: 1,
-    }
-
-    setMinimapTranslate(minimapTranslate)
-    setInitDraw(false)
   }
 
   useEffect(() => {
@@ -253,50 +197,38 @@ const TreeDiagram = ({
   }, [data, nodeSize])
 
   useEffect(() => {
-    if (treeNodeDatum.length > 0) {
-      const { nodes, links } = generateNodesAndLinks(treeNodeDatum, nodeMargin!)
-      setNodes(nodes)
-      setLinks(links)
+    if (isThumbnail) {
+      return
     }
-  }, [nodeMargin, treeNodeDatum])
-
-  useEffect(() => {
-    if (links.length > 0 && nodes.length > 0 && initDraw) {
-      getInitTreeDiagramBound()
-    }
-  }, [links, nodes, initDraw])
-
-  useEffect(() => {
-    if (!isThumbnail) bindZoomListener()
+    bindZoomListener()
   }, [treeBound])
 
   return (
     <div className={styles.treeDiagramContainer} ref={treeDiagramContainerRef}>
       <MainChart
+        datum={treeNodeDatum}
+        nodeMargin={nodeMargin}
         viewPort={viewPort}
         treeTranslate={treeTranslate}
-        links={links}
-        nodes={nodes}
         customLinkElement={customLinkElement}
         customNodeElement={customNodeElement}
-        handleNodeExpandBtnToggle={handleNodeExpandBtnToggle}
-        handleOnNodeDetailClick={handleOnNodeDetailClick}
+        onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
+        onNodeDetailClick={handleOnNodeDetailClick}
+        onInit={getInitTreeDiagramBound}
       />
       {showMinimap && (
         <Minimap
+          datum={treeNodeDatum}
           treeBound={treeBound}
           viewPort={viewPort}
-          links={links}
-          nodes={nodes}
-          minimapTranslate={minimapTranslate}
+          nodeMargin={nodeMargin}
           customLinkElement={customLinkElement}
           customNodeElement={customNodeElement}
           minimapScale={minimapScale!}
-          brushGroup={() => BrushGroup(gBrushRef)}
-          gBrush={gBrush}
+          brushRef={brushRef}
           minimapScaleX={minimapScaleX}
           minimapScaleY={minimapScaleY}
-          mainChartSVG={mainChartSVG}
+          mainChartSVG={mainChartSelection}
           updateTreeTranslate={handleUpdateTreeTranslate}
           brushBehavior={brushBehavior}
         />

@@ -72,19 +72,7 @@ const customNodeElements = (nodeProps) => {
               }}
               onClick={(e) => handleOnNodeDetailClick(e, nodeDatum)}
             >
-              <div className={styles.nodeCardHeader}>
-                {nodeDatum.name}
-
-                {/* <Progress
-                  percent={Math.round((node.time_us / totalTime) * 100)}
-                  size="small"
-                  width={200}
-                  status="normal"
-                  strokeColor={getColorGradient(node.time_us)}
-                  format={(percent) => `${node.time_us} | ${percent}%`}
-                  className={styles.progress}
-                /> */}
-              </div>
+              <div className={styles.nodeCardHeader}>{nodeDatum.name}</div>
               <div className={styles.nodeCardBody}>
                 <p>
                   Actual Rows: <span>{nodeDatum.act_rows}</span>
@@ -191,6 +179,34 @@ const customLinkElements = (linkProps) => {
   )
 }
 
+const customNodeDetailElement = (nodeDetailProps) => {
+  const nodeDatum = nodeDetailProps.data
+  console.log('nodeDetailProps', nodeDatum)
+
+  return (
+    <div>
+      <p>
+        Actual Rows: <span>{nodeDatum.act_rows}</span>
+      </p>
+      <p>
+        Estimate Rows: <span>{nodeDatum.est_rows}</span>
+      </p>
+      <p>
+        Run at: <span>{nodeDatum.run_at}</span>
+      </p>
+      <p>
+        Cost: <span>{nodeDatum.cost}</span>
+      </p>
+      <p>
+        Access Table: <span>{nodeDatum.access_table}</span>
+      </p>
+      <p>
+        Access Partition: <span>{nodeDatum.access_partition}</span>
+      </p>
+    </div>
+  )
+}
+
 const TreeDiagramView = ({
   data,
   showMinimap,
@@ -206,6 +222,7 @@ const TreeDiagramView = ({
       nodeSize={nodeSize}
       customNodeElement={customNodeElements}
       customLinkElement={customLinkElements}
+      customNodeDetailElement={customNodeDetailElement}
       viewPort={viewPort}
       isThumbnail={isThumbnail}
     />

@@ -6,6 +6,7 @@ import { TreeDiagramProps, TreeNodeDatum } from './types'
 
 import Minimap from './Minimap'
 import MainChart from './MainChart'
+import NodeWrapperDetail from './NodeDetailWrapper'
 
 import { Drawer } from 'antd'
 
@@ -24,10 +25,12 @@ const TreeDiagram = ({
   viewPort,
   customNodeElement,
   customLinkElement,
+  customNodeDetailElement,
   isThumbnail,
 }: TreeDiagramProps) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
   const [showNodeDetail, setShowNodeDetail] = useState(false)
+  const [selectedNodeDetail, setSelectedNodeDetail] = useState(null)
 
   // Inits tree translate, the default position is on the top-middle of canvas
   const [treeTranslate, setTreeTranslate] = useState({
@@ -179,7 +182,7 @@ const TreeDiagram = ({
 
   function handleOnNodeDetailClick(node) {
     setShowNodeDetail(true)
-    console.log('onNodeDetailClick', node)
+    setSelectedNodeDetail(node)
   }
 
   // TODO: what will happen if data changes?
@@ -233,17 +236,25 @@ const TreeDiagram = ({
           brushBehavior={brushBehavior}
         />
       )}
-      <Drawer
-        title="Basic Drawer"
-        placement="right"
-        closable={true}
-        visible={showNodeDetail}
-        key="right"
-      >
-        <p>Some contents...</p>
-        <p>Some contents...</p>
-        <p>Some contents...</p>
-      </Drawer>
+      {selectedNodeDetail && (
+        <Drawer
+          title={selectedNodeDetail!.name}
+          placement="right"
+          width={450}
+          closable={false}
+          onClose={() => {
+            setShowNodeDetail(false)
+          }}
+          visible={showNodeDetail}
+          destroyOnClose={true}
+          key="right"
+        >
+          <NodeWrapperDetail
+            data={selectedNodeDetail}
+            renderCustomNodeDetailElement={customNodeDetailElement}
+          />
+        </Drawer>
+      )}
     </div>
   )
 }

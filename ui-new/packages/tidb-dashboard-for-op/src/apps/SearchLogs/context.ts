@@ -11,9 +11,9 @@ class DataSource implements ISearchLogsDataSource {
     return client.getInstance().logsDownloadAcquireTokenGet({ id }, options)
   }
 
-  logsDownloadGet(token: string, options?: ReqConfig) {
-    return client.getInstance().logsDownloadGet({ token }, options)
-  }
+  // logsDownloadGet(token: string, options?: ReqConfig) {
+  //   return client.getInstance().logsDownloadGet({ token }, options)
+  // }
 
   logsTaskgroupPut(
     request: LogsearchCreateTaskGroupRequest,

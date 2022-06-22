@@ -20,7 +20,7 @@ export interface ISearchLogsDataSource {
     options?: ReqConfig
   ): AxiosPromise<string>
 
-  logsDownloadGet(token: string, options?: ReqConfig): AxiosPromise<void>
+  // logsDownloadGet(token: string, options?: ReqConfig): AxiosPromise<void>
 
   logsTaskgroupPut(
     request: LogsearchCreateTaskGroupRequest,

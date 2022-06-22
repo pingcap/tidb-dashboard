@@ -57,12 +57,11 @@ const Minimap = ({
     k: 1,
   }
   const margin: nodeMarginType = useMemo(
-    () =>
-      nodeMargin || {
-        siblingMargin: 40,
-        childrenMargin: 60,
-      },
-    [nodeMargin]
+    () => ({
+      siblingMargin: nodeMargin?.childrenMargin || 40,
+      childrenMargin: nodeMargin?.siblingMargin || 60,
+    }),
+    [nodeMargin?.childrenMargin, nodeMargin?.siblingMargin]
   )
   const minimapContainerWidth = viewPort.width * minimapScale
   const minimapContainerHeight = viewPort.height * minimapScale

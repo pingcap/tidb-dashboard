@@ -38,12 +38,11 @@ const MainChart = ({
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
   const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
   const margin: nodeMarginType = useMemo(
-    () =>
-      nodeMargin || {
-        siblingMargin: 40,
-        childrenMargin: 60,
-      },
-    [nodeMargin]
+    () => ({
+      siblingMargin: nodeMargin?.childrenMargin || 40,
+      childrenMargin: nodeMargin?.siblingMargin || 60,
+    }),
+    [nodeMargin?.childrenMargin, nodeMargin?.siblingMargin]
   )
 
   useEffect(() => {

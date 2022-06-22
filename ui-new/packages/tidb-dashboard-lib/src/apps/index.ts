@@ -44,4 +44,4 @@ export { default as DiagnoseApp } from './Diagnose'
 export * from './Diagnose'
 
 export { default as OptimizerTraceApp } from './OptimizerTrace'
-export { default as OptimizerTraceAppMeta } from './OptimizerTrace/index.meta'
+export * from './OptimizerTrace'

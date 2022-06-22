@@ -32,7 +32,7 @@ import {
   // store
   mustLoadAppInfo,
   reloadWhoAmI,
-  NgmState,
+  NgmState
 
   // apps
   // ClusterInfoAppMeta as AppClusterInfo,
@@ -51,7 +51,7 @@ import {
   // QueryEditorAppMeta as AppQueryEditor,
   // ConfigurationAppMeta as AppConfiguration,
   // DebugAPIAppMeta as AppDebugAPI,
-  OptimizerTraceAppMeta as AppOptimizerTrace
+  // OptimizerTraceAppMeta as AppOptimizerTrace
 } from '@pingcap/tidb-dashboard-lib'
 
 import AppSlowQuery from '~/apps/SlowQuery/meta'
@@ -69,6 +69,7 @@ import AppQueryEditor from '~/apps/QueryEditor/meta'
 import AppConfiguration from '~/apps/Configuration/meta'
 import AppUserProfile from '~/apps/UserProfile/meta'
 import AppDiagnose from '~/apps/Diagnose/meta'
+import AppOptimizerTrace from '~/apps/OptimizerTrace/meta'
 
 // import AppRegistry from '@lib/utils/registry'
 // import * as routing from '@lib/utils/routing'

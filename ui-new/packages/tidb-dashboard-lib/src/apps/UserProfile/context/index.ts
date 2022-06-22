@@ -28,13 +28,6 @@ export interface IUserProfileDataSource {
     options?: ReqConfig
   ): AxiosPromise<SsoSSOImpersonationModel>
 
-  // userSSOGetAuthURL(
-  //   codeVerifier?: string,
-  //   redirectUrl?: string,
-  //   state?: string,
-  //   options?: ReqConfig
-  // ): AxiosPromise<string>
-
   userSSOGetConfig(options?: ReqConfig): AxiosPromise<ConfigSSOCoreConfig>
 
   userSSOListImpersonations(

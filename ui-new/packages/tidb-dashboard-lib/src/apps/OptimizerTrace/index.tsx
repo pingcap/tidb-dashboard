@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { Button, Upload, Space, Alert, Tooltip } from 'antd'
 import { UploadOutlined, ArrowRightOutlined } from '@ant-design/icons'
@@ -13,8 +13,19 @@ import LogicalOperatorTree, {
 import PhysicalOperatorTree, {
   PhysicalOperatorNode
 } from './components/PhysicalOperatorTree'
+import { OptimizerTraceContext } from './context'
+
+import translations from './translations'
+import { addTranslations } from '@lib/utils/i18n'
+
+addTranslations(translations)
 
 export default function OptimizeTraceApp() {
+  const ctx = useContext(OptimizerTraceContext)
+  if (ctx === null) {
+    throw new Error('OptimizerTraceContext must not be null')
+  }
+
   return (
     <Root>
       <Router>
@@ -265,3 +276,5 @@ function Final({ data }: { data: OptimizerData }) {
     </Card>
   )
 }
+
+export * from './context'

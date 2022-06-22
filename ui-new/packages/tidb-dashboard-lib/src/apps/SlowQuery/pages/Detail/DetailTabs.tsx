@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { SlowqueryModel } from '@lib/client'
@@ -10,10 +10,15 @@ import { tabTimeItems } from './DetailTabTime'
 import { tabCoprItems } from './DetailTabCopr'
 import { tabTxnItems } from './DetailTabTxn'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
+import { SlowQueryContext } from '../../context'
 
 export default function DetailTabs({ data }: { data: SlowqueryModel }) {
+  const ctx = useContext(SlowQueryContext)
+
   const { t } = useTranslation()
-  const { schemaColumns } = useSchemaColumns()
+  const { schemaColumns } = useSchemaColumns(
+    ctx!.ds.slowQueryAvailableFieldsGet
+  )
   const columnsSet = new Set(schemaColumns)
 
   const tabs = [

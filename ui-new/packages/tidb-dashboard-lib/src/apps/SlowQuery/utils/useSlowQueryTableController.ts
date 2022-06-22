@@ -148,7 +148,9 @@ export default function useSlowQueryTableController({
     null
   )
   const [errors, setErrors] = useState<any[]>([])
-  const { schemaColumns, isLoading: isColumnsLoading } = useSchemaColumns()
+  const { schemaColumns, isLoading: isColumnsLoading } = useSchemaColumns(
+    ds.slowQueryAvailableFieldsGet
+  )
 
   // Reload these options when sending a new request.
   useChange(() => {

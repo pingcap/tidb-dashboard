@@ -1,7 +1,8 @@
 import {
   IUserProfileDataSource,
   IUserProfileContext,
-  ReqConfig
+  ReqConfig,
+  IUserProfileEvent
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, {
@@ -10,6 +11,7 @@ import client, {
   CodeShareRequest,
   MetricsPutCustomPromAddressRequest
 } from '~/client'
+import auth from '~/uilts/auth'
 
 class DataSource implements IUserProfileDataSource {
   userGetSignOutInfo(redirectUrl?: string, options?: ReqConfig) {
@@ -22,14 +24,6 @@ class DataSource implements IUserProfileDataSource {
   ) {
     return client.getInstance().userSSOCreateImpersonation({ request }, options)
   }
-
-  // userSSOGetAuthURL(
-  //   codeVerifier?: string,
-  //   redirectUrl?: string,
-  //   state?: string,
-  //   options?: ReqConfig
-  // ) {
-  // }
 
   userSSOGetConfig(options?: ReqConfig) {
     return client.getInstance().userSSOGetConfig(options)
@@ -60,8 +54,13 @@ class DataSource implements IUserProfileDataSource {
   }
 }
 
-const ds = new DataSource()
+class EventHandler implements IUserProfileEvent {
+  logOut(): void {
+    auth.clearAuthToken()
+  }
+}
 
 export const ctx: IUserProfileContext = {
-  ds
+  ds: new DataSource(),
+  event: new EventHandler()
 }

@@ -54,8 +54,13 @@ export interface IUserProfileDataSource {
   ): AxiosPromise<MetricsPutCustomPromAddressResponse>
 }
 
+export interface IUserProfileEvent {
+  logOut(): void
+}
+
 export interface IUserProfileContext {
   ds: IUserProfileDataSource
+  event: IUserProfileEvent
 }
 
 export const UserProfileContext = createContext<IUserProfileContext | null>(

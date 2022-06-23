@@ -209,7 +209,7 @@ export function SessionForm() {
       console.error(e)
     }
 
-    // auth.clearAuthToken()
+    ctx!.event.logOut()
     if (signOutURL) {
       window.location.href = signOutURL
     } else {

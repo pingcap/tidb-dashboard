@@ -100,8 +100,8 @@ func (s *Service) getDetails(c *gin.Context) {
 		return
 	}
 
-	// get visual plan
-	result.VisualPlan, err = utils.GenerateVisualPlanJSON(result.VisualPlan)
+	// generate binary plan
+	result.BinaryPlan, err = utils.GenerateBinaryPlanJSON(result.BinaryPlan)
 	if err != nil {
 		rest.Error(c, err)
 		return

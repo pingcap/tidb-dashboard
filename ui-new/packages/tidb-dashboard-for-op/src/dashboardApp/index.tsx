@@ -8,12 +8,8 @@ import NProgress from 'nprogress'
 import './nprogress.less'
 
 import {
-  AppRegistry,
   routing,
   i18n,
-  // appOptions
-  saveAppOptions,
-  loadAppOptions,
   // sentryHelpers
   initSentryRoutingInstrument,
   applySentryTracingInterceptor,
@@ -27,6 +23,8 @@ import client, { InfoInfoResponse } from '~/client'
 import auth from '~/uilts/auth'
 import { handleSSOCallback, isSSOCallback } from '~/uilts/authSSO'
 import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
+import { loadAppOptions, saveAppOptions } from '~/uilts/appOptions'
+import AppRegistry from '~/uilts/registry'
 
 import AppOverview from '~/apps/Overview/meta'
 import AppClusterInfo from '~/apps/ClusterInfo/meta'

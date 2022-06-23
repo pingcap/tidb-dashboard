@@ -71,6 +71,7 @@ importers:
       react-spring: ^9.4.4
       react-use: ^15.3.3
       single-spa: ^5.9.4
+      single-spa-react: ^4.6.1
       typescript: ^4.7.3
     dependencies:
       '@ant-design/icons': 4.7.0_sfoxds7t5ydpegc3knd667wn6m
@@ -95,6 +96,7 @@ importers:
       react-spring: 9.4.5_sfoxds7t5ydpegc3knd667wn6m
       react-use: 15.3.8_sfoxds7t5ydpegc3knd667wn6m
       single-spa: 5.9.4
+      single-spa-react: 4.6.1_nirfsewa6s74k6y5dyozfox4gq
     devDependencies:
       '@baurine/esbuild-plugin-postcss3': 0.3.3
       '@types/node': 16.11.39
@@ -187,8 +189,6 @@ importers:
       react-syntax-highlighter: ^15.4.3
       react-use: ^15.3.3
       rimraf: ^3.0.2
-      single-spa: ^5.9.4
-      single-spa-react: ^4.6.1
       sql-formatter: ^4.0.2
       string-template: ^1.0.0
       tsc-alias: ^1.6.9
@@ -241,8 +241,6 @@ importers:
       react-spring: 9.4.5_sfoxds7t5ydpegc3knd667wn6m
       react-syntax-highlighter: 15.5.0_react@17.0.2
       react-use: 15.3.8_sfoxds7t5ydpegc3knd667wn6m
-      single-spa: 5.9.4
-      single-spa-react: 4.6.1_nirfsewa6s74k6y5dyozfox4gq
       sql-formatter: 4.0.2
       string-template: 1.0.0
       url: 0.11.0

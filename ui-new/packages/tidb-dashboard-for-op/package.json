@@ -32,7 +32,8 @@
     "react-router-dom": "6",
     "react-spring": "^9.4.4",
     "react-use": "^15.3.3",
-    "single-spa": "^5.9.4"
+    "single-spa": "^5.9.4",
+    "single-spa-react": "^4.6.1"
   },
   "devDependencies": {
     "@baurine/esbuild-plugin-postcss3": "^0.3.3",

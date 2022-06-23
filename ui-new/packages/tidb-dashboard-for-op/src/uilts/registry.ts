@@ -2,8 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import singleSpaReact from 'single-spa-react'
 import * as singleSpa from 'single-spa'
-import * as i18n from './i18n'
-import * as routing from './routing'
+
+import { i18n, routing } from '@pingcap/tidb-dashboard-lib'
+
 import { AppOptions } from './appOptions'
 
 export default class AppRegistry {

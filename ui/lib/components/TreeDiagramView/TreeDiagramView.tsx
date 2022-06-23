@@ -1,13 +1,14 @@
 import React from 'react'
 import { RawNodeDatum, TreeDiagramProps, rectBound } from './types'
 import TreeDigram from '../TreeDiagram'
+import TreeDiagramThumbnail from '../TreeDiagram/TreeDiagramThumbnail'
 import styles from './index.module.less'
 import { Button } from 'antd'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 interface TreeDiagramViewProps extends TreeDiagramProps {
   data: RawNodeDatum | RawNodeDatum[]
-  showMinimap: boolean
+  showMinimap?: boolean
   viewPort: rectBound
   isThumbnail?: boolean
 }
@@ -83,20 +84,6 @@ const customNodeElements = (nodeProps) => {
                 <p>
                   Run at: <span>{nodeDatum.run_at}</span>
                 </p>
-                {nodeDatum.__node_attrs.isNodeDetailVisible && (
-                  <>
-                    <p>
-                      Cost: <span>{nodeDatum.cost}</span>
-                    </p>
-                    <p>
-                      Access Table: <span>{nodeDatum.access_table}</span>
-                    </p>
-                    <p>
-                      Access Partition:{' '}
-                      <span>{nodeDatum.access_partition}</span>
-                    </p>
-                  </>
-                )}
               </div>
             </div>
             {nodeDatum.__node_attrs.collapsiable && (
@@ -181,7 +168,6 @@ const customLinkElements = (linkProps) => {
 
 const customNodeDetailElement = (nodeDetailProps) => {
   const nodeDatum = nodeDetailProps.data
-  console.log('nodeDetailProps', nodeDatum)
 
   return (
     <div>
@@ -216,16 +202,30 @@ const TreeDiagramView = ({
   const nodeSize = { width: 250, height: 150 }
 
   return (
-    <TreeDigram
-      data={data}
-      showMinimap={showMinimap}
-      nodeSize={nodeSize}
-      customNodeElement={customNodeElements}
-      customLinkElement={customLinkElements}
-      customNodeDetailElement={customNodeDetailElement}
-      viewPort={viewPort}
-      isThumbnail={isThumbnail}
-    />
+    <>
+      {isThumbnail ? (
+        <TreeDiagramThumbnail
+          data={data}
+          nodeSize={nodeSize}
+          customNodeElement={customNodeElements}
+          customLinkElement={customLinkElements}
+          viewPort={{
+            width: window.innerWidth / 2,
+            height: window.innerHeight / 2,
+          }}
+        />
+      ) : (
+        <TreeDigram
+          data={data}
+          showMinimap={showMinimap}
+          nodeSize={nodeSize}
+          customNodeElement={customNodeElements}
+          customLinkElement={customLinkElements}
+          customNodeDetailElement={customNodeDetailElement}
+          viewPort={viewPort}
+        />
+      )}
+    </>
   )
 }
 
@@ -234,6 +234,7 @@ TreeDiagramView.defaultProps = {
     width: window.innerWidth,
     height: window.innerHeight - 150,
   },
+  showMinimap: false,
   isThumbnail: false,
 }
 

@@ -155,57 +155,9 @@ function DetailPage() {
                       </Descriptions.Item>
                     )
                 })()}
-                {/* <Descriptions.Item
-                  span={2}
-                  multiline={detailExpand.plan}
-                  label={
-                    <Space size="middle">
-                      <TextWithInfo.TransKey transKey="slow_query.detail.head.plan" />
-                      <Expand.Link
-                        expanded={detailExpand.plan}
-                        onClick={togglePlan}
-                      />
-                      <CopyLink data={data.plan ?? ''} />
-                    </Space>
-                  }
-                >
-                  <Expand expanded={detailExpand.plan}>
-                    <Pre noWrap>{data.plan}</Pre>
-                  </Expand>
-                </Descriptions.Item>
-
-                {(() => {
-                  // if (data.visual_plan)
-                  return (
-                    <Descriptions.Item
-                      span={2}
-                      label={
-                        <Space size="middle" onClick={toggleVisualPlan}>
-                          <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
-                        </Space>
-                      }
-                    >
-                      <Modal
-                        title="Visual Plan Tree Diagram"
-                        centered
-                        visible={isVpVisible}
-                        width={window.innerWidth}
-                        onCancel={toggleVisualPlan}
-                        footer={null}
-                        bodyStyle={{ background: '#f5f5f5' }}
-                      >
-                        <TreeDiagramView
-                          // data={JSON.parse(data.visual_plan).main}
-                          data={vpData.main}
-                          showMinimap={true}
-                        />
-                      </Modal>
-                    </Descriptions.Item>
-                  )
-                })()} */}
               </Descriptions>
-              <Tabs defaultActiveKey="visual_plan">
-                <Tabs.TabPane tab="Visual Plan" key="visual_plan">
+              <Tabs defaultActiveKey="binary_plan">
+                <Tabs.TabPane tab="Visual Plan" key="binary_plan">
                   <Modal
                     title="Visual Plan Tree Diagram"
                     centered
@@ -216,7 +168,7 @@ function DetailPage() {
                     bodyStyle={{ background: '#f5f5f5' }}
                   >
                     <TreeDiagramView
-                      // data={JSON.parse(data.visual_plan).main}
+                      // data={JSON.parse(data.binary_plan).main}
                       data={vpData.main}
                       showMinimap={true}
                     />
@@ -224,18 +176,18 @@ function DetailPage() {
                   <Descriptions>
                     <Descriptions.Item
                       span={2}
-                      label={
-                        <Space size="middle" onClick={toggleVisualPlan}>
-                          <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
-                        </Space>
-                      }
+                      contentStyle={{
+                        width: window.innerWidth / 2,
+                        height: window.innerHeight / 2,
+                      }}
                     >
-                      {/* <TreeDiagramView
-                        // data={JSON.parse(data.visual_plan).main}
-                        data={vpData.main}
-                        showMinimap={false}
-                        isThumbnail={true}
-                      /> */}
+                      <div onClick={toggleVisualPlan}>
+                        <TreeDiagramView
+                          // data={JSON.parse(data.binary_plan).main}
+                          data={vpData.main}
+                          isThumbnail={true}
+                        />
+                      </div>
                     </Descriptions.Item>
                   </Descriptions>
                 </Tabs.TabPane>

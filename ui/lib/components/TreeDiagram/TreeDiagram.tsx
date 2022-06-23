@@ -236,7 +236,7 @@ const TreeDiagram = ({
           brushBehavior={brushBehavior}
         />
       )}
-      {selectedNodeDetail && (
+      {selectedNodeDetail && !isThumbnail && (
         <Drawer
           title={selectedNodeDetail!.name}
           placement="right"

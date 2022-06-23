@@ -177,31 +177,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
                   <Pre noWrap>{data.plan}</Pre>
                 </Expand>
               </Descriptions.Item>
-
-              {data.visual_plan ? (
-                <Descriptions.Item
-                  span={2}
-                  label={
-                    <Space size="middle" onClick={toggleVisualPlan}>
-                      <TextWithInfo.TransKey transKey="slow_query.detail.head.tree_diagram" />
-                    </Space>
-                  }
-                >
-                  <Modal
-                    title="Visual Plan Tree Diagram"
-                    centered
-                    visible={isVpVisible}
-                    width={window.innerWidth}
-                    onCancel={toggleVisualPlan}
-                    footer={null}
-                  >
-                    <TreeDiagramView
-                      data={JSON.parse(data.visual_plan).main}
-                      showMinimap={true}
-                    />
-                  </Modal>
-                </Descriptions.Item>
-              ) : null}
             </Descriptions>
 
             <DetailTabs data={data} query={query} />

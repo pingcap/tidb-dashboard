@@ -12,6 +12,6 @@ useSingleRequestParameter: true
 
 # Put the model and api in separate folders and in separate classes
 # https://github.com/OpenAPITools/openapi-generator/issues/5008#issuecomment-613791804
-# withSeparateModelsAndApi: true
-# apiPackage: api
-# modelPackage: models
+withSeparateModelsAndApi: true
+apiPackage: api
+modelPackage: models

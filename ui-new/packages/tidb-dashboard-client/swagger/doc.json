@@ -2686,33 +2686,6 @@
         }
       }
     },
-    "/statements/time_ranges": {
-      "get": {
-        "security": [
-          {
-            "JwtAuth": []
-          }
-        ],
-        "summary": "Get available statement time ranges",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/statement.TimeRange"
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "schema": {
-              "$ref": "#/definitions/rest.ErrorResponse"
-            }
-          }
-        }
-      }
-    },
     "/topology/alertmanager": {
       "get": {
         "security": [
@@ -5038,19 +5011,14 @@
         "sum_warnings": {
           "type": "integer"
         },
-        "table_names": {
-          "type": "string"
-        }
-      }
-    },
-    "statement.TimeRange": {
-      "type": "object",
-      "properties": {
-        "begin_time": {
+        "summary_begin_time": {
           "type": "integer"
         },
-        "end_time": {
+        "summary_end_time": {
           "type": "integer"
+        },
+        "table_names": {
+          "type": "string"
         }
       }
     },

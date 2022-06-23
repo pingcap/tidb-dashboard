@@ -184,10 +184,25 @@ const customNodeDetailElement = (nodeDetailProps) => {
         Cost: <span>{nodeDatum.cost}</span>
       </p>
       <p>
-        Access Table: <span>{nodeDatum.access_table}</span>
+        Disk Bytes: <span>{nodeDatum.disk_bytes}</span>
       </p>
       <p>
-        Access Partition: <span>{nodeDatum.access_partition}</span>
+        Memory Bytes: <span>{nodeDatum.memory_bytes}</span>
+      </p>
+      <p>
+        Operator Info: <span>{nodeDatum.operator_info}</span>
+      </p>
+      <p>
+        Root Basic Exec Info: <span>{nodeDatum.root_basic_exec_info}</span>
+      </p>
+      <p>
+        Root Group Exec Info: <span>{nodeDatum.root_group_exec_info}</span>
+      </p>
+      <p>
+        Store Type: <span>{nodeDatum.store_type}</span>
+      </p>
+      <p>
+        Task Type: <span>{nodeDatum.task_type}</span>
       </p>
     </div>
   )

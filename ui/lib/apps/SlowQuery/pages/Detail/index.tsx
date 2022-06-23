@@ -168,8 +168,8 @@ function DetailPage() {
                     bodyStyle={{ background: '#f5f5f5' }}
                   >
                     <TreeDiagramView
-                      // data={JSON.parse(data.binary_plan).main}
-                      data={vpData.main}
+                      data={JSON.parse(data.binary_plan!).main}
+                      // data={vpData.main}
                       showMinimap={true}
                     />
                   </Modal>
@@ -183,8 +183,8 @@ function DetailPage() {
                     >
                       <div onClick={toggleVisualPlan}>
                         <TreeDiagramView
-                          // data={JSON.parse(data.binary_plan).main}
-                          data={vpData.main}
+                          data={JSON.parse(data.binary_plan!).main}
+                          // data={vpData.main}
                           isThumbnail={true}
                         />
                       </div>

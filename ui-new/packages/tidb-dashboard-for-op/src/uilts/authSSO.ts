@@ -1,7 +1,7 @@
-import client, { ErrorStrategy } from '@lib/client'
 import { Modal } from 'antd'
-import * as auth from './auth'
-import { AuthTypes } from './auth'
+import { ReqConfig } from '@pingcap/tidb-dashboard-lib'
+import client from '~/client'
+import { AuthTypes, setAuthToken } from './auth'
 
 function newRandomString(length: number) {
   let text = ''
@@ -29,7 +29,7 @@ export async function getAuthURL() {
   sessionStorage.setItem('sso.state', state)
   const resp = await client
     .getInstance()
-    .userSSOGetAuthURL(codeVerifier, getRedirectURL(), state)
+    .userSSOGetAuthURL({ codeVerifier, redirectUrl: getRedirectURL(), state })
   return resp.data
 }
 
@@ -47,20 +47,22 @@ async function handleSSOCallbackInner() {
   }
   const r = await client.getInstance().userLogin(
     {
-      type: AuthTypes.SSO,
-      extra: JSON.stringify({
-        code: p.get('code'),
-        code_verifier: sessionStorage.getItem('sso.codeVerifier'),
-        redirect_url: getRedirectURL()
-      })
+      message: {
+        type: AuthTypes.SSO,
+        extra: JSON.stringify({
+          code: p.get('code'),
+          code_verifier: sessionStorage.getItem('sso.codeVerifier'),
+          redirect_url: getRedirectURL()
+        })
+      }
     },
-    { errorStrategy: ErrorStrategy.Custom }
+    { handleError: 'custom' } as ReqConfig
   )
 
   sessionStorage.removeItem('sso.codeVerifier')
   sessionStorage.removeItem('sso.state')
 
-  auth.setAuthToken(r.data.token)
+  setAuthToken(r.data.token)
   window.location.replace(getBaseURL())
 }
 

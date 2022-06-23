@@ -22,7 +22,7 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Pre } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import * as auth from '@lib/utils/auth'
+// import * as auth from '@lib/utils/auth'
 import ReactMarkdown from 'react-markdown'
 import Checkbox from 'antd/lib/checkbox/Checkbox'
 import { store } from '@lib/utils/store'
@@ -209,7 +209,7 @@ export function SessionForm() {
       console.error(e)
     }
 
-    auth.clearAuthToken()
+    // auth.clearAuthToken()
     if (signOutURL) {
       window.location.href = signOutURL
     } else {

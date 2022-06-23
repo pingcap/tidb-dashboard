@@ -1,10 +1,10 @@
 import {
   IOptimizerTraceDataSource,
-  IOptimizerTraceContext,
-  ReqConfig
+  IOptimizerTraceContext
+  // ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
-import client from '~/client'
+// import client from '~/client'
 
 class DataSource implements IOptimizerTraceDataSource {}
 

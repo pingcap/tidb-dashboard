@@ -24,44 +24,23 @@ import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
 import { useMemoizedFn } from 'ahooks'
 
-// import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
-// import { getAuthURL } from '@lib/utils/authSSO'
-// import { AuthTypes } from '@lib/utils/auth'
-// import { isDistro } from '@lib/utils/i18n'
-// import * as auth from '@lib/utils/auth'
-// import { useIsFeatureSupport } from '@lib/utils/store'
-// import { Root, AppearAnimate, LanguageDropdown } from '@lib/components'
-// import { landingSvg, logoSvg } from '@lib/utils/distroAssets'
-
-import client, { UserAuthenticateForm } from '~/client'
-
 import {
-  // client
-  // client,
-  // ErrorStrategy,
-  // UserAuthenticateForm,
-
-  // auth sso
-  getAuthURL,
-
-  // auth
-  auth,
-
   // i18n
   i18n,
-
   // store
   useIsFeatureSupport,
-
   // components
   Root,
   AppearAnimate,
   LanguageDropdown,
-
   // assets
   landingSvg,
   logoSvg
 } from '@pingcap/tidb-dashboard-lib'
+
+import client, { UserAuthenticateForm } from '~/client'
+import auth from '~/uilts/auth'
+import { getAuthURL } from '~/uilts/authSSO'
 
 import styles from './index.module.less'
 

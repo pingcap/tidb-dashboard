@@ -4,20 +4,15 @@ import axios, { AxiosInstance } from 'axios'
 import { message, Modal, notification } from 'antd'
 import * as singleSpa from 'single-spa'
 
-// import * as auth from '@lib/utils/auth'
-// import * as routing from '@lib/utils/routing'
-// import * as i18n from '@lib/utils/i18n'
-// import { reportError } from '@lib/utils/sentryHelpers'
+import { routing, i18n, reportError } from '@pingcap/tidb-dashboard-lib'
 
-import { auth, routing, i18n, reportError } from '@pingcap/tidb-dashboard-lib'
-
-// import { Configuration, DefaultApi } from './api'
 import { Configuration, DefaultApi } from '@pingcap/tidb-dashboard-client'
+
+import auth from '~/uilts/auth'
 
 import { getApiBasePath } from './baseUrl'
 import translations from './translations'
 
-// export * from './api'
 export * from '@pingcap/tidb-dashboard-client'
 
 //////////////////////////////

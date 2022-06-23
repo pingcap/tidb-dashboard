@@ -2,15 +2,14 @@ import { useMount, useUnmount, useMemoizedFn } from 'ahooks'
 import { useState, useRef, useEffect } from 'react'
 import axios, { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 
-import { ErrorStrategy } from '@lib/client'
+import { ReqConfig } from '@lib/types'
 
-export interface ReqConfig {
+interface ClientReqConfig extends ReqConfig {
   cancelToken: CancelToken
-  errorStrategy: ErrorStrategy
 }
 
 export interface RequestFactory<T> {
-  (reqConfig: ReqConfig): AxiosPromise<T>
+  (reqConfig: ClientReqConfig): AxiosPromise<T>
 }
 
 interface Options {
@@ -62,9 +61,9 @@ export function useClientRequest<T>(
     }))
 
     try {
-      const reqConfig: ReqConfig = {
+      const reqConfig: ClientReqConfig = {
         cancelToken: cancelTokenSource.current.token,
-        errorStrategy: ErrorStrategy.Custom // handle the error by component self
+        handleError: 'custom' // handle the error by componenent self
       }
       const resp = await reqFactory(reqConfig)
       if (mounted.current) {

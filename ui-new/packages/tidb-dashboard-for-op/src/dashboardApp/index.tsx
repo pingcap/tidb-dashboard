@@ -7,12 +7,9 @@ import { Modal, notification } from 'antd'
 import NProgress from 'nprogress'
 import './nprogress.less'
 
-import client, { InfoInfoResponse } from '~/client'
-
 import {
   AppRegistry,
   routing,
-  auth,
   i18n,
   // appOptions
   saveAppOptions,
@@ -20,39 +17,16 @@ import {
   // sentryHelpers
   initSentryRoutingInstrument,
   applySentryTracingInterceptor,
-  // api client
-  // client,
-  // InfoInfoResponse,
   // telemetry
   telemetry,
-  // auth sso
-  handleSSOCallback,
-  isSSOCallback,
-
   // store
-  mustLoadAppInfo,
-  reloadWhoAmI,
   NgmState
-
-  // apps
-  // ClusterInfoAppMeta as AppClusterInfo,
-
-  // StatementAppMeta as AppStatement,
-  // SlowQueryAppMeta as AppSlowQuery,
-  // UserProfileAppMeta as AppUserProfile,
-  // OverviewAppMeta as AppOverview,
-  // KeyVizAppMeta as AppKeyViz,
-  // TopSQLAppMeta as AppTopSQL,
-  // SystemReportAppMeta as AppSystemReport,
-  // DiagnoseAppMeta as AppDiagnose,
-  // SearchLogsAppMeta as AppSearchLogs,
-  // InstanceProfilingAppMeta as AppInstanceProfiling,
-  // ConprofAppMeta as AppContinuousProfiling,
-  // QueryEditorAppMeta as AppQueryEditor,
-  // ConfigurationAppMeta as AppConfiguration,
-  // DebugAPIAppMeta as AppDebugAPI,
-  // OptimizerTraceAppMeta as AppOptimizerTrace
 } from '@pingcap/tidb-dashboard-lib'
+
+import client, { InfoInfoResponse } from '~/client'
+import auth from '~/uilts/auth'
+import { handleSSOCallback, isSSOCallback } from '~/uilts/authSSO'
+import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
 
 import AppOverview from '~/apps/Overview/meta'
 import AppClusterInfo from '~/apps/ClusterInfo/meta'
@@ -71,43 +45,8 @@ import AppUserProfile from '~/apps/UserProfile/meta'
 import AppDiagnose from '~/apps/Diagnose/meta'
 import AppOptimizerTrace from '~/apps/OptimizerTrace/meta'
 
-// import AppRegistry from '@lib/utils/registry'
-// import * as routing from '@lib/utils/routing'
-// import * as auth from '@lib/utils/auth'
-// import * as i18n from '@lib/utils/i18n'
-// import { distro, isDistro } from '@lib/utils/i18n'
-// import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
-// import {
-//   initSentryRoutingInstrument,
-//   applySentryTracingInterceptor
-// } from '@lib/utils/sentryHelpers'
-// import client, { InfoInfoResponse } from '@lib/client'
-// import * as telemetry from '@lib/utils/telemetry'
-
 import LayoutMain from './layout/main'
 import LayoutSignIn from './layout/signin'
-
-// import AppUserProfile from '@lib/apps/UserProfile/index.meta'
-// import AppOverview from '@lib/apps/Overview/index.meta'
-// import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
-// import AppKeyViz from '@lib/apps/KeyViz/index.meta'
-// import AppTopSQL from '@lib/apps/TopSQL/index.meta'
-// import AppStatement from '@lib/apps/Statement/index.meta'
-// import AppSystemReport from '@lib/apps/SystemReport/index.meta'
-// import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
-// import AppDiagnose from '@lib/apps/Diagnose/index.meta'
-// import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
-// import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
-// import AppContinuousProfiling from '@lib/apps/ContinuousProfiling/index.meta'
-// import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
-// import AppConfiguration from '@lib/apps/Configuration/index.meta'
-// import AppDebugAPI from '@lib/apps/DebugAPI/index.meta'
-// import AppOptimizerTrace from '@lib/apps/OptimizerTrace/index.meta'
-
-// import { handleSSOCallback, isSSOCallback } from '@lib/utils/authSSO'
-// import { mustLoadAppInfo, reloadWhoAmI, NgmState } from '@lib/utils/store'
-// import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
-// NOTE: Don't remove above comment line, it is a placeholder for code generator
 
 import translations from './layout/translations'
 

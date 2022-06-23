@@ -55,6 +55,7 @@ importers:
       esbuild-plugin-yaml: ^0.0.1
       eslint-watch: ^8.0.0
       esm: ^3.2.25
+      eventemitter2: ^6.4.5
       fs-extra: ^10.0.0
       gulp: ^4.0.2
       gulp-shell: ^0.8.0
@@ -83,6 +84,7 @@ importers:
       antd: 4.21.0_sfoxds7t5ydpegc3knd667wn6m
       axios: 0.27.2
       classnames: 2.3.1
+      eventemitter2: 6.4.5
       i18next: 21.8.9
       nprogress: 0.2.0
       rc-animate: 3.1.1_sfoxds7t5ydpegc3knd667wn6m
@@ -155,7 +157,6 @@ importers:
       esbuild-plugin-yaml: ^0.0.1
       eslint-watch: ^8.0.0
       esm: ^3.2.25
-      eventemitter2: ^6.4.5
       fs-extra: ^10.0.0
       gulp: ^4.0.2
       gulp-shell: ^0.8.0
@@ -214,7 +215,6 @@ importers:
       dayjs: 1.11.3
       echarts: 4.9.0
       echarts-for-react: 2.0.16_echarts@4.9.0+react@17.0.2
-      eventemitter2: 6.4.5
       hsluv: 0.1.0
       i18next: 21.8.9
       i18next-browser-languagedetector: 6.1.4

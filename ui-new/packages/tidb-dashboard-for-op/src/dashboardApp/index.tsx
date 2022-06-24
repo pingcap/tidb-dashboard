@@ -48,6 +48,8 @@ import LayoutSignIn from './layout/signin'
 
 import translations from './layout/translations'
 
+i18n.updateDistro({ tidb: 'TieDB', is_distro: true })
+
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
   if (spinner) {

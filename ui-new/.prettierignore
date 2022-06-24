@@ -1,2 +1,3 @@
-packages/tidb-dashboard-client/src/client/api/*.ts
+packages/tidb-dashboard-client/src
 packages/tidb-dashboard-client/swagger/spec.json
+packages/tidb-dashboard-lib/src/client/models

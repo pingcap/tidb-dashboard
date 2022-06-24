@@ -1,6 +1,6 @@
 import publicPathPrefix from '~/uilts/publicPathPrefix'
 
-export const API_HOST = (function getApiHost(): string {
+export const API_HOST = (function () {
   let apiPrefix
   if (process.env.NODE_ENV === 'development') {
     if (process.env.REACT_APP_DASHBOARD_API_URL) {

@@ -5,41 +5,36 @@ import { message, Modal, notification } from 'antd'
 import * as singleSpa from 'single-spa'
 
 import { routing, i18n } from '@pingcap/tidb-dashboard-lib'
-
-import { Configuration, DefaultApi } from '@pingcap/tidb-dashboard-client'
+import {
+  Configuration,
+  DefaultApi as DashboardApi
+} from '@pingcap/tidb-dashboard-client'
 
 import auth from '~/uilts/auth'
 
-import { getApiBasePath } from './baseUrl'
+import { getApiBasePath } from './apiBasePath'
 import translations from './translations'
 
 export * from '@pingcap/tidb-dashboard-client'
 
 //////////////////////////////
 
-let basePath: string
-let apiClientInstance: DefaultApi
-let rawAxiosInstance: AxiosInstance
+const client = {
+  init(apiBasePath: string, apiInstance: DashboardApi) {
+    this.apiBasePath = apiBasePath
+    this.apiInstance = apiInstance
+  },
 
-function save(
-  instanceBasePath: string,
-  instance: DefaultApi,
-  axiosInstace: AxiosInstance
-) {
-  basePath = instanceBasePath
-  apiClientInstance = instance
-  rawAxiosInstance = axiosInstace
+  getInstance(): DashboardApi {
+    return this.apiInstance
+  },
+
+  getBasePath(): string {
+    return this.apiBasePath
+  }
 }
 
-function getInstance(): DefaultApi {
-  return apiClientInstance
-}
-
-function getBasePath(): string {
-  return basePath
-}
-
-export default { getInstance, getBasePath }
+export default client
 
 //////////////////////////////
 
@@ -48,7 +43,6 @@ type HandleError = 'default' | 'custom'
 function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   instance.interceptors.response.use(undefined, async function (err) {
     const { response, config } = err
-    // const errorStrategy = config.errorStrategy as ErrorStrategy
     const handleError = config.handleError as HandleError
     const method = (config.method as string).toLowerCase()
 
@@ -82,7 +76,7 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
     } else if (handleError === 'default') {
       if (method === 'get') {
         const fullUrl = config.url as string
-        const API = fullUrl.replace(getBasePath(), '').split('?')[0]
+        const API = fullUrl.replace(client.getBasePath(), '').split('?')[0]
         notification.error({
           key: API,
           message: i18next.t('error.title'),
@@ -109,8 +103,6 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
 }
 
 function initAxios() {
-  i18n.addTranslations(translations)
-
   const instance = axios.create()
   applyErrorHandlerInterceptor(instance)
 
@@ -118,11 +110,13 @@ function initAxios() {
 }
 
 function init() {
-  const basePath = getApiBasePath()
+  i18n.addTranslations(translations)
+
+  const apiBasePath = getApiBasePath()
   const axiosInstance = initAxios()
-  const dashboardClient = new DefaultApi(
+  const dashboardApi = new DashboardApi(
     new Configuration({
-      basePath,
+      basePath: apiBasePath,
       apiKey: () => auth.getAuthTokenAsBearer() || '',
       baseOptions: {
         handleError: 'default'
@@ -132,7 +126,7 @@ function init() {
     axiosInstance
   )
 
-  save(basePath, dashboardClient, axiosInstance)
+  client.init(apiBasePath, dashboardApi)
 }
 
 init()

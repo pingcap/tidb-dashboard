@@ -19,7 +19,7 @@ import {
   isDistro
 } from '@pingcap/tidb-dashboard-lib'
 
-import client, { InfoInfoResponse } from '~/client'
+import { InfoInfoResponse } from '~/client'
 import auth from '~/uilts/auth'
 import { handleSSOCallback, isSSOCallback } from '~/uilts/authSSO'
 import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'

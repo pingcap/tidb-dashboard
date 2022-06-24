@@ -1,4 +1,3 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 import mixpanel, { Config } from 'mixpanel-browser'
 import { InfoInfoResponse } from '@lib/client'
 import { getPathInLocationHash } from './routing'

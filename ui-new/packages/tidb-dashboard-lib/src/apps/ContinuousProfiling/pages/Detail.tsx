@@ -19,7 +19,6 @@ import {
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { instanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
-import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { telemetry } from '../utils/telemetry'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { ConProfilingContext } from '../context'
@@ -129,7 +128,9 @@ export default function Page() {
         const profileURL = `${
           ctx!.cfg.basePath
         }/continuous_profiling/single_profile/view?token=${token}`
-        const speedscopeURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
+        const speedscopeURL = `${
+          ctx!.cfg.publicPathBase
+        }/speedscope/#profileURL=${encodeURIComponent(
           profileURL
         )}&title=${speedscopeTitle}`
         window.open(speedscopeURL, '_blank')

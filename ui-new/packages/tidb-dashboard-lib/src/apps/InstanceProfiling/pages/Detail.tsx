@@ -9,7 +9,6 @@ import { upperFirst } from 'lodash'
 import { ProfilingTaskModel } from '@lib/client'
 import { CardTable, DateTime, Head, Descriptions, Card } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
-import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { instanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
@@ -193,7 +192,9 @@ export default function Page() {
         profileURL = `${ctx!.cfg.basePath}/profiling/single/view?token=${token}`
         if (isProtobuf) {
           const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
-          profileURL = `${publicPathPrefix}/speedscope/#profileURL=${encodeURIComponent(
+          profileURL = `${
+            ctx!.cfg.publicPathBase
+          }/speedscope/#profileURL=${encodeURIComponent(
             // protobuf can be rendered to flamegraph by speedscope
             profileURL + `&output_type=protobuf`
           )}&title=${titleOnTab}`

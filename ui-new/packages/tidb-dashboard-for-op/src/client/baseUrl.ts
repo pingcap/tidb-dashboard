@@ -1,4 +1,3 @@
-// import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import publicPathPrefix from '~/uilts/publicPathPrefix'
 
 export const API_HOST = (function getApiHost(): string {

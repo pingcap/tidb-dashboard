@@ -50,7 +50,7 @@ export interface IInstanceProfilingDataSource {
 
 export interface IInstanceProfilingContext {
   ds: IInstanceProfilingDataSource
-  cfg: IContextConfig
+  cfg: IContextConfig & { publicPathBase: string }
 }
 
 export const InstanceProfilingContext =

@@ -9,6 +9,8 @@ import client, {
   DiagnoseGenerateMetricsRelationRequest
 } from '~/client'
 
+import publicPathBase from '~/uilts/publicPathPrefix'
+
 class DataSource implements ISystemReportDataSource {
   diagnoseReportsGet(options?: ReqConfig) {
     return client.getInstance().diagnoseReportsGet(options)
@@ -38,5 +40,5 @@ const ds = new DataSource()
 
 export const ctx: ISystemReportContext = {
   ds,
-  cfg: { basePath: client.getBasePath() }
+  cfg: { basePath: client.getBasePath(), publicPathBase }
 }

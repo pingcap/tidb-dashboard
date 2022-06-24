@@ -6,6 +6,8 @@ import {
 
 import client, { ProfilingStartRequest } from '~/client'
 
+import publicPathBase from '~/uilts/publicPathPrefix'
+
 class DataSource implements IInstanceProfilingDataSource {
   getActionToken(id?: string, action?: string, options?: ReqConfig) {
     return client.getInstance().getActionToken({ id, action }, options)
@@ -38,5 +40,5 @@ const ds = new DataSource()
 
 export const ctx: IInstanceProfilingContext = {
   ds,
-  cfg: { basePath: client.getBasePath() }
+  cfg: { basePath: client.getBasePath(), publicPathBase }
 }

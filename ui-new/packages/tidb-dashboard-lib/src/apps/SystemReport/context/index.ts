@@ -31,7 +31,7 @@ export interface ISystemReportDataSource {
 
 export interface ISystemReportContext {
   ds: ISystemReportDataSource
-  cfg: IContextConfig
+  cfg: IContextConfig & { publicPathBase: string }
 }
 
 export const SystemReportContext = createContext<ISystemReportContext | null>(

@@ -60,7 +60,7 @@ export interface IConProfilingDataSource {
 
 export interface IConProfilingContext {
   ds: IConProfilingDataSource
-  cfg: IContextConfig
+  cfg: IContextConfig & { publicPathBase: string }
 }
 
 export const ConProfilingContext = createContext<IConProfilingContext | null>(

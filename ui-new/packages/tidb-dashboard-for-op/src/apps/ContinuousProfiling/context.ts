@@ -6,6 +6,8 @@ import {
 
 import client, { ConprofNgMonitoringConfig } from '~/client'
 
+import publicPathBase from '~/uilts/publicPathPrefix'
+
 class DataSource implements IConProfilingDataSource {
   continuousProfilingActionTokenGet(q: string, options?: ReqConfig) {
     return client
@@ -84,5 +86,5 @@ const ds = new DataSource()
 
 export const ctx: IConProfilingContext = {
   ds,
-  cfg: { basePath: client.getBasePath() }
+  cfg: { basePath: client.getBasePath(), publicPathBase }
 }

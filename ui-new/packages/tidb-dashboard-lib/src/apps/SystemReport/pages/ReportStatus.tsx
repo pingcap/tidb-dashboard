@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 // import client from '@lib/client'
-import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { AnimatedSkeleton, DateTime, ErrorBar, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -43,7 +42,9 @@ function ReportStatus() {
           <Button type="primary" disabled={report?.progress! < 100}>
             {/* Not using client basePath intentionally so that it can be handled by dev server */}
             <a
-              href={`${publicPathPrefix}/api/diagnose/reports/${report.id}/detail`}
+              href={`${ctx!.cfg.publicPathBase}/api/diagnose/reports/${
+                report.id
+              }/detail`}
               target="_blank"
               rel="noopener noreferrer"
             >

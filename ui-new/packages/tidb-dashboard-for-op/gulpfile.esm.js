@@ -1,7 +1,7 @@
 import { task, series, parallel } from 'gulp'
 import shell from 'gulp-shell'
 
-task('distro:generate', shell.task('../../../scripts/distro/write_strings.sh'))
+task('distro:gen', shell.task('../../../scripts/distro/write_strings.sh'))
 
 task(
   'speedscope:copy',
@@ -23,7 +23,7 @@ task('esbuild:build', shell.task('NODE_ENV=production node builder.js'))
 task(
   'dev',
   series(
-    parallel('distro:generate', 'speedscope:copy'),
+    parallel('distro:gen', 'speedscope:copy'),
     parallel('tsc:watch', 'lint:watch', 'esbuild:dev')
   )
 )
@@ -31,7 +31,7 @@ task(
 task(
   'build',
   series(
-    parallel('distro:generate', 'speedscope:copy'),
+    parallel('distro:gen', 'speedscope:copy'),
     parallel('tsc:check', 'lint:check', 'esbuild:build')
   )
 )

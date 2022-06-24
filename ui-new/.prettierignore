@@ -1,2 +1,2 @@
 packages/tidb-dashboard-client/src/client/api/*.ts
-packages/tidb-dashboard-client/swagger/doc.json
+packages/tidb-dashboard-client/swagger/spec.json

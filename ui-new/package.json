@@ -8,7 +8,6 @@
   },
   "scripts": {
     "prepare": "cd .. && husky install ui-new/.husky",
-    "gen:api": "pnpm -r --parallel gen:api",
     "build:lib": "pnpm -r --filter @pingcap/tidb-dashboard-lib build",
     "dev": "pnpm build:lib && pnpm -r --parallel dev",
     "build": "pnpm -r build"

@@ -48,7 +48,7 @@ import LayoutSignIn from './layout/signin'
 
 import translations from './layout/translations'
 
-import '~/uilts/distroStringsRes'
+import '~/uilts/distro/stringsRes'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')

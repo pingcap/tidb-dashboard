@@ -13,7 +13,7 @@ import {
   store
 } from '@pingcap/tidb-dashboard-lib'
 
-import { lightLogoSvg } from '~/uilts/distroAssets'
+import { lightLogoSvg } from '~/uilts/distro/assetsRes'
 
 import styles from './Banner.module.less'
 

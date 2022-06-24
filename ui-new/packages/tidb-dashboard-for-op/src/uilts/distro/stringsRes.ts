@@ -1,8 +1,8 @@
 import { updateDistro } from '@pingcap/tidb-dashboard-lib'
 
-import defaultDistroStringsRes from '../distro_strings.json'
+import defDistroStringsRes from './strings_res.json'
 
-let distro = defaultDistroStringsRes
+let distro = defDistroStringsRes
 
 // it is a base64 encoded string
 let distroStringsRes = document
@@ -13,7 +13,7 @@ if (distroStringsRes && distroStringsRes !== '__DISTRO_STRINGS_RES__') {
   try {
     const distroObj = JSON.parse(atob(distroStringsRes))
     distro = {
-      ...defaultDistroStringsRes,
+      ...defDistroStringsRes,
       ...distroObj
     }
   } catch (error) {

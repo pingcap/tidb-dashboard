@@ -38,7 +38,7 @@ import {
 import client, { UserAuthenticateForm } from '~/client'
 import auth from '~/uilts/auth'
 import { getAuthURL } from '~/uilts/authSSO'
-import { landingSvg, logoSvg } from '~/uilts/distroAssets'
+import { landingSvg, logoSvg } from '~/uilts/distro/assetsRes'
 
 import styles from './index.module.less'
 

@@ -1,10 +1,11 @@
 const fs = require('fs-extra')
 const os = require('os')
-const path = require('path')
 const chalk = require('chalk')
+const { watch } = require('chokidar')
+
 const { start } = require('live-server')
 const { createProxyMiddleware } = require('http-proxy-middleware')
-const { watch } = require('chokidar')
+
 const { build } = require('esbuild')
 const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const autoprefixer = require('autoprefixer')
@@ -224,15 +225,14 @@ async function main() {
   if (isDev) {
     start(devServerParams)
 
-    const tsConfig = require('./tsconfig.json')
-    tsConfig.include.forEach((folder) => {
-      watch(`${folder}/**/*`, { ignoreInitial: true }).on('all', () => {
-        rebuild()
-      })
+    watch(`src/**/*`, { ignoreInitial: true }).on('all', () => {
+      rebuild()
     })
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {
       handleAssets()
     })
+
+    // it doesn't work well by watching lib code changes
     // watch('node_modules/@pingcap/tidb-dashboard-lib/dist/**/*', { ignoreInitial: true }).on(
     //   'all',
     //   () => {

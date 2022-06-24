@@ -1,4 +1,4 @@
-import publicPathPrefix from './publicPathPrefix'
+import publicPathPrefix from '../publicPathPrefix'
 
 let timestamp = document
   .querySelector('meta[name="x-distro-assets-res-timestamp"]')

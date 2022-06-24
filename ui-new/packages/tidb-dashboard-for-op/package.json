@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
+    "@duorou_xu/speedscope": "1.14.1",
     "@g07cha/flexbox-react": "^5.0.0",
     "@pingcap/tidb-dashboard-client": "workspace:^1.0.0",
     "@pingcap/tidb-dashboard-lib": "workspace:^1.0.0",

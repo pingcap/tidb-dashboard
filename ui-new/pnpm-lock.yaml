@@ -31,6 +31,7 @@ importers:
     specifiers:
       '@ant-design/icons': ^4.7.0
       '@baurine/esbuild-plugin-postcss3': ^0.3.3
+      '@duorou_xu/speedscope': 1.14.1
       '@g07cha/flexbox-react': ^5.0.0
       '@pingcap/tidb-dashboard-client': workspace:^1.0.0
       '@pingcap/tidb-dashboard-lib': workspace:^1.0.0
@@ -72,6 +73,7 @@ importers:
       typescript: ^4.7.3
     dependencies:
       '@ant-design/icons': 4.7.0_sfoxds7t5ydpegc3knd667wn6m
+      '@duorou_xu/speedscope': 1.14.1
       '@g07cha/flexbox-react': 5.0.0_sfoxds7t5ydpegc3knd667wn6m
       '@pingcap/tidb-dashboard-client': link:../tidb-dashboard-client
       '@pingcap/tidb-dashboard-lib': link:../tidb-dashboard-lib
@@ -1682,6 +1684,13 @@ packages:
   /@ctrl/tinycolor/3.4.1:
     resolution: {integrity: sha512-ej5oVy6lykXsvieQtqZxCOaLT+xD4+QNarq78cIYISHmZXshCvROLudpQN3lfL8G0NL7plMSSK+zlyvCaIJ4Iw==}
     engines: {node: '>=10'}
+    dev: false
+
+  /@duorou_xu/speedscope/1.14.1:
+    resolution: {integrity: sha512-udmHqPSHei7AuM8Jdo18ePjxItE9Ydyp++cEDgHpsJ5xKbzFAiR+tC8+AEMs0UY6suPtlbID5YwlA95A1OOLGA==}
+    hasBin: true
+    dependencies:
+      open: 7.2.0
     dev: false
 
   /@elastic/charts/46.10.1_5vvgggp2kvqmg5c46qktsvfq34:
@@ -6599,6 +6608,12 @@ packages:
       kind-of: 6.0.3
     dev: true
 
+  /is-docker/2.2.1:
+    resolution: {integrity: sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ==}
+    engines: {node: '>=8'}
+    hasBin: true
+    dev: false
+
   /is-extendable/0.1.1:
     resolution: {integrity: sha512-5BMULNob1vgFX6EjQw5izWDxrecWK9AM72rugNr0TFldMOi0fj6Jk+zeKIt0xGj4cEfQIJth4w3OKWOJ4f+AFw==}
     engines: {node: '>=0.10.0'}
@@ -6800,6 +6815,13 @@ packages:
     resolution: {integrity: sha512-gfygJYZ2gLTDlmbWMI0CE2MwnFzSN/2SZfkMlItC4K/JBlsWVDB0bO6XhqcY13YXE7iMcAJnzTCJjPiTeJJ0Mw==}
     engines: {node: '>=4'}
     dev: true
+
+  /is-wsl/2.2.0:
+    resolution: {integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==}
+    engines: {node: '>=8'}
+    dependencies:
+      is-docker: 2.2.1
+    dev: false
 
   /isarray/1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
@@ -7956,6 +7978,14 @@ packages:
     dependencies:
       mimic-fn: 2.1.0
     dev: true
+
+  /open/7.2.0:
+    resolution: {integrity: sha512-4HeyhxCvBTI5uBePsAdi55C5fmqnWZ2e2MlmvWi5KW5tdH5rxoiv/aMtbeVxKZc3eWkT1GymMnLG8XC4Rq4TDQ==}
+    engines: {node: '>=8'}
+    dependencies:
+      is-docker: 2.2.1
+      is-wsl: 2.2.0
+    dev: false
 
   /opn/6.0.0:
     resolution: {integrity: sha512-I9PKfIZC+e4RXZ/qr1RhgyCnGgYX0UEIlXgWnCOVACIvFgaC9rz6Won7xbdhoHrd8IIhV7YEpHjreNUNkqCGkQ==}

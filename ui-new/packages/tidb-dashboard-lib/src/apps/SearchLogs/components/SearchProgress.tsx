@@ -164,8 +164,7 @@ export default function SearchProgress({
     if (!token) {
       return
     }
-    // const url = `${client.getBasePath()}/logs/download?token=${token}`
-    const url = `${ctx!.cfg.basePath}/logs/download?token=${token}`
+    const url = `${ctx!.cfg.apiPathBase}/logs/download?token=${token}`
     window.location.href = url
   }
 

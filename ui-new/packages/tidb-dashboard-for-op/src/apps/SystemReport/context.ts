@@ -40,5 +40,5 @@ const ds = new DataSource()
 
 export const ctx: ISystemReportContext = {
   ds,
-  cfg: { basePath: client.getBasePath(), publicPathBase }
+  cfg: { apiPathBase: client.getBasePath(), publicPathBase }
 }

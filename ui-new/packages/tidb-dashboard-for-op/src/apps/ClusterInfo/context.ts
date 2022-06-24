@@ -40,5 +40,5 @@ const ds = new DataSource()
 
 export const ctx: IClusterInfoContext = {
   ds,
-  cfg: { basePath: client.getBasePath() }
+  cfg: { apiPathBase: client.getBasePath() }
 }

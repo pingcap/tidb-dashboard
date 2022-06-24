@@ -61,5 +61,5 @@ const ds = new DataSource()
 
 export const ctx: ISearchLogsContext = {
   ds,
-  cfg: { basePath: client.getBasePath() }
+  cfg: { apiPathBase: client.getBasePath() }
 }

@@ -5,5 +5,5 @@ export interface ReqConfig extends AxiosRequestConfig {
 }
 
 export interface IContextConfig {
-  basePath: string
+  apiPathBase: string
 }

@@ -88,7 +88,7 @@ export default function ReportGenerator() {
         okButtonProps: {
           target: '_blank',
           href:
-            `${ctx!.cfg.basePath}/diagnose/metrics_relation/view?token=` +
+            `${ctx!.cfg.apiPathBase}/diagnose/metrics_relation/view?token=` +
             encodeURIComponent(resp.data)
         }
       })

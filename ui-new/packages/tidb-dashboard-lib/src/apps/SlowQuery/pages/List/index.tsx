@@ -161,7 +161,7 @@ function List() {
       const token = res.data
       if (token) {
         window.location.href = `${
-          ctx!.cfg.basePath
+          ctx!.cfg.apiPathBase
         }/slow_query/download?token=${token}`
       }
     } finally {

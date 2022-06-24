@@ -116,7 +116,7 @@ export default function Page() {
 
       if (action === 'view_graph' || action === 'view_text') {
         const profileURL = `${
-          ctx!.cfg.basePath
+          ctx!.cfg.apiPathBase
         }/continuous_profiling/single_profile/view?token=${token}`
         window.open(profileURL, '_blank')
         return
@@ -126,7 +126,7 @@ export default function Page() {
         // view flamegraph by speedscope
         const speedscopeTitle = `${rec.target?.component}_${rec.target?.address}_${rec.profile_type}`
         const profileURL = `${
-          ctx!.cfg.basePath
+          ctx!.cfg.apiPathBase
         }/continuous_profiling/single_profile/view?token=${token}`
         const speedscopeURL = `${
           ctx!.cfg.publicPathBase
@@ -139,7 +139,7 @@ export default function Page() {
 
       if (action === 'download') {
         window.location.href = `${
-          ctx!.cfg.basePath
+          ctx!.cfg.apiPathBase
         }/continuous_profiling/download?token=${token}`
         return
       }
@@ -159,7 +159,7 @@ export default function Page() {
     }
     telemetry.downloadProfilingGroupResult()
     window.location.href = `${
-      ctx!.cfg.basePath
+      ctx!.cfg.apiPathBase
     }/continuous_profiling/download?token=${token}`
   }, [ts])
 

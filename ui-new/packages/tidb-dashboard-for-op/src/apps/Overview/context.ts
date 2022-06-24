@@ -54,5 +54,5 @@ const ds = new DataSource()
 
 export const ctx: IOverviewContext = {
   ds,
-  cfg: { basePath: client.getBasePath() }
+  cfg: { apiPathBase: client.getBasePath() }
 }

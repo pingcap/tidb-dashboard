@@ -86,5 +86,5 @@ const ds = new DataSource()
 
 export const ctx: IConProfilingContext = {
   ds,
-  cfg: { basePath: client.getBasePath(), publicPathBase }
+  cfg: { apiPathBase: client.getBasePath(), publicPathBase }
 }

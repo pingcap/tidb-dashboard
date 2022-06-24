@@ -177,7 +177,7 @@ export default function Page() {
         }
 
         window.location.href = `${
-          ctx!.cfg.basePath
+          ctx!.cfg.apiPathBase
         }/profiling/single/download?token=${token}`
         break
       case ViewOptions.FlameGraph:
@@ -189,7 +189,9 @@ export default function Page() {
         if (!token) {
           return
         }
-        profileURL = `${ctx!.cfg.basePath}/profiling/single/view?token=${token}`
+        profileURL = `${
+          ctx!.cfg.apiPathBase
+        }/profiling/single/view?token=${token}`
         if (isProtobuf) {
           const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
           profileURL = `${
@@ -213,7 +215,7 @@ export default function Page() {
           return
         }
         profileURL = `${
-          ctx!.cfg.basePath
+          ctx!.cfg.apiPathBase
         }/profiling/single/view?token=${token}&output_type=${openAs}`
 
         window.open(`${profileURL}`, '_blank')
@@ -361,7 +363,7 @@ export default function Page() {
       return
     }
     window.location.href = `${
-      ctx!.cfg.basePath
+      ctx!.cfg.apiPathBase
     }/profiling/group/download?token=${token}`
   }, [id])
 

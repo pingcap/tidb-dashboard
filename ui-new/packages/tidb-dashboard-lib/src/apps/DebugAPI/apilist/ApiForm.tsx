@@ -68,7 +68,7 @@ export default function ApiForm({
           })
         const token = resp.data
         window.location.href = `${
-          ctx!.cfg.basePath
+          ctx!.cfg.apiPathBase
         }/debug_api/download?token=${token}`
       } catch (e) {
         console.error(e)

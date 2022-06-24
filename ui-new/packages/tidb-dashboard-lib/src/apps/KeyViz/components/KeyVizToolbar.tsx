@@ -14,7 +14,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import Flexbox from '@g07cha/flexbox-react'
 import { AutoRefreshButton, Card, Toolbar } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { isDistro } from '@lib/utils/distroStringsRes'
+import { isDistro } from '@lib/utils/distro'
 
 export interface IKeyVizToolbarProps {
   enabled: boolean
@@ -199,7 +199,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
             >
               <SettingOutlined onClick={onShowSettings} />
             </Tooltip>
-            {!isDistro && (
+            {!isDistro() && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}

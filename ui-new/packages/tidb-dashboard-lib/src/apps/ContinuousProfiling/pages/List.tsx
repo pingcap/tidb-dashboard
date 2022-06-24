@@ -32,7 +32,7 @@ import ConProfSettingForm from './ConProfSettingForm'
 
 import styles from './List.module.less'
 import { telemetry } from '../utils/telemetry'
-import { isDistro } from '@lib/utils/distroStringsRes'
+import { isDistro } from '@lib/utils/distro'
 import { ConProfilingContext } from '../context'
 
 export default function Page() {
@@ -264,7 +264,7 @@ export default function Page() {
                 }}
               />
             </Tooltip>
-            {!isDistro && (
+            {!isDistro() && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}

@@ -37,7 +37,7 @@ import useSlowQueryTableController, {
 import styles from './List.module.less'
 import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
-import { isDistro } from '@lib/utils/distroStringsRes'
+import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
 
 const { Option } = Select
@@ -237,7 +237,7 @@ function List() {
                 <MenuOutlined />
               </div>
             </Dropdown>
-            {!isDistro && (
+            {!isDistro() && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}

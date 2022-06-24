@@ -1,4 +1,6 @@
-import defaultDistroStringsRes from '@lib/distro_strings.json'
+import { updateDistro } from '@pingcap/tidb-dashboard-lib'
+
+import defaultDistroStringsRes from '../distro_strings.json'
 
 let distro = defaultDistroStringsRes
 
@@ -19,6 +21,4 @@ if (distroStringsRes && distroStringsRes !== '__DISTRO_STRINGS_RES__') {
   }
 }
 
-const isDistro = Boolean(distro['is_distro'])
-
-export { distro, isDistro }
+updateDistro(distro)

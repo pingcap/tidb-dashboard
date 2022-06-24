@@ -4,7 +4,8 @@ import { Button, Result, Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import { Card } from '@lib/components'
-import { addTranslationResource, isDistro } from '@lib/utils/i18n'
+import { addTranslationResource } from '@lib/utils/i18n'
+import { isDistro } from '@lib/utils/distro'
 import { useNgmState, NgmState } from '@lib/utils/store'
 
 const translations = {
@@ -42,7 +43,7 @@ export function NgmNotStarted() {
         subTitle={t('component.ngmNotStarted.subTitle')}
         extra={
           <Space>
-            {!isDistro && (
+            {!isDistro() && (
               <Button
                 onClick={() => {
                   window.open(t('component.ngmNotStarted.help_url'), '_blank')

@@ -29,7 +29,7 @@ import { combineTargetStats } from '../utils'
 import styles from './List.module.less'
 import { upperFirst } from 'lodash'
 import { QuestionCircleOutlined } from '@ant-design/icons'
-import { isDistro } from '@lib/utils/distroStringsRes'
+import { isDistro } from '@lib/utils/distro'
 import { InstanceProfilingContext } from '../context'
 
 const profilingDurationsSec = [10, 30, 60, 120]
@@ -282,7 +282,7 @@ export default function Page() {
             </Form>
           </Space>
           <Space>
-            {!isDistro && (
+            {!isDistro() && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}

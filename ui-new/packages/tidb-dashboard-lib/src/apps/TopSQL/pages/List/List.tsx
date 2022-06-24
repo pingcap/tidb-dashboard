@@ -39,7 +39,7 @@ import { ListChart } from './ListChart'
 import { SettingsForm } from './SettingsForm'
 import { onLegendItemOver, onLegendItemOut } from './legendAction'
 import { InstanceType } from './ListDetail/ListDetailTable'
-import { isDistro } from '@lib/utils/distroStringsRes'
+import { isDistro } from '@lib/utils/distro'
 import { TopSQLContext } from '../../context'
 
 const TOP_N = 5
@@ -206,7 +206,7 @@ export function TopSQLList() {
                   }}
                 />
               </Tooltip>
-              {!isDistro && (
+              {!isDistro() && (
                 <Tooltip
                   mouseEnterDelay={0}
                   mouseLeaveDelay={0}

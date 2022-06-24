@@ -11,7 +11,7 @@ import {
   TopologyTiDBInfo
 } from '@lib/client'
 import { ApiFormWidgetConfig, createFormWidget } from './widgets'
-import { distro } from '@lib/utils/i18n'
+import { distro } from '@lib/utils/distro'
 import { DebugAPIContext } from '../context'
 
 export interface Topology {
@@ -33,7 +33,7 @@ export default function ApiForm({
   const { t } = useTranslation()
   const { id, path_params, query_params, component } = endpoint
   const endpointHostParamKey = useMemo(
-    () => `${distro[component!]?.toLowerCase()}_instance`,
+    () => `${distro()[component!]?.toLowerCase()}_instance`,
     [component]
   )
   const pathParams = (path_params ?? []).map((p) => {

@@ -44,7 +44,7 @@ import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 // import client, { StatementModel } from '@lib/client'
 import { StatementModel } from '@lib/client'
-import { isDistro } from '@lib/utils/distroStringsRes'
+import { isDistro } from '@lib/utils/distro'
 import { StatementContext } from '../../context'
 
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
@@ -285,7 +285,7 @@ export default function StatementsOverview() {
                 <MenuOutlined />
               </div>
             </Dropdown>
-            {!isDistro && (
+            {!isDistro() && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}

@@ -16,7 +16,10 @@ import {
   // telemetry
   telemetry,
   // store
-  NgmState
+  NgmState,
+  // distro
+  distro,
+  isDistro
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, { InfoInfoResponse } from '~/client'
@@ -48,7 +51,7 @@ import LayoutSignIn from './layout/signin'
 
 import translations from './layout/translations'
 
-i18n.updateDistro({ tidb: 'TieDB', is_distro: true })
+import '~/uilts/distroStringsRes'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -108,7 +111,7 @@ async function webPageStart() {
       description: (
         <span>
           {i18next.t('health_check.ngm_not_started')}
-          {Boolean(!i18n.isDistro) && (
+          {!isDistro() && (
             <>
               {' '}
               <a
@@ -200,7 +203,7 @@ async function webPageStart() {
 }
 
 async function main() {
-  document.title = `${i18n.distro.tidb} Dashboard`
+  document.title = `${distro().tidb} Dashboard`
 
   if (routing.isPortalPage()) {
     // the portal page is only used to receive options

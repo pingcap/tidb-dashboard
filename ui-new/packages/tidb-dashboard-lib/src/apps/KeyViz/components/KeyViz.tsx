@@ -14,7 +14,7 @@ import KeyVizToolbar from './KeyVizToolbar'
 
 import './KeyViz.less'
 import { useChange } from '@lib/utils/useChange'
-import { isDistro } from '@lib/utils/distroStringsRes'
+import { isDistro } from '@lib/utils/distro'
 import { IKeyVizDataSource, KeyVizContext } from '../context'
 
 // const CACHE_EXPRIE_SECS = 10
@@ -188,7 +188,7 @@ const KeyViz = () => {
           <Button type="primary" onClick={openSettings}>
             {t('keyviz.settings.open_setting')}
           </Button>
-          {!isDistro && (
+          {!isDistro() && (
             <Button
               onClick={() => {
                 window.open(t('keyviz.settings.help_url'), '_blank')

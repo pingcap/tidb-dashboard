@@ -1,10 +1,10 @@
 import { createContext } from 'react'
 
-import { AxiosPromise } from 'axios'
+// import { AxiosPromise } from 'axios'
 
-import {} from '@lib/client'
+// import {} from '@lib/client'
 
-import { ReqConfig } from '@lib/types'
+// import { ReqConfig } from '@lib/types'
 
 export interface IOptimizerTraceDataSource {}
 

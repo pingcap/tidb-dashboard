@@ -3,7 +3,7 @@ import { Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import type { ApiFormWidget } from './index'
-import { distro } from '@lib/utils/i18n'
+import { distro } from '@lib/utils/distro'
 
 const portKeys: { [k: string]: string } = {
   tidb: 'status_port',
@@ -21,7 +21,7 @@ export const HostSelectWidget: ApiFormWidget = ({ endpoint, topology }) => {
     <Select
       showSearch
       placeholder={t(`debug_api.widgets.host_select_placeholder`, {
-        endpointType: distro[endpoint.component!]?.toLowerCase()
+        endpointType: distro()[endpoint.component!]?.toLowerCase()
       })}
     >
       {componentEndpoints.map((d) => {

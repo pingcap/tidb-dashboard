@@ -25,22 +25,20 @@ import Flexbox from '@g07cha/flexbox-react'
 import { useMemoizedFn } from 'ahooks'
 
 import {
-  // i18n
-  i18n,
+  // distro
+  isDistro,
   // store
   useIsFeatureSupport,
   // components
   Root,
   AppearAnimate,
-  LanguageDropdown,
-  // assets
-  landingSvg,
-  logoSvg
+  LanguageDropdown
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, { UserAuthenticateForm } from '~/client'
 import auth from '~/uilts/auth'
 import { getAuthURL } from '~/uilts/authSSO'
+import { landingSvg, logoSvg } from '~/uilts/distroAssets'
 
 import styles from './index.module.less'
 
@@ -202,7 +200,7 @@ function useSignInSubmit(
           const errComp = (
             <>
               {errMsg}
-              {!i18n.isDistro && (
+              {!isDistro() && (
                 <>
                   {' '}
                   <a

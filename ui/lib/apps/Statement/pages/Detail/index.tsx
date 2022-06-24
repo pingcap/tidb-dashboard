@@ -1,4 +1,4 @@
-import { Alert, Space, Modal } from 'antd'
+import { Alert, Space } from 'antd'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import React, { useEffect, useMemo, useRef, useState } from 'react'

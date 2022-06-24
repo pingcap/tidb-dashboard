@@ -1,7 +1,5 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react'
-import _ from 'lodash'
+import React, { useEffect, useState, useMemo } from 'react'
 import { AssignInternalProperties } from './utlis'
-import styles from './index.module.less'
 import { TreeNodeDatum, Translate, nodeMarginType } from './types'
 import { generateNodesAndLinks } from './utlis'
 
@@ -10,7 +8,7 @@ import LinkWrapper from './LinkWrapper'
 
 // imports d3 APIs
 import { select } from 'd3-selection'
-import { HierarchyPointLink, HierarchyPointNode, tree } from 'd3'
+import { HierarchyPointLink, HierarchyPointNode } from 'd3'
 
 const TreeDiagramThumbnail = ({
   data,

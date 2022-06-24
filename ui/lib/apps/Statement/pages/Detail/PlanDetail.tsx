@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Space, Modal } from 'antd'
+import React from 'react'
+import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,
@@ -11,7 +11,6 @@ import {
   HighlightSQL,
   Pre,
   TextWithInfo,
-  TreeDiagramView,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
@@ -79,11 +78,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
     titleKey = 'all'
   } else {
     titleKey = 'some'
-  }
-
-  const [isVpVisible, setIsVpVisable] = useState(false)
-  const toggleVisualPlan = () => {
-    setIsVpVisable(!isVpVisible)
   }
 
   return (

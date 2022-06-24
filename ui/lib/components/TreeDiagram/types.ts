@@ -1,6 +1,3 @@
-import { AnyPtrRecord } from 'dns'
-import { ReactElement } from 'react-markdown/lib/react-markdown'
-
 export interface Translate {
   x: number
   y: number

@@ -30,7 +30,7 @@ const TreeDiagram = ({
 }: TreeDiagramProps) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
   const [showNodeDetail, setShowNodeDetail] = useState(false)
-  const [selectedNodeDetail, setSelectedNodeDetail] = useState(null)
+  const [selectedNodeDetail, setSelectedNodeDetail] = useState<TreeNodeDatum>()
 
   // Inits tree translate, the default position is on the top-middle of canvas
   const [treeTranslate, setTreeTranslate] = useState({

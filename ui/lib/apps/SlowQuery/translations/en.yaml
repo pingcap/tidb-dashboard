@@ -116,6 +116,7 @@ slow_query:
       sql: Query
       previous_sql: Previous Query
       plan: Plan
+      tree_diagram: Tree Diagram
     tabs:
       basic: Basic
       time: Time

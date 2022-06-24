@@ -1,8 +1,10 @@
-import React from 'react'
-import { Space } from 'antd'
+import React, { useState } from 'react'
+import { Space, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
+
+import { Tabs } from 'antd'
 
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -18,10 +20,13 @@ import {
   HighlightSQL,
   Pre,
   TextWithInfo,
+  TreeDiagramView,
 } from '@lib/components'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 
 import DetailTabs from './DetailTabs'
+
+import vpData from './example'
 
 export interface IPageQuery {
   connectId?: string
@@ -64,6 +69,11 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
   const togglePlan = () =>
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
+
+  const [isVpVisible, setIsVpVisable] = useState(false)
+  const toggleVisualPlan = () => {
+    setIsVpVisable(!isVpVisible)
+  }
 
   return (
     <div>
@@ -145,26 +155,64 @@ function DetailPage() {
                       </Descriptions.Item>
                     )
                 })()}
-                <Descriptions.Item
-                  span={2}
-                  multiline={detailExpand.plan}
-                  label={
-                    <Space size="middle">
-                      <TextWithInfo.TransKey transKey="slow_query.detail.head.plan" />
-                      <Expand.Link
-                        expanded={detailExpand.plan}
-                        onClick={togglePlan}
-                      />
-                      <CopyLink data={data.plan ?? ''} />
-                    </Space>
-                  }
-                >
-                  <Expand expanded={detailExpand.plan}>
-                    <Pre noWrap>{data.plan}</Pre>
-                  </Expand>
-                </Descriptions.Item>
               </Descriptions>
-
+              <Tabs defaultActiveKey="binary_plan">
+                <Tabs.TabPane tab="Visual Plan" key="binary_plan">
+                  <Modal
+                    title="Visual Plan Tree Diagram"
+                    centered
+                    visible={isVpVisible}
+                    width={window.innerWidth}
+                    onCancel={toggleVisualPlan}
+                    footer={null}
+                    bodyStyle={{ background: '#f5f5f5' }}
+                  >
+                    <TreeDiagramView
+                      data={JSON.parse(data.binary_plan!).main}
+                      // data={vpData.main}
+                      showMinimap={true}
+                    />
+                  </Modal>
+                  <Descriptions>
+                    <Descriptions.Item
+                      span={2}
+                      contentStyle={{
+                        width: window.innerWidth / 2,
+                        height: window.innerHeight / 2,
+                      }}
+                    >
+                      <div onClick={toggleVisualPlan}>
+                        <TreeDiagramView
+                          data={JSON.parse(data.binary_plan!).main}
+                          // data={vpData.main}
+                          isThumbnail={true}
+                        />
+                      </div>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="Text Plan" key="text_plan">
+                  <Descriptions>
+                    <Descriptions.Item
+                      span={2}
+                      multiline={detailExpand.plan}
+                      label={
+                        <Space size="middle">
+                          <Expand.Link
+                            expanded={detailExpand.plan}
+                            onClick={togglePlan}
+                          />
+                          <CopyLink data={data.plan ?? ''} />
+                        </Space>
+                      }
+                    >
+                      <Expand expanded={detailExpand.plan}>
+                        <Pre noWrap>{data.plan}</Pre>
+                      </Expand>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Tabs.TabPane>
+              </Tabs>
               <DetailTabs data={data} />
             </>
           )}

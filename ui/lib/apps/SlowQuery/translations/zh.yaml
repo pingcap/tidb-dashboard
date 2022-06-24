@@ -119,6 +119,7 @@ slow_query:
       sql: SQL 查询
       previous_sql: 上一条 SQL 查询
       plan: 执行计划
+      tree_diagram: 树形图
     tabs:
       basic: 基本信息
       time: 执行时间

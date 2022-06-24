@@ -34,9 +34,6 @@ importers:
       '@g07cha/flexbox-react': ^5.0.0
       '@pingcap/tidb-dashboard-client': workspace:^1.0.0
       '@pingcap/tidb-dashboard-lib': workspace:^1.0.0
-      '@sentry/react': ^7.1.1
-      '@sentry/tracing': ^7.1.1
-      '@sentry/types': ^7.1.1
       '@types/node': ^16.9.1
       '@types/react': ^17.0.20
       '@types/react-dom': ^17.0.9
@@ -78,9 +75,6 @@ importers:
       '@g07cha/flexbox-react': 5.0.0_sfoxds7t5ydpegc3knd667wn6m
       '@pingcap/tidb-dashboard-client': link:../tidb-dashboard-client
       '@pingcap/tidb-dashboard-lib': link:../tidb-dashboard-lib
-      '@sentry/react': 7.1.1_react@17.0.2
-      '@sentry/tracing': 7.1.1
-      '@sentry/types': 7.1.1
       ahooks: 3.4.1_react@17.0.2
       antd: 4.21.0_sfoxds7t5ydpegc3knd667wn6m
       axios: 0.27.2
@@ -130,8 +124,6 @@ importers:
       '@elastic/charts': ^46.10.1
       '@g07cha/flexbox-react': ^5.0.0
       '@openapitools/openapi-generator-cli': ^2.4.26
-      '@sentry/react': ^7.1.1
-      '@sentry/types': ^7.1.1
       '@types/d3': ^5.7.2
       '@types/d3-graphviz': ^2.6.7
       '@types/lodash': ^4.14.180
@@ -202,8 +194,6 @@ importers:
       '@baurine/sql-formatter-plus': 1.5.3
       '@elastic/charts': 46.10.1_5vvgggp2kvqmg5c46qktsvfq34
       '@g07cha/flexbox-react': 5.0.0_sfoxds7t5ydpegc3knd667wn6m
-      '@sentry/react': 7.1.1_react@17.0.2
-      '@sentry/types': 7.1.1
       '@uifabric/utilities': 7.34.1_zn5uodkvigq2cma2dm4r3u5424
       ace-builds: 1.6.0
       ahooks: 3.4.1_react@17.0.2
@@ -2140,72 +2130,6 @@ packages:
   /@rushstack/eslint-patch/1.1.3:
     resolution: {integrity: sha512-WiBSI6JBIhC6LRIsB2Kwh8DsGTlbBU+mLRxJmAe3LjHTdkDpwIbEOZgoXBbZilk/vlfjK8i6nKRAvIRn1XaIMw==}
     dev: true
-
-  /@sentry/browser/7.1.1:
-    resolution: {integrity: sha512-5AQvStZ+nOP/yxsBmeMZpeGLVtuOgnCNvswKd/c1CJwNw7bDmCE4TQeNKp1C3Gb7lSdBk8ViwUKn0ZpoVQ5MTw==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@sentry/core': 7.1.1
-      '@sentry/types': 7.1.1
-      '@sentry/utils': 7.1.1
-      tslib: 1.14.1
-    dev: false
-
-  /@sentry/core/7.1.1:
-    resolution: {integrity: sha512-SADdAoG5u1LTJhPN5KPtn5HHmH6r0mr6h2LokuZnhj6/okrAuCIIKOb6Fh8jV7j2VuABvew8+FjJHORxi7D/3Q==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@sentry/hub': 7.1.1
-      '@sentry/types': 7.1.1
-      '@sentry/utils': 7.1.1
-      tslib: 1.14.1
-    dev: false
-
-  /@sentry/hub/7.1.1:
-    resolution: {integrity: sha512-ASsRVjYDIii6ZTf36JnIYKHWBQBk0P42Tgq324MpyPgaeVDg3saBcyXO5iAtWvY6Vmdi2H4JCVDoir2Zz3Me1w==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@sentry/types': 7.1.1
-      '@sentry/utils': 7.1.1
-      tslib: 1.14.1
-    dev: false
-
-  /@sentry/react/7.1.1_react@17.0.2:
-    resolution: {integrity: sha512-Z7cZvXHIWxg7OhOSy4InhrRgQPRNtHsyOkIAHkgwW32JYOGTg1HdqQ5mFUxQLejhU/YqsxVjTK4CI58FATykLw==}
-    engines: {node: '>=8'}
-    peerDependencies:
-      react: 15.x || 16.x || 17.x || 18.x
-    dependencies:
-      '@sentry/browser': 7.1.1
-      '@sentry/types': 7.1.1
-      '@sentry/utils': 7.1.1
-      hoist-non-react-statics: 3.3.2
-      react: 17.0.2
-      tslib: 1.14.1
-    dev: false
-
-  /@sentry/tracing/7.1.1:
-    resolution: {integrity: sha512-MJ+EPGfvPlgbJOcZRoIl6+Oi0oRE2nIi/HP2BPJSKGxXFi2Y09bcZUwfxOH8fkUa465jOGBFdCm+sXcbyExvuw==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@sentry/hub': 7.1.1
-      '@sentry/types': 7.1.1
-      '@sentry/utils': 7.1.1
-      tslib: 1.14.1
-    dev: false
-
-  /@sentry/types/7.1.1:
-    resolution: {integrity: sha512-5N1UMd2SqvUXprcIUMyDEju3H9lJY2oWfWQBGo0lG6Amn/lGAPAYlchg+4vQCLutDQMyd8K9zPwcbKn4u6gHdw==}
-    engines: {node: '>=8'}
-    dev: false
-
-  /@sentry/utils/7.1.1:
-    resolution: {integrity: sha512-DPRHDf3InfyVgmxToE4Z+AATAR4OVm+wsXDLFGGyncR91CE1x4wLQKOcAJJwX3F0Hz1VHENfmx1DvyYTHOrC/A==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@sentry/types': 7.1.1
-      tslib: 1.14.1
-    dev: false
 
   /@svgr/babel-plugin-add-jsx-attribute/6.0.0_@babel+core@7.18.2:
     resolution: {integrity: sha512-MdPdhdWLtQsjd29Wa4pABdhWbaRMACdM1h31BY+c6FghTZqNGT7pEYdBoaGeKtdTOBC/XNFQaKVj+r/Ei2ryWA==}

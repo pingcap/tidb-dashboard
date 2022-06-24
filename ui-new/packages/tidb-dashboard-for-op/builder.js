@@ -94,6 +94,7 @@ function genDefine() {
       define[`process.env.${k}`] = JSON.stringify(envVal)
     }
   }
+  // REACT_APP_RELEASE_VERSION was used in sentry before
   define['process.env.REACT_APP_RELEASE_VERSION'] = JSON.stringify(
     getInternalVersion()
   )

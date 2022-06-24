@@ -5,5 +5,3 @@ export { default as telemetry } from './telemetry'
 export * from './distro'
 export * from './store'
 export * from './useVersionedLocalStorageState'
-
-export * from './sentryHelpers'

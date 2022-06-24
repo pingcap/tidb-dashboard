@@ -10,9 +10,6 @@ import './nprogress.less'
 import {
   routing,
   i18n,
-  // sentryHelpers
-  initSentryRoutingInstrument,
-  applySentryTracingInterceptor,
   // telemetry
   telemetry,
   // store
@@ -97,11 +94,6 @@ async function webPageStart() {
         preRoute = curRoute
       }
     })
-
-    // sentry
-    initSentryRoutingInstrument()
-    const instance = client.getAxiosInstance()
-    applySentryTracingInterceptor(instance)
   }
 
   if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {

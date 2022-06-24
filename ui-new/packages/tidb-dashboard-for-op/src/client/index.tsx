@@ -4,7 +4,7 @@ import axios, { AxiosInstance } from 'axios'
 import { message, Modal, notification } from 'antd'
 import * as singleSpa from 'single-spa'
 
-import { routing, i18n, reportError } from '@pingcap/tidb-dashboard-lib'
+import { routing, i18n } from '@pingcap/tidb-dashboard-lib'
 
 import { Configuration, DefaultApi } from '@pingcap/tidb-dashboard-client'
 
@@ -39,24 +39,9 @@ function getBasePath(): string {
   return basePath
 }
 
-function getAxiosInstance(): AxiosInstance {
-  return rawAxiosInstance
-}
-
-export default { getInstance, getBasePath, getAxiosInstance }
+export default { getInstance, getBasePath }
 
 //////////////////////////////
-
-// export enum ErrorStrategy {
-//   Default = 'default',
-//   Custom = 'custom'
-// }
-
-// declare module 'axios' {
-//   interface AxiosRequestConfig {
-//     errorStrategy?: ErrorStrategy | undefined
-//   }
-// }
 
 type HandleError = 'default' | 'custom'
 
@@ -119,7 +104,6 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
       err.handled = true
     }
 
-    reportError(err)
     return Promise.reject(err)
   })
 }

@@ -18,8 +18,6 @@
     "@baurine/sql-formatter-plus": "^1.5.3",
     "@elastic/charts": "^46.10.1",
     "@g07cha/flexbox-react": "^5.0.0",
-    "@sentry/react": "^7.1.1",
-    "@sentry/types": "^7.1.1",
     "@uifabric/utilities": "^7.33.5",
     "ace-builds": "^1.6.0",
     "ahooks": "^3.1.9",

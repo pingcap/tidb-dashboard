@@ -26,7 +26,7 @@ import { Card, CardTable, Toolbar, DatePicker } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { InstanceKindName } from '@lib/utils/instanceTable'
+import { instanceKindName } from '@lib/utils/instanceTable'
 
 import ConProfSettingForm from './ConProfSettingForm'
 
@@ -108,7 +108,11 @@ export default function Page() {
         maxWidth: 250,
         onRender: (rec) => {
           const { tikv, tidb, pd, tiflash } = rec.component_num
-          const s = `${tikv} ${InstanceKindName['tikv']}, ${tidb} ${InstanceKindName['tidb']}, ${pd} ${InstanceKindName['pd']}, ${tiflash} ${InstanceKindName['tiflash']}`
+          const s = `${tikv} ${instanceKindName(
+            'tikv'
+          )}, ${tidb} ${instanceKindName('tidb')}, ${pd} ${instanceKindName(
+            'pd'
+          )}, ${tiflash} ${instanceKindName('tiflash')}`
           return <span>{s}</span>
         }
       },

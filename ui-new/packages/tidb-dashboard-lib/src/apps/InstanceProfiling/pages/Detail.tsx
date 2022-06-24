@@ -10,7 +10,7 @@ import { ProfilingTaskModel } from '@lib/client'
 import { CardTable, DateTime, Head, Descriptions, Card } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
-import { InstanceKindName } from '@lib/utils/instanceTable'
+import { instanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
@@ -138,20 +138,20 @@ export default function Page() {
     const newGroups: IGroup[] = []
     let startIndex = 0
     const tasks = data?.tasks_status ?? []
-    for (const instanceKind of ['pd', 'tidb', 'tikv', 'tiflash']) {
+    for (const kind of InstanceKinds) {
       tasks.forEach((task) => {
-        if (task.target.kind === instanceKind) {
+        if (task.target.kind === kind) {
           newRows.push({
             ...task,
-            kind: InstanceKindName[instanceKind]
+            kind: instanceKindName(kind)
           })
         }
       })
 
       if (newRows.length - startIndex > 0) {
         newGroups.push({
-          key: InstanceKindName[instanceKind],
-          name: InstanceKindName[instanceKind],
+          key: instanceKindName(kind),
+          name: instanceKindName(kind),
           startIndex: startIndex,
           count: newRows.length - startIndex
         })

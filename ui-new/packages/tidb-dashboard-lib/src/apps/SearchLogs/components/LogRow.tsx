@@ -9,7 +9,7 @@ import React, { useCallback, useState } from 'react'
 import TextHighlighter from 'react-highlight-words'
 import styles from './LogRow.module.less'
 import { Pre } from '@lib/components'
-import { InstanceKindName } from '@lib/utils/instanceTable'
+import { InstanceKind, instanceKindName } from '@lib/utils/instanceTable'
 import { hsluvToHex } from 'hsluv'
 import moize from 'moize'
 
@@ -174,7 +174,9 @@ function ColumnComponent(props: IColProps) {
         }
       }}
     >
-      {item.component.kind ? InstanceKindName[item.component.kind] : '?'}{' '}
+      {item.component.kind
+        ? instanceKindName(item.component.kind as InstanceKind)
+        : '?'}{' '}
       {item.component.display_name}
     </BaseInfoColumn>
   )

@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { TopologyStoreLocation } from '@lib/client'
 
 import styles from './index.module.less'
-import { InstanceKindName } from '@lib/utils/instanceTable'
+import { instanceKindName } from '@lib/utils/instanceTable'
 
 //////////////////////////////////////
 
@@ -147,8 +147,8 @@ export function trimDuplicate(strArr: string[]): ShortStrMap {
 //////////////////////////////////////
 
 const NODE_STORES = 'Stores'
-const NODE_TIFLASH = InstanceKindName.tiflash
-const NODE_TIKV = InstanceKindName.tikv
+const NODE_TIFLASH = () => instanceKindName('tiflash')
+const NODE_TIKV = () => instanceKindName('tikv')
 
 type TreeNode = {
   name: string
@@ -183,7 +183,7 @@ export function buildTreeData(
         curNode = subNode
       }
       const storeType =
-        store.labels!['engine'] === 'tiflash' ? NODE_TIFLASH : NODE_TIKV
+        store.labels!['engine'] === 'tiflash' ? NODE_TIFLASH() : NODE_TIKV()
       curNode.children.push({
         name: storeType,
         value: store.address!,
@@ -418,7 +418,7 @@ export default function StoreLocationTree({
           if (d._children) {
             return grey[1]
           }
-          if (d.data.name === NODE_TIFLASH) {
+          if (d.data.name === NODE_TIFLASH()) {
             return magenta[4]
           }
           return cyan[5]
@@ -438,7 +438,9 @@ export default function StoreLocationTree({
       const middleNodeText = nodeEnter
         .filter(
           ({ data: { name } }: any) =>
-            name !== NODE_STORES && name !== NODE_TIFLASH && name !== NODE_TIKV
+            name !== NODE_STORES &&
+            name !== NODE_TIFLASH() &&
+            name !== NODE_TIKV()
         )
         .append('text')
       middleNodeText
@@ -471,7 +473,7 @@ export default function StoreLocationTree({
       const leafNodeText = nodeEnter
         .filter(
           ({ data: { name } }: any) =>
-            name === NODE_TIFLASH || name === NODE_TIKV
+            name === NODE_TIFLASH() || name === NODE_TIKV()
         )
         .append('text')
       leafNodeText

@@ -17,7 +17,7 @@ import {
   // ActionsButton,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { InstanceKindName } from '@lib/utils/instanceTable'
+import { instanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { telemetry } from '../utils/telemetry'
@@ -69,17 +69,17 @@ export default function Page() {
         )
       }
     })
-    for (const instanceKind of ['pd', 'tidb', 'tikv', 'tiflash']) {
+    for (const kind of InstanceKinds) {
       profiles.forEach((p) => {
-        if (p.target?.component === instanceKind) {
+        if (p.target?.component === kind) {
           newRows.push(p)
         }
       })
 
       if (newRows.length - startIndex > 0) {
         newGroups.push({
-          key: InstanceKindName[instanceKind],
-          name: InstanceKindName[instanceKind],
+          key: instanceKindName(kind),
+          name: instanceKindName(kind),
           startIndex: startIndex,
           count: newRows.length - startIndex
         })

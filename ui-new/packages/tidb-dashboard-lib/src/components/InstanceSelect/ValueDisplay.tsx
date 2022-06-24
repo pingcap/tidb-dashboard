@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import {
   IInstanceTableItem,
   InstanceKind,
-  InstanceKindName
+  instanceKindName
 } from '@lib/utils/instanceTable'
 import { useTranslation } from 'react-i18next'
 
@@ -56,14 +56,14 @@ export default function ValueDisplay({
         if (stats.all === stats.selected) {
           p.push(
             t('component.instanceSelect.selected.partial.all', {
-              component: InstanceKindName[ik]
+              component: instanceKindName(ik as InstanceKind)
             })
           )
         } else {
           p.push(
             t('component.instanceSelect.selected.partial.n', {
               n: stats.selected,
-              component: InstanceKindName[ik]
+              component: instanceKindName(ik as InstanceKind)
             })
           )
         }

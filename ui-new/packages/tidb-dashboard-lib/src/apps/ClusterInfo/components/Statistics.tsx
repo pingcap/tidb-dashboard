@@ -8,7 +8,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Alert } from 'antd'
 
 import styles from './Statistics.module.less'
-import { InstanceKinds, InstanceKindName } from '@lib/utils/instanceTable'
+import { InstanceKinds, instanceKindName } from '@lib/utils/instanceTable'
 import { ClusterInfoContext } from '../context'
 
 function PartialInfo({ data }: { data?: ClusterinfoClusterStatisticsPartial }) {
@@ -96,7 +96,7 @@ export default function Statistics() {
           </Card>
           {InstanceKinds.map((ik) => {
             return (
-              <Card title={InstanceKindName[ik]} key={ik}>
+              <Card title={instanceKindName(ik)} key={ik}>
                 <PartialInfo data={data.stats_by_instance_kind?.[ik]} />
               </Card>
             )

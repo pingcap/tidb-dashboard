@@ -11,7 +11,7 @@ import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import {
   InstanceKind,
   InstanceKinds,
-  InstanceKindName
+  instanceKindName
 } from '@lib/utils/instanceTable'
 import { WarningOutlined } from '@ant-design/icons'
 import { ClusterInfoContext } from '../context'
@@ -190,7 +190,7 @@ System: ${getValueFormat('percentunit')(system)}`
         onRender: (row: IExpandedHostItem) => {
           const item = InstanceKinds.map((ik) => {
             if (row.instancesCount[ik] > 0) {
-              return `${row.instancesCount[ik]} ${InstanceKindName[ik]}`
+              return `${row.instancesCount[ik]} ${instanceKindName(ik)}`
             } else {
               return ''
             }

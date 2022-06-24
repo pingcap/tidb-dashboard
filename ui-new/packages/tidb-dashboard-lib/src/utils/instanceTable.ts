@@ -1,13 +1,16 @@
+import _ from 'lodash'
+import i18next from 'i18next'
+import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
+
 import {
   TopologyPDInfo,
   TopologyTiDBInfo,
   TopologyStoreInfo
 } from '@lib/client'
-import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
-import _ from 'lodash'
-import i18next from 'i18next'
 
 export type InstanceKind = 'pd' | 'tidb' | 'tikv' | 'tiflash'
+
+export const InstanceKinds: InstanceKind[] = ['pd', 'tidb', 'tikv', 'tiflash']
 
 export const InstanceStatus = {
   Unreachable: 0,
@@ -17,14 +20,9 @@ export const InstanceStatus = {
   Down: 4
 }
 
-export const InstanceKindName: { [key in InstanceKind]: string } = {
-  pd: i18next.t('distro.pd'),
-  tidb: i18next.t('distro.tidb'),
-  tikv: i18next.t('distro.tikv'),
-  tiflash: i18next.t('distro.tiflash')
+export function instanceKindName(kind: InstanceKind) {
+  return i18next.t(`distro.${kind}`)
 }
-
-export const InstanceKinds = Object.keys(InstanceKindName) as InstanceKind[]
 
 export interface IInstanceTableItem
   extends TopologyPDInfo,
@@ -74,7 +72,7 @@ export function buildInstanceTable({
     }
     groupData.push({
       key: ik,
-      name: InstanceKindName[ik],
+      name: instanceKindName(ik),
       startIndex: startIndex,
       count: instances.length,
       level: 0
@@ -119,7 +117,7 @@ export function filterInstanceTable(
     }
     groupData.push({
       key: ik,
-      name: InstanceKindName[ik],
+      name: instanceKindName(ik),
       startIndex: startIndex,
       count: instances.length,
       level: 0

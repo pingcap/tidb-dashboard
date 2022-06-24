@@ -17,7 +17,7 @@ import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import { TaskState } from '../utils'
 
 import styles from './Styles.module.less'
-import { InstanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
+import { instanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
 import { SearchLogsContext } from '../context'
 
 const { confirm } = Modal
@@ -135,7 +135,7 @@ export default function SearchProgress({
       }
       const title = (
         <span>
-          {InstanceKindName[ik]} <small>{describeProgress(tasks)}</small>
+          {instanceKindName(ik)} <small>{describeProgress(tasks)}</small>
         </span>
       )
       data.push({

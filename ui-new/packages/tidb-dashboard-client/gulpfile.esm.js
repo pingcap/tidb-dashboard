@@ -20,5 +20,10 @@ task('tsc:build', shell.task('tsc'))
 
 ///////////////////////////
 
-task('dev', series('swagger:gen', parallel('swagger:watch', 'tsc:watch')))
+if (process.env.WATCH_API === '0') {
+  task('dev', series('tsc:build'))
+} else {
+  task('dev', series('swagger:gen', parallel('swagger:watch', 'tsc:watch')))
+}
+
 task('build', series('swagger:gen', 'tsc:build'))

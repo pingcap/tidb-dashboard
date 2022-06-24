@@ -10,6 +10,7 @@
     "prepare": "cd .. && husky install ui-new/.husky",
     "build:lib": "pnpm -r --filter @pingcap/tidb-dashboard-lib build",
     "dev": "pnpm build:lib && pnpm -r --parallel dev",
+    "dev:no_watch_api": "WATCH_API=0 pnpm dev",
     "build": "pnpm -r build"
   },
   "devDependencies": {

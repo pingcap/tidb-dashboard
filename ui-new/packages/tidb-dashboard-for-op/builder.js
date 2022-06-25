@@ -1,5 +1,6 @@
-const fs = require('fs-extra')
 const os = require('os')
+const path = require('path')
+const fs = require('fs-extra')
 const chalk = require('chalk')
 const { watch } = require('chokidar')
 
@@ -15,14 +16,9 @@ const { yamlPlugin } = require('esbuild-plugin-yaml')
 const isDev = process.env.NODE_ENV !== 'production'
 const isE2E = process.env.E2E_TEST === 'true'
 
-// handle .env
-if (isDev) {
-  fs.copyFileSync('./.env.development', './.env')
-} else {
-  fs.copyFileSync('./.env.production', './.env')
-}
-// load .env file
-require('dotenv').config()
+// load env
+const envFile = isDev ? './.env.development' : './env.production'
+require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const dashboardApiPrefix =
   process.env.REACT_APP_DASHBOARD_API_URL || 'http://127.0.0.1:12333'

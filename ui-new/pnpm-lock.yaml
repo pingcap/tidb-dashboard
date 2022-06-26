@@ -38,6 +38,7 @@ importers:
       '@ant-design/icons': ^4.7.0
       '@baurine/esbuild-plugin-postcss3': ^0.3.3
       '@duorou_xu/speedscope': 1.14.1
+      '@fortawesome/fontawesome-free': ^6.1.1
       '@g07cha/flexbox-react': ^5.0.0
       '@pingcap/tidb-dashboard-client': workspace:^1.0.0
       '@pingcap/tidb-dashboard-lib': workspace:^1.0.0
@@ -50,6 +51,7 @@ importers:
       antd: ^4.18.7
       autoprefixer: ^10.4.2
       axios: ^0.27.2
+      bulma: ^0.9.4
       chalk: 4.1.2
       chokidar: ^3.5.2
       classnames: ^2.3.1
@@ -71,6 +73,7 @@ importers:
       react: ^17.0.2
       react-dom: ^17.0.2
       react-i18next: ^11.15.4
+      react-markdown: ^8.0.3
       react-router-dom: '6'
       react-spring: ^9.4.4
       react-use: ^15.3.3
@@ -80,12 +83,14 @@ importers:
     dependencies:
       '@ant-design/icons': 4.7.0_sfoxds7t5ydpegc3knd667wn6m
       '@duorou_xu/speedscope': 1.14.1
+      '@fortawesome/fontawesome-free': 6.1.1
       '@g07cha/flexbox-react': 5.0.0_sfoxds7t5ydpegc3knd667wn6m
       '@pingcap/tidb-dashboard-client': link:../tidb-dashboard-client
       '@pingcap/tidb-dashboard-lib': link:../tidb-dashboard-lib
       ahooks: 3.4.1_react@17.0.2
       antd: 4.21.0_sfoxds7t5ydpegc3knd667wn6m
       axios: 0.27.2
+      bulma: 0.9.4
       classnames: 2.3.1
       eventemitter2: 6.4.5
       i18next: 21.8.9
@@ -94,6 +99,7 @@ importers:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-i18next: 11.17.0_ohyflxdyo7oportarxwd7iawxa
+      react-markdown: 8.0.3_hx2b44akkvgcgvvtmk7ds2qk6q
       react-router-dom: 6.3.0_sfoxds7t5ydpegc3knd667wn6m
       react-spring: 9.4.5_sfoxds7t5ydpegc3knd667wn6m
       react-use: 15.3.8_sfoxds7t5ydpegc3knd667wn6m
@@ -1823,6 +1829,12 @@ packages:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       tslib: 1.14.1
+    dev: false
+
+  /@fortawesome/fontawesome-free/6.1.1:
+    resolution: {integrity: sha512-J/3yg2AIXc9wznaVqpHVX3Wa5jwKovVF0AMYSnbmcXTiL3PpRPfF58pzWucCwEiCJBp+hCNRLWClTomD8SseKg==}
+    engines: {node: '>=6'}
+    requiresBuild: true
     dev: false
 
   /@g07cha/flexbox-react/5.0.0_sfoxds7t5ydpegc3knd667wn6m:
@@ -3600,7 +3612,6 @@ packages:
 
   /bulma/0.9.4:
     resolution: {integrity: sha512-86FlT5+1GrsgKbPLRRY7cGDg8fsJiP/jzTqXXVqiUZZ2aZT8uemEOHlU1CDU+TxklPEZ11HZNNWclRBBecP4CQ==}
-    dev: true
 
   /cache-base/1.0.1:
     resolution: {integrity: sha512-AKcdTnFSWATd5/GCPRxr2ChwIJ85CeyrEyjRHlKxQ56d4XJMGym0uAiKn0xbLOGOl3+yRpOTi484dVCEc5AUzQ==}

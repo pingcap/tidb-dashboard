@@ -119,10 +119,9 @@ const logTime = (_options = {}) => ({
 const esbuildParams = {
   color: true,
   entryPoints: {
-    dashboardApp: 'src/index.ts'
-    // diagnoseReport: 'diagnoseReportApp/index.tsx',
+    dashboardApp: 'src/index.ts',
+    diagnoseReport: 'src/diagnoseReportApp/index.tsx',
   },
-  // loader: { '.ts': 'ts' },
   outdir: 'build',
   minify: !isDev,
   format: 'esm',

@@ -48,6 +48,7 @@ import LayoutSignIn from './layout/signin'
 
 import translations from './layout/translations'
 
+// for update distro strings resource
 import '~/uilts/distro/stringsRes'
 
 function removeSpinner() {

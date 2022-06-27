@@ -1,4 +1,3 @@
-// import '@lib/utils/wdyr'
 import React from 'react'
 
 import * as singleSpa from 'single-spa'

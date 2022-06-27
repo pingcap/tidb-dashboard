@@ -95,7 +95,14 @@
 
     <script type="module">
       import { default as startDashboard } from './index.js'
-      startDashboard('http://localhost:12333/dashboard/api', 'any')
+
+      const apiPathBase = 'http://localhost:12333/dashboard/api'
+      fetch(`${apiPathBase}/user/login`, {
+        method: 'POST',
+        body: JSON.stringify({ username: 'root', type: 0 })
+      })
+        .then((res) => res.json())
+        .then(({ token }) => startDashboard(apiPathBase, token))
     </script>
   </body>
 </html>

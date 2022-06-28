@@ -163,5 +163,5 @@ const ds = new DataSource()
 
 export const ctx: () => IStatementContext = () => ({
   ds,
-  cfg: { apiPathBase: client.getBasePath() }
+  cfg: { apiPathBase: client.getBasePath(), enableExport: false }
 })

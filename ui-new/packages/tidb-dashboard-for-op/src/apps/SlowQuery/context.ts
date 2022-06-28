@@ -70,5 +70,5 @@ const ds = new DataSource()
 
 export const ctx: ISlowQueryContext = {
   ds,
-  cfg: { apiPathBase: client.getBasePath() }
+  cfg: { apiPathBase: client.getBasePath(), enableExport: true }
 }

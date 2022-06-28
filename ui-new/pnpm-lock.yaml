@@ -37,7 +37,7 @@ importers:
       gulp-shell: 0.8.0
       typescript: 4.7.3
 
-  packages/tidb-dashboard-for-cloud:
+  packages/tidb-dashboard-for-dbaas:
     specifiers:
       '@pingcap/tidb-dashboard-client': workspace:^1.0.0
       '@pingcap/tidb-dashboard-lib': workspace:^1.0.0

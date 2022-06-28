@@ -4,7 +4,7 @@ import { ctx } from './context'
 
 export default function () {
   return (
-    <SlowQueryProvider value={ctx}>
+    <SlowQueryProvider value={ctx()}>
       <SlowQueryApp />
     </SlowQueryProvider>
   )

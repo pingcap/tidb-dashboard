@@ -4,7 +4,7 @@ import { ctx } from './context'
 
 export default function () {
   return (
-    <KeyVizProvider value={ctx}>
+    <KeyVizProvider value={ctx()}>
       <KeyVizApp />
     </KeyVizProvider>
   )

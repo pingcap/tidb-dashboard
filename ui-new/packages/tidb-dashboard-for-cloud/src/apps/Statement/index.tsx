@@ -4,7 +4,7 @@ import { ctx } from './context'
 
 export default function () {
   return (
-    <StatementProvider value={ctx}>
+    <StatementProvider value={ctx()}>
       <StatementApp />
     </StatementProvider>
   )

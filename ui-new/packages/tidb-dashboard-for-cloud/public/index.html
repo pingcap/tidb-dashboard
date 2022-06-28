@@ -89,12 +89,10 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <!-- <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div> -->
+    <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
     <div id="root"></div>
-    <!-- <script type="module" src="index.js?h=%JS_CONTENT_HASH%"></script> -->
-
     <script type="module">
-      import { default as startDashboard } from './index.js'
+      import { default as startDashboard } from './index.js?h=%JS_CONTENT_HASH%'
 
       const apiPathBase = 'http://localhost:12333/dashboard/api'
       fetch(`${apiPathBase}/user/login`, {
@@ -102,7 +100,13 @@
         body: JSON.stringify({ username: 'root', type: 0 })
       })
         .then((res) => res.json())
-        .then(({ token }) => startDashboard(apiPathBase, token))
+        .then(({ token }) => {
+          document.getElementById('dashboard_page_spinner').remove()
+          startDashboard(apiPathBase, token)
+          if (window.location.hash === '') {
+            window.location.hash = '#/statement'
+          }
+        })
     </script>
   </body>
 </html>

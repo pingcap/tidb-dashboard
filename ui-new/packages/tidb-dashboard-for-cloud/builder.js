@@ -17,9 +17,11 @@ const isDev = process.env.NODE_ENV !== 'production'
 const envFile = isDev ? './.env.development' : './env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
+const outDir = 'dist'
+
 const devServerParams = {
   port: process.env.PORT,
-  root: 'build',
+  root: outDir,
   open: true
 }
 
@@ -79,7 +81,7 @@ const logTime = (_options = {}) => ({
 const esbuildParams = {
   color: true,
   entryPoints: ['src/index.tsx'],
-  outdir: 'build',
+  outdir: outDir,
   minify: !isDev,
   format: 'esm',
   bundle: true,
@@ -107,23 +109,23 @@ const esbuildParams = {
 function buildHtml(inputFilename, outputFilename) {
   let result = fs.readFileSync(inputFilename).toString()
 
-  const jsContentHash = md5File.sync('./build/index.js')
+  const jsContentHash = md5File.sync(`./${outDir}/index.js`)
   result = result.replace('%JS_CONTENT_HASH%', jsContentHash.slice(0, 7))
 
-  const cssContentHash = md5File.sync('./build/index.css')
+  const cssContentHash = md5File.sync(`./${outDir}/index.css`)
   result = result.replace('%CSS_CONTENT_HASH%', cssContentHash.slice(0, 7))
 
   fs.writeFileSync(outputFilename, result)
 }
 
 function handleAssets() {
-  fs.copySync('./public', './build')
+  fs.copySync('./public', `./${outDir}`)
 
-  buildHtml('./public/index.html', './build/index.html')
+  buildHtml('./public/index.html', `./${outDir}/index.html`)
 }
 
 async function main() {
-  fs.removeSync('./build')
+  fs.removeSync(`./${outDir}`)
 
   const builder = await build(esbuildParams)
   handleAssets()
@@ -141,7 +143,6 @@ async function main() {
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {
       handleAssets()
     })
-
   } else {
     process.exit(0)
   }

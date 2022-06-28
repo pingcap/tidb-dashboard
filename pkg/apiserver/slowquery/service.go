@@ -107,6 +107,8 @@ func (s *Service) getDetails(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("vp: %s \n", result.BinaryPlan)
+
 	c.JSON(http.StatusOK, *result)
 }
 

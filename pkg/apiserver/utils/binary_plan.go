@@ -4,11 +4,18 @@ package utils
 
 import (
 	"encoding/base64"
-	"encoding/json"
 
+	simplejson "github.com/bitly/go-simplejson"
 	"github.com/golang/snappy"
-
 	"github.com/pingcap/tipb/go-tipb"
+	json "google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/runtime/protoimpl"
+)
+
+const (
+	MainTree = "main"
+	CteTrees = "ctes"
+	Children = "children"
 )
 
 // GenerateBinaryPlan generate visual plan from raw data.
@@ -50,10 +57,62 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 	}
 
 	// json marshal
-	bpJSON, err := json.Marshal(bp)
+	bpJSON, err := json.Marshal(protoimpl.X.ProtoMessageV2Of(bp))
 	if err != nil {
 		return "", err
 	}
 
-	return string(bpJSON), nil
+	// new simple json
+	vp, err := simplejson.NewJson(bpJSON)
+	if err != nil {
+		return "", err
+	}
+
+	// main
+	err = analyzeRoot(vp.Get(MainTree))
+	if err != nil {
+		return "", err
+	}
+
+	// ctes
+	err = analyzeTrees(vp.Get(CteTrees))
+	if err != nil {
+		return "", err
+	}
+
+	// to string
+	vpJSON, err := vp.MarshalJSON()
+	if err != nil {
+		return "", err
+	}
+
+	return string(vpJSON), nil
+}
+
+func analyzeRoot(root *simplejson.Json) error {
+	c := root.Get(Children)
+	err := analyzeTrees(c)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func analyzeTrees(ctes *simplejson.Json) error {
+	length := len(ctes.MustArray())
+
+	if length == 0 {
+		return nil
+	}
+
+	for i := 0; i < length; i++ {
+		c := ctes.GetIndex(i)
+		err := analyzeRoot(c)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

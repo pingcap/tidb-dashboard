@@ -4,6 +4,7 @@ package utils
 
 import (
 	"encoding/base64"
+	"strings"
 
 	simplejson "github.com/bitly/go-simplejson"
 	"github.com/golang/snappy"
@@ -19,10 +20,10 @@ const (
 )
 
 var (
-	needJsonFormat = []string{
+	needJSONFormat = []string{
 		"rootBasicExecInfo",
 		"rootGroupExecInfo",
-		"operatorInfo",
+		// "operatorInfo",
 		"copExecInfo",
 	}
 
@@ -104,17 +105,34 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 }
 
 func analyzeNode(node *simplejson.Json) error {
-
 	// format
 	for _, key := range needSetNA {
 		if node.Get(key).MustString() == "-1" {
 			node.Set(key, "N/A")
 		}
 	}
-	
-	for _, key := range needJsonFormat {
-		s := node.Get(key).MustString()
-		
+
+	// I don't want to do that either, but have to convert the irregular string to json
+	for _, key := range needJSONFormat {
+		if key == "rootGroupExecInfo" {
+			slist := node.Get(key).MustStringArray()
+			newSlist := []interface{}{}
+			for _, s := range slist {
+				sJSON, err := formatJSON(s)
+				if err != nil {
+					newSlist = append(newSlist, s)
+				}
+				newSlist = append(newSlist, sJSON)
+			}
+			node.Set(key, newSlist)
+		} else {
+			s := node.Get(key).MustString()
+			sJSON, err := formatJSON(s)
+			if err != nil {
+				continue
+			}
+			node.Set(key, sJSON)
+		}
 	}
 
 	c := node.Get(Children)
@@ -143,4 +161,18 @@ func analyzeChildrenNodes(noeds *simplejson.Json) error {
 	}
 
 	return nil
+}
+
+func formatJSON(s string) (*simplejson.Json, error) {
+	s = `{` + s + `}`
+	s = strings.ReplaceAll(s, "{", `{"`)
+	s = strings.ReplaceAll(s, "}", `"}`)
+	s = strings.ReplaceAll(s, ":", `":"`)
+	s = strings.ReplaceAll(s, ",", `","`)
+	s = strings.ReplaceAll(s, `" `, `"`)
+	s = strings.ReplaceAll(s, `}"`, `}`)
+	s = strings.ReplaceAll(s, `"{`, `{`)
+	s = strings.ReplaceAll(s, `{""}`, "{}")
+
+	return simplejson.NewJson([]byte(s))
 }

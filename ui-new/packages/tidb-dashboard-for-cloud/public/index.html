@@ -85,14 +85,14 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="index.css?h=%CSS_CONTENT_HASH%" />
+    <link rel="stylesheet" href="main.css?h=%CSS_CONTENT_HASH%" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
     <div id="root"></div>
     <script type="module">
-      import { default as startDashboard } from './index.js?h=%JS_CONTENT_HASH%'
+      import { default as startDashboard } from './main.js?h=%JS_CONTENT_HASH%'
 
       const apiPathBase = 'http://localhost:12333/dashboard/api'
       fetch(`${apiPathBase}/user/login`, {

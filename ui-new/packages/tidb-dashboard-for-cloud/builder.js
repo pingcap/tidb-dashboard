@@ -80,7 +80,9 @@ const logTime = (_options = {}) => ({
 
 const esbuildParams = {
   color: true,
-  entryPoints: ['src/index.tsx'],
+  entryPoints: {
+    main: 'src/index.tsx'
+  },
   outdir: outDir,
   minify: !isDev,
   format: 'esm',
@@ -109,10 +111,10 @@ const esbuildParams = {
 function buildHtml(inputFilename, outputFilename) {
   let result = fs.readFileSync(inputFilename).toString()
 
-  const jsContentHash = md5File.sync(`./${outDir}/index.js`)
+  const jsContentHash = md5File.sync(`./${outDir}/main.js`)
   result = result.replace('%JS_CONTENT_HASH%', jsContentHash.slice(0, 7))
 
-  const cssContentHash = md5File.sync(`./${outDir}/index.css`)
+  const cssContentHash = md5File.sync(`./${outDir}/main.css`)
   result = result.replace('%CSS_CONTENT_HASH%', cssContentHash.slice(0, 7))
 
   fs.writeFileSync(outputFilename, result)

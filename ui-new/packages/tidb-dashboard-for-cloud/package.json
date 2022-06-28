@@ -1,7 +1,14 @@
 {
   "name": "@pingcap/tidb-dashboard-for-cloud",
-  "private": "true",
   "version": "1.0.0",
+  "main": "dist/main.js",
+  "module": "dist/main.js",
+  "files": [
+    "dist/*.js",
+    "dist/*.css",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
     "dev": "gulp dev",
     "build": "gulp build"

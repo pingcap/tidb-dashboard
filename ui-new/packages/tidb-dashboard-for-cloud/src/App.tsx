@@ -1,26 +1,25 @@
 import React, { useEffect, useState } from 'react'
-import KeyViz from './apps/KeyViz'
-import SlowQuery from './apps/SlowQuery'
 import Statement from './apps/Statement'
+import SlowQuery from './apps/SlowQuery'
+import KeyViz from './apps/KeyViz'
 
 function getLocHashPrefix() {
   return window.location.hash.split('/')[1]
 }
 
 export default function () {
-  const [locHashPrefix, setLocHashPrefix] = useState(getLocHashPrefix())
+  const [locHashPrefix, setLocHashPrefix] = useState(() => getLocHashPrefix())
 
   useEffect(() => {
-    function onHashChange() {
-      setLocHashPrefix(getLocHashPrefix())
-    }
+    const timerId = setInterval(() => {
+      const curLocHashPrefix = getLocHashPrefix()
+      if (curLocHashPrefix !== locHashPrefix) {
+        setLocHashPrefix(curLocHashPrefix)
+      }
+    }, 200)
 
-    window.addEventListener('hashchange', onHashChange, false)
-
-    return () => {
-      window.removeEventListener('hashchange', onHashChange)
-    }
-  }, [])
+    return () => clearInterval(timerId)
+  }, [locHashPrefix])
 
   if (locHashPrefix === 'statement') {
     return <Statement />

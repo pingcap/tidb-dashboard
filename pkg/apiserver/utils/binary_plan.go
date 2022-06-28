@@ -18,6 +18,20 @@ const (
 	Children = "children"
 )
 
+var (
+	needJsonFormat = []string{
+		"rootBasicExecInfo",
+		"rootGroupExecInfo",
+		"operatorInfo",
+		"copExecInfo",
+	}
+
+	needSetNA = []string{
+		"diskBytes",
+		"memoryBytes",
+	}
+)
+
 // GenerateBinaryPlan generate visual plan from raw data.
 func GenerateBinaryPlan(v string) (*tipb.ExplainData, error) {
 	if v == "" {
@@ -69,13 +83,13 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 	}
 
 	// main
-	err = analyzeRoot(vp.Get(MainTree))
+	err = analyzeNode(vp.Get(MainTree))
 	if err != nil {
 		return "", err
 	}
 
 	// ctes
-	err = analyzeTrees(vp.Get(CteTrees))
+	err = analyzeChildrenNodes(vp.Get(CteTrees))
 	if err != nil {
 		return "", err
 	}
@@ -89,9 +103,22 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 	return string(vpJSON), nil
 }
 
-func analyzeRoot(root *simplejson.Json) error {
-	c := root.Get(Children)
-	err := analyzeTrees(c)
+func analyzeNode(node *simplejson.Json) error {
+
+	// format
+	for _, key := range needSetNA {
+		if node.Get(key).MustString() == "-1" {
+			node.Set(key, "N/A")
+		}
+	}
+	
+	for _, key := range needJsonFormat {
+		s := node.Get(key).MustString()
+		
+	}
+
+	c := node.Get(Children)
+	err := analyzeChildrenNodes(c)
 	if err != nil {
 		return err
 	}
@@ -99,16 +126,17 @@ func analyzeRoot(root *simplejson.Json) error {
 	return nil
 }
 
-func analyzeTrees(ctes *simplejson.Json) error {
-	length := len(ctes.MustArray())
+func analyzeChildrenNodes(noeds *simplejson.Json) error {
+	length := len(noeds.MustArray())
 
+	// no children nodes
 	if length == 0 {
 		return nil
 	}
 
 	for i := 0; i < length; i++ {
-		c := ctes.GetIndex(i)
-		err := analyzeRoot(c)
+		c := noeds.GetIndex(i)
+		err := analyzeNode(c)
 		if err != nil {
 			return err
 		}

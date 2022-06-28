@@ -92,7 +92,7 @@
     <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
     <div id="root"></div>
     <script type="module">
-      import { default as startDashboard } from './main.js?h=%JS_CONTENT_HASH%'
+      import startDashboard from './main.js?h=%JS_CONTENT_HASH%'
 
       const apiPathBase = 'http://localhost:12333/dashboard/api'
       fetch(`${apiPathBase}/user/login`, {

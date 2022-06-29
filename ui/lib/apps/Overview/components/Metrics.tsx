@@ -16,7 +16,7 @@ import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { LoadingOutlined } from '@ant-design/icons'
 import { min, some } from 'lodash'
 
-import { PointerEvent, Chart } from '@elastic/charts'
+import { PointerEvent } from '@elastic/charts'
 
 import { ChartContext } from '../../../components/MetricChart/ChartContext'
 
@@ -315,21 +315,27 @@ function Latency(props: IChartProps) {
   )
 }
 
-function CPU(props: IChartProps) {
+function GetTokenDuration(props: IChartProps) {
   const { t } = useTranslation()
   return (
     <Card noMarginTop noMarginBottom>
-      <Typography.Title level={5}>{t('overview.metrics.cpu')}</Typography.Title>
+      <Typography.Title level={5}>
+        {t('overview.metrics.latency.get_token')}
+      </Typography.Title>
       <MetricChart
         queries={[
           {
             query:
-              'avg(rate(process_cpu_seconds_total{k8s_cluster="$k8s_cluster",tidb_cluster="$tidb_cluster",job="tidb"}[1m]))',
+              'sum(rate(tidb_server_get_token_duration_seconds_bucket[$__rate_interval]))',
             name: 'avg',
           },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tidb_server_get_token_duration_seconds_bucket[$__rate_interval])) by (le))',
+            name: '99%',
+          },
         ]}
-        yDomain={{ min: 0, max: 100 }}
-        unit="percent"
+        unit="s"
         type="line"
         {...props}
       />
@@ -337,13 +343,192 @@ function CPU(props: IChartProps) {
   )
 }
 
-// TiDB Memory Usage
+function ParseDuration(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.latency.parse')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query:
+              '(sum(rate(tidb_session_parse_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_session_parse_duration_seconds_count[$__rate_interval])))',
+            name: 'avg',
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tidb_session_parse_duration_seconds_bucket[$__rate_interval])) by (le))',
+            name: '99%',
+          },
+        ]}
+        unit="s"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+function CompileDuration(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.latency.compile')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query:
+              '(sum(rate(tidb_session_compile_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_session_compile_duration_seconds_count[$__rate_interval])))',
+            name: 'avg',
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tidb_session_compile_duration_seconds_bucket[$__rate_interval])) by (le))',
+            name: '99%',
+          },
+        ]}
+        unit="s"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+function ExecDuration(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.latency.execution')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query:
+              '(sum(rate(tidb_session_execute_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_session_execute_duration_seconds_count[$__rate_interval])))',
+            name: 'avg',
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tidb_session_execute_duration_seconds_bucket[$__rate_interval])) by (le))',
+            name: '99%',
+          },
+        ]}
+        unit="s"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+function Transaction(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.transaction.tps')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query:
+              'sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval])) by (type, txn_mode)',
+            name: '{type}-{txn_mode}',
+          },
+        ]}
+        unit="s"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+function TransactionDuration(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.transaction.average_duration')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query:
+              '(sum(rate(tidb_session_transaction_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval])))',
+            name: 'avg',
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tidb_session_transaction_duration_seconds_bucket[$__rate_interval])) by (le, txn_mode))',
+            name: '99%-{txn_mode}',
+          },
+        ]}
+        unit="s"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+function TransactionRetry(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.transaction.retry_count')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query:
+              'sum(increase(tidb_session_retry_num_bucket[$__rate_interval])) by (le)',
+            name: '{le}',
+          },
+        ]}
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+function TiDBUptime(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.server.tidb_uptime')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query: '(time() - process_start_time_seconds)',
+            name: '{instance}',
+          },
+        ]}
+        unit="s"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+// TiDB CPU Usage
 function TiDBCPUUsage(props: IChartProps) {
   const { t } = useTranslation()
   return (
     <Card noMarginTop noMarginBottom>
       <Typography.Title level={5}>
-        {t('overview.metrics.memory')}
+        {t('overview.metrics.server.tidb_cpu_usage')}
       </Typography.Title>
       <MetricChart
         queries={[
@@ -366,10 +551,14 @@ function TiDBMemoryUsage(props: IChartProps) {
   return (
     <Card noMarginTop noMarginBottom>
       <Typography.Title level={5}>
-        {t('overview.metrics.memory')}
+        {t('overview.metrics.server.tidb_memory_usage')}
       </Typography.Title>
       <MetricChart
         queries={[
+          {
+            query: `tidb_server_memory_usage`,
+            name: '{type}-{instance}',
+          },
           {
             query: 'process_resident_memory_bytes',
             name: 'process-{instance}',
@@ -387,21 +576,119 @@ function TiDBMemoryUsage(props: IChartProps) {
   )
 }
 
-function IO(props: IChartProps) {
+function TiKVUptime(props: IChartProps) {
   const { t } = useTranslation()
   return (
     <Card noMarginTop noMarginBottom>
-      <Typography.Title level={5}>{t('overview.metrics.io')}</Typography.Title>
+      <Typography.Title level={5}>
+        {t('overview.metrics.server.tikv_uptime')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query: '(time() - process_start_time_seconds)',
+            name: '{instance}',
+          },
+        ]}
+        unit="s"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+// TiKV CPU Usage
+function TiKVCPUUsage(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.server.tikv_cpu_usage')}
+      </Typography.Title>
       <MetricChart
         queries={[
           {
             query:
-              'irate(node_disk_io_time_seconds_total[$__rate_interval]) * 100',
-            name: '{instance} - {device}',
+              'sum(rate(process_cpu_seconds_total[$__rate_interval])) by (instance)',
+            name: '{instance}',
           },
         ]}
-        yDomain={{ min: 0, max: 100 }}
         unit="percent"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+// TiKV Memory Usage
+function TiKVMemoryUsage(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.server.tikv_memory_usage')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query: 'avg(process_resident_memory_bytes) by (instance)',
+            name: '{instance}',
+          },
+        ]}
+        unit="decbytes"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+function TiKVIO(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.server.tikv_io_mbps')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query:
+              'sum(rate(tikv_engine_flow_bytes[$__rate_interval])) by (instance)',
+            name: '{instance}-write',
+          },
+          {
+            query:
+              'sum(rate(tikv_engine_flow_bytes[$__rate_interval])) by (instance)',
+            name: '{instance}-read',
+          },
+        ]}
+        unit="decbytes"
+        type="line"
+        {...props}
+      />
+    </Card>
+  )
+}
+
+// TODO: check size unit
+function TiKVStorageUsage(props: IChartProps) {
+  const { t } = useTranslation()
+  return (
+    <Card noMarginTop noMarginBottom>
+      <Typography.Title level={5}>
+        {t('overview.metrics.server.tikv_storage_usage')}
+      </Typography.Title>
+      <MetricChart
+        queries={[
+          {
+            query: 'sum(tikv_store_size_bytes) by (instance)',
+            name: '{instance}',
+          },
+        ]}
+        unit="decbytes"
         type="line"
         {...props}
       />
@@ -448,25 +735,34 @@ export default function Metrics() {
 
       <ChartContext.Provider value={[pointerEvent, setPointerEvent]}>
         <Stack tokens={{ childrenGap: 16 }}>
-          {/* <Connection {...metricProps('connection')} />
+          <Connection {...metricProps('connection')} />
           <Disconnection {...metricProps('disconneciton')} />
           <ConnectionIdleDuration
             {...metricProps('connection_idle_duration')}
           />
-          <DatabaseTime {...metricProps('database_time')}/>
-          <DatabaseTimeByPhrase {...metricProps('database_time_by_phrase')}/>
-          <DatabaseExecTime {...metricProps('database_exec_time')}/>
+          <DatabaseTime {...metricProps('database_time')} />
+          <DatabaseTimeByPhrase {...metricProps('database_time_by_phrase')} />
+          <DatabaseExecTime {...metricProps('database_exec_time')} />
           <QPS {...metricProps('qps')} />
           <FailedQuery {...metricProps('failed_query')} />
           <CPS {...metricProps('cps')} />
-          <OPS {...metricProps('ops')} /> */}
+          <OPS {...metricProps('ops')} />
           <Latency {...metricProps('latency')} />
-          {/* <CPU {...metricProps('cpu')} /> */}
-          {/* <TiDBCPUUsage {...metricProps('tidb_cpu_usage')} /> */}
-
-          {/* <TiDBMemoryUsage {...metricProps('memory')} /> */}
-
-          {/* <IO {...metricProps('io')} /> */}
+          <GetTokenDuration {...metricProps('get_token')} />
+          <ParseDuration {...metricProps('parse')} />
+          <CompileDuration {...metricProps('compile')} />
+          <ExecDuration {...metricProps('execution')} />
+          <Transaction {...metricProps('tps')} />
+          <TransactionDuration {...metricProps('average_duration')} />
+          <TransactionRetry {...metricProps('retry_count')} />
+          <TiDBUptime {...metricProps('tidb_uptime')} />
+          <TiDBCPUUsage {...metricProps('tidb_cpu_usage')} />
+          <TiDBMemoryUsage {...metricProps('tidb_memory_usage')} />
+          <TiKVUptime {...metricProps('tikv_uptime')} />
+          <TiKVCPUUsage {...metricProps('tikv_cpu_usage')} />
+          <TiKVMemoryUsage {...metricProps('tikv_memory_usage')} />
+          <TiKVIO {...metricProps('tikv_io_mbps')} />
+          <TiKVStorageUsage {...metricProps('tikv_storage_usage')} />
         </Stack>
       </ChartContext.Provider>
     </>

@@ -1,12 +1,25 @@
 import React, { useContext } from 'react'
-import { Root } from '@lib/components'
-import KeyViz from './components/KeyViz'
+import { Routes, Route, HashRouter as Router } from 'react-router-dom'
 
-import translations from './translations'
+import { Root } from '@lib/components'
 import { addTranslations } from '@lib/utils/i18n'
+import { useLocationChange } from '@lib/hooks/useLocationChange'
+
+import KeyViz from './components/KeyViz'
+import translations from './translations'
 import { KeyVizContext } from './context'
 
 addTranslations(translations)
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route path="/keyviz" element={<KeyViz />} />
+    </Routes>
+  )
+}
 
 export default () => {
   const ctx = useContext(KeyVizContext)
@@ -16,7 +29,9 @@ export default () => {
 
   return (
     <Root>
-      <KeyViz />
+      <Router>
+        <AppRoutes />
+      </Router>
     </Root>
   )
 }

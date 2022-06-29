@@ -9,8 +9,20 @@ import { Detail, List } from './pages'
 import { StatementContext } from './context'
 
 import translations from './translations'
+import { useLocationChange } from '@lib/hooks/useLocationChange'
 
 addTranslations(translations)
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route path="/statement" element={<List />} />
+      <Route path="/statement/detail" element={<Detail />} />
+    </Routes>
+  )
+}
 
 export default function () {
   const statementCacheMgr = useCache(2)
@@ -24,10 +36,7 @@ export default function () {
     <Root>
       <CacheContext.Provider value={statementCacheMgr}>
         <Router>
-          <Routes>
-            <Route path="/statement" element={<List />} />
-            <Route path="/statement/detail" element={<Detail />} />
-          </Routes>
+          <AppRoutes />
         </Router>
       </CacheContext.Provider>
     </Root>

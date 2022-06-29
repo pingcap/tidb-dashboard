@@ -41,6 +41,7 @@ importers:
     specifiers:
       '@pingcap/tidb-dashboard-client': workspace:^1.0.0
       '@pingcap/tidb-dashboard-lib': workspace:^1.0.0
+      '@types/node': ^16.9.1
       antd: ^4.18.7
       autoprefixer: ^10.4.2
       axios: ^0.27.2
@@ -73,6 +74,7 @@ importers:
       react-dom: 17.0.2_react@17.0.2
       react-router-dom: 6.3.0_sfoxds7t5ydpegc3knd667wn6m
     devDependencies:
+      '@types/node': 16.11.39
       autoprefixer: 10.4.7
       chalk: 4.1.2
       chokidar: 3.5.3

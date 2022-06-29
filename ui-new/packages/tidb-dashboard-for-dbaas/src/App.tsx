@@ -11,14 +11,16 @@ export default function () {
   const [locHashPrefix, setLocHashPrefix] = useState(() => getLocHashPrefix())
 
   useEffect(() => {
-    const timerId = setInterval(() => {
+    function handleRouteChange() {
       const curLocHashPrefix = getLocHashPrefix()
       if (curLocHashPrefix !== locHashPrefix) {
         setLocHashPrefix(curLocHashPrefix)
       }
-    }, 200)
-
-    return () => clearInterval(timerId)
+    }
+    window.addEventListener('dashboard:route-change', handleRouteChange)
+    return () => {
+      window.removeEventListener('dashboard:route-change', handleRouteChange)
+    }
   }, [locHashPrefix])
 
   if (locHashPrefix === 'statement') {

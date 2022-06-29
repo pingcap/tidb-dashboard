@@ -19,8 +19,9 @@ require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
 
+const devPort = parseInt(process.env.PORT) + 1
 const devServerParams = {
-  port: process.env.PORT,
+  port: devPort + '',
   root: outDir,
   open: true
 }

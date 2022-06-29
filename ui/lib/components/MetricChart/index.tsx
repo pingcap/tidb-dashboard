@@ -1,6 +1,13 @@
 import { Space } from 'antd'
 import _ from 'lodash'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import format from 'string-template'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import client, { ErrorStrategy } from '@lib/client'
@@ -18,6 +25,7 @@ import {
   Position,
   ScaleType,
   Settings,
+  PointerEvent,
 } from '@elastic/charts'
 import { GraphType, QueryData, renderQueryData } from './seriesRenderer'
 import {
@@ -34,6 +42,8 @@ import {
   QueryOptions,
   resolveQueryTemplate,
 } from '@lib/utils/prometheus'
+
+import { ChartContext } from './ChartContext'
 
 export type { GraphType }
 
@@ -85,7 +95,7 @@ export interface IMetricChartProps {
 
   yDomain?: DomainRange
   queries: IQueryOption[]
-  unit: string
+  unit?: string
   type: GraphType
 
   height?: number
@@ -111,11 +121,20 @@ export default function MetricChart({
   onRangeChange,
   onLoadingStateChange,
 }: IMetricChartProps) {
+  const chartRef = useRef<Chart>(null)
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const [chartHandle] = useChartHandle(chartContainerRef, 150)
   const [isLoading, setLoading] = useState(false)
   const [data, setData] = useState<Data | null>(null)
   const [error, setError] = useState<any>(null)
+
+  const [pointerEvent, setPointerEvent] = useContext(ChartContext)
+
+  const pointerUpdate = (event: PointerEvent) => {
+    if (chartRef.current) {
+      setPointerEvent(event)
+    }
+  }
 
   useChange(() => {
     onLoadingStateChange?.(isLoading)
@@ -157,6 +176,8 @@ export default function MetricChart({
           }
         }
         fillInto[fillIdx] = data
+        console.log('query', query)
+        console.log('query data', data)
       } catch (e) {
         fillInto[fillIdx] = null
         setError((existingErr) => existingErr || e)
@@ -205,6 +226,14 @@ export default function MetricChart({
     queryAllMetrics()
   }, [range])
 
+  console.log('data', data)
+
+  useEffect(() => {
+    if (chartRef.current && pointerEvent) {
+      chartRef.current.dispatchExternalPointerEvent(pointerEvent)
+    }
+  }, [pointerEvent])
+
   const handleBrushEnd = useCallback(
     (ev: BrushEvent) => {
       if (!ev.x) {
@@ -245,10 +274,12 @@ export default function MetricChart({
     )
   } else {
     inner = (
-      <Chart size={{ height }}>
+      <Chart size={{ height }} ref={chartRef}>
         <Settings
           {...DEFAULT_CHART_SETTINGS}
           legendPosition={Position.Right}
+          pointerUpdateDebounce={0}
+          onPointerUpdate={pointerUpdate}
           legendSize={150}
           onBrushEnd={handleBrushEnd}
         />
@@ -262,7 +293,9 @@ export default function MetricChart({
           id="left"
           position={Position.Left}
           showOverlappingTicks
-          tickFormat={(v) => getValueFormat(unit)(v, 2)}
+          tickFormat={(v) =>
+            unit ? getValueFormat(unit)(v, 2) : Number(v).toFixed(0)
+          }
           ticks={5}
           domain={yDomain}
         />

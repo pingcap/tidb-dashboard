@@ -1,6 +1,0 @@
-daysUntilStale: 60
-daysUntilClose: 7
-exemptLabels:
-  - type/feature-request
-  - type/pinned
-staleLabel: type/stale

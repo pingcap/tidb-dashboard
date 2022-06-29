@@ -87,7 +87,7 @@
     </style>
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@0.0.5/dist/main.css"
+      href="https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@0.0.6/dist/main.css"
     />
   </head>
   <body>
@@ -95,7 +95,7 @@
     <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
     <div id="root"></div>
     <script type="module">
-      import startDashboard from 'https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@0.0.5/dist/main.js'
+      import startDashboard from 'https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@0.0.6/dist/main.js'
 
       const apiPathBase = 'http://localhost:12333/dashboard/api'
       fetch(`${apiPathBase}/user/login`, {
@@ -105,7 +105,7 @@
         .then((res) => res.json())
         .then(({ token }) => {
           document.getElementById('dashboard_page_spinner').remove()
-          startDashboard(apiPathBase, token)
+          startDashboard({ apiPathBase, apiToken: token })
           if (window.location.hash === '') {
             window.location.hash = '#/statement'
           }

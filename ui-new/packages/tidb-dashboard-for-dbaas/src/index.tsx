@@ -32,9 +32,14 @@ function trackRouteChange() {
   window.addEventListener('dashboard:route-change', handler)
 }
 
-function start(apiPathBase: string, token: string) {
+type StartOptions = {
+  apiPathBase: string
+  apiToken: string
+}
+
+function start({ apiPathBase, apiToken }: StartOptions) {
   i18next.changeLanguage('en')
-  setupClient(apiPathBase, token)
+  setupClient(apiPathBase, apiToken)
 
   // telemetry
   telemetry.init()

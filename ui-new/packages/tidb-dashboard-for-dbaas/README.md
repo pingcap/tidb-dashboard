@@ -19,11 +19,11 @@ NPM: [@pingcap/tidb-dashboard-for-dbaas](https://www.npmjs.com/package/@pingcap/
     <script type="module">
       import startDashboard from 'https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@<version>/dist/main.js'
 
-      // get tidb dashboard api path base and token
+      // get tidb dashboard api path base and api token
       // ...
 
-      // startDashboard by apiPathBase and token
-      startDashboard(apiPathBase, token)
+      // startDashboard by apiPathBase and apiToken
+      startDashboard({ apiPathBase, apiToken })
     </script>
   </body>
 </html>

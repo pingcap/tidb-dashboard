@@ -102,7 +102,7 @@
         .then((res) => res.json())
         .then(({ token }) => {
           document.getElementById('dashboard_page_spinner').remove()
-          startDashboard(apiPathBase, token)
+          startDashboard({ apiPathBase, apiToken: token })
           if (window.location.hash === '') {
             window.location.hash = '#/statement'
           }

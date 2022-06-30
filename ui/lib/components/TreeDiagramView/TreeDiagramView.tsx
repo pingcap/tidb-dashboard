@@ -76,13 +76,13 @@ const customNodeElements = (nodeProps) => {
               <div className={styles.nodeCardHeader}>{nodeDatum.name}</div>
               <div className={styles.nodeCardBody}>
                 <p>
-                  Actual Rows: <span>{nodeDatum.act_rows}</span>
+                  Duration: <span>{nodeDatum.duration}</span>
                 </p>
                 <p>
-                  Estimate Rows: <span>{nodeDatum.est_rows}</span>
+                  Actual Rows: <span>{nodeDatum.actRows}</span>
                 </p>
                 <p>
-                  Run at: <span>{nodeDatum.run_at}</span>
+                  Estimate Rows: <span>{nodeDatum.estRows}</span>
                 </p>
               </div>
             </div>
@@ -172,25 +172,22 @@ const customNodeDetailElement = (nodeDetailProps) => {
   return (
     <div>
       <p>
-        Actual Rows: <span>{nodeDatum.act_rows}</span>
+        Actual Rows: <span>{nodeDatum.actRows}</span>
       </p>
       <p>
-        Estimate Rows: <span>{nodeDatum.est_rows}</span>
-      </p>
-      <p>
-        Run at: <span>{nodeDatum.run_at}</span>
+        Estimate Rows: <span>{nodeDatum.estRows}</span>
       </p>
       <p>
         Cost: <span>{nodeDatum.cost}</span>
       </p>
       <p>
-        Disk Bytes: <span>{nodeDatum.disk_bytes}</span>
+        Disk Bytes: <span>{nodeDatum.diskBytes}</span>
       </p>
       <p>
-        Memory Bytes: <span>{nodeDatum.memory_bytes}</span>
+        Memory Bytes: <span>{nodeDatum.memoryBytes}</span>
       </p>
       <p>
-        Operator Info: <span>{nodeDatum.operator_info}</span>
+        Operator Info: <span>{nodeDatum.operatorInfo}</span>
       </p>
       <p>
         Root Basic Exec Info: <span>{nodeDatum.root_basic_exec_info}</span>
@@ -199,10 +196,10 @@ const customNodeDetailElement = (nodeDetailProps) => {
         Root Group Exec Info: <span>{nodeDatum.root_group_exec_info}</span>
       </p>
       <p>
-        Store Type: <span>{nodeDatum.store_type}</span>
+        Store Type: <span>{nodeDatum.storeType}</span>
       </p>
       <p>
-        Task Type: <span>{nodeDatum.task_type}</span>
+        Task Type: <span>{nodeDatum.taskType}</span>
       </p>
     </div>
   )

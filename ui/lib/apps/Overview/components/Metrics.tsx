@@ -19,6 +19,7 @@ import { min, some } from 'lodash'
 import { PointerEvent } from '@elastic/charts'
 
 import { ChartContext } from '../../../components/MetricChart/ChartContext'
+import { useEventEmitter } from 'ahooks'
 
 interface IChartProps {
   range: Range
@@ -87,11 +88,11 @@ function ConnectionIdleDuration(props: IChartProps) {
       <MetricChart
         queries={[
           {
-            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum[$__rate_interval])))`,
+            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='1'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_countin_txn='1'}[$__rate_interval])))`,
             name: 'avg-in-txn',
           },
           {
-            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count[$__rate_interval])))`,
+            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='0'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='0'}[$__rate_interval])))`,
             name: 'avg-not-in-txn',
           },
         ]}
@@ -203,6 +204,10 @@ function QPS(props: IChartProps) {
       <MetricChart
         queries={[
           {
+            query: 'sum(rate(tidb_executor_statement_total[$__rate_interval]))',
+            name: 'total',
+          },
+          {
             query:
               'sum(rate(tidb_executor_statement_total[$__rate_interval])) by (type)',
             name: '{type}',
@@ -249,8 +254,8 @@ function CPS(props: IChartProps) {
         queries={[
           {
             query:
-              'sum(rate(tidb_server_query_total[$__rate_interval])) by (type)',
-            name: '{type}',
+              'sum(rate(tidb_server_query_total[$__rate_interval])) by (result)',
+            name: 'query {type}',
           },
         ]}
         type="line"
@@ -272,7 +277,7 @@ function OPS(props: IChartProps) {
           {
             query:
               'sum(rate(tidb_server_plan_cache_total[$__rate_interval])) by (type)',
-            name: 'average',
+            name: 'avg',
           },
         ]}
         type="line"
@@ -293,17 +298,17 @@ function Latency(props: IChartProps) {
         queries={[
           {
             query:
-              'sum(rate(tidb_server_handle_query_duration_seconds_sum[$__rate_interval]))',
+              'sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval]))',
             name: 'avg',
           },
           {
             query:
-              'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le))',
-            name: '99%',
+              'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!="internal"}[$__rate_interval])) by (le))',
+            name: '99',
           },
           {
             query:
-              'sum(rate(tidb_server_handle_query_duration_seconds_sum}[$__rate_interval])) by (sql_type) / sum(rate(tidb_server_handle_query_duration_seconds_count[$__rate_interval])) by (sql_type)',
+              'sum(rate(tidb_server_handle_query_duration_seconds_sum{ sql_type!="internal"}[$__rate_interval])) by (sql_type) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval])) by (sql_type)',
             name: 'avg-{sql_type}',
           },
         ]}
@@ -332,7 +337,7 @@ function GetTokenDuration(props: IChartProps) {
           {
             query:
               'histogram_quantile(0.99, sum(rate(tidb_server_get_token_duration_seconds_bucket[$__rate_interval])) by (le))',
-            name: '99%',
+            name: '99',
           },
         ]}
         unit="s"
@@ -354,12 +359,12 @@ function ParseDuration(props: IChartProps) {
         queries={[
           {
             query:
-              '(sum(rate(tidb_session_parse_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_session_parse_duration_seconds_count[$__rate_interval])))',
+              '(sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval])) / sum(rate(tidb_session_parse_duration_seconds_count{sql_type="general"}[$__rate_interval])))',
             name: 'avg',
           },
           {
             query:
-              'histogram_quantile(0.99, sum(rate(tidb_session_parse_duration_seconds_bucket[$__rate_interval])) by (le))',
+              'histogram_quantile(0.99, sum(rate(tidb_session_parse_duration_seconds_bucket{sql_type="general"}[$__rate_interval])) by (le))',
             name: '99%',
           },
         ]}
@@ -382,12 +387,12 @@ function CompileDuration(props: IChartProps) {
         queries={[
           {
             query:
-              '(sum(rate(tidb_session_compile_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_session_compile_duration_seconds_count[$__rate_interval])))',
+              '(sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval])) / sum(rate(tidb_session_compile_duration_seconds_count{sql_type="general"}[$__rate_interval])))',
             name: 'avg',
           },
           {
             query:
-              'histogram_quantile(0.99, sum(rate(tidb_session_compile_duration_seconds_bucket[$__rate_interval])) by (le))',
+              'histogram_quantile(0.99, sum(rate(tidb_session_compile_duration_seconds_bucket{sql_type="general"}[$__rate_interval])) by (le))',
             name: '99%',
           },
         ]}
@@ -410,12 +415,12 @@ function ExecDuration(props: IChartProps) {
         queries={[
           {
             query:
-              '(sum(rate(tidb_session_execute_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_session_execute_duration_seconds_count[$__rate_interval])))',
+              '(sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval])) / sum(rate(tidb_session_execute_duration_seconds_count{sql_type="general"}[$__rate_interval])))',
             name: 'avg',
           },
           {
             query:
-              'histogram_quantile(0.99, sum(rate(tidb_session_execute_duration_seconds_bucket[$__rate_interval])) by (le))',
+              'histogram_quantile(0.99, sum(rate(tidb_session_execute_duration_seconds_bucket{sql_type="general"}[$__rate_interval])) by (le))',
             name: '99%',
           },
         ]}
@@ -467,7 +472,7 @@ function TransactionDuration(props: IChartProps) {
           {
             query:
               'histogram_quantile(0.99, sum(rate(tidb_session_transaction_duration_seconds_bucket[$__rate_interval])) by (le, txn_mode))',
-            name: '99%-{txn_mode}',
+            name: '99-{txn_mode}',
           },
         ]}
         unit="s"
@@ -510,7 +515,7 @@ function TiDBUptime(props: IChartProps) {
       <MetricChart
         queries={[
           {
-            query: '(time() - process_start_time_seconds)',
+            query: '(time() - process_start_time_seconds{job="tidb"})',
             name: '{instance}',
           },
         ]}
@@ -533,7 +538,8 @@ function TiDBCPUUsage(props: IChartProps) {
       <MetricChart
         queries={[
           {
-            query: 'irate(process_cpu_seconds_total[$__rate_interval])',
+            query:
+              'irate(process_cpu_seconds_total{job="tidb"}[$__rate_interval])',
             name: '{instance}',
           },
         ]}
@@ -556,15 +562,15 @@ function TiDBMemoryUsage(props: IChartProps) {
       <MetricChart
         queries={[
           {
-            query: `tidb_server_memory_usage`,
+            query: `tidb_server_memory_usage{job="tidb"}`,
             name: '{type}-{instance}',
           },
           {
-            query: 'process_resident_memory_bytes',
+            query: 'process_resident_memory_bytes{job="tidb"}',
             name: 'process-{instance}',
           },
           {
-            query: `go_memory_classes_heap_objects_bytes + go_memory_classes_heap_unused_bytes`,
+            query: `go_memory_classes_heap_objects_bytes{job="tidb"} + go_memory_classes_heap_unused_bytes{job="tidb"}`,
             name: 'HeapInuse-{instance}',
           },
         ]}
@@ -586,7 +592,8 @@ function TiKVUptime(props: IChartProps) {
       <MetricChart
         queries={[
           {
-            query: '(time() - process_start_time_seconds)',
+            query:
+              'sum(rate(process_cpu_seconds_total{job=~".*tikv"}[$__rate_interval])) by (instance)',
             name: '{instance}',
           },
         ]}
@@ -610,7 +617,7 @@ function TiKVCPUUsage(props: IChartProps) {
         queries={[
           {
             query:
-              'sum(rate(process_cpu_seconds_total[$__rate_interval])) by (instance)',
+              'sum(rate(process_cpu_seconds_total{job=~".*tikv"}[$__rate_interval])) by (instance)',
             name: '{instance}',
           },
         ]}
@@ -633,7 +640,8 @@ function TiKVMemoryUsage(props: IChartProps) {
       <MetricChart
         queries={[
           {
-            query: 'avg(process_resident_memory_bytes) by (instance)',
+            query:
+              'avg(process_resident_memory_bytes{job=~".*tikv"}) by (instance)',
             name: '{instance}',
           },
         ]}
@@ -656,12 +664,12 @@ function TiKVIO(props: IChartProps) {
         queries={[
           {
             query:
-              'sum(rate(tikv_engine_flow_bytes[$__rate_interval])) by (instance)',
+              'sum(rate(tikv_engine_flow_bytes{db="kv", type="wal_file_bytes"}[$__rate_interval])) by (instance)',
             name: '{instance}-write',
           },
           {
             query:
-              'sum(rate(tikv_engine_flow_bytes[$__rate_interval])) by (instance)',
+              'sum(rate(tikv_engine_flow_bytes{db="kv", type=~"bytes_read|iter_bytes_read"}[$__rate_interval])) by (instance)',
             name: '{instance}-read',
           },
         ]}
@@ -684,7 +692,7 @@ function TiKVStorageUsage(props: IChartProps) {
       <MetricChart
         queries={[
           {
-            query: 'sum(tikv_store_size_bytes) by (instance)',
+            query: 'sum(tikv_store_size_bytes{type="used"}) by (instance)',
             name: '{instance}',
           },
         ]}
@@ -733,7 +741,7 @@ export default function Metrics() {
         </Toolbar>
       </Card>
 
-      <ChartContext.Provider value={[pointerEvent, setPointerEvent]}>
+      <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
           <Connection {...metricProps('connection')} />
           <Disconnection {...metricProps('disconneciton')} />

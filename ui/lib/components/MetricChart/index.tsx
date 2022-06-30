@@ -128,13 +128,9 @@ export default function MetricChart({
   const [data, setData] = useState<Data | null>(null)
   const [error, setError] = useState<any>(null)
 
-  const [pointerEvent, setPointerEvent] = useContext(ChartContext)
+  const ee = useContext(ChartContext)
 
-  const pointerUpdate = (event: PointerEvent) => {
-    if (chartRef.current) {
-      setPointerEvent(event)
-    }
-  }
+  ee.useSubscription((e) => chartRef.current?.dispatchExternalPointerEvent(e))
 
   useChange(() => {
     onLoadingStateChange?.(isLoading)
@@ -176,8 +172,6 @@ export default function MetricChart({
           }
         }
         fillInto[fillIdx] = data
-        console.log('query', query)
-        console.log('query data', data)
       } catch (e) {
         fillInto[fillIdx] = null
         setError((existingErr) => existingErr || e)
@@ -226,14 +220,6 @@ export default function MetricChart({
     queryAllMetrics()
   }, [range])
 
-  console.log('data', data)
-
-  useEffect(() => {
-    if (chartRef.current && pointerEvent) {
-      chartRef.current.dispatchExternalPointerEvent(pointerEvent)
-    }
-  }, [pointerEvent])
-
   const handleBrushEnd = useCallback(
     (ev: BrushEvent) => {
       if (!ev.x) {
@@ -279,7 +265,7 @@ export default function MetricChart({
           {...DEFAULT_CHART_SETTINGS}
           legendPosition={Position.Right}
           pointerUpdateDebounce={0}
-          onPointerUpdate={pointerUpdate}
+          onPointerUpdate={(e) => ee.emit(e)}
           legendSize={150}
           onBrushEnd={handleBrushEnd}
         />

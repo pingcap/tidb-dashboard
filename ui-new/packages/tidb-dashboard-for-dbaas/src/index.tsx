@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 
 import { telemetry } from '@pingcap/tidb-dashboard-lib'
 import { setupClient } from '~/client'
+import { reloadWhoAmI } from '~/utils/store'
 
 import App from './App'
 
@@ -38,8 +39,12 @@ type StartOptions = {
 }
 
 function start({ apiPathBase, apiToken }: StartOptions) {
+  // i18n
   i18next.changeLanguage('en')
+
+  // api client
   setupClient(apiPathBase, apiToken)
+  reloadWhoAmI()
 
   // telemetry
   telemetry.init()

@@ -25,12 +25,13 @@
     <script type="module">
       import startDashboard from 'https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@0.0.6/dist/main.js'
 
-      const apiPathBase = localStorage.getItem('dbaas.apiPathBase')
-      const apiToken = localStorage.getItem('dbaas.apiToken')
-      startDashboard({ apiPathBase, apiToken })
       if (window.location.hash === '') {
         window.location.hash = '#/statement'
       }
+
+      const apiPathBase = localStorage.getItem('dbaas.apiPathBase')
+      const apiToken = localStorage.getItem('dbaas.apiToken')
+      startDashboard({ apiPathBase, apiToken })
     </script>
   </body>
 </html>

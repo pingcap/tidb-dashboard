@@ -29,6 +29,29 @@ const (
 	StoreType         = "storeType"
 )
 
+// operator.
+type operator int
+
+const (
+	Default operator = iota
+	IndexJoin
+	IndexMergeJoin
+	IndexHashJoin
+	Apply
+	Shuffle
+	ShuffleReceiver
+	IndexLookUpReader
+	IndexMergeReader
+)
+
+type concurrency struct {
+	joinConcurrency    int
+	copConcurrency     int
+	tableConcurrency   int
+	applyConcurrency   int
+	shuffleConcurrency int
+}
+
 var (
 	needJSONFormat = []string{
 		"rootBasicExecInfo",
@@ -42,6 +65,16 @@ var (
 		"memoryBytes",
 	}
 )
+
+func newConcurrency() concurrency {
+	return concurrency{
+		joinConcurrency:    1,
+		copConcurrency:     1,
+		tableConcurrency:   1,
+		applyConcurrency:   1,
+		shuffleConcurrency: 1,
+	}
+}
 
 // GenerateBinaryPlan generate visual plan from raw data.
 func GenerateBinaryPlan(v string) (*tipb.ExplainData, error) {
@@ -108,13 +141,15 @@ func analyzeDuration(bp []byte) ([]byte, error) {
 	}
 
 	// main
-	_, _, _, _, err = analyzeDurationNode(vp.Get(MainTree), 1, 1, 1)
+	mainConcurrency := newConcurrency()
+	_, err = analyzeDurationNode(vp.Get(MainTree), mainConcurrency)
 	if err != nil {
 		return nil, err
 	}
 
 	// ctes
-	_, err = analyzeDurationNodes(vp.Get(CteTrees), 1, 1, 1)
+	ctesConcurrency := newConcurrency()
+	_, err = analyzeDurationNodes(vp.Get(CteTrees), Default, ctesConcurrency)
 	if err != nil {
 		return nil, err
 	}
@@ -123,87 +158,31 @@ func analyzeDuration(bp []byte) ([]byte, error) {
 }
 
 // analyzeDurationNode set node.duration.
-func analyzeDurationNode(node *simplejson.Json, concurrency, copConcurrency, tableConcurrency int) (time.Duration, int, int, int, error) {
+func analyzeDurationNode(node *simplejson.Json, concurrency concurrency) (time.Duration, error) {
 	// get duration time
 	ts := node.GetPath(RootBasicExecInfo, "time").MustString()
 
 	// cop task
 	if ts == "" {
-		storeType := node.GetPath(StoreType).MustString()
-		ts = node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "time").MustString()
-		if ts == "" {
-			switch node.GetPath(TaskType).MustString() {
-			case "cop":
-				// cop task count
-				taskCountStr := node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "tasks").MustString()
-				taskCount, _ := strconv.Atoi(taskCountStr)
-				maxTS := node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "proc max").MustString()
-				avgTS := node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "avg").MustString()
-				if taskCount <= copConcurrency {
-					ts = maxTS
-				} else {
-					avgDuration, err := time.ParseDuration(avgTS)
-					if err != nil {
-						ts = maxTS
-						break
-					}
-					avgDuration = avgDuration * time.Duration((taskCount / copConcurrency))
-					maxDuration, err := time.ParseDuration(maxTS)
-					if err != nil {
-						ts = maxTS
-						break
-					}
-
-					if avgDuration > maxDuration {
-						ts = maxTS
-						break
-					}
-
-					ts = avgDuration.String()
-				}
-			// tiflash
-			case "batchCop", "mpp":
-				ts = node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "proc max").MustString()
-			default:
-				ts = "0s"
-			}
-		}
+		ts = getCopTaskDuratuon(node, concurrency)
+	} else {
+		ts = getOperatorDuratuon(ts, concurrency)
 	}
 
+	fmt.Printf("%s %s %v\n", node.Get("name").MustString(), ts, concurrency)
+
+	operator := getOperatorType(node)
 	duration, err := time.ParseDuration(ts)
 	if err != nil {
-		return 0, concurrency, copConcurrency, tableConcurrency, err
+		duration = 0
 	}
-
-	// concurrency, copConcurrency
-	rootGroupInfo := node.Get(RootGroupExecInfo)
-	rootGroupInfoCount := len(rootGroupInfo.MustArray())
-	if rootGroupInfoCount > 0 {
-		for i := 0; i < rootGroupInfoCount; i++ {
-			tmpConcurrencyStr := rootGroupInfo.GetIndex(i).GetPath("inner", "concurrency").MustString()
-			tmpConcurrency, _ := strconv.Atoi(tmpConcurrencyStr)
-			if tmpConcurrency > 0 {
-				concurrency = tmpConcurrency
-			}
-
-			tmpCopConcurrencyStr := rootGroupInfo.GetIndex(i).GetPath("cop_task", "distsql_concurrency").MustString()
-			tmpCopConcurrency, _ := strconv.Atoi(tmpCopConcurrencyStr)
-			if tmpCopConcurrency > 0 {
-				copConcurrency = tmpCopConcurrency
-			}
-
-			tmpTableConcurrencyStr := rootGroupInfo.GetIndex(i).GetPath("table_task", "concurrency").MustString()
-			tmpTableConcurrency, _ := strconv.Atoi(tmpTableConcurrencyStr)
-			if tmpTableConcurrency > 0 {
-				tableConcurrency = tmpTableConcurrency
-			}
-		}
-	}
+	// get current_node concurrency
+	concurrency = getConcurrency(node, operator, concurrency)
 
 	c := node.Get(Children)
-	subDuration, err := analyzeDurationNodes(c, concurrency, copConcurrency, tableConcurrency)
+	subDuration, err := analyzeDurationNodes(c, operator, concurrency)
 	if err != nil {
-		return 0, concurrency, copConcurrency, tableConcurrency, err
+		return 0, err
 	}
 
 	if duration < subDuration {
@@ -213,28 +192,110 @@ func analyzeDurationNode(node *simplejson.Json, concurrency, copConcurrency, tab
 	// set
 	node.Set(Duration, duration.String())
 
-	return duration, concurrency, copConcurrency, tableConcurrency, nil
+	return duration, nil
 }
 
 // analyzeDurationNodes return max(node.duration).
-func analyzeDurationNodes(noeds *simplejson.Json, concurrency, copConcurrency, tableConcurrency int) (time.Duration, error) {
+func analyzeDurationNodes(noeds *simplejson.Json, operator operator, concurrency concurrency) (time.Duration, error) {
 	length := len(noeds.MustArray())
 
 	// no children nodes
 	if length == 0 {
 		return 0, nil
 	}
-
 	var durations []time.Duration
-	for i := 0; i < length; i++ {
-		var d time.Duration
-		var err error
-		c := noeds.GetIndex(i)
-		d, _, _, _, err = analyzeDurationNode(c, concurrency, copConcurrency, tableConcurrency)
-		if err != nil {
-			return 0, err
+
+	if operator == Apply {
+		for i := 0; i < length; i++ {
+			n := noeds.GetIndex(i)
+			if n.Get("driverSide").MustString() == "build" {
+				newConcurrency := concurrency
+				newConcurrency.applyConcurrency = 1
+				d, err := analyzeDurationNode(n, newConcurrency)
+				if err != nil {
+					return 0, err
+				}
+				durations = append(durations, d)
+
+				// get probe concurrency
+				var cacheHitRatio, actRows float64
+				rootGroupInfo := n.Get(RootGroupExecInfo)
+				for i := 0; i < len(rootGroupInfo.MustArray()); i++ {
+					cacheHitRatioStr := strings.TrimRight(rootGroupInfo.GetIndex(i).Get("cacheHitRatio").MustString(), "%")
+					if cacheHitRatioStr == "" {
+						continue
+					}
+					cacheHitRatio, err = strconv.ParseFloat(cacheHitRatioStr, 64)
+					if err != nil {
+						return 0, err
+					}
+				}
+
+				actRows, err = strconv.ParseFloat(n.Get("actRows").MustString(), 64)
+				if err != nil {
+					return 0, err
+				}
+
+				taskCount := int(actRows * (1 - cacheHitRatio/100))
+
+				if taskCount < concurrency.applyConcurrency {
+					concurrency.applyConcurrency = taskCount
+				}
+
+				break
+			}
 		}
-		durations = append(durations, d)
+
+		for i := 0; i < length; i++ {
+			n := noeds.GetIndex(i)
+			if n.Get("driverSide").MustString() == "probe" {
+				d, err := analyzeDurationNode(n, concurrency)
+				if err != nil {
+					return 0, err
+				}
+				durations = append(durations, d)
+				break
+			}
+		}
+	} else {
+		for i := 0; i < length; i++ {
+			var d time.Duration
+			var err error
+			n := noeds.GetIndex(i)
+
+			switch operator {
+			case IndexJoin, IndexMergeJoin, IndexHashJoin:
+				if n.Get("driverSide").MustString() == "probe" {
+					d, err = analyzeDurationNode(n, concurrency)
+				} else {
+					// build: set joinConcurrency == 1
+					newConcurrency := concurrency
+					newConcurrency.joinConcurrency = 1
+					d, err = analyzeDurationNode(n, newConcurrency)
+				}
+			case IndexLookUpReader, IndexMergeReader:
+				if n.Get("driverSide").MustString() == "probe" {
+					d, err = analyzeDurationNode(n, concurrency)
+				} else {
+					// build: set joinConcurrency == 1
+					newConcurrency := concurrency
+					newConcurrency.tableConcurrency = 1
+					d, err = analyzeDurationNode(n, newConcurrency)
+				}
+			// concurrency:  suffle -> StreamAgg/Window/MergeJoin ->  Sort -> ShuffleReceiver
+			case ShuffleReceiver:
+				newConcurrency := concurrency
+				newConcurrency.shuffleConcurrency = 1
+				d, err = analyzeDurationNode(n, newConcurrency)
+			default:
+				d, err = analyzeDurationNode(n, concurrency)
+			}
+
+			if err != nil {
+				return 0, err
+			}
+			durations = append(durations, d)
+		}
 	}
 
 	// get max duration
@@ -243,6 +304,158 @@ func analyzeDurationNodes(noeds *simplejson.Json, concurrency, copConcurrency, t
 	})
 
 	return durations[0], nil
+}
+
+func getOperatorType(node *simplejson.Json) operator {
+	operator := node.Get("name").MustString()
+
+	switch {
+	case strings.HasPrefix(operator, "IndexJoin"):
+		return IndexJoin
+	case strings.HasPrefix(operator, "IndexMergeJoin"):
+		return IndexMergeJoin
+	case strings.HasPrefix(operator, "IndexHashJoin"):
+		return IndexHashJoin
+	case strings.HasPrefix(operator, "Apply"):
+		return Apply
+	case strings.HasPrefix(operator, "Shuffle") && !strings.HasPrefix(operator, "ShuffleReceiver"):
+		return Shuffle
+	case strings.HasPrefix(operator, "ShuffleReceiver"):
+		return ShuffleReceiver
+	case strings.HasPrefix(operator, "IndexLookUp"):
+		return IndexLookUpReader
+	case strings.HasPrefix(operator, "IndexMerge"):
+		return IndexMergeReader
+	default:
+		return Default
+	}
+}
+
+func getConcurrency(node *simplejson.Json, operator operator, concurrency concurrency) concurrency {
+	// concurrency, copConcurrency
+	rootGroupInfo := node.Get(RootGroupExecInfo)
+	rootGroupInfoCount := len(rootGroupInfo.MustArray())
+	if rootGroupInfoCount > 0 {
+		for i := 0; i < rootGroupInfoCount; i++ {
+			switch operator {
+			case IndexJoin, IndexMergeJoin, IndexHashJoin:
+				tmpJoinConcurrencyStr := rootGroupInfo.GetIndex(i).GetPath("inner", "concurrency").MustString()
+				tmpJoinConcurrency, _ := strconv.Atoi(tmpJoinConcurrencyStr)
+
+				joinTaskCountStr := rootGroupInfo.GetIndex(i).GetPath("inner", "task").MustString()
+				joinTaskCount, _ := strconv.Atoi(joinTaskCountStr)
+
+				// task count as concurrency
+				if joinTaskCount < tmpJoinConcurrency {
+					tmpJoinConcurrency = joinTaskCount
+				}
+
+				if tmpJoinConcurrency > 0 {
+					concurrency.joinConcurrency = tmpJoinConcurrency * concurrency.joinConcurrency
+				}
+
+			case Apply:
+				tmpApplyConcurrencyStr := rootGroupInfo.GetIndex(i).GetPath("Concurrency").MustString()
+				tmpApplyConcurrency, _ := strconv.Atoi(tmpApplyConcurrencyStr)
+				if tmpApplyConcurrency > 0 {
+					concurrency.applyConcurrency = tmpApplyConcurrency * concurrency.applyConcurrency
+				}
+
+			case IndexLookUpReader, IndexMergeReader:
+				tmpTableConcurrencyStr := rootGroupInfo.GetIndex(i).GetPath("table_task", "concurrency").MustString()
+				tmpTableConcurrency, _ := strconv.Atoi(tmpTableConcurrencyStr)
+
+				tableTaskNumStr := rootGroupInfo.GetIndex(i).GetPath("table_task", "num").MustString()
+				tableTaskNum, _ := strconv.Atoi(tableTaskNumStr)
+				tableTaskNum = tableTaskNum / concurrency.joinConcurrency
+				if tableTaskNum < tmpTableConcurrency {
+					tmpTableConcurrency = tableTaskNum
+				}
+
+				if tmpTableConcurrency > 0 {
+					concurrency.tableConcurrency = tmpTableConcurrency * concurrency.copConcurrency
+				}
+
+			case Shuffle:
+				tmpSuffleConcurrencyStr := rootGroupInfo.GetIndex(i).Get("ShuffleConcurrency").MustString()
+				tmpSuffleConcurrency, _ := strconv.Atoi(tmpSuffleConcurrencyStr)
+
+				if tmpSuffleConcurrency > 0 {
+					concurrency.shuffleConcurrency = tmpSuffleConcurrency * concurrency.shuffleConcurrency
+				}
+			}
+
+			tmpCopConcurrencyStr := rootGroupInfo.GetIndex(i).GetPath("cop_task", "distsql_concurrency").MustString()
+			tmpCopConcurrency, _ := strconv.Atoi(tmpCopConcurrencyStr)
+			if tmpCopConcurrency > 0 {
+				concurrency.copConcurrency = tmpCopConcurrency * concurrency.copConcurrency
+			}
+		}
+	}
+
+	return concurrency
+}
+
+func getCopTaskDuratuon(node *simplejson.Json, concurrency concurrency) string {
+	storeType := node.GetPath(StoreType).MustString()
+	// task == 1
+	ts := node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "time").MustString()
+	if ts == "" {
+		switch node.GetPath(TaskType).MustString() {
+		case "cop":
+			// cop task count
+			taskCountStr := node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "tasks").MustString()
+			taskCount, _ := strconv.Atoi(taskCountStr)
+			maxTS := node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "proc max").MustString()
+			maxDuration, err := time.ParseDuration(maxTS)
+			if err != nil {
+				ts = maxTS
+				break
+			}
+			avgTS := node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "avg").MustString()
+			avgDuration, err := time.ParseDuration(avgTS)
+			if err != nil {
+				ts = maxTS
+				break
+			}
+
+			var tsDuration time.Duration
+			n := float64(taskCount) / float64(
+				concurrency.joinConcurrency*concurrency.tableConcurrency*concurrency.applyConcurrency*concurrency.shuffleConcurrency*concurrency.copConcurrency)
+
+			if n > 1 {
+				tsDuration = time.Duration(float64(avgDuration) * n)
+			} else {
+				tsDuration = time.Duration(float64(avgDuration) /
+					float64(concurrency.joinConcurrency*concurrency.tableConcurrency*concurrency.applyConcurrency*concurrency.shuffleConcurrency))
+			}
+
+			ts = tsDuration.String()
+
+			if tsDuration > maxDuration {
+
+				ts = maxTS
+			}
+		// tiflash
+		case "batchCop", "mpp":
+			ts = node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "proc max").MustString()
+		default:
+			ts = "0s"
+		}
+	}
+
+	return ts
+}
+
+func getOperatorDuratuon(ts string, concurrency concurrency) string {
+	t, err := time.ParseDuration(ts)
+	if err != nil {
+		return "0s"
+	}
+
+	return time.Duration(float64(t) /
+		float64(concurrency.joinConcurrency*concurrency.tableConcurrency*concurrency.applyConcurrency*concurrency.shuffleConcurrency)).
+		String()
 }
 
 func formatBinaryPlanJSON(bp []byte) ([]byte, error) {

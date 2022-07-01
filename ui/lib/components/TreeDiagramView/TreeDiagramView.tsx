@@ -79,6 +79,9 @@ const customNodeElements = (nodeProps) => {
                   Duration: <span>{nodeDatum.duration}</span>
                 </p>
                 <p>
+                  Run At: <span>{nodeDatum.storeType}</span>
+                </p>
+                <p>
                   Actual Rows: <span>{nodeDatum.actRows}</span>
                 </p>
                 <p>

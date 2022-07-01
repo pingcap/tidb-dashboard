@@ -17,13 +17,13 @@
     </style>
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@0.0.6/dist/main.css"
+      href="https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@%PACKAGE_VERSION%/dist/main.css"
     />
   </head>
   <body>
     <div id="root"></div>
     <script type="module">
-      import startDashboard from 'https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@0.0.6/dist/main.js'
+      import startDashboard from 'https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@%PACKAGE_VERSION%/dist/main.js'
 
       if (window.location.hash === '') {
         window.location.hash = '#/statement'

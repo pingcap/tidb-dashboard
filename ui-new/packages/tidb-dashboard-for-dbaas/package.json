@@ -44,6 +44,7 @@
     "eslint-watch": "^8.0.0",
     "esm": "^3.2.25",
     "fs-extra": "^10.0.0",
+    "glob": "^8.0.3",
     "gulp": "^4.0.2",
     "gulp-shell": "^0.8.0",
     "live-server": "^1.2.1",

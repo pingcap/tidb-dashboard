@@ -1,5 +1,6 @@
 const path = require('path')
 const fs = require('fs-extra')
+const glob = require('glob')
 const md5File = require('md5-file')
 const chalk = require('chalk')
 const { watch } = require('chokidar')
@@ -109,22 +110,25 @@ const esbuildParams = {
   inject: ['./process-shim.js'] // fix runtime crash
 }
 
-function buildHtml(inputFilename, outputFilename) {
-  let result = fs.readFileSync(inputFilename).toString()
-
+function updateHtmlFiles(htmlFiles) {
   const jsContentHash = md5File.sync(`./${outDir}/main.js`)
-  result = result.replace('%JS_CONTENT_HASH%', jsContentHash.slice(0, 7))
-
   const cssContentHash = md5File.sync(`./${outDir}/main.css`)
-  result = result.replace('%CSS_CONTENT_HASH%', cssContentHash.slice(0, 7))
+  const packageVersion = process.env.npm_package_version
 
-  fs.writeFileSync(outputFilename, result)
+  htmlFiles.forEach(function (htmlFile) {
+    let result = fs.readFileSync(htmlFile).toString()
+    result = result.replaceAll('%JS_CONTENT_HASH%', jsContentHash.slice(0, 7))
+    result = result.replaceAll('%CSS_CONTENT_HASH%', cssContentHash.slice(0, 7))
+    result = result.replaceAll('%PACKAGE_VERSION%', packageVersion)
+    fs.writeFileSync(htmlFile, result)
+  })
 }
 
 function handleAssets() {
   fs.copySync('./public', `./${outDir}`)
 
-  buildHtml('./public/index.html', `./${outDir}/index.html`)
+  const htmlFiles = glob.sync(`./${outDir}/**/*.html`)
+  updateHtmlFiles(htmlFiles)
 }
 
 async function main() {

@@ -1,4 +1,3 @@
-// import '@lib/utils/wdyr'
 import React from 'react'
 
 import * as singleSpa from 'single-spa'
@@ -83,15 +82,12 @@ async function webPageStart() {
   telemetry.init()
   if (info?.enable_telemetry) {
     // mixpanel
-    telemetry.enableTelemetry(info)
+    telemetry.enable(info.version?.internal_version!)
     let preRoute = ''
     window.addEventListener('single-spa:routing-event', () => {
       const curRoute = routing.getPathInLocationHash()
       if (curRoute !== preRoute) {
-        telemetry.mixpanel.register({
-          $current_url: curRoute
-        })
-        telemetry.mixpanel.track('Page Change')
+        telemetry.trackRouteChange(curRoute)
         preRoute = curRoute
       }
     })

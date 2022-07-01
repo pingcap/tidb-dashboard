@@ -277,14 +277,16 @@ export default function StatementsOverview() {
                 data-e2e="statement_setting"
               />
             </Tooltip>
-            <Dropdown overlay={dropdownMenu} placement="bottomRight">
-              <div
-                style={{ cursor: 'pointer' }}
-                data-e2e="statement_export_menu"
-              >
-                <MenuOutlined />
-              </div>
-            </Dropdown>
+            {ctx!.cfg.enableExport && (
+              <Dropdown overlay={dropdownMenu} placement="bottomRight">
+                <div
+                  style={{ cursor: 'pointer' }}
+                  data-e2e="statement_export_menu"
+                >
+                  <MenuOutlined />
+                </div>
+              </Dropdown>
+            )}
             {!isDistro() && (
               <Tooltip
                 mouseEnterDelay={0}

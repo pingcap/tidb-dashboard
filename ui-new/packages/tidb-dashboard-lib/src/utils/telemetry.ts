@@ -1,5 +1,4 @@
 import mixpanel, { Config } from 'mixpanel-browser'
-import { InfoInfoResponse } from '@lib/client'
 import { getPathInLocationHash } from './routing'
 
 export { mixpanel }
@@ -29,16 +28,25 @@ export function init() {
   mixpanel.opt_out_tracking()
 }
 
-export function enableTelemetry(info: InfoInfoResponse) {
+export function enable(dashboardVersion: string) {
   mixpanel.register({
     $current_url: getPathInLocationHash(),
-    dashboard_version: info.version?.internal_version
+    dashboard_version: dashboardVersion
   })
   mixpanel.opt_in_tracking()
 }
 
+// TODO: refine naming
+export function trackRouteChange(curRoute: string) {
+  mixpanel.register({
+    $current_url: curRoute
+  })
+  mixpanel.track('Page Change')
+}
+
 export default {
   init,
-  enableTelemetry,
-  mixpanel
+  enable,
+  mixpanel,
+  trackRouteChange
 }

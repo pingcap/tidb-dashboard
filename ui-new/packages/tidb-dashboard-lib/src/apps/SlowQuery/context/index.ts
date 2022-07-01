@@ -40,7 +40,9 @@ export interface ISlowQueryDataSource {
 
 export interface ISlowQueryContext {
   ds: ISlowQueryDataSource
-  cfg: IContextConfig
+  cfg: IContextConfig & {
+    enableExport: boolean
+  }
 }
 
 export const SlowQueryContext = createContext<ISlowQueryContext | null>(null)

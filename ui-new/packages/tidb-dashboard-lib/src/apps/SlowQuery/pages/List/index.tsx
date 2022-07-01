@@ -229,14 +229,16 @@ function List() {
                 }
               />
             )}
-            <Dropdown overlay={dropdownMenu} placement="bottomRight">
-              <div
-                style={{ cursor: 'pointer' }}
-                data-e2e="slow_query_export_menu"
-              >
-                <MenuOutlined />
-              </div>
-            </Dropdown>
+            {ctx!.cfg.enableExport && (
+              <Dropdown overlay={dropdownMenu} placement="bottomRight">
+                <div
+                  style={{ cursor: 'pointer' }}
+                  data-e2e="slow_query_export_menu"
+                >
+                  <MenuOutlined />
+                </div>
+              </Dropdown>
+            )}
             {!isDistro() && (
               <Tooltip
                 mouseEnterDelay={0}

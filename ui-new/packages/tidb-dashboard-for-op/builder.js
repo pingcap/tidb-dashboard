@@ -14,7 +14,7 @@ const { yamlPlugin } = require('esbuild-plugin-yaml')
 // const babelPlugin = require('@baurine/esbuild-plugin-babel')
 
 const isDev = process.env.NODE_ENV !== 'production'
-const isE2E = process.env.E2E_TEST === 'true'
+// const isE2E = process.env.E2E_TEST === 'true'
 
 // load env
 const envFile = isDev ? './.env.development' : './env.production'
@@ -120,7 +120,7 @@ const esbuildParams = {
   color: true,
   entryPoints: {
     dashboardApp: 'src/index.ts',
-    diagnoseReport: 'src/diagnoseReportApp/index.tsx',
+    diagnoseReport: 'src/diagnoseReportApp/index.tsx'
   },
   outdir: 'build',
   minify: !isDev,
@@ -200,6 +200,7 @@ function handleAssets() {
   buildHtml('./public/diagnoseReport.html', './build/diagnoseReport.html')
 }
 
+// TODO: fix
 function copyDistroRes() {
   const distroResPath = '../bin/distro-res'
   if (fs.existsSync(distroResPath)) {
@@ -227,13 +228,13 @@ async function main() {
       handleAssets()
     })
 
-    // it doesn't work well by watching lib code changes
-    // watch('node_modules/@pingcap/tidb-dashboard-lib/dist/**/*', { ignoreInitial: true }).on(
-    //   'all',
-    //   () => {
-    //     rebuild()
-    //   }
-    // )
+    // watch "node_modules/@pingcap/tidb-dashboard-lib/dist/**/*" triggers too many rebuild
+    // so we just watch index.js to refine the experience
+    watch('node_modules/@pingcap/tidb-dashboard-lib/dist/index.js', {
+      ignoreInitial: true
+    }).on('all', () => {
+      rebuild()
+    })
   } else {
     process.exit(0)
   }

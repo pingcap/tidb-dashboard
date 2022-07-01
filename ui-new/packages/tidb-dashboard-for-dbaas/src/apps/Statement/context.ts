@@ -161,7 +161,7 @@ class DataSource implements IStatementDataSource {
 
 const ds = new DataSource()
 
-export const ctx: IStatementContext = {
+export const ctx: () => IStatementContext = () => ({
   ds,
-  cfg: { apiPathBase: client.getBasePath(), enableExport: true }
-}
+  cfg: { apiPathBase: client.getBasePath(), enableExport: false }
+})

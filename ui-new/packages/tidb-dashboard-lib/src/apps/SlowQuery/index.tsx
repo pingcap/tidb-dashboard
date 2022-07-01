@@ -10,8 +10,20 @@ import { List, Detail } from './pages'
 import { SlowQueryContext } from './context'
 
 import translations from './translations'
+import { useLocationChange } from '@lib/hooks/useLocationChange'
 
 addTranslations(translations)
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route path="/slow_query" element={<List />} />
+      <Route path="/slow_query/detail" element={<Detail />} />
+    </Routes>
+  )
+}
 
 export default function () {
   const slowQueryCacheMgr = useCache(2)
@@ -25,10 +37,7 @@ export default function () {
     <Root>
       <CacheContext.Provider value={slowQueryCacheMgr}>
         <Router>
-          <Routes>
-            <Route path="/slow_query" element={<List />} />
-            <Route path="/slow_query/detail" element={<Detail />} />
-          </Routes>
+          <AppRoutes />
         </Router>
       </CacheContext.Provider>
     </Root>

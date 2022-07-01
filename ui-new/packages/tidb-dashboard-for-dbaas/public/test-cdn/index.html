@@ -97,7 +97,8 @@
     <script type="module">
       import startDashboard from 'https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@0.0.6/dist/main.js'
 
-      const apiPathBase = 'http://localhost:12333/dashboard/api'
+      // const apiPathBase = 'http://localhost:12333/dashboard/api'
+      const apiPathBase = 'http://localhost:2379/dashboard/api'
       fetch(`${apiPathBase}/user/login`, {
         method: 'POST',
         body: JSON.stringify({ username: 'root', type: 0 })

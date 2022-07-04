@@ -7,36 +7,36 @@ import LinkWrapper from './LinkWrapper'
 import { generateNodesAndLinks } from './utlis'
 
 interface MainChartProps {
-  datum: TreeNodeDatum[]
-  viewPort: {
-    width: number
-    height: number
-  }
+  treeIdx: number
+  datum: TreeNodeDatum
   treeTranslate: Translate
   customLinkElement: any
   customNodeElement: any
 
   onNodeExpandBtnToggle: any
   onNodeDetailClick: any
-  onInit?: () => void
+  // onInit?: () => void
+  getOffset?: (number) => any
 
   nodeMargin?: nodeMarginType
 }
 
 const MainChart = ({
+  treeIdx,
   datum,
   nodeMargin,
-  viewPort,
   treeTranslate,
   customLinkElement,
   customNodeElement,
   onNodeExpandBtnToggle,
   onNodeDetailClick,
-  onInit,
+  // onInit,
+  getOffset,
 }: MainChartProps) => {
   const inited = useRef(false)
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
   const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
+  const [bound, setBound] = useState({ x: 0, height: 0 })
   const margin: nodeMarginType = useMemo(
     () => ({
       siblingMargin: nodeMargin?.childrenMargin || 40,
@@ -44,9 +44,10 @@ const MainChart = ({
     }),
     [nodeMargin?.childrenMargin, nodeMargin?.siblingMargin]
   )
+  const [offset, setOffset] = useState(0)
 
   useEffect(() => {
-    if (!datum.length) {
+    if (!datum) {
       return
     }
     const { nodes, links } = generateNodesAndLinks(datum, margin)
@@ -60,51 +61,50 @@ const MainChart = ({
       return
     }
     inited.current = true
-    onInit?.()
-  }, [nodes, onInit])
+    const res = getOffset?.(treeIdx)
+    console.log('h', res)
+    setOffset(res.offset)
+    setBound({ x: res.x, y: res.y })
+  }, [nodes, getOffset])
 
   return (
-    <svg
-      className="mainChartSVG"
-      width={viewPort.width}
-      height={viewPort.height}
+    <g
+      className={`mainChartGroup-${treeIdx}`}
+      transform={`translate(${treeTranslate.k * (-bound.x + offset)}, ${
+        treeTranslate.k * bound.y
+      }) scale(${treeTranslate.k})`}
     >
-      <g
-        className="mainChartGroup"
-        transform={`translate(${treeTranslate.x}, ${treeTranslate.y}) scale(${treeTranslate.k})`}
-      >
-        <g className="linksWrapper">
-          {links &&
-            links.map((link, i) => {
-              return (
-                <LinkWrapper
-                  key={i}
-                  data={link}
-                  collapsiableButtonSize={{ width: 60, height: 30 }}
-                  renderCustomLinkElement={customLinkElement}
-                />
-              )
-            })}
-        </g>
-
-        <g className="nodesWrapper">
-          {nodes &&
-            nodes.map((hierarchyPointNode, i) => {
-              const { data } = hierarchyPointNode
-              return (
-                <NodeWrapper
-                  data={data}
-                  key={data.name}
-                  renderCustomNodeElement={customNodeElement}
-                  hierarchyPointNode={hierarchyPointNode}
-                  onNodeExpandBtnToggle={onNodeExpandBtnToggle}
-                  onNodeDetailClick={onNodeDetailClick}
-                />
-              )
-            })}
-        </g>
+      <g className="linksWrapper">
+        {links &&
+          links.map((link, i) => {
+            return (
+              <LinkWrapper
+                key={i}
+                data={link}
+                collapsiableButtonSize={{ width: 60, height: 30 }}
+                renderCustomLinkElement={customLinkElement}
+              />
+            )
+          })}
       </g>
-    </svg>
+
+      <g className="nodesWrapper">
+        {nodes &&
+          nodes.map((hierarchyPointNode, i) => {
+            const { data } = hierarchyPointNode
+            return (
+              <NodeWrapper
+                data={data}
+                key={data.name}
+                renderCustomNodeElement={customNodeElement}
+                hierarchyPointNode={hierarchyPointNode}
+                onNodeExpandBtnToggle={onNodeExpandBtnToggle}
+                onNodeDetailClick={onNodeDetailClick}
+              />
+            )
+          })}
+      </g>
+    </g>
   )
 }
 

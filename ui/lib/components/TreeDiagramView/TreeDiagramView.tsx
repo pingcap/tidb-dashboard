@@ -7,7 +7,7 @@ import { Button } from 'antd'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 interface TreeDiagramViewProps extends TreeDiagramProps {
-  data: RawNodeDatum | RawNodeDatum[]
+  data: RawNodeDatum[]
   showMinimap?: boolean
   viewPort: rectBound
   isThumbnail?: boolean
@@ -216,19 +216,27 @@ const TreeDiagramView = ({
 }: TreeDiagramViewProps) => {
   const nodeSize = { width: 250, height: 150 }
 
+  const treeDataArr = data
+  console.log('TreeDiagramView data,', treeDataArr)
+
   return (
     <>
       {isThumbnail ? (
-        <TreeDiagramThumbnail
-          data={data}
-          nodeSize={nodeSize}
-          customNodeElement={customNodeElements}
-          customLinkElement={customLinkElements}
-          viewPort={{
-            width: window.innerWidth / 2,
-            height: window.innerHeight / 2,
-          }}
-        />
+        <div style={{ height: 1000 }}>
+          {treeDataArr.map((d, idx) => (
+            <TreeDiagramThumbnail
+              key={idx}
+              data={d}
+              nodeSize={nodeSize}
+              customNodeElement={customNodeElements}
+              customLinkElement={customLinkElements}
+              viewPort={{
+                width: window.innerWidth / 2,
+                height: window.innerHeight / 2,
+              }}
+            />
+          ))}
+        </div>
       ) : (
         <TreeDigram
           data={data}

@@ -16,6 +16,15 @@ import { brush as d3Brush } from 'd3-brush'
 import { select, event } from 'd3-selection'
 import { scaleLinear } from 'd3-scale'
 
+interface boundType {
+  [k: string]: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+}
+
 const TreeDiagram = ({
   data,
   nodeSize,
@@ -31,6 +40,10 @@ const TreeDiagram = ({
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
   const [showNodeDetail, setShowNodeDetail] = useState(false)
   const [selectedNodeDetail, setSelectedNodeDetail] = useState<TreeNodeDatum>()
+  // const [multiTreeBounds, setMultiTreeBounds] = useState<boundType[]>([])
+  // const [boundsMap, setBoundsMap] = useState<boundType>({})
+  // const multiTreeBounds: boundType[] = []
+  const boundsMap: boundType = {}
 
   // Inits tree translate, the default position is on the top-middle of canvas
   const [treeTranslate, setTreeTranslate] = useState({
@@ -41,8 +54,6 @@ const TreeDiagram = ({
 
   // Sets the bound of entire tree
   const [treeBound, setTreeBound] = useState({
-    x: 0,
-    y: 0,
     width: 0,
     height: 0,
   })
@@ -51,7 +62,6 @@ const TreeDiagram = ({
 
   // A SVG container for main chart
   const mainChartSelection = select('.mainChartSVG')
-  const mainChartGroupSelection = select('.mainChartGroup')
 
   const brushRef = useRef<SVGGElement>(null)
   const brushSelection = select(brushRef.current!)
@@ -77,53 +87,55 @@ const TreeDiagram = ({
       .range([0, treeBound.height * zoomScale])
   }
 
-  const handleUpdateTreeTranslate = (zoomScale, brushX, brushY) => {
-    setTreeTranslate({
-      x: minimapScaleX(zoomScale.k)(-treeBound.x - brushX),
-      y: minimapScaleY(zoomScale.k)(-brushY),
-      k: zoomScale.k,
-    })
-  }
+  // const handleUpdateTreeTranslate = (zoomScale, brushX, brushY) => {
+  //   setTreeTranslate({
+  //     x: minimapScaleX(zoomScale.k)(-treeBound.x - brushX),
+  //     y: minimapScaleY(zoomScale.k)(-brushY),
+  //     k: zoomScale.k,
+  //   })
+  // }
 
   // Limits brush move extent
-  const brushBehavior = d3Brush().extent([
-    [
-      minimapScaleX(treeTranslate.k)(-viewPort.width / 2),
-      minimapScaleY(treeTranslate.k)(-viewPort.height / 2),
-    ],
-    [
-      minimapScaleX(treeTranslate.k)(treeBound.width + viewPort.width / 2),
-      minimapScaleY(treeTranslate.k)(treeBound.height + viewPort.height / 2),
-    ],
-  ])
+  // const brushBehavior = d3Brush().extent([
+  //   [
+  //     minimapScaleX(treeTranslate.k)(-viewPort.width / 2),
+  //     minimapScaleY(treeTranslate.k)(-viewPort.height / 2),
+  //   ],
+  //   [
+  //     minimapScaleX(treeTranslate.k)(treeBound.width + viewPort.width / 2),
+  //     minimapScaleY(treeTranslate.k)(treeBound.height + viewPort.height / 2),
+  //   ],
+  // ])
 
   const onZoom = () => {
     const t = event.transform
+    console.log('onzoom.........', t)
+
     setTreeTranslate(t)
 
     // Moves brush on minimap when zoom behavior is triggered.
-    brushBehavior.move(brushSelection, [
-      [
-        -treeBound.x + minimapScaleX(t.k).invert(-t.x),
-        minimapScaleY(t.k).invert(-t.y),
-      ],
-      [
-        -treeBound.x + minimapScaleX(t.k).invert(-t.x + viewPort.width),
-        minimapScaleY(t.k).invert(-t.y + viewPort.height),
-      ],
-    ])
+    // brushBehavior.move(brushSelection, [
+    //   [
+    //     -treeBound.x + minimapScaleX(t.k).invert(-t.x),
+    //     minimapScaleY(t.k).invert(-t.y),
+    //   ],
+    //   [
+    //     -treeBound.x + minimapScaleX(t.k).invert(-t.x + viewPort.width),
+    //     minimapScaleY(t.k).invert(-t.y + viewPort.height),
+    //   ],
+    // ])
   }
 
   const zoomBehavior = d3Zoom()
-    .scaleExtent([0.5, 2])
+    // .scaleExtent([0.5, 2])
     // Limits the zoom translate extent
-    .translateExtent([
-      [treeBound.x - viewPort.width / 2, -viewPort.height / 2],
-      [
-        treeBound.x + treeBound.width + viewPort.width / 2,
-        treeBound.height + viewPort.height / 2,
-      ],
-    ])
+    // .translateExtent([
+    //   [treeBound.x - viewPort.width / 2, -viewPort.height / 2],
+    //   [
+    //     treeBound.x + treeBound.width + viewPort.width / 2,
+    //     treeBound.height + viewPort.height / 2,
+    //   ],
+    // ])
     .on('zoom', () => onZoom())
 
   // Binds MainChart container
@@ -169,6 +181,7 @@ const TreeDiagram = ({
 
     // @ts-ignore
     const matches = findNodesById(nodeId, data, [])
+
     const targetNodeDatum = matches[0]
 
     if (targetNodeDatum.__node_attrs.collapsed) {
@@ -185,17 +198,62 @@ const TreeDiagram = ({
     setSelectedNodeDetail(node)
   }
 
-  // TODO: what will happen if data changes?
-  const getInitTreeDiagramBound = () => {
-    const mainChartGroupNode =
-      mainChartGroupSelection.node() as SVGGraphicsElement
-    const { x, y, width, height } = mainChartGroupNode.getBBox()
-    setTreeBound({ x: x, y: y, width: width, height: height })
+  // Sets init bound value and returns offset of current tree to original point [0,0].
+  const getInitTreeBound = (treeIdx) => {
+    let offset = 0
+    let boundWidth = 0,
+      boundHeight = 0
+    const treeGroupNode = select(
+      `.mainChartGroup-${treeIdx}`
+    ).node() as SVGGraphicsElement
+
+    const { x, y, width, height } = treeGroupNode.getBBox()
+
+    boundsMap[`mainChartGroup-${treeIdx}`] = {
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+    }
+
+    for (let i = treeIdx; i > 0; i--) {
+      offset = offset + boundsMap[`mainChartGroup-${treeIdx - 1}`].width + 100
+      boundWidth = boundWidth + boundsMap[`mainChartGroup-${treeIdx - 1}`].width
+      boundHeight =
+        boundsMap[`mainChartGroup-${treeIdx - 1}`].height > boundHeight
+          ? boundsMap[`mainChartGroup-${treeIdx - 1}`].height
+          : boundHeight
+      console.log('boundWidth', treeIdx, boundWidth, boundHeight)
+    }
+
+    console.log('boundsMap', boundsMap)
+
+    setTreeBound({
+      width: boundWidth + width,
+      height: boundHeight > height ? boundHeight : height,
+    })
+    console.log(
+      'tree bound from getInitTreeBound',
+      boundWidth + width,
+      boundHeight > height ? boundHeight : height
+    )
+
+    return { x, y, offset }
+  }
+
+  const getZoomToFitViewPort = () => {
+    const k = Math.min(
+      viewPort.width / treeBound.width,
+      viewPort.height / treeBound.height
+    )
+    console.log('k', k)
+    setTreeTranslate({ ...treeTranslate, k: k })
   }
 
   useEffect(() => {
     // Assigns all internal properties to tree node
     const treeNodes = AssignInternalProperties(data, nodeSize!)
+    console.log('treeNodes', treeNodes)
     setTreeNodeDatum(treeNodes)
   }, [data, nodeSize])
 
@@ -204,22 +262,35 @@ const TreeDiagram = ({
       return
     }
     bindZoomListener()
+
+    console.log('treeBound useEffect', treeBound)
+    getZoomToFitViewPort()
   }, [treeBound])
 
   return (
     <div className={styles.treeDiagramContainer} ref={treeDiagramContainerRef}>
-      <MainChart
-        datum={treeNodeDatum}
-        nodeMargin={nodeMargin}
-        viewPort={viewPort}
-        treeTranslate={treeTranslate}
-        customLinkElement={customLinkElement}
-        customNodeElement={customNodeElement}
-        onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
-        onNodeDetailClick={handleOnNodeDetailClick}
-        onInit={getInitTreeDiagramBound}
-      />
-      {showMinimap && (
+      <svg
+        className="mainChartSVG"
+        width={viewPort.width}
+        height={viewPort.height}
+      >
+        {treeNodeDatum.map((d, treeIdx) => (
+          <MainChart
+            key={treeIdx}
+            treeIdx={treeIdx}
+            datum={d}
+            nodeMargin={nodeMargin}
+            treeTranslate={treeTranslate}
+            customLinkElement={customLinkElement}
+            customNodeElement={customNodeElement}
+            onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
+            onNodeDetailClick={handleOnNodeDetailClick}
+            // onInit={getInitTreeDiagramBound}
+            getOffset={getInitTreeBound}
+          />
+        ))}
+      </svg>
+      {/* {showMinimap && (
         <Minimap
           datum={treeNodeDatum}
           treeBound={treeBound}
@@ -235,7 +306,7 @@ const TreeDiagram = ({
           updateTreeTranslate={handleUpdateTreeTranslate}
           brushBehavior={brushBehavior}
         />
-      )}
+      )} */}
       {selectedNodeDetail && !isThumbnail && (
         <Drawer
           title={selectedNodeDetail!.name}

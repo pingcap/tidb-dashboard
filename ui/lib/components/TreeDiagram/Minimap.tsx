@@ -170,7 +170,7 @@ const Minimap = ({
 
   useEffect(() => {
     if (datum.length > 0) {
-      const { nodes, links } = generateNodesAndLinks(datum, margin)
+      const { nodes, links } = generateNodesAndLinks(datum[0], margin)
       setNodes(nodes)
       setLinks(links)
     }

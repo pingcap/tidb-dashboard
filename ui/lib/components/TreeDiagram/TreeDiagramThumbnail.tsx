@@ -30,6 +30,8 @@ const TreeDiagramThumbnail = ({
     height: 0,
   })
 
+  console.log('TreeDiagramThumbnail data', data)
+
   const margin: nodeMarginType = useMemo(
     () => ({
       siblingMargin: nodeMargin?.childrenMargin || 40,
@@ -83,7 +85,7 @@ const TreeDiagramThumbnail = ({
     if (!treeNodeDatum.length) {
       return
     }
-    const { nodes, links } = generateNodesAndLinks(treeNodeDatum, margin)
+    const { nodes, links } = generateNodesAndLinks(treeNodeDatum[0], margin)
     setNodes(nodes)
     setLinks(links)
   }, [treeNodeDatum, margin])

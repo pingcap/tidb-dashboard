@@ -22,11 +22,25 @@ const (
 	CteTrees          = "ctes"
 	Children          = "children"
 	Duration          = "duration"
+	Time              = "time"
+	Diagnosis         = "diagnosis"
 	RootGroupExecInfo = "rootGroupExecInfo"
 	RootBasicExecInfo = "rootBasicExecInfo"
+	OperatorInfo      = "operatorInfo"
+	OperatorName      = "name"
 	CopExecInfo       = "copExecInfo"
+	CacheHitRatio     = "cacheHitRatio"
 	TaskType          = "taskType"
 	StoreType         = "storeType"
+	DiskBytes         = "diskBytes"
+	MemoryBytes       = "memoryBytes"
+	ActRows           = "actRows"
+	EstRows           = "estRows"
+	DriverSide        = "driverSide"
+	ScanObject        = "scanObject"
+
+	JoinTaskThreshold    = 10000
+	returnTableThreshold = 0.7
 )
 
 // operator.
@@ -42,6 +56,12 @@ const (
 	ShuffleReceiver
 	IndexLookUpReader
 	IndexMergeReader
+	IndexFullScan
+	IndexRangeScan
+	TableFullScan
+	TableRangeScan
+	TableRowIDScan
+	Selection
 )
 
 type concurrency struct {
@@ -52,17 +72,24 @@ type concurrency struct {
 	shuffleConcurrency int
 }
 
+type diagnosticOperation struct {
+	needUdateStatistics bool
+}
+
 var (
 	needJSONFormat = []string{
-		"rootBasicExecInfo",
-		"rootGroupExecInfo",
-		// "operatorInfo",
-		"copExecInfo",
+		RootGroupExecInfo,
+		RootBasicExecInfo,
+		CopExecInfo,
 	}
 
 	needSetNA = []string{
-		"diskBytes",
-		"memoryBytes",
+		MemoryBytes,
+		DiskBytes,
+	}
+
+	needCheckOperator = []string{
+		"eq", "ge", "gt", "le", "lt", "isnull", "in",
 	}
 )
 
@@ -74,6 +101,10 @@ func newConcurrency() concurrency {
 		applyConcurrency:   1,
 		shuffleConcurrency: 1,
 	}
+}
+
+func newDiagnosticOperation() diagnosticOperation {
+	return diagnosticOperation{}
 }
 
 // GenerateBinaryPlan generate visual plan from raw data.
@@ -130,7 +161,190 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 		return "", err
 	}
 
+	bpJSON, err = diagnosticOperator(bpJSON)
+
 	return string(bpJSON), nil
+}
+
+func diagnosticOperator(bp []byte) ([]byte, error) {
+	// new simple json
+	vp, err := simplejson.NewJson(bp)
+	if err != nil {
+		return nil, err
+	}
+
+	// main
+
+	_, err = diagnosticOperatorNode(vp.Get(MainTree), newDiagnosticOperation())
+	if err != nil {
+		return nil, err
+	}
+
+	// ctes
+	_, err = diagnosticOperatorNodes((vp.Get(CteTrees)), newDiagnosticOperation())
+	if err != nil {
+		return nil, err
+	}
+
+	return vp.MarshalJSON()
+}
+
+// diagnosticOperatorNode set node.diagnosis
+func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (diagnosticOperation, error) {
+	operator := getOperatorType(node)
+	operatorInfo := node.Get(OperatorInfo).MustString()
+	diagnosis := []string{}
+
+	switch {
+	//pseudo stats
+	case strings.Contains(operatorInfo, "stats: pseudo"):
+		switch strings.ToLower(node.GetPath(ScanObject, "database").MustString()) {
+		case "information_schema", "metrics_schema", "performance_schema", "mysql":
+		default:
+			diagnosis = append(diagnosis, "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF.")
+		}
+	}
+
+	// use disk
+	diskBytes := node.Get(DiskBytes).MustString()
+	if diskBytes != "N/A" {
+		diagnosis = append(diagnosis, "Disk spill is triggered for this operator because the memory quota is exceeded. The execution might be slow. Consider increasing the memory quota if there's enough memory.")
+	}
+
+	diagOp, err := diagnosticOperatorNodes(node.Get(Children), diagOp)
+
+	// marked rows estimation error too high
+	if diagOp.needUdateStatistics {
+		switch operator {
+		case IndexFullScan, IndexRangeScan, TableFullScan, TableRangeScan, TableRowIDScan, Selection:
+			actRows := node.Get(ActRows).MustFloat64()
+			estRows := node.Get(EstRows).MustFloat64()
+			if actRows == 0 || estRows == 0 {
+				actRows = +1
+				estRows = +1
+			}
+			if actRows/estRows > 100 || estRows/actRows > 100 {
+				diagnosis = append(diagnosis, "The estimation error is high. Consider checking the health state of the statistics.")
+			}
+			diagOp.needUdateStatistics = true
+		default:
+			diagOp.needUdateStatistics = false
+		}
+	}
+
+	switch operator {
+	// index join
+	case IndexJoin, IndexMergeJoin, IndexHashJoin:
+		// only use in build
+		rootGroupInfo := node.Get(RootGroupExecInfo)
+		rootGroupInfoCount := len(rootGroupInfo.MustArray())
+		if rootGroupInfoCount > 0 {
+			for i := 0; i < rootGroupInfoCount; i++ {
+				joinTaskCountStr := rootGroupInfo.GetIndex(i).GetPath("inner", "task").MustString()
+				joinTaskCount, _ := strconv.Atoi(joinTaskCountStr)
+				if joinTaskCount > JoinTaskThreshold {
+					diagnosis = append(diagnosis, "This index join has a large build side. It might be slow and cause heavy pressure on TiKV. Consider using the optimizer hints to guide the optimizer to choose hash join.")
+					break
+				}
+			}
+		}
+	// unreasonable index return table plan
+	case IndexLookUpReader:
+		cNode := getBuildChildrenWithDriverSide(node, "build")
+		if getOperatorType(cNode) != Selection {
+			break
+		}
+		if len(cNode.Get(Children).MustArray()) != 1 {
+			break
+		}
+		gNode := cNode.Get(Children).GetIndex(0)
+
+		if getOperatorType(gNode) != IndexFullScan {
+			break
+		}
+
+		if !strings.Contains(gNode.Get(OperatorInfo).MustString(), "keep order:false") {
+			break
+		}
+
+		cNodeActRows := cNode.Get(ActRows).MustFloat64()
+		gNodeActRows := gNode.Get(ActRows).MustFloat64()
+		if cNodeActRows/gNodeActRows > returnTableThreshold {
+			diagnosis = append(diagnosis, "This IndexLookup read a lot of data from the index side. It might be slow and cause heavy pressure on TiKV. Consider using the optimizer hints to guide the optimizer to choose a better index or not to use index.")
+		}
+	case Selection:
+		if len(node.Get(Children).MustArray()) != 1 {
+			break
+		}
+		cNode := node.Get(Children).GetIndex(0)
+
+		if getOperatorType(cNode) != IndexFullScan {
+			break
+		}
+		if node.Get(StoreType).MustString() != "tikv" {
+			break
+		}
+
+		operatorInfo := node.Get(OperatorInfo).MustString()
+
+		useOperator := false // operatror :  eq/ge/gt/le/lt/isnull/in
+		for _, op := range needCheckOperator {
+			if strings.Contains(operatorInfo, op) {
+				n := strings.Count(operatorInfo, op+"(")
+
+				useOperator = true
+				operatorInfo = strings.Replace(operatorInfo, op+"(", "", n)
+				operatorInfo = strings.Replace(operatorInfo, ")", "", n)
+			}
+		}
+
+		if useOperator {
+			if strings.Count(operatorInfo, "(") == strings.Count(operatorInfo, ")") && strings.Count(operatorInfo, "(") > 0 {
+				useOperator = false
+			}
+		}
+
+		if node.Get(ActRows).MustFloat64() < 10000 && cNode.Get(ActRows).MustFloat64() > 5000000 && useOperator {
+			diagnosis = append(diagnosis, "This Selection filters a high proportion of data. Using an index on this column might achieve better performance. Consider adding an index on this column if there is not one.")
+		}
+
+	case TableFullScan:
+		if node.Get(StoreType).MustString() == "tikv" && node.Get(ActRows).MustFloat64() > 1000000000 {
+			diagnosis = append(diagnosis, "The TiKV read a lot of data. Consider using TiFlash to get better performance if it's necessary to read so much data.")
+		}
+	}
+
+	// set diagnosis
+	node.Set(Diagnosis, diagnosis)
+	if err != nil {
+		return diagOp, err
+	}
+
+	return diagOp, nil
+}
+
+func diagnosticOperatorNodes(nodes *simplejson.Json, diagOp diagnosticOperation) (diagnosticOperation, error) {
+	length := len(nodes.MustArray())
+
+	// no children nodes
+	if length == 0 {
+		diagOp.needUdateStatistics = true
+		return diagOp, nil
+	}
+	var needUdateStatistics bool
+	for i := 0; i < length; i++ {
+		c := nodes.GetIndex(i)
+		n, err := diagnosticOperatorNode(c, diagOp)
+		if err != nil {
+			return diagOp, err
+		}
+		if n.needUdateStatistics {
+			needUdateStatistics = n.needUdateStatistics
+		}
+	}
+
+	diagOp.needUdateStatistics = needUdateStatistics
+	return diagOp, nil
 }
 
 func analyzeDuration(bp []byte) ([]byte, error) {
@@ -140,12 +354,14 @@ func analyzeDuration(bp []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	rootTs := vp.Get(MainTree).GetPath(RootBasicExecInfo, Time).MustString()
 	// main
 	mainConcurrency := newConcurrency()
 	_, err = analyzeDurationNode(vp.Get(MainTree), mainConcurrency)
 	if err != nil {
 		return nil, err
 	}
+	vp.Get(MainTree).Set(Duration, rootTs)
 
 	// ctes
 	ctesConcurrency := newConcurrency()
@@ -160,7 +376,7 @@ func analyzeDuration(bp []byte) ([]byte, error) {
 // analyzeDurationNode set node.duration.
 func analyzeDurationNode(node *simplejson.Json, concurrency concurrency) (time.Duration, error) {
 	// get duration time
-	ts := node.GetPath(RootBasicExecInfo, "time").MustString()
+	ts := node.GetPath(RootBasicExecInfo, Time).MustString()
 
 	// cop task
 	if ts == "" {
@@ -168,8 +384,6 @@ func analyzeDurationNode(node *simplejson.Json, concurrency concurrency) (time.D
 	} else {
 		ts = getOperatorDuratuon(ts, concurrency)
 	}
-
-	fmt.Printf("%s %s %v\n", node.Get("name").MustString(), ts, concurrency)
 
 	operator := getOperatorType(node)
 	duration, err := time.ParseDuration(ts)
@@ -179,8 +393,7 @@ func analyzeDurationNode(node *simplejson.Json, concurrency concurrency) (time.D
 	// get current_node concurrency
 	concurrency = getConcurrency(node, operator, concurrency)
 
-	c := node.Get(Children)
-	subDuration, err := analyzeDurationNodes(c, operator, concurrency)
+	subDuration, err := analyzeDurationNodes(node.Get(Children), operator, concurrency)
 	if err != nil {
 		return 0, err
 	}
@@ -196,8 +409,8 @@ func analyzeDurationNode(node *simplejson.Json, concurrency concurrency) (time.D
 }
 
 // analyzeDurationNodes return max(node.duration).
-func analyzeDurationNodes(noeds *simplejson.Json, operator operator, concurrency concurrency) (time.Duration, error) {
-	length := len(noeds.MustArray())
+func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency concurrency) (time.Duration, error) {
+	length := len(nodes.MustArray())
 
 	// no children nodes
 	if length == 0 {
@@ -207,8 +420,8 @@ func analyzeDurationNodes(noeds *simplejson.Json, operator operator, concurrency
 
 	if operator == Apply {
 		for i := 0; i < length; i++ {
-			n := noeds.GetIndex(i)
-			if n.Get("driverSide").MustString() == "build" {
+			n := nodes.GetIndex(i)
+			if n.Get(DriverSide).MustString() == "build" {
 				newConcurrency := concurrency
 				newConcurrency.applyConcurrency = 1
 				d, err := analyzeDurationNode(n, newConcurrency)
@@ -221,7 +434,7 @@ func analyzeDurationNodes(noeds *simplejson.Json, operator operator, concurrency
 				var cacheHitRatio, actRows float64
 				rootGroupInfo := n.Get(RootGroupExecInfo)
 				for i := 0; i < len(rootGroupInfo.MustArray()); i++ {
-					cacheHitRatioStr := strings.TrimRight(rootGroupInfo.GetIndex(i).Get("cacheHitRatio").MustString(), "%")
+					cacheHitRatioStr := strings.TrimRight(rootGroupInfo.GetIndex(i).Get(CacheHitRatio).MustString(), "%")
 					if cacheHitRatioStr == "" {
 						continue
 					}
@@ -231,7 +444,7 @@ func analyzeDurationNodes(noeds *simplejson.Json, operator operator, concurrency
 					}
 				}
 
-				actRows, err = strconv.ParseFloat(n.Get("actRows").MustString(), 64)
+				actRows, err = strconv.ParseFloat(n.Get(ActRows).MustString(), 64)
 				if err != nil {
 					return 0, err
 				}
@@ -247,8 +460,8 @@ func analyzeDurationNodes(noeds *simplejson.Json, operator operator, concurrency
 		}
 
 		for i := 0; i < length; i++ {
-			n := noeds.GetIndex(i)
-			if n.Get("driverSide").MustString() == "probe" {
+			n := nodes.GetIndex(i)
+			if n.Get(DriverSide).MustString() == "probe" {
 				d, err := analyzeDurationNode(n, concurrency)
 				if err != nil {
 					return 0, err
@@ -261,11 +474,11 @@ func analyzeDurationNodes(noeds *simplejson.Json, operator operator, concurrency
 		for i := 0; i < length; i++ {
 			var d time.Duration
 			var err error
-			n := noeds.GetIndex(i)
+			n := nodes.GetIndex(i)
 
 			switch operator {
 			case IndexJoin, IndexMergeJoin, IndexHashJoin:
-				if n.Get("driverSide").MustString() == "probe" {
+				if n.Get(DriverSide).MustString() == "probe" {
 					d, err = analyzeDurationNode(n, concurrency)
 				} else {
 					// build: set joinConcurrency == 1
@@ -274,7 +487,7 @@ func analyzeDurationNodes(noeds *simplejson.Json, operator operator, concurrency
 					d, err = analyzeDurationNode(n, newConcurrency)
 				}
 			case IndexLookUpReader, IndexMergeReader:
-				if n.Get("driverSide").MustString() == "probe" {
+				if n.Get(DriverSide).MustString() == "probe" {
 					d, err = analyzeDurationNode(n, concurrency)
 				} else {
 					// build: set joinConcurrency == 1
@@ -307,7 +520,7 @@ func analyzeDurationNodes(noeds *simplejson.Json, operator operator, concurrency
 }
 
 func getOperatorType(node *simplejson.Json) operator {
-	operator := node.Get("name").MustString()
+	operator := node.Get(OperatorName).MustString()
 
 	switch {
 	case strings.HasPrefix(operator, "IndexJoin"):
@@ -318,7 +531,7 @@ func getOperatorType(node *simplejson.Json) operator {
 		return IndexHashJoin
 	case strings.HasPrefix(operator, "Apply"):
 		return Apply
-	case strings.HasPrefix(operator, "Shuffle") && !strings.HasPrefix(operator, "ShuffleReceiver"):
+	case strings.HasPrefix(operator, "Shuffle") && !strings.Contains(operator, "ShuffleReceiver"):
 		return Shuffle
 	case strings.HasPrefix(operator, "ShuffleReceiver"):
 		return ShuffleReceiver
@@ -326,9 +539,39 @@ func getOperatorType(node *simplejson.Json) operator {
 		return IndexLookUpReader
 	case strings.HasPrefix(operator, "IndexMerge"):
 		return IndexMergeReader
+	case strings.HasPrefix(operator, "IndexFullScan"):
+		return IndexFullScan
+	case strings.HasPrefix(operator, "IndexRangeScan"):
+		return IndexRangeScan
+	case strings.HasPrefix(operator, "TableFullScan"):
+		return TableFullScan
+	case strings.HasPrefix(operator, "TableRangeScan"):
+		return TableRangeScan
+	case strings.HasPrefix(operator, "TableRowIDScan"):
+		return TableRowIDScan
+	case strings.HasPrefix(operator, "Selection"):
+		return Selection
 	default:
 		return Default
 	}
+}
+
+func getBuildChildrenWithDriverSide(node *simplejson.Json, driverSide string) *simplejson.Json {
+	nodes := node.Get(Children)
+	length := len(nodes.MustArray())
+
+	// no children nodes
+	if length == 0 {
+		return nil
+	}
+
+	for i := 0; i < length; i++ {
+		n := nodes.GetIndex(i)
+		if n.Get(DriverSide).MustString() == driverSide {
+			return n
+		}
+	}
+	return nil
 }
 
 func getConcurrency(node *simplejson.Json, operator operator, concurrency concurrency) concurrency {
@@ -433,7 +676,6 @@ func getCopTaskDuratuon(node *simplejson.Json, concurrency concurrency) string {
 			ts = tsDuration.String()
 
 			if tsDuration > maxDuration {
-
 				ts = maxTS
 			}
 		// tiflash
@@ -521,8 +763,8 @@ func formatNode(node *simplejson.Json) error {
 	return nil
 }
 
-func formatChildrenNodes(noeds *simplejson.Json) error {
-	length := len(noeds.MustArray())
+func formatChildrenNodes(nodes *simplejson.Json) error {
+	length := len(nodes.MustArray())
 
 	// no children nodes
 	if length == 0 {
@@ -530,7 +772,7 @@ func formatChildrenNodes(noeds *simplejson.Json) error {
 	}
 
 	for i := 0; i < length; i++ {
-		c := noeds.GetIndex(i)
+		c := nodes.GetIndex(i)
 		err := formatNode(c)
 		if err != nil {
 			return err

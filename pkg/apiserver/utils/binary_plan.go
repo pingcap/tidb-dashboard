@@ -177,7 +177,6 @@ func diagnosticOperator(bp []byte) ([]byte, error) {
 	}
 
 	// main
-
 	_, err = diagnosticOperatorNode(vp.Get(MainTree), newDiagnosticOperation())
 	if err != nil {
 		return nil, err
@@ -192,20 +191,17 @@ func diagnosticOperator(bp []byte) ([]byte, error) {
 	return vp.MarshalJSON()
 }
 
-// diagnosticOperatorNode set node.diagnosis
+// diagnosticOperatorNode set node.diagnosis.
 func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (diagnosticOperation, error) {
 	operator := getOperatorType(node)
 	operatorInfo := node.Get(OperatorInfo).MustString()
 	diagnosis := []string{}
 
-	switch {
-	//pseudo stats
-	case strings.Contains(operatorInfo, "stats: pseudo"):
-		switch strings.ToLower(node.GetPath(ScanObject, "database").MustString()) {
-		case "information_schema", "metrics_schema", "performance_schema", "mysql":
-		default:
-			diagnosis = append(diagnosis, "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF.")
-		}
+	// pseudo stats
+	switch strings.ToLower(node.GetPath(ScanObject, "database").MustString()) {
+	case "information_schema", "metrics_schema", "performance_schema", "mysql":
+	default:
+		diagnosis = append(diagnosis, "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF.")
 	}
 
 	// use disk
@@ -287,8 +283,6 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 		if node.Get(StoreType).MustString() != "tikv" {
 			break
 		}
-
-		operatorInfo := node.Get(OperatorInfo).MustString()
 
 		useOperator := false // operatror :  eq/ge/gt/le/lt/isnull/in
 		for _, op := range needCheckOperator {

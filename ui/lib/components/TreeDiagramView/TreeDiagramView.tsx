@@ -204,6 +204,9 @@ const customNodeDetailElement = (nodeDetailProps) => {
       <p>
         Task Type: <span>{nodeDatum.task_type}</span>
       </p>
+      <p>
+        Diagnostic Information: <span>{nodeDatum.diagnosis}</span>
+      </p>
     </div>
   )
 }

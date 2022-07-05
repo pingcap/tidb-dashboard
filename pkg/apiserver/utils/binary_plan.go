@@ -162,6 +162,9 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 	}
 
 	bpJSON, err = diagnosticOperator(bpJSON)
+	if err != nil {
+		return "", err
+	}
 
 	return string(bpJSON), nil
 }

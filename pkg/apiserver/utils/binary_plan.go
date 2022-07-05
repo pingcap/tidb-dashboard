@@ -338,6 +338,8 @@ func diagnosticOperatorNodes(nodes *simplejson.Json, diagOp diagnosticOperation)
 // eq(minus(test.t1.b, 1), 1) false
 // eq(test.t.a, 1), eq(test.t.a, 2)  ture
 // eq(test.t.a, 1), eq(test.t.b, 1) false
+// in(tets.t.a, 1, 2, 3, 4) ture
+// in(tets.t.a, 1, 2, 3, 4), in(tets.t.b, 1, 2, 3, 4) false
 func useComparisonOperator(operatorInfo string) bool {
 	useComparisonOperator := false
 	for _, op := range needCheckOperator {

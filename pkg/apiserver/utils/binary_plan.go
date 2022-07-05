@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	ss "strings"
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
@@ -332,6 +331,14 @@ func diagnosticOperatorNodes(nodes *simplejson.Json, diagOp diagnosticOperation)
 	return diagOp, nil
 }
 
+// cut go 1.18 strings.Cut
+func cut(s, sep string) (before, after string, found bool) {
+	if i := strings.Index(s, sep); i >= 0 {
+		return s[:i], s[i+len(sep):], true
+	}
+	return s, "", false
+}
+
 // useComparisonOperator
 // matching rules: only match the eq/ge/gt/le/lt/isnull/in functions on a single column
 // for example:
@@ -350,8 +357,8 @@ func useComparisonOperator(operatorInfo string) bool {
 			n := strings.Count(operatorInfo, op+"(")
 			for i := 0; i < n; i++ {
 				column := ""
-				s1, s, _ := ss.Cut(operatorInfo, op+"(")
-				s, s2, _ := ss.Cut(s, ")")
+				s1, s, _ := cut(operatorInfo, op+"(")
+				s, s2, _ := cut(s, ")")
 
 				if strings.Contains(s, "(") {
 					return false

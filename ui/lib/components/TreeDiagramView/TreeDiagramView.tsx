@@ -217,7 +217,6 @@ const TreeDiagramView = ({
   const nodeSize = { width: 250, height: 150 }
 
   const treeDataArr = data
-  console.log('TreeDiagramView data,', treeDataArr)
 
   return (
     <>

@@ -19,6 +19,7 @@ interface MainChartProps {
   getOffset?: (number) => any
 
   nodeMargin?: nodeMarginType
+  zoomToFitViewPort: number
 }
 
 const MainChart = ({
@@ -30,13 +31,14 @@ const MainChart = ({
   customNodeElement,
   onNodeExpandBtnToggle,
   onNodeDetailClick,
+  zoomToFitViewPort,
   // onInit,
   getOffset,
 }: MainChartProps) => {
   const inited = useRef(false)
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
   const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
-  const [bound, setBound] = useState({ x: 0, height: 0 })
+  const [bound, setBound] = useState({ x: 0, y: 0 })
   const margin: nodeMarginType = useMemo(
     () => ({
       siblingMargin: nodeMargin?.childrenMargin || 40,
@@ -62,17 +64,23 @@ const MainChart = ({
     }
     inited.current = true
     const res = getOffset?.(treeIdx)
-    console.log('h', res)
     setOffset(res.offset)
     setBound({ x: res.x, y: res.y })
   }, [nodes, getOffset])
 
+  console.log(
+    'treetranslate',
+    treeTranslate,
+    treeTranslate.k * (-bound.x + offset),
+    treeTranslate.y + treeTranslate.k * bound.y
+  )
+
   return (
     <g
       className={`mainChartGroup-${treeIdx}`}
-      transform={`translate(${treeTranslate.k * (-bound.x + offset)}, ${
-        treeTranslate.k * bound.y
-      }) scale(${treeTranslate.k})`}
+      transform={`translate(${zoomToFitViewPort * (-bound.x + offset)}, ${
+        zoomToFitViewPort * bound.y
+      }) scale(${zoomToFitViewPort})`}
     >
       <g className="linksWrapper">
         {links &&

@@ -11,7 +11,7 @@ import NodeWrapperDetail from './NodeDetailWrapper'
 import { Drawer } from 'antd'
 
 // imports d3 APIs
-import { zoom as d3Zoom } from 'd3-zoom'
+import { zoom as d3Zoom, zoomIdentity } from 'd3-zoom'
 import { brush as d3Brush } from 'd3-brush'
 import { select, event } from 'd3-selection'
 import { scaleLinear } from 'd3-scale'
@@ -40,14 +40,13 @@ const TreeDiagram = ({
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
   const [showNodeDetail, setShowNodeDetail] = useState(false)
   const [selectedNodeDetail, setSelectedNodeDetail] = useState<TreeNodeDatum>()
-  // const [multiTreeBounds, setMultiTreeBounds] = useState<boundType[]>([])
-  // const [boundsMap, setBoundsMap] = useState<boundType>({})
+  const [zoomToFitViewPort, setZoomToFitViewPort] = useState(0)
   // const multiTreeBounds: boundType[] = []
   const boundsMap: boundType = {}
 
   // Inits tree translate, the default position is on the top-middle of canvas
   const [treeTranslate, setTreeTranslate] = useState({
-    x: viewPort.width / 2,
+    x: 0,
     y: 0,
     k: 1,
   })
@@ -61,7 +60,7 @@ const TreeDiagram = ({
   const treeDiagramContainerRef = useRef<HTMLDivElement>(null)
 
   // A SVG container for main chart
-  const mainChartSelection = select('.mainChartSVG')
+  const mainChartSVGSelection = select('.mainChartSVG')
 
   const brushRef = useRef<SVGGElement>(null)
   const brushSelection = select(brushRef.current!)
@@ -140,7 +139,13 @@ const TreeDiagram = ({
 
   // Binds MainChart container
   const bindZoomListener = () => {
-    mainChartSelection.call(zoomBehavior as any)
+    mainChartSVGSelection.call(zoomBehavior as any)
+
+    // mainChartSelection.call(
+    //   d3Zoom().transform as any,
+    //   zoomIdentity
+    //     .scale(zoomToFitViewPort)
+    // )
   }
 
   const findNodesById = (
@@ -203,6 +208,7 @@ const TreeDiagram = ({
     let offset = 0
     let boundWidth = 0,
       boundHeight = 0
+    const gap = 100
     const treeGroupNode = select(
       `.mainChartGroup-${treeIdx}`
     ).node() as SVGGraphicsElement
@@ -217,43 +223,31 @@ const TreeDiagram = ({
     }
 
     for (let i = treeIdx; i > 0; i--) {
-      offset = offset + boundsMap[`mainChartGroup-${treeIdx - 1}`].width + 100
-      boundWidth = boundWidth + boundsMap[`mainChartGroup-${treeIdx - 1}`].width
+      offset = offset + boundsMap[`mainChartGroup-${i - 1}`].width + gap
+      boundWidth = boundWidth + boundsMap[`mainChartGroup-${i - 1}`].width + gap
       boundHeight =
-        boundsMap[`mainChartGroup-${treeIdx - 1}`].height > boundHeight
-          ? boundsMap[`mainChartGroup-${treeIdx - 1}`].height
+        boundsMap[`mainChartGroup-${i - 1}`].height > boundHeight
+          ? boundsMap[`mainChartGroup-${i - 1}`].height
           : boundHeight
-      console.log('boundWidth', treeIdx, boundWidth, boundHeight)
     }
-
-    console.log('boundsMap', boundsMap)
 
     setTreeBound({
       width: boundWidth + width,
       height: boundHeight > height ? boundHeight : height,
     })
-    console.log(
-      'tree bound from getInitTreeBound',
-      boundWidth + width,
-      boundHeight > height ? boundHeight : height
-    )
 
     return { x, y, offset }
   }
 
-  const getZoomToFitViewPort = () => {
-    const k = Math.min(
-      viewPort.width / treeBound.width,
-      viewPort.height / treeBound.height
-    )
+  const getZoomToFitViewPort = (vw) => {
+    const k = Math.min(vw / treeBound.width, viewPort.height / treeBound.height)
+    setZoomToFitViewPort(k)
     console.log('k', k)
-    setTreeTranslate({ ...treeTranslate, k: k })
   }
 
   useEffect(() => {
     // Assigns all internal properties to tree node
     const treeNodes = AssignInternalProperties(data, nodeSize!)
-    console.log('treeNodes', treeNodes)
     setTreeNodeDatum(treeNodes)
   }, [data, nodeSize])
 
@@ -261,34 +255,41 @@ const TreeDiagram = ({
     if (isThumbnail) {
       return
     }
-    bindZoomListener()
-
-    console.log('treeBound useEffect', treeBound)
-    getZoomToFitViewPort()
+    if (treeDiagramContainerRef.current) {
+      getZoomToFitViewPort(treeDiagramContainerRef.current?.clientWidth)
+      bindZoomListener()
+    }
+    console.log('treeBound', treeBound)
   }, [treeBound])
 
   return (
     <div className={styles.treeDiagramContainer} ref={treeDiagramContainerRef}>
       <svg
         className="mainChartSVG"
-        width={viewPort.width}
+        width={treeDiagramContainerRef.current?.clientWidth}
         height={viewPort.height}
       >
-        {treeNodeDatum.map((d, treeIdx) => (
-          <MainChart
-            key={treeIdx}
-            treeIdx={treeIdx}
-            datum={d}
-            nodeMargin={nodeMargin}
-            treeTranslate={treeTranslate}
-            customLinkElement={customLinkElement}
-            customNodeElement={customNodeElement}
-            onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
-            onNodeDetailClick={handleOnNodeDetailClick}
-            // onInit={getInitTreeDiagramBound}
-            getOffset={getInitTreeBound}
-          />
-        ))}
+        <g
+          className={`mainChartGroup`}
+          transform={`translate(${treeTranslate.x}, ${treeTranslate.y}) scale(${treeTranslate.k})`}
+        >
+          {treeNodeDatum.map((d, treeIdx) => (
+            <MainChart
+              key={treeIdx}
+              treeIdx={treeIdx}
+              datum={d}
+              nodeMargin={nodeMargin}
+              treeTranslate={treeTranslate}
+              customLinkElement={customLinkElement}
+              customNodeElement={customNodeElement}
+              onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
+              onNodeDetailClick={handleOnNodeDetailClick}
+              // onInit={getInitTreeDiagramBound}
+              getOffset={getInitTreeBound}
+              zoomToFitViewPort={zoomToFitViewPort}
+            />
+          ))}
+        </g>
       </svg>
       {/* {showMinimap && (
         <Minimap

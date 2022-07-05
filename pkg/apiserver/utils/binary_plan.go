@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	ss "strings"
 	"time"
 
 	simplejson "github.com/bitly/go-simplejson"
@@ -349,8 +350,8 @@ func useComparisonOperator(operatorInfo string) bool {
 			n := strings.Count(operatorInfo, op+"(")
 			for i := 0; i < n; i++ {
 				column := ""
-				s1, s, _ := strings.Cut(operatorInfo, op+"(")
-				s, s2, _ := strings.Cut(s, ")")
+				s1, s, _ := ss.Cut(operatorInfo, op+"(")
+				s, s2, _ := ss.Cut(s, ")")
 
 				if strings.Contains(s, "(") {
 					return false

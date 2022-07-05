@@ -13,8 +13,8 @@ interface SingleTreeProps {
   zoomToFitViewportScale: number
   customLinkElement: any
   customNodeElement: any
-  onNodeExpandBtnToggle: any
-  onNodeDetailClick: any
+  onNodeExpandBtnToggle?: any
+  onNodeDetailClick?: any
   getTreePosition: (number) => any
 }
 
@@ -29,7 +29,6 @@ const SingleTree = ({
   onNodeDetailClick,
   getTreePosition,
 }: SingleTreeProps) => {
-  console.log('in single tree', treeIdx)
   const singleTreeGroupRef = useRef(null)
   const inited = useRef(false)
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])

@@ -170,6 +170,7 @@ function DetailPage() {
                     width={window.innerWidth}
                     onCancel={toggleVisualPlan}
                     footer={null}
+                    destroyOnClose={true}
                     bodyStyle={{ background: '#f5f5f5' }}
                   >
                     <TreeDiagramView
@@ -187,12 +188,12 @@ function DetailPage() {
                       }}
                     >
                       <div onClick={toggleVisualPlan}>
-                        {/* <TreeDiagramView
-                            // data={JSON.parse(data.binary_plan!).main}
-                            data={vpData.main}
-                            isThumbnail={true}
-                          /> */}
-                        Show visual plan
+                        <TreeDiagramView
+                          // data={JSON.parse(data.binary_plan!).main}
+                          data={vpData.main}
+                          isThumbnail={true}
+                        />
+                        {/* Show visual plan */}
                       </div>
                     </Descriptions.Item>
                   </Descriptions>

@@ -36,7 +36,6 @@ const TreeDiagram = ({
   customNodeElement,
   customLinkElement,
   customNodeDetailElement,
-  isThumbnail,
   gapBetweenTrees,
 }: TreeDiagramProps) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
@@ -89,66 +88,62 @@ const TreeDiagram = ({
       .range([0, multiTreesBound.height * zoomScale])
   }
 
-  // const handleUpdateTreeTranslate = (zoomScale, brushX, brushY) => {
-  //   setTreeTranslate({
-  //     x: minimapScaleX(zoomScale.k)(-multiTreesBound.x - brushX),
-  //     y: minimapScaleY(zoomScale.k)(-brushY),
-  //     k: zoomScale.k,
-  //   })
-  // }
+  const handleUpdateTreeTranslate = (zoomScale, brushX, brushY) => {
+    setMultiTreesTranslate({
+      x: minimapScaleX(zoomScale.k)(-brushX),
+      y: minimapScaleY(zoomScale.k)(-brushY),
+      k: zoomScale.k,
+    })
+  }
 
   // Limits brush move extent
-  // const brushBehavior = d3Brush().extent([
-  //   [
-  //     minimapScaleX(treeTranslate.k)(-viewport.width / 2),
-  //     minimapScaleY(treeTranslate.k)(-viewport.height / 2),
-  //   ],
-  //   [
-  //     minimapScaleX(treeTranslate.k)(multiTreesBound.width + viewport.width / 2),
-  //     minimapScaleY(treeTranslate.k)(multiTreesBound.height + viewport.height / 2),
-  //   ],
-  // ])
+  const brushBehavior = d3Brush().extent([
+    [
+      minimapScaleX(multiTreesTranslate.k)(-viewport.width / 2),
+      minimapScaleY(multiTreesTranslate.k)(-viewport.height / 2),
+    ],
+    [
+      minimapScaleX(multiTreesTranslate.k)(
+        multiTreesBound.width + viewport.width / 2
+      ),
+      minimapScaleY(multiTreesTranslate.k)(
+        multiTreesBound.height + viewport.height / 2
+      ),
+    ],
+  ])
 
   const onZoom = () => {
     const t = event.transform
-    console.log('onzoom.........', t)
 
     setMultiTreesTranslate(t)
 
+    console.log('on zoom brushSelection', brushSelection)
+
     // Moves brush on minimap when zoom behavior is triggered.
-    // brushBehavior.move(brushSelection, [
-    //   [
-    //     -multiTreesBound.x + minimapScaleX(t.k).invert(-t.x),
-    //     minimapScaleY(t.k).invert(-t.y),
-    //   ],
-    //   [
-    //     -multiTreesBound.x + minimapScaleX(t.k).invert(-t.x + viewport.width),
-    //     minimapScaleY(t.k).invert(-t.y + viewport.height),
-    //   ],
-    // ])
+    brushBehavior.move(brushSelection, [
+      [minimapScaleX(t.k).invert(-t.x), minimapScaleY(t.k).invert(-t.y)],
+      [
+        minimapScaleX(t.k).invert(-t.x + viewport.width),
+        minimapScaleY(t.k).invert(-t.y + viewport.height),
+      ],
+    ])
   }
 
   const zoomBehavior = d3Zoom()
-    // .scaleExtent([0.5, 2])
+    .scaleExtent([0.5, 2])
     // Limits the zoom translate extent
-    // .translateExtent([
-    //   [multiTreesBound.x - viewport.width / 2, -viewport.height / 2],
-    //   [
-    //     multiTreesBound.x + multiTreesBound.width + viewport.width / 2,
-    //     multiTreesBound.height + viewport.height / 2,
-    //   ],
-    // ])
+    .translateExtent([
+      [-viewport.width / 2, -viewport.height / 2],
+      [
+        multiTreesBound.width + viewport.width / 2,
+        multiTreesBound.height + viewport.height / 2,
+      ],
+    ])
     .on('zoom', () => onZoom())
 
   // Binds MainChart container
   const bindZoomListener = () => {
     multiTreesSVGSelection.call(zoomBehavior as any)
-
-    // mainChartSelection.call(
-    //   d3Zoom().transform as any,
-    //   zoomIdentity
-    //     .scale(zoomToFitViewPort)
-    // )
   }
 
   const findNodesById = (
@@ -185,7 +180,7 @@ const TreeDiagram = ({
   }
 
   function handleNodeExpandBtnToggle(nodeId: string) {
-    const data = _.clone(treeNodeDatum)
+    const data = treeNodeDatum.map((datum) => _.clone(datum))
 
     // @ts-ignore
     const matches = findNodesById(nodeId, data, [])
@@ -265,22 +260,21 @@ const TreeDiagram = ({
   }, [data, nodeSize])
 
   useEffect(() => {
-    if (isThumbnail) {
-      return
-    }
     if (treeDiagramContainerRef.current) {
       setMultiTreesViewport({
         width: treeDiagramContainerRef.current?.clientWidth,
         height: treeDiagramContainerRef.current?.clientHeight,
       })
-
       getZoomToFitViewPortScale()
       bindZoomListener()
     }
   }, [multiTreesBound])
 
   return (
-    <div className={styles.treeDiagramContainer} ref={treeDiagramContainerRef}>
+    <div
+      className={`${styles.treeDiagramContainer} tree-diagram-container`}
+      ref={treeDiagramContainerRef}
+    >
       <MainChart
         treeNodeDatum={treeNodeDatum}
         classNamePrefix="multiTrees"
@@ -294,24 +288,27 @@ const TreeDiagram = ({
         nodeMargin={nodeMargin}
         zoomToFitViewportScale={zoomToFitViewportScale}
       />
-      {/* {showMinimap && (
+      {showMinimap && (
         <Minimap
-          datum={treeNodeDatum}
-          multiTreesBound={multiTreesBound}
+          treeNodeDatum={treeNodeDatum}
+          classNamePrefix="minimapMultiTrees"
           viewport={viewport}
-          nodeMargin={nodeMargin}
           customLinkElement={customLinkElement}
           customNodeElement={customNodeElement}
+          multiTreesBound={multiTreesBound}
+          nodeMargin={nodeMargin}
           minimapScale={minimapScale!}
-          brushRef={brushRef}
           minimapScaleX={minimapScaleX}
           minimapScaleY={minimapScaleY}
-          mainChartSVG={mainChartSelection}
+          multiTreesSVG={multiTreesSVGSelection}
           updateTreeTranslate={handleUpdateTreeTranslate}
           brushBehavior={brushBehavior}
+          brushRef={brushRef}
+          zoomToFitViewportScale={zoomToFitViewportScale}
+          getTreePosition={getInitSingleTreeBound}
         />
-      )} */}
-      {selectedNodeDetail && !isThumbnail && (
+      )}
+      {selectedNodeDetail && (
         <Drawer
           title={selectedNodeDetail!.name}
           placement="right"
@@ -322,6 +319,8 @@ const TreeDiagram = ({
           }}
           visible={showNodeDetail}
           destroyOnClose={true}
+          getContainer={false}
+          style={{ position: 'absolute' }}
           key="right"
         >
           <NodeWrapperDetail

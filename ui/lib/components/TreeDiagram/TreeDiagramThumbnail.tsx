@@ -30,8 +30,6 @@ const TreeDiagramThumbnail = ({
     height: 0,
   })
 
-  console.log('TreeDiagramThumbnail data', data)
-
   const margin: nodeMarginType = useMemo(
     () => ({
       siblingMargin: nodeMargin?.childrenMargin || 40,

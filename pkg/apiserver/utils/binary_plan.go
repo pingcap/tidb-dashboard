@@ -338,8 +338,8 @@ func diagnosticOperatorNodes(nodes *simplejson.Json, diagOp diagnosticOperation)
 // eq(minus(test.t1.b, 1), 1) false
 // eq(test.t.a, 1), eq(test.t.a, 2)  ture
 // eq(test.t.a, 1), eq(test.t.b, 1) false
-// in(tets.t.a, 1, 2, 3, 4) ture
-// in(tets.t.a, 1, 2, 3, 4), in(tets.t.b, 1, 2, 3, 4) false.
+// in(test.t.a, 1, 2, 3, 4) ture
+// in(test.t.a, 1, 2, 3, 4), in(test.t.b, 1, 2, 3, 4) false.
 func useComparisonOperator(operatorInfo string) bool {
 	useComparisonOperator := false
 	columnSet := make(map[string]bool)
@@ -349,18 +349,59 @@ func useComparisonOperator(operatorInfo string) bool {
 			n := strings.Count(operatorInfo, op+"(")
 			for i := 0; i < n; i++ {
 				column := ""
-				_, s, _ := strings.Cut(operatorInfo, op+"(")
-				if op == "isnull" {
-					// isnull(test.t.a)
-					column = strings.Split(s, ")")[0]
-				} else {
-					// eq(test.t.a, 1)
-					// in(tets.t.a, 1, 2, 3, 4)
-					column = strings.Split(s, ",")[0]
+				s1, s, _ := strings.Cut(operatorInfo, op+"(")
+				s, s2, _ := strings.Cut(s, ")")
+
+				if strings.Contains(s, "(") {
+					return false
 				}
-				columnSet[column] = true
-				operatorInfo = strings.Replace(operatorInfo, op+"(", "", 1)
-				operatorInfo = strings.Replace(operatorInfo, ")", "", 1)
+				switch op {
+				case "isnull":
+					// not(isnull(test2.t1.a)) true
+					if strings.HasSuffix(s1, "not(") && strings.HasPrefix(s2, ")") {
+						s1 = strings.TrimRight(s1, "not(")
+						s2 = strings.TrimLeft(s2, ")")
+					}
+					// isnull(test.t.a)
+					column = strings.TrimSpace(s)
+					// if strings.
+				case "in":
+					// in(test.t.a, 1, 2, 3, 4) true
+					slist := strings.Split(s, ",")
+					column = strings.TrimSpace(slist[0])
+					// in(test.t.a, 1, 2, test.t.b, 4) false
+					for _, c := range slist[1:] {
+						c = strings.TrimSpace(c)
+						if strings.Count(c, ".") == 2 && !strings.Contains(c, `"`) {
+							return false
+						}
+					}
+				default:
+					// eq(test.t.a, 1) true
+					slist := strings.Split(s, ",")
+					if len(slist) != 2 {
+						return false
+					}
+					c := ""
+					c1, c2 := strings.TrimSpace(slist[0]), strings.TrimSpace(slist[1])
+					if strings.Count(c1, ".") == 2 && !strings.Contains(c1, `"`) {
+						column = c1
+						c = c2
+					} else if strings.Count(c2, ".") == 2 && !strings.Contains(c2, `"`) {
+						column = c2
+						c = c1
+					}
+					// eq(test2.t1.a, test2.t2.a) false
+					database := strings.Split(column, ".")[0]
+					if len(slist) > 1 && strings.HasPrefix(c, database) {
+						return false
+					}
+				}
+
+				if column != "" {
+					columnSet[column] = true
+				}
+				operatorInfo = s1 + s2
 			}
 		}
 	}

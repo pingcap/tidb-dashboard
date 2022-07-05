@@ -130,7 +130,7 @@ const TreeDiagram = ({
   }
 
   const zoomBehavior = d3Zoom()
-    .scaleExtent([0.5, 2])
+    .scaleExtent([0.5, 5])
     // Limits the zoom translate extent
     .translateExtent([
       [-viewport.width / 2, -viewport.height / 2],

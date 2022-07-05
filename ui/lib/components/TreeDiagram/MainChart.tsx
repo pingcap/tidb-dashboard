@@ -37,7 +37,7 @@ const MainChart = ({
       height={viewport.height}
     >
       <g
-        className={`${classNamePrefix}Group}`}
+        className={`${classNamePrefix}Group`}
         transform={`translate(${translate.x}, ${translate.y}) scale(${translate.k})`}
       >
         {treeNodeDatum.map((datum, idx) => (
@@ -46,7 +46,7 @@ const MainChart = ({
             datum={datum}
             treeIdx={idx}
             nodeMargin={nodeMargin}
-            zoomToFitViewportScale={zoomToFitViewportScale}
+            zoomToFitViewportScale={1}
             customLinkElement={customLinkElement}
             customNodeElement={customNodeElement}
             onNodeExpandBtnToggle={onNodeExpandBtnToggle}

@@ -50,14 +50,6 @@ const Minimap = ({
   const { width: multiTreesBoundWidth, height: multiTreesBoundHeight } =
     multiTreesBound
 
-  const margin: nodeMarginType = useMemo(
-    () => ({
-      siblingMargin: nodeMargin?.childrenMargin || 40,
-      childrenMargin: nodeMargin?.siblingMargin || 60,
-    }),
-    [nodeMargin?.childrenMargin, nodeMargin?.siblingMargin]
-  )
-
   const _brushRef = useRef<SVGGElement>(null)
 
   const brushSelection = select(_brushRef.current!)

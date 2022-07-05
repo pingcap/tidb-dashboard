@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React from 'react'
 
 import { nodeMarginType, Translate, TreeNodeDatum, rectBound } from './types'
 import SingleTree from './SingleTree'
@@ -14,6 +14,7 @@ interface MainChartProps {
   onNodeDetailClick: any
   getTreePosition: (number) => any
   nodeMargin?: nodeMarginType
+  adjustPosition: rectBound
   zoomToFitViewportScale: number
 }
 
@@ -27,6 +28,7 @@ const MainChart = ({
   onNodeExpandBtnToggle,
   onNodeDetailClick,
   nodeMargin,
+  adjustPosition,
   zoomToFitViewportScale,
   getTreePosition,
 }: MainChartProps) => {
@@ -46,11 +48,12 @@ const MainChart = ({
             datum={datum}
             treeIdx={idx}
             nodeMargin={nodeMargin}
-            zoomToFitViewportScale={1}
+            zoomToFitViewportScale={zoomToFitViewportScale}
             customLinkElement={customLinkElement}
             customNodeElement={customNodeElement}
             onNodeExpandBtnToggle={onNodeExpandBtnToggle}
             onNodeDetailClick={onNodeDetailClick}
+            adjustPosition={adjustPosition}
             getTreePosition={getTreePosition}
           />
         ))}

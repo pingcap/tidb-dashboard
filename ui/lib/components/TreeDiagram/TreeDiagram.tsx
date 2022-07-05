@@ -45,6 +45,7 @@ const TreeDiagram = ({
   const [multiTreesViewport, setMultiTreesViewport] =
     useState<rectBound>(viewport)
   const singleTreeBoundsMap: TreeBoundType = {}
+  const [adjustPosition, setAdjustPosition] = useState({ width: 0, height: 0 })
 
   // Inits tree translate, the default position is on the top-middle of canvas
   const [multiTreesTranslate, setMultiTreesTranslate] = useState({
@@ -117,8 +118,6 @@ const TreeDiagram = ({
 
     setMultiTreesTranslate(t)
 
-    console.log('on zoom brushSelection', brushSelection)
-
     // Moves brush on minimap when zoom behavior is triggered.
     brushBehavior.move(brushSelection, [
       [minimapScaleX(t.k).invert(-t.x), minimapScaleY(t.k).invert(-t.y)],
@@ -132,18 +131,25 @@ const TreeDiagram = ({
   const zoomBehavior = d3Zoom()
     .scaleExtent([0.5, 5])
     // Limits the zoom translate extent
-    .translateExtent([
-      [-viewport.width / 2, -viewport.height / 2],
-      [
-        multiTreesBound.width + viewport.width / 2,
-        multiTreesBound.height + viewport.height / 2,
-      ],
-    ])
+    // .translateExtent([
+    //   [-viewport.width / 2, -viewport.height / 2],
+    //   [
+    //     multiTreesBound.width + viewport.width / 2,
+    //     multiTreesBound.height + viewport.height / 2,
+    //   ],
+    // ])
     .on('zoom', () => onZoom())
 
   // Binds MainChart container
   const bindZoomListener = () => {
     multiTreesSVGSelection.call(zoomBehavior as any)
+
+    multiTreesSVGSelection.call(
+      d3Zoom().transform as any,
+      zoomIdentity
+        .translate(multiTreesTranslate.x, multiTreesTranslate.y)
+        .scale(multiTreesTranslate.k)
+    )
   }
 
   const findNodesById = (
@@ -245,12 +251,28 @@ const TreeDiagram = ({
   }
 
   const getZoomToFitViewPortScale = () => {
-    const k = Math.min(
-      multiTreesViewport.width / multiTreesBound.width,
-      multiTreesViewport.height / multiTreesBound.height
-    )
+    const widthRatio = multiTreesViewport.width / multiTreesBound.width
+    const heightRation = multiTreesViewport.height / multiTreesBound.height
+    const k = Math.min(widthRatio, heightRation)
 
     setZoomToFitViewportScale(k > 1 ? 1 : k)
+
+    if (heightRation > 2 && widthRatio > 2) {
+      setAdjustPosition({
+        width: multiTreesViewport.width / widthRatio,
+        height: viewport.height / heightRation,
+      })
+    } else if (widthRatio > 2) {
+      setAdjustPosition({
+        ...adjustPosition,
+        width: multiTreesViewport.width / widthRatio,
+      })
+    } else if (heightRation > 2) {
+      setAdjustPosition({
+        ...adjustPosition,
+        height: viewport.height / heightRation,
+      })
+    }
   }
 
   useEffect(() => {
@@ -286,6 +308,7 @@ const TreeDiagram = ({
         onNodeDetailClick={handleOnNodeDetailClick}
         getTreePosition={getInitSingleTreeBound}
         nodeMargin={nodeMargin}
+        adjustPosition={adjustPosition}
         zoomToFitViewportScale={zoomToFitViewportScale}
       />
       {showMinimap && (
@@ -304,6 +327,7 @@ const TreeDiagram = ({
           updateTreeTranslate={handleUpdateTreeTranslate}
           brushBehavior={brushBehavior}
           brushRef={brushRef}
+          adjustPosition={adjustPosition}
           zoomToFitViewportScale={zoomToFitViewportScale}
           getTreePosition={getInitSingleTreeBound}
         />

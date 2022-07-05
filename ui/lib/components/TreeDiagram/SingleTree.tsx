@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react'
-import { HierarchyPointLink, HierarchyPointNode, tree } from 'd3'
+import { HierarchyPointLink, HierarchyPointNode } from 'd3'
 
 import NodeWrapper from './NodeWrapper'
 import LinkWrapper from './LinkWrapper'
 import { TreeNodeDatum, nodeMarginType } from './types'
 import { generateNodesAndLinks } from './utlis'
+import { rectBound } from './types'
 
 interface SingleTreeProps {
   datum: TreeNodeDatum
@@ -15,6 +16,7 @@ interface SingleTreeProps {
   customNodeElement: any
   onNodeExpandBtnToggle?: any
   onNodeDetailClick?: any
+  adjustPosition: rectBound
   getTreePosition: (number) => any
 }
 
@@ -27,8 +29,14 @@ const SingleTree = ({
   customNodeElement,
   onNodeExpandBtnToggle,
   onNodeDetailClick,
+  adjustPosition,
   getTreePosition,
 }: SingleTreeProps) => {
+  console.log(
+    'SingleTree zoomToFitViewportScale',
+    zoomToFitViewportScale,
+    adjustPosition
+  )
   const singleTreeGroupRef = useRef(null)
   const inited = useRef(false)
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
@@ -65,6 +73,7 @@ const SingleTree = ({
     const position = getTreePosition(treeIdx)
     setTreePosition(position)
   }, [nodes, getTreePosition])
+  console.log('adjustPosition', adjustPosition)
 
   return (
     // tranform is the relative position to the original point [0,0] when initiated.
@@ -72,9 +81,10 @@ const SingleTree = ({
       className={`singleTreeGroup-${treeIdx}`}
       ref={singleTreeGroupRef}
       transform={`translate(${
-        zoomToFitViewportScale * (-treePosition.x + treePosition.offset)
+        zoomToFitViewportScale * (-treePosition.x + treePosition.offset) +
+        adjustPosition.width
       }, ${
-        zoomToFitViewportScale * treePosition.y
+        zoomToFitViewportScale * treePosition.y + adjustPosition.height
       }) scale(${zoomToFitViewportScale})`}
     >
       <g className="linksWrapper">

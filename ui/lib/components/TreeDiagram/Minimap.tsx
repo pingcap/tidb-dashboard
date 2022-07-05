@@ -1,4 +1,4 @@
-import React, { MutableRefObject, Ref, useEffect, useMemo, useRef } from 'react'
+import React, { MutableRefObject, Ref, useEffect, useRef } from 'react'
 import { select, event } from 'd3-selection'
 import { brush as d3Brush } from 'd3-brush'
 import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
@@ -6,6 +6,7 @@ import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 import SingleTree from './SingleTree'
 import styles from './index.module.less'
 import { rectBound, TreeNodeDatum, nodeMarginType } from './types'
+import { Translate } from '../TreeDiagramView/types'
 
 interface MinimapProps {
   treeNodeDatum: TreeNodeDatum[]
@@ -21,6 +22,7 @@ interface MinimapProps {
   updateTreeTranslate?
   brushBehavior?
   brushRef?: Ref<SVGGElement>
+  adjustPosition: rectBound
   zoomToFitViewportScale
   getTreePosition: (number) => any
   nodeMargin?: nodeMarginType
@@ -39,6 +41,7 @@ const Minimap = ({
   minimapScaleY,
   multiTreesSVG,
   updateTreeTranslate,
+  adjustPosition,
   zoomToFitViewportScale,
   getTreePosition,
   brushRef,
@@ -51,8 +54,8 @@ const Minimap = ({
     multiTreesBound
 
   const _brushRef = useRef<SVGGElement>(null)
-
   const brushSelection = select(_brushRef.current!)
+  const minimapContainerRef = useRef(null)
   const minimapMultiTreesSVGSelection = select(`.${classNamePrefix}SVG`)
   const minimapMultiTreesGroupSelection = select(`.${classNamePrefix}Group`)
 
@@ -127,11 +130,13 @@ const Minimap = ({
   }
 
   useEffect(() => {
-    drawMinimap()
-    // Removes these elements can avoid re-select brush on minimap
-    minimapMultiTreesSVGSelection.selectAll('.handle').remove()
-    minimapMultiTreesSVGSelection.selectAll('.overlay').remove()
-  })
+    if (minimapContainerRef.current && _brushRef.current) {
+      drawMinimap()
+      // Removes these elements can avoid re-select brush on minimap
+      minimapMultiTreesSVGSelection.selectAll('.handle').remove()
+      minimapMultiTreesSVGSelection.selectAll('.overlay').remove()
+    }
+  }, [minimapContainerRef.current, _brushRef.current])
 
   useEffect(() => {
     bindBrushListener()
@@ -145,7 +150,7 @@ const Minimap = ({
   }, [brushRef])
 
   return (
-    <div className={styles.minimapContainer}>
+    <div className={styles.minimapContainer} ref={minimapContainerRef}>
       <svg
         className={`${classNamePrefix}SVG`}
         width={minimapContainer.width}
@@ -163,6 +168,7 @@ const Minimap = ({
               customLinkElement={customLinkElement}
               customNodeElement={customNodeElement}
               getTreePosition={getTreePosition}
+              adjustPosition={adjustPosition}
             />
           ))}
         </g>

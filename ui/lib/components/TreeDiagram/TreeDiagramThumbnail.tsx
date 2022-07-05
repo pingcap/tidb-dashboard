@@ -14,7 +14,7 @@ const TreeDiagramThumbnail = ({
   data,
   nodeSize,
   nodeMargin,
-  viewPort,
+  viewport,
   customNodeElement,
   customLinkElement,
 }) => {
@@ -39,8 +39,8 @@ const TreeDiagramThumbnail = ({
     }),
     [nodeMargin?.childrenMargin, nodeMargin?.siblingMargin]
   )
-  const thumbnailContainerWidth = viewPort.width
-  const thumbnailContainerHeight = viewPort.height
+  const thumbnailContainerWidth = viewport.width
+  const thumbnailContainerHeight = viewport.height
 
   // A SVG container for main chart
   const thumbnailSVGSelection = select('.thumbnailSVG')

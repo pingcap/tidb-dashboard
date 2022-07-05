@@ -15,8 +15,9 @@ import { zoom as d3Zoom, zoomIdentity } from 'd3-zoom'
 import { brush as d3Brush } from 'd3-brush'
 import { select, event } from 'd3-selection'
 import { scaleLinear } from 'd3-scale'
+import { rectBound } from '../TreeDiagramView/types'
 
-interface boundType {
+interface TreeBoundType {
   [k: string]: {
     x: number
     y: number
@@ -31,28 +32,30 @@ const TreeDiagram = ({
   nodeMargin,
   showMinimap,
   minimapScale,
-  viewPort,
+  viewport,
   customNodeElement,
   customLinkElement,
   customNodeDetailElement,
   isThumbnail,
+  gapBetweenTrees,
 }: TreeDiagramProps) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
   const [showNodeDetail, setShowNodeDetail] = useState(false)
   const [selectedNodeDetail, setSelectedNodeDetail] = useState<TreeNodeDatum>()
-  const [zoomToFitViewPort, setZoomToFitViewPort] = useState(0)
-  // const multiTreeBounds: boundType[] = []
-  const boundsMap: boundType = {}
+  const [zoomToFitViewportScale, setZoomToFitViewportScale] = useState(0)
+  const [multiTreesViewport, setMultiTreesViewport] =
+    useState<rectBound>(viewport)
+  const singleTreeBoundsMap: TreeBoundType = {}
 
   // Inits tree translate, the default position is on the top-middle of canvas
-  const [treeTranslate, setTreeTranslate] = useState({
+  const [multiTreesTranslate, setMultiTreesTranslate] = useState({
     x: 0,
     y: 0,
     k: 1,
   })
 
   // Sets the bound of entire tree
-  const [treeBound, setTreeBound] = useState({
+  const [multiTreesBound, setMultiTreesBound] = useState({
     width: 0,
     height: 0,
   })
@@ -60,7 +63,7 @@ const TreeDiagram = ({
   const treeDiagramContainerRef = useRef<HTMLDivElement>(null)
 
   // A SVG container for main chart
-  const mainChartSVGSelection = select('.mainChartSVG')
+  const multiTreesSVGSelection = select('.multiTreesSVG')
 
   const brushRef = useRef<SVGGElement>(null)
   const brushSelection = select(brushRef.current!)
@@ -75,20 +78,20 @@ const TreeDiagram = ({
    */
   const minimapScaleX = (zoomScale) => {
     return scaleLinear()
-      .domain([0, treeBound.width])
-      .range([0, treeBound.width * zoomScale])
+      .domain([0, multiTreesBound.width])
+      .range([0, multiTreesBound.width * zoomScale])
   }
 
   // Creates a continuous linear scale to calculate the corresponse height in mainChart or minimap
   const minimapScaleY = (zoomScale) => {
     return scaleLinear()
-      .domain([0, treeBound.height])
-      .range([0, treeBound.height * zoomScale])
+      .domain([0, multiTreesBound.height])
+      .range([0, multiTreesBound.height * zoomScale])
   }
 
   // const handleUpdateTreeTranslate = (zoomScale, brushX, brushY) => {
   //   setTreeTranslate({
-  //     x: minimapScaleX(zoomScale.k)(-treeBound.x - brushX),
+  //     x: minimapScaleX(zoomScale.k)(-multiTreesBound.x - brushX),
   //     y: minimapScaleY(zoomScale.k)(-brushY),
   //     k: zoomScale.k,
   //   })
@@ -97,12 +100,12 @@ const TreeDiagram = ({
   // Limits brush move extent
   // const brushBehavior = d3Brush().extent([
   //   [
-  //     minimapScaleX(treeTranslate.k)(-viewPort.width / 2),
-  //     minimapScaleY(treeTranslate.k)(-viewPort.height / 2),
+  //     minimapScaleX(treeTranslate.k)(-viewport.width / 2),
+  //     minimapScaleY(treeTranslate.k)(-viewport.height / 2),
   //   ],
   //   [
-  //     minimapScaleX(treeTranslate.k)(treeBound.width + viewPort.width / 2),
-  //     minimapScaleY(treeTranslate.k)(treeBound.height + viewPort.height / 2),
+  //     minimapScaleX(treeTranslate.k)(multiTreesBound.width + viewport.width / 2),
+  //     minimapScaleY(treeTranslate.k)(multiTreesBound.height + viewport.height / 2),
   //   ],
   // ])
 
@@ -110,17 +113,17 @@ const TreeDiagram = ({
     const t = event.transform
     console.log('onzoom.........', t)
 
-    setTreeTranslate(t)
+    setMultiTreesTranslate(t)
 
     // Moves brush on minimap when zoom behavior is triggered.
     // brushBehavior.move(brushSelection, [
     //   [
-    //     -treeBound.x + minimapScaleX(t.k).invert(-t.x),
+    //     -multiTreesBound.x + minimapScaleX(t.k).invert(-t.x),
     //     minimapScaleY(t.k).invert(-t.y),
     //   ],
     //   [
-    //     -treeBound.x + minimapScaleX(t.k).invert(-t.x + viewPort.width),
-    //     minimapScaleY(t.k).invert(-t.y + viewPort.height),
+    //     -multiTreesBound.x + minimapScaleX(t.k).invert(-t.x + viewport.width),
+    //     minimapScaleY(t.k).invert(-t.y + viewport.height),
     //   ],
     // ])
   }
@@ -129,17 +132,17 @@ const TreeDiagram = ({
     // .scaleExtent([0.5, 2])
     // Limits the zoom translate extent
     // .translateExtent([
-    //   [treeBound.x - viewPort.width / 2, -viewPort.height / 2],
+    //   [multiTreesBound.x - viewport.width / 2, -viewport.height / 2],
     //   [
-    //     treeBound.x + treeBound.width + viewPort.width / 2,
-    //     treeBound.height + viewPort.height / 2,
+    //     multiTreesBound.x + multiTreesBound.width + viewport.width / 2,
+    //     multiTreesBound.height + viewport.height / 2,
     //   ],
     // ])
     .on('zoom', () => onZoom())
 
   // Binds MainChart container
   const bindZoomListener = () => {
-    mainChartSVGSelection.call(zoomBehavior as any)
+    multiTreesSVGSelection.call(zoomBehavior as any)
 
     // mainChartSelection.call(
     //   d3Zoom().transform as any,
@@ -203,19 +206,17 @@ const TreeDiagram = ({
     setSelectedNodeDetail(node)
   }
 
-  // Sets init bound value and returns offset of current tree to original point [0,0].
-  const getInitTreeBound = (treeIdx) => {
+  // Updates multiTrees bound and returns single tree position, which contains root point and offset to original point [0,0].
+  const getInitSingleTreeBound = (treeIdx) => {
     let offset = 0
-    let boundWidth = 0,
-      boundHeight = 0
-    const gap = 100
-    const treeGroupNode = select(
-      `.mainChartGroup-${treeIdx}`
+    let multiTreesBound: rectBound = { width: 0, height: 0 }
+    const singleTreeGroupNode = select(
+      `.singleTreeGroup-${treeIdx}`
     ).node() as SVGGraphicsElement
 
-    const { x, y, width, height } = treeGroupNode.getBBox()
+    const { x, y, width, height } = singleTreeGroupNode.getBBox()
 
-    boundsMap[`mainChartGroup-${treeIdx}`] = {
+    singleTreeBoundsMap[`singleTreeGroup-${treeIdx}`] = {
       x: x,
       y: y,
       width: width,
@@ -223,26 +224,38 @@ const TreeDiagram = ({
     }
 
     for (let i = treeIdx; i > 0; i--) {
-      offset = offset + boundsMap[`mainChartGroup-${i - 1}`].width + gap
-      boundWidth = boundWidth + boundsMap[`mainChartGroup-${i - 1}`].width + gap
-      boundHeight =
-        boundsMap[`mainChartGroup-${i - 1}`].height > boundHeight
-          ? boundsMap[`mainChartGroup-${i - 1}`].height
-          : boundHeight
+      offset =
+        offset +
+        singleTreeBoundsMap[`singleTreeGroup-${i - 1}`].width +
+        gapBetweenTrees!
+
+      multiTreesBound.width =
+        multiTreesBound.width +
+        singleTreeBoundsMap[`singleTreeGroup-${i - 1}`].width +
+        gapBetweenTrees!
+
+      multiTreesBound.height =
+        singleTreeBoundsMap[`singleTreeGroup-${i - 1}`].height >
+        multiTreesBound.height
+          ? singleTreeBoundsMap[`singleTreeGroup-${i - 1}`].height
+          : multiTreesBound.height
     }
 
-    setTreeBound({
-      width: boundWidth + width,
-      height: boundHeight > height ? boundHeight : height,
+    setMultiTreesBound({
+      width: multiTreesBound.width + width,
+      height: multiTreesBound.height > height ? multiTreesBound.height : height,
     })
 
     return { x, y, offset }
   }
 
-  const getZoomToFitViewPort = (vw) => {
-    const k = Math.min(vw / treeBound.width, viewPort.height / treeBound.height)
-    setZoomToFitViewPort(k)
-    console.log('k', k)
+  const getZoomToFitViewPortScale = () => {
+    const k = Math.min(
+      multiTreesViewport.width / multiTreesBound.width,
+      multiTreesViewport.height / multiTreesBound.height
+    )
+
+    setZoomToFitViewportScale(k > 1 ? 1 : k)
   }
 
   useEffect(() => {
@@ -256,46 +269,36 @@ const TreeDiagram = ({
       return
     }
     if (treeDiagramContainerRef.current) {
-      getZoomToFitViewPort(treeDiagramContainerRef.current?.clientWidth)
+      setMultiTreesViewport({
+        width: treeDiagramContainerRef.current?.clientWidth,
+        height: treeDiagramContainerRef.current?.clientHeight,
+      })
+
+      getZoomToFitViewPortScale()
       bindZoomListener()
     }
-    console.log('treeBound', treeBound)
-  }, [treeBound])
+  }, [multiTreesBound])
 
   return (
     <div className={styles.treeDiagramContainer} ref={treeDiagramContainerRef}>
-      <svg
-        className="mainChartSVG"
-        width={treeDiagramContainerRef.current?.clientWidth}
-        height={viewPort.height}
-      >
-        <g
-          className={`mainChartGroup`}
-          transform={`translate(${treeTranslate.x}, ${treeTranslate.y}) scale(${treeTranslate.k})`}
-        >
-          {treeNodeDatum.map((d, treeIdx) => (
-            <MainChart
-              key={treeIdx}
-              treeIdx={treeIdx}
-              datum={d}
-              nodeMargin={nodeMargin}
-              treeTranslate={treeTranslate}
-              customLinkElement={customLinkElement}
-              customNodeElement={customNodeElement}
-              onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
-              onNodeDetailClick={handleOnNodeDetailClick}
-              // onInit={getInitTreeDiagramBound}
-              getOffset={getInitTreeBound}
-              zoomToFitViewPort={zoomToFitViewPort}
-            />
-          ))}
-        </g>
-      </svg>
+      <MainChart
+        treeNodeDatum={treeNodeDatum}
+        classNamePrefix="multiTrees"
+        translate={multiTreesTranslate}
+        viewport={multiTreesViewport}
+        customLinkElement={customLinkElement}
+        customNodeElement={customNodeElement}
+        onNodeExpandBtnToggle={handleNodeExpandBtnToggle}
+        onNodeDetailClick={handleOnNodeDetailClick}
+        getTreePosition={getInitSingleTreeBound}
+        nodeMargin={nodeMargin}
+        zoomToFitViewportScale={zoomToFitViewportScale}
+      />
       {/* {showMinimap && (
         <Minimap
           datum={treeNodeDatum}
-          treeBound={treeBound}
-          viewPort={viewPort}
+          multiTreesBound={multiTreesBound}
+          viewport={viewport}
           nodeMargin={nodeMargin}
           customLinkElement={customLinkElement}
           customNodeElement={customNodeElement}
@@ -339,6 +342,7 @@ TreeDiagram.defaultProps = {
     siblingMargin: 40,
     childrenMargin: 60,
   },
+  gapBetweenTrees: 100,
 }
 
 export default TreeDiagram

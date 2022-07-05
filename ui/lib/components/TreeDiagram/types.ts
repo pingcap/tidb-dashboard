@@ -53,7 +53,7 @@ export interface TreeDiagramProps {
   /**
    * The dimensions of the tree container,
    */
-  viewPort: rectBound
+  viewport: rectBound
 
   /**
    * Sets the time (in milliseconds) for the transition to center a node once clicked.
@@ -109,4 +109,6 @@ export interface TreeDiagramProps {
 
   // Disables zoom behavior is isThumbnail is true
   isThumbnail?: boolean
+
+  gapBetweenTrees?: number
 }

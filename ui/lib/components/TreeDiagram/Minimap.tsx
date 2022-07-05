@@ -13,20 +13,23 @@ import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 
 import NodeWrapper from './NodeWrapper'
 import LinkWrapper from './LinkWrapper'
+import SingleTree from './SingleTree'
 import styles from './index.module.less'
 import { Translate, rectBound, TreeNodeDatum, nodeMarginType } from './types'
 import { generateNodesAndLinks } from './utlis'
 
 interface MinimapProps {
-  datum: TreeNodeDatum[]
-  treeBound
-  viewPort: rectBound
+  treeNodeDatum: TreeNodeDatum[]
+  classNamePrefix: string
+  translate: Translate
+  viewport: rectBound
+  multiTreesBound: rectBound
   customLinkElement: any
   customNodeElement: any
   minimapScale: number
   minimapScaleX
   minimapScaleY
-  mainChartSVG
+  multiTreesSVG
   updateTreeTranslate
   brushBehavior
   brushRef?: Ref<SVGGElement>
@@ -35,27 +38,34 @@ interface MinimapProps {
 }
 
 const Minimap = ({
-  datum,
-  treeBound,
-  viewPort,
+  treeNodeDatum,
+  classNamePrefix,
+  translate,
+  viewport,
+  multiTreesBound,
   nodeMargin,
   customLinkElement,
   customNodeElement,
   minimapScale,
   minimapScaleX,
   minimapScaleY,
-  mainChartSVG,
+  multiTreesSVG,
   updateTreeTranslate,
   brushRef,
 }: MinimapProps) => {
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
   const [links, setLinks] = useState<HierarchyPointLink<TreeNodeDatum>[]>([])
-  const { width: mainChartWidth, height: mainChartHeight, x, y } = treeBound
-  const translate: Translate = {
-    x: -x,
-    y,
-    k: 1,
+  const { width: minimapContainerWidth, height: minimapContainerHeight } = {
+    width: viewport.width * minimapScale,
+    height: viewport.height * minimapScale,
   }
+  const { width: multiTreesBoundWidth, height: multiTreesBoundsHeight } =
+    multiTreesBound
+  // const translate: Translate = {
+  //   x: -x,
+  //   y,
+  //   k: 1,
+  // }
   const margin: nodeMarginType = useMemo(
     () => ({
       siblingMargin: nodeMargin?.childrenMargin || 40,
@@ -63,58 +73,56 @@ const Minimap = ({
     }),
     [nodeMargin?.childrenMargin, nodeMargin?.siblingMargin]
   )
-  const minimapContainerWidth = viewPort.width * minimapScale
-  const minimapContainerHeight = viewPort.height * minimapScale
+  // const minimapContainerWidth = viewPort.width * minimapScale
+  // const minimapContainerHeight = viewPort.height * minimapScale
   const _brushRef = useRef<SVGGElement>(null)
 
   const brushSelection = select(_brushRef.current!)
   const minimapSelection = select('.minimapSVG')
   const minimapGroupSelection = select('.minimapGroup')
 
-  const longSide = mainChartWidth > mainChartHeight ? 'x' : 'y'
-  const chartLongSideSize = Math.max(mainChartWidth, mainChartHeight)
-  const chartMinimapScale =
-    chartLongSideSize /
-    (longSide === 'x' ? minimapContainerWidth : minimapContainerHeight)
+  // const longSide = mainChartWidth > mainChartHeight ? 'x' : 'y'
+  // const chartLongSideSize = Math.max(mainChartWidth, mainChartHeight)
+  // const chartMinimapScale =
+  //   chartLongSideSize /
+  //   (longSide === 'x' ? minimapContainerWidth : minimapContainerHeight)
 
   const drawMinimap = () => {
-    minimapSelection
-      .attr('width', minimapContainerWidth)
-      .attr('height', minimapContainerHeight)
-      .attr(
-        'viewBox',
-        (longSide === 'x'
-          ? [
-              0,
-              -(minimapContainerHeight * chartMinimapScale - mainChartHeight) /
-                2,
-              mainChartWidth,
-              minimapContainerHeight * chartMinimapScale,
-            ]
-          : [
-              -(minimapContainerWidth * chartMinimapScale - mainChartWidth) / 2,
-              0,
-              minimapContainerWidth * chartMinimapScale,
-              mainChartHeight,
-            ]
-        ).join(' ')
-      )
-      .attr('preserveAspectRatio', 'xMidYMid meet')
-      .style('position', 'absolute')
-      .style('top', 0)
-      .style('left', 20)
-      .style('border', '1px solid grey')
-      .style('background', 'white')
-
-    select('.minimap-rect')
-      .attr('width', mainChartWidth)
-      .attr('height', mainChartHeight)
-      .attr('fill', 'white')
-
-    minimapGroupSelection
-      .attr('transform', `translate(${translate.x}, 0) scale(${translate.k})`)
-      .attr('width', mainChartWidth)
-      .attr('height', mainChartHeight)
+    // minimapSelection
+    //   .attr('width', minimapContainerWidth)
+    //   .attr('height', minimapContainerHeight)
+    //   .attr(
+    //     'viewBox',
+    //     (longSide === 'x'
+    //       ? [
+    //           0,
+    //           -(minimapContainerHeight * chartMinimapScale - mainChartHeight) /
+    //             2,
+    //           mainChartWidth,
+    //           minimapContainerHeight * chartMinimapScale,
+    //         ]
+    //       : [
+    //           -(minimapContainerWidth * chartMinimapScale - mainChartWidth) / 2,
+    //           0,
+    //           minimapContainerWidth * chartMinimapScale,
+    //           mainChartHeight,
+    //         ]
+    //     ).join(' ')
+    //   )
+    //   .attr('preserveAspectRatio', 'xMidYMid meet')
+    //   .style('position', 'absolute')
+    //   .style('top', 0)
+    //   .style('left', 20)
+    //   .style('border', '1px solid grey')
+    //   .style('background', 'white')
+    // select('.minimap-rect')
+    //   .attr('width', mainChartWidth)
+    //   .attr('height', mainChartHeight)
+    //   .attr('fill', 'white')
+    // minimapGroupSelection
+    //   .attr('transform', `translate(${translate.x}, 0) scale(${translate.k})`)
+    //   .attr('width', mainChartWidth)
+    //   .attr('height', mainChartHeight)
   }
 
   const onBrush = () => {
@@ -122,15 +130,15 @@ const Minimap = ({
     if (Array.isArray(event.selection)) {
       const [[brushX, brushY]] = event.selection
 
-      const zoomScale = zoomTransform(mainChartSVG.node() as any)
+      const zoomScale = zoomTransform(multiTreesSVG.node() as any)
 
       // Sets initial offset, so that first pan and zoom does not jump back to default [0,0] coords.
       // @ts-ignore
-      mainChartSVG.call(
+      multiTreesSVG.call(
         d3Zoom().transform as any,
         zoomIdentity
           .translate(
-            minimapScaleX(zoomScale.k)(-treeBound.x - brushX),
+            minimapScaleX(zoomScale.k)(-brushX),
             minimapScaleY(zoomScale.k)(-brushY)
           )
           .scale(zoomScale.k)
@@ -143,38 +151,38 @@ const Minimap = ({
 
   // Limits brush move extent
   const brushBehavior = d3Brush()
-    .extent([
-      [
-        minimapScaleX(1)(-viewPort.width / 2),
-        minimapScaleY(1)(-viewPort.height / 2),
-      ],
-      [
-        minimapScaleX(1)(treeBound.width + viewPort.width / 2),
-        minimapScaleY(1)(treeBound.height + viewPort.height / 2),
-      ],
-    ])
+    // .extent([
+    //   [
+    //     minimapScaleX(1)(-viewPort.width / 2),
+    //     minimapScaleY(1)(-viewPort.height / 2),
+    //   ],
+    //   [
+    //     minimapScaleX(1)(treeBound.width + viewPort.width / 2),
+    //     minimapScaleY(1)(treeBound.height + viewPort.height / 2),
+    //   ],
+    // ])
     .on('brush', () => onBrush())
 
   const bindBrushListener = () => {
     brushSelection.call(brushBehavior)
 
     // init brush seletion
-    brushBehavior.move(brushSelection, [
-      [-treeBound.x - minimapScaleX(1)(viewPort.width / 2), 0],
-      [
-        -treeBound.x - minimapScaleX(1)(viewPort.width / 2) + viewPort.width,
-        viewPort.height,
-      ],
-    ])
+    // brushBehavior.move(brushSelection, [
+    //   [- minimapScaleX(1)(viewPort.width / 2), 0],
+    //   [
+    //     - minimapScaleX(1)(viewPort.width / 2) + viewPort.width,
+    //     viewPort.height,
+    //   ],
+    // ])
   }
 
-  useEffect(() => {
-    if (datum.length > 0) {
-      const { nodes, links } = generateNodesAndLinks(datum[0], margin)
-      setNodes(nodes)
-      setLinks(links)
-    }
-  }, [datum, margin])
+  // useEffect(() => {
+  //   if (datum.length > 0) {
+  //     const { nodes, links } = generateNodesAndLinks(datum[0], margin)
+  //     setNodes(nodes)
+  //     setLinks(links)
+  //   }
+  // }, [datum, margin])
 
   useEffect(() => {
     drawMinimap()
@@ -185,7 +193,7 @@ const Minimap = ({
 
   useEffect(() => {
     bindBrushListener()
-  }, [treeBound])
+  }, [multiTreesBound])
 
   useEffect(() => {
     if (!_brushRef.current || !brushRef) {
@@ -197,6 +205,31 @@ const Minimap = ({
   return (
     <div className={styles.minimapContainer}>
       <svg
+        className={`${classNamePrefix}SVG`}
+        width={viewport.width}
+        height={viewport.height}
+      >
+        {/* <g
+          className={`${classNamePrefix}Group}`}
+          transform={`translate(${translate.x}, ${translate.y}) scale(${translate.k})`}
+        >
+          {treeNodeDatum.map((datum, idx) => (
+            <SingleTree
+              key={datum.name}
+              datum={datum}
+              treeIdx={idx}
+              nodeMargin={nodeMargin}
+              zoomToFitViewportScale={zoomToFitViewportScale}
+              customLinkElement={customLinkElement}
+              customNodeElement={customNodeElement}
+              onNodeExpandBtnToggle={onNodeExpandBtnToggle}
+              onNodeDetailClick={onNodeDetailClick}
+              getTreePosition={getTreePosition}
+            />
+          ))}
+        </g> */}
+      </svg>
+      {/* <svg
         className="minimapSVG"
         width={minimapContainerWidth}
         height={minimapContainerHeight}
@@ -237,7 +270,7 @@ const Minimap = ({
           </g>
         </g>
         <g ref={_brushRef}></g>
-      </svg>
+      </svg> */}
     </div>
   )
 }

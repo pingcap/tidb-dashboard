@@ -192,7 +192,7 @@ function DetailPage() {
                             data={vpData.main}
                             isThumbnail={true}
                           /> */}
-                        hello
+                        Show visual plan
                       </div>
                     </Descriptions.Item>
                   </Descriptions>

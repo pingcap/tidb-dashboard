@@ -9,7 +9,7 @@ import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 interface TreeDiagramViewProps extends TreeDiagramProps {
   data: RawNodeDatum[]
   showMinimap?: boolean
-  viewPort: rectBound
+  viewport: rectBound
   isThumbnail?: boolean
 }
 
@@ -211,7 +211,7 @@ const customNodeDetailElement = (nodeDetailProps) => {
 const TreeDiagramView = ({
   data,
   showMinimap,
-  viewPort,
+  viewport,
   isThumbnail,
 }: TreeDiagramViewProps) => {
   const nodeSize = { width: 250, height: 150 }
@@ -229,7 +229,7 @@ const TreeDiagramView = ({
               nodeSize={nodeSize}
               customNodeElement={customNodeElements}
               customLinkElement={customLinkElements}
-              viewPort={{
+              viewport={{
                 width: window.innerWidth / 2,
                 height: window.innerHeight / 2,
               }}
@@ -244,7 +244,7 @@ const TreeDiagramView = ({
           customNodeElement={customNodeElements}
           customLinkElement={customLinkElements}
           customNodeDetailElement={customNodeDetailElement}
-          viewPort={viewPort}
+          viewport={viewport}
         />
       )}
     </>
@@ -252,7 +252,7 @@ const TreeDiagramView = ({
 }
 
 TreeDiagramView.defaultProps = {
-  viewPort: {
+  viewport: {
     width: window.innerWidth,
     height: window.innerHeight - 150,
   },

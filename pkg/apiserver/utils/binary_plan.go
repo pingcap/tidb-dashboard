@@ -342,19 +342,38 @@ func diagnosticOperatorNodes(nodes *simplejson.Json, diagOp diagnosticOperation)
 // in(tets.t.a, 1, 2, 3, 4), in(tets.t.b, 1, 2, 3, 4) false.
 func useComparisonOperator(operatorInfo string) bool {
 	useComparisonOperator := false
+	columnSet := make(map[string]bool)
 	for _, op := range needCheckOperator {
 		if strings.Contains(operatorInfo, op) {
 			useComparisonOperator = true
 			n := strings.Count(operatorInfo, op+"(")
-			operatorInfo = strings.Replace(operatorInfo, op+"(", "", n)
-			operatorInfo = strings.Replace(operatorInfo, ")", "", n)
+			for i := 0; i < n; i++ {
+				column := ""
+				_, s, _ := strings.Cut(operatorInfo, op+"(")
+				if op == "isnull" {
+					// isnull(test.t.a)
+					column = strings.Split(s, ")")[0]
+				} else {
+					// eq(test.t.a, 1)
+					// in(tets.t.a, 1, 2, 3, 4)
+					column = strings.Split(s, ",")[0]
+				}
+				columnSet[column] = true
+				operatorInfo = strings.Replace(operatorInfo, op+"(", "", 1)
+				operatorInfo = strings.Replace(operatorInfo, ")", "", 1)
+			}
 		}
 	}
 	if useComparisonOperator {
 		if strings.Count(operatorInfo, "(") == strings.Count(operatorInfo, ")") && strings.Count(operatorInfo, "(") > 0 {
 			return false
 		}
+		// single column
+		if len(columnSet) != 1 {
+			return false
+		}
 	}
+
 	return useComparisonOperator
 }
 

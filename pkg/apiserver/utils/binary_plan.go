@@ -284,24 +284,11 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 			break
 		}
 
-		useOperator := false // operatror :  eq/ge/gt/le/lt/isnull/in
-		for _, op := range needCheckOperator {
-			if strings.Contains(operatorInfo, op) {
-				n := strings.Count(operatorInfo, op+"(")
-
-				useOperator = true
-				operatorInfo = strings.Replace(operatorInfo, op+"(", "", n)
-				operatorInfo = strings.Replace(operatorInfo, ")", "", n)
-			}
+		if !useComparisonOperator(operatorInfo) {
+			break
 		}
 
-		if useOperator {
-			if strings.Count(operatorInfo, "(") == strings.Count(operatorInfo, ")") && strings.Count(operatorInfo, "(") > 0 {
-				useOperator = false
-			}
-		}
-
-		if node.Get(ActRows).MustFloat64() < 10000 && cNode.Get(ActRows).MustFloat64() > 5000000 && useOperator {
+		if node.Get(ActRows).MustFloat64() < 10000 && cNode.Get(ActRows).MustFloat64() > 5000000 {
 			diagnosis = append(diagnosis, "This Selection filters a high proportion of data. Using an index on this column might achieve better performance. Consider adding an index on this column if there is not one.")
 		}
 
@@ -342,6 +329,30 @@ func diagnosticOperatorNodes(nodes *simplejson.Json, diagOp diagnosticOperation)
 
 	diagOp.needUdateStatistics = needUdateStatistics
 	return diagOp, nil
+}
+
+// useComparisonOperator
+// matching rules: only match the eq/ge/gt/le/lt/isnull/in functions on a single column
+// for example:
+// eq(test.t.a, 1)  ture
+// eq(minus(test.t1.b, 1), 1) false.
+func useComparisonOperator(operatorInfo string) bool {
+	useComparisonOperator := false
+	for _, op := range needCheckOperator {
+		if strings.Contains(operatorInfo, op) {
+			n := strings.Count(operatorInfo, op+"(")
+			useComparisonOperator = true
+			operatorInfo = strings.Replace(operatorInfo, op+"(", "", n)
+			operatorInfo = strings.Replace(operatorInfo, ")", "", n)
+		}
+	}
+	if useComparisonOperator {
+		if strings.Count(operatorInfo, "(") == strings.Count(operatorInfo, ")") && strings.Count(operatorInfo, "(") > 0 {
+			useComparisonOperator = false
+		}
+	}
+
+	return useComparisonOperator
 }
 
 func analyzeDuration(bp []byte) ([]byte, error) {
@@ -719,8 +730,13 @@ func formatBinaryPlanJSON(bp []byte) ([]byte, error) {
 	return vp.MarshalJSON()
 }
 
+// formatNode
+// format diskBytes memoryByte to string
+// format rootBasicExecInfo  rootGroupExecInfo copExecInfo field to json
+// for example:
+// {"copExecInfo" : "tikv_task:{time:0s, loops:1}, scan_detail: {total_process_keys: 8, total_process_keys_size: 360, total_keys: 9, rocksdb: {delete_skipped_count: 0, key_skipped_count: 8, block: {cache_hit_count: 1, read_count: 0, read_byte: 0 Bytes}}}"}
 func formatNode(node *simplejson.Json) error {
-	// format
+	// set diskBytes memoryByte
 	for _, key := range needSetNA {
 		if node.Get(key).MustString() == "-1" {
 			node.Set(key, "N/A")
@@ -728,7 +744,7 @@ func formatNode(node *simplejson.Json) error {
 	}
 	var err error
 
-	// I don't want to do that either, but have to convert the irregular string to json
+	//
 	for _, key := range needJSONFormat {
 		if key == RootGroupExecInfo {
 			slist := node.Get(key).MustStringArray()

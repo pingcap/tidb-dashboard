@@ -198,12 +198,13 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 	diagnosis := []string{}
 
 	// pseudo stats
-	switch strings.ToLower(node.GetPath(ScanObject, "database").MustString()) {
-	case "information_schema", "metrics_schema", "performance_schema", "mysql":
-	default:
-		diagnosis = append(diagnosis, "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF.")
+	if strings.Contains(operatorInfo, "stats:pseudo") {
+		switch strings.ToLower(node.GetPath(ScanObject, "database").MustString()) {
+		case "information_schema", "metrics_schema", "performance_schema", "mysql":
+		default:
+			diagnosis = append(diagnosis, "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF.")
+		}
 	}
-
 	// use disk
 	diskBytes := node.Get(DiskBytes).MustString()
 	if diskBytes != "N/A" {

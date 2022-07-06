@@ -201,7 +201,6 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 	if strings.Contains(operatorInfo, "stats:pseudo") {
 		switch strings.ToLower(node.GetPath(ScanObject, "database").MustString()) {
 		case "information_schema", "metrics_schema", "performance_schema", "mysql":
-			break
 		default:
 			diagnosis = append(diagnosis, "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF.")
 		}

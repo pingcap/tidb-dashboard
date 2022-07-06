@@ -9,14 +9,16 @@ import LinkWrapper from './LinkWrapper'
 // imports d3 APIs
 import { select } from 'd3-selection'
 import { HierarchyPointLink, HierarchyPointNode } from 'd3'
+import { DefaultNode } from './DefaultNode'
+import { DefaultLink } from './DefaultLink'
 
 const TreeDiagramThumbnail = ({
   data,
   nodeSize,
   nodeMargin,
   viewport,
-  customNodeElement,
-  customLinkElement,
+  customNodeElement = DefaultNode,
+  customLinkElement = DefaultLink,
 }) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])

@@ -99,9 +99,9 @@ export interface TreeDiagramProps {
    */
   showMinimap?: boolean
 
-  customNodeElement: any
+  customNodeElement?: any
 
-  customLinkElement: any
+  customLinkElement?: any
 
   customNodeDetailElement: any
 

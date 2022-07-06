@@ -16,6 +16,8 @@ import { brush as d3Brush } from 'd3-brush'
 import { select, event } from 'd3-selection'
 import { scaleLinear } from 'd3-scale'
 import { rectBound } from '../TreeDiagramView/types'
+import { DefaultNode } from './DefaultNode'
+import { DefaultLink } from './DefaultLink'
 
 interface TreeBoundType {
   [k: string]: {
@@ -33,8 +35,8 @@ const TreeDiagram = ({
   showMinimap,
   minimapScale,
   viewport,
-  customNodeElement,
-  customLinkElement,
+  customNodeElement = DefaultNode,
+  customLinkElement = DefaultLink,
   customNodeDetailElement,
   gapBetweenTrees,
 }: TreeDiagramProps) => {

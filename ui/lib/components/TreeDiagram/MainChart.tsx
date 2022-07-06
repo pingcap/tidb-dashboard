@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 import { nodeMarginType, Translate, TreeNodeDatum, rectBound } from './types'
 import SingleTree from './SingleTree'
@@ -32,6 +32,36 @@ const MainChart = ({
   zoomToFitViewportScale,
   getTreePosition,
 }: MainChartProps) => {
+  const Trees = useMemo(
+    () =>
+      treeNodeDatum.map((datum, idx) => (
+        <SingleTree
+          key={datum.name}
+          datum={datum}
+          treeIdx={idx}
+          nodeMargin={nodeMargin}
+          zoomToFitViewportScale={zoomToFitViewportScale}
+          customLinkElement={customLinkElement}
+          customNodeElement={customNodeElement}
+          onNodeExpandBtnToggle={onNodeExpandBtnToggle}
+          onNodeDetailClick={onNodeDetailClick}
+          adjustPosition={adjustPosition}
+          getTreePosition={getTreePosition}
+        />
+      )),
+    [
+      treeNodeDatum,
+      nodeMargin,
+      zoomToFitViewportScale,
+      customLinkElement,
+      customNodeElement,
+      onNodeExpandBtnToggle,
+      onNodeDetailClick,
+      adjustPosition,
+      getTreePosition,
+    ]
+  )
+
   return (
     <svg
       className={`${classNamePrefix}SVG`}
@@ -42,21 +72,7 @@ const MainChart = ({
         className={`${classNamePrefix}Group`}
         transform={`translate(${translate.x}, ${translate.y}) scale(${translate.k})`}
       >
-        {treeNodeDatum.map((datum, idx) => (
-          <SingleTree
-            key={datum.name}
-            datum={datum}
-            treeIdx={idx}
-            nodeMargin={nodeMargin}
-            zoomToFitViewportScale={zoomToFitViewportScale}
-            customLinkElement={customLinkElement}
-            customNodeElement={customNodeElement}
-            onNodeExpandBtnToggle={onNodeExpandBtnToggle}
-            onNodeDetailClick={onNodeDetailClick}
-            adjustPosition={adjustPosition}
-            getTreePosition={getTreePosition}
-          />
-        ))}
+        {Trees}
       </g>
     </svg>
   )

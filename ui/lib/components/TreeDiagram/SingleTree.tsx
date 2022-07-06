@@ -32,11 +32,6 @@ const SingleTree = ({
   adjustPosition,
   getTreePosition,
 }: SingleTreeProps) => {
-  console.log(
-    'SingleTree zoomToFitViewportScale',
-    zoomToFitViewportScale,
-    adjustPosition
-  )
   const singleTreeGroupRef = useRef(null)
   const inited = useRef(false)
   const [nodes, setNodes] = useState<HierarchyPointNode<TreeNodeDatum>[]>([])
@@ -73,7 +68,6 @@ const SingleTree = ({
     const position = getTreePosition(treeIdx)
     setTreePosition(position)
   }, [nodes, getTreePosition])
-  console.log('adjustPosition', adjustPosition)
 
   return (
     // tranform is the relative position to the original point [0,0] when initiated.

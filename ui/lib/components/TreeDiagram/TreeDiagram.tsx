@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import _ from 'lodash'
 import { AssignInternalProperties } from './utlis'
 import styles from './index.module.less'
@@ -28,6 +28,37 @@ interface TreeBoundType {
   }
 }
 
+const findNodesById = (
+  nodeId: string,
+  nodeSet: TreeNodeDatum[],
+  hits: TreeNodeDatum[]
+) => {
+  if (hits.length > 0) {
+    return hits
+  }
+  hits = hits.concat(nodeSet.filter((node) => node.__node_attrs.id === nodeId))
+
+  nodeSet.forEach((node) => {
+    if (node.children && node.children.length > 0) {
+      hits = findNodesById(nodeId, node.children, hits)
+    }
+  })
+  return hits
+}
+
+const expandSpecificNode = (nodeDatum: TreeNodeDatum) => {
+  nodeDatum.__node_attrs.collapsed = false
+}
+
+const collapseAllDescententNodes = (nodeDatum: TreeNodeDatum) => {
+  nodeDatum.__node_attrs.collapsed = true
+  if (nodeDatum.children && nodeDatum.children.length > 0) {
+    nodeDatum.children.forEach((child) => {
+      collapseAllDescententNodes(child)
+    })
+  }
+}
+
 const TreeDiagram = ({
   data,
   nodeSize,
@@ -46,7 +77,7 @@ const TreeDiagram = ({
   const [zoomToFitViewportScale, setZoomToFitViewportScale] = useState(0)
   const [multiTreesViewport, setMultiTreesViewport] =
     useState<rectBound>(viewport)
-  const singleTreeBoundsMap: TreeBoundType = {}
+  const singleTreeBoundsMap = useRef<TreeBoundType>({})
   const [adjustPosition, setAdjustPosition] = useState({ width: 0, height: 0 })
 
   // Inits tree translate, the default position is on the top-middle of canvas
@@ -154,103 +185,77 @@ const TreeDiagram = ({
     )
   }
 
-  const findNodesById = (
-    nodeId: string,
-    nodeSet: TreeNodeDatum[],
-    hits: TreeNodeDatum[]
-  ) => {
-    if (hits.length > 0) {
-      return hits
-    }
-    hits = hits.concat(
-      nodeSet.filter((node) => node.__node_attrs.id === nodeId)
-    )
+  const handleNodeExpandBtnToggle = useCallback(
+    (nodeId: string) => {
+      const data = treeNodeDatum.map((datum) => _.clone(datum))
 
-    nodeSet.forEach((node) => {
-      if (node.children && node.children.length > 0) {
-        hits = findNodesById(nodeId, node.children, hits)
+      // @ts-ignore
+      const matches = findNodesById(nodeId, data, [])
+
+      const targetNodeDatum = matches[0]
+
+      if (targetNodeDatum.__node_attrs.collapsed) {
+        expandSpecificNode(targetNodeDatum)
+      } else {
+        collapseAllDescententNodes(targetNodeDatum)
       }
-    })
-    return hits
-  }
 
-  const expandSpecificNode = (nodeDatum: TreeNodeDatum) => {
-    nodeDatum.__node_attrs.collapsed = false
-  }
+      setTreeNodeDatum(data)
+    },
+    [treeNodeDatum]
+  )
 
-  const collapseAllDescententNodes = (nodeDatum: TreeNodeDatum) => {
-    nodeDatum.__node_attrs.collapsed = true
-    if (nodeDatum.children && nodeDatum.children.length > 0) {
-      nodeDatum.children.forEach((child) => {
-        collapseAllDescententNodes(child)
-      })
-    }
-  }
-
-  function handleNodeExpandBtnToggle(nodeId: string) {
-    const data = treeNodeDatum.map((datum) => _.clone(datum))
-
-    // @ts-ignore
-    const matches = findNodesById(nodeId, data, [])
-
-    const targetNodeDatum = matches[0]
-
-    if (targetNodeDatum.__node_attrs.collapsed) {
-      expandSpecificNode(targetNodeDatum)
-    } else {
-      collapseAllDescententNodes(targetNodeDatum)
-    }
-
-    setTreeNodeDatum(data)
-  }
-
-  function handleOnNodeDetailClick(node) {
+  const handleOnNodeDetailClick = useCallback((node) => {
     setShowNodeDetail(true)
     setSelectedNodeDetail(node)
-  }
+  }, [])
 
   // Updates multiTrees bound and returns single tree position, which contains root point and offset to original point [0,0].
-  const getInitSingleTreeBound = (treeIdx) => {
-    let offset = 0
-    let multiTreesBound: rectBound = { width: 0, height: 0 }
-    const singleTreeGroupNode = select(
-      `.singleTreeGroup-${treeIdx}`
-    ).node() as SVGGraphicsElement
+  const getInitSingleTreeBound = useCallback(
+    (treeIdx) => {
+      let offset = 0
+      let multiTreesBound: rectBound = { width: 0, height: 0 }
+      const singleTreeGroupNode = select(
+        `.singleTreeGroup-${treeIdx}`
+      ).node() as SVGGraphicsElement
 
-    const { x, y, width, height } = singleTreeGroupNode.getBBox()
+      const { x, y, width, height } = singleTreeGroupNode.getBBox()
 
-    singleTreeBoundsMap[`singleTreeGroup-${treeIdx}`] = {
-      x: x,
-      y: y,
-      width: width,
-      height: height,
-    }
+      singleTreeBoundsMap.current[`singleTreeGroup-${treeIdx}`] = {
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+      }
 
-    for (let i = treeIdx; i > 0; i--) {
-      offset =
-        offset +
-        singleTreeBoundsMap[`singleTreeGroup-${i - 1}`].width +
-        gapBetweenTrees!
+      for (let i = treeIdx; i > 0; i--) {
+        offset =
+          offset +
+          singleTreeBoundsMap.current[`singleTreeGroup-${i - 1}`].width +
+          gapBetweenTrees!
 
-      multiTreesBound.width =
-        multiTreesBound.width +
-        singleTreeBoundsMap[`singleTreeGroup-${i - 1}`].width +
-        gapBetweenTrees!
+        multiTreesBound.width =
+          multiTreesBound.width +
+          singleTreeBoundsMap.current[`singleTreeGroup-${i - 1}`].width +
+          gapBetweenTrees!
 
-      multiTreesBound.height =
-        singleTreeBoundsMap[`singleTreeGroup-${i - 1}`].height >
-        multiTreesBound.height
-          ? singleTreeBoundsMap[`singleTreeGroup-${i - 1}`].height
-          : multiTreesBound.height
-    }
+        multiTreesBound.height =
+          singleTreeBoundsMap.current[`singleTreeGroup-${i - 1}`].height >
+          multiTreesBound.height
+            ? singleTreeBoundsMap.current[`singleTreeGroup-${i - 1}`].height
+            : multiTreesBound.height
+      }
 
-    setMultiTreesBound({
-      width: multiTreesBound.width + width,
-      height: multiTreesBound.height > height ? multiTreesBound.height : height,
-    })
+      setMultiTreesBound({
+        width: multiTreesBound.width + width,
+        height:
+          multiTreesBound.height > height ? multiTreesBound.height : height,
+      })
 
-    return { x, y, offset }
-  }
+      return { x, y, offset }
+    },
+    [singleTreeBoundsMap, gapBetweenTrees]
+  )
 
   const getZoomToFitViewPortScale = () => {
     const widthRatio = multiTreesViewport.width / multiTreesBound.width

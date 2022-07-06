@@ -103,7 +103,7 @@ export interface TreeDiagramProps {
 
   customLinkElement?: any
 
-  customNodeDetailElement: any
+  customNodeDetailElement?: any
 
   translate?: Translate
 

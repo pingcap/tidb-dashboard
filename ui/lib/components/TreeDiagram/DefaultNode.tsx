@@ -67,13 +67,13 @@ export const DefaultNode = (nodeProps) => {
               <div className={styles.nodeCardHeader}>{nodeDatum.name}</div>
               <div className={styles.nodeCardBody}>
                 <p>
-                  Actual Rows: <span>{nodeDatum.act_rows}</span>
+                  Actual Rows: <span>{nodeDatum.actRows}</span>
                 </p>
                 <p>
-                  Estimate Rows: <span>{nodeDatum.est_rows}</span>
+                  Estimate Rows: <span>{nodeDatum.estRows}</span>
                 </p>
                 <p>
-                  Run at: <span>{nodeDatum.run_at}</span>
+                  Run at: <span>{nodeDatum.storeType}</span>
                 </p>
               </div>
             </div>

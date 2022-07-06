@@ -10,48 +10,6 @@ interface TreeDiagramViewProps extends TreeDiagramProps {
   isThumbnail?: boolean
 }
 
-const customNodeDetailElement = (nodeDetailProps) => {
-  const nodeDatum = nodeDetailProps.data
-
-  return (
-    <div>
-      <p>
-        Actual Rows: <span>{nodeDatum.act_rows}</span>
-      </p>
-      <p>
-        Estimate Rows: <span>{nodeDatum.est_rows}</span>
-      </p>
-      <p>
-        Run at: <span>{nodeDatum.run_at}</span>
-      </p>
-      <p>
-        Cost: <span>{nodeDatum.cost}</span>
-      </p>
-      <p>
-        Disk Bytes: <span>{nodeDatum.disk_bytes}</span>
-      </p>
-      <p>
-        Memory Bytes: <span>{nodeDatum.memory_bytes}</span>
-      </p>
-      <p>
-        Operator Info: <span>{nodeDatum.operator_info}</span>
-      </p>
-      <p>
-        Root Basic Exec Info: <span>{nodeDatum.root_basic_exec_info}</span>
-      </p>
-      <p>
-        Root Group Exec Info: <span>{nodeDatum.root_group_exec_info}</span>
-      </p>
-      <p>
-        Store Type: <span>{nodeDatum.store_type}</span>
-      </p>
-      <p>
-        Task Type: <span>{nodeDatum.task_type}</span>
-      </p>
-    </div>
-  )
-}
-
 const TreeDiagramView = ({
   data,
   showMinimap,
@@ -83,7 +41,6 @@ const TreeDiagramView = ({
           data={data}
           showMinimap={showMinimap}
           nodeSize={nodeSize}
-          customNodeDetailElement={customNodeDetailElement}
           viewport={viewport}
         />
       )}

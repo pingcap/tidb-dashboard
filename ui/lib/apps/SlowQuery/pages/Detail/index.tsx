@@ -156,72 +156,87 @@ function DetailPage() {
                     )
                 })()}
               </Descriptions>
-              <Tabs
-                defaultActiveKey={
-                  data.binary_plan ? 'text_plan' : 'binary_plan'
-                }
-              >
-                {/* {data.binary_plan && ( */}
-                <Tabs.TabPane tab="Visual Plan" key="binary_plan">
-                  <Modal
-                    title="Visual Plan Tree Diagram"
-                    centered
-                    visible={isVpVisible}
-                    width={window.innerWidth}
-                    onCancel={toggleVisualPlan}
-                    footer={null}
-                    destroyOnClose={true}
-                    bodyStyle={{ background: '#f5f5f5' }}
-                  >
-                    <TreeDiagramView
-                      // data={JSON.parse(data.binary_plan!).main}
-                      data={vpData.main}
-                      showMinimap={true}
-                    />
-                  </Modal>
-                  <Descriptions>
-                    <Descriptions.Item
-                      span={2}
-                      contentStyle={{
-                        width: window.innerWidth / 2,
-                        height: window.innerHeight / 2,
-                      }}
-                    >
-                      <div onClick={toggleVisualPlan}>
+              {(!!data.binary_plan || !!data.plan) && (
+                <Tabs
+                  defaultActiveKey={
+                    data.binary_plan ? 'binary_plan' : 'text_plan'
+                  }
+                >
+                  {data.binary_plan && (
+                    <Tabs.TabPane tab="Visual Plan" key="binary_plan">
+                      <Modal
+                        title="Visual Plan Tree Diagram"
+                        centered
+                        visible={isVpVisible}
+                        width={window.innerWidth}
+                        onCancel={toggleVisualPlan}
+                        footer={null}
+                        destroyOnClose={true}
+                        bodyStyle={{ background: '#f5f5f5' }}
+                      >
                         <TreeDiagramView
-                          // data={JSON.parse(data.binary_plan!).main}
-                          data={vpData.main}
-                          isThumbnail={true}
+                          data={
+                            JSON.parse(data.binary_plan!).cte
+                              ? JSON.parse(data.binary_plan!).main.concat(
+                                  JSON.parse(data.binary_plan!).cte
+                                )
+                              : JSON.parse(data.binary_plan!).main
+                          }
+                          // data={vpData.main}
+                          showMinimap={true}
                         />
-                        {/* Show visual plan */}
-                      </div>
-                    </Descriptions.Item>
-                  </Descriptions>
-                </Tabs.TabPane>
-                {/* )} */}
+                      </Modal>
+                      <Descriptions>
+                        <Descriptions.Item
+                          span={2}
+                          contentStyle={{
+                            width: window.innerWidth / 2,
+                            height: window.innerHeight / 2,
+                          }}
+                        >
+                          <div onClick={toggleVisualPlan}>
+                            <TreeDiagramView
+                              data={
+                                JSON.parse(data.binary_plan!).cte
+                                  ? [JSON.parse(data.binary_plan!).main].concat(
+                                      JSON.parse(data.binary_plan!).cte
+                                    )
+                                  : [JSON.parse(data.binary_plan!).main]
+                              }
+                              // data={vpData.main}
+                              isThumbnail={true}
+                            />
+                            {/* Show visual plan */}
+                          </div>
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Tabs.TabPane>
+                  )}
 
-                <Tabs.TabPane tab="Text Plan" key="text_plan">
-                  <Descriptions>
-                    <Descriptions.Item
-                      span={2}
-                      multiline={detailExpand.plan}
-                      label={
-                        <Space size="middle">
-                          <Expand.Link
-                            expanded={detailExpand.plan}
-                            onClick={togglePlan}
-                          />
-                          <CopyLink data={data.plan ?? ''} />
-                        </Space>
-                      }
-                    >
-                      <Expand expanded={detailExpand.plan}>
-                        <Pre noWrap>{data.plan}</Pre>
-                      </Expand>
-                    </Descriptions.Item>
-                  </Descriptions>
-                </Tabs.TabPane>
-              </Tabs>
+                  <Tabs.TabPane tab="Text Plan" key="text_plan">
+                    <Descriptions>
+                      <Descriptions.Item
+                        span={2}
+                        multiline={detailExpand.plan}
+                        label={
+                          <Space size="middle">
+                            <Expand.Link
+                              expanded={detailExpand.plan}
+                              onClick={togglePlan}
+                            />
+                            <CopyLink data={data.plan ?? ''} />
+                          </Space>
+                        }
+                      >
+                        <Expand expanded={detailExpand.plan}>
+                          <Pre noWrap>{data.plan}</Pre>
+                        </Expand>
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </Tabs.TabPane>
+                </Tabs>
+              )}
+
               <DetailTabs data={data} />
             </>
           )}

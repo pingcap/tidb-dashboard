@@ -18,6 +18,7 @@ import { scaleLinear } from 'd3-scale'
 import { rectBound } from '../TreeDiagramView/types'
 import { DefaultNode } from './DefaultNode'
 import { DefaultLink } from './DefaultLink'
+import { DefaultNodeDetail } from './DefaultNodeDetail'
 
 interface TreeBoundType {
   [k: string]: {
@@ -68,7 +69,7 @@ const TreeDiagram = ({
   viewport,
   customNodeElement = DefaultNode,
   customLinkElement = DefaultLink,
-  customNodeDetailElement,
+  customNodeDetailElement = DefaultNodeDetail,
   gapBetweenTrees,
 }: TreeDiagramProps) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
@@ -343,7 +344,7 @@ const TreeDiagram = ({
         <Drawer
           title={selectedNodeDetail!.name}
           placement="right"
-          width={450}
+          width={600}
           closable={false}
           onClose={() => {
             setShowNodeDetail(false)

@@ -107,16 +107,16 @@ const Minimap = ({
 
   // Limits brush move extent
   const brushBehavior = d3Brush()
-    .extent([
-      [
-        minimapScaleX(1)(-viewport.width / 2),
-        minimapScaleY(1)(-viewport.height / 2),
-      ],
-      [
-        minimapScaleX(1)(multiTreesBoundWidth + viewport.width / 2),
-        minimapScaleY(1)(multiTreesBoundHeight + viewport.height / 2),
-      ],
-    ])
+    // .extent([
+    //   [
+    //     minimapScaleX(1)(-viewport.width / 2),
+    //     minimapScaleY(1)(-viewport.height / 2),
+    //   ],
+    //   [
+    //     minimapScaleX(1)(multiTreesBoundWidth + viewport.width / 2),
+    //     minimapScaleY(1)(multiTreesBoundHeight + viewport.height / 2),
+    //   ],
+    // ])
     .on('brush', () => onBrush())
 
   const bindBrushListener = () => {
@@ -132,15 +132,18 @@ const Minimap = ({
   useEffect(() => {
     if (minimapContainerRef.current && _brushRef.current) {
       drawMinimap()
-      // Removes these elements can avoid re-select brush on minimap
-      minimapMultiTreesSVGSelection.selectAll('.handle').remove()
-      minimapMultiTreesSVGSelection.selectAll('.overlay').remove()
     }
   }, [minimapContainerRef.current, _brushRef.current])
 
   useEffect(() => {
     bindBrushListener()
   }, [multiTreesBound])
+
+  useEffect(() => {
+    // Removes these elements can avoid re-select brush on minimap
+    minimapMultiTreesSVGSelection.selectAll('.handle').remove()
+    minimapMultiTreesSVGSelection.selectAll('.overlay').remove()
+  })
 
   useEffect(() => {
     if (!_brushRef.current || !brushRef) {

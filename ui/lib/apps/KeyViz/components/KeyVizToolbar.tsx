@@ -89,6 +89,14 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
       },
       { text: t('keyviz.toolbar.view_type.read_keys'), value: 'read_keys' },
       { text: t('keyviz.toolbar.view_type.write_keys'), value: 'written_keys' },
+      {
+        text: t('keyviz.toolbar.view_type.read_query_num'),
+        value: 'read_query_num',
+      },
+      {
+        text: t('keyviz.toolbar.view_type.write_query_num'),
+        value: 'write_query_num',
+      },
       { text: t('keyviz.toolbar.view_type.all'), value: 'integration' },
     ]
 

@@ -14,6 +14,10 @@ export function tagUnit(tag: DataTag): string {
       return 'keys/min'
     case 'written_keys':
       return 'keys/min'
+    case 'read_query_num':
+      return 'qps/min'
+    case 'write_query_num':
+      return 'qps/min'
   }
 }
 

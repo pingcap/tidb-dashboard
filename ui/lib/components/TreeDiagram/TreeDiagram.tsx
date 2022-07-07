@@ -163,7 +163,7 @@ const TreeDiagram = ({
   }
 
   const zoomBehavior = d3Zoom()
-    .scaleExtent([0.5, 5])
+    // .scaleExtent([0.5, 5])
     // Limits the zoom translate extent
     // .translateExtent([
     //   [-viewport.width / 2, -viewport.height / 2],
@@ -265,22 +265,22 @@ const TreeDiagram = ({
 
     setZoomToFitViewportScale(k > 1 ? 1 : k)
 
-    if (heightRation > 2 && widthRatio > 2) {
-      setAdjustPosition({
-        width: multiTreesViewport.width / widthRatio,
-        height: viewport.height / heightRation,
-      })
-    } else if (widthRatio > 2) {
-      setAdjustPosition({
-        ...adjustPosition,
-        width: multiTreesViewport.width / widthRatio,
-      })
-    } else if (heightRation > 2) {
-      setAdjustPosition({
-        ...adjustPosition,
-        height: viewport.height / heightRation,
-      })
-    }
+    // if (heightRation > 2 && widthRatio > 2) {
+    //   setAdjustPosition({
+    //     width: multiTreesViewport.width / widthRatio,
+    //     height: viewport.height / heightRation,
+    //   })
+    // } else if (widthRatio > 2) {
+    //   setAdjustPosition({
+    //     ...adjustPosition,
+    //     width: multiTreesViewport.width / widthRatio,
+    //   })
+    // } else if (heightRation > 2) {
+    //   setAdjustPosition({
+    //     ...adjustPosition,
+    //     height: viewport.height / heightRation,
+    //   })
+    // }
   }
 
   useEffect(() => {

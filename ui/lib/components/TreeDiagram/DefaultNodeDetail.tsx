@@ -12,7 +12,7 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
   console.log('nodeDatum', nodeDatum)
 
   return (
-    <Collapse ghost defaultActiveKey={['1']}>
+    <Collapse ghost defaultActiveKey={['1', '2']} destroyInactivePanel={true}>
       <Collapse.Panel
         header="Basic Info"
         key="1"
@@ -85,13 +85,38 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
               />
             </div>
           )}
+          {Object.keys(nodeDatum.accessObject).length > 0 && (
+            <>
+              {Object.keys(nodeDatum.accessObject).map((k) => (
+                <>
+                  {nodeDatum.accessObject[k] && (
+                    <>
+                      {k} :
+                      <ReactJson
+                        src={nodeDatum.accessObject[k]}
+                        enableClipboard={false}
+                        displayObjectSize={false}
+                        displayDataTypes={false}
+                        name={false}
+                        iconStyle="circle"
+                      />
+                    </>
+                  )}
+                </>
+              ))}
+            </>
+          )}
         </div>
       </Collapse.Panel>
       {nodeDatum.diagnosis.length > 0 && (
-        <Collapse.Panel header="Advisor" key="2" style={{ fontWeight: 'bold' }}>
-          <div style={{ fontWeight: 'normal' }}>
+        <Collapse.Panel
+          header="Advisor"
+          key="2"
+          className={styles.collapseHeader}
+        >
+          <div style={{ fontWeight: 'normal' }} className={styles.BasicInfo}>
             <ol type="1">
-              {nodeDatum.diagnosis.map((d, idx) => (
+              {nodeDatum.diagnosis.map((d) => (
                 <li>{d}</li>
               ))}
             </ol>

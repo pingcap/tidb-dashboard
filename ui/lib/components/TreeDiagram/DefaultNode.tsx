@@ -60,7 +60,10 @@ export const DefaultNode = (nodeProps) => {
           x={0}
           y={0}
         >
-          <div className="node-foreign-object-div" style={{ width: nodeWidth }}>
+          <div
+            className="node-foreign-object-div"
+            style={{ width: nodeWidth, height: nodeHeight }}
+          >
             <Card
               size="small"
               title={nodeDatum.name}
@@ -81,15 +84,15 @@ export const DefaultNode = (nodeProps) => {
               }}
               onClick={(e) => handleOnNodeDetailClick(e, nodeDatum)}
             >
-              <p>
+              <div className={styles.cardContentP}>
                 Actual Rows: <span>{nodeDatum.actRows}</span>
-              </p>
-              <p>
+              </div>
+              <div className={styles.cardContentP}>
                 Estimate Rows: <span>{toFixed(nodeDatum.estRows, 2)}</span>
-              </p>
-              <p>
+              </div>
+              <div className={styles.cardContentP}>
                 Run at: <span>{nodeDatum.storeType}</span>
-              </p>
+              </div>
             </Card>
             {nodeDatum.__node_attrs.collapsiable && (
               <Button

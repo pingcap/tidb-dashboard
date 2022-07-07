@@ -17,25 +17,19 @@ const TreeDiagramView = ({
   isThumbnail,
 }: TreeDiagramViewProps) => {
   const nodeSize = { width: 250, height: 180 }
-
-  const treeDataArr = data
+  console.log('data', data)
 
   return (
     <>
       {isThumbnail ? (
-        <div style={{ height: 1000 }}>
-          {treeDataArr.map((d, idx) => (
-            <TreeDiagramThumbnail
-              key={idx}
-              data={d}
-              nodeSize={nodeSize}
-              viewport={{
-                width: window.innerWidth / 2,
-                height: window.innerHeight / 2,
-              }}
-            />
-          ))}
-        </div>
+        <TreeDiagramThumbnail
+          data={data}
+          nodeSize={nodeSize}
+          viewport={{
+            width: window.innerWidth / 2,
+            height: window.innerHeight / 2,
+          }}
+        />
       ) : (
         <TreeDigram
           data={data}

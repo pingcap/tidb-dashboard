@@ -187,7 +187,7 @@ function DetailPage() {
                                   )
                                 : [JSON.parse(data.binary_plan!).main]
                             }
-                            // data={vpData.main}
+                            // data={[vpData.main].concat(vpData.ctes)}
                             showMinimap={true}
                           />
                         </Modal>
@@ -204,7 +204,7 @@ function DetailPage() {
                                       )
                                     : [JSON.parse(data.binary_plan!).main]
                                 }
-                                // data={vpData.main}
+                                // data={[vpData.main].concat(vpData.ctes)}
                                 isThumbnail={true}
                               />
                             </div>

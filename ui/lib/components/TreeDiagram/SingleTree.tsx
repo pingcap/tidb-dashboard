@@ -16,7 +16,6 @@ interface SingleTreeProps {
   customNodeElement: any
   onNodeExpandBtnToggle?: any
   onNodeDetailClick?: any
-  adjustPosition: rectBound
   getTreePosition: (number) => any
 }
 
@@ -29,7 +28,6 @@ const SingleTree = ({
   customNodeElement,
   onNodeExpandBtnToggle,
   onNodeDetailClick,
-  adjustPosition,
   getTreePosition,
 }: SingleTreeProps) => {
   const singleTreeGroupRef = useRef(null)
@@ -75,10 +73,9 @@ const SingleTree = ({
       className={`singleTreeGroup-${treeIdx}`}
       ref={singleTreeGroupRef}
       transform={`translate(${
-        zoomToFitViewportScale * (-treePosition.x + treePosition.offset) +
-        adjustPosition.width
+        zoomToFitViewportScale * (-treePosition.x + treePosition.offset)
       }, ${
-        zoomToFitViewportScale * treePosition.y + adjustPosition.height
+        zoomToFitViewportScale * treePosition.y
       }) scale(${zoomToFitViewportScale})`}
     >
       <g className="linksWrapper">

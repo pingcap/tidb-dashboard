@@ -262,25 +262,18 @@ const TreeDiagram = ({
     const widthRatio = multiTreesViewport.width / multiTreesBound.width
     const heightRation = multiTreesViewport.height / multiTreesBound.height
     const k = Math.min(widthRatio, heightRation)
-
     setZoomToFitViewportScale(k > 1 ? 1 : k)
 
-    // if (heightRation > 2 && widthRatio > 2) {
-    //   setAdjustPosition({
-    //     width: multiTreesViewport.width / widthRatio,
-    //     height: viewport.height / heightRation,
-    //   })
-    // } else if (widthRatio > 2) {
-    //   setAdjustPosition({
-    //     ...adjustPosition,
-    //     width: multiTreesViewport.width / widthRatio,
-    //   })
-    // } else if (heightRation > 2) {
-    //   setAdjustPosition({
-    //     ...adjustPosition,
-    //     height: viewport.height / heightRation,
-    //   })
-    // }
+    setAdjustPosition({
+      width:
+        widthRatio > 1
+          ? (multiTreesViewport.width - multiTreesBound.width) / 2
+          : 0,
+      height:
+        heightRation > 1
+          ? (multiTreesViewport.height - multiTreesBound.height) / 2
+          : 0,
+    })
   }
 
   useEffect(() => {

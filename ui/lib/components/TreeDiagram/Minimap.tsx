@@ -1,4 +1,4 @@
-import React, { MutableRefObject, Ref, useEffect, useRef } from 'react'
+import React, { MutableRefObject, Ref, useEffect, useRef, useMemo } from 'react'
 import { select, event } from 'd3-selection'
 import { brush as d3Brush } from 'd3-brush'
 import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
@@ -151,6 +151,30 @@ const Minimap = ({
     ;(brushRef as MutableRefObject<SVGElement>).current = _brushRef.current
   }, [brushRef])
 
+  const Trees = useMemo(
+    () =>
+      treeNodeDatum.map((datum, idx) => (
+        <SingleTree
+          key={datum.name}
+          datum={datum}
+          treeIdx={idx}
+          nodeMargin={nodeMargin}
+          zoomToFitViewportScale={zoomToFitViewportScale}
+          customLinkElement={customLinkElement}
+          customNodeElement={customNodeElement}
+          getTreePosition={getTreePosition}
+        />
+      )),
+    [
+      treeNodeDatum,
+      nodeMargin,
+      zoomToFitViewportScale,
+      customLinkElement,
+      customNodeElement,
+      getTreePosition,
+    ]
+  )
+
   return (
     <div className={styles.minimapContainer} ref={minimapContainerRef}>
       <svg
@@ -159,20 +183,13 @@ const Minimap = ({
         height={minimapContainer.height}
       >
         <rect className="minimap-rect"></rect>
-        <g className={`${classNamePrefix}Group`}>
-          {treeNodeDatum.map((datum, idx) => (
-            <SingleTree
-              key={datum.name}
-              datum={datum}
-              treeIdx={idx}
-              nodeMargin={nodeMargin}
-              zoomToFitViewportScale={zoomToFitViewportScale}
-              customLinkElement={customLinkElement}
-              customNodeElement={customNodeElement}
-              getTreePosition={getTreePosition}
-              adjustPosition={adjustPosition}
-            />
-          ))}
+        <g className={`${classNamePrefix}GroupWrapper`}>
+          <g
+            className={`${classNamePrefix}Group`}
+            transform={`translate(${adjustPosition.width}, ${adjustPosition.height}) scale(1)`}
+          >
+            {Trees}
+          </g>
         </g>
         <g ref={_brushRef}></g>
       </svg>

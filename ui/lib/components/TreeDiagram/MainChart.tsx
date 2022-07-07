@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 
 import { nodeMarginType, Translate, TreeNodeDatum, rectBound } from './types'
 import SingleTree from './SingleTree'
@@ -45,7 +45,6 @@ const MainChart = ({
           customNodeElement={customNodeElement}
           onNodeExpandBtnToggle={onNodeExpandBtnToggle}
           onNodeDetailClick={onNodeDetailClick}
-          adjustPosition={adjustPosition}
           getTreePosition={getTreePosition}
         />
       )),
@@ -57,7 +56,6 @@ const MainChart = ({
       customNodeElement,
       onNodeExpandBtnToggle,
       onNodeDetailClick,
-      adjustPosition,
       getTreePosition,
     ]
   )
@@ -69,10 +67,15 @@ const MainChart = ({
       height={viewport.height}
     >
       <g
-        className={`${classNamePrefix}Group`}
+        className={`${classNamePrefix}GroupWrapper`}
         transform={`translate(${translate.x}, ${translate.y}) scale(${translate.k})`}
       >
-        {Trees}
+        <g
+          className={`${classNamePrefix}Group`}
+          transform={`translate(${adjustPosition.width}, ${adjustPosition.height}) scale(1)`}
+        >
+          {Trees}
+        </g>
       </g>
     </svg>
   )

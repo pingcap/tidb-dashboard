@@ -71,7 +71,7 @@ export const DefaultNode = (nodeProps) => {
                 nodeDatum.diagnosis.length > 0 && (
                   <>
                     <ExclamationCircleFilled
-                      style={{ color: 'red', paddingRight: 10 }}
+                      style={{ color: 'red', paddingRight: 5 }}
                     />
                     {nodeDatum.diagnosis.length}
                   </>

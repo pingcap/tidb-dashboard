@@ -85,26 +85,18 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
               />
             </div>
           )}
-          {Object.keys(nodeDatum.accessObject).length > 0 && (
-            <>
-              {Object.keys(nodeDatum.accessObject).map((k) => (
-                <>
-                  {nodeDatum.accessObject[k] && (
-                    <>
-                      {k} :
-                      <ReactJson
-                        src={nodeDatum.accessObject[k]}
-                        enableClipboard={false}
-                        displayObjectSize={false}
-                        displayDataTypes={false}
-                        name={false}
-                        iconStyle="circle"
-                      />
-                    </>
-                  )}
-                </>
-              ))}
-            </>
+          {nodeDatum.accessObject && (
+            <div>
+              Access Object:
+              <ReactJson
+                src={nodeDatum.accessObject}
+                enableClipboard={false}
+                displayObjectSize={false}
+                displayDataTypes={false}
+                name={false}
+                iconStyle="circle"
+              />
+            </div>
           )}
         </div>
       </Collapse.Panel>

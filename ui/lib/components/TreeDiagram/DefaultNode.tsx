@@ -1,6 +1,11 @@
 import React from 'react'
-import { Button } from 'antd'
-import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
+import { Button, Card } from 'antd'
+import {
+  PlusOutlined,
+  MinusOutlined,
+  ExclamationCircleFilled,
+} from '@ant-design/icons'
+import { toFixed } from '@baurine/grafana-value-formats'
 
 import styles from './DefaultNode.module.less'
 
@@ -56,7 +61,19 @@ export const DefaultNode = (nodeProps) => {
           y={0}
         >
           <div className="node-foreign-object-div" style={{ width: nodeWidth }}>
-            <div
+            <Card
+              size="small"
+              title={nodeDatum.name}
+              extra={
+                nodeDatum.diagnosis.length > 0 && (
+                  <>
+                    <ExclamationCircleFilled
+                      style={{ color: 'red', paddingRight: 10 }}
+                    />
+                    {nodeDatum.diagnosis.length}
+                  </>
+                )
+              }
               className={styles.nodeCard}
               style={{
                 width: nodeWidth,
@@ -64,19 +81,16 @@ export const DefaultNode = (nodeProps) => {
               }}
               onClick={(e) => handleOnNodeDetailClick(e, nodeDatum)}
             >
-              <div className={styles.nodeCardHeader}>{nodeDatum.name}</div>
-              <div className={styles.nodeCardBody}>
-                <p>
-                  Actual Rows: <span>{nodeDatum.actRows}</span>
-                </p>
-                <p>
-                  Estimate Rows: <span>{nodeDatum.estRows}</span>
-                </p>
-                <p>
-                  Run at: <span>{nodeDatum.storeType}</span>
-                </p>
-              </div>
-            </div>
+              <p>
+                Actual Rows: <span>{nodeDatum.actRows}</span>
+              </p>
+              <p>
+                Estimate Rows: <span>{toFixed(nodeDatum.estRows, 2)}</span>
+              </p>
+              <p>
+                Run at: <span>{nodeDatum.storeType}</span>
+              </p>
+            </Card>
             {nodeDatum.__node_attrs.collapsiable && (
               <Button
                 className={styles.collapsableButton}

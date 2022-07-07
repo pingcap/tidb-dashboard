@@ -2,27 +2,23 @@ import React from 'react'
 
 import ReactJson from 'react-json-view'
 import { toFixed } from '@baurine/grafana-value-formats'
-import { Collapse, List } from 'antd'
+import { Collapse } from 'antd'
+
+import styles from './DefaultNodeDetail.module.less'
 
 export const DefaultNodeDetail = (nodeDetailProps) => {
   const nodeDatum = nodeDetailProps.data
+
+  console.log('nodeDatum', nodeDatum)
 
   return (
     <Collapse ghost defaultActiveKey={['1']}>
       <Collapse.Panel
         header="Basic Info"
         key="1"
-        style={{ fontWeight: 'bold' }}
+        className={styles.collapseHeader}
       >
-        <div style={{ paddingLeft: 24, fontWeight: 'normal' }}>
-          {/* <ReactJson
-                  src={nodeDatum}
-                  enableClipboard={false}
-                  displayObjectSize={false}
-                  name={false}
-                  iconStyle="circle"
-
-                /> */}
+        <div style={{ paddingLeft: 24 }} className={styles.BasicInfo}>
           <p>
             Actual Rows: <span>{nodeDatum.actRows}</span>
           </p>
@@ -48,68 +44,60 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
             Task Type: <span>{nodeDatum.taskType}</span>
           </p>
           <p>
-            Operator Info: <blockquote>{nodeDatum.operatorInfo}</blockquote>
+            Operator Info: <span>{nodeDatum.operatorInfo}</span>
           </p>
-          {}
-          <div>
-            Root Basic Exec Info:{' '}
-            <span>
+          {Object.keys(nodeDatum.rootBasicExecInfo).length > 0 && (
+            <div>
+              Root Basic Exec Info:{' '}
               <ReactJson
                 src={nodeDatum.rootBasicExecInfo}
                 enableClipboard={false}
                 displayObjectSize={false}
+                displayDataTypes={false}
                 name={false}
                 iconStyle="circle"
               />
-            </span>
-          </div>
-          <div>
-            Root Group Exec Info:{' '}
-            <span>
+            </div>
+          )}
+          {nodeDatum.rootGroupExecInfo.length > 0 && (
+            <div>
+              Root Group Exec Info:{' '}
               <ReactJson
                 src={nodeDatum.rootGroupExecInfo}
                 enableClipboard={false}
                 displayObjectSize={false}
+                displayDataTypes={false}
                 name={false}
                 iconStyle="circle"
               />
-            </span>
-          </div>
-          <div>
-            Coprocessor Exec Info:{' '}
-            <span>
+            </div>
+          )}
+          {Object.keys(nodeDatum.copExecInfo).length > 0 && (
+            <div>
+              Coprocessor Exec Info:{' '}
               <ReactJson
                 src={nodeDatum.copExecInfo}
                 enableClipboard={false}
                 displayObjectSize={false}
+                displayDataTypes={false}
                 name={false}
                 iconStyle="circle"
               />
-            </span>
-          </div>
-        </div>
-      </Collapse.Panel>
-      <Collapse.Panel header="Advisor" key="2" style={{ fontWeight: 'bold' }}>
-        <div style={{ paddingLeft: 24, fontWeight: 'normal' }}>
-          {nodeDatum.diagnosis.length > 0 ? (
-            <>
-              {/* {nodeDatum.diagnosis.map(() => ( */}
-              <List
-                itemLayout="horizontal"
-                dataSource={nodeDatum.diagnosis}
-                renderItem={(item) => (
-                  <List.Item>
-                    <List.Item.Meta title="Suggestions" />
-                  </List.Item>
-                )}
-              />
-              {/* ))} */}
-            </>
-          ) : (
-            <p>No Advices</p>
+            </div>
           )}
         </div>
       </Collapse.Panel>
+      {nodeDatum.diagnosis.length > 0 && (
+        <Collapse.Panel header="Advisor" key="2" style={{ fontWeight: 'bold' }}>
+          <div style={{ fontWeight: 'normal' }}>
+            <ol type="1">
+              {nodeDatum.diagnosis.map((d, idx) => (
+                <li>{d}</li>
+              ))}
+            </ol>
+          </div>
+        </Collapse.Panel>
+      )}
     </Collapse>
   )
 }

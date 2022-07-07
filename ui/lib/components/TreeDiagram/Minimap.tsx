@@ -6,7 +6,6 @@ import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 import SingleTree from './SingleTree'
 import styles from './index.module.less'
 import { rectBound, TreeNodeDatum, nodeMarginType } from './types'
-import { Translate } from '../TreeDiagramView/types'
 
 interface MinimapProps {
   treeNodeDatum: TreeNodeDatum[]

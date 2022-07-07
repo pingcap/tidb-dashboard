@@ -16,7 +16,7 @@ const TreeDiagramView = ({
   viewport,
   isThumbnail,
 }: TreeDiagramViewProps) => {
-  const nodeSize = { width: 250, height: 150 }
+  const nodeSize = { width: 250, height: 180 }
 
   const treeDataArr = data
 

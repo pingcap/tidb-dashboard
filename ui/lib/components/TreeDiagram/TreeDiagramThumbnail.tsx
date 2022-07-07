@@ -143,7 +143,7 @@ const TreeDiagramThumbnail = ({
 }
 
 TreeDiagramThumbnail.defaultProps = {
-  nodeSize: { width: 250, height: 150 },
+  nodeSize: { width: 250, height: 180 },
   nodeMargin: {
     siblingMargin: 40,
     childrenMargin: 60,

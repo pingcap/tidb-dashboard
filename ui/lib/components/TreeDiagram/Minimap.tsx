@@ -1,4 +1,4 @@
-import React, { MutableRefObject, Ref, useEffect, useRef, useMemo } from 'react'
+import React, { FC, MutableRefObject, Ref, useEffect, useRef } from 'react'
 import { select, event } from 'd3-selection'
 import { brush as d3Brush } from 'd3-brush'
 import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
@@ -15,14 +15,14 @@ interface MinimapProps {
   customLinkElement: any
   customNodeElement: any
   minimapScale: number
-  minimapScaleX?
-  minimapScaleY?
-  multiTreesSVG?
-  updateTreeTranslate?
-  brushBehavior?
+  minimapScaleX?: any
+  minimapScaleY?: any
+  multiTreesSVG?: any
+  updateTreeTranslate?: any
+  brushBehavior?: any
   brushRef?: Ref<SVGGElement>
   adjustPosition: rectBound
-  zoomToFitViewportScale
+  zoomToFitViewportScale: number
   getTreePosition: (number) => any
   nodeMargin?: nodeMarginType
 }
@@ -153,30 +153,6 @@ const Minimap = ({
     ;(brushRef as MutableRefObject<SVGElement>).current = _brushRef.current
   }, [brushRef])
 
-  const Trees = useMemo(
-    () =>
-      treeNodeDatum.map((datum, idx) => (
-        <SingleTree
-          key={datum.name}
-          datum={datum}
-          treeIdx={idx}
-          nodeMargin={nodeMargin}
-          zoomToFitViewportScale={zoomToFitViewportScale}
-          customLinkElement={customLinkElement}
-          customNodeElement={customNodeElement}
-          getTreePosition={getTreePosition}
-        />
-      )),
-    [
-      treeNodeDatum,
-      nodeMargin,
-      zoomToFitViewportScale,
-      customLinkElement,
-      customNodeElement,
-      getTreePosition,
-    ]
-  )
-
   return (
     <div className={styles.minimapContainer} ref={minimapContainerRef}>
       <svg
@@ -190,7 +166,16 @@ const Minimap = ({
             className={`${classNamePrefix}Group`}
             transform={`translate(${adjustPosition.width}, ${adjustPosition.height}) scale(1)`}
           >
-            {Trees}
+            <Trees
+              {...{
+                treeNodeDatum,
+                nodeMargin,
+                zoomToFitViewportScale,
+                customLinkElement,
+                customNodeElement,
+                getTreePosition,
+              }}
+            />
           </g>
         </g>
         <g ref={_brushRef}></g>
@@ -198,5 +183,41 @@ const Minimap = ({
     </div>
   )
 }
+
+const _Trees: FC<
+  Omit<
+    MinimapProps,
+    | 'classNamePrefix'
+    | 'translate'
+    | 'viewport'
+    | 'adjustPosition'
+    | 'minimapScale'
+    | 'multiTreesBound'
+  >
+> = ({
+  treeNodeDatum,
+  nodeMargin,
+  zoomToFitViewportScale,
+  customLinkElement,
+  customNodeElement,
+  getTreePosition,
+}) => (
+  <>
+    {treeNodeDatum.map((datum, idx) => (
+      <SingleTree
+        key={datum.name}
+        datum={datum}
+        treeIdx={idx}
+        nodeMargin={nodeMargin}
+        zoomToFitViewportScale={zoomToFitViewportScale}
+        customLinkElement={customLinkElement}
+        customNodeElement={customNodeElement}
+        getTreePosition={getTreePosition}
+      />
+    ))}
+  </>
+)
+
+const Trees = _Trees
 
 export default Minimap

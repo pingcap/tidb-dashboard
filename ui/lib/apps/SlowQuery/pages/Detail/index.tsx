@@ -52,6 +52,8 @@ function DetailPage() {
       )
   )
 
+  const binaryPlan = !!data ? JSON.parse(data.binary_plan!) : null
+
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     SLOW_QUERY_DETAIL_EXPAND,
     {
@@ -156,62 +158,53 @@ function DetailPage() {
                     )
                 })()}
               </Descriptions>
-              {(!!data.binary_plan || !!data.plan) && (
+              {(binaryPlan || !!data.plan) && (
                 <Tabs
                   defaultActiveKey={
-                    data.binary_plan &&
-                    !JSON.parse(data.binary_plan!).main.discardedDueToTooLong
+                    binaryPlan && !binaryPlan.main.discardedDueToTooLong
                       ? 'binary_plan'
                       : 'text_plan'
                   }
                 >
-                  {data.binary_plan &&
-                    !JSON.parse(data.binary_plan!).main
-                      .discardedDueToTooLong && (
-                      <Tabs.TabPane tab="Visual Plan" key="binary_plan">
-                        <Modal
-                          title="Visual Plan Tree Diagram"
-                          centered
-                          visible={isVpVisible}
-                          width={window.innerWidth}
-                          onCancel={toggleVisualPlan}
-                          footer={null}
-                          destroyOnClose={true}
-                          bodyStyle={{ background: '#f5f5f5' }}
-                        >
-                          <TreeDiagramView
-                            data={
-                              JSON.parse(data.binary_plan!).ctes
-                                ? [JSON.parse(data.binary_plan!).main].concat(
-                                    JSON.parse(data.binary_plan!).ctes
-                                  )
-                                : [JSON.parse(data.binary_plan!).main]
-                            }
-                            // data={[vpData.main].concat(vpData.ctes)}
-                            showMinimap={true}
-                          />
-                        </Modal>
-                        <Descriptions>
-                          <Descriptions.Item span={2}>
-                            <div onClick={toggleVisualPlan}>
-                              <TreeDiagramView
-                                data={
-                                  JSON.parse(data.binary_plan!).ctes
-                                    ? [
-                                        JSON.parse(data.binary_plan!).main,
-                                      ].concat(
-                                        JSON.parse(data.binary_plan!).ctes
-                                      )
-                                    : [JSON.parse(data.binary_plan!).main]
-                                }
-                                // data={[vpData.main].concat(vpData.ctes)}
-                                isThumbnail={true}
-                              />
-                            </div>
-                          </Descriptions.Item>
-                        </Descriptions>
-                      </Tabs.TabPane>
-                    )}
+                  {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
+                    <Tabs.TabPane tab="Visual Plan" key="binary_plan">
+                      <Modal
+                        title="Visual Plan Tree Diagram"
+                        centered
+                        visible={isVpVisible}
+                        width={window.innerWidth}
+                        onCancel={toggleVisualPlan}
+                        footer={null}
+                        destroyOnClose={true}
+                        bodyStyle={{ background: '#f5f5f5' }}
+                      >
+                        <TreeDiagramView
+                          data={
+                            binaryPlan.ctes
+                              ? [binaryPlan.main].concat(binaryPlan.ctes)
+                              : [binaryPlan.main]
+                          }
+                          // data={[vpData.main].concat(vpData.ctes)}
+                          showMinimap={true}
+                        />
+                      </Modal>
+                      <Descriptions>
+                        <Descriptions.Item span={2}>
+                          <div onClick={toggleVisualPlan}>
+                            <TreeDiagramView
+                              data={
+                                binaryPlan.ctes
+                                  ? [binaryPlan.main].concat(binaryPlan.ctes)
+                                  : [binaryPlan.main]
+                              }
+                              // data={[vpData.main].concat(vpData.ctes)}
+                              isThumbnail={true}
+                            />
+                          </div>
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Tabs.TabPane>
+                  )}
 
                   <Tabs.TabPane tab="Text Plan" key="text_plan">
                     <Descriptions>

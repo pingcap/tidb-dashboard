@@ -9,8 +9,6 @@ import styles from './DefaultNodeDetail.module.less'
 export const DefaultNodeDetail = (nodeDetailProps) => {
   const nodeDatum = nodeDetailProps.data
 
-  console.log('nodeDatum', nodeDatum)
-
   return (
     <Collapse ghost defaultActiveKey={['1', '2']} destroyInactivePanel={true}>
       <Collapse.Panel

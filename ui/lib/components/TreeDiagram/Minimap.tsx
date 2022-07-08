@@ -132,10 +132,12 @@ const Minimap = ({
     if (minimapContainerRef.current && _brushRef.current) {
       drawMinimap()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minimapContainerRef.current, _brushRef.current])
 
   useEffect(() => {
     bindBrushListener()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multiTreesBound])
 
   useEffect(() => {

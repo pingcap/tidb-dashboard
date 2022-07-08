@@ -291,6 +291,7 @@ const TreeDiagram = ({
       getZoomToFitViewPortScale()
       bindZoomListener()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multiTreesBound])
 
   return (

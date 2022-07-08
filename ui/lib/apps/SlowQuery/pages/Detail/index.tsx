@@ -26,7 +26,7 @@ import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStora
 
 import DetailTabs from './DetailTabs'
 
-import vpData from './example'
+// import vpData from './example'
 
 export interface IPageQuery {
   connectId?: string

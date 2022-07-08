@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
-import _ from 'lodash'
+import styles from './TreeDiagramThumbnail.module.less'
 import { AssignInternalProperties } from './utlis'
-import styles from './index.module.less'
 import { TreeDiagramProps, TreeNodeDatum } from './types'
 
 import SingleTree from './SingleTree'
@@ -135,15 +134,17 @@ const TreeDiagramThumbnail = ({
     if (thumbnailSVGRef.current) {
       getZoomToFitViewPortScale()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [thumbnailSVGRef.current, multiTreesBound])
 
   useEffect(() => {
     if (thumbnailSVGRef.current) drawMinimap()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoomToFitViewportScale, thumbnailSVGRef.current, multiTreesBound])
 
   return (
     <div
-      className={styles.thumbnailSVG}
+      className={styles.ThumbnailContainer}
       ref={thumbnailSVGRef}
       style={{
         minWidth: 300,

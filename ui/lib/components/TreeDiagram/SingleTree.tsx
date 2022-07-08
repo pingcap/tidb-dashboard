@@ -5,7 +5,6 @@ import NodeWrapper from './NodeWrapper'
 import LinkWrapper from './LinkWrapper'
 import { TreeNodeDatum, nodeMarginType } from './types'
 import { generateNodesAndLinks } from './utlis'
-import { rectBound } from './types'
 
 interface SingleTreeProps {
   datum: TreeNodeDatum
@@ -65,7 +64,7 @@ const SingleTree = ({
     inited.current = true
     const position = getTreePosition(treeIdx)
     setTreePosition(position)
-  }, [nodes, getTreePosition])
+  }, [nodes, getTreePosition, treeIdx])
 
   return (
     // tranform is the relative position to the original point [0,0] when initiated.

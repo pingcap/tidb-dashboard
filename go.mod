@@ -10,6 +10,8 @@ require (
 	github.com/Xeoncross/go-aesctr-with-hmac v0.0.0-20200623134604-12b17a7ff502
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/antonmedv/expr v1.9.0
+	github.com/bitly/go-simplejson v0.5.0
+	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/breeswish/gin-jwt/v2 v2.6.4-jwt-patch
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/fatih/structtag v1.2.0
@@ -53,7 +55,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.28.0
 	gorm.io/driver/mysql v1.0.6
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.9

@@ -46,7 +46,6 @@ const MainChart = ({
           className={`${classNamePrefix}Group`}
           transform={`translate(${adjustPosition.width}, ${adjustPosition.height}) scale(1)`}
         >
-          {Trees}
           <Trees
             {...{
               treeNodeDatum,

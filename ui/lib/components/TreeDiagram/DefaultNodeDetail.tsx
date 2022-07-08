@@ -108,8 +108,8 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
         >
           <div style={{ fontWeight: 'normal' }} className={styles.BasicInfo}>
             <ol type="1">
-              {nodeDatum.diagnosis.map((d) => (
-                <li>{d}</li>
+              {nodeDatum.diagnosis.map((d, idx) => (
+                <li key={idx}>{d}</li>
               ))}
             </ol>
           </div>

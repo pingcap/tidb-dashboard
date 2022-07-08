@@ -4,7 +4,6 @@ import { AssignInternalProperties } from './utlis'
 import styles from './index.module.less'
 import { TreeDiagramProps, TreeNodeDatum } from './types'
 
-import Minimap from './Minimap'
 import SingleTree from './SingleTree'
 
 // imports d3 APIs
@@ -34,12 +33,11 @@ const TreeDiagramThumbnail = ({
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
   const [zoomToFitViewportScale, setZoomToFitViewportScale] = useState(0)
   const singleTreeBoundsMap = useRef<TreeBoundType>({})
-  const [adjustPosition, setAdjustPosition] = useState({ width: 0, height: 0 })
 
   const thumbnailSVGRef = useRef(null)
 
-  const thumbnaiSVGSelection = select('.thumbnaiSVG')
-  const thumbnailGroupSelection = select('thumbnailGroup')
+  const thumbnaiSVGSelection = select('.thumbnailSVG')
+  const thumbnailGroupSelection = select('.thumbnailGroup')
 
   // Sets the bound of entire tree
   const [multiTreesBound, setMultiTreesBound] = useState({
@@ -100,45 +98,27 @@ const TreeDiagramThumbnail = ({
     const widthRatio = viewport.width / multiTreesBound.width
     const heightRation = viewport.height / multiTreesBound.height
     const k = Math.min(widthRatio, heightRation)
-    console.log('k', widthRatio, widthRatio, viewport)
-    setZoomToFitViewportScale(k > 1 ? 1 : k)
 
-    // if (heightRation > 2 && widthRatio > 2) {
-    //   setAdjustPosition({
-    //     width: viewport.width / widthRatio,
-    //     height: viewport.height / heightRation,
-    //   })
-    // } else if (widthRatio > 2) {
-    //   setAdjustPosition({
-    //     ...adjustPosition,
-    //     width: viewport.width / widthRatio,
-    //   })
-    // } else if (heightRation > 2) {
-    //   setAdjustPosition({
-    //     ...adjustPosition,
-    //     height: viewport.height / heightRation,
-    //   })
-    // }
+    setZoomToFitViewportScale(k > 1 ? 1 : k)
   }
 
   const drawMinimap = () => {
-    console.log('multiTreesBound', multiTreesBound)
+    const k = zoomToFitViewportScale > 0.5 ? 0.5 : zoomToFitViewportScale
+
+    select(thumbnailSVGRef.current)
+      .attr('width', multiTreesBound.width * k)
+      .attr('height', multiTreesBound.height * k)
+
     thumbnaiSVGSelection
-      .attr('width', viewport.width * zoomToFitViewportScale)
-      .attr('height', viewport.height * zoomToFitViewportScale)
+      .attr('width', multiTreesBound.width * k)
+      .attr('height', multiTreesBound.height * k)
       .attr(
         'viewBox',
         [0, 0, multiTreesBound.width, multiTreesBound.height].join(' ')
       )
       .attr('preserveAspectRatio', 'xMidYMid meet')
       .style('position', 'absolute')
-      .style('border', '1px solid grey')
       .style('background', 'white')
-
-    select('.thumbnail-rect')
-      .attr('width', viewport.width)
-      .attr('height', viewport.height)
-      .attr('fill', 'white')
 
     thumbnailGroupSelection
       .attr('width', multiTreesBound.width)
@@ -153,35 +133,40 @@ const TreeDiagramThumbnail = ({
 
   useEffect(() => {
     if (thumbnailSVGRef.current) {
-      drawMinimap()
       getZoomToFitViewPortScale()
     }
   }, [thumbnailSVGRef.current, multiTreesBound])
 
+  useEffect(() => {
+    if (thumbnailSVGRef.current) drawMinimap()
+  }, [zoomToFitViewportScale, thumbnailSVGRef.current, multiTreesBound])
+
   return (
-    <svg
+    <div
+      className={styles.thumbnailSVG}
       ref={thumbnailSVGRef}
-      className={'thumbnailSVG'}
-      width={viewport.width}
-      height={viewport.height}
+      style={{
+        minWidth: 300,
+        minHeight: 300,
+      }}
     >
-      <rect className="thumbnail-rect"></rect>
-      <g className="thumbnailGroup">
-        {treeNodeDatum.map((datum, idx) => (
-          <SingleTree
-            key={datum.name}
-            datum={datum}
-            treeIdx={idx}
-            nodeMargin={nodeMargin}
-            zoomToFitViewportScale={zoomToFitViewportScale}
-            customLinkElement={customLinkElement}
-            customNodeElement={customNodeElement}
-            getTreePosition={getInitSingleTreeBound}
-            adjustPosition={adjustPosition}
-          />
-        ))}
-      </g>
-    </svg>
+      <svg className="thumbnailSVG">
+        <g className="thumbnailGroup" transform={`translate(0,0) scale(1)`}>
+          {treeNodeDatum.map((datum, idx) => (
+            <SingleTree
+              key={datum.name}
+              datum={datum}
+              treeIdx={idx}
+              nodeMargin={nodeMargin}
+              zoomToFitViewportScale={zoomToFitViewportScale}
+              customLinkElement={customLinkElement}
+              customNodeElement={customNodeElement}
+              getTreePosition={getInitSingleTreeBound}
+            />
+          ))}
+        </g>
+      </svg>
+    </div>
   )
 }
 

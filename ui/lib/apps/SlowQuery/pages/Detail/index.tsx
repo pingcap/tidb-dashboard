@@ -52,7 +52,7 @@ function DetailPage() {
       )
   )
 
-  const binaryPlan = !!data ? JSON.parse(data.binary_plan!) : null
+  const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
 
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     SLOW_QUERY_DETAIL_EXPAND,

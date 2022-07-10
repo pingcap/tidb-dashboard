@@ -16,16 +16,7 @@ export interface rectBound {
 
 // Raw node data get from /api/slow_query/detail.
 export interface RawNodeDatum {
-  name: string
-  cost: number
-  est_rows: number
-  act_rows: number
-  access_table: string
-  access_index: string
-  access_partition: string
-  time_us: number
-  run_at: string
-  children?: RawNodeDatum[]
+  [k: string]: any
 }
 
 // Tree node data contains node attributes.

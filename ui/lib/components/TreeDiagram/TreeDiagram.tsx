@@ -362,7 +362,7 @@ const TreeDiagram = ({
 TreeDiagram.defaultProps = {
   nodeSize: { width: 250, height: 180 },
   showMinimap: false,
-  minimapScale: 0.1,
+  minimapScale: 0.15,
   nodeMargin: {
     siblingMargin: 40,
     childrenMargin: 60,

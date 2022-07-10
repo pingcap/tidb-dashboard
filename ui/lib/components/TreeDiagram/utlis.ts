@@ -4,7 +4,7 @@ import { hierarchy } from 'd3-hierarchy'
 
 import { nodeMarginType } from './types'
 // TODO: refactor this as isolated type
-import { RawNodeDatum, TreeNodeDatum } from '../TreeDiagramView/types'
+import { RawNodeDatum, TreeNodeDatum } from './types'
 
 type nodeFlexSize = {
   width: number

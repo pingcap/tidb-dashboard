@@ -5,19 +5,18 @@ import TreeDiagramThumbnail from '../TreeDiagram/TreeDiagramThumbnail'
 
 interface TreeDiagramViewProps extends TreeDiagramProps {
   data: RawNodeDatum[]
+  viewport?: rectBound
   showMinimap?: boolean
-  viewport: rectBound
   isThumbnail?: boolean
 }
 
 const TreeDiagramView = ({
   data,
-  showMinimap,
   viewport,
+  showMinimap,
   isThumbnail,
 }: TreeDiagramViewProps) => {
   const nodeSize = { width: 250, height: 180 }
-  console.log('data', data)
 
   return (
     <>
@@ -35,7 +34,7 @@ const TreeDiagramView = ({
           data={data}
           showMinimap={showMinimap}
           nodeSize={nodeSize}
-          viewport={viewport}
+          viewport={viewport!}
         />
       )}
     </>

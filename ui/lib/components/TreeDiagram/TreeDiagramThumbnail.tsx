@@ -30,13 +30,10 @@ const TreeDiagramThumbnail = ({
   gapBetweenTrees,
 }: TreeDiagramProps) => {
   const [treeNodeDatum, setTreeNodeDatum] = useState<TreeNodeDatum[]>([])
-  const [zoomToFitViewportScale, setZoomToFitViewportScale] = useState(0)
   const singleTreeBoundsMap = useRef<TreeBoundType>({})
 
-  const thumbnailSVGRef = useRef(null)
-
+  const thumbnailContainerGRef = useRef(null)
   const thumbnaiSVGSelection = select('.thumbnailSVG')
-  const thumbnailGroupSelection = select('.thumbnailGroup')
 
   // Sets the bound of entire tree
   const [multiTreesBound, setMultiTreesBound] = useState({
@@ -93,18 +90,15 @@ const TreeDiagramThumbnail = ({
     [singleTreeBoundsMap, gapBetweenTrees]
   )
 
-  const getZoomToFitViewPortScale = () => {
+  const drawMinimap = () => {
     const widthRatio = viewport.width / multiTreesBound.width
     const heightRation = viewport.height / multiTreesBound.height
-    const k = Math.min(widthRatio, heightRation)
+    const k =
+      Math.min(widthRatio, heightRation) > 0.5
+        ? 0.5
+        : Math.min(widthRatio, heightRation)
 
-    setZoomToFitViewportScale(k > 1 ? 1 : k)
-  }
-
-  const drawMinimap = () => {
-    const k = zoomToFitViewportScale > 0.5 ? 0.5 : zoomToFitViewportScale
-
-    select(thumbnailSVGRef.current)
+    select(thumbnailContainerGRef.current)
       .attr('width', multiTreesBound.width * k)
       .attr('height', multiTreesBound.height * k)
 
@@ -116,12 +110,7 @@ const TreeDiagramThumbnail = ({
         [0, 0, multiTreesBound.width, multiTreesBound.height].join(' ')
       )
       .attr('preserveAspectRatio', 'xMidYMid meet')
-      .style('position', 'absolute')
       .style('background', 'white')
-
-    thumbnailGroupSelection
-      .attr('width', multiTreesBound.width)
-      .attr('height', multiTreesBound.height)
   }
 
   useEffect(() => {
@@ -131,35 +120,21 @@ const TreeDiagramThumbnail = ({
   }, [data, nodeSize])
 
   useEffect(() => {
-    if (thumbnailSVGRef.current) {
-      getZoomToFitViewPortScale()
-    }
+    if (thumbnailContainerGRef.current) drawMinimap()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [thumbnailSVGRef.current, multiTreesBound])
-
-  useEffect(() => {
-    if (thumbnailSVGRef.current) drawMinimap()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoomToFitViewportScale, thumbnailSVGRef.current, multiTreesBound])
+  }, [thumbnailContainerGRef.current, multiTreesBound])
 
   return (
-    <div
-      className={styles.ThumbnailContainer}
-      ref={thumbnailSVGRef}
-      style={{
-        minWidth: 300,
-        minHeight: 300,
-      }}
-    >
+    <div className={styles.ThumbnailContainer} ref={thumbnailContainerGRef}>
       <svg className="thumbnailSVG">
-        <g className="thumbnailGroup" transform={`translate(0,0) scale(1)`}>
+        <g className="thumbnailGroup">
           {treeNodeDatum.map((datum, idx) => (
             <SingleTree
               key={datum.name}
               datum={datum}
               treeIdx={idx}
               nodeMargin={nodeMargin}
-              zoomToFitViewportScale={zoomToFitViewportScale}
+              zoomToFitViewportScale={1}
               customLinkElement={customLinkElement}
               customNodeElement={customNodeElement}
               getTreePosition={getInitSingleTreeBound}

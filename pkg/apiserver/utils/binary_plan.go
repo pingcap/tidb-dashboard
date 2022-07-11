@@ -36,7 +36,7 @@ const (
 	MemoryBytes             = "memoryBytes"
 	ActRows                 = "actRows"
 	EstRows                 = "estRows"
-	AccessObject            = "accessObject"
+	AccessObjects           = "accessObjects"
 	ScanObject              = "scanObject"
 	DynamicpartitionObjects = "dynamicpartitionObjects"
 	OtherObject             = "otherObject"
@@ -212,7 +212,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 
 	// pseudo stats
 	if strings.Contains(operatorInfo, "stats:pseudo") {
-		switch strings.ToLower(node.GetPath(AccessObject, ScanObject, "database").MustString()) {
+		switch strings.ToLower(getScanDatabase(node)) {
 		case "information_schema", "metrics_schema", "performance_schema", "mysql":
 		default:
 			diagnosis = append(diagnosis, "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF.")
@@ -350,6 +350,25 @@ func cut(s, sep string) (before, after string, found bool) {
 		return s[:i], s[i+len(sep):], true
 	}
 	return s, "", false
+}
+
+func getScanDatabase(node *simplejson.Json) string {
+	accessObjects := node.Get(AccessObjects)
+
+	length := len(accessObjects.MustArray())
+
+	if length == 0 {
+		return ""
+	}
+
+	for i := 0; i < length; i++ {
+		database := accessObjects.GetIndex(i).GetPath(ScanObject, "database").MustString()
+		if database != "" {
+			return database
+		}
+	}
+
+	return ""
 }
 
 // useComparisonOperator
@@ -862,6 +881,10 @@ func formatNode(node *simplejson.Json) error {
 
 	if len(node.Get("labels").MustArray()) == 0 {
 		node.Set("labels", []string{})
+	}
+
+	if len(node.Get(AccessObjects).MustArray()) == 0 {
+		node.Set("labels", []interface{}{})
 	}
 
 	// actRows string -> uint64

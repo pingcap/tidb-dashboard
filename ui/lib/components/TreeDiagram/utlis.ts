@@ -12,7 +12,7 @@ type nodeFlexSize = {
 }
 
 export const AssignInternalProperties = (
-  data: RawNodeDatum[] | RawNodeDatum,
+  data: RawNodeDatum[],
   nodeFlexSize: nodeFlexSize
 ): TreeNodeDatum[] => {
   const d = Array.isArray(data) ? data : [data]

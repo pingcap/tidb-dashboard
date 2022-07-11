@@ -6,7 +6,7 @@ import { TreeDiagramProps, TreeNodeDatum } from './types'
 
 import Minimap from './Minimap'
 import MainChart from './MainChart'
-import NodeWrapperDetail from './NodeDetailWrapper'
+import NodeWrapperDetail from './NodeDetail/NodeDetailWrapper'
 
 import { Drawer } from 'antd'
 
@@ -15,10 +15,10 @@ import { zoom as d3Zoom, zoomIdentity } from 'd3-zoom'
 import { brush as d3Brush } from 'd3-brush'
 import { select, event } from 'd3-selection'
 import { scaleLinear } from 'd3-scale'
-import { rectBound } from '../TreeDiagramView/types'
-import { DefaultNode } from './DefaultNode'
-import { DefaultLink } from './DefaultLink'
-import { DefaultNodeDetail } from './DefaultNodeDetail'
+import { rectBound } from './types'
+import { DefaultNode } from './Node/DefaultNode'
+import { DefaultLink } from './Link/DefaultLink'
+import { DefaultNodeDetail } from './NodeDetail/DefaultNodeDetail'
 
 interface TreeBoundType {
   [k: string]: {
@@ -110,24 +110,28 @@ const TreeDiagram = ({
    * minimapScaleX(zoomScale)(widthOnMinimap) will return corresponding widthOnMainChart
    * minimapScaleX(zoomScale).invert(widthOnMainChart) will return corresponding widthOnMinimap
    */
-  const minimapScaleX = (zoomScale) => {
+  const minimapScaleX = (zoomScale: number) => {
     return scaleLinear()
       .domain([0, multiTreesBound.width])
       .range([0, multiTreesBound.width * zoomScale])
   }
 
   // Creates a continuous linear scale to calculate the corresponse height in mainChart or minimap
-  const minimapScaleY = (zoomScale) => {
+  const minimapScaleY = (zoomScale: number) => {
     return scaleLinear()
       .domain([0, multiTreesBound.height])
       .range([0, multiTreesBound.height * zoomScale])
   }
 
-  const handleUpdateTreeTranslate = (zoomScale, brushX, brushY) => {
+  const handleUpdateTreeTranslate = (
+    zoomScale: number,
+    brushX: number,
+    brushY: number
+  ) => {
     setMultiTreesTranslate({
-      x: minimapScaleX(zoomScale.k)(-brushX),
-      y: minimapScaleY(zoomScale.k)(-brushY),
-      k: zoomScale.k,
+      x: minimapScaleX(zoomScale)(-brushX),
+      y: minimapScaleY(zoomScale)(-brushY),
+      k: zoomScale,
     })
   }
 
@@ -156,12 +160,13 @@ const TreeDiagram = ({
     brushBehavior.move(brushSelection, [
       [minimapScaleX(t.k).invert(-t.x), minimapScaleY(t.k).invert(-t.y)],
       [
-        minimapScaleX(t.k).invert(-t.x + viewport.width),
-        minimapScaleY(t.k).invert(-t.y + viewport.height),
+        minimapScaleX(t.k).invert(-t.x + multiTreesViewport.width),
+        minimapScaleY(t.k).invert(-t.y + multiTreesViewport.height),
       ],
     ])
   }
 
+  // TODO: Limits zoom extent
   const zoomBehavior = d3Zoom()
     // .scaleExtent([0.5, 5])
     // Limits the zoom translate extent
@@ -296,7 +301,7 @@ const TreeDiagram = ({
 
   return (
     <div
-      className={`${styles.treeDiagramContainer} tree-diagram-container`}
+      className={`${styles.treeDiagramContainer}`}
       ref={treeDiagramContainerRef}
     >
       <MainChart
@@ -317,7 +322,7 @@ const TreeDiagram = ({
         <Minimap
           treeNodeDatum={treeNodeDatum}
           classNamePrefix="minimapMultiTrees"
-          viewport={viewport}
+          viewport={multiTreesViewport}
           customLinkElement={customLinkElement}
           customNodeElement={customNodeElement}
           multiTreesBound={multiTreesBound}

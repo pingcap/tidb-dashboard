@@ -1,15 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
-import styles from './TreeDiagramThumbnail.module.less'
-import { AssignInternalProperties } from './utlis'
-import { TreeDiagramProps, TreeNodeDatum } from './types'
+import styles from './index.module.less'
+import { AssignInternalProperties } from '../utlis'
+import { TreeDiagramProps, TreeNodeDatum } from '../types'
 
-import SingleTree from './SingleTree'
-
+import { Trees } from '../MemorizedTress'
 // imports d3 APIs
 import { select } from 'd3-selection'
-import { rectBound } from '../TreeDiagramView/types'
-import { DefaultNode } from './DefaultNode'
-import { DefaultLink } from './DefaultLink'
+import { rectBound } from '../types'
+import { DefaultNode } from '../Node/DefaultNode'
+import { DefaultLink } from '../Link/DefaultLink'
 
 interface TreeBoundType {
   [k: string]: {
@@ -128,18 +127,16 @@ const TreeDiagramThumbnail = ({
     <div className={styles.ThumbnailContainer} ref={thumbnailContainerGRef}>
       <svg className="thumbnailSVG">
         <g className="thumbnailGroup">
-          {treeNodeDatum.map((datum, idx) => (
-            <SingleTree
-              key={datum.name}
-              datum={datum}
-              treeIdx={idx}
-              nodeMargin={nodeMargin}
-              zoomToFitViewportScale={1}
-              customLinkElement={customLinkElement}
-              customNodeElement={customNodeElement}
-              getTreePosition={getInitSingleTreeBound}
-            />
-          ))}
+          <Trees
+            {...{
+              treeNodeDatum,
+              nodeMargin: nodeMargin!,
+              zoomToFitViewportScale: 1,
+              customLinkElement,
+              customNodeElement,
+              getTreePosition: getInitSingleTreeBound,
+            }}
+          />
         </g>
       </svg>
     </div>

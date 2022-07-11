@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react'
 import { HierarchyPointLink, HierarchyPointNode } from 'd3'
 
-import NodeWrapper from './NodeWrapper'
-import LinkWrapper from './LinkWrapper'
-import { TreeNodeDatum, nodeMarginType } from './types'
-import { generateNodesAndLinks } from './utlis'
+import NodeWrapper from '../Node/NodeWrapper'
+import LinkWrapper from '../Link/LinkWrapper'
+import { TreeNodeDatum, nodeMarginType } from '../types'
+import { generateNodesAndLinks } from '../utlis'
 
 interface SingleTreeProps {
   datum: TreeNodeDatum

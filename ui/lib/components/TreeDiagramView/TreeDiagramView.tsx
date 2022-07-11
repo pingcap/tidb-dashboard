@@ -1,7 +1,8 @@
 import React from 'react'
 import { RawNodeDatum, TreeDiagramProps, rectBound } from './types'
-import TreeDigram from '../TreeDiagram'
-import TreeDiagramThumbnail from '../TreeDiagram/TreeDiagramThumbnail'
+
+import TreeDigram from '@lib/components/TreeDiagram'
+import TreeDiagramThumbnail from '@lib/components/TreeDiagram/Thumbnail'
 
 interface TreeDiagramViewProps extends TreeDiagramProps {
   data: RawNodeDatum[]
@@ -44,7 +45,7 @@ const TreeDiagramView = ({
 TreeDiagramView.defaultProps = {
   viewport: {
     width: window.innerWidth,
-    height: window.innerHeight - 150,
+    height: window.innerHeight * 0.75,
   },
   showMinimap: false,
   isThumbnail: false,

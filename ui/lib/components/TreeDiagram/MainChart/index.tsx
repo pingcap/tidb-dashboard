@@ -1,17 +1,17 @@
-import React, { FC, memo } from 'react'
+import React from 'react'
 
-import { nodeMarginType, Translate, TreeNodeDatum, rectBound } from './types'
-import SingleTree from './SingleTree'
+import { nodeMarginType, Translate, TreeNodeDatum, rectBound } from '../types'
+import { Trees } from '../MemorizedTress'
 
 interface MainChartProps {
   treeNodeDatum: TreeNodeDatum[]
   classNamePrefix: string
   translate: Translate
   viewport: rectBound
-  customLinkElement: any
-  customNodeElement: any
-  onNodeExpandBtnToggle: any
-  onNodeDetailClick: any
+  customLinkElement: JSX.Element
+  customNodeElement: JSX.Element
+  onNodeExpandBtnToggle: (string) => void
+  onNodeDetailClick: (TreeNodeDatum) => void
   getTreePosition: (number) => any
   nodeMargin?: nodeMarginType
   adjustPosition: rectBound
@@ -49,7 +49,7 @@ const MainChart = ({
           <Trees
             {...{
               treeNodeDatum,
-              nodeMargin,
+              nodeMargin: nodeMargin!,
               zoomToFitViewportScale,
               customLinkElement,
               customNodeElement,
@@ -63,40 +63,5 @@ const MainChart = ({
     </svg>
   )
 }
-
-const _Trees: FC<
-  Omit<
-    MainChartProps,
-    'classNamePrefix' | 'translate' | 'viewport' | 'adjustPosition'
-  >
-> = ({
-  treeNodeDatum,
-  nodeMargin,
-  zoomToFitViewportScale,
-  customLinkElement,
-  customNodeElement,
-  onNodeExpandBtnToggle,
-  onNodeDetailClick,
-  getTreePosition,
-}) => (
-  <>
-    {treeNodeDatum.map((datum, idx) => (
-      <SingleTree
-        key={datum.name}
-        datum={datum}
-        treeIdx={idx}
-        nodeMargin={nodeMargin}
-        zoomToFitViewportScale={zoomToFitViewportScale}
-        customLinkElement={customLinkElement}
-        customNodeElement={customNodeElement}
-        onNodeExpandBtnToggle={onNodeExpandBtnToggle}
-        onNodeDetailClick={onNodeDetailClick}
-        getTreePosition={getTreePosition}
-      />
-    ))}
-  </>
-)
-
-const Trees = memo(_Trees)
 
 export default MainChart

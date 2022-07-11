@@ -44,6 +44,13 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
           <p>
             Operator Info: <span>{nodeDatum.operatorInfo}</span>
           </p>
+          {nodeDatum.labels.length > 0 && (
+            <>
+              {nodeDatum.labels.map((label) => (
+                <>{label}</>
+              ))}
+            </>
+          )}
           {Object.keys(nodeDatum.rootBasicExecInfo).length > 0 && (
             <div>
               Root Basic Exec Info:{' '}
@@ -83,17 +90,22 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
               />
             </div>
           )}
-          {nodeDatum.accessObject && (
+          {nodeDatum.accessObjects.length > 0 && (
             <div>
               Access Object:
-              <ReactJson
-                src={nodeDatum.accessObject}
-                enableClipboard={false}
-                displayObjectSize={false}
-                displayDataTypes={false}
-                name={false}
-                iconStyle="circle"
-              />
+              <>
+                {nodeDatum.accessObjects.map((obj, idx) => (
+                  <ReactJson
+                    key={idx}
+                    src={obj}
+                    enableClipboard={false}
+                    displayObjectSize={false}
+                    displayDataTypes={false}
+                    name={false}
+                    iconStyle="circle"
+                  />
+                ))}
+              </>
             </div>
           )}
         </div>

@@ -54,7 +54,7 @@ export const DefaultNode = (nodeProps) => {
           fill="none"
         ></rect>
         <foreignObject
-          className="node-foreign-object"
+          className={styles.NodeForeginObject}
           width={nodeWidth}
           height={nodeHeight}
           x={0}

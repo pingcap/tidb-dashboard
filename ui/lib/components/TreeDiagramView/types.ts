@@ -5,6 +5,7 @@ export interface RawNodeDatum {
   estRows: number
   actRows: number
   duration: string
+  labels: []
   storeType: string
   diskBytes: string
   taskType: string
@@ -13,7 +14,7 @@ export interface RawNodeDatum {
   rootBasicExecInfo: {}
   rootGroupExecInfo: []
   copExecInfo: {}
-  accessObject: {}
+  accessObjects: []
   diagnosis: []
   children?: RawNodeDatum[]
 }

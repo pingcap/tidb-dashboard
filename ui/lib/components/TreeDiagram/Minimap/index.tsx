@@ -1,29 +1,33 @@
-import React, { FC, MutableRefObject, Ref, useEffect, useRef } from 'react'
-import { select, event } from 'd3-selection'
-import { brush as d3Brush } from 'd3-brush'
+import React, { MutableRefObject, Ref, useEffect, useRef } from 'react'
+import { select, event, Selection } from 'd3-selection'
+import { brush as d3Brush, BrushBehavior } from 'd3-brush'
 import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
+import { ScaleLinear } from 'd3-scale'
 
-import SingleTree from './SingleTree'
-import styles from './index.module.less'
-import { rectBound, TreeNodeDatum, nodeMarginType } from './types'
+import { Trees } from '../MemorizedTress'
+import { rectBound, TreeNodeDatum, nodeMarginType } from '../types'
 
 interface MinimapProps {
   treeNodeDatum: TreeNodeDatum[]
   classNamePrefix: string
   viewport: rectBound
   multiTreesBound: rectBound
-  customLinkElement: any
-  customNodeElement: any
+  customLinkElement: JSX.Element
+  customNodeElement: JSX.Element
   minimapScale: number
-  minimapScaleX?: any
-  minimapScaleY?: any
+  minimapScaleX?: (zoomScale: number) => ScaleLinear<number, number>
+  minimapScaleY?: (zoomScale: number) => ScaleLinear<number, number>
   multiTreesSVG?: any
-  updateTreeTranslate?: any
-  brushBehavior?: any
+  updateTreeTranslate?: (
+    zoomScale: number,
+    brushX: number,
+    brushY: number
+  ) => void
+  brushBehavior?: BrushBehavior<any>
   brushRef?: Ref<SVGGElement>
   adjustPosition: rectBound
   zoomToFitViewportScale: number
-  getTreePosition: (number) => any
+  getTreePosition: (idx: number) => any
   nodeMargin?: nodeMarginType
 }
 
@@ -93,18 +97,18 @@ const Minimap = ({
         d3Zoom().transform as any,
         zoomIdentity
           .translate(
-            minimapScaleX(zoomScale.k)(-brushX),
-            minimapScaleY(zoomScale.k)(-brushY)
+            minimapScaleX!(zoomScale.k)(-brushX),
+            minimapScaleY!(zoomScale.k)(-brushY)
           )
           .scale(zoomScale.k)
       )
 
       // Handles tree translate update when brush moves
-      updateTreeTranslate(zoomScale, brushX, brushY)
+      updateTreeTranslate!(zoomScale.k, brushX, brushY)
     }
   }
 
-  // Limits brush move extent
+  // TODO: Limits brush move extent
   const brushBehavior = d3Brush()
     // .extent([
     //   [
@@ -154,7 +158,7 @@ const Minimap = ({
   }, [brushRef])
 
   return (
-    <div className={styles.minimapContainer} ref={minimapContainerRef}>
+    <div ref={minimapContainerRef}>
       <svg
         className={`${classNamePrefix}SVG`}
         width={minimapContainer.width}
@@ -169,7 +173,7 @@ const Minimap = ({
             <Trees
               {...{
                 treeNodeDatum,
-                nodeMargin,
+                nodeMargin: nodeMargin!,
                 zoomToFitViewportScale,
                 customLinkElement,
                 customNodeElement,
@@ -183,41 +187,5 @@ const Minimap = ({
     </div>
   )
 }
-
-const _Trees: FC<
-  Omit<
-    MinimapProps,
-    | 'classNamePrefix'
-    | 'translate'
-    | 'viewport'
-    | 'adjustPosition'
-    | 'minimapScale'
-    | 'multiTreesBound'
-  >
-> = ({
-  treeNodeDatum,
-  nodeMargin,
-  zoomToFitViewportScale,
-  customLinkElement,
-  customNodeElement,
-  getTreePosition,
-}) => (
-  <>
-    {treeNodeDatum.map((datum, idx) => (
-      <SingleTree
-        key={datum.name}
-        datum={datum}
-        treeIdx={idx}
-        nodeMargin={nodeMargin}
-        zoomToFitViewportScale={zoomToFitViewportScale}
-        customLinkElement={customLinkElement}
-        customNodeElement={customNodeElement}
-        getTreePosition={getTreePosition}
-      />
-    ))}
-  </>
-)
-
-const Trees = _Trees
 
 export default Minimap

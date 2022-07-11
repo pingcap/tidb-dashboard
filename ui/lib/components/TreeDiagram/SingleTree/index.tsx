@@ -11,10 +11,10 @@ interface SingleTreeProps {
   treeIdx: number
   nodeMargin?: nodeMarginType
   zoomToFitViewportScale: number
-  customLinkElement: any
-  customNodeElement: any
-  onNodeExpandBtnToggle?: any
-  onNodeDetailClick?: any
+  customLinkElement: JSX.Element
+  customNodeElement: JSX.Element
+  onNodeExpandBtnToggle?: (nodeId: string) => void
+  onNodeDetailClick?: (node: TreeNodeDatum) => void
   getTreePosition: (number) => any
 }
 

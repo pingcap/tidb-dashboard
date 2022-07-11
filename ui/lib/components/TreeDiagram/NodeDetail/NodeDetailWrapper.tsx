@@ -1,8 +1,9 @@
 import React from 'react'
+import { TreeNodeDatum } from '../types'
 
 interface NodeWrapperProps {
-  data
-  renderCustomNodeDetailElement
+  data: TreeNodeDatum
+  renderCustomNodeDetailElement: (nodeProps: any) => JSX.Element
 }
 
 const NodeDetailWrapper = ({

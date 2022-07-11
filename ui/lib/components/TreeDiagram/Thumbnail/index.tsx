@@ -3,7 +3,7 @@ import styles from './index.module.less'
 import { AssignInternalProperties } from '../utlis'
 import { TreeDiagramProps, TreeNodeDatum } from '../types'
 
-import { Trees } from '../MemorizedTress'
+import { Trees } from '../MemorizedTrees'
 // imports d3 APIs
 import { select } from 'd3-selection'
 import { rectBound } from '../types'

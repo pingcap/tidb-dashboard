@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { nodeMarginType, Translate, TreeNodeDatum, rectBound } from '../types'
-import { Trees } from '../MemorizedTress'
+import { Trees } from '../MemorizedTrees'
 
 interface MainChartProps {
   treeNodeDatum: TreeNodeDatum[]
@@ -10,9 +10,9 @@ interface MainChartProps {
   viewport: rectBound
   customLinkElement: JSX.Element
   customNodeElement: JSX.Element
-  onNodeExpandBtnToggle: (string) => void
-  onNodeDetailClick: (TreeNodeDatum) => void
-  getTreePosition: (number) => any
+  onNodeExpandBtnToggle: (nodeId: string) => void
+  onNodeDetailClick: (node: TreeNodeDatum) => void
+  getTreePosition: (treeIdx: number) => any
   nodeMargin?: nodeMarginType
   adjustPosition: rectBound
   zoomToFitViewportScale: number

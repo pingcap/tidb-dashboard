@@ -4,7 +4,7 @@ import { brush as d3Brush, BrushBehavior } from 'd3-brush'
 import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 import { ScaleLinear } from 'd3-scale'
 
-import { Trees } from '../MemorizedTress'
+import { Trees } from '../MemorizedTrees'
 import { rectBound, TreeNodeDatum, nodeMarginType } from '../types'
 
 interface MinimapProps {

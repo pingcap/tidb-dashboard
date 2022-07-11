@@ -140,7 +140,6 @@ func GenerateBinaryPlan(v string) (*tipb.ExplainData, error) {
 }
 
 func GenerateBinaryPlanJSON(b string) (string, error) {
-	fmt.Printf("bp base64: %s \n", b)
 
 	// generate bp
 	bp, err := GenerateBinaryPlan(b)
@@ -158,8 +157,6 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("bp: %s \n", string(bpJSON))
-
 	bpJSON, err = formatBinaryPlanJSON(bpJSON)
 	if err != nil {
 		return "", err
@@ -175,7 +172,6 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("vp: %s \n", string(bpJSON))
 	return string(bpJSON), nil
 }
 

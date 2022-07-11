@@ -1,14 +1,12 @@
 import React, { useContext } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 
-import { Root } from '@lib/components'
-
-import { NgmNotStartedGuard } from '../Ngm/components/Error/NgmNotStarted'
-import { TopSQLList } from './pages/List/List'
-
-import translations from './translations'
+import { Root, NgmNotStartedGuard } from '@lib/components'
 import { addTranslations } from '@lib/utils/i18n'
+
+import { TopSQLList } from './pages/List/List'
 import { TopSQLContext } from './context'
+import translations from './translations'
 
 addTranslations(translations)
 

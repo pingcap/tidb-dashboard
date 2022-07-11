@@ -34,7 +34,7 @@ for (const key in translations) {
   })
 }
 
-export function NgmNotStarted() {
+function NgmNotStarted() {
   const { t } = useTranslation()
   return (
     <Card data-e2e="ngm_not_started">

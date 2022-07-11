@@ -1,14 +1,12 @@
 import React, { useContext } from 'react'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 
-import { Root, ParamsPageWrapper } from '@lib/components'
-
-import { NgmNotStartedGuard } from '../Ngm/components/Error/NgmNotStarted'
-import { Detail, List } from './pages'
-
-import translations from './translations'
+import { Root, ParamsPageWrapper, NgmNotStartedGuard } from '@lib/components'
 import { addTranslations } from '@lib/utils/i18n'
+
+import { Detail, List } from './pages'
 import { ConProfilingContext } from './context'
+import translations from './translations'
 
 addTranslations(translations)
 

@@ -60,3 +60,4 @@ export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'
 
 export * from './AutoRefreshButton'
+export * from './Ngm'

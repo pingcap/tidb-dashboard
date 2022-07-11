@@ -880,7 +880,7 @@ func formatNode(node *simplejson.Json) error {
 	}
 
 	if len(node.Get(AccessObjects).MustArray()) == 0 {
-		node.Set("labels", []interface{}{})
+		node.Set(AccessObjects, []interface{}{})
 	}
 
 	// actRows string -> uint64

@@ -62,4 +62,4 @@ require (
 	moul.io/zapgorm2 v1.1.0
 )
 
-replace github.com/pingcap/tipb => github.com/time-and-fate/tipb v0.0.0-20220620062228-0abb96df1346
+replace github.com/pingcap/tipb => github.com/time-and-fate/tipb v0.0.0-20220708110256-2b4e44f7d73f

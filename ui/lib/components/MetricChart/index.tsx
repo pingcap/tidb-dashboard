@@ -266,7 +266,7 @@ export default function MetricChart({
           legendPosition={Position.Right}
           pointerUpdateDebounce={0}
           onPointerUpdate={(e) => ee.emit(e)}
-          legendSize={150}
+          legendSize={130}
           onBrushEnd={handleBrushEnd}
         />
         <Axis

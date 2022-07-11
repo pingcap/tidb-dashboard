@@ -8,7 +8,8 @@ overview:
     title: Alive Instances
   monitor_alert:
     title: Monitor & Alert
-    view_monitor: View Metrics
+    view_more_metrics: View More Metrics
+    view_grafana_monitor: View Grafana Metrics
     view_monitor_warn: Metrics unavailable
     view_alerts: 'View {{alertCount}} Alerts'
     view_zero_alerts: 'View Alerts'

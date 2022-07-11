@@ -1,5 +1,5 @@
-import { Space, Typography } from 'antd'
-import React, { useMemo, useState, useRef } from 'react'
+import { Space, Typography, Row, Col } from 'antd'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AutoRefreshButton,
@@ -14,7 +14,7 @@ import { Range } from '@elastic/charts/dist/utils/domain'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { LoadingOutlined } from '@ant-design/icons'
-import { min, some } from 'lodash'
+import { some } from 'lodash'
 
 import { PointerEvent } from '@elastic/charts'
 
@@ -30,7 +30,7 @@ interface IChartProps {
 function Connection(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t(`overview.metrics.connection.total`)}
       </Typography.Title>
@@ -60,7 +60,7 @@ function Connection(props: IChartProps) {
 function Disconnection(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t(`overview.metrics.connection.disconnection`)}
       </Typography.Title>
@@ -81,7 +81,7 @@ function Disconnection(props: IChartProps) {
 function ConnectionIdleDuration(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.connection.idle')}
       </Typography.Title>
@@ -107,7 +107,7 @@ function ConnectionIdleDuration(props: IChartProps) {
 function DatabaseTime(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.database_time.by_sql_type')}
       </Typography.Title>
@@ -133,7 +133,7 @@ function DatabaseTime(props: IChartProps) {
 function DatabaseTimeByPhrase(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.database_time.by_steps_of_sql_processig')}
       </Typography.Title>
@@ -167,7 +167,7 @@ function DatabaseTimeByPhrase(props: IChartProps) {
 function DatabaseExecTime(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.database_time.execute_time')}
       </Typography.Title>
@@ -197,7 +197,7 @@ function DatabaseExecTime(props: IChartProps) {
 function QPS(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.sql_count.qps')}
       </Typography.Title>
@@ -224,7 +224,7 @@ function QPS(props: IChartProps) {
 function FailedQuery(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.sql_count.failed_queries')}
       </Typography.Title>
@@ -246,7 +246,7 @@ function FailedQuery(props: IChartProps) {
 function CPS(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.sql_count.cps')}
       </Typography.Title>
@@ -268,7 +268,7 @@ function CPS(props: IChartProps) {
 function OPS(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.core_feature_usag.ops')}
       </Typography.Title>
@@ -290,7 +290,7 @@ function OPS(props: IChartProps) {
 function Latency(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.latency.query')}
       </Typography.Title>
@@ -323,7 +323,7 @@ function Latency(props: IChartProps) {
 function GetTokenDuration(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.latency.get_token')}
       </Typography.Title>
@@ -351,7 +351,7 @@ function GetTokenDuration(props: IChartProps) {
 function ParseDuration(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.latency.parse')}
       </Typography.Title>
@@ -379,7 +379,7 @@ function ParseDuration(props: IChartProps) {
 function CompileDuration(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.latency.compile')}
       </Typography.Title>
@@ -407,7 +407,7 @@ function CompileDuration(props: IChartProps) {
 function ExecDuration(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.latency.execution')}
       </Typography.Title>
@@ -435,7 +435,7 @@ function ExecDuration(props: IChartProps) {
 function Transaction(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.transaction.tps')}
       </Typography.Title>
@@ -458,7 +458,7 @@ function Transaction(props: IChartProps) {
 function TransactionDuration(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.transaction.average_duration')}
       </Typography.Title>
@@ -486,7 +486,7 @@ function TransactionDuration(props: IChartProps) {
 function TransactionRetry(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.transaction.retry_count')}
       </Typography.Title>
@@ -508,7 +508,7 @@ function TransactionRetry(props: IChartProps) {
 function TiDBUptime(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.server.tidb_uptime')}
       </Typography.Title>
@@ -531,7 +531,7 @@ function TiDBUptime(props: IChartProps) {
 function TiDBCPUUsage(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.server.tidb_cpu_usage')}
       </Typography.Title>
@@ -555,7 +555,7 @@ function TiDBCPUUsage(props: IChartProps) {
 function TiDBMemoryUsage(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.server.tidb_memory_usage')}
       </Typography.Title>
@@ -585,7 +585,7 @@ function TiDBMemoryUsage(props: IChartProps) {
 function TiKVUptime(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.server.tikv_uptime')}
       </Typography.Title>
@@ -609,7 +609,7 @@ function TiKVUptime(props: IChartProps) {
 function TiKVCPUUsage(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.server.tikv_cpu_usage')}
       </Typography.Title>
@@ -633,7 +633,7 @@ function TiKVCPUUsage(props: IChartProps) {
 function TiKVMemoryUsage(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.server.tikv_memory_usage')}
       </Typography.Title>
@@ -656,7 +656,7 @@ function TiKVMemoryUsage(props: IChartProps) {
 function TiKVIO(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.server.tikv_io_mbps')}
       </Typography.Title>
@@ -685,7 +685,7 @@ function TiKVIO(props: IChartProps) {
 function TiKVStorageUsage(props: IChartProps) {
   const { t } = useTranslation()
   return (
-    <Card noMarginTop noMarginBottom>
+    <Card noMarginRight>
       <Typography.Title level={5}>
         {t('overview.metrics.server.tikv_storage_usage')}
       </Typography.Title>
@@ -704,11 +704,12 @@ function TiKVStorageUsage(props: IChartProps) {
   )
 }
 
-export default function Metrics() {
+export default function Metrics(props) {
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
   const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({})
   const [pointerEvent, setPointerEvent] = useState<PointerEvent>()
+  const { allTypes: showAllPerformanceMetics } = props
 
   const isSomeLoading = useMemo(() => {
     return some(Object.values(isLoading))
@@ -743,34 +744,96 @@ export default function Metrics() {
 
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
-          <Connection {...metricProps('connection')} />
-          <Disconnection {...metricProps('disconneciton')} />
-          <ConnectionIdleDuration
-            {...metricProps('connection_idle_duration')}
-          />
-          <DatabaseTime {...metricProps('database_time')} />
-          <DatabaseTimeByPhrase {...metricProps('database_time_by_phrase')} />
-          <DatabaseExecTime {...metricProps('database_exec_time')} />
-          <QPS {...metricProps('qps')} />
-          <FailedQuery {...metricProps('failed_query')} />
-          <CPS {...metricProps('cps')} />
-          <OPS {...metricProps('ops')} />
-          <Latency {...metricProps('latency')} />
-          <GetTokenDuration {...metricProps('get_token')} />
-          <ParseDuration {...metricProps('parse')} />
-          <CompileDuration {...metricProps('compile')} />
-          <ExecDuration {...metricProps('execution')} />
-          <Transaction {...metricProps('tps')} />
-          <TransactionDuration {...metricProps('average_duration')} />
-          <TransactionRetry {...metricProps('retry_count')} />
-          <TiDBUptime {...metricProps('tidb_uptime')} />
-          <TiDBCPUUsage {...metricProps('tidb_cpu_usage')} />
-          <TiDBMemoryUsage {...metricProps('tidb_memory_usage')} />
-          <TiKVUptime {...metricProps('tikv_uptime')} />
-          <TiKVCPUUsage {...metricProps('tikv_cpu_usage')} />
-          <TiKVMemoryUsage {...metricProps('tikv_memory_usage')} />
-          <TiKVIO {...metricProps('tikv_io_mbps')} />
-          <TiKVStorageUsage {...metricProps('tikv_storage_usage')} />
+          <Row gutter={[16, 16]}>
+            <Col xl={12} sm={24}>
+              <Connection {...metricProps('connection')} />
+            </Col>
+            <Col xl={12} sm={24}>
+              <Disconnection {...metricProps('disconneciton')} />
+            </Col>
+            <Col xl={12} sm={24}>
+              <ConnectionIdleDuration
+                {...metricProps('connection_idle_duration')}
+              />
+            </Col>
+            <Col xl={12} sm={24}>
+              <DatabaseTime {...metricProps('database_time')} />
+            </Col>
+          </Row>
+          {showAllPerformanceMetics && (
+            <>
+              <Row gutter={[16, 16]}>
+                <Col xl={12} sm={24}>
+                  <DatabaseTimeByPhrase
+                    {...metricProps('database_time_by_phrase')}
+                  />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <DatabaseExecTime {...metricProps('database_exec_time')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <QPS {...metricProps('qps')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <FailedQuery {...metricProps('failed_query')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <CPS {...metricProps('cps')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <OPS {...metricProps('ops')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <Latency {...metricProps('latency')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <GetTokenDuration {...metricProps('get_token')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <ParseDuration {...metricProps('parse')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <CompileDuration {...metricProps('compile')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <ExecDuration {...metricProps('execution')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <Transaction {...metricProps('tps')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TransactionDuration {...metricProps('average_duration')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TransactionRetry {...metricProps('retry_count')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TiDBUptime {...metricProps('tidb_uptime')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TiDBCPUUsage {...metricProps('tidb_cpu_usage')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TiDBMemoryUsage {...metricProps('tidb_memory_usage')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TiKVUptime {...metricProps('tikv_uptime')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TiKVCPUUsage {...metricProps('tikv_cpu_usage')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TiKVMemoryUsage {...metricProps('tikv_memory_usage')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TiKVIO {...metricProps('tikv_io_mbps')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <TiKVStorageUsage {...metricProps('tikv_storage_usage')} />
+                </Col>
+              </Row>
+            </>
+          )}
         </Stack>
       </ChartContext.Provider>
     </>

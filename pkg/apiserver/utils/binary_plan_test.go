@@ -40,6 +40,7 @@ func TestUseComparisonOperator(t *testing.T) {
 	assert.False(t, useComparisonOperator("in(test.t.a, 1, 2, test.t.b, 4)"))
 	assert.False(t, useComparisonOperator("in(test.t.a, 1, 2, 3, 4), eq(1, test2.t2.a), eq(test.t.a, 1), eq(test.t.a, 2), isnull(test2.t1.a)"))
 	assert.True(t, useComparisonOperator("in(test.t.a, 1, 2, 3, 4), eq(1, test.t.a), eq(test.t.a, 1), eq(test.t.a, 2), isnull(test.t.a)"))
+	assert.True(t, useComparisonOperator("not(isnull(test2.table1.a))"))
 }
 
 func TestFormatJSON(t *testing.T) {

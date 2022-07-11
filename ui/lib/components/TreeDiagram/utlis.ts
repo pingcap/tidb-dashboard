@@ -4,7 +4,7 @@ import { hierarchy } from 'd3-hierarchy'
 
 import { nodeMarginType } from './types'
 // TODO: refactor this as isolated type
-import { RawNodeDatum, TreeNodeDatum } from '../TreeDiagramView/types'
+import { RawNodeDatum, TreeNodeDatum } from './types'
 
 type nodeFlexSize = {
   width: number
@@ -12,7 +12,7 @@ type nodeFlexSize = {
 }
 
 export const AssignInternalProperties = (
-  data: RawNodeDatum[] | RawNodeDatum,
+  data: RawNodeDatum[],
   nodeFlexSize: nodeFlexSize
 ): TreeNodeDatum[] => {
   const d = Array.isArray(data) ? data : [data]
@@ -44,7 +44,7 @@ export const AssignInternalProperties = (
 }
 
 export const generateNodesAndLinks = (
-  treeNodeDatum: TreeNodeDatum[],
+  treeNodeDatum: TreeNodeDatum,
   nodeMargin: nodeMarginType
 ) => {
   const tree = flextree({
@@ -59,7 +59,7 @@ export const generateNodesAndLinks = (
   })
 
   const rootNode = tree(
-    hierarchy(treeNodeDatum[0], (d) =>
+    hierarchy(treeNodeDatum, (d) =>
       d.__node_attrs.collapsed ? null : d.children
     )
   )

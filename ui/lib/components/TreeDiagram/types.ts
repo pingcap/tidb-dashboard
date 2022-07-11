@@ -16,16 +16,7 @@ export interface rectBound {
 
 // Raw node data get from /api/slow_query/detail.
 export interface RawNodeDatum {
-  name: string
-  cost: number
-  est_rows: number
-  act_rows: number
-  access_table: string
-  access_index: string
-  access_partition: string
-  time_us: number
-  run_at: string
-  children?: RawNodeDatum[]
+  [k: string]: any
 }
 
 // Tree node data contains node attributes.
@@ -48,12 +39,12 @@ export interface TreeDiagramProps {
    * The root node object, in which child nodes (also of type `RawNodeDatum`)
    * are recursively defined in the `children` key.
    */
-  data: RawNodeDatum[] | RawNodeDatum
+  data: RawNodeDatum[]
 
   /**
    * The dimensions of the tree container,
    */
-  viewPort: rectBound
+  viewport: rectBound
 
   /**
    * Sets the time (in milliseconds) for the transition to center a node once clicked.
@@ -99,14 +90,16 @@ export interface TreeDiagramProps {
    */
   showMinimap?: boolean
 
-  customNodeElement: any
+  customNodeElement?: any
 
-  customLinkElement: any
+  customLinkElement?: any
 
-  customNodeDetailElement: any
+  customNodeDetailElement?: any
 
   translate?: Translate
 
   // Disables zoom behavior is isThumbnail is true
   isThumbnail?: boolean
+
+  gapBetweenTrees?: number
 }

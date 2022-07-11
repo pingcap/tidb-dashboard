@@ -53,6 +53,7 @@
     "react-highlight-words": "^0.16.0",
     "react-i18next": "^11.7.0",
     "react-intersection-observer": "^9.1.0",
+    "react-json-view": "^1.21.3",
     "react-markdown": "^7.1.0",
     "react-router": "^6.0.0-alpha.3",
     "react-router-dom": "^6.0.0-alpha.3",

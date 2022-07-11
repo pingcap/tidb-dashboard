@@ -18,26 +18,31 @@ import (
 )
 
 const (
-	MainTree          = "main"
-	CteTrees          = "ctes"
-	Children          = "children"
-	Duration          = "duration"
-	Time              = "time"
-	Diagnosis         = "diagnosis"
-	RootGroupExecInfo = "rootGroupExecInfo"
-	RootBasicExecInfo = "rootBasicExecInfo"
-	OperatorInfo      = "operatorInfo"
-	OperatorName      = "name"
-	CopExecInfo       = "copExecInfo"
-	CacheHitRatio     = "cacheHitRatio"
-	TaskType          = "taskType"
-	StoreType         = "storeType"
-	DiskBytes         = "diskBytes"
-	MemoryBytes       = "memoryBytes"
-	ActRows           = "actRows"
-	EstRows           = "estRows"
-	DriverSide        = "driverSide"
-	ScanObject        = "scanObject"
+	MainTree                = "main"
+	CteTrees                = "ctes"
+	Children                = "children"
+	Duration                = "duration"
+	Time                    = "time"
+	Diagnosis               = "diagnosis"
+	RootGroupExecInfo       = "rootGroupExecInfo"
+	RootBasicExecInfo       = "rootBasicExecInfo"
+	OperatorInfo            = "operatorInfo"
+	OperatorName            = "name"
+	CopExecInfo             = "copExecInfo"
+	CacheHitRatio           = "cacheHitRatio"
+	TaskType                = "taskType"
+	StoreType               = "storeType"
+	DiskBytes               = "diskBytes"
+	MemoryBytes             = "memoryBytes"
+	ActRows                 = "actRows"
+	EstRows                 = "estRows"
+	AccessObject            = "accessObject"
+	ScanObject              = "scanObject"
+	DynamicpartitionObjects = "dynamicpartitionObjects"
+	OtherObject             = "otherObject"
+	DiscardedDueToTooLong   = "discardedDueToTooLong"
+	BuildSide               = "buildSide"
+	ProbeSide               = "probeSide"
 
 	JoinTaskThreshold    = 10000
 	returnTableThreshold = 0.7
@@ -135,6 +140,8 @@ func GenerateBinaryPlan(v string) (*tipb.ExplainData, error) {
 }
 
 func GenerateBinaryPlanJSON(b string) (string, error) {
+	fmt.Printf("bp base64: %s \n", b)
+
 	// generate bp
 	bp, err := GenerateBinaryPlan(b)
 	if err != nil {
@@ -151,6 +158,8 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 		return "", err
 	}
 
+	fmt.Printf("bp: %s \n", string(bpJSON))
+
 	bpJSON, err = formatBinaryPlanJSON(bpJSON)
 	if err != nil {
 		return "", err
@@ -166,6 +175,7 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 		return "", err
 	}
 
+	fmt.Printf("vp: %s \n", string(bpJSON))
 	return string(bpJSON), nil
 }
 
@@ -174,6 +184,10 @@ func diagnosticOperator(bp []byte) ([]byte, error) {
 	vp, err := simplejson.NewJson(bp)
 	if err != nil {
 		return nil, err
+	}
+
+	if vp.Get(DiscardedDueToTooLong).MustBool() {
+		return vp.MarshalJSON()
 	}
 
 	// main
@@ -187,7 +201,6 @@ func diagnosticOperator(bp []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return vp.MarshalJSON()
 }
 
@@ -199,7 +212,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 
 	// pseudo stats
 	if strings.Contains(operatorInfo, "stats:pseudo") {
-		switch strings.ToLower(node.GetPath(ScanObject, "database").MustString()) {
+		switch strings.ToLower(node.GetPath(AccessObject, ScanObject, "database").MustString()) {
 		case "information_schema", "metrics_schema", "performance_schema", "mysql":
 		default:
 			diagnosis = append(diagnosis, "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF.")
@@ -226,7 +239,6 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 			if actRows/estRows > 100 || estRows/actRows > 100 {
 				diagnosis = append(diagnosis, "The estimation error is high. Consider checking the health state of the statistics.")
 			}
-			diagOp.needUdateStatistics = true
 		default:
 			diagOp.needUdateStatistics = false
 		}
@@ -250,7 +262,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 		}
 	// unreasonable index return table plan
 	case IndexLookUpReader:
-		cNode := getBuildChildrenWithDriverSide(node, "build")
+		cNode := getBuildChildrenWithDriverSide(node)
 		if getOperatorType(cNode) != Selection {
 			break
 		}
@@ -434,6 +446,10 @@ func analyzeDuration(bp []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	if vp.Get(DiscardedDueToTooLong).MustBool() {
+		return vp.MarshalJSON()
+	}
+
 	rootTs := vp.Get(MainTree).GetPath(RootBasicExecInfo, Time).MustString()
 	// main
 	mainConcurrency := newConcurrency()
@@ -501,7 +517,7 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 	if operator == Apply {
 		for i := 0; i < length; i++ {
 			n := nodes.GetIndex(i)
-			if n.Get(DriverSide).MustString() == "build" {
+			if isBuildSide(n) {
 				newConcurrency := concurrency
 				newConcurrency.applyConcurrency = 1
 				d, err := analyzeDurationNode(n, newConcurrency)
@@ -541,7 +557,7 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 
 		for i := 0; i < length; i++ {
 			n := nodes.GetIndex(i)
-			if n.Get(DriverSide).MustString() == "probe" {
+			if isProbeSide(n) {
 				d, err := analyzeDurationNode(n, concurrency)
 				if err != nil {
 					return 0, err
@@ -558,7 +574,7 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 
 			switch operator {
 			case IndexJoin, IndexMergeJoin, IndexHashJoin:
-				if n.Get(DriverSide).MustString() == "probe" {
+				if isProbeSide(n) {
 					d, err = analyzeDurationNode(n, concurrency)
 				} else {
 					// build: set joinConcurrency == 1
@@ -567,7 +583,7 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 					d, err = analyzeDurationNode(n, newConcurrency)
 				}
 			case IndexLookUpReader, IndexMergeReader:
-				if n.Get(DriverSide).MustString() == "probe" {
+				if isProbeSide(n) {
 					d, err = analyzeDurationNode(n, concurrency)
 				} else {
 					// build: set joinConcurrency == 1
@@ -597,6 +613,30 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 	})
 
 	return durations[0], nil
+}
+
+func isProbeSide(node *simplejson.Json) bool {
+	return labelsContains(node, ProbeSide)
+}
+
+func isBuildSide(node *simplejson.Json) bool {
+	return labelsContains(node, BuildSide)
+}
+
+func labelsContains(node *simplejson.Json, label string) bool {
+	labels := node.Get("labels")
+	length := len(labels.MustArray())
+	if length == 0 {
+		return false
+	}
+
+	for i := 0; i < length; i++ {
+		if labels.GetIndex(i).MustString() == label {
+			return true
+		}
+	}
+
+	return false
 }
 
 func getOperatorType(node *simplejson.Json) operator {
@@ -636,7 +676,7 @@ func getOperatorType(node *simplejson.Json) operator {
 	}
 }
 
-func getBuildChildrenWithDriverSide(node *simplejson.Json, driverSide string) *simplejson.Json {
+func getBuildChildrenWithDriverSide(node *simplejson.Json) *simplejson.Json {
 	nodes := node.Get(Children)
 	length := len(nodes.MustArray())
 
@@ -647,7 +687,7 @@ func getBuildChildrenWithDriverSide(node *simplejson.Json, driverSide string) *s
 
 	for i := 0; i < length; i++ {
 		n := nodes.GetIndex(i)
-		if n.Get(DriverSide).MustString() == driverSide {
+		if isBuildSide(n) {
 			return n
 		}
 	}
@@ -744,20 +784,20 @@ func getCopTaskDuratuon(node *simplejson.Json, concurrency concurrency) string {
 
 			var tsDuration time.Duration
 			n := float64(taskCount) / float64(
-				concurrency.joinConcurrency*concurrency.tableConcurrency*concurrency.applyConcurrency*concurrency.shuffleConcurrency*concurrency.copConcurrency)
+				concurrency.joinConcurrency*concurrency.tableConcurrency*concurrency.applyConcurrency*concurrency.shuffleConcurrency)
 
-			if n > 1 {
-				tsDuration = time.Duration(float64(avgDuration) * n)
+			if n > float64(concurrency.copConcurrency) {
+				tsDuration = time.Duration(float64(avgDuration) * n / float64(concurrency.copConcurrency))
 			} else {
-				tsDuration = time.Duration(float64(avgDuration) /
-					float64(concurrency.joinConcurrency*concurrency.tableConcurrency*concurrency.applyConcurrency*concurrency.shuffleConcurrency))
+				tsDuration = time.Duration(float64(avgDuration) * n)
 			}
 
-			ts = tsDuration.String()
-
-			if tsDuration > maxDuration {
+			if tsDuration < maxDuration {
 				ts = maxTS
+			} else {
+				ts = tsDuration.String()
 			}
+
 		// tiflash
 		case "batchCop", "mpp":
 			ts = node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "proc max").MustString()
@@ -787,6 +827,11 @@ func formatBinaryPlanJSON(bp []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	if vp.Get(DiscardedDueToTooLong).MustBool() {
+		return vp.MarshalJSON()
+	}
+	vp.Set(DiscardedDueToTooLong, false)
+
 	// main
 	err = formatNode(vp.Get(MainTree))
 	if err != nil {
@@ -808,12 +853,27 @@ func formatBinaryPlanJSON(bp []byte) ([]byte, error) {
 // for example:
 // {"copExecInfo" : "tikv_task:{time:0s, loops:1}, scan_detail: {total_process_keys: 8, total_process_keys_size: 360, total_keys: 9, rocksdb: {delete_skipped_count: 0, key_skipped_count: 8, block: {cache_hit_count: 1, read_count: 0, read_byte: 0 Bytes}}}"}.
 func formatNode(node *simplejson.Json) error {
+	var err error
 	for _, key := range needSetNA {
-		if node.Get(key).MustString() == "-1" {
+		if node.Get(key).MustString() == "-1" || node.Get(key).MustString() == "" {
 			node.Set(key, "N/A")
 		}
 	}
-	var err error
+
+	if len(node.Get("labels").MustArray()) == 0 {
+		node.Set("labels", []string{})
+	}
+
+	// actRows string -> uint64
+	actRows, err := strconv.ParseUint(node.Get(ActRows).MustString(), 10, 64)
+	if err != nil {
+		actRows = 0
+	}
+	node.Set(ActRows, float64(actRows))
+
+	if node.Get(EstRows).MustFloat64() == 0 {
+		node.Set(EstRows, 0)
+	}
 
 	for _, key := range needJSONFormat {
 		if key == RootGroupExecInfo {

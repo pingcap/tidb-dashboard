@@ -6,21 +6,24 @@ import React, {
   useEffect,
   useContext
 } from 'react'
+import { Routes, Route, HashRouter as Router } from 'react-router-dom'
+import { IGroup, IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
+import { Modal, Spin, Tooltip, Input } from 'antd'
+import { useMemoizedFn, useDebounce } from 'ahooks'
+import { useTranslation } from 'react-i18next'
+import { LoadingOutlined } from '@ant-design/icons'
+
 import { Root, CardTable, Card, Pre } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ConfigurationItem } from '@lib/client'
-import { IGroup, IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import InlineEditor from './InlineEditor'
-import { Modal, Spin, Tooltip, Input } from 'antd'
-import { useMemoizedFn, useDebounce } from 'ahooks'
-import { LoadingOutlined } from '@ant-design/icons'
-import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
-import { useTranslation } from 'react-i18next'
-
-import translations from './translations'
 import { addTranslations } from '@lib/utils/i18n'
+import { useLocationChange } from '@lib/hooks/useLocationChange'
+
+import InlineEditor from './InlineEditor'
 import { ConfigurationContext } from './context'
+import translations from './translations'
 
 addTranslations(translations)
 
@@ -95,7 +98,7 @@ function getKey(item: IRow) {
   return `${item.kind}.${item.id}`
 }
 
-export default function () {
+function Configuration() {
   const ctx = useContext(ConfigurationContext)
   if (ctx === null) {
     throw new Error('ConfigurationContext must not be null')
@@ -251,6 +254,24 @@ export default function () {
         </Spin>
       </ScrollablePane>
     </Root>
+  )
+}
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route path="/configuration" element={<Configuration />} />
+    </Routes>
+  )
+}
+
+export default function () {
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
   )
 }
 

@@ -4,11 +4,26 @@ import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
 import { Root } from '@lib/components'
 import ListPage from './pages/List'
 
-import translations from './translations'
 import { addTranslations } from '@lib/utils/i18n'
+import { useLocationChange } from '@lib/hooks/useLocationChange'
 import { ClusterInfoContext } from './context'
+import translations from './translations'
 
 addTranslations(translations)
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route
+        path="/cluster_info"
+        element={<Navigate to="/cluster_info/instance" replace />}
+      />
+      <Route path="/cluster_info/:tabKey" element={<ListPage />} />
+    </Routes>
+  )
+}
 
 const App = () => {
   const ctx = useContext(ClusterInfoContext)
@@ -19,13 +34,7 @@ const App = () => {
   return (
     <Root>
       <Router>
-        <Routes>
-          <Route
-            path="/cluster_info"
-            element={<Navigate to="/cluster_info/instance" replace />}
-          />
-          <Route path="/cluster_info/:tabKey" element={<ListPage />} />
-        </Routes>
+        <AppRoutes />
       </Router>
     </Root>
   )

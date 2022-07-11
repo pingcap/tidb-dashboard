@@ -7,8 +7,36 @@ import { addTranslations } from '@lib/utils/i18n'
 import { Detail, List } from './pages'
 import { ConProfilingContext } from './context'
 import translations from './translations'
+import { useLocationChange } from '@lib/hooks/useLocationChange'
 
 addTranslations(translations)
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route
+        path="/continuous_profiling"
+        element={
+          <NgmNotStartedGuard>
+            <List />
+          </NgmNotStartedGuard>
+        }
+      />
+      <Route
+        path="/continuous_profiling/detail"
+        element={
+          <NgmNotStartedGuard>
+            <ParamsPageWrapper>
+              <Detail />
+            </ParamsPageWrapper>
+          </NgmNotStartedGuard>
+        }
+      />
+    </Routes>
+  )
+}
 
 const App = () => {
   const ctx = useContext(ConProfilingContext)
@@ -19,26 +47,7 @@ const App = () => {
   return (
     <Root>
       <Router>
-        <Routes>
-          <Route
-            path="/continuous_profiling"
-            element={
-              <NgmNotStartedGuard>
-                <List />
-              </NgmNotStartedGuard>
-            }
-          />
-          <Route
-            path="/continuous_profiling/detail"
-            element={
-              <NgmNotStartedGuard>
-                <ParamsPageWrapper>
-                  <Detail />
-                </ParamsPageWrapper>
-              </NgmNotStartedGuard>
-            }
-          />
-        </Routes>
+        <AppRoutes />
       </Router>
     </Root>
   )

@@ -2,13 +2,24 @@ import React, { useContext } from 'react'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 
 import { Root } from '@lib/components'
-import { DiagnoseGenerator } from './pages'
-
+import { useLocationChange } from '@lib/hooks/useLocationChange'
 import { addTranslations } from '@lib/utils/i18n'
-import translations from './translations'
+
 import { DiagnoseContext } from './context'
+import { DiagnoseGenerator } from './pages'
+import translations from './translations'
 
 addTranslations(translations)
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route path="/diagnose" element={<DiagnoseGenerator />} />
+    </Routes>
+  )
+}
 
 const App = () => {
   const ctx = useContext(DiagnoseContext)
@@ -19,9 +30,7 @@ const App = () => {
   return (
     <Root>
       <Router>
-        <Routes>
-          <Route path="/diagnose" element={<DiagnoseGenerator />} />
-        </Routes>
+        <AppRoutes />
       </Router>
     </Root>
   )

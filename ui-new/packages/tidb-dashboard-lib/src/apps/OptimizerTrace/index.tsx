@@ -5,8 +5,9 @@ import { UploadOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { Card, Toolbar, Root } from '@lib/components'
+import { addTranslations } from '@lib/utils/i18n'
+import { useLocationChange } from '@lib/hooks/useLocationChange'
 
-import styles from './index.module.less'
 import LogicalOperatorTree, {
   LogicalOperatorNode
 } from './components/LogicalOperatorTree'
@@ -14,11 +15,21 @@ import PhysicalOperatorTree, {
   PhysicalOperatorNode
 } from './components/PhysicalOperatorTree'
 import { OptimizerTraceContext } from './context'
-
 import translations from './translations'
-import { addTranslations } from '@lib/utils/i18n'
+
+import styles from './index.module.less'
 
 addTranslations(translations)
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route path="/optimizer_trace" element={<OptimizerTrace />} />
+    </Routes>
+  )
+}
 
 export default function OptimizeTraceApp() {
   const ctx = useContext(OptimizerTraceContext)
@@ -29,9 +40,7 @@ export default function OptimizeTraceApp() {
   return (
     <Root>
       <Router>
-        <Routes>
-          <Route path="/optimizer_trace" element={<OptimizerTrace />} />
-        </Routes>
+        <AppRoutes />
       </Router>
     </Root>
   )

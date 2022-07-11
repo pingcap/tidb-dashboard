@@ -9,6 +9,7 @@ import {
   WarningOutlined,
   CheckOutlined
 } from '@ant-design/icons'
+import { Routes, Route, HashRouter as Router } from 'react-router-dom'
 
 import Editor from './Editor'
 import ResultTable from './ResultTable'
@@ -21,12 +22,13 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import translations from './translations'
 import { addTranslations } from '@lib/utils/i18n'
 import { QueryEditorContext } from './context'
+import { useLocationChange } from '@lib/hooks/useLocationChange'
 
 const MAX_DISPLAY_ROWS = 1000
 
 addTranslations(translations)
 
-function App() {
+function QueryEditor() {
   const ctx = useContext(QueryEditorContext)
 
   if (ctx === null) {
@@ -115,6 +117,24 @@ function App() {
         </Split>
       </div>
     </Root>
+  )
+}
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route path="/query_editor" element={<QueryEditor />} />
+    </Routes>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
   )
 }
 

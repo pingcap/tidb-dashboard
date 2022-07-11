@@ -1,13 +1,25 @@
 import React, { useContext } from 'react'
+import { Routes, Route, HashRouter as Router } from 'react-router-dom'
 
 import { Root } from '@lib/components'
-import { ApiList } from './apilist'
-
-import translations from './translations'
 import { addTranslations } from '@lib/utils/i18n'
+import { useLocationChange } from '@lib/hooks/useLocationChange'
+
 import { DebugAPIContext } from './context'
+import { ApiList } from './apilist'
+import translations from './translations'
 
 addTranslations(translations)
+
+function AppRoutes() {
+  useLocationChange()
+
+  return (
+    <Routes>
+      <Route path="/debug_api" element={<ApiList />} />
+    </Routes>
+  )
+}
 
 export default function () {
   const ctx = useContext(DebugAPIContext)
@@ -17,7 +29,9 @@ export default function () {
 
   return (
     <Root>
-      <ApiList />
+      <Router>
+        <AppRoutes />
+      </Router>
     </Root>
   )
 }

@@ -1,7 +1,7 @@
 import React, { memo } from 'react'
 import SingleTree from './SingleTree'
 
-import { rectBound, TreeNodeDatum, nodeMarginType } from './types'
+import { TreeNodeDatum, nodeMarginType } from './types'
 
 interface MultiTreesProps {
   treeNodeDatum: TreeNodeDatum[]

@@ -1,5 +1,5 @@
 import React, { MutableRefObject, Ref, useEffect, useRef } from 'react'
-import { select, event, Selection } from 'd3-selection'
+import { select, event } from 'd3-selection'
 import { brush as d3Brush, BrushBehavior } from 'd3-brush'
 import { zoom as d3Zoom, zoomIdentity, zoomTransform } from 'd3-zoom'
 import { ScaleLinear } from 'd3-scale'

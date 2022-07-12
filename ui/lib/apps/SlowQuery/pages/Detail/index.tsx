@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
-import { Space, Modal } from 'antd'
+import { Space, Modal, Tabs } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-
-import { Tabs } from 'antd'
 
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'

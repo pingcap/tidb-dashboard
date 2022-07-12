@@ -13,6 +13,7 @@ class DataSource implements IKeyVizDataSource {
   keyvisualConfigPut(request: ConfigKeyVisualConfig, options?: ReqConfig) {
     return client.getInstance().keyvisualConfigPut({ request }, options)
   }
+
   keyvisualHeatmapsGet(
     startkey?: string,
     endkey?: string,

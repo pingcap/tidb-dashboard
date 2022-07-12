@@ -44,6 +44,6 @@ class DataSource implements ITopSQLDataSource {
 
 const ds = new DataSource()
 
-export const ctx: ITopSQLContext = {
+export const ctx: () => ITopSQLContext = () => ({
   ds
-}
+})

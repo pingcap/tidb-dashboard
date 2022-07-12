@@ -1,7 +1,7 @@
 import { store, ReqConfig } from '@pingcap/tidb-dashboard-lib'
-import client from '~/client'
+import client, { InfoInfoResponse } from '~/client'
 
-export async function reloadWhoAmI(): Promise<boolean> {
+export async function loadWhoAmI(): Promise<boolean> {
   try {
     const resp = await client.getInstance().infoWhoami({
       handleError: 'custom'
@@ -16,4 +16,14 @@ export async function reloadWhoAmI(): Promise<boolean> {
     })
     return false
   }
+}
+
+export async function loadAppInfo(): Promise<InfoInfoResponse> {
+  const resp = await client.getInstance().infoGet({
+    handleError: 'custom'
+  } as ReqConfig)
+  store.update((s) => {
+    s.appInfo = resp.data
+  })
+  return resp.data
 }

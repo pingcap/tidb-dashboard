@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Statement from './apps/Statement'
 import SlowQuery from './apps/SlowQuery'
 import KeyViz from './apps/KeyViz'
+import TopSQL from './apps/TopSQL'
 
 function getLocHashPrefix() {
   return window.location.hash.split('/')[1]
@@ -33,6 +34,10 @@ export default function () {
 
   if (locHashPrefix === 'keyviz') {
     return <KeyViz />
+  }
+
+  if (locHashPrefix === 'topsql') {
+    return <TopSQL />
   }
 
   return <p>No Matched Route!</p>

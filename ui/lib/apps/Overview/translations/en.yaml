@@ -1,5 +1,7 @@
 overview:
   nav_title: Overview
+  back: Back
+  view_more_metrics: View More Metrics
   top_statements:
     title: Time Consuming SQL Statements
   recent_slow_query:
@@ -8,7 +10,6 @@ overview:
     title: Alive Instances
   monitor_alert:
     title: Monitor & Alert
-    view_more_metrics: View More Metrics
     view_grafana_monitor: View Grafana Metrics
     view_monitor_warn: Metrics unavailable
     view_alerts: 'View {{alertCount}} Alerts'
@@ -25,7 +26,6 @@ overview:
       total: Database Time
       by_sql_type: Database Time by SQL Types
       by_steps_of_sql_processig: Database Time by Steps of SQL Processing
-      execute_time: Database Execute Time
     sql_count:
       qps: Query Per Second
       failed_queries: Failed Queries
@@ -41,7 +41,6 @@ overview:
     transaction:
       tps: Transaction Per Second
       average_duration: Transaction Duration
-      retry_count: Transaction Retry Cound
     server:
       tidb_uptime: TiDB Uptime
       tidb_cpu_usage: TiDB CPU Usage

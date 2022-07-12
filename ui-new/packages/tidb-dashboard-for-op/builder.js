@@ -119,7 +119,7 @@ const logTime = (_options = {}) => ({
 const esbuildParams = {
   color: true,
   entryPoints: {
-    dashboardApp: 'src/index.ts',
+    dashboardApp: 'src/dashboardApp/index.ts',
     diagnoseReport: 'src/diagnoseReportApp/index.tsx'
   },
   outdir: 'build',
@@ -227,7 +227,6 @@ async function main() {
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {
       handleAssets()
     })
-
     // watch "node_modules/@pingcap/tidb-dashboard-lib/dist/**/*" triggers too many rebuild
     // so we just watch index.js to refine the experience
     watch('node_modules/@pingcap/tidb-dashboard-lib/dist/index.js', {

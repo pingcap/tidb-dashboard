@@ -41,15 +41,23 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
           <p>
             Task Type: <span>{nodeDatum.taskType}</span>
           </p>
-          <p>
-            Operator Info: <span>{nodeDatum.operatorInfo}</span>
-          </p>
+          {nodeDatum.operatorInfo && (
+            <p>
+              Operator Info: <span>{nodeDatum.operatorInfo}</span>
+            </p>
+          )}
           {nodeDatum.labels.length > 0 && (
-            <>
-              {nodeDatum.labels.map((label) => (
-                <>{label}</>
-              ))}
-            </>
+            <p>
+              Labels:{' '}
+              <span>
+                {nodeDatum.labels.map((label, idx) => (
+                  <>
+                    {idx > 0 ? ',' : ''}
+                    {label}
+                  </>
+                ))}
+              </span>
+            </p>
           )}
           {Object.keys(nodeDatum.rootBasicExecInfo).length > 0 && (
             <div>

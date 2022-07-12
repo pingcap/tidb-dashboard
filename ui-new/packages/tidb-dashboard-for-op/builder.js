@@ -17,7 +17,7 @@ const isDev = process.env.NODE_ENV !== 'production'
 // const isE2E = process.env.E2E_TEST === 'true'
 
 // load env
-const envFile = isDev ? './.env.development' : './env.production'
+const envFile = isDev ? './.env.development' : './.env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
@@ -202,9 +202,8 @@ function handleAssets() {
   buildHtml('./public/diagnoseReport.html', `./${outDir}/diagnoseReport.html`)
 }
 
-// TODO: fix
 function copyDistroRes() {
-  const distroResPath = '../bin/distro-res'
+  const distroResPath = '../../../bin/distro-res'
   if (fs.existsSync(distroResPath)) {
     fs.copySync(distroResPath, `./${outDir}/distro-res`)
   }

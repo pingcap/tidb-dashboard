@@ -1,5 +1,5 @@
-import React from 'react'
-import { Space } from 'antd'
+import React, { useState } from 'react'
+import { Space, Tabs, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,
@@ -11,6 +11,7 @@ import {
   HighlightSQL,
   Pre,
   TextWithInfo,
+  TreeDiagramView,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
@@ -50,6 +51,13 @@ function PlanDetail({ query }: IPlanDetailProps) {
         reqConfig
       )
   )
+  const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
+
+  const [isVpVisible, setIsVpVisable] = useState(false)
+  const toggleVisualPlan = () => {
+    setIsVpVisable(!isVpVisible)
+  }
+
   const { isLoading: isSchemaLoading } = useSchemaColumns()
   const isLoading = isDataLoading || isSchemaLoading
 
@@ -153,25 +161,78 @@ function PlanDetail({ query }: IPlanDetailProps) {
                   </Expand>
                 </Descriptions.Item>
               ) : null}
-              <Descriptions.Item
-                span={2}
-                multiline={detailExpand.plan}
-                label={
-                  <Space size="middle">
-                    <TextWithInfo.TransKey transKey="statement.fields.plan" />
-                    <Expand.Link
-                      expanded={detailExpand.plan}
-                      onClick={togglePlan}
-                    />
-                    <CopyLink data={data.plan ?? ''} />
-                  </Space>
+            </Descriptions>
+
+            {(binaryPlan || detailExpand.plan) && (
+              <Tabs
+                defaultActiveKey={
+                  binaryPlan && !binaryPlan.main.discardedDueToTooLong
+                    ? 'binary_plan'
+                    : 'text_plan'
                 }
               >
-                <Expand expanded={detailExpand.plan}>
-                  <Pre noWrap>{data.plan}</Pre>
-                </Expand>
-              </Descriptions.Item>
-            </Descriptions>
+                {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
+                  <Tabs.TabPane tab="Visual Plan" key="binary_plan">
+                    <Modal
+                      title="Visual Plan Tree Diagram"
+                      centered
+                      visible={isVpVisible}
+                      width={window.innerWidth}
+                      onCancel={toggleVisualPlan}
+                      footer={null}
+                      destroyOnClose={true}
+                      bodyStyle={{ background: '#f5f5f5' }}
+                    >
+                      <TreeDiagramView
+                        data={
+                          binaryPlan.ctes
+                            ? [binaryPlan.main].concat(binaryPlan.ctes)
+                            : [binaryPlan.main]
+                        }
+                        showMinimap={true}
+                      />
+                    </Modal>
+                    <Descriptions>
+                      <Descriptions.Item span={2}>
+                        <div onClick={toggleVisualPlan}>
+                          <TreeDiagramView
+                            data={
+                              binaryPlan.ctes
+                                ? [binaryPlan.main].concat(binaryPlan.ctes)
+                                : [binaryPlan.main]
+                            }
+                            isThumbnail={true}
+                          />
+                        </div>
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </Tabs.TabPane>
+                )}
+
+                <Tabs.TabPane tab="Text Plan" key="text_plan">
+                  <Descriptions>
+                    <Descriptions.Item
+                      span={2}
+                      multiline={detailExpand.plan}
+                      label={
+                        <Space size="middle">
+                          <TextWithInfo.TransKey transKey="statement.fields.plan" />
+                          <Expand.Link
+                            expanded={detailExpand.plan}
+                            onClick={togglePlan}
+                          />
+                          <CopyLink data={data.plan ?? ''} />
+                        </Space>
+                      }
+                    >
+                      <Expand expanded={detailExpand.plan}>
+                        <Pre noWrap>{data.plan}</Pre>
+                      </Expand>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Tabs.TabPane>
+              </Tabs>
+            )}
 
             <DetailTabs data={data} query={query} />
           </>

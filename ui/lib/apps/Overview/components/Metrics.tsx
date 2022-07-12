@@ -1,4 +1,4 @@
-import { Space, Typography, Row, Col } from 'antd'
+import { Space, Typography, Row, Col, Collapse } from 'antd'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -37,16 +37,11 @@ function Connection(props: IChartProps) {
       <MetricChart
         queries={[
           {
-            query: 'tidb_server_connections',
-            name: '{instance}',
-          },
-          {
             query: 'sum(tidb_server_connections)',
             name: 'total',
           },
           {
-            query:
-              'sum(rate(tidb_server_handle_query_duration_seconds_sum[$__rate_interval]))',
+            query: 'sum(tidb_server_tokens)',
             name: 'active connections',
           },
         ]}
@@ -744,25 +739,27 @@ export default function Metrics(props) {
 
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
-          <Row gutter={[16, 16]}>
-            <Col xl={12} sm={24}>
-              <Connection {...metricProps('connection')} />
-            </Col>
-            <Col xl={12} sm={24}>
-              <Disconnection {...metricProps('disconneciton')} />
-            </Col>
-            <Col xl={12} sm={24}>
-              <ConnectionIdleDuration
-                {...metricProps('connection_idle_duration')}
-              />
-            </Col>
-            <Col xl={12} sm={24}>
-              <DatabaseTime {...metricProps('database_time')} />
-            </Col>
-          </Row>
-          {showAllPerformanceMetics && (
-            <>
+          <Collapse bordered={false} defaultActiveKey={['1', '2']}>
+            <Collapse.Panel header="Application Connection" key="1">
               <Row gutter={[16, 16]}>
+                <Col xl={12} sm={24}>
+                  <Connection {...metricProps('connection')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <Disconnection {...metricProps('disconneciton')} />
+                </Col>
+                <Col xl={12} sm={24}>
+                  <ConnectionIdleDuration
+                    {...metricProps('connection_idle_duration')}
+                  />
+                </Col>
+              </Row>
+            </Collapse.Panel>
+            <Collapse.Panel header="Database Time" key="2">
+              <Row gutter={[16, 16]}>
+                <Col xl={12} sm={24}>
+                  <DatabaseTime {...metricProps('database_time')} />
+                </Col>
                 <Col xl={12} sm={24}>
                   <DatabaseTimeByPhrase
                     {...metricProps('database_time_by_phrase')}
@@ -771,68 +768,98 @@ export default function Metrics(props) {
                 <Col xl={12} sm={24}>
                   <DatabaseExecTime {...metricProps('database_exec_time')} />
                 </Col>
-                <Col xl={12} sm={24}>
-                  <QPS {...metricProps('qps')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <FailedQuery {...metricProps('failed_query')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <CPS {...metricProps('cps')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <OPS {...metricProps('ops')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <Latency {...metricProps('latency')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <GetTokenDuration {...metricProps('get_token')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <ParseDuration {...metricProps('parse')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <CompileDuration {...metricProps('compile')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <ExecDuration {...metricProps('execution')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <Transaction {...metricProps('tps')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TransactionDuration {...metricProps('average_duration')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TransactionRetry {...metricProps('retry_count')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TiDBUptime {...metricProps('tidb_uptime')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TiDBCPUUsage {...metricProps('tidb_cpu_usage')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TiDBMemoryUsage {...metricProps('tidb_memory_usage')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TiKVUptime {...metricProps('tikv_uptime')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TiKVCPUUsage {...metricProps('tikv_cpu_usage')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TiKVMemoryUsage {...metricProps('tikv_memory_usage')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TiKVIO {...metricProps('tikv_io_mbps')} />
-                </Col>
-                <Col xl={12} sm={24}>
-                  <TiKVStorageUsage {...metricProps('tikv_storage_usage')} />
-                </Col>
               </Row>
-            </>
+            </Collapse.Panel>
+          </Collapse>
+          {showAllPerformanceMetics && (
+            <Collapse bordered={false}>
+              <Collapse.Panel header="SQL Count" key="1">
+                <Row gutter={[16, 16]}>
+                  <Col xl={12} sm={24}>
+                    <QPS {...metricProps('qps')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <FailedQuery {...metricProps('failed_query')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <CPS {...metricProps('cps')} />
+                  </Col>
+                </Row>
+              </Collapse.Panel>
+              <Collapse.Panel header="Core Feature Usage" key="2">
+                <Row gutter={[16, 16]}>
+                  <Col xl={12} sm={24}>
+                    <DatabaseTime {...metricProps('database_time')} />
+                  </Col>
+                </Row>
+              </Collapse.Panel>
+
+              <Collapse.Panel header="Latency break down" key="2">
+                <Row gutter={[16, 16]}>
+                  <Col xl={12} sm={24}>
+                    <OPS {...metricProps('ops')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <Latency {...metricProps('latency')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <GetTokenDuration {...metricProps('get_token')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <ParseDuration {...metricProps('parse')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <CompileDuration {...metricProps('compile')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <ExecDuration {...metricProps('execution')} />
+                  </Col>
+                </Row>
+              </Collapse.Panel>
+
+              <Collapse.Panel header="Transaction" key="2">
+                <Row gutter={[16, 16]}>
+                  <Col xl={12} sm={24}>
+                    <Transaction {...metricProps('tps')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <TransactionDuration {...metricProps('average_duration')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <TransactionRetry {...metricProps('retry_count')} />
+                  </Col>
+                </Row>
+              </Collapse.Panel>
+
+              <Collapse.Panel header="Server" key="2">
+                <Row gutter={[16, 16]}>
+                  <Col xl={12} sm={24}>
+                    <TiDBUptime {...metricProps('tidb_uptime')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <TiDBCPUUsage {...metricProps('tidb_cpu_usage')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <TiDBMemoryUsage {...metricProps('tidb_memory_usage')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <TiKVUptime {...metricProps('tikv_uptime')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <TiKVCPUUsage {...metricProps('tikv_cpu_usage')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <TiKVMemoryUsage {...metricProps('tikv_memory_usage')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <TiKVIO {...metricProps('tikv_io_mbps')} />
+                  </Col>
+                  <Col xl={12} sm={24}>
+                    <TiKVStorageUsage {...metricProps('tikv_storage_usage')} />
+                  </Col>
+                </Row>
+              </Collapse.Panel>
+            </Collapse>
           )}
         </Stack>
       </ChartContext.Provider>

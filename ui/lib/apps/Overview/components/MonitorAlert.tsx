@@ -48,16 +48,12 @@ export default function MonitorAlert() {
             </Typography.Text>
           )}
           {grafanaData && (
-            <a
-              href={`/overview/detail`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <Link to={`/overview/detail`}>
               <Space>
                 {t('overview.monitor_alert.view_more_metrics')}
                 <RightOutlined />
               </Space>
-            </a>
+            </Link>
           )}
           {grafanaData && (
             <a

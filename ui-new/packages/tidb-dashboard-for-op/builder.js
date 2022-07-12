@@ -74,7 +74,7 @@ function getInternalVersion() {
     .filter((l) => !l.startsWith('#') && l !== '')[0]
   if (version === '') {
     throw new Error(
-      `invalid release version, please check the release-version @tidb-dashboard/root`
+      `invalid release version, please check the release-version file`
     )
   }
   return version

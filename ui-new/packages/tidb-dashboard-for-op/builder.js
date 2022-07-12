@@ -20,12 +20,14 @@ const isDev = process.env.NODE_ENV !== 'production'
 const envFile = isDev ? './.env.development' : './env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
+const outDir = 'dist'
+
 const dashboardApiPrefix =
   process.env.REACT_APP_DASHBOARD_API_URL || 'http://127.0.0.1:12333'
 const devServerPort = process.env.PORT
 const devServerParams = {
   port: devServerPort,
-  root: 'build',
+  root: outDir,
   open: '/dashboard',
   // Set base URL
   // https://github.com/tapio/live-server/issues/287 - How can I serve from a base URL?
@@ -122,7 +124,7 @@ const esbuildParams = {
     dashboardApp: 'src/dashboardApp/index.ts',
     diagnoseReport: 'src/diagnoseReportApp/index.tsx'
   },
-  outdir: 'build',
+  outdir: outDir,
   minify: !isDev,
   format: 'esm',
   bundle: true,
@@ -178,7 +180,7 @@ function buildHtml(inputFilename, outputFilename) {
   }
 
   // handle distro strings res, only for dev mode
-  const distroStringsResFilePath = './build/distro-res/strings.json'
+  const distroStringsResFilePath = `./${outDir}/distro-res/strings.json`
   if (isDev && fs.existsSync(distroStringsResFilePath)) {
     const distroStringsRes = require(distroStringsResFilePath)
     result = result.replace(
@@ -191,25 +193,25 @@ function buildHtml(inputFilename, outputFilename) {
 }
 
 function handleAssets() {
-  fs.copySync('./public', './build')
+  fs.copySync('./public', `./${outDir}`)
   if (isDev) {
     copyDistroRes()
   }
 
-  buildHtml('./public/index.html', './build/index.html')
-  buildHtml('./public/diagnoseReport.html', './build/diagnoseReport.html')
+  buildHtml('./public/index.html', `./${outDir}/index.html`)
+  buildHtml('./public/diagnoseReport.html', `./${outDir}/diagnoseReport.html`)
 }
 
 // TODO: fix
 function copyDistroRes() {
   const distroResPath = '../bin/distro-res'
   if (fs.existsSync(distroResPath)) {
-    fs.copySync(distroResPath, './build/distro-res')
+    fs.copySync(distroResPath, `./${outDir}/distro-res`)
   }
 }
 
 async function main() {
-  fs.removeSync('./build')
+  fs.removeSync(`./${outDir}`)
 
   const builder = await build(esbuildParams)
   handleAssets()

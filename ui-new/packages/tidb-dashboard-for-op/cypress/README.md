@@ -20,7 +20,7 @@ cd ui-new && pnpm dev
 # start backend server
 make dev && make run
 # open cypress test runner
-cd ui-new && pnpm open:cypress
+cd ui-new/pacakges/tidb-dashboard-for-op && pnpm open:cypress
 ```
 
 #### Test E2E with FEATURE_VERSION < 5.3.0
@@ -31,7 +31,7 @@ cd ui-new && pnpm dev
 # start backend server
 make dev && make run FEATURE_VERSION=5.0.0
 # open cypress test runner
-cd ui-new && pnpm open:cypress --env FEATURE_VERSION=5.0.0
+cd ui-new/pacakges/tidb-dashboard-for-op && pnpm open:cypress --env FEATURE_VERSION=5.0.0
 ```
 
 Run test by choosing test file under `/integration` on cypress test runner, cypress will open a broswer to run e2e test.
@@ -61,6 +61,6 @@ Since there was no cypress image of m1 before. So we use github actions to gener
 
 3. Enter which git SHA you want the test to run on
 
-4. Specify the test specs to generate the snapshots, base path is `${PROJECT_DIR}/ui/cypress/integration`
+4. Specify the test specs to generate the snapshots, base path is `${PROJECT_DIR}/ui-new/packages/tidb-dashboard-for-op/cypress/integration`
 
 5. Enter the action after all jobs finished, download the e2e-snapshots artifact below.

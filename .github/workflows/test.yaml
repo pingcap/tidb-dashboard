@@ -108,20 +108,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      # https://pnpm.io/continuous-integration#github-actions
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2.2.2
         with:
-          node-version: "16"
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
-        working-directory: ui
-      - uses: actions/cache@v3
-        id: yarn-cache
+          version: 7
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          node-version: '16'
+          cache: 'pnpm'
       - uses: actions/setup-go@v3
         with:
           go-version: "1.15"
@@ -186,7 +182,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
-          files: ./ui/.nyc_output/out.json
+          files: ./ui-new/packages/tidb-dashboard-for-op/.nyc_output/out.json
           fail_ci_if_error: true
           flags: e2e_test
           verbose: true

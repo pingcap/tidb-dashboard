@@ -14,11 +14,13 @@ set -euo pipefail
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_DIR=$(cd "$DIR/.."; pwd)
 
+UI_ASSETS_DIR=$PROJECT_DIR/ui-new/packages/tidb-dashboard-for-op/dist
+
 export GOBIN=$PROJECT_DIR/bin
 export PATH=$GOBIN:$PATH
 
 echo "+ Preflight check"
-if [ ! -d "$PROJECT_DIR/ui/build" ]; then
+if [ ! -d "$UI_ASSETS_DIR" ]; then
   echo "  - Error: UI assets must be built first"
   exit 1
 fi
@@ -32,7 +34,7 @@ fi
 echo "+ Embed UI assets"
 
 cd "$PROJECT_DIR/scripts"
-go run generate_assets.go "$PROJECT_DIR/ui/build" "$BUILD_TAG_PARAMETER"
+go run generate_assets.go "$UI_ASSETS_DIR" "$BUILD_TAG_PARAMETER"
 
 HANDLER_PATH=$PROJECT_DIR/pkg/uiserver/embedded_assets_handler.go
 mv assets_vfsdata.go $HANDLER_PATH

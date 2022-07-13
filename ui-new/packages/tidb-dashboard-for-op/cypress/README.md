@@ -4,7 +4,7 @@ Since there are some features is different from version to version, we have `mak
 
 ## Install Cypress
 
-The Cypress has been added to package.json, so just run `yarn` to install it. We use Cypress@8.5.0 here since the version>8.5.0 has an unstable server connection error, the related issue can be referred [here](https://github.com/cypress-io/cypress/issues/18464).
+The Cypress has been added to package.json, so just run `pnpm i` to install it. We use Cypress@8.5.0 here since the version>8.5.0 has an unstable server connection error, the related issue can be referred [here](https://github.com/cypress-io/cypress/issues/18464).
 
 ## Run Test
 
@@ -16,22 +16,22 @@ The Cypress has been added to package.json, so just run `yarn` to install it. We
 
 ```shell
 # start frontend server
-cd ui && yarn start
+cd ui-new && pnpm dev
 # start backend server
 make dev && make run
 # open cypress test runner
-cd ui && yarn open:cypress
+cd ui-new && pnpm open:cypress
 ```
 
 #### Test E2E with FEATURE_VERSION < 5.3.0
 
 ```shell
 # start frontend server
-cd ui && yarn start
+cd ui-new && pnpm dev
 # start backend server
 make dev && make run FEATURE_VERSION=5.0.0
 # open cypress test runner
-cd ui && yarn open:cypress --env FEATURE_VERSION=5.0.0
+cd ui-new && pnpm open:cypress --env FEATURE_VERSION=5.0.0
 ```
 
 Run test by choosing test file under `/integration` on cypress test runner, cypress will open a broswer to run e2e test.

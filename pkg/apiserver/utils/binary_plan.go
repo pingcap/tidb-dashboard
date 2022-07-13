@@ -46,6 +46,14 @@ const (
 
 	JoinTaskThreshold    = 10000
 	returnTableThreshold = 0.7
+
+	LargeEstimatedBias = "The estimation error is high. Consider checking the health state of the statistics."
+	UseDisk            = "Disk spill is triggered for this operator because the memory quota is exceeded. The execution might be slow. Consider increasing the memory quota if there's enough memory."
+	PseudoCheck        = "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF."
+	AddIndex           = "This Selection filters a high proportion of data. Using an index on this column might achieve better performance. Consider adding an index on this column if there is not one."
+	BadIndex           = "This IndexLookup read a lot of data from the index side. It might be slow and cause heavy pressure on TiKV. Consider using the optimizer hints to guide the optimizer to choose a better index or not to use index."
+	BadIndexJoin       = "This index join has a large build side. It might be slow and cause heavy pressure on TiKV. Consider using the optimizer hints to guide the optimizer to choose hash join."
+	UseTiFlash         = "The TiKV read a lot of data. Consider using TiFlash to get better performance if it's necessary to read so much data."
 )
 
 // operator.
@@ -140,6 +148,7 @@ func GenerateBinaryPlan(v string) (*tipb.ExplainData, error) {
 }
 
 func GenerateBinaryPlanJSON(b string) (string, error) {
+	fmt.Printf("bp: %s\n", b)
 	// generate bp
 	bp, err := GenerateBinaryPlan(b)
 	if err != nil {
@@ -149,13 +158,11 @@ func GenerateBinaryPlanJSON(b string) (string, error) {
 	if bp == nil {
 		return "", nil
 	}
-
 	// json marshal
 	bpJSON, err := json.Marshal(protoimpl.X.ProtoMessageV2Of(bp))
 	if err != nil {
 		return "", err
 	}
-
 	bpJSON, err = formatBinaryPlanJSON(bpJSON)
 	if err != nil {
 		return "", err
@@ -205,21 +212,33 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 	operatorInfo := node.Get(OperatorInfo).MustString()
 	diagnosis := []string{}
 
+	// filter system table
+	switch strings.ToLower(getScanDatabase(node)) {
+	case "information_schema", "metrics_schema", "performance_schema", "mysql":
+		diagOp, err := diagnosticOperatorNodes(node.Get(Children), diagOp)
+		if err != nil {
+			return diagOp, nil
+		}
+		// set diagnosis
+		node.Set(Diagnosis, diagnosis)
+		return diagOp, nil
+	}
+
 	// pseudo stats
 	if strings.Contains(operatorInfo, "stats:pseudo") {
-		switch strings.ToLower(getScanDatabase(node)) {
-		case "information_schema", "metrics_schema", "performance_schema", "mysql":
-		default:
-			diagnosis = append(diagnosis, "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF.")
-		}
+		diagnosis = append(diagnosis, PseudoCheck)
 	}
+
 	// use disk
 	diskBytes := node.Get(DiskBytes).MustString()
 	if diskBytes != "N/A" {
-		diagnosis = append(diagnosis, "Disk spill is triggered for this operator because the memory quota is exceeded. The execution might be slow. Consider increasing the memory quota if there's enough memory.")
+		diagnosis = append(diagnosis, UseDisk)
 	}
 
 	diagOp, err := diagnosticOperatorNodes(node.Get(Children), diagOp)
+	if err != nil {
+		return diagOp, nil
+	}
 
 	// marked rows estimation error too high
 	if diagOp.needUdateStatistics {
@@ -228,11 +247,11 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 			actRows := node.Get(ActRows).MustFloat64()
 			estRows := node.Get(EstRows).MustFloat64()
 			if actRows == 0 || estRows == 0 {
-				actRows = +1
-				estRows = +1
+				actRows = actRows + 1
+				estRows = estRows + 1
 			}
 			if actRows/estRows > 100 || estRows/actRows > 100 {
-				diagnosis = append(diagnosis, "The estimation error is high. Consider checking the health state of the statistics.")
+				diagnosis = append(diagnosis, LargeEstimatedBias)
 			}
 		default:
 			diagOp.needUdateStatistics = false
@@ -250,7 +269,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 				joinTaskCountStr := rootGroupInfo.GetIndex(i).GetPath("inner", "task").MustString()
 				joinTaskCount, _ := strconv.Atoi(joinTaskCountStr)
 				if joinTaskCount > JoinTaskThreshold {
-					diagnosis = append(diagnosis, "This index join has a large build side. It might be slow and cause heavy pressure on TiKV. Consider using the optimizer hints to guide the optimizer to choose hash join.")
+					diagnosis = append(diagnosis, BadIndexJoin)
 					break
 				}
 			}
@@ -277,7 +296,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 		cNodeActRows := cNode.Get(ActRows).MustFloat64()
 		gNodeActRows := gNode.Get(ActRows).MustFloat64()
 		if cNodeActRows/gNodeActRows > returnTableThreshold {
-			diagnosis = append(diagnosis, "This IndexLookup read a lot of data from the index side. It might be slow and cause heavy pressure on TiKV. Consider using the optimizer hints to guide the optimizer to choose a better index or not to use index.")
+			diagnosis = append(diagnosis, BadIndex)
 		}
 	case Selection:
 		if len(node.Get(Children).MustArray()) != 1 {
@@ -285,7 +304,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 		}
 		cNode := node.Get(Children).GetIndex(0)
 
-		if getOperatorType(cNode) != IndexFullScan {
+		if getOperatorType(cNode) != TableFullScan {
 			break
 		}
 		if node.Get(StoreType).MustString() != "tikv" {
@@ -297,20 +316,16 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 		}
 
 		if node.Get(ActRows).MustFloat64() < 10000 && cNode.Get(ActRows).MustFloat64() > 5000000 {
-			diagnosis = append(diagnosis, "This Selection filters a high proportion of data. Using an index on this column might achieve better performance. Consider adding an index on this column if there is not one.")
+			diagnosis = append(diagnosis, AddIndex)
 		}
-
 	case TableFullScan:
 		if node.Get(StoreType).MustString() == "tikv" && node.Get(ActRows).MustFloat64() > 1000000000 {
-			diagnosis = append(diagnosis, "The TiKV read a lot of data. Consider using TiFlash to get better performance if it's necessary to read so much data.")
+			diagnosis = append(diagnosis, UseTiFlash)
 		}
 	}
 
 	// set diagnosis
 	node.Set(Diagnosis, diagnosis)
-	if err != nil {
-		return diagOp, err
-	}
 
 	return diagOp, nil
 }
@@ -554,13 +569,17 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 					}
 				}
 
+				actRowsStr := n.Get(ActRows).MustString()
+				if actRowsStr == "" {
+					continue
+				}
 				actRows, err = strconv.ParseFloat(n.Get(ActRows).MustString(), 64)
 				if err != nil {
 					return 0, err
 				}
 
 				taskCount := int(actRows * (1 - cacheHitRatio/100))
-
+				taskCount = taskCount / concurrency.joinConcurrency * concurrency.shuffleConcurrency * concurrency.tableConcurrency
 				if taskCount < concurrency.applyConcurrency {
 					concurrency.applyConcurrency = taskCount
 				}
@@ -721,7 +740,7 @@ func getConcurrency(node *simplejson.Json, operator operator, concurrency concur
 
 				joinTaskCountStr := rootGroupInfo.GetIndex(i).GetPath("inner", "task").MustString()
 				joinTaskCount, _ := strconv.Atoi(joinTaskCountStr)
-
+				joinTaskCount = joinTaskCount / concurrency.applyConcurrency * concurrency.shuffleConcurrency * concurrency.tableConcurrency
 				// task count as concurrency
 				if joinTaskCount < tmpJoinConcurrency {
 					tmpJoinConcurrency = joinTaskCount
@@ -744,7 +763,7 @@ func getConcurrency(node *simplejson.Json, operator operator, concurrency concur
 
 				tableTaskNumStr := rootGroupInfo.GetIndex(i).GetPath("table_task", "num").MustString()
 				tableTaskNum, _ := strconv.Atoi(tableTaskNumStr)
-				tableTaskNum = tableTaskNum / concurrency.joinConcurrency
+				tableTaskNum = tableTaskNum / concurrency.joinConcurrency * concurrency.applyConcurrency * concurrency.shuffleConcurrency
 				if tableTaskNum < tmpTableConcurrency {
 					tmpTableConcurrency = tableTaskNum
 				}

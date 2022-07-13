@@ -81,6 +81,7 @@ export const DefaultNode = (nodeProps) => {
               style={{
                 width: nodeWidth,
                 height: nodeHeight - collapsableButtonSize.height,
+                position: 'initial',
               }}
               onClick={(e) => handleOnNodeDetailClick(e, nodeDatum)}
             >
@@ -96,12 +97,11 @@ export const DefaultNode = (nodeProps) => {
             </Card>
             {nodeDatum.__node_attrs.collapsiable && (
               <Button
-                className={styles.collapsableButton}
                 style={{
                   width: collapsableButtonSize.width,
                   height: collapsableButtonSize.height,
-                  top: nodeHeight - collapsableButtonSize.height,
-                  left: (nodeWidth - 60) / 2,
+                  marginLeft: (nodeWidth - 60) / 2,
+                  position: 'initial',
                 }}
                 onClick={(e) => handleExpandBtnToggleOnClick(e, nodeDatum)}
               >

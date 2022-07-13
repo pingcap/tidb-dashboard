@@ -4,6 +4,7 @@ tidb_version=$1
 without_ngm=${2:-false}
 mode=${3:-"start"}
 
+# TIUP_BIN_DIR=$TIUP_HOME/bin/tiup
 TIUP_BIN_DIR=$HOME/.tiup/bin/tiup
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 

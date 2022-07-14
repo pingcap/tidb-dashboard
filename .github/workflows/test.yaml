@@ -10,6 +10,74 @@ on:
       - release
 
 jobs:
+  backend_ut:
+    name: Backend - Unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.15'
+      - name: Load go module cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Run unit test
+        run: |
+          make unit_test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./coverage/unit_test.txt
+          fail_ci_if_error: true
+          flags: be_unit_test
+          verbose: true
+
+  backend_integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        tidb_version: [nightly, ^6.0, ^5.4, ^5.0]
+    name: Backend - Integration - TiDB@${{ matrix.tidb_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.15'
+      - name: Load go module cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Load TiUP cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.tiup/components
+          key: ${{ runner.os }}-tiup-${{ matrix.tidb_version }}
+      - name: Run integration test
+        run: |
+          make integration_test TIDB_VERSION=${{ matrix.tidb_version }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./coverage/integration_${{ matrix.tidb_version }}.txt
+          fail_ci_if_error: true
+          flags: be_integration_test_${{ matrix.tidb_version }}
+          verbose: true
+
   e2e_test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -20,6 +88,21 @@ jobs:
         include:
           - feature_version: 6.0.0 # You must ensure feature_version and tidb_version is matching!
             tidb_version: nightly
+            without_ngm: false
+          - feature_version: 6.0.0
+            tidb_version: nightly
+            without_ngm: true
+          - feature_version: 6.0.0
+            tidb_version: ^6.0
+            without_ngm: false
+          - feature_version: 6.0.0
+            tidb_version: ^6.0
+            without_ngm: true
+          - feature_version: 5.4.0
+            tidb_version: ^5.4
+            without_ngm: false
+          - feature_version: 5.0.0
+            tidb_version: ^5.0
             without_ngm: false
     name: E2E - TiDB@${{ matrix.tidb_version }}${{ !matrix.without_ngm && '+ngm' || '' }}
     steps:

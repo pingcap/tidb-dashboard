@@ -28,5 +28,5 @@ else
     $TIUP_BIN_DIR update playground
 
     # Run Tiup
-    $TIUP_BIN_DIR playground ${tidb_version} --without-monitor=${without_ngm} --tiflash=0 &> start_tiup.log &
+    $TIUP_BIN_DIR playground ${tidb_version} --without-monitor=${without_ngm} --tiflash=0 &> ~/start_tiup.log &
 fi

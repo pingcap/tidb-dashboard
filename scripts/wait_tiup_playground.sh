@@ -17,6 +17,7 @@ for ((i=0; i<${MAX_TIMES}; i++)); do
     exit 0
   fi
   sleep ${INTERVAL}
+  cat ~/start_tiup.log
 done
 
 exit 1

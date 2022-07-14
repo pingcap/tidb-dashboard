@@ -100,7 +100,7 @@ export default function Nodes() {
           <RightOutlined />
         </Link>
       }
-      noMarginLeft
+      noMarginRight
     >
       <Stack tokens={{ childrenGap: 16 }}>
         <Row>

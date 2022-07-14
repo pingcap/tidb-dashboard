@@ -1,4 +1,4 @@
-import { Space, Typography } from 'antd'
+import { Space, Typography, Row, Col, Collapse, Button } from 'antd'
 import React, { useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -10,15 +10,21 @@ import {
   TimeRangeSelector,
   Toolbar
 } from '@lib/components'
+import { Link } from 'react-router-dom'
 import { Range } from '@elastic/charts/dist/utils/domain'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { some } from 'lodash'
 import { ReqConfig } from '@lib/types'
 import { MetricsQueryResponse } from '@lib/client'
 import { AxiosPromise } from 'axios'
 import { OverviewContext } from '../context'
+
+import { PointerEvent } from '@elastic/charts'
+import { ChartContext } from '@lib/components/MetricChart/ChartContext'
+import { useEventEmitter } from 'ahooks'
+import { MetricsItems } from './MetricsItems'
 
 interface IChartProps {
   range: Range
@@ -33,144 +39,32 @@ interface IChartProps {
   ) => AxiosPromise<MetricsQueryResponse>
 }
 
-function QPS(props: IChartProps) {
+const MetricsWrapper = ({ metricsItem, props }) => {
   const { t } = useTranslation()
+
   return (
-    <Card noMarginTop noMarginBottom>
-      <Typography.Title level={5}>
-        {t('overview.metrics.total_requests')}
+    <Card noMarginTop noMarginBottom noMarginLeft>
+      <Typography.Title level={5} style={{ textAlign: 'center' }}>
+        {t(`overview.metrics.${metricsItem.title}`)}
       </Typography.Title>
       <MetricChart
-        queries={[
-          {
-            query:
-              'sum(rate(tidb_executor_statement_total[$__rate_interval])) by (type)',
-            name: '{type}'
-          }
-        ]}
-        unit="qps"
-        type="bar_stacked"
+        queries={metricsItem.queries}
+        type={metricsItem.type}
+        unit={metricsItem.unit}
         {...props}
       />
     </Card>
   )
 }
 
-function Latency(props: IChartProps) {
-  const { t } = useTranslation()
-  return (
-    <Card noMarginTop noMarginBottom>
-      <Typography.Title level={5}>
-        {t('overview.metrics.latency')}
-      </Typography.Title>
-      <MetricChart
-        queries={[
-          {
-            query:
-              'histogram_quantile(0.9, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le))',
-            name: '95%'
-          },
-          {
-            query:
-              'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le))',
-            name: '99%'
-          },
-          {
-            query:
-              'histogram_quantile(0.999, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le))',
-            name: '99.9%'
-          }
-        ]}
-        unit="s"
-        type="line"
-        {...props}
-      />
-    </Card>
-  )
-}
-
-function CPU(props: IChartProps) {
-  const { t } = useTranslation()
-  return (
-    <Card noMarginTop noMarginBottom>
-      <Typography.Title level={5}>{t('overview.metrics.cpu')}</Typography.Title>
-      <MetricChart
-        queries={[
-          {
-            query:
-              '100 - avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[$__rate_interval]) ) * 100',
-            name: '{instance}'
-          }
-        ]}
-        yDomain={{ min: 0, max: 100 }}
-        unit="percent"
-        type="line"
-        {...props}
-      />
-    </Card>
-  )
-}
-
-function Memory(props: IChartProps) {
-  const { t } = useTranslation()
-  return (
-    <Card noMarginTop noMarginBottom>
-      <Typography.Title level={5}>
-        {t('overview.metrics.memory')}
-      </Typography.Title>
-      <MetricChart
-        queries={[
-          {
-            query: `100 - (
-              avg_over_time(node_memory_MemAvailable_bytes[$__rate_interval]) or
-                (
-                  avg_over_time(node_memory_Buffers_bytes[$__rate_interval]) +
-                  avg_over_time(node_memory_Cached_bytes[$__rate_interval]) +
-                  avg_over_time(node_memory_MemFree_bytes[$__rate_interval]) +
-                  avg_over_time(node_memory_Slab_bytes[$__rate_interval])
-                )
-              ) /
-              avg_over_time(node_memory_MemTotal_bytes[$__rate_interval]) * 100`,
-            name: '{instance}'
-          }
-        ]}
-        yDomain={{ min: 0, max: 100 }}
-        unit="percent"
-        type="line"
-        {...props}
-      />
-    </Card>
-  )
-}
-
-function IO(props: IChartProps) {
-  const { t } = useTranslation()
-  return (
-    <Card noMarginTop noMarginBottom>
-      <Typography.Title level={5}>{t('overview.metrics.io')}</Typography.Title>
-      <MetricChart
-        queries={[
-          {
-            query:
-              'irate(node_disk_io_time_seconds_total[$__rate_interval]) * 100',
-            name: '{instance} - {device}'
-          }
-        ]}
-        yDomain={{ min: 0, max: 100 }}
-        unit="percent"
-        type="line"
-        {...props}
-      />
-    </Card>
-  )
-}
-
-export default function Metrics() {
+export default function Metrics(props) {
   const ctx = useContext(OverviewContext)
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
   const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({})
+  const { showAllPanels: showAllPerformanceMetics } = props
+  const { t } = useTranslation()
 
   const isSomeLoading = useMemo(() => {
     return some(Object.values(isLoading))
@@ -186,11 +80,18 @@ export default function Metrics() {
     }
   }
 
+  console.log('hello from Metrics ')
+
   return (
     <>
       <Card>
         <Toolbar>
           <Space>
+            {showAllPerformanceMetics && (
+              <Link to={`/overview`}>
+                <ArrowLeftOutlined /> {t('overview.back')}
+              </Link>
+            )}
             <TimeRangeSelector.WithZoomOut
               value={timeRange}
               onChange={setTimeRange}
@@ -201,15 +102,47 @@ export default function Metrics() {
             />
             {isSomeLoading && <LoadingOutlined />}
           </Space>
+          <Space>
+            {!showAllPerformanceMetics && (
+              <Link to={`/overview/detail`}>
+                <Button type="primary">
+                  {t('overview.view_more_metrics')}
+                </Button>
+              </Link>
+            )}
+          </Space>
         </Toolbar>
       </Card>
-      <Stack tokens={{ childrenGap: 16 }}>
-        <QPS {...metricProps('qps')} />
-        <Latency {...metricProps('latency')} />
-        <CPU {...metricProps('cpu')} />
-        <Memory {...metricProps('memory')} />
-        <IO {...metricProps('io')} />
-      </Stack>
+      <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
+        <Stack tokens={{ childrenGap: 16 }}>
+          <Card noMarginTop noMarginBottom noMarginRight>
+            {MetricsItems.map((item, idx) => (
+              <>
+                {((idx > 1 && showAllPerformanceMetics) || idx < 2) && (
+                  <Collapse defaultActiveKey={['1']} ghost key={item.category}>
+                    <Collapse.Panel
+                      header={item.category}
+                      key="1"
+                      style={{ fontSize: 16, fontWeight: 500 }}
+                    >
+                      <Row gutter={[16, 16]}>
+                        {item.metrics.map((m) => (
+                          <Col xl={12} sm={24} key={m.title}>
+                            <MetricsWrapper
+                              metricsItem={m}
+                              props={metricProps(`${m.title}`)}
+                            />
+                          </Col>
+                        ))}
+                      </Row>
+                    </Collapse.Panel>
+                  </Collapse>
+                )}
+              </>
+            ))}
+          </Card>
+        </Stack>
+      </ChartContext.Provider>
     </>
   )
 }

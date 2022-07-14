@@ -92,9 +92,7 @@ dev: lint default
 .PHONY: ui_deps
 ui_deps: install_tools
 	cd ui-new &&\
-	pnpm i &&\
-	cd packages/tidb-dashboard-for-op &&\
-	./node_modules/.bin/cypress install --force
+	pnpm i
 
 .PHONY: ui
 ui: ui_deps

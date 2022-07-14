@@ -4,7 +4,7 @@ describe('Statement detail page E2E test', () => {
       'DROP TABLE IF EXISTS mysql.t;',
       'CREATE TABLE `t` (`a` bigint(20) DEFAULT NULL, `b` bigint(20) DEFAULT NULL, `c` timestamp(6) DEFAULT CURRENT_TIMESTAMP(6), `d` varchar(50) DEFAULT NULL, UNIQUE KEY `idx0` (`a`), KEY `idx1` (`b`), KEY `idx2` (`b`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;',
       'select /*+ USE_INDEX(t, idx1) */ count(*)  from t where b < 100;',
-      'select /*+ USE_INDEX(t, idx2) */ count(*)  from t where b < 100;',
+      'select /*+ USE_INDEX(t, idx2) */ count(*)  from t where b < 100;'
     ]
 
     workloads.forEach((query) => {
@@ -148,7 +148,7 @@ describe('Statement detail page E2E test', () => {
         'Time',
         'Coprocessor Read',
         'Transaction',
-        'Slow Query',
+        'Slow Query'
       ]
       cy.get('[data-e2e=tabs]')
         .find('.ant-tabs-tab')

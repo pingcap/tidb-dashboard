@@ -8,18 +8,18 @@ describe('User Login', () => {
     // Create user test
     before(() => {
       let queryData = {
-        query: 'DROP USER IF EXISTS "test"@"%"',
+        query: 'DROP USER IF EXISTS "test"@"%"'
       }
       cy.task('queryDB', { ...queryData })
 
       queryData = {
-        query: "CREATE USER 'test'@'%' IDENTIFIED BY 'test_pwd'",
+        query: "CREATE USER 'test'@'%' IDENTIFIED BY 'test_pwd'"
       }
 
       cy.task('queryDB', { ...queryData })
 
       queryData = {
-        query: "GRANT ALL PRIVILEGES ON *.* TO 'test'@'%' WITH GRANT OPTION",
+        query: "GRANT ALL PRIVILEGES ON *.* TO 'test'@'%' WITH GRANT OPTION"
       }
       cy.task('queryDB', { ...queryData })
     })

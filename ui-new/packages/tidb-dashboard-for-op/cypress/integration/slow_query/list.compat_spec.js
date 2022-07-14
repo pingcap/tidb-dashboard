@@ -71,7 +71,7 @@ describe('SlowQuery list compatibility test', () => {
           'rocksdb_key_skipped_count',
           'rocksdb_block_cache_hit_count',
           'rocksdb_block_read_count',
-          'rocksdb_block_read_byte',
+          'rocksdb_block_read_byte'
         ]
 
         cy.get('[data-e2e="columns_selector_popover"]').trigger('mouseover')

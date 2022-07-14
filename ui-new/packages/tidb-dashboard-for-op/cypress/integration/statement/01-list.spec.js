@@ -5,11 +5,11 @@ import dayjs from 'dayjs'
 import {
   restartTiUP,
   validateStatementCSVList,
-  deleteDownloadsFolder,
+  deleteDownloadsFolder
 } from '../utils'
 import {
   testBaseSelectorOptions,
-  checkAllOptionsInBaseSelector,
+  checkAllOptionsInBaseSelector
 } from '../components'
 
 const neatCSV = require('neat-csv')
@@ -35,7 +35,7 @@ describe('SQL statements list page', () => {
   const defaultExecStmtList = [
     'SHOW DATABASES',
     'SELECT DISTINCT `stmt_type` FROM `information_schema`.`cluster_statements_summary_history` ORDER BY `stmt_type` ASC',
-    'SELECT `version` ()',
+    'SELECT `version` ()'
   ]
 
   describe('Initialize statement list page', () => {
@@ -59,8 +59,8 @@ describe('SQL statements list page', () => {
         body: {
           code: 'common.bad_request',
           error: true,
-          message: 'common.bad_request',
-        },
+          message: 'common.bad_request'
+        }
       }
 
       // stub out a response body
@@ -114,7 +114,7 @@ describe('SQL statements list page', () => {
 
       cy.contains('Last Seen').within(() => {
         cy.get('[data-e2e=columns_selector_field_last_seen]').check({
-          force: true,
+          force: true
         })
       })
     })
@@ -215,7 +215,7 @@ describe('SQL statements list page', () => {
     it('Filter statements with use database (mysql)', () => {
       let queryData = {
         query: 'SELECT count(*) from user;',
-        database: 'mysql',
+        database: 'mysql'
       }
       cy.task('queryDB', { ...queryData })
       cy.reload()
@@ -377,7 +377,7 @@ describe('SQL statements list page', () => {
       sum_latency: 'Total Latency ',
       avg_latency: 'Mean Latency ',
       exec_count: '# Exec ',
-      plan_count: '# Plans ',
+      plan_count: '# Plans '
     }
 
     it('Default selected columns', () => {
@@ -532,7 +532,7 @@ describe('SQL statements list page', () => {
       // send a query now
       let queryData = {
         query: 'select count(*) from tidb;',
-        database: 'mysql',
+        database: 'mysql'
       }
       cy.task('queryDB', { ...queryData })
 
@@ -605,6 +605,8 @@ describe('SQL statements list page', () => {
           cy.get('.ant-drawer-content').should('exist')
           cy.get('[data-e2e=submit_btn]').click()
         })
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500)
       cy.contains('Current statement history will be cleared.').should(
         'not.exist'
@@ -749,6 +751,7 @@ describe('SQL statements list page', () => {
               cy.get('[data-e2e=search_config]').type(
                 'tidb_stmt_summary_refresh_interval'
               )
+              // eslint-disable-next-line cypress/no-unnecessary-waiting
               cy.wait(1000)
               cy.get('[data-automation-key=key]').contains(
                 'tidb_stmt_summary_refresh_interval'
@@ -760,6 +763,7 @@ describe('SQL statements list page', () => {
               cy.get('[data-e2e=search_config]')
                 .clear()
                 .type('tidb_stmt_summary_history_size')
+              // eslint-disable-next-line cypress/no-unnecessary-waiting
               cy.wait(1000)
               cy.get('[data-automation-key=key]').contains(
                 'tidb_stmt_summary_history_size'
@@ -780,8 +784,8 @@ describe('SQL statements list page', () => {
           body: {
             code: 'common.bad_request',
             error: true,
-            message: 'common.bad_request',
-          },
+            message: 'common.bad_request'
+          }
         }
 
         // stub out a response body
@@ -809,8 +813,8 @@ describe('SQL statements list page', () => {
         body: {
           code: 'common.bad_request',
           error: true,
-          message: 'common.bad_request',
-        },
+          message: 'common.bad_request'
+        }
       }
 
       // stub out a response body
@@ -845,6 +849,7 @@ describe('SQL statements list page', () => {
 
       cy.wait('@statements_list')
 
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500)
       cy.contains(slowNetworkText).should('not.exist')
     })
@@ -872,6 +877,7 @@ describe('SQL statements list page', () => {
 
       cy.get('[data-e2e=sql_statements_search]').type('SELECT version')
 
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(1000)
       cy.get('[data-e2e=syntax_highlighter_compact]').contains('SHOW DATABASES')
 
@@ -907,6 +913,7 @@ describe('SQL statements list page', () => {
       cy.get('[data-e2e=sql_statements_search]').type('{enter}')
       cy.wait('@statements_list')
 
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500)
       cy.contains(slowNetworkText).should('not.exist')
 

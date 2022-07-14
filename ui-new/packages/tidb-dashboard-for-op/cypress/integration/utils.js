@@ -28,7 +28,7 @@ export const validateStatementCSVList = (allStatementList) => {
   const defaultExecStmtList = [
     'show databases',
     'select distinct `stmt_type` from `information_schema` . `cluster_statements_summary_history` order by `stmt_type` asc',
-    'select `version` ( )',
+    'select `version` ( )'
   ]
 
   const allStatementDigestText = []
@@ -48,7 +48,10 @@ export const restartTiUP = () => {
   )
 
   // Wait TiUP Playground
-  cy.exec('bash ../../../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log', {
-    timeout: 300000,
-  })
+  cy.exec(
+    'bash ../../../scripts/wait_tiup_playground.sh 1 300 &> wait_tiup.log',
+    {
+      timeout: 300000
+    }
+  )
 }

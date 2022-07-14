@@ -41,7 +41,7 @@ describe('Root User Login', () => {
   it('root login with correct pwd', function () {
     // set password for root
     let queryData = {
-      query: 'SET PASSWORD FOR "root"@"%" = "root_pwd"',
+      query: 'SET PASSWORD FOR "root"@"%" = "root_pwd"'
     }
     cy.task('queryDB', { ...queryData })
 
@@ -51,7 +51,7 @@ describe('Root User Login', () => {
     // set empty password for root
     queryData = {
       query: 'SET PASSWORD FOR "root"@"%" = ""',
-      password: 'root_pwd',
+      password: 'root_pwd'
     }
     cy.task('queryDB', { ...queryData })
   })

@@ -156,8 +156,8 @@ if (isE2E) {
       filter: /\.tsx?/,
       config: {
         presets: ['@babel/preset-react', '@babel/preset-typescript'],
-        plugins: ['istanbul'],
-      },
+        plugins: ['istanbul']
+      }
     })
   )
 }

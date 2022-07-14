@@ -28,7 +28,7 @@ Cypress.Commands.add('login', (username, password = '') => {
     {
       validate() {
         cy.request('/whoami').its('status').should('eq', 200)
-      },
+      }
     }
   )
 })
@@ -41,7 +41,7 @@ Cypress.Commands.overwrite('request', (originalFn, ...options) => {
   if (!!token && optionsObject === Object(optionsObject)) {
     optionsObject.headers = {
       authorization: 'Bearer ' + token,
-      ...optionsObject.headers,
+      ...optionsObject.headers
     }
 
     return originalFn(optionsObject)

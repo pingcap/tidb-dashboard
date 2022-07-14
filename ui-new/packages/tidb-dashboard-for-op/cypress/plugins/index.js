@@ -24,7 +24,7 @@ function queryTestDB(query, password, database) {
     port: '4000',
     user: 'root',
     database: database,
-    password: password,
+    password: password
   }
   // creates a new mysql connection
   const connection = mysql.createConnection(dbConfig)
@@ -87,7 +87,7 @@ module.exports = (on, config) => {
     // Usage: cy.task('getClipboard')
     getClipboard: () => {
       return clipboardy.readSync()
-    },
+    }
   })
 
   return config

@@ -11,7 +11,7 @@ describe('Read-only user open statement config setting', () => {
         'CREATE USER "readOnlyUser"@"%" IDENTIFIED BY "test";',
         'GRANT PROCESS, CONFIG ON *.* TO "readOnlyUser"@"%";',
         'GRANT SHOW DATABASES ON *.* TO "readOnlyUser"@"%";',
-        'GRANT DASHBOARD_CLIENT ON *.* TO "readOnlyUser"@"%";',
+        'GRANT DASHBOARD_CLIENT ON *.* TO "readOnlyUser"@"%";'
       ]
 
       workloads.forEach((query) => {

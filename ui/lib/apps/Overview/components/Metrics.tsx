@@ -30,9 +30,9 @@ interface IChartProps {
   onLoadingStateChange?: (isLoading: boolean) => void
 }
 
-const MetricsWrapper = (props) => {
+const MetricsWrapper = ({ metricsItem, props }) => {
   const { t } = useTranslation()
-  const { metricsItem, metricProps } = props
+  // const { metricsItem, metricProps } = props
   return (
     <Card noMarginTop noMarginBottom noMarginLeft>
       <Typography.Title level={5} style={{ textAlign: 'center' }}>
@@ -42,7 +42,7 @@ const MetricsWrapper = (props) => {
         queries={metricsItem.queries}
         type={metricsItem.type}
         unit={metricsItem.unit}
-        {...metricProps}
+        {...props}
       />
     </Card>
   )
@@ -117,7 +117,7 @@ export default function Metrics(props) {
                           <Col xl={12} sm={24} key={m.title}>
                             <MetricsWrapper
                               metricsItem={m}
-                              metricProps={metricProps(`${m.title}`)}
+                              props={metricProps(`${m.title}`)}
                             />
                           </Col>
                         ))}

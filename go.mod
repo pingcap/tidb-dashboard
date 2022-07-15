@@ -37,7 +37,7 @@ require (
 	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
 	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
-	github.com/pingcap/tipb v0.0.0-20220314125451-bfb5c2c55188
+	github.com/pingcap/tipb v0.0.0-20220714100504-7d3474676bc9
 	github.com/rs/cors v1.7.0
 	github.com/shhdgit/testfixtures/v3 v3.6.2-0.20211219171712-c4f264d673d3
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
@@ -61,5 +61,3 @@ require (
 	gorm.io/gorm v1.21.9
 	moul.io/zapgorm2 v1.1.0
 )
-
-replace github.com/pingcap/tipb => github.com/time-and-fate/tipb v0.0.0-20220708110256-2b4e44f7d73f

@@ -240,7 +240,7 @@ export function TopSQLList() {
                 >
                   {t('topsql.settings.open_settings')}
                 </Button>
-                {!isDistro && (
+                {!isDistro() && (
                   <Button
                     onClick={() => {
                       window.open(t('topsql.settings.help_url'), '_blank')

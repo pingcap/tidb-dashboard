@@ -310,7 +310,7 @@ export default function Page() {
             message={
               <>
                 {t('instance_profiling.list.disable_warning')}{' '}
-                {!isDistro && (
+                {!isDistro() && (
                   <a
                     target="_blank"
                     href={t('instance_profiling.settings.help_url')}

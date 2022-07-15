@@ -346,7 +346,7 @@ export default function StatementsOverview() {
               <Button type="primary" onClick={() => setShowSettings(true)}>
                 {t('statement.settings.open_setting')}
               </Button>
-              {!isDistro && (
+              {!isDistro() && (
                 <Button
                   onClick={() => {
                     window.open(t('statement.settings.help_url'), '_blank')

@@ -311,7 +311,7 @@ export default function Page() {
               >
                 {t('conprof.settings.open_settings')}
               </Button>
-              {!isDistro && (
+              {!isDistro() && (
                 <Button
                   onClick={() => {
                     window.open(t('conprof.settings.help_url'), '_blank')

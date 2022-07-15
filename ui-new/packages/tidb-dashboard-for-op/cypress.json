@@ -1,0 +1,14 @@
+{
+  "defaultCommandTimeout": 10000,
+  "responseTimeout": 60000,
+  "requestTimeout": 60000,
+  "screenshotOnRunFailure": true,
+  "video": true,
+  "env": {
+    "FEATURE_VERSION": "6.0.0",
+    "TIDB_VERSION": "latest",
+    "ALLOW_SCREENSHOT": false
+  },
+  "experimentalSessionSupport": true,
+  "ignoreTestFiles": ["**/__snapshots__/*", "**/__image_snapshots__/*"]
+}

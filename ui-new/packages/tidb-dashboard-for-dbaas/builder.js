@@ -15,7 +15,7 @@ const { yamlPlugin } = require('esbuild-plugin-yaml')
 const isDev = process.env.NODE_ENV !== 'production'
 
 // load env
-const envFile = isDev ? './.env.development' : './env.production'
+const envFile = isDev ? './.env.development' : './.env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'

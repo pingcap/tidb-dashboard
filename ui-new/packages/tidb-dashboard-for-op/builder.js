@@ -11,10 +11,10 @@ const { build } = require('esbuild')
 const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const autoprefixer = require('autoprefixer')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
-// const babelPlugin = require('@baurine/esbuild-plugin-babel')
+const babelPlugin = require('@baurine/esbuild-plugin-babel')
 
 const isDev = process.env.NODE_ENV !== 'production'
-// const isE2E = process.env.E2E_TEST === 'true'
+const isE2E = process.env.E2E_TEST === 'true'
 
 // load env
 const envFile = isDev ? './.env.development' : './.env.production'
@@ -149,18 +149,18 @@ const esbuildParams = {
   define: genDefine(),
   inject: ['./process-shim.js'] // fix runtime crash
 }
-// if (isE2E) {
-//   // use babel and istanbul to report test coverage for e2e test
-//   esbuildParams.plugins.push(
-//     babelPlugin({
-//       filter: /\.tsx?/,
-//       config: {
-//         presets: ['@babel/preset-react', '@babel/preset-typescript'],
-//         plugins: ['istanbul'],
-//       },
-//     })
-//   )
-// }
+if (isE2E) {
+  // use babel and istanbul to report test coverage for e2e test
+  esbuildParams.plugins.push(
+    babelPlugin({
+      filter: /\.tsx?/,
+      config: {
+        presets: ['@babel/preset-react', '@babel/preset-typescript'],
+        plugins: ['istanbul']
+      }
+    })
+  )
+}
 
 function buildHtml(inputFilename, outputFilename) {
   let result = fs.readFileSync(inputFilename).toString()

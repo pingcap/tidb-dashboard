@@ -277,7 +277,7 @@ const TreeDiagram = ({
       height:
         k > 1
           ? (multiTreesViewport.height - multiTreesBound.height) / 2
-          : (multiTreesViewport.height - multiTreesBound.height * k) / 2
+          : (multiTreesViewport.height - multiTreesBound.height * k) / 2,
     })
   }
 

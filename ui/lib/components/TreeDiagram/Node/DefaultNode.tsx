@@ -39,7 +39,7 @@ export const DefaultNode = (nodeProps) => {
     onNodeDetailClick(node)
   }
 
-  const headColor = (runAt: string): string =>  {
+  const headColor = (runAt: string): string => {
     switch (runAt) {
       case 'tidb':
         return '#FFF5EB'
@@ -97,7 +97,7 @@ export const DefaultNode = (nodeProps) => {
                 position: 'initial',
               }}
               onClick={(e) => handleOnNodeDetailClick(e, nodeDatum)}
-              headStyle={{ backgroundColor: headColor(nodeDatum.storeType)}}
+              headStyle={{ backgroundColor: headColor(nodeDatum.storeType) }}
             >
               <div className={styles.cardContentP}>
                 Actual Rows: <span>{nodeDatum.actRows}</span>

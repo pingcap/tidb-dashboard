@@ -579,9 +579,9 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 				}
 
 				taskCount := int(actRows * (1 - cacheHitRatio/100))
-				taskCount = taskCount / concurrency.joinConcurrency * concurrency.shuffleConcurrency * concurrency.tableConcurrency
-				if taskCount < concurrency.applyConcurrency {
-					concurrency.applyConcurrency = taskCount
+				taskCountAvg := taskCount / concurrency.joinConcurrency * concurrency.shuffleConcurrency * concurrency.tableConcurrency
+				if taskCountAvg < concurrency.applyConcurrency {
+					concurrency.applyConcurrency = taskCountAvg
 				}
 
 				break
@@ -740,10 +740,10 @@ func getConcurrency(node *simplejson.Json, operator operator, concurrency concur
 
 				joinTaskCountStr := rootGroupInfo.GetIndex(i).GetPath("inner", "task").MustString()
 				joinTaskCount, _ := strconv.Atoi(joinTaskCountStr)
-				joinTaskCount = joinTaskCount / concurrency.applyConcurrency * concurrency.shuffleConcurrency * concurrency.tableConcurrency
+				joinTaskCountAvg := joinTaskCount / concurrency.applyConcurrency * concurrency.shuffleConcurrency * concurrency.tableConcurrency
 				// task count as concurrency
-				if joinTaskCount < tmpJoinConcurrency {
-					tmpJoinConcurrency = joinTaskCount
+				if joinTaskCountAvg < tmpJoinConcurrency {
+					tmpJoinConcurrency = joinTaskCountAvg
 				}
 
 				if tmpJoinConcurrency > 0 {
@@ -763,9 +763,9 @@ func getConcurrency(node *simplejson.Json, operator operator, concurrency concur
 
 				tableTaskNumStr := rootGroupInfo.GetIndex(i).GetPath("table_task", "num").MustString()
 				tableTaskNum, _ := strconv.Atoi(tableTaskNumStr)
-				tableTaskNum = tableTaskNum / concurrency.joinConcurrency * concurrency.applyConcurrency * concurrency.shuffleConcurrency
-				if tableTaskNum < tmpTableConcurrency {
-					tmpTableConcurrency = tableTaskNum
+				tableTaskNumAvg := tableTaskNum / concurrency.joinConcurrency * concurrency.applyConcurrency * concurrency.shuffleConcurrency
+				if tableTaskNumAvg < tmpTableConcurrency {
+					tmpTableConcurrency = tableTaskNumAvg
 				}
 
 				if tmpTableConcurrency > 0 {

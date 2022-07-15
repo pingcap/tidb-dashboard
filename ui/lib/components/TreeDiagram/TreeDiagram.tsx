@@ -273,11 +273,11 @@ const TreeDiagram = ({
       width:
         widthRatio > 1
           ? (multiTreesViewport.width - multiTreesBound.width) / 2
-          : 0,
+          : (multiTreesViewport.width - multiTreesBound.width * k) / 2,
       height:
         heightRation > 1
           ? (multiTreesViewport.height - multiTreesBound.height) / 2
-          : 0,
+          : (multiTreesViewport.height - multiTreesBound.height * k) / 2
     })
   }
 

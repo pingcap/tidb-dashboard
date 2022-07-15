@@ -17,7 +17,7 @@ const TreeDiagramView = ({
   showMinimap,
   isThumbnail,
 }: TreeDiagramViewProps) => {
-  const nodeSize = { width: 250, height: 180 }
+  const nodeSize = { width: 250, height: 210 }
 
   return (
     <>

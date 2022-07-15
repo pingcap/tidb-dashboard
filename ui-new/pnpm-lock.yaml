@@ -146,7 +146,7 @@ importers:
       react-i18next: ^11.15.4
       react-markdown: ^8.0.3
       react-router-dom: '6'
-      react-spring: ^9.4.4
+      react-spring: ^8.0.27
       react-use: ^15.3.3
       single-spa: ^5.9.4
       single-spa-react: ^4.6.1
@@ -172,7 +172,7 @@ importers:
       react-i18next: 11.17.0_ohyflxdyo7oportarxwd7iawxa
       react-markdown: 8.0.3_hx2b44akkvgcgvvtmk7ds2qk6q
       react-router-dom: 6.3.0_sfoxds7t5ydpegc3knd667wn6m
-      react-spring: 9.4.5_sfoxds7t5ydpegc3knd667wn6m
+      react-spring: 8.0.27_sfoxds7t5ydpegc3knd667wn6m
       react-use: 15.3.8_sfoxds7t5ydpegc3knd667wn6m
       single-spa: 5.9.4
       single-spa-react: 4.6.1_nirfsewa6s74k6y5dyozfox4gq
@@ -10438,6 +10438,18 @@ packages:
       split.js: 1.6.5
     dev: false
 
+  /react-spring/8.0.27_sfoxds7t5ydpegc3knd667wn6m:
+    resolution: {integrity: sha512-nDpWBe3ZVezukNRandTeLSPcwwTMjNVu1IDq9qA/AMiUqHuRN4BeSWvKr3eIxxg1vtiYiOLy4FqdfCP5IoP77g==}
+    peerDependencies:
+      react: '>= 16.8.0'
+      react-dom: '>= 16.8.0'
+    dependencies:
+      '@babel/runtime': 7.18.3
+      prop-types: 15.8.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+    dev: false
+
   /react-spring/9.4.5_sfoxds7t5ydpegc3knd667wn6m:
     resolution: {integrity: sha512-FRIXQGR+jG+Fx4UcqhF0b5jMEU3Q5QcZ8rEVWKqZgrrn92C1HcqtuZy7dH+rZ6uNGjnlV7HBf8iprJaJ+350LA==}
     dependencies:
@@ -12498,4 +12510,3 @@ packages:
   /zrender/4.3.2:
     resolution: {integrity: sha512-bIusJLS8c4DkIcdiK+s13HiQ/zjQQVgpNohtd8d94Y2DnJqgM1yjh/jpDb8DoL6hd7r8Awagw8e3qK/oLaWr3g==}
     dev: false
-

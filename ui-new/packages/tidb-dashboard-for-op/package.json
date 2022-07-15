@@ -35,7 +35,7 @@
     "react-i18next": "^11.15.4",
     "react-markdown": "^8.0.3",
     "react-router-dom": "6",
-    "react-spring": "^9.4.4",
+    "react-spring": "^8.0.27",
     "react-use": "^15.3.3",
     "single-spa": "^5.9.4",
     "single-spa-react": "^4.6.1"

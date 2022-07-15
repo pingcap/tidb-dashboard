@@ -45,7 +45,6 @@ const TreeDiagramView = ({
 TreeDiagramView.defaultProps = {
   viewport: {
     width: window.innerWidth,
-    height: window.innerHeight * 0.75,
   },
   showMinimap: false,
   isThumbnail: false,

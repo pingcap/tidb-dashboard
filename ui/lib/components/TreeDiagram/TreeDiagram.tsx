@@ -318,7 +318,7 @@ const TreeDiagram = ({
         adjustPosition={adjustPosition}
         zoomToFitViewportScale={zoomToFitViewportScale}
       />
-      {showMinimap && (
+      {showMinimap && multiTreesViewport.height && (
         <Minimap
           treeNodeDatum={treeNodeDatum}
           classNamePrefix="minimapMultiTrees"
@@ -343,7 +343,7 @@ const TreeDiagram = ({
         <Drawer
           title={selectedNodeDetail!.name}
           placement="right"
-          width={600}
+          width={window.innerWidth * 0.3}
           closable={false}
           onClose={() => {
             setShowNodeDetail(false)

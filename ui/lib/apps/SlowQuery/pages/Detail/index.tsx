@@ -174,7 +174,7 @@ function DetailPage() {
                         onCancel={toggleVisualPlan}
                         footer={null}
                         destroyOnClose={true}
-                        bodyStyle={{ background: '#f5f5f5' }}
+                        bodyStyle={{ background: '#f5f5f5', height: window.innerHeight - 100 }}
                       >
                         <TreeDiagramView
                           data={

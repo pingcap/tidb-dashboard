@@ -21,7 +21,7 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
             Actual Rows: <span>{nodeDatum.actRows}</span>
           </p>
           <p>
-            Estimate Rows: <span>{toFixed(nodeDatum.estRows, 2)}</span>
+            Estimate Rows: <span>{toFixed(nodeDatum.estRows, 0)}</span>
           </p>
           <p>
             Run at: <span>{nodeDatum.storeType}</span>
@@ -29,9 +29,11 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
           <p>
             Duration: <span>{nodeDatum.duration}</span>
           </p>
-          <p>
-            Cost: <span>{toFixed(nodeDatum.cost, 5)}</span>
-          </p>
+          {nodeDatum.cost && (
+            <p>
+              Cost: <span>{toFixed(nodeDatum.cost, 0)}</span>
+            </p>
+          )}
           <p>
             Disk Bytes: <span>{nodeDatum.diskBytes}</span>
           </p>

@@ -271,13 +271,13 @@ const TreeDiagram = ({
 
     setAdjustPosition({
       width:
-        widthRatio > 1
+        k > 1
           ? (multiTreesViewport.width - multiTreesBound.width) / 2
-          : 0,
+          : (multiTreesViewport.width - multiTreesBound.width * k) / 2,
       height:
-        heightRation > 1
+        k > 1
           ? (multiTreesViewport.height - multiTreesBound.height) / 2
-          : 0,
+          : (multiTreesViewport.height - multiTreesBound.height * k) / 2,
     })
   }
 
@@ -318,7 +318,7 @@ const TreeDiagram = ({
         adjustPosition={adjustPosition}
         zoomToFitViewportScale={zoomToFitViewportScale}
       />
-      {showMinimap && (
+      {showMinimap && multiTreesViewport.height && (
         <Minimap
           treeNodeDatum={treeNodeDatum}
           classNamePrefix="minimapMultiTrees"
@@ -343,7 +343,7 @@ const TreeDiagram = ({
         <Drawer
           title={selectedNodeDetail!.name}
           placement="right"
-          width={600}
+          width={window.innerWidth * 0.3}
           closable={false}
           onClose={() => {
             setShowNodeDetail(false)

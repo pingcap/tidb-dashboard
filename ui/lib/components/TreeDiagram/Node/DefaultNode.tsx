@@ -39,6 +39,19 @@ export const DefaultNode = (nodeProps) => {
     onNodeDetailClick(node)
   }
 
+  const headColor = (runAt: string): string => {
+    switch (runAt) {
+      case 'tidb':
+        return '#FFF5EB'
+      case 'tikv':
+        return '#DEEDF0'
+      case 'tiflash':
+        return '#F4C7AB'
+      default:
+        return ''
+    }
+  }
+
   return (
     <React.Fragment>
       <g
@@ -71,7 +84,7 @@ export const DefaultNode = (nodeProps) => {
                 nodeDatum.diagnosis.length > 0 && (
                   <>
                     <ExclamationCircleFilled
-                      style={{ color: 'red', paddingRight: 5 }}
+                      style={{ color: '#fa7070', paddingRight: 5 }}
                     />
                     {nodeDatum.diagnosis.length}
                   </>
@@ -84,15 +97,19 @@ export const DefaultNode = (nodeProps) => {
                 position: 'initial',
               }}
               onClick={(e) => handleOnNodeDetailClick(e, nodeDatum)}
+              headStyle={{ backgroundColor: headColor(nodeDatum.storeType) }}
             >
               <div className={styles.cardContentP}>
                 Actual Rows: <span>{nodeDatum.actRows}</span>
               </div>
               <div className={styles.cardContentP}>
-                Estimate Rows: <span>{toFixed(nodeDatum.estRows, 2)}</span>
+                Estimate Rows: <span>{toFixed(nodeDatum.estRows)}</span>
               </div>
               <div className={styles.cardContentP}>
                 Run at: <span>{nodeDatum.storeType}</span>
+              </div>
+              <div className={styles.cardContentP}>
+                Duration: <span>{nodeDatum.duration}</span>
               </div>
             </Card>
             {nodeDatum.__node_attrs.collapsiable && (

@@ -4,7 +4,12 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "gulp dev",
-    "build": "gulp build"
+    "build": "gulp build",
+    "run:e2e-test:compat-features": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.compat_spec.[jt]s",
+    "run:e2e-test:common-features": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.spec.[jt]s",
+    "run:e2e-test:without-ngm": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.without_ngm_spec.[jt]s",
+    "run:e2e-test:specify": "TZ=Asia/Shanghai cypress run",
+    "open:cypress": "TZ=Asia/Shanghai cypress open"
   },
   "keywords": [],
   "author": "",
@@ -36,17 +41,27 @@
     "single-spa-react": "^4.6.1"
   },
   "devDependencies": {
+    "@baurine/esbuild-plugin-babel": "^0.3.0",
     "@baurine/esbuild-plugin-postcss3": "^0.3.3",
+    "@cypress/code-coverage": "^3.9.12",
+    "@cypress/skip-test": "^2.6.1",
     "@types/node": "^16.9.1",
     "@types/react": "^17.0.20",
     "@types/react-dom": "^17.0.9",
     "autoprefixer": "^10.4.2",
+    "babel-plugin-istanbul": "^6.1.1",
     "chalk": "4.1.2",
     "chokidar": "^3.5.2",
+    "clipboardy": "2.3.0",
+    "cypress": "8.5.0",
+    "cypress-image-snapshot": "^4.0.1",
+    "cypress-real-events": "^1.7.0",
+    "dayjs": "^1.10.8",
     "dotenv": "^16.0.1",
     "esbuild": "^0.14.23",
     "esbuild-plugin-svgr": "^1.0.0",
     "esbuild-plugin-yaml": "^0.0.1",
+    "eslint-plugin-cypress": "^2.12.1",
     "eslint-watch": "^8.0.0",
     "esm": "^3.2.25",
     "fs-extra": "^10.0.0",
@@ -54,6 +69,8 @@
     "gulp-shell": "^0.8.0",
     "http-proxy-middleware": "^2.0.6",
     "live-server": "^1.2.1",
+    "mysql2": "^2.3.3",
+    "neat-csv": "5.1.0",
     "typescript": "^4.7.3"
   }
 }

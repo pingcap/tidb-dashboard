@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: '16'
           cache: 'pnpm'
-          cache-dependency-path: 'ui-new/pnpm-lock.yaml'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
       - uses: actions/setup-go@v3
         with:
           go-version: "1.15"
@@ -97,7 +97,7 @@ jobs:
           UI: 1
           FEATURE_VERSION: ${{ matrix.feature_version }}
       - name: Delete Previous Snapshots
-        run: rm -rf ${{ github.workspace }}/ui-new/packages/tidb-dashboard-for-op/cypress/snapshots
+        run: rm -rf ${{ github.workspace }}/ui/packages/tidb-dashboard-for-op/cypress/snapshots
       - name: Run E2E Features Test
         run: make e2e_test_specify
         env:
@@ -112,10 +112,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: e2e-video-${{ matrix.feature_version }}
-          path: ${{ github.workspace }}/ui-new/packages/tidb-dashboard-for-op/cypress/videos/**/*
+          path: ${{ github.workspace }}/ui/packages/tidb-dashboard-for-op/cypress/videos/**/*
       - name: Upload snapshots artifact
         uses: actions/upload-artifact@v2
         if: always()
         with:
           name: e2e-snapshots-${{ matrix.feature_version }}
-          path: ${{ github.workspace }}/ui-new/packages/tidb-dashboard-for-op/cypress/snapshots/**/*
+          path: ${{ github.workspace }}/ui/packages/tidb-dashboard-for-op/cypress/snapshots/**/*

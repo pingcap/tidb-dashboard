@@ -69,7 +69,7 @@ The followings are required for developing TiDB Dashboard:
 
    ```bash
    # In tidb-dashboard directory:
-   cd ui-new
+   cd ui
    pnpm i # install all dependencies
    pnpm dev
    ```
@@ -81,7 +81,7 @@ The followings are required for developing TiDB Dashboard:
 When back-end server and front-end server are both started, E2E tests can be run by:
 
 ```bash
-cd ui-new/packages/tidb-dashboard-for-op
+cd ui/packages/tidb-dashboard-for-op
 pnpm open:cypress
 ```
 
@@ -120,7 +120,7 @@ This is a rough outline of what a contributor's workflow looks like:
   - Frontend:
 
     ```bash
-    # In ui-new directory:
+    # In ui directory:
     pnpm fmt
     ```
 

@@ -60,28 +60,28 @@ e2e_test:
 
 .PHONY: e2e_compat_features_test
 e2e_compat_features_test:
-	cd ui-new &&\
+	cd ui &&\
 	pnpm i &&\
 	cd packages/tidb-dashboard-for-op &&\
 	pnpm run:e2e-test:compat-features --env FEATURE_VERSION=$(FEATURE_VERSION) TIDB_VERSION=$(TIDB_VERSION)
 
 .PHONY: e2e_common_features_test
 e2e_common_features_test:
-	cd ui-new &&\
+	cd ui &&\
 	pnpm i &&\
 	cd packages/tidb-dashboard-for-op &&\
 	pnpm run:e2e-test:common-features --env TIDB_VERSION=$(TIDB_VERSION)
 
 .PHONY: e2e_without_ngm_test
 e2e_without_ngm_test:
-	cd ui-new &&\
+	cd ui &&\
 	pnpm i &&\
 	cd packages/tidb-dashboard-for-op &&\
 	pnpm run:e2e-test:without-ngm --env TIDB_VERSION=$(TIDB_VERSION) WITHOUT_NGM=$(WITHOUT_NGM)
 
 .PHONY: e2e_test_specify
 e2e_test_specify:
-	cd ui-new &&\
+	cd ui &&\
 	pnpm i &&\
 	cd packages/tidb-dashboard-for-op &&\
 	pnpm run:e2e-test:specify --env TIDB_VERSION=$(TIDB_VERSION) -- --spec $(E2E_SPEC)
@@ -91,12 +91,12 @@ dev: lint default
 
 .PHONY: ui_deps
 ui_deps: install_tools
-	cd ui-new &&\
+	cd ui &&\
 	pnpm i
 
 .PHONY: ui
 ui: ui_deps
-	cd ui-new &&\
+	cd ui &&\
 	pnpm build
 
 .PHONY: go_generate

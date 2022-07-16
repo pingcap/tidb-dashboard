@@ -153,11 +153,11 @@ async function main() {
 
     // watch "node_modules/@pingcap/tidb-dashboard-lib/dist/**/*" triggers too many rebuild
     // so we just watch index.js to refine the experience
-    // watch('node_modules/@pingcap/tidb-dashboard-lib/dist/index.js', {
-    //   ignoreInitial: true
-    // }).on('all', () => {
-    //   rebuild()
-    // })
+    watch('node_modules/@pingcap/tidb-dashboard-lib/dist/index.js', {
+      ignoreInitial: true
+    }).on('all', () => {
+      rebuild()
+    })
   } else {
     process.exit(0)
   }

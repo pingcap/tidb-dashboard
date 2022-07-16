@@ -24,6 +24,7 @@ fi
 pnpm openapi-generator-cli generate -i $SPEC_TARGET_PATH -g typescript-axios -c $OPENAPI_CONFIG_DIR -o $OUTPUT_DIR
 
 # copy models to tidb-dashboard-lib
+# merge all models into a large file, to reduce the rebuild times for tidb-dashboard-lib
 cd $OUTPUT_MODELS_DIR
 MODEL_FILES="$(ls | grep -v index.ts)"
 echo "/* tslint:disable */" > ../_models.ts

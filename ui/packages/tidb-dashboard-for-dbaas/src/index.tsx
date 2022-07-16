@@ -8,8 +8,8 @@ import { loadAppInfo, loadWhoAmI } from '~/utils/store'
 
 import App from './App'
 
-import '@pingcap/tidb-dashboard-lib/dist/index.css'
 import './styles/style.less'
+import '@pingcap/tidb-dashboard-lib/dist/index.css'
 import './styles/override.less'
 
 function renderApp() {

@@ -39,7 +39,7 @@ export default function MonitorAlert() {
   }, [amData, ctx])
 
   return (
-    <Card title={t('overview.monitor_alert.title')} noMarginLeft>
+    <Card title={t('overview.monitor_alert.title')} noMarginRight>
       <Stack tokens={{ childrenGap: 16 }}>
         <AnimatedSkeleton
           showSkeleton={grafanaIsLoading}
@@ -60,7 +60,7 @@ export default function MonitorAlert() {
               rel="noopener noreferrer"
             >
               <Space>
-                {t('overview.monitor_alert.view_monitor')}
+                {t('overview.monitor_alert.view_grafana_monitor')}
                 <RightOutlined />
               </Space>
             </a>

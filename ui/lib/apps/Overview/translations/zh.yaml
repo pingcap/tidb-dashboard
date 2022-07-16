@@ -1,5 +1,7 @@
 overview:
   nav_title: 概况
+  back: 返回
+  view_more_metrics: 查看更多指标
   top_statements:
     title: 最耗时的 SQL 语句
   recent_slow_query:
@@ -8,15 +10,44 @@ overview:
     title: 在线实例
   monitor_alert:
     title: 监控和告警
-    view_monitor: 查看监控
+    view_grafana_monitor: 查看监控
     view_monitor_warn: 监控不可用
     view_alerts: '查看 {{alertCount}} 条告警'
     view_zero_alerts: 查看告警
     view_alerts_warn: 告警不可用
     run_diagnose: 运行诊断
   metrics:
-    total_requests: QPS
-    latency: 延迟
-    cpu: CPU 使用率
-    memory: 内存使用率
-    io: IO 使用率
+    connection:
+      total: Total Connection
+      active: Active Connection
+      disconnection: Disconnection
+      idle: Average Idle Connection Duration
+    database_time:
+      total: Database Time
+      by_sql_type: Database Time by SQL Types
+      by_steps_of_sql_processig: Database Time by Steps of SQL Processing
+    sql_count:
+      qps: Query Per Second
+      failed_queries: Failed Queries
+      cps: Command Per Second
+    core_feature_usag:
+      ops: Queries Using Plan Cache OPS
+    latency:
+      query: Query Duration
+      get_token: Get Token Duration
+      parse: Parse Duration
+      compile: Compile Duration
+      execution: Execution Duraion
+    transaction:
+      tps: Transaction Per Second
+      average_duration: Transaction Duration
+    server:
+      tidb_uptime: TiDB Uptime
+      tidb_cpu_usage: TiDB CPU Usage
+      tidb_memory_usage: TiDB Memory Usage
+      tikv_uptime: TiKV Uptime
+      tikv_cpu_usage: TiKV CPU Usage
+      tikv_memory_usage: TiKV Memory Usage
+      tikv_io_mbps: TiKV IO MBps
+      tikv_storage_usage: TiKV Storage Usage
+    connection_count: Connection Count

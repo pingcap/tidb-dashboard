@@ -1,0 +1,77 @@
+conprof:
+  nav_title: Continuous Profiling
+  list:
+    toolbar:
+      refresh: Refresh
+      settings: Settings
+      range_end: Range End Time
+      range_duration: Range Duration
+      query: Query
+    control_form:
+      title: Start Profiling Instances
+      enable_tooltip: This feature is enabled, you can disable it in the settings
+      disable_tooltip: This feature is not enabled, you can enable it in the settings
+    table:
+      title: Profiling History
+      columns:
+        targets: Instances
+        start_at: Start At
+        duration: Duration (sec)
+        status: Status
+      status:
+        running: Running
+        finished: Finished
+        failed: Failed
+        partial_finished: Partial Finished
+        unknown: Unknown
+      actions:
+        detail: Detail
+  detail:
+    head:
+      back: History
+      title: Profiling Detail
+      start_at: Start At
+    download: Download Profiling Result
+    table:
+      columns:
+        instance: Instance
+        kind: Component
+        content: Content
+        status: Status
+        view_as:
+          title: View As
+          error: Error Information
+          view_flamegraph: FlameGraph
+          view_graph: DotGraph
+          download: RawData
+          view_text: RawData
+      status:
+        finished: Finished
+        error: Error
+  settings:
+    title: Settings
+    disabled_result:
+      title: Feature Not Enabled
+      sub_title: Continuous Profiling feature is not enabled. You can modify settings to enable the feature and wait for new data being collected.
+    disabled_with_history: Continuous Profiling feature is not enabled, but you still can view history result. You can modify settings to enable the feature.
+    open_settings: Open Settings
+    switch: Enable Feature
+    switch_tooltip: After being enabled, Continuous Profiling will generate instance profiling results continuously.
+    profile_targets: Profiling Targets
+    profile_targets_tooltip: |
+      After being enabled, Continuous Profiling will profile all instances including newly created instances. There are {{n}} instances, and Continuous Profiling will produce {{size}} results every day.
+    profile_duration: Profiling Duration
+    profile_duration_tooltip:
+    profile_interval: Profiling Interval
+    profile_interval_tooltip:
+    profile_retention_duration: Retention Duration
+    profile_retention_duration_tooltip: |
+      The profiling results are persisted in the disk. Those exceeding the retention duration are deleted. This setting works for all results.
+    profile_retention_duration_option: '{{d}} days'
+    close_feature: Disable Continuous Profiling Feature
+    close_feature_confirm: Are you sure want to disable this feature, it will stop continuous profiling, history result will be kept.
+    actions:
+      close: Disable
+      cancel: Cancel
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/continuous-profiling

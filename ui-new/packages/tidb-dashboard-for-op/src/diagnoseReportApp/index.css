@@ -1,0 +1,36 @@
+.report-container {
+  margin-bottom: 16px;
+}
+
+tr.subvalues {
+  background-color: lightcyan;
+}
+
+tr.subvalues.fold {
+  display: none;
+}
+
+.subvalues-toggle {
+  display: inline-block;
+  width: 60px;
+  cursor: pointer;
+  color: #2160c4;
+}
+
+.actions {
+  padding: 8px 0;
+  background-color: white;
+
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.table-header-row {
+  position: sticky;
+  top: 55px;
+  z-index: 1;
+
+  background-color: #888;
+  color: white !important;
+}

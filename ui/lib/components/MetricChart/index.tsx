@@ -1,6 +1,12 @@
 import { Space } from 'antd'
 import _ from 'lodash'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import format from 'string-template'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import client, { ErrorStrategy } from '@lib/client'
@@ -18,6 +24,7 @@ import {
   Position,
   ScaleType,
   Settings,
+  PointerEvent,
 } from '@elastic/charts'
 import { GraphType, QueryData, renderQueryData } from './seriesRenderer'
 import {
@@ -34,6 +41,8 @@ import {
   QueryOptions,
   resolveQueryTemplate,
 } from '@lib/utils/prometheus'
+
+import { ChartContext } from './ChartContext'
 
 export type { GraphType }
 
@@ -85,7 +94,7 @@ export interface IMetricChartProps {
 
   yDomain?: DomainRange
   queries: IQueryOption[]
-  unit: string
+  unit?: string
   type: GraphType
 
   height?: number
@@ -111,11 +120,16 @@ export default function MetricChart({
   onRangeChange,
   onLoadingStateChange,
 }: IMetricChartProps) {
+  const chartRef = useRef<Chart>(null)
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const [chartHandle] = useChartHandle(chartContainerRef, 150)
   const [isLoading, setLoading] = useState(false)
   const [data, setData] = useState<Data | null>(null)
   const [error, setError] = useState<any>(null)
+
+  const ee = useContext(ChartContext)
+
+  ee.useSubscription((e) => chartRef.current?.dispatchExternalPointerEvent(e))
 
   useChange(() => {
     onLoadingStateChange?.(isLoading)
@@ -245,11 +259,13 @@ export default function MetricChart({
     )
   } else {
     inner = (
-      <Chart size={{ height }}>
+      <Chart size={{ height }} ref={chartRef}>
         <Settings
           {...DEFAULT_CHART_SETTINGS}
           legendPosition={Position.Right}
-          legendSize={150}
+          pointerUpdateDebounce={0}
+          onPointerUpdate={(e) => ee.emit(e)}
+          legendSize={130}
           onBrushEnd={handleBrushEnd}
         />
         <Axis
@@ -262,7 +278,9 @@ export default function MetricChart({
           id="left"
           position={Position.Left}
           showOverlappingTicks
-          tickFormat={(v) => getValueFormat(unit)(v, 2)}
+          tickFormat={(v) =>
+            unit ? getValueFormat(unit)(v, 2) : Number(v).toFixed(0)
+          }
           ticks={5}
           domain={yDomain}
         />

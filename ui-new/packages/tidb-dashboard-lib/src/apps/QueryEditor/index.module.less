@@ -1,0 +1,40 @@
+@import 'antd/es/style/themes/default.less';
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  &:before,
+  &:after {
+    // Handle margin collapse
+    content: ' ';
+    display: table;
+  }
+}
+
+.contentContainer {
+  flex: 1;
+  min-height: 0;
+
+  > :global(.gutter.gutter-vertical) {
+    background-color: @gray-3;
+    cursor: row-resize;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+    background-repeat: no-repeat;
+    background-position: center center;
+    margin: 0 @padding-page;
+  }
+
+  &.isCollapsed > :global(.gutter) {
+    display: none;
+  }
+}
+
+.successText {
+  color: @success-color;
+}
+
+.resultTableContainer {
+  position: relative;
+}

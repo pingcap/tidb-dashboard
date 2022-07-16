@@ -1,0 +1,58 @@
+topsql:
+  nav_title: Top SQL
+  alert_header:
+    title: Feature Not Enabled
+    body: Top SQL feature is not enabled. The history data are available. You can modify settings to enable the feature and wait for new data being collected.
+    settings: Settings
+  settings:
+    title: Settings
+    open_settings: Open Settings
+    disable_feature: Disable Top SQL Feature
+    disable_warning: Are you sure want to disable this feature?
+    enable: Enable Feature
+    enable_tooltip: Whether Top SQL feature is enabled. When enabled, there will be small overhead.
+    disabled_result:
+      title: Feature Not Enabled
+      sub_title: Top SQL feature is not enabled. You can modify settings to enable the feature and wait for new data being collected.
+    actions:
+      save: Save
+      close: Disable
+      cancel: Cancel
+    enable_info:
+      title: Success
+      content: Top SQL is enabled now and is collecting data. You need to wait for about 1 minute to view this data.
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/top-sql
+  refresh: Refresh
+  chart:
+    cpu_time: CPU Time
+  table:
+    description: The following table shows which top {{topN}} queries are contributing the most to load in the current time range. Click one to see details.
+    description_no_recent_data: There is no data currently. You need to wait for about 1 minute for new data being collected.
+    others: Other Statements
+    others_tooltip: All of other non Top {{topN}} statements
+    fields:
+      cpu_time: Total CPU Time
+      sql: SQL Statement
+  detail:
+    title: SQL Statement Details by Plan
+    overall: Overall
+    overall_tooltip: The execution details of all plans of this statement
+    no_plan: Plan Not Available
+    no_plan_tooltip: This statement is not a query or the statement plan was being generated
+    fields:
+      cpu_time: Total CPU Time
+      plan: Plan
+      exec_count_per_sec: Call/sec
+      scan_records_per_sec: Scan Rows/sec
+      scan_indexes_per_sec: Scan Indexes/sec
+      duration_per_exec_ms: Latency/call
+  detail_content:
+    fields:
+      sql_text: Statement Template
+      sql_text_tooltip: Similar queries have same statement template even for different query parameters
+      sql_digest: Query Template ID
+      sql_digest_tooltip: a.k.a. Query digest
+      plan_digest: Plan Template ID
+      plan_digest_tooltip: a.k.a. Plan digest
+      plan: Execution Plan

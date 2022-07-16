@@ -1,0 +1,50 @@
+search_logs:
+  nav_title: 日志搜索
+  nav:
+    search_logs: 日志搜索
+    detail: 搜索结果
+    history: 历史搜索
+    show_sidebar: 下载或显示进度
+  page:
+    intro: 点击搜索预览和下载日志
+    tip: 预览仅显示前 500 项日志
+    view: 查看
+    search_histroy: 搜索历史
+  common:
+    time_range: 时间范围
+    start_time: 起始时间
+    end_time: 结束时间
+    log_level: 日志等级
+    components: 选择实例
+    keywords: 关键字
+    keywords_placeholder: 搜索关键字，可选，以空格分割
+    search: 搜索
+    progress: 搜索进度
+    download_selected: 下载选中日志
+    cancel: 取消
+    retry: 重试
+  progress:
+    running: 正在运行
+    success: 成功
+    failed: 失败
+  confirm:
+    cancel_tasks: 确认要取消正在运行的日志搜索任务么？
+    retry_tasks: 确认要重试所有失败的日志搜索任务么？
+  preview:
+    time: 时间
+    level: 日志等级
+    component: 组件
+    log: 日志
+  history:
+    instances: 实例
+    running: 正在搜索
+    finished: 已完成
+    delete_selected: 删除选中的任务
+    delete_all: 删除全部任务
+    status: 状态
+    action: 操作
+    detail: 查看详情
+    delete: 删除
+    delete_confirm_title: 删除搜索历史
+    delete_selected_confirm_content: 确认要删除选中的搜索历史吗？
+    delete_all_confirm_content: 确认要删除所有的搜索历史吗？

@@ -1,0 +1,73 @@
+@import 'antd/es/style/themes/default.less';
+
+.cardContainer {
+  // &:before,
+  // &:after {
+  //   // Handle margin collapse
+  //   content: ' ';
+  //   display: table;
+  // }
+}
+
+.cardInner {
+  margin: @padding-page;
+
+  &.noMargin {
+    margin: 0;
+  }
+
+  &.noMarginTop {
+    margin-top: 0;
+  }
+
+  &.noMarginBottom {
+    margin-bottom: 0;
+  }
+
+  &.noMarginLeft {
+    margin-left: 0;
+  }
+
+  &.noMarginRight {
+    margin-right: 0;
+  }
+}
+
+.cardTitleSection {
+  margin: @padding-lg 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.cardTitle {
+  color: @heading-color;
+  font-size: @heading-4-size;
+  line-height: 32px;
+  margin-right: @padding-md;
+}
+
+.cardSubTitle {
+  margin-left: @padding-md;
+  margin-right: @padding-md;
+}
+
+.cardTitleSpacer {
+  flex-grow: 1;
+}
+
+.hasTitle > .cardContent {
+  margin-top: @padding-lg;
+}
+
+.cardContainer.flexGrow {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+
+  .cardInner,
+  .cardContent {
+    display: flex;
+    flex-grow: 1;
+  }
+}

@@ -1,0 +1,44 @@
+@import 'antd/es/style/themes/default.less';
+
+.headContainer {
+  // &:before,
+  // &:after {
+  //   // Handle margin collapse
+  //   content: ' ';
+  //   display: table;
+  // }
+}
+
+.headInner {
+  margin-top: @padding-page;
+}
+
+.headTitleSection {
+  margin: @padding-lg @padding-page;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.headBack {
+  margin-right: @padding-lg;
+  flex-shrink: 0;
+}
+
+.headTitle {
+  color: @heading-color;
+  font-size: @heading-4-size;
+  line-height: 32px;
+  flex-grow: 1;
+  margin-right: @padding-lg;
+}
+
+.headContent {
+  margin: @padding-lg @padding-page;
+}
+
+.headFooter {
+  margin-top: @padding-lg;
+  border-bottom: 1px solid @border-color-base;
+  padding: 0 @padding-page;
+}

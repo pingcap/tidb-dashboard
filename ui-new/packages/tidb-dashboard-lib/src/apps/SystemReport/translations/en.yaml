@@ -1,0 +1,33 @@
+system_report:
+  nav_title: Cluster Diagnostics
+  generate:
+    title: New Diagnostic Report
+    range_begin: Range Start Time
+    range_duration: Range Duration
+    is_compare: Compare by Baseline
+    compare_range_begin: Baseline Range Start Time
+    submit: Start
+    metrics_relation: Generate Metrics Relation
+  list_table:
+    id: Report ID
+    report_create_time: Diagnose At
+    status: Status
+    status_running: Running
+    status_finish: Finish
+    range: Range
+    compare_range: Baseline Range
+  status:
+    head:
+      title: Diagnostic Status
+      back: New Diagnostic Report
+      view: View Full Report
+    range_begin: Range Start Time
+    range_end: Range End Time
+    baseline_begin: Baseline Range Start Time
+    progress: Progress
+  time_duration:
+    custom: Custom
+  metrics_relation:
+    success:
+      title: Generate metrics relation graph successfully
+      button: View Graph

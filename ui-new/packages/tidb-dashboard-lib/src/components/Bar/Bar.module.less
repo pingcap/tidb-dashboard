@@ -1,0 +1,67 @@
+@import 'antd/es/style/themes/default.less';
+
+@bar-height: 8px;
+@bar-color: lighten(@primary-color, 10%);
+@bar-stack-color: @gray-3;
+@error-bar-height: 6px;
+@error-bar-color: @gold-5;
+@error-line-width: 2px;
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-height: 1em;
+  height: unit(@line-height-base, em);
+}
+
+.text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 5px;
+}
+
+.bar_container {
+  flex-grow: 1;
+  position: relative;
+  height: @bar-height;
+  background: @bar-stack-color;
+}
+
+.bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background-color: @bar-color;
+}
+
+.error_bar {
+  position: absolute;
+  top: 50%;
+  height: @error-line-width;
+  margin-top: -(@error-line-width / 2); // https://github.com/less/less.js/issues/3608#issuecomment-811086683
+  background-color: @error-bar-color;
+
+  &::before {
+    content: '';
+    position: absolute;
+    height: @error-bar-height;
+    width: @error-line-width;
+    margin-top: -(@error-bar-height / 2);
+    background-color: @error-bar-color;
+    top: 50%;
+  }
+
+  &.min_bar {
+    &::before {
+      left: 0;
+    }
+  }
+
+  &.max_bar {
+    &::before {
+      right: 0;
+    }
+  }
+}

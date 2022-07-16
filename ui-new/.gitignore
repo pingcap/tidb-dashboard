@@ -1,0 +1,15 @@
+node_modules
+dist
+build
+
+.eslintcache
+
+# testing
+coverage
+cypress/downloads
+cypress/videos
+cypress/screeshots
+cypress/integration/1-getting-started
+cypress/integration/2-advanced-examples
+.nyc_output
+*.log

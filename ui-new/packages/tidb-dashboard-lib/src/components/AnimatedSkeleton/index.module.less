@@ -1,0 +1,19 @@
+@import 'antd/es/style/mixins/motion.less';
+
+.container :global {
+  .skeletonAnimationFirstTime {
+    animation: 0.5s linear 0.5s antFadeIn;
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
+  }
+  .skeletonAnimationNotFirstTime {
+    animation: 0.5s linear 0 antFadeIn;
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
+  }
+
+  .contentAnimation {
+    animation: 0.2s linear 0s antFadeIn;
+    animation-fill-mode: both;
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "data": [
+    { "instance": "127.0.0.1:10080", "instance_type": "tidb" },
+    { "instance": "127.0.0.1:20160", "instance_type": "tikv" }
+  ],
+  "status": "ok"
+}

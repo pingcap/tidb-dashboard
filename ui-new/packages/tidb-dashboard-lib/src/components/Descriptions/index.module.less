@@ -1,0 +1,58 @@
+@import 'antd/es/style/themes/default.less';
+
+.descriptions {
+  :global {
+    .ant-descriptions-row {
+      line-height: 1;
+    }
+
+    .ant-descriptions-row > th {
+      padding: 0;
+      padding-bottom: @padding-xs;
+    }
+
+    .ant-descriptions-row > td {
+      padding: 0;
+      padding-bottom: @padding-md;
+    }
+
+    .ant-descriptions-item-label {
+      color: @text-color-secondary;
+    }
+
+    .ant-descriptions-item-content {
+      color: @text-color;
+    }
+  }
+}
+
+.item {
+  // nothing for now
+}
+
+.itemSingleline {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  > span {
+    display: inline;
+  }
+  pre {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.itemMultiline {
+  overflow-wrap: break-word;
+  white-space: normal;
+  text-overflow: inherit;
+  overflow: auto;
+
+  :global {
+    .ant-descriptions-item-container {
+      overflow: auto;
+    }
+  }
+}

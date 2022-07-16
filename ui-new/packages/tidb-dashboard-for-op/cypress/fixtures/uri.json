@@ -1,0 +1,9 @@
+{
+  "root": "/",
+  "login": "/signin",
+  "overview": "/overview",
+  "slow_query": "/slow_query",
+  "statement": "/statement",
+  "configuration": "/configuration",
+  "topsql": "/topsql"
+}

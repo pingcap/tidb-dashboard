@@ -1,0 +1,23 @@
+diagnose:
+  nav_title: 集群诊断
+  generate:
+    title: 集群诊断
+    range_begin: 区间起始时间
+    range_duration: 区间长度
+    submit: 开始
+  time_duration:
+    custom: 自定义
+  table_title:
+    config_diagnosis: 配置诊断
+    error_diagnosis: 故障诊断
+    performance_diagnosis: 性能诊断
+  fields:
+    rule: Rule
+    item: Item
+    type: Type
+    instance: Instance
+    status_address: Status Address
+    value: Value
+    reference: Reference
+    severity: Severity
+    details: Details

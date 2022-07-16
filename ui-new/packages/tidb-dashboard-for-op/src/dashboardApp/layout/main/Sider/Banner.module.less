@@ -1,0 +1,45 @@
+@import 'antd/es/style/themes/default.less';
+
+.banner {
+  background: @primary-color;
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  position: relative;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.bannerLeft {
+  padding: 20px 16px 20px 24px;
+}
+
+.bannerRight {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transition: background-color 0.2s @ease-out;
+  display: flex;
+}
+
+.banner:hover .bannerRight {
+  background: lighten(@primary-color, 5%);
+}
+
+.bannerLogo {
+  margin: 5px 0;
+}
+
+.bannerContent {
+  margin-left: 15px;
+}
+
+.bannerTitle {
+  font-size: 1rem;
+}
+
+.bannerVersion {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}

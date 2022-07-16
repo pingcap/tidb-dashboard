@@ -73,7 +73,7 @@ Thank you to all the people who already contributed to TiDB Dashboard!
 ## Architecture
 
 This repository contains both Dashboard HTTP API and Dashboard UI. Dashboard HTTP API is placed in
-`pkg/` directory, written in Golang. Dashboard UI is placed in `ui/` directory, powered by React.
+`pkg/` directory, written in Golang. Dashboard UI is placed in `ui-new/` directory, powered by React.
 
 TiDB Dashboard can also be integrated into PD, as follows:
 

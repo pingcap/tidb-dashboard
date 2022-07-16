@@ -1,0 +1,33 @@
+@import 'antd/es/style/themes/default.less';
+
+.tooltip {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: @padding-xs @padding-md;
+  background: white;
+  text-align: center;
+  line-height: @line-height-base;
+  border-radius: @border-radius-base;
+  z-index: 10;
+  transition: all 0.1s ease-out;
+  pointer-events: none;
+  box-shadow: @box-shadow-base;
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    transform: translate(-50%, 50%) rotate(45deg);
+    transform-origin: center center;
+    z-index: 10;
+  }
+}

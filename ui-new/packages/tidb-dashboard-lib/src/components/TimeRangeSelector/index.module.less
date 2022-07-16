@@ -1,0 +1,41 @@
+@import 'antd/es/style/themes/default.less';
+
+.dropdown_content_container {
+  background-color: @select-dropdown-bg;
+  padding: @padding-md;
+  border-radius: @border-radius-base;
+  outline: none;
+  box-shadow: @box-shadow-base;
+  box-sizing: border-box;
+
+  .usual_time_ranges {
+    span {
+      color: @gray-6;
+    }
+
+    margin-bottom: 16px;
+  }
+
+  .custom_time_ranges {
+    span {
+      color: @gray-6;
+    }
+  }
+
+  .time_range_items {
+    max-width: 360px;
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .time_range_item {
+    width: 120px;
+    padding-bottom: 4px;
+    cursor: pointer;
+  }
+
+  .time_range_item_active {
+    color: @primary-color;
+  }
+}

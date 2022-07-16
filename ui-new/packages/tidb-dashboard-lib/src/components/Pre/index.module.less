@@ -1,0 +1,34 @@
+@font-face {
+  font-family: 'JetBrains Mono NL';
+  src: local('JetBrains Mono NL'),
+    data-uri('./JetBrainsMonoNL-Regular.woff') format('woff'),
+    local('JetBrains Mono');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.font-mixin() {
+  -webkit-font-smoothing: antialiased;
+  font-family: 'JetBrains Mono NL', Menlo, Monaco, Consolas, 'Lucida Console',
+    'Courier New', monospace;
+  font-feature-settings: 'liga' 0;
+  font-variant-ligatures: none;
+}
+
+.pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+
+  .font-mixin();
+  pre,
+  code {
+    .font-mixin();
+  }
+}
+
+.preNoWrap {
+  white-space: pre;
+  word-wrap: normal;
+  overflow-x: auto;
+}

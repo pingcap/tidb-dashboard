@@ -1,0 +1,58 @@
+profiling:
+  nav_title: Profiling Instances
+instance_profiling:
+  nav_title: Manual Profiling
+  settings:
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/dashboard-profiling
+  list:
+    control_form:
+      title: Start Profiling Instances
+      profiling_type:
+        placeholder: All Profiling Types
+        columnTitle: Profiling Type
+      duration:
+        label: Duration
+      submit: Start Profiling
+    disable_warning: You cannot start a profile now since continuous profiling is enabled. You can see latest profiling results in the continuous profiling page.
+    table:
+      title: Profiling History
+      columns:
+        targets: Instances
+        requsted_profiling_types: Profiling Types
+        start_at: Start At
+        duration: Duration (sec)
+        status: Status
+      status:
+        running: Running
+        finished: Finished
+        failed: Failed
+        partial_finished: Partial Finished
+        unknown: Unknown
+      actions:
+        detail: Detail
+  detail:
+    head:
+      back: History
+      title: Profiling Detail
+      start_at: Start At
+    download: Download Profiling Result
+    table:
+      columns:
+        instance: Instance
+        kind: Component
+        content: Content
+        status: Status
+        view_as:
+          title: View As
+          error: Error Information
+          flamegraph: FlameGraph
+          graph: DotGraph
+          download: RawData
+          text: RawData
+      status:
+        finished: Finished
+        skipped: Not Applicable
+        skipped_tooltip: This profiling kind is currently not supported
+        running: Running
+        error: Error

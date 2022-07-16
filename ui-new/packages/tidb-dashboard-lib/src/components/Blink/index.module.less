@@ -1,0 +1,17 @@
+@import 'antd/es/style/themes/default.less';
+
+.blinkActive {
+  animation: blink 0.7s 2 ease-in-out;
+}
+
+@keyframes blink {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(@gold-5, 0.4);
+  }
+  100% {
+    background-color: transparent;
+  }
+}

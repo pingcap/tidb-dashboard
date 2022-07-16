@@ -1,0 +1,102 @@
+@import 'antd/es/style/themes/default.less';
+@import 'antd/es/style/mixins/index';
+@import 'antd/es/input/style/mixin';
+@import 'antd/es/select/style/index.less'; // Exist index.less and index.js both, we need to declare it explictly else it will find index.js
+
+.baseSelect {
+  .reset-component;
+  position: relative;
+  display: inline-block;
+}
+
+.baseSelectInner {
+  position: relative;
+  background-color: @select-background;
+  border: @border-width-base @border-style-base @select-border-color;
+  border-radius: @border-radius-base;
+  transition: all 0.3s @ease-in-out;
+  display: flex;
+  width: 100%;
+  height: @input-height-base;
+  padding: 0 @input-padding-horizontal-base;
+  cursor: pointer;
+  color: @text-color;
+
+  &.focused {
+    .active();
+  }
+
+  &.disabled {
+    color: @disabled-color;
+    background: @input-disabled-bg;
+    cursor: not-allowed;
+
+    .baseSelectInput {
+      cursor: not-allowed;
+    }
+  }
+
+  &:not(.disabled):hover {
+    .hover();
+  }
+}
+
+:global(.ant-form-item-has-error) {
+  .baseSelectInner {
+    border-color: @error-color !important;
+    &.focused {
+      .active(@error-color);
+    }
+  }
+}
+
+.baseSelectInput {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+  height: @select-height-without-border;
+}
+
+.baseSelectValueDisplay {
+  position: relative;
+  display: block;
+  padding-right: @selection-item-padding;
+  font-weight: normal;
+  font-size: @select-dropdown-font-size;
+  line-height: @select-height-without-border;
+  transition: all 0.3s;
+  pointer-events: none;
+  width: 100%;
+
+  &.isPlaceholder {
+    opacity: 0.4;
+  }
+}
+
+.baseSelectArrow {
+  position: absolute;
+  top: 53%; // The same as Ant-design's select
+  right: @input-padding-horizontal-base;
+  width: @font-size-sm;
+  height: @font-size-sm;
+  margin-top: -(@font-size-sm / 2);
+  color: @disabled-color;
+  font-size: @font-size-sm;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+}
+
+.baseSelectOverlay {
+  background-color: @select-dropdown-bg;
+  border-radius: @border-radius-base;
+  outline: none;
+  box-shadow: @box-shadow-base;
+  box-sizing: border-box;
+}

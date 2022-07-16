@@ -1,0 +1,78 @@
+.cardTable {
+  :global {
+    .ms-DetailsRow {
+      .ms-DetailsRow-fields {
+        font-size: 0.9rem;
+      }
+      > :first-child.ms-DetailsRow-fields {
+        > :first-child {
+          padding-left: @padding-page;
+        }
+      }
+      > .ms-DetailsRow-cellCheck + .ms-DetailsRow-fields {
+        > :first-child {
+          padding-left: 0;
+        }
+      }
+    }
+  }
+}
+
+.cardTable.contentExtended {
+  :global {
+    .ms-DetailsRow {
+      > :first-child.ms-DetailsRow-fields {
+        > :last-child {
+          padding-right: @padding-page;
+        }
+      }
+      > .ms-DetailsRow-cellCheck + .ms-DetailsRow-fields {
+        > :first-child {
+          padding-left: 0;
+        }
+      }
+    }
+  }
+}
+
+.tableHeader {
+  :global {
+    .ms-DetailsHeader {
+      padding-top: 0;
+
+      > :first-child .ms-DetailsHeader-cellTitle {
+        padding-left: @padding-page;
+      }
+      > :first-child.ms-DetailsHeader-cellIsCheck
+        + .ms-DetailsHeader-cell
+        .ms-DetailsHeader-cellTitle {
+        padding-left: 0;
+      }
+
+      // FIXME: For sticky headers, when there is `.contentExtended`, we
+      // need to add padding right.
+
+      // > :nth-last-child(2) .ms-DetailsHeader-cellTitle {
+      //   padding-right: @padding-page;
+      // }
+
+      // &.is-resizingColumn > :nth-last-child(3) .ms-DetailsHeader-cellTitle {
+      //   // FIXME: This is highly magical
+      //   padding-right: @padding-page;
+      // }
+    }
+  }
+}
+
+.clickableTableRow {
+  cursor: pointer;
+}
+
+.highlightRow {
+  border: 1px solid;
+}
+
+.cardTableContent {
+  margin-left: -@padding-page;
+  margin-right: -@padding-page;
+}

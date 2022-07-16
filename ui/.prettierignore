@@ -2,7 +2,7 @@ packages/tidb-dashboard-client/src
 packages/tidb-dashboard-client/swagger/spec.json
 packages/tidb-dashboard-client/dist
 
-packages/tidb-dashboard-lib/src/client/models
+packages/tidb-dashboard-lib/src/client/models.ts
 packages/tidb-dashboard-lib/dist
 
 packages/tidb-dashboard-for-op/src/uilts/distro/strings_res.json

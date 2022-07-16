@@ -7,7 +7,7 @@ set -euo pipefail
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_DIR=$(cd "$DIR/../.."; pwd)
 
-TARGET="${PROJECT_DIR}/ui-new/packages/tidb-dashboard-for-op/src/uilts/distro/strings_res.json"
+TARGET="${PROJECT_DIR}/ui/packages/tidb-dashboard-for-op/src/uilts/distro/strings_res.json"
 
 echo "+ Write distro strings"
 cd "$PROJECT_DIR"

@@ -118,7 +118,7 @@ jobs:
         with:
           node-version: '16'
           cache: 'pnpm'
-          cache-dependency-path: 'ui-new/pnpm-lock.yaml'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
       - name: Load cypress cache
         uses: actions/cache@v3
         id: cypress-cache
@@ -191,7 +191,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
-          files: ./ui-new/packages/tidb-dashboard-for-op/.nyc_output/out.json
+          files: ./ui/packages/tidb-dashboard-for-op/.nyc_output/out.json
           fail_ci_if_error: true
           flags: e2e_test
           verbose: true

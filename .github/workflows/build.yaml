@@ -57,7 +57,7 @@ jobs:
         with:
           node-version: '16'
           cache: 'pnpm'
-          cache-dependency-path: 'ui-new/pnpm-lock.yaml'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
       - uses: actions/setup-go@v3
         with:
           go-version: '1.15'
@@ -76,7 +76,7 @@ jobs:
       - name: Check format
         run: |
           pnpm fmt-check || (echo "::error ::Please format your code by using 'pnpm fmt-fix'"; exit 1)
-        working-directory: ui-new
+        working-directory: ui
       - name: Build UI
         run: |
           make ui

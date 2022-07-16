@@ -9,7 +9,7 @@
   "scripts": {
     "fmt-check": "prettier --check .",
     "fmt-fix": "prettier --write .",
-    "prepare": "cd .. && husky install ui-new/.husky",
+    "prepare": "cd .. && husky install ui/.husky",
     "build:lib": "pnpm -r --filter @pingcap/tidb-dashboard-lib build",
     "dev": "pnpm build:lib && pnpm -r --parallel dev",
     "dev:watch_api": "WATCH_API=1 pnpm dev",

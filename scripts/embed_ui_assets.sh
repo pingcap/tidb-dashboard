@@ -14,7 +14,7 @@ set -euo pipefail
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_DIR=$(cd "$DIR/.."; pwd)
 
-UI_ASSETS_DIR=$PROJECT_DIR/ui-new/packages/tidb-dashboard-for-op/dist
+UI_ASSETS_DIR=$PROJECT_DIR/ui/packages/tidb-dashboard-for-op/dist
 
 export GOBIN=$PROJECT_DIR/bin
 export PATH=$GOBIN:$PATH

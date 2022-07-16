@@ -1,5 +1,4 @@
 area/frontend:
   - /ui
-  - /ui-new
 area/backend:
   - *.go

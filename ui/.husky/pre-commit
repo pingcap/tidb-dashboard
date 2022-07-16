@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd ui-new
+cd ui
 pnpm lint-staged

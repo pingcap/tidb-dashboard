@@ -1,4 +1,4 @@
-const MetricsItems = [
+const overviewMetrics = [
   {
     title: 'total_requests',
     queries: [
@@ -86,4 +86,4 @@ const MetricsItems = [
   }
 ]
 
-export { MetricsItems }
+export { overviewMetrics }

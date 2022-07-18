@@ -24,7 +24,7 @@ import { OverviewContext } from '../context'
 import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
 import { useEventEmitter } from 'ahooks'
-import { MetricsItems } from '../data/overviewMetrics'
+import { overviewMetrics } from '../data/overviewMetrics'
 
 interface IChartProps {
   range: Range
@@ -108,7 +108,7 @@ export default function Metrics() {
       </Card>
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
-          {MetricsItems.map((item) => (
+          {overviewMetrics.map((item) => (
             <MetricsWrapper
               metricsItem={item}
               props={metricProps(`${item.title}`)}

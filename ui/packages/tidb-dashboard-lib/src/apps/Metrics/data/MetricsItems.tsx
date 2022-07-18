@@ -1,4 +1,4 @@
-const MetricsItems = [
+const metricsItems = [
   {
     category: 'application_connection',
     metrics: [
@@ -394,4 +394,4 @@ const MetricsItems = [
   }
 ]
 
-export { MetricsItems }
+export { metricsItems }

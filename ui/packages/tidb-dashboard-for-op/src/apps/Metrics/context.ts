@@ -7,18 +7,6 @@ import {
 import client from '~/client'
 
 class DataSource implements IMetricsDataSource {
-  getTiDBTopology(options?: ReqConfig) {
-    return client.getInstance().getTiDBTopology(options)
-  }
-
-  getStoreTopology(options?: ReqConfig) {
-    return client.getInstance().getStoreTopology(options)
-  }
-
-  getPDTopology(options?: ReqConfig) {
-    return client.getInstance().getPDTopology(options)
-  }
-
   metricsQueryGet(
     endTimeSec?: number,
     query?: string,
@@ -36,23 +24,10 @@ class DataSource implements IMetricsDataSource {
       options
     )
   }
-
-  getGrafanaTopology(options?: ReqConfig) {
-    return client.getInstance().getGrafanaTopology(options)
-  }
-
-  getAlertManagerTopology(options?: ReqConfig) {
-    return client.getInstance().getAlertManagerTopology(options)
-  }
-
-  getAlertManagerCounts(address: string, options?: ReqConfig) {
-    return client.getInstance().getAlertManagerCounts({ address }, options)
-  }
 }
 
 const ds = new DataSource()
 
 export const ctx: IMetricsContext = {
-  ds,
-  cfg: { apiPathBase: client.getBasePath() }
+  ds
 }

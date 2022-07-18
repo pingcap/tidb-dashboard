@@ -1,4 +1,4 @@
-import { Space, Typography, Row, Col, Collapse, Button } from 'antd'
+import { Space, Typography, Row, Col, Collapse } from 'antd'
 import React, { useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -23,7 +23,7 @@ import { MetricsContext } from '../context'
 import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
 import { useEventEmitter } from 'ahooks'
-import { MetricsItems } from '../data/MetricsItems'
+import { metricsItems } from '../data/metricsItems'
 
 interface IChartProps {
   range: Range
@@ -105,7 +105,7 @@ export default function Metrics() {
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
           <Card noMarginTop noMarginBottom noMarginRight>
-            {MetricsItems.map((item) => (
+            {metricsItems.map((item) => (
               <Collapse defaultActiveKey={['1']} ghost key={item.category}>
                 <Collapse.Panel
                   header={t(`metrics.category.${item.category}`)}

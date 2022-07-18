@@ -1,8 +1,8 @@
-import { AppstoreOutlined } from '@ant-design/icons'
+import { LineChartOutlined } from '@ant-design/icons'
 
 export default {
   id: 'metrics',
   routerPrefix: '/metrics',
-  icon: AppstoreOutlined,
+  icon: LineChartOutlined,
   reactRoot: () => import('.')
 }

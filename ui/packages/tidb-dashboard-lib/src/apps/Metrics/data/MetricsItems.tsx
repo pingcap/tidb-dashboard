@@ -1,9 +1,9 @@
 const MetricsItems = [
   {
-    category: 'Application Connection',
+    category: 'application_connection',
     metrics: [
       {
-        title: 'connection_count',
+        title: 'Connection Count',
         queries: [
           {
             query: 'sum(tidb_server_connections)',
@@ -18,7 +18,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'disconnection',
+        title: 'Disconnection',
         queries: [
           {
             query: 'sum(tidb_server_disconnection_total) by (instance, result)',
@@ -29,7 +29,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'connection_idle_duration',
+        title: 'Average Idle Connection Duration',
         queries: [
           {
             query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='1'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='1'}[$__rate_interval])))`,
@@ -46,10 +46,10 @@ const MetricsItems = [
     ]
   },
   {
-    category: 'Database Time',
+    category: 'database_time',
     metrics: [
       {
-        title: 'database_time',
+        title: 'Database Time',
         queries: [
           {
             query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
@@ -60,7 +60,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'database_time_by_sql_type',
+        title: 'Database Time by SQL Types',
         queries: [
           {
             query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
@@ -71,7 +71,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'database_time_by_steps_of_sql_processig',
+        title: 'Database Time by Steps of SQL Processing',
         queries: [
           {
             query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
@@ -96,10 +96,10 @@ const MetricsItems = [
     ]
   },
   {
-    category: 'SQL Count',
+    category: 'sql_count',
     metrics: [
       {
-        title: 'sql_count_qps',
+        title: 'Query Per Second',
         queries: [
           {
             query: 'sum(rate(tidb_executor_statement_total[$__rate_interval]))',
@@ -115,7 +115,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'failed_queries',
+        title: 'Failed Queries',
         queries: [
           {
             query:
@@ -127,7 +127,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'cps',
+        title: 'Command Per Second',
         queries: [
           {
             query:
@@ -141,10 +141,10 @@ const MetricsItems = [
     ]
   },
   {
-    category: 'Core Feature Usage',
+    category: 'core_feature_usage',
     metrics: [
       {
-        title: 'ops',
+        title: 'Queries Using Plan Cache OPS',
         queries: [
           {
             query:
@@ -158,10 +158,10 @@ const MetricsItems = [
     ]
   },
   {
-    category: 'Latency break down',
+    category: 'latency_break_down',
     metrics: [
       {
-        title: 'query',
+        title: 'Query Duration',
         queries: [
           {
             query:
@@ -188,7 +188,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'get_token',
+        title: 'Get Token Duration',
         queries: [
           {
             query:
@@ -205,7 +205,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'parse',
+        title: 'Parse Duration',
         queries: [
           {
             query:
@@ -222,7 +222,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'compile',
+        title: 'Compile Duration',
         queries: [
           {
             query:
@@ -239,7 +239,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'execution',
+        title: 'Execution Duraion',
         queries: [
           {
             query:
@@ -258,10 +258,10 @@ const MetricsItems = [
     ]
   },
   {
-    category: 'Transaction',
+    category: 'transaction',
     metrics: [
       {
-        title: 'tps',
+        title: 'Transaction Per Second',
         queries: [
           {
             query:
@@ -273,8 +273,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        id: 'average_duration',
-        title: 'transaction_average_duration',
+        title: 'Transaction Duration',
         queries: [
           {
             query:
@@ -293,10 +292,10 @@ const MetricsItems = [
     ]
   },
   {
-    category: 'Server',
+    category: 'server',
     metrics: [
       {
-        title: 'tidb_uptime',
+        title: 'TiDB Uptime',
         queries: [
           {
             query: '(time() - process_start_time_seconds{job="tidb"})',
@@ -307,7 +306,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'tidb_cpu_usage',
+        title: 'TiDB CPU Usage',
         queries: [
           {
             query:
@@ -319,7 +318,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'tidb_memory_usage',
+        title: 'TiDB Memory Usage',
         queries: [
           {
             query: 'process_resident_memory_bytes{job="tidb"}',
@@ -330,7 +329,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'tikv_uptime',
+        title: 'TiKV Uptime',
         queries: [
           {
             query: '(time() - process_start_time_seconds{job="tikv"})',
@@ -341,7 +340,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'tikv_cpu_usage',
+        title: 'TiKV CPU Usage',
         queries: [
           {
             query:
@@ -353,7 +352,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'tikv_memory_usage',
+        title: 'TiKV Memory Usage',
         queries: [
           {
             query: 'process_resident_memory_bytes{job=~".*tikv"}',
@@ -364,7 +363,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'tikv_io_mbps',
+        title: 'TiKV IO MBps',
         queries: [
           {
             query:
@@ -381,7 +380,7 @@ const MetricsItems = [
         type: 'line'
       },
       {
-        title: 'tikv_storage_usage',
+        title: 'TiKV Storage Usage',
         queries: [
           {
             query: 'sum(tikv_store_size_bytes{type="used"}) by (instance)',

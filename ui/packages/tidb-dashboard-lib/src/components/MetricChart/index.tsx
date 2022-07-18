@@ -23,8 +23,7 @@ import {
   LineSeries,
   Position,
   ScaleType,
-  Settings,
-  PointerEvent
+  Settings
 } from '@elastic/charts'
 import { GraphType, QueryData, renderQueryData } from './seriesRenderer'
 import {

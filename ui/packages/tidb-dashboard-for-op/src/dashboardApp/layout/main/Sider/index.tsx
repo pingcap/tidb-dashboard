@@ -127,6 +127,7 @@ function Sider({
 
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
+    useAppMenuItem(registry, 'metrics'),
     useAppMenuItem(registry, 'cluster_info'),
     // topSQL
     useAppMenuItem(registry, 'statement'),

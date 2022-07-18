@@ -1,38 +1,25 @@
 import React, { useContext } from 'react'
 import { HashRouter as Router } from 'react-router-dom'
-import { Col, Row } from 'antd'
 
 import { Root } from '@lib/components'
 import { addTranslations } from '@lib/utils/i18n'
 
 import translations from './translations'
-import { OverviewContext } from './context'
+import { MetricsContext } from './context'
 import { useLocationChange } from '@lib/hooks/useLocationChange'
-import Instances from './components/Instances'
 import Metrics from './components/Metrics'
-import MonitorAlert from './components/MonitorAlert'
 
 addTranslations(translations)
 
 function AppRoutes() {
   useLocationChange()
-  return (
-    <Row>
-      <Col span={18}>
-        <Metrics />
-      </Col>
-      <Col span={6}>
-        <Instances />
-        <MonitorAlert />
-      </Col>
-    </Row>
-  )
+  return <Metrics />
 }
 
 export default function () {
-  const ctx = useContext(OverviewContext)
+  const ctx = useContext(MetricsContext)
   if (ctx === null) {
-    throw new Error('OverviewContext must not be null')
+    throw new Error('MetricsContext must not be null')
   }
 
   return (

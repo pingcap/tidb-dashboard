@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
-// import client from '@lib/client'
 import { AnimatedSkeleton, DateTime, ErrorBar, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -21,9 +20,7 @@ function ReportStatus() {
     isLoading,
     error
   } = useClientRequestWithPolling(
-    (reqConfig) =>
-      // client.getInstance().diagnoseReportsIdStatusGet(id, reqConfig),
-      ctx!.ds.diagnoseReportsIdStatusGet(id, reqConfig),
+    (reqConfig) => ctx!.ds.diagnoseReportsIdStatusGet(id, reqConfig),
     {
       shouldPoll: (data) => data?.progress! < 100
     }

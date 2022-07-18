@@ -1,4 +1,3 @@
-// import client from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
 import { CardTable, Card } from '@lib/components'
 import { Alert } from 'antd'
@@ -61,10 +60,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
         return
       }
       try {
-        const res =
-          // await client
-          //   .getInstance()
-          await ctx!.ds.logsTaskgroupsIdPreviewGet(taskGroupID + '')
+        const res = await ctx!.ds.logsTaskgroupsIdPreviewGet(taskGroupID + '')
         setData(
           res.data.map((value, index): ILogItem => {
             return {
@@ -84,7 +80,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
       setLoading(true)
     }
     getLogPreview()
-  }, [taskGroupID, componentByTaskId, tasks])
+  }, [taskGroupID, componentByTaskId, tasks, ctx])
 
   const renderRow = useCallback(
     (props?: IDetailsRowProps, defaultRender?) => {

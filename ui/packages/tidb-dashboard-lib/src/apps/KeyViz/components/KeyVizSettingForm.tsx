@@ -11,7 +11,6 @@ import {
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-// import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
@@ -74,16 +73,11 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
     data: config,
     isLoading: loading,
     error
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().keyvisualConfigGet(reqConfig)
-    ctx!.ds.keyvisualConfigGet
-  )
+  } = useClientRequest(ctx!.ds.keyvisualConfigGet)
 
   const onUpdateServiceStatus = async (values) => {
     try {
       setSubmitting(true)
-      // await client.getInstance().keyvisualConfigPut(values)
       await ctx!.ds.keyvisualConfigPut(values)
       onClose()
       onConfigUpdated()

@@ -14,10 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import {
-  // ErrorStrategy,
-  ConprofContinuousProfilingConfig
-} from '@lib/client'
+import { ConprofContinuousProfilingConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar, InstanceSelect } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
@@ -58,18 +55,11 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
     data: initialConfig,
     isLoading: loading,
     error
-  } = useClientRequest(
-    // () =>
-    // client.getInstance().continuousProfilingConfigGet({
-    //   errorStrategy: ErrorStrategy.Custom
-    // })
-    () => ctx!.ds.continuousProfilingConfigGet({ handleError: 'custom' })
+  } = useClientRequest(() =>
+    ctx!.ds.continuousProfilingConfigGet({ handleError: 'custom' })
   )
 
   const { data: estimateSize } = useClientRequest(() =>
-    // client.getInstance().continuousProfilingEstimateSizeGet({
-    //   errorStrategy: ErrorStrategy.Custom
-    // })
     ctx!.ds.continuousProfilingEstimateSizeGet({ handleError: 'custom' })
   )
 
@@ -96,9 +86,6 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
         }
         try {
           setSubmitting(true)
-          // await client.getInstance().continuousProfilingConfigPost({
-          //   continuous_profiling: newConfig
-          // })
           await ctx!.ds.continuousProfilingConfigPost({
             continuous_profiling: newConfig
           })
@@ -125,7 +112,7 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated]
+    [t, onClose, onConfigUpdated, ctx]
   )
 
   return (

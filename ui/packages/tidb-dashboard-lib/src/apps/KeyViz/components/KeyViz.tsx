@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { useGetSet, useMount } from 'react-use'
 import { useBoolean, useMemoizedFn } from 'ahooks'
 
-// import client, { ConfigKeyVisualConfig } from '@lib/client'
 import { ConfigKeyVisualConfig } from '@lib/client'
 import { Heatmap } from '../heatmap'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
@@ -101,7 +100,6 @@ const KeyViz = () => {
   const updateServiceStatus = useMemoizedFn(async function () {
     try {
       setLoading(true)
-      // const resp = await client.getInstance().keyvisualConfigGet()
       const resp = await ctx!.ds.keyvisualConfigGet()
       const config = resp.data
       setConfig(config)

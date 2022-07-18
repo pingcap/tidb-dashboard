@@ -58,7 +58,7 @@ export function PrometheusAddressForm() {
         setIsPosting(false)
       }
     },
-    [form]
+    [form, ctx]
   )
 
   const handleCancel = useCallback(() => {

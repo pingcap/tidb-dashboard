@@ -125,7 +125,7 @@ function ConProfSettingForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated]
+    [t, onClose, onConfigUpdated, ctx]
   )
 
   return (

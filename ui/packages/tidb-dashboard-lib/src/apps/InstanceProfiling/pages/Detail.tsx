@@ -365,7 +365,7 @@ export default function Page() {
     window.location.href = `${
       ctx!.cfg.apiPathBase
     }/profiling/group/download?token=${token}`
-  }, [id])
+  }, [id, ctx])
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>

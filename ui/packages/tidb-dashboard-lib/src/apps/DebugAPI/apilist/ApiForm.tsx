@@ -76,7 +76,7 @@ export default function ApiForm({
         setLoading(false)
       }
     },
-    [id, endpointHostParamKey]
+    [id, endpointHostParamKey, ctx]
   )
 
   const endpointParam = useMemo<EndpointAPIParamDefinition>(

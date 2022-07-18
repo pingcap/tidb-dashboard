@@ -83,7 +83,7 @@ export default function DiagnosisTable({
         },
         reqConfig
       )
-  }, [internalTimeRange, kind])
+  }, [internalTimeRange, kind, ctx])
 
   const { data, isLoading, error, sendRequest } = useClientRequest(
     reqFn.current!,

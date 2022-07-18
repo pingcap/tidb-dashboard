@@ -134,7 +134,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         setSubmitting(false)
       }
     },
-    [navigate]
+    [navigate, ctx]
   )
 
   return (

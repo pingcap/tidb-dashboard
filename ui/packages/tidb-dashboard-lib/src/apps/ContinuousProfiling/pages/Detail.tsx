@@ -161,7 +161,7 @@ export default function Page() {
     window.location.href = `${
       ctx!.cfg.apiPathBase
     }/continuous_profiling/download?token=${token}`
-  }, [ts])
+  }, [ts, ctx])
 
   const columns = useMemo(
     () => [

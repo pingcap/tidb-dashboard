@@ -35,7 +35,7 @@ export const TableIDWidget: ApiFormWidget = ({ value, onChange }) => {
     } finally {
       setLoading(false)
     }
-  }, [setLoading, setOptions, options])
+  }, [setLoading, setOptions, options, ctx])
 
   const memoOnChange = useCallback(
     (tags: string[]) => onChange?.(tags[0]),

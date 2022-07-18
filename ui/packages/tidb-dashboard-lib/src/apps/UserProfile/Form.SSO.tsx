@@ -67,7 +67,7 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
         setIsPosting(false)
       }
     },
-    [onChange]
+    [onChange, ctx]
   )
 
   return (
@@ -230,7 +230,7 @@ export function SSOForm() {
         setIsPosting(false)
       }
     },
-    [sendRequest]
+    [sendRequest, ctx]
   )
 
   const handleAuthStateChange = useCallback(() => {

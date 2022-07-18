@@ -61,13 +61,12 @@ export default function LogSearchingHistory() {
 
   useEffect(() => {
     async function getData() {
-      // const res = await client.getInstance().logsTaskgroupsGet()
       const res = await ctx!.ds.logsTaskgroupsGet()
       setTaskGroups(res.data)
     }
 
     getData()
-  }, [])
+  }, [ctx])
 
   function stateRender({ state }: LogsearchTaskGroupModel) {
     switch (state) {

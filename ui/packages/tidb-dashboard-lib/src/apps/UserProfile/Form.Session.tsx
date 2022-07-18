@@ -22,7 +22,6 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Pre } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-// import * as auth from '@lib/utils/auth'
 import ReactMarkdown from 'react-markdown'
 import Checkbox from 'antd/lib/checkbox/Checkbox'
 import { store } from '@lib/utils/store'
@@ -63,20 +62,21 @@ function ShareSessionButton() {
     setIsCopied(false)
   }, [])
 
-  const handleFinish = useCallback(async (values) => {
-    try {
-      setIsPosting(true)
-      const r =
-        // await client.getInstance().userShareSession
-        await ctx!.ds.userShareSession({
+  const handleFinish = useCallback(
+    async (values) => {
+      try {
+        setIsPosting(true)
+        const r = await ctx!.ds.userShareSession({
           expire_in_sec: values.expire * 60 * 60,
           revoke_write_priv: !!values.read_only
         })
-      setCode(r.data.code)
-    } finally {
-      setIsPosting(false)
-    }
-  }, [])
+        setCode(r.data.code)
+      } finally {
+        setIsPosting(false)
+      }
+    },
+    [ctx]
+  )
 
   const handleCopy = useCallback(() => {
     setIsCopied(true)
@@ -215,7 +215,7 @@ export function SessionForm() {
     } else {
       window.location.reload()
     }
-  }, [])
+  }, [ctx])
 
   return (
     <Space>

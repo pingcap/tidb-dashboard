@@ -110,14 +110,13 @@ export default function Page() {
       }
       try {
         setSubmitting(true)
-        // const res = await client.getInstance().startProfiling(req)
         const res = await ctx!.ds.startProfiling(req)
         navigate(`/instance_profiling/detail?id=${res.data.id}`)
       } finally {
         setSubmitting(false)
       }
     },
-    [navigate]
+    [navigate, ctx]
   )
 
   const handleRowClick = useMemoizedFn(

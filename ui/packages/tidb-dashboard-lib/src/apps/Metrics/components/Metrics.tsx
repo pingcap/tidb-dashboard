@@ -40,7 +40,16 @@ interface IChartProps {
 
 const MetricsWrapper = ({ metricsItem, props }) => {
   return (
-    <Card noMarginTop noMarginBottom noMarginLeft>
+    <Card
+      noMarginTop
+      noMarginBottom
+      noMarginLeft
+      style={{
+        border: '1px solid #f1f0f0',
+        padding: '10px 2rem',
+        backgroundColor: '#fcfcfd'
+      }}
+    >
       <Typography.Title level={5} style={{ textAlign: 'center' }}>
         {metricsItem.title}
       </Typography.Title>
@@ -95,15 +104,7 @@ export default function Metrics() {
       </Card>
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
-          <Card
-            noMarginTop
-            noMarginBottom
-            noMarginRight
-            style={{
-              border: '1px solid #e9e7e7',
-              padding: '10px 2rem'
-            }}
-          >
+          <Card noMarginTop noMarginBottom noMarginRight>
             {MetricsItems.map((item) => (
               <Collapse defaultActiveKey={['1']} ghost key={item.category}>
                 <Collapse.Panel

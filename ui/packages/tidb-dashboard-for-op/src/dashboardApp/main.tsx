@@ -152,7 +152,6 @@ async function webPageStart() {
   registry
     .register(AppUserProfile)
     .register(AppOverview)
-    .register(AppMetrics)
     .register(AppClusterInfo)
     .register(AppKeyViz)
     .register(AppTopSQL)
@@ -160,6 +159,7 @@ async function webPageStart() {
     .register(AppSystemReport)
     .register(AppSlowQuery)
     .register(AppDiagnose)
+    .register(AppMetrics)
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
     .register(AppConProfiling)

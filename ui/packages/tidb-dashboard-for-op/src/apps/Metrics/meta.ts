@@ -4,6 +4,5 @@ export default {
   id: 'metrics',
   routerPrefix: '/metrics',
   icon: AppstoreOutlined,
-  isDefaultRouter: true,
   reactRoot: () => import('.')
 }

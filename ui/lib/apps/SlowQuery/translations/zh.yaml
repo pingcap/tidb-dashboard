@@ -118,8 +118,11 @@ slow_query:
       back: 列表
       sql: SQL 查询
       previous_sql: 上一条 SQL 查询
-      plan: 执行计划
-      tree_diagram: 树形图
+    plan:
+      title: 执行计划
+      visual: 图形
+      text: 文本
+      modal_title: 执行计划可视化
     tabs:
       basic: 基本信息
       time: 执行时间

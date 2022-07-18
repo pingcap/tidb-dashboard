@@ -229,8 +229,6 @@ export default function useSlowQueryTableController({
           orderOptions.orderBy,
           queryOptions.plans,
           queryOptions.searchText,
-          // {
-          // }
           {
             handleError: 'custom'
           }

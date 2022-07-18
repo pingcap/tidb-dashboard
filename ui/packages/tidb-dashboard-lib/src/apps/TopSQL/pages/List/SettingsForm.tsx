@@ -25,11 +25,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
     data: initialConfig,
     isLoading: loading,
     error
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().topsqlConfigGet(reqConfig)
-    ctx!.ds.topsqlConfigGet
-  )
+  } = useClientRequest(ctx!.ds.topsqlConfigGet)
 
   const handleSubmit = useCallback(
     (values) => {
@@ -39,7 +35,6 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         }
         try {
           setSubmitting(true)
-          // await client.getInstance().topsqlConfigPost(newConfig)
           await ctx!.ds.topsqlConfigPost(newConfig)
           telemetry.saveSettings(newConfig)
           onClose()

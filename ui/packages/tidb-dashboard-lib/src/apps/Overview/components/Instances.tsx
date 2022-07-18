@@ -3,7 +3,6 @@ import React, { useContext, useMemo } from 'react'
 import { Card, AnimatedSkeleton, Descriptions } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-// import client from '@lib/client'
 import { Typography, Row, Col, Space } from 'antd'
 import {
   STATUS_OFFLINE,
@@ -68,16 +67,8 @@ export default function Nodes() {
 
   const ctx = useContext(OverviewContext)
 
-  const tidbResp = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().getTiDBTopology(reqConfig)
-    ctx!.ds.getTiDBTopology
-  )
-  const storeResp = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().getStoreTopology(reqConfig)
-    ctx!.ds.getStoreTopology
-  )
+  const tidbResp = useClientRequest(ctx!.ds.getTiDBTopology)
+  const storeResp = useClientRequest(ctx!.ds.getStoreTopology)
   const tiKVResp = {
     ...storeResp,
     data: storeResp.data?.tikv
@@ -86,11 +77,7 @@ export default function Nodes() {
     ...storeResp,
     data: storeResp.data?.tiflash
   }
-  const pdResp = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().getPDTopology(reqConfig)
-    ctx!.ds.getPDTopology
-  )
+  const pdResp = useClientRequest(ctx!.ds.getPDTopology)
 
   return (
     <Card

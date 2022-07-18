@@ -58,14 +58,12 @@ export default function ApiForm({
           }
           return prev
         }, {})
-        const resp =
-          // await client.getInstance().debugAPIRequestEndpoint
-          await ctx!.ds.debugAPIRequestEndpoint({
-            api_id: id,
-            host: hostname,
-            port: Number(port),
-            param_values
-          })
+        const resp = await ctx!.ds.debugAPIRequestEndpoint({
+          api_id: id,
+          host: hostname,
+          port: Number(port),
+          param_values
+        })
         const token = resp.data
         window.location.href = `${
           ctx!.cfg.apiPathBase
@@ -76,7 +74,7 @@ export default function ApiForm({
         setLoading(false)
       }
     },
-    [id, endpointHostParamKey]
+    [id, endpointHostParamKey, ctx]
   )
 
   const endpointParam = useMemo<EndpointAPIParamDefinition>(

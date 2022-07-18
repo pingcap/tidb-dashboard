@@ -1,18 +1,19 @@
 import { Tooltip, Typography } from 'antd'
 import React, { useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-// import client, { HostinfoInfo, HostinfoPartitionInfo } from '@lib/client'
+import { WarningOutlined } from '@ant-design/icons'
+
 import { HostinfoInfo, HostinfoPartitionInfo } from '@lib/client'
 import { Bar, CardTable } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import {
   InstanceKind,
   InstanceKinds,
   instanceKindName
 } from '@lib/utils/instanceTable'
-import { WarningOutlined } from '@ant-design/icons'
+
 import { ClusterInfoContext } from '../context'
 
 interface IExpandedDiskItem extends HostinfoPartitionInfo {
@@ -85,8 +86,6 @@ export default function HostTable() {
   const ctx = useContext(ClusterInfoContext)
 
   const { data, isLoading, error } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().clusterInfoGetHostsInfo(reqConfig)
     ctx!.ds.clusterInfoGetHostsInfo
   )
 

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
-// import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 import formatSql from '@lib/utils/sqlFormatter'
@@ -40,8 +39,6 @@ function DetailPage() {
   const { t } = useTranslation()
 
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
-    // client
-    // .getInstance()
     ctx!.ds.slowQueryDetailGet(
       query.connectId!,
       query.digest!,

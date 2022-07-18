@@ -1,4 +1,3 @@
-// import client from '@lib/client'
 import { AnimatedSkeleton, Blink, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -18,8 +17,6 @@ export function PrometheusAddressForm() {
   const [isPosting, setIsPosting] = useState(false)
   const handleValuesChange = useCallback(() => setIsChanged(true), [])
   const { error, isLoading, data } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().metricsGetPromAddress(reqConfig)
     ctx!.ds.metricsGetPromAddress
   )
   const isInitialLoad = useRef(true)
@@ -46,9 +43,6 @@ export function PrometheusAddressForm() {
       }
       try {
         setIsPosting(true)
-        // const resp = await client.getInstance().metricsSetCustomPromAddress({
-        //   address
-        // })
         const resp = await ctx!.ds.metricsSetCustomPromAddress({ address })
         const customAddr = resp?.data?.normalized_address ?? ''
         form.setFieldsValue({ customAddr })
@@ -58,7 +52,7 @@ export function PrometheusAddressForm() {
         setIsPosting(false)
       }
     },
-    [form]
+    [form, ctx]
   )
 
   const handleCancel = useCallback(() => {

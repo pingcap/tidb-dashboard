@@ -43,14 +43,8 @@ export default function Page() {
     data: historyTable,
     isLoading: listLoading,
     error: historyError
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().getProfilingGroups(reqConfig)
-    ctx!.ds.getProfilingGroups
-  )
+  } = useClientRequest(ctx!.ds.getProfilingGroups)
   const { data: ngMonitoringConfig } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().continuousProfilingConfigGet(reqConfig)
     ctx!.ds.continuousProfilingConfigGet
   )
 
@@ -110,14 +104,13 @@ export default function Page() {
       }
       try {
         setSubmitting(true)
-        // const res = await client.getInstance().startProfiling(req)
         const res = await ctx!.ds.startProfiling(req)
         navigate(`/instance_profiling/detail?id=${res.data.id}`)
       } finally {
         setSubmitting(false)
       }
     },
-    [navigate]
+    [navigate, ctx]
   )
 
   const handleRowClick = useMemoizedFn(

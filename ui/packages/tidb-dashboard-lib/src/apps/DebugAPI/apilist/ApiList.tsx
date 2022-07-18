@@ -55,24 +55,17 @@ export default function Page() {
 
   const { t, i18n } = useTranslation()
   const { data: endpointData, isLoading: isEndpointLoading } = useClientRequest(
-    // (reqConfig) => client.getInstance().debugAPIGetEndpoints(reqConfig)
     ctx!.ds.debugAPIGetEndpoints
   )
   const { endpoints, filterBy } = useFilterEndpoints(endpointData)
 
   // TODO: refine with components/InstanceSelect
   const { data: tidbTopology = [], isLoading: isTiDBTopology } =
-    useClientRequest(
-      // (reqConfig) =>
-      // client.getInstance().getTiDBTopology(reqConfig)
-      ctx!.ds.getTiDBTopology
-    )
+    useClientRequest(ctx!.ds.getTiDBTopology)
   const { data: pdTopology = [], isLoading: isPDLoading } = useClientRequest(
-    // (reqConfig) => client.getInstance().getPDTopology(reqConfig)
     ctx!.ds.getPDTopology
   )
   const { data: storeTopology, isLoading: isStoreLoading } = useClientRequest(
-    // (reqConfig) => client.getInstance().getStoreTopology(reqConfig)
     ctx!.ds.getStoreTopology
   )
   const topology: Topology = {

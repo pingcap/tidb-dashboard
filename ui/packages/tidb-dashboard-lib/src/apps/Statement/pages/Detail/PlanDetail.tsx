@@ -13,7 +13,6 @@ import {
   TextWithInfo
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-// import client from '@lib/client'
 import formatSql from '@lib/utils/sqlFormatter'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 
@@ -42,8 +41,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
     isLoading: isDataLoading,
     error
   } = useClientRequest((reqConfig) =>
-    // client
-    //   .getInstance()
     ctx!.ds.statementsPlanDetailGet(
       query.beginTime!,
       query.digest!,

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-// import client from '@lib/client'
 import { Card, Pre, DatePicker } from '@lib/components'
 
 import ReportHistory from '../components/ReportHistory'
@@ -30,14 +29,12 @@ const useFinishHandler = (
       ? compare_start_time + range_duration * 60
       : 0
 
-    const res =
-      // await client.getInstance().diagnoseReportsPost({
-      await genReport({
-        start_time,
-        end_time,
-        compare_start_time,
-        compare_end_time
-      })
+    const res = await genReport({
+      start_time,
+      end_time,
+      compare_start_time,
+      compare_end_time
+    })
     navigate(`/system_report/detail?id=${res.data}`)
   }
 }
@@ -74,14 +71,11 @@ export default function ReportGenerator() {
     try {
       setGenerateRelationPosting(true)
 
-      const resp =
-        // await client
-        //   .getInstance()
-        await ctx!.ds.diagnoseGenerateMetricsRelationship({
-          start_time,
-          end_time,
-          type: 'sum'
-        })
+      const resp = await ctx!.ds.diagnoseGenerateMetricsRelationship({
+        start_time,
+        end_time,
+        type: 'sum'
+      })
       Modal.success({
         title: t('system_report.metrics_relation.success.title'),
         okText: t('system_report.metrics_relation.success.button'),

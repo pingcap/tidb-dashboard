@@ -3,7 +3,7 @@ import Statement from './apps/Statement'
 import SlowQuery from './apps/SlowQuery'
 import KeyViz from './apps/KeyViz'
 import TopSQL from './apps/TopSQL'
-import Overview from './apps/Overview'
+import Metrics from './apps/Metrics'
 
 function getLocHashPrefix() {
   return window.location.hash.split('/')[1]
@@ -41,8 +41,8 @@ export default function () {
     return <TopSQL />
   }
 
-  if (locHashPrefix === 'overview') {
-    return <Overview />
+  if (locHashPrefix === 'metrics') {
+    return <Metrics />
   }
 
   return <p>No Matched Route!</p>

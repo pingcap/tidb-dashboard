@@ -1,12 +1,12 @@
 import {
-  IOverviewDataSource,
-  IOverviewContext,
+  IMetricsDataSource,
+  IMetricsContext,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 import client from '~/client'
 
-class DataSource implements IOverviewDataSource {
+class DataSource implements IMetricsDataSource {
   getTiDBTopology(options?: ReqConfig) {
     return client.getInstance().getTiDBTopology(options)
   }
@@ -52,7 +52,7 @@ class DataSource implements IOverviewDataSource {
 
 const ds = new DataSource()
 
-export const ctx: () => IOverviewContext = () => ({
+export const ctx: () => IMetricsContext = () => ({
   ds,
   cfg: { apiPathBase: client.getBasePath() }
 })

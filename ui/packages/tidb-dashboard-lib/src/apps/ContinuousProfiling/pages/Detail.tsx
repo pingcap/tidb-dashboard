@@ -8,14 +8,7 @@ import { upperFirst } from 'lodash'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 
 import { ConprofProfileDetail } from '@lib/client'
-import {
-  Card,
-  CardTable,
-  DateTime,
-  Descriptions,
-  Head
-  // ActionsButton,
-} from '@lib/components'
+import { Card, CardTable, DateTime, Descriptions, Head } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { instanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -43,11 +36,8 @@ export default function Page() {
     data: groupProfileDetail,
     isLoading: groupDetailLoading,
     error: groupDetailError
-  } = useClientRequest(
-    // () => {
-    // return client.getInstance().continuousProfilingGroupProfileDetailGet(ts)
-    (reqConfig) =>
-      ctx!.ds.continuousProfilingGroupProfileDetailGet(ts, reqConfig)
+  } = useClientRequest((reqConfig) =>
+    ctx!.ds.continuousProfilingGroupProfileDetailGet(ts, reqConfig)
   )
 
   const profileDuration = groupProfileDetail?.profile_duration_secs || 0
@@ -97,12 +87,9 @@ export default function Page() {
       if (action === 'view_flamegraph' || action === 'download') {
         dataFormat = 'protobuf'
       }
-      const res =
-        // await client
-        //   .getInstance()
-        await ctx!.ds.continuousProfilingActionTokenGet(
-          `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}&data_format=${dataFormat}`
-        )
+      const res = await ctx!.ds.continuousProfilingActionTokenGet(
+        `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}&data_format=${dataFormat}`
+      )
       const token = res.data
       if (!token) {
         return
@@ -147,12 +134,9 @@ export default function Page() {
   )
 
   const handleDownloadGroup = useCallback(async () => {
-    const res =
-      // await client
-      //   .getInstance()
-      await ctx!.ds.continuousProfilingActionTokenGet(
-        `ts=${ts}&data_format=protobuf`
-      )
+    const res = await ctx!.ds.continuousProfilingActionTokenGet(
+      `ts=${ts}&data_format=protobuf`
+    )
     const token = res.data
     if (!token) {
       return

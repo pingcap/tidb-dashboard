@@ -6,7 +6,6 @@ import {
   QuestionCircleOutlined,
   ShareAltOutlined
 } from '@ant-design/icons'
-// import client from '@lib/client'
 import {
   Alert,
   Button,
@@ -198,12 +197,9 @@ export function SessionForm() {
   const handleLogout = useCallback(async () => {
     let signOutURL: string | undefined = undefined
     try {
-      const resp =
-        // await client
-        //   .getInstance()
-        await ctx!.ds.userGetSignOutInfo(
-          `${window.location.protocol}//${window.location.host}${window.location.pathname}`
-        )
+      const resp = await ctx!.ds.userGetSignOutInfo(
+        `${window.location.protocol}//${window.location.host}${window.location.pathname}`
+      )
       signOutURL = resp.data.end_session_url
     } catch (e) {
       console.error(e)

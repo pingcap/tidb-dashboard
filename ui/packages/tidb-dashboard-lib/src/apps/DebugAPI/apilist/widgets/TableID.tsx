@@ -29,7 +29,6 @@ export const TableIDWidget: ApiFormWidget = ({ value, onChange }) => {
     }
     setLoading(true)
     try {
-      // const rst = await client.getInstance().infoListTables()
       const rst = await ctx!.ds.infoListTables()
       setOptions(rst.data)
     } finally {

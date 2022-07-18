@@ -96,7 +96,6 @@ async function getActionToken(
   apiType: string,
   fetcher: IInstanceProfilingDataSource['getActionToken']
 ): Promise<string | undefined> {
-  // const res = await client.getInstance().getActionToken(id, apiType)
   const res = await fetcher(id, apiType)
   const token = res.data
   if (!token) {
@@ -120,7 +119,6 @@ export default function Page() {
     isLoading,
     error
   } = useClientRequestWithPolling(
-    // (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
     (reqConfig) => ctx!.ds.getProfilingGroupDetail(id, reqConfig),
     {
       shouldPoll: (data) => !isFinished(data)
@@ -349,11 +347,6 @@ export default function Page() {
   )
 
   const handleDownloadGroup = useCallback(async () => {
-    // const res = await client.getInstance().getActionToken(id, 'group_download')
-    // const token = res.data
-    // if (!token) {
-    //   return
-    // }
     const token = await getActionToken(
       id,
       'group_download',

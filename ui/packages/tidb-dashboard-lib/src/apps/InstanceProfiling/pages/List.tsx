@@ -43,14 +43,8 @@ export default function Page() {
     data: historyTable,
     isLoading: listLoading,
     error: historyError
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().getProfilingGroups(reqConfig)
-    ctx!.ds.getProfilingGroups
-  )
+  } = useClientRequest(ctx!.ds.getProfilingGroups)
   const { data: ngMonitoringConfig } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().continuousProfilingConfigGet(reqConfig)
     ctx!.ds.continuousProfilingConfigGet
   )
 

@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-// import client, { ErrorStrategy, SlowqueryModel } from '@lib/client'
 import {
   TimeRange,
   IColumnKeys,
@@ -157,7 +156,6 @@ export default function useSlowQueryTableController({
     async function querySchemas() {
       try {
         const res = await ds.infoListDatabases({
-          // errorStrategy: ErrorStrategy.Custom
           handleError: 'custom'
         })
         setAllSchemas(res?.data || [])
@@ -220,27 +218,23 @@ export default function useSlowQueryTableController({
       const timeRange = toTimeRangeValue(queryOptions.timeRange)
 
       try {
-        const res =
-          // await client
-          //   .getInstance()
-          await ds.slowQueryListGet(
-            timeRange[0],
-            queryOptions.schemas,
-            orderOptions.desc,
-            queryOptions.digest,
-            timeRange[1],
-            actualVisibleColumnKeys,
-            queryOptions.limit,
-            orderOptions.orderBy,
-            queryOptions.plans,
-            queryOptions.searchText,
-            // {
-            //   errorStrategy: ErrorStrategy.Custom
-            // }
-            {
-              handleError: 'custom'
-            }
-          )
+        const res = await ds.slowQueryListGet(
+          timeRange[0],
+          queryOptions.schemas,
+          orderOptions.desc,
+          queryOptions.digest,
+          timeRange[1],
+          actualVisibleColumnKeys,
+          queryOptions.limit,
+          orderOptions.orderBy,
+          queryOptions.plans,
+          queryOptions.searchText,
+          // {
+          // }
+          {
+            handleError: 'custom'
+          }
+        )
         const data = res?.data || []
         setData(data)
         setErrors([])

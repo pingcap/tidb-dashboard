@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-// import client, { ClusterinfoClusterStatisticsPartial } from '@lib/client'
 import { ClusterinfoClusterStatisticsPartial } from '@lib/client'
 import { AnimatedSkeleton, ErrorBar, Descriptions, Card } from '@lib/components'
 import { useTranslation } from 'react-i18next'
@@ -53,8 +52,6 @@ export default function Statistics() {
   const ctx = useContext(ClusterInfoContext)
 
   const { data, isLoading, error } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().clusterInfoGetStatistics(reqConfig)
     ctx!.ds.clusterInfoGetStatistics
   )
   const { t } = useTranslation()

@@ -163,7 +163,6 @@ export default function MetricChart({
           queryOptions.start,
           queryOptions.step,
           {
-            // errorStrategy: ErrorStrategy.Custom
             handleError: 'custom'
           }
         )

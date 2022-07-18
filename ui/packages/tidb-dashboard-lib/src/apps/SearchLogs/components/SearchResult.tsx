@@ -1,4 +1,3 @@
-// import client from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
 import { CardTable, Card } from '@lib/components'
 import { Alert } from 'antd'

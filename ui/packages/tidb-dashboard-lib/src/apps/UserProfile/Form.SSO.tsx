@@ -55,12 +55,10 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
     async (data) => {
       setIsPosting(true)
       try {
-        const resp =
-          // await client.getInstance()
-          await ctx!.ds.userSSOCreateImpersonation({
-            sql_user: data.user,
-            password: data.password
-          })
+        const resp = await ctx!.ds.userSSOCreateImpersonation({
+          sql_user: data.user,
+          password: data.password
+        })
         setModalVisible(false)
         onChange?.(resp.data)
       } finally {
@@ -175,21 +173,13 @@ export function SSOForm() {
     isLoading,
     data: config,
     sendRequest
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().userSSOGetConfig(reqConfig)
-    ctx!.ds.userSSOGetConfig
-  )
+  } = useClientRequest(ctx!.ds.userSSOGetConfig)
   const {
     error: impError,
     isLoading: impIsLoading,
     data: impData,
     sendRequest: impSendRequest
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().userSSOListImpersonations(reqConfig)
-    ctx!.ds.userSSOListImpersonations
-  )
+  } = useClientRequest(ctx!.ds.userSSOListImpersonations)
   const initialForm = useRef<any>(null) // Used for "Cancel" behaviour
   const isWriteable = useIsWriteable()
 
@@ -222,7 +212,6 @@ export function SSOForm() {
     async (data) => {
       setIsPosting(true)
       try {
-        // await client.getInstance()
         await ctx!.ds.userSSOSetConfig({ config: data })
         sendRequest()
         setIsChanged(false)

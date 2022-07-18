@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-// import client, { ErrorStrategy, StatementModel } from '@lib/client'
 import { StatementModel } from '@lib/client'
 import {
   DEFAULT_TIME_RANGE,
@@ -158,9 +157,6 @@ export default function useStatementTableController({
   useChange(() => {
     async function queryStatementStatus() {
       try {
-        // const res = await client.getInstance().statementsConfigGet({
-        //   errorStrategy: ErrorStrategy.Custom
-        // })
         const res = await ds.statementsConfigGet({ handleError: 'custom' })
         setEnabled(res?.data.enable!)
       } catch (e) {
@@ -170,9 +166,6 @@ export default function useStatementTableController({
 
     async function querySchemas() {
       try {
-        // const res = await client.getInstance().infoListDatabases({
-        //   errorStrategy: ErrorStrategy.Custom
-        // })
         const res = await ds.infoListDatabases({ handleError: 'custom' })
         setAllSchemas(res?.data || [])
       } catch (e) {
@@ -182,9 +175,6 @@ export default function useStatementTableController({
 
     async function queryStmtTypes() {
       try {
-        // const res = await client.getInstance().statementsStmtTypesGet({
-        //   errorStrategy: ErrorStrategy.Custom
-        // })
         const res = await ds.statementsStmtTypesGet({ handleError: 'custom' })
         setAllStmtTypes(res?.data || [])
       } catch (e) {
@@ -247,19 +237,6 @@ export default function useStatementTableController({
       const timeRange = toTimeRangeValue(queryOptions.timeRange)
 
       try {
-        // const res = await client
-        //   .getInstance()
-        //   .statementsListGet(
-        //     timeRange[0],
-        //     timeRange[1],
-        //     actualVisibleColumnKeys,
-        //     queryOptions.schemas,
-        //     queryOptions.stmtTypes,
-        //     queryOptions.searchText,
-        //     {
-        //       errorStrategy: ErrorStrategy.Custom
-        //     }
-        //   )
         const res = await ds.statementsListGet(
           timeRange[0],
           timeRange[1],

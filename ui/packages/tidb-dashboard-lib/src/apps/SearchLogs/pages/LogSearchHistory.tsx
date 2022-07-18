@@ -1,4 +1,3 @@
-// import client from '@lib/client'
 import { LogsearchTaskGroupModel } from '@lib/client'
 import { Head, CardTable, DateTime } from '@lib/components'
 import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
@@ -104,10 +103,8 @@ export default function LogSearchingHistory() {
       okButtonProps: { danger: true },
       onOk: async () => {
         for (const taskGroupID of selectedRowKeys) {
-          // await client.getInstance().logsTaskgroupsIdDelete(taskGroupID)
           await ctx!.ds.logsTaskgroupsIdDelete(taskGroupID)
         }
-        // const res = await client.getInstance().logsTaskgroupsGet()
         const res = await ctx!.ds.logsTaskgroupsGet()
         setTaskGroups(res.data)
       }
@@ -128,10 +125,8 @@ export default function LogSearchingHistory() {
           if (key === undefined) {
             continue
           }
-          // await client.getInstance().logsTaskgroupsIdDelete(String(key))
           await ctx!.ds.logsTaskgroupsIdDelete(String(key))
         }
-        // const res = await client.getInstance().logsTaskgroupsGet()
         const res = await ctx!.ds.logsTaskgroupsGet()
         setTaskGroups(res.data)
       }

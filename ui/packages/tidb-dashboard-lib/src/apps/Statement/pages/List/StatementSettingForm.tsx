@@ -11,7 +11,6 @@ import {
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-// import client, { StatementEditableConfig } from '@lib/client'
 import { StatementEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar } from '@lib/components'

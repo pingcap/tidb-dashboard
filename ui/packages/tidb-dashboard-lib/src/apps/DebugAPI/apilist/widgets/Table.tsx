@@ -31,7 +31,6 @@ export const TableWidget: ApiFormWidget = ({ form, value, onChange }) => {
 
     setLoading(true)
     try {
-      // const rst = await client.getInstance().infoListTables(dbValue)
       const rst = await ctx!.ds.infoListTables(dbValue)
       setOptions(rst.data)
     } finally {

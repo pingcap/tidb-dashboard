@@ -327,17 +327,14 @@ const useTopSQLData = (
       const [start, end] = ts
       try {
         setIsLoading(true)
-        const resp =
-          // await client
-          //   .getInstance()
-          await ctx!.ds.topsqlSummaryGet(
-            String(end),
-            _instance.instance,
-            _instance.instance_type,
-            String(start),
-            String(TOP_N),
-            `${timeWindowSize}s`
-          )
+        const resp = await ctx!.ds.topsqlSummaryGet(
+          String(end),
+          _instance.instance,
+          _instance.instance_type,
+          String(start),
+          String(TOP_N),
+          `${timeWindowSize}s`
+        )
         data = resp.data.data ?? []
       } finally {
         setIsLoading(false)
@@ -398,10 +395,10 @@ const useTopSQLConfig = () => {
 
       setLoadingHistory(true)
       try {
-        const res =
-          // await client
-          //   .getInstance()
-          await ctx!.ds.topsqlInstancesGet(String(now), String(sevenDaysAgo))
+        const res = await ctx!.ds.topsqlInstancesGet(
+          String(now),
+          String(sevenDaysAgo)
+        )
         const data = res.data.data
         if (!!data?.length) {
           setHaveHistoryData(true)

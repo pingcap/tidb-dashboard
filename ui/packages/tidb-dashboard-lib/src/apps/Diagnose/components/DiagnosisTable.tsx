@@ -74,7 +74,6 @@ export default function DiagnosisTable({
   const reqFn = useRef<ReqFnType | null>(null)
   useEffect(() => {
     reqFn.current = (reqConfig) =>
-      // client.getInstance()
       ctx!.ds.diagnoseDiagnosisPost(
         {
           start_time: internalTimeRange[0],
@@ -110,7 +109,7 @@ export default function DiagnosisTable({
         _newRow[key] = v
       })
 
-      //subvalues (2 demensional array)
+      // subvalues (2 demensional array)
       let _subRows: any[] = []
       row.sub_values?.forEach((sub_v) => {
         let _subRow = { row_idx: rowIdx, is_sub: true }

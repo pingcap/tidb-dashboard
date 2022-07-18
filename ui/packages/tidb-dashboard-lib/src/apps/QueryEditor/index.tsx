@@ -47,18 +47,16 @@ function QueryEditor() {
     try {
       setRunning(true)
       setResults(undefined)
-      const resp =
-        // await client.getInstance().queryEditorRun
-        await ctx!.ds.queryEditorRun({
-          max_rows: MAX_DISPLAY_ROWS,
-          statements: editor.current?.editor.getValue()
-        })
+      const resp = await ctx!.ds.queryEditorRun({
+        max_rows: MAX_DISPLAY_ROWS,
+        statements: editor.current?.editor.getValue()
+      })
       setResults(resp.data)
     } finally {
       setRunning(false)
     }
     editor.current?.editor.focus()
-  }, [])
+  }, [ctx])
 
   return (
     <Root>

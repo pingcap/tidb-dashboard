@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { RightOutlined, WarningOutlined } from '@ant-design/icons'
 import { Card, AnimatedSkeleton } from '@lib/components'
-// import client from '@lib/client'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -16,11 +15,9 @@ export default function MonitorAlert() {
   const [alertCounter, setAlertCounter] = useState(0)
 
   const { data: amData, isLoading: amIsLoading } = useClientRequest(
-    // (reqConfig) => client.getInstance().getAlertManagerTopology(reqConfig)
     ctx!.ds.getAlertManagerTopology
   )
   const { data: grafanaData, isLoading: grafanaIsLoading } = useClientRequest(
-    // (reqConfig) => client.getInstance().getGrafanaTopology(reqConfig)
     ctx!.ds.getGrafanaTopology
   )
 
@@ -29,10 +26,9 @@ export default function MonitorAlert() {
       return
     }
     async function fetch() {
-      let resp =
-        // await client
-        //   .getInstance()
-        await ctx!.ds.getAlertManagerCounts(`${amData!.ip}:${amData!.port}`)
+      let resp = await ctx!.ds.getAlertManagerCounts(
+        `${amData!.ip}:${amData!.port}`
+      )
       setAlertCounter(resp.data)
     }
     fetch()

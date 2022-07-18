@@ -3,7 +3,6 @@ import React, { useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-//import client, { HostinfoInfo } from '@lib/client'
 import { HostinfoInfo } from '@lib/client'
 import { Bar, CardTable, Pre } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -53,8 +52,6 @@ export default function HostTable() {
   const ctx = useContext(ClusterInfoContext)
 
   const { data, isLoading, error } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().clusterInfoGetHostsInfo(reqConfig)
     ctx!.ds.clusterInfoGetHostsInfo
   )
 

@@ -31,13 +31,12 @@ export const TableWidget: ApiFormWidget = ({ form, value, onChange }) => {
 
     setLoading(true)
     try {
-      // const rst = await client.getInstance().infoListTables(dbValue)
       const rst = await ctx!.ds.infoListTables(dbValue)
       setOptions(rst.data)
     } finally {
       setLoading(false)
     }
-  }, [setLoading, setOptions, form])
+  }, [setLoading, setOptions, form, ctx])
 
   const memoOnChange = useCallback(
     (tags: string[]) => onChange?.(tags[0]),

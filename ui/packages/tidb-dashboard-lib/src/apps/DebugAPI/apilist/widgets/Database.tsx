@@ -2,7 +2,6 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 
-// import client from '@lib/client'
 import type { ApiFormWidget } from './index'
 import { useLimitSelection } from './useLimitSelection'
 import { DebugAPIContext } from '../../context'
@@ -22,13 +21,12 @@ export const DatabaseWidget: ApiFormWidget = ({ value, onChange }) => {
 
     setLoading(true)
     try {
-      // const rst = await client.getInstance().infoListDatabases()
       const rst = await ctx!.ds.infoListDatabases()
       setOptions(rst.data)
     } finally {
       setLoading(false)
     }
-  }, [setLoading, setOptions, options])
+  }, [setLoading, setOptions, options, ctx])
 
   const memoOnChange = useCallback(
     (tags: string[]) => onChange?.(tags[0]),

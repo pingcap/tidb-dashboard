@@ -43,13 +43,11 @@ function Value({ item, onSaved }: IValueProps) {
 
   const handleSave = useMemoizedFn(async (newValue) => {
     try {
-      const resp =
-        // await client.getInstance().configurationEdit
-        await ctx!.ds.configurationEdit({
-          id: item.id,
-          kind: item.kind,
-          new_value: newValue
-        })
+      const resp = await ctx!.ds.configurationEdit({
+        id: item.id,
+        kind: item.kind,
+        new_value: newValue
+      })
       if ((resp?.data?.warnings?.length ?? 0) > 0) {
         Modal.warning({
           title: 'Edit configuration is partially done',
@@ -105,7 +103,6 @@ function Configuration() {
   }
 
   const { data, isLoading, error, sendRequest } = useClientRequest(
-    // (reqConfig) => client.getInstance().configurationGetAll(reqConfig)
     ctx!.ds.configurationGetAll
   )
 

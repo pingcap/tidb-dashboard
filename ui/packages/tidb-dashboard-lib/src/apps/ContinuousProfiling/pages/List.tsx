@@ -21,7 +21,6 @@ import {
 } from '@ant-design/icons'
 import dayjs, { Dayjs } from 'dayjs'
 
-// import { ErrorStrategy } from '@lib/client'
 import { Card, CardTable, Toolbar, DatePicker } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
@@ -77,16 +76,6 @@ export default function Page() {
         handleError: 'custom'
       }
     )
-
-    // return client
-    //   .getInstance()
-    //   .continuousProfilingGroupProfilesGet(
-    //     _rangeStartTime.unix(),
-    //     _rangeEndTime.unix(),
-    //     {
-    //       errorStrategy: ErrorStrategy.Custom
-    //     }
-    //   )
   })
 
   const { t } = useTranslation()
@@ -186,11 +175,7 @@ export default function Page() {
   const [showSettings, setShowSettings] = useState(false)
 
   const { data: ngMonitoringConfig, sendRequest: reloadConfig } =
-    useClientRequest(
-      // (reqConfig) =>
-      // client.getInstance().continuousProfilingConfigGet(reqConfig)
-      ctx!.ds.continuousProfilingConfigGet
-    )
+    useClientRequest(ctx!.ds.continuousProfilingConfigGet)
   const conprofIsDisabled = useMemo(
     () => ngMonitoringConfig?.continuous_profiling?.enable === false,
     [ngMonitoringConfig]

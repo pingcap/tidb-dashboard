@@ -4,7 +4,6 @@ import { Divider, Popconfirm, Tooltip } from 'antd'
 import React, { useCallback, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-// import client from '@lib/client'
 import { CardTable, InstanceStatusBadge } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import {
@@ -66,31 +65,19 @@ export default function ListPage() {
     isLoading: loadingTiDB,
     error: errTiDB,
     sendRequest
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().getTiDBTopology(reqConfig)
-    ctx!.ds.getTiDBTopology
-  )
+  } = useClientRequest(ctx!.ds.getTiDBTopology)
 
   const {
     data: dataStores,
     isLoading: loadingStores,
     error: errStores
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().getStoreTopology(reqConfig)
-    ctx!.ds.getStoreTopology
-  )
+  } = useClientRequest(ctx!.ds.getStoreTopology)
 
   const {
     data: dataPD,
     isLoading: loadingPD,
     error: errPD
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().getPDTopology(reqConfig)
-    ctx!.ds.getPDTopology
-  )
+  } = useClientRequest(ctx!.ds.getPDTopology)
 
   const [tableData, groupData] = useMemo(
     () =>
@@ -106,9 +93,6 @@ export default function ListPage() {
 
   const handleHideTiDB = useCallback(
     async (node) => {
-      // await client
-      //   .getInstance()
-      //   .topologyTidbAddressDelete(`${node.ip}:${node.port}`)
       await ctx!.ds.topologyTidbAddressDelete(`${node.ip}:${node.port}`)
       sendRequest()
     },

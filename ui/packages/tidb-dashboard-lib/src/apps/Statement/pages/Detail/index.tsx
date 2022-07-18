@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
-// import client, { StatementModel } from '@lib/client'
 import { StatementModel } from '@lib/client'
 import {
   AnimatedSkeleton,
@@ -47,8 +46,6 @@ function DetailPage() {
     isLoading,
     error
   } = useClientRequest((reqConfig) =>
-    // client
-    //   .getInstance()
     ctx!.ds.statementsPlansGet(
       query.beginTime!,
       query.digest!,

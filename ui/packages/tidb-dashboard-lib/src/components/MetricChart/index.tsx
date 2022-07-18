@@ -1,5 +1,5 @@
 import React, {
-  useCallback,
+  // useCallback,
   useContext,
   useMemo,
   useRef,
@@ -17,14 +17,13 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Axis,
-  BrushEvent,
+  // BrushEvent,
   Chart,
   DomainRange,
   LineSeries,
   Position,
   ScaleType,
-  Settings,
-  PointerEvent
+  Settings
 } from '@elastic/charts'
 import { GraphType, QueryData, renderQueryData } from './seriesRenderer'
 import {
@@ -164,7 +163,6 @@ export default function MetricChart({
           queryOptions.start,
           queryOptions.step,
           {
-            // errorStrategy: ErrorStrategy.Custom
             handleError: 'custom'
           }
         )
@@ -225,19 +223,19 @@ export default function MetricChart({
     queryAllMetrics()
   }, [range])
 
-  const handleBrushEnd = useCallback(
-    (ev: BrushEvent) => {
-      if (!ev.x) {
-        return
-      }
-      const timeRange: TimeRangeValue = [
-        Math.floor((ev.x[0] as number) / 1000),
-        Math.floor((ev.x[1] as number) / 1000)
-      ]
-      onRangeChange?.(alignRange(timeRange))
-    },
-    [onRangeChange]
-  )
+  // const handleBrushEnd = useCallback(
+  //   (ev: BrushEvent) => {
+  //     if (!ev.x) {
+  //       return
+  //     }
+  //     const timeRange: TimeRangeValue = [
+  //       Math.floor((ev.x[0] as number) / 1000),
+  //       Math.floor((ev.x[1] as number) / 1000)
+  //     ]
+  //     onRangeChange?.(alignRange(timeRange))
+  //   },
+  //   [onRangeChange]
+  // )
 
   const { t } = useTranslation()
 

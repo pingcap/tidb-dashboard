@@ -42,7 +42,6 @@ import useStatementTableController, {
 import styles from './List.module.less'
 import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
-// import client, { StatementModel } from '@lib/client'
 import { StatementModel } from '@lib/client'
 import { isDistro } from '@lib/utils/distro'
 import { StatementContext } from '../../context'

@@ -100,8 +100,6 @@ export default function ReportHistory() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { data, isLoading, error } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().diagnoseReportsGet(reqConfig)
     ctx!.ds.diagnoseReportsGet
   )
   const columns = useMemo(() => tableColumns(t), [t])

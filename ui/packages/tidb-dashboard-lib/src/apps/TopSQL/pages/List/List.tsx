@@ -327,17 +327,14 @@ const useTopSQLData = (
       const [start, end] = ts
       try {
         setIsLoading(true)
-        const resp =
-          // await client
-          //   .getInstance()
-          await ctx!.ds.topsqlSummaryGet(
-            String(end),
-            _instance.instance,
-            _instance.instance_type,
-            String(start),
-            String(TOP_N),
-            `${timeWindowSize}s`
-          )
+        const resp = await ctx!.ds.topsqlSummaryGet(
+          String(end),
+          _instance.instance,
+          _instance.instance_type,
+          String(start),
+          String(TOP_N),
+          `${timeWindowSize}s`
+        )
         data = resp.data.data ?? []
       } finally {
         setIsLoading(false)
@@ -378,11 +375,7 @@ const useTopSQLConfig = () => {
     data: topSQLConfig,
     isLoading: isConfigLoading,
     sendRequest: updateConfig
-  } = useClientRequest(
-    // (reqConfig) =>
-    // client.getInstance().topsqlConfigGet(reqConfig)
-    ctx!.ds.topsqlConfigGet
-  )
+  } = useClientRequest(ctx!.ds.topsqlConfigGet)
   const [haveHistoryData, setHaveHistoryData] = useState(true)
   const [loadingHistory, setLoadingHistory] = useState(true)
 
@@ -402,10 +395,10 @@ const useTopSQLConfig = () => {
 
       setLoadingHistory(true)
       try {
-        const res =
-          // await client
-          //   .getInstance()
-          await ctx!.ds.topsqlInstancesGet(String(now), String(sevenDaysAgo))
+        const res = await ctx!.ds.topsqlInstancesGet(
+          String(now),
+          String(sevenDaysAgo)
+        )
         const data = res.data.data
         if (!!data?.length) {
           setHaveHistoryData(true)
@@ -432,30 +425,28 @@ const useInstances = (timeRange: TimeRange) => {
   const [instances, setInstances] = useState<TopsqlInstanceItem[]>([])
   const [isLoading, setLoading] = useState(false)
 
-  const fetchInstances = async (
-    _timeRange: TimeRange | null
-  ): Promise<TopsqlInstanceItem[]> => {
-    if (!_timeRange) {
-      return []
-    }
+  const fetchInstances = useCallback(
+    async (_timeRange: TimeRange | null) => {
+      if (!_timeRange) {
+        return []
+      }
 
-    const [start, end] = toTimeRangeValue(_timeRange)
-    const resp =
-      // await client
-      //   .getInstance()
-      await ctx!.ds.topsqlInstancesGet(String(end), String(start))
-    const data = sortBy(resp.data.data || [], ['instance_type', 'instance'])
+      const [start, end] = toTimeRangeValue(_timeRange)
+      const resp = await ctx!.ds.topsqlInstancesGet(String(end), String(start))
+      const data = sortBy(resp.data.data || [], ['instance_type', 'instance'])
 
-    setInstances(data)
-    return data
-  }
+      setInstances(data)
+      return data
+    },
+    [ctx]
+  )
 
   useEffect(() => {
     setLoading(true)
     fetchInstances(timeRange).finally(() => {
       setLoading(false)
     })
-  }, [timeRange])
+  }, [timeRange, fetchInstances])
 
   return {
     instances,

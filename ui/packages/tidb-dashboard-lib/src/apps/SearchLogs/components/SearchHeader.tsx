@@ -1,4 +1,3 @@
-// import client from '@lib/client'
 import {
   LogsearchCreateTaskGroupRequest,
   ModelRequestTargetNode
@@ -44,9 +43,6 @@ export default function SearchHeader({ taskGroupID }: Props) {
       if (!taskGroupID) {
         return
       }
-      // const res = await client
-      //   .getInstance()
-      //   .logsTaskgroupsIdGet(String(taskGroupID))
       const res = await ctx!.ds.logsTaskgroupsIdGet(String(taskGroupID))
       const { task_group, tasks } = res.data
       const { start_time, end_time, min_level, patterns } =
@@ -124,7 +120,6 @@ export default function SearchHeader({ taskGroupID }: Props) {
 
       try {
         setSubmitting(true)
-        // const result = await client.getInstance().logsTaskgroupPut(req)
         const result = await ctx!.ds.logsTaskgroupPut(req)
         const id = result?.data?.task_group?.id
         if (id) {
@@ -134,7 +129,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         setSubmitting(false)
       }
     },
-    [navigate]
+    [navigate, ctx]
   )
 
   return (

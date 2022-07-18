@@ -1,4 +1,3 @@
-// import client from '@lib/client'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
 import { IKeyVizDataSource } from '../context'
 
@@ -7,8 +6,6 @@ export async function fetchHeatmap(
   selection?: HeatmapRange,
   type: DataTag = 'written_bytes'
 ): Promise<HeatmapData> {
-  // const resp = await client
-  //   .getInstance()
   const resp = await fetcher(
     selection?.startkey,
     selection?.endkey,

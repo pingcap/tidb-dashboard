@@ -10,7 +10,6 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-// import client, { LogsearchTaskModel } from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
 import { AnimatedSkeleton } from '@lib/components'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
@@ -158,7 +157,6 @@ export default function SearchProgress({
       (key) => !InstanceKinds.some((ik) => ik === key)
     )
 
-    // const res = await client.getInstance().logsDownloadAcquireTokenGet(keys)
     const res = await ctx!.ds.logsDownloadAcquireTokenGet(keys)
     const token = res.data
     if (!token) {
@@ -175,7 +173,6 @@ export default function SearchProgress({
     confirm({
       title: t('search_logs.confirm.cancel_tasks'),
       onOk() {
-        // client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
         ctx!.ds.logsTaskgroupsIdCancelPost(taskGroupID + '')
         toggleReload()
       }
@@ -189,7 +186,6 @@ export default function SearchProgress({
     confirm({
       title: t('search_logs.confirm.retry_tasks'),
       onOk() {
-        // client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
         ctx!.ds.logsTaskgroupsIdRetryPost(taskGroupID + '')
         toggleReload()
       }

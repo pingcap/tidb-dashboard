@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
-// import client from '@lib/client'
 import { Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { SearchHeader, SearchProgress, SearchResult } from '../components'
@@ -42,7 +41,6 @@ export default function LogSearchingDetail() {
   }
 
   const { data } = useClientRequestWithPolling(
-    // (reqConfig) => client.getInstance().logsTaskgroupsIdGet(id, reqConfig),
     (reqConfig) => ctx!.ds.logsTaskgroupsIdGet(id, reqConfig),
     {
       shouldPoll: (data) => !isFinished(data)

@@ -184,7 +184,10 @@ function PlanDetail({ query }: IPlanDetailProps) {
                         }
                       >
                         {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
-                          <Tabs.TabPane tab={t('slow_query.detail.plan.visual')} key="binary_plan">
+                          <Tabs.TabPane
+                            tab={t('slow_query.detail.plan.visual')}
+                            key="binary_plan"
+                          >
                             <Modal
                               title={t('slow_query.detail.plan.modal_title')}
                               centered

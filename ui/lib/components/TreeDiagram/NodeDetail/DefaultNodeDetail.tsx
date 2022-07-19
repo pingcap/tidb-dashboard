@@ -23,7 +23,11 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
       size="middle"
       onTabClick={(key) => telemetry.clickTabOnNodeDetail(key)}
     >
-      <Tabs.TabPane tab={t(`binary_plan.tabs.general`)} key="1" style={{ padding: '1rem' }}>
+      <Tabs.TabPane
+        tab={t(`binary_plan.tabs.general`)}
+        key="1"
+        style={{ padding: '1rem' }}
+      >
         <p>
           Duration{' '}
           <Tooltip title={t(`binary_plan.tooltip.duration`)}>

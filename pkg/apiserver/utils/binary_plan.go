@@ -47,13 +47,13 @@ const (
 	JoinTaskThreshold    = 10000
 	returnTableThreshold = 0.7
 
-	LargeEstimatedBias = "The estimation error is high. Consider checking the health state of the statistics."
-	UseDisk            = "Disk spill is triggered for this operator because the memory quota is exceeded. The execution might be slow. Consider increasing the memory quota if there's enough memory."
-	PseudoCheck        = "This operator used pseudo statistics and the estimation might be inaccurate. It might be caused by unavailable or outdated statistics. Consider collecting statistics or setting variable tidb_enable_pseudo_for_outdated_stats to OFF."
-	AddIndex           = "This Selection filters a high proportion of data. Using an index on this column might achieve better performance. Consider adding an index on this column if there is not one."
-	BadIndex           = "This IndexLookup read a lot of data from the index side. It might be slow and cause heavy pressure on TiKV. Consider using the optimizer hints to guide the optimizer to choose a better index or not to use index."
-	BadIndexJoin       = "This index join has a large build side. It might be slow and cause heavy pressure on TiKV. Consider using the optimizer hints to guide the optimizer to choose hash join."
-	UseTiFlash         = "The TiKV read a lot of data. Consider using TiFlash to get better performance if it's necessary to read so much data."
+	HighEstError               = "high_est_error"
+	DiskSpill                  = "disk_spill"
+	PseudoEst                  = "pseudo_est"
+	GoodFilterOnTableFullScan  = "good_filter_on_table_fullscan"
+	BadIndexForIndexLookUp     = "bad_index_for_index_lookup"
+	IndexJoinBuildSideTooLarge = "index_join_build_side_too_large"
+	TiKVHugeTableScan          = "tikv_huge_table_scan"
 )
 
 // operator.
@@ -226,13 +226,13 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 
 	// pseudo stats
 	if strings.Contains(operatorInfo, "stats:pseudo") {
-		diagnosis = append(diagnosis, PseudoCheck)
+		diagnosis = append(diagnosis, PseudoEst)
 	}
 
 	// use disk
 	diskBytes := node.Get(DiskBytes).MustString()
 	if diskBytes != "N/A" {
-		diagnosis = append(diagnosis, UseDisk)
+		diagnosis = append(diagnosis, DiskSpill)
 	}
 
 	diagOp, err := diagnosticOperatorNodes(node.Get(Children), diagOp)
@@ -251,7 +251,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 				estRows = estRows + 1
 			}
 			if actRows/estRows > 100 || estRows/actRows > 100 {
-				diagnosis = append(diagnosis, LargeEstimatedBias)
+				diagnosis = append(diagnosis, HighEstError)
 			}
 		default:
 			diagOp.needUdateStatistics = false
@@ -269,7 +269,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 				joinTaskCountStr := rootGroupInfo.GetIndex(i).GetPath("inner", "task").MustString()
 				joinTaskCount, _ := strconv.Atoi(joinTaskCountStr)
 				if joinTaskCount > JoinTaskThreshold {
-					diagnosis = append(diagnosis, BadIndexJoin)
+					diagnosis = append(diagnosis, IndexJoinBuildSideTooLarge)
 					break
 				}
 			}
@@ -296,7 +296,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 		cNodeActRows := cNode.Get(ActRows).MustFloat64()
 		gNodeActRows := gNode.Get(ActRows).MustFloat64()
 		if cNodeActRows/gNodeActRows > returnTableThreshold {
-			diagnosis = append(diagnosis, BadIndex)
+			diagnosis = append(diagnosis, BadIndexForIndexLookUp)
 		}
 	case Selection:
 		if len(node.Get(Children).MustArray()) != 1 {
@@ -316,11 +316,11 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 		}
 
 		if node.Get(ActRows).MustFloat64() < 10000 && cNode.Get(ActRows).MustFloat64() > 5000000 {
-			diagnosis = append(diagnosis, AddIndex)
+			diagnosis = append(diagnosis, GoodFilterOnTableFullScan)
 		}
 	case TableFullScan:
 		if node.Get(StoreType).MustString() == "tikv" && node.Get(ActRows).MustFloat64() > 1000000000 {
-			diagnosis = append(diagnosis, UseTiFlash)
+			diagnosis = append(diagnosis, TiKVHugeTableScan)
 		}
 	}
 

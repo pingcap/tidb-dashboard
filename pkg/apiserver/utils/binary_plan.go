@@ -47,7 +47,7 @@ const (
 	JoinTaskThreshold    = 10000
 	returnTableThreshold = 0.7
 
-	// role tag
+	// role tag.
 	HighEstError               = "high_est_error"
 	DiskSpill                  = "disk_spill"
 	PseudoEst                  = "pseudo_est"

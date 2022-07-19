@@ -13,4 +13,4 @@ binary_plan:
     good_filter_on_table_fullscan: '该过滤条件的过滤性较好。使用该列上的索引可能能够达到更好的性能。如果没有该列上的索引，可以考虑创建该列上的索引。'
     bad_index_for_index_lookup: '该 IndexLookup 算子从索引中读取了大量数据。这可能导致执行较慢以及对 TiKV 造成较大压力。可以考虑使用 Optimizer Hints 指导 TiDB 选择更好的索引或者不使用索引。'
     index_join_build_side_too_large: '该 IndexJoin 算子从 build 端读取了大量数据。这可能导致执行较慢以及对 TiKV 造成较大压力。可以考虑使用 Optimizer Hints 指导 TiDB 选择 Hash Join。'
-    tikv_huge_table_scan: "该算子在 TiKV 读取了大量数据。如果确实需要读取大量数据，可以考虑使用 TiFlash 达到更好的性能。"
+    tikv_huge_table_scan: '该算子在 TiKV 读取了大量数据。如果确实需要读取大量数据，可以考虑使用 TiFlash 达到更好的性能。'

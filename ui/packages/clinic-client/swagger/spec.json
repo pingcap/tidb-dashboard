@@ -1,0 +1,3579 @@
+{
+    "schemes": [],
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a Clinic server.",
+        "title": "Clinic Example API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "",
+    "basePath": "/clinic/api/v1",
+    "paths": {
+        "/compute-engine/{oid}/{cid}/comparison": {
+            "get": {
+                "description": "list comparison report",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Report"
+                ],
+                "summary": "list comparison report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the count per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the page index",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "if need data",
+                        "name": "brief",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/report.ComparisonReportResp"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "touch report in on cluster",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Report"
+                ],
+                "summary": "Touch New Comparison Report Job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "comparison report param",
+                        "name": "report-param",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/report.TouchComparisonReportReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/report.ReportResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/compute-engine/{oid}/{cid}/comparison/{rid}": {
+            "get": {
+                "description": "list comparison report",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Report"
+                ],
+                "summary": "list comparison report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "report id",
+                        "name": "rid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "if need data",
+                        "name": "brief",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/compute_engine.ComparisonReport"
+                        }
+                    }
+                }
+            }
+        },
+        "/compute-engine/{oid}/{cid}/health": {
+            "get": {
+                "description": "list health report",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HealthReport"
+                ],
+                "summary": "list health report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start time",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end time",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "if need data",
+                        "name": "brief",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/report.HealthReportResp"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "touch Health report in on cluster",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HealthReport"
+                ],
+                "summary": "Touch New Health Report Job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "health report param",
+                        "name": "reportParams",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/report.HealthReportReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/report.ReportResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/compute-engine/{oid}/{cid}/health/{rid}": {
+            "get": {
+                "description": "list health report",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HealthReport"
+                ],
+                "summary": "get health report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "report id",
+                        "name": "rid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "if need data",
+                        "name": "brief",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/compute_engine.Report"
+                        }
+                    }
+                }
+            }
+        },
+        "/compute-engine/{oid}/{cid}/realtime": {
+            "get": {
+                "description": "list realtime report",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Report"
+                ],
+                "summary": "list realtime report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start time",
+                        "name": "start-time",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end time",
+                        "name": "end-time",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "report status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/report.RealtimeReportContent"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/compute-engine/{oid}/{cid}/realtime/feedback": {
+            "post": {
+                "description": "Feedback realtime report",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Report"
+                ],
+                "summary": "Feedback realtime report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "realtime report Feedback param",
+                        "name": "reportParams",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/report.FeedbackArgs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/diag/flush": {
+            "post": {
+                "description": "call flush api after all parts of file are uploaded",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Flush",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "a custom hash combining package’s filename, size and modify time",
+                        "name": "uuid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "an optional issue Jira issue ID this package should be connected to",
+                        "name": "issue",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.FlushResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diag/precreate": {
+            "post": {
+                "description": "precreate",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Precreate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "a custom hash combining package’s filename, size and modify time",
+                        "name": "uuid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the size of the file",
+                        "name": "length",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "an optional alias of filename",
+                        "name": "alias",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "actual name of the file",
+                        "name": "filename",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.PreCreateResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diag/upload": {
+            "post": {
+                "description": "upload file part api",
+                "consumes": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Upload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "a custom hash combining package’s filename, size and modify time",
+                        "name": "uuid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the serial number of the file part",
+                        "name": "sequence",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the length of the file part",
+                        "name": "length",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/login/logout": {
+            "post": {
+                "description": "log out",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Logout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.SuccessResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/login/oauth/{name}/info": {
+            "get": {
+                "description": "get oauth config",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Config the user",
+                "parameters": [
+                    {
+                        "enum": [
+                            "internal",
+                            "ask_tug",
+                            "tidbcloud"
+                        ],
+                        "type": "string",
+                        "description": "string enums",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the redirect_uri request parameter is used as a callback URL",
+                        "name": "redirect_uri",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login.OAuthInfoResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/login/oauth/{name}/validate": {
+            "post": {
+                "description": "set auth header",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Validate the user",
+                "parameters": [
+                    {
+                        "enum": [
+                            "internal",
+                            "ask_tug",
+                            "tidbcloud"
+                        ],
+                        "type": "string",
+                        "description": "string enums",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "validation",
+                        "name": "validation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login.Validation"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login.ValidationResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs": {
+            "get": {
+                "description": "list organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "List the organizations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the organization name",
+                        "name": "query",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter condition, can be all,starred,mine",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the count per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the page index",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/org.ListOrganizationsResp"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Create the organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "organization",
+                        "name": "organization",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/org.Organization"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/org.Organization"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}": {
+            "get": {
+                "description": "get organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Get the organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/org.Organization"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Update the organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "organization",
+                        "name": "organization",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/org.UpdateOrganizationReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/org.Organization"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete Organization and data",
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "delete Organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters": {
+            "get": {
+                "description": "list cluster of the specified organization",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "List clusters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the count per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "the query of cluster",
+                        "name": "query",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the page index",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.ListClustersResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}": {
+            "get": {
+                "description": "list packages of the specified cluster",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "List info of the specified cluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.Cluster"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update cluster information",
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "update cluster information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "cluster information",
+                        "name": "cluster",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cluster.UpdateClusterReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.SuccessResp"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete cluster and data",
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "delete cluster and data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/dashboard": {
+            "get": {
+                "description": "list dashboard user can access",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "list dashboard user can access",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "startTime of dashboard show",
+                        "name": "startTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "endTime of dashboard show",
+                        "name": "endTime",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/cluster.DataUrl"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/data": {
+            "get": {
+                "description": "get the detail information of the specified timerange in cluster",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "get the detail information of the specified timerange in cluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start time",
+                        "name": "startTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end time",
+                        "name": "endTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the count per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the page index",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.DataSummaryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/data_status": {
+            "get": {
+                "description": "get data status of the specified cluster",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "get data status of the cluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ],
+                        "type": "integer",
+                        "description": "int enums",
+                        "name": "data_type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.TaskStatusResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/download/{itemid}": {
+            "get": {
+                "description": "download file",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "download total package",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "item id",
+                        "name": "itemid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/downloadConf/{itemid}": {
+            "get": {
+                "description": "download file",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "download total package",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "item id",
+                        "name": "itemid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/logurl/{itemid}": {
+            "get": {
+                "description": "get log url",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "log url",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "item id",
+                        "name": "itemid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "startTime of dashboard show",
+                        "name": "startTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "endTime of dashboard show",
+                        "name": "endTime",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.DataUrl"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/rebuild": {
+            "put": {
+                "description": "rebuild data for the specified package",
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "rebuild data for the specified package",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "rebuild",
+                        "name": "rebuild",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/common.Rebuild"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.SuccessResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/slowqueries": {
+            "get": {
+                "description": "get slow log list in cluster",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "get slow log list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "package id",
+                        "name": "itemID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start time",
+                        "name": "begin_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end time",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "db list",
+                        "name": "db",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "text",
+                        "name": "text",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "orderBy",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "desc",
+                        "name": "desc",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "plans",
+                        "name": "plans",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "digest",
+                        "name": "digest",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/cluster.SlowQueryProfile"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/slowqueries/{queryid}": {
+            "get": {
+                "description": "get slow log detail in cluster",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "get slow log detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "package id",
+                        "name": "itemID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "log id",
+                        "name": "queryid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.SlowQueryProfile"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/clusters/{cid}/{itemid}/meta": {
+            "get": {
+                "description": "meta information of package file",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "meta information of package file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster id",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "item id",
+                        "name": "itemid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.FileMeta"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/diag/flush": {
+            "post": {
+                "description": "call flush api after all parts of file are uploaded",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Flush",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "a custom hash combining package’s filename, size and modify time",
+                        "name": "uuid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "an optional issue Jira issue ID this package should be connected to",
+                        "name": "issue",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.FlushResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/diag/precreate": {
+            "post": {
+                "description": "precreate",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Precreate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "a custom hash combining package’s filename, size and modify time",
+                        "name": "uuid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the size of the file",
+                        "name": "length",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "an optional alias of filename",
+                        "name": "alias",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "actual name of the file",
+                        "name": "filename",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.PreCreateResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/diag/upload": {
+            "post": {
+                "description": "upload file part api",
+                "consumes": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Upload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "a custom hash combining package’s filename, size and modify time",
+                        "name": "uuid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the serial number of the file part",
+                        "name": "sequence",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the length of the file part",
+                        "name": "length",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/keys": {
+            "get": {
+                "description": "list api key of the user in current organizatioin",
+                "tags": [
+                    "Api Key"
+                ],
+                "summary": "List api key",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the count per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the page index",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/org.ListApiKeyResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create api key",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Api Key"
+                ],
+                "summary": "Create api key",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/org.ApiKeyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/keys/{id}": {
+            "delete": {
+                "description": "create api key",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Api Key"
+                ],
+                "summary": "Delete api key",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "key id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/org.ApiKeyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/roles": {
+            "get": {
+                "description": "list organization roles",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "List the organizations roles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/org.Role"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/star": {
+            "post": {
+                "description": "star organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Star the organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.SuccessResp"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "unstar organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "UnStar the organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.SuccessResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/tasks": {
+            "get": {
+                "description": "get organization task list",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Get the organization task list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/org.TaskStatus"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/users": {
+            "get": {
+                "description": "list users of the organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "List users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the count per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the page index",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/org.ListUsersResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/users/invite": {
+            "post": {
+                "description": "invite user to join the organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Invite user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "invite user",
+                        "name": "invite",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/org.InvitesReq"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.SuccessResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/orgs/{oid}/users/{id}": {
+            "put": {
+                "description": "update user role in organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Update user role in organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "user id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "user role",
+                        "name": "role",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/org.Role"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.SuccessResp"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete user from organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Delete user from organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization id",
+                        "name": "oid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "user id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/common.SuccessResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/profile": {
+            "get": {
+                "description": "get profile",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "get value from login.ValidationResp response",
+                        "name": "x-csrf-token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.UserResp"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "cluster.Cluster": {
+            "type": "object",
+            "properties": {
+                "clusterType": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "integer"
+                },
+                "dataSizeLimit": {
+                    "type": "integer"
+                },
+                "dataSizeUsed": {
+                    "description": "Usage by the cluster in bytes",
+                    "type": "integer"
+                },
+                "endTime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastestUpdated": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "boolean"
+                },
+                "topology": {
+                    "$ref": "#/definitions/db.Topology"
+                },
+                "totalOncall": {
+                    "type": "integer"
+                },
+                "totalReport": {
+                    "description": "PackageCount int64 `json:\"package_count\"`",
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.DataInfo": {
+            "type": "object",
+            "properties": {
+                "endTime": {
+                    "type": "integer"
+                },
+                "itemID": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "integer"
+                }
+            }
+        },
+        "cluster.DataSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "dataInfos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.DataInfo"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "cluster.DataUrl": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "url": {
+                    "description": "Uid   string `json:\"uid\"`",
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.FileMeta": {
+            "type": "object",
+            "properties": {
+                "briefSize": {
+                    "type": "string"
+                },
+                "totalSize": {
+                    "type": "string"
+                }
+            }
+        },
+        "cluster.ListClustersResp": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.Cluster"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "cluster.SlowQueryProfile": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "cluster.UpdateClusterReq": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "common.FlushResponse": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "common.PreCreateResponse": {
+            "type": "object",
+            "properties": {
+                "blockbytes": {
+                    "type": "integer"
+                },
+                "sequence": {
+                    "type": "integer"
+                }
+            }
+        },
+        "common.Rebuild": {
+            "type": "object",
+            "properties": {
+                "dataType": {
+                    "type": "integer"
+                },
+                "healthReport": {
+                    "type": "boolean"
+                },
+                "itemID": {
+                    "type": "string"
+                }
+            }
+        },
+        "common.SuccessResp": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "common.TaskStatus": {
+            "type": "object",
+            "properties": {
+                "endTime": {
+                    "type": "integer"
+                },
+                "itemID": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "taskType": {
+                    "type": "integer"
+                }
+            }
+        },
+        "common.TaskStatusResp": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/common.TaskStatus"
+                    }
+                }
+            }
+        },
+        "compute_engine.ComparisonReport": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "$ref": "#/definitions/compute_engine.ComparisonReportArgs"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/compute_engine.ComparisonReportData"
+                },
+                "hook": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "compute_engine.ComparisonReportArgs": {
+            "type": "object",
+            "properties": {
+                "cluster": {
+                    "type": "string"
+                },
+                "org_id": {
+                    "type": "string"
+                },
+                "org_type": {
+                    "type": "string"
+                },
+                "package_id_1": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "package_id_2": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "start_ts_1": {
+                    "type": "integer"
+                },
+                "start_ts_2": {
+                    "type": "integer"
+                },
+                "stop_ts_1": {
+                    "type": "integer"
+                },
+                "stop_ts_2": {
+                    "type": "integer"
+                }
+            }
+        },
+        "compute_engine.ComparisonReportData": {
+            "type": "object",
+            "properties": {
+                "businessMetricsComparison": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "subValues": {
+                                "type": "object",
+                                "additionalProperties": true
+                            },
+                            "values": {
+                                "type": "object",
+                                "properties": {
+                                    "components": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "object",
+                                        "properties": {
+                                            "key": {
+                                                "type": "string"
+                                            },
+                                            "variables": {
+                                                "type": "object",
+                                                "additionalProperties": true
+                                            }
+                                        }
+                                    },
+                                    "diff": {
+                                        "type": "string"
+                                    },
+                                    "grafanaLocation": {
+                                        "type": "string"
+                                    },
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "metrics": {
+                                        "type": "string"
+                                    },
+                                    "t1AverageValue": {
+                                        "type": "string"
+                                    },
+                                    "t2AverageValue": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "clusterTopologyInfo": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "subValues": {
+                                "type": "object",
+                                "additionalProperties": true
+                            },
+                            "values": {
+                                "type": "object",
+                                "properties": {
+                                    "components": {
+                                        "type": "string"
+                                    },
+                                    "t1Instances": {
+                                        "type": "string"
+                                    },
+                                    "t2Instances": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "comparisonTimeRange": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "subValues": {
+                                "type": "object",
+                                "additionalProperties": true
+                            },
+                            "values": {
+                                "type": "object",
+                                "properties": {
+                                    "t1EndTime": {
+                                        "type": "integer"
+                                    },
+                                    "t1StartTime": {
+                                        "type": "integer"
+                                    },
+                                    "t2EndTime": {
+                                        "type": "integer"
+                                    },
+                                    "t2StartTime": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "configurationComparison": {
+                    "type": "array",
+                    "items": {}
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "logComparison": {
+                    "type": "array",
+                    "items": {}
+                },
+                "performanceMetricsComparison": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "subValues": {
+                                "type": "object",
+                                "additionalProperties": true
+                            },
+                            "values": {
+                                "type": "object",
+                                "properties": {
+                                    "components": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "object",
+                                        "properties": {
+                                            "key": {
+                                                "type": "string"
+                                            },
+                                            "variables": {
+                                                "type": "object",
+                                                "additionalProperties": true
+                                            }
+                                        }
+                                    },
+                                    "diff": {},
+                                    "grafanaLocation": {
+                                        "type": "string"
+                                    },
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "metrics": {
+                                        "type": "string"
+                                    },
+                                    "t1AverageValue": {
+                                        "type": "string"
+                                    },
+                                    "t2AverageValue": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "resourceMetricsComparison": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "subValues": {
+                                "type": "object",
+                                "additionalProperties": true
+                            },
+                            "values": {
+                                "type": "object",
+                                "properties": {
+                                    "components": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "object",
+                                        "properties": {
+                                            "key": {
+                                                "type": "string"
+                                            },
+                                            "variables": {
+                                                "type": "object",
+                                                "additionalProperties": true
+                                            }
+                                        }
+                                    },
+                                    "diff": {
+                                        "type": "string"
+                                    },
+                                    "grafanaLocation": {
+                                        "type": "string"
+                                    },
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "metrics": {
+                                        "type": "string"
+                                    },
+                                    "t1AverageValue": {
+                                        "type": "string"
+                                    },
+                                    "t2AverageValue": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "compute_engine.HealthDataResult": {
+            "type": "object",
+            "properties": {
+                "log": {
+                    "$ref": "#/definitions/compute_engine.HealthLogResult"
+                },
+                "metric": {
+                    "$ref": "#/definitions/compute_engine.HealthMetricResult"
+                }
+            }
+        },
+        "compute_engine.HealthLogAdvice": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "component": {
+                    "type": "string"
+                },
+                "conditions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "content": {
+                    "type": "object",
+                    "properties": {
+                        "key": {
+                            "type": "string"
+                        },
+                        "variables": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "instance": {
+                    "type": "string"
+                },
+                "kb": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "compute_engine.HealthLogResult": {
+            "type": "object",
+            "properties": {
+                "advice": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/compute_engine.HealthLogAdvice"
+                    }
+                },
+                "source": {
+                    "type": "string"
+                },
+                "stats": {
+                    "$ref": "#/definitions/compute_engine.HealthLogStats"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "compute_engine.HealthLogStats": {
+            "type": "object",
+            "properties": {
+                "scannedLogs": {
+                    "type": "integer"
+                }
+            }
+        },
+        "compute_engine.HealthMetricAdvice": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "component": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "object",
+                    "properties": {
+                        "key": {
+                            "type": "string"
+                        },
+                        "variables": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "instance": {
+                    "type": "string"
+                },
+                "kb": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "qualified": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "compute_engine.HealthMetricResult": {
+            "type": "object",
+            "properties": {
+                "advice": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/compute_engine.HealthMetricAdvice"
+                    }
+                },
+                "source": {
+                    "type": "string"
+                },
+                "stats": {
+                    "$ref": "#/definitions/compute_engine.HealthMetricStats"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "compute_engine.HealthMetricStats": {
+            "type": "object",
+            "properties": {
+                "checkedRules": {
+                    "type": "integer"
+                },
+                "scannedMetrics": {
+                    "type": "integer"
+                }
+            }
+        },
+        "compute_engine.HealthReportArgs": {
+            "type": "object",
+            "properties": {
+                "cluster": {
+                    "type": "string"
+                },
+                "start_ts": {
+                    "type": "integer"
+                },
+                "stop_ts": {
+                    "type": "integer"
+                }
+            }
+        },
+        "compute_engine.Report": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "$ref": "#/definitions/compute_engine.HealthReportArgs"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/compute_engine.HealthDataResult"
+                },
+                "hook": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "db.ComparisonArg": {
+            "type": "object",
+            "properties": {
+                "endTime1": {
+                    "type": "integer"
+                },
+                "endTime2": {
+                    "type": "integer"
+                },
+                "packageID1": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "packageID2": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startTime1": {
+                    "type": "integer"
+                },
+                "startTime2": {
+                    "type": "integer"
+                }
+            }
+        },
+        "db.Topology": {
+            "type": "object",
+            "properties": {
+                "dmMaster": {
+                    "type": "integer"
+                },
+                "dmWorker": {
+                    "type": "integer"
+                },
+                "pd": {
+                    "type": "integer"
+                },
+                "tidb": {
+                    "type": "integer"
+                },
+                "tikv": {
+                    "type": "integer"
+                }
+            }
+        },
+        "login.OAuthInfoResp": {
+            "type": "object",
+            "properties": {
+                "auth_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "login.Validation": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "redirect_uri": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "login.ValidationResp": {
+            "type": "object",
+            "properties": {
+                "session_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "org.ApiKeyResponse": {
+            "type": "object",
+            "properties": {
+                "createdTime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "key": {
+                    "description": "Name string `json:\"name\"`",
+                    "type": "string"
+                }
+            }
+        },
+        "org.Invite": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "type": "integer"
+                },
+                "userName": {
+                    "type": "string"
+                }
+            }
+        },
+        "org.InvitesReq": {
+            "type": "object",
+            "properties": {
+                "invites": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/org.Invite"
+                    }
+                }
+            }
+        },
+        "org.ListApiKeyResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/org.ApiKeyResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "org.ListOrganizationsResp": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/org.Organization"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "org.ListUsersResp": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/org.User"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "org.Organization": {
+            "type": "object",
+            "properties": {
+                "clusterCount": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "externalID": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isStarred": {
+                    "type": "boolean"
+                },
+                "lastUpdated": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "roleNames": {
+                    "description": "TODO: it should be in new api but UI hope to put in this response",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "org.Role": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "org.TaskStatus": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "process": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "taskType": {
+                    "type": "string"
+                }
+            }
+        },
+        "org.UpdateOrganizationReq": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "org.User": {
+            "type": "object",
+            "properties": {
+                "roleName": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
+                },
+                "userName": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.ComparisonReport": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "$ref": "#/definitions/db.ComparisonArg"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "creator": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.ComparisonReportResp": {
+            "type": "object",
+            "properties": {
+                "reports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/report.ComparisonReport"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "report.FeedbackArgs": {
+            "type": "object",
+            "properties": {
+                "agree": {
+                    "type": "boolean"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "rule": {
+                    "type": "integer"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.HealthData": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/compute_engine.Report"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                }
+            }
+        },
+        "report.HealthReport": {
+            "type": "object",
+            "properties": {
+                "endTime": {
+                    "type": "integer"
+                },
+                "existed": {
+                    "type": "boolean"
+                },
+                "healthData": {
+                    "$ref": "#/definitions/report.HealthData"
+                },
+                "inRebuild": {
+                    "type": "boolean"
+                },
+                "itemID": {
+                    "type": "string"
+                },
+                "progress": {
+                    "type": "integer"
+                },
+                "startTime": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.HealthReportReq": {
+            "type": "object",
+            "properties": {
+                "itemID": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.HealthReportResp": {
+            "type": "object",
+            "properties": {
+                "reports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/report.HealthReport"
+                    }
+                }
+            }
+        },
+        "report.RealtimeReportAdvice": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "component": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "object",
+                    "properties": {
+                        "key": {
+                            "type": "string"
+                        },
+                        "variables": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "qualified": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.RealtimeReportContent": {
+            "type": "object",
+            "properties": {
+                "advice": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/report.RealtimeReportAdvice"
+                    }
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.ReportResp": {
+            "type": "object",
+            "properties": {
+                "taskID": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.TouchComparisonReportReq": {
+            "type": "object",
+            "properties": {
+                "endTime1": {
+                    "type": "integer"
+                },
+                "endTime2": {
+                    "type": "integer"
+                },
+                "packageID1": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "packageID2": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startTime1": {
+                    "type": "integer"
+                },
+                "startTime2": {
+                    "type": "integer"
+                }
+            }
+        },
+        "user.UserResp": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "internal": {
+                    "type": "boolean"
+                },
+                "userName": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

@@ -165,10 +165,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
 
             {(binaryPlan || data.plan) && (
               <>
-                <Space
-                  size="middle"
-                  style={{ color: '#8c8c8c' }}
-                >
+                <Space size="middle" style={{ color: '#8c8c8c' }}>
                   {t('statement.pages.detail.desc.plans.execution.title')}
                 </Space>
 

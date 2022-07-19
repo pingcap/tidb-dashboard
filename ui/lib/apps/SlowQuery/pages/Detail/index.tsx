@@ -157,7 +157,7 @@ function DetailPage() {
               {(binaryPlan || !!data.plan) && (
                 <>
                   <Space size="middle" style={{ color: '#8c8c8c' }}>
-                      {t('slow_query.detail.plan.title')}
+                    {t('slow_query.detail.plan.title')}
                   </Space>
                   <Tabs
                     defaultActiveKey={

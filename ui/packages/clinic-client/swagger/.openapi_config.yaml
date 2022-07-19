@@ -6,7 +6,6 @@ supportsES6: true
 
 # Setting this property to true will generate functions with a single argument containing all API endpoint parameters instead of one argument per parameter.
 useSingleRequestParameter: true
-
 # conflicts with `useSingleRequestParameter`
 # withInterfaces: true
 

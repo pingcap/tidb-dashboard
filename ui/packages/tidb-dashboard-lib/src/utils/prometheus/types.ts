@@ -84,6 +84,11 @@ export type MatrixOrVectorResult =
   | PromMatrixData['result'][0]
   | PromVectorData['result'][0]
 
+export enum TransformNullValue {
+  NULL = 'null',
+  AS_ZERO = 'as_zero'
+}
+
 // Our customized types
 
 export interface QueryOptions {

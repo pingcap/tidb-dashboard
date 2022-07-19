@@ -115,8 +115,11 @@ slow_query:
       back: List
       sql: Query
       previous_sql: Previous Query
-      plan: Plan
-      tree_diagram: Tree Diagram
+    plan:
+      title: Plan
+      visual: Visual
+      text: Text
+      modal_title: Visual Plan
     tabs:
       basic: Basic
       time: Time

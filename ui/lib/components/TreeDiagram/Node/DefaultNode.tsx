@@ -46,7 +46,7 @@ export const DefaultNode = (nodeProps) => {
       case 'tikv':
         return '#DEEDF0'
       case 'tiflash':
-        return '#F4C7AB'
+        return '#FFDAFE'
       default:
         return ''
     }
@@ -100,6 +100,9 @@ export const DefaultNode = (nodeProps) => {
               headStyle={{ backgroundColor: headColor(nodeDatum.storeType) }}
             >
               <div className={styles.cardContentP}>
+                Duration: <span>{nodeDatum.duration}</span>
+              </div>
+              <div className={styles.cardContentP}>
                 Actual Rows: <span>{nodeDatum.actRows}</span>
               </div>
               <div className={styles.cardContentP}>
@@ -107,9 +110,6 @@ export const DefaultNode = (nodeProps) => {
               </div>
               <div className={styles.cardContentP}>
                 Run at: <span>{nodeDatum.storeType}</span>
-              </div>
-              <div className={styles.cardContentP}>
-                Duration: <span>{nodeDatum.duration}</span>
               </div>
             </Card>
             {nodeDatum.__node_attrs.collapsiable && (

@@ -55,7 +55,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
   const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
 
   const [isVpVisible, setIsVpVisable] = useState(false)
-  const toggleVisualPlan = (action: string) => {
+  const toggleVisualPlan = (action: 'open' | 'close') => {
     telemetry.toggleVisualPlanModal(action)
     setIsVpVisable(!isVpVisible)
   }

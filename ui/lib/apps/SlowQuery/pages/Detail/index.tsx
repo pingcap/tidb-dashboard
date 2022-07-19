@@ -70,7 +70,7 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   const [isVpVisible, setIsVpVisable] = useState(false)
-  const toggleVisualPlan = (action: string) => {
+  const toggleVisualPlan = (action: 'open' | 'close') => {
     telemetry.toggleVisualPlanModal(action)
     setIsVpVisable(!isVpVisible)
   }

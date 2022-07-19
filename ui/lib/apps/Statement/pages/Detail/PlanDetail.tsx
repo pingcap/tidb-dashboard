@@ -163,7 +163,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
               ) : null}
             </Descriptions>
 
-            {(binaryPlan || detailExpand.plan) && (
+            {(binaryPlan || data.plan) && (
               <Descriptions>
                 <Descriptions.Item
                   label={
@@ -171,7 +171,10 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       <span style={{ paddingRight: '2rem' }}>
                         {t('slow_query.detail.plan.title')}
                       </span>
-                      <Tabs
+                    </Space>
+                  }
+                >
+                   <Tabs
                         defaultActiveKey={
                           binaryPlan && !binaryPlan.main.discardedDueToTooLong
                             ? 'binary_plan'
@@ -234,7 +237,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
                               multiline={detailExpand.plan}
                               label={
                                 <Space size="middle">
-                                  <TextWithInfo.TransKey transKey="statement.fields.plan" />
                                   <Expand.Link
                                     expanded={detailExpand.plan}
                                     onClick={togglePlan}
@@ -250,10 +252,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
                           </Descriptions>
                         </Tabs.TabPane>
                       </Tabs>
-                    </Space>
-                  }
-                >
-                  <React.Fragment />
                 </Descriptions.Item>
               </Descriptions>
             )}

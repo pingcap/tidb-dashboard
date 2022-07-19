@@ -162,7 +162,11 @@ function DetailPage() {
                         <span style={{ paddingRight: '2rem' }}>
                           {t('slow_query.detail.plan.title')}
                         </span>
-                        <Tabs
+
+                      </Space>
+                    }
+                  >
+                    <Tabs
                           defaultActiveKey={
                             binaryPlan && !binaryPlan.main.discardedDueToTooLong
                               ? 'binary_plan'
@@ -245,10 +249,6 @@ function DetailPage() {
                             </Descriptions>
                           </Tabs.TabPane>
                         </Tabs>
-                      </Space>
-                    }
-                  >
-                    <React.Fragment />
                   </Descriptions.Item>
                 </Descriptions>
               )}

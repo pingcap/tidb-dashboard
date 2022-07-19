@@ -160,94 +160,95 @@ function DetailPage() {
                     label={
                       <Space align="baseline" size="middle">
                         <span style={{ paddingRight: '2rem' }}>
-                            {t('slow_query.detail.plan.title')}
-                          </span>
-                          <Tabs
-                            defaultActiveKey={
-                              binaryPlan && !binaryPlan.main.discardedDueToTooLong
-                                ? 'binary_plan'
-                                : 'text_plan'
-                            }
-                          >
-                            {binaryPlan &&
-                              !binaryPlan.main.discardedDueToTooLong && (
-                                <Tabs.TabPane
-                                  tab={t('slow_query.detail.plan.visual')}
-                                  key="binary_plan"
+                          {t('slow_query.detail.plan.title')}
+                        </span>
+                        <Tabs
+                          defaultActiveKey={
+                            binaryPlan && !binaryPlan.main.discardedDueToTooLong
+                              ? 'binary_plan'
+                              : 'text_plan'
+                          }
+                        >
+                          {binaryPlan &&
+                            !binaryPlan.main.discardedDueToTooLong && (
+                              <Tabs.TabPane
+                                tab={t('slow_query.detail.plan.visual')}
+                                key="binary_plan"
+                              >
+                                <Modal
+                                  title={t(
+                                    'slow_query.detail.plan.modal_title'
+                                  )}
+                                  centered
+                                  visible={isVpVisible}
+                                  width={window.innerWidth}
+                                  onCancel={toggleVisualPlan}
+                                  footer={null}
+                                  destroyOnClose={true}
+                                  bodyStyle={{
+                                    background: '#f5f5f5',
+                                    height: window.innerHeight - 100,
+                                  }}
                                 >
-                                  <Modal
-                                    title={t(
-                                      'slow_query.detail.plan.modal_title'
-                                    )}
-                                    centered
-                                    visible={isVpVisible}
-                                    width={window.innerWidth}
-                                    onCancel={toggleVisualPlan}
-                                    footer={null}
-                                    destroyOnClose={true}
-                                    bodyStyle={{
-                                      background: '#f5f5f5',
-                                      height: window.innerHeight - 100,
-                                    }}
-                                  >
-                                    <TreeDiagramView
-                                      data={
-                                        binaryPlan.ctes
-                                          ? [binaryPlan.main].concat(
-                                              binaryPlan.ctes
-                                            )
-                                          : [binaryPlan.main]
-                                      }
-                                      showMinimap={true}
-                                    />
-                                  </Modal>
-                                  <Descriptions>
-                                    <Descriptions.Item span={2}>
-                                      <div onClick={toggleVisualPlan}>
-                                        <TreeDiagramView
-                                          data={
+                                  <TreeDiagramView
+                                    data={
+                                      binaryPlan.ctes
+                                        ? [binaryPlan.main].concat(
                                             binaryPlan.ctes
-                                              ? [binaryPlan.main].concat(
-                                                  binaryPlan.ctes
-                                                )
-                                              : [binaryPlan.main]
-                                          }
-                                          isThumbnail={true}
-                                        />
-                                      </div>
-                                    </Descriptions.Item>
-                                  </Descriptions>
-                                </Tabs.TabPane>
-                              )}
-
-                            <Tabs.TabPane
-                              tab={t('slow_query.detail.plan.text')}
-                              key="text_plan"
-                            >
-                              <Descriptions>
-                                <Descriptions.Item
-                                  span={2}
-                                  multiline={detailExpand.plan}
-                                  label={
-                                    <Space size="middle">
-                                      <Expand.Link
-                                        expanded={detailExpand.plan}
-                                        onClick={togglePlan}
+                                          )
+                                        : [binaryPlan.main]
+                                    }
+                                    showMinimap={true}
+                                  />
+                                </Modal>
+                                <Descriptions>
+                                  <Descriptions.Item span={2}>
+                                    <div onClick={toggleVisualPlan}>
+                                      <TreeDiagramView
+                                        data={
+                                          binaryPlan.ctes
+                                            ? [binaryPlan.main].concat(
+                                                binaryPlan.ctes
+                                              )
+                                            : [binaryPlan.main]
+                                        }
+                                        isThumbnail={true}
                                       />
-                                      <CopyLink data={data.plan ?? ''} />
-                                    </Space>
-                                  }
-                                >
-                                  <Expand expanded={detailExpand.plan}>
-                                    <Pre noWrap>{data.plan}</Pre>
-                                  </Expand>
-                                </Descriptions.Item>
-                              </Descriptions>
-                            </Tabs.TabPane>
-                          </Tabs>
+                                    </div>
+                                  </Descriptions.Item>
+                                </Descriptions>
+                              </Tabs.TabPane>
+                            )}
+
+                          <Tabs.TabPane
+                            tab={t('slow_query.detail.plan.text')}
+                            key="text_plan"
+                          >
+                            <Descriptions>
+                              <Descriptions.Item
+                                span={2}
+                                multiline={detailExpand.plan}
+                                label={
+                                  <Space size="middle">
+                                    <Expand.Link
+                                      expanded={detailExpand.plan}
+                                      onClick={togglePlan}
+                                    />
+                                    <CopyLink data={data.plan ?? ''} />
+                                  </Space>
+                                }
+                              >
+                                <Expand expanded={detailExpand.plan}>
+                                  <Pre noWrap>{data.plan}</Pre>
+                                </Expand>
+                              </Descriptions.Item>
+                            </Descriptions>
+                          </Tabs.TabPane>
+                        </Tabs>
                       </Space>
                     }
                   >
+                    <React.Fragment />
                   </Descriptions.Item>
                 </Descriptions>
               )}

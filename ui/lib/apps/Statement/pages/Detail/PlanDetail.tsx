@@ -163,7 +163,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
               ) : null}
             </Descriptions>
 
-
             {(binaryPlan || detailExpand.plan) && (
               <Descriptions>
                 <Descriptions.Item
@@ -209,7 +208,9 @@ function PlanDetail({ query }: IPlanDetailProps) {
                                   <TreeDiagramView
                                     data={
                                       binaryPlan.ctes
-                                        ? [binaryPlan.main].concat(binaryPlan.ctes)
+                                        ? [binaryPlan.main].concat(
+                                            binaryPlan.ctes
+                                          )
                                         : [binaryPlan.main]
                                     }
                                     isThumbnail={true}
@@ -246,9 +247,9 @@ function PlanDetail({ query }: IPlanDetailProps) {
                     </Space>
                   }
                 >
+                  <React.Fragment />
                 </Descriptions.Item>
               </Descriptions>
-
             )}
 
             <DetailTabs data={data} query={query} />

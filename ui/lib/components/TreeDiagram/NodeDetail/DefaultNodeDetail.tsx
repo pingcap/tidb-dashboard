@@ -143,7 +143,9 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
         <Tabs.TabPane tab="Diagnose" key="4">
           <ol type="1">
             {nodeDatum.diagnosis.map((d, idx) => (
-              <li key={idx} style={{ padding: '1rem 0'}}>{t(`binary_plan.diagnosis.${d}`)}</li>
+              <li key={idx} style={{ padding: '1rem 0' }}>
+                {t(`binary_plan.diagnosis.${d}`)}
+              </li>
             ))}
           </ol>
         </Tabs.TabPane>

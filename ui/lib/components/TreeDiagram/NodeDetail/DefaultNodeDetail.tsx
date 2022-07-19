@@ -23,7 +23,7 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
       size="middle"
       onTabClick={(key) => telemetry.clickTabOnNodeDetail(key)}
     >
-      <Tabs.TabPane tab="General" key="1" style={{ padding: '1rem' }}>
+      <Tabs.TabPane tab={t(`binary_plan.tabs.general`)} key="1" style={{ padding: '1rem' }}>
         <p>
           Duration{' '}
           <Tooltip title={t(`binary_plan.tooltip.duration`)}>
@@ -47,7 +47,11 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
           </p>
         )}
       </Tabs.TabPane>
-      <Tabs.TabPane tab="Hardware Usage" key="2" style={{ padding: '1rem' }}>
+      <Tabs.TabPane
+        tab={t(`binary_plan.tabs.hardware_usage`)}
+        key="2"
+        style={{ padding: '1rem' }}
+      >
         <p>
           Disk:{' '}
           <span>
@@ -62,7 +66,7 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
         </p>
       </Tabs.TabPane>
       <Tabs.TabPane
-        tab="Advanced Information"
+        tab={t(`binary_plan.tabs.advanced_info`)}
         key="3"
         style={{ padding: '1rem' }}
       >
@@ -146,7 +150,7 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
         )}
       </Tabs.TabPane>
       {nodeDatum.diagnosis.length > 0 && (
-        <Tabs.TabPane tab="Diagnose" key="4">
+        <Tabs.TabPane tab={t(`binary_plan.tabs.diagnosis`)} key="4">
           <ol type="1">
             {nodeDatum.diagnosis.map((d, idx) => (
               <li key={idx} style={{ padding: '1rem 0' }}>

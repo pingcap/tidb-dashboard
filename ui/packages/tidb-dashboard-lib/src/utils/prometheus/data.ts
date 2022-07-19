@@ -38,12 +38,12 @@ export function processRawData(
       let dpValue: number | null = parseSampleValue(value[1])
 
       if (isNaN(dpValue)) {
-        dpValue = 0
+        dpValue = null
       }
 
       const timestamp = value[0] * 1000
       for (let t = baseTimestamp; t < timestamp; t += stepMs) {
-        dps.push([t, 0])
+        dps.push([t, null])
       }
       baseTimestamp = timestamp + stepMs
       dps.push([timestamp, dpValue])
@@ -51,7 +51,7 @@ export function processRawData(
 
     const endTimestamp = options.end * 1000
     for (let t = baseTimestamp; t <= endTimestamp; t += stepMs) {
-      dps.push([t, 0])
+      dps.push([t, null])
     }
 
     return dps

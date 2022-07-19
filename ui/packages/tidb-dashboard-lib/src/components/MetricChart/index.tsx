@@ -38,7 +38,8 @@ import {
   processRawData,
   PromMatrixData,
   QueryOptions,
-  resolveQueryTemplate
+  resolveQueryTemplate,
+  TransformNullValue
 } from '@lib/utils/prometheus'
 import { AxiosPromise } from 'axios'
 import { ReqConfig } from '@lib/types'
@@ -96,6 +97,7 @@ export interface IMetricChartProps {
   queries: IQueryOption[]
   unit?: string
   type: GraphType
+  nullValue?: TransformNullValue
 
   height?: number
 
@@ -126,7 +128,8 @@ export default function MetricChart({
   height = 200,
   onRangeChange,
   onLoadingStateChange,
-  getMetrics
+  getMetrics,
+  nullValue = TransformNullValue.NULL
 }: IMetricChartProps) {
   const chartRef = useRef<Chart>(null)
   const chartContainerRef = useRef<HTMLDivElement>(null)
@@ -204,10 +207,23 @@ export default function MetricChart({
           if (data === null) {
             return
           }
+
+          // transform data according to nullValue config
+          const transformedData =
+            nullValue === TransformNullValue.AS_ZERO
+              ? data.map((d) => {
+                  if (d[1] !== null) {
+                    return d
+                  }
+                  d[1] = 0
+                  return d
+                })
+              : data
+
           sd.push({
             id: `${queryIdx}_${seriesIdx}`,
             name: format(queries[queryIdx].name, promResult.metric),
-            data,
+            data: transformedData,
             color: queries[queryIdx].color
           })
         })

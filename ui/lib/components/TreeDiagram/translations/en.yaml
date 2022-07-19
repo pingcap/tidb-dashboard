@@ -1,6 +1,11 @@
 binary_plan:
   tooltip:
     duration: 'The time taken by the parent operator includes the time taken by all children.'
+  tabs:
+    general: General
+    hardware_usage: Hardware Usage
+    advanced_info: Advanced Information
+    diagnosis: Diagnosis
   diagnosis:
     high_est_error: 'The estimation error is high. Consider checking the health state of the statistics.'
     disk_spill: "Disk spill is triggered for this operator because the memory quota is exceeded. The execution might be slow. Consider increasing the memory quota if there's enough memory."

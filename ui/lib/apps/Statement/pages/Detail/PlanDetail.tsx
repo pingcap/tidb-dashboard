@@ -179,9 +179,12 @@ function PlanDetail({ query }: IPlanDetailProps) {
                         }
                       >
                         {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
-                          <Tabs.TabPane tab="Visual Plan" key="binary_plan">
+                          <Tabs.TabPane
+                            tab={t('slow_query.detail.plan.visual')}
+                            key="binary_plan"
+                          >
                             <Modal
-                              title="Visual Plan Tree Diagram"
+                              title={t('slow_query.detail.plan.modal_title')}
                               centered
                               visible={isVpVisible}
                               width={window.innerWidth}
@@ -221,7 +224,10 @@ function PlanDetail({ query }: IPlanDetailProps) {
                           </Tabs.TabPane>
                         )}
 
-                        <Tabs.TabPane tab="Text Plan" key="text_plan">
+                        <Tabs.TabPane
+                          tab={t('slow_query.detail.plan.text')}
+                          key="text_plan"
+                        >
                           <Descriptions>
                             <Descriptions.Item
                               span={2}

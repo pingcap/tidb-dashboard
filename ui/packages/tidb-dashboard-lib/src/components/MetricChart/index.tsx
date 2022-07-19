@@ -43,6 +43,7 @@ import {
 import { AxiosPromise } from 'axios'
 import { ReqConfig } from '@lib/types'
 import { ChartContext } from './ChartContext'
+import { AsyncQueue } from '@lib/utils/async-queue'
 
 export type { GraphType }
 
@@ -117,6 +118,8 @@ type Data = {
   values: QueryData[]
 }
 
+const aq = new AsyncQueue(5)
+
 export default function MetricChart({
   queries,
   range,
@@ -157,7 +160,8 @@ export default function MetricChart({
     ) {
       const query = resolveQueryTemplate(queryTemplate, queryOptions)
       try {
-        const resp = await getMetrics(
+        const resp = await aq.arrange(
+          getMetrics,
           queryOptions.end,
           query,
           queryOptions.start,

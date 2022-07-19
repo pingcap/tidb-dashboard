@@ -5,7 +5,7 @@ export const telemetry = {
   clickPlanTabs(tab: string, queryDigest: string) {
     mixpanel.track('Statement: Plan Tab Clicked', { tab, queryDigest })
   },
-  toggleVisualPlanModal(action: string) {
+  toggleVisualPlanModal(action: 'open' | 'close') {
     mixpanel.track('Statement: Visual Plan Modal Toggled', { action })
   },
   toggleExpandBtnOnNode(nodeName: string) {

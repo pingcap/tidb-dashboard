@@ -1,3 +1,5 @@
+import { TransformNullValue } from '@lib/utils/prometheus'
+
 const metricsItems = [
   {
     category: 'application_connection',
@@ -7,7 +9,7 @@ const metricsItems = [
         queries: [
           {
             query: 'sum(tidb_server_connections)',
-            name: 'total'
+            name: 'Total'
           },
           {
             query: 'sum(tidb_server_tokens)',
@@ -15,6 +17,7 @@ const metricsItems = [
           }
         ],
         unit: null,
+        nullValue: TransformNullValue.AS_ZERO,
         type: 'line'
       },
       {
@@ -25,8 +28,9 @@ const metricsItems = [
             name: '{instance}-{result}'
           }
         ],
-        unit: null,
-        type: 'line'
+        unit: 'short',
+        nullValue: TransformNullValue.AS_ZERO,
+        type: 'stack'
       },
       {
         title: 'Average Idle Connection Duration',
@@ -41,6 +45,7 @@ const metricsItems = [
           }
         ],
         unit: 's',
+        nullValue: TransformNullValue.AS_ZERO,
         type: 'line'
       }
     ]
@@ -68,7 +73,7 @@ const metricsItems = [
           }
         ],
         unit: 's',
-        type: 'line'
+        type: 'bar_stacked'
       },
       {
         title: 'Database Time by Steps of SQL Processing',
@@ -91,7 +96,7 @@ const metricsItems = [
           }
         ],
         unit: 's',
-        type: 'line'
+        type: 'bar_stacked'
       }
     ]
   },
@@ -103,7 +108,7 @@ const metricsItems = [
         queries: [
           {
             query: 'sum(rate(tidb_executor_statement_total[$__rate_interval]))',
-            name: 'total'
+            name: 'Total'
           },
           {
             query:
@@ -111,6 +116,7 @@ const metricsItems = [
             name: '{type}'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 'qps',
         type: 'line'
       },
@@ -123,7 +129,8 @@ const metricsItems = [
             name: '{type} @ {instance}'
           }
         ],
-        unit: null,
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 'short',
         type: 'line'
       },
       {
@@ -132,10 +139,11 @@ const metricsItems = [
           {
             query:
               'sum(rate(tidb_server_query_total[$__rate_interval])) by (result)',
-            name: 'query {type}'
+            name: 'query {result}'
           }
         ],
-        unit: null,
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 'short',
         type: 'line'
       }
     ]
@@ -152,7 +160,8 @@ const metricsItems = [
             name: 'avg'
           }
         ],
-        unit: null,
+        unit: 'short',
+        nullValue: TransformNullValue.AS_ZERO,
         type: 'line'
       }
     ]
@@ -181,9 +190,10 @@ const metricsItems = [
           {
             query:
               'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!="internal"}[$__rate_interval])) by (le,sql_type))',
-            name: '99-{{sql_type}}'
+            name: '99-{sql_type}'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       },
@@ -201,6 +211,7 @@ const metricsItems = [
             name: '99'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       },
@@ -215,9 +226,10 @@ const metricsItems = [
           {
             query:
               'histogram_quantile(0.99, sum(rate(tidb_session_parse_duration_seconds_bucket{sql_type="general"}[$__rate_interval])) by (le))',
-            name: '99%'
+            name: '99'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       },
@@ -232,9 +244,10 @@ const metricsItems = [
           {
             query:
               'histogram_quantile(0.99, sum(rate(tidb_session_compile_duration_seconds_bucket{sql_type="general"}[$__rate_interval])) by (le))',
-            name: '99%'
+            name: '99'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       },
@@ -249,9 +262,10 @@ const metricsItems = [
           {
             query:
               'histogram_quantile(0.99, sum(rate(tidb_session_execute_duration_seconds_bucket{sql_type="general"}[$__rate_interval])) by (le))',
-            name: '99%'
+            name: '99'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       }
@@ -302,6 +316,7 @@ const metricsItems = [
             name: '{instance}'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       },
@@ -314,6 +329,7 @@ const metricsItems = [
             name: '{instance}'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 'percent',
         type: 'line'
       },
@@ -325,6 +341,7 @@ const metricsItems = [
             name: '{instance}'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 'decbytes',
         type: 'line'
       },
@@ -376,7 +393,7 @@ const metricsItems = [
             name: '{instance}-read'
           }
         ],
-        unit: 'decbytes',
+        unit: 'KBs',
         type: 'line'
       },
       {
@@ -388,7 +405,7 @@ const metricsItems = [
           }
         ],
         unit: 'decbytes',
-        type: 'line'
+        type: 'stack'
       }
     ]
   }

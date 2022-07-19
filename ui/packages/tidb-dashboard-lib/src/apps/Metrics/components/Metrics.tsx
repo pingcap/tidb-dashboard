@@ -41,9 +41,7 @@ interface IChartProps {
 const MetricsWrapper = ({ metricsItem, props }) => {
   return (
     <Card
-      noMarginTop
-      noMarginBottom
-      noMarginLeft
+      noMargin
       style={{
         border: '1px solid #f1f0f0',
         padding: '10px 2rem',
@@ -57,6 +55,7 @@ const MetricsWrapper = ({ metricsItem, props }) => {
         queries={metricsItem.queries}
         type={metricsItem.type}
         unit={metricsItem.unit}
+        nullValue={metricsItem.nullValue}
         {...props}
       />
     </Card>
@@ -110,7 +109,7 @@ export default function Metrics() {
                 <Collapse.Panel
                   header={t(`metrics.category.${item.category}`)}
                   key="1"
-                  style={{ fontSize: 16, fontWeight: 500 }}
+                  style={{ fontSize: 16, fontWeight: 500, padding: 0 }}
                 >
                   <Row gutter={[16, 16]}>
                     {item.metrics.map((m) => (

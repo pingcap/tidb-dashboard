@@ -462,7 +462,7 @@ const metricsItems = [
           },
           {
             query:
-              'ahistogram_quantile(0.99, sum(rate(tikv_raftstore_apply_log_duration_seconds_bucket[$__rate_interval])) by (le))',
+              'histogram_quantile(0.99, sum(rate(tikv_raftstore_apply_log_duration_seconds_bucket[$__rate_interval])) by (le))',
             name: '99'
           }
         ],

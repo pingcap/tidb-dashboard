@@ -1,0 +1,11 @@
+metrics:
+  nav_title: Metrics
+  category:
+    application_connection: Application Connection
+    database_time: Databse Time
+    sql_count: SQL Count
+    core_feature_usage: Core Feature Usage
+    latency_break_down: Latency Break Down
+    transaction: Transaction
+    core_path_duration: Core Path Duration
+    server: Server

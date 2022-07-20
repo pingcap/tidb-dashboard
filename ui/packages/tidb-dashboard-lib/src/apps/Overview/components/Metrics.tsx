@@ -1,88 +1,48 @@
 import { Space, Typography, Button } from 'antd'
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AutoRefreshButton,
   Card,
   DEFAULT_TIME_RANGE,
+  GraphType,
   MetricChart,
   TimeRange,
   TimeRangeSelector,
   Toolbar
 } from '@lib/components'
 import { Link } from 'react-router-dom'
-import { Range } from '@elastic/charts/dist/utils/domain'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { LoadingOutlined } from '@ant-design/icons'
-import { some } from 'lodash'
-import { ReqConfig } from '@lib/types'
-import { MetricsQueryResponse } from '@lib/client'
-import { AxiosPromise } from 'axios'
+import { throttle } from 'lodash'
 import { OverviewContext } from '../context'
 
 import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
-import { useEventEmitter } from 'ahooks'
+import { useEventEmitter, useMemoizedFn } from 'ahooks'
 import { overviewMetrics } from '../data/overviewMetrics'
-
-interface IChartProps {
-  range: Range
-  onRangeChange?: (newRange: Range) => void
-  onLoadingStateChange?: (isLoading: boolean) => void
-  getMetrics: (
-    endTimeSec?: number,
-    query?: string,
-    startTimeSec?: number,
-    stepSec?: number,
-    options?: ReqConfig
-  ) => AxiosPromise<MetricsQueryResponse>
-}
-
-const MetricsWrapper = ({ metricsItem, props }) => {
-  const { t } = useTranslation()
-
-  return (
-    <Card noMarginTop noMarginBottom>
-      <Typography.Title level={5}>
-        {t(`overview.metrics.${metricsItem.title}`)}
-      </Typography.Title>
-      <MetricChart
-        queries={metricsItem.queries}
-        yDomain={
-          metricsItem.yDomain
-            ? { min: metricsItem.yDomain.min, max: metricsItem.yDomain.max }
-            : null
-        }
-        type={metricsItem.type}
-        unit={metricsItem.unit}
-        {...props}
-      />
-    </Card>
-  )
-}
 
 export default function Metrics() {
   const ctx = useContext(OverviewContext)
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
   const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
-  const [isLoading, setIsLoading] = useState<Record<string, boolean>>({})
+  const loadingCounter = useRef(0)
+  const [isSomeLoading, setIsSomeLoading] = useState(false)
   const { t } = useTranslation()
 
-  const isSomeLoading = useMemo(() => {
-    return some(Object.values(isLoading))
-  }, [isLoading])
+  const setIsSomeLoadingDebounce = useCallback(
+    throttle(setIsSomeLoading, 50),
+    []
+  )
 
-  function metricProps(id: string): IChartProps {
-    return {
-      range: chartRange,
-      onRangeChange: setChartRange,
-      onLoadingStateChange: (loading) =>
-        setIsLoading((v) => ({ ...v, [id]: loading })),
-      getMetrics: ctx!.ds.metricsQueryGet
-    }
-  }
+  const onLoadingStateChange = useMemoizedFn((loading: boolean) => {
+    loading
+      ? (loadingCounter.current += 1)
+      : loadingCounter.current > 0 && (loadingCounter.current -= 1)
+    setIsSomeLoadingDebounce(loadingCounter.current > 0)
+  })
 
   return (
     <>
@@ -109,10 +69,25 @@ export default function Metrics() {
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
           {overviewMetrics.map((item) => (
-            <MetricsWrapper
-              metricsItem={item}
-              props={metricProps(`${item.title}`)}
-            />
+            <Card noMarginTop noMarginBottom>
+              <Typography.Title level={5}>
+                {t(`overview.metrics.${item.title}`)}
+              </Typography.Title>
+              <MetricChart
+                queries={item.queries}
+                yDomain={
+                  item.yDomain
+                    ? { min: item.yDomain.min, max: item.yDomain.max }
+                    : undefined
+                }
+                type={item.type as GraphType}
+                unit={item.unit!}
+                range={chartRange}
+                onRangeChange={setChartRange}
+                getMetrics={ctx!.ds.metricsQueryGet}
+                onLoadingStateChange={onLoadingStateChange}
+              />
+            </Card>
           ))}
         </Stack>
       </ChartContext.Provider>

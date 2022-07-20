@@ -13,6 +13,11 @@ statement:
             one_for_all: Execution Detail
             all: Execution Detail of All Plans
             some: 'Execution Detail of Selected {{n}} Plans'
+          execution:
+            title: Execution Plan
+            visual: Visual
+            text: Text
+            modal_title: Visual Plan
       tabs:
         basic: Basic
         time: Time

@@ -38,19 +38,19 @@ func TestAPIClient_GetMembers(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetMembersResponse{
 		Members: []pdclient.GetMembersResponseMember{
-			pdclient.GetMembersResponseMember{
+			{
 				GitHash:       "0c1246dd219fd16b4b2ff5108941e5d3e958922d",
 				ClientUrls:    []string{"http://172.16.6.170:2379"},
 				DeployPath:    "/home/tidb/tidb-deploy/pd-2379/bin",
 				BinaryVersion: "v4.0.14",
 				MemberID:      0x28cb7236f465dbeb,
-			}, pdclient.GetMembersResponseMember{
+			}, {
 				GitHash:       "0c1246dd219fd16b4b2ff5108941e5d3e958922d",
 				ClientUrls:    []string{"http://172.16.6.169:2379"},
 				DeployPath:    "/home/tidb/tidb-deploy/pd-2379/bin",
 				BinaryVersion: "v4.0.14",
 				MemberID:      0x79cc97f3bcb16deb,
-			}, pdclient.GetMembersResponseMember{
+			}, {
 				GitHash:       "0c1246dd219fd16b4b2ff5108941e5d3e958922d",
 				ClientUrls:    []string{"http://172.16.6.171:2379"},
 				DeployPath:    "/home/tidb/tidb-deploy/pd-2379/bin",
@@ -76,7 +76,7 @@ func TestAPIClient_GetStores(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, &pdclient.GetStoresResponse{
 		Stores: []pdclient.GetStoresResponseStoresElem{
-			pdclient.GetStoresResponseStoresElem{
+			{
 				Store: pdclient.GetStoresResponseStore{
 					Address:        "172.16.6.168:20160",
 					ID:             4,
@@ -89,7 +89,7 @@ func TestAPIClient_GetStores(t *testing.T) {
 					StartTimestamp: 1636421304,
 				},
 			},
-			pdclient.GetStoresResponseStoresElem{
+			{
 				Store: pdclient.GetStoresResponseStore{
 					Address:        "172.16.5.218:20160",
 					ID:             5,
@@ -102,7 +102,7 @@ func TestAPIClient_GetStores(t *testing.T) {
 					StartTimestamp: 1636421304,
 				},
 			},
-			pdclient.GetStoresResponseStoresElem{
+			{
 				Store: pdclient.GetStoresResponseStore{
 					Address:        "172.16.5.141:20160",
 					ID:             1,

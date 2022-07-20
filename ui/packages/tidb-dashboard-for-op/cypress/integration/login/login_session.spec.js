@@ -9,6 +9,7 @@ describe('Login session', () => {
 
   it('Redirect to sigin page when user not login', function () {
     cy.visit(this.uri.overview)
+    /* eslint-disable no-unused-expressions */
     expect(localStorage.getItem('dashboard_auth_token')).to.be.null
     cy.url().should('include', this.uri.login)
   })

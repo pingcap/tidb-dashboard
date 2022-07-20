@@ -30,6 +30,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/visualplan"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
@@ -135,6 +136,7 @@ var Modules = fx.Options(
 	slowquery.Module,
 	debugapi.Module,
 	topsql.Module,
+	visualplan.Module,
 )
 
 func (s *Service) Start(ctx context.Context) error {

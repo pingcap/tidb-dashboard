@@ -2038,6 +2038,12 @@ export interface SlowqueryModel {
     'backoff_types'?: string;
     /**
      * 
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan'?: string;
+    /**
+     * 
      * @type {number}
      * @memberof SlowqueryModel
      */
@@ -2708,6 +2714,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'avg_write_size'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'binary_plan'?: string;
     /**
      * 
      * @type {string}

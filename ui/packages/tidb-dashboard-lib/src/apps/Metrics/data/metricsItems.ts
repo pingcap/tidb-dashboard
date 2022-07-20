@@ -1,4 +1,47 @@
-import { TransformNullValue } from '@lib/utils/prometheus'
+import { QueryData } from '@lib/components/MetricChart/seriesRenderer'
+import { ColorType, TransformNullValue } from '@lib/utils/prometheus'
+
+function transformColorBySQLType(legendLabel: string) {
+  switch (legendLabel) {
+    case 'Select':
+      return ColorType.BLUE_3
+    case 'Commit':
+      return ColorType.GREEN_2
+    case 'Insert':
+      return ColorType.GREEN_3
+    case 'Update':
+      return ColorType.GREEN_4
+    case 'general':
+      return ColorType.PINK
+    default:
+      return undefined
+  }
+}
+
+function transformColorByExecTimeOverview(legendLabel: string) {
+  switch (legendLabel) {
+    case 'tso_wait':
+      return ColorType.RED_5
+    case 'Commit':
+      return ColorType.GREEN_4
+    case 'Prewrite':
+      return ColorType.GREEN_3
+    case 'PessimisticLock':
+      return ColorType.RED_4
+    case 'Get':
+      return ColorType.BLUE_3
+    case 'BatchGet':
+      return ColorType.BLUE_4
+    case 'Cop':
+      return ColorType.BLUE_1
+    case 'Scan':
+      return ColorType.PURPLE
+    case 'execute time':
+      return ColorType.YELLOW
+    default:
+      return undefined
+  }
+}
 
 const metricsItems = [
   {
@@ -58,9 +101,11 @@ const metricsItems = [
         queries: [
           {
             query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
-            name: 'database time'
+            name: 'database time',
+            color: ColorType.YELLOW
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       },
@@ -69,7 +114,8 @@ const metricsItems = [
         queries: [
           {
             query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
-            name: '{sql_type}'
+            name: '{sql_type}',
+            color: (qd: QueryData) => transformColorBySQLType(qd.name)
           }
         ],
         unit: 's',
@@ -80,19 +126,48 @@ const metricsItems = [
         queries: [
           {
             query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
-            name: 'parse'
+            name: 'parse',
+            color: ColorType.RED_2
           },
           {
             query: `sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
-            name: 'compile'
+            name: 'compile',
+            color: ColorType.ORANGE
           },
           {
             query: `sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
-            name: 'execute'
+            name: 'execute',
+            color: ColorType.GREEN_3
           },
           {
             query: `sum(rate(tidb_server_get_token_duration_seconds_sum{sql_type="general"}[$__rate_interval]))/1000000`,
-            name: 'get token'
+            name: 'get token',
+            color: ColorType.RED_3
+          }
+        ],
+        unit: 's',
+        type: 'bar_stacked'
+      },
+      {
+        title: 'Database Execute Time',
+        queries: [
+          {
+            query:
+              'sum(rate(tidb_tikvclient_request_seconds_sum{store!="0"}[$__rate_interval])) by (type)',
+            name: '{type}',
+            color: (qd: QueryData) => transformColorByExecTimeOverview(qd.name)
+          },
+          {
+            query:
+              'sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum{type="wait"}[$__rate_interval]))',
+            name: 'tso_wait',
+            color: ColorType.RED_5
+          },
+          {
+            query:
+              'sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))',
+            name: 'execute time',
+            color: ColorType.YELLOW
           }
         ],
         unit: 's',
@@ -157,7 +232,12 @@ const metricsItems = [
           {
             query:
               'sum(rate(tidb_server_plan_cache_total[$__rate_interval])) by (type)',
-            name: 'avg'
+            name: 'avg - hit'
+          },
+          {
+            query:
+              'sum(rate(tidb_server_plan_cache_miss_total[$__rate_interval]))',
+            name: 'avg - miss'
           }
         ],
         unit: 'short',
@@ -283,6 +363,7 @@ const metricsItems = [
             name: '{type}-{txn_mode}'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       },

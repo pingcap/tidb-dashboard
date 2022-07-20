@@ -101,7 +101,10 @@ const metricsItems = [
         ],
         nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
-        type: 'line'
+        type: 'line',
+        color: (qd: QueryData) => {
+          transformColorBySQLTypeAndPhase(qd.name)
+        }
       },
       {
         title: 'Database Time by SQL Types',
@@ -138,7 +141,10 @@ const metricsItems = [
           }
         ],
         unit: 's',
-        type: 'bar_stacked'
+        type: 'bar_stacked',
+        color: (qd: QueryData) => {
+          transformColorBySQLTypeAndPhase(qd.name)
+        }
       },
       {
         tilte: 'Database Execute Time',
@@ -160,7 +166,10 @@ const metricsItems = [
           }
         ],
         unit: 's',
-        type: 'bar_stacked'
+        type: 'bar_stacked',
+        color: (qd: QueryData) => {
+          transformColorBySQLTypeAndPhase(qd.name)
+        }
       }
     ]
   },

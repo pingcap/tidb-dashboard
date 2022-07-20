@@ -30,7 +30,7 @@ const metricsItems = [
         ],
         unit: 'short',
         nullValue: TransformNullValue.AS_ZERO,
-        type: 'stack'
+        type: 'area_stack'
       },
       {
         title: 'Average Idle Connection Duration',
@@ -601,7 +601,7 @@ const metricsItems = [
           }
         ],
         unit: 'decbytes',
-        type: 'stack'
+        type: 'area_stack'
       }
     ]
   }

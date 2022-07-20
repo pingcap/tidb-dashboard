@@ -2,7 +2,7 @@ import { BarSeries, LineSeries, ScaleType, AreaSeries } from '@elastic/charts'
 import { DataPoint, ColorType } from '@lib/utils/prometheus'
 import React from 'react'
 
-export type GraphType = 'bar_stacked' | 'line' | 'stack'
+export type GraphType = 'bar_stacked' | 'area_stack' | 'line'
 
 export type QueryData = {
   id: string
@@ -15,10 +15,10 @@ export function renderQueryData(type: GraphType, qd: QueryData) {
   switch (type) {
     case 'bar_stacked':
       return renderStackedBar(qd)
+    case 'area_stack':
+      return renderAreaStack(qd)
     case 'line':
       return renderLine(qd)
-    case 'stack':
-      return renderStack(qd)
   }
 }
 
@@ -102,7 +102,7 @@ function renderLine(qd: QueryData) {
   )
 }
 
-function renderStack(qd: QueryData) {
+function renderAreaStack(qd: QueryData) {
   return (
     <AreaSeries
       key={qd.id}

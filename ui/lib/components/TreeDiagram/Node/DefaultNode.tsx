@@ -6,6 +6,7 @@ import {
   ExclamationCircleFilled,
 } from '@ant-design/icons'
 import { toFixed } from '@baurine/grafana-value-formats'
+import { telemetry } from '@lib/apps/Statement/utils/telemetry'
 
 import styles from './DefaultNode.module.less'
 
@@ -32,10 +33,12 @@ export const DefaultNode = (nodeProps) => {
   }
 
   const handleExpandBtnToggleOnClick = (e, node) => {
+    telemetry.toggleExpandBtnOnNode(node.name)
     onNodeExpandBtnToggle(node.__node_attrs.id)
   }
 
   const handleOnNodeDetailClick = (e, node) => {
+    telemetry.clickNode(node.name)
     onNodeDetailClick(node)
   }
 

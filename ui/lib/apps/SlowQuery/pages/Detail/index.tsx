@@ -21,6 +21,7 @@ import {
   TreeDiagramView,
 } from '@lib/components'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
+import { telemetry } from '@lib/apps/SlowQuery/utils/telemetry'
 
 import DetailTabs from './DetailTabs'
 
@@ -69,7 +70,8 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   const [isVpVisible, setIsVpVisable] = useState(false)
-  const toggleVisualPlan = () => {
+  const toggleVisualPlan = (action: 'open' | 'close') => {
+    telemetry.toggleVisualPlanModal(action)
     setIsVpVisable(!isVpVisible)
   }
 
@@ -165,6 +167,9 @@ function DetailPage() {
                         ? 'binary_plan'
                         : 'text_plan'
                     }
+                    onTabClick={(key) =>
+                      telemetry.clickPlanTabs(key, data.digest!)
+                    }
                   >
                     {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
                       <Tabs.TabPane
@@ -176,7 +181,7 @@ function DetailPage() {
                           centered
                           visible={isVpVisible}
                           width={window.innerWidth}
-                          onCancel={toggleVisualPlan}
+                          onCancel={() => toggleVisualPlan('close')}
                           footer={null}
                           destroyOnClose={true}
                           bodyStyle={{
@@ -195,7 +200,7 @@ function DetailPage() {
                         </Modal>
                         <Descriptions>
                           <Descriptions.Item span={2}>
-                            <div onClick={toggleVisualPlan}>
+                            <div onClick={() => toggleVisualPlan('open')}>
                               <TreeDiagramView
                                 data={
                                   binaryPlan.ctes

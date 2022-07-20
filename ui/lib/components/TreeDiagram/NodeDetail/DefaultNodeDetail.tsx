@@ -8,6 +8,7 @@ import { InfoCircleTwoTone } from '@ant-design/icons'
 import { addTranslations } from '@lib/utils/i18n'
 import { useTranslation } from 'react-i18next'
 import translations from '../translations'
+import { telemetry } from '@lib/apps/Statement/utils/telemetry'
 
 addTranslations(translations)
 
@@ -16,7 +17,12 @@ export const DefaultNodeDetail = (nodeDetailProps) => {
   const { t } = useTranslation()
 
   return (
-    <Tabs defaultActiveKey="1" type="card" size="middle">
+    <Tabs
+      defaultActiveKey="1"
+      type="card"
+      size="middle"
+      onTabClick={(key) => telemetry.clickTabOnNodeDetail(key)}
+    >
       <Tabs.TabPane
         tab={t(`binary_plan.tabs.general`)}
         key="1"

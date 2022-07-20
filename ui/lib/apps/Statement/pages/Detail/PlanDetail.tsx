@@ -21,6 +21,7 @@ import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStora
 import type { IPageQuery } from '.'
 import DetailTabs from './PlanDetailTabs'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
+import { telemetry } from '@lib/apps/Statement/utils/telemetry'
 
 export interface IQuery extends IPageQuery {
   plans: string[]
@@ -54,7 +55,8 @@ function PlanDetail({ query }: IPlanDetailProps) {
   const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
 
   const [isVpVisible, setIsVpVisable] = useState(false)
-  const toggleVisualPlan = () => {
+  const toggleVisualPlan = (action: 'open' | 'close') => {
+    telemetry.toggleVisualPlanModal(action)
     setIsVpVisable(!isVpVisible)
   }
 
@@ -175,22 +177,21 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       ? 'binary_plan'
                       : 'text_plan'
                   }
+                  onTabClick={(key) =>
+                    telemetry.clickPlanTabs(key, data.digest!)
+                  }
                 >
                   {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
                     <Tabs.TabPane
-                      tab={t(
-                        'statement.pages.detail.desc.plans.execution.visual'
-                      )}
+                      tab={t('slow_query.detail.plan.visual')}
                       key="binary_plan"
                     >
                       <Modal
-                        title={t(
-                          'statement.pages.detail.desc.plans.execution.modal_title'
-                        )}
+                        title={t('slow_query.detail.plan.modal_title')}
                         centered
                         visible={isVpVisible}
                         width={window.innerWidth}
-                        onCancel={toggleVisualPlan}
+                        onCancel={() => toggleVisualPlan('close')}
                         footer={null}
                         destroyOnClose={true}
                         bodyStyle={{
@@ -209,7 +210,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       </Modal>
                       <Descriptions>
                         <Descriptions.Item span={2}>
-                          <div onClick={toggleVisualPlan}>
+                          <div onClick={() => toggleVisualPlan('open')}>
                             <TreeDiagramView
                               data={
                                 binaryPlan.ctes

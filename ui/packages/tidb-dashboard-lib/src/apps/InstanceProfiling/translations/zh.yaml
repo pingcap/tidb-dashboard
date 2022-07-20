@@ -1,0 +1,58 @@
+profiling:
+  nav_title: 实例性能分析
+instance_profiling:
+  nav_title: 手动分析
+  settings:
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-profiling
+  list:
+    control_form:
+      title: 开始性能分析
+      profiling_type:
+        placeholder: 所有性能数据
+        columnTitle: 性能数据类型
+      duration:
+        label: 分析时长
+      submit: 开始分析
+    disable_warning: 当前已启用持续性能分析，因此不能再发起一个新的性能分析。可在持续性能分析页面查看当前及过往的分析结果。
+    table:
+      title: 性能分析历史
+      columns:
+        targets: 实例
+        requsted_profiling_types: 分析类型
+        start_at: 开始时间
+        duration: 时长（秒）
+        status: 状态
+      status:
+        running: 分析中
+        finished: 完成
+        failed: 失败
+        partial_finished: 部分完成
+        unknown: 未知
+      actions:
+        detail: 详情
+  detail:
+    head:
+      back: 历史记录
+      title: 性能分析详情
+      start_at: 开始时间
+    download: 下载性能分析结果
+    table:
+      columns:
+        instance: 实例
+        kind: 组件
+        content: 内容
+        status: 状态
+        view_as:
+          title: 查看方式
+          error: 错误信息
+          flamegraph: 火焰图
+          graph: 关系图
+          download: 原始数据
+          text: 原始数据
+      status:
+        finished: 完成
+        skipped: 不适用
+        skipped_tooltip: 该分析当前暂不支持
+        running: 分析中
+        error: 错误

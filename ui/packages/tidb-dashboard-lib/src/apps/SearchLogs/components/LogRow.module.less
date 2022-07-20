@@ -1,0 +1,119 @@
+@import 'antd/es/style/themes/default.less';
+
+.logRow {
+  padding-left: @padding-page; // 48px
+  padding-right: @padding-page; // 48px
+  padding-top: 11px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid rgb(243, 242, 241); // hardcode from Fluentui
+  animation-duration: 0.367s; // hardcode from Fluentui
+  animation-timing-function: cubic-bezier(
+    0.1,
+    0.25,
+    0.75,
+    0.9
+  ); // hardcode from Fluentui
+  animation-fill-mode: both; // hardcode from Fluentui
+  animation-name: fadeIn;
+
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  position: relative;
+
+  pre {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    line-clamp: 8;
+    -webkit-box-orient: vertical;
+  }
+
+  &.isExpanded pre {
+    -webkit-line-clamp: initial;
+    line-clamp: initial;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.logRow {
+  &:hover {
+    border-left: 5px solid @gray-4;
+    padding-left: @padding-page - 5px;
+  }
+
+  &:hover::before {
+    content: attr(data-level);
+    user-select: none;
+    font-size: 0.8rem;
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0 5px;
+  }
+}
+
+.logRow[data-level='DEBUG'],
+.logRow[data-level='INFO'] {
+  &:hover::before {
+    background-color: @gray-4;
+    color: @gray-7;
+  }
+}
+
+.logRow[data-level='WARN'] {
+  border-left: 5px solid @orange-4;
+  padding-left: @padding-page - 5px;
+
+  &:hover::before {
+    background-color: @orange-4;
+    color: #fff;
+  }
+}
+
+.logRow[data-level='ERROR'],
+.logRow[data-level='CRITICAL'] {
+  border-left: 5px solid @red-6;
+  padding-left: @padding-page - 5px;
+
+  &:hover::before {
+    background-color: @red-6;
+    color: #fff;
+  }
+}
+
+.cell {
+  vertical-align: top;
+}
+
+.textCell {
+  display: inline;
+}
+
+.infoCell {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: @gray-3;
+  padding: 0 5px;
+
+  font-size: 0.8rem;
+  margin-right: 5px;
+  border-bottom: 3px solid @gray-4;
+}
+
+.highlight {
+  background: @gold-3;
+  margin: 0;
+  padding: 0;
+}

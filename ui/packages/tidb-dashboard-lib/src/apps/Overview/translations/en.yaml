@@ -1,0 +1,44 @@
+overview:
+  nav_title: Overview
+  back: Back
+  view_more_metrics: View More Metrics
+  top_statements:
+    title: Time Consuming SQL Statements
+  recent_slow_query:
+    title: Recent Slow Queries
+  instances:
+    title: Alive Instances
+  monitor_alert:
+    title: Monitor & Alert
+    view_grafana_monitor: View Grafana Metrics
+    view_monitor_warn: Metrics unavailable
+    view_alerts: 'View {{alertCount}} Alerts'
+    view_zero_alerts: 'View Alerts'
+    view_alerts_warn: Alert unavailable
+    run_diagnose: Run Diagnostics
+  metrics:
+    connection_count: Connection Count
+    disconnection: Disconnection
+    connection_idle_duration: Average Idle Connection Duration
+    database_time: Database Time
+    database_time_by_sql_type: Database Time by SQL Types
+    database_time_by_steps_of_sql_processig: Database Time by Steps of SQL Processing
+    sql_count_qps: Query Per Second
+    failed_queries: Failed Queries
+    cps: Command Per Second
+    ops: Queries Using Plan Cache OPS
+    query: Query Duration
+    get_token: Get Token Duration
+    parse: Parse Duration
+    compile: Compile Duration
+    execution: Execution Duraion
+    tps: Transaction Per Second
+    transaction_average_duration: Transaction Duration
+    tidb_uptime: TiDB Uptime
+    tidb_cpu_usage: TiDB CPU Usage
+    tidb_memory_usage: TiDB Memory Usage
+    tikv_uptime: TiKV Uptime
+    tikv_cpu_usage: TiKV CPU Usage
+    tikv_memory_usage: TiKV Memory Usage
+    tikv_io_mbps: TiKV IO MBps
+    tikv_storage_usage: TiKV Storage Usage

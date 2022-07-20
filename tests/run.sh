@@ -15,8 +15,8 @@ set -euo pipefail
 
 PROJECT_DIR="$(dirname "$0")/.."
 
-source tests/_inc/download_tools.sh >/dev/null
-source tests/_inc/run_services.sh >/dev/null
+source scripts/_inc/download_tools.sh >/dev/null
+source scripts/_inc/run_services.sh >/dev/null
 
 download_tools
 

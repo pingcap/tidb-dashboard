@@ -1,0 +1,79 @@
+conprof:
+  nav_title: 持续分析
+  toolbar:
+    refresh: Refresh
+  list:
+    toolbar:
+      refresh: 刷新
+      settings: 设置
+      range_end: 区间结束时间
+      range_duration: 区间长度
+      query: 查询
+    control_form:
+      title: 开始性能分析
+      enable_tooltip: 该功能已开启，你可以在设置中关闭
+      disable_tooltip: 该功能未启用，你可以在设置中启用
+    table:
+      title: 性能分析历史
+      columns:
+        targets: 实例
+        start_at: 开始时间
+        duration: 时长（秒）
+        status: 状态
+      status:
+        running: 分析中
+        finished: 完成
+        failed: 失败
+        partial_finished: 部分完成
+        unknown: 未知
+      actions:
+        detail: 详情
+  detail:
+    head:
+      back: 历史记录
+      title: 性能分析详情
+      start_at: 开始时间
+    download: 下载性能分析结果
+    table:
+      columns:
+        instance: 实例
+        kind: 组件
+        content: 内容
+        status: 状态
+        view_as:
+          title: 查看方式
+          error: 错误信息
+          view_flamegraph: 火焰图
+          view_graph: 关系图
+          download: 原始数据
+          view_text: 原始数据
+      status:
+        finished: 完成
+        error: 错误
+  settings:
+    title: 设置
+    disabled_result:
+      title: 该功能未启用
+      sub_title: 持续性能分析功能未启用。您可以修改设置打开该功能后等待新数据收集。
+    disabled_with_history: 持续性能分析功能未启用，但仍然可以查看历史数据。您可以修改设置打开该功能。
+    open_settings: 打开设置
+    switch: 启用功能
+    switch_tooltip: 是否启用持续分析功能，启用后，会持续产出实例性能分析结果。
+    profile_targets: 分析范围
+    profile_targets_tooltip: |
+      分析所有实例，在新实例创建后，也会自动加入分析范围。
+      目前有 {{n}} 个实例，预计每日生成 {{size}} 分析结果文件。
+    profile_duration: 分析时长
+    profile_duration_tooltip:
+    profile_interval: 执行周期
+    profile_interval_tooltip:
+    profile_retention_duration: 保留时间
+    profile_retention_duration_tooltip: 分析结果会持久化到磁盘中，超过保留时间会被回收。该配置对所有结果生效，包括历史结果。
+    profile_retention_duration_option: '{{d}} 天'
+    close_feature: 关闭持续分析功能
+    close_feature_confirm: 确认要关闭该功能吗？关闭后将停止持续分析，历史结果会继续保留。
+    actions:
+      close: 确认
+      cancel: 取消
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/continuous-profiling

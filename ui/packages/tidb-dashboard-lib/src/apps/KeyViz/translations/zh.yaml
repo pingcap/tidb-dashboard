@@ -1,0 +1,37 @@
+keyviz:
+  nav_title: 流量可视化
+  toolbar:
+    brightness: 调整亮度
+    zoom:
+      select: 框选
+      reset: 重置
+    view_type:
+      read_bytes: 读取字节量
+      write_bytes: 写入字节量
+      read_keys: 读取次数
+      write_keys: 写入次数
+      all: 所有
+  settings:
+    title: 设置
+    disabled_result:
+      title: 该功能未启用
+      sub_title: |
+        流量可视化功能未启用，因此无法查看可视化报告。
+        您可以修改设置打开该功能后等待新数据收集。
+    open_setting: 打开设置
+    close_keyviz: 关闭流量可视化功能
+    close_keyviz_warning: 确认要关闭该功能吗？关闭后现有历史记录也将被清空！
+    switch: 启用功能
+    switch_tooltip: 是否启用流量可视化功能，关闭后将不能使用流量可视化功能，但能减少一些 {{distro.pd}} 的 CPU 资源开销。
+    policy: 模式
+    policy_db: '{{distro.tidb}}'
+    policy_kv: 原生 KV
+    separator: 分隔符
+    separator_placeholder: 用于切分 Key 的分隔符
+    separator_empty_warning: 分隔符为空串时，Key 将不会被切分
+    actions:
+      save: 保存
+      close: 确认
+      cancel: 取消
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-key-visualizer

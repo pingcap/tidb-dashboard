@@ -1,0 +1,170 @@
+statement:
+  nav_title: SQL Statements
+  pages:
+    detail:
+      head:
+        back: List
+        title: Statement Information
+      desc:
+        time_range: Time Range
+        plans:
+          note: There are multiple execution plans for this kind of SQL statement. You can choose to view one or multiple of them.
+          title:
+            one_for_all: Execution Detail
+            all: Execution Detail of All Plans
+            some: 'Execution Detail of Selected {{n}} Plans'
+          execution:
+            title: Execution Plan
+            visual: Visual
+            text: Text
+            modal_title: Visual Plan
+      tabs:
+        basic: Basic
+        time: Time
+        copr: Coprocessor Read
+        txn: Transaction
+        slow_query: Slow Query
+    overview:
+      toolbar:
+        schemas:
+          placeholder: All Databases
+          selected: '{{ n }} Databases'
+          columnTitle: Execution Database Name
+        statement_types:
+          placeholder: All Kinds
+          selected: '{{ n }} Kinds'
+          columnTitle: Statement Kind
+        select_columns:
+          show_full_sql: Show Full Query Text
+        query: Query
+        keyword:
+          placeholder: Filter keyword
+        time_range_selector:
+          name: Select Time Range
+          recent: Recent
+          usual_time_ranges: Common
+          custom_time_ranges: Custom
+        export: Export
+        exporting: Exporting
+      actual_range: 'Due to time window and expiration configurations, currently displaying data in time range: '
+      slow_load_info: On-the-fly update is disabled due to slow data loading. You can initiate query manually by clicking the "Query" button.
+  settings:
+    title: Settings
+    disabled_result:
+      title: Feature Not Enabled
+      sub_title: |
+        Statement feature is not enabled so that statement history cannot be viewed.
+        You can modify settings to enable the feature and wait for new data being collected.
+    open_setting: Open Settings
+    close_statement: Disable Statement Feature
+    close_statement_warning: Are you sure want to disable this feature? Current statement history will be cleared.
+    switch: Enable Feature
+    switch_tooltip: Whether Statement feature is enabled. When enabled, there will be a small SQL statement execution overhead.
+    max_size: 'Max # Statement'
+    max_size_tooltip: Max number of statement to collect. After exceeding, old statement information will be dropped. You may enlarge this setting when memory is sufficient and you discovered that data displayed in UI is incomplete.
+    refresh_interval: Window Size (min)
+    refresh_interval_tooltip: By reducing this setting you can select time range more precisely.
+    history_size: '# Windows'
+    history_size_tooltip: By enlarging this setting more statement history will be preserved, with larger memory cost.
+    keep_duration: SQL Statement History Size
+    keep_duration_tooltip: Window Size × Number of Windows
+    internal_query: Collect Internal Queries
+    internal_query_tooltip: After enabled, {{distro.tidb}} internal queries will be collected as well.
+    actions:
+      save: Save
+      close: Disable
+      cancel: Cancel
+    help: Help
+    help_url: https://docs.pingcap.com/tidb/dev/dashboard-statement-list
+  fields:
+    table_names: Table Names
+    related_schemas: Database
+    related_schemas_tooltip: Related databases of the statement
+    plan_digest: Plan ID
+    plan_digest_tooltip: Different execution plans have different plan ID
+    digest_text: Statement Template
+    digest_text_tooltip: Similar queries have same statement template even for different query parameters
+    sum_latency: Total Latency
+    sum_latency_tooltip: Total execution time for this kind of statement
+    exec_count: '# Exec'
+    exec_count_tooltip: Total execution count for this kind of statement
+    plan_count: '# Plans'
+    plan_count_tooltip: Number of distinct execution plans of this statement in current time range
+    avg_latency: Mean Latency
+    avg_latency_tooltip: Execution time of single query
+    avg_mem: Mean Memory
+    avg_mem_tooltip: Memory usage of single query
+    max_mem: Max Memory
+    max_mem_tooltip: Maximum memory usage of single query
+    avg_disk: Mean Disk
+    avg_disk_tooltip: Disk usage of single query
+    max_disk: Max Disk
+    max_disk_tooltip: Maximum disk usage of single query
+    index_names: Index Name
+    index_names_tooltip: The name of the used index
+    first_seen: First Seen
+    last_seen: Last Seen
+    sample_user: Execution User
+    sample_user_tooltip: The user that executes the query (sampled)
+    sum_errors: Total Errors
+    sum_warnings: Total Warnings
+    errors_warnings: Errors / Warnings
+    errors_warnings_tooltip: Total Errors and Total Warnings
+    parse_latency: Parse Time
+    parse_latency_tooltip: Time consumed when parsing the query
+    compile_latency: Compile
+    compile_latency_tooltip: Time consumed when optimizing the query
+    wait_time: Coprocessor Wait Time
+    process_time: Coprocessor Execution Time
+    total_process_time: Total Execution Time
+    total_wait_time: Total Wait Time
+    backoff_time: Backoff Retry Time
+    backoff_time_tooltip: The waiting time before retry when a query encounters errors that require a retry
+    get_commit_ts_time: Get Commit Ts Time
+    local_latch_wait_time: Local Latch Wait Time
+    resolve_lock_time: Resolve Lock Time
+    prewrite_time: Prewrite Time
+    commit_time: Commit Time
+    commit_backoff_time: Commit Backoff Retry Time
+    latency: Query
+    query_time2: Query Time
+    query_time2_tooltip: The execution time of a query (due to the parallel execution, it may be significantly smaller than the above time)
+    sum_cop_task_num: Total Coprocessor Tasks
+    avg_processed_keys: Mean Visible Versions Per Query
+    max_processed_keys: Max Visible Versions Per Query
+    avg_total_keys: Mean Meet Versions Per Query
+    avg_total_keys_tooltip: Meet versions contains overwritten or deleted versions
+    max_total_keys: Max Meet Versions Per Query
+    avg_affected_rows: Mean Affected Rows
+    sum_backoff_times: Total Backoff Count
+    avg_write_keys: Mean Written Keys
+    max_write_keys: Max Written Keys
+    avg_write_size: Mean Written Data Size
+    max_write_size: Max Written Data Size
+    avg_prewrite_regions: Mean Prewrite Regions
+    max_prewrite_regions: Max Prewrite Regions
+    avg_txn_retry: Mean Transaction Retries
+    max_txn_retry: Max Transaction Retries
+    digest: Query Template ID
+    digest_tooltip: a.k.a. Query digest
+    schema_name: Execution Database
+    schema_name_tooltip: The database used to execute the query
+    query_sample_text: Query Sample
+    prev_sample_text: Previous Query Sample
+    plan: Execution Plan
+
+    avg_rocksdb_delete_skipped_count: Mean RocksDB Skipped Deletions
+    avg_rocksdb_delete_skipped_count_tooltip: Total number of deleted (a.k.a. tombstone) key versions that are skipped during iteration (RocksDB delete_skipped_count)
+    max_rocksdb_delete_skipped_count: Max RocksDB Skipped Deletions
+    avg_rocksdb_key_skipped_count: Mean RocksDB Skipped Keys
+    avg_rocksdb_key_skipped_count_tooltip: Total number of keys skipped during iteration (RocksDB key_skipped_count)
+    max_rocksdb_key_skipped_count: Max RocksDB Skipped Keys
+    avg_rocksdb_block_cache_hit_count: Mean RocksDB Block Cache Hits
+    avg_rocksdb_block_cache_hit_count_tooltip: Total number of hits from the block cache (RocksDB block_cache_hit_count)
+    max_rocksdb_block_cache_hit_count: Max RocksDB Block Cache Hits
+    avg_rocksdb_block_read_count: Mean RocksDB Block Reads
+    avg_rocksdb_block_read_count_tooltip: Total number of blocks RocksDB read from file (RocksDB block_read_count)
+    max_rocksdb_block_read_count: Max RocksDB Block Reads
+    avg_rocksdb_block_read_byte: Mean RocksDB FS Read Size
+    avg_rocksdb_block_read_byte_tooltip: Total number of bytes RocksDB read from file (RocksDB block_read_byte)
+    max_rocksdb_block_read_byte: Max RocksDB FS Read Size

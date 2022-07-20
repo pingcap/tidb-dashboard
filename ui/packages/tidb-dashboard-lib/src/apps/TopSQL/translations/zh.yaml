@@ -1,0 +1,58 @@
+topsql:
+  nav_title: Top SQL
+  alert_header:
+    title: 该功能未启用
+    body: Top SQL 功能未启用，可查看历史数据。您可以修改设置打开该功能后等待新数据收集。
+    settings: 设置
+  settings:
+    title: 设置
+    open_settings: 打开设置
+    disable_feature: 关闭 Top SQL 功能
+    disable_warning: 确认要关闭该功能吗？
+    enable: 启用功能
+    enable_tooltip: 是否启用 Top SQL 功能，关闭后将只能看到历史数据，但能提升少量 {{distro.tidb}} 性能。
+    disabled_result:
+      title: 该功能未启用
+      sub_title: Top SQL 功能未启用。您可以修改设置打开该功能后等待新数据收集。
+    actions:
+      save: 保存
+      close: 确认
+      cancel: 取消
+    enable_info:
+      title: 成功
+      content: Top SQL 功能现在已启用，正在收集数据。您需要等待大约 1 分钟时间以便看到该数据。
+    help: 帮助
+    help_url: https://docs.pingcap.com/zh/tidb/dev/top-sql
+  refresh: 刷新
+  chart:
+    cpu_time: CPU 耗时
+  table:
+    description: 以下表格展示了当前时间范围内消耗负载最多的 {{topN}} 类 SQL 查询，点击后可进一步显示详情。
+    description_no_recent_data: 当前暂无数据，您需要等待约 1 分钟完成新数据采集。
+    others: 其他语句
+    others_tooltip: 所有其他非 Top {{topN}} 的语句
+    fields:
+      cpu_time: 累计 CPU 耗时
+      sql: SQL 语句
+  detail:
+    title: SQL 详情
+    overall: 总计
+    overall_tooltip: 该语句在所有执行计划上的总计详情
+    no_plan: 无执行计划
+    no_plan_tooltip: 该语句不是查询语句，或当时执行计划正在生成中
+    fields:
+      cpu_time: 累计 CPU 耗时
+      plan: 执行计划
+      exec_count_per_sec: Call/sec
+      scan_records_per_sec: Scan Rows/sec
+      scan_indexes_per_sec: Scan Indexes/sec
+      duration_per_exec_ms: Latency/call
+  detail_content:
+    fields:
+      sql_text: SQL 模板
+      sql_text_tooltip: 相似的 SQL 查询即使查询参数不一样也具有相同的 SQL 模板
+      sql_digest: SQL 模板 ID
+      sql_digest_tooltip: SQL 模板的唯一标识（SQL 指纹）
+      plan_digest: Plan 模板 ID
+      plan_digest_tooltip: Plan 模板的唯一标识（Plan 指纹）
+      plan: 执行计划

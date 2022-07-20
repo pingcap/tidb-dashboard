@@ -1,0 +1,86 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - release
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.15'
+      - name: Load go module cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Load golangci-lint cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/golangci-lint
+          key: ${{ runner.os }}-golint
+          restore-keys: |
+            ${{ runner.os }}-golint
+      - name: Lint and build
+        run: |
+          make dev
+      - name: Check uncommitted lint changes
+        run: |
+          git diff --exit-code
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      # https://pnpm.io/continuous-integration#github-actions
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 7
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'pnpm'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.15'
+      - name: Load go module cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Install ui packages
+        run: |
+          make ui_deps
+      - name: Check format
+        run: |
+          pnpm fmt-check || (echo "::error ::Please format your code by using 'pnpm fmt-fix'"; exit 1)
+        working-directory: ui
+      - name: Build UI
+        run: |
+          make ui
+        env:
+          NO_MINIMIZE: true
+          CI: true

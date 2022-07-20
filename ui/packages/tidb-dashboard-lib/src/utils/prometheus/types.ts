@@ -105,7 +105,8 @@ export enum ColorType {
   RED_5 = '#701313',
   PURPLE = '#8778ee',
   ORANGE = '#FF9830',
-  YELLOW = '#FADE2A'
+  YELLOW = '#FADE2A',
+  PINK = '#F2495C'
 }
 
 // Our customized types

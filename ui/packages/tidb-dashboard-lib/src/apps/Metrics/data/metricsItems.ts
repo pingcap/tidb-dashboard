@@ -1,38 +1,43 @@
 import { QueryData } from '@lib/components/MetricChart/seriesRenderer'
 import { ColorType, TransformNullValue } from '@lib/utils/prometheus'
 
-function transformColorBySQLTypeAndPhase(legendLabel: string) {
+function transformColorBySQLType(legendLabel: string) {
   switch (legendLabel) {
-    case 'Cop':
-      return ColorType.BLUE_1
     case 'Select':
+      return ColorType.BLUE_3
+    case 'Commit':
+      return ColorType.GREEN_2
+    case 'Insert':
+      return ColorType.GREEN_3
+    case 'Update':
+      return ColorType.GREEN_4
+    case 'general':
+      return ColorType.PINK
+    default:
+      return undefined
+  }
+}
+
+function transformColorByExecTimeOverview(legendLabel: string) {
+  switch (legendLabel) {
+    case 'tso_wait':
+      return ColorType.RED_5
+    case 'Commit':
+      return ColorType.GREEN_4
+    case 'Prewrite':
+      return ColorType.GREEN_3
+    case 'PessimisticLock':
+      return ColorType.RED_4
     case 'Get':
       return ColorType.BLUE_3
     case 'BatchGet':
       return ColorType.BLUE_4
-    case 'Insert':
-    case 'Prewrite':
-    case 'execute':
-      return ColorType.GREEN_3
-    case 'Update':
-    case 'Commit':
-      return ColorType.GREEN_4
-    case 'parse':
-      return ColorType.RED_2
-    case 'Show':
-    case 'get token':
-      return ColorType.RED_3
-    case 'PessimisticLock':
-      return ColorType.RED_4
-    case 'tso_wait':
-      return ColorType.RED_5
+    case 'Cop':
+      return ColorType.BLUE_1
     case 'Scan':
       return ColorType.PURPLE
     case 'execute time':
-    case 'database time':
       return ColorType.YELLOW
-    case 'compile':
-      return ColorType.ORANGE
     default:
       return undefined
   }
@@ -97,7 +102,7 @@ const metricsItems = [
           {
             query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
             name: 'database time',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: ColorType.YELLOW
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
@@ -110,7 +115,7 @@ const metricsItems = [
           {
             query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
             name: '{sql_type}',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: (qd: QueryData) => transformColorBySQLType(qd.name)
           }
         ],
         unit: 's',
@@ -122,22 +127,22 @@ const metricsItems = [
           {
             query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
             name: 'parse',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: ColorType.RED_2
           },
           {
             query: `sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
             name: 'compile',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: ColorType.ORANGE
           },
           {
             query: `sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
             name: 'execute',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: ColorType.GREEN_3
           },
           {
             query: `sum(rate(tidb_server_get_token_duration_seconds_sum{sql_type="general"}[$__rate_interval]))/1000000`,
             name: 'get token',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: ColorType.RED_3
           }
         ],
         unit: 's',
@@ -150,19 +155,19 @@ const metricsItems = [
             query:
               'sum(rate(tidb_tikvclient_request_seconds_sum{store!="0"}[$__rate_interval])) by (type)',
             name: '{type}',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: (qd: QueryData) => transformColorByExecTimeOverview(qd.name)
           },
           {
             query:
               'sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum{type="wait"}[$__rate_interval]))',
             name: 'tso_wait',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: ColorType.RED_5
           },
           {
             query:
               'sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))',
             name: 'execute time',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: ColorType.YELLOW
           }
         ],
         unit: 's',

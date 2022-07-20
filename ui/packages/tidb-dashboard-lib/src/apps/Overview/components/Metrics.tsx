@@ -76,11 +76,6 @@ export default function Metrics() {
               </Typography.Title>
               <MetricChart
                 queries={item.queries}
-                yDomain={
-                  item.yDomain
-                    ? { min: item.yDomain.min, max: item.yDomain.max }
-                    : undefined
-                }
                 type={item.type as GraphType}
                 unit={item.unit!}
                 range={chartRange}

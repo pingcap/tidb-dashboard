@@ -1,5 +1,5 @@
 import { BarSeries, LineSeries, ScaleType, AreaSeries } from '@elastic/charts'
-import { DataPoint, ColorType } from '@lib/utils/prometheus'
+import { DataPoint } from '@lib/utils/prometheus'
 import React from 'react'
 
 export type GraphType = 'bar_stacked' | 'area_stack' | 'line'
@@ -22,45 +22,6 @@ export function renderQueryData(type: GraphType, qd: QueryData) {
   }
 }
 
-function transformLengendColor(legendLabel: string) {
-  switch (legendLabel) {
-    case 'Cop':
-      return ColorType.BLUE_1
-    case 'Select':
-    case 'Get':
-      return ColorType.BLUE_3
-    case 'BatchGet':
-      return ColorType.BLUE_4
-    case 'Commit':
-      return ColorType.GREEN_2
-    case 'Insert':
-    case 'Prewrite':
-    case 'execute':
-      return ColorType.GREEN_3
-    case 'Update':
-    case 'Commit':
-      return ColorType.GREEN_4
-    case 'parse':
-      return ColorType.RED_2
-    case 'Show':
-    case 'get token':
-      return ColorType.RED_3
-    case 'PessimisticLock':
-      return ColorType.RED_4
-    case 'tso_wait':
-      return ColorType.RED_5
-    case 'Scan':
-      return ColorType.PURPLE
-    case 'execute time':
-    case 'database time':
-      return ColorType.YELLOW
-    case 'compile':
-      return ColorType.ORANGE
-    default:
-      return undefined
-  }
-}
-
 function renderStackedBar(qd: QueryData) {
   return (
     <BarSeries
@@ -73,7 +34,7 @@ function renderStackedBar(qd: QueryData) {
       stackAccessors={[0]}
       data={qd.data}
       name={qd.name}
-      color={transformLengendColor(qd.name)}
+      color={qd.color}
     />
   )
 }
@@ -89,7 +50,7 @@ function renderLine(qd: QueryData) {
       yAccessors={[1]}
       data={qd.data}
       name={qd.name}
-      color={transformLengendColor(qd.name)}
+      color={qd.color}
       lineSeriesStyle={{
         line: {
           strokeWidth: 2
@@ -114,7 +75,7 @@ function renderAreaStack(qd: QueryData) {
       stackAccessors={[0]}
       data={qd.data}
       name={qd.name}
-      color={transformLengendColor(qd.name)}
+      color={qd.color}
     />
   )
 }

@@ -86,7 +86,7 @@ for (const key in translations) {
 export interface IQueryOption {
   query: string
   name: string
-  color?: string
+  color?: string | ((qd: QueryData) => string)
 }
 
 export interface IMetricChartProps {
@@ -220,12 +220,15 @@ export default function MetricChart({
                 })
               : data
 
-          sd.push({
+          const d: QueryData = {
             id: `${queryIdx}_${seriesIdx}`,
             name: format(queries[queryIdx].name, promResult.metric),
-            data: transformedData,
-            color: queries[queryIdx].color
-          })
+            data: transformedData
+          }
+          const colorOrFn = queries[queryIdx].color
+
+          d.color = typeof colorOrFn === 'function' ? colorOrFn(d) : colorOrFn
+          sd.push(d)
         })
       })
       setData({

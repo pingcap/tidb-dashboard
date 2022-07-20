@@ -61,7 +61,7 @@ export default function Metrics() {
       </Card>
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
-          <Card noMarginTop noMarginBottom noMarginRight>
+          <Card noMarginTop noMarginBottom>
             {metricsItems.map((item) => (
               <Collapse defaultActiveKey={['1']} ghost key={item.category}>
                 <Collapse.Panel

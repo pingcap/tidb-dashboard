@@ -147,21 +147,21 @@ const metricsItems = [
         }
       },
       {
-        tilte: 'Database Execute Time',
+        title: 'Database Execute Time',
         queries: [
           {
             query:
-              'sum(rate(tidb_tikvclient_request_seconds_sum[$__rate_interval])) by (type)',
+              'sum(rate(tidb_tikvclient_request_seconds_sum{store!="0"}[$__rate_interval])) by (type)',
             name: '{type}'
           },
           {
             query:
-              'sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum[$__rate_interval]))',
+              'sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum{type="wait"}[$__rate_interval]))',
             name: 'tso_wait'
           },
           {
             query:
-              'sum(rate(tidb_session_execute_duration_seconds_sum[$__rate_interval]))',
+              'sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))',
             name: 'execute time'
           }
         ],

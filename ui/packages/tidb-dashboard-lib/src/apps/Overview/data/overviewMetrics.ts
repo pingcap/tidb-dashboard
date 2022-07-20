@@ -1,14 +1,21 @@
+import { TransformNullValue } from '@lib/utils/prometheus'
+
 const overviewMetrics = [
   {
     title: 'total_requests',
     queries: [
+      {
+        query: 'sum(rate(tidb_executor_statement_total[$__rate_interval]))',
+        name: 'Total'
+      },
       {
         query:
           'sum(rate(tidb_executor_statement_total[$__rate_interval])) by (type)',
         name: '{type}'
       }
     ],
-    unit: null,
+    nullValue: TransformNullValue.AS_ZERO,
+    unit: 'qps',
     type: 'bar_stacked'
   },
   {
@@ -16,20 +23,26 @@ const overviewMetrics = [
     queries: [
       {
         query:
-          'histogram_quantile(0.9, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le))',
-        name: '95%'
+          'sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval]))',
+        name: 'avg'
       },
       {
         query:
-          'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le))',
-        name: '99%'
+          'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!="internal"}[$__rate_interval])) by (le))',
+        name: '99'
       },
       {
         query:
-          'histogram_quantile(0.999, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le))',
-        name: '99.9%'
+          'sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval])) by (sql_type)',
+        name: 'avg-{sql_type}'
+      },
+      {
+        query:
+          'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!="internal"}[$__rate_interval])) by (le,sql_type))',
+        name: '99-{sql_type}'
       }
     ],
+    nullValue: TransformNullValue.AS_ZERO,
     unit: 's',
     type: 'line'
   },
@@ -37,15 +50,11 @@ const overviewMetrics = [
     title: 'cpu',
     queries: [
       {
-        query:
-          '100 - avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[$__rate_interval]) ) * 100',
+        query: 'rate(process_cpu_seconds_total{job="tidb"}[$__rate_interval])',
         name: '{instance}'
       }
     ],
-    yDomain: {
-      min: 0,
-      max: 100
-    },
+    nullValue: TransformNullValue.AS_ZERO,
     unit: 'percent',
     type: 'line'
   },
@@ -53,35 +62,29 @@ const overviewMetrics = [
     title: 'memory',
     queries: [
       {
-        query: `100 - (
-          avg_over_time(node_memory_MemAvailable_bytes[$__rate_interval]) or
-            (
-              avg_over_time(node_memory_Buffers_bytes[$__rate_interval]) +
-              avg_over_time(node_memory_Cached_bytes[$__rate_interval]) +
-              avg_over_time(node_memory_MemFree_bytes[$__rate_interval]) +
-              avg_over_time(node_memory_Slab_bytes[$__rate_interval])
-            )
-          ) /
-          avg_over_time(node_memory_MemTotal_bytes[$__rate_interval]) * 100`,
+        query: 'process_resident_memory_bytes{job="tidb"}',
         name: '{instance}'
       }
     ],
-    yDomain: {
-      min: 0,
-      max: 100
-    },
-    unit: 'percent',
+    nullValue: TransformNullValue.AS_ZERO,
+    unit: 'decbytes',
     type: 'line'
   },
   {
     title: 'io',
     queries: [
       {
-        query: 'irate(node_disk_io_time_seconds_total[$__rate_interval]) * 100',
-        name: '{instance} - {device}'
+        query:
+          'sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance) + sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance)',
+        name: '{instance}-write'
+      },
+      {
+        query:
+          'sum(rate(tikv_engine_flow_bytes{db="kv", type=~"bytes_read|iter_bytes_read"}[$__rate_interval])) by (instance)',
+        name: '{instance}-read'
       }
     ],
-    unit: 'decbytes',
+    unit: 'KBs',
     type: 'line'
   }
 ]

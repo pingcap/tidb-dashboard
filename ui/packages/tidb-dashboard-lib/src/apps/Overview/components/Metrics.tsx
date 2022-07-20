@@ -56,6 +56,7 @@ const MetricsWrapper = ({ metricsItem, props }) => {
         }
         type={metricsItem.type}
         unit={metricsItem.unit}
+        nullValue={metricsItem.nullValue}
         {...props}
       />
     </Card>

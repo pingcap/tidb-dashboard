@@ -61,6 +61,7 @@ const metricsItems = [
             name: 'database time'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       },
@@ -93,6 +94,28 @@ const metricsItems = [
           {
             query: `sum(rate(tidb_server_get_token_duration_seconds_sum{sql_type="general"}[$__rate_interval]))/1000000`,
             name: 'get token'
+          }
+        ],
+        unit: 's',
+        type: 'bar_stacked'
+      },
+      {
+        tilte: 'Database Execute Time',
+        queries: [
+          {
+            query:
+              'sum(rate(tidb_tikvclient_request_seconds_sum[$__rate_interval])) by (type)',
+            name: '{type}'
+          },
+          {
+            query:
+              'sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum[$__rate_interval]))',
+            name: 'tso_wait'
+          },
+          {
+            query:
+              'sum(rate(tidb_session_execute_duration_seconds_sum[$__rate_interval]))',
+            name: 'execute time'
           }
         ],
         unit: 's',
@@ -157,6 +180,11 @@ const metricsItems = [
           {
             query:
               'sum(rate(tidb_server_plan_cache_total[$__rate_interval])) by (type)',
+            name: 'avg'
+          },
+          {
+            query:
+              'sum(rate(tidb_server_plan_cache_miss_total[$__rate_interval]))',
             name: 'avg'
           }
         ],
@@ -283,6 +311,7 @@ const metricsItems = [
             name: '{type}-{txn_mode}'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
         type: 'line'
       },

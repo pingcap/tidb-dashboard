@@ -89,6 +89,25 @@ export enum TransformNullValue {
   AS_ZERO = 'as_zero'
 }
 
+export enum ColorType {
+  BLUE_1 = '#C0D8FF',
+  BLUE_2 = '#8AB8FF',
+  BLUE_3 = '#3274D9',
+  BLUE_4 = '#1F60C4',
+  GREEN_1 = '#C8F2C2',
+  GREEN_2 = '#96D98D',
+  GREEN_3 = '#56A64B',
+  GREEN_4 = '#37872D',
+  RED_1 = '#FFA6B0',
+  RED_2 = '#FF7383',
+  RED_3 = '#E02F44',
+  RED_4 = '#C4162A',
+  RED_5 = '#701313',
+  PURPLE = '#8778ee',
+  ORANGE = '#FF9830',
+  YELLOW = '#FADE2A'
+}
+
 // Our customized types
 
 export interface QueryOptions {

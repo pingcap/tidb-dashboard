@@ -18,7 +18,7 @@ func TestGetPDInstances(t *testing.T) {
 	resp, err := pdtopo.GetPDInstances(context.Background(), apiClient)
 	require.NoError(t, err)
 	require.Equal(t, []topo.PDInfo{
-		topo.PDInfo{
+		{
 			GitHash:        "0c1246dd219fd16b4b2ff5108941e5d3e958922d",
 			Version:        "v4.0.14",
 			IP:             "172.16.6.169",
@@ -27,7 +27,7 @@ func TestGetPDInstances(t *testing.T) {
 			Status:         topo.CompStatusUp,
 			StartTimestamp: 1635762685,
 		},
-		topo.PDInfo{
+		{
 			GitHash:        "0c1246dd219fd16b4b2ff5108941e5d3e958922d",
 			Version:        "v4.0.14",
 			IP:             "172.16.6.170",
@@ -36,7 +36,7 @@ func TestGetPDInstances(t *testing.T) {
 			Status:         topo.CompStatusUp,
 			StartTimestamp: 1635762685,
 		},
-		topo.PDInfo{
+		{
 			GitHash:        "0c1246dd219fd16b4b2ff5108941e5d3e958922d",
 			Version:        "v4.0.14",
 			IP:             "172.16.6.171",

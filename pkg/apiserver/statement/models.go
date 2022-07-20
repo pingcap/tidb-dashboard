@@ -80,6 +80,7 @@ type Model struct {
 	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)" related:"plan_digest"`
 	AggPlan                  string `json:"plan" agg:"ANY_VALUE(plan)"`
 	AggPlanDigest            string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
+	AggBinaryPlan            string `json:"binary_plan" agg:"ANY_VALUE(binary_plan)"`
 	// RocksDB
 	AggMaxRocksdbDeleteSkippedCount uint `json:"max_rocksdb_delete_skipped_count" agg:"MAX(max_rocksdb_delete_skipped_count)"`
 	AggAvgRocksdbDeleteSkippedCount uint `json:"avg_rocksdb_delete_skipped_count" agg:"CAST(SUM(exec_count * avg_rocksdb_delete_skipped_count) / SUM(exec_count) as SIGNED)"`

@@ -116,7 +116,7 @@ slow_query:
       sql: Query
       previous_sql: Previous Query
     plan:
-      title: Plan
+      title: Execution Plan
       visual: Visual
       text: Text
       modal_title: Visual Plan

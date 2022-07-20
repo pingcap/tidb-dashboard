@@ -1,0 +1,11 @@
+metrics:
+  nav_title: 监控指标
+  category:
+    application_connection: 应用连接
+    database_time: 数据库时间
+    sql_count: SQL 数量
+    core_feature_usage: 核心功能使用情况
+    latency_break_down: 延迟及拆解
+    transaction: 事务
+    core_path_duration: 核心流程耗时
+    server: 服务

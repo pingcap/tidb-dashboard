@@ -109,7 +109,12 @@ export default function Metrics() {
                 <Collapse.Panel
                   header={t(`metrics.category.${item.category}`)}
                   key="1"
-                  style={{ fontSize: 16, fontWeight: 500, padding: 0 }}
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 500,
+                    padding: 0,
+                    marginLeft: -16
+                  }}
                 >
                   <Row gutter={[16, 16]}>
                     {item.metrics.map((m) => (

@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { LoadingOutlined } from '@ant-design/icons'
-import { throttle } from 'lodash'
+import { debounce } from 'lodash'
 import { OverviewContext } from '../context'
 
 import { PointerEvent } from '@elastic/charts'
@@ -32,8 +32,9 @@ export default function Metrics() {
   const [isSomeLoading, setIsSomeLoading] = useState(false)
   const { t } = useTranslation()
 
+  // eslint-disable-next-line
   const setIsSomeLoadingDebounce = useCallback(
-    throttle(setIsSomeLoading, 50),
+    debounce(setIsSomeLoading, 100, { leading: true }),
     []
   )
 

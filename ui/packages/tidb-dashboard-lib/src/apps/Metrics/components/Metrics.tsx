@@ -19,7 +19,7 @@ import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
 import { useEventEmitter, useMemoizedFn } from 'ahooks'
 import { metricsItems } from '../data/metricsItems'
-import { throttle } from 'lodash'
+import { debounce } from 'lodash'
 
 export default function Metrics() {
   const ctx = useContext(MetricsContext)
@@ -30,8 +30,9 @@ export default function Metrics() {
   const loadingCounter = useRef(0)
   const [isSomeLoading, setIsSomeLoading] = useState(false)
 
+  // eslint-disable-next-line
   const setIsSomeLoadingDebounce = useCallback(
-    throttle(setIsSomeLoading, 50),
+    debounce(setIsSomeLoading, 100, { leading: true }),
     []
   )
 

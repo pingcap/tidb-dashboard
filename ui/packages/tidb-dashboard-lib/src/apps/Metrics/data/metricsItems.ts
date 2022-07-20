@@ -3,60 +3,41 @@ import { ColorType, TransformNullValue } from '@lib/utils/prometheus'
 
 function transformColorBySQLType(legendLabel: string) {
   switch (legendLabel) {
-    case 'Cop':
-      return ColorType.BLUE_1
     case 'Select':
-    case 'Get':
       return ColorType.BLUE_3
-    case 'BatchGet':
-      return ColorType.BLUE_4
+    case 'Commit':
+      return ColorType.GREEN_2
     case 'Insert':
-    case 'Prewrite':
       return ColorType.GREEN_3
     case 'Update':
-    case 'Commit':
       return ColorType.GREEN_4
-    case 'Show':
-      return ColorType.RED_3
-    case 'PessimisticLock':
-      return ColorType.RED_4
-    case 'Scan':
-      return ColorType.PURPLE
+    case 'general':
+      return ColorType.PINK
     default:
       return undefined
   }
 }
 
-function transformColorBySQLTypeAndPhase(legendLabel: string) {
+function transformColorByExecTimeOverview(legendLabel: string) {
   switch (legendLabel) {
-    case 'Cop':
-      return ColorType.BLUE_1
-    case 'Select':
+    case 'tso_wait':
+      return ColorType.RED_5
+    case 'Commit':
+      return ColorType.GREEN_4
+    case 'Prewrite':
+      return ColorType.GREEN_3
+    case 'PessimisticLock':
+      return ColorType.RED_4
     case 'Get':
       return ColorType.BLUE_3
     case 'BatchGet':
       return ColorType.BLUE_4
-    case 'Insert':
-    case 'Prewrite':
-      return ColorType.GREEN_3
-    case 'Update':
-    case 'Commit':
-      return ColorType.GREEN_4
-    case 'parse':
-      return
-    case 'Show':
-      return ColorType.RED_3
-    case 'PessimisticLock':
-      return ColorType.RED_4
-    case 'tso_wait':
-      return
+    case 'Cop':
+      return ColorType.BLUE_1
     case 'Scan':
       return ColorType.PURPLE
     case 'execute time':
-    case 'database time':
       return ColorType.YELLOW
-    case 'compile':
-      return
     default:
       return undefined
   }
@@ -174,7 +155,7 @@ const metricsItems = [
             query:
               'sum(rate(tidb_tikvclient_request_seconds_sum[$__rate_interval])) by (type)',
             name: '{type}',
-            color: (qd: QueryData) => transformColorBySQLTypeAndPhase(qd.name)
+            color: (qd: QueryData) => transformColorByExecTimeOverview(qd.name)
           },
           {
             query:

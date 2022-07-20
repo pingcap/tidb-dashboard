@@ -7,4 +7,5 @@ metrics:
     core_feature_usage: 核心功能使用情况
     latency_break_down: 延迟及拆解
     transaction: 事务
+    core_path_duration: 核心流程耗时
     server: 服务

@@ -306,6 +306,173 @@ const metricsItems = [
     ]
   },
   {
+    category: 'core_path_duration',
+    metrics: [
+      {
+        title: 'Avg TiDB KV Request Duration',
+        queries: [
+          {
+            query:
+              'sum(rate(tidb_tikvclient_request_seconds_sum{store!="0"}[$__rate_interval])) by (type)/ sum(rate(tidb_tikvclient_request_seconds_count{store!="0"}[$__rate_interval])) by (type)',
+            name: '{type}'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Avg TiKV GRPC Duration',
+        queries: [
+          {
+            query:
+              'sum(rate(tikv_grpc_msg_duration_seconds_sum{store!="0"}[$__rate_interval])) by (type)/ sum(rate(tikv_grpc_msg_duration_seconds_count{store!="0"}[$__rate_interval])) by (type)',
+            name: '{type}'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Average / P99 PD TSO Wait/RPC Duration',
+        queries: [
+          {
+            query:
+              '(sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum{type="wait"}[$__rate_interval])) / sum(rate(pd_client_cmd_handle_cmds_duration_seconds_count{type="wait"}[$__rate_interval])))',
+            name: 'wait - avg'
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(pd_client_cmd_handle_cmds_duration_seconds_bucket{type="wait"}[$__rate_interval])) by (le))',
+            name: 'wait - 99'
+          },
+          {
+            query:
+              '(sum(rate(pd_client_request_handle_requests_duration_seconds_sum{type="tso"}[$__rate_interval])) / sum(rate(pd_client_request_handle_requests_duration_seconds_count{type="tso"}[$__rate_interval])))',
+            name: 'rpc - avg'
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(pd_client_request_handle_requests_duration_seconds_bucket{type="tso"}[$__rate_interval])) by (le))',
+            name: 'rpc - 99'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Average / P99 Storage Async Write Duration',
+        queries: [
+          {
+            query:
+              'sum(rate(tikv_storage_engine_async_request_duration_seconds_sum{type="write"}[$__rate_interval])) / sum(rate(tikv_storage_engine_async_request_duration_seconds_count{type="write"}[$__rate_interval]))',
+            name: 'avg'
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tikv_storage_engine_async_request_duration_seconds_bucket{type="write"}[$__rate_interval])) by (le))',
+            name: '99'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Average / P99 Store Duration',
+        queries: [
+          {
+            query:
+              'sum(rate(tikv_raftstore_store_duration_secs_sum[$__rate_interval])) / sum(rate(tikv_raftstore_store_duration_secs_count[$__rate_interval]))',
+            name: 'avg'
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tikv_raftstore_store_duration_secs_bucket[$__rate_interval])) by (le))',
+            name: ''
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Average / P99 Apply Duration',
+        queries: [
+          {
+            query:
+              '(sum(rate(tikv_raftstore_apply_duration_secs_sum[$__rate_interval])) / sum(rate(tikv_raftstore_apply_duration_secs_count[$__rate_interval])))',
+            name: 'avg'
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tikv_raftstore_apply_duration_secs_bucket[$__rate_interval])) by (le))',
+            name: '99'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Average / P99 Append Log Duration',
+        queries: [
+          {
+            query:
+              '(sum(rate(tikv_raftstore_append_log_duration_seconds_sum[$__rate_interval])) / sum(rate(tikv_raftstore_append_log_duration_seconds_count[$__rate_interval])))',
+            name: 'avg'
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tikv_raftstore_append_log_duration_seconds_bucket[$__rate_interval])) by (le))',
+            name: '99'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Average / P99 Commit Log Duration',
+        queries: [
+          {
+            query:
+              '(sum(rate(tikv_raftstore_commit_log_duration_seconds_sum[$__rate_interval])) / sum(rate(tikv_raftstore_commit_log_duration_seconds_count[$__rate_interval])))',
+            name: 'avg'
+          },
+          {
+            query:
+              'histogram_quantile(0.99, sum(rate(tikv_raftstore_commit_log_duration_seconds_bucket[$__rate_interval])) by (le))',
+            name: '99'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Average / P99 Apply Log Duration',
+        queries: [
+          {
+            query:
+              '(sum(rate(tikv_raftstore_apply_log_duration_seconds_sum[$__rate_interval])) / sum(rate(tikv_raftstore_apply_log_duration_seconds_count[$__rate_interval])))',
+            name: 'avg'
+          },
+          {
+            query:
+              'ahistogram_quantile(0.99, sum(rate(tikv_raftstore_apply_log_duration_seconds_bucket[$__rate_interval])) by (le))',
+            name: '99'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      }
+    ]
+  },
+  {
     category: 'server',
     metrics: [
       {

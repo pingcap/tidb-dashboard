@@ -26,6 +26,7 @@ import { loadAppOptions, saveAppOptions } from '~/uilts/appOptions'
 import AppRegistry from '~/uilts/registry'
 
 import AppOverview from '~/apps/Overview/meta'
+import AppMetrics from '~/apps/Metrics/meta'
 import AppClusterInfo from '~/apps/ClusterInfo/meta'
 import AppTopSQL from '~/apps/TopSQL/meta'
 import AppSlowQuery from '~/apps/SlowQuery/meta'
@@ -158,6 +159,7 @@ async function webPageStart() {
     .register(AppSystemReport)
     .register(AppSlowQuery)
     .register(AppDiagnose)
+    .register(AppMetrics)
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
     .register(AppConProfiling)

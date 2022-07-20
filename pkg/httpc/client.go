@@ -83,7 +83,8 @@ func (c *Client) SendRequest(
 	method string,
 	body io.Reader,
 	errType *errorx.Type,
-	errOriginComponent string) ([]byte, error) {
+	errOriginComponent string,
+) ([]byte, error) {
 	res, err := c.Send(ctx, uri, method, body, errType, errOriginComponent)
 	if err != nil {
 		return nil, err
@@ -97,7 +98,8 @@ func (c *Client) Send(
 	method string,
 	body io.Reader,
 	errType *errorx.Type,
-	errOriginComponent string) (*Response, error) {
+	errOriginComponent string,
+) (*Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
 		e := errType.Wrap(err, "Failed to build %s API request", errOriginComponent)

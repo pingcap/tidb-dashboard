@@ -1,5 +1,5 @@
-import React, { useContext } from 'react'
-import { Space } from 'antd'
+import React, { useState, useContext } from 'react'
+import { Space, Tabs, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,
@@ -10,7 +10,8 @@ import {
   Expand,
   HighlightSQL,
   Pre,
-  TextWithInfo
+  TextWithInfo,
+  TreeDiagramView
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import formatSql from '@lib/utils/sqlFormatter'
@@ -19,6 +20,7 @@ import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStora
 import type { IPageQuery } from '.'
 import DetailTabs from './PlanDetailTabs'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
+import { telemetry } from '../../utils/telemetry'
 import { StatementContext } from '../../context'
 
 export interface IQuery extends IPageQuery {
@@ -54,6 +56,14 @@ function PlanDetail({ query }: IPlanDetailProps) {
     ctx!.ds.statementsAvailableFieldsGet
   )
   const isLoading = isDataLoading || isSchemaLoading
+
+  const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
+
+  const [isVpVisible, setIsVpVisable] = useState(false)
+  const toggleVisualPlan = (action: 'open' | 'close') => {
+    telemetry.toggleVisualPlanModal(action)
+    setIsVpVisable(!isVpVisible)
+  }
 
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     STMT_DETAIL_PLAN_EXPAND,
@@ -155,25 +165,95 @@ function PlanDetail({ query }: IPlanDetailProps) {
                   </Expand>
                 </Descriptions.Item>
               ) : null}
-              <Descriptions.Item
-                span={2}
-                multiline={detailExpand.plan}
-                label={
-                  <Space size="middle">
-                    <TextWithInfo.TransKey transKey="statement.fields.plan" />
-                    <Expand.Link
-                      expanded={detailExpand.plan}
-                      onClick={togglePlan}
-                    />
-                    <CopyLink data={data.plan ?? ''} />
-                  </Space>
-                }
-              >
-                <Expand expanded={detailExpand.plan}>
-                  <Pre noWrap>{data.plan}</Pre>
-                </Expand>
-              </Descriptions.Item>
             </Descriptions>
+
+            {(binaryPlan || data.plan) && (
+              <>
+                <Space size="middle" style={{ color: '#8c8c8c' }}>
+                  {t('statement.pages.detail.desc.plans.execution.title')}
+                </Space>
+
+                <Tabs
+                  defaultActiveKey={
+                    binaryPlan && !binaryPlan.main.discardedDueToTooLong
+                      ? 'binary_plan'
+                      : 'text_plan'
+                  }
+                  onTabClick={(key) =>
+                    telemetry.clickPlanTabs(key, data.digest!)
+                  }
+                >
+                  {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
+                    <Tabs.TabPane
+                      tab={t('slow_query.detail.plan.visual')}
+                      key="binary_plan"
+                    >
+                      <Modal
+                        title={t('slow_query.detail.plan.modal_title')}
+                        centered
+                        visible={isVpVisible}
+                        width={window.innerWidth}
+                        onCancel={() => toggleVisualPlan('close')}
+                        footer={null}
+                        destroyOnClose={true}
+                        bodyStyle={{
+                          background: '#f5f5f5',
+                          height: window.innerHeight - 100
+                        }}
+                      >
+                        <TreeDiagramView
+                          data={
+                            binaryPlan.ctes
+                              ? [binaryPlan.main].concat(binaryPlan.ctes)
+                              : [binaryPlan.main]
+                          }
+                          showMinimap={true}
+                        />
+                      </Modal>
+                      <Descriptions>
+                        <Descriptions.Item span={2}>
+                          <div onClick={() => toggleVisualPlan('open')}>
+                            <TreeDiagramView
+                              data={
+                                binaryPlan.ctes
+                                  ? [binaryPlan.main].concat(binaryPlan.ctes)
+                                  : [binaryPlan.main]
+                              }
+                              isThumbnail={true}
+                            />
+                          </div>
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Tabs.TabPane>
+                  )}
+
+                  <Tabs.TabPane
+                    tab={t('statement.pages.detail.desc.plans.execution.text')}
+                    key="text_plan"
+                  >
+                    <Descriptions>
+                      <Descriptions.Item
+                        span={2}
+                        multiline={detailExpand.plan}
+                        label={
+                          <Space size="middle">
+                            <Expand.Link
+                              expanded={detailExpand.plan}
+                              onClick={togglePlan}
+                            />
+                            <CopyLink data={data.plan ?? ''} />
+                          </Space>
+                        }
+                      >
+                        <Expand expanded={detailExpand.plan}>
+                          <Pre noWrap>{data.plan}</Pre>
+                        </Expand>
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </Tabs.TabPane>
+                </Tabs>
+              </>
+            )}
 
             <DetailTabs data={data} query={query} />
           </>

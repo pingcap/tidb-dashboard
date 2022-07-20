@@ -221,12 +221,12 @@ const metricsItems = [
           {
             query:
               'sum(rate(tidb_server_plan_cache_total[$__rate_interval])) by (type)',
-            name: 'avg'
+            name: 'avg - hit'
           },
           {
             query:
               'sum(rate(tidb_server_plan_cache_miss_total[$__rate_interval]))',
-            name: 'avg'
+            name: 'avg - miss'
           }
         ],
         unit: 'short',

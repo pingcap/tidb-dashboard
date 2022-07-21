@@ -116,9 +116,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
-          cache: 'pnpm'
-          cache-dependency-path: 'ui/pnpm-lock.yaml'
+          node-version: "16"
+          cache: "pnpm"
+          cache-dependency-path: "ui/pnpm-lock.yaml"
       - name: Load cypress cache
         uses: actions/cache@v3
         id: cypress-cache

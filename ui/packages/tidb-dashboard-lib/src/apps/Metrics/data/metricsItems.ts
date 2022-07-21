@@ -46,55 +46,6 @@ function transformColorByExecTimeOverview(legendLabel: string) {
 
 const metricsItems = [
   {
-    category: 'application_connection',
-    metrics: [
-      {
-        title: 'Connection Count',
-        queries: [
-          {
-            query: 'sum(tidb_server_connections)',
-            name: 'Total'
-          },
-          {
-            query: 'sum(tidb_server_tokens)',
-            name: 'active connections'
-          }
-        ],
-        unit: null,
-        nullValue: TransformNullValue.AS_ZERO,
-        type: 'line'
-      },
-      {
-        title: 'Disconnection',
-        queries: [
-          {
-            query: 'sum(tidb_server_disconnection_total) by (instance, result)',
-            name: '{instance}-{result}'
-          }
-        ],
-        unit: 'short',
-        nullValue: TransformNullValue.AS_ZERO,
-        type: 'area_stack'
-      },
-      {
-        title: 'Average Idle Connection Duration',
-        queries: [
-          {
-            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='1'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='1'}[$__rate_interval])))`,
-            name: 'avg-in-txn'
-          },
-          {
-            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='0'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='0'}[$__rate_interval])))`,
-            name: 'avg-not-in-txn'
-          }
-        ],
-        unit: 's',
-        nullValue: TransformNullValue.AS_ZERO,
-        type: 'line'
-      }
-    ]
-  },
-  {
     category: 'database_time',
     metrics: [
       {
@@ -123,7 +74,7 @@ const metricsItems = [
         type: 'bar_stacked'
       },
       {
-        title: 'Database Time by Steps of SQL Processing',
+        title: 'Database Time by Steps of SQL Phase',
         queries: [
           {
             query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
@@ -163,16 +114,43 @@ const metricsItems = [
               'sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum{type="wait"}[$__rate_interval]))',
             name: 'tso_wait',
             color: ColorType.RED_5
-          },
-          {
-            query:
-              'sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))',
-            name: 'execute time',
-            color: ColorType.YELLOW
           }
         ],
         unit: 's',
         type: 'bar_stacked'
+      }
+    ]
+  },
+  {
+    category: 'application_connection',
+    metrics: [
+      {
+        title: 'Connection Count',
+        queries: [
+          {
+            query: 'sum(tidb_server_connections)',
+            name: 'Total'
+          },
+          {
+            query: 'sum(tidb_server_tokens)',
+            name: 'active connections'
+          }
+        ],
+        unit: null,
+        nullValue: TransformNullValue.AS_ZERO,
+        type: 'line'
+      },
+      {
+        title: 'Disconnection',
+        queries: [
+          {
+            query: 'sum(tidb_server_disconnection_total) by (instance, result)',
+            name: '{instance}-{result}'
+          }
+        ],
+        unit: 'short',
+        nullValue: TransformNullValue.AS_ZERO,
+        type: 'area_stack'
       }
     ]
   },
@@ -221,12 +199,7 @@ const metricsItems = [
         nullValue: TransformNullValue.AS_ZERO,
         unit: 'short',
         type: 'line'
-      }
-    ]
-  },
-  {
-    category: 'core_feature_usage',
-    metrics: [
+      },
       {
         title: 'Queries Using Plan Cache OPS',
         queries: [
@@ -276,6 +249,22 @@ const metricsItems = [
         ],
         nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Average Idle Connection Duration',
+        queries: [
+          {
+            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='1'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='1'}[$__rate_interval])))`,
+            name: 'avg-in-txn'
+          },
+          {
+            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='0'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='0'}[$__rate_interval])))`,
+            name: 'avg-not-in-txn'
+          }
+        ],
+        unit: 's',
+        nullValue: TransformNullValue.AS_ZERO,
         type: 'line'
       },
       {

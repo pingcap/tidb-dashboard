@@ -12,13 +12,16 @@ import { CacheContext } from '@lib/utils/useCache'
 import React, { useMemo, useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEffectOnce } from 'react-use'
+import { useTranslation } from 'react-i18next'
 
 function List() {
+    const { t } = useTranslation()
     const cache = useContext(CacheContext)
     let [isLoading, setIsLoading] = useState(true)
     let [items, setItems] = useState([] as DeadlockModel[])
     const navigate = useNavigate()
     const pullItems = async () => {
+        cache?.clear()
         setIsLoading(true)
         const { data } = await client.getInstance().deadlockListGet()
         data.map(it => {
@@ -36,6 +39,7 @@ function List() {
     )
     useEffectOnce(() => {
         setIsLoading(true)
+        cache?.clear()
         client
             .getInstance()
             .deadlockListGet()
@@ -79,16 +83,16 @@ function List() {
                 <CardTable
                     loading={isLoading}
                     columns={[
-                        { name: 'id', key: 'id', minWidth: 100, onRender: (it) => it.id },
+                        { name: 'ID', key: 'id', minWidth: 100, onRender: (it) => it.id },
                         {
                             name: 'Transaction Count',
-                            key: 'count',
+                            key: t('deadlock.fields.count'),
                             minWidth: 300,
                             onRender: (it) => it.items.length,
                         },
                         {
                             name: 'Occur time',
-                            key: 'occur_time',
+                            key: t('deadlock.fields.occur_time'),
                             minWidth: 300,
                             onRender: (it) => new Date(it.occur_time).toLocaleString(),
                         },

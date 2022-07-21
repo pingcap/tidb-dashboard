@@ -6,8 +6,10 @@ import { CardTable, HighlightSQL } from '@lib/components'
 import { useEffectOnce } from 'react-use'
 import DeadlockChainGraph from '../components/DeadlockChainGraph'
 import { CacheContext } from '@lib/utils/useCache'
+import { useTranslation } from 'react-i18next'
 
 function Detail() {
+    const { t } = useTranslation()
     const cache = useContext(CacheContext)
     const id = new URLSearchParams(useLocation().search).get('id')
     let [isLoading, setIsLoading] = useState(true)
@@ -16,6 +18,7 @@ function Detail() {
         setIsLoading(true)
         if (cache?.get(`deadlock-${id}`) !== undefined) {
             setItems(cache.get(`deadlock-${id}`))
+            setIsLoading(false)
         } else {
             client
                 .getInstance()
@@ -44,25 +47,25 @@ function Detail() {
                 loading={isLoading}
                 columns={[
                     {
-                        name: 'try_lock_trx_id',
+                        name: t('deadlock.fields.try_lock_trx_id') ,
                         key: 'try_lock_trx_id',
                         minWidth: 100,
                         onRender: (it) => it.try_lock_trx_id,
                     },
                     {
-                        name: 'current_sql',
+                        name: t('deadlock.fields.current_sql'),
                         key: 'current_sql',
                         minWidth: 350,
                         onRender: (it) => <HighlightSQL sql={it.current_sql} compact />,
                     },
                     {
-                        name: 'key',
+                        name: t('deadlock.fields.key') ,
                         key: 'key',
                         minWidth: 300,
                         onRender: (it) => it.key,
                     },
                     {
-                        name: 'trx_holding_lock',
+                        name: t('deadlock.fields.trx_holding_lock'),
                         key: 'trx_holding_lock',
                         minWidth: 150,
                         onRender: (it) => it.trx_holding_lock,

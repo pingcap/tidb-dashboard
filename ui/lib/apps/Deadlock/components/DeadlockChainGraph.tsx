@@ -31,10 +31,15 @@ function DeadlockChainGraph(prop: Prop) {
         let result: Array<NodeMeta> = [];
         const outAngle = 2 * Math.PI / nodeSize;
         const halfInnerAngle = Math.PI * (nodeSize - 2) / nodeSize / 2;
-        let currentNodeConnectOutX = center.x - Math.sin(halfInnerAngle) * radius;
-        let currentNodeConnectOutY = center.y + radius - Math.cos(halfInnerAngle);
-
-        let currentNodeConnectInX = center.x + Math.sin(halfInnerAngle) * radius;
+        let currentNodeConnectOutX = center.x - Math.sin(halfInnerAngle) * 30;
+        if (nodeSize == 2) {
+            currentNodeConnectOutX = center.x - 30;
+        }
+        let currentNodeConnectOutY = center.y + radius - Math.cos(halfInnerAngle) * 30;
+        if (nodeSize == 2) {
+            currentNodeConnectOutY = center.y + radius;
+        }
+        let currentNodeConnectInX = center.x + Math.sin(halfInnerAngle) * 30;
         let currentNodeConnectInY = center.y + radius - Math.cos(halfInnerAngle);
         let angle = 0;
         for (let i = 0; i < nodeSize; ++i) {
@@ -63,15 +68,15 @@ function DeadlockChainGraph(prop: Prop) {
     return (
         <svg className="container" height={300} width={300}>
             <defs>
-                <marker id="triangle" markerUnits="strokeWidth" markerWidth="5" markerHeight="4" refX="0" refY="2" orient="auto">
+                <marker id="triangle" markerUnits="strokeWidth" markerWidth="5" markerHeight="4" refX="5" refY="2" orient="auto">
                     <path d="M 0 0 L 5 2 L 0 4 z" />
                 </marker>
             </defs>
             {data.links.map((link, index) => (
                 <path
                     d={`
-                    M ${layout[link.source].connectOutX},${layout[link.source].connectOutY}
-                    A 100,100 ${-outAngle} 0,0 ${layout[link.target].connectInX},${layout[link.target].connectInY}`}
+                    M ${layout[link.source].connectInX},${layout[link.source].connectInY}
+                    A 100,100 ${-outAngle} 0,0 ${layout[link.target].connectOutX},${layout[link.target].connectOutY}`}
                     key={`line-${index}`}
                     fill="none"
                     stroke="#4679BD"

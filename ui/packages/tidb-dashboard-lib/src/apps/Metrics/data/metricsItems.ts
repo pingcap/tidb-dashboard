@@ -34,6 +34,7 @@ function transformColorByExecTimeOverview(legendLabel: string) {
       return ColorType.BLUE_4
     case 'Cop':
       return ColorType.BLUE_1
+    case 'ScanLock':
     case 'Scan':
       return ColorType.PURPLE
     case 'execute time':
@@ -140,7 +141,7 @@ const metricsItems = [
             color: ColorType.GREEN_3
           },
           {
-            query: `sum(rate(tidb_server_get_token_duration_seconds_sum{sql_type="general"}[$__rate_interval]))/1000000`,
+            query: `sum(rate(tidb_server_get_token_duration_seconds_sum[$__rate_interval]))/1000000`,
             name: 'get token',
             color: ColorType.RED_3
           }
@@ -572,13 +573,12 @@ const metricsItems = [
         title: 'TiDB CPU Usage',
         queries: [
           {
-            query:
-              'rate(process_cpu_seconds_total{job="tidb"}[$__rate_interval])',
+            query: 'rate(process_cpu_seconds_total{job="tidb"}[30s])',
             name: '{instance}'
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
-        unit: 'percent',
+        unit: 'percentunit',
         type: 'line'
       },
       {
@@ -590,7 +590,7 @@ const metricsItems = [
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
-        unit: 'decbytes',
+        unit: 'bytes',
         type: 'line'
       },
       {
@@ -613,7 +613,7 @@ const metricsItems = [
             name: '{instance}'
           }
         ],
-        unit: 'percent',
+        unit: 'percentunit',
         type: 'line'
       },
       {
@@ -624,7 +624,7 @@ const metricsItems = [
             name: '{instance}'
           }
         ],
-        unit: 'decbytes',
+        unit: 'bytes',
         type: 'line'
       },
       {
@@ -641,7 +641,7 @@ const metricsItems = [
             name: '{instance}-read'
           }
         ],
-        unit: 'KBs',
+        unit: 'Bps',
         type: 'line'
       },
       {

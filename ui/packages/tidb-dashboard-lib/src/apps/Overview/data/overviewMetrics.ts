@@ -16,7 +16,7 @@ const overviewMetrics = [
     ],
     nullValue: TransformNullValue.AS_ZERO,
     unit: 'qps',
-    type: 'bar_stacked'
+    type: 'line'
   },
   {
     title: 'latency',

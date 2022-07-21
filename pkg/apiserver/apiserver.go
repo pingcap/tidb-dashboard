@@ -17,6 +17,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/configuration"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/conprof"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/deadlock"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/diagnose"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
@@ -135,6 +136,8 @@ var Modules = fx.Options(
 	slowquery.Module,
 	debugapi.Module,
 	topsql.Module,
+	visualplan.Module,
+	deadlock.Module,
 )
 
 func (s *Service) Start(ctx context.Context) error {

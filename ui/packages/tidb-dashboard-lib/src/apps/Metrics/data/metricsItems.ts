@@ -46,6 +46,82 @@ function transformColorByExecTimeOverview(legendLabel: string) {
 
 const metricsItems = [
   {
+    category: 'database_time',
+    metrics: [
+      {
+        title: 'Database Time',
+        queries: [
+          {
+            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
+            name: 'database time',
+            color: ColorType.YELLOW
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Database Time by SQL Types',
+        queries: [
+          {
+            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
+            name: '{sql_type}',
+            color: (qd: QueryData) => transformColorBySQLType(qd.name)
+          }
+        ],
+        unit: 's',
+        type: 'bar_stacked'
+      },
+      {
+        title: 'Database Time by SQL Phase',
+        queries: [
+          {
+            query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
+            name: 'parse',
+            color: ColorType.RED_2
+          },
+          {
+            query: `sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
+            name: 'compile',
+            color: ColorType.ORANGE
+          },
+          {
+            query: `sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
+            name: 'execute',
+            color: ColorType.GREEN_3
+          },
+          {
+            query: `sum(rate(tidb_server_get_token_duration_seconds_sum[$__rate_interval]))/1000000`,
+            name: 'get token',
+            color: ColorType.RED_3
+          }
+        ],
+        unit: 's',
+        type: 'bar_stacked'
+      },
+      {
+        title: 'SQL Execute Time Overview',
+        queries: [
+          {
+            query:
+              'sum(rate(tidb_tikvclient_request_seconds_sum{store!="0"}[$__rate_interval])) by (type)',
+            name: '{type}',
+            color: (qd: QueryData) => transformColorByExecTimeOverview(qd.name)
+          },
+          {
+            query:
+              'sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum{type="wait"}[$__rate_interval]))',
+            name: 'tso_wait',
+            color: ColorType.RED_5
+          }
+        ],
+        unit: 's',
+        type: 'bar_stacked'
+      }
+    ]
+  },
+  {
     category: 'application_connection',
     metrics: [
       {
@@ -75,104 +151,6 @@ const metricsItems = [
         unit: 'short',
         nullValue: TransformNullValue.AS_ZERO,
         type: 'area_stack'
-      },
-      {
-        title: 'Average Idle Connection Duration',
-        queries: [
-          {
-            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='1'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='1'}[$__rate_interval])))`,
-            name: 'avg-in-txn'
-          },
-          {
-            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='0'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='0'}[$__rate_interval])))`,
-            name: 'avg-not-in-txn'
-          }
-        ],
-        unit: 's',
-        nullValue: TransformNullValue.AS_ZERO,
-        type: 'line'
-      }
-    ]
-  },
-  {
-    category: 'database_time',
-    metrics: [
-      {
-        title: 'Database Time',
-        queries: [
-          {
-            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
-            name: 'database time',
-            color: ColorType.YELLOW
-          }
-        ],
-        nullValue: TransformNullValue.AS_ZERO,
-        unit: 's',
-        type: 'line'
-      },
-      {
-        title: 'Database Time by SQL Types',
-        queries: [
-          {
-            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
-            name: '{sql_type}',
-            color: (qd: QueryData) => transformColorBySQLType(qd.name)
-          }
-        ],
-        unit: 's',
-        type: 'bar_stacked'
-      },
-      {
-        title: 'Database Time by Steps of SQL Processing',
-        queries: [
-          {
-            query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
-            name: 'parse',
-            color: ColorType.RED_2
-          },
-          {
-            query: `sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
-            name: 'compile',
-            color: ColorType.ORANGE
-          },
-          {
-            query: `sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
-            name: 'execute',
-            color: ColorType.GREEN_3
-          },
-          {
-            query: `sum(rate(tidb_server_get_token_duration_seconds_sum[$__rate_interval]))/1000000`,
-            name: 'get token',
-            color: ColorType.RED_3
-          }
-        ],
-        unit: 's',
-        type: 'bar_stacked'
-      },
-      {
-        title: 'Database Execute Time',
-        queries: [
-          {
-            query:
-              'sum(rate(tidb_tikvclient_request_seconds_sum{store!="0"}[$__rate_interval])) by (type)',
-            name: '{type}',
-            color: (qd: QueryData) => transformColorByExecTimeOverview(qd.name)
-          },
-          {
-            query:
-              'sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum{type="wait"}[$__rate_interval]))',
-            name: 'tso_wait',
-            color: ColorType.RED_5
-          },
-          {
-            query:
-              'sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))',
-            name: 'execute time',
-            color: ColorType.YELLOW
-          }
-        ],
-        unit: 's',
-        type: 'bar_stacked'
       }
     ]
   },
@@ -214,19 +192,14 @@ const metricsItems = [
         queries: [
           {
             query:
-              'sum(rate(tidb_server_query_total[$__rate_interval])) by (result)',
-            name: 'query {result}'
+              'sum(rate(tidb_server_query_total[$__rate_interval])) by (type)',
+            name: '{type}'
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
         unit: 'short',
         type: 'line'
-      }
-    ]
-  },
-  {
-    category: 'core_feature_usage',
-    metrics: [
+      },
       {
         title: 'Queries Using Plan Cache OPS',
         queries: [
@@ -276,6 +249,22 @@ const metricsItems = [
         ],
         nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'Average Idle Connection Duration',
+        queries: [
+          {
+            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='1'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='1'}[$__rate_interval])))`,
+            name: 'avg-in-txn'
+          },
+          {
+            query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='0'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='0'}[$__rate_interval])))`,
+            name: 'avg-not-in-txn'
+          }
+        ],
+        unit: 's',
+        nullValue: TransformNullValue.AS_ZERO,
         type: 'line'
       },
       {
@@ -333,7 +322,7 @@ const metricsItems = [
         type: 'line'
       },
       {
-        title: 'Execution Duraion',
+        title: 'Execute Duration',
         queries: [
           {
             query:

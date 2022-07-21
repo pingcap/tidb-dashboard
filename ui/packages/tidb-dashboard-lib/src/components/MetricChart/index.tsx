@@ -19,7 +19,6 @@ import {
   Axis,
   // BrushEvent,
   Chart,
-  DomainRange,
   LineSeries,
   Position,
   ScaleType,

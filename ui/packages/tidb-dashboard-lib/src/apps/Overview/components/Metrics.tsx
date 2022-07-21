@@ -78,6 +78,7 @@ export default function Metrics() {
                 queries={item.queries}
                 type={item.type as GraphType}
                 unit={item.unit!}
+                nullValue={item.nullValue}
                 range={chartRange}
                 onRangeChange={setChartRange}
                 getMetrics={ctx!.ds.metricsQueryGet}

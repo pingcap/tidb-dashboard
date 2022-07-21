@@ -17,12 +17,12 @@ function DiagnoseStatus() {
   const {
     data: report,
     isLoading,
-    error,
+    error
   } = useClientRequestWithPolling(
     (reqConfig) =>
       client.getInstance().diagnoseReportsIdStatusGet(id, reqConfig),
     {
-      shouldPoll: (data) => data?.progress! < 100,
+      shouldPoll: (data) => data?.progress! < 100
     }
   )
 

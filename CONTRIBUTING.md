@@ -44,9 +44,9 @@ The followings are required for developing TiDB Dashboard:
 
 - git - Version control
 - make - Build tool (run common workflows)
-- [Golang 1.13+](https://golang.org/) - To compile the server.
-- [Node.js 12+](https://nodejs.org/) - To compile the front-end.
-- [Yarn 1.21+](https://classic.yarnpkg.com/en/docs/install) - To manage front-end dependencies.
+- [Golang 1.15+](https://golang.org/) - To compile the server.
+- [Node.js 16+](https://nodejs.org/) - To compile the front-end.
+- [PNPM 7](https://pnpm.io/) - To manage front-end dependencies.
 - [Java 8+](https://www.java.com/ES/download/) - To generate JavaScript API client by OpenAPI specification.
 
 ### Step 3. Build and Run TiDB Dashboard
@@ -70,8 +70,8 @@ The followings are required for developing TiDB Dashboard:
    ```bash
    # In tidb-dashboard directory:
    cd ui
-   yarn  # install all dependencies
-   yarn start
+   pnpm i # install all dependencies
+   pnpm dev
    ```
 
 1. That's it! You can access TiDB Dashboard now: http://127.0.0.1:3001
@@ -81,9 +81,8 @@ The followings are required for developing TiDB Dashboard:
 When back-end server and front-end server are both started, E2E tests can be run by:
 
 ```bash
-cd ui/tests
-yarn
-yarn test
+cd ui/packages/tidb-dashboard-for-op
+pnpm open:cypress
 ```
 
 > Now we have only a few e2e tests. Contributions are welcome!
@@ -100,20 +99,6 @@ We use [Swagger] to generate the API server and corresponding clients. Swagger p
 see all TiDB Dashboard API endpoints and specifications, or even send API requests.
 
 Swagger UI is available at http://localhost:12333/dashboard/api/swagger after the above Step 3 is finished.
-
-### Storybook
-
-We expose some UI components in a playground provided by [React Storybook]. In the playground you can see what
-components look like and how to use them.
-
-Storybook can be started using the following commands:
-
-```bash
-cd ui
-yarn storybook
-```
-
-> We have not yet make all components available in the Storybook. Contributions are welcome!
 
 ## Contribution flow
 
@@ -136,7 +121,7 @@ This is a rough outline of what a contributor's workflow looks like:
 
     ```bash
     # In ui directory:
-    yarn fmt
+    pnpm fmt
     ```
 
     > Recommended to install [Prettier plugin](https://prettier.io/docs/en/editors.html) for your editor so that there will be auto format on save.
@@ -193,10 +178,8 @@ If the change affects many subsystems, you can use `*` instead, like `*: foo`.
 
 The body of the commit message should describe why the change was made and at a high level, how the code works.
 
-[diagnosis sig]: https://github.com/pingcap/community/tree/master/special-interest-groups/sig-diagnosis
 [pd]: https://github.com/pingcap/pd
 [tidb]: https://github.com/pingcap/tidb
 [tikv]: https://github.com/tikv/tikv
 [tiup]: https://tiup.io
 [swagger]: https://swagger.io
-[react storybook]: https://storybook.js.org

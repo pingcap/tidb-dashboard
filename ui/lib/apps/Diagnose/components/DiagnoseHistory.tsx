@@ -18,7 +18,7 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'id',
     fieldName: 'id',
     minWidth: 200,
-    maxWidth: 350,
+    maxWidth: 350
   },
   {
     name: t('diagnose.list_table.diagnose_create_time'),
@@ -29,7 +29,7 @@ const tableColumns = (t: TFunction): IColumn[] => [
       <DateTime.Calendar
         unixTimestampMs={dayjs(rec.created_at).unix() * 1000}
       />
-    ),
+    )
   },
   {
     name: t('diagnose.list_table.status'),
@@ -52,7 +52,7 @@ const tableColumns = (t: TFunction): IColumn[] => [
           />
         )
       }
-    },
+    }
   },
   {
     name: t('diagnose.list_table.range'),
@@ -71,7 +71,7 @@ const tableColumns = (t: TFunction): IColumn[] => [
           />
         </span>
       )
-    },
+    }
   },
   {
     name: t('diagnose.list_table.compare_range'),
@@ -89,8 +89,8 @@ const tableColumns = (t: TFunction): IColumn[] => [
             unixTimestampMs={dayjs(rec.compare_end_time).unix() * 1000}
           />
         </span>
-      ),
-  },
+      )
+  }
 ]
 
 export default function DiagnoseHistory() {

@@ -4,7 +4,7 @@ BUILD_TAGS ?=
 
 LDFLAGS ?=
 
-FEATURE_VERSION ?= 6.0.0
+FEATURE_VERSION ?= 6.2.0
 
 WITHOUT_NGM ?= false
 
@@ -61,39 +61,43 @@ e2e_test:
 .PHONY: e2e_compat_features_test
 e2e_compat_features_test:
 	cd ui &&\
-	yarn &&\
-	yarn run:e2e-test:compat-features --env FEATURE_VERSION=$(FEATURE_VERSION) TIDB_VERSION=$(TIDB_VERSION)
+	pnpm i &&\
+	cd packages/tidb-dashboard-for-op &&\
+	pnpm run:e2e-test:compat-features --env FEATURE_VERSION=$(FEATURE_VERSION) TIDB_VERSION=$(TIDB_VERSION)
 
 .PHONY: e2e_common_features_test
 e2e_common_features_test:
 	cd ui &&\
-	yarn &&\
-	yarn run:e2e-test:common-features --env TIDB_VERSION=$(TIDB_VERSION)
+	pnpm i &&\
+	cd packages/tidb-dashboard-for-op &&\
+	pnpm run:e2e-test:common-features --env TIDB_VERSION=$(TIDB_VERSION)
 
 .PHONY: e2e_without_ngm_test
 e2e_without_ngm_test:
 	cd ui &&\
-	yarn &&\
-	yarn run:e2e-test:without-ngm --env TIDB_VERSION=$(TIDB_VERSION) WITHOUT_NGM=$(WITHOUT_NGM)
+	pnpm i &&\
+	cd packages/tidb-dashboard-for-op &&\
+	pnpm run:e2e-test:without-ngm --env TIDB_VERSION=$(TIDB_VERSION) WITHOUT_NGM=$(WITHOUT_NGM)
 
 .PHONY: e2e_test_specify
 e2e_test_specify:
 	cd ui &&\
-	yarn &&\
-	yarn run:e2e-test:specify --env TIDB_VERSION=$(TIDB_VERSION) -- --spec $(E2E_SPEC)
+	pnpm i &&\
+	cd packages/tidb-dashboard-for-op &&\
+	pnpm run:e2e-test:specify --env TIDB_VERSION=$(TIDB_VERSION) -- --spec $(E2E_SPEC)
 
 .PHONY: dev
 dev: lint default
 
-.PHONY: yarn_dependencies
-yarn_dependencies: install_tools
+.PHONY: ui_deps
+ui_deps: install_tools
 	cd ui &&\
-	yarn install --frozen-lockfile
+	pnpm i
 
 .PHONY: ui
-ui: yarn_dependencies
+ui: ui_deps
 	cd ui &&\
-	yarn build
+	pnpm build
 
 .PHONY: go_generate
 go_generate: export PATH := $(shell pwd)/bin:$(PATH)

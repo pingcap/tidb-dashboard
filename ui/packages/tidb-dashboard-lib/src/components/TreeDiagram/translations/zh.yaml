@@ -1,0 +1,16 @@
+binary_plan:
+  tooltip:
+    duration: '父算子的耗时包含所有子算子的耗时。'
+  tabs:
+    general: 概览
+    hardware_usage: 硬件使用
+    advanced_info: 高级信息
+    diagnosis: 诊断
+  diagnosis:
+    high_est_error: '估算误差较大。可以考虑检查统计信息的健康度。'
+    disk_spill: 执行过程中由于到达内存限制，产生了落盘，执行可能会变慢。内存足够的情况下，可以考虑提高内存使用阈值。"
+    pseudo_est: '该算子使用了 pseudo 统计信息，行数估算可能不准确。原因可能是统计信息不可用或者统计信息过期。可以考虑收集统计信息或者将系统变量 tidb_enable_pseudo_for_outdated_stats 设为 OFF。'
+    good_filter_on_table_fullscan: '该过滤条件的过滤性较好。使用该列上的索引可能能够达到更好的性能。如果没有该列上的索引，可以考虑创建该列上的索引。'
+    bad_index_for_index_lookup: '该 IndexLookup 算子从索引中读取了大量数据。这可能导致执行较慢以及对 TiKV 造成较大压力。可以考虑使用 Optimizer Hints 指导 TiDB 选择更好的索引或者不使用索引。'
+    index_join_build_side_too_large: '该 IndexJoin 算子从 build 端读取了大量数据。这可能导致执行较慢以及对 TiKV 造成较大压力。可以考虑使用 Optimizer Hints 指导 TiDB 选择 Hash Join。'
+    tikv_huge_table_scan: '该算子在 TiKV 读取了大量数据。如果确实需要读取大量数据，可以考虑使用 TiFlash 达到更好的性能。'

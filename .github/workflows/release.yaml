@@ -14,23 +14,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      # https://pnpm.io/continuous-integration#github-actions
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2.2.2
         with:
-          node-version: "16"
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
-        working-directory: ui
-      - uses: actions/cache@v3
-        id: yarn-cache
+          version: 7
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          node-version: '16'
+          cache: 'pnpm'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.13.5"
+          go-version: "1.15"
       - name: Load go module cache
         uses: actions/cache@v3
         with:
@@ -50,7 +47,7 @@ jobs:
         run: |
           make ui
       - name: Pack UI assets for release
-        working-directory: ui/build
+        working-directory: ui/packages/tidb-dashboard-for-op/dist
         run: |
           zip -r ../static-assets.zip .
       - name: Create release
@@ -69,7 +66,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ui/static-assets.zip
+          asset_path: ./ui/packages/tidb-dashboard-for-op/static-assets.zip
           asset_name: static-assets.zip
           asset_content_type: application/zip
       - name: Generate embedded UI assets

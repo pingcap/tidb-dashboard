@@ -1,6 +1,5 @@
 import React, { useContext, useState } from 'react'
 import client, { DeadlockModel } from '@lib/client'
-import { graphviz } from 'd3-graphviz'
 import { useLocation, useParams } from 'react-router'
 import { Card } from 'antd'
 import { CardTable, HighlightSQL } from '@lib/components'

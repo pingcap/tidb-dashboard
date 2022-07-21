@@ -1,9 +1,6 @@
 import { DeadlockModel } from '@lib/client'
-import { CardTable, HighlightSQL } from '@lib/components'
-import * as d3 from 'd3'
 import React, { useRef, useState } from 'react'
 import { useEffectOnce } from 'react-use'
-import Deadlock from '..'
 
 interface Prop {
     deadlockChain: DeadlockModel[]
@@ -12,122 +9,84 @@ interface Prop {
 
 function DeadlockChainGraph(prop: Prop) {
     const data = {
-        nodes: [{ id: '426812829645406216' }, { id: '426812829645406217' }] as {
-            id: string
-        }[],
-        links: [
-            {
-                source: 0,
-                target: 1,
-                type: 'blocked',
-                key: '7480000000000000355F728000000000000002',
-            },
-            {
-                source: 1,
-                target: 0,
-                type: 'blocked',
-                key: '7480000000000000355F728000000000000001',
-            },
-        ] as { source: number; target: number; type: string; key: string }[],
+        nodes: prop.deadlockChain.map(it => {
+            return { id: it.try_lock_trx_id }
+        }),
+        links: prop.deadlockChain.map((d, i) => ({
+            source: i,
+            target: prop.deadlockChain.findIndex(it => it.trx_holding_lock == d.try_lock_trx_id),
+            type: 'blocked',
+            key: d.key
+        })),
     }
-    for (let node of prop.deadlockChain) {
-        const newObject = { id: node.try_lock_trx_id!!.toString() }
-        data.nodes.splice(0, 0, newObject)
+    interface NodeMeta {
+        x: number,
+        y: number,
+        connectOutX: number,
+        connectOutY: number,
+        connectInX: number,
+        connectInY: number,
     }
-    const links = data.links.map(Object.create)
-    const nodes = data.nodes.map(Object.create)
-    console.log(data, links, nodes)
-    const [nodeCurrentLookingAt, setNodeCurrentLookingAt] = useState(
-        null as number | null
-    )
-    const containerRef = useRef<HTMLDivElement>(null)
-    function linkArc(d) {
-        const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y)
-        return `
-            M${d.source.x},${d.source.y}
-            A${r},${r} 0 0,1 ${d.target.x},${d.target.y}
-        `
+    function calcCircularLayout(nodeSize: number, center: { x: number, y: number }, radius: number): Array<NodeMeta> {
+        let result: Array<NodeMeta> = [];
+        const outAngle = 2 * Math.PI / nodeSize;
+        const halfInnerAngle = Math.PI * (nodeSize - 2) / nodeSize / 2;
+        let currentNodeConnectOutX = center.x - Math.sin(halfInnerAngle) * radius;
+        let currentNodeConnectOutY = center.y + radius - Math.cos(halfInnerAngle);
+
+        let currentNodeConnectInX = center.x + Math.sin(halfInnerAngle) * radius;
+        let currentNodeConnectInY = center.y + radius - Math.cos(halfInnerAngle);
+        let angle = 0;
+        for (let i = 0; i < nodeSize; ++i) {
+            angle += outAngle;
+            const x = center.x + radius * Math.sin(angle);
+            const y = center.y + radius * Math.cos(angle);
+
+            result.push({ x: x, y: y, connectOutX: currentNodeConnectOutX, connectOutY: currentNodeConnectOutY, connectInX: currentNodeConnectInX, connectInY: currentNodeConnectInY });
+
+            const newNodeConnectOutX = (currentNodeConnectOutX - center.x) * Math.cos(outAngle) - (currentNodeConnectOutY - center.y) * Math.sin(outAngle) + center.x;
+            const newNodeConnectOutY = (currentNodeConnectOutX - center.x) * Math.sin(outAngle) + (currentNodeConnectOutY - center.y) * Math.cos(outAngle) + center.y;
+            currentNodeConnectOutX = newNodeConnectOutX;
+            currentNodeConnectOutY = newNodeConnectOutY;
+
+            const newNodeConnectInX = (currentNodeConnectInX - center.x) * Math.cos(outAngle) - (currentNodeConnectInY - center.y) * Math.sin(outAngle) + center.x;
+            const newNodeConnectInY = (currentNodeConnectInX - center.x) * Math.sin(outAngle) + (currentNodeConnectInY - center.y) * Math.cos(outAngle) + center.y;
+            currentNodeConnectInX = newNodeConnectInX;
+            currentNodeConnectInY = newNodeConnectInY;
+
+        }
+        console.log(result);
+        return result;
     }
-    useEffectOnce(() => {
-        const simulation = d3
-            .forceSimulation(nodes)
-            .force('link', d3.forceLink(links))
-            .force('charge', d3.forceManyBody().strength(-2000))
-            .force('x', d3.forceX())
-            .force('y', d3.forceY())
-        const svg = d3
-            .create('svg')
-            .attr('width', 400)
-            .attr('height', 300)
-            .attr('viewBox', '-100, -75, 200, 150')
-            .style('font', '12px sans-serif')
-
-        svg
-            .append('defs')
-            .selectAll('marker')
-            .data(['blocked'])
-            .join('marker')
-            .attr('id', (d) => `arrow-${d}`)
-            .attr('viewBox', '0 0 10 10')
-            .attr('refX', 38)
-            .attr('refY', -5)
-            .attr('markerWidth', 8)
-            .attr('markerHeight', 8)
-            .attr('orient', 'auto')
-            .append('path')
-            .attr('fill', 'red')
-            .attr('d', 'M0,-5L10,0L0,5')
-
-        const link = svg
-            .append('g')
-            .attr('fill', 'none')
-            .attr('stroke-width', 1)
-            .selectAll('path')
-            .data(links)
-            .join('path')
-            .attr('stroke', 'red')
-            .attr('marker-end', (d) => `url(#arrow-${d.type})`)
-            .join('g')
-
-        const node = svg
-            .append('g')
-            .attr('fill', 'currentColor')
-            .attr('stroke-linecap', 'round')
-            .attr('stroke-linejoin', 'round')
-            .selectAll('g')
-            .data(nodes)
-            .join('g')
-
-        node
-            .append('circle')
-            .attr('stroke', 'black')
-            .attr('stroke-width', 1)
-            .attr('fill', 'white')
-            .attr('r', 25)
-            .on('mouseover', function (d, i) {
-                setNodeCurrentLookingAt(i)
-            })
-
-        node
-            .append('text')
-            .attr('x', -20)
-            .attr('y', 4)
-            .text((d) => d.id.slice(d.id.length - 6))
-            .clone(true)
-            .lower()
-            .attr('fill', 'none')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 3)
-
-        simulation.on('tick', () => {
-            link.attr('d', linkArc)
-            node.attr('transform', (d) => `translate(${d.x},${d.y})`)
-        })
-
-        containerRef.current?.appendChild(svg.node()!)
-    })
+    const outAngle = 360 / data.nodes.length;
+    const layout = calcCircularLayout(data.nodes.length, {x: 150, y: 150}, 100);
     return (
-        <div ref={containerRef} />
+        <svg className="container" height={300} width={300}>
+            <defs>
+                <marker id="triangle" markerUnits="strokeWidth" markerWidth="5" markerHeight="4" refX="0" refY="2" orient="auto">
+                    <path d="M 0 0 L 5 2 L 0 4 z" />
+                </marker>
+            </defs>
+            {data.links.map((link, index) => (
+                <path
+                    d={`
+                    M ${layout[link.source].connectOutX},${layout[link.source].connectOutY}
+                    A 100,100 ${-outAngle} 0,0 ${layout[link.target].connectInX},${layout[link.target].connectInY}`}
+                    key={`line-${index}`}
+                    fill="none"
+                    stroke="#4679BD"
+                    markerEnd="url(#triangle)"
+                />
+            ))}
+            {data.nodes.map((n, i) => (
+                <g key={n.id}>
+                    <circle cx={layout[i].x} cy={layout[i].y} r={30} fill="white" stroke="#000" />
+                    <text textAnchor="middle" x={layout[i].x} y={layout[i].y+5}>
+                        {n.id?.toString().slice(n.id.toString().length - 6)}
+                    </text>
+                </g>
+            ))}
+        </svg>
     )
 }
 

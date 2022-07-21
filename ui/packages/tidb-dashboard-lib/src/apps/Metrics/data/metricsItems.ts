@@ -74,7 +74,7 @@ const metricsItems = [
         type: 'bar_stacked'
       },
       {
-        title: 'Database time by SQL Phase',
+        title: 'Database Time by SQL Phase',
         queries: [
           {
             query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,

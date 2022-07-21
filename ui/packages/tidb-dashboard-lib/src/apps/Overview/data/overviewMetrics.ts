@@ -55,7 +55,7 @@ const overviewMetrics = [
       }
     ],
     nullValue: TransformNullValue.AS_ZERO,
-    unit: 'percent',
+    unit: 'percentunit',
     type: 'line'
   },
   {
@@ -67,7 +67,7 @@ const overviewMetrics = [
       }
     ],
     nullValue: TransformNullValue.AS_ZERO,
-    unit: 'decbytes',
+    unit: 'bytes',
     type: 'line'
   },
   {
@@ -84,7 +84,7 @@ const overviewMetrics = [
         name: '{instance}-read'
       }
     ],
-    unit: 'KBs',
+    unit: 'Bps',
     type: 'line'
   }
 ]

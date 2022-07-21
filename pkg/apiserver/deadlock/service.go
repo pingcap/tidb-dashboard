@@ -53,7 +53,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 func (s *Service) getList(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	var results []Model
-	err := db.Table(DeadlockTable).Find(&results)
+	err := db.Table(DeadlockTable).Find(&results).Error
 	if err != nil {
 		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return

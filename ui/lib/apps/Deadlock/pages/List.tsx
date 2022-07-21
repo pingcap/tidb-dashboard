@@ -8,14 +8,27 @@ import {
 } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 import { useMemoizedFn } from 'ahooks'
-import React, { useMemo, useState } from 'react'
+import { CacheContext } from '@lib/utils/useCache'
+import React, { useMemo, useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEffectOnce } from 'react-use'
 
 function List() {
+    const cache = useContext(CacheContext)
     let [isLoading, setIsLoading] = useState(true)
     let [items, setItems] = useState([] as DeadlockModel[])
     const navigate = useNavigate()
+    const pullItems = async () => {
+        setIsLoading(true)
+        const { data } = await client.getInstance().deadlockListGet()
+        data.map(it => {
+            let items = cache?.get(`deadlock-${it.id}`) || [];
+            items.push(it);
+            cache?.set(`deadlock-${it.id}`, items);
+        })
+        setItems(data)
+        setIsLoading(false)
+    }
     const handleRowClick = useMemoizedFn(
         (record, index, ev: React.MouseEvent<HTMLElement>) => {
             openLink(`/deadlock/detail?id=${record.id}`, ev, navigate)
@@ -28,19 +41,29 @@ function List() {
             .deadlockListGet()
             .then((res) => {
                 setItems(res.data)
+                res.data.map(it => {
+                    let items = cache?.get(`deadlock-${it.id}`) || [];
+                    items.push(it);
+                    cache?.set(`deadlock-${it.id}`, items);
+                })
+            })
+            .catch((e) => {
+                console.error(e)
+            })
+            .finally(() => {
                 setIsLoading(false)
             })
     })
     const summary = useMemo(() => {
         let result = new Map()
         for (const item of items) {
-            let summeryEntry = result.get(item.id) || {
+            let summaryEntry = result.get(item.id) || {
                 id: item.id,
                 occur_time: item.occur_time,
                 items: [],
             }
-            summeryEntry.items.push(item)
-            result.set(item.id, summeryEntry)
+            summaryEntry.items.push(item)
+            result.set(item.id, summaryEntry)
         }
         return result
     }, [items])
@@ -49,12 +72,7 @@ function List() {
             <Card noMarginBottom>
                 <AutoRefreshButton
                     disabled={isLoading}
-                    onRefresh={async () => {
-                        setIsLoading(true)
-                        const { data } = await client.getInstance().deadlockListGet()
-                        setItems(data)
-                        setIsLoading(false)
-                    }}
+                    onRefresh={pullItems}
                 />
             </Card>
             <AnimatedSkeleton showSkeleton={isLoading}>

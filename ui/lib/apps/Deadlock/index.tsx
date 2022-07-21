@@ -5,14 +5,17 @@ import useCache, { CacheContext } from '@lib/utils/useCache'
 import { Root } from '@lib/components'
 import { List, Detail } from './pages'
 export default function () {
+  const cache = useCache(32)
   return (
     <Root>
+      <CacheContext.Provider value={cache}>
       <Router>
         <Routes>
           <Route path="/deadlock" element={<List />} />
           <Route path="/deadlock/detail" element={<Detail />} />
         </Routes>
-      </Router>
+        </Router>
+      </CacheContext.Provider>
     </Root>
   )
 }

@@ -127,42 +127,7 @@ function DeadlockChainGraph(prop: Prop) {
         containerRef.current?.appendChild(svg.node()!)
     })
     return (
-        <div>
-            <div ref={containerRef} />
-            <CardTable
-                loading={false}
-                columns={[
-                    {
-                        name: 'try_lock_trx',
-                        key: 'try_lock_trx',
-                        minWidth: 100,
-                        onRender: (it) => it.try_lock_trx,
-                    },
-                    {
-                        name: 'sql',
-                        key: 'sql',
-                        minWidth: 350,
-                        onRender: (it) => <HighlightSQL sql={it.sql} compact />,
-                    },
-                    {
-                        name: 'locked_key',
-                        key: 'locked_key',
-                        minWidth: 300,
-                        onRender: (it) => it.locked_key,
-                    },
-                    {
-                        name: 'holding_lock_trx',
-                        key: 'holding_lock_trx',
-                        minWidth: 150,
-                        onRender: (it) => it.holding_lock_trx,
-                    },
-                ]}
-                items={prop.deadlockChain}
-                orderBy={'try_lock_trx'}
-                desc={false}
-                data-e2e="detail_tabs_deadlock"
-            />
-        </div>
+        <div ref={containerRef} />
     )
 }
 

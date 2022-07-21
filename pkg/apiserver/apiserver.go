@@ -136,7 +136,6 @@ var Modules = fx.Options(
 	slowquery.Module,
 	debugapi.Module,
 	topsql.Module,
-	visualplan.Module,
 	deadlock.Module,
 )
 

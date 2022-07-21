@@ -38,6 +38,7 @@ import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
 import AppDebugAPI from '@lib/apps/DebugAPI/index.meta'
 import AppOptimizerTrace from '@lib/apps/OptimizerTrace/index.meta'
+import AppDeadlock from '@lib/apps/Deadlock/index.meta'
 import { handleSSOCallback, isSSOCallback } from '@lib/utils/authSSO'
 import { mustLoadAppInfo, reloadWhoAmI, NgmState } from '@lib/utils/store'
 // import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
@@ -169,6 +170,7 @@ async function webPageStart() {
     .register(AppConfiguration)
     .register(AppDebugAPI)
     .register(AppOptimizerTrace)
+    .register(AppDeadlock)
   // .register(__APP_NAME__)
   // NOTE: Don't remove above comment line, it is a placeholder for code generator
 

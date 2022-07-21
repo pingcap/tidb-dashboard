@@ -134,6 +134,7 @@ function Sider({
     // warning: "diagnose" app doesn't release yet
     // useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
+    useAppMenuItem(registry, 'deadlock'),
     // useAppMenuItem(registry, '__APP_NAME__'),
     // NOTE: Don't remove above comment line, it is a placeholder for code generator
     debugSubMenu,

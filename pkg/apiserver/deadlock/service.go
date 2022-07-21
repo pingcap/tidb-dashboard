@@ -35,6 +35,10 @@ func newService(p ServiceParams) *Service {
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/deadlock")
+	endpoint.Use(
+		auth.MWAuthRequired(),
+		utils.MWConnectTiDB(s.params.TiDBClient),
+	)
 	{
 		endpoint.GET("/list", s.getList)
 	}

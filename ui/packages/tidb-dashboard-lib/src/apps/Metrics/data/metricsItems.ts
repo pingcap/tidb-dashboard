@@ -74,7 +74,7 @@ const metricsItems = [
         type: 'bar_stacked'
       },
       {
-        title: 'Database Time by Steps of SQL Phase',
+        title: 'Database Time by SQL Phase',
         queries: [
           {
             query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
@@ -101,7 +101,7 @@ const metricsItems = [
         type: 'bar_stacked'
       },
       {
-        title: 'Database Execute Time',
+        title: 'SQL Execute Time Overview',
         queries: [
           {
             query:
@@ -192,8 +192,8 @@ const metricsItems = [
         queries: [
           {
             query:
-              'sum(rate(tidb_server_query_total[$__rate_interval])) by (result)',
-            name: 'query {result}'
+              'sum(rate(tidb_server_query_total[$__rate_interval])) by (type)',
+            name: '{type}'
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
@@ -322,7 +322,7 @@ const metricsItems = [
         type: 'line'
       },
       {
-        title: 'Execution Duraion',
+        title: 'Execute Duration',
         queries: [
           {
             query:

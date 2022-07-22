@@ -1,4 +1,3 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
 import { IColumnKeys, TimeRange } from '@lib/components'
 import { mixpanel } from '@lib/utils/telemetry'
 

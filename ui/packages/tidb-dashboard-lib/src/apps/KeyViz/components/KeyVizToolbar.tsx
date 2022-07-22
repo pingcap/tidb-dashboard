@@ -15,6 +15,7 @@ import Flexbox from '@g07cha/flexbox-react'
 import { AutoRefreshButton, Card, Toolbar } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { isDistro } from '@lib/utils/distro'
+import { telemetry as keyVizTelementry } from '../utils/telemetry'
 
 export interface IKeyVizToolbarProps {
   enabled: boolean
@@ -41,29 +42,49 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
 
   handleRefreshClick = () => {
     this.props.onRefresh()
+    keyVizTelementry.clickManualRefresh()
   }
 
   handleAutoRefreshMenuClick = (key) => {
     this.props.onChangeAutoRefresh(key)
+    keyVizTelementry.clickAutoRefresh()
   }
 
   handleDateRange = (value) => {
     this.props.onChangeDateRange(value)
+    keyVizTelementry.changeTimeDuration(value)
   }
 
   handleMetricChange = (value) => {
     this.props.onChangeMetric(value)
+    keyVizTelementry.changeMetric(value)
   }
 
   handleBrightLevel = (exp: number) => {
     this.props.onChangeBrightLevel(Math.pow(2, exp))
     this.setState({ exp })
+    keyVizTelementry.changeBright(exp)
   }
 
   handleBrightnessDropdown = () => {
     setTimeout(() => {
       this.handleBrightLevel(this.state.exp)
     }, 0)
+  }
+
+  handleToggleBrush = () => {
+    this.props.onToggleBrush()
+    keyVizTelementry.toggleBrush()
+  }
+
+  handleShowSetting = () => {
+    this.props.onShowSettings()
+    keyVizTelementry.openSetting()
+  }
+
+  handleResetZoom = () => {
+    this.props.onResetZoom()
+    keyVizTelementry.resetZoom()
   }
 
   render() {
@@ -74,8 +95,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
       dateRange,
       isOnBrush,
       metricType,
-      autoRefreshSeconds,
-      onShowSettings
+      autoRefreshSeconds
     } = this.props
 
     // in hours
@@ -138,7 +158,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
               >
                 {t('keyviz.toolbar.zoom.select')}
               </Button>
-              <Button disabled={!enabled} onClick={this.props.onResetZoom}>
+              <Button disabled={!enabled} onClick={this.handleResetZoom}>
                 {t('keyviz.toolbar.zoom.reset')}
               </Button>
             </Button.Group>
@@ -197,7 +217,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
               mouseLeaveDelay={0}
               title={t('keyviz.settings.title')}
             >
-              <SettingOutlined onClick={onShowSettings} />
+              <SettingOutlined onClick={this.handleShowSetting} />
             </Tooltip>
             {!isDistro() && (
               <Tooltip
@@ -209,6 +229,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
                 <QuestionCircleOutlined
                   onClick={() => {
                     window.open(t('keyviz.settings.help_url'), '_blank')
+                    keyVizTelementry.openHelp()
                   }}
                 />
               </Tooltip>

@@ -152,7 +152,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
             <Button.Group>
               <Button
                 disabled={!enabled}
-                onClick={this.props.onToggleBrush}
+                onClick={this.handleToggleBrush}
                 icon={<ArrowsAltOutlined />}
                 type={isOnBrush ? 'primary' : 'default'}
               >

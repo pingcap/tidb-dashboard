@@ -115,7 +115,11 @@ slow_query:
       back: List
       sql: Query
       previous_sql: Previous Query
-      plan: Plan
+    plan:
+      title: Execution Plan
+      visual: Visual
+      text: Text
+      modal_title: Visual Plan
     tabs:
       basic: Basic
       time: Time

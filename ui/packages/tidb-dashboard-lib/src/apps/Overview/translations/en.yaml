@@ -18,6 +18,6 @@ overview:
   metrics:
     total_requests: QPS
     latency: Latency
-    cpu: CPU Utilization
-    memory: Memory Utilization
-    io: IO Utilization
+    cpu: TiDB CPU Usage
+    memory: TiDB Memory Usage
+    io: IO Usage

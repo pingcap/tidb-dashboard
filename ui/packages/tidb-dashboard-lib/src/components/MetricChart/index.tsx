@@ -19,7 +19,6 @@ import {
   Axis,
   // BrushEvent,
   Chart,
-  DomainRange,
   LineSeries,
   Position,
   ScaleType,
@@ -86,14 +85,13 @@ for (const key in translations) {
 export interface IQueryOption {
   query: string
   name: string
-  color?: string
+  color?: string | ((qd: QueryData) => string)
 }
 
 export interface IMetricChartProps {
   // When object ref changed, there will be a data reload.
   range: TimeRangeValue
 
-  yDomain?: DomainRange
   queries: IQueryOption[]
   unit?: string
   type: GraphType
@@ -122,7 +120,6 @@ type Data = {
 export default function MetricChart({
   queries,
   range,
-  yDomain,
   unit,
   type,
   height = 200,
@@ -220,12 +217,15 @@ export default function MetricChart({
                 })
               : data
 
-          sd.push({
+          const d: QueryData = {
             id: `${queryIdx}_${seriesIdx}`,
             name: format(queries[queryIdx].name, promResult.metric),
-            data: transformedData,
-            color: queries[queryIdx].color
-          })
+            data: transformedData
+          }
+          const colorOrFn = queries[queryIdx].color
+
+          d.color = typeof colorOrFn === 'function' ? colorOrFn(d) : colorOrFn
+          sd.push(d)
         })
       })
       setData({
@@ -301,7 +301,6 @@ export default function MetricChart({
             unit ? getValueFormat(unit)(v, 2) : Number(v).toFixed(0)
           }
           ticks={5}
-          domain={yDomain}
         />
         {data?.values.map((qd) => renderQueryData(type, qd))}
         {data && (

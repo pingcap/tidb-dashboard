@@ -12,6 +12,7 @@ import SlowQueryTab from './SlowQueryTab'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import type { IQuery } from './PlanDetail'
 import { StatementContext } from '../../context'
+import { telemetry as stmtTelemetry } from '../../utils/telemetry'
 
 export default function DetailTabs({
   data,
@@ -105,5 +106,13 @@ export default function DetailTabs({
       content: () => <SlowQueryTab query={query} />
     }
   ]
-  return <CardTabs animated={false} tabs={tabs} />
+  return (
+    <CardTabs
+      animated={false}
+      tabs={tabs}
+      onChange={(tab) => {
+        stmtTelemetry.switchDetailTab(tab)
+      }}
+    />
+  )
 }

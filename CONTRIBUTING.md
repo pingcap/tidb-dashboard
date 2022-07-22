@@ -64,6 +64,11 @@ The followings are required for developing TiDB Dashboard:
    # In tidb-dashboard directory:
    make dev && make run
    ```
+   If you meet up with an error like
+   ```
+   2022/07/22 09:48:01 internal error: package "context" without types was imported from "github.com/pingcap/tidb-dashboard/util/topo" util/topo/provider.go:20: running "mockery": exit status 1
+   ```
+   This is because some depedencies we are using [does not support go 1.18](https://github.com/vektra/mockery/issues/434), you may downgrade your go version to go 1.17 with [gvm](https://github.com/moovweb/gvm).
 
 1. Build and run front-end server in a new terminal:
 

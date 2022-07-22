@@ -1,7 +1,7 @@
 deadlock:
   nav_title: Deadlock information
   fields:
-    try_lock_trx_id: Transaction holding the lock
-    trx_holding_lock: Transaction acquiring the lock
+    try_lock_trx_id: Transaction acquiring the lock
+    trx_holding_lock: Transaction holding the lock
     current_sql: SQL for acquiring the lock
     key: Locked key

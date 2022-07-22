@@ -4,7 +4,6 @@ import {
     AutoRefreshButton,
     Card,
     CardTable,
-    HighlightSQL,
 } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 import { useMemoizedFn } from 'ahooks'
@@ -24,7 +23,7 @@ function List() {
         cache?.clear()
         setIsLoading(true)
         const { data } = await client.getInstance().deadlockListGet()
-        data.map(it => {
+        data.forEach(it => {
             let items = cache?.get(`deadlock-${it.id}`) || [];
             items.push(it);
             cache?.set(`deadlock-${it.id}`, items);
@@ -45,7 +44,7 @@ function List() {
             .deadlockListGet()
             .then((res) => {
                 setItems(res.data)
-                res.data.map(it => {
+                res.data.forEach(it => {
                     let items = cache?.get(`deadlock-${it.id}`) || [];
                     items.push(it);
                     cache?.set(`deadlock-${it.id}`, items);

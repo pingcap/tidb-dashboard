@@ -1,7 +1,6 @@
 import React, { useContext, useState } from 'react'
 import client, { DeadlockModel } from '@lib/client'
-import { useLocation, useParams } from 'react-router'
-import { Card } from 'antd'
+import { useLocation } from 'react-router'
 import { CardTable, HighlightSQL } from '@lib/components'
 import { useEffectOnce } from 'react-use'
 import DeadlockChainGraph from '../components/DeadlockChainGraph'
@@ -24,8 +23,7 @@ function Detail() {
                 .getInstance()
                 .deadlockListGet()
                 .then(({ data }) => {
-                    console.log(data);
-                    data.map(it => {
+                    data.forEach(it => {
                         let items = cache?.get(`deadlock-${it.id}`) || [];
                         items.push(it);
                         cache?.set(`deadlock-${it.id}`, items);

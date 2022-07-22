@@ -1,6 +1,5 @@
 import { DeadlockModel } from '@lib/client'
-import React, { useRef, useState } from 'react'
-import { useEffectOnce } from 'react-use'
+import React from 'react'
 
 interface Prop {
     deadlockChain: DeadlockModel[]
@@ -14,7 +13,7 @@ function DeadlockChainGraph(prop: Prop) {
         }),
         links: prop.deadlockChain.map((d, i) => ({
             source: i,
-            target: prop.deadlockChain.findIndex(it => it.trx_holding_lock == d.try_lock_trx_id),
+            target: prop.deadlockChain.findIndex(it => it.trx_holding_lock === d.try_lock_trx_id),
             type: 'blocked',
             key: d.key
         })),
@@ -32,13 +31,7 @@ function DeadlockChainGraph(prop: Prop) {
         const outAngle = 2 * Math.PI / nodeSize;
         const halfInnerAngle = Math.PI * (nodeSize - 2) / nodeSize / 2;
         let currentNodeConnectOutX = center.x - Math.sin(halfInnerAngle) * 30;
-        if (nodeSize == 2) {
-            currentNodeConnectOutX = center.x - 30;
-        }
         let currentNodeConnectOutY = center.y + radius - Math.cos(halfInnerAngle) * 30;
-        if (nodeSize == 2) {
-            currentNodeConnectOutY = center.y + radius;
-        }
         let currentNodeConnectInX = center.x + Math.sin(halfInnerAngle) * 30;
         let currentNodeConnectInY = center.y + radius - Math.cos(halfInnerAngle);
         let angle = 0;
@@ -60,7 +53,6 @@ function DeadlockChainGraph(prop: Prop) {
             currentNodeConnectInY = newNodeConnectInY;
 
         }
-        console.log(result);
         return result;
     }
     const outAngle = 360 / data.nodes.length;

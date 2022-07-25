@@ -1,4 +1,4 @@
-metrics:
+monitoring:
   nav_title: 监控指标
   category:
     application_connection: 应用连接

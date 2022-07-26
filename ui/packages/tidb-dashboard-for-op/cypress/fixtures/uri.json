@@ -5,6 +5,5 @@
   "slow_query": "/slow_query",
   "statement": "/statement",
   "configuration": "/configuration",
-  "topsql": "/topsql",
-  "deadlock": "/deadlock"
+  "topsql": "/topsql"
 }

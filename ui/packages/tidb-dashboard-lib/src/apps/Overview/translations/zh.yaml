@@ -1,0 +1,23 @@
+overview:
+  nav_title: 概况
+  view_more_metrics: 查看更多指标
+  top_statements:
+    title: 最耗时的 SQL 语句
+  recent_slow_query:
+    title: 最近慢查询
+  instances:
+    title: 在线实例
+  monitor_alert:
+    title: 监控和告警
+    view_grafana_monitor: 查看监控
+    view_monitor_warn: 监控不可用
+    view_alerts: '查看 {{alertCount}} 条告警'
+    view_zero_alerts: 查看告警
+    view_alerts_warn: 告警不可用
+    run_diagnose: 运行诊断
+  metrics:
+    total_requests: QPS
+    latency: 延迟
+    cpu: TiDB CPU 使用
+    memory: TiDB 内存使用
+    io: IO 使用

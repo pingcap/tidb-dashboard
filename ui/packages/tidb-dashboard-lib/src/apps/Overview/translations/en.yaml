@@ -1,0 +1,23 @@
+overview:
+  nav_title: Overview
+  view_more_metrics: View More Metrics
+  top_statements:
+    title: Time Consuming SQL Statements
+  recent_slow_query:
+    title: Recent Slow Queries
+  instances:
+    title: Alive Instances
+  monitor_alert:
+    title: Monitor & Alert
+    view_grafana_monitor: View Grafana Metrics
+    view_monitor_warn: Metrics unavailable
+    view_alerts: 'View {{alertCount}} Alerts'
+    view_zero_alerts: 'View Alerts'
+    view_alerts_warn: Alert unavailable
+    run_diagnose: Run Diagnostics
+  metrics:
+    total_requests: QPS
+    latency: Latency
+    cpu: TiDB CPU Usage
+    memory: TiDB Memory Usage
+    io: IO Usage

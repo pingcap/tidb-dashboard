@@ -1,0 +1,25 @@
+error:
+  title: Error
+  common:
+    network: Network connection error
+    unauthenticated: Please sign in again (session is expired)
+    forbidden: The current user is not authorized to perform this action
+  api:
+    user:
+      signin:
+        invalid_code: Authorization Code is invalid or expired
+        insufficient_priv: The user does not have sufficient privileges to access {{distro.tidb}} Dashboard.
+    slow_query:
+      export_no_data: No slow queires can be exported
+    statement:
+      export_no_data: No statements can be exported
+    continuous_profiling:
+      ng_monitoring_not_ready: |
+        To use or learn more about "Continuous Profiling" feature, please search for "Continuous Profiling" in the {{distro.tidb}} official docs for more information.
+        If it doesn't resove the issue, please contact the product's technical support.
+    feature_not_supported: The cluster of this version doesn't support or can't use this feature, please contact with technical support to get more information.
+  tidb:
+    no_alive_tidb: No alive {{distro.tidb}} instance
+    pd_access_failed: Failed to access {{distro.pd}} node
+    tidb_conn_failed: Failed to connect to {{distro.tidb}}
+    tidb_auth_failed: '{{distro.tidb}} authentication failed'

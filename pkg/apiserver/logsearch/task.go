@@ -11,6 +11,7 @@ import (
 	"math"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -207,7 +208,7 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 		fileName = fileName + "-slow"
 	}
 	savedPath := path.Join(*t.taskGroup.model.LogStoreDir, fileName+".zip")
-	f, err := os.Create(savedPath)
+	f, err := os.Create(filepath.Clean(savedPath))
 	if err != nil {
 		t.setError(err)
 		return

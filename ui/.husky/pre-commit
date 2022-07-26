@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd ui
+pnpm lint-staged

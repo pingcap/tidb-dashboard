@@ -5,7 +5,7 @@ package pdtopo
 import (
 	"context"
 
-	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap/tidb-dashboard/util/topo"
 )

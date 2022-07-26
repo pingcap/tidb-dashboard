@@ -272,7 +272,7 @@ const monitoringItems = [
         queries: [
           {
             query:
-              'sum(rate(tidb_server_get_token_duration_seconds_sum{sql_type="general"}[$__rate_interval])) / sum(rate(tidb_server_get_token_duration_seconds_count{sql_type="general"}[$__rate_interval]))',
+              'sum(rate(tidb_server_get_token_duration_seconds_sum[1m])) / sum(rate(tidb_server_get_token_duration_seconds_count[1m]))',
             name: 'avg'
           },
           {

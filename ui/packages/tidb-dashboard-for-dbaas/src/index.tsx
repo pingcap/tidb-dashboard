@@ -36,9 +36,10 @@ function trackRouteChange() {
 type StartOptions = {
   apiPathBase: string
   apiToken: string
+  mixpanelUser: string
 }
 
-function start({ apiPathBase, apiToken }: StartOptions) {
+function start({ apiPathBase, apiToken, mixpanelUser }: StartOptions) {
   // i18n
   i18next.changeLanguage('en')
 
@@ -48,8 +49,14 @@ function start({ apiPathBase, apiToken }: StartOptions) {
   loadAppInfo()
 
   // telemetry
-  telemetry.init()
+  telemetry.init(
+    process.env.REACT_APP_MIXPANEL_HOST,
+    process.env.REACT_APP_MIXPANEL_TOKEN
+  )
   telemetry.enable(`tidb-dashboard-for-dbaas-${process.env.REACT_APP_VERSION}`)
+  if (mixpanelUser) {
+    telemetry.identifyUser(mixpanelUser)
+  }
   trackRouteChange()
 
   renderApp()

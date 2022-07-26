@@ -80,7 +80,10 @@ async function webPageStart() {
     return
   }
 
-  telemetry.init()
+  telemetry.init(
+    process.env.REACT_APP_MIXPANEL_HOST,
+    process.env.REACT_APP_MIXPANEL_TOKEN
+  )
   if (info?.enable_telemetry) {
     // mixpanel
     telemetry.enable(info.version?.internal_version!)

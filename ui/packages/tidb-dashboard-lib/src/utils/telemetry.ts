@@ -3,9 +3,7 @@ import { getPathInLocationHash } from './routing'
 
 export { mixpanel }
 
-export function init() {
-  const token =
-    process.env.REACT_APP_MIXPANEL_TOKEN || '00000000000000000000000000000000'
+function init(apiHost?: string, token?: string) {
   let options: Partial<Config> = {
     autotrack: false,
     opt_out_tracking_by_default: true,
@@ -19,16 +17,15 @@ export function init() {
     ],
     debug: process.env.NODE_ENV === 'development'
   }
-  const apiHost = process.env.REACT_APP_MIXPANEL_HOST
   if (apiHost) {
     options['api_host'] = apiHost
   }
-  mixpanel.init(token, options)
+  mixpanel.init(token || '00000000000000000000000000000000', options)
   // disable mixpanel to report data immediately
   mixpanel.opt_out_tracking()
 }
 
-export function enable(dashboardVersion: string) {
+function enable(dashboardVersion: string) {
   mixpanel.register({
     $current_url: getPathInLocationHash(),
     dashboard_version: dashboardVersion
@@ -36,8 +33,12 @@ export function enable(dashboardVersion: string) {
   mixpanel.opt_in_tracking()
 }
 
+function identifyUser(userId: string) {
+  mixpanel.identify(userId)
+}
+
 // TODO: refine naming
-export function trackRouteChange(curRoute: string) {
+function trackRouteChange(curRoute: string) {
   mixpanel.register({
     $current_url: curRoute
   })
@@ -47,6 +48,6 @@ export function trackRouteChange(curRoute: string) {
 export default {
   init,
   enable,
-  mixpanel,
+  identifyUser,
   trackRouteChange
 }

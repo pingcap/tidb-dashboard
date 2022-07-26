@@ -20,6 +20,7 @@ export * from './conprof-group-profiles';
 export * from './conprof-ng-monitoring-config';
 export * from './conprof-profile-detail';
 export * from './conprof-target';
+export * from './deadlock-model';
 export * from './decorator-label-key';
 export * from './diagnose-gen-diagnosis-report-request';
 export * from './diagnose-generate-metrics-relation-request';

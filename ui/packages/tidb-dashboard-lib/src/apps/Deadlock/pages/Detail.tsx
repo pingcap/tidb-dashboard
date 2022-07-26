@@ -1,13 +1,16 @@
 import React, { useContext, useState } from 'react'
-import client, { DeadlockModel } from '@lib/client'
-import { useLocation } from 'react-router'
-import { CardTable, HighlightSQL } from '@lib/components'
+import { DeadlockModel } from '@lib/client'
+import { useLocation } from 'react-router-dom'
 import { useEffectOnce } from 'react-use'
-import DeadlockChainGraph from '../components/DeadlockChainGraph'
-import { CacheContext } from '@lib/utils/useCache'
 import { useTranslation } from 'react-i18next'
 
+import { CardTable, HighlightSQL } from '@lib/components'
+import { CacheContext } from '@lib/utils/useCache'
+import DeadlockChainGraph from '../components/DeadlockChainGraph'
+import { DeadlockContext } from '../context'
+
 function Detail() {
+  const ctx = useContext(DeadlockContext)
   const { t } = useTranslation()
   const cache = useContext(CacheContext)
   const id = new URLSearchParams(useLocation().search).get('id')
@@ -19,18 +22,15 @@ function Detail() {
       setItems(cache.get(`deadlock-${id}`))
       setIsLoading(false)
     } else {
-      client
-        .getInstance()
-        .deadlockListGet()
-        .then(({ data }) => {
-          data.forEach((it) => {
-            let items = cache?.get(`deadlock-${it.id}`) || []
-            items.push(it)
-            cache?.set(`deadlock-${it.id}`, items)
-          })
-          setItems(data.filter((it) => it.id?.toString() === id))
-          setIsLoading(false)
+      ctx!.ds.deadlockListGet().then(({ data }) => {
+        data.forEach((it) => {
+          let items = cache?.get(`deadlock-${it.id}`) || []
+          items.push(it)
+          cache?.set(`deadlock-${it.id}`, items)
         })
+        setItems(data.filter((it) => it.id?.toString() === id))
+        setIsLoading(false)
+      })
     }
   })
   return (

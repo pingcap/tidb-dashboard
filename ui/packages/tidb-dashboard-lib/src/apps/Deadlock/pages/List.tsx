@@ -1,4 +1,4 @@
-import client, { DeadlockModel } from '@lib/client'
+import { DeadlockModel } from '@lib/client'
 import {
   AnimatedSkeleton,
   AutoRefreshButton,
@@ -12,17 +12,21 @@ import React, { useMemo, useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEffectOnce } from 'react-use'
 import { useTranslation } from 'react-i18next'
+import { DeadlockContext } from '../context'
 
 function List() {
+  const ctx = useContext(DeadlockContext)
+
   const { t } = useTranslation()
   const cache = useContext(CacheContext)
   let [isLoading, setIsLoading] = useState(true)
   let [items, setItems] = useState([] as DeadlockModel[])
   const navigate = useNavigate()
+
   const pullItems = async () => {
     cache?.clear()
     setIsLoading(true)
-    const { data } = await client.getInstance().deadlockListGet()
+    const { data } = await ctx!.ds.deadlockListGet()
     data.forEach((it) => {
       let items = cache?.get(`deadlock-${it.id}`) || []
       items.push(it)
@@ -39,8 +43,7 @@ function List() {
   useEffectOnce(() => {
     setIsLoading(true)
     cache?.clear()
-    client
-      .getInstance()
+    ctx!.ds
       .deadlockListGet()
       .then((res) => {
         setItems(res.data)

@@ -48,3 +48,6 @@ export * from './Diagnose'
 
 export { default as OptimizerTraceApp } from './OptimizerTrace'
 export * from './OptimizerTrace'
+
+export { default as DeadlockApp } from './Deadlock'
+export * from './Deadlock'

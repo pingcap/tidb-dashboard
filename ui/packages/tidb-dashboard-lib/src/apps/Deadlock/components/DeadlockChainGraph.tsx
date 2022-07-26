@@ -1,5 +1,5 @@
-import { DeadlockModel } from '@lib/client'
 import React from 'react'
+import { DeadlockModel } from '@lib/client'
 
 interface Prop {
   deadlockChain: DeadlockModel[]

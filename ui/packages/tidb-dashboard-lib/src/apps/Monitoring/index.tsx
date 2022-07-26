@@ -5,21 +5,21 @@ import { Root } from '@lib/components'
 import { addTranslations } from '@lib/utils/i18n'
 
 import translations from './translations'
-import { MetricsContext } from './context'
+import { MonitoringContext } from './context'
 import { useLocationChange } from '@lib/hooks/useLocationChange'
-import Metrics from './components/Metrics'
+import Monitoring from './components/Monitoring'
 
 addTranslations(translations)
 
 function AppRoutes() {
   useLocationChange()
-  return <Metrics />
+  return <Monitoring />
 }
 
 export default function () {
-  const ctx = useContext(MetricsContext)
+  const ctx = useContext(MonitoringContext)
   if (ctx === null) {
-    throw new Error('MetricsContext must not be null')
+    throw new Error('MonitoringContext must not be null')
   }
 
   return (

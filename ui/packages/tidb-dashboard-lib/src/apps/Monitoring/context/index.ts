@@ -6,7 +6,7 @@ import { MetricsQueryResponse } from '@lib/client'
 
 import { ReqConfig } from '@lib/types'
 
-export interface IMetricsDataSource {
+export interface IMonitoringDataSource {
   metricsQueryGet(
     endTimeSec?: number,
     query?: string,
@@ -16,10 +16,10 @@ export interface IMetricsDataSource {
   ): AxiosPromise<MetricsQueryResponse>
 }
 
-export interface IMetricsContext {
-  ds: IMetricsDataSource
+export interface IMonitoringContext {
+  ds: IMonitoringDataSource
 }
 
-export const MetricsContext = createContext<IMetricsContext | null>(null)
+export const MonitoringContext = createContext<IMonitoringContext | null>(null)
 
-export const MetricsProvider = MetricsContext.Provider
+export const MonitoringProvider = MonitoringContext.Provider

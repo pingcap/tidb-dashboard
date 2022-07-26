@@ -1,12 +1,12 @@
 import {
-  IMetricsDataSource,
-  IMetricsContext,
+  IMonitoringDataSource,
+  IMonitoringContext,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 import client from '~/client'
 
-class DataSource implements IMetricsDataSource {
+class DataSource implements IMonitoringDataSource {
   metricsQueryGet(
     endTimeSec?: number,
     query?: string,
@@ -28,6 +28,6 @@ class DataSource implements IMetricsDataSource {
 
 const ds = new DataSource()
 
-export const ctx: IMetricsContext = {
+export const ctx: () => IMonitoringContext = () => ({
   ds
-}
+})

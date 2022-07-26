@@ -44,7 +44,7 @@ function transformColorByExecTimeOverview(legendLabel: string) {
   }
 }
 
-const metricsItems = [
+const monitoringItems = [
   {
     category: 'database_time',
     metrics: [
@@ -354,7 +354,7 @@ const metricsItems = [
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
-        unit: 's',
+        unit: 'short',
         type: 'line'
       },
       {
@@ -648,4 +648,4 @@ const metricsItems = [
   }
 ]
 
-export { metricsItems }
+export { monitoringItems }

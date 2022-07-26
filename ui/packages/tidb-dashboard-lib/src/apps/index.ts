@@ -1,8 +1,8 @@
 export { default as OverviewApp } from './Overview'
 export * from './Overview'
 
-export { default as MetricsApp } from './Metrics'
-export * from './Metrics'
+export { default as MonitoringApp } from './Monitoring'
+export * from './Monitoring'
 
 export { default as ClusterInfoApp } from './ClusterInfo'
 export * from './ClusterInfo'

@@ -61,7 +61,7 @@ export default function Metrics() {
             {isSomeLoading && <LoadingOutlined />}
           </Space>
           <Space>
-            <Link to={`/metrics`}>
+            <Link to={`/monitoring`}>
               <Button type="primary">{t('overview.view_more_metrics')}</Button>
             </Link>
           </Space>

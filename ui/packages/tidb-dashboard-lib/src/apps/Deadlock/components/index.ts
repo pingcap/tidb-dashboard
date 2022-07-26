@@ -1,3 +1,1 @@
-import DeadlockChainGraph from './DeadlockChainGraph'
-
-export { DeadlockChainGraph }
+export { default as DeadlockChainGraph } from './DeadlockChainGraph'

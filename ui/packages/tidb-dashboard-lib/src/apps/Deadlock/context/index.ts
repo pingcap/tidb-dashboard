@@ -1,9 +1,7 @@
 import { createContext } from 'react'
-
 import { AxiosPromise } from 'axios'
 
 import { DeadlockModel } from '@lib/client'
-
 import { ReqConfig } from '@lib/types'
 
 export interface IDeadlockDataSource {

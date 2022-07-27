@@ -1,5 +1,10 @@
 import React, { useState, useMemo } from 'react'
-import { ExperimentOutlined, BugOutlined, AimOutlined } from '@ant-design/icons'
+import {
+  ExperimentOutlined,
+  BugOutlined,
+  AimOutlined,
+  PullRequestOutlined
+} from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from 'ahooks'
@@ -104,6 +109,22 @@ function Sider({
     </Menu.SubMenu>
   )
 
+  const conflictSubMenuItems = [useAppMenuItem(registry, 'deadlock')]
+
+  const conflictSubMenu = (
+    <Menu.SubMenu
+      key="conflict"
+      title={
+        <span>
+          <PullRequestOutlined />
+          <span>{t('nav.sider.conflict')}</span>
+        </span>
+      }
+    >
+      {conflictSubMenuItems}
+    </Menu.SubMenu>
+  )
+
   const experimentalSubMenuItems = [
     useAppMenuItem(registry, 'query_editor'),
     useAppMenuItem(registry, 'configuration')
@@ -137,10 +158,10 @@ function Sider({
     // useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'monitoring'),
     useAppMenuItem(registry, 'search_logs'),
-    useAppMenuItem(registry, 'deadlock'),
     // useAppMenuItem(registry, '__APP_NAME__'),
     // NOTE: Don't remove above comment line, it is a placeholder for code generator
-    debugSubMenu
+    debugSubMenu,
+    conflictSubMenu
   ]
   if (topSQLSupport) {
     menuItems.splice(2, 0, topSQLMenu)

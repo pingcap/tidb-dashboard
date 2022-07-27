@@ -20,7 +20,7 @@ function List() {
   const { t } = useTranslation()
   const cache = useContext(CacheContext)
   let [isLoading, setIsLoading] = useState(true)
-  let [items, setItems] = useState([] as DeadlockModel[])
+  let [items, setItems] = useState<DeadlockModel[]>([])
   const navigate = useNavigate()
 
   const pullItems = async () => {
@@ -71,8 +71,24 @@ function List() {
       summaryEntry.items.push(item)
       result.set(item.id, summaryEntry)
     }
-    return result
+    return Array.from(result.values())
   }, [items])
+
+  const columns = [
+    { name: 'ID', key: 'id', minWidth: 100, onRender: (it) => it.id },
+    {
+      name: 'Transaction Count',
+      key: t('deadlock.fields.count'),
+      minWidth: 300,
+      onRender: (it) => it.items.length
+    },
+    {
+      name: 'Occur time',
+      key: t('deadlock.fields.occur_time'),
+      minWidth: 300,
+      onRender: (it) => new Date(it.occur_time).toLocaleString()
+    }
+  ]
   return (
     <div>
       <Card noMarginBottom>
@@ -81,22 +97,8 @@ function List() {
       <AnimatedSkeleton showSkeleton={isLoading}>
         <CardTable
           loading={isLoading}
-          columns={[
-            { name: 'ID', key: 'id', minWidth: 100, onRender: (it) => it.id },
-            {
-              name: 'Transaction Count',
-              key: t('deadlock.fields.count'),
-              minWidth: 300,
-              onRender: (it) => it.items.length
-            },
-            {
-              name: 'Occur time',
-              key: t('deadlock.fields.occur_time'),
-              minWidth: 300,
-              onRender: (it) => new Date(it.occur_time).toLocaleString()
-            }
-          ]}
-          items={Array.from(summary.values())}
+          columns={columns}
+          items={summary}
           orderBy={'occur_time'}
           desc={false}
           onRowClicked={handleRowClick}

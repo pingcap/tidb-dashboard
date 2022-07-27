@@ -1,5 +1,69 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { DeadlockModel } from '@lib/client'
+
+interface NodeMeta {
+  x: number
+  y: number
+  connectInX: number
+  connectInY: number
+  connectOutX: number
+  connectOutY: number
+}
+
+function calcCircularLayout(
+  center: { x: number; y: number },
+  circularRadius: number,
+  nodeSize: number,
+  nodeRadius: number
+): Array<NodeMeta> {
+  let result: Array<NodeMeta> = []
+  const outAngle = (2 * Math.PI) / nodeSize
+  const halfInnerAngle = (Math.PI * (nodeSize - 2)) / nodeSize / 2
+  let currentNodeConnectInX = center.x - Math.sin(halfInnerAngle) * nodeRadius
+  let currentNodeConnectInY =
+    center.y + circularRadius - Math.cos(halfInnerAngle) * nodeRadius
+  let currentNodeConnectOutX = center.x + Math.sin(halfInnerAngle) * nodeRadius
+  let currentNodeConnectOutY =
+    center.y + circularRadius - Math.cos(halfInnerAngle) * nodeRadius
+  let angle = 0
+  for (let i = 0; i < nodeSize; ++i) {
+    angle += outAngle
+    const x = center.x + circularRadius * Math.sin(angle)
+    const y = center.y + circularRadius * Math.cos(angle)
+
+    result.push({
+      x: x,
+      y: y,
+      connectInX: currentNodeConnectInX,
+      connectInY: currentNodeConnectInY,
+      connectOutX: currentNodeConnectOutX,
+      connectOutY: currentNodeConnectOutY
+    })
+
+    const newNodeConnectInX =
+      (currentNodeConnectInX - center.x) * Math.cos(outAngle) -
+      (currentNodeConnectInY - center.y) * Math.sin(outAngle) +
+      center.x
+    const newNodeConnectInY =
+      (currentNodeConnectInX - center.x) * Math.sin(outAngle) +
+      (currentNodeConnectInY - center.y) * Math.cos(outAngle) +
+      center.y
+    currentNodeConnectInX = newNodeConnectInX
+    currentNodeConnectInY = newNodeConnectInY
+
+    const newNodeConnectOutX =
+      (currentNodeConnectOutX - center.x) * Math.cos(outAngle) -
+      (currentNodeConnectOutY - center.y) * Math.sin(outAngle) +
+      center.x
+    const newNodeConnectOutY =
+      (currentNodeConnectOutX - center.x) * Math.sin(outAngle) +
+      (currentNodeConnectOutY - center.y) * Math.cos(outAngle) +
+      center.y
+    currentNodeConnectOutX = newNodeConnectOutX
+    currentNodeConnectOutY = newNodeConnectOutY
+  }
+  return result
+}
 
 interface Prop {
   deadlockChain: DeadlockModel[]
@@ -21,70 +85,10 @@ function DeadlockChainGraph(prop: Prop) {
     }))
   }
   const nodeRadius = 30
-  interface NodeMeta {
-    x: number
-    y: number
-    connectInX: number
-    connectInY: number
-    connectOutX: number
-    connectOutY: number
-  }
-  function calcCircularLayout(
-    nodeSize: number,
-    center: { x: number; y: number },
-    radius: number
-  ): Array<NodeMeta> {
-    let result: Array<NodeMeta> = []
-    const outAngle = (2 * Math.PI) / nodeSize
-    const halfInnerAngle = (Math.PI * (nodeSize - 2)) / nodeSize / 2
-    let currentNodeConnectInX = center.x - Math.sin(halfInnerAngle) * nodeRadius
-    let currentNodeConnectInY =
-      center.y + radius - Math.cos(halfInnerAngle) * nodeRadius
-    let currentNodeConnectOutX =
-      center.x + Math.sin(halfInnerAngle) * nodeRadius
-    let currentNodeConnectOutY =
-      center.y + radius - Math.cos(halfInnerAngle) * nodeRadius
-    let angle = 0
-    for (let i = 0; i < nodeSize; ++i) {
-      angle += outAngle
-      const x = center.x + radius * Math.sin(angle)
-      const y = center.y + radius * Math.cos(angle)
-
-      result.push({
-        x: x,
-        y: y,
-        connectInX: currentNodeConnectInX,
-        connectInY: currentNodeConnectInY,
-        connectOutX: currentNodeConnectOutX,
-        connectOutY: currentNodeConnectOutY
-      })
-
-      const newNodeConnectInX =
-        (currentNodeConnectInX - center.x) * Math.cos(outAngle) -
-        (currentNodeConnectInY - center.y) * Math.sin(outAngle) +
-        center.x
-      const newNodeConnectInY =
-        (currentNodeConnectInX - center.x) * Math.sin(outAngle) +
-        (currentNodeConnectInY - center.y) * Math.cos(outAngle) +
-        center.y
-      currentNodeConnectInX = newNodeConnectInX
-      currentNodeConnectInY = newNodeConnectInY
-
-      const newNodeConnectOutX =
-        (currentNodeConnectOutX - center.x) * Math.cos(outAngle) -
-        (currentNodeConnectOutY - center.y) * Math.sin(outAngle) +
-        center.x
-      const newNodeConnectOutY =
-        (currentNodeConnectOutX - center.x) * Math.sin(outAngle) +
-        (currentNodeConnectOutY - center.y) * Math.cos(outAngle) +
-        center.y
-      currentNodeConnectOutX = newNodeConnectOutX
-      currentNodeConnectOutY = newNodeConnectOutY
-    }
-    return result
-  }
-  const outAngle = 360 / data.nodes.length
-  const layout = calcCircularLayout(data.nodes.length, { x: 150, y: 150 }, 100)
+  const layout = useMemo(
+    () => calcCircularLayout({ x: 150, y: 150 }, 100, data.nodes.length, 30),
+    [data.nodes.length]
+  )
   return (
     <svg className="container" height={300} width={300}>
       <defs>
@@ -102,11 +106,9 @@ function DeadlockChainGraph(prop: Prop) {
       </defs>
       {data.links.map((link, index) => (
         <path
-          d={`
-                    M ${layout[link.source].connectOutX},${
+          d={`M ${layout[link.source].connectOutX},${
             layout[link.source].connectOutY
-          }
-                    A 100,100 ${-outAngle} 0,0 ${
+          } A 100,100 ${-360 / data.nodes.length} 0,0 ${
             layout[link.target].connectInX
           },${layout[link.target].connectInY}`}
           key={`line-${index}`}

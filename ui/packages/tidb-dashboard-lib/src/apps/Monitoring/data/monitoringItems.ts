@@ -282,7 +282,7 @@ const monitoringItems = [
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
-        unit: 's',
+        unit: 'µs',
         type: 'line'
       },
       {
@@ -363,7 +363,7 @@ const monitoringItems = [
           {
             query:
               'sum(rate(tidb_session_transaction_duration_seconds_sum[$__rate_interval])) by (txn_mode)/ sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval])) by (txn_mode)',
-            name: 'avg'
+            name: 'avg-{txn_mode}'
           },
           {
             query:

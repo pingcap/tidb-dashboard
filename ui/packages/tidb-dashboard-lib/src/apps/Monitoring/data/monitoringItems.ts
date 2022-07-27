@@ -49,56 +49,62 @@ const monitoringItems = [
     category: 'database_time',
     metrics: [
       {
-        title: 'Database Time',
+        title: 'Database Time by SQL Types',
         queries: [
           {
             query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
             name: 'database time',
-            color: ColorType.YELLOW
+            color: ColorType.YELLOW,
+            type: 'line'
+          },
+          {
+            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
+            name: '{sql_type}',
+            color: (qd: QueryData) => transformColorBySQLType(qd.name),
+            type: 'bar_stacked'
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
-        type: 'line'
-      },
-      {
-        title: 'Database Time by SQL Types',
-        queries: [
-          {
-            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
-            name: '{sql_type}',
-            color: (qd: QueryData) => transformColorBySQLType(qd.name)
-          }
-        ],
-        unit: 's',
-        type: 'bar_stacked'
+        type: 'mixed'
       },
       {
         title: 'Database Time by SQL Phase',
         queries: [
           {
+            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
+            name: 'database time',
+            color: ColorType.YELLOW,
+            type: 'line'
+          },
+          {
             query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
             name: 'parse',
-            color: ColorType.RED_2
+            color: ColorType.RED_2,
+            type: 'bar_stacked'
           },
           {
             query: `sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
             name: 'compile',
-            color: ColorType.ORANGE
+            color: ColorType.ORANGE,
+            type: 'bar_stacked'
           },
           {
             query: `sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
             name: 'execute',
-            color: ColorType.GREEN_3
+            color: ColorType.GREEN_3,
+            type: 'bar_stacked'
           },
           {
             query: `sum(rate(tidb_server_get_token_duration_seconds_sum[$__rate_interval]))/1000000`,
             name: 'get token',
-            color: ColorType.RED_3
+            color: ColorType.RED_3,
+            type: 'bar_stacked'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
-        type: 'bar_stacked'
+        type: 'mixed'
       },
       {
         title: 'SQL Execute Time Overview',

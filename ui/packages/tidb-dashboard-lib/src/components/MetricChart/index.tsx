@@ -86,6 +86,7 @@ export interface IQueryOption {
   query: string
   name: string
   color?: string | ((qd: QueryData) => string)
+  type?: GraphType
 }
 
 export interface IMetricChartProps {
@@ -220,7 +221,8 @@ export default function MetricChart({
           const d: QueryData = {
             id: `${queryIdx}_${seriesIdx}`,
             name: format(queries[queryIdx].name, promResult.metric),
-            data: transformedData
+            data: transformedData,
+            type: queries[queryIdx].type
           }
           const colorOrFn = queries[queryIdx].color
 

@@ -1,5 +1,8 @@
-import { QueryData } from '@pingcap/tidb-dashboard-lib'
-import { ColorType, TransformNullValue } from '@pingcap/tidb-dashboard-lib'
+import {
+  ColorType,
+  TransformNullValue,
+  QueryData
+} from '@pingcap/tidb-dashboard-lib'
 
 function transformColorBySQLType(legendLabel: string) {
   switch (legendLabel) {

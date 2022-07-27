@@ -6,6 +6,12 @@ import { MetricsQueryResponse } from '@lib/client'
 
 import { ReqConfig } from '@lib/types'
 
+// interface MetricsQueriesType {
+
+// }
+
+type ClusterType = 'op' | 'cloud'
+
 export interface IMonitoringDataSource {
   metricsQueryGet(
     endTimeSec?: number,
@@ -18,7 +24,10 @@ export interface IMonitoringDataSource {
 
 export interface IMonitoringContext {
   ds: IMonitoringDataSource
-  metricsQueries: any
+  cfg: {
+    metricsQueries: any
+    clusterType: ClusterType
+  }
 }
 
 export const MonitoringContext = createContext<IMonitoringContext | null>(null)

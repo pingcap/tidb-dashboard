@@ -1,5 +1,8 @@
-import { QueryData } from '@pingcap/tidb-dashboard-lib'
-import { ColorType, TransformNullValue } from '@pingcap/tidb-dashboard-lib'
+import {
+  ColorType,
+  TransformNullValue,
+  QueryData
+} from '@pingcap/tidb-dashboard-lib'
 
 function transformColorBySQLType(legendLabel: string) {
   switch (legendLabel) {
@@ -142,7 +145,7 @@ const monitoringItems = [
             name: 'active connections'
           }
         ],
-        unit: null,
+        unit: 'short',
         nullValue: TransformNullValue.AS_ZERO,
         type: 'line'
       },
@@ -248,7 +251,7 @@ const monitoringItems = [
           },
           {
             query:
-              'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!="internal"}[$__rate_interval])) by (le,sql_type))',
+              'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le,sql_type))',
             name: '99-{sql_type}'
           }
         ],
@@ -402,7 +405,7 @@ const monitoringItems = [
         queries: [
           {
             query:
-              '"sum(rate(tikv_grpc_msg_duration_seconds_sum{store!="0"}[$__rate_interval])) by (type)/ sum(rate(tikv_grpc_msg_duration_seconds_count{store!="0"}[$__rate_interval])) by (type)',
+              'sum(rate(tikv_grpc_msg_duration_seconds_sum{store!="0"}[$__rate_interval])) by (type)/ sum(rate(tikv_grpc_msg_duration_seconds_count{store!="0"}[$__rate_interval])) by (type)',
             name: '{type}'
           }
         ],

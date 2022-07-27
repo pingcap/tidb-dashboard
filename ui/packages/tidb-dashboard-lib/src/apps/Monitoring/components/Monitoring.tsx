@@ -22,7 +22,6 @@ import { debounce } from 'lodash'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)
-  console.log('ctx', ctx, ctx!.metricsQueries)
   const { t } = useTranslation()
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
@@ -62,7 +61,7 @@ export default function Monitoring() {
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
           <Card noMarginTop noMarginBottom>
-            {ctx!.metricsQueries.map((item) => (
+            {ctx!.cfg.metricsQueries.map((item) => (
               <Collapse defaultActiveKey={['1']} ghost key={item.category}>
                 <Collapse.Panel
                   header={t(`monitoring.category.${item.category}`)}
@@ -100,6 +99,9 @@ export default function Monitoring() {
                             onRangeChange={setChartRange}
                             getMetrics={ctx!.ds.metricsQueryGet}
                             onLoadingStateChange={onLoadingStateChange}
+                            promAddrConfigurable={
+                              ctx!.cfg.clusterType === 'op' ? true : false
+                            }
                           />
                         </Card>
                       </Col>

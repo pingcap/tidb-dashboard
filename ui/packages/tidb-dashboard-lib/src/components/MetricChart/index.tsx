@@ -99,6 +99,7 @@ export interface IMetricChartProps {
   nullValue?: TransformNullValue
 
   height?: number
+  promAddrConfigurable: boolean
 
   onRangeChange?: (newRange: TimeRangeValue) => void
   onLoadingStateChange?: (isLoading: boolean) => void
@@ -127,7 +128,8 @@ export default function MetricChart({
   onRangeChange,
   onLoadingStateChange,
   getMetrics,
-  nullValue = TransformNullValue.NULL
+  nullValue = TransformNullValue.NULL,
+  promAddrConfigurable
 }: IMetricChartProps) {
   const chartRef = useRef<Chart>(null)
   const chartContainerRef = useRef<HTMLDivElement>(null)
@@ -273,9 +275,11 @@ export default function MetricChart({
       <div style={{ height }}>
         <Space direction="vertical">
           <ErrorBar errors={[error]} />
-          <Link to="/user_profile?blink=profile.prometheus">
-            {t('components.metricChart.changePromButton')}
-          </Link>
+          {promAddrConfigurable && (
+            <Link to="/user_profile?blink=profile.prometheus">
+              {t('components.metricChart.changePromButton')}
+            </Link>
+          )}
         </Space>
       </div>
     )

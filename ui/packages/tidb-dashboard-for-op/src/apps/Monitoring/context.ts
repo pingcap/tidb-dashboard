@@ -32,5 +32,8 @@ const ds = new DataSource()
 
 export const ctx: IMonitoringContext = {
   ds,
-  metricsQueries: monitoringItems
+  cfg: {
+    metricsQueries: monitoringItems,
+    clusterType: 'op'
+  }
 }

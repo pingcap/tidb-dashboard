@@ -83,6 +83,7 @@ export default function Metrics() {
                 onRangeChange={setChartRange}
                 getMetrics={ctx!.ds.metricsQueryGet}
                 onLoadingStateChange={onLoadingStateChange}
+                promAddrConfigurable={true}
               />
             </Card>
           ))}

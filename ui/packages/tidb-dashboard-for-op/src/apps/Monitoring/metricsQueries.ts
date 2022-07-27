@@ -1,5 +1,5 @@
-import { QueryData } from '@lib/components/MetricChart/seriesRenderer'
-import { ColorType, TransformNullValue } from '@lib/utils/prometheus'
+import { QueryData } from '@pingcap/tidb-dashboard-lib'
+import { ColorType, TransformNullValue } from '@pingcap/tidb-dashboard-lib'
 
 function transformColorBySQLType(legendLabel: string) {
   switch (legendLabel) {

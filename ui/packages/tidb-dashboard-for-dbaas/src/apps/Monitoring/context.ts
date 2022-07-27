@@ -6,6 +6,7 @@ import {
 
 import client from '~/client'
 
+import { monitoringItems } from './metricsQueries'
 class DataSource implements IMonitoringDataSource {
   metricsQueryGet(
     endTimeSec?: number,
@@ -29,5 +30,6 @@ class DataSource implements IMonitoringDataSource {
 const ds = new DataSource()
 
 export const ctx: () => IMonitoringContext = () => ({
-  ds
+  ds,
+  metricsQueries: monitoringItems
 })

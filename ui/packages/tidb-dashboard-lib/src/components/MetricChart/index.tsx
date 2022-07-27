@@ -44,7 +44,7 @@ import { AxiosPromise } from 'axios'
 import { ReqConfig } from '@lib/types'
 import { ChartContext } from './ChartContext'
 
-export type { GraphType }
+export type { GraphType, QueryData }
 
 const translations = {
   en: {

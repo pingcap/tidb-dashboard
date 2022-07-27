@@ -18,6 +18,7 @@ export interface IMonitoringDataSource {
 
 export interface IMonitoringContext {
   ds: IMonitoringDataSource
+  metricsQueries: any
 }
 
 export const MonitoringContext = createContext<IMonitoringContext | null>(null)

@@ -13,7 +13,6 @@ export type QueryData = {
 }
 
 export function renderQueryData(type: GraphType, qd: QueryData) {
-  console.log('qd', qd, type)
   switch (type) {
     case 'bar_stacked':
       return renderStackedBar(qd)

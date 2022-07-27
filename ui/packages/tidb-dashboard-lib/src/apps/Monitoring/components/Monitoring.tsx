@@ -18,11 +18,11 @@ import { MonitoringContext } from '../context'
 import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
 import { useEventEmitter, useMemoizedFn } from 'ahooks'
-import { monitoringItems } from '../data/monitoringItems'
 import { debounce } from 'lodash'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)
+  console.log('ctx', ctx, ctx!.metricsQueries)
   const { t } = useTranslation()
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
@@ -62,7 +62,7 @@ export default function Monitoring() {
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
           <Card noMarginTop noMarginBottom>
-            {monitoringItems.map((item) => (
+            {ctx!.metricsQueries.map((item) => (
               <Collapse defaultActiveKey={['1']} ghost key={item.category}>
                 <Collapse.Panel
                   header={t(`monitoring.category.${item.category}`)}

@@ -1,5 +1,5 @@
-metrics:
-  nav_title: Metrics
+monitoring:
+  nav_title: Monitoring
   category:
     application_connection: Application Connection
     database_time: Database Time

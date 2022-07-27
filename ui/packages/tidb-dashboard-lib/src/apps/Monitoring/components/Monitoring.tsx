@@ -13,16 +13,16 @@ import {
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { LoadingOutlined } from '@ant-design/icons'
-import { MetricsContext } from '../context'
+import { MonitoringContext } from '../context'
 
 import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
 import { useEventEmitter, useMemoizedFn } from 'ahooks'
-import { metricsItems } from '../data/metricsItems'
+import { monitoringItems } from '../data/monitoringItems'
 import { debounce } from 'lodash'
 
-export default function Metrics() {
-  const ctx = useContext(MetricsContext)
+export default function Monitoring() {
+  const ctx = useContext(MonitoringContext)
   const { t } = useTranslation()
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
@@ -62,10 +62,10 @@ export default function Metrics() {
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
           <Card noMarginTop noMarginBottom>
-            {metricsItems.map((item) => (
+            {monitoringItems.map((item) => (
               <Collapse defaultActiveKey={['1']} ghost key={item.category}>
                 <Collapse.Panel
-                  header={t(`metrics.category.${item.category}`)}
+                  header={t(`monitoring.category.${item.category}`)}
                   key="1"
                   style={{
                     fontSize: 16,

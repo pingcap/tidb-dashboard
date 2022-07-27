@@ -44,7 +44,7 @@ function transformColorByExecTimeOverview(legendLabel: string) {
   }
 }
 
-const metricsItems = [
+const monitoringItems = [
   {
     category: 'database_time',
     metrics: [
@@ -272,7 +272,7 @@ const metricsItems = [
         queries: [
           {
             query:
-              'sum(rate(tidb_server_get_token_duration_seconds_sum{sql_type="general"}[$__rate_interval])) / sum(rate(tidb_server_get_token_duration_seconds_count{sql_type="general"}[$__rate_interval]))',
+              'sum(rate(tidb_server_get_token_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_server_get_token_duration_seconds_count[$__rate_interval]))',
             name: 'avg'
           },
           {
@@ -282,7 +282,7 @@ const metricsItems = [
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
-        unit: 's',
+        unit: 'µs',
         type: 'line'
       },
       {
@@ -354,7 +354,7 @@ const metricsItems = [
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
-        unit: 's',
+        unit: 'short',
         type: 'line'
       },
       {
@@ -363,7 +363,7 @@ const metricsItems = [
           {
             query:
               'sum(rate(tidb_session_transaction_duration_seconds_sum[$__rate_interval])) by (txn_mode)/ sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval])) by (txn_mode)',
-            name: 'avg'
+            name: 'avg-{txn_mode}'
           },
           {
             query:
@@ -648,4 +648,4 @@ const metricsItems = [
   }
 ]
 
-export { metricsItems }
+export { monitoringItems }

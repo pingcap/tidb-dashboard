@@ -1,8 +1,8 @@
 import { LineChartOutlined } from '@ant-design/icons'
 
 export default {
-  id: 'metrics',
-  routerPrefix: '/metrics',
+  id: 'monitoring',
+  routerPrefix: '/monitoring',
   icon: LineChartOutlined,
   reactRoot: () => import('.')
 }

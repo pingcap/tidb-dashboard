@@ -63,5 +63,5 @@ func (s *Service) GenerateVisualPlan(c *gin.Context) {
 		rest.Error(c, rest.ErrBadRequest.New("generate visual plan failed: %v", err))
 		return
 	}
-	c.String(http.StatusOK, vp)
+	c.Data(http.StatusOK, gin.MIMEJSON, []byte(vp))
 }

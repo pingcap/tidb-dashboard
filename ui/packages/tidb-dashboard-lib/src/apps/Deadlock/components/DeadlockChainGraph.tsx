@@ -71,19 +71,21 @@ interface Prop {
 }
 
 function DeadlockChainGraph(prop: Prop) {
-  const data = {
-    nodes: prop.deadlockChain.map((it) => {
-      return { id: it.try_lock_trx_id }
-    }),
-    links: prop.deadlockChain.map((d, i) => ({
-      source: i,
-      target: prop.deadlockChain.findIndex(
-        (it) => it.trx_holding_lock === d.try_lock_trx_id
-      ),
-      type: 'blocked',
-      key: d.key
-    }))
-  }
+  const data = useMemo(() => {
+    return {
+      nodes: prop.deadlockChain.map((it) => {
+        return { id: it.try_lock_trx_id }
+      }),
+      links: prop.deadlockChain.map((d, i) => ({
+        source: i,
+        target: prop.deadlockChain.findIndex(
+          (it) => it.trx_holding_lock === d.try_lock_trx_id
+        ),
+        type: 'blocked',
+        key: d.key
+      }))
+    }
+  }, [prop.deadlockChain])
   const nodeRadius = 30
   const layout = useMemo(
     () => calcCircularLayout({ x: 150, y: 150 }, 100, data.nodes.length, 30),

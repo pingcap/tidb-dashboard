@@ -5,6 +5,7 @@ package deadlock
 import "time"
 
 type Model struct {
+	Instance       string    `gorm:"column:INSTANCE" json:"instance"`
 	DeadlockID     uint64    `gorm:"column:DEADLOCK_ID" json:"id"`
 	OccurTime      time.Time `gorm:"column:OCCUR_TIME" json:"occur_time"`
 	Retryable      bool      `gorm:"column:RETRYABLE" json:"retryable"`

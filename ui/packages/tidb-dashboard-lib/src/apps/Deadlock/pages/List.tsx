@@ -28,16 +28,20 @@ function List() {
     setIsLoading(true)
     const { data } = await ctx!.ds.deadlockListGet()
     data.forEach((it) => {
-      let items = cache?.get(`deadlock-${it.id}`) || []
+      let items = cache?.get(`deadlock-${it.instance}-${it.id}`) || []
       items.push(it)
-      cache?.set(`deadlock-${it.id}`, items)
+      cache?.set(`deadlock-${it.instance}-${it.id}`, items)
     })
     setItems(data)
     setIsLoading(false)
   }
   const handleRowClick = useMemoizedFn(
     (record, index, ev: React.MouseEvent<HTMLElement>) => {
-      openLink(`/deadlock/detail?id=${record.id}`, ev, navigate)
+      openLink(
+        `/deadlock/detail?id=${record.id}&instance=${record.instance}`,
+        ev,
+        navigate
+      )
     }
   )
   useEffectOnce(() => {
@@ -48,9 +52,9 @@ function List() {
       .then((res) => {
         setItems(res.data)
         res.data.forEach((it) => {
-          let items = cache?.get(`deadlock-${it.id}`) || []
+          let items = cache?.get(`deadlock-${it.instance}-${it.id}`) || []
           items.push(it)
-          cache?.set(`deadlock-${it.id}`, items)
+          cache?.set(`deadlock-${it.instance}-${it.id}`, items)
         })
       })
       .catch((e) => {
@@ -63,18 +67,25 @@ function List() {
   const summary = useMemo(() => {
     let result = new Map()
     for (const item of items) {
-      let summaryEntry = result.get(item.id) || {
+      let summaryEntry = result.get(`${item.instance}-${item.id}`) || {
         id: item.id,
+        instance: item.instance,
         occur_time: item.occur_time,
         items: []
       }
       summaryEntry.items.push(item)
-      result.set(item.id, summaryEntry)
+      result.set(`${item.instance}-${item.id}`, summaryEntry)
     }
     return Array.from(result.values())
   }, [items])
 
   const columns = [
+    {
+      name: t('deadlock.fields.instance'),
+      key: 'instance',
+      minWidth: 100,
+      onRender: (it) => it.instance
+    },
     { name: 'ID', key: 'id', minWidth: 100, onRender: (it) => it.id },
     {
       name: 'Transaction Count',

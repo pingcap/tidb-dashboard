@@ -3793,6 +3793,9 @@
                 "id": {
                     "type": "integer"
                 },
+                "instance": {
+                    "type": "string"
+                },
                 "key": {
                     "type": "string"
                 },

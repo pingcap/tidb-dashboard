@@ -13,22 +13,28 @@ function Detail() {
   const ctx = useContext(DeadlockContext)
   const { t } = useTranslation()
   const cache = useContext(CacheContext)
+  const instance = new URLSearchParams(useLocation().search).get('instance')
   const id = new URLSearchParams(useLocation().search).get('id')
   let [isLoading, setIsLoading] = useState(true)
   let [items, setItems] = useState<DeadlockModel[]>([])
   useEffectOnce(() => {
     setIsLoading(true)
-    if (cache?.get(`deadlock-${id}`) !== undefined) {
-      setItems(cache.get(`deadlock-${id}`))
+    if (cache?.get(`deadlock-${instance}-${id}`) !== undefined) {
+      setItems(cache.get(`deadlock-${instance}-${id}`))
       setIsLoading(false)
     } else {
       ctx!.ds.deadlockListGet().then(({ data }) => {
         data.forEach((it) => {
-          let items = cache?.get(`deadlock-${it.id}`) || []
+          let items = cache?.get(`deadlock-${it.instance}-${it.id}`) || []
           items.push(it)
-          cache?.set(`deadlock-${it.id}`, items)
+          cache?.set(`deadlock-${it.instance}-${it.id}`, items)
         })
-        setItems(data.filter((it) => it.id?.toString() === id))
+        setItems(
+          data.filter(
+            (it) =>
+              it.id?.toString() === id && it.instance?.toString() === instance
+          )
+        )
         setIsLoading(false)
       })
     }
@@ -61,12 +67,7 @@ function Detail() {
   ]
   return (
     <>
-      <DeadlockChainGraph
-        deadlockChain={items}
-        onHover={(id: string) => {
-          console.log(id)
-        }}
-      />
+      <DeadlockChainGraph deadlockChain={items} />
       <CardTable
         loading={isLoading}
         columns={columns}

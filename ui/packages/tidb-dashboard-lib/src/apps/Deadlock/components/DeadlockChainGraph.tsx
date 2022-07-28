@@ -67,7 +67,6 @@ function calcCircularLayout(
 
 interface Prop {
   deadlockChain: DeadlockModel[]
-  onHover: (id: string) => void
 }
 
 function DeadlockChainGraph(prop: Prop) {

@@ -37,6 +37,12 @@ export interface DeadlockModel {
      * @type {string}
      * @memberof DeadlockModel
      */
+    'instance'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeadlockModel
+     */
     'key'?: string;
     /**
      * 

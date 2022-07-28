@@ -15,7 +15,7 @@ import { WithZoomOut } from './WithZoomOut'
 const { RangePicker } = DatePicker
 
 // These presets are aligned with Grafana
-const RECENT_SECONDS = [
+const DEFAULT_RECENT_SECONDS = [
   5 * 60,
   15 * 60,
   30 * 60,
@@ -91,12 +91,16 @@ export interface ITimeRangeSelectorProps {
   value?: TimeRange
   onChange?: (val: TimeRange) => void
   disabled?: boolean
+  recent_seconds?: number[]
+  withRangePicker?: boolean
 }
 
 function TimeRangeSelector({
   value,
   onChange,
-  disabled = false
+  disabled = false,
+  recent_seconds = DEFAULT_RECENT_SECONDS,
+  withRangePicker = true
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -146,7 +150,7 @@ function TimeRangeSelector({
           )}
         </span>
         <div className={styles.time_range_items} data-e2e="common-timeranges">
-          {RECENT_SECONDS.map((seconds) => (
+          {recent_seconds.map((seconds) => (
             <div
               tabIndex={-1}
               key={seconds}

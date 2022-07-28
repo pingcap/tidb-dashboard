@@ -49,6 +49,7 @@ export default function Monitoring() {
             <TimeRangeSelector.WithZoomOut
               value={timeRange}
               onChange={setTimeRange}
+              withRangePicker={ctx?.cfg.clusterType === 'op' ? true : false}
             />
             <AutoRefreshButton
               onRefresh={() => setTimeRange((r) => ({ ...r }))}

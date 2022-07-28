@@ -1,5 +1,5 @@
 deadlock:
-  nav_title: Deadlock information
+  nav_title: Deadlock Information
   fields:
     try_lock_trx_id: Transaction acquiring the lock
     trx_holding_lock: Transaction holding the lock

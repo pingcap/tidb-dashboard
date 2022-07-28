@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	DeadlockTable = "INFORMATION_SCHEMA.DEADLOCKS"
+	DeadlockTable = "INFORMATION_SCHEMA.CLUSTER_DEADLOCKS"
 )
 
 type ServiceParams struct {

@@ -86,7 +86,7 @@ for (const key in translations) {
 export interface IQueryOption {
   query: string
   name: string
-  color?: ColorType | ((qd: QueryData) => string)
+  color?: ColorType | ((qd: QueryData) => string | undefined)
   type?: GraphType
 }
 

@@ -4,24 +4,19 @@ import { AxiosPromise } from 'axios'
 
 import { MetricsQueryResponse } from '@lib/client'
 
-import { ColorType, TransformNullValue } from '@lib/utils'
+import { TransformNullValue } from '@lib/utils'
 
-import { GraphType, QueryData } from '@lib/components'
+import { GraphType, IQueryOption } from '@lib/components'
 
 import { ReqConfig } from '@lib/types'
 
 type ClusterType = 'op' | 'cloud'
 
-interface MetricsQueryType {
+export interface MetricsQueryType {
   category: string
   metrics: {
     title: string
-    queries: {
-      query: string
-      name: string
-      color?: ColorType | ((qd: QueryData) => ColorType)
-      type?: GraphType
-    }[]
+    queries: IQueryOption[]
     unit: string
     type: GraphType
     nullValue?: TransformNullValue

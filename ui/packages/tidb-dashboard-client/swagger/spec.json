@@ -4551,6 +4551,9 @@
                 "backoff_types": {
                     "type": "string"
                 },
+                "binary_plan": {
+                    "type": "string"
+                },
                 "commit_backoff_time": {
                     "type": "number"
                 },
@@ -4905,6 +4908,9 @@
                 },
                 "avg_write_size": {
                     "type": "integer"
+                },
+                "binary_plan": {
+                    "type": "string"
                 },
                 "digest": {
                     "type": "string"

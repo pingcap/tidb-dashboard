@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'
-import { HashRouter as Router, Routes, Route } from 'react-router-dom'
+import { HashRouter as Router } from 'react-router-dom'
+import { Col, Row } from 'antd'
 
 import { Root } from '@lib/components'
 import { addTranslations } from '@lib/utils/i18n'
@@ -7,17 +8,24 @@ import { addTranslations } from '@lib/utils/i18n'
 import translations from './translations'
 import { OverviewContext } from './context'
 import { useLocationChange } from '@lib/hooks/useLocationChange'
-import { List, Detail } from './pages'
+import Instances from './components/Instances'
+import Metrics from './components/Metrics'
+import MonitorAlert from './components/MonitorAlert'
 
 addTranslations(translations)
 
 function AppRoutes() {
   useLocationChange()
   return (
-    <Routes>
-      <Route path="/overview" element={<List />} />
-      <Route path="/overview/detail" element={<Detail />} />
-    </Routes>
+    <Row>
+      <Col span={18}>
+        <Metrics />
+      </Col>
+      <Col span={6}>
+        <Instances />
+        <MonitorAlert />
+      </Col>
+    </Row>
   )
 }
 

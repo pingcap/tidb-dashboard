@@ -26,9 +26,9 @@ func TestAPIClient_HLGetStoreLocations(t *testing.T) {
 	require.Equal(t, &pdclient.StoreLocations{
 		LocationLabels: []string{},
 		Stores: []pdclient.StoreLabels{
-			pdclient.StoreLabels{Address: "172.16.5.141:20160", Labels: map[string]string{}},
-			pdclient.StoreLabels{Address: "172.16.5.218:20160", Labels: map[string]string{}},
-			pdclient.StoreLabels{Address: "172.16.6.168:20160", Labels: map[string]string{}},
+			{Address: "172.16.5.141:20160", Labels: map[string]string{}},
+			{Address: "172.16.5.218:20160", Labels: map[string]string{}},
+			{Address: "172.16.6.168:20160", Labels: map[string]string{}},
 		},
 	}, resp)
 }
@@ -38,7 +38,7 @@ func TestAPIClient_HLGetStores(t *testing.T) {
 	resp, err := apiClient.HLGetStores(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, []pdclient.GetStoresResponseStore{
-		pdclient.GetStoresResponseStore{
+		{
 			Address:        "172.16.5.141:20160",
 			ID:             1,
 			Labels:         nil,
@@ -49,7 +49,7 @@ func TestAPIClient_HLGetStores(t *testing.T) {
 			DeployPath:     "/home/tidb/tidb-deploy/tikv-20160/bin",
 			StartTimestamp: 1636421301,
 		},
-		pdclient.GetStoresResponseStore{
+		{
 			Address:        "172.16.5.218:20160",
 			ID:             5,
 			Labels:         nil,
@@ -60,7 +60,7 @@ func TestAPIClient_HLGetStores(t *testing.T) {
 			DeployPath:     "/home/tidb/tidb-deploy/tikv-20160/bin",
 			StartTimestamp: 1636421304,
 		},
-		pdclient.GetStoresResponseStore{
+		{
 			Address:        "172.16.6.168:20160",
 			ID:             4,
 			Labels:         nil,

@@ -34,6 +34,12 @@ export interface SlowqueryModel {
     'backoff_types'?: string;
     /**
      * 
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan'?: string;
+    /**
+     * 
      * @type {number}
      * @memberof SlowqueryModel
      */

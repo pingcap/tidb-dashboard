@@ -26,6 +26,7 @@ import { loadAppOptions, saveAppOptions } from '~/uilts/appOptions'
 import AppRegistry from '~/uilts/registry'
 
 import AppOverview from '~/apps/Overview/meta'
+import AppMonitoring from '~/apps/Monitoring/meta'
 import AppClusterInfo from '~/apps/ClusterInfo/meta'
 import AppTopSQL from '~/apps/TopSQL/meta'
 import AppSlowQuery from '~/apps/SlowQuery/meta'
@@ -79,7 +80,10 @@ async function webPageStart() {
     return
   }
 
-  telemetry.init()
+  telemetry.init(
+    process.env.REACT_APP_MIXPANEL_HOST,
+    process.env.REACT_APP_MIXPANEL_TOKEN
+  )
   if (info?.enable_telemetry) {
     // mixpanel
     telemetry.enable(info.version?.internal_version!)
@@ -158,6 +162,7 @@ async function webPageStart() {
     .register(AppSystemReport)
     .register(AppSlowQuery)
     .register(AppDiagnose)
+    .register(AppMonitoring)
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
     .register(AppConProfiling)

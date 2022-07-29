@@ -193,6 +193,12 @@ export interface StatementModel {
      * @type {string}
      * @memberof StatementModel
      */
+    'binary_plan'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
     'digest'?: string;
     /**
      * 

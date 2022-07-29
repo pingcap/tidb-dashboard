@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom'
 
 import { telemetry } from '@pingcap/tidb-dashboard-lib'
 import { setupClient } from '~/client'
-import { loadAppInfo, loadWhoAmI } from '~/utils/store'
 
 import App from './App'
 
@@ -44,8 +43,6 @@ function start({ apiPathBase, apiToken }: StartOptions) {
 
   // api client
   setupClient(apiPathBase, apiToken)
-  loadWhoAmI()
-  loadAppInfo()
 
   // telemetry
   telemetry.init()

@@ -34,6 +34,6 @@ export const ctx: IMonitoringContext = {
   ds,
   cfg: {
     metricsQueries: monitoringItems,
-    clusterType: 'op'
+    promeAddrConfigurable: true
   }
 }

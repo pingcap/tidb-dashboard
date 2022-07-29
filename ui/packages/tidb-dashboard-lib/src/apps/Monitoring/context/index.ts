@@ -10,8 +10,6 @@ import { GraphType, IQueryOption } from '@lib/components'
 
 import { ReqConfig } from '@lib/types'
 
-type ClusterType = 'op' | 'cloud'
-
 export interface MetricsQueryType {
   category: string
   metrics: {
@@ -25,7 +23,11 @@ export interface MetricsQueryType {
 
 interface IMetricConfig {
   metricsQueries: MetricsQueryType[]
-  clusterType: ClusterType
+  promeAddrConfigurable: boolean
+  timeRangeSelector?: {
+    recent_seconds: number[]
+    withAbsoluteRangePicker: boolean
+  }
 }
 
 export interface IMonitoringDataSource {

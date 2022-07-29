@@ -1,7 +1,8 @@
 import {
   ColorType,
   TransformNullValue,
-  QueryData
+  QueryData,
+  MetricsQueryType
 } from '@pingcap/tidb-dashboard-lib'
 
 function transformColorBySQLType(legendLabel: string) {
@@ -47,7 +48,7 @@ function transformColorByExecTimeOverview(legendLabel: string) {
   }
 }
 
-const monitoringItems = [
+const monitoringItems: MetricsQueryType[] = [
   {
     category: 'database_time',
     metrics: [
@@ -145,7 +146,7 @@ const monitoringItems = [
             name: 'active connections'
           }
         ],
-        unit: null,
+        unit: 'short',
         nullValue: TransformNullValue.AS_ZERO,
         type: 'line'
       },

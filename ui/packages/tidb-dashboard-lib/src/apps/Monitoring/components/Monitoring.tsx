@@ -50,7 +50,10 @@ export default function Monitoring() {
             <TimeRangeSelector.WithZoomOut
               value={timeRange}
               onChange={setTimeRange}
-              withRangePicker={ctx?.cfg.clusterType === 'op' ? true : false}
+              recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
+              withAbsoluteRangePicker={
+                ctx?.cfg.timeRangeSelector?.withAbsoluteRangePicker
+              }
             />
             <AutoRefreshButton
               onRefresh={() => setTimeRange((r) => ({ ...r }))}
@@ -102,7 +105,7 @@ export default function Monitoring() {
                             getMetrics={ctx!.ds.metricsQueryGet}
                             onLoadingStateChange={onLoadingStateChange}
                             promAddrConfigurable={
-                              ctx!.cfg.clusterType === 'op' ? true : false
+                              ctx!.cfg.promeAddrConfigurable
                             }
                           />
                         </Card>

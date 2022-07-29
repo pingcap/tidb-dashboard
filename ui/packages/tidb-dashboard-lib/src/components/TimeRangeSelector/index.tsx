@@ -92,7 +92,7 @@ export interface ITimeRangeSelectorProps {
   onChange?: (val: TimeRange) => void
   disabled?: boolean
   recent_seconds?: number[]
-  withRangePicker?: boolean
+  withAbsoluteRangePicker?: boolean
 }
 
 function TimeRangeSelector({
@@ -100,7 +100,7 @@ function TimeRangeSelector({
   onChange,
   disabled = false,
   recent_seconds = DEFAULT_RECENT_SECONDS,
-  withRangePicker = true
+  withAbsoluteRangePicker = true
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -167,21 +167,23 @@ function TimeRangeSelector({
           ))}
         </div>
       </div>
-      <div className={styles.custom_time_ranges}>
-        <span>
-          {t(
-            'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
-          )}
-        </span>
-        <div style={{ marginTop: 8 }}>
-          <RangePicker
-            showTime
-            format="YYYY-MM-DD HH:mm:ss"
-            value={rangePickerValue}
-            onChange={handleRangePickerChange}
-          />
+      {withAbsoluteRangePicker && (
+        <div className={styles.custom_time_ranges}>
+          <span>
+            {t(
+              'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
+            )}
+          </span>
+          <div style={{ marginTop: 8 }}>
+            <RangePicker
+              showTime
+              format="YYYY-MM-DD HH:mm:ss"
+              value={rangePickerValue}
+              onChange={handleRangePickerChange}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 

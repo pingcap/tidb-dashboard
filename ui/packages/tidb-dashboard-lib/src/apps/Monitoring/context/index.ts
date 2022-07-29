@@ -4,13 +4,34 @@ import { AxiosPromise } from 'axios'
 
 import { MetricsQueryResponse } from '@lib/client'
 
+import { ColorType, TransformNullValue } from '@lib/utils'
+
+import { GraphType, QueryData } from '@lib/components'
+
 import { ReqConfig } from '@lib/types'
 
-// interface MetricsQueriesType {
-
-// }
-
 type ClusterType = 'op' | 'cloud'
+
+interface MetricsQueryType {
+  category: string
+  metrics: {
+    title: string
+    queries: {
+      query: string
+      name: string
+      color?: ColorType | ((qd: QueryData) => ColorType)
+      type?: GraphType
+    }[]
+    unit: string
+    type: GraphType
+    nullValue?: TransformNullValue
+  }[]
+}
+
+interface IMetricConfig {
+  metricsQueries: MetricsQueryType[]
+  clusterType: ClusterType
+}
 
 export interface IMonitoringDataSource {
   metricsQueryGet(
@@ -24,10 +45,7 @@ export interface IMonitoringDataSource {
 
 export interface IMonitoringContext {
   ds: IMonitoringDataSource
-  cfg: {
-    metricsQueries: any
-    clusterType: ClusterType
-  }
+  cfg: IMetricConfig
 }
 
 export const MonitoringContext = createContext<IMonitoringContext | null>(null)

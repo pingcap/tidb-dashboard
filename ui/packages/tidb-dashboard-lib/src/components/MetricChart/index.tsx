@@ -38,7 +38,8 @@ import {
   PromMatrixData,
   QueryOptions,
   resolveQueryTemplate,
-  TransformNullValue
+  TransformNullValue,
+  ColorType
 } from '@lib/utils/prometheus'
 import { AxiosPromise } from 'axios'
 import { ReqConfig } from '@lib/types'
@@ -85,7 +86,7 @@ for (const key in translations) {
 export interface IQueryOption {
   query: string
   name: string
-  color?: string | ((qd: QueryData) => string)
+  color?: ColorType | ((qd: QueryData) => string)
   type?: GraphType
 }
 

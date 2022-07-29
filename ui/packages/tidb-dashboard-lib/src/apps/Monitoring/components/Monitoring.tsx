@@ -8,6 +8,7 @@ import {
   MetricChart,
   TimeRange,
   TimeRangeSelector,
+  GraphType,
   Toolbar
 } from '@lib/components'
 import { Stack } from 'office-ui-fabric-react'
@@ -93,7 +94,7 @@ export default function Monitoring() {
                           </Typography.Title>
                           <MetricChart
                             queries={m.queries}
-                            type={m.type}
+                            type={m.type as GraphType}
                             unit={m.unit}
                             nullValue={m.nullValue}
                             range={chartRange}

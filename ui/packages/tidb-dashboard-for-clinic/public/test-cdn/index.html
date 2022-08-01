@@ -87,7 +87,7 @@
     </style>
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@%PACKAGE_VERSION%/dist/main.css"
+      href="https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-clinic@%PACKAGE_VERSION%/dist/main.css"
     />
   </head>
   <body>
@@ -95,23 +95,15 @@
     <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
     <div id="root"></div>
     <script type="module">
-      import startDashboard from 'https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-dbaas@%PACKAGE_VERSION%/dist/main.js'
+      import startDashboard from 'https://cdn.jsdelivr.net/npm/@pingcap/tidb-dashboard-for-clinic@%PACKAGE_VERSION%/dist/main.js'
 
-      // const apiPathBase = 'http://localhost:12333/dashboard/api'
-      const apiPathBase = 'http://localhost:2379/dashboard/api'
-      fetch(`${apiPathBase}/user/login`, {
-        method: 'POST',
-        body: JSON.stringify({ username: 'root', type: 0 })
-      })
-        .then((res) => res.json())
-        .then(({ token }) => {
-          if (window.location.hash === '') {
-            window.location.hash = '#/statement'
-          }
-
-          document.getElementById('dashboard_page_spinner').remove()
-          startDashboard({ apiPathBase, apiToken: token })
-        })
+      if (window.location.hash === '') {
+        window.location.hash =
+          '#/slow_query?oid=200&cid=7107157329868478405&item_id=d8a82313dc35a301-9b4db3aed6e913a1-bc85728fbb6a6b1a&begin_time=1655342718&end_time=1655349918'
+      }
+      const csrfToken = localStorage.getItem('clinic.auth.csrf_token')
+      const apiPathBase = '/clinic/api/v1'
+      startDashboard({ apiPathBase, apiToken: csrfToken })
     </script>
   </body>
 </html>

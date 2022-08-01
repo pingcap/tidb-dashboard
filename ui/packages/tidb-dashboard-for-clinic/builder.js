@@ -6,6 +6,7 @@ const chalk = require('chalk')
 const { watch } = require('chokidar')
 
 const { start } = require('live-server')
+const { createProxyMiddleware } = require('http-proxy-middleware')
 
 const { build } = require('esbuild')
 const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
@@ -20,11 +21,21 @@ require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
 
-const devPort = parseInt(process.env.PORT) + 1
+const devServerPort = 8181 // same as the clinic-ui
 const devServerParams = {
-  port: devPort + '',
+  host: 'localhost',
+  port: devServerPort,
   root: outDir,
-  open: true
+  open: '/clinic/',
+  proxy: [['/clinic', `http://localhost:${devServerPort}`]],
+  middleware: [
+    // https://github.com/chimurai/http-proxy-middleware
+    createProxyMiddleware('/clinic/api/v1', {
+      target:
+        'http://clinic-staging-1072990385.us-west-2.elb.amazonaws.com:8085',
+      changeOrigin: true
+    })
+  ]
 }
 
 const lessModifyVars = {

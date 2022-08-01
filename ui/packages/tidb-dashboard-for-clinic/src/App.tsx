@@ -2,7 +2,12 @@ import React, { useEffect, useState } from 'react'
 import SlowQuery from './apps/SlowQuery'
 
 function getLocHashPrefix() {
-  return window.location.hash.split('/')[1]
+  let urlHashPath = window.location.hash
+  const questionMarkPos = urlHashPath.indexOf('?')
+  if (questionMarkPos > 0) {
+    urlHashPath = urlHashPath.slice(0, questionMarkPos)
+  }
+  return urlHashPath.split('/')[1]
 }
 
 export default function () {

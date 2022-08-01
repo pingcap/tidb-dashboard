@@ -32,7 +32,7 @@ export default function () {
       })
     )
     setReady(true)
-  }, [])
+  }, [dsExtra.beginTime, dsExtra.endTime])
 
   if (ready) {
     return (

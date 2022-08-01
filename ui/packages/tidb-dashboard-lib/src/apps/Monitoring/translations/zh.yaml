@@ -1,5 +1,7 @@
 monitoring:
   nav_title: 监控指标
+  panel_no_data_tips: '该面板的一些指标返回了空值，请升级到 TiDB 的最新版本查看这个指标。如果你的 TiDB 已经是最新版本，请联系技术支持。'
+  info_doc_href: 'https://docs.pingcap.com/zh/'
   category:
     application_connection: 应用连接
     database_time: 数据库时间

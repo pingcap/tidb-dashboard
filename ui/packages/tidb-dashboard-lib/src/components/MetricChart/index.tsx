@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Space, Badge, Tooltip } from 'antd'
+import { Space } from 'antd'
 import _ from 'lodash'
 import format from 'string-template'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -59,9 +59,7 @@ const translations = {
     },
     components: {
       metricChart: {
-        changePromButton: 'Change Prometheus Source',
-        emptyQueryResult:
-          'Some metrics in this panel return null values, please upgrade to the latest version of TiDB to see these metrics. If your TiDB already is the latest version, please contact technical support.'
+        changePromButton: 'Change Prometheus Source'
       }
     }
   },
@@ -75,9 +73,7 @@ const translations = {
     },
     components: {
       metricChart: {
-        changePromButton: '修改 Prometheus 源',
-        emptyQueryResult:
-          '该面板的一些指标返回了空值，请升级到 TiDB 的最新版本查看这个指标。如果你的 TiDB 已经是最新版本，请联系技术支持。'
+        changePromButton: '修改 Prometheus 源'
       }
     }
   }
@@ -104,7 +100,7 @@ export interface IMetricChartProps {
   nullValue?: TransformNullValue
 
   height?: number
-  promAddrConfigurable: boolean
+  promAddrConfigurable?: boolean
 
   onRangeChange?: (newRange: TimeRangeValue) => void
   onLoadingStateChange?: (isLoading: boolean) => void
@@ -134,7 +130,7 @@ export default function MetricChart({
   onLoadingStateChange,
   getMetrics,
   nullValue = TransformNullValue.NULL,
-  promAddrConfigurable
+  promAddrConfigurable = true
 }: IMetricChartProps) {
   const chartRef = useRef<Chart>(null)
   const chartContainerRef = useRef<HTMLDivElement>(null)
@@ -142,7 +138,6 @@ export default function MetricChart({
   const [isLoading, setLoading] = useState(false)
   const [data, setData] = useState<Data | null>(null)
   const [error, setError] = useState<any>(null)
-  const [hasEmptyQueryResult, setHasEmptyQueryResult] = useState(false)
   const ee = useContext(ChartContext)
   ee.useSubscription((e) => chartRef.current?.dispatchExternalPointerEvent(e))
 
@@ -184,9 +179,6 @@ export default function MetricChart({
           }
         }
         fillInto[fillIdx] = data
-        if (data?.result.length === 0) {
-          setHasEmptyQueryResult(true)
-        }
       } catch (e) {
         fillInto[fillIdx] = null
         setError((existingErr) => existingErr || e)
@@ -268,19 +260,6 @@ export default function MetricChart({
 
   const { t } = useTranslation()
 
-  const BadgeWithTooltip = () => {
-    return (
-      <Tooltip
-        placement="top"
-        title={t('components.metricChart.emptyQueryResult')}
-      >
-        <div style={{ position: 'absolute', left: 10, top: 0 }}>
-          <Badge.Ribbon text="i" color="#707070" placement="start" />
-        </div>
-      </Tooltip>
-    )
-  }
-
   const hasMetricData = useMemo(() => {
     return (
       (data?.values.length ?? 0) > 0 &&
@@ -308,7 +287,6 @@ export default function MetricChart({
   } else {
     inner = (
       <>
-        {hasEmptyQueryResult && <BadgeWithTooltip />}
         <Chart size={{ height }} ref={chartRef}>
           <Settings
             {...DEFAULT_CHART_SETTINGS}
@@ -328,7 +306,7 @@ export default function MetricChart({
             position={Position.Left}
             showOverlappingTicks
             tickFormat={(v) =>
-              unit ? getValueFormat(unit)(v, 2) : Number(v).toFixed(0)
+              unit ? getValueFormat(unit)(v, 1) : getValueFormat('none')(v)
             }
             ticks={5}
           />

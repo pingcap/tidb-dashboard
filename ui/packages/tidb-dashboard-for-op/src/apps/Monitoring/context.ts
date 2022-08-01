@@ -33,7 +33,6 @@ const ds = new DataSource()
 export const ctx: IMonitoringContext = {
   ds,
   cfg: {
-    metricsQueries: monitoringItems,
-    promeAddrConfigurable: true
+    metricsQueries: monitoringItems
   }
 }

@@ -1,5 +1,7 @@
 overview:
   nav_title: Overview
+  panel_no_data_tips: 'Some metrics in this panel return null values, please upgrade to the latest version of TiDB to see these metrics. If your TiDB already is the latest version, please contact technical support.'
+  info_doc_href: 'https://docs.pingcap.com/'
   view_more_metrics: View More Metrics
   top_statements:
     title: Time Consuming SQL Statements

@@ -1,5 +1,7 @@
 monitoring:
   nav_title: Monitoring
+  panel_no_data_tips: 'Some metrics in this panel return null values, please upgrade to the latest version of TiDB to see these metrics. If your TiDB already is the latest version, please contact technical support.'
+  info_doc_href: 'https://docs.pingcap.com/'
   category:
     application_connection: Application Connection
     database_time: Database Time

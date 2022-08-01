@@ -1,5 +1,7 @@
 overview:
   nav_title: 概况
+  panel_no_data_tips: '该面板的一些指标返回了空值，请升级到 TiDB 的最新版本查看这个指标。如果你的 TiDB 已经是最新版本，请联系技术支持。'
+  info_doc_href: 'https://docs.pingcap.com/zh/'
   view_more_metrics: 查看更多指标
   top_statements:
     title: 最耗时的 SQL 语句

@@ -1,4 +1,4 @@
-import { Space, Typography, Button } from 'antd'
+import { Space, Typography, Button, Tooltip } from 'antd'
 import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -14,7 +14,7 @@ import {
 import { Link } from 'react-router-dom'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
 import { OverviewContext } from '../context'
 
@@ -58,6 +58,15 @@ export default function Metrics() {
               onRefresh={() => setTimeRange((r) => ({ ...r }))}
               disabled={isSomeLoading}
             />
+            <Tooltip placement="top" title={t('overview.panel_no_data_tips')}>
+              <a
+                href={t('overview.info_doc_href')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <QuestionCircleOutlined />
+              </a>
+            </Tooltip>
             {isSomeLoading && <LoadingOutlined />}
           </Space>
           <Space>
@@ -83,7 +92,6 @@ export default function Metrics() {
                 onRangeChange={setChartRange}
                 getMetrics={ctx!.ds.metricsQueryGet}
                 onLoadingStateChange={onLoadingStateChange}
-                promAddrConfigurable={true}
               />
             </Card>
           ))}

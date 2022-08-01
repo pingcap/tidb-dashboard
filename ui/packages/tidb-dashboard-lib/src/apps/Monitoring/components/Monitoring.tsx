@@ -1,4 +1,4 @@
-import { Space, Typography, Row, Col, Collapse } from 'antd'
+import { Space, Typography, Row, Col, Collapse, Tooltip } from 'antd'
 import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -13,7 +13,7 @@ import {
 } from '@lib/components'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { MonitoringContext } from '../context'
 
 import { PointerEvent } from '@elastic/charts'
@@ -59,6 +59,15 @@ export default function Monitoring() {
               onRefresh={() => setTimeRange((r) => ({ ...r }))}
               disabled={isSomeLoading}
             />
+            <Tooltip placement="top" title={t('monitoring.panel_no_data_tips')}>
+              <a
+                href={t('monitoring.info_doc_href')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <QuestionCircleOutlined />
+              </a>
+            </Tooltip>
             {isSomeLoading && <LoadingOutlined />}
           </Space>
         </Toolbar>

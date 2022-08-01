@@ -12,7 +12,8 @@ function getDsExtra(): DsExtra {
     cid: params.get('cid')!,
     itemID: params.get('item_id')!,
     beginTime: params.get('begin_time')!,
-    endTime: params.get('end_time')!
+    endTime: params.get('end_time')!,
+    curQueryID: ''
   }
 }
 

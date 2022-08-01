@@ -1,5 +1,6 @@
 import {
   ISlowQueryDataSource,
+  ISlowQueryEvent,
   ISlowQueryContext,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
@@ -12,6 +13,7 @@ export type DsExtra = {
   itemID: string
   beginTime: string
   endTime: string
+  curQueryID: string
 }
 
 class DataSource implements ISlowQueryDataSource {
@@ -82,7 +84,7 @@ class DataSource implements ISlowQueryDataSource {
         oid: this.extra.oid,
         itemID: this.extra.itemID,
         cid: this.extra.cid,
-        queryid: ''
+        queryid: this.extra.curQueryID
       },
       options
     )
@@ -99,7 +101,20 @@ class DataSource implements ISlowQueryDataSource {
   }
 }
 
+class EventHandler implements ISlowQueryEvent {
+  constructor(public extra: DsExtra) {}
+
+  selectSlowQueryItem(item: any) {
+    this.extra.curQueryID = item.id
+  }
+}
+
 export const ctx: (extra: DsExtra) => ISlowQueryContext = (extra) => ({
   ds: new DataSource(extra),
-  cfg: { apiPathBase: client.getBasePath(), enableExport: false }
+  event: new EventHandler(extra),
+  cfg: {
+    apiPathBase: client.getBasePath(),
+    enableExport: false,
+    showDBFilter: false
+  }
 })

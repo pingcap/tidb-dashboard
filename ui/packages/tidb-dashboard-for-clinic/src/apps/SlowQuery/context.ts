@@ -6,7 +6,17 @@ import {
 
 import client from '~/client'
 
+export type DsExtra = {
+  oid: string
+  cid: string
+  itemID: string
+  beginTime: string
+  endTime: string
+}
+
 class DataSource implements ISlowQueryDataSource {
+  constructor(public extra: DsExtra) {}
+
   infoListDatabases(options?: ReqConfig) {
     return Promise.resolve({
       data: [],
@@ -43,9 +53,9 @@ class DataSource implements ISlowQueryDataSource {
     return client.getInstance().orgsOidClustersCidSlowqueriesGet(
       {
         xCsrfToken: client.getToken(),
-        oid: '',
-        itemID: '',
-        cid: '',
+        oid: this.extra.oid,
+        itemID: this.extra.itemID,
+        cid: this.extra.cid,
         beginTime,
         endTime,
         db,
@@ -69,9 +79,9 @@ class DataSource implements ISlowQueryDataSource {
     return client.getInstance().orgsOidClustersCidSlowqueriesQueryidGet(
       {
         xCsrfToken: client.getToken(),
-        oid: '',
-        itemID: '',
-        cid: '',
+        oid: this.extra.oid,
+        itemID: this.extra.itemID,
+        cid: this.extra.cid,
         queryid: ''
       },
       options
@@ -89,9 +99,7 @@ class DataSource implements ISlowQueryDataSource {
   }
 }
 
-const ds = new DataSource()
-
-export const ctx: () => ISlowQueryContext = () => ({
-  ds,
+export const ctx: (extra: DsExtra) => ISlowQueryContext = (extra) => ({
+  ds: new DataSource(extra),
   cfg: { apiPathBase: client.getBasePath(), enableExport: false }
 })

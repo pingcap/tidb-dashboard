@@ -8,11 +8,23 @@ import client from '~/client'
 
 class DataSource implements ISlowQueryDataSource {
   infoListDatabases(options?: ReqConfig) {
-    return client.getInstance().infoListDatabases(options)
+    return Promise.resolve({
+      data: [],
+      status: 200,
+      statusText: 'ok',
+      headers: {},
+      config: {}
+    })
   }
 
   slowQueryAvailableFieldsGet(options?: ReqConfig) {
-    return client.getInstance().slowQueryAvailableFieldsGet(options)
+    return Promise.resolve({
+      data: [],
+      status: 200,
+      statusText: 'ok',
+      headers: {},
+      config: {}
+    })
   }
 
   slowQueryListGet(
@@ -28,18 +40,21 @@ class DataSource implements ISlowQueryDataSource {
     text?: string,
     options?: ReqConfig
   ) {
-    return client.getInstance().slowQueryListGet(
+    return client.getInstance().orgsOidClustersCidSlowqueriesGet(
       {
+        xCsrfToken: client.getToken(),
+        oid: '',
+        itemID: '',
+        cid: '',
         beginTime,
-        db,
-        desc,
-        digest,
         endTime,
-        fields,
+        db,
         limit,
+        text,
         orderBy,
+        desc,
         plans,
-        text
+        digest
       },
       options
     )
@@ -51,18 +66,26 @@ class DataSource implements ISlowQueryDataSource {
     timestamp?: number,
     options?: ReqConfig
   ) {
-    return client.getInstance().slowQueryDetailGet(
+    return client.getInstance().orgsOidClustersCidSlowqueriesQueryidGet(
       {
-        connectId,
-        digest,
-        timestamp
+        xCsrfToken: client.getToken(),
+        oid: '',
+        itemID: '',
+        cid: '',
+        queryid: ''
       },
       options
     )
   }
 
   slowQueryDownloadTokenPost(request: any, options?: ReqConfig) {
-    return client.getInstance().slowQueryDownloadTokenPost({ request }, options)
+    return Promise.resolve({
+      data: '',
+      status: 200,
+      statusText: 'ok',
+      headers: {},
+      config: {}
+    })
   }
 }
 

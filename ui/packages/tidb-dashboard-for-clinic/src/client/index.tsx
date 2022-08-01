@@ -4,10 +4,7 @@ import axios, { AxiosInstance } from 'axios'
 import { message, Modal, notification } from 'antd'
 
 import { routing, i18n } from '@pingcap/tidb-dashboard-lib'
-import {
-  Configuration,
-  DefaultApi as DashboardApi
-} from '@pingcap/clinic-client'
+import { Configuration, DefaultApi as ClinicApi } from '@pingcap/clinic-client'
 
 import translations from './translations'
 
@@ -16,17 +13,22 @@ export * from '@pingcap/clinic-client'
 //////////////////////////////
 
 const client = {
-  _init(apiBasePath: string, apiInstance: DashboardApi) {
+  _init(apiBasePath: string, apiToken: string, apiInstance: ClinicApi) {
     this.apiBasePath = apiBasePath
+    this.apiToken = apiToken
     this.apiInstance = apiInstance
   },
 
-  getInstance(): DashboardApi {
+  getInstance(): ClinicApi {
     return this.apiInstance
   },
 
   getBasePath(): string {
     return this.apiBasePath
+  },
+
+  getToken(): string {
+    return this.apiToken
   }
 }
 
@@ -103,14 +105,13 @@ function initAxios() {
   return instance
 }
 
-export function setupClient(apiBasePath: string, token: string) {
+export function setupClient(apiBasePath: string, apiToken: string) {
   i18n.addTranslations(translations)
 
   const axiosInstance = initAxios()
-  const dashboardApi = new DashboardApi(
+  const clinicApi = new ClinicApi(
     new Configuration({
       basePath: apiBasePath,
-      apiKey: `Bearer ${token}`,
       baseOptions: {
         handleError: 'default'
       }
@@ -119,5 +120,5 @@ export function setupClient(apiBasePath: string, token: string) {
     axiosInstance
   )
 
-  client._init(apiBasePath, dashboardApi)
+  client._init(apiBasePath, apiToken, clinicApi)
 }

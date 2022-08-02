@@ -26,6 +26,7 @@ if [ "${NEED_DOWNLOAD}" = true ]; then
 fi
 
 echo "+ Run lints for Go source code"
+go get ./...
 ${LINT_BIN} run --fix
 
 echo "+ Clean up go mod"

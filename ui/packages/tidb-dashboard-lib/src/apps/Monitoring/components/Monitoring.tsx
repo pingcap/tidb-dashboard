@@ -13,7 +13,7 @@ import {
 } from '@lib/components'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
-import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
 import { MonitoringContext } from '../context'
 
 import { PointerEvent } from '@elastic/charts'
@@ -61,11 +61,11 @@ export default function Monitoring() {
             />
             <Tooltip placement="top" title={t('monitoring.panel_no_data_tips')}>
               <a
-                href={t('monitoring.info_doc_href')}
+                href="https://docs.pingcap.com/tidbcloud/monitor-built-in-monitoring#1-why-are-some-panels-empty-on-this-page"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <QuestionCircleOutlined />
+                <FileTextOutlined />
               </a>
             </Tooltip>
             {isSomeLoading && <LoadingOutlined />}

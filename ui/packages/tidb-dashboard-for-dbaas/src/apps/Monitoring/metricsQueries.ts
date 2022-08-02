@@ -631,7 +631,7 @@ const monitoringItems: MetricsQueryType[] = [
         queries: [
           {
             query:
-              'sum(rate(tikv_engine_flow_bytes{db="kv", type="wal_file_bytes"}[2m])) by (instance) + (sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[2m])) by (instance) or (0 * sum(rate(raft_engine_write_size_sum[2m])) by (instance))) + (sum(rate(raft_engine_write_size_sum[2m])) by (instance) or (0 * sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[2m])) by (instance)))',
+              'sum(rate(tikv_engine_flow_bytes{db="kv", type="wal_file_bytes"}[$__rate_interval])) by (instance) + (sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance) or (0 * sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance))) + (sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance) or (0 * sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance)))',
             name: '{instance}-write'
           },
           {

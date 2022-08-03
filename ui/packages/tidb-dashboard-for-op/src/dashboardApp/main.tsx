@@ -42,6 +42,7 @@ import AppConfiguration from '~/apps/Configuration/meta'
 import AppUserProfile from '~/apps/UserProfile/meta'
 import AppDiagnose from '~/apps/Diagnose/meta'
 import AppOptimizerTrace from '~/apps/OptimizerTrace/meta'
+import AppDeadlock from '~/apps/Deadlock/meta'
 
 import LayoutMain from './layout/main'
 import LayoutSignIn from './layout/signin'
@@ -167,6 +168,7 @@ async function webPageStart() {
     .register(AppConfiguration)
     .register(AppDebugAPI)
     .register(AppOptimizerTrace)
+    .register(AppDeadlock)
 
   try {
     const ok = await reloadWhoAmI()

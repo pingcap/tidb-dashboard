@@ -33,6 +33,7 @@ nav:
     signout: Sign Out
   sider:
     debug: Advanced Debugging
+    conflict: Conflict Diagnosing
     experimental: Experimental Features
 health_check:
   failed_notification_title: System Health Check Failed

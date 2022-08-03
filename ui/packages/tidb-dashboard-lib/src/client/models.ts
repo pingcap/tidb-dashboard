@@ -645,6 +645,71 @@ export interface ConprofTarget {
 /**
  * 
  * @export
+ * @interface DeadlockModel
+ */
+export interface DeadlockModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof DeadlockModel
+     */
+    'current_sql'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof DeadlockModel
+     */
+    'id'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeadlockModel
+     */
+    'instance'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeadlockModel
+     */
+    'key'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeadlockModel
+     */
+    'key_info'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeadlockModel
+     */
+    'occur_time'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DeadlockModel
+     */
+    'retryable'?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof DeadlockModel
+     */
+    'trx_holding_lock'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DeadlockModel
+     */
+    'try_lock_trx_id'?: number;
+}
+
+
+
+
+/**
+ * 
+ * @export
  * @interface DecoratorLabelKey
  */
 export interface DecoratorLabelKey {

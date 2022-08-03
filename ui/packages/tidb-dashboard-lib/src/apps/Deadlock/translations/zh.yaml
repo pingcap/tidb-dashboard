@@ -1,0 +1,10 @@
+deadlock:
+  nav_title: 死锁信息
+  fields:
+    instance: 实例
+    count: 事务数量
+    occur_time: 发生时间
+    try_lock_trx_id: 尝试加锁事务号
+    trx_holding_lock: 持锁事务号
+    current_sql: 尝试加锁 SQL
+    key: 被锁住的 key

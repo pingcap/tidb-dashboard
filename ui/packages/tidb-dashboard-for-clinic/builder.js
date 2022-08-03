@@ -5,9 +5,6 @@ const md5File = require('md5-file')
 const chalk = require('chalk')
 const { watch } = require('chokidar')
 
-const { start } = require('live-server')
-const { createProxyMiddleware } = require('http-proxy-middleware')
-
 const { build } = require('esbuild')
 const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const autoprefixer = require('autoprefixer')
@@ -20,23 +17,7 @@ const envFile = isDev ? './.env.development' : './.env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
-
-const devServerPort = 8181 // same as the clinic-ui
-const devServerParams = {
-  host: 'localhost',
-  port: devServerPort,
-  root: outDir,
-  open: '/clinic/',
-  proxy: [['/clinic', `http://localhost:${devServerPort}`]],
-  middleware: [
-    // https://github.com/chimurai/http-proxy-middleware
-    createProxyMiddleware('/clinic/api/v1', {
-      target:
-        'http://clinic-staging-1072990385.us-west-2.elb.amazonaws.com:8085',
-      changeOrigin: true
-    })
-  ]
-}
+const clinicUIDistPath = process.env.CLINIC_UI_DIST_PATH
 
 const lessModifyVars = {
   '@primary-color': '#4263eb',
@@ -94,7 +75,7 @@ const logTime = (_options = {}) => ({
 const esbuildParams = {
   color: true,
   entryPoints: {
-    main: 'src/index.tsx'
+    dashboard: 'src/index.tsx'
   },
   outdir: outDir,
   minify: !isDev,
@@ -122,8 +103,8 @@ const esbuildParams = {
 }
 
 function updateHtmlFiles(htmlFiles) {
-  const jsContentHash = md5File.sync(`./${outDir}/main.js`)
-  const cssContentHash = md5File.sync(`./${outDir}/main.css`)
+  const jsContentHash = md5File.sync(`./${outDir}/dashboard.js`)
+  const cssContentHash = md5File.sync(`./${outDir}/dashboard.css`)
   const packageVersion = process.env.npm_package_version
 
   htmlFiles.forEach(function (htmlFile) {
@@ -142,6 +123,16 @@ function handleAssets() {
   updateHtmlFiles(htmlFiles)
 }
 
+function copyAssets() {
+  // copy out dir to clinic ui repo
+  if (!fs.existsSync(clinicUIDistPath)) {
+    throw new Error(`clini ui dist path ${clinicUIDistPath} doesn't exist`)
+  }
+  const targetFolder = path.resolve(clinicUIDistPath, 'dashboard')
+  fs.removeSync(targetFolder)
+  fs.copySync(`./${outDir}`, targetFolder)
+}
+
 async function main() {
   fs.removeSync(`./${outDir}`)
 
@@ -153,13 +144,14 @@ async function main() {
   }
 
   if (isDev) {
-    start(devServerParams)
+    copyAssets()
 
     watch(`src/**/*`, { ignoreInitial: true }).on('all', () => {
       rebuild()
     })
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {
       handleAssets()
+      copyAssets()
     })
 
     // watch "node_modules/@pingcap/tidb-dashboard-lib/dist/**/*" triggers too many rebuild

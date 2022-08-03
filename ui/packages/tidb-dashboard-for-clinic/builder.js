@@ -75,7 +75,7 @@ const logTime = (_options = {}) => ({
 const esbuildParams = {
   color: true,
   entryPoints: {
-    dashboard: 'src/index.tsx'
+    main: 'src/index.tsx'
   },
   outdir: outDir,
   minify: !isDev,
@@ -103,8 +103,8 @@ const esbuildParams = {
 }
 
 function updateHtmlFiles(htmlFiles) {
-  const jsContentHash = md5File.sync(`./${outDir}/dashboard.js`)
-  const cssContentHash = md5File.sync(`./${outDir}/dashboard.css`)
+  const jsContentHash = md5File.sync(`./${outDir}/main.js`)
+  const cssContentHash = md5File.sync(`./${outDir}/main.css`)
   const packageVersion = process.env.npm_package_version
 
   htmlFiles.forEach(function (htmlFile) {
@@ -126,7 +126,9 @@ function handleAssets() {
 function copyAssets() {
   // copy out dir to clinic ui repo
   if (!fs.existsSync(clinicUIDistPath)) {
-    throw new Error(`clini ui dist path ${clinicUIDistPath} doesn't exist`)
+    throw new Error(
+      `clini ui dist path ${clinicUIDistPath} doesn't exist, please change it by your local path`
+    )
   }
   const targetFolder = path.resolve(clinicUIDistPath, 'dashboard')
   fs.removeSync(targetFolder)

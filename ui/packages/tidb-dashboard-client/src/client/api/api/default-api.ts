@@ -53,6 +53,8 @@ import { ConprofGroupProfiles } from '../models';
 // @ts-ignore
 import { ConprofNgMonitoringConfig } from '../models';
 // @ts-ignore
+import { DeadlockModel } from '../models';
+// @ts-ignore
 import { DiagnoseGenDiagnosisReportRequest } from '../models';
 // @ts-ignore
 import { DiagnoseGenerateMetricsRelationRequest } from '../models';
@@ -665,6 +667,39 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             if (ts !== undefined) {
                 localVarQueryParameter['ts'] = ts;
             }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary List all deadlock records
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deadlockListGet: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/deadlock/list`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -3796,6 +3831,16 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary List all deadlock records
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deadlockListGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<DeadlockModel>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deadlockListGet(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary Get all endpoints
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4792,6 +4837,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         continuousProfilingSingleProfileViewGet(address?: string, component?: string, profileType?: string, ts?: number, options?: any): AxiosPromise<void> {
             return localVarFp.continuousProfilingSingleProfileViewGet(address, component, profileType, ts, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary List all deadlock records
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deadlockListGet(options?: any): AxiosPromise<Array<DeadlockModel>> {
+            return localVarFp.deadlockListGet(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6879,6 +6933,17 @@ export class DefaultApi extends BaseAPI {
      */
     public continuousProfilingSingleProfileViewGet(requestParameters: DefaultApiContinuousProfilingSingleProfileViewGetRequest = {}, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).continuousProfilingSingleProfileViewGet(requestParameters.address, requestParameters.component, requestParameters.profileType, requestParameters.ts, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary List all deadlock records
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public deadlockListGet(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).deadlockListGet(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

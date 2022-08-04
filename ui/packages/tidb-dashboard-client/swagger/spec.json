@@ -442,6 +442,39 @@
                 }
             }
         },
+        "/deadlock/list": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "List all deadlock records",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/deadlock.Model"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/debug_api/download": {
             "get": {
                 "summary": "Download a finished request result",
@@ -3748,6 +3781,38 @@
                 },
                 "component": {
                     "type": "string"
+                }
+            }
+        },
+        "deadlock.Model": {
+            "type": "object",
+            "properties": {
+                "current_sql": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "instance": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "key_info": {
+                    "type": "string"
+                },
+                "occur_time": {
+                    "type": "string"
+                },
+                "retryable": {
+                    "type": "boolean"
+                },
+                "trx_holding_lock": {
+                    "type": "integer"
+                },
+                "try_lock_trx_id": {
+                    "type": "integer"
                 }
             }
         },

@@ -34,6 +34,7 @@ nav:
     signout: 登出
   sider:
     debug: 高级调试
+    conflict: 冲突诊断
     experimental: 实验性功能
 health_check:
   failed_notification_title: 系统健康检查失败

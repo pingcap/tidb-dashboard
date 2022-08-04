@@ -20,6 +20,7 @@ class DataSource implements ISlowQueryDataSource {
   constructor(public extra: DsExtra) {}
 
   infoListDatabases(options?: ReqConfig) {
+    // return Promise.reject(new Error('no need to implemented'))
     return Promise.resolve({
       data: [],
       status: 200,
@@ -30,6 +31,7 @@ class DataSource implements ISlowQueryDataSource {
   }
 
   slowQueryAvailableFieldsGet(options?: ReqConfig) {
+    // return Promise.reject(new Error('no need to implemented'))
     return Promise.resolve({
       data: [],
       status: 200,
@@ -91,13 +93,14 @@ class DataSource implements ISlowQueryDataSource {
   }
 
   slowQueryDownloadTokenPost(request: any, options?: ReqConfig) {
-    return Promise.resolve({
-      data: '',
-      status: 200,
-      statusText: 'ok',
-      headers: {},
-      config: {}
-    })
+    return Promise.reject(new Error('no need to implemented'))
+    // return Promise.resolve({
+    //   data: '',
+    //   status: 200,
+    //   statusText: 'ok',
+    //   headers: {},
+    //   config: {}
+    // })
   }
 }
 

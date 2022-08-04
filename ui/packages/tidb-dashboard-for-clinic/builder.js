@@ -133,6 +133,7 @@ function copyAssets() {
   const targetFolder = path.resolve(clinicUIDistPath, 'dashboard')
   fs.removeSync(targetFolder)
   fs.copySync(`./${outDir}`, targetFolder)
+  console.log('copy dist to clinic ui')
 }
 
 async function main() {
@@ -146,14 +147,11 @@ async function main() {
   }
 
   if (isDev) {
-    copyAssets()
-
     watch(`src/**/*`, { ignoreInitial: true }).on('all', () => {
       rebuild()
     })
     watch('public/**/*', { ignoreInitial: true }).on('all', () => {
       handleAssets()
-      copyAssets()
     })
 
     // watch "node_modules/@pingcap/tidb-dashboard-lib/dist/**/*" triggers too many rebuild
@@ -162,6 +160,10 @@ async function main() {
       ignoreInitial: true
     }).on('all', () => {
       rebuild()
+    })
+
+    watch(`dist/**/*`).on('all', () => {
+      copyAssets()
     })
   } else {
     process.exit(0)

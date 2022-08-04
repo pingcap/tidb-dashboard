@@ -61,7 +61,7 @@ export default function Monitoring() {
             />
             <Tooltip placement="top" title={t('monitoring.panel_no_data_tips')}>
               <a
-                href="https://docs.pingcap.com/tidbcloud/monitor-built-in-monitoring#1-why-are-some-panels-empty-on-this-page"
+                href="https://docs.pingcap.com/tidbcloud/built-in-monitoring "
                 target="_blank"
                 rel="noopener noreferrer"
               >

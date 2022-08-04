@@ -1,5 +1,9 @@
 # TiDB Dashboard UI
 
+## Arch
+
+![ui arch](./ui_arch.png)
+
 ## Run
 
 ### Dev

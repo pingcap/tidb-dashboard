@@ -60,7 +60,8 @@ export default function Metrics() {
             />
             <Tooltip placement="top" title={t('overview.panel_no_data_tips')}>
               <a
-                href="https://docs.pingcap.com/tidbcloud/built-in-monitoring "
+                // TODO: replace reference link on op side
+                href="https://docs.pingcap.com/tidbcloud/built-in-monitoring"
                 target="_blank"
                 rel="noopener noreferrer"
               >

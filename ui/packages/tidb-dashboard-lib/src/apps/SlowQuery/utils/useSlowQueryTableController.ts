@@ -126,8 +126,6 @@ export default function useSlowQueryTableController({
   persistQueryInSession = true,
   ds
 }: ISlowQueryTableControllerOpts): ISlowQueryTableController {
-  // const ctx = useContext(SlowQueryContext)
-
   const { orderOptions, changeOrder } = useOrderState(
     'slow_query',
     persistQueryInSession,

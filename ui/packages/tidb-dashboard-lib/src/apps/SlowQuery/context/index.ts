@@ -38,10 +38,16 @@ export interface ISlowQueryDataSource {
   ): AxiosPromise<string>
 }
 
+export interface ISlowQueryEvent {
+  selectSlowQueryItem(item: SlowqueryModel): void
+}
+
 export interface ISlowQueryContext {
   ds: ISlowQueryDataSource
+  event?: ISlowQueryEvent
   cfg: IContextConfig & {
     enableExport: boolean
+    showDBFilter: boolean
   }
 }
 

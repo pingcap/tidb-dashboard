@@ -1,0 +1,25 @@
+error:
+  title: 错误
+  common:
+    network: 网络连接失败
+    unauthenticated: 会话已过期，请重新登录
+    forbidden: 当前用户没有权限进行该操作
+  api:
+    user:
+      signin:
+        invalid_code: 授权码无效或已过期
+        insufficient_priv: 该用户缺少足够的权限访问 {{distro.tidb}} Dashboard。
+    slow_query:
+      export_no_data: 没有可导出的慢查询日志
+    statement:
+      export_no_data: 没有可导出的语句
+    continuous_profiling:
+      ng_monitoring_not_ready: |
+        想使用或深入了解“持续性能分析”功能，请在 {{distro.tidb}} 官方文档搜索“持续性能分析”查看更多内容。
+        若未能解决问题，请联系本产品技术支持。
+    feature_not_supported: 当前版本的集群不支持或无法使用该功能，请联系技术支持了解详细情况。
+  tidb:
+    no_alive_tidb: 没有正在运行的 {{distro.tidb}} 实例
+    pd_access_failed: 无法访问 {{distro.pd}} 节点
+    tidb_conn_failed: 无法连接到 {{distro.tidb}}
+    tidb_auth_failed: '{{distro.tidb}} 登录验证失败'

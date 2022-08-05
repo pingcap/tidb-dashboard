@@ -175,16 +175,18 @@ function List() {
         <Toolbar className={styles.list_toolbar} data-e2e="slow_query_toolbar">
           <Space>
             <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
-            <MultiSelect.Plain
-              placeholder={t('slow_query.toolbar.schemas.placeholder')}
-              selectedValueTransKey="slow_query.toolbar.schemas.selected"
-              columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
-              value={filterSchema}
-              style={{ width: 150 }}
-              onChange={setFilterSchema}
-              items={controller.allSchemas}
-              data-e2e="execution_database_name"
-            />
+            {ctx!.cfg.showDBFilter && (
+              <MultiSelect.Plain
+                placeholder={t('slow_query.toolbar.schemas.placeholder')}
+                selectedValueTransKey="slow_query.toolbar.schemas.selected"
+                columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
+                value={filterSchema}
+                style={{ width: 150 }}
+                onChange={setFilterSchema}
+                items={controller.allSchemas}
+                data-e2e="execution_database_name"
+              />
+            )}
             <Select
               style={{ width: 150 }}
               value={filterLimit}

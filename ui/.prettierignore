@@ -1,3 +1,7 @@
+packages/clinic-client/src
+packages/clinic-client/swagger/spec.json
+packages/clinic-client/dist
+
 packages/tidb-dashboard-client/src
 packages/tidb-dashboard-client/swagger/spec.json
 packages/tidb-dashboard-client/dist

@@ -1,0 +1,16 @@
+# https://openapi-generator.tech/docs/generators/typescript-axios#config-options
+
+enumPropertyNaming: original
+modelPropertyNaming: original
+supportsES6: true
+
+# Setting this property to true will generate functions with a single argument containing all API endpoint parameters instead of one argument per parameter.
+useSingleRequestParameter: true
+# conflicts with `useSingleRequestParameter`
+# withInterfaces: true
+
+# Put the model and api in separate folders and in separate classes
+# https://github.com/OpenAPITools/openapi-generator/issues/5008#issuecomment-613791804
+# withSeparateModelsAndApi: true
+# apiPackage: api
+# modelPackage: models

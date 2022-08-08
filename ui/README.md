@@ -12,6 +12,14 @@
 1. `pnpm i`
 1. `pnpm dev`
 
+> Note:
+>
+> You can run `pnpm dev:op`, `pnpm dev:dbaas`, `pnpm dev:clinic` only to start a specific dashboard variant, while `pnpm dev` starts all of them.
+>
+> Before starting `pnpm dev:dbaas`, you need to start dbaas ui.
+>
+> Before starting `pnpm dev:clinic`, you need to start clinic ui.
+
 ### Build
 
 1. `pnpm build`

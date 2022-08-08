@@ -21,13 +21,14 @@ const envFile = isDev ? './.env.development' : './.env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
+const dbaasUIPublicPath = process.env.DBAAS_UI_PUBLIC_PATH
 
-const devPort = parseInt(process.env.PORT) + 1
-const devServerParams = {
-  port: devPort + '',
-  root: outDir,
-  open: true
-}
+// const devPort = parseInt(process.env.PORT) + 1
+// const devServerParams = {
+//   port: devPort + '',
+//   root: outDir,
+//   open: true
+// }
 
 function genDefine() {
   const define = {}
@@ -113,6 +114,22 @@ function handleAssets() {
   updateHtmlFiles(htmlFiles)
 }
 
+function copyAssets() {
+  // copy out dir to dbaas ui repo
+  // why we copy to dbaas ui publich folder instead of dist folder
+  // because dbaas ui use create-react-app, it doesn't write output to disk in dev mode
+  // so we only can copy to its public folder
+  if (!fs.existsSync(dbaasUIPublicPath)) {
+    throw new Error(
+      `dbaas ui public path ${dbaasUIPublicPath} doesn't exist, please change it by your local path`
+    )
+  }
+  const targetFolder = path.resolve(dbaasUIPublicPath, 'dashboard')
+  fs.removeSync(targetFolder)
+  fs.copySync(`./${outDir}`, targetFolder)
+  console.log('copy dist to dbaas ui')
+}
+
 async function main() {
   fs.removeSync(`./${outDir}`)
 
@@ -124,7 +141,7 @@ async function main() {
   }
 
   if (isDev) {
-    start(devServerParams)
+    // start(devServerParams)
 
     watch(`src/**/*`, { ignoreInitial: true }).on('all', () => {
       rebuild()
@@ -139,6 +156,10 @@ async function main() {
       ignoreInitial: true
     }).on('all', () => {
       rebuild()
+    })
+
+    watch(`dist/**/*`).on('all', () => {
+      copyAssets()
     })
   } else {
     process.exit(0)

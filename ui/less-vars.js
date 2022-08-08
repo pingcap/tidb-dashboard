@@ -1,5 +1,5 @@
 const lessModifyVars = {
-  '@primary-color': '#4263eb',
+  '@primary-color': '#0ca6f2',
   '@body-background': '#fff',
   '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
   '@tooltip-max-width': '500px'

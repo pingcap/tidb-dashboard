@@ -4,7 +4,31 @@ import { AxiosPromise } from 'axios'
 
 import { MetricsQueryResponse } from '@lib/client'
 
+import { TransformNullValue } from '@lib/utils'
+
+import { GraphType, IQueryOption } from '@lib/components'
+
 import { ReqConfig } from '@lib/types'
+
+export interface MetricsQueryType {
+  category: string
+  metrics: {
+    title: string
+    queries: IQueryOption[]
+    unit: string
+    type: GraphType
+    nullValue?: TransformNullValue
+  }[]
+}
+
+interface IMetricConfig {
+  metricsQueries: MetricsQueryType[]
+  promeAddrConfigurable?: boolean
+  timeRangeSelector?: {
+    recent_seconds: number[]
+    withAbsoluteRangePicker: boolean
+  }
+}
 
 export interface IMonitoringDataSource {
   metricsQueryGet(
@@ -18,6 +42,7 @@ export interface IMonitoringDataSource {
 
 export interface IMonitoringContext {
   ds: IMonitoringDataSource
+  cfg: IMetricConfig
 }
 
 export const MonitoringContext = createContext<IMonitoringContext | null>(null)

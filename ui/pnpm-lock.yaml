@@ -288,7 +288,7 @@ importers:
       '@ant-design/colors': ^6.0.0
       '@ant-design/icons': ^4.7.0
       '@baurine/esbuild-plugin-postcss3': ^0.3.3
-      '@baurine/grafana-value-formats': ^1.0.3
+      '@baurine/grafana-value-formats': ^1.0.4
       '@baurine/sql-formatter-plus': ^1.5.3
       '@elastic/charts': ^46.10.1
       '@g07cha/flexbox-react': ^5.0.0
@@ -360,7 +360,7 @@ importers:
     dependencies:
       '@ant-design/colors': 6.0.0
       '@ant-design/icons': 4.7.0_sfoxds7t5ydpegc3knd667wn6m
-      '@baurine/grafana-value-formats': 1.0.3_dayjs@1.11.4
+      '@baurine/grafana-value-formats': 1.0.4_dayjs@1.11.4
       '@baurine/sql-formatter-plus': 1.5.3
       '@elastic/charts': 46.13.0_5vvgggp2kvqmg5c46qktsvfq34
       '@g07cha/flexbox-react': 5.0.0_sfoxds7t5ydpegc3knd667wn6m
@@ -1844,8 +1844,8 @@ packages:
       - supports-color
     dev: true
 
-  /@baurine/grafana-value-formats/1.0.3_dayjs@1.11.4:
-    resolution: {integrity: sha512-rgD8AhnSXFDf6RNsoF65KmXs4+VyWDIFRgOjCH8nAW7Zj2ugKeEGMYkfvPJ+7J/mHg8zJme0FPzNB4djAot+aA==}
+  /@baurine/grafana-value-formats/1.0.4_dayjs@1.11.4:
+    resolution: {integrity: sha512-SB7nYJa7XmUejERGpAWCU7MXegdp27NUFG2eYox92FYg0I7K/UmI+lGval6ZCJhxq7y7FSpAQmer4vnoeFouLA==}
     peerDependencies:
       dayjs: ^1.10.1
     dependencies:

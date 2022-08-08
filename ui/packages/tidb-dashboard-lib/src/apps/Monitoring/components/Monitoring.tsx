@@ -1,4 +1,4 @@
-import { Space, Typography, Row, Col, Collapse } from 'antd'
+import { Space, Typography, Row, Col, Collapse, Tooltip } from 'antd'
 import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -8,17 +8,17 @@ import {
   MetricChart,
   TimeRange,
   TimeRangeSelector,
+  GraphType,
   Toolbar
 } from '@lib/components'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
 import { MonitoringContext } from '../context'
 
 import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
 import { useEventEmitter, useMemoizedFn } from 'ahooks'
-import { monitoringItems } from '../data/monitoringItems'
 import { debounce } from 'lodash'
 
 export default function Monitoring() {
@@ -50,11 +50,25 @@ export default function Monitoring() {
             <TimeRangeSelector.WithZoomOut
               value={timeRange}
               onChange={setTimeRange}
+              recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
+              withAbsoluteRangePicker={
+                ctx?.cfg.timeRangeSelector?.withAbsoluteRangePicker
+              }
             />
             <AutoRefreshButton
               onRefresh={() => setTimeRange((r) => ({ ...r }))}
               disabled={isSomeLoading}
             />
+            <Tooltip placement="top" title={t('monitoring.panel_no_data_tips')}>
+              <a
+                // TODO: replace reference link on op side
+                href="https://docs.pingcap.com/tidbcloud/built-in-monitoring"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FileTextOutlined />
+              </a>
+            </Tooltip>
             {isSomeLoading && <LoadingOutlined />}
           </Space>
         </Toolbar>
@@ -62,7 +76,7 @@ export default function Monitoring() {
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
           <Card noMarginTop noMarginBottom>
-            {monitoringItems.map((item) => (
+            {ctx!.cfg.metricsQueries.map((item) => (
               <Collapse defaultActiveKey={['1']} ghost key={item.category}>
                 <Collapse.Panel
                   header={t(`monitoring.category.${item.category}`)}
@@ -93,13 +107,16 @@ export default function Monitoring() {
                           </Typography.Title>
                           <MetricChart
                             queries={m.queries}
-                            type={m.type}
+                            type={m.type as GraphType}
                             unit={m.unit}
                             nullValue={m.nullValue}
                             range={chartRange}
                             onRangeChange={setChartRange}
                             getMetrics={ctx!.ds.metricsQueryGet}
                             onLoadingStateChange={onLoadingStateChange}
+                            promAddrConfigurable={
+                              ctx!.cfg.promeAddrConfigurable
+                            }
                           />
                         </Card>
                       </Col>

@@ -1,5 +1,9 @@
-import { QueryData } from '@lib/components/MetricChart/seriesRenderer'
-import { ColorType, TransformNullValue } from '@lib/utils/prometheus'
+import {
+  ColorType,
+  TransformNullValue,
+  QueryData,
+  MetricsQueryType
+} from '@pingcap/tidb-dashboard-lib'
 
 function transformColorBySQLType(legendLabel: string) {
   switch (legendLabel) {
@@ -44,61 +48,67 @@ function transformColorByExecTimeOverview(legendLabel: string) {
   }
 }
 
-const monitoringItems = [
+const monitoringItems: MetricsQueryType[] = [
   {
     category: 'database_time',
     metrics: [
       {
-        title: 'Database Time',
+        title: 'Database Time by SQL Types',
         queries: [
           {
             query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
             name: 'database time',
-            color: ColorType.YELLOW
+            color: ColorType.YELLOW,
+            type: 'line'
+          },
+          {
+            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
+            name: '{sql_type}',
+            color: (qd: QueryData) => transformColorBySQLType(qd.name),
+            type: 'bar_stacked'
           }
         ],
         nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
-        type: 'line'
-      },
-      {
-        title: 'Database Time by SQL Types',
-        queries: [
-          {
-            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
-            name: '{sql_type}',
-            color: (qd: QueryData) => transformColorBySQLType(qd.name)
-          }
-        ],
-        unit: 's',
-        type: 'bar_stacked'
+        type: 'mixed'
       },
       {
         title: 'Database Time by SQL Phase',
         queries: [
           {
+            query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
+            name: 'database time',
+            color: ColorType.YELLOW,
+            type: 'line'
+          },
+          {
             query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
             name: 'parse',
-            color: ColorType.RED_2
+            color: ColorType.RED_2,
+            type: 'bar_stacked'
           },
           {
             query: `sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
             name: 'compile',
-            color: ColorType.ORANGE
+            color: ColorType.ORANGE,
+            type: 'bar_stacked'
           },
           {
             query: `sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
             name: 'execute',
-            color: ColorType.GREEN_3
+            color: ColorType.GREEN_3,
+            type: 'bar_stacked'
           },
           {
             query: `sum(rate(tidb_server_get_token_duration_seconds_sum[$__rate_interval]))/1000000`,
             name: 'get token',
-            color: ColorType.RED_3
+            color: ColorType.RED_3,
+            type: 'bar_stacked'
           }
         ],
+        nullValue: TransformNullValue.AS_ZERO,
         unit: 's',
-        type: 'bar_stacked'
+        type: 'mixed'
       },
       {
         title: 'SQL Execute Time Overview',
@@ -136,7 +146,7 @@ const monitoringItems = [
             name: 'active connections'
           }
         ],
-        unit: null,
+        unit: 'short',
         nullValue: TransformNullValue.AS_ZERO,
         type: 'line'
       },
@@ -179,7 +189,7 @@ const monitoringItems = [
         queries: [
           {
             query:
-              'increase(tidb_server_execute_error_total[$__rate_interval])',
+              'sum(rate(tidb_server_execute_error_total[$__rate_interval]))',
             name: '{type} @ {instance}'
           }
         ],
@@ -204,8 +214,7 @@ const monitoringItems = [
         title: 'Queries Using Plan Cache OPS',
         queries: [
           {
-            query:
-              'sum(rate(tidb_server_plan_cache_total[$__rate_interval])) by (type)',
+            query: 'sum(rate(tidb_server_plan_cache_total[$__rate_interval]))',
             name: 'avg - hit'
           },
           {
@@ -243,7 +252,7 @@ const monitoringItems = [
           },
           {
             query:
-              'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!="internal"}[$__rate_interval])) by (le,sql_type))',
+              'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le,sql_type))',
             name: '99-{sql_type}'
           }
         ],
@@ -550,7 +559,7 @@ const monitoringItems = [
         title: 'TiDB Uptime',
         queries: [
           {
-            query: '(time() - process_start_time_seconds{job="tidb"})',
+            query: '(time() - process_start_time_seconds{component="tidb"})',
             name: '{instance}'
           }
         ],
@@ -562,7 +571,8 @@ const monitoringItems = [
         title: 'TiDB CPU Usage',
         queries: [
           {
-            query: 'rate(process_cpu_seconds_total{job="tidb"}[30s])',
+            query:
+              'irate(process_cpu_seconds_total{component="tidb"}[$__rate_interval])',
             name: '{instance}'
           }
         ],
@@ -574,7 +584,7 @@ const monitoringItems = [
         title: 'TiDB Memory Usage',
         queries: [
           {
-            query: 'process_resident_memory_bytes{job="tidb"}',
+            query: 'process_resident_memory_bytes{component="tidb"}',
             name: '{instance}'
           }
         ],
@@ -586,7 +596,7 @@ const monitoringItems = [
         title: 'TiKV Uptime',
         queries: [
           {
-            query: '(time() - process_start_time_seconds{job="tikv"})',
+            query: '(time() - process_start_time_seconds{component="tikv"})',
             name: '{instance}'
           }
         ],
@@ -609,7 +619,7 @@ const monitoringItems = [
         title: 'TiKV Memory Usage',
         queries: [
           {
-            query: 'process_resident_memory_bytes{job=~".*tikv"}',
+            query: 'avg(process_resident_memory_bytes) by (instance)',
             name: '{instance}'
           }
         ],
@@ -621,7 +631,7 @@ const monitoringItems = [
         queries: [
           {
             query:
-              'sum(rate(tikv_engine_flow_bytes{db="kv", type="wal_file_bytes"}[$__rate_interval])) by (instance) + sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance) + sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance)',
+              'sum(rate(tikv_engine_flow_bytes{db="kv", type="wal_file_bytes"}[$__rate_interval])) by (instance) + (sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance) or (0 * sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance))) + (sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance) or (0 * sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance)))',
             name: '{instance}-write'
           },
           {
@@ -641,7 +651,74 @@ const monitoringItems = [
             name: '{instance}'
           }
         ],
-        unit: 'decbytes',
+        unit: 'bytes',
+        type: 'area_stack'
+      },
+      {
+        title: 'TiFlash Uptime',
+        queries: [
+          {
+            query: 'tiflash_system_asynchronous_metric_Uptime',
+            name: '{instance}'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'TiFlash CPU Usage',
+        queries: [
+          {
+            query:
+              'rate(tiflash_proxy_process_cpu_seconds_total{component="tiflash"}[$__rate_interval])',
+            name: '{instance}'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 'percentunit',
+        type: 'line'
+      },
+      {
+        title: 'TiFlash Memory',
+        queries: [
+          {
+            query:
+              'tiflash_proxy_process_resident_memory_bytes{component="tiflash"}',
+            name: '{instance}'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 'bytes',
+        type: 'line'
+      },
+      {
+        title: 'TiFlash IO MBps',
+        queries: [
+          {
+            query:
+              'sum(rate(tiflash_system_profile_event_WriteBufferFromFileDescriptorWriteBytes[$__rate_interval])) + sum(rate(tiflash_system_profile_event_PSMWriteBytes[$__rate_interval])) + sum(rate(tiflash_system_profile_event_WriteBufferAIOWriteBytes[$__rate_interval]))',
+            name: '{instance}-write'
+          },
+          {
+            query:
+              'sum(rate(tiflash_system_profile_event_ReadBufferFromFileDescriptorReadBytes[$__rate_interval])) + sum(rate(tiflash_system_profile_event_PSMReadBytes[$__rate_interval])) + sum(rate(tiflash_system_profile_event_ReadBufferAIOReadBytes[$__rate_interval]))',
+            name: '{instance}-read'
+          }
+        ],
+        unit: 'Bps',
+        type: 'line'
+      },
+      {
+        title: 'TiFlash Storage Usage',
+        queries: [
+          {
+            query:
+              'sum(tiflash_system_current_metric_StoreSizeUsed) by (instance)',
+            name: '{instance}'
+          }
+        ],
+        unit: 'bytes',
         type: 'area_stack'
       }
     ]

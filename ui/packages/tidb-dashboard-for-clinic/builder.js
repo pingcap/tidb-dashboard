@@ -10,6 +10,8 @@ const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const autoprefixer = require('autoprefixer')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
 
+const { lessModifyVars, lessGlobalVars } = require('../../less-vars')
+
 const isDev = process.env.NODE_ENV !== 'production'
 
 // load env
@@ -18,26 +20,6 @@ require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
 const clinicUIDistPath = process.env.CLINIC_UI_DIST_PATH
-
-const lessModifyVars = {
-  '@primary-color': '#4263eb',
-  '@body-background': '#fff',
-  '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
-  '@tooltip-max-width': '500px'
-}
-const lessGlobalVars = {
-  '@padding-page': '48px',
-  '@gray-1': '#fff',
-  '@gray-2': '#fafafa',
-  '@gray-3': '#f5f5f5',
-  '@gray-4': '#f0f0f0',
-  '@gray-5': '#d9d9d9',
-  '@gray-6': '#bfbfbf',
-  '@gray-7': '#8c8c8c',
-  '@gray-8': '#595959',
-  '@gray-9': '#262626',
-  '@gray-10': '#000'
-}
 
 function genDefine() {
   const define = {}

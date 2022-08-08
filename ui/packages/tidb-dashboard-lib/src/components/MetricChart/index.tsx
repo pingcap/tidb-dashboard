@@ -38,13 +38,14 @@ import {
   PromMatrixData,
   QueryOptions,
   resolveQueryTemplate,
-  TransformNullValue
+  TransformNullValue,
+  ColorType
 } from '@lib/utils/prometheus'
 import { AxiosPromise } from 'axios'
 import { ReqConfig } from '@lib/types'
 import { ChartContext } from './ChartContext'
 
-export type { GraphType }
+export type { GraphType, QueryData }
 
 const translations = {
   en: {
@@ -85,7 +86,8 @@ for (const key in translations) {
 export interface IQueryOption {
   query: string
   name: string
-  color?: string | ((qd: QueryData) => string)
+  color?: ColorType | ((qd: QueryData) => string | undefined)
+  type?: GraphType
 }
 
 export interface IMetricChartProps {
@@ -98,6 +100,7 @@ export interface IMetricChartProps {
   nullValue?: TransformNullValue
 
   height?: number
+  promAddrConfigurable?: boolean
 
   onRangeChange?: (newRange: TimeRangeValue) => void
   onLoadingStateChange?: (isLoading: boolean) => void
@@ -126,7 +129,8 @@ export default function MetricChart({
   onRangeChange,
   onLoadingStateChange,
   getMetrics,
-  nullValue = TransformNullValue.NULL
+  nullValue = TransformNullValue.NULL,
+  promAddrConfigurable = true
 }: IMetricChartProps) {
   const chartRef = useRef<Chart>(null)
   const chartContainerRef = useRef<HTMLDivElement>(null)
@@ -220,7 +224,8 @@ export default function MetricChart({
           const d: QueryData = {
             id: `${queryIdx}_${seriesIdx}`,
             name: format(queries[queryIdx].name, promResult.metric),
-            data: transformedData
+            data: transformedData,
+            type: queries[queryIdx].type
           }
           const colorOrFn = queries[queryIdx].color
 
@@ -271,53 +276,58 @@ export default function MetricChart({
       <div style={{ height }}>
         <Space direction="vertical">
           <ErrorBar errors={[error]} />
-          <Link to="/user_profile?blink=profile.prometheus">
-            {t('components.metricChart.changePromButton')}
-          </Link>
+          {promAddrConfigurable && (
+            <Link to="/user_profile?blink=profile.prometheus">
+              {t('components.metricChart.changePromButton')}
+            </Link>
+          )}
         </Space>
       </div>
     )
   } else {
     inner = (
-      <Chart size={{ height }} ref={chartRef}>
-        <Settings
-          {...DEFAULT_CHART_SETTINGS}
-          legendPosition={Position.Right}
-          legendSize={130}
-          pointerUpdateDebounce={0}
-          onPointerUpdate={(e) => ee.emit(e)}
-        />
-        <Axis
-          id="bottom"
-          position={Position.Bottom}
-          showOverlappingTicks
-          tickFormat={timeTickFormatter(range)}
-        />
-        <Axis
-          id="left"
-          position={Position.Left}
-          showOverlappingTicks
-          tickFormat={(v) =>
-            unit ? getValueFormat(unit)(v, 2) : Number(v).toFixed(0)
-          }
-          ticks={5}
-        />
-        {data?.values.map((qd) => renderQueryData(type, qd))}
-        {data && (
-          <LineSeries // An empty series to avoid "no data" notice
-            id="_placeholder"
-            xScaleType={ScaleType.Time}
-            yScaleType={ScaleType.Linear}
-            xAccessor={0}
-            yAccessors={[1]}
-            hideInLegend
-            data={[
-              [data.meta.queryOptions.start * 1000, null],
-              [data.meta.queryOptions.end * 1000, null]
-            ]}
+      <>
+        <Chart size={{ height }} ref={chartRef}>
+          <Settings
+            {...DEFAULT_CHART_SETTINGS}
+            legendPosition={Position.Right}
+            legendSize={130}
+            pointerUpdateDebounce={0}
+            onPointerUpdate={(e) => ee.emit(e)}
+            xDomain={{ min: range[0] * 1000, max: range[1] * 1000 }}
           />
-        )}
-      </Chart>
+          <Axis
+            id="bottom"
+            position={Position.Bottom}
+            showOverlappingTicks
+            tickFormat={timeTickFormatter(range)}
+          />
+          <Axis
+            id="left"
+            position={Position.Left}
+            showOverlappingTicks
+            tickFormat={(v) =>
+              unit ? getValueFormat(unit)(v, 1) : getValueFormat('none')(v)
+            }
+            ticks={5}
+          />
+          {data?.values.map((qd) => renderQueryData(type, qd))}
+          {data && (
+            <LineSeries // An empty series to avoid "no data" notice
+              id="_placeholder"
+              xScaleType={ScaleType.Time}
+              yScaleType={ScaleType.Linear}
+              xAccessor={0}
+              yAccessors={[1]}
+              hideInLegend
+              data={[
+                [data.meta.queryOptions.start * 1000, null],
+                [data.meta.queryOptions.end * 1000, null]
+              ]}
+            />
+          )}
+        </Chart>
+      </>
     )
   }
 

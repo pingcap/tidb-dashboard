@@ -1,5 +1,6 @@
 overview:
   nav_title: 概况
+  panel_no_data_tips: 文档
   view_more_metrics: 查看更多指标
   top_statements:
     title: 最耗时的 SQL 语句

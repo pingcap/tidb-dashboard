@@ -77,9 +77,8 @@ func (s *Service) queryStatements(
 				`LOWER(digest_text) REGEXP ?
 				 OR LOWER(digest) REGEXP ?
 				 OR LOWER(schema_name) REGEXP ?
-				 OR LOWER(table_names) REGEXP ?
-				 OR LOWER(plan) REGEXP ?`,
-				v, v, v, v, v,
+				 OR LOWER(table_names) REGEXP ?`,
+				v, v, v, v,
 			)
 		}
 	}

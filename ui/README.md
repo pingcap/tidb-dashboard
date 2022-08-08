@@ -1,5 +1,9 @@
 # TiDB Dashboard UI
 
+## Arch
+
+![ui arch](./ui_arch.png)
+
 ## Run
 
 ### Dev
@@ -16,4 +20,10 @@
 
 1. `pnpm build`
 1. `cd packages/tidb-dashboard-for-dbaas`
+1. `pnpm publish --access public`
+
+### Publish `tidb-dashboard-for-clinic` NPM package
+
+1. `pnpm build`
+1. `cd packages/tidb-dashboard-for-clinic`
 1. `pnpm publish --access public`

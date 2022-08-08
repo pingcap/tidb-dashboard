@@ -294,6 +294,7 @@ export default function MetricChart({
             legendSize={130}
             pointerUpdateDebounce={0}
             onPointerUpdate={(e) => ee.emit(e)}
+            xDomain={{ min: range[0] * 1000, max: range[1] * 1000 }}
           />
           <Axis
             id="bottom"

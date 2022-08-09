@@ -19,7 +19,7 @@ const envFile = isDev ? './.env.development' : './.env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
-const clinicUIDistPath = process.env.CLINIC_UI_DIST_PATH
+const clinicUIDashboardPath = process.env.CLINIC_UI_DASHBOARD_PATH
 
 function genDefine() {
   const define = {}
@@ -107,15 +107,14 @@ function handleAssets() {
 
 function copyAssets() {
   // copy out dir to clinic ui repo
-  if (!fs.existsSync(clinicUIDistPath)) {
+  if (!fs.existsSync(clinicUIDashboardPath)) {
     throw new Error(
-      `clini ui dist path ${clinicUIDistPath} doesn't exist, please change it by your local path`
+      `clini ui dashboard path ${clinicUIDashboardPath} doesn't exist, please change it by your local path`
     )
   }
-  const targetFolder = path.resolve(clinicUIDistPath, 'dashboard')
-  fs.removeSync(targetFolder)
-  fs.copySync(`./${outDir}`, targetFolder)
-  console.log('copy dist to clinic ui')
+  fs.removeSync(clinicUIDashboardPath)
+  fs.copySync(`./${outDir}`, clinicUIDashboardPath)
+  console.log('copy dashboard to clinic ui')
 }
 
 async function main() {

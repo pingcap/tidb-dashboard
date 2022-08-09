@@ -21,7 +21,7 @@ const envFile = isDev ? './.env.development' : './.env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
-const dbaasUIPublicPath = process.env.DBAAS_UI_PUBLIC_PATH
+const dbaasUIDashboardPath = process.env.DBAAS_UI_DASHBOARD_PATH
 
 // const devPort = parseInt(process.env.PORT) + 1
 // const devServerParams = {
@@ -119,15 +119,14 @@ function copyAssets() {
   // why we copy to dbaas ui publich folder instead of dist folder
   // because dbaas ui use create-react-app, it doesn't write output to disk in dev mode
   // so we only can copy to its public folder
-  if (!fs.existsSync(dbaasUIPublicPath)) {
+  if (!fs.existsSync(dbaasUIDashboardPath)) {
     throw new Error(
-      `dbaas ui public path ${dbaasUIPublicPath} doesn't exist, please change it by your local path`
+      `dbaas ui dashboard path ${dbaasUIDashboardPath} doesn't exist, please change it by your local path`
     )
   }
-  const targetFolder = path.resolve(dbaasUIPublicPath, 'dashboard')
-  fs.removeSync(targetFolder)
-  fs.copySync(`./${outDir}`, targetFolder)
-  console.log('copy dist to dbaas ui')
+  fs.removeSync(dbaasUIDashboardPath)
+  fs.copySync(`./${outDir}`, dbaasUIDashboardPath)
+  console.log('copy dashboard to dbaas ui')
 }
 
 async function main() {

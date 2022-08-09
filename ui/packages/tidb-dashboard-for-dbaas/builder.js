@@ -116,7 +116,7 @@ function handleAssets() {
 
 function copyAssets() {
   // copy out dir to dbaas ui repo
-  // why we copy to dbaas ui publich folder instead of dist folder
+  // why we copy to dbaas ui public folder instead of dist folder
   // because dbaas ui use create-react-app, it doesn't write output to disk in dev mode
   // so we only can copy to its public folder
   if (!fs.existsSync(dbaasUIDashboardPath)) {

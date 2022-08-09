@@ -10,6 +10,8 @@ const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const autoprefixer = require('autoprefixer')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
 
+const { lessModifyVars, lessGlobalVars } = require('../../less-vars')
+
 const isDev = process.env.NODE_ENV !== 'production'
 
 // load env
@@ -17,27 +19,7 @@ const envFile = isDev ? './.env.development' : './.env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
-const clinicUIDistPath = process.env.CLINIC_UI_DIST_PATH
-
-const lessModifyVars = {
-  '@primary-color': '#4263eb',
-  '@body-background': '#fff',
-  '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
-  '@tooltip-max-width': '500px'
-}
-const lessGlobalVars = {
-  '@padding-page': '48px',
-  '@gray-1': '#fff',
-  '@gray-2': '#fafafa',
-  '@gray-3': '#f5f5f5',
-  '@gray-4': '#f0f0f0',
-  '@gray-5': '#d9d9d9',
-  '@gray-6': '#bfbfbf',
-  '@gray-7': '#8c8c8c',
-  '@gray-8': '#595959',
-  '@gray-9': '#262626',
-  '@gray-10': '#000'
-}
+const clinicUIDashboardPath = process.env.CLINIC_UI_DASHBOARD_PATH
 
 function genDefine() {
   const define = {}
@@ -125,15 +107,14 @@ function handleAssets() {
 
 function copyAssets() {
   // copy out dir to clinic ui repo
-  if (!fs.existsSync(clinicUIDistPath)) {
+  if (!fs.existsSync(clinicUIDashboardPath)) {
     throw new Error(
-      `clini ui dist path ${clinicUIDistPath} doesn't exist, please change it by your local path`
+      `clini ui dashboard path ${clinicUIDashboardPath} doesn't exist, please change it by your local path`
     )
   }
-  const targetFolder = path.resolve(clinicUIDistPath, 'dashboard')
-  fs.removeSync(targetFolder)
-  fs.copySync(`./${outDir}`, targetFolder)
-  console.log('copy dist to clinic ui')
+  fs.removeSync(clinicUIDashboardPath)
+  fs.copySync(`./${outDir}`, clinicUIDashboardPath)
+  console.log('copy dashboard to clinic ui')
 }
 
 async function main() {

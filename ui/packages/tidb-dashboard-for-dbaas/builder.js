@@ -12,6 +12,8 @@ const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const autoprefixer = require('autoprefixer')
 const { yamlPlugin } = require('esbuild-plugin-yaml')
 
+const { lessModifyVars, lessGlobalVars } = require('../../less-vars')
+
 const isDev = process.env.NODE_ENV !== 'production'
 
 // load env
@@ -19,33 +21,14 @@ const envFile = isDev ? './.env.development' : './.env.production'
 require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
+const dbaasUIDashboardPath = process.env.DBAAS_UI_DASHBOARD_PATH
 
-const devPort = parseInt(process.env.PORT) + 1
-const devServerParams = {
-  port: devPort + '',
-  root: outDir,
-  open: true
-}
-
-const lessModifyVars = {
-  '@primary-color': '#4263eb',
-  '@body-background': '#fff',
-  '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
-  '@tooltip-max-width': '500px'
-}
-const lessGlobalVars = {
-  '@padding-page': '48px',
-  '@gray-1': '#fff',
-  '@gray-2': '#fafafa',
-  '@gray-3': '#f5f5f5',
-  '@gray-4': '#f0f0f0',
-  '@gray-5': '#d9d9d9',
-  '@gray-6': '#bfbfbf',
-  '@gray-7': '#8c8c8c',
-  '@gray-8': '#595959',
-  '@gray-9': '#262626',
-  '@gray-10': '#000'
-}
+// const devPort = parseInt(process.env.PORT) + 1
+// const devServerParams = {
+//   port: devPort + '',
+//   root: outDir,
+//   open: true
+// }
 
 function genDefine() {
   const define = {}
@@ -131,6 +114,21 @@ function handleAssets() {
   updateHtmlFiles(htmlFiles)
 }
 
+function copyAssets() {
+  // copy out dir to dbaas ui repo
+  // why we copy to dbaas ui public folder instead of dist folder
+  // because dbaas ui use create-react-app, it doesn't write output to disk in dev mode
+  // so we only can copy to its public folder
+  if (!fs.existsSync(dbaasUIDashboardPath)) {
+    throw new Error(
+      `dbaas ui dashboard path ${dbaasUIDashboardPath} doesn't exist, please change it by your local path`
+    )
+  }
+  fs.removeSync(dbaasUIDashboardPath)
+  fs.copySync(`./${outDir}`, dbaasUIDashboardPath)
+  console.log('copy dashboard to dbaas ui')
+}
+
 async function main() {
   fs.removeSync(`./${outDir}`)
 
@@ -142,7 +140,7 @@ async function main() {
   }
 
   if (isDev) {
-    start(devServerParams)
+    // start(devServerParams)
 
     watch(`src/**/*`, { ignoreInitial: true }).on('all', () => {
       rebuild()
@@ -157,6 +155,10 @@ async function main() {
       ignoreInitial: true
     }).on('all', () => {
       rebuild()
+    })
+
+    watch(`dist/**/*`).on('all', () => {
+      copyAssets()
     })
   } else {
     process.exit(0)

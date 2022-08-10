@@ -1,0 +1,43 @@
+signin:
+  message:
+    error: '登录失败: {{ msg }}'
+    success: 登录成功
+    access_doc: 帮助
+    access_doc_link: https://docs.pingcap.com/zh/tidb/stable/dashboard-user
+  form:
+    username: 用户名
+    username_tooltip: 升级到 TiDB 5.3 及更高版本后可自定义登录用户
+    password: 密码
+    button: 登录
+    tidb_auth:
+      title: SQL 用户登录
+      switch:
+        title: SQL 用户
+        description: 我知道数据库的登录用户名和密码
+    code_auth:
+      title: 授权码登录
+      switch:
+        title: 授权码
+        description: 其他人通过授权码邀请我使用
+      code: 授权码
+    sso:
+      button: 使用公司账号 SSO 登录
+      switch:
+        title: SSO
+        description: 使用公司账号登录
+    use_alternative: 使用其他登录方式
+    alternative:
+      title: 选择登录方式
+
+nav:
+  user:
+    signout: 登出
+  sider:
+    debug: 高级调试
+    conflict: 冲突诊断
+    experimental: 实验性功能
+health_check:
+  failed_notification_title: 系统健康检查失败
+  ngm_not_started: 集群中未启动必要组件 `NgMonitoring`，部分功能将不可用。
+  help_text: 帮助
+  help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-faq#界面提示-集群中未启动必要组件-ngmonitoring

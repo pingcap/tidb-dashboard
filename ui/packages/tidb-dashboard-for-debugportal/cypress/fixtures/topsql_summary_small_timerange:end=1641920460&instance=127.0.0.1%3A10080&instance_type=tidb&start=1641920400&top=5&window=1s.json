@@ -1,0 +1,177 @@
+{
+  "data": [
+    {
+      "sql_digest": "61f4cce222f1a26d6b0650865051ebed3d077412ae053636e2f5acf9dc426a42",
+      "sql_text": "insert high_priority into `mysql` . `tidb` values ( ... ) on duplicate key update `variable_value` = ? , comment = ?",
+      "is_other": false,
+      "cpu_time_ms": 10,
+      "exec_count_per_sec": 0.01639344262295082,
+      "duration_per_exec_ms": 0,
+      "scan_records_per_sec": 0,
+      "scan_indexes_per_sec": 0,
+      "plans": [
+        {
+          "plan_digest": "",
+          "plan_text": "",
+          "timestamp_sec": [1641920435, 1641920436],
+          "cpu_time_ms": [10, 0],
+          "exec_count_per_sec": 0.01639344262295082,
+          "duration_per_exec_ms": 0,
+          "scan_records_per_sec": 0,
+          "scan_indexes_per_sec": 0
+        }
+      ]
+    },
+    {
+      "sql_digest": "e6f07d43b5c21db0fbb9a31feac2dc599787763393dd5acbfad80e247eb02ad5",
+      "sql_text": "begin",
+      "is_other": false,
+      "cpu_time_ms": 10,
+      "exec_count_per_sec": 0.3770491803278688,
+      "duration_per_exec_ms": 0,
+      "scan_records_per_sec": 0,
+      "scan_indexes_per_sec": 0,
+      "plans": [
+        {
+          "plan_digest": "",
+          "plan_text": "",
+          "timestamp_sec": [
+            1641920402, 1641920405, 1641920408, 1641920411, 1641920414,
+            1641920417, 1641920420, 1641920423, 1641920426, 1641920429,
+            1641920432, 1641920435, 1641920436, 1641920438, 1641920441,
+            1641920444, 1641920447, 1641920450, 1641920453, 1641920456,
+            1641920459
+          ],
+          "cpu_time_ms": [
+            0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+          ],
+          "exec_count_per_sec": 0.3770491803278688,
+          "duration_per_exec_ms": 0,
+          "scan_records_per_sec": 0,
+          "scan_indexes_per_sec": 0
+        }
+      ]
+    },
+    {
+      "sql_digest": "ea4709893ffb8edc8d58191ccbd93c4c4fdfc1d20ebbcc7f48707df328d6dbb2",
+      "sql_text": "select `version` , `table_id` , `modify_count` , `count` from `mysql` . `stats_meta` where `version` \u003e ? order by `version`",
+      "is_other": false,
+      "cpu_time_ms": 10,
+      "exec_count_per_sec": 0.32786885245901637,
+      "duration_per_exec_ms": 0,
+      "scan_records_per_sec": 0,
+      "scan_indexes_per_sec": 0,
+      "plans": [
+        {
+          "plan_digest": "",
+          "plan_text": "",
+          "timestamp_sec": [1641920426],
+          "cpu_time_ms": [10],
+          "exec_count_per_sec": 0,
+          "duration_per_exec_ms": 0,
+          "scan_records_per_sec": 0,
+          "scan_indexes_per_sec": 0
+        },
+        {
+          "plan_digest": "42d48b331dfe53300ddea68d4217dc467244bd898f80f10a913f2104d26d4989",
+          "plan_text": "\tProjection        \troot\tmysql.stats_meta.count, mysql.stats_meta.modify_count, mysql.stats_meta.table_id, mysql.stats_meta.version\n\t└─IndexLookUp     \troot\t\n\t  ├─IndexRangeScan\tcop \ttable:stats_meta, index:idx_ver(version), range:[?,?], keep order:true\n\t  └─TableRowIDScan\tcop \ttable:stats_meta, keep order:false",
+          "timestamp_sec": [
+            1641920402, 1641920405, 1641920408, 1641920411, 1641920414,
+            1641920417, 1641920420, 1641920423, 1641920426, 1641920429,
+            1641920432, 1641920435, 1641920438, 1641920441, 1641920444,
+            1641920447, 1641920450, 1641920453, 1641920456, 1641920459
+          ],
+          "cpu_time_ms": [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+          ],
+          "exec_count_per_sec": 0.32786885245901637,
+          "duration_per_exec_ms": 0,
+          "scan_records_per_sec": 0,
+          "scan_indexes_per_sec": 0
+        }
+      ]
+    },
+    {
+      "sql_digest": "b95a604794f9eff17a1a6a37d754324be11ede348a0d1e53da2bc3c32d6a4142",
+      "sql_text": "select `variable_name` , `variable_value` from `mysql` . `global_variables` where `variable_name` in ( ... )",
+      "is_other": false,
+      "cpu_time_ms": 10,
+      "exec_count_per_sec": 0.32786885245901637,
+      "duration_per_exec_ms": 0,
+      "scan_records_per_sec": 0,
+      "scan_indexes_per_sec": 0,
+      "plans": [
+        {
+          "plan_digest": "9449388a4efbc35c8eca1639aec164392df687869239f9ad16ea37887d98c42a",
+          "plan_text": "\tBatch_Point_Get\troot\ttable:GLOBAL_VARIABLES, index:PRIMARY(VARIABLE_NAME), keep order:false, desc:false",
+          "timestamp_sec": [
+            1641920402, 1641920405, 1641920408, 1641920411, 1641920414,
+            1641920417, 1641920420, 1641920423, 1641920426, 1641920429,
+            1641920432, 1641920435, 1641920438, 1641920441, 1641920444,
+            1641920447, 1641920450, 1641920453, 1641920456, 1641920459
+          ],
+          "cpu_time_ms": [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0
+          ],
+          "exec_count_per_sec": 0.32786885245901637,
+          "duration_per_exec_ms": 0,
+          "scan_records_per_sec": 0,
+          "scan_indexes_per_sec": 0
+        }
+      ]
+    },
+    {
+      "sql_digest": "e2769f5619db3dc4916298c4c6b3bc2c36c6d64a84e2a5549284521482564ce0",
+      "sql_text": "select high_priority ( `variable_value` ) from `mysql` . `tidb` where `variable_name` = ? for update",
+      "is_other": false,
+      "cpu_time_ms": 0,
+      "exec_count_per_sec": 0.06557377049180328,
+      "duration_per_exec_ms": 0,
+      "scan_records_per_sec": 0,
+      "scan_indexes_per_sec": 0,
+      "plans": [
+        {
+          "plan_digest": "892b61d58192589f43d81f3ee50710d71e6a8c286a59877069eaa00cd3bb8f5c",
+          "plan_text": "\tProjection          \troot\tmysql.tidb.variable_value\n\t└─SelectLock        \troot\t\n\t  └─IndexLookUp     \troot\t\n\t    ├─IndexRangeScan\tcop \ttable:tidb, index:PRIMARY(VARIABLE_NAME), range:[?,?], keep order:false\n\t    └─TableRowIDScan\tcop \ttable:tidb, keep order:false",
+          "timestamp_sec": [1641920435, 1641920436],
+          "cpu_time_ms": [0, 0],
+          "exec_count_per_sec": 0.06557377049180328,
+          "duration_per_exec_ms": 0,
+          "scan_records_per_sec": 0,
+          "scan_indexes_per_sec": 0
+        }
+      ]
+    },
+    {
+      "sql_digest": "",
+      "sql_text": "",
+      "is_other": true,
+      "cpu_time_ms": 0,
+      "exec_count_per_sec": 0.7868852459016393,
+      "duration_per_exec_ms": 0,
+      "scan_records_per_sec": 0,
+      "scan_indexes_per_sec": 0,
+      "plans": [
+        {
+          "plan_digest": "",
+          "plan_text": "",
+          "timestamp_sec": [
+            1641920402, 1641920405, 1641920408, 1641920411, 1641920414,
+            1641920417, 1641920419, 1641920420, 1641920423, 1641920426,
+            1641920429, 1641920432, 1641920435, 1641920436, 1641920438,
+            1641920441, 1641920444, 1641920447, 1641920449, 1641920450,
+            1641920453, 1641920456, 1641920459
+          ],
+          "cpu_time_ms": [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+          ],
+          "exec_count_per_sec": 0.7868852459016393,
+          "duration_per_exec_ms": 0,
+          "scan_records_per_sec": 0,
+          "scan_indexes_per_sec": 0
+        }
+      ]
+    }
+  ],
+  "status": "ok"
+}

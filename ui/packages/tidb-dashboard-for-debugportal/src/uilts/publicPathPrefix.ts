@@ -1,3 +1,3 @@
-let prefix = './'
+let prefix = '.'
 
 export default prefix

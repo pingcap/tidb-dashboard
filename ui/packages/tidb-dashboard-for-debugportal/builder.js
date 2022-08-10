@@ -107,6 +107,10 @@ function copyAssets() {
   }
   fs.removeSync(clinicUIDashboardPath)
   fs.copySync(`./${outDir}`, clinicUIDashboardPath)
+  if (!isDev) {
+    fs.removeSync(`${clinicUIDashboardPath}/dashboardApp.css.map`)
+    fs.removeSync(`${clinicUIDashboardPath}/dashboardApp.js.map`)
+  }
   console.log('copy dashboard to clinic ui')
 }
 
@@ -115,6 +119,7 @@ async function main() {
 
   const builder = await build(esbuildParams)
   handleAssets()
+  copyAssets()
 
   function rebuild() {
     builder

@@ -12,7 +12,6 @@ import {
 
 import auth from '~/uilts/auth'
 
-import { getApiBasePath } from './apiBasePath'
 import translations from './translations'
 
 export * from '@pingcap/tidb-dashboard-client'
@@ -102,22 +101,24 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   })
 }
 
-function initAxios() {
-  const instance = axios.create()
+function initAxios(token: string) {
+  const instance = axios.create({
+    headers: {
+      'x-csrf-token': token
+    }
+  })
   applyErrorHandlerInterceptor(instance)
 
   return instance
 }
 
-function init() {
+export function setupClient(apiBasePath: string, token: string) {
   i18n.addTranslations(translations)
 
-  const apiBasePath = getApiBasePath()
-  const axiosInstance = initAxios()
+  const axiosInstance = initAxios(token)
   const dashboardApi = new DashboardApi(
     new Configuration({
       basePath: apiBasePath,
-      apiKey: () => auth.getAuthTokenAsBearer() || '',
       baseOptions: {
         handleError: 'default'
       }
@@ -128,5 +129,3 @@ function init() {
 
   client.init(apiBasePath, dashboardApi)
 }
-
-init()

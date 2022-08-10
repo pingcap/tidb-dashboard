@@ -1,12 +1,4 @@
-const DEF_PUBLIC_PATH_PREFIX = '/dashboard'
-
 let prefix =
-  document
-    .querySelector('meta[name="x-public-path-prefix"]')
-    ?.getAttribute('content') || DEF_PUBLIC_PATH_PREFIX
-
-if (prefix === '__PUBLIC_PATH_PREFIX__') {
-  prefix = DEF_PUBLIC_PATH_PREFIX
-}
+  process.env.REACT_APP_DASHBOARD_IN_CLINIC_PUBLIC_PATH_PREFIX || '/clinic/d'
 
 export default prefix

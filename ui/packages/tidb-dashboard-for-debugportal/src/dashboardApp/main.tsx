@@ -18,7 +18,7 @@ import {
   isDistro
 } from '@pingcap/tidb-dashboard-lib'
 
-import { InfoInfoResponse } from '~/client'
+import { InfoInfoResponse, setupClient } from '~/client'
 import auth from '~/uilts/auth'
 import { handleSSOCallback, isSSOCallback } from '~/uilts/authSSO'
 import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
@@ -65,6 +65,8 @@ async function webPageStart() {
     i18next.changeLanguage(options.lang)
   }
   i18n.addTranslations(translations)
+
+  setupClient(options.apiBasePath, auth.getAuthToken() || '')
 
   let info: InfoInfoResponse
 
@@ -202,25 +204,35 @@ async function main() {
   document.title = `${distro().tidb} Dashboard`
 
   if (routing.isPortalPage()) {
-    // the portal page is only used to receive options
-    function handlePortalEvent(event) {
-      const { type, token, lang, hideNav, skipNgmCheck, redirectPath } =
-        event.data
+    // same window communication
+    function handleSameWindowPortalEvent(event) {
+      const {
+        type,
+        token,
+        apiBasePath,
+        lang,
+        hideNav,
+        skipNgmCheck,
+        redirectPath
+      } = event.detail
       // the event type must be "DASHBOARD_PORTAL_EVENT"
       if (type !== 'DASHBOARD_PORTAL_EVENT') {
         return
       }
 
       auth.setAuthToken(token)
-      saveAppOptions({ hideNav, lang, skipNgmCheck })
+      saveAppOptions({ apiBasePath, hideNav, lang, skipNgmCheck })
       window.location.hash = `#${redirectPath}`
       window.location.reload()
-
-      window.removeEventListener('message', handlePortalEvent)
+      window.removeEventListener(
+        'dashboard:portal_event',
+        handleSameWindowPortalEvent
+      )
     }
-
-    window.addEventListener('message', handlePortalEvent)
-    return
+    window.addEventListener(
+      'dashboard:portal_event',
+      handleSameWindowPortalEvent
+    )
   }
 
   if (isSSOCallback()) {

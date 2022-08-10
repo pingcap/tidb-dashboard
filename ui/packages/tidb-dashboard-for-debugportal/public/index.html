@@ -2,16 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="x-public-path-prefix" content="__PUBLIC_PATH_PREFIX__" />
-    <meta name="x-distro-strings-res" content="__DISTRO_STRINGS_RES__" />
-    <meta
-      name="x-distro-assets-res-timestamp"
-      content="__DISTRO_ASSETS_RES_TIMESTAMP__"
-    />
-    <link
-      rel="icon"
-      href="%PUBLIC_URL%/distro-res/favicon.ico?t=__DISTRO_ASSETS_RES_TIMESTAMP__"
-    />
+    <link rel="icon" href="./distro-res/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       http-equiv="Cache-control"
@@ -98,10 +89,7 @@
         }
       }
     </style>
-    <link
-      rel="stylesheet"
-      href="%PUBLIC_URL%/dashboardApp.css?t=%TIME_PLACE_HOLDER%"
-    />
+    <link rel="stylesheet" href="./dashboardApp.css?t=%TIME_PLACE_HOLDER%" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -109,7 +97,31 @@
     <div id="root"></div>
     <script
       type="module"
-      src="%PUBLIC_URL%/dashboardApp.js?t=%TIME_PLACE_HOLDER%"
+      src="./dashboardApp.js?t=%TIME_PLACE_HOLDER%"
     ></script>
+
+    <script>
+      window.onload = function () {
+        if (window.location.hash.startsWith('#/portal')) {
+          const hashParams = new URLSearchParams(
+            window.location.hash.slice(window.location.hash.indexOf('?'))
+          )
+          const clusterId = hashParams.get('clusterId')
+          const apiBasePath = `/clinic/api/v1/dashboard/proxy/cluster/${clusterId}/pd/dashboard/api`
+          window.dispatchEvent(
+            new CustomEvent('dashboard:portal_event', {
+              detail: {
+                type: 'DASHBOARD_PORTAL_EVENT',
+                token: localStorage.getItem('clinic.auth.csrf_token'),
+                apiBasePath,
+                lang: 'en',
+                hideNav: false,
+                redirectPath: '/overview'
+              }
+            })
+          )
+        }
+      }
+    </script>
   </body>
 </html>

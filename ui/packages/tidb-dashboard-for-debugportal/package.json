@@ -1,15 +1,10 @@
 {
-  "name": "@pingcap/tidb-dashboard-for-op",
+  "name": "@pingcap/tidb-dashboard-for-debugportal",
   "private": "true",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "scripts": {
     "dev": "gulp dev",
-    "build": "gulp build",
-    "run:e2e-test:compat-features": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.compat_spec.[jt]s",
-    "run:e2e-test:common-features": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.spec.[jt]s",
-    "run:e2e-test:without-ngm": "TZ=Asia/Shanghai cypress run --spec cypress/integration/**/*.without_ngm_spec.[jt]s",
-    "run:e2e-test:specify": "TZ=Asia/Shanghai cypress run",
-    "open:cypress": "TZ=Asia/Shanghai cypress open"
+    "build": "gulp build"
   },
   "keywords": [],
   "author": "",

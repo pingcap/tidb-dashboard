@@ -2,8 +2,8 @@ import React, { useState, useMemo } from 'react'
 import {
   ExperimentOutlined,
   BugOutlined,
-  AimOutlined,
-  PullRequestOutlined
+  AimOutlined
+  // PullRequestOutlined
 } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
 import Banner from './Banner'
 import styles from './index.module.less'
-// import { store, useIsFeatureSupport } from '@lib/utils/store'
 
 import { store, useIsFeatureSupport } from '@pingcap/tidb-dashboard-lib'
 
@@ -109,21 +108,21 @@ function Sider({
     </Menu.SubMenu>
   )
 
-  const conflictSubMenuItems = [useAppMenuItem(registry, 'deadlock')]
+  // const conflictSubMenuItems = [useAppMenuItem(registry, 'deadlock')]
 
-  const conflictSubMenu = (
-    <Menu.SubMenu
-      key="conflict"
-      title={
-        <span>
-          <PullRequestOutlined />
-          <span>{t('nav.sider.conflict')}</span>
-        </span>
-      }
-    >
-      {conflictSubMenuItems}
-    </Menu.SubMenu>
-  )
+  // const conflictSubMenu = (
+  //   <Menu.SubMenu
+  //     key="conflict"
+  //     title={
+  //       <span>
+  //         <PullRequestOutlined />
+  //         <span>{t('nav.sider.conflict')}</span>
+  //       </span>
+  //     }
+  //   >
+  //     {conflictSubMenuItems}
+  //   </Menu.SubMenu>
+  // )
 
   const experimentalSubMenuItems = [
     useAppMenuItem(registry, 'query_editor'),
@@ -153,15 +152,15 @@ function Sider({
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),
-    useAppMenuItem(registry, 'system_report'),
+    // useAppMenuItem(registry, 'system_report'),
     // warning: "diagnose" app doesn't release yet
     // useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'monitoring'),
     useAppMenuItem(registry, 'search_logs'),
     // useAppMenuItem(registry, '__APP_NAME__'),
     // NOTE: Don't remove above comment line, it is a placeholder for code generator
-    debugSubMenu,
-    conflictSubMenu
+    debugSubMenu
+    // conflictSubMenu
   ]
   if (topSQLSupport) {
     menuItems.splice(2, 0, topSQLMenu)

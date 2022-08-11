@@ -1,8 +1,8 @@
 {
   "name": "@pingcap/tidb-dashboard-for-debugportal",
-  "version": "0.0.1",
-  "main": "dist/main.js",
-  "module": "dist/main.js",
+  "version": "0.0.2",
+  "main": "dist/dashboardApp.js",
+  "module": "dist/dashboardApp.js",
   "files": [
     "dist/*.js",
     "dist/*.css",
@@ -11,6 +11,7 @@
     "dist/speedscope/*.css",
     "dist/speedscope/*.map",
     "dist/speedscope/*.png",
+    "dist/speedscope/*.txt",
     "package.json",
     "README.md"
   ],

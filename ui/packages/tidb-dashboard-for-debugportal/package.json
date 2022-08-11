@@ -1,7 +1,19 @@
 {
   "name": "@pingcap/tidb-dashboard-for-debugportal",
-  "private": "true",
   "version": "0.0.1",
+  "main": "dist/main.js",
+  "module": "dist/main.js",
+  "files": [
+    "dist/*.js",
+    "dist/*.css",
+    "dist/*.map",
+    "dist/speedscope/*.js",
+    "dist/speedscope/*.css",
+    "dist/speedscope/*.map",
+    "dist/speedscope/*.png",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
     "dev": "gulp dev",
     "build": "gulp build"

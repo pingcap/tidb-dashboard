@@ -103,11 +103,14 @@
     <script>
       window.onload = function () {
         if (window.location.hash.startsWith('#/portal')) {
-          const hashParams = new URLSearchParams(
-            window.location.hash.slice(window.location.hash.indexOf('?'))
-          )
-          const clusterId = hashParams.get('clusterId')
+          const searchParams = new URLSearchParams(window.location.search)
+          const clusterId = searchParams.get('clusterId') || ''
+          if (clusterId === '') {
+            window.alert('Invalid clusterId parameter!')
+            return
+          }
           const apiBasePath = `/clinic/api/v1/dashboard/proxy/cluster/${clusterId}/pd/dashboard/api`
+
           window.dispatchEvent(
             new CustomEvent('dashboard:portal_event', {
               detail: {

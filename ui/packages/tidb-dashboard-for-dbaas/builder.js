@@ -5,8 +5,6 @@ const md5File = require('md5-file')
 const chalk = require('chalk')
 const { watch } = require('chokidar')
 
-const { start } = require('live-server')
-
 const { build } = require('esbuild')
 const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const autoprefixer = require('autoprefixer')
@@ -22,13 +20,6 @@ require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
 
 const outDir = 'dist'
 const dbaasUIDashboardPath = process.env.DBAAS_UI_DASHBOARD_PATH
-
-// const devPort = parseInt(process.env.PORT) + 1
-// const devServerParams = {
-//   port: devPort + '',
-//   root: outDir,
-//   open: true
-// }
 
 function genDefine() {
   const define = {}

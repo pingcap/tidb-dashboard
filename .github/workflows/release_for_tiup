@@ -44,8 +44,11 @@ jobs:
       - name: Build UI
         env:
           REACT_APP_MIXPANEL_TOKEN: ${{ secrets.REACT_APP_MIXPANEL_TOKEN }}
+          UI:1
         run: |
           make ui
+          echo "***************************"$UI
+          make      
       - name: Pack UI assets for release
         working-directory: ui/packages/tidb-dashboard-for-op/dist
         run: |

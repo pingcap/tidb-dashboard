@@ -15,8 +15,15 @@ const { lessModifyVars, lessGlobalVars } = require('../../less-vars')
 const isDev = process.env.NODE_ENV !== 'production'
 
 // load env
+const dotenv = require('dotenv')
 const envFile = isDev ? './.env.development' : './.env.production'
-require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
+dotenv.config({ path: path.resolve(process.cwd(), envFile) })
+if (isDev && fs.pathExistsSync(path.resolve(process.cwd(), '.env.local'))) {
+  dotenv.config({
+    path: '.env.local',
+    override: true
+  })
+}
 
 const outDir = 'dist'
 const dbaasUIDashboardPath = process.env.DBAAS_UI_DASHBOARD_PATH

@@ -1,0 +1,42 @@
+signin:
+  message:
+    error: 'Sign in failed: {{ msg }}'
+    success: Sign in successfully
+    access_doc: Help
+    access_doc_link: https://docs.pingcap.com/tidb/stable/dashboard-user
+  form:
+    username: Username
+    username_tooltip: Sign in user can be customized in TiDB 5.3 or later versions
+    password: Password
+    button: Sign In
+    tidb_auth:
+      title: SQL User Sign In
+      switch:
+        title: SQL User
+        description: I know the username and password to connect to the database
+    code_auth:
+      title: Authorization Code Sign In
+      switch:
+        title: Authorization Code
+        description: I was invited by others with an authorization code
+      code: Code
+    sso:
+      button: Sign In via Company Account (SSO)
+      switch:
+        title: SSO
+        description: I want to sign in use my company account
+    use_alternative: Use Alternative Authentication
+    alternative:
+      title: Select Authentication
+nav:
+  user:
+    signout: Sign Out
+  sider:
+    debug: Advanced Debugging
+    conflict: Conflict Diagnosing
+    experimental: Experimental Features
+health_check:
+  failed_notification_title: System Health Check Failed
+  ngm_not_started: A required component `NgMonitoring` is not started in this cluster. Some features may not work.
+  help_text: Help
+  help_url: https://docs.pingcap.com/tidb/dev/dashboard-faq#a-required-component-ngmonitoring-is-not-started-error-is-shown

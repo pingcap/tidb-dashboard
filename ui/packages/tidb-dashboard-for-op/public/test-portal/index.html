@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TiDB Dashboard iframe Test</title>
+    <script>
+      function changeApp(app) {
+        console.log('app:', app)
+        const dashboard = document.getElementById('dashboard')
+        dashboard.src = `http://localhost:3001/dashboard/#/${app}`
+      }
+
+      window.onload = function () {
+        const dashboard = document.getElementById('dashboard')
+        const token =
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTIwMjUzMjgsIm9yaWdfaWF0IjoxNTkxOTM4OTI4LCJwIjoibkZyZGh1OXlxdnNOSnBXS1daUUlUTkRPakJFMTc4eExQaXc3Y1g4eGxrNFlxMXBRWXVUU1BLVHdNQXIwM2VDajhvTnJuWDc5ZEFDQWZtblBzZXcwaXhnQWdaR1kveU1pMXNqUUc4L1VkMy9McDJKUTN5elMifQ.ynPM1S2jOBvnEcRJgZK-FEaUuhNCI16GCUXKdYs9T18'
+        dashboard.contentWindow.postMessage(
+          {
+            type: 'DASHBOARD_PORTAL_EVENT',
+            token,
+            lang: 'en',
+            hideNav: true,
+            redirectPath: '/statement'
+          },
+          '*'
+        )
+      }
+    </script>
+  </head>
+  <body>
+    <div style="margin: 20px">
+      <h1>iframe test</h1>
+      <div>
+        <a href="#" onclick="changeApp('statement'); return false;"
+          >SQL Statement</a
+        >
+        |
+        <a href="#" onclick="changeApp('slow_query'); return false;"
+          >Slow Query</a
+        >
+        |
+        <a href="#" onclick="changeApp('keyviz'); return false;">Key Viz</a>
+      </div>
+      <div style="border: 1px solid #52c41a; height: 80vh">
+        <iframe
+          id="dashboard"
+          width="100%"
+          height="100%"
+          src="http://localhost:3001/dashboard/#/portal"
+        ></iframe>
+      </div>
+    </div>
+  </body>
+</html>

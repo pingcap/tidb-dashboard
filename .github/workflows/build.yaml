@@ -85,4 +85,5 @@ jobs:
           UI: 1
         run: |
           make ui
+          echo "*******************"$ui
           make

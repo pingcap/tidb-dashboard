@@ -13,3 +13,5 @@ cypress/integration/1-getting-started
 cypress/integration/2-advanced-examples
 .nyc_output
 *.log
+
+.env.local

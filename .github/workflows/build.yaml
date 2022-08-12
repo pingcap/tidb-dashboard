@@ -85,5 +85,5 @@ jobs:
           UI: 1
         run: |
           make ui
-          echo "*******************"$ui
+          echo "*******************"${{ env.UI }}
           make

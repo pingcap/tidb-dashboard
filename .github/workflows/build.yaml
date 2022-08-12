@@ -79,8 +79,10 @@ jobs:
           pnpm fmt-check || (echo "::error ::Please format your code by using 'pnpm fmt-fix'"; exit 1)
         working-directory: ui
       - name: Build UI
-        run: |
-          make ui
         env:
           NO_MINIMIZE: true
           CI: true
+          UI: 1
+        run: |
+          make ui
+          make

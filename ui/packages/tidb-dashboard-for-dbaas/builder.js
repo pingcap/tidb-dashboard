@@ -5,8 +5,6 @@ const md5File = require('md5-file')
 const chalk = require('chalk')
 const { watch } = require('chokidar')
 
-const { start } = require('live-server')
-
 const { build } = require('esbuild')
 const postCssPlugin = require('@baurine/esbuild-plugin-postcss3')
 const autoprefixer = require('autoprefixer')
@@ -17,18 +15,18 @@ const { lessModifyVars, lessGlobalVars } = require('../../less-vars')
 const isDev = process.env.NODE_ENV !== 'production'
 
 // load env
+const dotenv = require('dotenv')
 const envFile = isDev ? './.env.development' : './.env.production'
-require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
+dotenv.config({ path: path.resolve(process.cwd(), envFile) })
+if (isDev && fs.pathExistsSync(path.resolve(process.cwd(), '.env.local'))) {
+  dotenv.config({
+    path: '.env.local',
+    override: true
+  })
+}
 
 const outDir = 'dist'
 const dbaasUIDashboardPath = process.env.DBAAS_UI_DASHBOARD_PATH
-
-// const devPort = parseInt(process.env.PORT) + 1
-// const devServerParams = {
-//   port: devPort + '',
-//   root: outDir,
-//   open: true
-// }
 
 function genDefine() {
   const define = {}
@@ -115,10 +113,6 @@ function handleAssets() {
 }
 
 function copyAssets() {
-  // copy out dir to dbaas ui repo
-  // why we copy to dbaas ui public folder instead of dist folder
-  // because dbaas ui use create-react-app, it doesn't write output to disk in dev mode
-  // so we only can copy to its public folder
   if (!fs.existsSync(dbaasUIDashboardPath)) {
     throw new Error(
       `dbaas ui dashboard path ${dbaasUIDashboardPath} doesn't exist, please change it by your local path`

@@ -15,6 +15,7 @@
     "dev:op": "pnpm build:lib && pnpm -r --parallel --filter @pingcap/tidb-dashboard-for-op... dev",
     "dev:dbaas": "pnpm build:lib && pnpm -r --parallel --filter @pingcap/tidb-dashboard-for-dbaas... dev",
     "dev:clinic": "pnpm build:lib && pnpm -r --parallel --filter @pingcap/tidb-dashboard-for-clinic... dev",
+    "dev:debugportal": "pnpm build:lib && pnpm -r --parallel --filter @pingcap/tidb-dashboard-for-debugportal... dev",
     "dev:watch_api": "WATCH_API=1 pnpm dev",
     "build": "pnpm -r build"
   },

@@ -1,0 +1,171 @@
+@import 'antd/es/style/themes/default.less';
+@import 'antd/es/button/style/mixin.less';
+
+@content-width: 400px;
+
+.container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.contantContainer {
+  min-width: @content-width;
+  width: 38%;
+  background: #fff;
+  position: relative;
+}
+
+.dialogContainer {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 30px 65px;
+  overflow-y: auto;
+}
+
+.dialog {
+  max-width: 300px;
+  width: 100%;
+  margin: auto;
+}
+
+.landingContainer {
+  flex-grow: 1;
+}
+
+.landing {
+  background-size: cover;
+  background-position: center left;
+  height: 100%;
+}
+
+.logo {
+  height: 40px;
+  margin-bottom: 80px;
+}
+
+.signInButton {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.extraLink {
+  font-size: 0.9rem;
+  margin: 15px 0;
+  a {
+    color: @gray-7;
+    &:hover {
+      color: @gray-7;
+    }
+  }
+
+  &.clickable {
+    a:hover {
+      color: @link-hover-color;
+    }
+  }
+}
+
+.alternativeFormLayer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  z-index: 2;
+}
+
+.alternativeCloseButton {
+  font-size: 1rem;
+  border: 0;
+  background: #fff;
+  color: @text-color;
+  cursor: pointer;
+  padding: @padding-xss;
+  padding-right: 0;
+
+  &:hover,
+  &:active,
+  &:focus {
+    color: @link-hover-color;
+    outline: 0;
+  }
+}
+
+.alternativeButton {
+  .btn;
+  .btn-default;
+
+  height: auto;
+  width: 100%;
+  color: @text-color;
+
+  margin-bottom: @padding-sm;
+  text-align: left;
+  padding: @padding-md;
+  padding-right: 50px + @padding-md;
+  position: relative;
+  word-wrap: normal;
+  white-space: normal;
+  line-height: 1;
+
+  &:hover,
+  &:active,
+  &:focus {
+    color: @text-color;
+  }
+
+  .title {
+    color: @heading-color;
+    margin-bottom: @padding-sm;
+  }
+
+  .icon {
+    font-size: 1.3rem;
+    position: absolute;
+    right: 0;
+    width: 50px;
+    text-align: center;
+    opacity: 0;
+    transform: translateX(-5px);
+    transition: opacity 0.2s linear, transform 0.2s linear;
+    color: @gray-6;
+
+    // For vertical align
+    top: 50%;
+    margin-top: -20px;
+    line-height: 40px;
+  }
+
+  &:hover,
+  &:active,
+  &:focus {
+    .icon {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+.container :global {
+  .formAnimation {
+    animation: 0.2s @ease-out-circ 0.5s antZoomBigIn;
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
+  }
+  .landingAnimation {
+    animation: 0.5s linear 0 antFadeIn;
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
+  }
+}

@@ -653,6 +653,72 @@ const monitoringItems: MetricsQueryType[] = [
         ],
         unit: 'decbytes',
         type: 'area_stack'
+      },
+      {
+        title: 'TiFlash Uptime',
+        queries: [
+          {
+            query: 'tiflash_system_asynchronous_metric_Uptime',
+            name: '{instance}'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 's',
+        type: 'line'
+      },
+      {
+        title: 'TiFlash CPU Usage',
+        queries: [
+          {
+            query:
+              'rate(tiflash_proxy_process_cpu_seconds_total{job="tiflash"}[$__rate_interval])',
+            name: '{instance}'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 'percentunit',
+        type: 'line'
+      },
+      {
+        title: 'TiFlash Memory',
+        queries: [
+          {
+            query: 'tiflash_proxy_process_resident_memory_bytes{job="tiflash"}',
+            name: '{instance}'
+          }
+        ],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: 'bytes',
+        type: 'line'
+      },
+      {
+        title: 'TiFlash IO MBps',
+        queries: [
+          {
+            query:
+              'sum(rate(tiflash_system_profile_event_WriteBufferFromFileDescriptorWriteBytes[$__rate_interval])) + sum(rate(tiflash_system_profile_event_PSMWriteBytes[$__rate_interval])) + sum(rate(tiflash_system_profile_event_WriteBufferAIOWriteBytes[$__rate_interval]))',
+            name: '{instance}-write'
+          },
+          {
+            query:
+              'sum(rate(tiflash_system_profile_event_ReadBufferFromFileDescriptorReadBytes[$__rate_interval])) + sum(rate(tiflash_system_profile_event_PSMReadBytes[$__rate_interval])) + sum(rate(tiflash_system_profile_event_ReadBufferAIOReadBytes[$__rate_interval]))',
+            name: '{instance}-read'
+          }
+        ],
+        unit: 'Bps',
+        type: 'line'
+      },
+      {
+        title: 'TiFlash Storage Usage',
+        queries: [
+          {
+            query:
+              'sum(tiflash_system_current_metric_StoreSizeUsed) by (instance)',
+            name: '{instance}'
+          }
+        ],
+        unit: 'bytes',
+        type: 'area_stack'
       }
     ]
   }

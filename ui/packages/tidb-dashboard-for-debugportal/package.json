@@ -1,6 +1,6 @@
 {
   "name": "@pingcap/tidb-dashboard-for-debugportal",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "dist/dashboardApp.js",
   "module": "dist/dashboardApp.js",
   "files": [

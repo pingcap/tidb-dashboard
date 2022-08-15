@@ -104,13 +104,13 @@
       window.onload = function () {
         if (window.location.hash.startsWith('#/portal')) {
           const searchParams = new URLSearchParams(window.location.search)
+          const orgId = searchParams.get('orgId') || ''
           const clusterId = searchParams.get('clusterId') || ''
-          if (clusterId === '') {
-            window.alert('Invalid clusterId parameter!')
+          if (orgId === '' || clusterId === '') {
+            window.alert('Invalid orgId or clusterId parameter!')
             return
           }
           const apiBasePath = `/clinic/api/v1/dashboard/proxy/cluster/${clusterId}/pd/dashboard/api`
-
           window.dispatchEvent(
             new CustomEvent('dashboard:portal_event', {
               detail: {
@@ -119,7 +119,9 @@
                 apiBasePath,
                 lang: 'en',
                 hideNav: false,
-                redirectPath: '/overview'
+                redirectPath: '/overview',
+                orgId,
+                clusterId
               }
             })
           )

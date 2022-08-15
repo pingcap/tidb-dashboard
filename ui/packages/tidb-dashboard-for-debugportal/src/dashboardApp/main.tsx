@@ -66,7 +66,12 @@ async function webPageStart() {
   }
   i18n.addTranslations(translations)
 
-  setupClient(options.apiBasePath, auth.getAuthToken() || '')
+  setupClient(
+    options.apiBasePath,
+    auth.getAuthToken() || '',
+    options.orgId,
+    options.clusterId
+  )
 
   let info: InfoInfoResponse
 
@@ -213,15 +218,26 @@ async function main() {
         lang,
         hideNav,
         skipNgmCheck,
-        redirectPath
+        redirectPath,
+        orgId,
+        clusterId
       } = event.detail
       // the event type must be "DASHBOARD_PORTAL_EVENT"
       if (type !== 'DASHBOARD_PORTAL_EVENT') {
         return
       }
 
+      console.log('event detail:', event.detail)
+
       auth.setAuthToken(token)
-      saveAppOptions({ apiBasePath, hideNav, lang, skipNgmCheck })
+      saveAppOptions({
+        apiBasePath,
+        hideNav,
+        lang,
+        skipNgmCheck,
+        orgId,
+        clusterId
+      })
       window.location.hash = `#${redirectPath}`
       window.location.reload()
       window.removeEventListener(

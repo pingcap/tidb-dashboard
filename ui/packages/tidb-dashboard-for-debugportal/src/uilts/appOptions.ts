@@ -1,21 +1,13 @@
 export type AppOptions = {
-  apiBasePath: string
   hideNav: boolean
   skipNgmCheck: boolean
   lang: string
-
-  orgId: string
-  clusterId: string
 }
 
 const defAppOptions: AppOptions = {
-  apiBasePath: '',
   hideNav: false,
   skipNgmCheck: false,
-  lang: '',
-
-  orgId: '',
-  clusterId: ''
+  lang: ''
 }
 
 const optionsKey = 'dashboard_app_options'

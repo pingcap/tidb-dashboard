@@ -154,7 +154,8 @@ const monitoringItems: MetricsQueryType[] = [
         title: 'Disconnection',
         queries: [
           {
-            query: 'sum(tidb_server_disconnection_total) by (instance, result)',
+            query:
+              'sum(rate(tidb_server_disconnection_total[$__rate_interval])) by (instance, result)',
             name: '{instance}-{result}'
           }
         ],

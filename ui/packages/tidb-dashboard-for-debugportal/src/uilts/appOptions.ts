@@ -1,12 +1,10 @@
 export type AppOptions = {
-  apiBasePath: string
   hideNav: boolean
   skipNgmCheck: boolean
   lang: string
 }
 
 const defAppOptions: AppOptions = {
-  apiBasePath: '',
   hideNav: false,
   skipNgmCheck: false,
   lang: ''

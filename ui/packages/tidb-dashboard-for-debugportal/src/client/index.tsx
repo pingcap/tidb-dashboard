@@ -101,10 +101,12 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   })
 }
 
-function initAxios(token: string) {
+function initAxios(token: string, orgId: string, clusterId: string) {
   const instance = axios.create({
     headers: {
-      'x-csrf-token': token
+      'x-csrf-token': token,
+      'x-org-id': orgId,
+      'x-cluster-id': clusterId
     }
   })
   applyErrorHandlerInterceptor(instance)
@@ -112,10 +114,15 @@ function initAxios(token: string) {
   return instance
 }
 
-export function setupClient(apiBasePath: string, token: string) {
+export function setupClient(
+  apiBasePath: string,
+  token: string,
+  orgId: string,
+  clusterId: string
+) {
   i18n.addTranslations(translations)
 
-  const axiosInstance = initAxios(token)
+  const axiosInstance = initAxios(token, orgId, clusterId)
   const dashboardApi = new DashboardApi(
     new Configuration({
       basePath: apiBasePath,

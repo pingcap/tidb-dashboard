@@ -102,28 +102,26 @@
 
     <script>
       window.onload = function () {
-        if (window.location.hash.startsWith('#/portal')) {
-          const searchParams = new URLSearchParams(window.location.search)
-          const clusterId = searchParams.get('clusterId') || ''
-          if (clusterId === '') {
-            window.alert('Invalid clusterId parameter!')
-            return
-          }
-          const apiBasePath = `/clinic/api/v1/dashboard/proxy/cluster/${clusterId}/pd/dashboard/api`
-
-          window.dispatchEvent(
-            new CustomEvent('dashboard:portal_event', {
-              detail: {
-                type: 'DASHBOARD_PORTAL_EVENT',
-                token: localStorage.getItem('clinic.auth.csrf_token'),
-                apiBasePath,
-                lang: 'en',
-                hideNav: false,
-                redirectPath: '/overview'
-              }
-            })
-          )
+        const searchParams = new URLSearchParams(window.location.search)
+        const orgId = searchParams.get('orgId') || ''
+        const clusterId = searchParams.get('clusterId') || ''
+        if (orgId === '' || clusterId === '') {
+          window.alert('Invalid orgId or clusterId parameter!')
+          return
         }
+
+        const apiBasePath = `/clinic/api/v1/dashboard/proxy/cluster/${clusterId}/pd/dashboard/api`
+        window.dispatchEvent(
+          new CustomEvent('dashboard:portal_event', {
+            detail: {
+              type: 'DASHBOARD_PORTAL_EVENT',
+              token: localStorage.getItem('clinic.auth.csrf_token'),
+              apiBasePath,
+              orgId,
+              clusterId
+            }
+          })
+        )
       }
     </script>
   </body>

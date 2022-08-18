@@ -20,9 +20,8 @@ import {
 
 import { InfoInfoResponse, setupClient } from '~/client'
 import auth from '~/uilts/auth'
-import { handleSSOCallback, isSSOCallback } from '~/uilts/authSSO'
 import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
-import { loadAppOptions, saveAppOptions } from '~/uilts/appOptions'
+import { AppOptions } from '~/uilts/appOptions'
 import AppRegistry from '~/uilts/registry'
 
 import AppOverview from '~/apps/Overview/meta'
@@ -50,7 +49,7 @@ import LayoutSignIn from './layout/signin'
 import translations from './layout/translations'
 
 // for update distro strings resource
-import '~/uilts/distro/stringsRes'
+// import '~/uilts/distro/stringsRes'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -60,14 +59,6 @@ function removeSpinner() {
 }
 
 async function webPageStart() {
-  const options = loadAppOptions()
-  if (options.lang) {
-    i18next.changeLanguage(options.lang)
-  }
-  i18n.addTranslations(translations)
-
-  setupClient(options.apiBasePath, auth.getAuthToken() || '')
-
   let info: InfoInfoResponse
 
   try {
@@ -100,6 +91,11 @@ async function webPageStart() {
     })
   }
 
+  const options: AppOptions = {
+    lang: 'en',
+    skipNgmCheck: false,
+    hideNav: false
+  }
   if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
     notification.error({
       key: 'ngm_not_started',
@@ -200,47 +196,28 @@ async function webPageStart() {
   singleSpa.start()
 }
 
-async function main() {
+function main() {
   document.title = `${distro().tidb} Dashboard`
 
-  if (routing.isPortalPage()) {
-    // same window communication
-    function handleSameWindowPortalEvent(event) {
-      const {
-        type,
-        token,
-        apiBasePath,
-        lang,
-        hideNav,
-        skipNgmCheck,
-        redirectPath
-      } = event.detail
-      // the event type must be "DASHBOARD_PORTAL_EVENT"
-      if (type !== 'DASHBOARD_PORTAL_EVENT') {
-        return
-      }
-
-      auth.setAuthToken(token)
-      saveAppOptions({ apiBasePath, hideNav, lang, skipNgmCheck })
-      window.location.hash = `#${redirectPath}`
-      window.location.reload()
-      window.removeEventListener(
-        'dashboard:portal_event',
-        handleSameWindowPortalEvent
-      )
+  function handleSameWindowPortalEvent(event) {
+    const { type, token, apiBasePath, orgId, clusterId } = event.detail
+    // the event type must be "DASHBOARD_PORTAL_EVENT"
+    if (type !== 'DASHBOARD_PORTAL_EVENT') {
+      return
     }
-    window.addEventListener(
+
+    i18next.changeLanguage('en')
+    i18n.addTranslations(translations)
+    setupClient(apiBasePath, token, orgId, clusterId)
+
+    window.removeEventListener(
       'dashboard:portal_event',
       handleSameWindowPortalEvent
     )
-  }
 
-  if (isSSOCallback()) {
-    await handleSSOCallback()
-    return
+    webPageStart()
   }
-
-  await webPageStart()
+  window.addEventListener('dashboard:portal_event', handleSameWindowPortalEvent)
 }
 
 main()

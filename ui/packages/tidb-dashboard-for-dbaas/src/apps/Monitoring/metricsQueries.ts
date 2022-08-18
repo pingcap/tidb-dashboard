@@ -620,7 +620,8 @@ const monitoringItems: MetricsQueryType[] = [
         title: 'TiKV Memory Usage',
         queries: [
           {
-            query: 'avg(process_resident_memory_bytes) by (instance)',
+            query:
+              'avg(process_resident_memory_bytes{component="tikv"}) by (instance)',
             name: '{instance}'
           }
         ],

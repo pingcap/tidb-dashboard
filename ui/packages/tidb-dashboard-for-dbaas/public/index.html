@@ -94,27 +94,18 @@
     <script type="module">
       import startDashboard from './main.js?h=%JS_CONTENT_HASH%'
 
-      // const apiPathBase = 'http://localhost:2379/dashboard/api'
-      // fetch(`${apiPathBase}/user/login`, {
-      //   method: 'POST',
-      //   body: JSON.stringify({ username: 'root', type: 0 })
-      // })
-      //   .then((res) => res.json())
-      //   .then(({ token }) => {
-      //     if (window.location.hash === '') {
-      //       window.location.hash = '#/statement'
-      //     }
-
-      //     document.getElementById('dashboard_page_spinner').remove()
-      //     startDashboard({ apiPathBase, apiToken: token })
-      //   })
-
       document.getElementById('dashboard_page_spinner').remove()
 
       const apiPathBase = localStorage.getItem('dbaas.dashboard_url') + 'api'
       const apiToken = localStorage.getItem('id_token')
       const mixpanelUser = localStorage.getItem('dbaas.mixpanel_user')
-      startDashboard({ apiPathBase, apiToken, mixpanelUser })
+      const timezoneStr = localStorage.getItem('dbaas.tenant_time_zone')
+      let timezone = parseInt(timezoneStr)
+      if (timezone === NaN) {
+        timezone = null
+      }
+
+      startDashboard({ apiPathBase, apiToken, mixpanelUser, timezone })
     </script>
   </body>
 </html>

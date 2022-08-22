@@ -25,7 +25,7 @@ function getTimeZoneStr() {
   if (getTimeZone() >= 0) {
     return `utc+${z}`
   }
-  return `utc-${z}`
+  return `utc${z}`
 }
 
 function setTimeZone(timezone: number) {

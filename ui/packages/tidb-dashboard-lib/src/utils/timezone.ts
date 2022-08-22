@@ -20,6 +20,14 @@ function getTimeZone() {
   return _tz
 }
 
+function getTimeZoneStr() {
+  const z = getTimeZone()
+  if (getTimeZone() >= 0) {
+    return `utc+${z}`
+  }
+  return `utc-${z}`
+}
+
 function setTimeZone(timezone: number) {
   if (timezone >= -16 && timezone <= 16) {
     _tz = timezone
@@ -28,4 +36,4 @@ function setTimeZone(timezone: number) {
   throw new Error('timezone value must be range in -16~16.')
 }
 
-export default { getTimeZone, setTimeZone }
+export default { getTimeZone, getTimeZoneStr, setTimeZone }

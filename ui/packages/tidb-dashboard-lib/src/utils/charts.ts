@@ -29,7 +29,7 @@ export function timeTickFormatter(range: TimeRangeValue): TickFormatter {
   const format = niceTimeFormatByDay(diff)
 
   function formatter(v): string {
-    return timeFormatter(format)(v, { timeZone: `utc${tz.getTimeZone()}` })
+    return timeFormatter(format)(v, { timeZone: tz.getTimeZoneStr() })
   }
   return formatter
 }
@@ -43,7 +43,7 @@ function niceTimeFormatByDay(days: number) {
 
 export function timeTooltipFormatter({ value }: TooltipValue): string {
   return timeFormatter('YYYY-MM-DD HH:mm:ss (UTCZ)')(value, {
-    timeZone: `utc${tz.getTimeZone()}`
+    timeZone: tz.getTimeZoneStr()
   })
 }
 

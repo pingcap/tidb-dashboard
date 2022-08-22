@@ -2,7 +2,7 @@ import i18next from 'i18next'
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import { telemetry } from '@pingcap/tidb-dashboard-lib'
+import { telemetry, tz } from '@pingcap/tidb-dashboard-lib'
 import { setupClient } from '~/client'
 import { loadAppInfo, loadWhoAmI } from '~/utils/store'
 
@@ -37,11 +37,22 @@ type StartOptions = {
   apiPathBase: string
   apiToken: string
   mixpanelUser: string
+  timezone: number | null
 }
 
-function start({ apiPathBase, apiToken, mixpanelUser }: StartOptions) {
+function start({
+  apiPathBase,
+  apiToken,
+  mixpanelUser,
+  timezone
+}: StartOptions) {
   // i18n
   i18next.changeLanguage('en')
+
+  // timezone
+  if (timezone !== null) {
+    tz.setTimeZone(timezone)
+  }
 
   // api client
   setupClient(apiPathBase, apiToken)

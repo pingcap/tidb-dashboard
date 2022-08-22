@@ -2,15 +2,12 @@ import React from 'react'
 import i18next from 'i18next'
 import axios, { AxiosInstance } from 'axios'
 import { message, Modal, notification } from 'antd'
-import * as singleSpa from 'single-spa'
 
 import { routing, i18n } from '@pingcap/tidb-dashboard-lib'
 import {
   Configuration,
   DefaultApi as DashboardApi
 } from '@pingcap/tidb-dashboard-client'
-
-import auth from '~/uilts/auth'
 
 import translations from './translations'
 
@@ -69,8 +66,6 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
       if (!routing.isLocationMatch('/') && !routing.isSignInPage()) {
         message.error({ content, key: errCode })
       }
-      auth.clearAuthToken()
-      singleSpa.navigateToUrl('#' + routing.signInRoute)
       err.handled = true
     } else if (handleError === 'default') {
       if (method === 'get') {

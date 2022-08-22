@@ -11,6 +11,7 @@ import styles from './index.module.less'
 import { useChange } from '@lib/utils/useChange'
 import { useMemoizedFn } from 'ahooks'
 import { WithZoomOut } from './WithZoomOut'
+import { tz } from '@lib/utils'
 
 const { RangePicker } = DatePicker
 
@@ -207,7 +208,12 @@ function TimeRangeSelector({
         {value && value.type === 'absolute' && (
           <span data-e2e="selected_timerange">
             {value.value
-              .map((v) => dayjs.unix(v).format('MM-DD HH:mm:ss'))
+              .map((v) =>
+                dayjs
+                  .unix(v)
+                  .utcOffset(tz.getTimeZone())
+                  .format('MM-DD HH:mm:ss (UTCZ)')
+              )
               .join(' ~ ')}
           </span>
         )}

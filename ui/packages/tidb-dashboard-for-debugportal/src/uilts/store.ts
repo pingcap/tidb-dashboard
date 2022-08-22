@@ -1,16 +1,7 @@
 import { store, ReqConfig } from '@pingcap/tidb-dashboard-lib'
 import client, { InfoInfoResponse } from '~/client'
 
-import { authEvents, EVENT_TOKEN_CHANGED, getAuthToken } from './auth'
-
 export async function reloadWhoAmI(): Promise<boolean> {
-  if (!getAuthToken()) {
-    store.update((s) => {
-      s.whoAmI = undefined
-    })
-    return false
-  }
-
   try {
     const resp = await client.getInstance().infoWhoami({
       handleError: 'custom'
@@ -36,7 +27,3 @@ export async function mustLoadAppInfo(): Promise<InfoInfoResponse> {
   })
   return resp.data
 }
-
-authEvents.on(EVENT_TOKEN_CHANGED, async () => {
-  await reloadWhoAmI()
-})

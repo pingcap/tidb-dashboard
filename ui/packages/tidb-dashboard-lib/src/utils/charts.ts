@@ -9,11 +9,11 @@ import {
   TooltipValue
 } from '@elastic/charts'
 import { TimeRangeValue } from '@lib/components'
-// import moment from 'moment'
 import dayjs from 'dayjs'
 import React, { useRef } from 'react'
 import { DEFAULT_MIN_INTERVAL_SEC } from './prometheus'
 import '@elastic/charts/dist/theme_only_light.css'
+import tz from './timezone'
 
 /**
  * A human readable tick label formatter for time series data. It scales according to the data domain.
@@ -27,7 +27,11 @@ export function timeTickFormatter(range: TimeRangeValue): TickFormatter {
   const maxDate = dayjs(range[1] * 1000)
   const diff = maxDate.diff(minDate, 'minutes')
   const format = niceTimeFormatByDay(diff)
-  return timeFormatter(format)
+
+  function formatter(v): string {
+    return timeFormatter(format)(v, { timeZone: `utc${tz.getTimeZone()}` })
+  }
+  return formatter
 }
 
 function niceTimeFormatByDay(days: number) {
@@ -38,7 +42,9 @@ function niceTimeFormatByDay(days: number) {
 }
 
 export function timeTooltipFormatter({ value }: TooltipValue): string {
-  return timeFormatter('YYYY-MM-DD HH:mm:ss')(value)
+  return timeFormatter('YYYY-MM-DD HH:mm:ss (UTCZ)')(value, {
+    timeZone: `utc${tz.getTimeZone()}`
+  })
 }
 
 export const DEFAULT_TOOLTIP_SETTINGS: TooltipSettings = {

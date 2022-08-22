@@ -6,9 +6,6 @@ export const telemetry = {
   clickZoomOut(timestamps: [number, number]) {
     mixpanel.track('Monitoring: Click Zoom Out Button', { timestamps })
   },
-  openTimeRangePicker() {
-    mixpanel.track('Monitoring: Open Time Range Picker')
-  },
   selectTimeRange(v: TimeRange) {
     mixpanel.track('Monitoring: Select Time Range', v)
   },
@@ -20,5 +17,11 @@ export const telemetry = {
   },
   clickDocumentationIcon() {
     mixpanel.track('Monitoring: Click Documentation Icon')
+  },
+  clickSeriesLabel(chartTitle: string, seriesName: string) {
+    mixpanel.track('Monitoring: Click to Hide Series', {
+      chartTitle,
+      seriesName
+    })
   }
 }

@@ -22,6 +22,7 @@ import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
 import { useEventEmitter, useMemoizedFn } from 'ahooks'
 import { overviewMetrics } from '../data/overviewMetrics'
+import { telemetry } from '../utils/telemetry'
 
 export default function Metrics() {
   const ctx = useContext(OverviewContext)
@@ -45,6 +46,11 @@ export default function Metrics() {
     setIsSomeLoadingDebounce(loadingCounter.current > 0)
   })
 
+  const handleManualRefreshClick = () => {
+    telemetry.clickManualRefresh()
+    return setTimeRange((r) => ({ ...r }))
+  }
+
   return (
     <>
       <Card>
@@ -52,10 +58,17 @@ export default function Metrics() {
           <Space>
             <TimeRangeSelector.WithZoomOut
               value={timeRange}
-              onChange={setTimeRange}
+              onChange={(v) => {
+                setTimeRange(v)
+                telemetry.selectTimeRange(v)
+              }}
+              onZoomOutClick={(start, end) =>
+                telemetry.clickZoomOut([start, end])
+              }
             />
             <AutoRefreshButton
-              onRefresh={() => setTimeRange((r) => ({ ...r }))}
+              onChange={telemetry.selectAutoRefreshOption}
+              onRefresh={handleManualRefreshClick}
               disabled={isSomeLoading}
             />
             <Tooltip placement="top" title={t('overview.panel_no_data_tips')}>
@@ -65,14 +78,18 @@ export default function Metrics() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <FileTextOutlined />
+                <FileTextOutlined
+                  onClick={() => telemetry.clickDocumentationIcon()}
+                />
               </a>
             </Tooltip>
             {isSomeLoading && <LoadingOutlined />}
           </Space>
           <Space>
             <Link to={`/monitoring`}>
-              <Button type="primary">{t('overview.view_more_metrics')}</Button>
+              <Button type="primary" onClick={telemetry.clickViewMoreMetrics}>
+                {t('overview.view_more_metrics')}
+              </Button>
             </Link>
           </Space>
         </Toolbar>
@@ -93,6 +110,9 @@ export default function Metrics() {
                 onRangeChange={setChartRange}
                 getMetrics={ctx!.ds.metricsQueryGet}
                 onLoadingStateChange={onLoadingStateChange}
+                onClickSeriesLabel={(seriesName) =>
+                  telemetry.clickSeriesLabel(item.title, seriesName)
+                }
               />
             </Card>
           ))}

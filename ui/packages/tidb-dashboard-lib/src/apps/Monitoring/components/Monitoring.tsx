@@ -49,10 +49,6 @@ export default function Monitoring() {
     return setTimeRange((r) => ({ ...r }))
   }
 
-  const handleRefreshTimerChange = (e) => {
-    telemetry.selectAutoRefreshOption(e)
-  }
-
   return (
     <>
       <Card>
@@ -60,14 +56,20 @@ export default function Monitoring() {
           <Space>
             <TimeRangeSelector.WithZoomOut
               value={timeRange}
-              onChange={setTimeRange}
+              onChange={(v) => {
+                setTimeRange(v)
+                telemetry.selectTimeRange(v)
+              }}
               recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
               withAbsoluteRangePicker={
                 ctx?.cfg.timeRangeSelector?.withAbsoluteRangePicker
               }
+              onZoomOutClick={(start, end) =>
+                telemetry.clickZoomOut([start, end])
+              }
             />
             <AutoRefreshButton
-              onChange={handleRefreshTimerChange}
+              onChange={telemetry.selectAutoRefreshOption}
               onRefresh={handleManualRefreshClick}
               disabled={isSomeLoading}
             />
@@ -130,6 +132,9 @@ export default function Monitoring() {
                             onLoadingStateChange={onLoadingStateChange}
                             promAddrConfigurable={
                               ctx!.cfg.promeAddrConfigurable
+                            }
+                            onClickSeriesLabel={(seriesName) =>
+                              telemetry.clickSeriesLabel(m.title, seriesName)
                             }
                           />
                         </Card>

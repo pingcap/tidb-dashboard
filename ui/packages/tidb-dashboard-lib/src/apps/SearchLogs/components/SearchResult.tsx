@@ -19,6 +19,7 @@ import {
 import { ComponentWithSortIndex, ILogItem, LogRow } from './LogRow'
 import { sortBy } from 'lodash'
 import { SearchLogsContext } from '../context'
+import { tz } from '@lib/utils'
 
 interface Props {
   patterns: string[]
@@ -65,7 +66,9 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
           res.data.map((value, index): ILogItem => {
             return {
               key: index,
-              time: dayjs(value.time).format('YYYY-MM-DD HH:mm:ss (z)'),
+              time: dayjs(value.time)
+                .utcOffset(tz.getTimeZone())
+                .format('YYYY-MM-DD HH:mm:ss (UTCZ)'),
               level: LogLevelText[value.level ?? 0],
               component: componentByTaskId[value.task_id ?? -1],
               log: value.message

@@ -10,31 +10,30 @@ import { IDateTimeProps } from '.'
 import calendar from './calendarPlugin'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import localizedFormat from 'dayjs/plugin/localizedFormat'
-import timezone from 'dayjs/plugin/timezone'
+import tz from '@lib/utils/timezone'
 
 dayjs.extend(calendar)
 dayjs.extend(weekOfYear)
 dayjs.extend(localizedFormat)
-dayjs.extend(timezone)
 
 const translations = {
   en: {
-    sameDay: '[Today at] h:mm A (z)',
-    sameWeek: 'dddd h:mm A (z)',
-    nextDay: '[Tomorrow] h:mm A (z)',
-    nextWeek: '[Next] dddd h:mm A (z)',
-    lastDay: '[Yesterday] h:mm A (z)',
-    lastWeek: '[Last] dddd h:mm A (z)',
-    sameElse: 'lll (z)'
+    sameDay: '[Today at] h:mm A (UTCZ)',
+    sameWeek: 'dddd h:mm A (UTCZ)',
+    nextDay: '[Tomorrow] h:mm A (UTCZ)',
+    nextWeek: '[Next] dddd h:mm A (UTCZ)',
+    lastDay: '[Yesterday] h:mm A (UTCZ)',
+    lastWeek: '[Last] dddd h:mm A (UTCZ)',
+    sameElse: 'lll (UTCZ)'
   },
   zh: {
-    sameDay: '[今天] HH:mm (z)',
-    sameWeek: 'dddd HH:mm (z)',
-    nextDay: '[明天] HH:mm (z)',
-    nextWeek: '[下]dddd HH:mm (z)',
-    lastDay: '[昨天] HH:mm (z)',
-    lastWeek: '[上]dddd HH:mm (z)',
-    sameElse: 'lll (z)'
+    sameDay: '[今天] HH:mm (UTCZ)',
+    sameWeek: 'dddd HH:mm (UTCZ)',
+    nextDay: '[明天] HH:mm (UTCZ)',
+    nextWeek: '[下]dddd HH:mm (UTCZ)',
+    lastDay: '[昨天] HH:mm (UTCZ)',
+    lastWeek: '[上]dddd HH:mm (UTCZ)',
+    sameElse: 'lll (UTCZ)'
   }
 }
 
@@ -58,15 +57,17 @@ function Calendar({ unixTimestampMs, ...rest }: IDateTimeProps) {
 }
 
 export function format(unixTimestampMs: number) {
-  return dayjs(unixTimestampMs).calendar(undefined, {
-    sameDay: i18next.t('component.dateTime.calendar.sameDay'),
-    sameWeek: i18next.t('component.dateTime.calendar.sameWeek'),
-    nextDay: i18next.t('component.dateTime.calendar.nextDay'),
-    nextWeek: i18next.t('component.dateTime.calendar.nextWeek'),
-    lastDay: i18next.t('component.dateTime.calendar.lastDay'),
-    lastWeek: i18next.t('component.dateTime.calendar.lastWeek'),
-    sameElse: i18next.t('component.dateTime.calendar.sameElse')
-  })
+  return dayjs(unixTimestampMs)
+    .utcOffset(tz.getTimeZone())
+    .calendar(undefined, {
+      sameDay: i18next.t('component.dateTime.calendar.sameDay'),
+      sameWeek: i18next.t('component.dateTime.calendar.sameWeek'),
+      nextDay: i18next.t('component.dateTime.calendar.nextDay'),
+      nextWeek: i18next.t('component.dateTime.calendar.nextWeek'),
+      lastDay: i18next.t('component.dateTime.calendar.lastDay'),
+      lastWeek: i18next.t('component.dateTime.calendar.lastWeek'),
+      sameElse: i18next.t('component.dateTime.calendar.sameElse')
+    })
 }
 
 export default React.memo(Calendar)

@@ -94,6 +94,7 @@
     <script type="module">
       import startDashboard from './main.js?h=%JS_CONTENT_HASH%'
 
+      // keep it here for debugging when dbaas doesn't work
       // const apiPathBase = 'http://localhost:2379/dashboard/api'
       // fetch(`${apiPathBase}/user/login`, {
       //   method: 'POST',
@@ -106,7 +107,7 @@
       //     }
 
       //     document.getElementById('dashboard_page_spinner').remove()
-      //     startDashboard({ apiPathBase, apiToken: token })
+      //     startDashboard({ apiPathBase, apiToken: token, timezone: 14 })
       //   })
 
       document.getElementById('dashboard_page_spinner').remove()
@@ -114,7 +115,13 @@
       const apiPathBase = localStorage.getItem('dbaas.dashboard_url') + 'api'
       const apiToken = localStorage.getItem('id_token')
       const mixpanelUser = localStorage.getItem('dbaas.mixpanel_user')
-      startDashboard({ apiPathBase, apiToken, mixpanelUser })
+      const timezoneStr = localStorage.getItem('dbaas.tenant_time_zone')
+      let timezone = parseInt(timezoneStr)
+      if (timezone === NaN) {
+        timezone = null
+      }
+
+      startDashboard({ apiPathBase, apiToken, mixpanelUser, timezone })
     </script>
   </body>
 </html>

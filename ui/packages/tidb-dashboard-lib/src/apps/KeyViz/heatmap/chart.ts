@@ -1,13 +1,15 @@
 import * as d3 from 'd3'
 import _ from 'lodash'
+import dayjs from 'dayjs'
+
 import { HeatmapRange, HeatmapData, DataTag } from './types'
 import { createBuffer } from './buffer'
 import { labelAxisGroup } from './axis/label-axis'
 import { histogram } from './axis/histogram'
 import { getColorScheme, ColorScheme, rasterizeLevel } from './color'
 import { tagUnit, withUnit, clickToCopyBehavior } from './utils'
-
 import legend from './legend'
+import { tz } from '@lib/utils'
 
 const margin = {
   top: 25,
@@ -243,9 +245,12 @@ export async function heatmapChart(
       .axisBottom(xScale)
       .tickFormat((idx) =>
         data.timeAxis[idx as number] !== undefined
-          ? d3.timeFormat('%Y-%m-%d %H:%M:%S')(
-              new Date(data.timeAxis[idx as number] * 1000)
-            )
+          ? // d3.timeFormat('%Y-%m-%d %H:%M:%S')(
+            //   new Date(data.timeAxis[idx as number] * 1000)
+            // )
+            dayjs(data.timeAxis[idx as number] * 1000)
+              .utcOffset(tz.getTimeZone())
+              .format('YYYY-MM-DD HH:mm:ss')
           : ''
       )
       .ticks(width / 270)

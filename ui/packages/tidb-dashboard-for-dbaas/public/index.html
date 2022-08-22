@@ -94,6 +94,22 @@
     <script type="module">
       import startDashboard from './main.js?h=%JS_CONTENT_HASH%'
 
+      // keep it here for debugging when dbaas doesn't work
+      // const apiPathBase = 'http://localhost:2379/dashboard/api'
+      // fetch(`${apiPathBase}/user/login`, {
+      //   method: 'POST',
+      //   body: JSON.stringify({ username: 'root', type: 0 })
+      // })
+      //   .then((res) => res.json())
+      //   .then(({ token }) => {
+      //     if (window.location.hash === '') {
+      //       window.location.hash = '#/statement'
+      //     }
+
+      //     document.getElementById('dashboard_page_spinner').remove()
+      //     startDashboard({ apiPathBase, apiToken: token, timezone: 14 })
+      //   })
+
       document.getElementById('dashboard_page_spinner').remove()
 
       const apiPathBase = localStorage.getItem('dbaas.dashboard_url') + 'api'

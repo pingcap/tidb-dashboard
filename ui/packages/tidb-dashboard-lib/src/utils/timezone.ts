@@ -3,9 +3,9 @@ import utc from 'dayjs/plugin/utc'
 
 dayjs.extend(utc)
 
-// value range: -16 ~ 16
+// value range: -12~14
 // 8 means UTC+08:00
-let _tz: number | undefined = undefined
+let _tz: number | null = null
 
 function getLocalTimeZone(): number {
   // in UTC+08:00 time zone, `dayjs().utcOffset()` will get 480
@@ -14,7 +14,7 @@ function getLocalTimeZone(): number {
 }
 
 function getTimeZone() {
-  if (_tz === undefined) {
+  if (_tz === null) {
     _tz = getLocalTimeZone()
   }
   return _tz
@@ -29,11 +29,12 @@ function getTimeZoneStr() {
 }
 
 function setTimeZone(timezone: number) {
-  if (timezone >= -16 && timezone <= 16) {
+  // https://en.wikipedia.org/wiki/List_of_UTC_offsets
+  if (timezone >= -12 && timezone <= 14) {
     _tz = timezone
     return
   }
-  throw new Error('timezone value must be range in -16~16.')
+  throw new Error('timezone value must be range in -12~14.')
 }
 
 export default { getTimeZone, getTimeZoneStr, setTimeZone }

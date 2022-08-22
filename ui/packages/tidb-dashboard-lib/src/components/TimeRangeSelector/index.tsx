@@ -93,7 +93,6 @@ export interface ITimeRangeSelectorProps {
   disabled?: boolean
   recent_seconds?: number[]
   withAbsoluteRangePicker?: boolean
-  onZoomOutClick?: (start: number, end: number) => void
 }
 
 function TimeRangeSelector({
@@ -101,8 +100,7 @@ function TimeRangeSelector({
   onChange,
   disabled = false,
   recent_seconds = DEFAULT_RECENT_SECONDS,
-  withAbsoluteRangePicker = true,
-  onZoomOutClick
+  withAbsoluteRangePicker = true
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)

@@ -19,7 +19,6 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 
 import { InfoInfoResponse, setupClient } from '~/client'
-import auth from '~/uilts/auth'
 import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
 import { AppOptions } from '~/uilts/appOptions'
 import AppRegistry from '~/uilts/registry'
@@ -44,7 +43,6 @@ import AppOptimizerTrace from '~/apps/OptimizerTrace/meta'
 import AppDeadlock from '~/apps/Deadlock/meta'
 
 import LayoutMain from './layout/main'
-import LayoutSignIn from './layout/signin'
 
 import translations from './layout/translations'
 
@@ -142,15 +140,6 @@ async function webPageStart() {
     { registry }
   )
 
-  singleSpa.registerApplication(
-    'signin',
-    AppRegistry.newReactSpaApp(() => LayoutSignIn, 'root'),
-    () => {
-      return routing.isSignInPage()
-    },
-    { registry }
-  )
-
   registry
     .register(AppUserProfile)
     .register(AppOverview)
@@ -180,14 +169,6 @@ async function webPageStart() {
   } catch (e) {
     // If there are auth errors, redirection will happen any way. So we continue.
   }
-
-  window.addEventListener('single-spa:app-change', () => {
-    if (!routing.isSignInPage()) {
-      if (!auth.getAuthTokenAsBearer()) {
-        singleSpa.navigateToUrl('#' + routing.signInRoute)
-      }
-    }
-  })
 
   window.addEventListener('single-spa:first-mount', () => {
     removeSpinner()

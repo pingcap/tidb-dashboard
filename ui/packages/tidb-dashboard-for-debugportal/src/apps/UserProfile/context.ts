@@ -11,7 +11,6 @@ import client, {
   CodeShareRequest,
   MetricsPutCustomPromAddressRequest
 } from '~/client'
-import auth from '~/uilts/auth'
 
 class DataSource implements IUserProfileDataSource {
   userGetSignOutInfo(redirectUrl?: string, options?: ReqConfig) {
@@ -55,9 +54,7 @@ class DataSource implements IUserProfileDataSource {
 }
 
 class EventHandler implements IUserProfileEvent {
-  logOut(): void {
-    auth.clearAuthToken()
-  }
+  logOut(): void {}
 }
 
 export const ctx: IUserProfileContext = {

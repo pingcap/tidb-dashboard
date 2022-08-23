@@ -176,6 +176,9 @@ export function TopSQLList() {
                   telemetry.selectTimeRange(v)
                 }}
                 disabled={isLoading}
+                onZoomOutClick={(start, end) =>
+                  telemetry.clickZoomOut([start, end])
+                }
               />
               <AutoRefreshButton
                 disabled={isLoading}

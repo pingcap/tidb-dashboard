@@ -38,7 +38,7 @@ function renderStackedBar(qd: QueryData) {
   return (
     <BarSeries
       key={qd.id}
-      id={qd.id}
+      id={qd.name}
       xScaleType={ScaleType.Time}
       yScaleType={ScaleType.Linear}
       xAccessor={0}
@@ -55,7 +55,7 @@ function renderLine(qd: QueryData) {
   return (
     <LineSeries
       key={qd.id}
-      id={qd.id}
+      id={qd.name}
       xScaleType={ScaleType.Time}
       yScaleType={ScaleType.Linear}
       xAccessor={0}
@@ -79,7 +79,7 @@ function renderAreaStack(qd: QueryData) {
   return (
     <AreaSeries
       key={qd.id}
-      id={qd.id}
+      id={qd.name}
       xScaleType={ScaleType.Time}
       yScaleType={ScaleType.Linear}
       xAccessor={0}

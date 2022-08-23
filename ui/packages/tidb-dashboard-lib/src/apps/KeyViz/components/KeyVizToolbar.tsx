@@ -15,7 +15,7 @@ import Flexbox from '@g07cha/flexbox-react'
 import { AutoRefreshButton, Card, Toolbar } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { isDistro } from '@lib/utils/distro'
-import { telemetry as keyVizTelementry } from '../utils/telemetry'
+import { telemetry as keyVizTelemetry } from '../utils/telemetry'
 
 export interface IKeyVizToolbarProps {
   enabled: boolean
@@ -42,28 +42,28 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
 
   handleRefreshClick = () => {
     this.props.onRefresh()
-    keyVizTelementry.clickManualRefresh()
+    keyVizTelemetry.clickManualRefresh()
   }
 
   handleAutoRefreshMenuClick = (key) => {
     this.props.onChangeAutoRefresh(key)
-    keyVizTelementry.clickAutoRefresh()
+    keyVizTelemetry.clickAutoRefresh()
   }
 
   handleDateRange = (value) => {
     this.props.onChangeDateRange(value)
-    keyVizTelementry.changeTimeDuration(value)
+    keyVizTelemetry.changeTimeDuration(value)
   }
 
   handleMetricChange = (value) => {
     this.props.onChangeMetric(value)
-    keyVizTelementry.changeMetric(value)
+    keyVizTelemetry.changeMetric(value)
   }
 
   handleBrightLevel = (exp: number) => {
     this.props.onChangeBrightLevel(Math.pow(2, exp))
     this.setState({ exp })
-    keyVizTelementry.changeBright(exp)
+    keyVizTelemetry.changeBright(exp)
   }
 
   handleBrightnessDropdown = () => {
@@ -74,17 +74,17 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
 
   handleToggleBrush = () => {
     this.props.onToggleBrush()
-    keyVizTelementry.toggleBrush()
+    keyVizTelemetry.toggleBrush()
   }
 
   handleShowSetting = () => {
     this.props.onShowSettings()
-    keyVizTelementry.openSetting()
+    keyVizTelemetry.openSetting()
   }
 
   handleResetZoom = () => {
     this.props.onResetZoom()
-    keyVizTelementry.resetZoom()
+    keyVizTelemetry.resetZoom()
   }
 
   render() {
@@ -229,7 +229,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
                 <QuestionCircleOutlined
                   onClick={() => {
                     window.open(t('keyviz.settings.help_url'), '_blank')
-                    keyVizTelementry.openHelp()
+                    keyVizTelemetry.openHelp()
                   }}
                 />
               </Tooltip>

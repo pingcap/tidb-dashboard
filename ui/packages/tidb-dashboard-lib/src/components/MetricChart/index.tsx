@@ -111,6 +111,7 @@ export interface IMetricChartProps {
     stepSec?: number,
     options?: ReqConfig
   ) => AxiosPromise<MetricsQueryResponse>
+  onClickSeriesLabel?: (seriesName: string) => void
 }
 
 type Data = {
@@ -130,7 +131,8 @@ export default function MetricChart({
   onLoadingStateChange,
   getMetrics,
   nullValue = TransformNullValue.NULL,
-  promAddrConfigurable = true
+  promAddrConfigurable = true,
+  onClickSeriesLabel
 }: IMetricChartProps) {
   const chartRef = useRef<Chart>(null)
   const chartContainerRef = useRef<HTMLDivElement>(null)
@@ -258,6 +260,11 @@ export default function MetricChart({
   //   [onRangeChange]
   // )
 
+  const handleLegendItemClick = (e) => {
+    const seriesName = e[0].specId
+    onClickSeriesLabel!(seriesName)
+  }
+
   const { t } = useTranslation()
 
   const hasMetricData = useMemo(() => {
@@ -295,6 +302,7 @@ export default function MetricChart({
             pointerUpdateDebounce={0}
             onPointerUpdate={(e) => ee.emit(e)}
             xDomain={{ min: range[0] * 1000, max: range[1] * 1000 }}
+            onLegendItemClick={handleLegendItemClick}
           />
           <Axis
             id="bottom"

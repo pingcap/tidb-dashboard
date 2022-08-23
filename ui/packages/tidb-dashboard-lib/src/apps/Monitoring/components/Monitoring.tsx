@@ -20,6 +20,7 @@ import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
 import { useEventEmitter, useMemoizedFn } from 'ahooks'
 import { debounce } from 'lodash'
+import { telemetry } from '../utils/telemetry'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)
@@ -42,6 +43,12 @@ export default function Monitoring() {
       : loadingCounter.current > 0 && (loadingCounter.current -= 1)
     setIsSomeLoadingDebounce(loadingCounter.current > 0)
   })
+
+  const handleManualRefreshClick = () => {
+    telemetry.clickManualRefresh()
+    return setTimeRange((r) => ({ ...r }))
+  }
+
   return (
     <>
       <Card>
@@ -49,14 +56,21 @@ export default function Monitoring() {
           <Space>
             <TimeRangeSelector.WithZoomOut
               value={timeRange}
-              onChange={setTimeRange}
+              onChange={(v) => {
+                setTimeRange(v)
+                telemetry.selectTimeRange(v)
+              }}
               recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
               withAbsoluteRangePicker={
                 ctx?.cfg.timeRangeSelector?.withAbsoluteRangePicker
               }
+              onZoomOutClick={(start, end) =>
+                telemetry.clickZoomOut([start, end])
+              }
             />
             <AutoRefreshButton
-              onRefresh={() => setTimeRange((r) => ({ ...r }))}
+              onChange={telemetry.selectAutoRefreshOption}
+              onRefresh={handleManualRefreshClick}
               disabled={isSomeLoading}
             />
             <Tooltip placement="top" title={t('monitoring.panel_no_data_tips')}>
@@ -66,7 +80,9 @@ export default function Monitoring() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <FileTextOutlined />
+                <FileTextOutlined
+                  onClick={() => telemetry.clickDocumentationIcon()}
+                />
               </a>
             </Tooltip>
             {isSomeLoading && <LoadingOutlined />}
@@ -116,6 +132,9 @@ export default function Monitoring() {
                             onLoadingStateChange={onLoadingStateChange}
                             promAddrConfigurable={
                               ctx!.cfg.promeAddrConfigurable
+                            }
+                            onClickSeriesLabel={(seriesName) =>
+                              telemetry.clickSeriesLabel(m.title, seriesName)
                             }
                           />
                         </Card>

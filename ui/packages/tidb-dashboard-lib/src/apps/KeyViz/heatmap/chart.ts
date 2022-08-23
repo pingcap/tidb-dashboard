@@ -707,9 +707,12 @@ export async function heatmapChart(
 
       const timeText = [timeIdx, timeIdx + 1]
         .map((idx) =>
-          d3.timeFormat('%Y-%m-%d\n%H:%M:%S')(
-            new Date(data.timeAxis[idx] * 1000)
-          )
+          // d3.timeFormat('%Y-%m-%d\n%H:%M:%S')(
+          //   new Date(data.timeAxis[idx] * 1000)
+          // )
+          dayjs(data.timeAxis[idx as number] * 1000)
+            .utcOffset(tz.getTimeZone())
+            .format('YYYY-MM-DD HH:mm:ss')
         )
         .join(' ~ ')
 

@@ -36,7 +36,7 @@ function ShortValueWithTooltip({
   )
 }
 
-const bytesScaler = scaledUnits(1024, ['', 'K', 'M', 'B', 'T'])
+const bytesScaler = scaledUnits(1024, ['', 'K', 'M', 'G', 'T'])
 
 function ScaledBytesWithTooltip({
   value = 0,

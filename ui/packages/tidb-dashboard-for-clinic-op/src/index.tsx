@@ -49,7 +49,9 @@ function start({ apiPathBase, apiToken }: StartOptions) {
     process.env.REACT_APP_MIXPANEL_HOST,
     process.env.REACT_APP_MIXPANEL_TOKEN
   )
-  telemetry.enable(`tidb-dashboard-for-clinic-${process.env.REACT_APP_VERSION}`)
+  telemetry.enable(
+    `tidb-dashboard-for-clinic-op-${process.env.REACT_APP_VERSION}`
+  )
   trackRouteChange()
 
   renderApp()

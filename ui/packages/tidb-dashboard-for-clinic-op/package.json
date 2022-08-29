@@ -1,5 +1,5 @@
 {
-  "name": "@pingcap/tidb-dashboard-for-clinic",
+  "name": "@pingcap/tidb-dashboard-for-clinic-op",
   "version": "0.0.4",
   "main": "dist/main.js",
   "module": "dist/main.js",

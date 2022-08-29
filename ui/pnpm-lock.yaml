@@ -54,7 +54,7 @@ importers:
       gulp-shell: 0.8.0
       typescript: 4.7.4
 
-  packages/tidb-dashboard-for-clinic:
+  packages/tidb-dashboard-for-clinic-op:
     specifiers:
       '@pingcap/clinic-client': workspace:^1.0.0
       '@pingcap/tidb-dashboard-lib': workspace:^1.0.0

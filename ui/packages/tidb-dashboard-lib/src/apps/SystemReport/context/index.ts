@@ -29,8 +29,13 @@ export interface ISystemReportDataSource {
   ): AxiosPromise<DiagnoseReport>
 }
 
+export interface ISystemReportEvent {
+  getFullReportLink(reportID: string): string
+}
+
 export interface ISystemReportContext {
   ds: ISystemReportDataSource
+  event: ISystemReportEvent
   cfg: IContextConfig & { publicPathBase: string }
 }
 

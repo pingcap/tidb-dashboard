@@ -1,7 +1,8 @@
 import {
   ISystemReportDataSource,
   ISystemReportContext,
-  ReqConfig
+  ReqConfig,
+  ISystemReportEvent
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, {
@@ -36,9 +37,15 @@ class DataSource implements ISystemReportDataSource {
   }
 }
 
-const ds = new DataSource()
+class SystemReportEvent implements ISystemReportEvent {
+  getFullReportLink(reportID: string): string {
+    /* Not using client basePath intentionally so that it can be handled by dev server */
+    return `${publicPathBase}/api/diagnose/reports/${reportID}/detail`
+  }
+}
 
 export const ctx: ISystemReportContext = {
-  ds,
+  ds: new DataSource(),
+  event: new SystemReportEvent(),
   cfg: { apiPathBase: client.getBasePath(), publicPathBase }
 }

@@ -42,7 +42,7 @@ function ReportStatus() {
               // href={`${ctx!.cfg.publicPathBase}/api/diagnose/reports/${
               //   report.id
               // }/detail`}
-              href={ctx!.event.getFullReportLink(report.id!)}
+              href={ctx!.cfg.fullReportLink(report.id!)}
               target="_blank"
               rel="noopener noreferrer"
             >

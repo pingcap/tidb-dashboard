@@ -2,7 +2,7 @@ import {
   ISystemReportDataSource,
   ISystemReportContext,
   ReqConfig,
-  ISystemReportEvent
+  ISystemReportConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, {
@@ -42,17 +42,20 @@ class DataSource implements ISystemReportDataSource {
   }
 }
 
-class SystemReportEvent implements ISystemReportEvent {
+class SystemReportConfig implements ISystemReportConfig {
   constructor(public extra: DsExtra) {}
 
-  getFullReportLink(reportID: string): string {
+  public apiPathBase = client.getBasePath()
+
+  public publicPathBase = publicPathBase
+
+  public fullReportLink(reportId: string): string {
     const { orgId, clusterId } = this.extra
-    return `${publicPathBase}/diagnose-report/?orgId=${orgId}&clusterId=${clusterId}&reportId=${reportID}`
+    return `${publicPathBase}/diagnose-report/?orgId=${orgId}&clusterId=${clusterId}&reportId=${reportId}`
   }
 }
 
 export const ctx: (extra: DsExtra) => ISystemReportContext = (extra) => ({
   ds: new DataSource(),
-  event: new SystemReportEvent(extra),
-  cfg: { apiPathBase: client.getBasePath(), publicPathBase }
+  cfg: new SystemReportConfig(extra)
 })

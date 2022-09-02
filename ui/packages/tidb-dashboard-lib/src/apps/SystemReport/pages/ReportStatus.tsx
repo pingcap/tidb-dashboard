@@ -39,9 +39,10 @@ function ReportStatus() {
           <Button type="primary" disabled={report?.progress! < 100}>
             {/* Not using client basePath intentionally so that it can be handled by dev server */}
             <a
-              href={`${ctx!.cfg.publicPathBase}/api/diagnose/reports/${
-                report.id
-              }/detail`}
+              // href={`${ctx!.cfg.publicPathBase}/api/diagnose/reports/${
+              //   report.id
+              // }/detail`}
+              href={ctx!.cfg.fullReportLink(report.id!)}
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -76,18 +76,20 @@ async function webPageStart() {
     process.env.REACT_APP_MIXPANEL_HOST,
     process.env.REACT_APP_MIXPANEL_TOKEN
   )
-  if (info?.enable_telemetry) {
-    // mixpanel
-    telemetry.enable(info.version?.internal_version!)
-    let preRoute = ''
-    window.addEventListener('single-spa:routing-event', () => {
-      const curRoute = routing.getPathInLocationHash()
-      if (curRoute !== preRoute) {
-        telemetry.trackRouteChange(curRoute)
-        preRoute = curRoute
-      }
-    })
-  }
+  // if (info?.enable_telemetry) {
+  // }
+  // mixpanel
+  telemetry.enable(
+    `tidb-dashboard-for-clinic-cloud-${process.env.REACT_APP_VERSION}`
+  )
+  let preRoute = ''
+  window.addEventListener('single-spa:routing-event', () => {
+    const curRoute = routing.getPathInLocationHash()
+    if (curRoute !== preRoute) {
+      telemetry.trackRouteChange(curRoute)
+      preRoute = curRoute
+    }
+  })
 
   const options: AppOptions = {
     lang: 'en',

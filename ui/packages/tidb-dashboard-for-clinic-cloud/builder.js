@@ -62,7 +62,8 @@ const logTime = (_options = {}) => ({
 const esbuildParams = {
   color: true,
   entryPoints: {
-    dashboardApp: 'src/dashboardApp/index.ts'
+    dashboardApp: 'src/dashboardApp/index.ts',
+    diagnoseReport: 'src/diagnoseReportApp/index.tsx'
   },
   outdir: outDir,
   minify: !isDev,

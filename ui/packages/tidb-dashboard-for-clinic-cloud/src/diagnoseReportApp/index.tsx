@@ -10,7 +10,7 @@ import DiagnosisReport from './components/DiagnosisReport'
 import translations from './translations'
 
 // for update distro strings resource
-import '~/uilts/distro/stringsRes'
+// import '~/uilts/distro/stringsRes'
 
 import './index.css'
 
@@ -31,7 +31,15 @@ function refineDiagnosisData() {
 i18n.addTranslations(translations)
 document.title = `${distro().tidb} Dashboard Diagnosis Report`
 
-ReactDOM.render(
-  <DiagnosisReport diagnosisTables={refineDiagnosisData()} />,
-  document.getElementById('root')
-)
+function main() {
+  ReactDOM.render(
+    <DiagnosisReport diagnosisTables={refineDiagnosisData()} />,
+    document.getElementById('root')
+  )
+}
+
+main()
+
+window.addEventListener('dashboard:diagnose_report_event', function (event) {
+  main()
+})

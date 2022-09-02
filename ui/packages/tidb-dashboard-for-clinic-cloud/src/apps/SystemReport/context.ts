@@ -1,7 +1,8 @@
 import {
   ISystemReportDataSource,
   ISystemReportContext,
-  ReqConfig
+  ReqConfig,
+  ISystemReportConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, {
@@ -10,6 +11,11 @@ import client, {
 } from '~/client'
 
 import publicPathBase from '~/uilts/publicPathPrefix'
+
+export type DsExtra = {
+  orgId: string
+  clusterId: string
+}
 
 class DataSource implements ISystemReportDataSource {
   diagnoseReportsGet(options?: ReqConfig) {
@@ -36,9 +42,20 @@ class DataSource implements ISystemReportDataSource {
   }
 }
 
-const ds = new DataSource()
+class SystemReportConfig implements ISystemReportConfig {
+  constructor(public extra: DsExtra) {}
 
-export const ctx: ISystemReportContext = {
-  ds,
-  cfg: { apiPathBase: client.getBasePath(), publicPathBase }
+  public apiPathBase = client.getBasePath()
+
+  public publicPathBase = publicPathBase
+
+  public fullReportLink(reportId: string): string {
+    const { orgId, clusterId } = this.extra
+    return `${publicPathBase}/diagnose-report/?orgId=${orgId}&clusterId=${clusterId}&reportId=${reportId}`
+  }
 }
+
+export const ctx: (extra: DsExtra) => ISystemReportContext = (extra) => ({
+  ds: new DataSource(),
+  cfg: new SystemReportConfig(extra)
+})

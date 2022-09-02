@@ -101,6 +101,7 @@ export default function ReportGenerator() {
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Card title={t('system_report.generate.title')}>
         <Form
+          style={{ rowGap: 16 }}
           form={form}
           layout="inline"
           onFinish={handleFinish}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="../distro-res/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../diagnoseReport.css?t=%TIME_PLACE_HOLDER%" />
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script
+      type="module"
+      src="../diagnoseReport.js?t=%TIME_PLACE_HOLDER%"
+    ></script>
+
+    <script>
+      window.onload = function () {
+        const searchParams = new URLSearchParams(window.location.search)
+        const orgId = searchParams.get('orgId') || ''
+        const clusterId = searchParams.get('clusterId') || ''
+        const reportId = searchParams.get('reportId') || ''
+        if (orgId === '' || clusterId === '' || reportId === '') {
+          window.alert('Invalid orgId, clusterId or reportId parameter!')
+          return
+        }
+
+        const token = localStorage.getItem('clinic.auth.csrf_token')
+        const apiBasePath = `/clinic/api/v1/dashboard/proxy/cluster/${clusterId}/pd/dashboard/api`
+        const reportDataApiPath = `${apiBasePath}/diagnose/reports/${reportId}/data.js`
+        // https://stackoverflow.com/a/67999347/2998877
+        fetch(reportDataApiPath, {
+          headers: {
+            'x-org-id': orgId,
+            'x-cluster-id': clusterId,
+            'x-csrf-token': token
+          }
+        })
+          .then((res) => res.blob())
+          .then((blob) => {
+            var objectURL = URL.createObjectURL(blob)
+            var sc = document.createElement('script')
+            sc.setAttribute('src', objectURL)
+            sc.setAttribute('type', 'text/javascript')
+            document.head.appendChild(sc)
+            sc.onload = function () {
+              window.dispatchEvent(
+                new CustomEvent('dashboard:diagnose_report_event')
+              )
+            }
+          })
+          .catch((err) => {
+            alert(err)
+          })
+      }
+    </script>
+  </body>
+</html>

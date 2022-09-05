@@ -6,7 +6,7 @@ import {
 
 import client from '~/client'
 
-import { monitoringItems } from './metricsQueries'
+import { getMonitoringItems } from './metricsQueries'
 
 class DataSource implements IMonitoringDataSource {
   metricsQueryGet(
@@ -33,6 +33,7 @@ const ds = new DataSource()
 export const ctx: IMonitoringContext = {
   ds,
   cfg: {
-    metricsQueries: monitoringItems
+    getMetricsQueries: (pdVersion: string | undefined) =>
+      getMonitoringItems(pdVersion)
   }
 }

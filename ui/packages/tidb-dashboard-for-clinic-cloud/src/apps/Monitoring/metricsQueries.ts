@@ -5,6 +5,8 @@ import {
   MetricsQueryType
 } from '@pingcap/tidb-dashboard-lib'
 
+import compareVersions from 'compare-versions'
+
 function transformColorBySQLType(legendLabel: string) {
   switch (legendLabel) {
     case 'Select':
@@ -53,9 +55,8 @@ const getMonitoringItems = (
 ): MetricsQueryType[] => {
   function loadTiKVStoragePromql() {
     const PDVersion = pdVersion?.replace('v', '')
-    console.log('PDVersion', PDVersion)
 
-    if (PDVersion && PDVersion < '5.4.1') {
+    if (PDVersion && compareVersions.compare(PDVersion, '5.4.1', '<')) {
       return 'sum(tikv_engine_size_bytes) by (instance)'
     }
     return 'sum(tikv_store_size_bytes{type="used"}) by (instance)'

@@ -59,6 +59,8 @@ export { default as DrawerFooter } from './DrawerFooter'
 export * from './TreeDiagramView'
 export { default as TreeDiagramView } from './TreeDiagramView'
 
+export * from './VisualPlan'
+
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'
 

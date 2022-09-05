@@ -274,7 +274,7 @@ export async function heatmapChart(
     const zoomBehavior = d3
       .zoom()
       .scaleExtent([1, 128])
-      .on('zoom', zooming)
+      .on('zoom', (event) => zooming(event))
       .on('end', zoomEnd)
 
     function constrainBoucing(transform) {
@@ -305,13 +305,13 @@ export async function heatmapChart(
       )
     }
 
-    function zooming() {
+    function zooming(event) {
       onZoom()
-      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
-        zoomTransform = constrainBoucing(d3.event.transform)
+      if (event.sourceEvent && event.sourceEvent.type === 'mousemove') {
+        zoomTransform = constrainBoucing(event.transform)
         hideTooltips()
       } else {
-        zoomTransform = constrainHard(d3.event.transform)
+        zoomTransform = constrainHard(event.transform)
         showTooltips()
       }
       render()

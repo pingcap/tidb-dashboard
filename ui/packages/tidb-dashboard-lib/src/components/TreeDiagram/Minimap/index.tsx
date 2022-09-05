@@ -83,7 +83,7 @@ const Minimap = ({
       .attr('height', multiTreesBoundHeight)
   }
 
-  const onBrush = (event) => {
+  const onBrush = () => {
     if (event.sourceEvent && event.sourceEvent.type === 'zoom') return null
     if (Array.isArray(event.selection)) {
       const [[brushX, brushY]] = event.selection
@@ -119,7 +119,7 @@ const Minimap = ({
     //     minimapScaleY(1)(multiTreesBoundHeight + viewport.height / 2),
     //   ],
     // ])
-    .on('brush', (event) => onBrush(event))
+    .on('brush', () => onBrush())
 
   const bindBrushListener = () => {
     brushSelection.call(brushBehavior)

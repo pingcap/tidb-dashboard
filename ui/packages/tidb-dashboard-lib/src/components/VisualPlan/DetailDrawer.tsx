@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import ReactJson from 'react-json-view'
 import { Tabs, Tooltip, Drawer, DrawerProps } from 'antd'
 import { InfoCircleTwoTone } from '@ant-design/icons'
@@ -51,6 +51,7 @@ const DetailDrawer: React.FC<DetailDrawerProps & DrawerProps> = ({
         style={{ position: 'absolute' }}
         className={theme}
         key="right"
+        getContainer={false}
         {...props}
       >
         <Tabs

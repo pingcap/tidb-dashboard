@@ -152,7 +152,7 @@ const TreeDiagram = ({
   //   ],
   // ])
 
-  const onZoom = (event) => {
+  const onZoom = () => {
     const t = event.transform
 
     setMultiTreesTranslate(t)
@@ -178,7 +178,7 @@ const TreeDiagram = ({
     //     multiTreesBound.height + viewport.height / 2,
     //   ],
     // ])
-    .on('zoom', (event) => onZoom(event))
+    .on('zoom', () => onZoom())
 
   // Binds MainChart container
   const bindZoomListener = () => {

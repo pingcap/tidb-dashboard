@@ -8,23 +8,20 @@ export const VisualPlanThumbnailView = (props) => {
   const minimap = false
   const cte = { gap: 10 }
   return (
-    <div style={{ height: window.innerHeight / 2 }}>
-      <VisualPlanThumbnail
-        data={binaryPlan}
-        minimap={minimap}
-        cte={cte}
-        theme={'light'}
-      />
-    </div>
+    <VisualPlanThumbnail
+      data={binaryPlan}
+      minimap={minimap}
+      cte={cte}
+      theme={'light'}
+    />
   )
 }
 
 export const VisualPlanView = (props) => {
   const binaryPlan = props.data
-  const minimap = { scale: 0.2 }
+  const minimap = { scale: 0.15 }
   const [showDetailDrawer, setShowDetailDrawer] = useState(false)
   const [detailData, setDetailData] = useState<RawNodeDatum | null>(null)
-  console.log('showDetailDrawer', showDetailDrawer)
 
   return (
     <>
@@ -41,11 +38,6 @@ export const VisualPlanView = (props) => {
         data={detailData!}
         theme={'light'}
         visible={showDetailDrawer}
-        getContainer={
-          document.getElementsByClassName(
-            'treeDiagramContainer'
-          )[0] as HTMLElement
-        }
         onClose={() => setShowDetailDrawer(false)}
       />
     </>

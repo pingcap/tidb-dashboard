@@ -55,7 +55,6 @@ const getMonitoringItems = (
 ): MetricsQueryType[] => {
   function loadTiKVStoragePromql() {
     const PDVersion = pdVersion?.replace('v', '')
-    console.log('PDVersion', PDVersion)
 
     if (PDVersion && compareVersions.compare(PDVersion, '5.4.1', '<')) {
       return 'sum(tikv_engine_size_bytes) by (instance)'

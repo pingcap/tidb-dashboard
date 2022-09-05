@@ -61,7 +61,7 @@
     "string-template": "^1.0.0",
     "url": "^0.11.0",
     "uuid": "^8.3.2",
-    "visual-plan": "file:../../../../visual-plan"
+    "visual-plan": "^0.0.6"
   },
   "devDependencies": {
     "@baurine/esbuild-plugin-postcss3": "^0.3.3",

@@ -56,9 +56,6 @@ export { default as Blink } from './Blink'
 export * from './DrawerFooter'
 export { default as DrawerFooter } from './DrawerFooter'
 
-export * from './TreeDiagramView'
-export { default as TreeDiagramView } from './TreeDiagramView'
-
 export * from './VisualPlan'
 
 export { default as LanguageDropdown } from './LanguageDropdown'

@@ -210,9 +210,9 @@ const DetailDrawer: React.FC<DetailDrawerProps & DrawerProps> = ({
           {data.diagnosis.length > 0 && (
             <Tabs.TabPane tab={t(`binary_plan.tabs.diagnosis`)} key="4">
               <ol type="1">
-                {data.diagnosis.map((d, idx) => (
+                {data.diagnosis.map((d: string, idx) => (
                   <li key={idx} style={{ padding: '1rem 0' }}>
-                    {/* {nt(`binary_plan.diagnosis.${d}`)} */}
+                    {t(`binary_plan.diagnosis.${d}`)}
                   </li>
                 ))}
               </ol>

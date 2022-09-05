@@ -1,6 +1,6 @@
 {
   "name": "@pingcap/tidb-dashboard-for-clinic-cloud",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "dist/dashboardApp.js",
   "module": "dist/dashboardApp.js",
   "files": [
@@ -34,6 +34,7 @@
     "axios": "^0.27.2",
     "bulma": "^0.9.4",
     "classnames": "^2.3.1",
+    "compare-versions": "^5.0.1",
     "eventemitter2": "^6.4.5",
     "i18next": "^21.6.11",
     "nprogress": "^0.2.0",

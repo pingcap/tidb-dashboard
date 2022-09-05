@@ -6,7 +6,8 @@ import {
 
 import client from '~/client'
 
-import { monitoringItems } from './metricsQueries'
+import { getMonitoringItems } from './metricsQueries'
+
 class DataSource implements IMonitoringDataSource {
   metricsQueryGet(
     endTimeSec?: number,
@@ -43,7 +44,8 @@ const RECENT_SECONDS = [
 export const ctx: () => IMonitoringContext = () => ({
   ds,
   cfg: {
-    metricsQueries: monitoringItems,
+    getMetricsQueries: (pdVersion: string | undefined) =>
+      getMonitoringItems(pdVersion),
     promeAddrConfigurable: false,
     timeRangeSelector: {
       recent_seconds: RECENT_SECONDS,

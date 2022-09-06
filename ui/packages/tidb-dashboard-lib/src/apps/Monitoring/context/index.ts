@@ -22,7 +22,7 @@ export interface MetricsQueryType {
 }
 
 interface IMetricConfig {
-  metricsQueries: MetricsQueryType[]
+  getMetricsQueries: (pdVersion: string | undefined) => MetricsQueryType[]
   promeAddrConfigurable?: boolean
   timeRangeSelector?: {
     recent_seconds: number[]

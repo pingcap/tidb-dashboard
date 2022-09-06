@@ -79,10 +79,7 @@ importers:
       chokidar: ^3.5.2
       classnames: ^2.3.1
       clipboardy: 2.3.0
-<<<<<<< HEAD
-=======
       compare-versions: ^5.0.1
->>>>>>> upstream/master
       cypress: 8.5.0
       cypress-image-snapshot: ^4.0.1
       cypress-real-events: ^1.7.0
@@ -127,10 +124,7 @@ importers:
       axios: 0.27.2
       bulma: 0.9.4
       classnames: 2.3.1
-<<<<<<< HEAD
-=======
       compare-versions: 5.0.1
->>>>>>> upstream/master
       eventemitter2: 6.4.6
       i18next: 21.8.14
       nprogress: 0.2.0
@@ -244,10 +238,7 @@ importers:
       axios: ^0.27.2
       chalk: 4.1.2
       chokidar: ^3.5.2
-<<<<<<< HEAD
-=======
       compare-versions: ^5.0.1
->>>>>>> upstream/master
       dotenv: ^16.0.1
       esbuild: ^0.14.23
       esbuild-plugin-svgr: ^1.0.0
@@ -271,10 +262,7 @@ importers:
       '@pingcap/tidb-dashboard-lib': link:../tidb-dashboard-lib
       antd: 4.21.7_sfoxds7t5ydpegc3knd667wn6m
       axios: 0.27.2
-<<<<<<< HEAD
-=======
       compare-versions: 5.0.1
->>>>>>> upstream/master
       i18next: 21.8.14
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2

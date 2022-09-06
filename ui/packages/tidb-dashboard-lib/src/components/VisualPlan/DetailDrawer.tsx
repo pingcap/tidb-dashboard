@@ -7,7 +7,6 @@ import { RawNodeDatum, Theme } from 'visual-plan'
 import { addTranslations } from '@lib/utils/i18n'
 import { useTranslation } from 'react-i18next'
 import translations from './translations'
-import { telemetry } from '@lib/apps/Statement/utils/telemetry'
 import { toFixed, getValueFormat } from '@baurine/grafana-value-formats'
 
 addTranslations(translations)

@@ -21,7 +21,6 @@ import { OverviewContext } from '../context'
 import { PointerEvent } from '@elastic/charts'
 import { ChartContext } from '@lib/components/MetricChart/ChartContext'
 import { useEventEmitter, useMemoizedFn } from 'ahooks'
-import { overviewMetrics } from '../data/overviewMetrics'
 import { telemetry } from '../utils/telemetry'
 
 export default function Metrics() {
@@ -96,7 +95,7 @@ export default function Metrics() {
       </Card>
       <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
         <Stack tokens={{ childrenGap: 16 }}>
-          {overviewMetrics.map((item) => (
+          {ctx?.cfg.metricsQueries.map((item) => (
             <Card noMarginTop noMarginBottom>
               <Typography.Title level={5}>
                 {t(`overview.metrics.${item.title}`)}

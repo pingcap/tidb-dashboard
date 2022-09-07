@@ -1,6 +1,9 @@
-import { TransformNullValue } from '@lib/utils/prometheus'
+import {
+  TransformNullValue,
+  OverviewMetricsQueryType
+} from '@pingcap/tidb-dashboard-lib'
 
-const overviewMetrics = [
+const overviewMetrics: OverviewMetricsQueryType[] = [
   {
     title: 'total_requests',
     queries: [
@@ -50,7 +53,8 @@ const overviewMetrics = [
     title: 'cpu',
     queries: [
       {
-        query: 'rate(process_cpu_seconds_total{job="tidb"}[$__rate_interval])',
+        query:
+          'irate(process_cpu_seconds_total{component="tidb"}[$__rate_interval])',
         name: '{instance}'
       }
     ],
@@ -62,7 +66,7 @@ const overviewMetrics = [
     title: 'memory',
     queries: [
       {
-        query: 'process_resident_memory_bytes{job="tidb"}',
+        query: 'process_resident_memory_bytes{component="tidb"}',
         name: '{instance}'
       }
     ],
@@ -75,7 +79,7 @@ const overviewMetrics = [
     queries: [
       {
         query:
-          'sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance) + sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance)',
+          'sum(rate(tikv_engine_flow_bytes{db="kv", type="wal_file_bytes"}[$__rate_interval])) by (instance) + (sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance) or (0 * sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance))) + (sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance) or (0 * sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance)))',
         name: '{instance}-write'
       },
       {

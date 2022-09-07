@@ -5,6 +5,7 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 
 import client from '~/client'
+import { overviewMetrics } from './metricsQueries'
 
 class DataSource implements IOverviewDataSource {
   getTiDBTopology(options?: ReqConfig) {
@@ -54,5 +55,8 @@ const ds = new DataSource()
 
 export const ctx: IOverviewContext = {
   ds,
-  cfg: { apiPathBase: client.getBasePath() }
+  cfg: {
+    apiPathBase: client.getBasePath(),
+    metricsQueries: overviewMetrics
+  }
 }

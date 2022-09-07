@@ -12,6 +12,15 @@ import {
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
+import { GraphType, IQueryOption } from '@lib/components'
+import { TransformNullValue } from '@lib/utils'
+export interface OverviewMetricsQueryType {
+  title: string
+  queries: IQueryOption[]
+  unit: string
+  type: GraphType
+  nullValue?: TransformNullValue
+}
 
 export interface IOverviewDataSource {
   getTiDBTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTiDBInfo>>
@@ -44,7 +53,9 @@ export interface IOverviewDataSource {
 
 export interface IOverviewContext {
   ds: IOverviewDataSource
-  cfg: IContextConfig
+  cfg: IContextConfig & {
+    metricsQueries: OverviewMetricsQueryType[]
+  }
 }
 
 export const OverviewContext = createContext<IOverviewContext | null>(null)

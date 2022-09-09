@@ -4,19 +4,14 @@ import { AxiosPromise } from 'axios'
 
 import { MetricsQueryResponse } from '@lib/client'
 
-import { TransformNullValue } from '@lib/utils'
-
-import { GraphType, IQueryOption } from '@lib/components'
-
-import { ReqConfig } from '@lib/types'
+import { IQueryConfig, TransformNullValue } from 'metrics-chart'
 
 export interface MetricsQueryType {
   category: string
   metrics: {
     title: string
-    queries: IQueryOption[]
+    queries: IQueryConfig[]
     unit: string
-    type: GraphType
     nullValue?: TransformNullValue
   }[]
 }
@@ -31,13 +26,12 @@ interface IMetricConfig {
 }
 
 export interface IMonitoringDataSource {
-  metricsQueryGet(
-    endTimeSec?: number,
-    query?: string,
-    startTimeSec?: number,
-    stepSec?: number,
-    options?: ReqConfig
-  ): AxiosPromise<MetricsQueryResponse>
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }): AxiosPromise<MetricsQueryResponse>
 }
 
 export interface IMonitoringContext {

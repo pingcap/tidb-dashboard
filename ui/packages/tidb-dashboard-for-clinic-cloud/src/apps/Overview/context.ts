@@ -20,22 +20,19 @@ class DataSource implements IOverviewDataSource {
     return client.getInstance().getPDTopology(options)
   }
 
-  metricsQueryGet(
-    endTimeSec?: number,
-    query?: string,
-    startTimeSec?: number,
-    stepSec?: number,
-    options?: ReqConfig
-  ) {
-    return client.getInstance().metricsQueryGet(
-      {
-        endTimeSec,
-        query,
-        startTimeSec,
-        stepSec
-      },
-      options
-    )
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }) {
+    const { endTimeSec, query, startTimeSec, stepSec } = params
+    return client.getInstance().metricsQueryGet({
+      endTimeSec,
+      query,
+      startTimeSec,
+      stepSec
+    })
   }
 
   getGrafanaTopology(options?: ReqConfig) {

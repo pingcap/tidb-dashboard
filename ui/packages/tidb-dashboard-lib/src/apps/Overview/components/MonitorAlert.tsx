@@ -27,7 +27,10 @@ export default function MonitorAlert() {
     }
     async function fetch() {
       let resp = await ctx!.ds.getAlertManagerCounts(
-        `${amData!.ip}:${amData!.port}`
+        `${amData!.ip}:${amData!.port}`,
+        {
+          handleError: 'custom'
+        }
       )
       setAlertCounter(resp.data)
     }

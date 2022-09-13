@@ -15,6 +15,9 @@ export const telemetry = {
   changeSearchText() {
     mixpanel.track('Statement: Change Search Text')
   },
+  search() {
+    mixpanel.track('Statement: Search')
+  },
   changeVisibleColumns(columns: IColumnKeys) {
     mixpanel.track('Statement: Change Visible Columns', { columns })
   },

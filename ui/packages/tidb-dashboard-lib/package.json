@@ -34,7 +34,7 @@
     "i18next": "^21.6.11",
     "i18next-browser-languagedetector": "^6.1.3",
     "lodash": "^4.17.21",
-    "metrics-chart": "file:../../../../metrics-chart",
+    "metrics-chart": "^0.15.0",
     "mixpanel-browser": "^2.45.0",
     "moize": "^5.4.7",
     "moment-timezone": "^0.5.34",

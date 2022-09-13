@@ -136,22 +136,6 @@ export default function Monitoring() {
                           >
                             {m.title}
                           </Typography.Title>
-                          {/* <MetricChart
-                            queries={m.queries}
-                            type={m.type as GraphType}
-                            unit={m.unit}
-                            nullValue={m.nullValue}
-                            range={chartRange}
-                            onRangeChange={setChartRange}
-                            getMetrics={ctx!.ds.metricsQueryGet}
-                            onLoadingStateChange={onLoadingStateChange}
-                            promAddrConfigurable={
-                              ctx!.cfg.promeAddrConfigurable
-                            }
-                            onClickSeriesLabel={(seriesName) =>
-                              telemetry.clickSeriesLabel(m.title, seriesName)
-                            }
-                          /> */}
                           <MetricsChart
                             queries={m.queries}
                             range={chartRange}

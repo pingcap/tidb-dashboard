@@ -20,7 +20,7 @@ import { OverviewContext } from '../context'
 import { useMemoizedFn } from 'ahooks'
 import { telemetry } from '../utils/telemetry'
 
-import { MetricsChart, SyncChartContext, TimeRangeValue } from 'metrics-chart'
+import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
 export default function Metrics() {
   const ctx = useContext(OverviewContext)
 
@@ -104,7 +104,7 @@ export default function Metrics() {
           </Space>
         </Toolbar>
       </Card>
-      <SyncChartContext>
+      <SyncChartPointer>
         <Stack tokens={{ childrenGap: 16 }}>
           {ctx?.cfg.metricsQueries.map((item) => (
             <Card noMarginTop noMarginBottom>
@@ -127,7 +127,7 @@ export default function Metrics() {
             </Card>
           ))}
         </Stack>
-      </SyncChartContext>
+      </SyncChartPointer>
     </>
   )
 }

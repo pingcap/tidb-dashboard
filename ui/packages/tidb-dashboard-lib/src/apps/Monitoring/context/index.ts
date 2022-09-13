@@ -4,13 +4,13 @@ import { AxiosPromise } from 'axios'
 
 import { MetricsQueryResponse } from '@lib/client'
 
-import { IQueryConfig, TransformNullValue } from 'metrics-chart'
+import { QueryConfig, TransformNullValue } from 'metrics-chart'
 
 export interface MetricsQueryType {
   category: string
   metrics: {
     title: string
-    queries: IQueryConfig[]
+    queries: QueryConfig[]
     unit: string
     nullValue?: TransformNullValue
   }[]

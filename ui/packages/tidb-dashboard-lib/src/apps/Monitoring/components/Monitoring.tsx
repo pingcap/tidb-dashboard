@@ -20,7 +20,7 @@ import { Link } from 'react-router-dom'
 import { debounce } from 'lodash'
 import { store } from '@lib/utils/store'
 import { telemetry } from '../utils/telemetry'
-import { MetricsChart, SyncChartContext, TimeRangeValue } from 'metrics-chart'
+import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)
@@ -104,7 +104,7 @@ export default function Monitoring() {
           </Space>
         </Toolbar>
       </Card>
-      <SyncChartContext>
+      <SyncChartPointer>
         <Stack tokens={{ childrenGap: 16 }}>
           <Card noMarginTop noMarginBottom>
             {ctx!.cfg.getMetricsQueries(pdVersion).map((item) => (
@@ -174,7 +174,7 @@ export default function Monitoring() {
             ))}
           </Card>
         </Stack>
-      </SyncChartContext>
+      </SyncChartPointer>
     </>
   )
 }

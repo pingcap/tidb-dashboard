@@ -12,10 +12,10 @@ import {
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
-import { IQueryConfig, TransformNullValue } from 'metrics-chart'
+import { QueryConfig, TransformNullValue } from 'metrics-chart'
 export interface OverviewMetricsQueryType {
   title: string
-  queries: IQueryConfig[]
+  queries: QueryConfig[]
   unit: string
   nullValue?: TransformNullValue
 }

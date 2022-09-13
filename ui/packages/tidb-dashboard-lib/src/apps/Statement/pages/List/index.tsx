@@ -150,6 +150,7 @@ export default function StatementsOverview() {
       searchText: filterText,
       visibleColumnKeys
     })
+    stmtTelmetry.search()
   })
 
   const sendQueryDebounced = useDebounceFn(sendQueryNow, {

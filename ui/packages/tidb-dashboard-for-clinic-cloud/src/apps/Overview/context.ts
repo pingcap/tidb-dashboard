@@ -26,7 +26,7 @@ class DataSource implements IOverviewDataSource {
     startTimeSec?: number
     stepSec?: number
   }) {
-    return client.getInstance().metricsQueryGet({ ...params }, {
+    return client.getInstance().metricsQueryGet(params, {
       handleError: 'custom'
     } as ReqConfig)
   }

@@ -5,11 +5,10 @@ import {
   AutoRefreshButton,
   Card,
   DEFAULT_TIME_RANGE,
-  GraphType,
-  MetricChart,
   TimeRange,
   TimeRangeSelector,
-  Toolbar
+  Toolbar,
+  ErrorBar
 } from '@lib/components'
 import { Link } from 'react-router-dom'
 import { Stack } from 'office-ui-fabric-react'
@@ -18,13 +17,13 @@ import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
 import { OverviewContext } from '../context'
 
-import { PointerEvent } from '@elastic/charts'
-import { ChartContext } from '@lib/components/MetricChart/ChartContext'
-import { useEventEmitter, useMemoizedFn } from 'ahooks'
+import { useMemoizedFn } from 'ahooks'
 import { telemetry } from '../utils/telemetry'
 
+import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
 export default function Metrics() {
   const ctx = useContext(OverviewContext)
+  const promAddrConfigurable = ctx?.cfg.promAddrConfigurable || false
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
   const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
@@ -49,6 +48,21 @@ export default function Metrics() {
     telemetry.clickManualRefresh()
     return setTimeRange((r) => ({ ...r }))
   }
+
+  const handleOnBrush = (range: TimeRangeValue) => {
+    setChartRange(range)
+  }
+
+  const ErrorComponent = (error: Error) => (
+    <Space direction="vertical">
+      <ErrorBar errors={[error]} />
+      {promAddrConfigurable && (
+        <Link to="/user_profile?blink=profile.prometheus">
+          {t('components.metricChart.changePromButton')}
+        </Link>
+      )}
+    </Space>
+  )
 
   return (
     <>
@@ -93,22 +107,22 @@ export default function Metrics() {
           </Space>
         </Toolbar>
       </Card>
-      <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
+      <SyncChartPointer>
         <Stack tokens={{ childrenGap: 16 }}>
           {ctx?.cfg.metricsQueries.map((item) => (
             <Card noMarginTop noMarginBottom>
               <Typography.Title level={5}>
                 {t(`overview.metrics.${item.title}`)}
               </Typography.Title>
-              <MetricChart
+              <MetricsChart
                 queries={item.queries}
-                type={item.type as GraphType}
-                unit={item.unit!}
-                nullValue={item.nullValue}
                 range={chartRange}
-                onRangeChange={setChartRange}
-                getMetrics={ctx!.ds.metricsQueryGet}
-                onLoadingStateChange={onLoadingStateChange}
+                nullValue={item.nullValue}
+                unit={item.unit!}
+                fetchPromeData={ctx!.ds.metricsQueryGet}
+                onLoading={onLoadingStateChange}
+                onBrush={handleOnBrush}
+                errorComponent={ErrorComponent}
                 onClickSeriesLabel={(seriesName) =>
                   telemetry.clickSeriesLabel(item.title, seriesName)
                 }
@@ -116,7 +130,7 @@ export default function Metrics() {
             </Card>
           ))}
         </Stack>
-      </ChartContext.Provider>
+      </SyncChartPointer>
     </>
   )
 }

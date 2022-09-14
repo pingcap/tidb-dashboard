@@ -1,7 +1,6 @@
 import {
   ColorType,
   TransformNullValue,
-  QueryData,
   MetricsQueryType
 } from '@pingcap/tidb-dashboard-lib'
 
@@ -70,79 +69,79 @@ const getMonitoringItems = (
           title: 'Database Time by SQL Types',
           queries: [
             {
-              query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
+              promql: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
               name: 'database time',
               color: ColorType.YELLOW,
               type: 'line'
             },
             {
-              query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
+              promql: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type)`,
               name: '{sql_type}',
-              color: (qd: QueryData) => transformColorBySQLType(qd.name),
+              color: (seriesName: string) =>
+                transformColorBySQLType(seriesName),
               type: 'bar_stacked'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'mixed'
+          unit: 's'
         },
         {
           title: 'Database Time by SQL Phase',
           queries: [
             {
-              query: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
+              promql: `sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval]))`,
               name: 'database time',
               color: ColorType.YELLOW,
               type: 'line'
             },
             {
-              query: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
+              promql: `sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
               name: 'parse',
               color: ColorType.RED_2,
               type: 'bar_stacked'
             },
             {
-              query: `sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
+              promql: `sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
               name: 'compile',
               color: ColorType.ORANGE,
               type: 'bar_stacked'
             },
             {
-              query: `sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
+              promql: `sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval]))`,
               name: 'execute',
               color: ColorType.GREEN_3,
               type: 'bar_stacked'
             },
             {
-              query: `sum(rate(tidb_server_get_token_duration_seconds_sum[$__rate_interval]))/1000000`,
+              promql: `sum(rate(tidb_server_get_token_duration_seconds_sum[$__rate_interval]))/1000000`,
               name: 'get token',
               color: ColorType.RED_3,
               type: 'bar_stacked'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'mixed'
+          unit: 's'
         },
         {
           title: 'SQL Execute Time Overview',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_tikvclient_request_seconds_sum{store!="0"}[$__rate_interval])) by (type)',
               name: '{type}',
-              color: (qd: QueryData) =>
-                transformColorByExecTimeOverview(qd.name)
+              color: (seriesName: string) =>
+                transformColorByExecTimeOverview(seriesName),
+              type: 'bar_stacked'
             },
             {
-              query:
+              promql:
                 'sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum{type="wait"}[$__rate_interval]))',
               name: 'tso_wait',
-              color: ColorType.RED_5
+              color: ColorType.RED_5,
+              type: 'bar_stacked'
             }
           ],
-          unit: 's',
-          type: 'bar_stacked'
+          unit: 's'
         }
       ]
     },
@@ -153,30 +152,31 @@ const getMonitoringItems = (
           title: 'Connection Count',
           queries: [
             {
-              query: 'sum(tidb_server_connections)',
-              name: 'Total'
+              promql: 'sum(tidb_server_connections)',
+              name: 'Total',
+              type: 'line'
             },
             {
-              query: 'sum(tidb_server_tokens)',
-              name: 'active connections'
+              promql: 'sum(tidb_server_tokens)',
+              name: 'active connections',
+              type: 'line'
             }
           ],
           unit: 'short',
-          nullValue: TransformNullValue.AS_ZERO,
-          type: 'line'
+          nullValue: TransformNullValue.AS_ZERO
         },
         {
           title: 'Disconnection',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_server_disconnection_total[$__rate_interval])) by (instance, result)',
-              name: '{instance}-{result}'
+              name: '{instance}-{result}',
+              type: 'area_stack'
             }
           ],
           unit: 'short',
-          nullValue: TransformNullValue.AS_ZERO,
-          type: 'area_stack'
+          nullValue: TransformNullValue.AS_ZERO
         }
       ]
     },
@@ -187,63 +187,65 @@ const getMonitoringItems = (
           title: 'Query Per Second',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_executor_statement_total[$__rate_interval]))',
-              name: 'Total'
+              name: 'Total',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'sum(rate(tidb_executor_statement_total[$__rate_interval])) by (type)',
-              name: '{type}'
+              name: '{type}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'qps',
-          type: 'line'
+          unit: 'qps'
         },
         {
           title: 'Failed Queries',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_server_execute_error_total[$__rate_interval]))',
-              name: '{type} @ {instance}'
+              name: '{type} @ {instance}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'short',
-          type: 'line'
+          unit: 'short'
         },
         {
           title: 'Command Per Second',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_server_query_total[$__rate_interval])) by (type)',
-              name: '{type}'
+              name: '{type}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'short',
-          type: 'line'
+          unit: 'short'
         },
         {
           title: 'Queries Using Plan Cache OPS',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_server_plan_cache_total[$__rate_interval]))',
-              name: 'avg - hit'
+              name: 'avg - hit',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'sum(rate(tidb_server_plan_cache_miss_total[$__rate_interval]))',
-              name: 'avg - miss'
+              name: 'avg - miss',
+              type: 'line'
             }
           ],
           unit: 'short',
-          nullValue: TransformNullValue.AS_ZERO,
-          type: 'line'
+          nullValue: TransformNullValue.AS_ZERO
         }
       ]
     },
@@ -254,117 +256,125 @@ const getMonitoringItems = (
           title: 'Query Duration',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval]))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!="internal"}[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval])) by (sql_type)',
-              name: 'avg-{sql_type}'
+              name: 'avg-{sql_type}',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket[$__rate_interval])) by (le,sql_type))',
-              name: '99-{sql_type}'
+              name: '99-{sql_type}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Average Idle Connection Duration',
           queries: [
             {
-              query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='1'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='1'}[$__rate_interval])))`,
-              name: 'avg-in-txn'
+              promql: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='1'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='1'}[$__rate_interval])))`,
+              name: 'avg-in-txn',
+              type: 'line'
             },
             {
-              query: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='0'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='0'}[$__rate_interval])))`,
-              name: 'avg-not-in-txn'
+              promql: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='0'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='0'}[$__rate_interval])))`,
+              name: 'avg-not-in-txn',
+              type: 'line'
             }
           ],
           unit: 's',
-          nullValue: TransformNullValue.AS_ZERO,
-          type: 'line'
+          nullValue: TransformNullValue.AS_ZERO
         },
         {
           title: 'Get Token Duration',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_server_get_token_duration_seconds_sum[$__rate_interval])) / sum(rate(tidb_server_get_token_duration_seconds_count[$__rate_interval]))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tidb_server_get_token_duration_seconds_bucket[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'µs',
-          type: 'line'
+          unit: 'µs'
         },
         {
           title: 'Parse Duration',
           queries: [
             {
-              query:
+              promql:
                 '(sum(rate(tidb_session_parse_duration_seconds_sum{sql_type="general"}[$__rate_interval])) / sum(rate(tidb_session_parse_duration_seconds_count{sql_type="general"}[$__rate_interval])))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tidb_session_parse_duration_seconds_bucket{sql_type="general"}[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Compile Duration',
           queries: [
             {
-              query:
+              promql:
                 '(sum(rate(tidb_session_compile_duration_seconds_sum{sql_type="general"}[$__rate_interval])) / sum(rate(tidb_session_compile_duration_seconds_count{sql_type="general"}[$__rate_interval])))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tidb_session_compile_duration_seconds_bucket{sql_type="general"}[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Execute Duration',
           queries: [
             {
-              query:
+              promql:
                 '(sum(rate(tidb_session_execute_duration_seconds_sum{sql_type="general"}[$__rate_interval])) / sum(rate(tidb_session_execute_duration_seconds_count{sql_type="general"}[$__rate_interval])))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tidb_session_execute_duration_seconds_bucket{sql_type="general"}[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         }
       ]
     },
@@ -375,31 +385,32 @@ const getMonitoringItems = (
           title: 'Transaction Per Second',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval])) by (type, txn_mode)',
-              name: '{type}-{txn_mode}'
+              name: '{type}-{txn_mode}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'short',
-          type: 'line'
+          unit: 'short'
         },
         {
           title: 'Transaction Duration',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_session_transaction_duration_seconds_sum[$__rate_interval])) by (txn_mode)/ sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval])) by (txn_mode)',
-              name: 'avg-{txn_mode}'
+              name: 'avg-{txn_mode}',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tidb_session_transaction_duration_seconds_bucket[$__rate_interval])) by (le, txn_mode))',
-              name: '99-{txn_mode}'
+              name: '99-{txn_mode}',
+              type: 'line'
             }
           ],
-          unit: 's',
-          type: 'line'
+          unit: 's'
         }
       ]
     },
@@ -410,163 +421,172 @@ const getMonitoringItems = (
           title: 'Avg TiDB KV Request Duration',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tidb_tikvclient_request_seconds_sum{store!="0"}[$__rate_interval])) by (type)/ sum(rate(tidb_tikvclient_request_seconds_count{store!="0"}[$__rate_interval])) by (type)',
-              name: '{type}'
+              name: '{type}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Avg TiKV GRPC Duration',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tikv_grpc_msg_duration_seconds_sum{store!="0"}[$__rate_interval])) by (type)/ sum(rate(tikv_grpc_msg_duration_seconds_count{store!="0"}[$__rate_interval])) by (type)',
-              name: '{type}'
+              name: '{type}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Average / P99 PD TSO Wait/RPC Duration',
           queries: [
             {
-              query:
+              promql:
                 '(sum(rate(pd_client_cmd_handle_cmds_duration_seconds_sum{type="wait"}[$__rate_interval])) / sum(rate(pd_client_cmd_handle_cmds_duration_seconds_count{type="wait"}[$__rate_interval])))',
-              name: 'wait - avg'
+              name: 'wait - avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(pd_client_cmd_handle_cmds_duration_seconds_bucket{type="wait"}[$__rate_interval])) by (le))',
-              name: 'wait - 99'
+              name: 'wait - 99',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 '(sum(rate(pd_client_request_handle_requests_duration_seconds_sum{type="tso"}[$__rate_interval])) / sum(rate(pd_client_request_handle_requests_duration_seconds_count{type="tso"}[$__rate_interval])))',
-              name: 'rpc - avg'
+              name: 'rpc - avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(pd_client_request_handle_requests_duration_seconds_bucket{type="tso"}[$__rate_interval])) by (le))',
-              name: 'rpc - 99'
+              name: 'rpc - 99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Average / P99 Storage Async Write Duration',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tikv_storage_engine_async_request_duration_seconds_sum{type="write"}[$__rate_interval])) / sum(rate(tikv_storage_engine_async_request_duration_seconds_count{type="write"}[$__rate_interval]))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tikv_storage_engine_async_request_duration_seconds_bucket{type="write"}[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Average / P99 Store Duration',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tikv_raftstore_store_duration_secs_sum[$__rate_interval])) / sum(rate(tikv_raftstore_store_duration_secs_count[$__rate_interval]))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tikv_raftstore_store_duration_secs_bucket[$__rate_interval])) by (le))',
-              name: ''
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Average / P99 Apply Duration',
           queries: [
             {
-              query:
+              promql:
                 '(sum(rate(tikv_raftstore_apply_duration_secs_sum[$__rate_interval])) / sum(rate(tikv_raftstore_apply_duration_secs_count[$__rate_interval])))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tikv_raftstore_apply_duration_secs_bucket[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Average / P99 Append Log Duration',
           queries: [
             {
-              query:
+              promql:
                 '(sum(rate(tikv_raftstore_append_log_duration_seconds_sum[$__rate_interval])) / sum(rate(tikv_raftstore_append_log_duration_seconds_count[$__rate_interval])))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tikv_raftstore_append_log_duration_seconds_bucket[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Average / P99 Commit Log Duration',
           queries: [
             {
-              query:
+              promql:
                 '(sum(rate(tikv_raftstore_commit_log_duration_seconds_sum[$__rate_interval])) / sum(rate(tikv_raftstore_commit_log_duration_seconds_count[$__rate_interval])))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tikv_raftstore_commit_log_duration_seconds_bucket[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'Average / P99 Apply Log Duration',
           queries: [
             {
-              query:
+              promql:
                 '(sum(rate(tikv_raftstore_apply_log_duration_seconds_sum[$__rate_interval])) / sum(rate(tikv_raftstore_apply_log_duration_seconds_count[$__rate_interval])))',
-              name: 'avg'
+              name: 'avg',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'histogram_quantile(0.99, sum(rate(tikv_raftstore_apply_log_duration_seconds_bucket[$__rate_interval])) by (le))',
-              name: '99'
+              name: '99',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         }
       ]
     },
@@ -577,168 +597,170 @@ const getMonitoringItems = (
           title: 'TiDB Uptime',
           queries: [
             {
-              query: '(time() - process_start_time_seconds{component="tidb"})',
-              name: '{instance}'
+              promql: '(time() - process_start_time_seconds{component="tidb"})',
+              name: '{instance}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'TiDB CPU Usage',
           queries: [
             {
-              query:
+              promql:
                 'irate(process_cpu_seconds_total{component="tidb"}[$__rate_interval])',
-              name: '{instance}'
+              name: '{instance}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'percentunit',
-          type: 'line'
+          unit: 'percentunit'
         },
         {
           title: 'TiDB Memory Usage',
           queries: [
             {
-              query: 'process_resident_memory_bytes{component="tidb"}',
-              name: '{instance}'
+              promql: 'process_resident_memory_bytes{component="tidb"}',
+              name: '{instance}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'bytes',
-          type: 'line'
+          unit: 'bytes'
         },
         {
           title: 'TiKV Uptime',
           queries: [
             {
-              query: '(time() - process_start_time_seconds{component="tikv"})',
-              name: '{instance}'
+              promql: '(time() - process_start_time_seconds{component="tikv"})',
+              name: '{instance}',
+              type: 'line'
             }
           ],
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'TiKV CPU Usage',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tikv_thread_cpu_seconds_total[$__rate_interval])) by (instance)',
-              name: '{instance}'
+              name: '{instance}',
+              type: 'line'
             }
           ],
-          unit: 'percentunit',
-          type: 'line'
+          unit: 'percentunit'
         },
         {
           title: 'TiKV Memory Usage',
           queries: [
             {
-              query:
+              promql:
                 'avg(process_resident_memory_bytes{component="tikv"}) by (instance)',
-              name: '{instance}'
+              name: '{instance}',
+              type: 'line'
             }
           ],
-          unit: 'bytes',
-          type: 'line'
+          unit: 'bytes'
         },
         {
           title: 'TiKV IO MBps',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tikv_engine_flow_bytes{db="kv", type="wal_file_bytes"}[$__rate_interval])) by (instance) + (sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance) or (0 * sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance))) + (sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance) or (0 * sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance)))',
-              name: '{instance}-write'
+              name: '{instance}-write',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'sum(rate(tikv_engine_flow_bytes{db="kv", type=~"bytes_read|iter_bytes_read"}[$__rate_interval])) by (instance)',
-              name: '{instance}-read'
+              name: '{instance}-read',
+              type: 'line'
             }
           ],
-          unit: 'Bps',
-          type: 'line'
+          unit: 'Bps'
         },
         {
           title: 'TiKV Storage Usage',
           queries: [
             {
-              query: loadTiKVStoragePromql(),
-              name: '{instance}'
+              promql: loadTiKVStoragePromql(),
+              name: '{instance}',
+              type: 'area_stack'
             }
           ],
-          unit: 'bytes',
-          type: 'area_stack'
+          unit: 'bytes'
         },
         {
           title: 'TiFlash Uptime',
           queries: [
             {
-              query: 'tiflash_system_asynchronous_metric_Uptime',
-              name: '{instance}'
+              promql: 'tiflash_system_asynchronous_metric_Uptime',
+              name: '{instance}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 's',
-          type: 'line'
+          unit: 's'
         },
         {
           title: 'TiFlash CPU Usage',
           queries: [
             {
-              query:
+              promql:
                 'rate(tiflash_proxy_process_cpu_seconds_total{component="tiflash"}[$__rate_interval])',
-              name: '{instance}'
+              name: '{instance}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'percentunit',
-          type: 'line'
+          unit: 'percentunit'
         },
         {
           title: 'TiFlash Memory',
           queries: [
             {
-              query:
+              promql:
                 'tiflash_proxy_process_resident_memory_bytes{component="tiflash"}',
-              name: '{instance}'
+              name: '{instance}',
+              type: 'line'
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'bytes',
-          type: 'line'
+          unit: 'bytes'
         },
         {
           title: 'TiFlash IO MBps',
           queries: [
             {
-              query:
+              promql:
                 'sum(rate(tiflash_system_profile_event_WriteBufferFromFileDescriptorWriteBytes[$__rate_interval])) by (instance) + sum(rate(tiflash_system_profile_event_PSMWriteBytes[$__rate_interval])) by (instance) + sum(rate(tiflash_system_profile_event_WriteBufferAIOWriteBytes[$__rate_interval])) by (instance)',
-              name: '{instance}-write'
+              name: '{instance}-write',
+              type: 'line'
             },
             {
-              query:
+              promql:
                 'sum(rate(tiflash_system_profile_event_ReadBufferFromFileDescriptorReadBytes[$__rate_interval])) by (instance) + sum(rate(tiflash_system_profile_event_PSMReadBytes[$__rate_interval])) by (instance) + sum(rate(tiflash_system_profile_event_ReadBufferAIOReadBytes[$__rate_interval])) by (instance)',
-              name: '{instance}-read'
+              name: '{instance}-read',
+              type: 'line'
             }
           ],
-          unit: 'Bps',
-          type: 'line'
+          unit: 'Bps'
         },
         {
           title: 'TiFlash Storage Usage',
           queries: [
             {
-              query:
+              promql:
                 'sum(tiflash_system_current_metric_StoreSizeUsed) by (instance)',
-              name: '{instance}'
+              name: '{instance}',
+              type: 'area_stack'
             }
           ],
-          unit: 'bytes',
-          type: 'area_stack'
+          unit: 'bytes'
         }
       ]
     }

@@ -5,26 +5,26 @@ import {
   AutoRefreshButton,
   Card,
   DEFAULT_TIME_RANGE,
-  MetricChart,
   TimeRange,
   TimeRangeSelector,
-  GraphType,
-  Toolbar
+  Toolbar,
+  ErrorBar
 } from '@lib/components'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
 import { MonitoringContext } from '../context'
+import { useMemoizedFn } from 'ahooks'
 
-import { PointerEvent } from '@elastic/charts'
-import { ChartContext } from '@lib/components/MetricChart/ChartContext'
-import { useEventEmitter, useMemoizedFn } from 'ahooks'
+import { Link } from 'react-router-dom'
 import { debounce } from 'lodash'
 import { store } from '@lib/utils/store'
 import { telemetry } from '../utils/telemetry'
+import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)
+  const promAddrConfigurable = ctx?.cfg.promAddrConfigurable || false
   const info = store.useState((s) => s.appInfo)
   const pdVersion = info?.version?.pd_version
   const { t } = useTranslation()
@@ -51,6 +51,21 @@ export default function Monitoring() {
     telemetry.clickManualRefresh()
     return setTimeRange((r) => ({ ...r }))
   }
+
+  const handleOnBrush = (range: TimeRangeValue) => {
+    setChartRange(range)
+  }
+
+  const ErrorComponent = (error: Error) => (
+    <Space direction="vertical">
+      <ErrorBar errors={[error]} />
+      {promAddrConfigurable && (
+        <Link to="/user_profile?blink=profile.prometheus">
+          {t('components.metricChart.changePromButton')}
+        </Link>
+      )}
+    </Space>
+  )
 
   return (
     <>
@@ -92,7 +107,7 @@ export default function Monitoring() {
           </Space>
         </Toolbar>
       </Card>
-      <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
+      <SyncChartPointer>
         <Stack tokens={{ childrenGap: 16 }}>
           <Card noMarginTop noMarginBottom>
             {ctx!.cfg.getMetricsQueries(pdVersion).map((item) => (
@@ -124,18 +139,15 @@ export default function Monitoring() {
                           >
                             {m.title}
                           </Typography.Title>
-                          <MetricChart
+                          <MetricsChart
                             queries={m.queries}
-                            type={m.type as GraphType}
-                            unit={m.unit}
-                            nullValue={m.nullValue}
                             range={chartRange}
-                            onRangeChange={setChartRange}
-                            getMetrics={ctx!.ds.metricsQueryGet}
-                            onLoadingStateChange={onLoadingStateChange}
-                            promAddrConfigurable={
-                              ctx!.cfg.promeAddrConfigurable
-                            }
+                            nullValue={m.nullValue}
+                            unit={m.unit!}
+                            fetchPromeData={ctx!.ds.metricsQueryGet}
+                            onLoading={onLoadingStateChange}
+                            onBrush={handleOnBrush}
+                            errorComponent={ErrorComponent}
                             onClickSeriesLabel={(seriesName) =>
                               telemetry.clickSeriesLabel(m.title, seriesName)
                             }
@@ -149,7 +161,7 @@ export default function Monitoring() {
             ))}
           </Card>
         </Stack>
-      </ChartContext.Provider>
+      </SyncChartPointer>
     </>
   )
 }

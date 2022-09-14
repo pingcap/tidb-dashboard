@@ -23,6 +23,7 @@ import { telemetry } from '../utils/telemetry'
 import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
 export default function Metrics() {
   const ctx = useContext(OverviewContext)
+  const promAddrConfigurable = ctx?.cfg.promAddrConfigurable || false
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
   const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
@@ -55,9 +56,11 @@ export default function Metrics() {
   const ErrorComponent = (error: Error) => (
     <Space direction="vertical">
       <ErrorBar errors={[error]} />
-      <Link to="/user_profile?blink=profile.prometheus">
-        {t('components.metricChart.changePromButton')}
-      </Link>
+      {promAddrConfigurable && (
+        <Link to="/user_profile?blink=profile.prometheus">
+          {t('components.metricChart.changePromButton')}
+        </Link>
+      )}
     </Space>
   )
 

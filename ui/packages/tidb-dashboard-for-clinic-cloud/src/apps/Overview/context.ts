@@ -5,6 +5,7 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 
 import client from '~/client'
+import { overviewMetrics } from './metricsQueries'
 
 class DataSource implements IOverviewDataSource {
   getTiDBTopology(options?: ReqConfig) {
@@ -19,22 +20,15 @@ class DataSource implements IOverviewDataSource {
     return client.getInstance().getPDTopology(options)
   }
 
-  metricsQueryGet(
-    endTimeSec?: number,
-    query?: string,
-    startTimeSec?: number,
-    stepSec?: number,
-    options?: ReqConfig
-  ) {
-    return client.getInstance().metricsQueryGet(
-      {
-        endTimeSec,
-        query,
-        startTimeSec,
-        stepSec
-      },
-      options
-    )
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }) {
+    return client.getInstance().metricsQueryGet(params, {
+      handleError: 'custom'
+    } as ReqConfig)
   }
 
   getGrafanaTopology(options?: ReqConfig) {
@@ -52,7 +46,25 @@ class DataSource implements IOverviewDataSource {
 
 const ds = new DataSource()
 
+const RECENT_SECONDS = [
+  5 * 60,
+  15 * 60,
+  30 * 60,
+  60 * 60,
+  3 * 60 * 60,
+  6 * 60 * 60,
+  12 * 60 * 60,
+  24 * 60 * 60
+]
+
 export const ctx: IOverviewContext = {
   ds,
-  cfg: { apiPathBase: client.getBasePath() }
+  cfg: {
+    apiPathBase: client.getBasePath(),
+    metricsQueries: overviewMetrics,
+    timeRangeSelector: {
+      recent_seconds: RECENT_SECONDS,
+      withAbsoluteRangePicker: false
+    }
+  }
 }

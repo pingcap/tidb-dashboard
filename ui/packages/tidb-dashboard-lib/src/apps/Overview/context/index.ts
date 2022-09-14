@@ -20,6 +20,15 @@ export interface OverviewMetricsQueryType {
   nullValue?: TransformNullValue
 }
 
+interface IMetricConfig {
+  metricsQueries: OverviewMetricsQueryType[]
+  promAddrConfigurable?: boolean
+  timeRangeSelector?: {
+    recent_seconds: number[]
+    withAbsoluteRangePicker: boolean
+  }
+}
+
 export interface IOverviewDataSource {
   getTiDBTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTiDBInfo>>
 
@@ -50,9 +59,7 @@ export interface IOverviewDataSource {
 
 export interface IOverviewContext {
   ds: IOverviewDataSource
-  cfg: IContextConfig & {
-    metricsQueries: OverviewMetricsQueryType[]
-  }
+  cfg: IContextConfig & IMetricConfig
 }
 
 export const OverviewContext = createContext<IOverviewContext | null>(null)

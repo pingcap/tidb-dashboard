@@ -24,6 +24,7 @@ import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)
+  const promAddrConfigurable = ctx?.cfg.promAddrConfigurable || false
   const info = store.useState((s) => s.appInfo)
   const pdVersion = info?.version?.pd_version
   const { t } = useTranslation()
@@ -58,9 +59,11 @@ export default function Monitoring() {
   const ErrorComponent = (error: Error) => (
     <Space direction="vertical">
       <ErrorBar errors={[error]} />
-      <Link to="/user_profile?blink=profile.prometheus">
-        {t('components.metricChart.changePromButton')}
-      </Link>
+      {promAddrConfigurable && (
+        <Link to="/user_profile?blink=profile.prometheus">
+          {t('components.metricChart.changePromButton')}
+        </Link>
+      )}
     </Space>
   )
 

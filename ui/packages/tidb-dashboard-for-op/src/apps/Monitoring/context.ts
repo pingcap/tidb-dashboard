@@ -27,6 +27,7 @@ export const ctx: IMonitoringContext = {
   ds,
   cfg: {
     getMetricsQueries: (pdVersion: string | undefined) =>
-      getMonitoringItems(pdVersion)
+      getMonitoringItems(pdVersion),
+    promAddrConfigurable: true
   }
 }

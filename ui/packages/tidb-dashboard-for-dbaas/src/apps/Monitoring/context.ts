@@ -39,7 +39,6 @@ export const ctx: () => IMonitoringContext = () => ({
   cfg: {
     getMetricsQueries: (pdVersion: string | undefined) =>
       getMonitoringItems(pdVersion),
-    promeAddrConfigurable: false,
     timeRangeSelector: {
       recent_seconds: RECENT_SECONDS,
       withAbsoluteRangePicker: false

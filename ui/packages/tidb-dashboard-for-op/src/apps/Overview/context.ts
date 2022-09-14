@@ -50,6 +50,7 @@ export const ctx: IOverviewContext = {
   ds,
   cfg: {
     apiPathBase: client.getBasePath(),
-    metricsQueries: overviewMetrics
+    metricsQueries: overviewMetrics,
+    promAddrConfigurable: true
   }
 }

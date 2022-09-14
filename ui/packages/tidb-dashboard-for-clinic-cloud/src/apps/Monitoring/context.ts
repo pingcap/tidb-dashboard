@@ -21,12 +21,27 @@ class DataSource implements IMonitoringDataSource {
   }
 }
 
+const RECENT_SECONDS = [
+  5 * 60,
+  15 * 60,
+  30 * 60,
+  60 * 60,
+  3 * 60 * 60,
+  6 * 60 * 60,
+  12 * 60 * 60,
+  24 * 60 * 60
+]
+
 const ds = new DataSource()
 
 export const ctx: IMonitoringContext = {
   ds,
   cfg: {
     getMetricsQueries: (pdVersion: string | undefined) =>
-      getMonitoringItems(pdVersion)
+      getMonitoringItems(pdVersion),
+    timeRangeSelector: {
+      recent_seconds: RECENT_SECONDS,
+      withAbsoluteRangePicker: false
+    }
   }
 }

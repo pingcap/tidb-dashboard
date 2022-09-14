@@ -9,22 +9,15 @@ import client from '~/client'
 import { getMonitoringItems } from './metricsQueries'
 
 class DataSource implements IMonitoringDataSource {
-  metricsQueryGet(
-    endTimeSec?: number,
-    query?: string,
-    startTimeSec?: number,
-    stepSec?: number,
-    options?: ReqConfig
-  ) {
-    return client.getInstance().metricsQueryGet(
-      {
-        endTimeSec,
-        query,
-        startTimeSec,
-        stepSec
-      },
-      options
-    )
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }) {
+    return client.getInstance().metricsQueryGet(params, {
+      handleError: 'custom'
+    } as ReqConfig)
   }
 }
 
@@ -34,6 +27,7 @@ export const ctx: IMonitoringContext = {
   ds,
   cfg: {
     getMetricsQueries: (pdVersion: string | undefined) =>
-      getMonitoringItems(pdVersion)
+      getMonitoringItems(pdVersion),
+    promAddrConfigurable: true
   }
 }

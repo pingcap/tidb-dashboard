@@ -12,14 +12,21 @@ import {
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
-import { GraphType, IQueryOption } from '@lib/components'
-import { TransformNullValue } from '@lib/utils'
+import { QueryConfig, TransformNullValue } from 'metrics-chart'
 export interface OverviewMetricsQueryType {
   title: string
-  queries: IQueryOption[]
+  queries: QueryConfig[]
   unit: string
-  type: GraphType
   nullValue?: TransformNullValue
+}
+
+interface IMetricConfig {
+  metricsQueries: OverviewMetricsQueryType[]
+  promAddrConfigurable?: boolean
+  timeRangeSelector?: {
+    recent_seconds: number[]
+    withAbsoluteRangePicker: boolean
+  }
 }
 
 export interface IOverviewDataSource {
@@ -42,20 +49,17 @@ export interface IOverviewDataSource {
     options?: ReqConfig
   ): AxiosPromise<number>
 
-  metricsQueryGet(
-    endTimeSec?: number,
-    query?: string,
-    startTimeSec?: number,
-    stepSec?: number,
-    options?: ReqConfig
-  ): AxiosPromise<MetricsQueryResponse>
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }): AxiosPromise<MetricsQueryResponse>
 }
 
 export interface IOverviewContext {
   ds: IOverviewDataSource
-  cfg: IContextConfig & {
-    metricsQueries: OverviewMetricsQueryType[]
-  }
+  cfg: IContextConfig & IMetricConfig
 }
 
 export const OverviewContext = createContext<IOverviewContext | null>(null)

@@ -20,22 +20,15 @@ class DataSource implements IOverviewDataSource {
     return client.getInstance().getPDTopology(options)
   }
 
-  metricsQueryGet(
-    endTimeSec?: number,
-    query?: string,
-    startTimeSec?: number,
-    stepSec?: number,
-    options?: ReqConfig
-  ) {
-    return client.getInstance().metricsQueryGet(
-      {
-        endTimeSec,
-        query,
-        startTimeSec,
-        stepSec
-      },
-      options
-    )
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }) {
+    return client.getInstance().metricsQueryGet(params, {
+      handleError: 'custom'
+    } as ReqConfig)
   }
 
   getGrafanaTopology(options?: ReqConfig) {
@@ -57,6 +50,7 @@ export const ctx: IOverviewContext = {
   ds,
   cfg: {
     apiPathBase: client.getBasePath(),
-    metricsQueries: overviewMetrics
+    metricsQueries: overviewMetrics,
+    promAddrConfigurable: true
   }
 }

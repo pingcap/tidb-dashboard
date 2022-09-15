@@ -112,6 +112,10 @@ slow_query:
     status:
       success: 成功
       error: 失败
+  overview:
+    empty_result: 没有符合条件的慢查询
+    result_count: 得到 {{ n }} 条结果。
+    slow_load_info: 数据加载耗时较长，已禁用即时更新。修改查询条件后，您可以手工点击”查询“按钮来发起查询。
   detail:
     head:
       title: 慢查询详情

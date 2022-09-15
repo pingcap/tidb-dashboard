@@ -355,6 +355,11 @@ export default function StatementsOverview() {
                   <DateTime.Calendar
                     unixTimestampMs={dataTimeRange[1] * 1000}
                   />
+                  <div>
+                    {t('statement.pages.overview.result_count', {
+                      n: controller.data?.list.length
+                    })}
+                  </div>
                 </p>
               </Card>
             )}

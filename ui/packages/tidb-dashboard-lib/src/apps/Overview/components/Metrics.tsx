@@ -75,6 +75,10 @@ export default function Metrics() {
                 setTimeRange(v)
                 telemetry.selectTimeRange(v)
               }}
+              recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
+              withAbsoluteRangePicker={
+                ctx?.cfg.timeRangeSelector?.withAbsoluteRangePicker
+              }
               onZoomOutClick={(start, end) =>
                 telemetry.clickZoomOut([start, end])
               }

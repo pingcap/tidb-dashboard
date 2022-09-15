@@ -61,7 +61,8 @@
     "sql-formatter": "^4.0.2",
     "string-template": "^1.0.0",
     "url": "^0.11.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "visual-plan": "^0.0.7"
   },
   "devDependencies": {
     "@baurine/esbuild-plugin-postcss3": "^0.3.3",

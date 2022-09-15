@@ -16,8 +16,7 @@ import {
   LoadingOutlined,
   ExportOutlined,
   MenuOutlined,
-  QuestionCircleOutlined,
-  SmileOutlined
+  QuestionCircleOutlined
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import {
@@ -262,10 +261,7 @@ function List() {
       </Card>
 
       {controller.data?.length === 0 ? (
-        <Result
-          icon={<SmileOutlined />}
-          title={t('slow_query.overview.empty_result')}
-        />
+        <Result title={t('slow_query.overview.empty_result')} />
       ) : (
         <div style={{ height: '100%', position: 'relative' }}>
           <ScrollablePane>

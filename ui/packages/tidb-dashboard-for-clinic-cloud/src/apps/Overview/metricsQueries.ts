@@ -20,7 +20,7 @@ const overviewMetrics: OverviewMetricsQueryType[] = [
       }
     ],
     nullValue: TransformNullValue.AS_ZERO,
-    unit: 'qps'
+    unit: 'short'
   },
   {
     title: 'latency',

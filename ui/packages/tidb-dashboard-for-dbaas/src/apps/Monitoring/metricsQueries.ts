@@ -200,7 +200,7 @@ const getMonitoringItems = (
             }
           ],
           nullValue: TransformNullValue.AS_ZERO,
-          unit: 'qps'
+          unit: 'short'
         },
         {
           title: 'Failed Queries',

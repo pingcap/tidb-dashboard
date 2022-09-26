@@ -46,6 +46,7 @@ statement:
           custom_time_ranges: Custom
         export: Export
         exporting: Exporting
+      result_count: Get {{ n }} results.
       actual_range: 'Due to time window and expiration configurations, currently displaying data in time range: '
       slow_load_info: On-the-fly update is disabled due to slow data loading. You can initiate query manually by clicking the "Query" button.
   settings:

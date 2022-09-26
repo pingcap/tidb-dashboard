@@ -15,9 +15,12 @@ class DataSource implements IMonitoringDataSource {
     startTimeSec?: number
     stepSec?: number
   }) {
-    return client.getInstance().metricsQueryGet(params, {
-      handleError: 'custom'
-    } as ReqConfig)
+    return client
+      .getInstance()
+      .metricsQueryGet(params, {
+        handleError: 'custom'
+      } as ReqConfig)
+      .then((res) => res.data)
   }
 }
 

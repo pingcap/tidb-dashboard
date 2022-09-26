@@ -26,9 +26,12 @@ class DataSource implements IOverviewDataSource {
     startTimeSec?: number
     stepSec?: number
   }) {
-    return client.getInstance().metricsQueryGet(params, {
-      handleError: 'custom'
-    } as ReqConfig)
+    return client
+      .getInstance()
+      .metricsQueryGet(params, {
+        handleError: 'custom'
+      } as ReqConfig)
+      .then((res) => res.data)
   }
 
   getGrafanaTopology(options?: ReqConfig) {

@@ -1,7 +1,5 @@
 import { createContext } from 'react'
 
-import { AxiosPromise } from 'axios'
-
 import { MetricsQueryResponse } from '@lib/client'
 
 import { QueryConfig, TransformNullValue } from 'metrics-chart'
@@ -31,7 +29,7 @@ export interface IMonitoringDataSource {
     query?: string
     startTimeSec?: number
     stepSec?: number
-  }): AxiosPromise<MetricsQueryResponse>
+  }): Promise<MetricsQueryResponse>
 }
 
 export interface IMonitoringContext {

@@ -447,7 +447,7 @@ importers:
       i18next: ^21.6.11
       i18next-browser-languagedetector: ^6.1.3
       lodash: ^4.17.21
-      metrics-chart: ^0.18.0
+      metrics-chart: ^0.25.0
       mixpanel-browser: ^2.45.0
       moize: ^5.4.7
       moment-timezone: ^0.5.34
@@ -503,7 +503,7 @@ importers:
       i18next: 21.8.14
       i18next-browser-languagedetector: 6.1.4
       lodash: 4.17.21
-      metrics-chart: 0.18.0_nh5kzh2ihs4z2b7x7xgyuhrcya
+      metrics-chart: 0.25.0_zjsc3xv7yejrwf2vtvr7tkuf5a
       mixpanel-browser: 2.45.0
       moize: 5.4.7
       moment-timezone: 0.5.34
@@ -8613,19 +8613,17 @@ packages:
     engines: {node: '>= 8'}
     dev: true
 
-  /metrics-chart/0.18.0_nh5kzh2ihs4z2b7x7xgyuhrcya:
-    resolution: {integrity: sha512-yjFbIpLT5CY0jFJsIp0ir0qFnXZ9424W1qAzKuWKev8eCAtHxhqvBJu1y5jHQl8ws48vhCbrfxj62cwL6l+bjA==}
+  /metrics-chart/0.25.0_zjsc3xv7yejrwf2vtvr7tkuf5a:
+    resolution: {integrity: sha512-URUOYrOr7jFubFulPKmVsiAVkMt0eVONFmFa/EDKwpY72m731LqRDEVNQruvsXY6RwyRWVychUfKf2MSK1KAdQ==}
     peerDependencies:
       '@elastic/charts': ^46.10.1
       ahooks: ^3.7.0
-      axios: ^0.27.2
       react: ^17.0.2
       react-dom: ^17.0.2
     dependencies:
       '@baurine/grafana-value-formats': 1.0.4_dayjs@1.11.5
       '@elastic/charts': 46.13.0_5vvgggp2kvqmg5c46qktsvfq34
       ahooks: 3.5.2_react@17.0.2
-      axios: 0.27.2
       dayjs: 1.11.5
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2

@@ -54,7 +54,7 @@ export interface IOverviewDataSource {
     query?: string
     startTimeSec?: number
     stepSec?: number
-  }): AxiosPromise<MetricsQueryResponse>
+  }): Promise<MetricsQueryResponse>
 }
 
 export interface IOverviewContext {

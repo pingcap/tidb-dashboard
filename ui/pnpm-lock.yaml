@@ -447,7 +447,7 @@ importers:
       i18next: ^21.6.11
       i18next-browser-languagedetector: ^6.1.3
       lodash: ^4.17.21
-      metrics-chart: ^0.25.0
+      metrics-chart: ^0.26.0
       mixpanel-browser: ^2.45.0
       moize: ^5.4.7
       moment-timezone: ^0.5.34
@@ -503,7 +503,7 @@ importers:
       i18next: 21.8.14
       i18next-browser-languagedetector: 6.1.4
       lodash: 4.17.21
-      metrics-chart: 0.25.0_zjsc3xv7yejrwf2vtvr7tkuf5a
+      metrics-chart: 0.26.0_zjsc3xv7yejrwf2vtvr7tkuf5a
       mixpanel-browser: 2.45.0
       moize: 5.4.7
       moment-timezone: 0.5.34
@@ -8613,8 +8613,8 @@ packages:
     engines: {node: '>= 8'}
     dev: true
 
-  /metrics-chart/0.25.0_zjsc3xv7yejrwf2vtvr7tkuf5a:
-    resolution: {integrity: sha512-URUOYrOr7jFubFulPKmVsiAVkMt0eVONFmFa/EDKwpY72m731LqRDEVNQruvsXY6RwyRWVychUfKf2MSK1KAdQ==}
+  /metrics-chart/0.26.0_zjsc3xv7yejrwf2vtvr7tkuf5a:
+    resolution: {integrity: sha512-riApTDNRJG6gucbBjHCUSoYS1cBA/kdArUKIe8GnO2W5o0pUHNq62hrWxnpod6J1/cx9R0uhKPaApQ+UHOWt2A==}
     peerDependencies:
       '@elastic/charts': ^46.10.1
       ahooks: ^3.7.0

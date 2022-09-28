@@ -20,7 +20,7 @@ import {
 
 import { ClientOptions, InfoInfoResponse, setupClient } from '~/client'
 import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
-import { AppOptions } from '~/uilts/appOptions'
+import { AppOptions, defAppOptions } from '~/uilts/appOptions'
 import AppRegistry from '~/uilts/registry'
 
 import AppOverview from '~/apps/Overview/meta'
@@ -56,26 +56,47 @@ function removeSpinner() {
   }
 }
 
-const defAppOptions: AppOptions = {
-  lang: 'en',
-  skipNgmCheck: false,
-  hideNav: false
-}
-
 async function webPageStart(options: AppOptions) {
   let info: InfoInfoResponse
 
-  try {
-    info = await mustLoadAppInfo()
-  } catch (e) {
-    Modal.error({
-      title: `Failed to connect to server`,
-      content: '' + e,
-      okText: 'Reload',
-      onOk: () => window.location.reload()
-    })
-    removeSpinner()
-    return
+  if (!options.skipLoadAppInfo) {
+    try {
+      info = await mustLoadAppInfo()
+
+      if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
+        notification.error({
+          key: 'ngm_not_started',
+          message: i18next.t('health_check.failed_notification_title'),
+          description: (
+            <span>
+              {i18next.t('health_check.ngm_not_started')}
+              {!isDistro() && (
+                <>
+                  {' '}
+                  <a
+                    href={i18next.t('health_check.help_url')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {i18next.t('health_check.help_text')}
+                  </a>
+                </>
+              )}
+            </span>
+          ),
+          duration: null
+        })
+      }
+    } catch (e) {
+      Modal.error({
+        title: `Failed to connect to server`,
+        content: '' + e,
+        okText: 'Reload',
+        onOk: () => window.location.reload()
+      })
+      removeSpinner()
+      return
+    }
   }
 
   telemetry.init(
@@ -88,6 +109,7 @@ async function webPageStart(options: AppOptions) {
   telemetry.enable(
     `tidb-dashboard-for-clinic-cloud-${process.env.REACT_APP_VERSION}`
   )
+
   let preRoute = ''
   window.addEventListener('single-spa:routing-event', () => {
     const curRoute = routing.getPathInLocationHash()
@@ -96,37 +118,6 @@ async function webPageStart(options: AppOptions) {
       preRoute = curRoute
     }
   })
-
-  // const options: AppOptions = {
-  //   lang: 'en',
-  //   skipNgmCheck: false,
-  //   hideNav: false
-  // }
-
-  if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
-    notification.error({
-      key: 'ngm_not_started',
-      message: i18next.t('health_check.failed_notification_title'),
-      description: (
-        <span>
-          {i18next.t('health_check.ngm_not_started')}
-          {!isDistro() && (
-            <>
-              {' '}
-              <a
-                href={i18next.t('health_check.help_url')}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {i18next.t('health_check.help_text')}
-              </a>
-            </>
-          )}
-        </span>
-      ),
-      duration: null
-    })
-  }
 
   const registry = new AppRegistry(options)
 
@@ -169,14 +160,16 @@ async function webPageStart(options: AppOptions) {
     .register(AppOptimizerTrace)
     .register(AppDeadlock)
 
-  try {
-    const ok = await reloadWhoAmI()
+  if (!options.skipReloadWhoAmI) {
+    try {
+      const ok = await reloadWhoAmI()
 
-    if (routing.isLocationMatch('/') && ok) {
-      singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
+      if (routing.isLocationMatch('/') && ok) {
+        singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
+      }
+    } catch (e) {
+      // If there are auth errors, redirection will happen any way. So we continue.
     }
-  } catch (e) {
-    // If there are auth errors, redirection will happen any way. So we continue.
   }
 
   window.addEventListener('single-spa:first-mount', () => {

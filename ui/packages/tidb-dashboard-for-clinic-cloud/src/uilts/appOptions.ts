@@ -1,13 +1,19 @@
 export type AppOptions = {
-  hideNav: boolean
-  skipNgmCheck: boolean
   lang: string
+  hideNav: boolean
+
+  skipNgmCheck: boolean
+  skipLoadAppInfo: boolean
+  skipReloadWhoAmI: boolean
 }
 
-const defAppOptions: AppOptions = {
+export const defAppOptions: AppOptions = {
+  lang: 'en',
   hideNav: false,
+
   skipNgmCheck: false,
-  lang: ''
+  skipLoadAppInfo: false,
+  skipReloadWhoAmI: false
 }
 
 const optionsKey = 'dashboard_app_options'

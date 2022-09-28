@@ -179,28 +179,24 @@ async function webPageStart() {
   singleSpa.start()
 }
 
-function main() {
-  document.title = `${distro().tidb} Dashboard`
-
-  function handleSameWindowPortalEvent(event) {
-    const { type, token, apiBasePath, orgId, clusterId } = event.detail
-    // the event type must be "DASHBOARD_PORTAL_EVENT"
-    if (type !== 'DASHBOARD_PORTAL_EVENT') {
-      return
-    }
-
-    i18next.changeLanguage('en')
-    i18n.addTranslations(translations)
-    setupClient(apiBasePath, token, orgId, clusterId)
-
-    window.removeEventListener(
-      'dashboard:portal_event',
-      handleSameWindowPortalEvent
-    )
-
-    webPageStart()
-  }
-  window.addEventListener('dashboard:portal_event', handleSameWindowPortalEvent)
+type StartOptions = {
+  apiPathBase: string
+  apiToken: string
+  orgId: string
+  clusterId: string
 }
 
-main()
+export function start({
+  apiPathBase,
+  apiToken,
+  orgId,
+  clusterId
+}: StartOptions) {
+  document.title = `${distro().tidb} Dashboard`
+
+  i18next.changeLanguage('en')
+  i18n.addTranslations(translations)
+  setupClient(apiPathBase, apiToken, orgId, clusterId)
+
+  webPageStart()
+}

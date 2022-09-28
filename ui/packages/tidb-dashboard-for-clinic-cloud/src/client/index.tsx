@@ -110,17 +110,17 @@ function initAxios(token: string, orgId: string, clusterId: string) {
 }
 
 export function setupClient(
-  apiBasePath: string,
-  token: string,
+  apiPathBase: string,
+  apiToken: string,
   orgId: string,
   clusterId: string
 ) {
   i18n.addTranslations(translations)
 
-  const axiosInstance = initAxios(token, orgId, clusterId)
+  const axiosInstance = initAxios(apiToken, orgId, clusterId)
   const dashboardApi = new DashboardApi(
     new Configuration({
-      basePath: apiBasePath,
+      basePath: apiPathBase,
       baseOptions: {
         handleError: 'default'
       }
@@ -129,5 +129,5 @@ export function setupClient(
     axiosInstance
   )
 
-  client.init(apiBasePath, dashboardApi)
+  client.init(apiPathBase, dashboardApi)
 }

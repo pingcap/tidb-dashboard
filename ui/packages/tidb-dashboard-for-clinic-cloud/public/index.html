@@ -95,34 +95,22 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
     <div id="root"></div>
-    <script
-      type="module"
-      src="./dashboardApp.js?t=%TIME_PLACE_HOLDER%"
-    ></script>
+    <script type="module">
+      import startDashboard from './dashboardApp.js?t=%TIME_PLACE_HOLDER%'
 
-    <script>
-      window.onload = function () {
-        const searchParams = new URLSearchParams(window.location.search)
-        const orgId = searchParams.get('orgId') || ''
-        const clusterId = searchParams.get('clusterId') || ''
-        if (orgId === '' || clusterId === '') {
-          window.alert('Invalid orgId or clusterId parameter!')
-          return
-        }
+      const apiToken = localStorage.getItem('clinic.auth.csrf_token')
 
-        const apiBasePath = `/clinic/api/v1/dashboard/proxy/cluster/${clusterId}/pd/dashboard/api`
-        window.dispatchEvent(
-          new CustomEvent('dashboard:portal_event', {
-            detail: {
-              type: 'DASHBOARD_PORTAL_EVENT',
-              token: localStorage.getItem('clinic.auth.csrf_token'),
-              apiBasePath,
-              orgId,
-              clusterId
-            }
-          })
-        )
+      const searchParams = new URLSearchParams(window.location.search)
+      const orgId = searchParams.get('orgId') || ''
+      const clusterId = searchParams.get('clusterId') || ''
+      if (apiToken === '' || orgId === '' || clusterId === '') {
+        window.alert('Invalid token, orgId or clusterId!')
+        window.location.assign('/')
+        // return
       }
+
+      const apiPathBase = `/clinic/api/v1/dashboard/proxy/orgs/${orgId}/clusters/${clusterId}/pd/dashboard/api`
+      startDashboard({ apiPathBase, apiToken, orgId, clusterId })
     </script>
   </body>
 </html>

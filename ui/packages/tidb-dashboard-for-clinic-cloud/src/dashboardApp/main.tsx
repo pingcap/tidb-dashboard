@@ -56,7 +56,13 @@ function removeSpinner() {
   }
 }
 
-async function webPageStart() {
+const defAppOptions: AppOptions = {
+  lang: 'en',
+  skipNgmCheck: false,
+  hideNav: false
+}
+
+async function webPageStart(options: AppOptions) {
   let info: InfoInfoResponse
 
   try {
@@ -91,11 +97,12 @@ async function webPageStart() {
     }
   })
 
-  const options: AppOptions = {
-    lang: 'en',
-    skipNgmCheck: false,
-    hideNav: false
-  }
+  // const options: AppOptions = {
+  //   lang: 'en',
+  //   skipNgmCheck: false,
+  //   hideNav: false
+  // }
+
   if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
     notification.error({
       key: 'ngm_not_started',
@@ -179,7 +186,7 @@ async function webPageStart() {
   singleSpa.start()
 }
 
-type StartOptions = ClientOptions
+type StartOptions = ClientOptions & AppOptions
 
 export function start(options: StartOptions) {
   document.title = `${distro().tidb} Dashboard`
@@ -188,5 +195,5 @@ export function start(options: StartOptions) {
   i18n.addTranslations(translations)
   setupClient(options)
 
-  webPageStart()
+  webPageStart({ ...defAppOptions, ...options })
 }

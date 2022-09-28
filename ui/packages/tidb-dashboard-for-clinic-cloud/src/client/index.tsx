@@ -96,31 +96,55 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   })
 }
 
-function initAxios(token: string, orgId: string, clusterId: string) {
-  const instance = axios.create({
-    headers: {
-      'x-csrf-token': token,
-      'x-org-id': orgId,
-      'x-cluster-id': clusterId
-    }
-  })
+export type ClientOptions = {
+  apiPathBase: string
+  apiToken: string
+
+  provider?: string
+  region?: string
+  orgId?: string
+  projectId?: string
+  clusterId?: string
+}
+
+function initAxios({
+  apiToken,
+  provider,
+  region,
+  orgId,
+  projectId,
+  clusterId
+}: Omit<ClientOptions, 'apiPathBase'>) {
+  let headers = {}
+  headers['x-csrf-token'] = apiToken
+  if (provider) {
+    headers['x-provider'] = provider
+  }
+  if (region) {
+    headers['x-region'] = region
+  }
+  if (orgId) {
+    headers['x-org-id'] = orgId
+  }
+  if (projectId) {
+    headers['x-project-id'] = projectId
+  }
+  if (clusterId) {
+    headers['x-cluster-id'] = clusterId
+  }
+  const instance = axios.create({ headers })
   applyErrorHandlerInterceptor(instance)
 
   return instance
 }
 
-export function setupClient(
-  apiPathBase: string,
-  apiToken: string,
-  orgId: string,
-  clusterId: string
-) {
+export function setupClient(options: ClientOptions) {
   i18n.addTranslations(translations)
 
-  const axiosInstance = initAxios(apiToken, orgId, clusterId)
+  const axiosInstance = initAxios(options)
   const dashboardApi = new DashboardApi(
     new Configuration({
-      basePath: apiPathBase,
+      basePath: options.apiPathBase,
       baseOptions: {
         handleError: 'default'
       }
@@ -129,5 +153,5 @@ export function setupClient(
     axiosInstance
   )
 
-  client.init(apiPathBase, dashboardApi)
+  client.init(options.apiPathBase, dashboardApi)
 }

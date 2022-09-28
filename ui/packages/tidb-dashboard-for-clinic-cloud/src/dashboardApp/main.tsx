@@ -18,7 +18,7 @@ import {
   isDistro
 } from '@pingcap/tidb-dashboard-lib'
 
-import { InfoInfoResponse, setupClient } from '~/client'
+import { ClientOptions, InfoInfoResponse, setupClient } from '~/client'
 import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
 import { AppOptions } from '~/uilts/appOptions'
 import AppRegistry from '~/uilts/registry'
@@ -179,24 +179,14 @@ async function webPageStart() {
   singleSpa.start()
 }
 
-type StartOptions = {
-  apiPathBase: string
-  apiToken: string
-  orgId: string
-  clusterId: string
-}
+type StartOptions = ClientOptions
 
-export function start({
-  apiPathBase,
-  apiToken,
-  orgId,
-  clusterId
-}: StartOptions) {
+export function start(options: StartOptions) {
   document.title = `${distro().tidb} Dashboard`
 
   i18next.changeLanguage('en')
   i18n.addTranslations(translations)
-  setupClient(apiPathBase, apiToken, orgId, clusterId)
+  setupClient(options)
 
   webPageStart()
 }

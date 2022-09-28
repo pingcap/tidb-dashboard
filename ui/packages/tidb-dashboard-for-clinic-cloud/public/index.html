@@ -106,7 +106,6 @@
       if (apiToken === '' || orgId === '' || clusterId === '') {
         window.alert('Invalid token, orgId or clusterId!')
         window.location.assign('/')
-        // return
       }
 
       const apiPathBase = `/clinic/api/v1/dashboard/proxy/orgs/${orgId}/clusters/${clusterId}/pd/dashboard/api`

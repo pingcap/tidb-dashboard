@@ -114,6 +114,8 @@
 
       const apiToken = localStorage.getItem('clinic.auth.csrf_token')
 
+      // example entry link:
+      // http://localhost:8181/clinic/dashboard/cloud/?orgId=1&clusterId=63405#/overview
       const searchParams = new URLSearchParams(window.location.search)
       const orgId = searchParams.get('orgId') || ''
       const clusterId = searchParams.get('clusterId') || ''

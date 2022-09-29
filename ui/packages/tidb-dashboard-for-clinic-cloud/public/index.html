@@ -25,6 +25,12 @@
         left: 50%;
       }
 
+      #dashboard_page_spinner p {
+        margin-left: -50%;
+        margin-top: 8px;
+        color: #888;
+      }
+
       .dot-flashing {
         position: relative;
         width: 10px;
@@ -93,8 +99,16 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
+
+    <div id="dashboard_page_spinner">
+      <div class="dot-flashing"></div>
+      <p>
+        It may take a bit long time to load for the first time, due to download
+        some js files.
+      </p>
+    </div>
     <div id="root"></div>
+
     <script type="module">
       import startDashboard from './dashboardApp.js?t=%TIME_PLACE_HOLDER%'
 

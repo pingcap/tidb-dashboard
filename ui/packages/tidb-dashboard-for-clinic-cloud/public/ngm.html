@@ -116,6 +116,7 @@
 
       // example entry link:
       // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992#/slow_query
+      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992#/topsql
       const searchParams = new URLSearchParams(window.location.search)
       const provider = searchParams.get('provider') || ''
       const region = searchParams.get('region') || ''
@@ -156,6 +157,10 @@
           slowQuery: {
             enableExport: false,
             showDBFilter: false
+          },
+          topSQL: {
+            checkNgm: false,
+            showSetting: false
           }
         }
       })

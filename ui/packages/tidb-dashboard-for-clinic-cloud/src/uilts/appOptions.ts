@@ -1,4 +1,4 @@
-import { ISlowQueryConfig } from '@pingcap/tidb-dashboard-lib'
+import { ISlowQueryConfig, ITopSQLConfig } from '@pingcap/tidb-dashboard-lib'
 import { ClientOptions } from '~/client'
 
 export type AppOptions = {
@@ -41,6 +41,7 @@ export function loadAppOptions(): AppOptions {
 
 export type AppsConfig = {
   slowQuery?: Partial<ISlowQueryConfig>
+  topSQL?: Partial<ITopSQLConfig>
 }
 
 export type StartOptions = {

@@ -18,9 +18,14 @@ import {
   isDistro
 } from '@pingcap/tidb-dashboard-lib'
 
-import { ClientOptions, InfoInfoResponse, setupClient } from '~/client'
+import { InfoInfoResponse, setupClient } from '~/client'
 import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
-import { AppOptions, defAppOptions } from '~/uilts/appOptions'
+import {
+  AppOptions,
+  defAppOptions,
+  setStartOptions,
+  StartOptions
+} from '~/uilts/appOptions'
 import AppRegistry from '~/uilts/registry'
 
 import AppOverview from '~/apps/Overview/meta'
@@ -56,14 +61,17 @@ function removeSpinner() {
   }
 }
 
-async function webPageStart(options: AppOptions) {
+async function webPageStart(appOptions: AppOptions) {
+  i18n.addTranslations(translations)
+  i18next.changeLanguage(appOptions.lang)
+
   let info: InfoInfoResponse
 
-  if (!options.skipLoadAppInfo) {
+  if (!appOptions.skipLoadAppInfo) {
     try {
       info = await mustLoadAppInfo()
 
-      if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
+      if (!appOptions.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
         notification.error({
           key: 'ngm_not_started',
           message: i18next.t('health_check.failed_notification_title'),
@@ -119,7 +127,7 @@ async function webPageStart(options: AppOptions) {
     }
   })
 
-  const registry = new AppRegistry(options)
+  const registry = new AppRegistry(appOptions)
 
   NProgress.configure({
     showSpinner: false
@@ -160,7 +168,7 @@ async function webPageStart(options: AppOptions) {
     .register(AppOptimizerTrace)
     .register(AppDeadlock)
 
-  if (!options.skipReloadWhoAmI) {
+  if (!appOptions.skipReloadWhoAmI) {
     try {
       const ok = await reloadWhoAmI()
 
@@ -179,14 +187,11 @@ async function webPageStart(options: AppOptions) {
   singleSpa.start()
 }
 
-type StartOptions = ClientOptions & AppOptions
-
-export function start(options: StartOptions) {
+export function start(startOptions: StartOptions) {
   document.title = `${distro().tidb} Dashboard`
 
-  i18next.changeLanguage('en')
-  i18n.addTranslations(translations)
-  setupClient(options)
+  setStartOptions(startOptions)
 
-  webPageStart({ ...defAppOptions, ...options })
+  setupClient(startOptions.clientOptions)
+  webPageStart({ ...defAppOptions, ...startOptions.appOptions })
 }

@@ -1,6 +1,7 @@
 import {
   ISlowQueryDataSource,
   ISlowQueryContext,
+  ISlowQueryConfig,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
@@ -68,11 +69,14 @@ class DataSource implements ISlowQueryDataSource {
 
 const ds = new DataSource()
 
-export const ctx: ISlowQueryContext = {
+export const ctx: (cfg: Partial<ISlowQueryConfig>) => ISlowQueryContext = (
+  cfg
+) => ({
   ds,
   cfg: {
     apiPathBase: client.getBasePath(),
     enableExport: true,
-    showDBFilter: true
+    showDBFilter: true,
+    ...cfg
   }
-}
+})

@@ -1,3 +1,6 @@
+import { ISlowQueryConfig } from '@pingcap/tidb-dashboard-lib'
+import { ClientOptions } from '~/client'
+
 export type AppOptions = {
   lang: string
   hideNav: boolean
@@ -32,4 +35,26 @@ export function loadAppOptions(): AppOptions {
     return opt
   }
   return defAppOptions
+}
+
+////////////////////////////////////
+
+export type AppsConfig = {
+  slowQuery?: Partial<ISlowQueryConfig>
+}
+
+export type StartOptions = {
+  clientOptions: ClientOptions
+  appOptions?: AppOptions
+  appsConfig?: AppsConfig
+}
+
+let _startOptions: StartOptions
+
+export function setStartOptions(opt: StartOptions) {
+  _startOptions = opt
+}
+
+export function getStartOptions(): StartOptions {
+  return _startOptions
 }

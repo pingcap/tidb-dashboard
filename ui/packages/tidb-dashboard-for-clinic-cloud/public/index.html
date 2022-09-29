@@ -109,7 +109,14 @@
       }
 
       const apiPathBase = `/clinic/api/v1/dashboard/proxy/orgs/${orgId}/clusters/${clusterId}/pd/dashboard/api`
-      startDashboard({ apiPathBase, apiToken, orgId, clusterId })
+      startDashboard({
+        clientOptions: {
+          apiPathBase,
+          apiToken,
+          orgId,
+          clusterId
+        }
+      })
     </script>
   </body>
 </html>

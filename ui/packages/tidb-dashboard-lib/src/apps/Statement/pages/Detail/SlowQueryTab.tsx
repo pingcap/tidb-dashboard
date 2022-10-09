@@ -24,6 +24,8 @@ export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
       plans: query.plans
     },
     persistQueryInSession: false,
+    fetchSchemas: false,
+
     ds: ctx!.ds
   })
 

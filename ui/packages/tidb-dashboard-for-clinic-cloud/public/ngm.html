@@ -115,22 +115,53 @@
       const apiToken = localStorage.getItem('clinic.auth.csrf_token')
 
       // example entry link:
-      // http://localhost:8181/clinic/dashboard/cloud/?orgId=1&clusterId=63405#/overview
+      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992#/slow_query
+      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992#/topsql
       const searchParams = new URLSearchParams(window.location.search)
+      const provider = searchParams.get('provider') || ''
+      const region = searchParams.get('region') || ''
       const orgId = searchParams.get('orgId') || ''
+      const projectId = searchParams.get('projectId') || ''
       const clusterId = searchParams.get('clusterId') || ''
-      if (apiToken === '' || orgId === '' || clusterId === '') {
-        window.alert('Invalid token, orgId or clusterId!')
+      if (
+        apiToken === '' ||
+        provider === '' ||
+        region === '' ||
+        orgId === '' ||
+        projectId === '' ||
+        clusterId === ''
+      ) {
+        window.alert(
+          'Invalid token, provider, region, orgId, projectId or clusterId!'
+        )
         window.location.assign('/')
       }
 
-      const apiPathBase = `/clinic/api/v1/dashboard/proxy/orgs/${orgId}/clusters/${clusterId}/pd/dashboard/api`
+      const apiPathBase = `/ngm/api/v1`
       startDashboard({
         clientOptions: {
           apiPathBase,
           apiToken,
+          provider,
+          region,
           orgId,
+          projectId,
           clusterId
+        },
+        appOptions: {
+          hideNav: true,
+          skipLoadAppInfo: true,
+          skipReloadWhoAmI: true
+        },
+        appsConfig: {
+          slowQuery: {
+            enableExport: false,
+            showDBFilter: false
+          },
+          topSQL: {
+            checkNgm: false,
+            showSetting: false
+          }
         }
       })
     </script>

@@ -1,13 +1,22 @@
+import { ISlowQueryConfig, ITopSQLConfig } from '@pingcap/tidb-dashboard-lib'
+import { ClientOptions } from '~/client'
+
 export type AppOptions = {
-  hideNav: boolean
-  skipNgmCheck: boolean
   lang: string
+  hideNav: boolean
+
+  skipNgmCheck: boolean
+  skipLoadAppInfo: boolean
+  skipReloadWhoAmI: boolean
 }
 
-const defAppOptions: AppOptions = {
+export const defAppOptions: AppOptions = {
+  lang: 'en',
   hideNav: false,
+
   skipNgmCheck: false,
-  lang: ''
+  skipLoadAppInfo: false,
+  skipReloadWhoAmI: false
 }
 
 const optionsKey = 'dashboard_app_options'
@@ -26,4 +35,27 @@ export function loadAppOptions(): AppOptions {
     return opt
   }
   return defAppOptions
+}
+
+////////////////////////////////////
+
+export type AppsConfig = {
+  slowQuery?: Partial<ISlowQueryConfig>
+  topSQL?: Partial<ITopSQLConfig>
+}
+
+export type StartOptions = {
+  clientOptions: ClientOptions
+  appOptions?: AppOptions
+  appsConfig?: AppsConfig
+}
+
+let _startOptions: StartOptions
+
+export function setStartOptions(opt: StartOptions) {
+  _startOptions = opt
+}
+
+export function getStartOptions(): StartOptions {
+  return _startOptions
 }

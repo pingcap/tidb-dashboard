@@ -35,8 +35,14 @@ export interface ITopSQLDataSource {
   ): AxiosPromise<TopsqlSummaryResponse>
 }
 
+export interface ITopSQLConfig {
+  checkNgm: boolean
+  showSetting: boolean
+}
+
 export interface ITopSQLContext {
   ds: ITopSQLDataSource
+  cfg: ITopSQLConfig
 }
 
 export const TopSQLContext = createContext<ITopSQLContext | null>(null)

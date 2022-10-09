@@ -20,7 +20,12 @@ import {
 
 import { InfoInfoResponse, setupClient } from '~/client'
 import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
-import { AppOptions } from '~/uilts/appOptions'
+import {
+  AppOptions,
+  defAppOptions,
+  setStartOptions,
+  StartOptions
+} from '~/uilts/appOptions'
 import AppRegistry from '~/uilts/registry'
 
 import AppOverview from '~/apps/Overview/meta'
@@ -56,20 +61,50 @@ function removeSpinner() {
   }
 }
 
-async function webPageStart() {
+async function webPageStart(appOptions: AppOptions) {
+  i18n.addTranslations(translations)
+  i18next.changeLanguage(appOptions.lang)
+
   let info: InfoInfoResponse
 
-  try {
-    info = await mustLoadAppInfo()
-  } catch (e) {
-    Modal.error({
-      title: `Failed to connect to server`,
-      content: '' + e,
-      okText: 'Reload',
-      onOk: () => window.location.reload()
-    })
-    removeSpinner()
-    return
+  if (!appOptions.skipLoadAppInfo) {
+    try {
+      info = await mustLoadAppInfo()
+
+      if (!appOptions.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
+        notification.error({
+          key: 'ngm_not_started',
+          message: i18next.t('health_check.failed_notification_title'),
+          description: (
+            <span>
+              {i18next.t('health_check.ngm_not_started')}
+              {!isDistro() && (
+                <>
+                  {' '}
+                  <a
+                    href={i18next.t('health_check.help_url')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {i18next.t('health_check.help_text')}
+                  </a>
+                </>
+              )}
+            </span>
+          ),
+          duration: null
+        })
+      }
+    } catch (e) {
+      Modal.error({
+        title: `Failed to connect to server`,
+        content: '' + e,
+        okText: 'Reload',
+        onOk: () => window.location.reload()
+      })
+      removeSpinner()
+      return
+    }
   }
 
   telemetry.init(
@@ -82,6 +117,7 @@ async function webPageStart() {
   telemetry.enable(
     `tidb-dashboard-for-clinic-cloud-${process.env.REACT_APP_VERSION}`
   )
+
   let preRoute = ''
   window.addEventListener('single-spa:routing-event', () => {
     const curRoute = routing.getPathInLocationHash()
@@ -91,37 +127,7 @@ async function webPageStart() {
     }
   })
 
-  const options: AppOptions = {
-    lang: 'en',
-    skipNgmCheck: false,
-    hideNav: false
-  }
-  if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
-    notification.error({
-      key: 'ngm_not_started',
-      message: i18next.t('health_check.failed_notification_title'),
-      description: (
-        <span>
-          {i18next.t('health_check.ngm_not_started')}
-          {!isDistro() && (
-            <>
-              {' '}
-              <a
-                href={i18next.t('health_check.help_url')}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {i18next.t('health_check.help_text')}
-              </a>
-            </>
-          )}
-        </span>
-      ),
-      duration: null
-    })
-  }
-
-  const registry = new AppRegistry(options)
+  const registry = new AppRegistry(appOptions)
 
   NProgress.configure({
     showSpinner: false
@@ -162,14 +168,16 @@ async function webPageStart() {
     .register(AppOptimizerTrace)
     .register(AppDeadlock)
 
-  try {
-    const ok = await reloadWhoAmI()
+  if (!appOptions.skipReloadWhoAmI) {
+    try {
+      const ok = await reloadWhoAmI()
 
-    if (routing.isLocationMatch('/') && ok) {
-      singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
+      if (routing.isLocationMatch('/') && ok) {
+        singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
+      }
+    } catch (e) {
+      // If there are auth errors, redirection will happen any way. So we continue.
     }
-  } catch (e) {
-    // If there are auth errors, redirection will happen any way. So we continue.
   }
 
   window.addEventListener('single-spa:first-mount', () => {
@@ -179,28 +187,11 @@ async function webPageStart() {
   singleSpa.start()
 }
 
-function main() {
+export function start(startOptions: StartOptions) {
   document.title = `${distro().tidb} Dashboard`
 
-  function handleSameWindowPortalEvent(event) {
-    const { type, token, apiBasePath, orgId, clusterId } = event.detail
-    // the event type must be "DASHBOARD_PORTAL_EVENT"
-    if (type !== 'DASHBOARD_PORTAL_EVENT') {
-      return
-    }
+  setStartOptions(startOptions)
 
-    i18next.changeLanguage('en')
-    i18n.addTranslations(translations)
-    setupClient(apiBasePath, token, orgId, clusterId)
-
-    window.removeEventListener(
-      'dashboard:portal_event',
-      handleSameWindowPortalEvent
-    )
-
-    webPageStart()
-  }
-  window.addEventListener('dashboard:portal_event', handleSameWindowPortalEvent)
+  setupClient(startOptions.clientOptions)
+  webPageStart({ ...defAppOptions, ...startOptions.appOptions })
 }
-
-main()

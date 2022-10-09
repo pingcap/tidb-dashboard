@@ -1,6 +1,8 @@
 import '../styles/style.less'
 import '@pingcap/tidb-dashboard-lib/dist/index.css'
 
-import './main'
+import { start } from './main'
 
 import '../styles/override.less'
+
+export default start

@@ -93,6 +93,7 @@ function useQueryOptions(
 export interface ISlowQueryTableControllerOpts {
   cacheMgr?: CacheMgr
   showFullSQL?: boolean
+  fetchSchemas?: boolean
   initialQueryOptions?: ISlowQueryOptions
   persistQueryInSession?: boolean
 
@@ -122,6 +123,7 @@ export interface ISlowQueryTableController {
 export default function useSlowQueryTableController({
   cacheMgr,
   showFullSQL = false,
+  fetchSchemas = true,
   initialQueryOptions,
   persistQueryInSession = true,
   ds
@@ -152,6 +154,9 @@ export default function useSlowQueryTableController({
   // Reload these options when sending a new request.
   useChange(() => {
     async function querySchemas() {
+      if (!fetchSchemas) {
+        return
+      }
       try {
         const res = await ds.infoListDatabases({
           handleError: 'custom'

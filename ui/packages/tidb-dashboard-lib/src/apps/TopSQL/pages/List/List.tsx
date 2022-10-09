@@ -46,6 +46,7 @@ const TOP_N = 5
 const CHART_BAR_WIDTH = 8
 
 export function TopSQLList() {
+  const ctx = useContext(TopSQLContext)
   const { t } = useTranslation()
   const { topSQLConfig, isConfigLoading, updateConfig, haveHistoryData } =
     useTopSQLConfig()
@@ -195,20 +196,22 @@ export function TopSQLList() {
             </Space>
 
             <Space>
-              <Tooltip
-                mouseEnterDelay={0}
-                mouseLeaveDelay={0}
-                title={t('topsql.settings.title')}
-                placement="bottom"
-              >
-                <SettingOutlined
-                  data-e2e="topsql_settings"
-                  onClick={() => {
-                    setShowSettings(true)
-                    telemetry.clickSettings('settingIcon')
-                  }}
-                />
-              </Tooltip>
+              {ctx?.cfg.showSetting && (
+                <Tooltip
+                  mouseEnterDelay={0}
+                  mouseLeaveDelay={0}
+                  title={t('topsql.settings.title')}
+                  placement="bottom"
+                >
+                  <SettingOutlined
+                    data-e2e="topsql_settings"
+                    onClick={() => {
+                      setShowSettings(true)
+                      telemetry.clickSettings('settingIcon')
+                    }}
+                  />
+                </Tooltip>
+              )}
               {!isDistro() && (
                 <Tooltip
                   mouseEnterDelay={0}

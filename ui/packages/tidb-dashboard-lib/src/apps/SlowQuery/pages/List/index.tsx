@@ -67,10 +67,12 @@ function List() {
   const controller = useSlowQueryTableController({
     cacheMgr,
     showFullSQL,
+    fetchSchemas: ctx?.cfg.showDBFilter,
     initialQueryOptions: {
       ...DEF_SLOW_QUERY_OPTIONS,
       visibleColumnKeys
     },
+
     ds: ctx!.ds
   })
 

@@ -42,13 +42,15 @@ export interface ISlowQueryEvent {
   selectSlowQueryItem(item: SlowqueryModel): void
 }
 
+export interface ISlowQueryConfig extends IContextConfig {
+  enableExport: boolean
+  showDBFilter: boolean
+}
+
 export interface ISlowQueryContext {
   ds: ISlowQueryDataSource
   event?: ISlowQueryEvent
-  cfg: IContextConfig & {
-    enableExport: boolean
-    showDBFilter: boolean
-  }
+  cfg: ISlowQueryConfig
 }
 
 export const SlowQueryContext = createContext<ISlowQueryContext | null>(null)

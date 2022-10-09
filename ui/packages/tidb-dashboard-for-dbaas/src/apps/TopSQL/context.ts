@@ -45,5 +45,9 @@ class DataSource implements ITopSQLDataSource {
 const ds = new DataSource()
 
 export const ctx: () => ITopSQLContext = () => ({
-  ds
+  ds,
+  cfg: {
+    checkNgm: false,
+    showSetting: false
+  }
 })

@@ -120,8 +120,15 @@
       if (timezone === NaN) {
         timezone = null
       }
+      const promBaseUrl = localStorage.getItem('dbaas.cluster_prom_base_url')
 
-      startDashboard({ apiPathBase, apiToken, mixpanelUser, timezone })
+      startDashboard({
+        apiPathBase,
+        apiToken,
+        mixpanelUser,
+        timezone,
+        promBaseUrl
+      })
     </script>
   </body>
 </html>

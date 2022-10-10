@@ -16,9 +16,14 @@ export * from '@pingcap/tidb-dashboard-client'
 //////////////////////////////
 
 const client = {
-  _init(apiBasePath: string, apiInstance: DashboardApi) {
+  _init(
+    apiBasePath: string,
+    apiInstance: DashboardApi,
+    axiosInstance: AxiosInstance
+  ) {
     this.apiBasePath = apiBasePath
     this.apiInstance = apiInstance
+    this.axiosInstance = axiosInstance
   },
 
   getInstance(): DashboardApi {
@@ -27,6 +32,10 @@ const client = {
 
   getBasePath(): string {
     return this.apiBasePath
+  },
+
+  getAxiosInstace(): AxiosInstance {
+    return this.axiosInstance
   }
 }
 
@@ -119,5 +128,5 @@ export function setupClient(apiBasePath: string, token: string) {
     axiosInstance
   )
 
-  client._init(apiBasePath, dashboardApi)
+  client._init(apiBasePath, dashboardApi, axiosInstance)
 }

@@ -244,7 +244,7 @@ function List() {
                 </div>
               </Dropdown>
             )}
-            {!isDistro() && (
+            {!isDistro() && (ctx!.cfg.showHelp ?? true) && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}

@@ -31,6 +31,9 @@ export interface IKeyVizDataSource {
 
 export interface IKeyVizContext {
   ds: IKeyVizDataSource
+  cfg?: {
+    showHelp?: boolean
+  }
 }
 
 export const KeyVizContext = createContext<IKeyVizContext | null>(null)

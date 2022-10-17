@@ -45,6 +45,7 @@ export interface ISlowQueryEvent {
 export interface ISlowQueryConfig extends IContextConfig {
   enableExport: boolean
   showDBFilter: boolean
+  showHelp?: boolean
 }
 
 export interface ISlowQueryContext {

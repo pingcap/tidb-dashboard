@@ -224,6 +224,7 @@ const KeyViz = () => {
         onResetZoom={onResetZoom}
         autoRefreshSeconds={autoRefreshSeconds}
         isOnBrush={getOnBrush()}
+        showHelp={ctx!.cfg?.showHelp ?? true}
         onChangeBrightLevel={onChangeBrightLevel}
         onChangeMetric={setMetricType}
         onChangeDateRange={onChangeDateRange}

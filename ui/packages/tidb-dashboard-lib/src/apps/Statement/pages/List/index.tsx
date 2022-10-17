@@ -310,7 +310,7 @@ export default function StatementsOverview() {
                 </div>
               </Dropdown>
             )}
-            {!isDistro() && (
+            {!isDistro() && (ctx!.cfg.showHelp ?? true) && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}

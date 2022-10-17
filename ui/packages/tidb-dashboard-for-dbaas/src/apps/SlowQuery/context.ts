@@ -73,6 +73,7 @@ export const ctx: () => ISlowQueryContext = () => ({
   cfg: {
     apiPathBase: client.getBasePath(),
     enableExport: false,
-    showDBFilter: true
+    showDBFilter: true,
+    showHelp: false
   }
 })

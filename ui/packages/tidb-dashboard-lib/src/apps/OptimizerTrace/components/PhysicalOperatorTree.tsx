@@ -58,7 +58,7 @@ export default function PhysicalOperatorTree({
         (n.children || [])
           .map(
             (c) =>
-              `${n.id} -- ${c} ${createLabels({
+              `${n.id} -> ${c} ${createLabels({
                 color: n.selected ? 'blue' : ''
               })};\n`
           )
@@ -68,7 +68,7 @@ export default function PhysicalOperatorTree({
     console.log('link:', link)
 
     graphviz(containerEl).renderDot(
-      `graph {
+      `digraph {
   node [shape=ellipse fontsize=8 fontname="Verdana"];
   ${define}\n${link}\n}`
     )

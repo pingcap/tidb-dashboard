@@ -53,8 +53,11 @@ interface OptimizerData {
   }
   physical: {
     final: LogicalOperatorNode
-    selected_candidates: PhysicalOperatorNode[]
-    discarded_candidates: PhysicalOperatorNode[]
+    selected_candidates?: PhysicalOperatorNode[]
+    discarded_candidates?: PhysicalOperatorNode[]
+    candidates?: {
+      [x: string]: PhysicalOperatorNode
+    }
   }
   final: LogicalOperatorNode[]
   isFastPlan: boolean
@@ -188,39 +191,58 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
 
 function PhysicalOptimization({ data }: { data: OptimizerData }) {
   const physicalData = data.physical
-  const selectedCandidates = physicalData.selected_candidates
-  const discardedCandidates = physicalData.discarded_candidates
-  const allCandidates = [...selectedCandidates, ...discardedCandidates]
-  const allCandidatesMap = allCandidates.reduce((acc, c) => {
-    acc[c.id] = c
-    return acc
-  }, {} as { [props: string]: PhysicalOperatorNode })
-  const operatorCandidates = allCandidates.reduce((acc, c) => {
-    if (!acc[c.mapping]) {
-      acc[c.mapping] = []
-    }
-    if (!!c.children?.length) {
-      if (!c.childrenNodes) {
-        c.childrenNodes = []
+
+  let allCandidatesMap: { [x: string]: PhysicalOperatorNode } = {}
+
+  if (physicalData.candidates) {
+    allCandidatesMap = physicalData.candidates
+  } else {
+    const selectedCandidates = physicalData.selected_candidates || []
+    const discardedCandidates = physicalData.discarded_candidates || []
+
+    const allCandidates = [...selectedCandidates, ...discardedCandidates]
+    allCandidatesMap = allCandidates.reduce((acc, c) => {
+      acc[c.id] = c
+      return acc
+    }, {} as { [props: string]: PhysicalOperatorNode })
+  }
+
+  const operatorCandidates = Object.values(allCandidatesMap).reduce(
+    (acc, c) => {
+      if (c.mapping === '') {
+        return acc
       }
-      c.childrenNodes.push(
-        ...c.children.map((cid) => {
-          const cnode = allCandidatesMap[cid]
-          cnode.parentNode = c
-          return cnode
-        })
-      )
-    }
-    acc[c.mapping].push(c)
-    return acc
-  }, {} as { [props: string]: PhysicalOperatorNode[] })
-  const rootOperatorCandidates = Object.entries(operatorCandidates).map(
-    ([mapping, candidates]) =>
-      [mapping, candidates.filter((c) => !c.parentNode)] as [
-        string,
-        PhysicalOperatorNode[]
-      ]
+      if (!acc[c.mapping]) {
+        acc[c.mapping] = []
+      }
+      if (!!c.children?.length) {
+        if (!c.childrenNodes) {
+          c.childrenNodes = []
+        }
+        c.childrenNodes.push(
+          ...c.children.map((cid) => {
+            const cnode = allCandidatesMap[cid]
+            cnode.parentNode = c
+            return cnode
+          })
+        )
+      }
+      acc[c.mapping].push(c)
+      return acc
+    },
+    {} as { [props: string]: PhysicalOperatorNode[] }
   )
+  // console.log('operator candidates:', operatorCandidates)
+
+  const rootOperatorCandidates = Object.entries(operatorCandidates)
+  // .map(
+  //   ([mapping, candidates]) =>
+  //     [mapping, candidates.filter((c) => !c.parentNode)] as [
+  //       string,
+  //       PhysicalOperatorNode[]
+  //     ]
+  // )
+  // console.log('root operator candidates:', rootOperatorCandidates)
 
   const OperatorCandidates = () => (
     <>

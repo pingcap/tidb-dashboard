@@ -15,6 +15,16 @@ interface PhysicalOperatorTreeProps {
   className?: string
 }
 
+function convertTreeToArry(
+  node: PhysicalOperatorNode,
+  arr: PhysicalOperatorNode[]
+) {
+  arr.push(node)
+  if (node.childrenNodes) {
+    node.childrenNodes.forEach((n) => convertTreeToArry(n, arr))
+  }
+}
+
 export default function PhysicalOperatorTree({
   data,
   className
@@ -27,7 +37,9 @@ export default function PhysicalOperatorTree({
       return
     }
 
-    const allDatas = [data, ...(data.childrenNodes || [])]
+    // const allDatas = [data, ...(data.childrenNodes || [])]
+    let allDatas: PhysicalOperatorNode[] = []
+    convertTreeToArry(data, allDatas)
     const define = allDatas
       .map(
         (n) =>

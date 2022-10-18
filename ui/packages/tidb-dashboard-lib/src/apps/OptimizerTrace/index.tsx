@@ -207,6 +207,11 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
     }, {} as { [props: string]: PhysicalOperatorNode })
   }
 
+  // convert to tree
+  Object.values(allCandidatesMap).forEach((c) => {
+    c.childrenNodes = (c.children || []).map((i) => allCandidatesMap[i])
+  })
+
   const operatorCandidates = Object.values(allCandidatesMap).reduce(
     (acc, c) => {
       if (c.mapping === '') {
@@ -215,18 +220,18 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
       if (!acc[c.mapping]) {
         acc[c.mapping] = []
       }
-      if (!!c.children?.length) {
-        if (!c.childrenNodes) {
-          c.childrenNodes = []
-        }
-        c.childrenNodes.push(
-          ...c.children.map((cid) => {
-            const cnode = allCandidatesMap[cid]
-            cnode.parentNode = c
-            return cnode
-          })
-        )
-      }
+      // if (!!c.children?.length) {
+      //   if (!c.childrenNodes) {
+      //     c.childrenNodes = []
+      //   }
+      //   c.childrenNodes.push(
+      //     ...c.children.map((cid) => {
+      //       const cnode = allCandidatesMap[cid]
+      //       cnode.parentNode = c
+      //       return cnode
+      //     })
+      //   )
+      // }
       acc[c.mapping].push(c)
       return acc
     },

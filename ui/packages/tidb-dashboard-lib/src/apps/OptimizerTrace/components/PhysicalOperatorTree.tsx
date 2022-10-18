@@ -37,6 +37,8 @@ export default function PhysicalOperatorTree({
       return
     }
 
+    console.log('physcial data:', data)
+
     // const allDatas = [data, ...(data.childrenNodes || [])]
     let allDatas: PhysicalOperatorNode[] = []
     convertTreeToArry(data, allDatas)
@@ -50,6 +52,7 @@ export default function PhysicalOperatorTree({
           })};\n`
       )
       .join('')
+    console.log('define:', define)
     const link = allDatas
       .map((n) =>
         (n.children || [])
@@ -62,6 +65,7 @@ export default function PhysicalOperatorTree({
           .join('')
       )
       .join('')
+    console.log('link:', link)
 
     graphviz(containerEl).renderDot(
       `graph {

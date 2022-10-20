@@ -18,6 +18,9 @@ import { OptimizerTraceContext } from './context'
 import translations from './translations'
 
 import styles from './index.module.less'
+import PhysicalCostTree, {
+  PhysicalCostMap
+} from './components/PhysicalCostTree'
 
 addTranslations(translations)
 
@@ -53,11 +56,14 @@ interface OptimizerData {
   }
   physical: {
     final: LogicalOperatorNode
+    // old format
     selected_candidates?: PhysicalOperatorNode[]
     discarded_candidates?: PhysicalOperatorNode[]
+    // new format
     candidates?: {
       [x: string]: PhysicalOperatorNode
     }
+    costs: PhysicalCostMap
   }
   final: LogicalOperatorNode[]
   isFastPlan: boolean
@@ -294,6 +300,7 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
       <div>
         <OperatorCandidates />
       </div>
+      <PhysicalCostTree costs={physicalData.costs} name="IndexJoin_46" />
     </Card>
   )
 }

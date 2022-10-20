@@ -59,10 +59,16 @@ ${define}\n${link}\n}`
     )
   }, [containerRef, data, labels])
 
+  function handleClick(e) {
+    console.log(e.target)
+    console.log(e.target.parentNode)
+  }
+
   return (
     <div
       ref={containerRef}
       className={`${styles.operator_tree} ${className || ''}`}
+      onClick={handleClick}
     ></div>
   )
 }

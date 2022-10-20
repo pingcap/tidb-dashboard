@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { graphviz } from 'd3-graphviz'
 
 import styles from './OperatorTree.module.less'
@@ -29,6 +29,8 @@ export default function PhysicalOperatorTree({
   data,
   className
 }: PhysicalOperatorTreeProps) {
+  const [curNodeName, setCurNodeName] = useState('')
+
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -47,7 +49,10 @@ export default function PhysicalOperatorTree({
         (n) =>
           `${n.id} ${createLabels({
             label: `${n.type}_${n.id}\ncost: ${n.cost.toFixed(4)}`,
-            color: n.selected ? 'blue' : '',
+            color: n.selected ? '#4169E1' : '',
+            fillcolor:
+              `${n.type}_${n.id}` === curNodeName ? '#87CEFA' : 'white',
+            // fillcolor: 'red',
             tooltip: `info: ${n.info}`
           })};\n`
       )
@@ -59,7 +64,7 @@ export default function PhysicalOperatorTree({
           .map(
             (c) =>
               `${n.id} -> ${c} ${createLabels({
-                color: n.selected ? 'blue' : ''
+                color: n.selected ? '#4169E1' : ''
               })};\n`
           )
           .join('')
@@ -69,15 +74,37 @@ export default function PhysicalOperatorTree({
 
     graphviz(containerEl).renderDot(
       `digraph {
-  node [shape=ellipse fontsize=8 fontname="Verdana"];
+  node [shape=ellipse fontsize=8 fontname="Verdana" style="filled"];
   ${define}\n${link}\n}`
     )
-  }, [containerRef, data])
+  }, [containerRef, data, curNodeName])
+
+  function handleClick(e) {
+    // console.log(e.target)
+    // console.log(e.target.parentNode)
+    const trigger = e.target
+    const parent = e.target.parentNode
+    if (
+      (trigger?.tagName === 'text' || trigger?.tagName === 'ellipse') &&
+      parent?.tagName === 'a'
+    ) {
+      // console.log('selected a physical node')
+      // console.log(parent.children)
+      for (const el of parent.children) {
+        if (el.tagName === 'text') {
+          console.log(el.innerHTML)
+          setCurNodeName(el.innerHTML)
+          break
+        }
+      }
+    }
+  }
 
   return (
     <div
       ref={containerRef}
       className={`${styles.operator_tree} ${className || ''}`}
+      onClick={handleClick}
     ></div>
   )
 }

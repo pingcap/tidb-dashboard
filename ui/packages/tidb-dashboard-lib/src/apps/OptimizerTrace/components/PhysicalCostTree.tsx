@@ -196,7 +196,9 @@ export default function PhysicalCostTree({
       <h2>Cost for {name}</h2>
       <div
         ref={containerRef}
-        className={`${styles.operator_tree} ${className || ''}`}
+        className={`${styles.operator_tree} ${styles.cost_tree} ${
+          className || ''
+        }`}
       ></div>
     </div>
   )

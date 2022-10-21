@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useState } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import { Button, Upload, Space, Alert, Tooltip } from 'antd'
+import { Button, Upload, Space, Alert, Tooltip, Input } from 'antd'
 import { UploadOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { ErrorBoundary } from 'react-error-boundary'
 
@@ -83,8 +83,14 @@ interface LogicalOptimizeActionStep {
 }
 
 function OptimizerTrace() {
+  const ctx = useContext(OptimizerTraceContext)
+
   const [importedData, setImportedData] = useState<OptimizerData | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
+
+  const [showRunSQL, setShowRunSQL] = useState(false)
+  const [sqlStr, setSqlStr] = useState('')
+  const [running, setRunning] = useState(false)
 
   const handleBeforeUpload = useCallback(async (file: File) => {
     setErrorMsg('')
@@ -94,11 +100,44 @@ function OptimizerTrace() {
     return false
   }, [])
 
+  function toggleRunSQL() {
+    setShowRunSQL((pre) => !pre)
+  }
+
+  async function handleRunSQL() {
+    if (!sqlStr.startsWith('trace plan')) {
+      setErrorMsg('The SQL must start with "trace plan"')
+      return
+    }
+    try {
+      setRunning(true)
+      setErrorMsg('')
+      const resp = await ctx?.ds.queryEditorRun({
+        max_rows: 1000,
+        statements: sqlStr
+      })
+      if (resp?.data.error_msg) {
+        setErrorMsg(resp?.data.error_msg)
+      } else {
+        // TODO
+        setShowRunSQL(false)
+        fetch('/optimizer-trace-example-1.json')
+          .then((res) => res.json())
+          .then((data) => setImportedData(data))
+      }
+    } catch (err) {
+      console.log(err)
+    } finally {
+      setRunning(false)
+    }
+  }
+
   return (
     <div>
       <Card noMarginBottom style={{ height: '70px' }}>
         <Toolbar>
-          <Space>
+          <Space style={{ alignItems: 'flex-start' }}>
+            <Button onClick={toggleRunSQL}>Run SQL</Button>
             <Upload
               beforeUpload={handleBeforeUpload}
               accept=".json"
@@ -110,8 +149,28 @@ function OptimizerTrace() {
         </Toolbar>
       </Card>
 
+      {showRunSQL && (
+        <Card noMarginTop>
+          <Input.TextArea
+            rows={4}
+            placeholder="Example SQL: trace plan select * from t;"
+            onChange={(e) => setSqlStr(e.target.value)}
+            defaultValue={sqlStr}
+          />
+          <Button
+            style={{ marginTop: 8 }}
+            type="primary"
+            onClick={handleRunSQL}
+            disabled={sqlStr.length === 0}
+            loading={running}
+          >
+            Run
+          </Button>
+        </Card>
+      )}
+
       {errorMsg && (
-        <Card>
+        <Card noMarginTop>
           <Alert showIcon type="error" message="Error" description={errorMsg} />
         </Card>
       )}

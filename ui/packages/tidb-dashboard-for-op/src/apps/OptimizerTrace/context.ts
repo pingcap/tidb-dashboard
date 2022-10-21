@@ -1,12 +1,16 @@
 import {
   IOptimizerTraceDataSource,
-  IOptimizerTraceContext
-  // ReqConfig
+  IOptimizerTraceContext,
+  ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
-// import client from '~/client'
+import client, { QueryeditorRunRequest } from '~/client'
 
-class DataSource implements IOptimizerTraceDataSource {}
+class DataSource implements IOptimizerTraceDataSource {
+  queryEditorRun(request: QueryeditorRunRequest, options?: ReqConfig) {
+    return client.getInstance().queryEditorRun({ request }, options)
+  }
+}
 
 const ds = new DataSource()
 

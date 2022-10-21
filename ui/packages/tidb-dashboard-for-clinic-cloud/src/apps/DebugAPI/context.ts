@@ -12,7 +12,18 @@ class DataSource implements IDebugAPIDataSource {
   }
 
   debugAPIRequestEndpoint(req: EndpointRequestPayload, options?: ReqConfig) {
-    return client.getInstance().debugAPIRequestEndpoint({ req }, options)
+    return client.getInstance().debugAPIRequestEndpoint(
+      {
+        req: {
+          ...req,
+          // to compatible with the old tidb-dashboard backend api, for example: v5.0.6
+          // id -> api_id, params -> param_values
+          id: req.api_id,
+          params: req.param_values
+        } as any
+      },
+      options
+    )
   }
 
   infoListDatabases(options?: ReqConfig) {

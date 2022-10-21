@@ -196,7 +196,8 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
 }
 
 function PhysicalOptimization({ data }: { data: OptimizerData }) {
-  const [nodeName, setNodeName] = useState('')
+  const [physicalNodeName, setPhysicalNodeName] = useState('')
+  const [logicalNodeName, setLogicalNodeName] = useState('')
 
   const physicalData = data.physical
 
@@ -259,57 +260,65 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
   // )
   // console.log('root operator candidates:', rootOperatorCandidates)
 
-  const OperatorCandidates = () => (
-    <>
-      {rootOperatorCandidates.map((m, index) => {
-        const selectedCandidates = m[1].filter((c) => c.selected)
-        const unselectedCandidates = m[1].filter((c) => !c.selected)
-        return (
-          <div key={index} className={styles.physical_operator_tree_container}>
-            <span>{m[0]}</span>
-            <ArrowRightOutlined
-              style={{ fontSize: '30px' }}
-              className={styles.arrow}
-            />
-            <>
-              {selectedCandidates.map((c) => (
+  const OperatorCandidates = () => {
+    const selectedCandidates = operatorCandidates[logicalNodeName].filter(
+      (c) => c.selected
+    )
+    const unselectedCandidates = operatorCandidates[logicalNodeName].filter(
+      (c) => !c.selected
+    )
+    return (
+      <div className={styles.physical_operator_tree_container}>
+        {selectedCandidates.map((c) => (
+          <PhysicalOperatorTree
+            key={c.id}
+            data={c}
+            className={styles.operator_tree}
+            onSelect={setPhysicalNodeName}
+            nodeName={physicalNodeName}
+          />
+        ))}
+        {!!unselectedCandidates.length && (
+          <div className={styles.unselected_candidates}>
+            <p>unselected candidates</p>
+            <div className={styles.physical_operator_tree_container}>
+              {unselectedCandidates.map((c) => (
                 <PhysicalOperatorTree
                   key={c.id}
                   data={c}
                   className={styles.operator_tree}
-                  onSelect={setNodeName}
-                  nodeName={nodeName}
+                  onSelect={setPhysicalNodeName}
+                  nodeName={physicalNodeName}
                 />
               ))}
-            </>
-            {!!unselectedCandidates.length && (
-              <div className={styles.unselected_candidates}>
-                <p>unselected candidates</p>
-                {unselectedCandidates.map((c) => (
-                  <PhysicalOperatorTree
-                    key={c.id}
-                    data={c}
-                    className={styles.operator_tree}
-                    onSelect={setNodeName}
-                    nodeName={nodeName}
-                  />
-                ))}
-              </div>
-            )}
+            </div>
           </div>
-        )
-      })}
-    </>
-  )
+        )}
+      </div>
+    )
+  }
 
   return (
     <Card className={styles.container}>
       <h2>Physical Optimization</h2>
-      <div>
-        <OperatorCandidates />
+      <div className={styles.physical_operator_tree_container}>
+        <LogicalOperatorTree
+          className={styles.operator_tree}
+          data={data.logical.final}
+          nodeName={logicalNodeName}
+          onSelect={setLogicalNodeName}
+        />
+        <ArrowRightOutlined
+          style={{ fontSize: '30px' }}
+          className={styles.arrow}
+        />
+        {logicalNodeName && <OperatorCandidates />}
       </div>
-      {nodeName && (
-        <PhysicalCostTree costs={physicalData.costs ?? {}} name={nodeName} />
+      {physicalNodeName && (
+        <PhysicalCostTree
+          costs={physicalData.costs ?? {}}
+          name={physicalNodeName}
+        />
       )}
     </Card>
   )

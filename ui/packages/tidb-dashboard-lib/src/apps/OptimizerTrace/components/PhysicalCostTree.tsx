@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react'
+import React, { useEffect, useRef, useMemo, useState } from 'react'
 import { graphviz } from 'd3-graphviz'
 
 import styles from './OperatorTree.module.less'
@@ -80,12 +80,26 @@ function buildCostTree(costs: PhysicalCostMap, root: PhysicalCostRoot) {
 
 /////////////
 
-function genGraphvizNodeParam(param: PhyscialCostParam, strArr: string[]) {
+interface BoolMap {
+  [x: string]: boolean
+}
+
+type Expands = BoolMap
+
+/////////////
+
+function genGraphvizNodeParam(
+  param: PhyscialCostParam,
+  strArr: string[],
+  expands: Expands
+) {
   let str = ''
   if (param.params === undefined) {
     // leaf node
     str = `${param.id} ${createLabels({
-      label: `${param.name}\n${param.cost.toFixed(4)}`
+      label: `${param.name}\n${param.cost.toFixed(4)}`,
+      fillcolor: '#cffafe',
+      tooltip: `${param.id}`
     })};\n`
     // try {
     // } catch (err) {
@@ -95,7 +109,9 @@ function genGraphvizNodeParam(param: PhyscialCostParam, strArr: string[]) {
     str = `${param.id} ${createLabels({
       label: `${param.name}\ncost: ${param.cost.toFixed(4)}\ndesc: ${
         param.desc
-      }`
+      }`,
+      fillcolor: 'white',
+      tooltip: `${param.id}`
     })};\n`
   }
   strArr.push(str)
@@ -103,33 +119,42 @@ function genGraphvizNodeParam(param: PhyscialCostParam, strArr: string[]) {
   if (param.params === null || param.params === undefined) {
     return
   }
-  genGraphvizNodeParams(param.params, strArr)
+  if (expands[param.id] !== true) {
+    // not expand
+    return
+  }
+  genGraphvizNodeParams(param.params, strArr, expands)
 }
 
 function genGraphvizNodeParams(
   params: { [x: string]: number | PhyscialCostParam },
-  strArr: string[]
+  strArr: string[],
+  expands: Expands
 ) {
   Object.values(params).forEach((p) => {
     // number has already converted to PhyscialCostParam
     // it doesn't exist alreay in fact
     if (typeof p !== 'number') {
-      genGraphvizNodeParam(p, strArr)
+      genGraphvizNodeParam(p, strArr, expands)
     }
   })
 }
 
-function genGraphvizNodes(root: PhysicalCostRoot) {
+function genGraphvizNodes(root: PhysicalCostRoot, expands: Expands) {
   const strArr: string[] = []
 
   strArr.push(
     `${root.id} ${createLabels({
       label: `${root.type}_${root.id}\ncost: ${root.cost.toFixed(4)}\ndesc: ${
         root.desc
-      }`
+      }`,
+      fillcolor: 'white',
+      tooltip: `${root.id}`
     })};\n`
   )
-  genGraphvizNodeParams(root.params, strArr)
+  if (expands[root.id] === true) {
+    genGraphvizNodeParams(root.params, strArr, expands)
+  }
 
   return strArr
 }
@@ -139,34 +164,40 @@ function genGraphvizNodes(root: PhysicalCostRoot) {
 function genGraphvizLineParam(
   parentId: number,
   param: PhyscialCostParam,
-  strArr: string[]
+  strArr: string[],
+  expands: Expands
 ) {
+  if (expands[parentId] !== true) {
+    return
+  }
+
   strArr.push(`${parentId} -> ${param.id};\n`)
 
   if (param.params === null || param.params === undefined) {
     return
   }
 
-  genGraphvizLineParams(param.id, param.params, strArr)
+  genGraphvizLineParams(param.id, param.params, strArr, expands)
 }
 
 function genGraphvizLineParams(
   parentId: number,
   params: { [x: string]: number | PhyscialCostParam },
-  strArr: string[]
+  strArr: string[],
+  expands: Expands
 ) {
   Object.values(params).forEach((p) => {
     // number has already converted to PhyscialCostParam
     // it doesn't exist alreay in fact
     if (typeof p !== 'number') {
-      genGraphvizLineParam(parentId, p, strArr)
+      genGraphvizLineParam(parentId, p, strArr, expands)
     }
   })
 }
 
-function genGraphvizLines(root: PhysicalCostRoot) {
+function genGraphvizLines(root: PhysicalCostRoot, expands: Expands) {
   const strArr: string[] = []
-  genGraphvizLineParams(root.id, root.params, strArr)
+  genGraphvizLineParams(root.id, root.params, strArr, expands)
   return strArr
 }
 
@@ -189,7 +220,13 @@ export default function PhysicalCostTree({
     return root
   }, [costs, name])
 
+  const [nodeExpands, setNodeExpands] = useState<Expands>({})
+
   const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setNodeExpands({})
+  }, [name])
 
   useEffect(() => {
     if (!costRoot) {
@@ -200,16 +237,34 @@ export default function PhysicalCostTree({
       return
     }
 
-    const define = genGraphvizNodes(costRoot).join('')
+    const define = genGraphvizNodes(costRoot, nodeExpands).join('')
     console.log('define:', define)
-    const link = genGraphvizLines(costRoot).join('')
+    const link = genGraphvizLines(costRoot, nodeExpands).join('')
     console.log('link:', link)
     graphviz(containerEl).renderDot(
       `digraph {
-  node [shape=ellipse fontsize=8 fontname="Verdana"];
+  node [shape=ellipse fontsize=8 fontname="Verdana" style="filled"];
   ${define}\n${link}\n}`
     )
-  }, [containerRef, costRoot])
+  }, [containerRef, costRoot, nodeExpands])
+
+  function handleClick(e) {
+    const trigger = e.target
+    const parent = e.target.parentNode
+    if (
+      (trigger?.tagName === 'text' || trigger?.tagName === 'ellipse') &&
+      parent?.tagName === 'a'
+    ) {
+      console.log('title:', parent.getAttribute('title'))
+      const id = parent.getAttribute('title')
+
+      // toggle
+      setNodeExpands({
+        ...nodeExpands,
+        [id]: !(nodeExpands[id] ?? false)
+      })
+    }
+  }
 
   return (
     <div>
@@ -220,6 +275,7 @@ export default function PhysicalCostTree({
           className={`${styles.operator_tree} ${styles.cost_tree} ${
             className || ''
           }`}
+          onClick={handleClick}
         ></div>
       ) : (
         <p>Not exist</p>

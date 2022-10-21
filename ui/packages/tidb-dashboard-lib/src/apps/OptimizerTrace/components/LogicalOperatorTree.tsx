@@ -64,7 +64,7 @@ export default function LogicalOperatorTree({
 node [shape=ellipse fontsize=8 fontname="Verdana" style="filled"];
 ${define}\n${link}\n}`
     )
-  }, [containerRef, data, labels])
+  }, [containerRef, data, labels, nodeName])
 
   function handleClick(e) {
     const trigger = e.target

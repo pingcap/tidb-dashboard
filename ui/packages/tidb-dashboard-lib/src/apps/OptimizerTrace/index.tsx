@@ -250,7 +250,7 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
   )
   // console.log('operator candidates:', operatorCandidates)
 
-  const rootOperatorCandidates = Object.entries(operatorCandidates)
+  // const rootOperatorCandidates = Object.entries(operatorCandidates)
   // .map(
   //   ([mapping, candidates]) =>
   //     [mapping, candidates.filter((c) => !c.parentNode)] as [

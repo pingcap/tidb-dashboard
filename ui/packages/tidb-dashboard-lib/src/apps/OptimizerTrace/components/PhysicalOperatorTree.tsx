@@ -81,21 +81,15 @@ export default function PhysicalOperatorTree({
   }, [containerRef, data, nodeName])
 
   function handleClick(e) {
-    // console.log(e.target)
-    // console.log(e.target.parentNode)
     const trigger = e.target
     const parent = e.target.parentNode
     if (
       (trigger?.tagName === 'text' || trigger?.tagName === 'ellipse') &&
       parent?.tagName === 'a'
     ) {
-      // console.log('selected a physical node')
-      // console.log(parent.children)
       for (const el of parent.children) {
         if (el.tagName === 'text') {
-          console.log(el.innerHTML)
           onSelect?.(el.innerHTML)
-          // setCurNodeName(el.innerHTML)
           break
         }
       }

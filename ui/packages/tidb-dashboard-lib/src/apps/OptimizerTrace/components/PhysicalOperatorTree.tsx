@@ -52,7 +52,7 @@ export default function PhysicalOperatorTree({
           `${n.id} ${createLabels({
             label: `${n.type}_${n.id}\ncost: ${n.cost.toFixed(4)}`,
             color: n.selected ? '#4169E1' : '',
-            fillcolor: `${n.type}_${n.id}` === nodeName ? '#38bdf8' : 'white',
+            fillcolor: `${n.type}_${n.id}` === nodeName ? '#7dd3fc' : 'white',
             // fillcolor: 'red',
             tooltip: `info: ${n.info}`
           })};\n`

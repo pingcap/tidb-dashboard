@@ -63,7 +63,7 @@ interface OptimizerData {
     candidates?: {
       [x: string]: PhysicalOperatorNode
     }
-    costs: PhysicalCostMap
+    costs?: PhysicalCostMap
   }
   final: LogicalOperatorNode[]
   isFastPlan: boolean
@@ -218,6 +218,8 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
   // convert to tree
   Object.values(allCandidatesMap).forEach((c) => {
     c.childrenNodes = (c.children || []).map((i) => allCandidatesMap[i])
+    // fix cost
+    c.cost = physicalData.costs?.[`${c.type}_${c.id}`]?.cost ?? c.cost
   })
 
   const operatorCandidates = Object.values(allCandidatesMap).reduce(
@@ -307,7 +309,7 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
         <OperatorCandidates />
       </div>
       {nodeName && (
-        <PhysicalCostTree costs={physicalData.costs} name={nodeName} />
+        <PhysicalCostTree costs={physicalData.costs ?? {}} name={nodeName} />
       )}
     </Card>
   )

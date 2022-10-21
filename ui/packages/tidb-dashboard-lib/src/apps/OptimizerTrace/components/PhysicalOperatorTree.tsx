@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { graphviz } from 'd3-graphviz'
 
 import styles from './OperatorTree.module.less'

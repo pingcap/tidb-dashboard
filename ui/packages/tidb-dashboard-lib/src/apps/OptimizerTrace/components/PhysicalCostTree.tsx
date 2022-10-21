@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react'
+import React, { useEffect, useRef, useMemo } from 'react'
 import { graphviz } from 'd3-graphviz'
 
 import styles from './OperatorTree.module.less'
@@ -83,14 +83,14 @@ function buildCostTree(costs: PhysicalCostMap, root: PhysicalCostRoot) {
 function genGraphvizNodeParam(param: PhyscialCostParam, strArr: string[]) {
   let str = ''
   if (param.params === undefined) {
-    try {
-      // leaf node
-      str = `${param.id} ${createLabels({
-        label: `${param.name}\n${param.cost.toFixed(4)}\n`
-      })};\n`
-    } catch (err) {
-      console.log('err:', err, param)
-    }
+    // leaf node
+    str = `${param.id} ${createLabels({
+      label: `${param.name}\n${param.cost.toFixed(4)}`
+    })};\n`
+    // try {
+    // } catch (err) {
+    //   console.log('err:', err, param)
+    // }
   } else {
     str = `${param.id} ${createLabels({
       label: `${param.name}\ncost: ${param.cost.toFixed(4)}\ndesc: ${

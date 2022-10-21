@@ -269,15 +269,22 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
     )
     return (
       <div className={styles.physical_operator_tree_container}>
-        {selectedCandidates.map((c) => (
-          <PhysicalOperatorTree
-            key={c.id}
-            data={c}
-            className={styles.operator_tree}
-            onSelect={setPhysicalNodeName}
-            nodeName={physicalNodeName}
-          />
-        ))}
+        {!!selectedCandidates.length && (
+          <div className={styles.selected_candidates}>
+            <p>selected candidates</p>
+            <div className={styles.physical_operator_tree_container}>
+              {selectedCandidates.map((c) => (
+                <PhysicalOperatorTree
+                  key={c.id}
+                  data={c}
+                  className={styles.operator_tree}
+                  onSelect={setPhysicalNodeName}
+                  nodeName={physicalNodeName}
+                />
+              ))}
+            </div>
+          </div>
+        )}
         {!!unselectedCandidates.length && (
           <div className={styles.unselected_candidates}>
             <p>unselected candidates</p>
@@ -300,7 +307,9 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
 
   return (
     <Card className={styles.container}>
-      <h2>Physical Optimization</h2>
+      <h2>
+        Physical Optimization {logicalNodeName && `for ${logicalNodeName}`}
+      </h2>
       <div className={styles.physical_operator_tree_container}>
         <LogicalOperatorTree
           className={styles.operator_tree}

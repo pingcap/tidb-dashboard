@@ -44,7 +44,7 @@ export default function LogicalOperatorTree({
           `${n.id} ${createLabels({
             label: `${n.type}_${n.id}`,
             color: labels.color || '',
-            fillcolor: `${n.type}_${n.id}` === nodeName ? '#87CEFA' : 'white',
+            fillcolor: `${n.type}_${n.id}` === nodeName ? '#60a5fa' : 'white',
             tooltip: `info: ${n.info}`
           })};\n`
       )

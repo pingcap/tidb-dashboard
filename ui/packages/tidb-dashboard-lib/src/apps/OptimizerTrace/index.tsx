@@ -196,6 +196,8 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
 }
 
 function PhysicalOptimization({ data }: { data: OptimizerData }) {
+  const [nodeName, setNodeName] = useState('')
+
   const physicalData = data.physical
 
   let allCandidatesMap: { [x: string]: PhysicalOperatorNode } = {}
@@ -273,6 +275,8 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
                   key={c.id}
                   data={c}
                   className={styles.operator_tree}
+                  onSelect={setNodeName}
+                  nodeName={nodeName}
                 />
               ))}
             </>
@@ -284,6 +288,8 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
                     key={c.id}
                     data={c}
                     className={styles.operator_tree}
+                    onSelect={setNodeName}
+                    nodeName={nodeName}
                   />
                 ))}
               </div>
@@ -300,7 +306,9 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
       <div>
         <OperatorCandidates />
       </div>
-      <PhysicalCostTree costs={physicalData.costs} name="IndexJoin_46" />
+      {nodeName && (
+        <PhysicalCostTree costs={physicalData.costs} name={nodeName} />
+      )}
     </Card>
   )
 }

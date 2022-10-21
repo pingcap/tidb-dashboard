@@ -13,6 +13,8 @@ export interface PhysicalOperatorNode extends LogicalOperatorNode {
 interface PhysicalOperatorTreeProps {
   data: PhysicalOperatorNode
   className?: string
+  onSelect?: (name: string) => void
+  nodeName: string
 }
 
 function convertTreeToArry(
@@ -27,10 +29,10 @@ function convertTreeToArry(
 
 export default function PhysicalOperatorTree({
   data,
-  className
+  className,
+  onSelect,
+  nodeName
 }: PhysicalOperatorTreeProps) {
-  const [curNodeName, setCurNodeName] = useState('')
-
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -50,8 +52,7 @@ export default function PhysicalOperatorTree({
           `${n.id} ${createLabels({
             label: `${n.type}_${n.id}\ncost: ${n.cost.toFixed(4)}`,
             color: n.selected ? '#4169E1' : '',
-            fillcolor:
-              `${n.type}_${n.id}` === curNodeName ? '#87CEFA' : 'white',
+            fillcolor: `${n.type}_${n.id}` === nodeName ? '#87CEFA' : 'white',
             // fillcolor: 'red',
             tooltip: `info: ${n.info}`
           })};\n`
@@ -77,7 +78,7 @@ export default function PhysicalOperatorTree({
   node [shape=ellipse fontsize=8 fontname="Verdana" style="filled"];
   ${define}\n${link}\n}`
     )
-  }, [containerRef, data, curNodeName])
+  }, [containerRef, data, nodeName])
 
   function handleClick(e) {
     // console.log(e.target)
@@ -93,7 +94,8 @@ export default function PhysicalOperatorTree({
       for (const el of parent.children) {
         if (el.tagName === 'text') {
           console.log(el.innerHTML)
-          setCurNodeName(el.innerHTML)
+          onSelect?.(el.innerHTML)
+          // setCurNodeName(el.innerHTML)
           break
         }
       }

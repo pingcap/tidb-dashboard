@@ -42,6 +42,8 @@ function buildCostParam(costs: PhysicalCostMap, param: PhyscialCostParam) {
       throw new Error(`cost for ${param.name} not exist`)
     }
     param.params = root.params
+    // nested operator desc may be not correct, let's fix it by root.desc
+    param.desc = root.desc
   }
   if (param.params === undefined) {
     // reach leaf node
@@ -79,13 +81,25 @@ function buildCostTree(costs: PhysicalCostMap, root: PhysicalCostRoot) {
 /////////////
 
 function genGraphvizNodeParam(param: PhyscialCostParam, strArr: string[]) {
-  strArr.push(
-    `${param.id} ${createLabels({
+  let str = ''
+  if (param.params === undefined) {
+    try {
+      // leaf node
+      str = `${param.id} ${createLabels({
+        label: `${param.name}\n${param.cost.toFixed(4)}\n`
+      })};\n`
+    } catch (err) {
+      console.log('err:', err, param)
+    }
+  } else {
+    str = `${param.id} ${createLabels({
       label: `${param.name}\ncost: ${param.cost.toFixed(4)}\ndesc: ${
         param.desc
       }`
     })};\n`
-  )
+  }
+  strArr.push(str)
+
   if (param.params === null || param.params === undefined) {
     return
   }
@@ -165,7 +179,10 @@ export default function PhysicalCostTree({
 }: PhysicalCostTreeProps) {
   const costRoot = useMemo(() => {
     const root = costs[name]
-    buildCostTree(costs, root)
+
+    if (root) {
+      buildCostTree(costs, root)
+    }
 
     console.log('==========root:', root)
 
@@ -175,6 +192,9 @@ export default function PhysicalCostTree({
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (!costRoot) {
+      return
+    }
     const containerEl = containerRef.current
     if (!containerEl) {
       return
@@ -194,12 +214,16 @@ export default function PhysicalCostTree({
   return (
     <div>
       <h2>Cost for {name}</h2>
-      <div
-        ref={containerRef}
-        className={`${styles.operator_tree} ${styles.cost_tree} ${
-          className || ''
-        }`}
-      ></div>
+      {costRoot ? (
+        <div
+          ref={containerRef}
+          className={`${styles.operator_tree} ${styles.cost_tree} ${
+            className || ''
+          }`}
+        ></div>
+      ) : (
+        <p>Not exist</p>
+      )}
     </div>
   )
 }

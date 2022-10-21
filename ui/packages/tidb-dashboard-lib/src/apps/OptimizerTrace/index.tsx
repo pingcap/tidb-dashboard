@@ -18,6 +18,9 @@ import { OptimizerTraceContext } from './context'
 import translations from './translations'
 
 import styles from './index.module.less'
+import PhysicalCostTree, {
+  PhysicalCostMap
+} from './components/PhysicalCostTree'
 
 addTranslations(translations)
 
@@ -53,8 +56,14 @@ interface OptimizerData {
   }
   physical: {
     final: LogicalOperatorNode
-    selected_candidates: PhysicalOperatorNode[]
-    discarded_candidates: PhysicalOperatorNode[]
+    // old format
+    selected_candidates?: PhysicalOperatorNode[]
+    discarded_candidates?: PhysicalOperatorNode[]
+    // new format
+    candidates?: {
+      [x: string]: PhysicalOperatorNode
+    }
+    costs?: PhysicalCostMap
   }
   final: LogicalOperatorNode[]
   isFastPlan: boolean
@@ -187,40 +196,68 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
 }
 
 function PhysicalOptimization({ data }: { data: OptimizerData }) {
+  const [nodeName, setNodeName] = useState('')
+
   const physicalData = data.physical
-  const selectedCandidates = physicalData.selected_candidates
-  const discardedCandidates = physicalData.discarded_candidates
-  const allCandidates = [...selectedCandidates, ...discardedCandidates]
-  const allCandidatesMap = allCandidates.reduce((acc, c) => {
-    acc[c.id] = c
-    return acc
-  }, {} as { [props: string]: PhysicalOperatorNode })
-  const operatorCandidates = allCandidates.reduce((acc, c) => {
-    if (!acc[c.mapping]) {
-      acc[c.mapping] = []
-    }
-    if (!!c.children?.length) {
-      if (!c.childrenNodes) {
-        c.childrenNodes = []
+
+  let allCandidatesMap: { [x: string]: PhysicalOperatorNode } = {}
+
+  if (physicalData.candidates) {
+    allCandidatesMap = physicalData.candidates
+  } else {
+    const selectedCandidates = physicalData.selected_candidates || []
+    const discardedCandidates = physicalData.discarded_candidates || []
+
+    const allCandidates = [...selectedCandidates, ...discardedCandidates]
+    allCandidatesMap = allCandidates.reduce((acc, c) => {
+      acc[c.id] = c
+      return acc
+    }, {} as { [props: string]: PhysicalOperatorNode })
+  }
+
+  // convert to tree
+  Object.values(allCandidatesMap).forEach((c) => {
+    c.childrenNodes = (c.children || []).map((i) => allCandidatesMap[i])
+    // fix cost
+    c.cost = physicalData.costs?.[`${c.type}_${c.id}`]?.cost ?? c.cost
+  })
+
+  const operatorCandidates = Object.values(allCandidatesMap).reduce(
+    (acc, c) => {
+      if (c.mapping === '') {
+        return acc
       }
-      c.childrenNodes.push(
-        ...c.children.map((cid) => {
-          const cnode = allCandidatesMap[cid]
-          cnode.parentNode = c
-          return cnode
-        })
-      )
-    }
-    acc[c.mapping].push(c)
-    return acc
-  }, {} as { [props: string]: PhysicalOperatorNode[] })
-  const rootOperatorCandidates = Object.entries(operatorCandidates).map(
-    ([mapping, candidates]) =>
-      [mapping, candidates.filter((c) => !c.parentNode)] as [
-        string,
-        PhysicalOperatorNode[]
-      ]
+      if (!acc[c.mapping]) {
+        acc[c.mapping] = []
+      }
+      // if (!!c.children?.length) {
+      //   if (!c.childrenNodes) {
+      //     c.childrenNodes = []
+      //   }
+      //   c.childrenNodes.push(
+      //     ...c.children.map((cid) => {
+      //       const cnode = allCandidatesMap[cid]
+      //       cnode.parentNode = c
+      //       return cnode
+      //     })
+      //   )
+      // }
+      acc[c.mapping].push(c)
+      return acc
+    },
+    {} as { [props: string]: PhysicalOperatorNode[] }
   )
+  // console.log('operator candidates:', operatorCandidates)
+
+  const rootOperatorCandidates = Object.entries(operatorCandidates)
+  // .map(
+  //   ([mapping, candidates]) =>
+  //     [mapping, candidates.filter((c) => !c.parentNode)] as [
+  //       string,
+  //       PhysicalOperatorNode[]
+  //     ]
+  // )
+  // console.log('root operator candidates:', rootOperatorCandidates)
 
   const OperatorCandidates = () => (
     <>
@@ -240,6 +277,8 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
                   key={c.id}
                   data={c}
                   className={styles.operator_tree}
+                  onSelect={setNodeName}
+                  nodeName={nodeName}
                 />
               ))}
             </>
@@ -251,6 +290,8 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
                     key={c.id}
                     data={c}
                     className={styles.operator_tree}
+                    onSelect={setNodeName}
+                    nodeName={nodeName}
                   />
                 ))}
               </div>
@@ -267,6 +308,9 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
       <div>
         <OperatorCandidates />
       </div>
+      {nodeName && (
+        <PhysicalCostTree costs={physicalData.costs ?? {}} name={nodeName} />
+      )}
     </Card>
   )
 }

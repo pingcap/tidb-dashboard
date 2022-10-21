@@ -13,11 +13,25 @@ export interface PhysicalOperatorNode extends LogicalOperatorNode {
 interface PhysicalOperatorTreeProps {
   data: PhysicalOperatorNode
   className?: string
+  onSelect?: (name: string) => void
+  nodeName: string
+}
+
+function convertTreeToArry(
+  node: PhysicalOperatorNode,
+  arr: PhysicalOperatorNode[]
+) {
+  arr.push(node)
+  if (node.childrenNodes) {
+    node.childrenNodes.forEach((n) => convertTreeToArry(n, arr))
+  }
 }
 
 export default function PhysicalOperatorTree({
   data,
-  className
+  className,
+  onSelect,
+  nodeName
 }: PhysicalOperatorTreeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -27,41 +41,72 @@ export default function PhysicalOperatorTree({
       return
     }
 
-    const allDatas = [data, ...(data.childrenNodes || [])]
+    console.log('physcial data:', data)
+
+    // const allDatas = [data, ...(data.childrenNodes || [])]
+    let allDatas: PhysicalOperatorNode[] = []
+    convertTreeToArry(data, allDatas)
     const define = allDatas
       .map(
         (n) =>
           `${n.id} ${createLabels({
             label: `${n.type}_${n.id}\ncost: ${n.cost.toFixed(4)}`,
-            color: n.selected ? 'blue' : '',
+            color: n.selected ? '#4169E1' : '',
+            fillcolor: `${n.type}_${n.id}` === nodeName ? '#87CEFA' : 'white',
+            // fillcolor: 'red',
             tooltip: `info: ${n.info}`
           })};\n`
       )
       .join('')
+    // console.log('define:', define)
     const link = allDatas
       .map((n) =>
         (n.children || [])
           .map(
             (c) =>
-              `${n.id} -- ${c} ${createLabels({
-                color: n.selected ? 'blue' : ''
+              `${n.id} -> ${c} ${createLabels({
+                color: n.selected ? '#4169E1' : ''
               })};\n`
           )
           .join('')
       )
       .join('')
+    // console.log('link:', link)
 
     graphviz(containerEl).renderDot(
-      `graph {
-  node [shape=ellipse fontsize=8 fontname="Verdana"];
+      `digraph {
+  node [shape=ellipse fontsize=8 fontname="Verdana" style="filled"];
   ${define}\n${link}\n}`
     )
-  }, [containerRef, data])
+  }, [containerRef, data, nodeName])
+
+  function handleClick(e) {
+    // console.log(e.target)
+    // console.log(e.target.parentNode)
+    const trigger = e.target
+    const parent = e.target.parentNode
+    if (
+      (trigger?.tagName === 'text' || trigger?.tagName === 'ellipse') &&
+      parent?.tagName === 'a'
+    ) {
+      // console.log('selected a physical node')
+      // console.log(parent.children)
+      for (const el of parent.children) {
+        if (el.tagName === 'text') {
+          console.log(el.innerHTML)
+          onSelect?.(el.innerHTML)
+          // setCurNodeName(el.innerHTML)
+          break
+        }
+      }
+    }
+  }
 
   return (
     <div
       ref={containerRef}
       className={`${styles.operator_tree} ${className || ''}`}
+      onClick={handleClick}
     ></div>
   )
 }

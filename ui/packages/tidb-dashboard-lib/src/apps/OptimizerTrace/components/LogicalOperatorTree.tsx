@@ -42,6 +42,7 @@ export default function LogicalOperatorTree({
           })};\n`
       )
       .join('')
+    // console.log('define:', define)
     const link = data
       .map((n) =>
         (n.children || [])
@@ -49,6 +50,7 @@ export default function LogicalOperatorTree({
           .join('')
       )
       .join('')
+    // console.log('link:', link)
 
     graphviz(containerEl).renderDot(
       `digraph {
@@ -57,10 +59,16 @@ ${define}\n${link}\n}`
     )
   }, [containerRef, data, labels])
 
+  function handleClick(e) {
+    console.log(e.target)
+    console.log(e.target.parentNode)
+  }
+
   return (
     <div
       ref={containerRef}
       className={`${styles.operator_tree} ${className || ''}`}
+      onClick={handleClick}
     ></div>
   )
 }

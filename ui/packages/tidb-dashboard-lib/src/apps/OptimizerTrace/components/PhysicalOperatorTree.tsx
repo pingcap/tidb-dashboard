@@ -3,6 +3,7 @@ import { graphviz } from 'd3-graphviz'
 
 import styles from './OperatorTree.module.less'
 import { LogicalOperatorNode, createLabels } from './LogicalOperatorTree'
+import { FullscreenOutlined } from '@ant-design/icons'
 
 export interface PhysicalOperatorNode extends LogicalOperatorNode {
   parentNode: null | PhysicalOperatorNode
@@ -102,5 +103,21 @@ export default function PhysicalOperatorTree({
       className={`${styles.operator_tree} ${className || ''}`}
       onClick={handleClick}
     ></div>
+  )
+}
+
+export function PhysicalOperatorTreeWithFullScreen({
+  onFullScreen,
+  ...rest
+}: PhysicalOperatorTreeProps & {
+  onFullScreen: () => void
+}) {
+  return (
+    <div className={styles.tree_container}>
+      <div className={styles.fullscreen_icon_box}>
+        <FullscreenOutlined onClick={() => onFullScreen()} />
+      </div>
+      <PhysicalOperatorTree {...rest} />
+    </div>
   )
 }

@@ -12,7 +12,8 @@ import LogicalOperatorTree, {
   LogicalOperatorNode
 } from './components/LogicalOperatorTree'
 import PhysicalOperatorTree, {
-  PhysicalOperatorNode
+  PhysicalOperatorNode,
+  PhysicalOperatorTreeWithFullScreen
 } from './components/PhysicalOperatorTree'
 import { OptimizerTraceContext } from './context'
 import translations from './translations'
@@ -259,6 +260,9 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
   const [logicalNodeName, setLogicalNodeName] = useState('')
 
   const [showCostTreeModal, setShowCostTreeModal] = useState(false)
+  const [fullScreenPhysicalNode, setFullScreenPhysicalNode] = useState<
+    PhysicalOperatorNode | undefined
+  >(undefined)
 
   const physicalData = data.physical
 
@@ -340,12 +344,13 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
             <p>selected candidates</p>
             <div className={styles.physical_operator_tree_container}>
               {selectedCandidates.map((c) => (
-                <PhysicalOperatorTree
+                <PhysicalOperatorTreeWithFullScreen
                   key={c.id}
                   data={c}
                   className={styles.operator_tree}
                   onSelect={updatePhysicalNodeName}
                   nodeName={physicalNodeName}
+                  onFullScreen={() => setFullScreenPhysicalNode(c)}
                 />
               ))}
             </div>
@@ -356,12 +361,13 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
             <p>unselected candidates</p>
             <div className={styles.physical_operator_tree_container}>
               {unselectedCandidates.map((c) => (
-                <PhysicalOperatorTree
+                <PhysicalOperatorTreeWithFullScreen
                   key={c.id}
                   data={c}
                   className={styles.operator_tree}
                   onSelect={updatePhysicalNodeName}
                   nodeName={physicalNodeName}
+                  onFullScreen={() => setFullScreenPhysicalNode(c)}
                 />
               ))}
             </div>
@@ -389,7 +395,26 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
         />
         {logicalNodeName && <OperatorCandidates />}
       </div>
+
       <Modal
+        title={`Physical Optimization for ${logicalNodeName}`}
+        style={{ top: 50 }}
+        width="60%"
+        visible={fullScreenPhysicalNode !== undefined}
+        onCancel={() => setFullScreenPhysicalNode(undefined)}
+        footer={null}
+        destroyOnClose={true}
+      >
+        <PhysicalOperatorTree
+          data={fullScreenPhysicalNode!}
+          className={styles.physical_operator_tree_modal_container}
+          onSelect={updatePhysicalNodeName}
+          nodeName={physicalNodeName}
+        />
+      </Modal>
+
+      <Modal
+        title={`Cost for ${physicalNodeName}`}
         style={{ top: 50 }}
         width="90%"
         visible={showCostTreeModal}

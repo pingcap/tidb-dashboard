@@ -268,7 +268,6 @@ export default function PhysicalCostTree({
 
   return (
     <div>
-      <h2>Cost for {name}</h2>
       {costRoot ? (
         <div
           ref={containerRef}

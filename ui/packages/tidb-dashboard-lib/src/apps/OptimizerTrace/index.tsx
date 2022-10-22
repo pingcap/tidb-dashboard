@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useState } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import { Button, Upload, Space, Alert, Tooltip, Input } from 'antd'
+import { Button, Upload, Space, Alert, Tooltip, Input, Modal } from 'antd'
 import { UploadOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { ErrorBoundary } from 'react-error-boundary'
 
@@ -258,6 +258,8 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
   const [physicalNodeName, setPhysicalNodeName] = useState('')
   const [logicalNodeName, setLogicalNodeName] = useState('')
 
+  const [showCostTreeModal, setShowCostTreeModal] = useState(false)
+
   const physicalData = data.physical
 
   let allCandidatesMap: { [x: string]: PhysicalOperatorNode } = {}
@@ -319,6 +321,11 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
   // )
   // console.log('root operator candidates:', rootOperatorCandidates)
 
+  function updatePhysicalNodeName(name: string) {
+    setPhysicalNodeName(name)
+    setShowCostTreeModal(true)
+  }
+
   const OperatorCandidates = () => {
     const selectedCandidates = operatorCandidates[logicalNodeName].filter(
       (c) => c.selected
@@ -337,7 +344,7 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
                   key={c.id}
                   data={c}
                   className={styles.operator_tree}
-                  onSelect={setPhysicalNodeName}
+                  onSelect={updatePhysicalNodeName}
                   nodeName={physicalNodeName}
                 />
               ))}
@@ -353,7 +360,7 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
                   key={c.id}
                   data={c}
                   className={styles.operator_tree}
-                  onSelect={setPhysicalNodeName}
+                  onSelect={updatePhysicalNodeName}
                   nodeName={physicalNodeName}
                 />
               ))}
@@ -382,12 +389,19 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
         />
         {logicalNodeName && <OperatorCandidates />}
       </div>
-      {physicalNodeName && (
+      <Modal
+        style={{ top: 50 }}
+        width="90%"
+        visible={showCostTreeModal}
+        onCancel={() => setShowCostTreeModal(false)}
+        footer={null}
+        destroyOnClose={true}
+      >
         <PhysicalCostTree
           costs={physicalData.costs ?? {}}
           name={physicalNodeName}
         />
-      )}
+      </Modal>
     </Card>
   )
 }

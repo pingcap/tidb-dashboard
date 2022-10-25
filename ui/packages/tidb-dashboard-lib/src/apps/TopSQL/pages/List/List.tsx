@@ -21,7 +21,7 @@ import { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import {
   Card,
   TimeRangeSelector,
-  toTimeRangeValue,
+  toTimeRangeValue as _toTimeRangeValue,
   DEFAULT_TIME_RANGE,
   Toolbar,
   AutoRefreshButton,
@@ -45,6 +45,10 @@ import { TopSQLContext } from '../../context'
 const TOP_N = 5
 const CHART_BAR_WIDTH = 8
 const RECENT_RANGE_OFFSET = -60
+
+const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
+  return _toTimeRangeValue(v, v?.type === 'recent' ? RECENT_RANGE_OFFSET : 0)
+}
 
 export function TopSQLList() {
   const ctx = useContext(TopSQLContext)
@@ -328,10 +332,7 @@ const useTopSQLData = (
       }
 
       let data: TopsqlSummaryItem[]
-      const ts = toTimeRangeValue(
-        _timeRange,
-        _timeRange.type === 'recent' ? RECENT_RANGE_OFFSET : 0
-      )
+      const ts = toTimeRangeValue(_timeRange)
       const timeWindowSize = computeTimeWindowSize(ts)
 
       const [start, end] = ts

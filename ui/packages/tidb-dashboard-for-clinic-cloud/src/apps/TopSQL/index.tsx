@@ -1,11 +1,11 @@
 import React from 'react'
 import { TopSQLApp, TopSQLProvider } from '@pingcap/tidb-dashboard-lib'
-import { getStartOptions } from '~/uilts/appOptions'
+import { getGlobalConfig } from '~/uilts/globalConfig'
 import { ctx } from './context'
 
 export default function () {
   return (
-    <TopSQLProvider value={ctx(getStartOptions().appsConfig?.topSQL || {})}>
+    <TopSQLProvider value={ctx(getGlobalConfig().appsConfig?.topSQL || {})}>
       <TopSQLApp />
     </TopSQLProvider>
   )

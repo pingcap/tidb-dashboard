@@ -141,20 +141,22 @@
 
       const apiPathBase = `/ngm/api/v1`
       startDashboard({
+        appOptions: {
+          hideNav: true,
+          skipLoadAppInfo: true,
+          skipReloadWhoAmI: true
+        },
         clientOptions: {
           apiPathBase,
-          apiToken,
+          apiToken
+        },
+        clusterInfo: {
           provider,
           region,
           orgId,
           projectId,
           clusterId,
           deployType
-        },
-        appOptions: {
-          hideNav: true,
-          skipLoadAppInfo: true,
-          skipReloadWhoAmI: true
         },
         appsConfig: {
           slowQuery: {

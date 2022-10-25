@@ -23,9 +23,9 @@ import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
 import {
   AppOptions,
   defAppOptions,
-  setStartOptions,
-  StartOptions
-} from '~/uilts/appOptions'
+  GlobalConfig,
+  setGlobalConfig
+} from '~/uilts/globalConfig'
 import AppRegistry from '~/uilts/registry'
 
 import AppOverview from '~/apps/Overview/meta'
@@ -187,11 +187,11 @@ async function webPageStart(appOptions: AppOptions) {
   singleSpa.start()
 }
 
-export function start(startOptions: StartOptions) {
+export function start(globalConfig: GlobalConfig) {
   document.title = `${distro().tidb} Dashboard`
 
-  setStartOptions(startOptions)
+  setGlobalConfig(globalConfig)
 
-  setupClient(startOptions.clientOptions)
-  webPageStart({ ...defAppOptions, ...startOptions.appOptions })
+  setupClient(globalConfig.clientOptions, globalConfig.clusterInfo)
+  webPageStart({ ...defAppOptions, ...globalConfig.appOptions })
 }

@@ -5,7 +5,7 @@ import * as singleSpa from 'single-spa'
 
 import { i18n, routing } from '@pingcap/tidb-dashboard-lib'
 
-import { AppOptions } from './appOptions'
+import { AppOptions } from './globalConfig'
 
 export default class AppRegistry {
   public defaultRouter = ''

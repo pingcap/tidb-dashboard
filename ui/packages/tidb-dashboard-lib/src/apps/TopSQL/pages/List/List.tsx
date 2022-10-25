@@ -58,15 +58,9 @@ export function TopSQLList() {
     'topsql.instance',
     null
   )
-  const [timeRange, _setTimeRange] = useSessionStorage(
+  const [timeRange, setTimeRange] = useSessionStorage(
     'topsql.recent_time_range',
     DEFAULT_TIME_RANGE
-  )
-  const setTimeRange = useCallback(
-    (value: RelativeTimeRange | AbsoluteTimeRange) => {
-      _setTimeRange(value)
-    },
-    [_setTimeRange]
   )
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)

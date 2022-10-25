@@ -27,9 +27,7 @@ import {
   AutoRefreshButton,
   TimeRange,
   fromTimeRangeValue,
-  TimeRangeValue,
-  RelativeTimeRange,
-  AbsoluteTimeRange
+  TimeRangeValue
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
@@ -58,15 +56,9 @@ export function TopSQLList() {
     'topsql.instance',
     null
   )
-  const [timeRange, _setTimeRange] = useSessionStorage(
+  const [timeRange, setTimeRange] = useSessionStorage(
     'topsql.recent_time_range',
     DEFAULT_TIME_RANGE
-  )
-  const setTimeRange = useCallback(
-    (value: RelativeTimeRange | AbsoluteTimeRange) => {
-      _setTimeRange(value)
-    },
-    [_setTimeRange]
   )
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)

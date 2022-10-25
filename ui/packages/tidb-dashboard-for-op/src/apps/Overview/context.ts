@@ -5,6 +5,7 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 
 import client from '~/client'
+import { overviewMetrics } from './metricsQueries'
 
 class DataSource implements IOverviewDataSource {
   getTiDBTopology(options?: ReqConfig) {
@@ -19,22 +20,18 @@ class DataSource implements IOverviewDataSource {
     return client.getInstance().getPDTopology(options)
   }
 
-  metricsQueryGet(
-    endTimeSec?: number,
-    query?: string,
-    startTimeSec?: number,
-    stepSec?: number,
-    options?: ReqConfig
-  ) {
-    return client.getInstance().metricsQueryGet(
-      {
-        endTimeSec,
-        query,
-        startTimeSec,
-        stepSec
-      },
-      options
-    )
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }) {
+    return client
+      .getInstance()
+      .metricsQueryGet(params, {
+        handleError: 'custom'
+      } as ReqConfig)
+      .then((res) => res.data)
   }
 
   getGrafanaTopology(options?: ReqConfig) {
@@ -54,5 +51,9 @@ const ds = new DataSource()
 
 export const ctx: IOverviewContext = {
   ds,
-  cfg: { apiPathBase: client.getBasePath() }
+  cfg: {
+    apiPathBase: client.getBasePath(),
+    metricsQueries: overviewMetrics,
+    promAddrConfigurable: true
+  }
 }

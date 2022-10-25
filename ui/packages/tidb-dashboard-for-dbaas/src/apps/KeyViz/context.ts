@@ -42,5 +42,6 @@ class DataSource implements IKeyVizDataSource {
 const ds = new DataSource()
 
 export const ctx: () => IKeyVizContext = () => ({
-  ds
+  ds,
+  cfg: { showHelp: false }
 })

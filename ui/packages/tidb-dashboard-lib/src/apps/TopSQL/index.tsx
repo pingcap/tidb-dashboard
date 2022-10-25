@@ -12,6 +12,8 @@ import translations from './translations'
 addTranslations(translations)
 
 function AppRoutes() {
+  const ctx = useContext(TopSQLContext)
+
   useLocationChange()
 
   return (
@@ -19,9 +21,13 @@ function AppRoutes() {
       <Route
         path="/topsql"
         element={
-          <NgmNotStartedGuard>
+          ctx?.cfg.checkNgm ? (
+            <NgmNotStartedGuard>
+              <TopSQLList />
+            </NgmNotStartedGuard>
+          ) : (
             <TopSQLList />
-          </NgmNotStartedGuard>
+          )
         }
       />
     </Routes>

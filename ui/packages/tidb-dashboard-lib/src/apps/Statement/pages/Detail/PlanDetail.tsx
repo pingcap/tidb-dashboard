@@ -10,8 +10,7 @@ import {
   Expand,
   HighlightSQL,
   Pre,
-  TextWithInfo,
-  TreeDiagramView
+  TextWithInfo
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import formatSql from '@lib/utils/sqlFormatter'
@@ -28,6 +27,11 @@ import { StatementContext } from '../../context'
 //   RawNodeDatum,
 //   DetailDrawer
 // } from 'visual-plan'
+
+import {
+  VisualPlanThumbnailView,
+  VisualPlanView
+} from '@lib/components/VisualPlan'
 
 import {
   VisualPlanThumbnailView,
@@ -255,27 +259,11 @@ function PlanDetail({ query }: IPlanDetailProps) {
                           height: window.innerHeight - 100
                         }}
                       >
-                        {/* <TreeDiagramView
-                          data={
-                            binaryPlan.ctes
-                              ? [binaryPlan.main].concat(binaryPlan.ctes)
-                              : [binaryPlan.main]
-                          }
-                          showMinimap={true}
-                        /> */}
                         <VisualPlanView data={binaryPlan} />
                       </Modal>
                       <Descriptions>
                         <Descriptions.Item span={2}>
                           <div onClick={() => toggleVisualPlan('open')}>
-                            {/* <TreeDiagramView
-                              data={
-                                binaryPlan.ctes
-                                  ? [binaryPlan.main].concat(binaryPlan.ctes)
-                                  : [binaryPlan.main]
-                              }
-                              isThumbnail={true}
-                            /> */}
                             <VisualPlanThumbnailView data={binaryPlan} />
                           </div>
                         </Descriptions.Item>

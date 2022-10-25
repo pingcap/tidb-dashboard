@@ -1,6 +1,7 @@
 import {
   ITopSQLDataSource,
   ITopSQLContext,
+  ITopSQLConfig,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
@@ -44,6 +45,11 @@ class DataSource implements ITopSQLDataSource {
 
 const ds = new DataSource()
 
-export const ctx: ITopSQLContext = {
-  ds
-}
+export const ctx: (cfg: Partial<ITopSQLConfig>) => ITopSQLContext = (cfg) => ({
+  ds,
+  cfg: {
+    checkNgm: true,
+    showSetting: true,
+    ...cfg
+  }
+})

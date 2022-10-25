@@ -109,6 +109,10 @@ slow_query:
     status:
       success: Success
       error: Failed
+  overview:
+    empty_result: No matched slow queries
+    result_count: Get {{ n }} results.
+    slow_load_info: On-the-fly update is disabled due to slow data loading. You can initiate query manually by clicking the "Query" button.
   detail:
     head:
       title: Slow Query Detail

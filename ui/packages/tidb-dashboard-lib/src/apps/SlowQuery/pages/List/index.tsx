@@ -9,7 +9,8 @@ import {
   Menu,
   Dropdown,
   Alert,
-  Tooltip
+  Tooltip,
+  Result
 } from 'antd'
 import {
   LoadingOutlined,
@@ -66,10 +67,12 @@ function List() {
   const controller = useSlowQueryTableController({
     cacheMgr,
     showFullSQL,
+    fetchSchemas: ctx?.cfg.showDBFilter,
     initialQueryOptions: {
       ...DEF_SLOW_QUERY_OPTIONS,
       visibleColumnKeys
     },
+
     ds: ctx!.ds
   })
 
@@ -241,7 +244,7 @@ function List() {
                 </div>
               </Dropdown>
             )}
-            {!isDistro() && (
+            {!isDistro() && (ctx!.cfg.showHelp ?? true) && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}
@@ -258,20 +261,34 @@ function List() {
           </Space>
         </Toolbar>
       </Card>
-      <div style={{ height: '100%', position: 'relative' }}>
-        <ScrollablePane>
-          {controller.isDataLoadedSlowly && (
-            <Card noMarginBottom noMarginTop>
-              <Alert
-                message={t('statement.pages.overview.slow_load_info')}
-                type="info"
-                showIcon
-              />
-            </Card>
-          )}
-          <SlowQueriesTable cardNoMarginTop controller={controller} />
-        </ScrollablePane>
-      </div>
+
+      {controller.data?.length === 0 ? (
+        <Result title={t('slow_query.overview.empty_result')} />
+      ) : (
+        <div style={{ height: '100%', position: 'relative' }}>
+          <ScrollablePane>
+            {controller.isDataLoadedSlowly && (
+              <Card noMarginBottom noMarginTop>
+                <Alert
+                  message={t('slow_query.overview.slow_load_info')}
+                  type="info"
+                  showIcon
+                />
+              </Card>
+            )}
+            {(controller.data?.length ?? 0) > 0 && (
+              <Card noMarginBottom noMarginTop>
+                <p className="ant-form-item-extra">
+                  {t('slow_query.overview.result_count', {
+                    n: controller.data?.length
+                  })}
+                </p>
+              </Card>
+            )}
+            <SlowQueriesTable cardNoMarginTop controller={controller} />
+          </ScrollablePane>
+        </div>
+      )}
     </div>
   )
 }

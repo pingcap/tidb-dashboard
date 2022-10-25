@@ -25,6 +25,12 @@
         left: 50%;
       }
 
+      #dashboard_page_spinner p {
+        margin-left: -50%;
+        margin-top: 8px;
+        color: #888;
+      }
+
       .dot-flashing {
         position: relative;
         width: 10px;
@@ -93,36 +99,40 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
+
+    <div id="dashboard_page_spinner">
+      <div class="dot-flashing"></div>
+      <p>
+        It may take a bit long time to load for the first time, due to download
+        some js files.
+      </p>
+    </div>
     <div id="root"></div>
-    <script
-      type="module"
-      src="./dashboardApp.js?t=%TIME_PLACE_HOLDER%"
-    ></script>
 
-    <script>
-      window.onload = function () {
-        const searchParams = new URLSearchParams(window.location.search)
-        const orgId = searchParams.get('orgId') || ''
-        const clusterId = searchParams.get('clusterId') || ''
-        if (orgId === '' || clusterId === '') {
-          window.alert('Invalid orgId or clusterId parameter!')
-          return
-        }
+    <script type="module">
+      import startDashboard from './dashboardApp.js?t=%TIME_PLACE_HOLDER%'
 
-        const apiBasePath = `/clinic/api/v1/dashboard/proxy/cluster/${clusterId}/pd/dashboard/api`
-        window.dispatchEvent(
-          new CustomEvent('dashboard:portal_event', {
-            detail: {
-              type: 'DASHBOARD_PORTAL_EVENT',
-              token: localStorage.getItem('clinic.auth.csrf_token'),
-              apiBasePath,
-              orgId,
-              clusterId
-            }
-          })
-        )
+      const apiToken = localStorage.getItem('clinic.auth.csrf_token')
+
+      // example entry link:
+      // http://localhost:8181/clinic/dashboard/cloud/?orgId=1&clusterId=63405#/overview
+      const searchParams = new URLSearchParams(window.location.search)
+      const orgId = searchParams.get('orgId') || ''
+      const clusterId = searchParams.get('clusterId') || ''
+      if (apiToken === '' || orgId === '' || clusterId === '') {
+        window.alert('Invalid token, orgId or clusterId!')
+        window.location.assign('/')
       }
+
+      const apiPathBase = `/clinic/api/v1/dashboard/proxy/orgs/${orgId}/clusters/${clusterId}/pd/dashboard/api`
+      startDashboard({
+        clientOptions: {
+          apiPathBase,
+          apiToken,
+          orgId,
+          clusterId
+        }
+      })
     </script>
   </body>
 </html>

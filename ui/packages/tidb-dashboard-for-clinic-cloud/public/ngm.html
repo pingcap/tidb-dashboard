@@ -2,8 +2,12 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="favicon.ico" />
+    <link rel="icon" href="./distro-res/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Cache-control"
+      content="no-cache, no-store, must-revalidate"
+    />
     <style>
       body {
         margin: 0;
@@ -19,6 +23,12 @@
         position: absolute;
         top: 50%;
         left: 50%;
+      }
+
+      #dashboard_page_spinner p {
+        margin-left: -50%;
+        margin-top: 8px;
+        color: #888;
       }
 
       .dot-flashing {
@@ -85,49 +95,74 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="main.css?h=%CSS_CONTENT_HASH%" />
+    <link rel="stylesheet" href="./dashboardApp.css?t=%TIME_PLACE_HOLDER%" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
+
+    <div id="dashboard_page_spinner">
+      <div class="dot-flashing"></div>
+      <p>
+        It may take a bit long time to load for the first time, due to download
+        some js files.
+      </p>
+    </div>
     <div id="root"></div>
+
     <script type="module">
-      import startDashboard from './main.js?h=%JS_CONTENT_HASH%'
+      import startDashboard from './dashboardApp.js?t=%TIME_PLACE_HOLDER%'
 
-      // keep it here for debugging when dbaas doesn't work
-      // const apiPathBase = 'http://localhost:2379/dashboard/api'
-      // fetch(`${apiPathBase}/user/login`, {
-      //   method: 'POST',
-      //   body: JSON.stringify({ username: 'root', type: 0 })
-      // })
-      //   .then((res) => res.json())
-      //   .then(({ token }) => {
-      //     if (window.location.hash === '') {
-      //       window.location.hash = '#/statement'
-      //     }
+      const apiToken = localStorage.getItem('clinic.auth.csrf_token')
 
-      //     document.getElementById('dashboard_page_spinner').remove()
-      //     startDashboard({ apiPathBase, apiToken: token, timezone: 14 })
-      //   })
-
-      document.getElementById('dashboard_page_spinner').remove()
-
-      const apiPathBase = localStorage.getItem('dbaas.dashboard_url') + 'api'
-      const apiToken = localStorage.getItem('id_token')
-      const mixpanelUser = localStorage.getItem('dbaas.mixpanel_user')
-      const timezoneStr = localStorage.getItem('dbaas.tenant_time_zone')
-      let timezone = parseInt(timezoneStr)
-      if (timezone === NaN) {
-        timezone = null
+      // example entry link:
+      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992#/slow_query
+      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992#/topsql
+      const searchParams = new URLSearchParams(window.location.search)
+      const provider = searchParams.get('provider') || ''
+      const region = searchParams.get('region') || ''
+      const orgId = searchParams.get('orgId') || ''
+      const projectId = searchParams.get('projectId') || ''
+      const clusterId = searchParams.get('clusterId') || ''
+      if (
+        apiToken === '' ||
+        provider === '' ||
+        region === '' ||
+        orgId === '' ||
+        projectId === '' ||
+        clusterId === ''
+      ) {
+        window.alert(
+          'Invalid token, provider, region, orgId, projectId or clusterId!'
+        )
+        window.location.assign('/')
       }
-      const promBaseUrl = localStorage.getItem('dbaas.cluster_prom_base_url')
 
+      const apiPathBase = `/ngm/api/v1`
       startDashboard({
-        apiPathBase,
-        apiToken,
-        mixpanelUser,
-        timezone,
-        promBaseUrl
+        clientOptions: {
+          apiPathBase,
+          apiToken,
+          provider,
+          region,
+          orgId,
+          projectId,
+          clusterId
+        },
+        appOptions: {
+          hideNav: true,
+          skipLoadAppInfo: true,
+          skipReloadWhoAmI: true
+        },
+        appsConfig: {
+          slowQuery: {
+            enableExport: false,
+            showDBFilter: false
+          },
+          topSQL: {
+            checkNgm: false,
+            showSetting: false
+          }
+        }
       })
     </script>
   </body>

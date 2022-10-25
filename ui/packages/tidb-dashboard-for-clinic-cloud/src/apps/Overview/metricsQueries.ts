@@ -1,91 +1,100 @@
-import { TransformNullValue } from '@lib/utils/prometheus'
+import {
+  TransformNullValue,
+  OverviewMetricsQueryType
+} from '@pingcap/tidb-dashboard-lib'
 
-const overviewMetrics = [
+const overviewMetrics: OverviewMetricsQueryType[] = [
   {
     title: 'total_requests',
     queries: [
       {
-        query: 'sum(rate(tidb_executor_statement_total[$__rate_interval]))',
-        name: 'Total'
+        promql: 'sum(rate(tidb_executor_statement_total[$__rate_interval]))',
+        name: 'Total',
+        type: 'line'
       },
       {
-        query:
+        promql:
           'sum(rate(tidb_executor_statement_total[$__rate_interval])) by (type)',
-        name: '{type}'
+        name: '{type}',
+        type: 'line'
       }
     ],
     nullValue: TransformNullValue.AS_ZERO,
-    unit: 'qps',
-    type: 'line'
+    unit: 'short'
   },
   {
     title: 'latency',
     queries: [
       {
-        query:
+        promql:
           'sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval]))',
-        name: 'avg'
+        name: 'avg',
+        type: 'line'
       },
       {
-        query:
+        promql:
           'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!="internal"}[$__rate_interval])) by (le))',
-        name: '99'
+        name: '99',
+        type: 'line'
       },
       {
-        query:
+        promql:
           'sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval])) by (sql_type)',
-        name: 'avg-{sql_type}'
+        name: 'avg-{sql_type}',
+        type: 'line'
       },
       {
-        query:
+        promql:
           'histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!="internal"}[$__rate_interval])) by (le,sql_type))',
-        name: '99-{sql_type}'
+        name: '99-{sql_type}',
+        type: 'line'
       }
     ],
     nullValue: TransformNullValue.AS_ZERO,
-    unit: 's',
-    type: 'line'
+    unit: 's'
   },
   {
     title: 'cpu',
     queries: [
       {
-        query: 'rate(process_cpu_seconds_total{job="tidb"}[$__rate_interval])',
-        name: '{instance}'
+        promql:
+          'irate(process_cpu_seconds_total{component="tidb"}[$__rate_interval])',
+        name: '{instance}',
+        type: 'line'
       }
     ],
     nullValue: TransformNullValue.AS_ZERO,
-    unit: 'percentunit',
-    type: 'line'
+    unit: 'percentunit'
   },
   {
     title: 'memory',
     queries: [
       {
-        query: 'process_resident_memory_bytes{job="tidb"}',
-        name: '{instance}'
+        promql: 'process_resident_memory_bytes{component="tidb"}',
+        name: '{instance}',
+        type: 'line'
       }
     ],
     nullValue: TransformNullValue.AS_ZERO,
-    unit: 'bytes',
-    type: 'line'
+    unit: 'bytes'
   },
   {
     title: 'io',
     queries: [
       {
-        query:
-          'sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance) + sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance)',
-        name: '{instance}-write'
+        promql:
+          'sum(rate(tikv_engine_flow_bytes{db="kv", type="wal_file_bytes"}[$__rate_interval])) by (instance) + (sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance) or (0 * sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance))) + (sum(rate(raft_engine_write_size_sum[$__rate_interval])) by (instance) or (0 * sum(rate(tikv_engine_flow_bytes{db="raft", type="wal_file_bytes"}[$__rate_interval])) by (instance)))',
+        name: '{instance}-write',
+        type: 'line'
       },
       {
-        query:
+        promql:
           'sum(rate(tikv_engine_flow_bytes{db="kv", type=~"bytes_read|iter_bytes_read"}[$__rate_interval])) by (instance)',
-        name: '{instance}-read'
+        name: '{instance}-read',
+        type: 'line'
       }
     ],
-    unit: 'Bps',
-    type: 'line'
+    unit: 'Bps'
   }
 ]
 

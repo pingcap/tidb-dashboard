@@ -150,6 +150,7 @@ export default function StatementsOverview() {
       searchText: filterText,
       visibleColumnKeys
     })
+    stmtTelmetry.search()
   })
 
   const sendQueryDebounced = useDebounceFn(sendQueryNow, {
@@ -309,7 +310,7 @@ export default function StatementsOverview() {
                 </div>
               </Dropdown>
             )}
-            {!isDistro() && (
+            {!isDistro() && (ctx!.cfg.showHelp ?? true) && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}
@@ -354,6 +355,11 @@ export default function StatementsOverview() {
                   <DateTime.Calendar
                     unixTimestampMs={dataTimeRange[1] * 1000}
                   />
+                  <div>
+                    {t('statement.pages.overview.result_count', {
+                      n: controller.data?.list.length
+                    })}
+                  </div>
                 </p>
               </Card>
             )}

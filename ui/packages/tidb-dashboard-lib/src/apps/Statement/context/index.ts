@@ -64,6 +64,7 @@ export interface IStatementContext {
   ds: IStatementDataSource
   cfg: IContextConfig & {
     enableExport: boolean
+    showHelp?: boolean
   }
 }
 

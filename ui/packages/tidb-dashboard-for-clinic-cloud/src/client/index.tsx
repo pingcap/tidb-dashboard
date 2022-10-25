@@ -105,6 +105,7 @@ export type ClientOptions = {
   orgId?: string
   projectId?: string
   clusterId?: string
+  deployType?: string // dedicated / shared
 }
 
 function initAxios({
@@ -113,7 +114,8 @@ function initAxios({
   region,
   orgId,
   projectId,
-  clusterId
+  clusterId,
+  deployType
 }: Omit<ClientOptions, 'apiPathBase'>) {
   let headers = {}
   headers['x-csrf-token'] = apiToken
@@ -131,6 +133,9 @@ function initAxios({
   }
   if (clusterId) {
     headers['x-cluster-id'] = clusterId
+  }
+  if (deployType) {
+    headers['x-deploy-type'] = deployType
   }
   const instance = axios.create({ headers })
   applyErrorHandlerInterceptor(instance)

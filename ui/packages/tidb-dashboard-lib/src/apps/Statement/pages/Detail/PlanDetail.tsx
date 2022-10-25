@@ -33,11 +33,6 @@ import {
   VisualPlanView
 } from '@lib/components/VisualPlan'
 
-import {
-  VisualPlanThumbnailView,
-  VisualPlanView
-} from '@lib/components/VisualPlan'
-
 export interface IQuery extends IPageQuery {
   plans: string[]
   allPlans: number

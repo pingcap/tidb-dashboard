@@ -50,13 +50,16 @@ export type TimeRangeValue = [minSecond: number, maxSecond: number]
 
 export type TimeRange = RelativeTimeRange | AbsoluteTimeRange
 
-export function toTimeRangeValue(timeRange?: TimeRange): TimeRangeValue {
+export function toTimeRangeValue(
+  timeRange?: TimeRange,
+  offset = 0
+): TimeRangeValue {
   let t2 = timeRange ?? DEFAULT_TIME_RANGE
   if (t2.type === 'absolute') {
-    return [...t2.value]
+    return t2.value.map((t) => t + offset) as TimeRangeValue
   } else {
     const now = dayjs().unix()
-    return [now - t2.value, now + 1]
+    return [now - t2.value + offset, now + 1 + offset]
   }
 }
 

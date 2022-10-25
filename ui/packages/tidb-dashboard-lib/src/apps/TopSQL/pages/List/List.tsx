@@ -27,7 +27,9 @@ import {
   AutoRefreshButton,
   TimeRange,
   fromTimeRangeValue,
-  TimeRangeValue
+  TimeRangeValue,
+  RelativeTimeRange,
+  AbsoluteTimeRange
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
@@ -44,6 +46,7 @@ import { TopSQLContext } from '../../context'
 
 const TOP_N = 5
 const CHART_BAR_WIDTH = 8
+const RECENT_RANGE_OFFSET = -60
 
 export function TopSQLList() {
   const ctx = useContext(TopSQLContext)
@@ -55,9 +58,15 @@ export function TopSQLList() {
     'topsql.instance',
     null
   )
-  const [timeRange, setTimeRange] = useSessionStorage(
+  const [timeRange, _setTimeRange] = useSessionStorage(
     'topsql.recent_time_range',
     DEFAULT_TIME_RANGE
+  )
+  const setTimeRange = useCallback(
+    (value: RelativeTimeRange | AbsoluteTimeRange) => {
+      _setTimeRange(value)
+    },
+    [_setTimeRange]
   )
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -327,7 +336,10 @@ const useTopSQLData = (
       }
 
       let data: TopsqlSummaryItem[]
-      const ts = toTimeRangeValue(_timeRange)
+      const ts = toTimeRangeValue(
+        _timeRange,
+        _timeRange.type === 'recent' ? RECENT_RANGE_OFFSET : 0
+      )
       const timeWindowSize = computeTimeWindowSize(ts)
 
       const [start, end] = ts

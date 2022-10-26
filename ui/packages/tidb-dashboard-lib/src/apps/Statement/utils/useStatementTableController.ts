@@ -153,12 +153,23 @@ export default function useStatementTableController({
     ds.statementsAvailableFieldsGet
   )
 
+  // By PR https://github.com/pingcap/tidb-dashboard/pull/1234 (feat: improve statement)
+  // The statement API logic changes a bit
+  // The new UI can't work with the old tidb-dashboard backend API well
+  // So we try to make the new UI compatible with the old tidb-dashboard backend
+  // By enlarging the selected time range with window size
+  const [windowSize, setWindowSize] = useState(0)
+  // assume the backend is old at first
+  // then update it after the first request
+  const [oldBackend, setOldBackend] = useState(true)
+
   // Reload these options when sending a new request.
   useChange(() => {
     async function queryStatementStatus() {
       try {
         const res = await ds.statementsConfigGet({ handleError: 'custom' })
         setEnabled(res?.data.enable!)
+        setWindowSize(res?.data?.refresh_interval ?? 0)
       } catch (e) {
         setErrors((prev) => prev.concat(e))
       }
@@ -235,6 +246,11 @@ export default function useStatementTableController({
       setDataLoading(true)
 
       const timeRange = toTimeRangeValue(queryOptions.timeRange)
+      // enlarge the time range automatically for old tidb-dashboard backend
+      if (oldBackend) {
+        timeRange[0] -= windowSize
+        timeRange[1] += windowSize
+      }
 
       try {
         const res = await ds.statementsListGet(
@@ -249,6 +265,12 @@ export default function useStatementTableController({
         const data = {
           list: res?.data || [],
           timeRange
+        }
+        // if we have checked it is new backend (aka oldBackend === false)
+        // we don't check it again
+        if (oldBackend) {
+          // old backend api has no `summary_begin_time` field
+          setOldBackend(data.list[0]?.summary_begin_time === undefined)
         }
         setData(data)
         setErrors([])
@@ -271,7 +293,7 @@ export default function useStatementTableController({
     }
 
     queryStatementList()
-  }, [queryOptions])
+  }, [queryOptions, windowSize, oldBackend])
 
   const availableColumnsInTable = useMemo(
     () => statementColumns(data?.list ?? [], schemaColumns, showFullSQL),

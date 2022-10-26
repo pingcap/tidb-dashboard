@@ -49,12 +49,25 @@ function start(globalConfig: IGlobalConfig) {
   setupClient(apiPathBase, apiToken)
   loadWhoAmI()
   loadAppInfo()
+
   // telemetry
   telemetry.init(
     process.env.REACT_APP_MIXPANEL_HOST,
     process.env.REACT_APP_MIXPANEL_TOKEN
   )
-  telemetry.enable(`tidb-dashboard-for-dbaas-${process.env.REACT_APP_VERSION}`)
+  const {
+    clusterInfo: { orgId, tenantPlan, projectId, clusterId, deployType }
+  } = globalConfig
+  telemetry.enable(
+    `tidb-dashboard-for-dbaas-${process.env.REACT_APP_VERSION}`,
+    {
+      tenant_id: orgId,
+      tenant_plan: tenantPlan,
+      project_id: projectId,
+      cluster_id: clusterId,
+      deploy_type: deployType
+    }
+  )
   if (mixpanelUser) {
     telemetry.identifyUser(mixpanelUser)
   }

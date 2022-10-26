@@ -122,12 +122,17 @@
       }
       const promBaseUrl = localStorage.getItem('dbaas.cluster_prom_base_url')
 
+      const clusterInfo = JSON.parse(
+        localStorage.getItem('dbaas.cluster_info') ?? '{}'
+      )
+
       startDashboard({
         apiPathBase,
         apiToken,
         mixpanelUser,
         timezone,
-        promBaseUrl
+        promBaseUrl,
+        clusterInfo
       })
     </script>
   </body>

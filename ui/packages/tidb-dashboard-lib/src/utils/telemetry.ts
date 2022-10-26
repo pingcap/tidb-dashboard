@@ -25,10 +25,14 @@ function init(apiHost?: string, token?: string) {
   mixpanel.opt_out_tracking()
 }
 
-function enable(dashboardVersion: string) {
+function enable(
+  dashboardVersion: string,
+  extraData: { [k: string]: any } = {}
+) {
   mixpanel.register({
     $current_url: getPathInLocationHash(),
-    dashboard_version: dashboardVersion
+    dashboard_version: dashboardVersion,
+    ...extraData
   })
   mixpanel.opt_in_tracking()
 }

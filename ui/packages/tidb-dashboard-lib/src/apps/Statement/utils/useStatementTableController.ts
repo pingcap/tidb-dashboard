@@ -105,6 +105,7 @@ export interface IStatementTableController {
 
   orderOptions: IOrderOptions
   changeOrder: (orderBy: string, desc: boolean) => void
+  resetOrder: () => void
 
   isEnabled: boolean // returned from backend
   isLoading: boolean
@@ -133,6 +134,9 @@ export default function useStatementTableController({
     persistQueryInSession,
     DEF_ORDER_OPTIONS
   )
+  function resetOrder() {
+    changeOrder(DEF_ORDER_OPTIONS.orderBy, DEF_ORDER_OPTIONS.desc)
+  }
 
   const { queryOptions, setQueryOptions } = useQueryOptions(
     initialQueryOptions,
@@ -287,6 +291,7 @@ export default function useStatementTableController({
 
     orderOptions,
     changeOrder,
+    resetOrder,
 
     isEnabled,
     isLoading: isColumnsLoading || isDataLoading || isOptionsLoading,

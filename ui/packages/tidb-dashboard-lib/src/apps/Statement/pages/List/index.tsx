@@ -30,7 +30,8 @@ import {
   TimeRangeSelector,
   TimeRange,
   DateTime,
-  toTimeRangeValue
+  toTimeRangeValue,
+  IColumnKeys
 } from '@lib/components'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { StatementsTable } from '../../components'
@@ -99,6 +100,14 @@ export default function StatementsOverview() {
     },
     ds: ctx!.ds
   })
+  function updateVisibleColumnKeys(v: IColumnKeys) {
+    setVisibleColumnKeys(v)
+    stmtTelmetry.changeVisibleColumns(v)
+
+    if (v[controller.orderOptions.orderBy] !== true) {
+      controller.resetOrder()
+    }
+  }
 
   function menuItemClick({ key }) {
     switch (key) {
@@ -266,10 +275,7 @@ export default function StatementsOverview() {
                 columns={controller.availableColumnsInTable}
                 visibleColumnKeys={visibleColumnKeys}
                 defaultVisibleColumnKeys={DEF_STMT_COLUMN_KEYS}
-                onChange={(v) => {
-                  setVisibleColumnKeys(v)
-                  stmtTelmetry.changeVisibleColumns(v)
-                }}
+                onChange={updateVisibleColumnKeys}
                 foot={
                   <Checkbox
                     checked={showFullSQL}

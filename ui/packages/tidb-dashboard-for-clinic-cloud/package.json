@@ -1,6 +1,6 @@
 {
   "name": "@pingcap/tidb-dashboard-for-clinic-cloud",
-  "version": "0.0.22",
+  "version": "0.0.24",
   "main": "dist/dashboardApp.js",
   "module": "dist/dashboardApp.js",
   "files": [

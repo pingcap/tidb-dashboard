@@ -344,25 +344,29 @@ export default function StatementsOverview() {
                 />
               </Card>
             )}
-            {dataTimeRange && (
-              <Card noMarginBottom noMarginTop>
-                <p className="ant-form-item-extra">
-                  {t('statement.pages.overview.actual_range')}
-                  <DateTime.Calendar
-                    unixTimestampMs={dataTimeRange[0] * 1000}
-                  />
-                  {' ~ '}
-                  <DateTime.Calendar
-                    unixTimestampMs={dataTimeRange[1] * 1000}
-                  />
+            <Card noMarginBottom noMarginTop>
+              <p className="ant-form-item-extra">
+                {dataTimeRange && (
+                  <div>
+                    {t('statement.pages.overview.actual_range')}
+                    <DateTime.Calendar
+                      unixTimestampMs={dataTimeRange[0] * 1000}
+                    />
+                    {' ~ '}
+                    <DateTime.Calendar
+                      unixTimestampMs={dataTimeRange[1] * 1000}
+                    />
+                  </div>
+                )}
+                {(controller.data?.list.length ?? 0) > 0 && (
                   <div>
                     {t('statement.pages.overview.result_count', {
                       n: controller.data?.list.length
                     })}
                   </div>
-                </p>
-              </Card>
-            )}
+                )}
+              </p>
+            </Card>
             <StatementsTable cardNoMarginTop controller={controller} />
           </ScrollablePane>
         </div>

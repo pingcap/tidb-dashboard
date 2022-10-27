@@ -115,48 +115,54 @@
       const apiToken = localStorage.getItem('clinic.auth.csrf_token')
 
       // example entry link:
-      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992#/slow_query
-      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992#/topsql
+      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992&deployType=shared#/slow_query
+      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992&deployType=dedicated#/topsql
       const searchParams = new URLSearchParams(window.location.search)
       const provider = searchParams.get('provider') || ''
       const region = searchParams.get('region') || ''
       const orgId = searchParams.get('orgId') || ''
       const projectId = searchParams.get('projectId') || ''
       const clusterId = searchParams.get('clusterId') || ''
+      const deployType = searchParams.get('deployType') || ''
       if (
         apiToken === '' ||
         provider === '' ||
         region === '' ||
         orgId === '' ||
         projectId === '' ||
-        clusterId === ''
+        clusterId === '' ||
+        deployType === ''
       ) {
         window.alert(
-          'Invalid token, provider, region, orgId, projectId or clusterId!'
+          'Invalid token, provider, region, orgId, projectId, clusterId or deployType!'
         )
         window.location.assign('/')
       }
 
       const apiPathBase = `/ngm/api/v1`
       startDashboard({
-        clientOptions: {
-          apiPathBase,
-          apiToken,
-          provider,
-          region,
-          orgId,
-          projectId,
-          clusterId
-        },
         appOptions: {
           hideNav: true,
           skipLoadAppInfo: true,
           skipReloadWhoAmI: true
         },
+        clientOptions: {
+          apiPathBase,
+          apiToken
+        },
+        clusterInfo: {
+          provider,
+          region,
+          orgId,
+          projectId,
+          clusterId,
+          deployType
+        },
         appsConfig: {
           slowQuery: {
             enableExport: false,
-            showDBFilter: false
+            showDBFilter: false,
+            listApiReturnDetail: true // so we can use the result returned by list api in the detail page, avoid reqeust detail api
           },
           topSQL: {
             checkNgm: false,

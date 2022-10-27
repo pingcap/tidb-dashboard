@@ -25,7 +25,7 @@ interface IMetricConfig {
   promAddrConfigurable?: boolean
   timeRangeSelector?: {
     recent_seconds: number[]
-    withAbsoluteRangePicker: boolean
+    customAbsoluteRangePicker: boolean
   }
 }
 

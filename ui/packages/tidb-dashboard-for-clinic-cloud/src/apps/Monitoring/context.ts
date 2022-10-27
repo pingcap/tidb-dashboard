@@ -32,7 +32,10 @@ const RECENT_SECONDS = [
   3 * 60 * 60,
   6 * 60 * 60,
   12 * 60 * 60,
-  24 * 60 * 60
+  24 * 60 * 60,
+  2 * 24 * 60 * 60,
+  7 * 24 * 60 * 60,
+  15 * 24 * 60 * 60
 ]
 
 const ds = new DataSource()
@@ -44,7 +47,7 @@ export const ctx: IMonitoringContext = {
       getMonitoringItems(pdVersion),
     timeRangeSelector: {
       recent_seconds: RECENT_SECONDS,
-      withAbsoluteRangePicker: false
+      customAbsoluteRangePicker: true
     }
   }
 }

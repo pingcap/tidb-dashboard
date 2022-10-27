@@ -79,8 +79,8 @@ export default function Monitoring() {
                 telemetry.selectTimeRange(v)
               }}
               recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
-              withAbsoluteRangePicker={
-                ctx?.cfg.timeRangeSelector?.withAbsoluteRangePicker
+              customAbsoluteRangePicker={
+                ctx?.cfg.timeRangeSelector?.customAbsoluteRangePicker
               }
               onZoomOutClick={(start, end) =>
                 telemetry.clickZoomOut([start, end])

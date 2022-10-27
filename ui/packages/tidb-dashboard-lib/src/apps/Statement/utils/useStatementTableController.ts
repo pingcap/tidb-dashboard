@@ -154,7 +154,9 @@ export default function useStatementTableController({
   )
 
   // By PR https://github.com/pingcap/tidb-dashboard/pull/1234 (feat: improve statement)
+  // which brings in v2022.05.16.1 and PD >=5.4.2, >=6.1.0
   // The statement API logic changes a bit
+  // related code: https://github.com/pingcap/tidb-dashboard/pull/1234/files#diff-4bebd6011f602ac611ee19697803dc09877df197bf0176d1f27f84133b15e68bR54
   // The new UI can't work with the old tidb-dashboard backend API well
   // So we try to make the new UI compatible with the old tidb-dashboard backend
   // By enlarging the selected time range with window size

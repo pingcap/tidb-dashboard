@@ -65,7 +65,10 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
     err.message = content
     err.errCode = errCode
 
-    if (errCode === 'common.unauthenticated') {
+    if (
+      errCode === 'common.unauthenticated' ||
+      errCode === 'error.api.unauthorized' // compatible with old tidb-dashboard backend
+    ) {
       // Handle unauthorized error in a unified way
       if (!routing.isLocationMatch('/') && !routing.isSignInPage()) {
         message.error({ content, key: errCode })

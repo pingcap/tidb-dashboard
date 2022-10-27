@@ -1,12 +1,12 @@
 import React from 'react'
 import { SlowQueryApp, SlowQueryProvider } from '@pingcap/tidb-dashboard-lib'
-import { getStartOptions } from '~/uilts/appOptions'
+import { getGlobalConfig } from '~/uilts/globalConfig'
 import { ctx } from './context'
 
 export default function () {
   return (
     <SlowQueryProvider
-      value={ctx(getStartOptions().appsConfig?.slowQuery || {})}
+      value={ctx(getGlobalConfig().appsConfig?.slowQuery || {})}
     >
       <SlowQueryApp />
     </SlowQueryProvider>

@@ -2,12 +2,15 @@ import {
   ISlowQueryDataSource,
   ISlowQueryContext,
   ISlowQueryConfig,
+  ISlowQueryEvent,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
-import client from '~/client'
+import client, { SlowqueryModel } from '~/client'
 
 class DataSource implements ISlowQueryDataSource {
+  constructor(public cache: SlowqueryModel[]) {}
+
   infoListDatabases(options?: ReqConfig) {
     return client.getInstance().infoListDatabases(options)
   }
@@ -52,14 +55,26 @@ class DataSource implements ISlowQueryDataSource {
     timestamp?: number,
     options?: ReqConfig
   ) {
-    return client.getInstance().slowQueryDetailGet(
-      {
-        connectId,
-        digest,
-        timestamp
-      },
-      options
-    )
+    // to make this.cache as small as possible
+    const cachedItem = this.cache.pop()
+    if (cachedItem) {
+      return Promise.resolve({
+        data: cachedItem,
+        status: 200,
+        statusText: 'ok',
+        headers: {},
+        config: {}
+      })
+    } else {
+      return client.getInstance().slowQueryDetailGet(
+        {
+          connectId,
+          digest,
+          timestamp
+        },
+        options
+      )
+    }
   }
 
   slowQueryDownloadTokenPost(request: any, options?: ReqConfig) {
@@ -67,16 +82,32 @@ class DataSource implements ISlowQueryDataSource {
   }
 }
 
-const ds = new DataSource()
+class EventHandler implements ISlowQueryEvent {
+  constructor(
+    public listApiReturnDetail: boolean,
+    public cache: SlowqueryModel[]
+  ) {}
+
+  selectSlowQueryItem(item: any) {
+    if (this.listApiReturnDetail === true) {
+      this.cache.push(item)
+    }
+  }
+}
 
 export const ctx: (cfg: Partial<ISlowQueryConfig>) => ISlowQueryContext = (
   cfg
-) => ({
-  ds,
-  cfg: {
-    apiPathBase: client.getBasePath(),
-    enableExport: true,
-    showDBFilter: true,
-    ...cfg
+) => {
+  const slowQueryCache: SlowqueryModel[] = []
+
+  return {
+    ds: new DataSource(slowQueryCache),
+    event: new EventHandler(cfg.listApiReturnDetail ?? false, slowQueryCache),
+    cfg: {
+      apiPathBase: client.getBasePath(),
+      enableExport: true,
+      showDBFilter: true,
+      ...cfg
+    }
   }
-})
+}

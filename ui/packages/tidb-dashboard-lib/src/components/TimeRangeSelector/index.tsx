@@ -212,12 +212,16 @@ function TimeRangeSelector({
     }
   }
 
-  // eslint-disable-next-line arrow-body-style
+  // get the selectable time range value from rencent_seconds
+  const selectableHours = useMemo(() => {
+    return recent_seconds[recent_seconds.length - 1] / 3600
+  }, [recent_seconds])
+
   const disabledDate = (current) => {
     const today = dayjs().startOf('hour')
     // Can not select days before 15 days ago
     const tooEarly =
-      today.subtract(15 * 24, 'hour') > dayjs(current).startOf('hour')
+      today.subtract(selectableHours, 'hour') > dayjs(current).startOf('hour')
     // Can not select days after today
     const tooLate = today < dayjs(current).startOf('hour')
     return current && (tooEarly || tooLate)
@@ -237,7 +241,10 @@ function TimeRangeSelector({
     }
 
     // is 15 day ago
-    if (current && current.isSame(dayjs().subtract(15, 'day'), 'day')) {
+    if (
+      current &&
+      current.isSame(dayjs().subtract(selectableHours / 24, 'day'), 'day')
+    ) {
       return {
         disabledHours: () => hours.slice(0, hour)
       }

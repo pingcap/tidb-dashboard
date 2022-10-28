@@ -9,6 +9,8 @@ import {
   DefaultApi as DashboardApi
 } from '@pingcap/tidb-dashboard-client'
 
+import { ClientOptions, ClusterInfo } from '~/uilts/globalConfig'
+
 import translations from './translations'
 
 export * from '@pingcap/tidb-dashboard-client'
@@ -96,25 +98,11 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   })
 }
 
-export type ClientOptions = {
-  apiPathBase: string
-  apiToken: string
+function initAxios(clientOptions: ClientOptions, clusterInfo: ClusterInfo) {
+  const { apiToken } = clientOptions
+  const { provider, region, orgId, projectId, clusterId, deployType } =
+    clusterInfo
 
-  provider?: string
-  region?: string
-  orgId?: string
-  projectId?: string
-  clusterId?: string
-}
-
-function initAxios({
-  apiToken,
-  provider,
-  region,
-  orgId,
-  projectId,
-  clusterId
-}: Omit<ClientOptions, 'apiPathBase'>) {
   let headers = {}
   headers['x-csrf-token'] = apiToken
   if (provider) {
@@ -132,19 +120,25 @@ function initAxios({
   if (clusterId) {
     headers['x-cluster-id'] = clusterId
   }
+  if (deployType) {
+    headers['x-deploy-type'] = deployType
+  }
   const instance = axios.create({ headers })
   applyErrorHandlerInterceptor(instance)
 
   return instance
 }
 
-export function setupClient(options: ClientOptions) {
+export function setupClient(
+  clientOptions: ClientOptions,
+  clusterInfo: ClusterInfo
+) {
   i18n.addTranslations(translations)
 
-  const axiosInstance = initAxios(options)
+  const axiosInstance = initAxios(clientOptions, clusterInfo)
   const dashboardApi = new DashboardApi(
     new Configuration({
-      basePath: options.apiPathBase,
+      basePath: clientOptions.apiPathBase,
       baseOptions: {
         handleError: 'default'
       }
@@ -153,5 +147,5 @@ export function setupClient(options: ClientOptions) {
     axiosInstance
   )
 
-  client.init(options.apiPathBase, dashboardApi)
+  client.init(clientOptions.apiPathBase, dashboardApi)
 }

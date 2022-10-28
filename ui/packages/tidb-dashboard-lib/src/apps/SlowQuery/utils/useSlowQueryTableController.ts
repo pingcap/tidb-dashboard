@@ -191,7 +191,7 @@ export default function useSlowQueryTableController({
       // The cache key is built over queryOptions, instead of evaluated one.
       // So that when passing in same relative times options (e.g. Recent 15min)
       // the cache can be reused.
-      const cacheKey = JSON.stringify(queryOptions)
+      const cacheKey = JSON.stringify({ queryOptions, orderOptions })
       {
         const cache = cacheMgr?.get(cacheKey)
         if (cache) {
@@ -258,7 +258,7 @@ export default function useSlowQueryTableController({
     }
 
     getSlowQueryList()
-  }, [queryOptions])
+  }, [queryOptions, orderOptions])
 
   const availableColumnsInTable = useMemo(
     () => slowQueryColumns(data ?? [], schemaColumns, showFullSQL),

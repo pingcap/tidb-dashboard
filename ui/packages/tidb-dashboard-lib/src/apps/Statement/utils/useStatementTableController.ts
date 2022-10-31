@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { StatementModel } from '@lib/client'
@@ -169,6 +169,23 @@ export default function useStatementTableController({
   // then update it after the first request
   const [oldBackend, setOldBackend] = useState(true)
 
+  // check old or new backend
+  // the new backend removed the `/statements/time_ranges` API
+  // so if get 404, then it's the new backend
+  // else the old backend
+  useEffect(() => {
+    async function queryTimeRanges() {
+      try {
+        await ds.statementsTimeRangesGet({ handleError: 'custom' })
+      } catch (e) {
+        if ((e as any).response?.status === 404) {
+          setOldBackend(false)
+        }
+      }
+    }
+    queryTimeRanges()
+  }, [ds])
+
   // Reload these options when sending a new request.
   useChange(() => {
     async function queryStatementStatus() {
@@ -271,12 +288,6 @@ export default function useStatementTableController({
         const data = {
           list: res?.data || [],
           timeRange
-        }
-        // if we have checked it is new backend (aka oldBackend === false)
-        // we don't check it again
-        if (oldBackend && data.list[0]) {
-          // old backend api has no `summary_begin_time` field
-          setOldBackend(data.list[0].summary_begin_time === undefined)
         }
         setData(data)
         setErrors([])

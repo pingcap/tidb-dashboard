@@ -104,7 +104,7 @@ export default function StatementsOverview() {
     setVisibleColumnKeys(v)
     stmtTelmetry.changeVisibleColumns(v)
 
-    if (v[controller.orderOptions.orderBy] !== true) {
+    if (!v[controller.orderOptions.orderBy]) {
       controller.resetOrder()
     }
   }

@@ -104,7 +104,7 @@ class DataSource implements IStatementDataSource {
   }
 
   statementsTimeRangesGet(options?: ReqConfig) {
-    return client.getAxiosInstace().get('/statements/time_ranges', options)
+    return client.getAxiosInstance().get('/statements/time_ranges', options)
   }
 
   // slow query

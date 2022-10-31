@@ -34,7 +34,7 @@ const client = {
     return this.apiBasePath
   },
 
-  getAxiosInstace(): AxiosInstance {
+  getAxiosInstance(): AxiosInstance {
     return this.axiosInstance
   }
 }

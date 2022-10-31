@@ -21,7 +21,7 @@ class DataSource implements IMonitoringDataSource {
   }) => {
     if (this.globalConfig.promBaseUrl) {
       return client
-        .getAxiosInstace()
+        .getAxiosInstance()
         .get<MetricsQueryResponse>(
           this.globalConfig.promBaseUrl + '/api/v1/query_range',
           {

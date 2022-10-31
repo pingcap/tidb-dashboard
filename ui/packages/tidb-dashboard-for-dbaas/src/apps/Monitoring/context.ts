@@ -25,9 +25,6 @@ class DataSource implements IMonitoringDataSource {
         .get<MetricsQueryResponse>(
           this.globalConfig.promBaseUrl + '/api/v1/query_range',
           {
-            headers: {
-              Authorization: `Bearer ${this.globalConfig.apiToken}`
-            },
             params: {
               query: params.query,
               step: params.stepSec,

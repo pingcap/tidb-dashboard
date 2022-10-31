@@ -78,7 +78,7 @@ function List() {
   })
   function updateVisibleColumnKeys(v: IColumnKeys) {
     setVisibleColumnKeys(v)
-    if (v[controller.orderOptions.orderBy] !== true) {
+    if (!v[controller.orderOptions.orderBy]) {
       controller.resetOrder()
     }
   }

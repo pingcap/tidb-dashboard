@@ -274,9 +274,9 @@ export default function useStatementTableController({
         }
         // if we have checked it is new backend (aka oldBackend === false)
         // we don't check it again
-        if (oldBackend) {
+        if (oldBackend && data.list[0]) {
           // old backend api has no `summary_begin_time` field
-          setOldBackend(data.list[0]?.summary_begin_time === undefined)
+          setOldBackend(data.list[0].summary_begin_time === undefined)
         }
         setData(data)
         setErrors([])

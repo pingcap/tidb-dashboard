@@ -26,7 +26,8 @@ import {
   Toolbar,
   MultiSelect,
   TimeRange,
-  toTimeRangeValue
+  toTimeRangeValue,
+  IColumnKeys
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
@@ -75,6 +76,12 @@ function List() {
 
     ds: ctx!.ds
   })
+  function updateVisibleColumnKeys(v: IColumnKeys) {
+    setVisibleColumnKeys(v)
+    if (!v[controller.orderOptions.orderBy]) {
+      controller.resetOrder()
+    }
+  }
 
   function menuItemClick({ key }) {
     switch (key) {
@@ -222,7 +229,7 @@ function List() {
                 columns={controller.availableColumnsInTable}
                 visibleColumnKeys={visibleColumnKeys}
                 defaultVisibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
-                onChange={setVisibleColumnKeys}
+                onChange={updateVisibleColumnKeys}
                 foot={
                   <Checkbox
                     checked={showFullSQL}

@@ -1,8 +1,10 @@
 import {
   IStatementDataSource,
   IStatementContext,
-  ReqConfig
+  ReqConfig,
+  StatementTimeRange
 } from '@pingcap/tidb-dashboard-lib'
+import { AxiosPromise } from 'axios'
 
 import client, {
   StatementEditableConfig,
@@ -101,6 +103,10 @@ class DataSource implements IStatementDataSource {
 
   statementsStmtTypesGet(options?: ReqConfig) {
     return client.getInstance().statementsStmtTypesGet(options)
+  }
+
+  statementsTimeRangesGet(options?: ReqConfig) {
+    return client.getAxiosInstance().get('/statements/time_ranges', options)
   }
 
   // slow query

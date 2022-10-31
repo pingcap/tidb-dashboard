@@ -18,9 +18,14 @@ export * from '@pingcap/tidb-dashboard-client'
 //////////////////////////////
 
 const client = {
-  init(apiBasePath: string, apiInstance: DashboardApi) {
+  init(
+    apiBasePath: string,
+    apiInstance: DashboardApi,
+    axiosInstance: AxiosInstance
+  ) {
     this.apiBasePath = apiBasePath
     this.apiInstance = apiInstance
+    this.axiosInstance = axiosInstance
   },
 
   getInstance(): DashboardApi {
@@ -29,6 +34,10 @@ const client = {
 
   getBasePath(): string {
     return this.apiBasePath
+  },
+
+  getAxiosInstance(): AxiosInstance {
+    return this.axiosInstance
   }
 }
 
@@ -123,7 +132,10 @@ function initAxios(clientOptions: ClientOptions, clusterInfo: ClusterInfo) {
   if (deployType) {
     headers['x-deploy-type'] = deployType
   }
-  const instance = axios.create({ headers })
+  const instance = axios.create({
+    baseURL: clientOptions.apiPathBase,
+    headers
+  })
   applyErrorHandlerInterceptor(instance)
 
   return instance
@@ -147,5 +159,5 @@ export function setupClient(
     axiosInstance
   )
 
-  client.init(clientOptions.apiPathBase, dashboardApi)
+  client.init(clientOptions.apiPathBase, dashboardApi, axiosInstance)
 }

@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useMemo, useState } from 'react'
 import { graphviz } from 'd3-graphviz'
 
-import styles from './OperatorTree.module.less'
 import { createLabels } from './LogicalOperatorTree'
+
+import styles from './OperatorTree.module.less'
 
 export interface PhyscialCostParam {
   id: number // for generate graphviz
@@ -10,6 +11,8 @@ export interface PhyscialCostParam {
   name: string
   desc: string
   cost: number
+  // null means this node can be replaced by a root node
+  // undefined means this node is a leaf node, it is converted from a number leaf node
   params: null | undefined | { [x: string]: number | PhyscialCostParam }
 }
 
@@ -60,6 +63,9 @@ function buildCostParams(
   Object.keys(params).forEach((k) => {
     const v = params[k]
     if (typeof v === 'number') {
+      // convert the leaf node
+      // its orignal type is number
+      // convert to leaf PhysicalCostParam with `params: undefined`
       params[k] = {
         id: globalId++,
         name: k,
@@ -101,10 +107,6 @@ function genGraphvizNodeParam(
       fillcolor: '#cffafe',
       tooltip: `${param.id}`
     })};\n`
-    // try {
-    // } catch (err) {
-    //   console.log('err:', err, param)
-    // }
   } else {
     str = `${param.id} ${createLabels({
       label: `${param.name}\ncost: ${param.cost.toFixed(4)}\ndesc: ${
@@ -215,8 +217,6 @@ export default function PhysicalCostTree({
       buildCostTree(costs, root)
     }
 
-    console.log('==========root:', root)
-
     return root
   }, [costs, name])
 
@@ -238,9 +238,7 @@ export default function PhysicalCostTree({
     }
 
     const define = genGraphvizNodes(costRoot, nodeExpands).join('')
-    console.log('define:', define)
     const link = genGraphvizLines(costRoot, nodeExpands).join('')
-    console.log('link:', link)
     graphviz(containerEl).renderDot(
       `digraph {
   node [shape=ellipse fontsize=8 fontname="Verdana" style="filled"];
@@ -251,6 +249,7 @@ export default function PhysicalCostTree({
   function handleClick(e) {
     const trigger = e.target
     const parent = e.target.parentNode
+    // find clicked node
     if (
       (trigger?.tagName === 'text' || trigger?.tagName === 'ellipse') &&
       parent?.tagName === 'a'

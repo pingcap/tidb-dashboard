@@ -49,7 +49,6 @@ export default function LogicalOperatorTree({
           })};\n`
       )
       .join('')
-    // console.log('define:', define)
     const link = data
       .map((n) =>
         (n.children || [])
@@ -57,7 +56,6 @@ export default function LogicalOperatorTree({
           .join('')
       )
       .join('')
-    // console.log('link:', link)
 
     graphviz(containerEl).renderDot(
       `digraph {
@@ -66,6 +64,7 @@ ${define}\n${link}\n}`
     )
   }, [containerRef, data, labels, nodeName])
 
+  // find clicked node
   function handleClick(e) {
     const trigger = e.target
     const parent = e.target.parentNode

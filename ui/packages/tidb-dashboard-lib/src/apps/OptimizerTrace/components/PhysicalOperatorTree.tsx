@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react'
 import { graphviz } from 'd3-graphviz'
+import { FullscreenOutlined } from '@ant-design/icons'
+
+import { LogicalOperatorNode, createLabels } from './LogicalOperatorTree'
 
 import styles from './OperatorTree.module.less'
-import { LogicalOperatorNode, createLabels } from './LogicalOperatorTree'
-import { FullscreenOutlined } from '@ant-design/icons'
 
 export interface PhysicalOperatorNode extends LogicalOperatorNode {
   parentNode: null | PhysicalOperatorNode
@@ -42,9 +43,6 @@ export default function PhysicalOperatorTree({
       return
     }
 
-    console.log('physcial data:', data)
-
-    // const allDatas = [data, ...(data.childrenNodes || [])]
     let allDatas: PhysicalOperatorNode[] = []
     convertTreeToArry(data, allDatas)
     const define = allDatas
@@ -54,12 +52,10 @@ export default function PhysicalOperatorTree({
             label: `${n.type}_${n.id}\ncost: ${n.cost.toFixed(4)}`,
             color: n.selected ? '#4169E1' : '',
             fillcolor: `${n.type}_${n.id}` === nodeName ? '#7dd3fc' : 'white',
-            // fillcolor: 'red',
             tooltip: `info: ${n.info}`
           })};\n`
       )
       .join('')
-    // console.log('define:', define)
     const link = allDatas
       .map((n) =>
         (n.children || [])
@@ -72,7 +68,6 @@ export default function PhysicalOperatorTree({
           .join('')
       )
       .join('')
-    // console.log('link:', link)
 
     graphviz(containerEl).renderDot(
       `digraph {
@@ -81,6 +76,7 @@ export default function PhysicalOperatorTree({
     )
   }, [containerRef, data, nodeName])
 
+  // find clicked node
   function handleClick(e) {
     const trigger = e.target
     const parent = e.target.parentNode

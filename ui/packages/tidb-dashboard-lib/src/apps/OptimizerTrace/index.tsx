@@ -15,13 +15,13 @@ import PhysicalOperatorTree, {
   PhysicalOperatorNode,
   PhysicalOperatorTreeWithFullScreen
 } from './components/PhysicalOperatorTree'
+import PhysicalCostTree, {
+  PhysicalCostMap
+} from './components/PhysicalCostTree'
 import { OptimizerTraceContext } from './context'
 import translations from './translations'
 
 import styles from './index.module.less'
-import PhysicalCostTree, {
-  PhysicalCostMap
-} from './components/PhysicalCostTree'
 
 addTranslations(translations)
 
@@ -57,9 +57,11 @@ interface OptimizerData {
   }
   physical: {
     final: LogicalOperatorNode
+
     // old format
     selected_candidates?: PhysicalOperatorNode[]
     discarded_candidates?: PhysicalOperatorNode[]
+
     // new format
     candidates?: {
       [x: string]: PhysicalOperatorNode
@@ -176,17 +178,15 @@ function LogicalOptimization({ data }: { data: OptimizerData }) {
 
   return (
     <Card className={styles.container}>
-      <>
-        <h2>Logical Optimization</h2>
-        <div className={styles.logical_optimize}>
-          <Steps />
-          <LogicalOperatorTree
-            className={styles.operator_tree}
-            data={logicalData.final}
-            labels={{ color: 'blue' }}
-          />
-        </div>
-      </>
+      <h2>Logical Optimization</h2>
+      <div className={styles.logical_optimize}>
+        <Steps />
+        <LogicalOperatorTree
+          className={styles.operator_tree}
+          data={logicalData.final}
+          labels={{ color: 'blue' }}
+        />
+      </div>
     </Card>
   )
 }
@@ -205,8 +205,10 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
   let allCandidatesMap: { [x: string]: PhysicalOperatorNode } = {}
 
   if (physicalData.candidates) {
+    // new format
     allCandidatesMap = physicalData.candidates
   } else {
+    // old format
     const selectedCandidates = physicalData.selected_candidates || []
     const discardedCandidates = physicalData.discarded_candidates || []
 
@@ -232,34 +234,11 @@ function PhysicalOptimization({ data }: { data: OptimizerData }) {
       if (!acc[c.mapping]) {
         acc[c.mapping] = []
       }
-      // if (!!c.children?.length) {
-      //   if (!c.childrenNodes) {
-      //     c.childrenNodes = []
-      //   }
-      //   c.childrenNodes.push(
-      //     ...c.children.map((cid) => {
-      //       const cnode = allCandidatesMap[cid]
-      //       cnode.parentNode = c
-      //       return cnode
-      //     })
-      //   )
-      // }
       acc[c.mapping].push(c)
       return acc
     },
     {} as { [props: string]: PhysicalOperatorNode[] }
   )
-  // console.log('operator candidates:', operatorCandidates)
-
-  // const rootOperatorCandidates = Object.entries(operatorCandidates)
-  // .map(
-  //   ([mapping, candidates]) =>
-  //     [mapping, candidates.filter((c) => !c.parentNode)] as [
-  //       string,
-  //       PhysicalOperatorNode[]
-  //     ]
-  // )
-  // console.log('root operator candidates:', rootOperatorCandidates)
 
   function updatePhysicalNodeName(name: string) {
     setPhysicalNodeName(name)

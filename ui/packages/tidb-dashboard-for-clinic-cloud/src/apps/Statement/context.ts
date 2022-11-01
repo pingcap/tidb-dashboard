@@ -1,10 +1,8 @@
 import {
   IStatementDataSource,
   IStatementContext,
-  ReqConfig,
-  StatementTimeRange
+  ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
-import { AxiosPromise } from 'axios'
 
 import client, {
   StatementEditableConfig,

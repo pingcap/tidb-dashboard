@@ -150,12 +150,15 @@ export function setupClient(
   const axiosInstance = initAxios(clientOptions, clusterInfo)
   const dashboardApi = new DashboardApi(
     new Configuration({
-      basePath: clientOptions.apiPathBase,
       baseOptions: {
         handleError: 'default'
       }
     }),
-    undefined,
+    // basePath, it's set in the axiosInstance, so we pass empty string to dashboard Api
+    // if basePath and baseURL are both relative path
+    // the final api path will be the value that combined by dashboardApi basePath and axiosInstance baseURL
+    // if we use undefined for this param, dashboardApi basePath will be the default value `/dashboard/api`
+    '',
     axiosInstance
   )
 

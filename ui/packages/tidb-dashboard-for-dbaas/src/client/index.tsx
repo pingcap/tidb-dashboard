@@ -34,7 +34,7 @@ const client = {
     return this.apiBasePath
   },
 
-  getAxiosInstace(): AxiosInstance {
+  getAxiosInstance(): AxiosInstance {
     return this.axiosInstance
   }
 }
@@ -105,8 +105,13 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   })
 }
 
-function initAxios() {
-  const instance = axios.create()
+function initAxios(apiBasePath: string, token: string) {
+  const instance = axios.create({
+    baseURL: apiBasePath,
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
   applyErrorHandlerInterceptor(instance)
 
   return instance
@@ -115,7 +120,7 @@ function initAxios() {
 export function setupClient(apiBasePath: string, token: string) {
   i18n.addTranslations(translations)
 
-  const axiosInstance = initAxios()
+  const axiosInstance = initAxios(apiBasePath, token)
   const dashboardApi = new DashboardApi(
     new Configuration({
       basePath: apiBasePath,

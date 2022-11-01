@@ -8,6 +8,7 @@ import client, {
   StatementEditableConfig,
   StatementGetStatementsRequest
 } from '~/client'
+import auth from '~/uilts/auth'
 
 class DataSource implements IStatementDataSource {
   infoListDatabases(options?: ReqConfig) {
@@ -101,6 +102,16 @@ class DataSource implements IStatementDataSource {
 
   statementsStmtTypesGet(options?: ReqConfig) {
     return client.getInstance().statementsStmtTypesGet(options)
+  }
+
+  statementsTimeRangesGet(options?: ReqConfig) {
+    return client.getAxiosInstance().get('/statements/time_ranges', {
+      ...options,
+      headers: {
+        ...options?.headers,
+        Authorization: auth.getAuthTokenAsBearer() || ''
+      }
+    })
   }
 
   // slow query

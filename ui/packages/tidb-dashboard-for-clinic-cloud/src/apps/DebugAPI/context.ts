@@ -16,8 +16,9 @@ class DataSource implements IDebugAPIDataSource {
       {
         req: {
           ...req,
-          // to compatible with the old tidb-dashboard backend api, for example: v5.0.6
-          // id -> api_id, params -> param_values
+          // To compatible with the old tidb-dashboard backend api before 5.4.0
+          // By PR https://github.com/pingcap/tidb-dashboard/pull/1103 (release to v2021.12.30.1 and PD 5.4.0)
+          // It changes `id` to `api_id`, `params` to `param_values`
           id: req.api_id,
           params: req.param_values
         } as any

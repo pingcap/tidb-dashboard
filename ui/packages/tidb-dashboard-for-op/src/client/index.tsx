@@ -20,9 +20,14 @@ export * from '@pingcap/tidb-dashboard-client'
 //////////////////////////////
 
 const client = {
-  init(apiBasePath: string, apiInstance: DashboardApi) {
+  _init(
+    apiBasePath: string,
+    apiInstance: DashboardApi,
+    axiosInstance: AxiosInstance
+  ) {
     this.apiBasePath = apiBasePath
     this.apiInstance = apiInstance
+    this.axiosInstance = axiosInstance
   },
 
   getInstance(): DashboardApi {
@@ -31,6 +36,10 @@ const client = {
 
   getBasePath(): string {
     return this.apiBasePath
+  },
+
+  getAxiosInstance(): AxiosInstance {
+    return this.axiosInstance
   }
 }
 
@@ -65,7 +74,10 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
     err.message = content
     err.errCode = errCode
 
-    if (errCode === 'common.unauthenticated') {
+    if (
+      errCode === 'common.unauthenticated' ||
+      errCode === 'error.api.unauthorized' // compatible with old tidb-dashboard backend
+    ) {
       // Handle unauthorized error in a unified way
       if (!routing.isLocationMatch('/') && !routing.isSignInPage()) {
         message.error({ content, key: errCode })
@@ -102,8 +114,10 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   })
 }
 
-function initAxios() {
-  const instance = axios.create()
+function initAxios(apiBasePath: string) {
+  const instance = axios.create({
+    baseURL: apiBasePath
+  })
   applyErrorHandlerInterceptor(instance)
 
   return instance
@@ -113,7 +127,7 @@ function init() {
   i18n.addTranslations(translations)
 
   const apiBasePath = getApiBasePath()
-  const axiosInstance = initAxios()
+  const axiosInstance = initAxios(apiBasePath)
   const dashboardApi = new DashboardApi(
     new Configuration({
       basePath: apiBasePath,
@@ -126,7 +140,7 @@ function init() {
     axiosInstance
   )
 
-  client.init(apiBasePath, dashboardApi)
+  client._init(apiBasePath, dashboardApi, axiosInstance)
 }
 
 init()

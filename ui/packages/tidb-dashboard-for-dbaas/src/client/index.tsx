@@ -123,13 +123,11 @@ export function setupClient(apiBasePath: string, token: string) {
   const axiosInstance = initAxios(apiBasePath, token)
   const dashboardApi = new DashboardApi(
     new Configuration({
-      basePath: apiBasePath,
-      apiKey: `Bearer ${token}`,
       baseOptions: {
         handleError: 'default'
       }
     }),
-    undefined,
+    '',
     axiosInstance
   )
 

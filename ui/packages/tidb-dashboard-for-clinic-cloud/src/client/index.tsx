@@ -155,8 +155,9 @@ export function setupClient(
       }
     }),
     // basePath, it's set in the axiosInstance, so we pass empty string to dashboard Api
-    // else the final api path will be the value the combined by dashboardApi basePath and axiosInstance baseURL
-    // if we use undefined, dashboardApi basePath will be the default value `/dashboard/api`
+    // if basePath and baseURL are both relative path
+    // the final api path will be the value that combined by dashboardApi basePath and axiosInstance baseURL
+    // if we use undefined for this param, dashboardApi basePath will be the default value `/dashboard/api`
     '',
     axiosInstance
   )

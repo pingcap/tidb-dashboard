@@ -130,13 +130,12 @@ function init() {
   const axiosInstance = initAxios(apiBasePath)
   const dashboardApi = new DashboardApi(
     new Configuration({
-      basePath: apiBasePath,
       apiKey: () => auth.getAuthTokenAsBearer() || '',
       baseOptions: {
         handleError: 'default'
       }
     }),
-    undefined,
+    '',
     axiosInstance
   )
 

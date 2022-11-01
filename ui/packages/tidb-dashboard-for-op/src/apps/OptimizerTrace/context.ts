@@ -4,7 +4,7 @@ import {
   // ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
-// import client, { QueryeditorRunRequest } from '~/client'
+// import client from '~/client'
 
 class DataSource implements IOptimizerTraceDataSource {}
 

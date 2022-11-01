@@ -1,7 +1,20 @@
 import React, { useCallback, useContext, useState } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import { Button, Upload, Alert, Tooltip, Modal } from 'antd'
-import { UploadOutlined, ArrowRightOutlined } from '@ant-design/icons'
+import {
+  Button,
+  Upload,
+  Alert,
+  Tooltip,
+  Modal,
+  Space,
+  Dropdown,
+  Menu
+} from 'antd'
+import {
+  UploadOutlined,
+  ArrowRightOutlined,
+  DownOutlined
+} from '@ant-design/icons'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { Card, Root } from '@lib/components'
@@ -22,6 +35,9 @@ import { OptimizerTraceContext } from './context'
 import translations from './translations'
 
 import styles from './index.module.less'
+
+import oldFormatTrace from './examples/old-format.json'
+import newFormatTrace from './examples/new-format.json'
 
 addTranslations(translations)
 
@@ -99,12 +115,38 @@ function OptimizerTrace() {
     return false
   }, [])
 
+  function menuItemClick({ key }) {
+    setFileName(key)
+    if (key === 'old') {
+      setImportedData(oldFormatTrace as any)
+    } else if (key === 'new') {
+      setImportedData(newFormatTrace as any)
+    }
+  }
+
+  const menu = (
+    <Menu onClick={menuItemClick}>
+      <Menu.Item key="old">Old Format</Menu.Item>
+      <Menu.Item key="new">New Format</Menu.Item>
+    </Menu>
+  )
+
   return (
     <div>
       <Card noMarginBottom style={{ height: '70px' }}>
-        <Upload beforeUpload={handleBeforeUpload} accept=".json" maxCount={1}>
-          <Button icon={<UploadOutlined />}>Select File</Button>
-        </Upload>
+        <Space style={{ alignItems: 'flex-start' }}>
+          <Upload beforeUpload={handleBeforeUpload} accept=".json" maxCount={1}>
+            <Button icon={<UploadOutlined />}>Select File</Button>
+          </Upload>
+          <Dropdown overlay={menu}>
+            <Button>
+              <Space>
+                Examples
+                <DownOutlined />
+              </Space>
+            </Button>
+          </Dropdown>
+        </Space>
       </Card>
 
       {errorMsg && (

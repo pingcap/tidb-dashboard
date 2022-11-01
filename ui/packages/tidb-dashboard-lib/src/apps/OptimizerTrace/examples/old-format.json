@@ -1,0 +1,914 @@
+{
+  "logical": {
+    "final": [
+      {
+        "id": 1,
+        "type": "DataSource",
+        "children": [],
+        "cost": 0,
+        "selected": false,
+        "property": "",
+        "info": "table:t1"
+      },
+      {
+        "id": 3,
+        "type": "DataSource",
+        "children": [],
+        "cost": 0,
+        "selected": false,
+        "property": "",
+        "info": "table:t2"
+      },
+      {
+        "id": 14,
+        "type": "TopN",
+        "children": [3],
+        "cost": 0,
+        "selected": false,
+        "property": "",
+        "info": "test.t2.b, offset:0, count:1"
+      },
+      {
+        "id": 5,
+        "type": "Aggregation",
+        "children": [14],
+        "cost": 0,
+        "selected": false,
+        "property": "",
+        "info": "funcs:min(test.t2.b)"
+      },
+      {
+        "id": 13,
+        "type": "Selection",
+        "children": [5],
+        "cost": 0,
+        "selected": false,
+        "property": "",
+        "info": "not(isnull(Column#7))"
+      },
+      {
+        "id": 8,
+        "type": "Apply",
+        "children": [1, 13],
+        "cost": 0,
+        "selected": false,
+        "property": "",
+        "info": "inner join, other cond:gt(test.t1.b, Column#7)"
+      },
+      {
+        "id": 9,
+        "type": "Projection",
+        "children": [8],
+        "cost": 0,
+        "selected": false,
+        "property": "",
+        "info": "test.t1.b"
+      }
+    ],
+    "steps": [
+      {
+        "index": 1,
+        "before": [
+          {
+            "id": 1,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t1"
+          },
+          {
+            "id": 3,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t2"
+          },
+          {
+            "id": 4,
+            "type": "Selection",
+            "children": [3],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "lt(test.t2.a, test.t1.a)"
+          },
+          {
+            "id": 5,
+            "type": "Aggregation",
+            "children": [4],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "funcs:min(test.t2.b), firstrow(test.t2.a), firstrow(test.t2.b), firstrow(test.t2._tidb_rowid)"
+          },
+          {
+            "id": 6,
+            "type": "Projection",
+            "children": [5],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "Column#7"
+          },
+          {
+            "id": 7,
+            "type": "MaxOneRow",
+            "children": [6],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": ""
+          },
+          {
+            "id": 8,
+            "type": "Apply",
+            "children": [1, 7],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "left outer join"
+          },
+          {
+            "id": 2,
+            "type": "Selection",
+            "children": [8],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "gt(test.t1.b, Column#7)"
+          },
+          {
+            "id": 9,
+            "type": "Projection",
+            "children": [2],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "test.t1.b"
+          }
+        ],
+        "name": "column_prune",
+        "steps": [
+          {
+            "action": "Aggregation_5's columns[test.t2._tidb_rowid,test.t2.b,test.t2.a] have been pruned",
+            "reason": "",
+            "id": 5,
+            "type": "Aggregation",
+            "index": 0
+          },
+          {
+            "action": "Aggregation_5's aggregation functions[firstrow(test.t2._tidb_rowid),firstrow(test.t2.b),firstrow(test.t2.a)] have been pruned",
+            "reason": "",
+            "id": 5,
+            "type": "Aggregation",
+            "index": 1
+          },
+          {
+            "action": "DataSource_3's columns[test.t2._tidb_rowid] have been pruned",
+            "reason": "",
+            "id": 3,
+            "type": "DataSource",
+            "index": 2
+          },
+          {
+            "action": "DataSource_1's columns[test.t1._tidb_rowid] have been pruned",
+            "reason": "",
+            "id": 1,
+            "type": "DataSource",
+            "index": 3
+          }
+        ]
+      },
+      {
+        "index": 4,
+        "before": [
+          {
+            "id": 1,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t1"
+          },
+          {
+            "id": 3,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t2"
+          },
+          {
+            "id": 4,
+            "type": "Selection",
+            "children": [3],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "lt(test.t2.a, test.t1.a)"
+          },
+          {
+            "id": 5,
+            "type": "Aggregation",
+            "children": [4],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "funcs:min(test.t2.b)"
+          },
+          {
+            "id": 6,
+            "type": "Projection",
+            "children": [5],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "Column#7"
+          },
+          {
+            "id": 7,
+            "type": "MaxOneRow",
+            "children": [6],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": ""
+          },
+          {
+            "id": 8,
+            "type": "Apply",
+            "children": [1, 7],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "left outer join"
+          },
+          {
+            "id": 2,
+            "type": "Selection",
+            "children": [8],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "gt(test.t1.b, Column#7)"
+          },
+          {
+            "id": 9,
+            "type": "Projection",
+            "children": [2],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "test.t1.b"
+          }
+        ],
+        "name": "decorrelate",
+        "steps": [
+          {
+            "action": "MaxOneRow_7 removed from plan tree",
+            "reason": "",
+            "id": 7,
+            "type": "MaxOneRow",
+            "index": 0
+          },
+          {
+            "action": "Projection_6 is moved as Apply_8's parent",
+            "reason": "Apply_8's join type is left outer join, not semi join",
+            "id": 6,
+            "type": "Projection",
+            "index": 1
+          }
+        ]
+      },
+      {
+        "index": 6,
+        "before": [
+          {
+            "id": 1,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t1"
+          },
+          {
+            "id": 3,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t2"
+          },
+          {
+            "id": 4,
+            "type": "Selection",
+            "children": [3],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "lt(test.t2.a, test.t1.a)"
+          },
+          {
+            "id": 5,
+            "type": "Aggregation",
+            "children": [4],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "funcs:min(test.t2.b)"
+          },
+          {
+            "id": 8,
+            "type": "Apply",
+            "children": [1, 5],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "left outer join"
+          },
+          {
+            "id": 6,
+            "type": "Projection",
+            "children": [8],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "test.t1.a, test.t1.b, Column#7"
+          },
+          {
+            "id": 2,
+            "type": "Selection",
+            "children": [6],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "gt(test.t1.b, Column#7)"
+          },
+          {
+            "id": 9,
+            "type": "Projection",
+            "children": [2],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "test.t1.b"
+          }
+        ],
+        "name": "projection_eliminate",
+        "steps": [
+          {
+            "action": "Projection_6 is eliminated",
+            "reason": "Projection_6's Exprs are all Columns",
+            "id": 6,
+            "type": "Projection",
+            "index": 0
+          }
+        ]
+      },
+      {
+        "index": 7,
+        "before": [
+          {
+            "id": 1,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t1"
+          },
+          {
+            "id": 3,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t2"
+          },
+          {
+            "id": 4,
+            "type": "Selection",
+            "children": [3],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "lt(test.t2.a, test.t1.a)"
+          },
+          {
+            "id": 5,
+            "type": "Aggregation",
+            "children": [4],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "funcs:min(test.t2.b)"
+          },
+          {
+            "id": 8,
+            "type": "Apply",
+            "children": [1, 5],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "left outer join"
+          },
+          {
+            "id": 2,
+            "type": "Selection",
+            "children": [8],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "gt(test.t1.b, Column#7)"
+          },
+          {
+            "id": 9,
+            "type": "Projection",
+            "children": [2],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "test.t1.b"
+          }
+        ],
+        "name": "max_min_eliminate",
+        "steps": [
+          {
+            "action": "add Selection_10,add Sort_11,add Limit_12 during eliminating Aggregation_5 min function",
+            "reason": "Aggregation_5 has only one function[min] without group by, the columns in Aggregation_5 shouldn't be NULL and needs NULL to be filtered out, the columns in Aggregation_5 should be sorted",
+            "id": 5,
+            "type": "Aggregation",
+            "index": 0
+          }
+        ]
+      },
+      {
+        "index": 8,
+        "before": [
+          {
+            "id": 1,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t1"
+          },
+          {
+            "id": 3,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t2"
+          },
+          {
+            "id": 4,
+            "type": "Selection",
+            "children": [3],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "lt(test.t2.a, test.t1.a)"
+          },
+          {
+            "id": 10,
+            "type": "Selection",
+            "children": [4],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "not(isnull(test.t2.b))"
+          },
+          {
+            "id": 11,
+            "type": "Sort",
+            "children": [10],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "test.t2.b"
+          },
+          {
+            "id": 12,
+            "type": "Limit",
+            "children": [11],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "offset:0, count:1"
+          },
+          {
+            "id": 5,
+            "type": "Aggregation",
+            "children": [12],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "funcs:min(test.t2.b)"
+          },
+          {
+            "id": 8,
+            "type": "Apply",
+            "children": [1, 5],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "left outer join"
+          },
+          {
+            "id": 2,
+            "type": "Selection",
+            "children": [8],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "gt(test.t1.b, Column#7)"
+          },
+          {
+            "id": 9,
+            "type": "Projection",
+            "children": [2],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "test.t1.b"
+          }
+        ],
+        "name": "predicate_push_down",
+        "steps": [
+          {
+            "action": "The conditions[not(isnull(test.t1.b))] are pushed down across DataSource_1",
+            "reason": "",
+            "id": 1,
+            "type": "DataSource",
+            "index": 0
+          },
+          {
+            "action": "The conditions[lt(test.t2.a, test.t1.a),not(isnull(test.t2.b))] are pushed down across DataSource_3",
+            "reason": "",
+            "id": 3,
+            "type": "DataSource",
+            "index": 1
+          },
+          {
+            "action": "Selection_4 is removed",
+            "reason": "The conditions[lt(test.t2.a, test.t1.a)] in Selection_4 are pushed down",
+            "id": 4,
+            "type": "Selection",
+            "index": 2
+          },
+          {
+            "action": "Selection_10 is removed",
+            "reason": "The conditions[not(isnull(test.t2.b))] in Selection_10 are pushed down",
+            "id": 10,
+            "type": "Selection",
+            "index": 3
+          },
+          {
+            "action": "add Selection_13 to connect Apply_8 and Aggregation_5",
+            "reason": "",
+            "id": 13,
+            "type": "Selection",
+            "index": 4
+          },
+          {
+            "action": "Selection_2 is removed",
+            "reason": "The conditions[gt(test.t1.b, Column#7)] in Selection_2 are pushed down",
+            "id": 2,
+            "type": "Selection",
+            "index": 5
+          }
+        ]
+      },
+      {
+        "index": 13,
+        "before": [
+          {
+            "id": 1,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t1"
+          },
+          {
+            "id": 3,
+            "type": "DataSource",
+            "children": [],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "table:t2"
+          },
+          {
+            "id": 11,
+            "type": "Sort",
+            "children": [3],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "test.t2.b"
+          },
+          {
+            "id": 12,
+            "type": "Limit",
+            "children": [11],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "offset:0, count:1"
+          },
+          {
+            "id": 5,
+            "type": "Aggregation",
+            "children": [12],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "funcs:min(test.t2.b)"
+          },
+          {
+            "id": 13,
+            "type": "Selection",
+            "children": [5],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "not(isnull(Column#7))"
+          },
+          {
+            "id": 8,
+            "type": "Apply",
+            "children": [1, 13],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "inner join, other cond:gt(test.t1.b, Column#7)"
+          },
+          {
+            "id": 9,
+            "type": "Projection",
+            "children": [8],
+            "cost": 0,
+            "selected": false,
+            "property": "",
+            "info": "test.t1.b"
+          }
+        ],
+        "name": "topn_push_down",
+        "steps": [
+          {
+            "action": "Limit_12 is converted into TopN_14",
+            "reason": "",
+            "id": 14,
+            "type": "TopN",
+            "index": 0
+          },
+          {
+            "action": "Sort_11 passes ByItems[test.t2.b] to TopN_14",
+            "reason": "TopN_14 is Limit originally",
+            "id": 11,
+            "type": "Sort",
+            "index": 1
+          },
+          {
+            "action": "TopN_14 is added as DataSource_3's parent",
+            "reason": "TopN is pushed down",
+            "id": 14,
+            "type": "TopN",
+            "index": 2
+          }
+        ]
+      }
+    ]
+  },
+  "physical": {
+    "final": [
+      {
+        "id": 20,
+        "type": "TableReader",
+        "children": [],
+        "cost": 50823.833333333336,
+        "selected": false,
+        "property": "",
+        "info": "data:Selection_19"
+      },
+      {
+        "id": 32,
+        "type": "TableReader",
+        "children": [],
+        "cost": 41600.8168,
+        "selected": false,
+        "property": "",
+        "info": "data:TopN_31"
+      },
+      {
+        "id": 24,
+        "type": "TopN",
+        "children": [32],
+        "cost": 41603.8188,
+        "selected": false,
+        "property": "",
+        "info": "test.t2.b, offset:0, count:1"
+      },
+      {
+        "id": 23,
+        "type": "StreamAgg",
+        "children": [24],
+        "cost": 41606.8188,
+        "selected": false,
+        "property": "",
+        "info": "funcs:min(test.t2.b)->Column#7"
+      },
+      {
+        "id": 21,
+        "type": "Selection",
+        "children": [23],
+        "cost": 41609.8188,
+        "selected": false,
+        "property": "",
+        "info": "not(isnull(Column#7))"
+      },
+      {
+        "id": 17,
+        "type": "Apply",
+        "children": [20, 21],
+        "cost": 415756889.64533335,
+        "selected": false,
+        "property": "",
+        "info": "CARTESIAN inner join, other cond:gt(test.t1.b, Column#7)"
+      },
+      {
+        "id": 15,
+        "type": "Projection",
+        "children": [17],
+        "cost": 415762901.64533335,
+        "selected": false,
+        "property": "",
+        "info": "test.t1.b"
+      }
+    ],
+    "selected_candidates": [
+      {
+        "id": 17,
+        "type": "Apply",
+        "children": null,
+        "cost": 415756889.64533335,
+        "selected": true,
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "CARTESIAN inner join, other cond:gt(test.t1.b, Column#7)",
+        "mapping": "Apply_8"
+      },
+      {
+        "id": 20,
+        "type": "TableReader",
+        "children": null,
+        "cost": 50823.833333333336,
+        "selected": true,
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "data:Selection_19",
+        "mapping": "DataSource_1"
+      },
+      {
+        "id": 21,
+        "type": "Selection",
+        "children": null,
+        "cost": 41609.8188,
+        "selected": true,
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "not(isnull(Column#7))",
+        "mapping": "Selection_13"
+      },
+      {
+        "id": 23,
+        "type": "StreamAgg",
+        "children": null,
+        "cost": 41606.8188,
+        "selected": true,
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "funcs:min(test.t2.b)->Column#7",
+        "mapping": "Aggregation_5"
+      },
+      {
+        "id": 24,
+        "type": "TopN",
+        "children": null,
+        "cost": 41603.8188,
+        "selected": true,
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "test.t2.b, offset:0, count:1",
+        "mapping": "TopN_14"
+      },
+      {
+        "id": 15,
+        "type": "Projection",
+        "children": null,
+        "cost": 415762901.64533335,
+        "selected": true,
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "test.t1.b",
+        "mapping": "Projection_9"
+      }
+    ],
+    "discarded_candidates": [
+      {
+        "id": 22,
+        "type": "HashAgg",
+        "children": null,
+        "cost": 41637.4198,
+        "selected": false,
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "funcs:min(test.t2.b)->Column#7",
+        "mapping": "Aggregation_5"
+      },
+      {
+        "id": 30,
+        "type": "Selection",
+        "children": null,
+        "cost": 600020,
+        "selected": false,
+        "property": "Prop{cols: [], TaskTp: copSingleReadTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "lt(test.t2.a, test.t1.a), not(isnull(test.t2.b))",
+        "mapping": "DataSource_3"
+      }
+    ]
+  },
+  "final": [
+    {
+      "id": 20,
+      "type": "TableReader",
+      "children": [],
+      "cost": 50823.833333333336,
+      "selected": false,
+      "property": "",
+      "info": "data:Selection_19"
+    },
+    {
+      "id": 32,
+      "type": "TableReader",
+      "children": [],
+      "cost": 41600.8168,
+      "selected": false,
+      "property": "",
+      "info": "data:TopN_31"
+    },
+    {
+      "id": 24,
+      "type": "TopN",
+      "children": [32],
+      "cost": 41603.8188,
+      "selected": false,
+      "property": "",
+      "info": "test.t2.b, offset:0, count:1"
+    },
+    {
+      "id": 23,
+      "type": "StreamAgg",
+      "children": [24],
+      "cost": 41606.8188,
+      "selected": false,
+      "property": "",
+      "info": "funcs:min(test.t2.b)->Column#7"
+    },
+    {
+      "id": 21,
+      "type": "Selection",
+      "children": [23],
+      "cost": 41609.8188,
+      "selected": false,
+      "property": "",
+      "info": "not(isnull(Column#7))"
+    },
+    {
+      "id": 17,
+      "type": "Apply",
+      "children": [20, 21],
+      "cost": 415756889.64533335,
+      "selected": false,
+      "property": "",
+      "info": "CARTESIAN inner join, other cond:gt(test.t1.b, Column#7)"
+    },
+    {
+      "id": 15,
+      "type": "Projection",
+      "children": [17],
+      "cost": 415762901.64533335,
+      "selected": false,
+      "property": "",
+      "info": "test.t1.b"
+    }
+  ],
+  "isFastPlan": false
+}

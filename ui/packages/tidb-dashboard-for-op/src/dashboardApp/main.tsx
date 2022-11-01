@@ -66,62 +66,62 @@ async function webPageStart() {
   }
   i18n.addTranslations(translations)
 
-  // let info: InfoInfoResponse
+  let info: InfoInfoResponse
 
-  // try {
-  //   info = await mustLoadAppInfo()
-  // } catch (e) {
-  //   Modal.error({
-  //     title: `Failed to connect to server`,
-  //     content: '' + e,
-  //     okText: 'Reload',
-  //     onOk: () => window.location.reload()
-  //   })
-  //   removeSpinner()
-  //   return
-  // }
+  try {
+    info = await mustLoadAppInfo()
+  } catch (e) {
+    Modal.error({
+      title: `Failed to connect to server`,
+      content: '' + e,
+      okText: 'Reload',
+      onOk: () => window.location.reload()
+    })
+    removeSpinner()
+    return
+  }
 
-  // telemetry.init(
-  //   process.env.REACT_APP_MIXPANEL_HOST,
-  //   process.env.REACT_APP_MIXPANEL_TOKEN
-  // )
-  // if (info?.enable_telemetry) {
-  //   // mixpanel
-  //   telemetry.enable(info.version?.internal_version!)
-  //   let preRoute = ''
-  //   window.addEventListener('single-spa:routing-event', () => {
-  //     const curRoute = routing.getPathInLocationHash()
-  //     if (curRoute !== preRoute) {
-  //       telemetry.trackRouteChange(curRoute)
-  //       preRoute = curRoute
-  //     }
-  //   })
-  // }
+  telemetry.init(
+    process.env.REACT_APP_MIXPANEL_HOST,
+    process.env.REACT_APP_MIXPANEL_TOKEN
+  )
+  if (info?.enable_telemetry) {
+    // mixpanel
+    telemetry.enable(info.version?.internal_version!)
+    let preRoute = ''
+    window.addEventListener('single-spa:routing-event', () => {
+      const curRoute = routing.getPathInLocationHash()
+      if (curRoute !== preRoute) {
+        telemetry.trackRouteChange(curRoute)
+        preRoute = curRoute
+      }
+    })
+  }
 
-  // if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
-  //   notification.error({
-  //     key: 'ngm_not_started',
-  //     message: i18next.t('health_check.failed_notification_title'),
-  //     description: (
-  //       <span>
-  //         {i18next.t('health_check.ngm_not_started')}
-  //         {!isDistro() && (
-  //           <>
-  //             {' '}
-  //             <a
-  //               href={i18next.t('health_check.help_url')}
-  //               target="_blank"
-  //               rel="noopener noreferrer"
-  //             >
-  //               {i18next.t('health_check.help_text')}
-  //             </a>
-  //           </>
-  //         )}
-  //       </span>
-  //     ),
-  //     duration: null
-  //   })
-  // }
+  if (!options.skipNgmCheck && info?.ngm_state === NgmState.NotStarted) {
+    notification.error({
+      key: 'ngm_not_started',
+      message: i18next.t('health_check.failed_notification_title'),
+      description: (
+        <span>
+          {i18next.t('health_check.ngm_not_started')}
+          {!isDistro() && (
+            <>
+              {' '}
+              <a
+                href={i18next.t('health_check.help_url')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {i18next.t('health_check.help_text')}
+              </a>
+            </>
+          )}
+        </span>
+      ),
+      duration: null
+    })
+  }
 
   const registry = new AppRegistry(options)
 
@@ -173,15 +173,15 @@ async function webPageStart() {
     .register(AppOptimizerTrace)
     .register(AppDeadlock)
 
-  // try {
-  //   const ok = await reloadWhoAmI()
+  try {
+    const ok = await reloadWhoAmI()
 
-  //   if (routing.isLocationMatch('/') && ok) {
-  //     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
-  //   }
-  // } catch (e) {
-  //   // If there are auth errors, redirection will happen any way. So we continue.
-  // }
+    if (routing.isLocationMatch('/') && ok) {
+      singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
+    }
+  } catch (e) {
+    // If there are auth errors, redirection will happen any way. So we continue.
+  }
 
   window.addEventListener('single-spa:app-change', () => {
     if (!routing.isSignInPage()) {

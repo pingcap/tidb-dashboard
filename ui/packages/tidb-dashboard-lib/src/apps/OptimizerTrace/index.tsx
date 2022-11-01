@@ -84,7 +84,7 @@ interface LogicalOptimizeActionStep {
 }
 
 function OptimizerTrace() {
-  const ctx = useContext(OptimizerTraceContext)
+  // const ctx = useContext(OptimizerTraceContext)
 
   const [importedData, setImportedData] = useState<OptimizerData | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
@@ -106,31 +106,31 @@ function OptimizerTrace() {
   }
 
   async function handleRunSQL() {
-    if (!sqlStr.startsWith('trace plan')) {
-      setErrorMsg('The SQL must start with "trace plan"')
-      return
-    }
-    try {
-      setRunning(true)
-      setErrorMsg('')
-      const resp = await ctx?.ds.queryEditorRun({
-        max_rows: 1000,
-        statements: sqlStr
-      })
-      if (resp?.data.error_msg) {
-        setErrorMsg(resp?.data.error_msg)
-      } else {
-        // TODO
-        setShowRunSQL(false)
-        fetch('/optimizer-trace-example-1.json')
-          .then((res) => res.json())
-          .then((data) => setImportedData(data))
-      }
-    } catch (err) {
-      console.log(err)
-    } finally {
-      setRunning(false)
-    }
+    // if (!sqlStr.startsWith('trace plan')) {
+    //   setErrorMsg('The SQL must start with "trace plan"')
+    //   return
+    // }
+    // try {
+    //   setRunning(true)
+    //   setErrorMsg('')
+    //   const resp = await ctx?.ds.queryEditorRun({
+    //     max_rows: 1000,
+    //     statements: sqlStr
+    //   })
+    //   if (resp?.data.error_msg) {
+    //     setErrorMsg(resp?.data.error_msg)
+    //   } else {
+    //     // TODO
+    //     setShowRunSQL(false)
+    //     fetch('/optimizer-trace-example-1.json')
+    //       .then((res) => res.json())
+    //       .then((data) => setImportedData(data))
+    //   }
+    // } catch (err) {
+    //   console.log(err)
+    // } finally {
+    //   setRunning(false)
+    // }
   }
 
   return (

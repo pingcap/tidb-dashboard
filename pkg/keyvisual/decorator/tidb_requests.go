@@ -104,6 +104,8 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 		}
 	}
 
+	s.tableInOrder.buildFromTableMap(&s.TableMap)
+
 	// update schema version
 	if updateSuccess {
 		s.SchemaVersion = schemaVersion

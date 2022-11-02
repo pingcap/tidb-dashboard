@@ -1,0 +1,3021 @@
+{
+  "logical": {
+    "final": [
+      {
+        "type": "DataSource",
+        "property": "",
+        "info": "table:customer",
+        "children": [],
+        "id": 1,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "DataSource",
+        "property": "",
+        "info": "table:orders",
+        "children": [],
+        "id": 2,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "Join",
+        "property": "",
+        "info": "inner join, equal:[eq(test.customer.c_custkey, test.orders.o_custkey)]",
+        "children": [1, 2],
+        "id": 12,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "DataSource",
+        "property": "",
+        "info": "table:lineitem",
+        "children": [],
+        "id": 4,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "Join",
+        "property": "",
+        "info": "inner join, equal:[eq(test.orders.o_orderkey, test.lineitem.l_orderkey)]",
+        "children": [12, 4],
+        "id": 13,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "Aggregation",
+        "property": "",
+        "info": "group by:test.lineitem.l_orderkey, test.orders.o_orderdate, test.orders.o_shippriority, funcs:sum(mul(test.lineitem.l_extendedprice, minus(1, test.lineitem.l_discount))), firstrow(test.orders.o_orderdate), firstrow(test.orders.o_shippriority), firstrow(test.lineitem.l_orderkey)",
+        "children": [13],
+        "id": 7,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "TopN",
+        "property": "",
+        "info": "Column#35:desc, test.orders.o_orderdate, offset:0, count:10",
+        "children": [7],
+        "id": 11,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "Projection",
+        "property": "",
+        "info": "test.lineitem.l_orderkey, Column#35, test.orders.o_orderdate, test.orders.o_shippriority",
+        "children": [11],
+        "id": 8,
+        "cost": 0,
+        "selected": false
+      }
+    ],
+    "steps": [
+      {
+        "name": "column_prune",
+        "before": [
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:customer",
+            "children": [],
+            "id": 1,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:orders",
+            "children": [],
+            "id": 2,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join",
+            "children": [1, 2],
+            "id": 3,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:lineitem",
+            "children": [],
+            "id": 4,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join",
+            "children": [3, 4],
+            "id": 5,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Selection",
+            "property": "",
+            "info": "eq(test.customer.c_custkey, test.orders.o_custkey), eq(test.customer.c_mktsegment, 'AUTOMOBILE'), eq(test.lineitem.l_orderkey, test.orders.o_orderkey), gt(test.lineitem.l_shipdate, 1995-03-13 00:00:00.000000), lt(test.orders.o_orderdate, 1995-03-13 00:00:00.000000)",
+            "children": [5],
+            "id": 6,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Aggregation",
+            "property": "",
+            "info": "group by:test.lineitem.l_orderkey, test.orders.o_orderdate, test.orders.o_shippriority, funcs:sum(mul(test.lineitem.l_extendedprice, minus(1, test.lineitem.l_discount))), firstrow(test.customer.c_custkey), firstrow(test.customer.c_name), firstrow(test.customer.c_address), firstrow(test.customer.c_nationkey), firstrow(test.customer.c_phone), firstrow(test.customer.c_acctbal), firstrow(test.customer.c_mktsegment), firstrow(test.customer.c_comment), firstrow(test.orders.o_orderkey), firstrow(test.orders.o_custkey), firstrow(test.orders.o_orderstatus), firstrow(test.orders.o_totalprice), firstrow(test.orders.o_orderdate), firstrow(test.orders.o_orderpriority), firstrow(test.orders.o_clerk), firstrow(test.orders.o_shippriority), firstrow(test.orders.o_comment), firstrow(test.lineitem.l_orderkey), firstrow(test.lineitem.l_partkey), firstrow(test.lineitem.l_suppkey), firstrow(test.lineitem.l_linenumber), firstrow(test.lineitem.l_quantity), firstrow(test.lineitem.l_extendedprice), firstrow(test.lineitem.l_discount), firstrow(test.lineitem.l_tax), firstrow(test.lineitem.l_returnflag), firstrow(test.lineitem.l_linestatus), firstrow(test.lineitem.l_shipdate), firstrow(test.lineitem.l_commitdate), firstrow(test.lineitem.l_receiptdate), firstrow(test.lineitem.l_shipinstruct), firstrow(test.lineitem.l_shipmode), firstrow(test.lineitem.l_comment), firstrow(test.lineitem._tidb_rowid)",
+            "children": [6],
+            "id": 7,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Projection",
+            "property": "",
+            "info": "test.lineitem.l_orderkey, Column#35, test.orders.o_orderdate, test.orders.o_shippriority",
+            "children": [7],
+            "id": 8,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Sort",
+            "property": "",
+            "info": "Column#35:desc, test.orders.o_orderdate",
+            "children": [8],
+            "id": 9,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Limit",
+            "property": "",
+            "info": "offset:0, count:10",
+            "children": [9],
+            "id": 10,
+            "cost": 0,
+            "selected": false
+          }
+        ],
+        "steps": [
+          {
+            "action": "Aggregation_7's columns[test.lineitem._tidb_rowid,test.lineitem.l_comment,test.lineitem.l_shipmode,test.lineitem.l_shipinstruct,test.lineitem.l_receiptdate,test.lineitem.l_commitdate,test.lineitem.l_shipdate,test.lineitem.l_linestatus,test.lineitem.l_returnflag,test.lineitem.l_tax,test.lineitem.l_discount,test.lineitem.l_extendedprice,test.lineitem.l_quantity,test.lineitem.l_linenumber,test.lineitem.l_suppkey,test.lineitem.l_partkey,test.orders.o_comment,test.orders.o_clerk,test.orders.o_orderpriority,test.orders.o_totalprice,test.orders.o_orderstatus,test.orders.o_custkey,test.orders.o_orderkey,test.customer.c_comment,test.customer.c_mktsegment,test.customer.c_acctbal,test.customer.c_phone,test.customer.c_nationkey,test.customer.c_address,test.customer.c_name,test.customer.c_custkey] have been pruned",
+            "reason": "",
+            "type": "Aggregation",
+            "id": 7,
+            "index": 0
+          },
+          {
+            "action": "Aggregation_7's aggregation functions[firstrow(test.lineitem._tidb_rowid),firstrow(test.lineitem.l_comment),firstrow(test.lineitem.l_shipmode),firstrow(test.lineitem.l_shipinstruct),firstrow(test.lineitem.l_receiptdate),firstrow(test.lineitem.l_commitdate),firstrow(test.lineitem.l_shipdate),firstrow(test.lineitem.l_linestatus),firstrow(test.lineitem.l_returnflag),firstrow(test.lineitem.l_tax),firstrow(test.lineitem.l_discount),firstrow(test.lineitem.l_extendedprice),firstrow(test.lineitem.l_quantity),firstrow(test.lineitem.l_linenumber),firstrow(test.lineitem.l_suppkey),firstrow(test.lineitem.l_partkey),firstrow(test.orders.o_comment),firstrow(test.orders.o_clerk),firstrow(test.orders.o_orderpriority),firstrow(test.orders.o_totalprice),firstrow(test.orders.o_orderstatus),firstrow(test.orders.o_custkey),firstrow(test.orders.o_orderkey),firstrow(test.customer.c_comment),firstrow(test.customer.c_mktsegment),firstrow(test.customer.c_acctbal),firstrow(test.customer.c_phone),firstrow(test.customer.c_nationkey),firstrow(test.customer.c_address),firstrow(test.customer.c_name),firstrow(test.customer.c_custkey)] have been pruned",
+            "reason": "",
+            "type": "Aggregation",
+            "id": 7,
+            "index": 1
+          },
+          {
+            "action": "DataSource_1's columns[test.customer.c_comment,test.customer.c_acctbal,test.customer.c_phone,test.customer.c_nationkey,test.customer.c_address,test.customer.c_name] have been pruned",
+            "reason": "",
+            "type": "DataSource",
+            "id": 1,
+            "index": 2
+          },
+          {
+            "action": "DataSource_2's columns[test.orders.o_comment,test.orders.o_clerk,test.orders.o_orderpriority,test.orders.o_totalprice,test.orders.o_orderstatus] have been pruned",
+            "reason": "",
+            "type": "DataSource",
+            "id": 2,
+            "index": 3
+          },
+          {
+            "action": "DataSource_4's columns[test.lineitem._tidb_rowid,test.lineitem.l_comment,test.lineitem.l_shipmode,test.lineitem.l_shipinstruct,test.lineitem.l_receiptdate,test.lineitem.l_commitdate,test.lineitem.l_linestatus,test.lineitem.l_returnflag,test.lineitem.l_tax,test.lineitem.l_quantity,test.lineitem.l_linenumber,test.lineitem.l_suppkey,test.lineitem.l_partkey] have been pruned",
+            "reason": "",
+            "type": "DataSource",
+            "id": 4,
+            "index": 4
+          }
+        ],
+        "index": 1
+      },
+      {
+        "name": "predicate_push_down",
+        "before": [
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:customer",
+            "children": [],
+            "id": 1,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:orders",
+            "children": [],
+            "id": 2,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join",
+            "children": [1, 2],
+            "id": 3,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:lineitem",
+            "children": [],
+            "id": 4,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join",
+            "children": [3, 4],
+            "id": 5,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Selection",
+            "property": "",
+            "info": "eq(test.customer.c_custkey, test.orders.o_custkey), eq(test.customer.c_mktsegment, 'AUTOMOBILE'), eq(test.lineitem.l_orderkey, test.orders.o_orderkey), gt(test.lineitem.l_shipdate, 1995-03-13 00:00:00.000000), lt(test.orders.o_orderdate, 1995-03-13 00:00:00.000000)",
+            "children": [5],
+            "id": 6,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Aggregation",
+            "property": "",
+            "info": "group by:test.lineitem.l_orderkey, test.orders.o_orderdate, test.orders.o_shippriority, funcs:sum(mul(test.lineitem.l_extendedprice, minus(1, test.lineitem.l_discount))), firstrow(test.orders.o_orderdate), firstrow(test.orders.o_shippriority), firstrow(test.lineitem.l_orderkey)",
+            "children": [6],
+            "id": 7,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Projection",
+            "property": "",
+            "info": "test.lineitem.l_orderkey, Column#35, test.orders.o_orderdate, test.orders.o_shippriority",
+            "children": [7],
+            "id": 8,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Sort",
+            "property": "",
+            "info": "Column#35:desc, test.orders.o_orderdate",
+            "children": [8],
+            "id": 9,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Limit",
+            "property": "",
+            "info": "offset:0, count:10",
+            "children": [9],
+            "id": 10,
+            "cost": 0,
+            "selected": false
+          }
+        ],
+        "steps": [
+          {
+            "action": "The conditions[eq(test.customer.c_mktsegment, AUTOMOBILE)] are pushed down across DataSource_1",
+            "reason": "",
+            "type": "DataSource",
+            "id": 1,
+            "index": 0
+          },
+          {
+            "action": "The conditions[lt(test.orders.o_orderdate, 1995-03-13 00:00:00.000000)] are pushed down across DataSource_2",
+            "reason": "",
+            "type": "DataSource",
+            "id": 2,
+            "index": 1
+          },
+          {
+            "action": "The conditions[gt(test.lineitem.l_shipdate, 1995-03-13 00:00:00.000000)] are pushed down across DataSource_4",
+            "reason": "",
+            "type": "DataSource",
+            "id": 4,
+            "index": 2
+          },
+          {
+            "action": "Selection_6 is removed",
+            "reason": "The conditions[eq(test.customer.c_mktsegment, AUTOMOBILE),eq(test.customer.c_custkey, test.orders.o_custkey),eq(test.lineitem.l_orderkey, test.orders.o_orderkey),lt(test.orders.o_orderdate, 1995-03-13 00:00:00.000000),gt(test.lineitem.l_shipdate, 1995-03-13 00:00:00.000000)] in Selection_6 are pushed down",
+            "type": "Selection",
+            "id": 6,
+            "index": 3
+          }
+        ],
+        "index": 10
+      },
+      {
+        "name": "topn_push_down",
+        "before": [
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:customer",
+            "children": [],
+            "id": 1,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:orders",
+            "children": [],
+            "id": 2,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join, equal:[eq(test.customer.c_custkey, test.orders.o_custkey)]",
+            "children": [1, 2],
+            "id": 3,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:lineitem",
+            "children": [],
+            "id": 4,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join, equal:[eq(test.orders.o_orderkey, test.lineitem.l_orderkey)]",
+            "children": [3, 4],
+            "id": 5,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Aggregation",
+            "property": "",
+            "info": "group by:test.lineitem.l_orderkey, test.orders.o_orderdate, test.orders.o_shippriority, funcs:sum(mul(test.lineitem.l_extendedprice, minus(1, test.lineitem.l_discount))), firstrow(test.orders.o_orderdate), firstrow(test.orders.o_shippriority), firstrow(test.lineitem.l_orderkey)",
+            "children": [5],
+            "id": 7,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Projection",
+            "property": "",
+            "info": "test.lineitem.l_orderkey, Column#35, test.orders.o_orderdate, test.orders.o_shippriority",
+            "children": [7],
+            "id": 8,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Sort",
+            "property": "",
+            "info": "Column#35:desc, test.orders.o_orderdate",
+            "children": [8],
+            "id": 9,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Limit",
+            "property": "",
+            "info": "offset:0, count:10",
+            "children": [9],
+            "id": 10,
+            "cost": 0,
+            "selected": false
+          }
+        ],
+        "steps": [
+          {
+            "action": "Limit_10 is converted into TopN_11",
+            "reason": "",
+            "type": "TopN",
+            "id": 11,
+            "index": 0
+          },
+          {
+            "action": "Sort_9 passes ByItems[Column#35 true,test.orders.o_orderdate] to TopN_11",
+            "reason": "TopN_11 is Limit originally",
+            "type": "Sort",
+            "id": 9,
+            "index": 1
+          },
+          {
+            "action": "TopN_11 is added as Aggregation_7's parent",
+            "reason": "TopN is pushed down",
+            "type": "TopN",
+            "id": 11,
+            "index": 2
+          }
+        ],
+        "index": 15
+      },
+      {
+        "name": "join_reorder",
+        "before": [
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:customer",
+            "children": [],
+            "id": 1,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:orders",
+            "children": [],
+            "id": 2,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join, equal:[eq(test.customer.c_custkey, test.orders.o_custkey)]",
+            "children": [1, 2],
+            "id": 3,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:lineitem",
+            "children": [],
+            "id": 4,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join, equal:[eq(test.orders.o_orderkey, test.lineitem.l_orderkey)]",
+            "children": [3, 4],
+            "id": 5,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Aggregation",
+            "property": "",
+            "info": "group by:test.lineitem.l_orderkey, test.orders.o_orderdate, test.orders.o_shippriority, funcs:sum(mul(test.lineitem.l_extendedprice, minus(1, test.lineitem.l_discount))), firstrow(test.orders.o_orderdate), firstrow(test.orders.o_shippriority), firstrow(test.lineitem.l_orderkey)",
+            "children": [5],
+            "id": 7,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "TopN",
+            "property": "",
+            "info": "Column#35:desc, test.orders.o_orderdate, offset:0, count:10",
+            "children": [7],
+            "id": 11,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Projection",
+            "property": "",
+            "info": "test.lineitem.l_orderkey, Column#35, test.orders.o_orderdate, test.orders.o_shippriority",
+            "children": [11],
+            "id": 8,
+            "cost": 0,
+            "selected": false
+          }
+        ],
+        "steps": [
+          {
+            "action": "join order becomes ((customer*orders)*lineitem) from original ((customer*orders)*lineitem)",
+            "reason": "join cost during reorder: [[((customer*orders)*lineitem), cost:1.2551220900400399e+08],[(customer*orders), cost:2.504670299506237e+07],[customer, cost:7500],[lineitem, cost:1.00001937e+08],[orders, cost:2.4925e+07]]",
+            "type": "Projection",
+            "id": 8,
+            "index": 0
+          }
+        ],
+        "index": 17
+      },
+      {
+        "name": "column_prune",
+        "before": [
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:customer",
+            "children": [],
+            "id": 1,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:orders",
+            "children": [],
+            "id": 2,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join, equal:[eq(test.customer.c_custkey, test.orders.o_custkey)]",
+            "children": [1, 2],
+            "id": 12,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "DataSource",
+            "property": "",
+            "info": "table:lineitem",
+            "children": [],
+            "id": 4,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Join",
+            "property": "",
+            "info": "inner join, equal:[eq(test.orders.o_orderkey, test.lineitem.l_orderkey)]",
+            "children": [12, 4],
+            "id": 13,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Aggregation",
+            "property": "",
+            "info": "group by:test.lineitem.l_orderkey, test.orders.o_orderdate, test.orders.o_shippriority, funcs:sum(mul(test.lineitem.l_extendedprice, minus(1, test.lineitem.l_discount))), firstrow(test.orders.o_orderdate), firstrow(test.orders.o_shippriority), firstrow(test.lineitem.l_orderkey)",
+            "children": [13],
+            "id": 7,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "TopN",
+            "property": "",
+            "info": "Column#35:desc, test.orders.o_orderdate, offset:0, count:10",
+            "children": [7],
+            "id": 11,
+            "cost": 0,
+            "selected": false
+          },
+          {
+            "type": "Projection",
+            "property": "",
+            "info": "test.lineitem.l_orderkey, Column#35, test.orders.o_orderdate, test.orders.o_shippriority",
+            "children": [11],
+            "id": 8,
+            "cost": 0,
+            "selected": false
+          }
+        ],
+        "steps": [
+          {
+            "action": "Join_12's columns[test.orders.o_custkey,test.customer.c_mktsegment,test.customer.c_custkey] have been pruned",
+            "reason": "",
+            "type": "Join",
+            "id": 12,
+            "index": 0
+          },
+          {
+            "action": "Join_13's columns[test.lineitem.l_shipdate,test.orders.o_orderkey] have been pruned",
+            "reason": "",
+            "type": "Join",
+            "id": 13,
+            "index": 1
+          }
+        ],
+        "index": 18
+      }
+    ]
+  },
+  "physical": {
+    "costs": {
+      "HashAgg_22": {
+        "params": {
+          "IndexJoin_28": {
+            "name": "IndexJoin_28",
+            "cost": 14953946825.125187,
+            "params": null,
+            "desc": ""
+          },
+          "aggCost": {
+            "name": "aggCost",
+            "cost": 97967583.88966256,
+            "params": {
+              "aggTotalCost": {
+                "name": "aggTotalCost",
+                "cost": 293902751.6689877,
+                "params": {
+                  "aggCost": {
+                    "name": "aggCost",
+                    "cost": 55628281.07299452,
+                    "params": {
+                      "aggNum": 4,
+                      "cpuFactor": 30,
+                      "rows": 463569.008941621
+                    },
+                    "desc": "rows*aggNum*cpuFactor"
+                  },
+                  "groupCost": {
+                    "name": "groupCost",
+                    "cost": 41721210.80474589,
+                    "params": {
+                      "cpuFactor": 30,
+                      "groupItemNum": 3,
+                      "rows": 463569.008941621
+                    },
+                    "desc": "rows*groupItemNum*cpuFactor"
+                  },
+                  "hashBuildCost": {
+                    "name": "hashBuildCost",
+                    "cost": 113110838.18175551,
+                    "params": {
+                      "hashBuildCost": {
+                        "name": "hashBuildCost",
+                        "cost": 41721210.80474589,
+                        "params": {
+                          "buildRows": 463569.008941621,
+                          "cpuFactor": 30,
+                          "keyLengths": 3
+                        },
+                        "desc": "buildRows*keyLengths*cpuFactor"
+                      },
+                      "hashKeyCost": {
+                        "name": "hashKeyCost",
+                        "cost": 41721210.80474589,
+                        "params": {
+                          "buildRows": 463569.008941621,
+                          "cpuFactor": 30,
+                          "keyLengths": 3
+                        },
+                        "desc": "buildRows*keyLengths*cpuFactor"
+                      },
+                      "hashMemCost": {
+                        "name": "hashMemCost",
+                        "cost": 29668416.572263744,
+                        "params": {
+                          "buildRowSize": 64,
+                          "buildRows": 463569.008941621,
+                          "memFactor": 1
+                        },
+                        "desc": "buildRows*buildRowSize*memFactor"
+                      }
+                    },
+                    "desc": "(hashKeyCost) + (hashMemCost) + (hashBuildCost)"
+                  },
+                  "hashProbeCost": {
+                    "name": "hashProbeCost",
+                    "cost": 83442421.60949178,
+                    "params": {
+                      "hashKeyCost": {
+                        "name": "hashKeyCost",
+                        "cost": 41721210.80474589,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 3,
+                          "probeRows": 463569.008941621
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      },
+                      "hashProbeCost": {
+                        "name": "hashProbeCost",
+                        "cost": 41721210.80474589,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 3,
+                          "probeRows": 463569.008941621
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      }
+                    },
+                    "desc": "(hashKeyCost) + (hashProbeCost)"
+                  }
+                },
+                "desc": "(aggCost) + (groupCost) + (hashBuildCost) + (hashProbeCost)"
+              },
+              "concurrencyFactor": 3
+            },
+            "desc": "(aggTotalCost)/concurrencyFactor"
+          }
+        },
+        "type": "HashAgg",
+        "desc": "(IndexJoin_28) + (aggCost)",
+        "id": 22,
+        "cost": 15051914409.014849
+      },
+      "HashJoin_38": {
+        "params": {
+          "HashJoin_70": {
+            "name": "HashJoin_70",
+            "cost": 5274198010.608428,
+            "params": null,
+            "desc": ""
+          },
+          "TableReader_79": {
+            "name": "TableReader_79",
+            "cost": 22387827472.21748,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": { "cpuFactor": 30, "filters": 0, "rows": 100001937 },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "buildHashCost": {
+            "name": "buildHashCost",
+            "cost": 18800364156,
+            "params": {
+              "hashBuildCost": {
+                "name": "hashBuildCost",
+                "cost": 3000058110,
+                "params": {
+                  "buildRows": 100001937,
+                  "cpuFactor": 30,
+                  "keyLengths": 1
+                },
+                "desc": "buildRows*keyLengths*cpuFactor"
+              },
+              "hashKeyCost": {
+                "name": "hashKeyCost",
+                "cost": 3000058110,
+                "params": {
+                  "buildRows": 100001937,
+                  "cpuFactor": 30,
+                  "keyLengths": 1
+                },
+                "desc": "buildRows*keyLengths*cpuFactor"
+              },
+              "hashMemCost": {
+                "name": "hashMemCost",
+                "cost": 12800247936,
+                "params": {
+                  "buildRowSize": 128,
+                  "buildRows": 100001937,
+                  "memFactor": 1
+                },
+                "desc": "buildRows*buildRowSize*memFactor"
+              }
+            },
+            "desc": "(hashKeyCost) + (hashMemCost) + (hashBuildCost)"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 1370435.9407484406,
+            "params": {
+              "hashJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 6852179.703742203,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": {
+                      "cpuFactor": 30,
+                      "filters": 0,
+                      "rows": 114202.99506237006
+                    },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeHashCost": {
+                    "name": "probeHashCost",
+                    "cost": 6852179.703742203,
+                    "params": {
+                      "hashKeyCost": {
+                        "name": "hashKeyCost",
+                        "cost": 3426089.8518711017,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 1,
+                          "probeRows": 114202.99506237006
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      },
+                      "hashProbeCost": {
+                        "name": "hashProbeCost",
+                        "cost": 3426089.8518711017,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 1,
+                          "probeRows": 114202.99506237006
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      }
+                    },
+                    "desc": "(hashKeyCost) + (hashProbeCost)"
+                  }
+                },
+                "desc": "(probeFilterCost) + (probeHashCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/hashJoinConcurrency"
+          }
+        },
+        "type": "HashJoin",
+        "desc": "(TableReader_79) + (HashJoin_70) + (buildHashCost) + (buildFilterCost) + (probeCost)",
+        "id": 38,
+        "cost": 46463760074.76666
+      },
+      "HashJoin_39": {
+        "params": {
+          "HashJoin_70": {
+            "name": "HashJoin_70",
+            "cost": 5274198010.608428,
+            "params": null,
+            "desc": ""
+          },
+          "TableReader_79": {
+            "name": "TableReader_79",
+            "cost": 22387827472.21748,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": {
+              "cpuFactor": 30,
+              "filters": 0,
+              "rows": 114202.99506237006
+            },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "buildHashCost": {
+            "name": "buildHashCost",
+            "cost": 9593051.585239084,
+            "params": {
+              "hashBuildCost": {
+                "name": "hashBuildCost",
+                "cost": 3426089.8518711017,
+                "params": {
+                  "buildRows": 114202.99506237006,
+                  "cpuFactor": 30,
+                  "keyLengths": 1
+                },
+                "desc": "buildRows*keyLengths*cpuFactor"
+              },
+              "hashKeyCost": {
+                "name": "hashKeyCost",
+                "cost": 3426089.8518711017,
+                "params": {
+                  "buildRows": 114202.99506237006,
+                  "cpuFactor": 30,
+                  "keyLengths": 1
+                },
+                "desc": "buildRows*keyLengths*cpuFactor"
+              },
+              "hashMemCost": {
+                "name": "hashMemCost",
+                "cost": 2740871.881496881,
+                "params": {
+                  "buildRowSize": 24,
+                  "buildRows": 114202.99506237006,
+                  "memFactor": 1
+                },
+                "desc": "buildRows*buildRowSize*memFactor"
+              }
+            },
+            "desc": "(hashKeyCost) + (hashMemCost) + (hashBuildCost)"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 1200023244,
+            "params": {
+              "hashJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 6000116220,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": {
+                      "cpuFactor": 30,
+                      "filters": 0,
+                      "rows": 100001937
+                    },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeHashCost": {
+                    "name": "probeHashCost",
+                    "cost": 6000116220,
+                    "params": {
+                      "hashKeyCost": {
+                        "name": "hashKeyCost",
+                        "cost": 3000058110,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 1,
+                          "probeRows": 100001937
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      },
+                      "hashProbeCost": {
+                        "name": "hashProbeCost",
+                        "cost": 3000058110,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 1,
+                          "probeRows": 100001937
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      }
+                    },
+                    "desc": "(hashKeyCost) + (hashProbeCost)"
+                  }
+                },
+                "desc": "(probeFilterCost) + (probeHashCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/hashJoinConcurrency"
+          }
+        },
+        "type": "HashJoin",
+        "desc": "(HashJoin_70) + (TableReader_79) + (buildHashCost) + (buildFilterCost) + (probeCost)",
+        "id": 39,
+        "cost": 28871641778.411148
+      },
+      "HashJoin_69": {
+        "params": {
+          "TableReader_73": {
+            "name": "TableReader_73",
+            "cost": 4568485875.962565,
+            "params": null,
+            "desc": ""
+          },
+          "TableReader_76": {
+            "name": "TableReader_76",
+            "cost": 405932034.6458629,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": { "cpuFactor": 30, "filters": 0, "rows": 24925000 },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "buildHashCost": {
+            "name": "buildHashCost",
+            "cost": 3090700000,
+            "params": {
+              "hashBuildCost": {
+                "name": "hashBuildCost",
+                "cost": 747750000,
+                "params": {
+                  "buildRows": 24925000,
+                  "cpuFactor": 30,
+                  "keyLengths": 1
+                },
+                "desc": "buildRows*keyLengths*cpuFactor"
+              },
+              "hashKeyCost": {
+                "name": "hashKeyCost",
+                "cost": 747750000,
+                "params": {
+                  "buildRows": 24925000,
+                  "cpuFactor": 30,
+                  "keyLengths": 1
+                },
+                "desc": "buildRows*keyLengths*cpuFactor"
+              },
+              "hashMemCost": {
+                "name": "hashMemCost",
+                "cost": 1595200000,
+                "params": {
+                  "buildRowSize": 64,
+                  "buildRows": 24925000,
+                  "memFactor": 1
+                },
+                "desc": "buildRows*buildRowSize*memFactor"
+              }
+            },
+            "desc": "(hashKeyCost) + (hashMemCost) + (hashBuildCost)"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 90000,
+            "params": {
+              "hashJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 450000,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": { "cpuFactor": 30, "filters": 0, "rows": 7500 },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeHashCost": {
+                    "name": "probeHashCost",
+                    "cost": 450000,
+                    "params": {
+                      "hashKeyCost": {
+                        "name": "hashKeyCost",
+                        "cost": 225000,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 1,
+                          "probeRows": 7500
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      },
+                      "hashProbeCost": {
+                        "name": "hashProbeCost",
+                        "cost": 225000,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 1,
+                          "probeRows": 7500
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      }
+                    },
+                    "desc": "(hashKeyCost) + (hashProbeCost)"
+                  }
+                },
+                "desc": "(probeFilterCost) + (probeHashCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/hashJoinConcurrency"
+          }
+        },
+        "type": "HashJoin",
+        "desc": "(TableReader_73) + (TableReader_76) + (buildHashCost) + (buildFilterCost) + (probeCost)",
+        "id": 69,
+        "cost": 8065207910.608428
+      },
+      "HashJoin_70": {
+        "params": {
+          "TableReader_73": {
+            "name": "TableReader_73",
+            "cost": 4568485875.962565,
+            "params": null,
+            "desc": ""
+          },
+          "TableReader_76": {
+            "name": "TableReader_76",
+            "cost": 405932034.6458629,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": { "cpuFactor": 30, "filters": 0, "rows": 7500 },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "buildHashCost": {
+            "name": "buildHashCost",
+            "cost": 680100,
+            "params": {
+              "hashBuildCost": {
+                "name": "hashBuildCost",
+                "cost": 225000,
+                "params": {
+                  "buildRows": 7500,
+                  "cpuFactor": 30,
+                  "keyLengths": 1
+                },
+                "desc": "buildRows*keyLengths*cpuFactor"
+              },
+              "hashKeyCost": {
+                "name": "hashKeyCost",
+                "cost": 225000,
+                "params": {
+                  "buildRows": 7500,
+                  "cpuFactor": 30,
+                  "keyLengths": 1
+                },
+                "desc": "buildRows*keyLengths*cpuFactor"
+              },
+              "hashMemCost": {
+                "name": "hashMemCost",
+                "cost": 230100,
+                "params": {
+                  "buildRowSize": 30.68,
+                  "buildRows": 7500,
+                  "memFactor": 1
+                },
+                "desc": "buildRows*buildRowSize*memFactor"
+              }
+            },
+            "desc": "(hashKeyCost) + (hashMemCost) + (hashBuildCost)"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 299100000,
+            "params": {
+              "hashJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 1495500000,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": {
+                      "cpuFactor": 30,
+                      "filters": 0,
+                      "rows": 24925000
+                    },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeHashCost": {
+                    "name": "probeHashCost",
+                    "cost": 1495500000,
+                    "params": {
+                      "hashKeyCost": {
+                        "name": "hashKeyCost",
+                        "cost": 747750000,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 1,
+                          "probeRows": 24925000
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      },
+                      "hashProbeCost": {
+                        "name": "hashProbeCost",
+                        "cost": 747750000,
+                        "params": {
+                          "cpuFactor": 30,
+                          "keyLength": 1,
+                          "probeRows": 24925000
+                        },
+                        "desc": "probeRows*keyLength*cpuFactor"
+                      }
+                    },
+                    "desc": "(hashKeyCost) + (hashProbeCost)"
+                  }
+                },
+                "desc": "(probeFilterCost) + (probeHashCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/hashJoinConcurrency"
+          }
+        },
+        "type": "HashJoin",
+        "desc": "(TableReader_76) + (TableReader_73) + (buildHashCost) + (buildFilterCost) + (probeCost)",
+        "id": 70,
+        "cost": 5274198010.608428
+      },
+      "IndexFullScan_53": {
+        "params": { "rowSize": 46, "rows": 300005811, "scanFactor": 100 },
+        "type": "IndexFullScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 53,
+        "cost": 165710068423.56305
+      },
+      "IndexHashJoin_30": {
+        "params": {
+          "HashJoin_70": {
+            "name": "HashJoin_70",
+            "cost": 5274198010.608428,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": {
+              "cpuFactor": 30,
+              "filters": 0,
+              "rows": 114202.99506237006
+            },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 9679748814.516758,
+            "params": {
+              "indexLookupJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 48398744072.583786,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": {
+                      "cpuFactor": 30,
+                      "filters": 0,
+                      "rows": 463569.00894162105
+                    },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeReadCost": {
+                    "name": "probeReadCost",
+                    "cost": 48398744072.583786,
+                    "params": {
+                      "IndexLookUp_27": {
+                        "name": "IndexLookUp_27",
+                        "cost": 12713872.533592913,
+                        "params": null,
+                        "desc": ""
+                      },
+                      "batchRatio": 30,
+                      "buildRows": 114202.99506237006
+                    },
+                    "desc": "IndexLookUp_27*buildRows/batchRatio"
+                  }
+                },
+                "desc": "(probeReadCost) + (probeFilterCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/indexLookupJoinConcurrency"
+          }
+        },
+        "type": "IndexHashJoin",
+        "desc": "(HashJoin_70) + (buildFilterCost) + (probeCost)",
+        "id": 30,
+        "cost": 14953946825.125187
+      },
+      "IndexHashJoin_48": {
+        "params": {
+          "TableReader_52": {
+            "name": "TableReader_52",
+            "cost": 4568485875.962565,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": { "cpuFactor": 30, "filters": 0, "rows": 24925000 },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 2104786489666.7563,
+            "params": {
+              "indexLookupJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 10523932448333.781,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": { "cpuFactor": 30, "filters": 0, "rows": 24925 },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeReadCost": {
+                    "name": "probeReadCost",
+                    "cost": 10523932448333.781,
+                    "params": {
+                      "TableReader_42": {
+                        "name": "TableReader_42",
+                        "cost": 12666719.095286397,
+                        "params": null,
+                        "desc": ""
+                      },
+                      "batchRatio": 30,
+                      "buildRows": 24925000
+                    },
+                    "desc": "TableReader_42*buildRows/batchRatio"
+                  }
+                },
+                "desc": "(probeReadCost) + (probeFilterCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/indexLookupJoinConcurrency"
+          }
+        },
+        "type": "IndexHashJoin",
+        "desc": "(TableReader_52) + (buildFilterCost) + (probeCost)",
+        "id": 48,
+        "cost": 2109354975542.719
+      },
+      "IndexHashJoin_66": {
+        "params": {
+          "TableReader_73": {
+            "name": "TableReader_73",
+            "cost": 4568485875.962565,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": { "cpuFactor": 30, "filters": 0, "rows": 24925000 },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 2104786489666.7563,
+            "params": {
+              "indexLookupJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 10523932448333.781,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": { "cpuFactor": 30, "filters": 0, "rows": 24925 },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeReadCost": {
+                    "name": "probeReadCost",
+                    "cost": 10523932448333.781,
+                    "params": {
+                      "TableReader_60": {
+                        "name": "TableReader_60",
+                        "cost": 12666719.095286397,
+                        "params": null,
+                        "desc": ""
+                      },
+                      "batchRatio": 30,
+                      "buildRows": 24925000
+                    },
+                    "desc": "TableReader_60*buildRows/batchRatio"
+                  }
+                },
+                "desc": "(probeReadCost) + (probeFilterCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/indexLookupJoinConcurrency"
+          }
+        },
+        "type": "IndexHashJoin",
+        "desc": "(TableReader_73) + (buildFilterCost) + (probeCost)",
+        "id": 66,
+        "cost": 2109354975542.719
+      },
+      "IndexJoin_28": {
+        "params": {
+          "HashJoin_70": {
+            "name": "HashJoin_70",
+            "cost": 5274198010.608428,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": {
+              "cpuFactor": 30,
+              "filters": 0,
+              "rows": 114202.99506237006
+            },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 9679748814.516758,
+            "params": {
+              "indexLookupJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 48398744072.583786,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": {
+                      "cpuFactor": 30,
+                      "filters": 0,
+                      "rows": 463569.00894162105
+                    },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeReadCost": {
+                    "name": "probeReadCost",
+                    "cost": 48398744072.583786,
+                    "params": {
+                      "IndexLookUp_27": {
+                        "name": "IndexLookUp_27",
+                        "cost": 12713872.533592913,
+                        "params": null,
+                        "desc": "(readIndexCost) + (readTableCost)"
+                      },
+                      "batchRatio": 30,
+                      "buildRows": 114202.99506237006
+                    },
+                    "desc": "IndexLookUp_27*buildRows/batchRatio"
+                  }
+                },
+                "desc": "(probeReadCost) + (probeFilterCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/indexLookupJoinConcurrency"
+          }
+        },
+        "type": "IndexJoin",
+        "desc": "(HashJoin_70) + (buildFilterCost) + (probeCost)",
+        "id": 28,
+        "cost": 14953946825.125187
+      },
+      "IndexJoin_46": {
+        "params": {
+          "TableReader_52": {
+            "name": "TableReader_52",
+            "cost": 4568485875.962565,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": { "cpuFactor": 30, "filters": 0, "rows": 24925000 },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 2104786489666.7563,
+            "params": {
+              "indexLookupJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 10523932448333.781,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": { "cpuFactor": 30, "filters": 0, "rows": 24925 },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeReadCost": {
+                    "name": "probeReadCost",
+                    "cost": 10523932448333.781,
+                    "params": {
+                      "TableReader_42": {
+                        "name": "TableReader_42",
+                        "cost": 12666719.095286397,
+                        "params": null,
+                        "desc": "(Selection_41+netCost+seekCost)/distSqlScanConcurrency"
+                      },
+                      "batchRatio": 30,
+                      "buildRows": 24925000
+                    },
+                    "desc": "TableReader_42*buildRows/batchRatio"
+                  }
+                },
+                "desc": "(probeReadCost) + (probeFilterCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/indexLookupJoinConcurrency"
+          }
+        },
+        "type": "IndexJoin",
+        "desc": "(TableReader_52) + (buildFilterCost) + (probeCost)",
+        "id": 46,
+        "cost": 2109354975542.719
+      },
+      "IndexJoin_64": {
+        "params": {
+          "TableReader_73": {
+            "name": "TableReader_73",
+            "cost": 4568485875.962565,
+            "params": null,
+            "desc": ""
+          },
+          "buildFilterCost": {
+            "name": "buildFilterCost",
+            "cost": 0,
+            "params": { "cpuFactor": 30, "filters": 0, "rows": 24925000 },
+            "desc": "rows*filters*cpuFactor"
+          },
+          "probeCost": {
+            "name": "probeCost",
+            "cost": 2104786489666.7563,
+            "params": {
+              "indexLookupJoinConcurrency": 5,
+              "probeTotalCost": {
+                "name": "probeTotalCost",
+                "cost": 10523932448333.781,
+                "params": {
+                  "probeFilterCost": {
+                    "name": "probeFilterCost",
+                    "cost": 0,
+                    "params": { "cpuFactor": 30, "filters": 0, "rows": 24925 },
+                    "desc": "rows*filters*cpuFactor"
+                  },
+                  "probeReadCost": {
+                    "name": "probeReadCost",
+                    "cost": 10523932448333.781,
+                    "params": {
+                      "TableReader_60": {
+                        "name": "TableReader_60",
+                        "cost": 12666719.095286397,
+                        "params": null,
+                        "desc": "(Selection_59+netCost+seekCost)/distSqlScanConcurrency"
+                      },
+                      "batchRatio": 30,
+                      "buildRows": 24925000
+                    },
+                    "desc": "TableReader_60*buildRows/batchRatio"
+                  }
+                },
+                "desc": "(probeReadCost) + (probeFilterCost)"
+              }
+            },
+            "desc": "(probeTotalCost)/indexLookupJoinConcurrency"
+          }
+        },
+        "type": "IndexJoin",
+        "desc": "(TableReader_73) + (buildFilterCost) + (probeCost)",
+        "id": 64,
+        "cost": 2109354975542.719
+      },
+      "IndexLookUp_27": {
+        "params": {
+          "readIndexCost": {
+            "name": "readIndexCost",
+            "cost": 12667273.39536189,
+            "params": {
+              "distSqlScanConcurrency": 15,
+              "readIndexTotalCost": {
+                "name": "readIndexTotalCost",
+                "cost": 190009100.93042833,
+                "params": {
+                  "IndexRangeScan_24": {
+                    "name": "IndexRangeScan_24",
+                    "cost": 6726.317835356039,
+                    "params": null,
+                    "desc": "rows*log(rowSize)*scanFactor"
+                  },
+                  "indexNetCost": {
+                    "name": "indexNetCost",
+                    "cost": 2374.612592977475,
+                    "params": {
+                      "networkFactor": 8,
+                      "rowSize": 24.375,
+                      "rows": 12.177500476807563
+                    },
+                    "desc": "rows*rowSize*networkFactor"
+                  },
+                  "indexSeekCost": {
+                    "name": "indexSeekCost",
+                    "cost": 190000000,
+                    "params": { "seekFactor": 9500000, "taskNums": 20 },
+                    "desc": "taskNums*seekFactor"
+                  }
+                },
+                "desc": "(indexNetCost) + (indexSeekCost) + (IndexRangeScan_24)"
+              }
+            },
+            "desc": "(readIndexTotalCost)/distSqlScanConcurrency"
+          },
+          "readTableCost": {
+            "name": "readTableCost",
+            "cost": 46599.13823102407,
+            "params": {
+              "indexLookupConcurrency": 5,
+              "readTableTotalCost": {
+                "name": "readTableTotalCost",
+                "cost": 232995.69115512038,
+                "params": {
+                  "doubleReadCost": {
+                    "name": "doubleReadCost",
+                    "cost": 231737.83407364791,
+                    "params": {
+                      "double-read-cpu": {
+                        "name": "double-read-cpu",
+                        "cost": 365.3250143042269,
+                        "params": {
+                          "cpuFactor": 30,
+                          "indexRows": 12.177500476807563
+                        },
+                        "desc": "indexRows*cpuFactor"
+                      },
+                      "doubleReadSeekCost": {
+                        "name": "doubleReadSeekCost",
+                        "cost": 231372.5090593437,
+                        "params": {
+                          "seekFactor": 9500000,
+                          "taskNums": 0.024355000953615126
+                        },
+                        "desc": "taskNums*seekFactor"
+                      }
+                    },
+                    "desc": "(double-read-cpu) + (doubleReadSeekCost)"
+                  },
+                  "readTableCost": {
+                    "name": "readTableCost",
+                    "cost": 1257.857081472455,
+                    "params": {
+                      "distSqlScanConcurrency": 15,
+                      "readTableTotalCost": {
+                        "name": "readTableTotalCost",
+                        "cost": 18867.856222086826,
+                        "params": {
+                          "Selection_26": {
+                            "name": "Selection_26",
+                            "cost": 9466.825853991388,
+                            "params": null,
+                            "desc": "(filterCost) + (TableRowIDScan_25)"
+                          },
+                          "tableNetCost": {
+                            "name": "tableNetCost",
+                            "cost": 9401.030368095438,
+                            "params": {
+                              "networkFactor": 8,
+                              "rowSize": 96.5,
+                              "rows": 12.177500476807563
+                            },
+                            "desc": "rows*rowSize*networkFactor"
+                          },
+                          "tableSeekCost": {
+                            "name": "tableSeekCost",
+                            "cost": 0,
+                            "params": { "seekFactor": 9500000, "taskNums": 0 },
+                            "desc": "taskNums*seekFactor"
+                          }
+                        },
+                        "desc": "(tableNetCost) + (tableSeekCost) + (Selection_26)"
+                      }
+                    },
+                    "desc": "(readTableTotalCost)/distSqlScanConcurrency"
+                  }
+                },
+                "desc": "(readTableCost) + (doubleReadCost)"
+              }
+            },
+            "desc": "(readTableTotalCost)/indexLookupConcurrency"
+          }
+        },
+        "type": "IndexLookUp",
+        "desc": "(readIndexCost) + (readTableCost)",
+        "id": 27,
+        "cost": 12713872.533592913
+      },
+      "IndexLookUp_56": {
+        "params": {
+          "readIndexCost": {
+            "name": "readIndexCost",
+            "cost": 14960080104.57087,
+            "params": {
+              "distSqlScanConcurrency": 15,
+              "readIndexTotalCost": {
+                "name": "readIndexTotalCost",
+                "cost": 224401201568.56305,
+                "params": {
+                  "IndexFullScan_53": {
+                    "name": "IndexFullScan_53",
+                    "cost": 165710068423.56305,
+                    "params": null,
+                    "desc": "rows*log(rowSize)*scanFactor"
+                  },
+                  "indexNetCost": {
+                    "name": "indexNetCost",
+                    "cost": 58501133145,
+                    "params": {
+                      "networkFactor": 8,
+                      "rowSize": 24.375,
+                      "rows": 300005811
+                    },
+                    "desc": "rows*rowSize*networkFactor"
+                  },
+                  "indexSeekCost": {
+                    "name": "indexSeekCost",
+                    "cost": 190000000,
+                    "params": { "seekFactor": 9500000, "taskNums": 20 },
+                    "desc": "taskNums*seekFactor"
+                  }
+                },
+                "desc": "(indexNetCost) + (indexSeekCost) + (IndexFullScan_53)"
+              }
+            },
+            "desc": "(readIndexTotalCost)/distSqlScanConcurrency"
+          },
+          "readTableCost": {
+            "name": "readTableCost",
+            "cost": 1148279853898.03,
+            "params": {
+              "indexLookupConcurrency": 5,
+              "readTableTotalCost": {
+                "name": "readTableTotalCost",
+                "cost": 5741399269490.15,
+                "params": {
+                  "doubleReadCost": {
+                    "name": "doubleReadCost",
+                    "cost": 5709110583330,
+                    "params": {
+                      "double-read-cpu": {
+                        "name": "double-read-cpu",
+                        "cost": 9000174330,
+                        "params": { "cpuFactor": 30, "indexRows": 300005811 },
+                        "desc": "indexRows*cpuFactor"
+                      },
+                      "doubleReadSeekCost": {
+                        "name": "doubleReadSeekCost",
+                        "cost": 5700110409000,
+                        "params": {
+                          "seekFactor": 9500000,
+                          "taskNums": 600011.622
+                        },
+                        "desc": "taskNums*seekFactor"
+                      }
+                    },
+                    "desc": "(double-read-cpu) + (doubleReadSeekCost)"
+                  },
+                  "readTableCost": {
+                    "name": "readTableCost",
+                    "cost": 32288686160.150814,
+                    "params": {
+                      "distSqlScanConcurrency": 15,
+                      "readTableTotalCost": {
+                        "name": "readTableTotalCost",
+                        "cost": 484330292402.2622,
+                        "params": {
+                          "Selection_55": {
+                            "name": "Selection_55",
+                            "cost": 233225428595.2622,
+                            "params": null,
+                            "desc": "(filterCost) + (TableRowIDScan_54)"
+                          },
+                          "tableNetCost": {
+                            "name": "tableNetCost",
+                            "cost": 251104863807,
+                            "params": {
+                              "networkFactor": 8,
+                              "rowSize": 104.625,
+                              "rows": 300005811
+                            },
+                            "desc": "rows*rowSize*networkFactor"
+                          },
+                          "tableSeekCost": {
+                            "name": "tableSeekCost",
+                            "cost": 0,
+                            "params": { "seekFactor": 9500000, "taskNums": 0 },
+                            "desc": "taskNums*seekFactor"
+                          }
+                        },
+                        "desc": "(tableNetCost) + (tableSeekCost) + (Selection_55)"
+                      }
+                    },
+                    "desc": "(readTableTotalCost)/distSqlScanConcurrency"
+                  }
+                },
+                "desc": "(readTableCost) + (doubleReadCost)"
+              }
+            },
+            "desc": "(readTableTotalCost)/indexLookupConcurrency"
+          }
+        },
+        "type": "IndexLookUp",
+        "desc": "(readIndexCost) + (readTableCost)",
+        "id": 56,
+        "cost": 1163239934002.6008
+      },
+      "IndexRangeScan_24": {
+        "params": {
+          "rowSize": 46,
+          "rows": 12.177500476807563,
+          "scanFactor": 100
+        },
+        "type": "IndexRangeScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 24,
+        "cost": 6726.317835356039
+      },
+      "MergeJoin_23": {
+        "params": {
+          "IndexJoin_46": {
+            "name": "IndexJoin_46",
+            "cost": 2109354975542.719,
+            "params": null,
+            "desc": ""
+          },
+          "Projection_57": {
+            "name": "Projection_57",
+            "cost": 1165639980490.6008,
+            "params": null,
+            "desc": ""
+          },
+          "filterCost": {
+            "name": "filterCost",
+            "cost": 0,
+            "params": {
+              "filterLeftRowsCost": {
+                "name": "filterLeftRowsCost",
+                "cost": 0,
+                "params": {
+                  "cpuFactor": 30,
+                  "filters": 0,
+                  "rows": 114202.99506237006
+                },
+                "desc": "rows*filters*cpuFactor"
+              },
+              "filterRightRowsCost": {
+                "name": "filterRightRowsCost",
+                "cost": 0,
+                "params": { "cpuFactor": 30, "filters": 0, "rows": 100001937 },
+                "desc": "rows*filters*cpuFactor"
+              }
+            },
+            "desc": "(filterLeftRowsCost) + (filterRightRowsCost)"
+          },
+          "groupRowsCost": {
+            "name": "groupRowsCost",
+            "cost": 3003484199.851871,
+            "params": {
+              "groupLeftRowsCost": {
+                "name": "groupLeftRowsCost",
+                "cost": 3426089.8518711017,
+                "params": {
+                  "cpuFactor": 30,
+                  "groupItemNum": 1,
+                  "rows": 114202.99506237006
+                },
+                "desc": "rows*groupItemNum*cpuFactor"
+              },
+              "groupRightRowsCost": {
+                "name": "groupRightRowsCost",
+                "cost": 3000058110,
+                "params": {
+                  "cpuFactor": 30,
+                  "groupItemNum": 1,
+                  "rows": 100001937
+                },
+                "desc": "rows*groupItemNum*cpuFactor"
+              }
+            },
+            "desc": "(groupLeftRowsCost) + (groupRightRowsCost)"
+          }
+        },
+        "type": "MergeJoin",
+        "desc": "(IndexJoin_46) + (Projection_57) + (filterCost) + (groupRowsCost)",
+        "id": 23,
+        "cost": 3277998440233.172
+      },
+      "Selection_26": {
+        "params": {
+          "TableRowIDScan_25": {
+            "name": "TableRowIDScan_25",
+            "cost": 9101.50083968716,
+            "params": null,
+            "desc": "rows*log(rowSize)*scanFactor"
+          },
+          "filterCost": {
+            "name": "filterCost",
+            "cost": 365.3250143042269,
+            "params": {
+              "cpuFactor": 30,
+              "filters": 1,
+              "rows": 12.177500476807563
+            },
+            "desc": "rows*filters*cpuFactor"
+          }
+        },
+        "type": "Selection",
+        "desc": "(filterCost) + (TableRowIDScan_25)",
+        "id": 26,
+        "cost": 9466.825853991388
+      },
+      "Selection_41": {
+        "params": {
+          "TableRangeScan_40": {
+            "name": "TableRangeScan_40",
+            "cost": 756.2852959583925,
+            "params": null,
+            "desc": "rows*log(rowSize)*scanFactor"
+          },
+          "filterCost": {
+            "name": "filterCost",
+            "cost": 30,
+            "params": { "cpuFactor": 30, "filters": 1, "rows": 1 },
+            "desc": "rows*filters*cpuFactor"
+          }
+        },
+        "type": "Selection",
+        "desc": "(filterCost) + (TableRangeScan_40)",
+        "id": 41,
+        "cost": 786.2852959583925
+      },
+      "Selection_51": {
+        "params": {
+          "TableFullScan_50": {
+            "name": "TableFullScan_50",
+            "cost": 53325688139.43848,
+            "params": null,
+            "desc": "rows*log(rowSize)*scanFactor"
+          },
+          "filterCost": {
+            "name": "filterCost",
+            "cost": 2250000000,
+            "params": { "cpuFactor": 30, "filters": 1, "rows": 75000000 },
+            "desc": "rows*filters*cpuFactor"
+          }
+        },
+        "type": "Selection",
+        "desc": "(filterCost) + (TableFullScan_50)",
+        "id": 51,
+        "cost": 55575688139.43848
+      },
+      "Selection_55": {
+        "params": {
+          "TableRowIDScan_54": {
+            "name": "TableRowIDScan_54",
+            "cost": 224225254265.2622,
+            "params": null,
+            "desc": "rows*log(rowSize)*scanFactor"
+          },
+          "filterCost": {
+            "name": "filterCost",
+            "cost": 9000174330,
+            "params": { "cpuFactor": 30, "filters": 1, "rows": 300005811 },
+            "desc": "rows*filters*cpuFactor"
+          }
+        },
+        "type": "Selection",
+        "desc": "(filterCost) + (TableRowIDScan_54)",
+        "id": 55,
+        "cost": 233225428595.2622
+      },
+      "Selection_59": {
+        "params": {
+          "TableRangeScan_58": {
+            "name": "TableRangeScan_58",
+            "cost": 756.2852959583925,
+            "params": null,
+            "desc": "rows*log(rowSize)*scanFactor"
+          },
+          "filterCost": {
+            "name": "filterCost",
+            "cost": 30,
+            "params": { "cpuFactor": 30, "filters": 1, "rows": 1 },
+            "desc": "rows*filters*cpuFactor"
+          }
+        },
+        "type": "Selection",
+        "desc": "(filterCost) + (TableRangeScan_58)",
+        "id": 59,
+        "cost": 786.2852959583925
+      },
+      "Selection_72": {
+        "params": {
+          "TableFullScan_71": {
+            "name": "TableFullScan_71",
+            "cost": 53325688139.43848,
+            "params": null,
+            "desc": "rows*log(rowSize)*scanFactor"
+          },
+          "filterCost": {
+            "name": "filterCost",
+            "cost": 2250000000,
+            "params": { "cpuFactor": 30, "filters": 1, "rows": 75000000 },
+            "desc": "rows*filters*cpuFactor"
+          }
+        },
+        "type": "Selection",
+        "desc": "(filterCost) + (TableFullScan_71)",
+        "id": 72,
+        "cost": 55575688139.43848
+      },
+      "Selection_75": {
+        "params": {
+          "TableFullScan_74": {
+            "name": "TableFullScan_74",
+            "cost": 5672139719.687943,
+            "params": null,
+            "desc": "rows*log(rowSize)*scanFactor"
+          },
+          "filterCost": {
+            "name": "filterCost",
+            "cost": 225000000,
+            "params": { "cpuFactor": 30, "filters": 1, "rows": 7500000 },
+            "desc": "rows*filters*cpuFactor"
+          }
+        },
+        "type": "Selection",
+        "desc": "(filterCost) + (TableFullScan_74)",
+        "id": 75,
+        "cost": 5897139719.687943
+      },
+      "Selection_78": {
+        "params": {
+          "TableFullScan_77": {
+            "name": "TableFullScan_77",
+            "cost": 224225254265.2622,
+            "params": null,
+            "desc": "rows*log(rowSize)*scanFactor"
+          },
+          "filterCost": {
+            "name": "filterCost",
+            "cost": 9000174330,
+            "params": { "cpuFactor": 30, "filters": 1, "rows": 300005811 },
+            "desc": "rows*filters*cpuFactor"
+          }
+        },
+        "type": "Selection",
+        "desc": "(filterCost) + (TableFullScan_77)",
+        "id": 78,
+        "cost": 233225428595.2622
+      },
+      "TableFullScan_50": {
+        "params": { "rowSize": 138.15, "rows": 75000000, "scanFactor": 100 },
+        "type": "TableFullScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 50,
+        "cost": 53325688139.43848
+      },
+      "TableFullScan_71": {
+        "params": { "rowSize": 138.15, "rows": 75000000, "scanFactor": 100 },
+        "type": "TableFullScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 71,
+        "cost": 53325688139.43848
+      },
+      "TableFullScan_74": {
+        "params": {
+          "rowSize": 189.07999999999998,
+          "rows": 7500000,
+          "scanFactor": 100
+        },
+        "type": "TableFullScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 74,
+        "cost": 5672139719.687943
+      },
+      "TableFullScan_77": {
+        "params": {
+          "rowSize": 177.79000000000002,
+          "rows": 300005811,
+          "scanFactor": 100
+        },
+        "type": "TableFullScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 77,
+        "cost": 224225254265.2622
+      },
+      "TableRangeScan_40": {
+        "params": {
+          "rowSize": 189.07999999999998,
+          "rows": 1,
+          "scanFactor": 100
+        },
+        "type": "TableRangeScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 40,
+        "cost": 756.2852959583925
+      },
+      "TableRangeScan_58": {
+        "params": {
+          "rowSize": 189.07999999999998,
+          "rows": 1,
+          "scanFactor": 100
+        },
+        "type": "TableRangeScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 58,
+        "cost": 756.2852959583925
+      },
+      "TableReader_42": {
+        "params": {
+          "Selection_41": {
+            "name": "Selection_41",
+            "cost": 786.2852959583925,
+            "params": null,
+            "desc": "(filterCost) + (TableRangeScan_40)"
+          },
+          "distSqlScanConcurrency": 15,
+          "netCost": {
+            "name": "netCost",
+            "cost": 0.14400000000000002,
+            "params": { "networkFactor": 8, "rowSize": 18, "rows": 0.001 },
+            "desc": "rows*rowSize*networkFactor"
+          },
+          "seekCost": {
+            "name": "seekCost",
+            "cost": 190000000,
+            "params": { "seekFactor": 9500000, "taskNums": 20 },
+            "desc": "taskNums*seekFactor"
+          }
+        },
+        "type": "TableReader",
+        "desc": "(Selection_41+netCost+seekCost)/distSqlScanConcurrency",
+        "id": 42,
+        "cost": 12666719.095286397
+      },
+      "TableReader_52": {
+        "params": {
+          "Selection_51": {
+            "name": "Selection_51",
+            "cost": 55575688139.43848,
+            "params": null,
+            "desc": "(filterCost) + (TableFullScan_50)"
+          },
+          "distSqlScanConcurrency": 15,
+          "netCost": {
+            "name": "netCost",
+            "cost": 12761600000,
+            "params": { "networkFactor": 8, "rowSize": 64, "rows": 24925000 },
+            "desc": "rows*rowSize*networkFactor"
+          },
+          "seekCost": {
+            "name": "seekCost",
+            "cost": 190000000,
+            "params": { "seekFactor": 9500000, "taskNums": 20 },
+            "desc": "taskNums*seekFactor"
+          }
+        },
+        "type": "TableReader",
+        "desc": "(Selection_51+netCost+seekCost)/distSqlScanConcurrency",
+        "id": 52,
+        "cost": 4568485875.962565
+      },
+      "TableReader_60": {
+        "params": {
+          "Selection_59": {
+            "name": "Selection_59",
+            "cost": 786.2852959583925,
+            "params": null,
+            "desc": "(filterCost) + (TableRangeScan_58)"
+          },
+          "distSqlScanConcurrency": 15,
+          "netCost": {
+            "name": "netCost",
+            "cost": 0.14400000000000002,
+            "params": { "networkFactor": 8, "rowSize": 18, "rows": 0.001 },
+            "desc": "rows*rowSize*networkFactor"
+          },
+          "seekCost": {
+            "name": "seekCost",
+            "cost": 190000000,
+            "params": { "seekFactor": 9500000, "taskNums": 20 },
+            "desc": "taskNums*seekFactor"
+          }
+        },
+        "type": "TableReader",
+        "desc": "(Selection_59+netCost+seekCost)/distSqlScanConcurrency",
+        "id": 60,
+        "cost": 12666719.095286397
+      },
+      "TableReader_73": {
+        "params": {
+          "Selection_72": {
+            "name": "Selection_72",
+            "cost": 55575688139.43848,
+            "params": null,
+            "desc": "(filterCost) + (TableFullScan_71)"
+          },
+          "distSqlScanConcurrency": 15,
+          "netCost": {
+            "name": "netCost",
+            "cost": 12761600000,
+            "params": { "networkFactor": 8, "rowSize": 64, "rows": 24925000 },
+            "desc": "rows*rowSize*networkFactor"
+          },
+          "seekCost": {
+            "name": "seekCost",
+            "cost": 190000000,
+            "params": { "seekFactor": 9500000, "taskNums": 20 },
+            "desc": "taskNums*seekFactor"
+          }
+        },
+        "type": "TableReader",
+        "desc": "(Selection_72+netCost+seekCost)/distSqlScanConcurrency",
+        "id": 73,
+        "cost": 4568485875.962565
+      },
+      "TableReader_76": {
+        "params": {
+          "Selection_75": {
+            "name": "Selection_75",
+            "cost": 5897139719.687943,
+            "params": null,
+            "desc": "(filterCost) + (TableFullScan_74)"
+          },
+          "distSqlScanConcurrency": 15,
+          "netCost": {
+            "name": "netCost",
+            "cost": 1840800,
+            "params": { "networkFactor": 8, "rowSize": 30.68, "rows": 7500 },
+            "desc": "rows*rowSize*networkFactor"
+          },
+          "seekCost": {
+            "name": "seekCost",
+            "cost": 190000000,
+            "params": { "seekFactor": 9500000, "taskNums": 20 },
+            "desc": "taskNums*seekFactor"
+          }
+        },
+        "type": "TableReader",
+        "desc": "(Selection_75+netCost+seekCost)/distSqlScanConcurrency",
+        "id": 76,
+        "cost": 405932034.6458629
+      },
+      "TableReader_79": {
+        "params": {
+          "Selection_78": {
+            "name": "Selection_78",
+            "cost": 233225428595.2622,
+            "params": null,
+            "desc": "(filterCost) + (TableFullScan_77)"
+          },
+          "distSqlScanConcurrency": 15,
+          "netCost": {
+            "name": "netCost",
+            "cost": 102401983488,
+            "params": { "networkFactor": 8, "rowSize": 128, "rows": 100001937 },
+            "desc": "rows*rowSize*networkFactor"
+          },
+          "seekCost": {
+            "name": "seekCost",
+            "cost": 190000000,
+            "params": { "seekFactor": 9500000, "taskNums": 20 },
+            "desc": "taskNums*seekFactor"
+          }
+        },
+        "type": "TableReader",
+        "desc": "(Selection_78+netCost+seekCost)/distSqlScanConcurrency",
+        "id": 79,
+        "cost": 22387827472.21748
+      },
+      "TableRowIDScan_25": {
+        "params": {
+          "rowSize": 177.79000000000002,
+          "rows": 12.177500476807563,
+          "scanFactor": 100
+        },
+        "type": "TableRowIDScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 25,
+        "cost": 9101.50083968716
+      },
+      "TableRowIDScan_54": {
+        "params": {
+          "rowSize": 177.79000000000002,
+          "rows": 300005811,
+          "scanFactor": 100
+        },
+        "type": "TableRowIDScan",
+        "desc": "rows*log(rowSize)*scanFactor",
+        "id": 54,
+        "cost": 224225254265.2622
+      },
+      "TopN_17": {
+        "params": {
+          "HashAgg_22": {
+            "name": "HashAgg_22",
+            "cost": 15051914409.014849,
+            "params": null,
+            "desc": ""
+          },
+          "topNCPUCost": {
+            "name": "topNCPUCost",
+            "cost": 92396574.8833357,
+            "params": {
+              "ByItemNums": 2,
+              "cpuFactor": 30,
+              "log2(n)": 3.321928094887362,
+              "rows": 463569.008941621
+            },
+            "desc": "rows*log2(n)*ByItemNums*cpuFactor"
+          },
+          "topNMemCost": {
+            "name": "topNMemCost",
+            "cost": 640,
+            "params": { "memFactor": 1, "n": 10, "rowSize": 64 },
+            "desc": "n*rowSize*memFactor"
+          }
+        },
+        "type": "TopN",
+        "desc": "(HashAgg_22) + (topNCPUCost) + (topNMemCost)",
+        "id": 17,
+        "cost": 15144311623.898184
+      }
+    },
+    "candidates": {
+      "14": {
+        "type": "Projection",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "test.lineitem.l_orderkey, Column#35, test.orders.o_orderdate, test.orders.o_shippriority",
+        "children": [17],
+        "id": 14,
+        "cost": 0,
+        "selected": true,
+        "mapping": "Projection_8"
+      },
+      "17": {
+        "type": "TopN",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "Column#35:desc, test.orders.o_orderdate, offset:0, count:10",
+        "children": [22],
+        "id": 17,
+        "cost": 0,
+        "selected": true,
+        "mapping": "TopN_11"
+      },
+      "22": {
+        "type": "HashAgg",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "group by:test.lineitem.l_orderkey, test.orders.o_orderdate, test.orders.o_shippriority, funcs:sum(mul(test.lineitem.l_extendedprice, minus(1, test.lineitem.l_discount)))->Column#35, funcs:firstrow(test.orders.o_orderdate)->test.orders.o_orderdate, funcs:firstrow(test.orders.o_shippriority)->test.orders.o_shippriority, funcs:firstrow(test.lineitem.l_orderkey)->test.lineitem.l_orderkey",
+        "children": [28],
+        "id": 22,
+        "cost": 0,
+        "selected": true,
+        "mapping": "Aggregation_7"
+      },
+      "23": {
+        "type": "MergeJoin",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, left key:test.orders.o_orderkey, right key:test.lineitem.l_orderkey",
+        "children": [46, 57],
+        "id": 23,
+        "cost": 0,
+        "selected": false,
+        "mapping": "Join_13"
+      },
+      "24": {
+        "type": "IndexRangeScan",
+        "property": "",
+        "info": "table:lineitem, index:PRIMARY(L_ORDERKEY, L_LINENUMBER), range: decided by [eq(test.lineitem.l_orderkey, test.orders.o_orderkey)], keep order:false",
+        "children": null,
+        "id": 24,
+        "cost": 0,
+        "selected": true,
+        "mapping": ""
+      },
+      "25": {
+        "type": "TableRowIDScan",
+        "property": "",
+        "info": "table:lineitem, keep order:false",
+        "children": null,
+        "id": 25,
+        "cost": 0,
+        "selected": true,
+        "mapping": ""
+      },
+      "26": {
+        "type": "Selection",
+        "property": "",
+        "info": "gt(test.lineitem.l_shipdate, 1995-03-13 00:00:00.000000)",
+        "children": [25],
+        "id": 26,
+        "cost": 0,
+        "selected": true,
+        "mapping": ""
+      },
+      "27": {
+        "type": "IndexLookUp",
+        "property": "",
+        "info": "",
+        "children": [24, 26],
+        "id": 27,
+        "cost": 0,
+        "selected": true,
+        "mapping": ""
+      },
+      "28": {
+        "type": "IndexJoin",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, inner:IndexLookUp_27, outer key:test.orders.o_orderkey, inner key:test.lineitem.l_orderkey, equal cond:eq(test.orders.o_orderkey, test.lineitem.l_orderkey)",
+        "children": [70, 27],
+        "id": 28,
+        "cost": 0,
+        "selected": true,
+        "mapping": "Join_13"
+      },
+      "30": {
+        "type": "IndexHashJoin",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, inner:IndexLookUp_27, outer key:test.orders.o_orderkey, inner key:test.lineitem.l_orderkey, equal cond:eq(test.orders.o_orderkey, test.lineitem.l_orderkey)",
+        "children": [70, 27],
+        "id": 30,
+        "cost": 0,
+        "selected": false,
+        "mapping": "Join_13"
+      },
+      "38": {
+        "type": "HashJoin",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, equal:[eq(test.orders.o_orderkey, test.lineitem.l_orderkey)]",
+        "children": [70, 79],
+        "id": 38,
+        "cost": 0,
+        "selected": false,
+        "mapping": "Join_13"
+      },
+      "39": {
+        "type": "HashJoin",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, equal:[eq(test.orders.o_orderkey, test.lineitem.l_orderkey)]",
+        "children": [70, 79],
+        "id": 39,
+        "cost": 0,
+        "selected": false,
+        "mapping": "Join_13"
+      },
+      "40": {
+        "type": "TableRangeScan",
+        "property": "",
+        "info": "table:customer, range: decided by [test.orders.o_custkey], keep order:false",
+        "children": null,
+        "id": 40,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "41": {
+        "type": "Selection",
+        "property": "",
+        "info": "eq(test.customer.c_mktsegment, 'AUTOMOBILE')",
+        "children": [40],
+        "id": 41,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "42": {
+        "type": "TableReader",
+        "property": "",
+        "info": "data:Selection_41",
+        "children": [41],
+        "id": 42,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "46": {
+        "type": "IndexJoin",
+        "property": "Prop{cols: [{test.orders.o_orderkey false}], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, inner:TableReader_42, outer key:test.orders.o_custkey, inner key:test.customer.c_custkey, equal cond:eq(test.orders.o_custkey, test.customer.c_custkey)",
+        "children": [42, 52],
+        "id": 46,
+        "cost": 0,
+        "selected": false,
+        "mapping": "Join_12"
+      },
+      "48": {
+        "type": "IndexHashJoin",
+        "property": "Prop{cols: [{test.orders.o_orderkey false}], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, inner:TableReader_42, outer key:test.orders.o_custkey, inner key:test.customer.c_custkey, equal cond:eq(test.orders.o_custkey, test.customer.c_custkey)",
+        "children": [42, 52],
+        "id": 48,
+        "cost": 0,
+        "selected": false,
+        "mapping": "Join_12"
+      },
+      "50": {
+        "type": "TableFullScan",
+        "property": "",
+        "info": "table:orders, keep order:true",
+        "children": null,
+        "id": 50,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "51": {
+        "type": "Selection",
+        "property": "",
+        "info": "lt(test.orders.o_orderdate, 1995-03-13 00:00:00.000000)",
+        "children": [50],
+        "id": 51,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "52": {
+        "type": "TableReader",
+        "property": "Prop{cols: [{test.orders.o_orderkey false}], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "data:Selection_51",
+        "children": [51],
+        "id": 52,
+        "cost": 0,
+        "selected": false,
+        "mapping": "DataSource_2"
+      },
+      "53": {
+        "type": "IndexFullScan",
+        "property": "",
+        "info": "table:lineitem, index:PRIMARY(L_ORDERKEY, L_LINENUMBER), keep order:true",
+        "children": null,
+        "id": 53,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "54": {
+        "type": "TableRowIDScan",
+        "property": "",
+        "info": "table:lineitem, keep order:false",
+        "children": null,
+        "id": 54,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "55": {
+        "type": "Selection",
+        "property": "",
+        "info": "gt(test.lineitem.l_shipdate, 1995-03-13 00:00:00.000000)",
+        "children": [54],
+        "id": 55,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "56": {
+        "type": "IndexLookUp",
+        "property": "",
+        "info": "",
+        "children": [53, 55],
+        "id": 56,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "57": {
+        "type": "Projection",
+        "property": "Prop{cols: [{test.lineitem.l_orderkey false}], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "test.lineitem.l_orderkey, test.lineitem.l_extendedprice, test.lineitem.l_discount, test.lineitem.l_shipdate",
+        "children": [56],
+        "id": 57,
+        "cost": 0,
+        "selected": false,
+        "mapping": "DataSource_4"
+      },
+      "58": {
+        "type": "TableRangeScan",
+        "property": "",
+        "info": "table:customer, range: decided by [test.orders.o_custkey], keep order:false",
+        "children": null,
+        "id": 58,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "59": {
+        "type": "Selection",
+        "property": "",
+        "info": "eq(test.customer.c_mktsegment, 'AUTOMOBILE')",
+        "children": [58],
+        "id": 59,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "60": {
+        "type": "TableReader",
+        "property": "",
+        "info": "data:Selection_59",
+        "children": [59],
+        "id": 60,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "64": {
+        "type": "IndexJoin",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, inner:TableReader_60, outer key:test.orders.o_custkey, inner key:test.customer.c_custkey, equal cond:eq(test.orders.o_custkey, test.customer.c_custkey)",
+        "children": [60, 73],
+        "id": 64,
+        "cost": 0,
+        "selected": false,
+        "mapping": "Join_12"
+      },
+      "66": {
+        "type": "IndexHashJoin",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, inner:TableReader_60, outer key:test.orders.o_custkey, inner key:test.customer.c_custkey, equal cond:eq(test.orders.o_custkey, test.customer.c_custkey)",
+        "children": [60, 73],
+        "id": 66,
+        "cost": 0,
+        "selected": false,
+        "mapping": "Join_12"
+      },
+      "69": {
+        "type": "HashJoin",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, equal:[eq(test.customer.c_custkey, test.orders.o_custkey)]",
+        "children": [76, 73],
+        "id": 69,
+        "cost": 0,
+        "selected": false,
+        "mapping": "Join_12"
+      },
+      "70": {
+        "type": "HashJoin",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "inner join, equal:[eq(test.customer.c_custkey, test.orders.o_custkey)]",
+        "children": [76, 73],
+        "id": 70,
+        "cost": 0,
+        "selected": true,
+        "mapping": "Join_12"
+      },
+      "71": {
+        "type": "TableFullScan",
+        "property": "",
+        "info": "table:orders, keep order:false",
+        "children": null,
+        "id": 71,
+        "cost": 0,
+        "selected": true,
+        "mapping": ""
+      },
+      "72": {
+        "type": "Selection",
+        "property": "",
+        "info": "lt(test.orders.o_orderdate, 1995-03-13 00:00:00.000000)",
+        "children": [71],
+        "id": 72,
+        "cost": 0,
+        "selected": true,
+        "mapping": ""
+      },
+      "73": {
+        "type": "TableReader",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "data:Selection_72",
+        "children": [72],
+        "id": 73,
+        "cost": 0,
+        "selected": true,
+        "mapping": "DataSource_2"
+      },
+      "74": {
+        "type": "TableFullScan",
+        "property": "",
+        "info": "table:customer, keep order:false",
+        "children": null,
+        "id": 74,
+        "cost": 0,
+        "selected": true,
+        "mapping": ""
+      },
+      "75": {
+        "type": "Selection",
+        "property": "",
+        "info": "eq(test.customer.c_mktsegment, 'AUTOMOBILE')",
+        "children": [74],
+        "id": 75,
+        "cost": 0,
+        "selected": true,
+        "mapping": ""
+      },
+      "76": {
+        "type": "TableReader",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "data:Selection_75",
+        "children": [75],
+        "id": 76,
+        "cost": 0,
+        "selected": true,
+        "mapping": "DataSource_1"
+      },
+      "77": {
+        "type": "TableFullScan",
+        "property": "",
+        "info": "table:lineitem, keep order:false",
+        "children": null,
+        "id": 77,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "78": {
+        "type": "Selection",
+        "property": "",
+        "info": "gt(test.lineitem.l_shipdate, 1995-03-13 00:00:00.000000)",
+        "children": [77],
+        "id": 78,
+        "cost": 0,
+        "selected": false,
+        "mapping": ""
+      },
+      "79": {
+        "type": "TableReader",
+        "property": "Prop{cols: [], TaskTp: rootTask, expectedCount: 1.7976931348623157e+308}",
+        "info": "data:Selection_78",
+        "children": [78],
+        "id": 79,
+        "cost": 0,
+        "selected": false,
+        "mapping": "DataSource_4"
+      }
+    },
+    "final": [
+      {
+        "type": "TableFullScan",
+        "property": "",
+        "info": "table:customer, keep order:false",
+        "children": [],
+        "id": 74,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "Selection",
+        "property": "",
+        "info": "eq(test.customer.c_mktsegment, 'AUTOMOBILE')",
+        "children": [74],
+        "id": 75,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "TableReader",
+        "property": "",
+        "info": "data:Selection_75",
+        "children": [75],
+        "id": 76,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "TableFullScan",
+        "property": "",
+        "info": "table:orders, keep order:false",
+        "children": [],
+        "id": 71,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "Selection",
+        "property": "",
+        "info": "lt(test.orders.o_orderdate, 1995-03-13 00:00:00.000000)",
+        "children": [71],
+        "id": 72,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "TableReader",
+        "property": "",
+        "info": "data:Selection_72",
+        "children": [72],
+        "id": 73,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "HashJoin",
+        "property": "",
+        "info": "inner join, equal:[eq(test.customer.c_custkey, test.orders.o_custkey)]",
+        "children": [76, 73],
+        "id": 70,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "IndexRangeScan",
+        "property": "",
+        "info": "table:lineitem, index:PRIMARY(L_ORDERKEY, L_LINENUMBER), range: decided by [eq(test.lineitem.l_orderkey, test.orders.o_orderkey)], keep order:false",
+        "children": [],
+        "id": 24,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "TableRowIDScan",
+        "property": "",
+        "info": "table:lineitem, keep order:false",
+        "children": [],
+        "id": 25,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "Selection",
+        "property": "",
+        "info": "gt(test.lineitem.l_shipdate, 1995-03-13 00:00:00.000000)",
+        "children": [25],
+        "id": 26,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "IndexLookUp",
+        "property": "",
+        "info": "",
+        "children": [24, 26],
+        "id": 27,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "IndexJoin",
+        "property": "",
+        "info": "inner join, inner:IndexLookUp_27, outer key:test.orders.o_orderkey, inner key:test.lineitem.l_orderkey, equal cond:eq(test.orders.o_orderkey, test.lineitem.l_orderkey)",
+        "children": [70, 27],
+        "id": 28,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "HashAgg",
+        "property": "",
+        "info": "group by:test.lineitem.l_orderkey, test.orders.o_orderdate, test.orders.o_shippriority, funcs:sum(mul(test.lineitem.l_extendedprice, minus(1, test.lineitem.l_discount)))->Column#35, funcs:firstrow(test.orders.o_orderdate)->test.orders.o_orderdate, funcs:firstrow(test.orders.o_shippriority)->test.orders.o_shippriority, funcs:firstrow(test.lineitem.l_orderkey)->test.lineitem.l_orderkey",
+        "children": [28],
+        "id": 22,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "TopN",
+        "property": "",
+        "info": "Column#35:desc, test.orders.o_orderdate, offset:0, count:10",
+        "children": [22],
+        "id": 17,
+        "cost": 0,
+        "selected": false
+      },
+      {
+        "type": "Projection",
+        "property": "",
+        "info": "test.lineitem.l_orderkey, Column#35, test.orders.o_orderdate, test.orders.o_shippriority",
+        "children": [17],
+        "id": 14,
+        "cost": 0,
+        "selected": false
+      }
+    ]
+  },
+  "final": [
+    {
+      "type": "TableFullScan",
+      "property": "",
+      "info": "table:customer, keep order:false",
+      "children": [],
+      "id": 74,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "Selection",
+      "property": "",
+      "info": "eq(test.customer.c_mktsegment, 'AUTOMOBILE')",
+      "children": [74],
+      "id": 75,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "TableReader",
+      "property": "",
+      "info": "data:Selection_75",
+      "children": [75],
+      "id": 76,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "TableFullScan",
+      "property": "",
+      "info": "table:orders, keep order:false",
+      "children": [],
+      "id": 71,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "Selection",
+      "property": "",
+      "info": "lt(test.orders.o_orderdate, 1995-03-13 00:00:00.000000)",
+      "children": [71],
+      "id": 72,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "TableReader",
+      "property": "",
+      "info": "data:Selection_72",
+      "children": [72],
+      "id": 73,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "HashJoin",
+      "property": "",
+      "info": "inner join, equal:[eq(test.customer.c_custkey, test.orders.o_custkey)]",
+      "children": [76, 73],
+      "id": 70,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "IndexRangeScan",
+      "property": "",
+      "info": "table:lineitem, index:PRIMARY(L_ORDERKEY, L_LINENUMBER), range: decided by [eq(test.lineitem.l_orderkey, test.orders.o_orderkey)], keep order:false",
+      "children": [],
+      "id": 24,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "TableRowIDScan",
+      "property": "",
+      "info": "table:lineitem, keep order:false",
+      "children": [],
+      "id": 25,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "Selection",
+      "property": "",
+      "info": "gt(test.lineitem.l_shipdate, 1995-03-13 00:00:00.000000)",
+      "children": [25],
+      "id": 26,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "IndexLookUp",
+      "property": "",
+      "info": "",
+      "children": [24, 26],
+      "id": 27,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "IndexJoin",
+      "property": "",
+      "info": "inner join, inner:IndexLookUp_27, outer key:test.orders.o_orderkey, inner key:test.lineitem.l_orderkey, equal cond:eq(test.orders.o_orderkey, test.lineitem.l_orderkey)",
+      "children": [70, 27],
+      "id": 28,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "Projection",
+      "property": "",
+      "info": "mul(test.lineitem.l_extendedprice, minus(1, test.lineitem.l_discount))->Column#44, test.orders.o_orderdate, test.orders.o_shippriority, test.lineitem.l_orderkey, test.lineitem.l_orderkey, test.orders.o_orderdate, test.orders.o_shippriority",
+      "children": [28],
+      "id": 82,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "HashAgg",
+      "property": "",
+      "info": "group by:Column#48, Column#49, Column#50, funcs:sum(Column#44)->Column#35, funcs:firstrow(Column#45)->test.orders.o_orderdate, funcs:firstrow(Column#46)->test.orders.o_shippriority, funcs:firstrow(Column#47)->test.lineitem.l_orderkey",
+      "children": [82],
+      "id": 22,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "TopN",
+      "property": "",
+      "info": "Column#35:desc, test.orders.o_orderdate, offset:0, count:10",
+      "children": [22],
+      "id": 17,
+      "cost": 0,
+      "selected": false
+    },
+    {
+      "type": "Projection",
+      "property": "",
+      "info": "test.lineitem.l_orderkey, Column#35, test.orders.o_orderdate, test.orders.o_shippriority",
+      "children": [17],
+      "id": 14,
+      "cost": 0,
+      "selected": false
+    }
+  ],
+  "isFastPlan": false
+}

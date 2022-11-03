@@ -1,0 +1,180 @@
+{
+  "schemes": [],
+  "swagger": "2.0",
+  "info": {
+    "description": "This is a Clinic server.",
+    "title": "Clinic Example API",
+    "contact": {},
+    "version": "1.0"
+  },
+  "host": "",
+  "basePath": "/clinic/api/v1",
+  "paths": {
+    "/orgs/{oid}/clusters/{cid}/slowqueries": {
+      "get": {
+        "description": "get slow log list in cluster",
+        "produces": ["application/json"],
+        "summary": "get slow log list",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "get value from login.ValidationResp response",
+            "name": "x-csrf-token",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "organization id",
+            "name": "oid",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "package id",
+            "name": "itemID",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "start time",
+            "name": "begin_time",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "end time",
+            "name": "end_time",
+            "in": "query"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "db list",
+            "name": "db",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "limit",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "text",
+            "name": "text",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "orderBy",
+            "name": "orderBy",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "desc",
+            "name": "desc",
+            "in": "query"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "plans",
+            "name": "plans",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "digest",
+            "name": "digest",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "cluster id",
+            "name": "cid",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/cluster.SlowQueryProfile"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orgs/{oid}/clusters/{cid}/slowqueries/{queryid}": {
+      "get": {
+        "description": "get slow log detail in cluster",
+        "produces": ["application/json"],
+        "summary": "get slow log detail",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "get value from login.ValidationResp response",
+            "name": "x-csrf-token",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "organization id",
+            "name": "oid",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "package id",
+            "name": "itemID",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "cluster id",
+            "name": "cid",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "log id",
+            "name": "queryid",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/cluster.SlowQueryProfile"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "cluster.SlowQueryProfile": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

@@ -10,8 +10,7 @@ import {
   Expand,
   HighlightSQL,
   Pre,
-  TextWithInfo,
-  TreeDiagramView
+  TextWithInfo
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import formatSql from '@lib/utils/sqlFormatter'
@@ -22,6 +21,11 @@ import DetailTabs from './PlanDetailTabs'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import { telemetry } from '../../utils/telemetry'
 import { StatementContext } from '../../context'
+
+import {
+  VisualPlanThumbnailView,
+  VisualPlanView
+} from '@lib/components/VisualPlan'
 
 export interface IQuery extends IPageQuery {
   plans: string[]
@@ -201,32 +205,17 @@ function PlanDetail({ query }: IPlanDetailProps) {
                           height: window.innerHeight - 100
                         }}
                       >
-                        <TreeDiagramView
-                          data={
-                            binaryPlan.ctes
-                              ? [binaryPlan.main].concat(binaryPlan.ctes)
-                              : [binaryPlan.main]
-                          }
-                          showMinimap={true}
-                        />
+                        <VisualPlanView data={binaryPlan} />
                       </Modal>
                       <Descriptions>
                         <Descriptions.Item span={2}>
                           <div onClick={() => toggleVisualPlan('open')}>
-                            <TreeDiagramView
-                              data={
-                                binaryPlan.ctes
-                                  ? [binaryPlan.main].concat(binaryPlan.ctes)
-                                  : [binaryPlan.main]
-                              }
-                              isThumbnail={true}
-                            />
+                            <VisualPlanThumbnailView data={binaryPlan} />
                           </div>
                         </Descriptions.Item>
                       </Descriptions>
                     </Tabs.TabPane>
                   )}
-
                   <Tabs.TabPane
                     tab={t('statement.pages.detail.desc.plans.execution.text')}
                     key="text_plan"

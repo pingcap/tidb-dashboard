@@ -1,0 +1,303 @@
+diagnosis:
+  title: '{{distro.tidb}} Cluster System Report'
+  expand_all: Expand All
+  fold_all: Collapse All
+  expand: Expand
+  fold: Collapse
+  all_tables: Report Overview
+  tables:
+    category:
+      header: Basic Info
+      diagnose: Diagnose
+      load: Load Info
+      overview: Component Info
+      TiDB: '{{distro.tidb}} Component'
+      PD: '{{distro.pd}} Component'
+      TiKV: '{{distro.tikv}} Component'
+      config: Configuration Info
+      error: Error Info
+    title:
+      compare_diagnose: Diagnostics Comparison
+      compare_report_time_range: Comparison Time Range
+      top_10_slow_query_in_time_range_t1: Top 10 Slow Queries in Time Range t1
+      top_10_slow_query_in_time_range_t2: top 10 Slow Queries in Time Range t2
+      top_10_slow_query_group_by_digest_in_time_range_t1: Top 10 Slow Queries Group by Digest in Time Range t1
+      top_10_slow_query_group_by_digest_in_time_range_t2: Top 10 slow queries group by digest in Time Range t2
+      slow_query_with_diff_plan in_in_time_range_t1: Slow Queries with Different Plan in Time Range t1
+      slow_query_with_diff_plan in_in_time_range_t2: Slow queries with Different Plan in Time Range t2
+      diagnose_in_time_range_t1: Diagnostics in Time Range t1
+      diagnose_in_time_range_t2: Diagnostics in Time Range t2
+      max_diff_item: Maximum Different Item
+      slow_query_t2: Slow Queries In Time Range t2
+      generate_report_error: Report Generation Error
+      report_time_range: Report Time Range
+      diagnose: Diagnosis Result
+      total_time_consume: Time Consumed by Each Component
+      total_error: Errors Occurred in Each Component
+      time_consume: Time Consumed
+      tidb_time_consume: Time Consumed by {{distro.tidb}} Component
+      transaction: '{{distro.tidb}} Transaction'
+      tidb_connection_count: '{{distro.tidb}} Server Connections'
+      statistics_info: Statistics Info
+      ddl_owner: DDL Owner
+      scheduler_initial_config: Scheduler Initial Config
+      scheduler_change_config: Scheduler Config Change History
+      tidb_gc_initial_config: '{{distro.tidb}} GC Initial Config'
+      tidb_gc_change_config: '{{distro.tidb}} GC Config Change History'
+      tikv_rocksdb_initial_config: '{{distro.tikv}} RocksDB Initial Config'
+      tikv_rocksdb_change_config: '{{distro.tikv}} RocksDB Config Change History'
+      tikv_raftstore_initial_config: '{{distro.tikv}} RaftStore Initial Config'
+      tikv_raftstore_change_config: '{{distro.tikv}} RaftStore Config Change History'
+      pd_time_consume: Time Consumed by {{distro.pd}} Component
+      balance_leader_region: Scheduled Leader/Region Count
+      approximate_region_size: Approximate Region Size
+      tikv_engine_size: '{{distro.tikv}} Engine Size'
+      tikv_time_consume: Time Consumed by {{distro.tikv}} Component
+      scheduler_info: Scheduler Info
+      gc_info: GC Info
+      task_info: Task Info
+      snapshot_info: Snapshot Info
+      coprocessor_info: Coprocessor Info
+      raft_info: Raft Info
+      tikv_error: '{{distro.tikv}} Error'
+      tidb_current_config: "{{distro.tidb}}'s Current Config"
+      pd_current_config: "{{distro.pd}}'s Current Config"
+      tikv_current_config: "{{distro.tikv}}'s Current Config"
+      node_load_info: Server Load Info
+      process_cpu_usage: Instance CPU Usage
+      process_memory_usage: Instance Memory Usage
+      tidb/pd_goroutines_count: '{{distro.tidb}}/{{distro.pd}} Goroutines Count'
+      tikv_thread_cpu_usage: '{{distro.tikv}} Thread CPU Usage'
+      store_status: Store Status
+      cluster_status: Cluster Status
+      etcd_status: etcd Status
+      cluster_info: Cluster Topology Info
+      cache_hit: Cache Hit
+      cluster_hardware: Cluster Hardware Info
+      rocksdb_time_consume: Time Consumed by RocksDB
+      top_10_slow_query: Top 10 Slow Queries
+      top_10_slow_query_group_by_digest: Top 10 Slow Queries Group By Digest
+      slow_query_with_diff_plan: Slow Queries with Different Plan
+    comment:
+      compare_diagnose: Automatically diagnose the cluster problem by comparing with the reference time.
+      max_diff_item: The maximum different metrics between two time ranges.
+      diagnose: Automatically diagnose the cluster problem and record the problem in the table below.
+      total_time_consume: This table contains the event time consumed in {{distro.tidb}}/{{distro.tikv}}/{{distro.pd}}. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type, etc; TIME_RATIO is the TOTAL_TIME of this event divided by the TOTAL_TIME of the events whose TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile.
+      total_error: This table contains the total count of each error event. METRIC_NAME is the error event name; LABEL is the event label, such as instance, event type, etc; TOTAL_COUNT is the total count of this event.
+      tidb_time_consume: This table contains the event time consumed in {{distro.tidb}}. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type, etc; TIME_RATIO is the TOTAL_TIME of this event divided by the TOTAL_TIME of the events whose TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile.
+      transaction: This table contains the {{distro.tidb}} transaction statistics information. METRIC_NAME is the object name; LABEL is the object label, such as instance, event type, etc; TOTAL_VALUE is the total size/value of this object; TOTAL_COUNT is the total count of this object; P999 is the max size/value of 0.999 quantile; P99 is the max size/value of 0.99 quantile; P90 is the max size/value of 0.90 quantile; P80 is the max size/value of 0.80 quantile.
+      tidb_connection_count: The number of connections of each {{distro.tidb}} server.
+      ddl_owner: This table contains the DDL Owner info. Note that if no DDL request has been executed, the Owner info maybe null below, but it doesn't indicate that no DDL Owner exists.
+      scheduler_initial_config: The initial config value of {{distro.pd}} scheduler. The initial time is the start time of this report.
+      scheduler_change_config: The config change history of {{distro.pd}} scheduler. APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      tidb_gc_initial_config: The initial config value of {{distro.tidb}} GC. The initial time is the start time of this report.
+      tidb_gc_change_config: The config change history of {{distro.tidb}} GC. APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      tikv_rocksdb_initial_config: The initial config value of {{distro.tikv}} RocksDB. The initial time is the start time of this report.
+      tikv_rocksdb_change_config: The config change history of {{distro.tikv}} RocksDB. APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      tikv_raftstore_initial_config: The initial config value of {{distro.tikv}} RaftStore. The initial time is the start time of this report.
+      tikv_raftstore_change_config: The config change history of {{distro.tikv}} RaftStore. APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      pd_time_consume: This table contains the event time consumed in {{distro.pd}}. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type, etc; TIME_RATIO is the TOTAL_TIME of this event divided by the TOTAL_TIME of the events whose TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile.
+      tikv_time_consume: This table contains the event time consumed in {{distro.tikv}}. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type, etc; TIME_RATIO is the TOTAL_TIME of this event divided by the TOTAL_TIME of the events whose TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile.
+    table:
+      name:
+        tidb_transaction: Transaction
+        tidb_kv_request: KV request
+        tidb_slow_query: Slow query
+        tidb_ddl_handle_job: DDL job
+        tidb_ddl_batch_add_index: Batch add index
+        tidb_load_schema: Schema load
+        tidb_meta_operation: '{{distro.tidb}} meta operation'
+        tidb_auto_id_request: '{{distro.tidb}} auto ID request'
+        tidb_statistics_auto_analyze: '{{distro.tidb}} auto analyze'
+        tidb_gc: '{{distro.tidb}} GC'
+        pd_client_cmd: '{{distro.pd}} client cmd'
+        pd_handle_request: '{{distro.pd}} request'
+        pd_handle_transactions: etcd transactions
+        tikv_cop_request: Coprocessor request
+        tikv_cop_handle: Coprocessor handling request
+        tikv_handle_snapshot: Snapshot handling
+        tikv_send_snapshot: Snapshot sending
+        tikv_commit_log: Raft commit log
+        tidb_transaction_retry_num: '{{distro.tidb}} transaction retry'
+        tidb_txn_region_num: Transaction Region count
+        tidb_txn_kv_write_num: Transaction KV write count
+        tidb_txn_kv_write_size: Transaction KV write size
+        tidb_load_safepoint_total_num: Safepoint load
+        tikv_scheduler_stage_total_num: Scheduler stage
+        tikv_worker_handled_tasks_total_num: '{{distro.tikv}} worker handled tasks'
+        tikv_worker_pending_tasks_total_num: '{{distro.tikv}} worker pending tasks'
+        tikv_futurepool_handled_tasks_total_num: future_pool handled tasks
+        tikv_futurepool_pending_tasks_total_num: future_pool pending tasks
+        tikv_snapshot_kv_count: Snapshot KV
+        tikv_snapshot_size: Snapshot size
+        tikv_cop_scan_keys_num: '{{distro.tikv}} Coprocessor scan keys'
+        tikv_cop_total_response_total_size: '{{distro.tikv}} Coprocessor response'
+        tikv_cop_scan_num: '{{distro.tikv}} Coprocessor scan'
+        tikv_raft_sent_messages_total_num: Raft sent messages
+        tikv_flush_messages_total_num: Raft flush messages
+        tikv_receive_messages_total_num: Raft receive messages
+        tikv_raft_dropped_messages_total: Raft dropped messages
+        tikv_raft_proposals_total_num: Raft proposals
+        tikv_grpc_error_total_count: gRPC errors
+        tikv_critical_error_total_count: '{{distro.tikv}} critical errors'
+        tikv_coprocessor_request_error_total_count: Coprocessor request errors
+        node_disk_write_latency: Disk write latency
+        node_disk_read_latency: Disk read latency
+        sched_worker: Scheduler worker
+        tikv_memtable_hit: memtable hit
+        tikv_block_all_cache_hit: All block cache hit
+        tikv_block_index_cache_hit: Index block cache hit
+        tikv_block_filter_cache_hit: Filter block cache hit
+        tikv_block_data_cache_hit: Data block cache hit
+        tikv_block_bloom_prefix_cache_hit: Bloom prefix block cache hit
+      comment:
+        tidb_query: The time cost of SQL queries. The label is [sql_type].
+        tidb_get_token(us): The time cost of a session getting token to execute the SQL query. The label is [instance].
+        tidb_parse: The time cost of parsing SQL queries. The label is [sql_type].
+        tidb_compile: The time cost of building the query plan. The label is [sql_type].
+        tidb_execute: The time cost of executing the SQL query, which does not include the time to get the results of the query. The label is [sql_type].
+        tidb_distsql_execution: The time cost of distsql execution. The label is [type].
+        tidb_cop: The processing time of KV storage Coprocessor. The label is [instance].
+        tidb_transaction: The time cost of a transaction executing durations, including retry. The label is [sql_type].
+        tidb_transaction_local_latch_wait: The time cost of waiting for local latch. The label is [instance].
+        tidb_kv_backoff: The time cost of {{distro.tidb}} transaction latch waiting for key value storage. The label is [type].
+        tidb_kv_request: The time cost of KV requests durations. The label is [type].
+        tidb_slow_query: The time cost of {{distro.tidb}} slow queries. The label is [instance].
+        tidb_slow_query_cop_process: The total Coprocessor processing time of {{distro.tidb}} slow queries. The label is [instance].
+        tidb_slow_query_cop_wait: The total Coprocessor waiting time of {{distro.tidb}} slow queries. The label is [instance].
+        tidb_ddl_handle_job: The time cost of processing {{distro.tidb}} DDL jobs. The label is [type].
+        tidb_ddl_worker: The time cost of DDL worker handling jobs. The label is [action].
+        tidb_ddl_update_self_version: The time cost of updating {{distro.tidb}} schema syncer version. The label is [result].
+        tidb_owner_handle_syncer: The time cost of {{distro.tidb}} DDL owner operations on etcd. The label is [type].
+        tidb_ddl_batch_add_index: The time cost of {{distro.tidb}} batch adding index. The label is [type].
+        tidb_ddl_deploy_syncer: The time cost of {{distro.tidb}} DDL schema syncer statistics, including init, start, watch, and clear. The label is [type].
+        tidb_load_schema: The time cost of {{distro.tidb}} loading schema. The label is [type].
+        tidb_meta_operation: The time cost of {{distro.tidb}} meta operations, including get/set schema and DDL jobs. The label is [instance].
+        tidb_auto_id_request: The time cost of handling requests for {{distro.tidb}} auto ID. The label is [type].
+        tidb_statistics_auto_analyze: The time cost of {{distro.tidb}} auto analyze. The label is [type].
+        tidb_gc: The time cost of KV storage garbage collection. The label is [instance].
+        tidb_gc_push_task: The time cost of KV storage range worker processing one task. The label is [instance].
+        tidb_batch_client_unavailable: The time cost of KV storage batch processing unavailable. The label is [type].
+        tidb_batch_client_wait: The time cost of {{distro.tidb}} KV storage batch processing client requests that are waiting. The label is [instance].
+        pd_start_tso_wait: The time cost of waiting for the start timestamp oracle. The label is [instance].
+        pd_tso_rpc: The time cost from sending TSO request to receiving the response. The label is [instance].
+        pd_tso_wait: The time cost from the client starting to wait for the timestamp to receiving the timestamp. The label is [instance].
+        pd_client_cmd: The time cost of {{distro.pd}} client command. The label is [type].
+        pd_handle_request: The time cost of {{distro.pd}} handling request. The label is [type].
+        pd_grpc_completed_commands: The time cost of {{distro.pd}} completing each kind of gRPC commands. The label is [grpc_method].
+        pd_operator_finish: The time cost of {{distro.pd}} completing each kind of scheduling commands. The label is [type].
+        pd_operator_step_finish: The time cost of {{distro.pd}} completing operating steps. The label is [type].
+        pd_handle_transactions: The time cost of {{distro.pd}} handling etcd transactions. The label is [result].
+        pd_region_heartbeat: The time cost of heartbeats in each {{distro.tikv}} instance. The label is [address].
+        etcd_wal_fsync: The time cost of etcd writing WAL into the persistent storage. The label is [instance].
+        pd_peer_round_trip: The latency of the network. The label is [To].
+        tikv_grpc_message: The time cost of handling {{distro.tikv}} gRPC messages. The label is [type].
+        tikv_cop_request: The time cost of Coprocessor handling read requests. The label is [req].
+        tikv_cop_handle: The time cost of handling Coprocessor requests. The label is [req].
+        tikv_cop_wait: The time cost of Coprocessor requests that wait for being handled. The label is [req].
+        tikv_scheduler_command: The time cost of executing commit command. The label is [type].
+        tikv_scheduler_latch_wait: The waiting time of {{distro.tikv}} latch in commit command. The label is [type].
+        tikv_handle_snapshot: The time cost of handling snapshots. The label is [type].
+        tikv_send_snapshot: The time cost of sending snapshots. The label is [instance].
+        tikv_storage_async_request: The time cost of processing asynchronous snapshot requests. The label is [type].
+        tikv_raft_append_log: The time cost of Raft appends log. The label is [instance].
+        tikv_raft_apply_log: The time cost of Raft apply log. The label is [instance].
+        tikv_raft_apply_wait: The time cost of Raft apply wait. The label is [instance].
+        tikv_raft_process: The time cost of peer processes in Raft. The label is [instance].
+        tikv_raft_propose_wait: The waiting time of each proposal. The label is [type].
+        tikv_raft_store_events: The time cost of raftstore events. The label is [type].
+        tikv_commit_log: The time cost of Raft commits log. The label is [instance].
+        tikv_check_split: The time cost of running split check. The label is [instance].
+        tikv_ingest_sst: The time cost of ingesting SST files. The label is [instance].
+        tikv_gc_tasks: The time cost of executing GC tasks. The label is [task].
+        tikv_pd_request: The time cost of {{distro.tikv}} sending requests to {{distro.pd}}. The label is [type].
+        tikv_lock_manager_deadlock_detect:
+        tikv_lock_manager_waiter_lifetime:
+        tikv_backup_range:
+        tikv_backup:
+        tidb_transaction_retry_num: '{{distro.tidb}} transaction retry count. The label is [instance].'
+        tidb_transaction_statement_num: The total number of {{distro.tidb}} statements within a transaction. Internal means the internal transaction of {{distro.tidb}}. The label is [sql_type].
+        tidb_txn_region_num: The number of Regions that each transaction operates. The label is [instance].
+        tidb_txn_kv_write_num: The number of KV writes per transaction execution. The label is [instance].
+        tidb_txn_kv_write_size: The KV write size per transaction execution. The label is [instance].
+        tidb_load_safepoint_total_num: The total count of safe point loading. The label is [instance].
+        tidb_lock_resolver_total_num: The total count of lock resolve. The label is [instance].
+        pseudo_estimation_total_count: The total count of {{distro.tidb}} Optimizer using pseudo estimation. The label is [instance, type].
+        dump_feedback_total_count: The total count of operations that {{distro.tidb}} dumping statistics back to KV storage. The label is [instance, type].
+        store_query_feedback_total_count: The total count of {{distro.tidb}} store querying feedback. The label is [instance, type].
+        update_stats_total_count: The total count of {{distro.tidb}} updating statistics using feed back. The label is [instance].
+        balance-leader-in: balance-leader-in is the total count of Leader moving into the {{distro.tikv}} store. The label is [address].
+        balance-leader-out: balance-leader-out is the total count of Leader moving out of the {{distro.tikv}} store. The label is [address].
+        balance-region-in: balance-region-in is the total count of Regions moving into the {{distro.tikv}} store. The label is [address].
+        balance-region-out: balance-region-in is the total count of Regions moving into the {{distro.tikv}} store. The label is [address].
+        Approximate Region size: The approximate Region size. The label is [instance].
+        store size: The storage size. The label is [instance, type].
+        tikv_scheduler_keys_read: The number of keys read by a command. The label is [instance, type].
+        tikv_scheduler_keys_written: The number of keys written by a command. The label is [instance, type].
+        tikv_scheduler_scan_details_total_num: The keys scan details of each CF when executing a command. The label is [instance,req,tag].
+        tikv_scheduler_stage_total_num: The total number of scheduler states. The label is [instance,type,stage].
+        tikv_gc_keys_total_num: The total number of keys in CF affected during GC. The label is [instance,cf,tag].
+        tidb_gc_worker_action_total_num: The total count of KV storage garbage collection. The label is [instance,type].
+        tikv_worker_handled_tasks_total_num: The total number of tasks handled by worker. The label is [instance,name].
+        tikv_worker_pending_tasks_total_num: The total number of pending and running tasks of worker. The label is [instance,name].
+        tikv_futurepool_handled_tasks_total_num: The total number of tasks handled by future_pool. The label is [instance,name].
+        tikv_futurepool_pending_tasks_total_num: The total number of pending and running tasks of future_pool. The label is [instance,name].
+        tikv_snapshot_kv_count: tikv_snapshot_kv_count. The label is [instance].
+        tikv_snapshot_size: The number of KV pairs within a snapshot. The label is [instance].
+        tikv_snapshot_state_total_count: tikv_snapshot_size. The label is [instance,type].
+        tikv_cop_scan_keys_num: The total number of {{distro.tikv}} Coprocessor scan keys. The label is [instance,req].
+        tikv_cop_total_response_total_size: '{{distro.tikv}} coprocessor response total size. The label is [instance].'
+        tikv_cop_scan_num: The total number of {{distro.tikv}} coprocessor scan operations. The label is [instance,req,tag,cf].
+        tikv_raft_sent_messages_total_num: The total number of sent Raft messages. The label is [instance,type].
+        tikv_flush_messages_total_num: The total number of flushed Raft messages. The label is [instance].
+        tikv_receive_messages_total_num: The total number of received Raft messages. The label is [instance].
+        tikv_raft_dropped_messages_total: The total number of dropped Raft messages. The label is [instance,type].
+        tikv_raft_proposals_total_num: The total number of raft proposals. The label is [instance,type].
+        tikv_grpc_error_total_count: The total number of the gRPC message failures. The label is [instance,type].
+        tikv_critical_error_total_count: The total number of the {{distro.tikv}} critical errors. The label is [instance,type].
+        tikv_scheduler_is_busy_total_count: The total number of Scheduler Busy events that make the {{distro.tikv}} instance temporarily unavailable. The label is [instance,db,type,stage].
+        tikv_channel_full_total_count: The total number of channel full errors, which will make the {{distro.tikv}} instance temporarily unavailable. The label is [instance,db,type].
+        tikv_coprocessor_request_error_total_count: The total number of Coprocessor errors. The label is [instance,reason].
+        tikv_engine_write_stall: Indicates occurrences of Write Stall events that make the {{distro.tikv}} instance temporarily unavailable. The label is [instance,db].
+        tikv_server_report_failures_total_count: The total number of reported failure messages. The label is [instance].
+        tikv_storage_async_request_error: The total number of storage request errors. The label is [instance,status,type].
+        tikv_lock_manager_detect_error_total_count: The total number of {{distro.tikv}} lock manager detect error. The label is [instance,type].
+        tikv_backup_errors_total_count: The total number of {{distro.tikv}} lock manager detected errors. The label is [instance,error].
+        node_disk_write_latency: The disk write latency in each node. The label is [instance,device].
+        node_disk_read_latency: The disk read latency in each node. The label is [instance,device].
+        grpc: The CPU utilization of each {{distro.tikv}} gRPC. The label is [instance].
+        raftstore: The CPU utilization of {{distro.tikv}} raftstore thread. The label is [instance].
+        Async apply: The CPU utilization of {{distro.tikv}} async apply thread. The label is [instance].
+        sched_worker: The CPU utilization of {{distro.tikv}} scheduler worker thread. The label is [instance].
+        snapshot: The CPU utilization of {{distro.tikv}} snapshot. The label is [instance].
+        unified read pool: The CPU utilization of {{distro.tikv}} unified read pool thread. The label is [instance].
+        storage read pool: The CPU utilization of {{distro.tikv}} storage read pool thread. The label is [instance].
+        storage read pool normal: The CPU utilization of {{distro.tikv}} storage read pool normal thread. The label is [instance].
+        storage read pool high: The CPU utilization of {{distro.tikv}} storage read pool high thread. The label is [instance].
+        storage read pool low: The CPU utilization of {{distro.tikv}} storage read pool low thread. The label is [instance].
+        cop: The CPU utilization of {{distro.tikv}} Coprocessor. The label is [instance].
+        cop normal: The CPU utilization of {{distro.tikv}} Coprocessor normal thread. The label is [instance].
+        cop high: The CPU utilization of {{distro.tikv}} Coprocessor high thread. The label is [instance].
+        cop low: The CPU utilization of {{distro.tikv}} Coprocessor low thread. The label is [instance].
+        rocksdb: The CPU utilization {{distro.tikv}} RocksDB. The label is [instance].
+        gc: The CPU utilization of {{distro.tikv}} GC. The label is [instance].
+        split_check: The CPU utilization of {{distro.tikv}} split_check. The label is [instance].
+        region_score: The Region score of store. The label is [address].
+        leader_score: The Leader score of store. The label is [address].
+        region_count: The Region count of store. The label is [address].
+        leader_count: The Leader score of store. The label is [address].
+        region_size: The Region size of store. The label is [address].
+        leader_size: The Leader size of store. The label is [address].
+        tikv_memtable_hit: The hit rate of memtable. The label is [instance].
+        tikv_block_all_cache_hit: The hit rate of all block cache. The label is [instance].
+        tikv_block_index_cache_hit: The hit rate of index block cache. The label is [instance].
+        tikv_block_filter_cache_hit: The hit rate of filter block cache. The label is [instance].
+        tikv_block_data_cache_hit: The hit rate of data block cache. The label is [instance].
+        tikv_block_bloom_prefix_cache_hit: The hit rate of bloom_prefix block cache. The label is [instance].
+        get duration: The time consumed when RocksDB executing get operations. The label is [instance].
+        seek duration: The time consumed when RocksDB executing seek operations. The label is [instance].
+        write duration: The time consumed when RocksDB executing write operations. The label is [instance].
+        WAL sync duration: The time consumed when RocksDB executing WAL sync operations. The label is [instance].
+        compaction duration: The time consumed when RocksDB executing compaction operations. The label is [instance].
+        SST read duration: The time consumed when RocksDB reading SST files. The label is [instance].
+        write stall duration: The time cost of write stall. The label is [instance].

@@ -1,28 +1,33 @@
-import { Space, Typography, Row, Col, Collapse } from 'antd'
+import { Space, Typography, Row, Col, Collapse, Tooltip } from 'antd'
 import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Stack } from 'office-ui-fabric-react'
+import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
+import { useMemoizedFn } from 'ahooks'
+import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
+import { Link } from 'react-router-dom'
+import { debounce } from 'lodash'
+
 import {
   AutoRefreshButton,
   Card,
   DEFAULT_TIME_RANGE,
-  MetricChart,
   TimeRange,
   TimeRangeSelector,
-  Toolbar
+  Toolbar,
+  ErrorBar
 } from '@lib/components'
-import { Stack } from 'office-ui-fabric-react'
+import { store } from '@lib/utils/store'
+import { tz } from '@lib/utils'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
-import { LoadingOutlined } from '@ant-design/icons'
+import { telemetry } from '../utils/telemetry'
 import { MonitoringContext } from '../context'
-
-import { PointerEvent } from '@elastic/charts'
-import { ChartContext } from '@lib/components/MetricChart/ChartContext'
-import { useEventEmitter, useMemoizedFn } from 'ahooks'
-import { monitoringItems } from '../data/monitoringItems'
-import { debounce } from 'lodash'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)
+  const promAddrConfigurable = ctx?.cfg.promAddrConfigurable || false
+  const info = store.useState((s) => s.appInfo)
+  const pdVersion = info?.version?.pd_version
   const { t } = useTranslation()
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
@@ -42,6 +47,27 @@ export default function Monitoring() {
       : loadingCounter.current > 0 && (loadingCounter.current -= 1)
     setIsSomeLoadingDebounce(loadingCounter.current > 0)
   })
+
+  const handleManualRefreshClick = () => {
+    telemetry.clickManualRefresh()
+    return setTimeRange((r) => ({ ...r }))
+  }
+
+  const handleOnBrush = (range: TimeRangeValue) => {
+    setChartRange(range)
+  }
+
+  const ErrorComponent = (error: Error) => (
+    <Space direction="vertical">
+      <ErrorBar errors={[error]} />
+      {promAddrConfigurable && (
+        <Link to="/user_profile?blink=profile.prometheus">
+          {t('components.metricChart.changePromButton')}
+        </Link>
+      )}
+    </Space>
+  )
+
   return (
     <>
       <Card>
@@ -49,20 +75,43 @@ export default function Monitoring() {
           <Space>
             <TimeRangeSelector.WithZoomOut
               value={timeRange}
-              onChange={setTimeRange}
+              onChange={(v) => {
+                setTimeRange(v)
+                telemetry.selectTimeRange(v)
+              }}
+              recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
+              withAbsoluteRangePicker={
+                ctx?.cfg.timeRangeSelector?.withAbsoluteRangePicker
+              }
+              onZoomOutClick={(start, end) =>
+                telemetry.clickZoomOut([start, end])
+              }
             />
             <AutoRefreshButton
-              onRefresh={() => setTimeRange((r) => ({ ...r }))}
+              onChange={telemetry.selectAutoRefreshOption}
+              onRefresh={handleManualRefreshClick}
               disabled={isSomeLoading}
             />
+            <Tooltip placement="top" title={t('monitoring.panel_no_data_tips')}>
+              <a
+                // TODO: replace reference link on op side
+                href="https://docs.pingcap.com/tidbcloud/built-in-monitoring"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FileTextOutlined
+                  onClick={() => telemetry.clickDocumentationIcon()}
+                />
+              </a>
+            </Tooltip>
             {isSomeLoading && <LoadingOutlined />}
           </Space>
         </Toolbar>
       </Card>
-      <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
+      <SyncChartPointer>
         <Stack tokens={{ childrenGap: 16 }}>
           <Card noMarginTop noMarginBottom>
-            {monitoringItems.map((item) => (
+            {ctx!.cfg.getMetricsQueries(pdVersion).map((item) => (
               <Collapse defaultActiveKey={['1']} ghost key={item.category}>
                 <Collapse.Panel
                   header={t(`monitoring.category.${item.category}`)}
@@ -91,15 +140,19 @@ export default function Monitoring() {
                           >
                             {m.title}
                           </Typography.Title>
-                          <MetricChart
+                          <MetricsChart
                             queries={m.queries}
-                            type={m.type}
-                            unit={m.unit}
-                            nullValue={m.nullValue}
                             range={chartRange}
-                            onRangeChange={setChartRange}
-                            getMetrics={ctx!.ds.metricsQueryGet}
-                            onLoadingStateChange={onLoadingStateChange}
+                            nullValue={m.nullValue}
+                            unit={m.unit!}
+                            timezone={tz.getTimeZone()}
+                            fetchPromeData={ctx!.ds.metricsQueryGet}
+                            onLoading={onLoadingStateChange}
+                            onBrush={handleOnBrush}
+                            errorComponent={ErrorComponent}
+                            onClickSeriesLabel={(seriesName) =>
+                              telemetry.clickSeriesLabel(m.title, seriesName)
+                            }
                           />
                         </Card>
                       </Col>
@@ -110,7 +163,7 @@ export default function Monitoring() {
             ))}
           </Card>
         </Stack>
-      </ChartContext.Provider>
+      </SyncChartPointer>
     </>
   )
 }

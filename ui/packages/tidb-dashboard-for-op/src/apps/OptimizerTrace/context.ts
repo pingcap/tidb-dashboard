@@ -8,8 +8,6 @@ import {
 
 class DataSource implements IOptimizerTraceDataSource {}
 
-const ds = new DataSource()
-
 export const ctx: IOptimizerTraceContext = {
-  ds
+  ds: new DataSource()
 }

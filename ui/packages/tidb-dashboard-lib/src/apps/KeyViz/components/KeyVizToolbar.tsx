@@ -15,6 +15,7 @@ import Flexbox from '@g07cha/flexbox-react'
 import { AutoRefreshButton, Card, Toolbar } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { isDistro } from '@lib/utils/distro'
+import { telemetry as keyVizTelemetry } from '../utils/telemetry'
 
 export interface IKeyVizToolbarProps {
   enabled: boolean
@@ -24,6 +25,7 @@ export interface IKeyVizToolbarProps {
   metricType: string
   brightLevel: number
   dateRange: number
+  showHelp: boolean
   onResetZoom: () => void
   onToggleBrush: () => void
   onChangeMetric: (string) => void
@@ -41,29 +43,49 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
 
   handleRefreshClick = () => {
     this.props.onRefresh()
+    keyVizTelemetry.clickManualRefresh()
   }
 
   handleAutoRefreshMenuClick = (key) => {
     this.props.onChangeAutoRefresh(key)
+    keyVizTelemetry.clickAutoRefresh()
   }
 
   handleDateRange = (value) => {
     this.props.onChangeDateRange(value)
+    keyVizTelemetry.changeTimeDuration(value)
   }
 
   handleMetricChange = (value) => {
     this.props.onChangeMetric(value)
+    keyVizTelemetry.changeMetric(value)
   }
 
   handleBrightLevel = (exp: number) => {
     this.props.onChangeBrightLevel(Math.pow(2, exp))
     this.setState({ exp })
+    keyVizTelemetry.changeBright(exp)
   }
 
   handleBrightnessDropdown = () => {
     setTimeout(() => {
       this.handleBrightLevel(this.state.exp)
     }, 0)
+  }
+
+  handleToggleBrush = () => {
+    this.props.onToggleBrush()
+    keyVizTelemetry.toggleBrush()
+  }
+
+  handleShowSetting = () => {
+    this.props.onShowSettings()
+    keyVizTelemetry.openSetting()
+  }
+
+  handleResetZoom = () => {
+    this.props.onResetZoom()
+    keyVizTelemetry.resetZoom()
   }
 
   render() {
@@ -75,7 +97,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
       isOnBrush,
       metricType,
       autoRefreshSeconds,
-      onShowSettings
+      showHelp
     } = this.props
 
     // in hours
@@ -132,13 +154,13 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
             <Button.Group>
               <Button
                 disabled={!enabled}
-                onClick={this.props.onToggleBrush}
+                onClick={this.handleToggleBrush}
                 icon={<ArrowsAltOutlined />}
                 type={isOnBrush ? 'primary' : 'default'}
               >
                 {t('keyviz.toolbar.zoom.select')}
               </Button>
-              <Button disabled={!enabled} onClick={this.props.onResetZoom}>
+              <Button disabled={!enabled} onClick={this.handleResetZoom}>
                 {t('keyviz.toolbar.zoom.reset')}
               </Button>
             </Button.Group>
@@ -197,9 +219,9 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
               mouseLeaveDelay={0}
               title={t('keyviz.settings.title')}
             >
-              <SettingOutlined onClick={onShowSettings} />
+              <SettingOutlined onClick={this.handleShowSetting} />
             </Tooltip>
-            {!isDistro() && (
+            {!isDistro() && showHelp && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}
@@ -209,6 +231,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
                 <QuestionCircleOutlined
                   onClick={() => {
                     window.open(t('keyviz.settings.help_url'), '_blank')
+                    keyVizTelemetry.openHelp()
                   }}
                 />
               </Tooltip>

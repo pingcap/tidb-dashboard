@@ -38,11 +38,21 @@ export interface ISlowQueryDataSource {
   ): AxiosPromise<string>
 }
 
+export interface ISlowQueryEvent {
+  selectSlowQueryItem(item: SlowqueryModel): void
+}
+
+export interface ISlowQueryConfig extends IContextConfig {
+  enableExport: boolean
+  showDBFilter: boolean
+  showHelp?: boolean
+  listApiReturnDetail?: boolean // true means the list api will return all fields value of an item, not just the selected fields
+}
+
 export interface ISlowQueryContext {
   ds: ISlowQueryDataSource
-  cfg: IContextConfig & {
-    enableExport: boolean
-  }
+  event?: ISlowQueryEvent
+  cfg: ISlowQueryConfig
 }
 
 export const SlowQueryContext = createContext<ISlowQueryContext | null>(null)

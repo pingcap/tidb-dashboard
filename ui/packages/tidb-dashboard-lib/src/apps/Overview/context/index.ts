@@ -12,6 +12,22 @@ import {
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
+import { QueryConfig, TransformNullValue } from 'metrics-chart'
+export interface OverviewMetricsQueryType {
+  title: string
+  queries: QueryConfig[]
+  unit: string
+  nullValue?: TransformNullValue
+}
+
+interface IMetricConfig {
+  metricsQueries: OverviewMetricsQueryType[]
+  promAddrConfigurable?: boolean
+  timeRangeSelector?: {
+    recent_seconds: number[]
+    withAbsoluteRangePicker: boolean
+  }
+}
 
 export interface IOverviewDataSource {
   getTiDBTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTiDBInfo>>
@@ -33,18 +49,17 @@ export interface IOverviewDataSource {
     options?: ReqConfig
   ): AxiosPromise<number>
 
-  metricsQueryGet(
-    endTimeSec?: number,
-    query?: string,
-    startTimeSec?: number,
-    stepSec?: number,
-    options?: ReqConfig
-  ): AxiosPromise<MetricsQueryResponse>
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }): Promise<MetricsQueryResponse>
 }
 
 export interface IOverviewContext {
   ds: IOverviewDataSource
-  cfg: IContextConfig
+  cfg: IContextConfig & IMetricConfig
 }
 
 export const OverviewContext = createContext<IOverviewContext | null>(null)

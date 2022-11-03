@@ -93,6 +93,7 @@ function useQueryOptions(
 export interface ISlowQueryTableControllerOpts {
   cacheMgr?: CacheMgr
   showFullSQL?: boolean
+  fetchSchemas?: boolean
   initialQueryOptions?: ISlowQueryOptions
   persistQueryInSession?: boolean
 
@@ -105,6 +106,7 @@ export interface ISlowQueryTableController {
 
   orderOptions: IOrderOptions
   changeOrder: (orderBy: string, desc: boolean) => void
+  resetOrder: () => void
 
   isLoading: boolean
 
@@ -122,17 +124,19 @@ export interface ISlowQueryTableController {
 export default function useSlowQueryTableController({
   cacheMgr,
   showFullSQL = false,
+  fetchSchemas = true,
   initialQueryOptions,
   persistQueryInSession = true,
   ds
 }: ISlowQueryTableControllerOpts): ISlowQueryTableController {
-  // const ctx = useContext(SlowQueryContext)
-
   const { orderOptions, changeOrder } = useOrderState(
     'slow_query',
     persistQueryInSession,
     DEF_ORDER_OPTIONS
   )
+  function resetOrder() {
+    changeOrder(DEF_ORDER_OPTIONS.orderBy, DEF_ORDER_OPTIONS.desc)
+  }
 
   const { queryOptions, setQueryOptions } = useQueryOptions(
     initialQueryOptions,
@@ -154,6 +158,9 @@ export default function useSlowQueryTableController({
   // Reload these options when sending a new request.
   useChange(() => {
     async function querySchemas() {
+      if (!fetchSchemas) {
+        return
+      }
       try {
         const res = await ds.infoListDatabases({
           handleError: 'custom'
@@ -188,7 +195,7 @@ export default function useSlowQueryTableController({
       // The cache key is built over queryOptions, instead of evaluated one.
       // So that when passing in same relative times options (e.g. Recent 15min)
       // the cache can be reused.
-      const cacheKey = JSON.stringify(queryOptions)
+      const cacheKey = JSON.stringify({ queryOptions, orderOptions })
       {
         const cache = cacheMgr?.get(cacheKey)
         if (cache) {
@@ -255,7 +262,7 @@ export default function useSlowQueryTableController({
     }
 
     getSlowQueryList()
-  }, [queryOptions])
+  }, [queryOptions, orderOptions])
 
   const availableColumnsInTable = useMemo(
     () => slowQueryColumns(data ?? [], schemaColumns, showFullSQL),
@@ -271,6 +278,7 @@ export default function useSlowQueryTableController({
 
     orderOptions,
     changeOrder,
+    resetOrder,
 
     isLoading: isColumnsLoading || isDataLoading || isOptionsLoading,
 

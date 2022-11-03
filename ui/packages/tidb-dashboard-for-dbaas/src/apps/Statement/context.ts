@@ -103,6 +103,10 @@ class DataSource implements IStatementDataSource {
     return client.getInstance().statementsStmtTypesGet(options)
   }
 
+  statementsTimeRangesGet(options?: ReqConfig) {
+    return client.getAxiosInstance().get('/statements/time_ranges', options)
+  }
+
   // slow query
   slowQueryAvailableFieldsGet(options?: ReqConfig) {
     return client.getInstance().slowQueryAvailableFieldsGet(options)
@@ -163,5 +167,9 @@ const ds = new DataSource()
 
 export const ctx: () => IStatementContext = () => ({
   ds,
-  cfg: { apiPathBase: client.getBasePath(), enableExport: false }
+  cfg: {
+    apiPathBase: client.getBasePath(),
+    enableExport: false,
+    showHelp: false
+  }
 })

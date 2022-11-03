@@ -1,0 +1,10 @@
+deadlock:
+  nav_title: Deadlock Information
+  fields:
+    instance: Instance
+    count: Transaction count
+    occur_time: Occur time
+    try_lock_trx_id: Transaction acquiring the lock
+    trx_holding_lock: Transaction holding the lock
+    current_sql: SQL for acquiring the lock
+    key: Locked key

@@ -1,0 +1,304 @@
+diagnosis:
+  title: '{{distro.tidb}} 集群系统报告'
+  expand_all: 展开所有
+  fold_all: 收起所有
+  expand: 展开
+  fold: 收起
+  all_tables: 报告信息总览
+  tables:
+    category:
+      header: 基本信息
+      diagnose: 诊断
+      load: 负载
+      overview: 各组件信息总览
+      TiDB: '{{distro.tidb}} 组件'
+      PD: '{{distro.pd}} 组件'
+      TiKV: '{{distro.tikv}} 组件'
+      config: 配置
+      error: 错误
+    title:
+      compare_diagnose: 诊断对比
+      compare_report_time_range: 对比报告区间
+      top_10_slow_query_in_time_range_t1: t1 中的 Top 10 慢查询
+      top_10_slow_query_in_time_range_t2: t2 中的 Top 10 慢查询
+      top_10_slow_query_group_by_digest_in_time_range_t1: 按 SQL 指纹聚合的 t1 Top 10 慢查询
+      top_10_slow_query_group_by_digest_in_time_range_t2: 按 SQL 指纹聚合的 t2 Top 10 慢查询
+      slow_query_with_diff_plan_in_time_range_t1: t1 中的不同执行计划的慢查询
+      slow_query_with_diff_plan_in_time_range_t2: t2 中的不同执行计划的慢查询
+      diagnose_in_time_range_t1: t1 中的诊断信息
+      diagnose_in_time_range_t2: t2 中的诊断信息
+      max_diff_item: 最大不同项
+      slow_query_t2: t2 中的慢查询
+      generate_report_error: 生成报告的报错
+      report_time_range: 报告区间
+      diagnose: 诊断结果
+      total_time_consume: 各组件总耗时
+      total_error: 各组件总报错数
+      time_consume: 耗时
+      tidb_time_consume: '{{distro.tidb}} 中事件耗时'
+      transaction: '{{distro.tidb}} 事务'
+      tidb_connection_count: '{{distro.tidb}} 连接数'
+      statistics_info: 统计信息
+      ddl_owner: DDL Owner
+      scheduler_initial_config: 调度器初始配置
+      scheduler_change_config: 调度器配置修改历史
+      tidb_gc_initial_config: '{{distro.tidb}} GC 初始配置'
+      tidb_gc_change_config: '{{distro.tidb}} GC 配置修改历史'
+      tikv_rocksdb_initial_config: '{{distro.tikv}} RocksDB 初始配置'
+      tikv_rocksdb_change_config: '{{distro.tikv}} RocksDB 配置修改历史'
+      tikv_raftstore_initial_config: '{{distro.tikv}} RaftStore 初始配置'
+      tikv_raftstore_change_config: '{{distro.tikv}} RaftStore 配置修改历史'
+      pd_time_consume: '{{distro.pd}} 中事件耗时'
+      balance_leader_region: Leader/Region 调度数
+      approximate_region_size: Approximate Region 大小
+      tikv_engine_size: '{{distro.tikv}} 实例存储大小'
+      tikv_time_consume: '{{distro.tikv}} 中事件耗时'
+      scheduler_info: '{{distro.tikv}} 调度器信息'
+      gc_info: GC 信息
+      task_info: '{{distro.tikv}} 任务信息'
+      snapshot_info: '{{distro.tikv}} 快照信息'
+      coprocessor_info: Coprocessor 信息
+      raft_info: Raft 信息
+      tikv_error: '{{distro.tikv}} 错误'
+      tidb_current_config: '{{distro.tidb}} 当前配置'
+      pd_current_config: '{{distro.pd}} 当前配置'
+      tikv_current_config: '{{distro.tikv}} 当前配置'
+      node_load_info: 服务器负载信息
+      process_cpu_usage: 各实例 CPU 使用率
+      process_memory_usage: 各实例内存消耗
+      tidb/pd_goroutines_count: '{{distro.tidb}}/{{distro.pd}} 的 Goroutines 数量'
+      tikv_thread_cpu_usage: '{{distro.tikv}} 的 CPU 使用情况'
+      store_status: '{{distro.tikv}} 节点的存储状态'
+      cluster_status: 集群状态
+      etcd_status: etcd 状态
+      cluster_info: 集群拓扑信息
+      cache_hit: 缓存命中率
+      cluster_hardware: 集群硬件信息
+      rocksdb_time_consume: RocksDB 事件耗时
+      top_10_slow_query: Top 10 慢查询
+      top_10_slow_query_group_by_digest: 按 SQL 指纹聚合的 Top 10 慢查询
+      slow_query_with_diff_plan: 不同执行计划的慢查询
+    comment:
+      compare_diagnose: 通过与参考时间的比较，自动诊断集群问题。
+      max_diff_item: 两段时间中的最大不同项。
+      diagnose: 该表显示的是自动诊断的结果，即集群中出现的问题。
+      total_time_consume: 该表显示的是 {{distro.tidb}}/{{distro.tikv}}/{{distro.pd}} 组件中各事件的耗时。METRIC_NAME 是事件名称；LABEL 是事件标签，如实例、事件类型等；TIME_RATIO 是该事件的总时间除以 TIME_RATIO 为 1 的事件的总时间；TOTAL_TIME 是该事件的总耗时；TOTAL_COUNT 是该事件的总计数；P999 是 0.999 分位数的最大时间；P99 是 0.99 分位数的最大时间；P90 是 0.90 分位数的最大时间；P80 是 0.80 分位数的最大时间。
+      total_error: 该表显示的是各错误事件的数量。METRIC_NAME 是错误事件名称；LABEL 是事件标签，如实例、事件类型；TOTAL_COUNT 是该错误事件的总数。
+      tidb_time_consume: 该表显示的是 {{distro.tidb}} 组件中各事件的耗时。METRIC_NAME 是事件名称；LABEL 是事件标签，如实例、事件类型等；TIME_RATIO 是该事件的总时间除以 TIME_RATIO 为 1 的事件的总时间；TOTAL_TIME 是该事件的总耗时；TOTAL_COUNT 是该事件的总计数；P999 是 0.999 分位数的最大时间；P99 是 0.99 分位数的最大时间；P90 是 0.90 分位数的最大时间；P80 是 0.80 分位数的最大时间。
+      transaction: 该表显示了 {{distro.tidb}} 事务的统计信息。METRIC_NAME 是对象名；LABEL 是对象标签，如实例、事件类型等；TOTAL_VALUE 是该对象的总大小；TOTAL_COUNT 是该对象的总计数；P999 为 0.999 分位数的最大值；P99 是 0.99 分位数的最大值；P90 是 0.90 分位数的最大值；P80 是 0.80 分位数的最大值。
+      tidb_connection_count: '{{distro.tidb}} 服务器的连接数。'
+      ddl_owner: DDL Owner 的信息。注意：如果没有 DDL 请求被执行，下面的 Owner 信息可能为空，这并不表示 DDL Owner 不存在。
+      scheduler_initial_config: '{{distro.pd}} 调度器的初始配置值。初始时间是报表的开始时间。'
+      scheduler_change_config: '{{distro.pd}} 调度器的配置更改历史。APPROXIMATE_CHANGE_TIME 为最近的有效更改时间。'
+      tidb_gc_initial_config: '{{distro.tidb}} GC 的初始配置值。初始时间是报表的开始时间。'
+      tidb_gc_change_config: '{{distro.tidb}} GC 的配置更改历史。APPROXIMATE_CHANGE_TIME 为最近的有效更改时间。'
+      tikv_rocksdb_initial_config: '{{distro.tikv}} RocksDB 的初始配置值。初始时间是报表的开始时间。'
+      tikv_rocksdb_change_config: '{{distro.tikv}} RocksDB 的配置更改历史。APPROXIMATE_CHANGE_TIME 为最近的有效更改时间。'
+      tikv_raftstore_initial_config: '{{distro.tikv}} RaftStore 的初始配置值。初始时间是报表的开始时间。'
+      tikv_raftstore_change_config: '{{distro.tikv}} RaftStore 的配置更改历史。APPROXIMATE_CHANGE_TIME 为最近的有效更改时间。'
+      pd_time_consume: 该表显示的是 {{distro.pd}} 组件中各事件的耗时。METRIC_NAME 是事件名称；LABEL 是事件标签，如实例、事件类型等；TIME_RATIO 是该事件的总时间除以 TIME_RATIO 为 1 的事件的总时间；TOTAL_TIME 是该事件的总耗时；TOTAL_COUNT 是该事件的总计数；P999 是 0.999 分位数的最大时间；P99 是 0.99 分位数的最大时间；P90 是 0.90 分位数的最大时间；P80 是 0.80 分位数的最大时间。
+      tikv_time_consume: 该表显示的是 {{distro.tikv}} 组件中各事件的耗时。METRIC_NAME 是事件名称；LABEL 是事件标签，如实例、事件类型等；TIME_RATIO 是该事件的总时间除以 TIME_RATIO 为 1 的事件的总时间；TOTAL_TIME 是该事件的总耗时；TOTAL_COUNT 是该事件的总计数；P999 是 0.999 分位数的最大时间；P99 是 0.99 分位数的最大时间；P90 是 0.90 分位数的最大时间；P80 是 0.80 分位数的最大时间。
+    table:
+      name:
+        tidb_transaction: '{{distro.tidb}} 事务'
+        tidb_kv_request: '{{distro.tidb}} KV 请求'
+        tidb_slow_query: 慢查询
+        tidb_ddl_handle_job: DDL 任务
+        tidb_ddl_batch_add_index: 批量索引添加
+        tidb_load_schema: Schema 加载
+        tidb_meta_operation: '{{distro.tidb}} 元操作'
+        tidb_auto_id_request: '{{distro.tidb}} 自增 ID 请求'
+        tidb_statistics_auto_analyze: '{{distro.tidb}} 自动分析'
+        tidb_gc: 垃圾回收
+        pd_client_cmd: '{{distro.pd}} 客户端命令'
+        pd_handle_request: '{{distro.pd}} 请求'
+        pd_handle_transactions: etcd 事务
+        pd_peer_round_trip: 网络延迟
+        tikv_cop_request: Coprocessor 读请求
+        tikv_cop_handle: Coprocessor 请求
+        tikv_handle_snapshot: 快照处理
+        tikv_send_snapshot: 快照发送
+        tikv_commit_log: Raft 提交日志
+        tidb_transaction_retry_num: '{{distro.tidb}} 事务重试数'
+        tidb_txn_region_num: 事务操作的 Region 数量
+        tidb_txn_kv_write_num: 事务执行的 KV 写入数量
+        tidb_txn_kv_write_size: 事务执行的 KV 写入大小
+        tidb_load_safepoint_total_num: 安全点装载总数量
+        tikv_scheduler_stage_total_num: 调度程序状态的总数量
+        tikv_worker_handled_tasks_total_num: worker 处理的任务总数量
+        tikv_worker_pending_tasks_total_num: 工作进程的挂起和运行任务的总数量
+        tikv_futurepool_handled_tasks_total_num: future_pool 处理的任务总数量
+        tikv_futurepool_pending_tasks_total_num: future_pool 总挂起和运行任务数量
+        tikv_snapshot_kv_count: 快照的 KV 数量
+        tikv_snapshot_size: 快照大小
+        tikv_cop_scan_keys_num: '{{distro.tikv}} Coprocessor 扫描键总数量'
+        tikv_cop_total_response_total_size: '{{distro.tikv}} Coprocessor 响应总大小'
+        tikv_cop_scan_num: '{{distro.tikv}} Coprocessor 扫描操作总数量'
+        tikv_raft_sent_messages_total_num: 发送的 Raft 消息的总数量
+        tikv_flush_messages_total_num: 持久化 Raft 消息的总数量
+        tikv_receive_messages_total_num: 接受 Raft 消息的总数量
+        tikv_raft_dropped_messages_total: 丢弃 Raft 消息的总数量
+        tikv_raft_proposals_total_num: Raft proposal 的总数量
+        tikv_grpc_error_total_count: gRPC 消息失败的总数量
+        tikv_critical_error_total_count: '{{distro.tikv}} 临界误差的总数量'
+        tikv_coprocessor_request_error_total_count: Coprocessor 错误总数量
+        node_disk_write_latency: 磁盘写延迟
+        node_disk_read_latency: 磁盘读取延迟
+        sched_worker: 调度器工作线程
+        tikv_memtable_hit: memtable 命中率
+        tikv_block_all_cache_hit: 所有块缓存命中率
+        tikv_block_index_cache_hit: 索引块缓存命中率
+        tikv_block_filter_cache_hit: 过滤块缓存命中率
+        tikv_block_data_cache_hit: 数据块缓存命中率
+        tikv_block_bloom_prefix_cache_hit: bloom_prefix 块缓存命中率
+      comment:
+        tidb_query: SQL 查询耗时，标签是"SQL 类型"。
+        tidb_get_token(us): 会话获取令牌以执行 SQL 查询的耗时，标签是"实例"。
+        tidb_parse: 解析 SQL 的耗时，标签是"SQL 类型"。
+        tidb_compile: 构建查询计划的时间，标签是"SQL 类型"。
+        tidb_execute: 执行 SQL 的时间，不包括获得查询结果的时间，标签是"SQL 类型"。
+        tidb_distsql_execution: 执行 distsql 的耗时，标签是"类型"。
+        tidb_cop: KV storage Coprocessor 处理的耗时，标签是"实例"。
+        tidb_transaction: 事务执行 durations 的时间成本，包括重试，标签是"SQL 类型"。
+        tidb_transaction_local_latch_wait: 事务执行时本地锁占用的时间，标签是"实例"。
+        tidb_kv_backoff: '{{distro.tidb}} 事务锁等待键值存储的时间，标签是"类型"。'
+        tidb_kv_request: KV 请求 durations 的耗时，标签是"类型"。
+        tidb_slow_query: '{{distro.tidb}} 慢查询的时间开销，标签是"实例"。'
+        tidb_slow_query_cop_process: '{{distro.tidb}} 的慢查询总 cop 处理的耗时，标签是"实例"。'
+        tidb_slow_query_cop_wait: '{{distro.tidb}} 的慢查询总 cop 的等待时间，标签是"实例"。'
+        tidb_ddl_handle_job: 处理 {{distro.tidb}} DDL 任务的耗时，标签是"类型"。
+        tidb_ddl_worker: DDL worker 处理任务的耗时，标签是"实例"。
+        tidb_ddl_update_self_version: '{{distro.tidb}} schema 同步器版本更新的耗时，标签是"结果"。'
+        tidb_owner_handle_syncer: 在 etcd 上执行 {{distro.tidb}} DDL 所有者操作的耗时，标签是"类型"。
+        tidb_ddl_batch_add_index: '{{distro.tidb}} 批量添加索引的耗时，标签是"类型"。'
+        tidb_ddl_deploy_syncer: '{{distro.tidb}} DDL schema 同步器统计的时间成本，包括 init、start、watch、clear，标签是"类型"。'
+        tidb_load_schema: 加载 {{distro.tidb}} schema 的时间成本，标签是"类型"。
+        tidb_meta_operation: '{{distro.tidb}} 元操作的时间成本，包括 get/set 模式和 DDL 作业，标签是"实例"。'
+        tidb_auto_id_request: '{{distro.tidb}} 自增 ID 处理 ID 请求的耗时，标签是"类型"。'
+        tidb_statistics_auto_analyze: 自动分析 {{distro.tidb}} 的耗时，标签是"类型"。
+        tidb_gc: KV 存储垃圾回收的时间，标签是"实例"。
+        tidb_gc_push_task: KV 存储范围内 worker 处理一项任务的耗时，标签是"实例"。
+        tidb_batch_client_unavailable: KV 存储批量处理不可用的耗时，标签是"类型"。
+        tidb_batch_client_wait: KV 存储批量处理客户端等待请求的耗时，标签是"实例"。
+        pd_start_tso_wait: 等待获取开始时间戳 timestamp 的耗时，标签是"实例"。
+        pd_tso_rpc: 发送 TSO 请求直到收到响应的时间，标签是"实例"。
+        pd_tso_wait: 客户端开始等待 timestamp 直到收到 timestamp 结果的耗时，标签是"实例"。
+        pd_client_cmd: '{{distro.pd}} 客户端命令的耗时，标签是"类型"。'
+        pd_handle_request: '{{distro.pd}} 处理请求的耗时，标签是"类型"。'
+        pd_grpc_completed_commands: '{{distro.pd}} 完成各种 gRPC 命令的耗时，标签是"gRPC 方法"。'
+        pd_operator_finish: '{{distro.pd}} 完成各种调度命令的时间，标签是"类型"。'
+        pd_operator_step_finish: '{{distro.pd}} 完成操作步骤的耗时，标签是"类型"。'
+        pd_handle_transactions: '{{distro.pd}} 处理 etcd 事务的耗时，标签是"结果"。'
+        pd_region_heartbeat: 每个 {{distro.tikv}} 实例中心跳的耗时，标签是"服务地址"。
+        etcd_wal_fsync: etcd 将 WAL 写入持久存储器的耗时，标签是"实例"。
+        pd_peer_round_trip: 网络的延迟，标签是"实例"。
+        tikv_grpc_message: gRPC 报文的 {{distro.tikv}} 处理耗时，标签是"类型"。
+        tikv_cop_request: Coprocessor 处理读请求的时间开销，标签是"请求"。
+        tikv_cop_handle: 处理 Coprocessor 请求的时间开销，标签是"请求"。
+        tikv_cop_wait: Coprocessor 请求等待处理的耗时，标签是"请求"。
+        tikv_scheduler_command: 执行 commit 命令的耗时，标签是"类型"。
+        tikv_scheduler_latch_wait: 提交命令中 {{distro.tikv}} 锁存器等待的时间开销，标签是"类型"。
+        tikv_handle_snapshot: 处理快照的时间开销，标签是"类型"。
+        tikv_send_snapshot: 发送快照的时间开销，标签是"实例"。
+        tikv_storage_async_request: 处理异步快照请求的时间开销，标签是"类型"。
+        tikv_raft_append_log: Raft appends log 的时间开销，标签是"实例"。
+        tikv_raft_apply_log: Raft apply log 的时间开销，标签是"实例"。
+        tikv_raft_apply_wait: Raft apply wait 的时间开销，标签是"实例"。
+        tikv_raft_process: Peer processes in Raft 的时间开销，标签是"实例"。
+        tikv_raft_propose_wait: 每一个 Raft 提议的等待时间，标签是"类型"。
+        tikv_raft_store_events: RaftStore events 的时间开销，标签是"类型"。
+        tikv_commit_log: Raft 提交日志的时间开销，标签是"实例"。
+        tikv_check_split: 运行分割检查的耗时，标签是"实例"。
+        tikv_ingest_sst: Ingest SST 文件的耗时，标签是"实例"。
+        tikv_gc_tasks: 执行 GC 任务的耗时，标签是"任务"。
+        tikv_pd_request: '{{distro.tikv}} 向 {{distro.pd}} 发送请求的耗时，标签是"类型"。'
+        tikv_lock_manager_deadlock_detect:
+        tikv_lock_manager_waiter_lifetime:
+        tikv_backup_range:
+        tikv_backup:
+        tidb_transaction_retry_num: '{{distro.tidb}} 事务重试次数，标签是"实例"。'
+        tidb_transaction_statement_num: 一个事务中 {{distro.tidb}} 语句数的总数量。Internal 是指 {{distro.tidb}} 内部事务，标签是"实例"。'
+        tidb_txn_region_num: 每个事务进行操作的区域数量，标签是"实例"。
+        tidb_txn_kv_write_num: 每个事务执行的 KV 写入数量，标签是"实例"。
+        tidb_txn_kv_write_size: 每个事务执行的 KV 写入大小，标签是"实例"。
+        tidb_load_safepoint_total_num: 安全点装载总数量，标签是"实例"。
+        tidb_lock_resolver_total_num: lock resolve 的总数量，标签是"实例"。
+        pseudo_estimation_total_count: 使用伪估计的 {{distro.tidb}} 优化器的总数量，标签是"实例"，"类型"。
+        dump_feedback_total_count: '{{distro.tidb}} 转储统计数据回 KV 存储的操作总数量，标签是"实例"。'
+        store_query_feedback_total_count: '{{distro.tidb}} 存储查询反馈的总数量，标签是"实例"。'
+        update_stats_total_count: 使用反馈更新统计数据的 {{distro.tidb}} 总数量，标签是"实例"。
+        blance-leader-in: Leader 移动到 {{distro.tikv}} 存储的总数量，标签是"实例"。
+        blance-leader-out: Leader 移出 {{distro.tikv}} 存储的总数量，标签是"实例"。
+        blance-region-in: 移动到 {{distro.tikv}} 存储的 Region 总数量，标签是"实例"。
+        blance-region-out: 移出 {{distro.tikv}} 存储的的 Region 总数量，标签是"实例"。
+        Approximate Region size: 近似 Region 大小，标签是"实例"。
+        store size: 存储大小，标签是"实例"。
+        tikv_scheduler_keys_read: 由一条命令读取的键数量，标签是"实例"，"类型"。
+        tikv_scheduler_keys_written: 由一条命令写入的键数量，标签是"实例"，"类型"。
+        tikv_scheduler_scan_details_total_num: 在执行一条命令时，扫描每个 CF 的详细信息的总数量，标签是"实例"。
+        tikv_scheduler_stage_total_num: 调度程序状态的总数量，标签是"实例"，"阶段"，"类型"。
+        tikv_gc_keys_total_num: GC 期间 CF 中受影响的键的总数量，标签是"实例"。
+        tidb_gc_worker_action_total_num: KV 存储垃圾回收总量，标签是"实例"，"类型"。
+        tikv_worker_handled_tasks_total_num: worker 处理的任务总数量，标签是"实例"。
+        tikv_worker_pending_tasks_total_num: 工作进程的挂起和运行任务的总数量，标签是"实例"。
+        tikv_futurepool_handled_tasks_total_num: future_pool 处理的任务总数量，标签是"实例"。
+        tikv_futurepool_pending_tasks_total_num: future_pool 的总挂起和运行任务，标签是"实例"。
+        tikv_snapshot_kv_count: tikv_snapshot_kv_count，标签是"实例"。
+        tikv_snapshot_size: 快照内 KV 的数量，标签是"实例"。
+        tikv_snapshot_state_total_count: '{{distro.tikv}} 的快照大小，标签是"实例"，"类型"。'
+        tikv_cop_scan_keys_num: '{{distro.tikv}} Coprocessor 扫描键总数量，标签是"实例"。'
+        tikv_cop_total_response_total_size: '{{distro.tikv}} Coprocessor 响应总大小，标签是"实例"。'
+        tikv_cop_scan_num: '{{distro.tikv}} Coprocessor 扫描操作总数量，标签是"实例"。'
+        tikv_raft_sent_messages_total_num: 发送的 Raft 消息的总数量，标签是"实例"，"类型"。
+        tikv_flush_messages_total_num: Raft 上刷新了的信息总数量，标签是"实例"。
+        tikv_receive_messages_total_num: Raft 收到的的信息总数量，标签是"实例"。
+        tikv_raft_dropped_messages_total: Raft 丢掉的的信息总数量，标签是"实例"，"类型"。
+        tikv_raft_proposals_total_num: Raft 提议的的总数量，标签是"实例"，"类型"。
+        tikv_grpc_error_total_count: gRPC 消息失败的总数量，标签是"实例"，"类型"。
+        tikv_critical_error_total_count: '{{distro.tikv}} 临界误差的总数量，标签是"实例"，"类型"。'
+        tikv_scheduler_is_busy_total_count: 使 {{distro.tikv}} 实例暂时不可用的调度器繁忙事件的总数量，标签是"实例"。
+        tikv_channel_full_total_count: 通道完全错误的总数量，它将使 {{distro.tikv}} 实例暂时不可用，标签是"实例"。
+        tikv_coprocessor_request_error_total_count: Coprocessor 错误的总数量，标签是"实例"，"原因"。
+        tikv_engine_write_stall: 指示使 {{distro.tikv}} 实例暂时不可用的写失速事件，标签是"实例"。
+        tikv_server_report_failures_total_count: 报告失败消息的总数量，标签是"实例"。
+        tikv_storage_async_request_error: 存储请求错误的总数量，标签是"实例"，"状态"，"类型"。
+        tikv_lock_manager_detect_error_total_count: '{{distro.tikv}} 锁管理器检测错误的总数量，标签是"实例"，"类型"。'
+        tikv_backup_errors_total_count: '{{distro.tikv}} 锁管理的总错误，标签是"实例"，"错误"。'
+        node_disk_write_latency: 每个节点的磁盘写延迟，标签是"实例"，"设备"。
+        node_disk_read_latency: 每个节点的磁盘读取延迟，标签是"实例"，"设备"。
+        grpc: 每个 {{distro.tikv}} gRPC 的 CPU 利用率，标签是"实例"。'
+        raftstore: '{{distro.tikv}} RaftStore 线程的 CPU 利用率，标签是"实例"。'
+        Async apply: '{{distro.tikv}} 异步应用线程的 CPU 利用率，标签是"实例"。'
+        sched_worker: '{{distro.tikv}} 调度器工作线程的 CPU 利用率，标签是"实例"。'
+        snapshot: '{{distro.tikv}} 快照的 CPU 利用率，标签是"实例"。'
+        unified read pool: '{{distro.tikv}} 统一读池线程的 CPU 利用率，标签是"实例"。'
+        storage read pool: '{{distro.tikv}} 存储读池线程的 CPU 利用率，标签是"实例"。'
+        storage read pool normal: '{{distro.tikv}} 存储读池普通线程的 CPU 利用率，标签是"实例"。'
+        storage read pool high: '{{distro.tikv}} 存储较高读线程的 CPU 利用率，标签是"实例"。'
+        storage read pool low: '{{distro.tikv}} 存储较低读线程的 CPU 利用率，标签是"实例"。'
+        cop: '{{distro.tikv}} Coprocessor 的 CPU 利用率，标签是"实例"。'
+        cop normal: '{{distro.tikv}} Coprocessor 普通线程的 CPU 利用率，标签是"实例"。'
+        cop high: '{{distro.tikv}} Coprocessor 高线程的 CPU 利用率，标签是"实例"。'
+        cop low: '{{distro.tikv}} Coprocessor 低线程的 CPU 利用率，标签是"实例"。'
+        rocksdb: '{{distro.tikv}} RocksDB 的 CPU 利用率，标签是"实例"。'
+        gc: '{{distro.tikv}} GC 的 CPU 利用率，标签是"实例"。'
+        split_check: '{{distro.tikv}} split_chec 的 CPU 利用率，标签是"实例"。'
+        region_score: store 的 Region 得分，标签是"服务地址"。
+        leader_score: store 的 Leader 得分，标签是"服务地址"。
+        region_count: store 的 Region 数量，标签是"服务地址"。
+        leader_count: store 的 Leader 数量，标签是"服务地址"。
+        region_size: store 的 Region 大小，标签是"服务地址"。
+        leader_size: store 的 Leader 大小，标签是"服务地址"。
+        tikv_memtable_hit: memtable 的命中率，标签是"实例"。
+        tikv_block_all_cache_hit: 所有块缓存的命中率，标签是"实例"。
+        tikv_block_index_cache_hit: 索引块缓存的命中率，标签是"实例"。
+        tikv_block_filter_cache_hit: 过滤块缓存的命中率，标签是"实例"。
+        tikv_block_data_cache_hit: 数据块缓存的命中率，标签是"实例"。
+        tikv_block_bloom_prefix_cache_hit: bloom_prefix 块缓存的命中率，标签是"实例"。
+        get duration: RocksDB 执行 get 操作的耗时，标签是"实例"。
+        seek duration: RocksDB 执行 seek 操作的耗时，标签是"实例"。
+        write duration: RocksDB 执行写操作的耗时，标签是"实例"。
+        WAL sync duration: RocksDB 执行 WAL 同步操作的耗时，标签是"实例"。
+        compaction duration: RocksDB 执行压缩操作的耗时，标签是"实例"。
+        SST read duration: RocksDB 读取 SST 文件的耗时，标签是"实例"。
+        write stall duration: 由写停顿引起的时间，标签是"实例"。

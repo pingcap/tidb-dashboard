@@ -466,7 +466,9 @@ function App({ registry }) {
   useEffect(() => {
     async function run() {
       try {
-        const resp = await client.getInstance().userGetLoginInfo()
+        const resp = await client
+          .getInstance()
+          .userGetLoginInfo({ handleError: 'custom' } as any)
         const loginInfo = resp.data
         if (
           (loginInfo.supported_auth_types?.indexOf(auth.AuthTypes.SSO) ?? -1) >
@@ -478,12 +480,16 @@ function App({ registry }) {
         }
         setSupportedAuthTypes(loginInfo.supported_auth_types ?? [])
       } catch (e) {
-        Modal.error({
-          title: 'Initialize Sign in failed',
-          content: '' + e,
-          okText: 'Reload',
-          onOk: () => window.location.reload()
-        })
+        if ((e as any).response?.status === 404) {
+          setFormType(DisplayFormType.tidbCredential)
+        } else {
+          Modal.error({
+            title: 'Initialize Sign in failed',
+            content: '' + e,
+            okText: 'Reload',
+            onOk: () => window.location.reload()
+          })
+        }
       }
     }
     run()

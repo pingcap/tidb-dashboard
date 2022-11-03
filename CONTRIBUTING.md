@@ -121,7 +121,7 @@ This is a rough outline of what a contributor's workflow looks like:
 
     ```bash
     # In ui directory:
-    pnpm fmt
+    pnpm fmt-check
     ```
 
     > Recommended to install [Prettier plugin](https://prettier.io/docs/en/editors.html) for your editor so that there will be auto format on save.

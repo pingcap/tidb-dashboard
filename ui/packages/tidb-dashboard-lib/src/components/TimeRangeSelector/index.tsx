@@ -11,11 +11,12 @@ import styles from './index.module.less'
 import { useChange } from '@lib/utils/useChange'
 import { useMemoizedFn } from 'ahooks'
 import { WithZoomOut } from './WithZoomOut'
+import { tz } from '@lib/utils'
 
 const { RangePicker } = DatePicker
 
 // These presets are aligned with Grafana
-const RECENT_SECONDS = [
+const DEFAULT_RECENT_SECONDS = [
   5 * 60,
   15 * 60,
   30 * 60,
@@ -49,13 +50,16 @@ export type TimeRangeValue = [minSecond: number, maxSecond: number]
 
 export type TimeRange = RelativeTimeRange | AbsoluteTimeRange
 
-export function toTimeRangeValue(timeRange?: TimeRange): TimeRangeValue {
+export function toTimeRangeValue(
+  timeRange?: TimeRange,
+  offset = 0
+): TimeRangeValue {
   let t2 = timeRange ?? DEFAULT_TIME_RANGE
   if (t2.type === 'absolute') {
-    return [...t2.value]
+    return t2.value.map((t) => t + offset) as TimeRangeValue
   } else {
     const now = dayjs().unix()
-    return [now - t2.value, now + 1]
+    return [now - t2.value + offset, now + 1 + offset]
   }
 }
 
@@ -91,12 +95,16 @@ export interface ITimeRangeSelectorProps {
   value?: TimeRange
   onChange?: (val: TimeRange) => void
   disabled?: boolean
+  recent_seconds?: number[]
+  withAbsoluteRangePicker?: boolean
 }
 
 function TimeRangeSelector({
   value,
   onChange,
-  disabled = false
+  disabled = false,
+  recent_seconds = DEFAULT_RECENT_SECONDS,
+  withAbsoluteRangePicker = true
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -146,7 +154,7 @@ function TimeRangeSelector({
           )}
         </span>
         <div className={styles.time_range_items} data-e2e="common-timeranges">
-          {RECENT_SECONDS.map((seconds) => (
+          {recent_seconds.map((seconds) => (
             <div
               tabIndex={-1}
               key={seconds}
@@ -163,21 +171,23 @@ function TimeRangeSelector({
           ))}
         </div>
       </div>
-      <div className={styles.custom_time_ranges}>
-        <span>
-          {t(
-            'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
-          )}
-        </span>
-        <div style={{ marginTop: 8 }}>
-          <RangePicker
-            showTime
-            format="YYYY-MM-DD HH:mm:ss"
-            value={rangePickerValue}
-            onChange={handleRangePickerChange}
-          />
+      {withAbsoluteRangePicker && (
+        <div className={styles.custom_time_ranges}>
+          <span>
+            {t(
+              'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
+            )}
+          </span>
+          <div style={{ marginTop: 8 }}>
+            <RangePicker
+              showTime
+              format="YYYY-MM-DD HH:mm:ss"
+              value={rangePickerValue}
+              onChange={handleRangePickerChange}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 
@@ -199,7 +209,12 @@ function TimeRangeSelector({
         {value && value.type === 'absolute' && (
           <span data-e2e="selected_timerange">
             {value.value
-              .map((v) => dayjs.unix(v).format('MM-DD HH:mm:ss'))
+              .map((v) =>
+                dayjs
+                  .unix(v)
+                  .utcOffset(tz.getTimeZone())
+                  .format('MM-DD HH:mm:ss (UTCZ)')
+              )
               .join(' ~ ')}
           </span>
         )}

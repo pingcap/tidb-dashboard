@@ -11,6 +11,11 @@ import {
 import { IContextConfig, ReqConfig } from '@lib/types'
 import { ISlowQueryDataSource } from '@lib/apps/SlowQuery'
 
+export type StatementTimeRange = {
+  begin_time: number
+  end_time: number
+}
+
 export interface IStatementDataSource extends ISlowQueryDataSource {
   statementsAvailableFieldsGet(options?: ReqConfig): AxiosPromise<Array<string>>
 
@@ -58,12 +63,17 @@ export interface IStatementDataSource extends ISlowQueryDataSource {
   ): AxiosPromise<Array<StatementModel>>
 
   statementsStmtTypesGet(options?: ReqConfig): AxiosPromise<Array<string>>
+
+  statementsTimeRangesGet(
+    options?: ReqConfig
+  ): AxiosPromise<Array<StatementTimeRange>>
 }
 
 export interface IStatementContext {
   ds: IStatementDataSource
   cfg: IContextConfig & {
     enableExport: boolean
+    showHelp?: boolean
   }
 }
 

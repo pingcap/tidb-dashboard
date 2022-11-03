@@ -16,9 +16,14 @@ export * from '@pingcap/tidb-dashboard-client'
 //////////////////////////////
 
 const client = {
-  _init(apiBasePath: string, apiInstance: DashboardApi) {
+  _init(
+    apiBasePath: string,
+    apiInstance: DashboardApi,
+    axiosInstance: AxiosInstance
+  ) {
     this.apiBasePath = apiBasePath
     this.apiInstance = apiInstance
+    this.axiosInstance = axiosInstance
   },
 
   getInstance(): DashboardApi {
@@ -27,6 +32,10 @@ const client = {
 
   getBasePath(): string {
     return this.apiBasePath
+  },
+
+  getAxiosInstance(): AxiosInstance {
+    return this.axiosInstance
   }
 }
 
@@ -96,8 +105,13 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
   })
 }
 
-function initAxios() {
-  const instance = axios.create()
+function initAxios(apiBasePath: string, token: string) {
+  const instance = axios.create({
+    baseURL: apiBasePath,
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
   applyErrorHandlerInterceptor(instance)
 
   return instance
@@ -106,18 +120,16 @@ function initAxios() {
 export function setupClient(apiBasePath: string, token: string) {
   i18n.addTranslations(translations)
 
-  const axiosInstance = initAxios()
+  const axiosInstance = initAxios(apiBasePath, token)
   const dashboardApi = new DashboardApi(
     new Configuration({
-      basePath: apiBasePath,
-      apiKey: `Bearer ${token}`,
       baseOptions: {
         handleError: 'default'
       }
     }),
-    undefined,
+    '',
     axiosInstance
   )
 
-  client._init(apiBasePath, dashboardApi)
+  client._init(apiBasePath, dashboardApi, axiosInstance)
 }

@@ -29,9 +29,15 @@ export interface ISystemReportDataSource {
   ): AxiosPromise<DiagnoseReport>
 }
 
+export interface ISystemReportConfig extends IContextConfig {
+  publicPathBase: string
+
+  fullReportLink(reportId: string): string
+}
+
 export interface ISystemReportContext {
   ds: ISystemReportDataSource
-  cfg: IContextConfig & { publicPathBase: string }
+  cfg: ISystemReportConfig
 }
 
 export const SystemReportContext = createContext<ISystemReportContext | null>(

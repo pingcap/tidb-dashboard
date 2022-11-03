@@ -30,7 +30,8 @@ import {
   TimeRangeSelector,
   TimeRange,
   DateTime,
-  toTimeRangeValue
+  toTimeRangeValue,
+  IColumnKeys
 } from '@lib/components'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { StatementsTable } from '../../components'
@@ -45,6 +46,7 @@ import { useDeepCompareChange } from '@lib/utils/useChange'
 import { StatementModel } from '@lib/client'
 import { isDistro } from '@lib/utils/distro'
 import { StatementContext } from '../../context'
+import { telemetry as stmtTelmetry } from '../../utils/telemetry'
 
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'
@@ -98,6 +100,14 @@ export default function StatementsOverview() {
     },
     ds: ctx!.ds
   })
+  function updateVisibleColumnKeys(v: IColumnKeys) {
+    setVisibleColumnKeys(v)
+    stmtTelmetry.changeVisibleColumns(v)
+
+    if (!v[controller.orderOptions.orderBy]) {
+      controller.resetOrder()
+    }
+  }
 
   function menuItemClick({ key }) {
     switch (key) {
@@ -107,6 +117,7 @@ export default function StatementsOverview() {
           0
         )
         downloadCSV().finally(hide)
+        stmtTelmetry.export()
         break
     }
   }
@@ -148,6 +159,7 @@ export default function StatementsOverview() {
       searchText: filterText,
       visibleColumnKeys
     })
+    stmtTelmetry.search()
   })
 
   const sendQueryDebounced = useDebounceFn(sendQueryNow, {
@@ -200,7 +212,10 @@ export default function StatementsOverview() {
           <Space>
             <TimeRangeSelector
               value={timeRange}
-              onChange={setTimeRange}
+              onChange={(t) => {
+                setTimeRange(t)
+                stmtTelmetry.changeTimeRange(t)
+              }}
               data-e2e="statement_time_range_selector"
             />
             <MultiSelect.Plain
@@ -213,7 +228,10 @@ export default function StatementsOverview() {
               )}
               value={filterSchema}
               style={{ width: 150 }}
-              onChange={setFilterSchema}
+              onChange={(d) => {
+                setFilterSchema(d)
+                stmtTelmetry.changeDatabases()
+              }}
               items={controller.allSchemas}
               data-e2e="execution_database_name"
             />
@@ -227,13 +245,19 @@ export default function StatementsOverview() {
               )}
               value={filterStmtType}
               style={{ width: 150 }}
-              onChange={setFilterStmtType}
+              onChange={(v) => {
+                setFilterStmtType(v)
+                stmtTelmetry.changeStmtTypes()
+              }}
               items={controller.allStmtTypes}
               data-e2e="statement_types"
             />
             <Input.Search
               value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
+              onChange={(e) => {
+                setFilterText(e.target.value)
+                stmtTelmetry.changeSearchText()
+              }}
               onSearch={sendQueryNow}
               placeholder={t(
                 'statement.pages.overview.toolbar.keyword.placeholder'
@@ -251,11 +275,14 @@ export default function StatementsOverview() {
                 columns={controller.availableColumnsInTable}
                 visibleColumnKeys={visibleColumnKeys}
                 defaultVisibleColumnKeys={DEF_STMT_COLUMN_KEYS}
-                onChange={setVisibleColumnKeys}
+                onChange={updateVisibleColumnKeys}
                 foot={
                   <Checkbox
                     checked={showFullSQL}
-                    onChange={(e) => setShowFullSQL(e.target.checked)}
+                    onChange={(e) => {
+                      setShowFullSQL(e.target.checked)
+                      stmtTelmetry.toggleShowFullSQL(e.target.checked)
+                    }}
                     data-e2e="statement_show_full_sql"
                   >
                     {t(
@@ -272,7 +299,10 @@ export default function StatementsOverview() {
               placement="bottom"
             >
               <SettingOutlined
-                onClick={() => setShowSettings(true)}
+                onClick={() => {
+                  setShowSettings(true)
+                  stmtTelmetry.openSetting()
+                }}
                 data-e2e="statement_setting"
               />
             </Tooltip>
@@ -286,7 +316,7 @@ export default function StatementsOverview() {
                 </div>
               </Dropdown>
             )}
-            {!isDistro() && (
+            {!isDistro() && (ctx!.cfg.showHelp ?? true) && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}
@@ -296,6 +326,7 @@ export default function StatementsOverview() {
                 <QuestionCircleOutlined
                   onClick={() => {
                     window.open(t('statement.settings.help_url'), '_blank')
+                    stmtTelmetry.openHelp()
                   }}
                 />
               </Tooltip>
@@ -319,20 +350,29 @@ export default function StatementsOverview() {
                 />
               </Card>
             )}
-            {dataTimeRange && (
-              <Card noMarginBottom noMarginTop>
-                <p className="ant-form-item-extra">
-                  {t('statement.pages.overview.actual_range')}
-                  <DateTime.Calendar
-                    unixTimestampMs={dataTimeRange[0] * 1000}
-                  />
-                  {' ~ '}
-                  <DateTime.Calendar
-                    unixTimestampMs={dataTimeRange[1] * 1000}
-                  />
-                </p>
-              </Card>
-            )}
+            <Card noMarginBottom noMarginTop>
+              <p className="ant-form-item-extra">
+                {dataTimeRange && (
+                  <div>
+                    {t('statement.pages.overview.actual_range')}
+                    <DateTime.Calendar
+                      unixTimestampMs={dataTimeRange[0] * 1000}
+                    />
+                    {' ~ '}
+                    <DateTime.Calendar
+                      unixTimestampMs={dataTimeRange[1] * 1000}
+                    />
+                  </div>
+                )}
+                {(controller.data?.list.length ?? 0) > 0 && (
+                  <div>
+                    {t('statement.pages.overview.result_count', {
+                      n: controller.data?.list.length
+                    })}
+                  </div>
+                )}
+              </p>
+            </Card>
             <StatementsTable cardNoMarginTop controller={controller} />
           </ScrollablePane>
         </div>
@@ -349,6 +389,7 @@ export default function StatementsOverview() {
                 <Button
                   onClick={() => {
                     window.open(t('statement.settings.help_url'), '_blank')
+                    stmtTelmetry.openHelp()
                   }}
                 >
                   {t('statement.settings.help')}

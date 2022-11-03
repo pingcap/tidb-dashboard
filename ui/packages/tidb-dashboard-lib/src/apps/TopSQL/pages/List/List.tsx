@@ -21,7 +21,7 @@ import { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import {
   Card,
   TimeRangeSelector,
-  toTimeRangeValue,
+  toTimeRangeValue as _toTimeRangeValue,
   DEFAULT_TIME_RANGE,
   Toolbar,
   AutoRefreshButton,
@@ -44,8 +44,14 @@ import { TopSQLContext } from '../../context'
 
 const TOP_N = 5
 const CHART_BAR_WIDTH = 8
+const RECENT_RANGE_OFFSET = -60
+
+const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
+  return _toTimeRangeValue(v, v?.type === 'recent' ? RECENT_RANGE_OFFSET : 0)
+}
 
 export function TopSQLList() {
+  const ctx = useContext(TopSQLContext)
   const { t } = useTranslation()
   const { topSQLConfig, isConfigLoading, updateConfig, haveHistoryData } =
     useTopSQLConfig()
@@ -176,6 +182,9 @@ export function TopSQLList() {
                   telemetry.selectTimeRange(v)
                 }}
                 disabled={isLoading}
+                onZoomOutClick={(start, end) =>
+                  telemetry.clickZoomOut([start, end])
+                }
               />
               <AutoRefreshButton
                 disabled={isLoading}
@@ -192,20 +201,22 @@ export function TopSQLList() {
             </Space>
 
             <Space>
-              <Tooltip
-                mouseEnterDelay={0}
-                mouseLeaveDelay={0}
-                title={t('topsql.settings.title')}
-                placement="bottom"
-              >
-                <SettingOutlined
-                  data-e2e="topsql_settings"
-                  onClick={() => {
-                    setShowSettings(true)
-                    telemetry.clickSettings('settingIcon')
-                  }}
-                />
-              </Tooltip>
+              {ctx?.cfg.showSetting && (
+                <Tooltip
+                  mouseEnterDelay={0}
+                  mouseLeaveDelay={0}
+                  title={t('topsql.settings.title')}
+                  placement="bottom"
+                >
+                  <SettingOutlined
+                    data-e2e="topsql_settings"
+                    onClick={() => {
+                      setShowSettings(true)
+                      telemetry.clickSettings('settingIcon')
+                    }}
+                  />
+                </Tooltip>
+              )}
               {!isDistro() && (
                 <Tooltip
                   mouseEnterDelay={0}

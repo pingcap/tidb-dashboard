@@ -1,5 +1,6 @@
 monitoring:
   nav_title: 监控指标
+  panel_no_data_tips: 文档
   category:
     application_connection: 应用连接
     database_time: 数据库时间

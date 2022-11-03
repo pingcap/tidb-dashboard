@@ -12,11 +12,13 @@ export interface ITimeRangeSelectorWithZoomOutProps
   extends ITimeRangeSelectorProps {
   zoomOutRate?: number
   minRange?: number
+  onZoomOutClick?: (start: number, end: number) => void
 }
 
 export function WithZoomOut({
   zoomOutRate = 0.5,
   minRange = 5 * 60,
+  onZoomOutClick,
   ...rest
 }: ITimeRangeSelectorWithZoomOutProps) {
   const handleZoomOut = useMemoizedFn(() => {
@@ -32,6 +34,7 @@ export function WithZoomOut({
     let computedStart = start - expand
     let computedEnd = end + expand
     const newRange = fromTimeRangeValue([computedStart, computedEnd])
+    onZoomOutClick!(computedStart, computedEnd)
     rest.onChange?.(newRange)
   })
 

@@ -1,30 +1,29 @@
-import { Space, Typography, Button } from 'antd'
+import { Space, Typography, Button, Tooltip } from 'antd'
 import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AutoRefreshButton,
   Card,
   DEFAULT_TIME_RANGE,
-  GraphType,
-  MetricChart,
   TimeRange,
   TimeRangeSelector,
-  Toolbar
+  Toolbar,
+  ErrorBar
 } from '@lib/components'
 import { Link } from 'react-router-dom'
 import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
 import { OverviewContext } from '../context'
 
-import { PointerEvent } from '@elastic/charts'
-import { ChartContext } from '@lib/components/MetricChart/ChartContext'
-import { useEventEmitter, useMemoizedFn } from 'ahooks'
-import { overviewMetrics } from '../data/overviewMetrics'
+import { useMemoizedFn } from 'ahooks'
+import { telemetry } from '../utils/telemetry'
 
+import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
 export default function Metrics() {
   const ctx = useContext(OverviewContext)
+  const promAddrConfigurable = ctx?.cfg.promAddrConfigurable || false
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
   const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
@@ -45,6 +44,26 @@ export default function Metrics() {
     setIsSomeLoadingDebounce(loadingCounter.current > 0)
   })
 
+  const handleManualRefreshClick = () => {
+    telemetry.clickManualRefresh()
+    return setTimeRange((r) => ({ ...r }))
+  }
+
+  const handleOnBrush = (range: TimeRangeValue) => {
+    setChartRange(range)
+  }
+
+  const ErrorComponent = (error: Error) => (
+    <Space direction="vertical">
+      <ErrorBar errors={[error]} />
+      {promAddrConfigurable && (
+        <Link to="/user_profile?blink=profile.prometheus">
+          {t('components.metricChart.changePromButton')}
+        </Link>
+      )}
+    </Space>
+  )
+
   return (
     <>
       <Card>
@@ -52,42 +71,70 @@ export default function Metrics() {
           <Space>
             <TimeRangeSelector.WithZoomOut
               value={timeRange}
-              onChange={setTimeRange}
+              onChange={(v) => {
+                setTimeRange(v)
+                telemetry.selectTimeRange(v)
+              }}
+              recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
+              withAbsoluteRangePicker={
+                ctx?.cfg.timeRangeSelector?.withAbsoluteRangePicker
+              }
+              onZoomOutClick={(start, end) =>
+                telemetry.clickZoomOut([start, end])
+              }
             />
             <AutoRefreshButton
-              onRefresh={() => setTimeRange((r) => ({ ...r }))}
+              onChange={telemetry.selectAutoRefreshOption}
+              onRefresh={handleManualRefreshClick}
               disabled={isSomeLoading}
             />
+            <Tooltip placement="top" title={t('overview.panel_no_data_tips')}>
+              <a
+                // TODO: replace reference link on op side
+                href="https://docs.pingcap.com/tidbcloud/built-in-monitoring"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FileTextOutlined
+                  onClick={() => telemetry.clickDocumentationIcon()}
+                />
+              </a>
+            </Tooltip>
             {isSomeLoading && <LoadingOutlined />}
           </Space>
           <Space>
             <Link to={`/monitoring`}>
-              <Button type="primary">{t('overview.view_more_metrics')}</Button>
+              <Button type="primary" onClick={telemetry.clickViewMoreMetrics}>
+                {t('overview.view_more_metrics')}
+              </Button>
             </Link>
           </Space>
         </Toolbar>
       </Card>
-      <ChartContext.Provider value={useEventEmitter<PointerEvent>()}>
+      <SyncChartPointer>
         <Stack tokens={{ childrenGap: 16 }}>
-          {overviewMetrics.map((item) => (
+          {ctx?.cfg.metricsQueries.map((item) => (
             <Card noMarginTop noMarginBottom>
               <Typography.Title level={5}>
                 {t(`overview.metrics.${item.title}`)}
               </Typography.Title>
-              <MetricChart
+              <MetricsChart
                 queries={item.queries}
-                type={item.type as GraphType}
-                unit={item.unit!}
-                nullValue={item.nullValue}
                 range={chartRange}
-                onRangeChange={setChartRange}
-                getMetrics={ctx!.ds.metricsQueryGet}
-                onLoadingStateChange={onLoadingStateChange}
+                nullValue={item.nullValue}
+                unit={item.unit!}
+                fetchPromeData={ctx!.ds.metricsQueryGet}
+                onLoading={onLoadingStateChange}
+                onBrush={handleOnBrush}
+                errorComponent={ErrorComponent}
+                onClickSeriesLabel={(seriesName) =>
+                  telemetry.clickSeriesLabel(item.title, seriesName)
+                }
               />
             </Card>
           ))}
         </Stack>
-      </ChartContext.Provider>
+      </SyncChartPointer>
     </>
   )
 }

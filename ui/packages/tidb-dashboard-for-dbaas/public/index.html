@@ -94,21 +94,46 @@
     <script type="module">
       import startDashboard from './main.js?h=%JS_CONTENT_HASH%'
 
-      // const apiPathBase = 'http://localhost:12333/dashboard/api'
-      const apiPathBase = 'http://localhost:2379/dashboard/api'
-      fetch(`${apiPathBase}/user/login`, {
-        method: 'POST',
-        body: JSON.stringify({ username: 'root', type: 0 })
-      })
-        .then((res) => res.json())
-        .then(({ token }) => {
-          if (window.location.hash === '') {
-            window.location.hash = '#/statement'
-          }
+      // keep it here for debugging when dbaas doesn't work
+      // const apiPathBase = 'http://localhost:2379/dashboard/api'
+      // fetch(`${apiPathBase}/user/login`, {
+      //   method: 'POST',
+      //   body: JSON.stringify({ username: 'root', type: 0 })
+      // })
+      //   .then((res) => res.json())
+      //   .then(({ token }) => {
+      //     if (window.location.hash === '') {
+      //       window.location.hash = '#/statement'
+      //     }
 
-          document.getElementById('dashboard_page_spinner').remove()
-          startDashboard({ apiPathBase, apiToken: token })
-        })
+      //     document.getElementById('dashboard_page_spinner').remove()
+      //     startDashboard({ apiPathBase, apiToken: token, timezone: 14 })
+      //   })
+
+      document.getElementById('dashboard_page_spinner').remove()
+
+      const apiPathBase = localStorage.getItem('dbaas.dashboard_url') + 'api'
+      const apiToken = localStorage.getItem('id_token')
+      const mixpanelUser = localStorage.getItem('dbaas.mixpanel_user')
+      const timezoneStr = localStorage.getItem('dbaas.tenant_time_zone')
+      let timezone = parseInt(timezoneStr)
+      if (timezone === NaN) {
+        timezone = null
+      }
+      const promBaseUrl = localStorage.getItem('dbaas.cluster_prom_base_url')
+
+      const clusterInfo = JSON.parse(
+        localStorage.getItem('dbaas.cluster_info') ?? '{}'
+      )
+
+      startDashboard({
+        apiPathBase,
+        apiToken,
+        mixpanelUser,
+        timezone,
+        promBaseUrl,
+        clusterInfo
+      })
     </script>
   </body>
 </html>

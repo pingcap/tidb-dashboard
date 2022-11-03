@@ -9,7 +9,8 @@ import {
   Menu,
   Dropdown,
   Alert,
-  Tooltip
+  Tooltip,
+  Result
 } from 'antd'
 import {
   LoadingOutlined,
@@ -25,7 +26,8 @@ import {
   Toolbar,
   MultiSelect,
   TimeRange,
-  toTimeRangeValue
+  toTimeRangeValue,
+  IColumnKeys
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
@@ -66,12 +68,20 @@ function List() {
   const controller = useSlowQueryTableController({
     cacheMgr,
     showFullSQL,
+    fetchSchemas: ctx?.cfg.showDBFilter,
     initialQueryOptions: {
       ...DEF_SLOW_QUERY_OPTIONS,
       visibleColumnKeys
     },
+
     ds: ctx!.ds
   })
+  function updateVisibleColumnKeys(v: IColumnKeys) {
+    setVisibleColumnKeys(v)
+    if (!v[controller.orderOptions.orderBy]) {
+      controller.resetOrder()
+    }
+  }
 
   function menuItemClick({ key }) {
     switch (key) {
@@ -175,16 +185,18 @@ function List() {
         <Toolbar className={styles.list_toolbar} data-e2e="slow_query_toolbar">
           <Space>
             <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
-            <MultiSelect.Plain
-              placeholder={t('slow_query.toolbar.schemas.placeholder')}
-              selectedValueTransKey="slow_query.toolbar.schemas.selected"
-              columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
-              value={filterSchema}
-              style={{ width: 150 }}
-              onChange={setFilterSchema}
-              items={controller.allSchemas}
-              data-e2e="execution_database_name"
-            />
+            {ctx!.cfg.showDBFilter && (
+              <MultiSelect.Plain
+                placeholder={t('slow_query.toolbar.schemas.placeholder')}
+                selectedValueTransKey="slow_query.toolbar.schemas.selected"
+                columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
+                value={filterSchema}
+                style={{ width: 150 }}
+                onChange={setFilterSchema}
+                items={controller.allSchemas}
+                data-e2e="execution_database_name"
+              />
+            )}
             <Select
               style={{ width: 150 }}
               value={filterLimit}
@@ -217,7 +229,7 @@ function List() {
                 columns={controller.availableColumnsInTable}
                 visibleColumnKeys={visibleColumnKeys}
                 defaultVisibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
-                onChange={setVisibleColumnKeys}
+                onChange={updateVisibleColumnKeys}
                 foot={
                   <Checkbox
                     checked={showFullSQL}
@@ -239,7 +251,7 @@ function List() {
                 </div>
               </Dropdown>
             )}
-            {!isDistro() && (
+            {!isDistro() && (ctx!.cfg.showHelp ?? true) && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}
@@ -256,20 +268,34 @@ function List() {
           </Space>
         </Toolbar>
       </Card>
-      <div style={{ height: '100%', position: 'relative' }}>
-        <ScrollablePane>
-          {controller.isDataLoadedSlowly && (
-            <Card noMarginBottom noMarginTop>
-              <Alert
-                message={t('statement.pages.overview.slow_load_info')}
-                type="info"
-                showIcon
-              />
-            </Card>
-          )}
-          <SlowQueriesTable cardNoMarginTop controller={controller} />
-        </ScrollablePane>
-      </div>
+
+      {controller.data?.length === 0 ? (
+        <Result title={t('slow_query.overview.empty_result')} />
+      ) : (
+        <div style={{ height: '100%', position: 'relative' }}>
+          <ScrollablePane>
+            {controller.isDataLoadedSlowly && (
+              <Card noMarginBottom noMarginTop>
+                <Alert
+                  message={t('slow_query.overview.slow_load_info')}
+                  type="info"
+                  showIcon
+                />
+              </Card>
+            )}
+            {(controller.data?.length ?? 0) > 0 && (
+              <Card noMarginBottom noMarginTop>
+                <p className="ant-form-item-extra">
+                  {t('slow_query.overview.result_count', {
+                    n: controller.data?.length
+                  })}
+                </p>
+              </Card>
+            )}
+            <SlowQueriesTable cardNoMarginTop controller={controller} />
+          </ScrollablePane>
+        </div>
+      )}
     </div>
   )
 }

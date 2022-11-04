@@ -7,6 +7,9 @@ interface LogicalOperatorTreeProps {
   data: LogicalOperatorNode[]
   labels?: any
   className?: string
+
+  nodeName?: string
+  onSelect?: (name: string) => void
 }
 
 export interface LogicalOperatorNode {
@@ -22,7 +25,10 @@ export interface LogicalOperatorNode {
 export default function LogicalOperatorTree({
   data,
   labels = {},
-  className
+  className,
+
+  nodeName,
+  onSelect
 }: LogicalOperatorTreeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -38,6 +44,7 @@ export default function LogicalOperatorTree({
           `${n.id} ${createLabels({
             label: `${n.type}_${n.id}`,
             color: labels.color || '',
+            fillcolor: `${n.type}_${n.id}` === nodeName ? '#bfdbfe' : 'white',
             tooltip: `info: ${n.info}`
           })};\n`
       )
@@ -52,15 +59,33 @@ export default function LogicalOperatorTree({
 
     graphviz(containerEl).renderDot(
       `digraph {
-node [shape=ellipse fontsize=8 fontname="Verdana"];
+node [shape=ellipse fontsize=8 fontname="Verdana" style="filled"];
 ${define}\n${link}\n}`
     )
-  }, [containerRef, data, labels])
+  }, [containerRef, data, labels, nodeName])
+
+  // find clicked node
+  function handleClick(e) {
+    const trigger = e.target
+    const parent = e.target.parentNode
+    if (
+      (trigger?.tagName === 'text' || trigger?.tagName === 'ellipse') &&
+      parent?.tagName === 'a'
+    ) {
+      for (const el of parent.children) {
+        if (el.tagName === 'text') {
+          onSelect?.(el.innerHTML)
+          break
+        }
+      }
+    }
+  }
 
   return (
     <div
       ref={containerRef}
       className={`${styles.operator_tree} ${className || ''}`}
+      onClick={handleClick}
     ></div>
   )
 }

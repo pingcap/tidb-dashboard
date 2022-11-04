@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useMemoizedFn, useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { StatementModel } from '@lib/client'
@@ -105,6 +105,7 @@ export interface IStatementTableController {
 
   orderOptions: IOrderOptions
   changeOrder: (orderBy: string, desc: boolean) => void
+  resetOrder: () => void
 
   isEnabled: boolean // returned from backend
   isLoading: boolean
@@ -133,6 +134,9 @@ export default function useStatementTableController({
     persistQueryInSession,
     DEF_ORDER_OPTIONS
   )
+  function resetOrder() {
+    changeOrder(DEF_ORDER_OPTIONS.orderBy, DEF_ORDER_OPTIONS.desc)
+  }
 
   const { queryOptions, setQueryOptions } = useQueryOptions(
     initialQueryOptions,
@@ -153,12 +157,42 @@ export default function useStatementTableController({
     ds.statementsAvailableFieldsGet
   )
 
+  // By PR https://github.com/pingcap/tidb-dashboard/pull/1234 (feat: improve statement)
+  // which brings in v2022.05.16.1 and PD >=5.4.2, >=6.1.0
+  // The statement API logic changes a bit
+  // related code: https://github.com/pingcap/tidb-dashboard/pull/1234/files#diff-4bebd6011f602ac611ee19697803dc09877df197bf0176d1f27f84133b15e68bR54
+  // The new UI can't work with the old tidb-dashboard backend API well
+  // So we try to make the new UI compatible with the old tidb-dashboard backend
+  // By enlarging the selected time range with window size
+  const [windowSize, setWindowSize] = useState(0)
+  // assume the backend is old at first
+  // then update it after the first request
+  const [oldBackend, setOldBackend] = useState(true)
+
+  // check old or new backend
+  // the new backend removed the `/statements/time_ranges` API
+  // so if get 404, then it's the new backend
+  // else the old backend
+  useEffect(() => {
+    async function queryTimeRanges() {
+      try {
+        await ds.statementsTimeRangesGet({ handleError: 'custom' })
+      } catch (e) {
+        if ((e as any).response?.status === 404) {
+          setOldBackend(false)
+        }
+      }
+    }
+    queryTimeRanges()
+  }, [ds])
+
   // Reload these options when sending a new request.
   useChange(() => {
     async function queryStatementStatus() {
       try {
         const res = await ds.statementsConfigGet({ handleError: 'custom' })
         setEnabled(res?.data.enable!)
+        setWindowSize(res?.data?.refresh_interval ?? 0)
       } catch (e) {
         setErrors((prev) => prev.concat(e))
       }
@@ -235,6 +269,11 @@ export default function useStatementTableController({
       setDataLoading(true)
 
       const timeRange = toTimeRangeValue(queryOptions.timeRange)
+      // enlarge the time range automatically for old tidb-dashboard backend
+      if (oldBackend) {
+        timeRange[0] -= windowSize
+        timeRange[1] += windowSize
+      }
 
       try {
         const res = await ds.statementsListGet(
@@ -271,7 +310,7 @@ export default function useStatementTableController({
     }
 
     queryStatementList()
-  }, [queryOptions])
+  }, [queryOptions, windowSize, oldBackend])
 
   const availableColumnsInTable = useMemo(
     () => statementColumns(data?.list ?? [], schemaColumns, showFullSQL),
@@ -287,6 +326,7 @@ export default function useStatementTableController({
 
     orderOptions,
     changeOrder,
+    resetOrder,
 
     isEnabled,
     isLoading: isColumnsLoading || isDataLoading || isOptionsLoading,

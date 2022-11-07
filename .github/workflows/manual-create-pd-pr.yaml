@@ -23,7 +23,7 @@ jobs:
           ref: ${{ matrix.branch }}
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.18.1"
+          go-version: "1.18"
       - name: Load go module cache
         uses: actions/cache@v3
         with:

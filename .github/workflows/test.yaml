@@ -37,7 +37,7 @@ jobs:
         with:
           files: ./coverage/unit_test.txt
           fail_ci_if_error: true
-          flags: be_unit_test
+          flags: backend_ut
           verbose: true
 
   backend_integration:
@@ -75,7 +75,7 @@ jobs:
         with:
           files: ./coverage/integration_${{ matrix.tidb_version }}.txt
           fail_ci_if_error: true
-          flags: be_integration_test_${{ matrix.tidb_version }}
+          flags: backend_integration
           verbose: true
 
   e2e_test:

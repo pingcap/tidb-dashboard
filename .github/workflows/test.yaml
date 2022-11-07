@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.13.5"
+          go-version: "1.18"
       - name: Load go module cache
         uses: actions/cache@v3
         with:
@@ -37,7 +37,7 @@ jobs:
         with:
           files: ./coverage/unit_test.txt
           fail_ci_if_error: true
-          flags: be_unit_test
+          flags: backend_ut
           verbose: true
 
   backend_integration:
@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.13.5"
+          go-version: "1.18"
       - name: Load go module cache
         uses: actions/cache@v3
         with:
@@ -75,7 +75,7 @@ jobs:
         with:
           files: ./coverage/integration_${{ matrix.tidb_version }}.txt
           fail_ci_if_error: true
-          flags: be_integration_test_${{ matrix.tidb_version }}
+          flags: backend_integration
           verbose: true
 
   e2e_test:
@@ -129,7 +129,7 @@ jobs:
             ${{ runner.os }}-cypress-
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.13.5"
+          go-version: "1.18"
       - name: Load go module cache
         uses: actions/cache@v3
         with:

@@ -10,11 +10,13 @@ WITHOUT_NGM ?= false
 
 E2E_SPEC ?=
 
+RELEASE_VERSION := $(shell grep -v '^\#' ./release-version)
+
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
 endif
 
-LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(shell grep -v '^\#' ./release-version)"
+LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(RELEASE_VERSION)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.Standalone=Yes"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=N/A"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
@@ -111,6 +113,25 @@ ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
+
+IMAGE := pingcap/tidb-dashboard:$(RELEASE_VERSION)
+AMD64 := linux/amd64
+ARM64 := linux/arm64
+PLATFORMS := $(AMD64),$(ARM64)
+
+.PHONY: docker-image
+docker-image:
+	docker buildx build --push --no-cache -t $(IMAGE) --platform $(PLATFORMS) .
+
+.PHONY: docker-image-test-amd64
+docker-image-test-amd64:
+	docker buildx build --load --no-cache -t $(IMAGE) --platform $(AMD64) .
+	docker run --rm -it $(IMAGE) -v
+
+.PHONY: docker-image-test-arm64
+docker-image-test-arm64:
+	docker buildx build --load --no-cache -t $(IMAGE) --platform $(ARM64) .
+	docker run --rm -it $(IMAGE) -v
 
 .PHONY: run
 run:

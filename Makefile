@@ -34,7 +34,7 @@ default: server
 
 .PHONY: clean
 clean:
-	rm -rf ./coverage ./bin ./ui/node_modules
+	rm -rf ./coverage
 
 .PHONY: install_tools
 install_tools:

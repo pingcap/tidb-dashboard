@@ -18,6 +18,28 @@
         -moz-osx-font-smoothing: grayscale;
         background: #fff;
       }
+
+      #root {
+        margin: 0 auto;
+        width: 80%;
+        min-width: 800px;
+        height: 100%;
+      }
+      #placeholder {
+        height: 300px;
+        background-color: aliceblue;
+        place-items: center;
+        color: #ccc;
+        display: flex;
+        padding: 36px;
+      }
+
+      header {
+        height: 48px;
+        display: flex;
+        align-items: center;
+      }
+
       .navlist {
         padding: 16px 0px;
         margin-left: -16px;
@@ -30,33 +52,87 @@
       .navlist a:hover {
         color: deeppink;
       }
+
+      #toggle-full-window-btn {
+        margin-left: auto;
+      }
+      #toggle-full-window-btn {
+        cursor: pointer;
+      }
+      span.icon {
+        display: block;
+        width: 24px;
+        height: 24px;
+      }
+      .max-icon {
+        background: url(./maximize.svg);
+      }
+      .min-icon {
+        background: url(./minimize.svg);
+      }
+
+      #dashboard-container {
+        height: 700px;
+      }
+      #dashboard-container iframe {
+        width: 100%;
+        height: 100%;
+        border: 1px solid #ccc;
+      }
+
+      footer {
+        height: 64px;
+      }
+
+      .full-window {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      .full-window #dashboard-container {
+        height: 100%;
+      }
+      .full-window header {
+        background-color: white;
+        padding-left: 48px;
+        padding-right: 48px;
+      }
     </style>
   </head>
   <body>
-    <div
-      style="
-        margin: 0 auto;
-        width: 80%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      "
-    >
-      <nav class="navlist">
-        <a href="#/statement">Statement</a>
-        <a href="#/slow_query">SlowQuery</a>
-        <a href="#/keyviz">KeyViz</a>
-        <a href="#/topsql">TopSQL</a>
-        <a href="#/monitoring">Monitoring</a>
-      </nav>
-      <div style="flex: 1">
-        <iframe
-          id="dashboard"
-          width="100%"
-          height="90%"
-          style="border: 1px solid #ccc"
-        ></iframe>
+    <div id="root">
+      <div id="placeholder">
+        <h1>
+          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Velit quam
+          eaque, error distinctio nulla necessitatibus, sapiente quibusdam ipsum
+          quisquam, perferendis porro rerum ad! Facere id exercitationem culpa
+          nobis totam cum!
+        </h1>
       </div>
+
+      <main>
+        <header>
+          <nav class="navlist">
+            <a href="#/statement">Statement</a>
+            <a href="#/slow_query">SlowQuery</a>
+            <a href="#/keyviz">KeyViz</a>
+            <a href="#/topsql">TopSQL</a>
+            <a href="#/monitoring">Monitoring</a>
+          </nav>
+
+          <a id="toggle-full-window-btn">
+            <span class="icon max-icon"> </span>
+          </a>
+        </header>
+
+        <section id="dashboard-container">
+          <iframe id="dashboard"></iframe>
+        </section>
+      </main>
+
+      <footer />
     </div>
 
     <script>
@@ -64,6 +140,27 @@
         const hash = window.location.hash || '#/statement'
         const dashboard = document.getElementById('dashboard')
         dashboard.src = `/test-iframe/child.html${hash}`
+      }
+
+      let fullWindow = false
+      function toggleFullWindow(full) {
+        fullWindow = full
+        const mainEl = document.getElementsByTagName('main')[0]
+        const icon = document.querySelector('#toggle-full-window-btn span')
+        if (full) {
+          mainEl.classList.add('full-window')
+          icon.classList.remove('max-icon')
+          icon.classList.add('min-icon')
+        } else {
+          mainEl.classList.remove('full-window')
+          icon.classList.remove('min-icon')
+          icon.classList.add('max-icon')
+        }
+      }
+
+      window.onload = function () {
+        const btn = document.getElementById('toggle-full-window-btn')
+        btn.addEventListener('click', () => toggleFullWindow(!fullWindow))
       }
     </script>
 

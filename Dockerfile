@@ -12,21 +12,25 @@ RUN apk add --no-cache \
     npm \
     openjdk11
 
-# Install pnpm for building the frontend.
 RUN npm install -g pnpm
 
-RUN mkdir -p /go/src/github.com/pingcap/tidb-dashboard
+RUN mkdir -p /go/src/github.com/pingcap/tidb-dashboard/ui
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard
 
-# Cache dependencies.
+# Cache go module dependencies.
 COPY go.mod .
 COPY go.sum .
-
 RUN GO111MODULE=on go mod download
 
-COPY . .
+# Cache npm dependencies.
+WORKDIR /go/src/github.com/pingcap/tidb-dashboard/ui
+COPY ui/pnpm-lock.yaml .
+RUN pnpm fetch
 
-RUN make package
+# Build.
+WORKDIR /go/src/github.com/pingcap/tidb-dashboard
+COPY . .
+RUN make package PNPM_INSTALL_TAGS=--offline
 
 FROM alpine:3.16
 

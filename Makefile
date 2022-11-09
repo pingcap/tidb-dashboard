@@ -2,6 +2,8 @@ DASHBOARD_PKG := github.com/pingcap/tidb-dashboard
 
 BUILD_TAGS ?=
 
+PNPM_INSTALL_TAGS ?=
+
 LDFLAGS ?=
 
 FEATURE_VERSION ?= 6.2.0
@@ -21,16 +23,18 @@ LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildGitHash=$(shell git rev-p
 TIDB_VERSION ?= latest
 
 # Docker build variables.
-IMAGE := pingcap/tidb-dashboard:$(RELEASE_VERSION)
+IMAGE ?= pingcap/tidb-dashboard:$(RELEASE_VERSION)
 AMD64 := linux/amd64
 ARM64 := linux/arm64
 PLATFORMS := $(AMD64),$(ARM64)
+# If you want to build with no cache (after update go module, npm module, etc.), set "NO_CACHE=--pull --no-cache".
+NO_CACHE ?=
 
 default: server
 
 .PHONY: clean
 clean:
-	rm -rf ./coverage
+	rm -rf ./coverage ./bin ./ui/node_modules
 
 .PHONY: install_tools
 install_tools:
@@ -96,7 +100,7 @@ dev: lint default
 .PHONY: ui_deps
 ui_deps: install_tools
 	cd ui &&\
-	pnpm i
+	pnpm i ${PNPM_INSTALL_TAGS}
 
 .PHONY: ui
 ui: ui_deps
@@ -117,23 +121,23 @@ server: install_tools go_generate
 embed_ui_assets: ui
 	scripts/embed_ui_assets.sh
 
-.PHONY: package # make package builds frontend and backend server, and then packages them into a single binary.
+.PHONY: package # Build frontend and backend server, and then packages them into a single binary.
 package: BUILD_TAGS += ui_server
 package: embed_ui_assets server
 
-.PHONY: docker-image
-docker-image:
-	docker buildx build --push -t $(IMAGE) --platform $(PLATFORMS) .
+.PHONY: docker-image # For locally dev, set IMAGE to your dev docker registry.
+docker-image: clean
+	docker buildx build ${NO_CACHE} --push -t $(IMAGE) --platform $(PLATFORMS) .
 
 .PHONY: docker-image-amd64
-docker-image-amd64:
-	docker buildx build --load -t $(IMAGE) --platform $(AMD64) .
-	docker run --rm -it $(IMAGE) -v
+docker-image-amd64: clean
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(AMD64) .
+	docker run --rm $(IMAGE) -v
 
 .PHONY: docker-image-arm64
-docker-image-arm64:
-	docker buildx build --load -t $(IMAGE) --platform $(ARM64) .
-	docker run --rm -it $(IMAGE) -v
+docker-image-arm64: clean
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(ARM64) .
+	docker run --rm $(IMAGE) -v
 
 .PHONY: run # please ensure that tiup playground is running in the background.
 run:

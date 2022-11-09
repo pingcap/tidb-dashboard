@@ -86,15 +86,15 @@ jobs:
       matrix:
         # test latest features and compatibility of lower version
         include:
-          - feature_version: 6.0.0 # You must ensure feature_version and tidb_version is matching!
-            tidb_version: nightly
-            without_ngm: true
+#          - feature_version: 6.0.0 # You must ensure feature_version and tidb_version is matching!
+#            tidb_version: nightly
+#            without_ngm: true
           - feature_version: 6.0.0
             tidb_version: nightly
             without_ngm: true
-          - feature_version: 6.0.0
-            tidb_version: ^6.0
-            without_ngm: true
+#          - feature_version: 6.0.0
+#            tidb_version: ^6.0
+#            without_ngm: true
           - feature_version: 6.0.0
             tidb_version: ^6.0
             without_ngm: true

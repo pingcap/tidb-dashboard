@@ -55,8 +55,9 @@
 
       #toggle-full-window-btn {
         margin-left: auto;
+        margin-right: 8px;
       }
-      #toggle-full-window-btn {
+      a.toggle-btn {
         cursor: pointer;
       }
       span.icon {
@@ -69,6 +70,12 @@
       }
       .min-icon {
         background: url(./minimize.svg);
+      }
+      .full-screen-max-icon {
+        background: url(./maximize-2.svg);
+      }
+      .full-screen-min-icon {
+        background: url(./minimize-2.svg);
       }
 
       #dashboard-container {
@@ -122,8 +129,11 @@
             <a href="#/monitoring">Monitoring</a>
           </nav>
 
-          <a id="toggle-full-window-btn">
+          <a id="toggle-full-window-btn" class="toggle-btn">
             <span class="icon max-icon"> </span>
+          </a>
+          <a id="toggle-full-screen-btn" class="toggle-btn">
+            <span class="icon full-screen-max-icon"> </span>
           </a>
         </header>
 
@@ -158,9 +168,22 @@
         }
       }
 
+      function fullScreen() {
+        const el = document.getElementById('dashboard-container')
+        const icon = document.querySelector('#toggle-full-screen-btn span')
+        if (el.requestFullscreen) {
+          el.requestFullscreen()
+        }
+      }
+
       window.onload = function () {
-        const btn = document.getElementById('toggle-full-window-btn')
-        btn.addEventListener('click', () => toggleFullWindow(!fullWindow))
+        const fullWindowBtn = document.getElementById('toggle-full-window-btn')
+        fullWindowBtn.addEventListener('click', () =>
+          toggleFullWindow(!fullWindow)
+        )
+
+        const fullScreenBtn = document.getElementById('toggle-full-screen-btn')
+        fullScreenBtn.addEventListener('click', () => fullScreen())
       }
     </script>
 

@@ -21,7 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Make
-        run: make docker-image-test-amd64
+        run: make docker-image-amd64
   test-arm64-image:
     runs-on: ubuntu-latest
     strategy:
@@ -33,4 +33,4 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Make
-        run: make docker-image-test-arm64
+        run: make docker-image-arm64

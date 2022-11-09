@@ -109,8 +109,8 @@ go_generate:
 	scripts/generate_swagger_spec.sh
 	go generate -x ./...
 
-.PHONY: backend
-backend: install_tools go_generate
+.PHONY: server
+server: install_tools go_generate
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
 .PHONY: embed_ui_assets
@@ -119,7 +119,7 @@ embed_ui_assets: ui
 
 .PHONY: package # make package builds frontend and backend server, and then packages them into a single binary.
 package: BUILD_TAGS += ui_server
-package: embed_ui_assets backend
+package: embed_ui_assets server
 
 .PHONY: docker-image
 docker-image:

@@ -12,10 +12,6 @@ E2E_SPEC ?=
 
 RELEASE_VERSION := $(shell grep -v '^\#' ./release-version)
 
-ifeq ($(UI),1)
-	BUILD_TAGS += ui_server
-endif
-
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(RELEASE_VERSION)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.Standalone=Yes"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=N/A"
@@ -23,6 +19,12 @@ LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildTime=$(shell date -u '+%Y
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildGitHash=$(shell git rev-parse HEAD)"
 
 TIDB_VERSION ?= latest
+
+# Docker build variables.
+IMAGE := pingcap/tidb-dashboard:$(RELEASE_VERSION)
+AMD64 := linux/amd64
+ARM64 := linux/arm64
+PLATFORMS := $(AMD64),$(ARM64)
 
 default: server
 
@@ -107,32 +109,32 @@ go_generate:
 	scripts/generate_swagger_spec.sh
 	go generate -x ./...
 
-.PHONY: server
-server: install_tools go_generate
-ifeq ($(UI),1)
-	scripts/embed_ui_assets.sh
-endif
+.PHONY: backend
+backend: install_tools go_generate
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
-IMAGE := pingcap/tidb-dashboard:$(RELEASE_VERSION)
-AMD64 := linux/amd64
-ARM64 := linux/arm64
-PLATFORMS := $(AMD64),$(ARM64)
+.PHONY: embed_ui_assets
+embed_ui_assets: ui
+	scripts/embed_ui_assets.sh
+
+.PHONY: package # make package builds frontend and backend server, and then packages them into a single binary.
+package: BUILD_TAGS += ui_server
+package: embed_ui_assets backend
 
 .PHONY: docker-image
 docker-image:
-	docker buildx build --push --no-cache -t $(IMAGE) --platform $(PLATFORMS) .
+	docker buildx build --push -t $(IMAGE) --platform $(PLATFORMS) .
 
-.PHONY: docker-image-test-amd64
-docker-image-test-amd64:
-	docker buildx build --load --no-cache -t $(IMAGE) --platform $(AMD64) .
+.PHONY: docker-image-amd64
+docker-image-amd64:
+	docker buildx build --load -t $(IMAGE) --platform $(AMD64) .
 	docker run --rm -it $(IMAGE) -v
 
-.PHONY: docker-image-test-arm64
-docker-image-test-arm64:
-	docker buildx build --load --no-cache -t $(IMAGE) --platform $(ARM64) .
+.PHONY: docker-image-arm64
+docker-image-arm64:
+	docker buildx build --load -t $(IMAGE) --platform $(ARM64) .
 	docker run --rm -it $(IMAGE) -v
 
-.PHONY: run
+.PHONY: run # please ensure that tiup playground is running in the background.
 run:
 	bin/tidb-dashboard --debug --experimental --feature-version "$(FEATURE_VERSION)" --host 0.0.0.0

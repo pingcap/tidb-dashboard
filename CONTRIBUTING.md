@@ -58,23 +58,18 @@ The followings are required for developing TiDB Dashboard:
    cd tidb-dashboard
    ```
 
-1. Build and run TiDB Dashboard back-end server:
+2. Build and run TiDB Dashboard:
 
    ```bash
    # In tidb-dashboard directory:
-   make dev && make run
+   make package && make run
    ```
 
-1. Build and run front-end server in a new terminal:
+3. That's it! You can access TiDB Dashboard now: [http://127.0.0.1:12333/dashboard/](http://127.0.0.1:12333/dashboard/)
 
-   ```bash
-   # In tidb-dashboard directory:
-   cd ui
-   pnpm i # install all dependencies
-   pnpm dev
-   ```
-
-1. That's it! You can access TiDB Dashboard now: http://127.0.0.1:3001
+   > **Note:**
+   >
+   > `tiup playground` should keep running at background.
 
 ### Step 4. Run E2E Tests (optional)
 

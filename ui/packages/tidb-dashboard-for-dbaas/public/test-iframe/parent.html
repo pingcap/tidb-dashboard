@@ -55,7 +55,6 @@
 
       #toggle-full-window-btn {
         margin-left: auto;
-        margin-right: 8px;
       }
       a.toggle-btn {
         cursor: pointer;
@@ -64,6 +63,7 @@
         display: block;
         width: 24px;
         height: 24px;
+        margin-right: 8px;
       }
       .max-icon {
         background: url(./maximize.svg);
@@ -76,6 +76,9 @@
       }
       .full-screen-min-icon {
         background: url(./minimize-2.svg);
+      }
+      .new-tab-icon {
+        background: url(./external-link.svg);
       }
 
       #dashboard-container {
@@ -132,8 +135,11 @@
           <a id="toggle-full-window-btn" class="toggle-btn">
             <span class="icon max-icon"> </span>
           </a>
-          <a id="toggle-full-screen-btn" class="toggle-btn">
+          <a id="full-screen-btn" class="toggle-btn">
             <span class="icon full-screen-max-icon"> </span>
+          </a>
+          <a id="new-tab-btn" class="toggle-btn">
+            <span class="icon new-tab-icon"> </span>
           </a>
         </header>
 
@@ -157,23 +163,31 @@
         fullWindow = full
         const mainEl = document.getElementsByTagName('main')[0]
         const icon = document.querySelector('#toggle-full-window-btn span')
-        if (full) {
-          mainEl.classList.add('full-window')
-          icon.classList.remove('max-icon')
-          icon.classList.add('min-icon')
-        } else {
-          mainEl.classList.remove('full-window')
-          icon.classList.remove('min-icon')
-          icon.classList.add('max-icon')
-        }
+        // if (full) {
+        //   mainEl.classList.add('full-window')
+        //   icon.classList.remove('max-icon')
+        //   icon.classList.add('min-icon')
+        // } else {
+        //   mainEl.classList.remove('full-window')
+        //   icon.classList.remove('min-icon')
+        //   icon.classList.add('max-icon')
+        // }
+        mainEl.classList.toggle('full-window')
+        icon.classList.toggle('min-icon')
+        icon.classList.toggle('max-icon')
       }
 
       function fullScreen() {
         const el = document.getElementById('dashboard-container')
-        const icon = document.querySelector('#toggle-full-screen-btn span')
+        const icon = document.querySelector('#full-screen-btn span')
         if (el.requestFullscreen) {
           el.requestFullscreen()
         }
+      }
+
+      function openNewTab() {
+        const hash = window.location.hash || '#/statement'
+        window.open(`/test-iframe/child.html${hash}`, '_blank')
       }
 
       window.onload = function () {
@@ -182,8 +196,11 @@
           toggleFullWindow(!fullWindow)
         )
 
-        const fullScreenBtn = document.getElementById('toggle-full-screen-btn')
+        const fullScreenBtn = document.getElementById('full-screen-btn')
         fullScreenBtn.addEventListener('click', () => fullScreen())
+
+        const newTabBtn = document.getElementById('new-tab-btn')
+        newTabBtn.addEventListener('click', () => openNewTab())
       }
     </script>
 

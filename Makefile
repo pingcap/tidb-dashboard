@@ -23,7 +23,8 @@ LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildGitHash=$(shell git rev-p
 TIDB_VERSION ?= latest
 
 # Docker build variables.
-IMAGE ?= pingcap/tidb-dashboard:$(RELEASE_VERSION)
+REPOSITORY ?= pingcap/tidb-dashboard
+IMAGE ?= $(REPOSITORY):$(RELEASE_VERSION)
 AMD64 := linux/amd64
 ARM64 := linux/arm64
 PLATFORMS := $(AMD64),$(ARM64)
@@ -131,12 +132,12 @@ docker-build-and-push-image: clean
 
 .PHONY: docker-build-image-locally-amd64
 docker-build-image-locally-amd64: clean
-	docker buildx build ${NO_CACHE} --load -t $(IMAGE)-amd64 --platform $(AMD64) .
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(AMD64) .
 	docker run --rm $(IMAGE) -v
 
 .PHONY: docker-build-image-locally-arm64
 docker-build-image-locally-arm64: clean
-	docker buildx build ${NO_CACHE} --load -t $(IMAGE)-arm64 --platform $(ARM64) .
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(ARM64) .
 	docker run --rm $(IMAGE) -v
 
 .PHONY: run # please ensure that tiup playground is running in the background.

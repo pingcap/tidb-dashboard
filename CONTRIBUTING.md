@@ -100,6 +100,44 @@ see all TiDB Dashboard API endpoints and specifications, or even send API reques
 
 Swagger UI is available at http://localhost:12333/dashboard/api/swagger after the above Step 3 is finished.
 
+### Build and run docker image locally
+
+If you want to develop docker image🤔.
+
+1. Ensure the Docker Buildx is installed on your local machine.
+   
+   > Docker Buildx is included in Docker Desktop for Windows, macOS, and Linux.
+   > Docker Linux packages also include Docker Buildx when installed using the DEB or RPM packages.
+
+2. Build the docker image.
+
+   ```bash
+   # On repository root directory (only build locally, no push remote), run:
+   make docker-build-image-locally-amd64
+
+   # Or, if you want to build the image for arm64 platform (only build locally, no push remote), run:
+   make docker-build-image-locally-arm64
+
+   # Or, if you want to build cross-platform image and push it to your dev docker registry, run:
+   REPOSITORY=your-tidb-dashboard-repository make docker-build-and-push-image
+
+   # Finally, if you update npm modules or go modules, and want to disable docker layer cache to force rebuild, set NO_CACHE="--pull --no-cache" before make command. For example:
+   NO_CACHE="--pull --no-cache" make docker-build-image-locally-amd64
+   ```
+
+3. Run newly build image with docker-compose.
+
+   > Please make sure that `tiup playground` is not running on the background.
+   
+      ```bash
+      # On repository root directory, run:
+      docker-compose up
+      ```
+
+4. Access TiDB Dashboard at [http://localhost:12333/dashboard](http://localhost:12333/dashboard).
+
+> Dashboard in PD can be accessed at [http://localhost:2379/dashboard](http://localhost:2379/dashboard).
+
 ## Contribution flow
 
 This is a rough outline of what a contributor's workflow looks like:

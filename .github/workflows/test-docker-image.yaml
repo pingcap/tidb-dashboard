@@ -30,7 +30,9 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          # Currently github action runner only supports linux/amd64, it take a lot of time to build multi-arch image.
+          # So we only build amd64 image for now.
+          platforms: linux/amd64
           push: false
           tags: pingcap/tidb-dashboard:${{ steps.getversion.outputs.version }}
           no-cache: false

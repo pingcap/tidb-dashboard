@@ -76,6 +76,18 @@ The followings are required for developing TiDB Dashboard:
 
 4. That's it! You can access TiDB Dashboard now: http://127.0.0.1:3001
 
+5. (Optional) Package frontend and backend into a single binary:
+
+   ```bash
+   # In tidb-dashboard directory:
+   make package
+   
+   # Run the binary without separate frontend server:
+   make run
+   ```
+
+   You can access TiDB Dashboard now: [http://127.0.0.1:12333](http://127.0.0.1:3001)
+
 ### Step 4. Run E2E Tests (optional)
 
 When back-end server and front-end server are both started, E2E tests can be run by:

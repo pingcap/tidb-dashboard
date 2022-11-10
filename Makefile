@@ -125,18 +125,18 @@ embed_ui_assets: ui
 package: BUILD_TAGS += ui_server
 package: embed_ui_assets server
 
-.PHONY: docker-image # For locally dev, set IMAGE to your dev docker registry.
-docker-image: clean
+.PHONY: docker-build-and-push-image # For locally dev, set IMAGE to your dev docker registry.
+docker-build-and-push-image: clean
 	docker buildx build ${NO_CACHE} --push -t $(IMAGE) --platform $(PLATFORMS) .
 
-.PHONY: docker-image-amd64
-docker-image-amd64: clean
-	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(AMD64) .
+.PHONY: docker-build-image-locally-amd64
+docker-build-image-locally-amd64: clean
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE)-amd64 --platform $(AMD64) .
 	docker run --rm $(IMAGE) -v
 
-.PHONY: docker-image-arm64
-docker-image-arm64: clean
-	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(ARM64) .
+.PHONY: docker-build-image-locally-arm64
+docker-build-image-locally-arm64: clean
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE)-arm64 --platform $(ARM64) .
 	docker run --rm $(IMAGE) -v
 
 .PHONY: run # please ensure that tiup playground is running in the background.

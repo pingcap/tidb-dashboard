@@ -62,7 +62,8 @@
     "string-template": "^1.0.0",
     "url": "^0.11.0",
     "uuid": "^8.3.2",
-    "visual-plan": "^0.0.7"
+    "visual-plan": "^0.0.7",
+    "@diag-ui/chart": "file:../../../../diag-ui/packages/chart"
   },
   "devDependencies": {
     "@baurine/esbuild-plugin-postcss3": "^0.3.3",

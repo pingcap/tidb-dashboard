@@ -11,5 +11,5 @@
       "@lib/*": ["src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "node_modules/@diag-ui"]
 }

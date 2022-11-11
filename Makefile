@@ -12,6 +12,8 @@ WITHOUT_NGM ?= false
 
 E2E_SPEC ?=
 
+UI ?=
+
 RELEASE_VERSION := $(shell grep -v '^\#' ./release-version)
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(RELEASE_VERSION)"
@@ -115,10 +117,12 @@ go_generate:
 	go generate -x ./...
 
 .PHONY: server
+ifeq ($(UI),1)
+BUILD_TAGS += ui_server
+endif
 server: install_tools go_generate
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
-BUILD_TAGS += ui_server
 endif
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 

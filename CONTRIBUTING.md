@@ -74,7 +74,7 @@ The followings are required for developing TiDB Dashboard:
    pnpm dev
    ```
 
-4. That's it! You can access TiDB Dashboard now: http://127.0.0.1:3001
+4. That's it! You can access TiDB Dashboard now: [http://127.0.0.1:3001](http://127.0.0.1:3001)
 
 5. (Optional) Package frontend and backend into a single binary:
 
@@ -86,7 +86,7 @@ The followings are required for developing TiDB Dashboard:
    make run
    ```
 
-   You can access TiDB Dashboard now: [http://127.0.0.1:12333](http://127.0.0.1:3001)
+   You can access TiDB Dashboard now: [http://127.0.0.1:12333/dashboard](http://127.0.0.1:12333/dashboard)
 
 ### Step 4. Run E2E Tests (optional)
 
@@ -114,7 +114,7 @@ Swagger UI is available at http://localhost:12333/dashboard/api/swagger after th
 
 ### Build and run docker image locally
 
-If you want to develop docker image🤔.
+If you want to develop docker image locally 🤔.
 
 1. Ensure the Docker Buildx is installed on your local machine.
    

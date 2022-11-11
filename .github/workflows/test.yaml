@@ -186,6 +186,6 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           files: ./ui/packages/tidb-dashboard-for-op/.nyc_output/out.json
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           flags: e2e_test
           verbose: true

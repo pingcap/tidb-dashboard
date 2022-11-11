@@ -168,7 +168,7 @@ jobs:
           head -n 3 /home/runner/.tiup/data/$DATA_PATH/pd-0/pd.log
       - name: Build and run backend in the background
         run: |
-          make package
+          make
           make run &
         env:
           UI: 1

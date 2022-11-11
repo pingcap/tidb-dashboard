@@ -116,6 +116,9 @@ go_generate:
 
 .PHONY: server
 server: install_tools go_generate
+ifeq ($(UI),1)
+	scripts/embed_ui_assets.sh
+endif
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
 .PHONY: embed_ui_assets

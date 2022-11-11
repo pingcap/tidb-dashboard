@@ -9,7 +9,7 @@ services:
       - --pd=http://pd:2379
       - --debug
       - --experimental
-      - --feature-version=6.2.0
+      - --feature-version=6.3.0
       - --host=0.0.0.0
     depends_on:
       - "pd"

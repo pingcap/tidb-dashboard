@@ -88,22 +88,16 @@ jobs:
         include:
           - feature_version: 6.0.0 # You must ensure feature_version and tidb_version is matching!
             tidb_version: nightly
-            without_ngm: false
-          - feature_version: 6.0.0
-            tidb_version: nightly
             without_ngm: true
-          - feature_version: 6.0.0
-            tidb_version: ^6.0
-            without_ngm: false
           - feature_version: 6.0.0
             tidb_version: ^6.0
             without_ngm: true
           - feature_version: 5.4.0
             tidb_version: ^5.4
-            without_ngm: false
+            without_ngm: true
           - feature_version: 5.0.0
             tidb_version: ^5.0
-            without_ngm: false
+            without_ngm: true
     name: E2E - TiDB@${{ matrix.tidb_version }}${{ !matrix.without_ngm && '+ngm' || '' }}
     steps:
       - name: Checkout code
@@ -192,6 +186,6 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           files: ./ui/packages/tidb-dashboard-for-op/.nyc_output/out.json
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           flags: e2e_test
           verbose: true

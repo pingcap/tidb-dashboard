@@ -118,6 +118,7 @@ go_generate:
 server: install_tools go_generate
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
+BUILD_TAGS += ui_server
 endif
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 

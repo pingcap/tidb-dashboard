@@ -2,7 +2,7 @@
 import { skipOn } from '@cypress/skip-test'
 
 describe('TopSQL without ngm', function () {
-  skipOn(Cypress.env('FEATURE_VERSION') !== '5.0.0', () => {
+  skipOn(Cypress.env('FEATURE_VERSION') === '5.0.0', () => {
     before(() => {
       cy.fixture('uri.json').then((uri) => (this.uri = uri))
     })

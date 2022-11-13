@@ -16,9 +16,6 @@ export * from './Statement'
 export { default as SlowQueryApp } from './SlowQuery'
 export * from './SlowQuery'
 
-export { default as SlowQueryV2App } from './SlowQueryV2'
-export { SlowQueryV2Provider } from './SlowQueryV2/context'
-
 export { default as KeyVizApp } from './KeyViz'
 export * from './KeyViz'
 

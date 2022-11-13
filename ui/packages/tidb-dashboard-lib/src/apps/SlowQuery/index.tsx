@@ -5,7 +5,7 @@ import useCache, { CacheContext } from '@lib/utils/useCache'
 
 import { addTranslations } from '@lib/utils/i18n'
 
-import { List, Detail } from './pages'
+import { List, Detail, ListV2 } from './pages'
 
 import { SlowQueryContext } from './context'
 
@@ -21,6 +21,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/slow_query" element={<List />} />
       <Route path="/slow_query/detail" element={<Detail />} />
+      <Route path="/slow_query_v2" element={<ListV2 />} />
     </Routes>
   )
 }

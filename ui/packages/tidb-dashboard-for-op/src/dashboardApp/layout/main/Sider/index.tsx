@@ -151,7 +151,6 @@ function Sider({
     // topSQL
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
-    useAppMenuItem(registry, 'slow_query_v2'),
     useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'system_report'),
     // warning: "diagnose" app doesn't release yet

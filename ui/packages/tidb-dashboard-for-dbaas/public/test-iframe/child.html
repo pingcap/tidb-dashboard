@@ -31,7 +31,14 @@
 
       const apiPathBase = localStorage.getItem('dbaas.apiPathBase')
       const apiToken = localStorage.getItem('dbaas.apiToken')
-      startDashboard({ apiPathBase, apiToken })
+      startDashboard({
+        apiPathBase,
+        apiToken,
+        mixpanelUser: '',
+        timezone: null,
+        promBaseUrl: '',
+        clusterInfo: {}
+      })
     </script>
   </body>
 </html>

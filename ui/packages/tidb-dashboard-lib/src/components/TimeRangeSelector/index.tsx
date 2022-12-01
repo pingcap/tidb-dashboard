@@ -6,6 +6,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import cx from 'classnames'
 import dayjs, { Dayjs } from 'dayjs'
 import { useTranslation } from 'react-i18next'
+import { RangePickerProps } from 'antd/es/date-picker/generatePicker'
 
 import styles from './index.module.less'
 import { useChange } from '@lib/utils/useChange'
@@ -97,6 +98,10 @@ export interface ITimeRangeSelectorProps {
   disabled?: boolean
   recent_seconds?: number[]
   withAbsoluteRangePicker?: boolean
+  disabledDate?: RangePickerProps<dayjs.Dayjs>['disabledDate']
+  disabledTime?: RangePickerProps<dayjs.Dayjs>['disabledTime']
+  onCalendarChange?: RangePickerProps<dayjs.Dayjs>['onCalendarChange']
+  onOpenChange?: RangePickerProps<dayjs.Dayjs>['onOpenChange']
 }
 
 function TimeRangeSelector({
@@ -104,7 +109,11 @@ function TimeRangeSelector({
   onChange,
   disabled = false,
   recent_seconds = DEFAULT_RECENT_SECONDS,
-  withAbsoluteRangePicker = true
+  withAbsoluteRangePicker = true,
+  disabledDate,
+  disabledTime,
+  onCalendarChange,
+  onOpenChange
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -184,6 +193,10 @@ function TimeRangeSelector({
               format="YYYY-MM-DD HH:mm:ss"
               value={rangePickerValue}
               onChange={handleRangePickerChange}
+              disabledDate={disabledDate}
+              disabledTime={disabledTime}
+              onCalendarChange={onCalendarChange}
+              onOpenChange={onOpenChange}
             />
           </div>
         </div>

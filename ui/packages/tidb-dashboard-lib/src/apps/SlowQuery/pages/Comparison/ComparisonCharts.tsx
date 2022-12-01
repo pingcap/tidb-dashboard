@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Col, Row, Select, Typography } from 'antd'
 
 import { TimeRange, TimeRangeSelector } from '@lib/components'
-import { TimeSeriesChart } from './charts/TimeSeriesChart'
+import { TimeSeriesChart } from '../../components/charts/TimeSeriesChart'
 import { GroupBarChart } from './charts/GroupBarChart'
 import { DiffChart } from './charts/DiffChart'
 

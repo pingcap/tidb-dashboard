@@ -1,3 +1,4 @@
+import { PlotEvent } from '@ant-design/plots'
 import {
   TimeSeriesChart,
   PromDataAccessor,
@@ -45,7 +46,15 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = ({
 
   return (
     <PromDataAccessor fetch={cacheFetch} ref={triggerRef}>
-      <TimeSeriesChart ref={chartRef} modifyConfig={(cfg) => ({ ...cfg })}>
+      <TimeSeriesChart
+        ref={chartRef}
+        modifyConfig={(cfg) => ({ ...cfg })}
+        onReady={(plot) => {
+          plot.on('legend-item:click', (evt: PlotEvent) => {
+            console.log(evt)
+          })
+        }}
+      >
         <PromQueryGroup
           queries={[
             {

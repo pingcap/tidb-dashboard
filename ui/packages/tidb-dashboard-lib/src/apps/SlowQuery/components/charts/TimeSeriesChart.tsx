@@ -1,14 +1,16 @@
 import React, { MutableRefObject, useEffect, useRef } from 'react'
 
 import { TimeRange } from '@lib/components'
-import { PromDataAccessor } from '@diag-ui/chart'
-import { TimeSeriesChart as DiagTimeSeriesChart } from '@diag-ui/chart'
-import { PromQueryGroup } from '@diag-ui/chart'
-import { Chart } from '@diag-ui/chart'
-import { Trigger } from '@diag-ui/chart'
+import {
+  TimeSeriesChart as DiagTimeSeriesChart,
+  PromDataAccessor,
+  PromQueryGroup,
+  Chart,
+  Trigger
+} from '@diag-ui/chart'
 
 interface LineChartProps {
-  height: number
+  height?: number
   timeRange: TimeRange
   type: 'line' | 'scatter'
 }

@@ -1,17 +1,20 @@
 import React, { useState } from 'react'
-import { Modal } from 'antd'
+import { Col, Modal, Row, Typography } from 'antd'
 
-import { SlowQueryScatterChart } from './ScatterChart'
+import { TimeSeriesChart } from '../../components/charts/TimeSeriesChart'
 
 interface ExpandChartProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
+const { Title } = Typography
+
 export const ExpandChart: React.FC<ExpandChartProps> = ({
   open,
   onOpenChange
 }) => {
+  const [timeRange, onTimeRangeChange] = useState<any>()
   return (
     <Modal
       centered
@@ -24,7 +27,26 @@ export const ExpandChart: React.FC<ExpandChartProps> = ({
       }}
       footer={null}
     >
-      <SlowQueryScatterChart displayOptions={null as any} />
+      <Row style={{ paddingTop: '20px' }}>
+        <Col span={16}>
+          <Title level={5}>Slow Query Detail</Title>
+          <TimeSeriesChart timeRange={timeRange} height={632} type="scatter" />
+        </Col>
+        <Col span={8}>
+          <Row>
+            <Col span={24}>
+              <Title level={5}>Slow Query Count</Title>
+              <TimeSeriesChart timeRange={timeRange} height={300} type="line" />
+            </Col>
+          </Row>
+          <Row>
+            <Col span={24}>
+              <Title level={5}>Avg. Slow Query Latency</Title>
+              <TimeSeriesChart timeRange={timeRange} height={300} type="line" />
+            </Col>
+          </Row>
+        </Col>
+      </Row>
     </Modal>
   )
 }

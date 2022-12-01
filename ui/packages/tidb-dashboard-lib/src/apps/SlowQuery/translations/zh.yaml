@@ -21,6 +21,12 @@ slow_query:
     is_internal: 是否为内部 SQL 查询
     is_success: 是否执行成功
     is_success_tooltip: SQL 查询是否执行成功
+    is_prepared: Is Prepared?
+    is_prepared_tooltip: 是否由 prepare 语句生成
+    is_plan_from_cache: Is Plan from Cache?
+    is_plan_from_cache_tooltip: 查询计划是否来自缓存
+    is_plan_from_binding: Is Plan from Binding?
+    is_plan_from_binding_tooltip: 查询计划是否来自绑定
     result: 执行结果
     result_tooltip: SQL 查询是否执行成功
     index_names: 索引名

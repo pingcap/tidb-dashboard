@@ -11,6 +11,7 @@ import { SlowQueryContext } from './context'
 
 import translations from './translations'
 import { useLocationChange } from '@lib/hooks/useLocationChange'
+import { SlowQueryComparison } from './pages/Comparison'
 
 addTranslations(translations)
 
@@ -22,6 +23,10 @@ function AppRoutes() {
       <Route path="/slow_query" element={<List />} />
       <Route path="/slow_query/detail" element={<Detail />} />
       <Route path="/slow_query_v2" element={<ListV2 />} />
+      <Route
+        path="/slow_query_v2/comparison"
+        element={<SlowQueryComparison />}
+      />
     </Routes>
   )
 }

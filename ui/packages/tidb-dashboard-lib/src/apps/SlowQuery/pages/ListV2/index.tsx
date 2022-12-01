@@ -42,7 +42,8 @@ import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
-import { SlowQueryChart } from './Chart'
+import { SlowQueryScatterChart } from './ScatterChart'
+import { Selections, useUrlSelection } from './Selections'
 
 const { Option } = Select
 
@@ -56,6 +57,8 @@ function List() {
   const ctx = useContext(SlowQueryContext)
 
   const cacheMgr = useContext(CacheContext)
+
+  const [urlSelection, setUrlSelection] = useUrlSelection()
 
   const [visibleColumnKeys, setVisibleColumnKeys] =
     useVersionedLocalStorageState(SLOW_QUERY_VISIBLE_COLUMN_KEYS, {
@@ -185,76 +188,70 @@ function List() {
     <div className={styles.list_container}>
       <Card>
         <h1 style={{ marginBottom: '36px' }}>Slow Query Profiler</h1>
-
-        <Toolbar className={styles.list_toolbar} data-e2e="slow_query_toolbar">
-          <Space>
-            <MultiSelect.Plain
-              placeholder="Group By"
-              selectedValueTransKey="slow_query.toolbar.schemas.selected"
-              columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
-              value={filterSchema}
-              style={{ width: 150 }}
-              data-e2e="execution_database_name"
-            />
-            <MultiSelect.Plain
-              placeholder="Use TiFlash"
-              selectedValueTransKey="slow_query.toolbar.schemas.selected"
-              columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
-              value={filterSchema}
-              style={{ width: 150 }}
-              data-e2e="execution_database_name"
-            />
-            <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
-          </Space>
-          <Space>
-            {controller.availableColumnsInTable.length > 0 && (
-              <ColumnsSelector
-                columns={controller.availableColumnsInTable}
-                visibleColumnKeys={visibleColumnKeys}
-                defaultVisibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
-                onChange={updateVisibleColumnKeys}
-                foot={
-                  <Checkbox
-                    checked={showFullSQL}
-                    onChange={(e) => setShowFullSQL(e.target.checked)}
-                    data-e2e="slow_query_show_full_sql"
-                  >
-                    {t('slow_query.toolbar.select_columns.show_full_sql')}
-                  </Checkbox>
-                }
-              />
-            )}
-          </Space>
-        </Toolbar>
-
-        <SlowQueryChart />
+        <Selections
+          timeRange={timeRange}
+          selection={urlSelection}
+          onSelectionChange={setUrlSelection}
+          onTimeRangeChange={setTimeRange}
+        />
+        <div style={{ height: '300px' }}>
+          <SlowQueryScatterChart displayOptions={urlSelection} />
+        </div>
       </Card>
 
       {controller.data?.length === 0 ? (
         <Result title={t('slow_query.overview.empty_result')} />
       ) : (
         <div style={{ height: '100%', position: 'relative' }}>
-          <ScrollablePane>
-            {controller.isDataLoadedSlowly && (
-              <Card noMarginBottom noMarginTop>
-                <Alert
-                  message={t('slow_query.overview.slow_load_info')}
-                  type="info"
-                  showIcon
-                />
-              </Card>
-            )}
-            {(controller.data?.length ?? 0) > 0 && (
-              <Card noMarginBottom noMarginTop>
-                <p className="ant-form-item-extra">
-                  {t('slow_query.overview.result_count', {
-                    n: controller.data?.length
-                  })}
-                </p>
-              </Card>
-            )}
-            <SlowQueriesTable cardNoMarginTop controller={controller} />
-          </ScrollablePane>
+          {controller.isDataLoadedSlowly && (
+            <Card noMarginBottom noMarginTop>
+              <Alert
+                message={t('slow_query.overview.slow_load_info')}
+                type="info"
+                showIcon
+              />
+            </Card>
+          )}
+          <Card noMarginBottom noMarginTop>
+            <Toolbar className={styles.list_toolbar}>
+              <Space>
+                <div>
+                  {(controller.data?.length ?? 0) > 0 && (
+                    <p className="ant-form-item-extra">
+                      {t('slow_query.overview.result_count', {
+                        n: controller.data?.length
+                      })}
+                    </p>
+                  )}
+                </div>
+              </Space>
+
+              <Space>
+                {controller.availableColumnsInTable.length > 0 && (
+                  <ColumnsSelector
+                    columns={controller.availableColumnsInTable}
+                    visibleColumnKeys={visibleColumnKeys}
+                    defaultVisibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
+                    onChange={updateVisibleColumnKeys}
+                    foot={
+                      <Checkbox
+                        checked={showFullSQL}
+                        onChange={(e) => setShowFullSQL(e.target.checked)}
+                        data-e2e="slow_query_show_full_sql"
+                      >
+                        {t('slow_query.toolbar.select_columns.show_full_sql')}
+                      </Checkbox>
+                    }
+                  />
+                )}
+              </Space>
+            </Toolbar>
+          </Card>
+          <div style={{ height: '100%', position: 'relative' }}>
+            <ScrollablePane>
+              <SlowQueriesTable cardNoMarginTop controller={controller} />
+            </ScrollablePane>
+          </div>
         </div>
       )}
     </div>

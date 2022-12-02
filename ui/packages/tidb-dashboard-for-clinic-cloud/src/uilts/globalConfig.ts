@@ -48,8 +48,10 @@ export type GlobalConfig = {
   clusterInfo: ClusterInfo
 
   appsConfig?: AppsConfig
-  // example: {'monitoring':false} means disable monitoring app
-  appsEnable?: Record<string, boolean>
+
+  // appsDisabled has a higher priority than appsEnabled
+  appsDisabled?: string[]
+  appsEnabled?: string[]
 }
 
 // export const GlobalConfigContext = createContext<IGlobalConfig | null>(null)

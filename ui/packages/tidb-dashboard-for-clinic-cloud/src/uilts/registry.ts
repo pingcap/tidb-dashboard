@@ -49,7 +49,12 @@ export default class AppRegistry {
    */
   register(app) {
     // return if this app is disabled
-    if (getGlobalConfig().appsEnable?.[app.id] === false) {
+    const disabledApps = getGlobalConfig().appsDisabled
+    if (disabledApps && disabledApps.includes(app.id)) {
+      return this
+    }
+    const enabledApps = getGlobalConfig().appsEnabled
+    if (enabledApps && !enabledApps.includes(app.id)) {
       return this
     }
 

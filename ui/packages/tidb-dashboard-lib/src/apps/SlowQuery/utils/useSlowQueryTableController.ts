@@ -96,6 +96,7 @@ export interface ISlowQueryTableControllerOpts {
   fetchSchemas?: boolean
   initialQueryOptions?: ISlowQueryOptions
   persistQueryInSession?: boolean
+  filters?: Set<string>
 
   ds: ISlowQueryDataSource
 }
@@ -127,7 +128,8 @@ export default function useSlowQueryTableController({
   fetchSchemas = true,
   initialQueryOptions,
   persistQueryInSession = true,
-  ds
+  ds,
+  filters
 }: ISlowQueryTableControllerOpts): ISlowQueryTableController {
   const { orderOptions, changeOrder } = useOrderState(
     'slow_query',

@@ -1,4 +1,5 @@
 import { PlotEvent } from '@ant-design/plots'
+import { MixOptions, Plot } from '@antv/g2plot'
 import {
   TimeSeriesChart,
   PromDataAccessor,
@@ -6,22 +7,25 @@ import {
   Trigger,
   Chart
 } from '@diag-ui/chart'
-import React, { MutableRefObject, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { DisplayOptions } from './Selections'
 
 interface SlowQueryChartProps {
   displayOptions: DisplayOptions
+  onLegendChange?: OnLegendChange
 }
 
 export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = ({
-  displayOptions
+  displayOptions,
+  onLegendChange
 }) => {
   const triggerRef = useRef<Trigger>(null as any)
   const chartRef = useRef<Chart>(null)
   const { aggr_by, group_by, tiflash } = displayOptions
   const inited = useRef(false)
   const { cacheFetch, markInPlace } = useCacheFetch(displayOptions)
+  const { bindLegendClick } = useLegendAction(onLegendChange)
 
   const refreshChart = () => {
     markInPlace(false)
@@ -50,9 +54,7 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = ({
         ref={chartRef}
         modifyConfig={(cfg) => ({ ...cfg })}
         onReady={(plot) => {
-          plot.on('legend-item:click', (evt: PlotEvent) => {
-            console.log(evt)
-          })
+          bindLegendClick(plot)
         }}
       >
         <PromQueryGroup
@@ -68,6 +70,39 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = ({
       </TimeSeriesChart>
     </PromDataAccessor>
   )
+}
+
+interface Legend {
+  id: string
+  marker: any
+  name: string
+  unchecked: boolean
+  value: string
+}
+
+interface OnLegendChange {
+  (evt: {
+    legends: Legend[]
+    isSelectAll: boolean
+    selectedLegends: Legend[]
+  }): void
+}
+
+const useLegendAction = (onLegendChange?: OnLegendChange) => {
+  const bindLegendClick = (plot: Plot<MixOptions>) => {
+    if (!onLegendChange) {
+      return
+    }
+    plot.on('legend-item:click', (evt: PlotEvent) => {
+      const legends = evt.target.get('delegateObject').legend.get('items')
+      const isSelectAll = legends.every((item) => !item.unchecked)
+      const selectedLegends = legends.filter((item) => !item.unchecked)
+      console.log(evt.view.getData())
+      onLegendChange({ legends, isSelectAll, selectedLegends })
+    })
+  }
+
+  return { bindLegendClick }
 }
 
 const useCacheFetch = (displayOptions: DisplayOptions) => {
@@ -89,11 +124,11 @@ const useCacheFetch = (displayOptions: DisplayOptions) => {
         })
     }
     return cacheRef.current.then((resp) => {
-      if (tiflash !== 'all') {
-        resp.data.result = resultCache.current.filter(
-          (d) => tiflash === d.metric.use_tiflash
-        )
-      }
+      resp.data.result =
+        tiflash !== 'all'
+          ? resultCache.current.filter((d) => tiflash === d.metric.use_tiflash)
+          : resultCache.current
+
       resp.data.result.forEach((d) => {
         d.metric.name = d.metric[group_by!] || 'Unknwon'
       })

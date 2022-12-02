@@ -195,7 +195,12 @@ function List() {
           onTimeRangeChange={setTimeRange}
         />
         <div style={{ height: '300px' }}>
-          <SlowQueryScatterChart displayOptions={urlSelection} />
+          <SlowQueryScatterChart
+            displayOptions={urlSelection}
+            onLegendChange={({ selectedLegends }) =>
+              console.log(selectedLegends)
+            }
+          />
         </div>
       </Card>
 

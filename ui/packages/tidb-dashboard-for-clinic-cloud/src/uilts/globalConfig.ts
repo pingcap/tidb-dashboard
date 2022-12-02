@@ -46,7 +46,10 @@ export type GlobalConfig = {
   appOptions?: AppOptions
   clientOptions: ClientOptions
   clusterInfo: ClusterInfo
+
   appsConfig?: AppsConfig
+  // example: {'monitoring':false} means disable monitoring app
+  appsEnable?: Record<string, boolean>
 }
 
 // export const GlobalConfigContext = createContext<IGlobalConfig | null>(null)

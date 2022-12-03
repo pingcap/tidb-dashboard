@@ -1,3 +1,11 @@
+slow_query_v2:
+  overview:
+    head:
+      title: 慢查询
+  detail:
+    head:
+      title: 慢查询对比
+
 slow_query:
   nav_title: 慢查询
   fields:

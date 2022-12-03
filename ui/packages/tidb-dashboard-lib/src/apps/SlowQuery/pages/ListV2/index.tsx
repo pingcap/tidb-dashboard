@@ -1,34 +1,16 @@
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Select,
-  Space,
-  Input,
-  Checkbox,
-  message,
-  Menu,
-  Dropdown,
-  Alert,
-  Tooltip,
-  Result
-} from 'antd'
-import {
-  LoadingOutlined,
-  ExportOutlined,
-  MenuOutlined,
-  QuestionCircleOutlined
-} from '@ant-design/icons'
+import { Space, Checkbox, Alert, Result } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 
 import {
   Card,
   ColumnsSelector,
-  TimeRangeSelector,
   Toolbar,
-  MultiSelect,
   TimeRange,
-  toTimeRangeValue,
-  IColumnKeys
+  IColumnKeys,
+  Head,
+  DEFAULT_TIME_RANGE
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
@@ -40,16 +22,13 @@ import useSlowQueryTableController, {
 import styles from './List.module.less'
 import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
-import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
 import { SlowQueryScatterChart } from './ScatterChart'
 import { Selections, useUrlSelection } from './Selections'
-
-const { Option } = Select
+import useUrlState from '@ahooksjs/use-url-state'
 
 const SLOW_QUERY_VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
 const SLOW_QUERY_SHOW_FULL_SQL = 'slow_query.show_full_sql'
-const LIMITS = [100, 200, 500, 1000]
 
 function List() {
   const { t } = useTranslation()
@@ -68,7 +47,9 @@ function List() {
     SLOW_QUERY_SHOW_FULL_SQL,
     { defaultValue: false }
   )
-  const [downloading, setDownloading] = useState(false)
+  const [filters, setFilters] = useState<Set<string>>()
+  const { timeRange, setTimeRange } =
+    useURLTimeRangeToTimeRange(DEFAULT_TIME_RANGE)
 
   const controller = useSlowQueryTableController({
     cacheMgr,
@@ -76,8 +57,11 @@ function List() {
     fetchSchemas: ctx?.cfg.showDBFilter,
     initialQueryOptions: {
       ...DEF_SLOW_QUERY_OPTIONS,
-      visibleColumnKeys
+      visibleColumnKeys,
+      timeRange
     },
+    filters,
+    persistQueryInSession: false,
 
     ds: ctx!.ds
   })
@@ -88,45 +72,9 @@ function List() {
     }
   }
 
-  function menuItemClick({ key }) {
-    switch (key) {
-      case 'export':
-        const hide = message.loading(
-          t('slow_query.toolbar.exporting') + '...',
-          0
-        )
-        downloadCSV().finally(hide)
-        break
-    }
-  }
-
-  const dropdownMenu = (
-    <Menu onClick={menuItemClick}>
-      <Menu.Item
-        key="export"
-        disabled={downloading}
-        icon={<ExportOutlined />}
-        data-e2e="slow_query_export_btn"
-      >
-        {downloading
-          ? t('slow_query.toolbar.exporting')
-          : t('slow_query.toolbar.export')}
-      </Menu.Item>
-    </Menu>
-  )
-
-  const [timeRange, setTimeRange] = useState<TimeRange>(
-    controller.queryOptions.timeRange
-  )
-  const [filterSchema, setFilterSchema] = useState<string[]>(
-    controller.queryOptions.schemas
-  )
-  const [filterLimit, setFilterLimit] = useState<number>(
-    controller.queryOptions.limit
-  )
-  const [filterText, setFilterText] = useState<string>(
-    controller.queryOptions.searchText
-  )
+  const [filterSchema] = useState<string[]>(controller.queryOptions.schemas)
+  const [filterLimit] = useState<number>(controller.queryOptions.limit)
+  const [filterText] = useState<string>(controller.queryOptions.searchText)
 
   const sendQueryNow = useMemoizedFn(() => {
     cacheMgr?.clear()
@@ -156,38 +104,17 @@ function List() {
     sendQueryDebounced()
   }, [timeRange, filterSchema, filterLimit, filterText, visibleColumnKeys])
 
-  const downloadCSV = useMemoizedFn(async () => {
-    // use last effective query options
-    const timeRangeValue = toTimeRangeValue(controller.queryOptions.timeRange)
-    try {
-      setDownloading(true)
-      const res = await ctx!.ds.slowQueryDownloadTokenPost({
-        fields: '*',
-        begin_time: timeRangeValue[0],
-        end_time: timeRangeValue[1],
-        db: controller.queryOptions.schemas,
-        text: controller.queryOptions.searchText,
-        orderBy: controller.orderOptions.orderBy,
-        desc: controller.orderOptions.desc,
-        limit: 10000,
-        digest: '',
-        plans: []
-      })
-      const token = res.data
-      if (token) {
-        window.location.href = `${
-          ctx!.cfg.apiPathBase
-        }/slow_query/download?token=${token}`
-      }
-    } finally {
-      setDownloading(false)
+  const onLegendChange = useCallback(({ isSelectAll, data }) => {
+    if (isSelectAll) {
+      setFilters(undefined)
+    } else {
+      setFilters(new Set(data.map((d) => d.rawData.metric.digest)))
     }
-  })
+  }, [])
 
   return (
     <div className={styles.list_container}>
-      <Card>
-        <h1 style={{ marginBottom: '36px' }}>Slow Query Profiler</h1>
+      <Head title={t('slow_query_v2.overview.head.title')}>
         <Selections
           timeRange={timeRange}
           selection={urlSelection}
@@ -196,13 +123,12 @@ function List() {
         />
         <div style={{ height: '300px' }}>
           <SlowQueryScatterChart
+            timeRange={timeRange}
             displayOptions={urlSelection}
-            onLegendChange={({ selectedLegends }) =>
-              console.log(selectedLegends)
-            }
+            onLegendChange={onLegendChange}
           />
         </div>
-      </Card>
+      </Head>
 
       {controller.data?.length === 0 ? (
         <Result title={t('slow_query.overview.empty_result')} />
@@ -261,6 +187,37 @@ function List() {
       )}
     </div>
   )
+}
+
+export const useURLTimeRangeToTimeRange = (
+  initialState: TimeRange,
+  typeKey = 'timeRangeType',
+  valueKey = 'timeRangeValue'
+) => {
+  const [_timeRange, _setTimeRange] = useUrlState({
+    [typeKey]: initialState.type,
+    [valueKey]: initialState.value as any
+  })
+  const timeRange: TimeRange = useMemo(
+    () => ({
+      type: _timeRange[typeKey],
+      value: Array.isArray(_timeRange[valueKey])
+        ? _timeRange[valueKey].map((v) => parseInt(v))
+        : (parseInt(_timeRange[valueKey]) as any)
+    }),
+    [_timeRange, typeKey, valueKey]
+  )
+  const setTimeRange = useCallback(
+    (timeRange: TimeRange) => {
+      _setTimeRange({
+        [typeKey]: timeRange.type,
+        [valueKey]: timeRange.value
+      })
+    },
+    [_setTimeRange, typeKey, valueKey]
+  )
+
+  return { timeRange, setTimeRange }
 }
 
 export default List

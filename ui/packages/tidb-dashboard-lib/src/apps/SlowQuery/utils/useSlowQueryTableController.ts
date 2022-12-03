@@ -157,6 +157,13 @@ export default function useSlowQueryTableController({
     ds.slowQueryAvailableFieldsGet
   )
 
+  const filteredData = useMemo(() => {
+    if (!filters) {
+      return data
+    }
+    return data?.filter((d) => filters.has(d.digest!))
+  }, [data, filters])
+
   // Reload these options when sending a new request.
   useChange(() => {
     async function querySchemas() {
@@ -284,7 +291,7 @@ export default function useSlowQueryTableController({
 
     isLoading: isColumnsLoading || isDataLoading || isOptionsLoading,
 
-    data,
+    data: filteredData,
     isDataLoadedSlowly,
     allSchemas,
     errors,

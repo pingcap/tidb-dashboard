@@ -7,85 +7,70 @@ import {
   Trigger,
   Chart
 } from '@diag-ui/chart'
-import React, { useEffect, useRef } from 'react'
+import { TimeRange, toTimeRangeValue } from '@lib/components'
+import { useChange } from '@lib/utils/useChange'
+import React, { useRef } from 'react'
 
 import { DisplayOptions } from './Selections'
 
 interface SlowQueryChartProps {
+  timeRange: TimeRange
   displayOptions: DisplayOptions
   onLegendChange?: OnLegendChange
 }
 
-export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = ({
-  displayOptions,
-  onLegendChange
-}) => {
-  const triggerRef = useRef<Trigger>(null as any)
-  const chartRef = useRef<Chart>(null)
-  const { aggr_by, group_by, tiflash } = displayOptions
-  const inited = useRef(false)
-  const { cacheFetch, markInPlace } = useCacheFetch(displayOptions)
-  const { bindLegendClick } = useLegendAction(onLegendChange)
+export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
+  ({ timeRange, displayOptions, onLegendChange }) => {
+    const triggerRef = useRef<Trigger>(null as any)
+    const chartRef = useRef<Chart>(null)
+    const { aggr_by, group_by, tiflash } = displayOptions
+    const inited = useRef(false)
+    const { cacheFetch, markInPlace } = useCacheFetch(displayOptions)
+    const { bindLegendClick } = useLegendAction(onLegendChange)
 
-  const refreshChart = () => {
-    markInPlace(false)
-    triggerRef.current({ start_time: 1668938500, end_time: 1668968500 })
-  }
-  const refreshChartInPlace = () => {
-    markInPlace(true)
-    triggerRef.current({ start_time: 1668938500, end_time: 1668968500 })
-  }
-
-  useEffect(() => {
-    refreshChart()
-  }, [aggr_by])
-
-  useEffect(() => {
-    if (!inited.current) {
-      inited.current = true
-      return
+    const refreshChart = (inPlace = false) => {
+      const tr = toTimeRangeValue(timeRange)
+      markInPlace(inPlace)
+      onLegendChange?.({ isSelectAll: true, data: [] })
+      triggerRef.current({ start_time: tr[0], end_time: tr[1] })
     }
-    refreshChartInPlace()
-  }, [group_by, tiflash])
 
-  return (
-    <PromDataAccessor fetch={cacheFetch} ref={triggerRef}>
-      <TimeSeriesChart
-        ref={chartRef}
-        modifyConfig={(cfg) => ({ ...cfg })}
-        onReady={(plot) => {
-          bindLegendClick(plot)
-        }}
-      >
-        <PromQueryGroup
-          queries={[
-            {
-              promql: '',
-              name: '{name}',
-              type: 'scatter'
-            }
-          ]}
-          unit="s"
-        />
-      </TimeSeriesChart>
-    </PromDataAccessor>
-  )
-}
+    useChange(() => {
+      refreshChart()
+    }, [aggr_by, timeRange])
 
-interface Legend {
-  id: string
-  marker: any
-  name: string
-  unchecked: boolean
-  value: string
-}
+    useChange(() => {
+      if (!inited.current) {
+        inited.current = true
+        return
+      }
+      refreshChart(true)
+    }, [group_by, tiflash])
+
+    return (
+      <PromDataAccessor fetch={cacheFetch} ref={triggerRef}>
+        <TimeSeriesChart
+          ref={chartRef}
+          onReady={(plot) => bindLegendClick(plot)}
+        >
+          <PromQueryGroup
+            queries={[
+              {
+                promql: '',
+                name: '{name}',
+                type: 'scatter'
+              }
+            ]}
+            unit="bytes"
+          />
+        </TimeSeriesChart>
+      </PromDataAccessor>
+    )
+  }
+)
 
 interface OnLegendChange {
-  (evt: {
-    legends: Legend[]
-    isSelectAll: boolean
-    selectedLegends: Legend[]
-  }): void
+  (evt: { isSelectAll: boolean; data: any[] }): void
 }
 
 const useLegendAction = (onLegendChange?: OnLegendChange) => {
@@ -94,11 +79,10 @@ const useLegendAction = (onLegendChange?: OnLegendChange) => {
       return
     }
     plot.on('legend-item:click', (evt: PlotEvent) => {
+      const data = evt.view.views[0].getData()
       const legends = evt.target.get('delegateObject').legend.get('items')
       const isSelectAll = legends.every((item) => !item.unchecked)
-      const selectedLegends = legends.filter((item) => !item.unchecked)
-      console.log(evt.view.getData())
-      onLegendChange({ legends, isSelectAll, selectedLegends })
+      onLegendChange({ isSelectAll, data })
     })
   }
 

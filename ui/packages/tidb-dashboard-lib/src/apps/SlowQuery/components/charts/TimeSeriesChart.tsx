@@ -1,6 +1,6 @@
-import React, { MutableRefObject, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 
-import { TimeRange } from '@lib/components'
+import { TimeRange, toTimeRangeValue } from '@lib/components'
 import {
   TimeSeriesChart as DiagTimeSeriesChart,
   PromDataAccessor,
@@ -13,46 +13,53 @@ interface LineChartProps {
   height?: number
   timeRange: TimeRange
   type: 'line' | 'scatter'
+  promql: string
+  name: string
+  unit: string
 }
 
 export const TimeSeriesChart: React.FC<LineChartProps> = ({
   height,
   timeRange,
-  type
+  type,
+  promql,
+  name,
+  unit
 }) => {
   const triggerRef = useRef<Trigger>(null as any)
   const refreshChart = () => {
-    triggerRef.current({ start_time: 1668936700, end_time: 1668938500 })
+    const timeRangeValue = toTimeRangeValue(timeRange)
+    // triggerRef.current({ start_time: 1668936700, end_time: 1668938500 })
+    triggerRef.current({
+      start_time: timeRangeValue[0],
+      end_time: timeRangeValue[1]
+    })
   }
   const chartRef = useRef<Chart>(null)
 
   useEffect(() => {
     refreshChart()
-  }, [])
+  }, [timeRange, promql])
 
   return (
     <PromDataAccessor
       ref={triggerRef}
       fetch={(query, tp) => {
         return fetch(
-          'http://127.0.0.1:8428/api/v1/query_range?query=query_time&start=1668938500&end=1668968500&step=1m'
+          `http://127.0.0.1:8428/api/v1/query_range?query=${query}&start=${tp.start_time}&end=${tp.end_time}&step=1m`
         ).then((resp) => resp.json())
       }}
     >
-      <DiagTimeSeriesChart
-        height={height}
-        ref={chartRef}
-        modifyConfig={(cfg) => ({ ...cfg })}
-      >
+      <DiagTimeSeriesChart height={height} ref={chartRef}>
         <PromQueryGroup
           queries={[
             {
-              promql: 'test',
-              name: '{query}',
+              promql,
+              name,
               type
             }
           ]}
-          unit="s"
+          unit={unit}
         />
       </DiagTimeSeriesChart>
     </PromDataAccessor>

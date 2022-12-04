@@ -3,7 +3,8 @@ import { Select, Space } from 'antd'
 
 import { Toolbar } from '@lib/components'
 import styles from './Comparison.module.less'
-import { AGGR_BY, DisplayOptions, GROUP_BY } from '../ListV2/Selections'
+import { GROUP_BY } from '../ListV2/Selections'
+import { DisplayOptions } from '../../components/charts/ScatterChart'
 
 interface SelectionsProps {
   selection: DisplayOptions
@@ -19,15 +20,6 @@ export const Selections: React.FC<SelectionsProps> = ({
   return (
     <Toolbar className={styles.compar_toolbar}>
       <Space>
-        <div>
-          <span style={{ marginRight: '6px' }}>Aggregate By:</span>
-          <Select
-            defaultValue={selection.aggrBy}
-            style={{ width: 150 }}
-            options={AGGR_BY}
-            onChange={(v) => onSelectionChange({ aggrBy: v })}
-          />
-        </div>
         <div>
           <span style={{ marginRight: '6px' }}>Group By:</span>
           <Select

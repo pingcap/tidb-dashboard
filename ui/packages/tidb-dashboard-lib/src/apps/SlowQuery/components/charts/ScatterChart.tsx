@@ -11,7 +11,11 @@ import { TimeRange, toTimeRangeValue } from '@lib/components'
 import { useChange } from '@lib/utils/useChange'
 import React, { useRef } from 'react'
 
-import { DisplayOptions } from './Selections'
+export interface DisplayOptions {
+  aggrBy?: 'query_time' | 'memory_max'
+  groupBy?: 'query' | 'user' | 'database' | 'use_tiflash'
+  tiflash?: 'all' | 'yes' | 'no'
+}
 
 interface SlowQueryChartProps {
   timeRange: TimeRange
@@ -23,7 +27,7 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
   ({ timeRange, displayOptions, onLegendChange }) => {
     const triggerRef = useRef<Trigger>(null as any)
     const chartRef = useRef<Chart>(null)
-    const { aggr_by, group_by, tiflash } = displayOptions
+    const { aggrBy, groupBy, tiflash } = displayOptions
     const inited = useRef(false)
     const { cacheFetch, markInPlace } = useCacheFetch(displayOptions)
     const { bindLegendClick } = useLegendAction(onLegendChange)
@@ -32,12 +36,13 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
       const tr = toTimeRangeValue(timeRange)
       markInPlace(inPlace)
       onLegendChange?.({ isSelectAll: true, data: [] })
+      // triggerRef.current({ start_time: 1668936700, end_time: 1668938500 })
       triggerRef.current({ start_time: tr[0], end_time: tr[1] })
     }
 
     useChange(() => {
       refreshChart()
-    }, [aggr_by, timeRange])
+    }, [aggrBy, timeRange])
 
     useChange(() => {
       if (!inited.current) {
@@ -45,7 +50,7 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
         return
       }
       refreshChart(true)
-    }, [group_by, tiflash])
+    }, [groupBy, tiflash])
 
     return (
       <PromDataAccessor fetch={cacheFetch} ref={triggerRef}>
@@ -56,12 +61,12 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
           <PromQueryGroup
             queries={[
               {
-                promql: '',
+                promql: `${aggrBy!}{query!=""}`,
                 name: '{name}',
                 type: 'scatter'
               }
             ]}
-            unit="bytes"
+            unit={aggrBy === 'query_time' ? 's' : 'bytes'}
           />
         </TimeSeriesChart>
       </PromDataAccessor>
@@ -96,10 +101,10 @@ const useCacheFetch = (displayOptions: DisplayOptions) => {
   const resultCache = useRef<any>(null) as React.MutableRefObject<any>
   const isInPlace = useRef(false)
   const cacheFetch = (query, tp) => {
-    const { aggr_by, group_by, tiflash } = displayOptions
+    const { groupBy, tiflash } = displayOptions
     if (!isInPlace.current) {
       cacheRef.current = fetch(
-        `http://127.0.0.1:8428/api/v1/query_range?query=${aggr_by}&start=${tp.start_time}&end=${tp.end_time}&step=1m`
+        `http://127.0.0.1:8428/api/v1/query_range?query=${query}&start=${tp.start_time}&end=${tp.end_time}&step=1m`
       )
         .then((resp) => resp.json())
         .then((resp) => {
@@ -114,7 +119,7 @@ const useCacheFetch = (displayOptions: DisplayOptions) => {
           : resultCache.current
 
       resp.data.result.forEach((d) => {
-        d.metric.name = d.metric[group_by!] || 'Unknwon'
+        d.metric.name = d.metric[groupBy!] || 'Unknwon'
       })
       return resp
     })

@@ -8,12 +8,7 @@ import { Toolbar, TimeRange } from '@lib/components'
 import styles from './List.module.less'
 import { ExpandChart } from './ExpandChart'
 import { LimitTimeRange } from '../../components/LimitTimeRange'
-
-export interface DisplayOptions {
-  aggrBy?: 'query_time' | 'memory_max'
-  groupBy?: 'query' | 'user' | 'database' | 'use_tiflash'
-  tiflash?: 'all' | 'yes' | 'no'
-}
+import { DisplayOptions } from '../../components/charts/ScatterChart'
 
 interface SelectionsProps {
   selection: DisplayOptions
@@ -53,6 +48,10 @@ export const GROUP_BY = [
     label: 'Use TiFlash'
   }
 ]
+
+export const getGroupByLabel = (groupBy: DisplayOptions['groupBy']) => {
+  return GROUP_BY.find((g) => g.value === groupBy)?.label
+}
 
 export const Selections: React.FC<SelectionsProps> = ({
   selection,

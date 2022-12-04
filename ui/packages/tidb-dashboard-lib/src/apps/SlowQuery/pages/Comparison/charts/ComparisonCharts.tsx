@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Col, Row, Select, Typography } from 'antd'
+import { Col, Divider, Row, Select, Typography } from 'antd'
 
 import {
   DEFAULT_TIME_RANGE,
@@ -8,25 +8,32 @@ import {
   toTimeRangeValue,
   DatePicker
 } from '@lib/components'
-import { TimeSeriesChart } from '../../components/charts/TimeSeriesChart'
-import { GroupBarChart } from './charts/GroupBarChart'
-import { DiffChart } from './charts/DiffChart'
-import { DisplayOptions } from '../ListV2/Selections'
-import { useURLTimeRangeToTimeRange } from '../ListV2'
+import { TimeSeriesChart } from '../../../components/charts/TimeSeriesChart'
+import { GroupBarChart, GroupData } from './GroupBarChart'
+import { getGroupByLabel } from '../../ListV2/Selections'
+import { useURLTimeRangeToTimeRange } from '../../ListV2'
 import useUrlState from '@ahooksjs/use-url-state'
 import dayjs from 'dayjs'
 import { tz } from '@lib/utils'
-import { LimitTimeRange } from '../../components/LimitTimeRange'
+import { LimitTimeRange } from '../../../components/LimitTimeRange'
+import { ScatterCharts } from './ScatterCharts'
+import { DisplayOptions } from '@lib/apps/SlowQuery/components/charts/ScatterChart'
 
 const { Title } = Typography
 
 interface ComparisonChartsProps {
   selection: DisplayOptions
+  onSelectionChange: (
+    s: React.SetStateAction<Partial<{ [key in keyof DisplayOptions]: any }>>
+  ) => void
 }
 
 export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
-  selection
+  selection,
+  onSelectionChange
 }) => {
+  const { groupBy } = selection
+  const groupByLabel = getGroupByLabel(groupBy)
   const { timeRange: timeRangeA, setTimeRange: onTimeRangeAChange } =
     useURLTimeRangeToTimeRange(DEFAULT_TIME_RANGE)
   const { timeRange: timeRangeB, setTimeRange: onTimeRangeBChange } =
@@ -35,6 +42,16 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
       TIMERANGE_B_TYPE_KEY,
       TIMERANGE_B_VALUE_KEY
     )
+  const [slowQueryCountA, setSlowQueryCountA] = useState<GroupData[]>([])
+  const [slowQueryLatencyA, setSlowQueryLatencyA] = useState<GroupData[]>([])
+  // const [timeRangeAA] = useState<any>({
+  //   type: 'absolute',
+  //   value: [1668936700, 1668938440]
+  // })
+  // const [timeRangeBB] = useState<any>({
+  //   type: 'absolute',
+  //   value: [1668938440, 1668938500]
+  // })
 
   return (
     <>
@@ -53,6 +70,11 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                 timeRange={timeRangeA}
                 height={300}
                 type="line"
+                promql={`count(query_time{${genLabels(
+                  selection
+                )}}) by (${groupBy})`}
+                name={`{${groupBy!}}`}
+                unit="short"
               />
             </Col>
             <Col span={12}>
@@ -61,26 +83,40 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                 timeRange={timeRangeA}
                 height={300}
                 type="line"
+                promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                  selection
+                )}}))`}
+                name={`{${groupBy!}}`}
+                unit="s"
               />
             </Col>
           </Row>
           <Row style={{ marginTop: '10px' }}>
             <Col span={12}>
-              <Title level={5}>Avg. Slow Query Count by </Title>
-              <GroupBarChart height={600} />
+              <Title level={5}>Avg. Slow Query Count by {groupByLabel}</Title>
+              <GroupBarChart
+                height={600}
+                promql={`count(query_time{${genLabels(
+                  selection
+                )}}) by (${groupBy})`}
+                timeRange={timeRangeA}
+                // timeRange={timeRangeAA}
+                label={groupBy!}
+                unit="short"
+                onDataChange={(d) => setSlowQueryCountA(d)}
+              />
             </Col>
             <Col span={12}>
-              <Title level={5}>Avg. Slow Query Latency by </Title>
-              <GroupBarChart height={600} />
-            </Col>
-          </Row>
-          <Row style={{ marginTop: '10px' }}>
-            <Col span={24}>
-              <Title level={5}>Slow Query Detail</Title>
-              <TimeSeriesChart
+              <Title level={5}>Avg. Slow Query Latency by {groupByLabel}</Title>
+              <GroupBarChart
+                height={600}
+                promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                  selection
+                )}}))`}
                 timeRange={timeRangeA}
-                height={400}
-                type="scatter"
+                label={groupBy!}
+                unit="s"
+                onDataChange={(d) => setSlowQueryLatencyA(d)}
               />
             </Col>
           </Row>
@@ -94,6 +130,11 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                 timeRange={timeRangeB}
                 height={300}
                 type="line"
+                promql={`count(query_time{${genLabels(
+                  selection
+                )}}) by (${groupBy})`}
+                name={`{${groupBy!}}`}
+                unit="short"
               />
             </Col>
             <Col span={12}>
@@ -102,33 +143,60 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                 timeRange={timeRangeB}
                 height={300}
                 type="line"
+                promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                  selection
+                )}}))`}
+                name={`{${groupBy!}}`}
+                unit="s"
               />
             </Col>
           </Row>
           <Row style={{ marginTop: '10px' }}>
             <Col span={12}>
-              <Title level={5}>Avg. Slow Query Count by </Title>
-              <DiffChart height={600} />
+              <Title level={5}>Avg. Slow Query Count by {groupByLabel}</Title>
+              <GroupBarChart
+                height={600}
+                promql={`count(query_time{${genLabels(
+                  selection
+                )}}) by (${groupBy})`}
+                timeRange={timeRangeB}
+                // timeRange={timeRangeBB}
+                label={groupBy!}
+                unit="short"
+                diff={slowQueryCountA}
+              />
             </Col>
             <Col span={12}>
-              <Title level={5}>Avg. Slow Query Latency by </Title>
-              <DiffChart height={600} />
-            </Col>
-          </Row>
-          <Row style={{ marginTop: '10px' }}>
-            <Col span={24}>
-              <Title level={5}>Slow Query Detail</Title>
-              <TimeSeriesChart
+              <Title level={5}>Avg. Slow Query Latency by {groupByLabel}</Title>
+              <GroupBarChart
+                height={600}
+                promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                  selection
+                )}}))`}
                 timeRange={timeRangeB}
-                height={400}
-                type="scatter"
+                label={groupBy!}
+                unit="s"
+                diff={slowQueryLatencyA}
               />
             </Col>
           </Row>
         </Col>
       </Row>
+
+      <Divider />
+
+      <ScatterCharts
+        timeRangeA={timeRangeA}
+        timeRangeB={timeRangeB}
+        selection={selection}
+        onSelectionChange={onSelectionChange}
+      />
     </>
   )
+}
+
+const genLabels = ({ groupBy, tiflash }: DisplayOptions) => {
+  return `${groupBy}!="",use_tiflash=~"${tiflash === 'all' ? '.*' : tiflash}"`
 }
 
 interface TimeRangesProps {

@@ -1,5 +1,5 @@
 import { Divider } from 'antd'
-import React, { useMemo } from 'react'
+import React, { Suspense, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -8,7 +8,7 @@ import { Card, Head } from '@lib/components'
 import {
   ComparisonCharts,
   deleteSpecialTimeRangeQuery
-} from './ComparisonCharts'
+} from './charts/ComparisonCharts'
 import { Selections } from './Selections'
 import { useUrlSelection } from '../ListV2/Selections'
 
@@ -40,7 +40,10 @@ export const SlowQueryComparison: React.FC = () => {
       </Head>
       <Divider />
       <Card noMarginTop>
-        <ComparisonCharts selection={urlSelection} />
+        <ComparisonCharts
+          selection={urlSelection}
+          onSelectionChange={setUrlSelection}
+        />
       </Card>
     </>
   )

@@ -195,7 +195,7 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
   )
 }
 
-const genLabels = ({ groupBy, tiflash }: DisplayOptions) => {
+export const genLabels = ({ groupBy, tiflash }: DisplayOptions) => {
   return `${groupBy}!="",use_tiflash=~"${tiflash === 'all' ? '.*' : tiflash}"`
 }
 

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router'
 
 import { Toolbar, TimeRange } from '@lib/components'
 import styles from './List.module.less'
-import { ExpandChart } from './ExpandChart'
+import { ExpandChart } from './ExpandChart/ExpandChart'
 import { LimitTimeRange } from '../../components/LimitTimeRange'
 import { DisplayOptions } from '../../components/charts/ScatterChart'
 
@@ -134,6 +134,8 @@ export const Selections: React.FC<SelectionsProps> = ({
           <ExpandChart
             open={openExpandChart}
             onOpenChange={setOpenExpandChart}
+            defaultSelection={selection}
+            defaultTimeRange={timeRange}
           />
         </>
       </Space>

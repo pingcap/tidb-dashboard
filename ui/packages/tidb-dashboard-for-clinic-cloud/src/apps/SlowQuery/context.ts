@@ -80,6 +80,28 @@ class DataSource implements ISlowQueryDataSource {
   slowQueryDownloadTokenPost(request: any, options?: ReqConfig) {
     return client.getInstance().slowQueryDownloadTokenPost({ request }, options)
   }
+
+  slowQueryAnalyze(start: number, end: number) {
+    return client
+      .getAxiosInstance()
+      .get(`/slow_query/analyze?begin_time=${start}&end_time=${end}`)
+  }
+
+  promqlQuery(query: string, time: number, timeout: string) {
+    return client
+      .getAxiosInstance()
+      .get(
+        `/slow_query/vm_query?query=${query}&time=${time}&timeout=${timeout}`
+      )
+  }
+
+  promqlQueryRange(query: string, start: number, end: number, step: string) {
+    return client
+      .getAxiosInstance()
+      .get(
+        `/slow_query/vm_query_range?query=${query}&start=${start}&end=${end}&step=${step}`
+      )
+  }
 }
 
 class EventHandler implements ISlowQueryEvent {

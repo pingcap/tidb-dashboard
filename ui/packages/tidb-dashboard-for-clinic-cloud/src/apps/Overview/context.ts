@@ -1,6 +1,7 @@
 import {
   IOverviewDataSource,
   IOverviewContext,
+  IOverviewConfig,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
@@ -60,7 +61,9 @@ const RECENT_SECONDS = [
   24 * 60 * 60
 ]
 
-export const ctx: IOverviewContext = {
+export const ctx: (cfg: Partial<IOverviewConfig>) => IOverviewContext = (
+  cfg
+) => ({
   ds,
   cfg: {
     apiPathBase: client.getBasePath(),
@@ -68,6 +71,8 @@ export const ctx: IOverviewContext = {
     timeRangeSelector: {
       recent_seconds: RECENT_SECONDS,
       withAbsoluteRangePicker: false
-    }
+    },
+    showViewMoreMetrics: false,
+    ...cfg
   }
-}
+})

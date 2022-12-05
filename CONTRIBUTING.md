@@ -58,14 +58,14 @@ The followings are required for developing TiDB Dashboard:
    cd tidb-dashboard
    ```
 
-1. Build and run TiDB Dashboard back-end server:
+2. Build and run TiDB Dashboard back-end server:
 
    ```bash
    # In tidb-dashboard directory:
    make dev && make run
    ```
 
-1. Build and run front-end server in a new terminal:
+3. Build and run front-end server in a new terminal:
 
    ```bash
    # In tidb-dashboard directory:
@@ -74,7 +74,19 @@ The followings are required for developing TiDB Dashboard:
    pnpm dev
    ```
 
-1. That's it! You can access TiDB Dashboard now: http://127.0.0.1:3001
+4. That's it! You can access TiDB Dashboard now: [http://127.0.0.1:3001](http://127.0.0.1:3001)
+
+5. (Optional) Package frontend and backend into a single binary:
+
+   ```bash
+   # In tidb-dashboard directory:
+   make package
+   
+   # Run the binary without separate frontend server:
+   make run
+   ```
+
+   You can access TiDB Dashboard now: [http://127.0.0.1:12333/dashboard](http://127.0.0.1:12333/dashboard)
 
 ### Step 4. Run E2E Tests (optional)
 
@@ -99,6 +111,44 @@ We use [Swagger] to generate the API server and corresponding clients. Swagger p
 see all TiDB Dashboard API endpoints and specifications, or even send API requests.
 
 Swagger UI is available at http://localhost:12333/dashboard/api/swagger after the above Step 3 is finished.
+
+### Build and run docker image locally
+
+If you want to develop docker image locally 🤔.
+
+1. Ensure the Docker Buildx is installed on your local machine.
+   
+   > Docker Buildx is included in Docker Desktop for Windows, macOS, and Linux.
+   > Docker Linux packages also include Docker Buildx when installed using the DEB or RPM packages.
+
+2. Build the docker image.
+
+   ```bash
+   # On repository root directory (only build locally, no push remote), run:
+   make docker-build-image-locally-amd64
+
+   # Or, if you want to build the image for arm64 platform (only build locally, no push remote), run:
+   make docker-build-image-locally-arm64
+
+   # Or, if you want to build cross-platform image and push it to your dev docker registry, run:
+   REPOSITORY=your-tidb-dashboard-repository make docker-build-and-push-image
+
+   # Finally, if you update npm modules or go modules, and want to disable docker layer cache to force rebuild, set NO_CACHE="--pull --no-cache" before make command. For example:
+   NO_CACHE="--pull --no-cache" make docker-build-image-locally-amd64
+   ```
+
+3. Run newly build image with docker-compose.
+
+   > Please make sure that `tiup playground` is not running on the background.
+   
+      ```bash
+      # On repository root directory, run:
+      docker-compose up
+      ```
+
+4. Access TiDB Dashboard at [http://localhost:12333/dashboard](http://localhost:12333/dashboard).
+
+> Dashboard in PD can be accessed at [http://localhost:2379/dashboard](http://localhost:2379/dashboard).
 
 ## Contribution flow
 

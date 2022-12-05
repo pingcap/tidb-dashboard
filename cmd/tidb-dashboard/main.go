@@ -69,13 +69,13 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 
-	clusterCaPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs")
-	clusterCertPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format")
-	clusterKeyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format")
+	clusterCaPath := flag.String("cluster-ca", "", "(TLS between components of the TiDB cluster) path of file that contains list of trusted SSL CAs")
+	clusterCertPath := flag.String("cluster-cert", "", "(TLS between components of the TiDB cluster) path of file that contains X509 certificate in PEM format")
+	clusterKeyPath := flag.String("cluster-key", "", "(TLS between components of the TiDB cluster) path of file that contains X509 key in PEM format")
 
-	tidbCaPath := flag.String("tidb-ca", "", "path of file that contains list of trusted SSL CAs")
-	tidbCertPath := flag.String("tidb-cert", "", "path of file that contains X509 certificate in PEM format")
-	tidbKeyPath := flag.String("tidb-key", "", "path of file that contains X509 key in PEM format")
+	tidbCaPath := flag.String("tidb-ca", "", "(TLS for MySQL client) path of file that contains list of trusted SSL CAs")
+	tidbCertPath := flag.String("tidb-cert", "", "(TLS for MySQL client) path of file that contains X509 certificate in PEM format")
+	tidbKeyPath := flag.String("tidb-key", "", "(TLS for MySQL client) path of file that contains X509 key in PEM format")
 
 	// debug for keyvisual，hide help information
 	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")

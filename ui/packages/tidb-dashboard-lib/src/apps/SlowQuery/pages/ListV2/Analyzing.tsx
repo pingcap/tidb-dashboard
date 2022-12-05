@@ -15,8 +15,13 @@ export const Analyzing: React.FC<AnalyzingProps> = ({
   skipInit = false,
   children
 }) => {
+  const { analyzing } = useAnalyzing(timeRange, skipInit)
+  return <>{analyzing ? <Skeleton active paragraph={{ rows }} /> : children}</>
+}
+
+export const useAnalyzing = (timeRange: TimeRange, skipInit = false) => {
   const inited = useRef(false)
-  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzing, setAnalyzing] = useState(true)
   const ctx = useContext(SlowQueryContext)
 
   useEffect(() => {
@@ -34,5 +39,5 @@ export const Analyzing: React.FC<AnalyzingProps> = ({
     analyze()
   }, [timeRange])
 
-  return <>{analyzing ? <Skeleton active paragraph={{ rows }} /> : children}</>
+  return { analyzing }
 }

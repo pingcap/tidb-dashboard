@@ -78,6 +78,7 @@ const ModalContent: React.FC<ModalContentProps> = ({
             <SlowQueryScatterChart
               timeRange={timeRange}
               displayOptions={selection}
+              height={640}
             />
           </Col>
           <Col span={8}>

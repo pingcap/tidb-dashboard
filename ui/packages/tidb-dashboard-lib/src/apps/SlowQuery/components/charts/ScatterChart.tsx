@@ -22,10 +22,11 @@ interface SlowQueryChartProps {
   timeRange: TimeRange
   displayOptions: DisplayOptions
   onLegendChange?: OnLegendChange
+  height?: number
 }
 
 export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
-  ({ timeRange, displayOptions, onLegendChange }) => {
+  ({ timeRange, displayOptions, height, onLegendChange }) => {
     const triggerRef = useRef<Trigger>(null as any)
     const chartRef = useRef<Chart>(null)
     const { aggrBy, groupBy, tiflash } = displayOptions
@@ -58,6 +59,7 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
         <TimeSeriesChart
           ref={chartRef}
           onReady={(plot) => bindLegendClick(plot)}
+          height={height}
         >
           <PromQueryGroup
             queries={[
@@ -105,12 +107,13 @@ const useCacheFetch = (displayOptions: DisplayOptions) => {
   const cacheFetch = (query, tp) => {
     const { groupBy, tiflash } = displayOptions
     if (!isInPlace.current) {
-      cacheRef.current = ctx!.ds
-        .promqlQueryRange(query, tp.start_time, tp.end_time, '1m')
-        .then((resp) => {
-          resultCache.current = (resp.data as any).result
-          return resp
-        })
+      cacheRef.current =
+        ctx?.ds
+          .promqlQueryRange?.(query, tp.start_time, tp.end_time, '1m')
+          .then((resp) => {
+            resultCache.current = (resp.data as any).result
+            return resp
+          }) || Promise.resolve(null)
     }
     return cacheRef.current.then((resp) => {
       resp.data.result =

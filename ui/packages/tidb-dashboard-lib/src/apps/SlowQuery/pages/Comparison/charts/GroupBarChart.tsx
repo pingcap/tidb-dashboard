@@ -78,7 +78,7 @@ export const GroupBarChart: React.FC<GroupBarChartProps> = ({
     const timeRangeValue = toTimeRangeValue(timeRange)
     const time = timeRangeValue[1]
     const timeout = `${timeRangeValue[1] - timeRangeValue[0]}s`
-    ctx?.ds.promqlQuery(promql, time, timeout).then((res) => {
+    ctx?.ds.promqlQuery?.(promql, time, timeout).then((res) => {
       const result = (res?.data as any)?.result
       if (!result) {
         return

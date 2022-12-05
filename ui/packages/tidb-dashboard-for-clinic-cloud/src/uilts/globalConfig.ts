@@ -1,4 +1,8 @@
-import { ISlowQueryConfig, ITopSQLConfig } from '@pingcap/tidb-dashboard-lib'
+import {
+  IOverviewConfig,
+  ISlowQueryConfig,
+  ITopSQLConfig
+} from '@pingcap/tidb-dashboard-lib'
 
 export type AppOptions = {
   lang: string
@@ -33,6 +37,7 @@ export type ClusterInfo = {
 }
 
 export type AppsConfig = {
+  overview?: Partial<IOverviewConfig>
   slowQuery?: Partial<ISlowQueryConfig>
   topSQL?: Partial<ITopSQLConfig>
 }
@@ -41,7 +46,12 @@ export type GlobalConfig = {
   appOptions?: AppOptions
   clientOptions: ClientOptions
   clusterInfo: ClusterInfo
+
   appsConfig?: AppsConfig
+
+  // appsDisabled has a higher priority than appsEnabled
+  appsDisabled?: string[]
+  appsEnabled?: string[]
 }
 
 // export const GlobalConfigContext = createContext<IGlobalConfig | null>(null)

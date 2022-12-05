@@ -4705,6 +4705,15 @@
                 "plan": {
                     "type": "string"
                 },
+                "plan_from_binding": {
+                    "type": "integer"
+                },
+                "plan_from_cache": {
+                    "type": "integer"
+                },
+                "prepared": {
+                    "type": "integer"
+                },
                 "preproc_subqueries_time": {
                     "type": "number"
                 },

@@ -2,6 +2,8 @@ DASHBOARD_PKG := github.com/pingcap/tidb-dashboard
 
 BUILD_TAGS ?=
 
+PNPM_INSTALL_TAGS ?=
+
 LDFLAGS ?=
 
 FEATURE_VERSION ?= 6.2.0
@@ -10,17 +12,26 @@ WITHOUT_NGM ?= false
 
 E2E_SPEC ?=
 
-ifeq ($(UI),1)
-	BUILD_TAGS += ui_server
-endif
+UI ?=
 
-LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(shell grep -v '^\#' ./release-version)"
+RELEASE_VERSION := $(shell grep -v '^\#' ./release-version)
+
+LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(RELEASE_VERSION)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.Standalone=Yes"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=N/A"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.BuildGitHash=$(shell git rev-parse HEAD)"
 
 TIDB_VERSION ?= latest
+
+# Docker build variables.
+REPOSITORY ?= pingcap/tidb-dashboard
+IMAGE ?= $(REPOSITORY):$(RELEASE_VERSION)
+AMD64 := linux/amd64
+ARM64 := linux/arm64
+PLATFORMS := $(AMD64),$(ARM64)
+# If you want to build with no cache (after update go module, npm module, etc.), set "NO_CACHE=--pull --no-cache".
+NO_CACHE ?=
 
 default: server
 
@@ -92,7 +103,7 @@ dev: lint default
 .PHONY: ui_deps
 ui_deps: install_tools
 	cd ui &&\
-	pnpm i
+	pnpm i ${PNPM_INSTALL_TAGS}
 
 .PHONY: ui
 ui: ui_deps
@@ -106,12 +117,37 @@ go_generate:
 	go generate -x ./...
 
 .PHONY: server
+ifeq ($(UI),1)
+BUILD_TAGS += ui_server
+endif
 server: install_tools go_generate
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
-.PHONY: run
+.PHONY: embed_ui_assets
+embed_ui_assets: ui
+	scripts/embed_ui_assets.sh
+
+.PHONY: package # Build frontend and backend server, and then packages them into a single binary.
+package: BUILD_TAGS += ui_server
+package: embed_ui_assets server
+
+.PHONY: docker-build-and-push-image # For locally dev, set IMAGE to your dev docker registry.
+docker-build-and-push-image: clean
+	docker buildx build ${NO_CACHE} --push -t $(IMAGE) --platform $(PLATFORMS) .
+
+.PHONY: docker-build-image-locally-amd64
+docker-build-image-locally-amd64: clean
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(AMD64) .
+	docker run --rm $(IMAGE) -v
+
+.PHONY: docker-build-image-locally-arm64
+docker-build-image-locally-arm64: clean
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(ARM64) .
+	docker run --rm $(IMAGE) -v
+
+.PHONY: run # please ensure that tiup playground is running in the background.
 run:
 	bin/tidb-dashboard --debug --experimental --feature-version "$(FEATURE_VERSION)" --host 0.0.0.0

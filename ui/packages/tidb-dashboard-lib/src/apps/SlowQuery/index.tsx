@@ -22,9 +22,9 @@ function AppRoutes() {
     <Routes>
       <Route path="/slow_query" element={<List />} />
       <Route path="/slow_query/detail" element={<Detail />} />
-      <Route path="/slow_query_v2" element={<ListV2 />} />
+      <Route path="/slow_query/v2" element={<ListV2 />} />
       <Route
-        path="/slow_query_v2/comparison"
+        path="/slow_query/v2/comparison"
         element={<SlowQueryComparison />}
       />
     </Routes>

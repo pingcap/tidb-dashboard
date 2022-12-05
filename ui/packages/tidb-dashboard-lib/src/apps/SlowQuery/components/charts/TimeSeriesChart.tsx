@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 
 import { TimeRange, toTimeRangeValue } from '@lib/components'
 import {
@@ -8,6 +8,7 @@ import {
   Chart,
   Trigger
 } from '@diag-ui/chart'
+import { SlowQueryContext } from '../../context'
 
 interface LineChartProps {
   height?: number
@@ -26,6 +27,7 @@ export const TimeSeriesChart: React.FC<LineChartProps> = ({
   name,
   unit
 }) => {
+  const ctx = useContext(SlowQueryContext)
   const triggerRef = useRef<Trigger>(null as any)
   const refreshChart = () => {
     const timeRangeValue = toTimeRangeValue(timeRange)
@@ -45,9 +47,15 @@ export const TimeSeriesChart: React.FC<LineChartProps> = ({
     <PromDataAccessor
       ref={triggerRef}
       fetch={(query, tp) => {
-        return fetch(
-          `http://127.0.0.1:8428/api/v1/query_range?query=${query}&start=${tp.start_time}&end=${tp.end_time}&step=1m`
-        ).then((resp) => resp.json())
+        return ctx?.ds.promqlQueryRange?.(
+          query,
+          tp.start_time,
+          tp.end_time,
+          '1m'
+        ) as any
+        // return fetch(
+        //   `http://127.0.0.1:8428/api/v1/query_range?query=${query}&start=${tp.start_time}&end=${tp.end_time}&step=1m`
+        // ).then((resp) => resp.json())
       }}
     >
       <DiagTimeSeriesChart height={height} ref={chartRef}>

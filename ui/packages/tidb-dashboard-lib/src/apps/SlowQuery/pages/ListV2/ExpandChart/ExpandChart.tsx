@@ -9,6 +9,7 @@ import {
 import { genLabels } from '../../Comparison/charts/ComparisonCharts'
 import { TimeRange } from '@lib/components'
 import { Selections } from './Selections'
+import { Analyzing } from '../Analyzing'
 
 interface ExpandChartProps {
   open: boolean
@@ -50,7 +51,7 @@ interface ModalContentProps {
   defaultSelection: DisplayOptions
   defaultTimeRange: TimeRange
 }
-// reset the default value every time after modal destroy
+// reset the default value after modal destroy
 const ModalContent: React.FC<ModalContentProps> = ({
   defaultSelection,
   defaultTimeRange
@@ -69,47 +70,50 @@ const ModalContent: React.FC<ModalContentProps> = ({
           onTimeRangeChange={setTimeRange}
         />
       </Row>
-      <Row>
-        <Col span={16}>
-          <Title level={5}>Slow Query Detail</Title>
-          <SlowQueryScatterChart
-            timeRange={timeRange}
-            displayOptions={selection}
-          />
-        </Col>
-        <Col span={8}>
-          <Row>
-            <Col span={24}>
-              <Title level={5}>Slow Query Count</Title>
-              <TimeSeriesChart
-                timeRange={timeRange}
-                height={300}
-                type="line"
-                promql={`count(query_time{${genLabels(
-                  selection
-                )}}) by (${groupBy})`}
-                name={`{${groupBy!}}`}
-                unit="short"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col span={24}>
-              <Title level={5}>Avg. Slow Query Latency</Title>
-              <TimeSeriesChart
-                timeRange={timeRange}
-                height={300}
-                type="line"
-                promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
-                  selection
-                )}}))`}
-                name={`{${groupBy!}}`}
-                unit="s"
-              />
-            </Col>
-          </Row>
-        </Col>
-      </Row>
+
+      <Analyzing timeRange={timeRange} rows={5}>
+        <Row>
+          <Col span={16}>
+            <Title level={5}>Slow Query Detail</Title>
+            <SlowQueryScatterChart
+              timeRange={timeRange}
+              displayOptions={selection}
+            />
+          </Col>
+          <Col span={8}>
+            <Row>
+              <Col span={24}>
+                <Title level={5}>Slow Query Count</Title>
+                <TimeSeriesChart
+                  timeRange={timeRange}
+                  height={300}
+                  type="line"
+                  promql={`count(query_time{${genLabels(
+                    selection
+                  )}}) by (${groupBy})`}
+                  name={`{${groupBy!}}`}
+                  unit="short"
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col span={24}>
+                <Title level={5}>Avg. Slow Query Latency</Title>
+                <TimeSeriesChart
+                  timeRange={timeRange}
+                  height={300}
+                  type="line"
+                  promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                    selection
+                  )}}))`}
+                  name={`{${groupBy!}}`}
+                  unit="s"
+                />
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </Analyzing>
     </>
   )
 }

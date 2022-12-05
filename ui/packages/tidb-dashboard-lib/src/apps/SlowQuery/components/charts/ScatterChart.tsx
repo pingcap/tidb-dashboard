@@ -9,7 +9,8 @@ import {
 } from '@diag-ui/chart'
 import { TimeRange, toTimeRangeValue } from '@lib/components'
 import { useChange } from '@lib/utils/useChange'
-import React, { useRef } from 'react'
+import React, { useContext, useRef } from 'react'
+import { SlowQueryContext } from '../../context'
 
 export interface DisplayOptions {
   aggrBy?: 'query_time' | 'memory_max'
@@ -95,6 +96,7 @@ const useLegendAction = (onLegendChange?: OnLegendChange) => {
 }
 
 const useCacheFetch = (displayOptions: DisplayOptions) => {
+  const ctx = useContext(SlowQueryContext)
   const cacheRef = useRef<Promise<any>>(null) as React.MutableRefObject<
     Promise<any>
   >
@@ -103,12 +105,10 @@ const useCacheFetch = (displayOptions: DisplayOptions) => {
   const cacheFetch = (query, tp) => {
     const { groupBy, tiflash } = displayOptions
     if (!isInPlace.current) {
-      cacheRef.current = fetch(
-        `http://127.0.0.1:8428/api/v1/query_range?query=${query}&start=${tp.start_time}&end=${tp.end_time}&step=1m`
-      )
-        .then((resp) => resp.json())
+      cacheRef.current = ctx!.ds
+        .promqlQueryRange(query, tp.start_time, tp.end_time, '1m')
         .then((resp) => {
-          resultCache.current = resp.data.result
+          resultCache.current = (resp.data as any).result
           return resp
         })
     }

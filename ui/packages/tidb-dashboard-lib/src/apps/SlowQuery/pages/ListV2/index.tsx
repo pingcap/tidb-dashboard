@@ -1,12 +1,6 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Space, Checkbox, Alert, Result, Skeleton } from 'antd'
+import { Space, Checkbox, Alert, Result } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 
 import {
@@ -32,6 +26,7 @@ import { SlowQueryContext } from '../../context'
 import { Selections, useUrlSelection } from './Selections'
 import useUrlState from '@ahooksjs/use-url-state'
 import { SlowQueryScatterChart } from '../../components/charts/ScatterChart'
+import { Analyzing } from './Analyzing'
 
 const SLOW_QUERY_VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
 const SLOW_QUERY_SHOW_FULL_SQL = 'slow_query.show_full_sql'
@@ -118,18 +113,6 @@ function List() {
     }
   }, [])
 
-  const [analyzing, setAnalyzing] = useState(false)
-
-  useEffect(() => {
-    const analyze = async () => {
-      setAnalyzing(true)
-      await ctx?.ds.slowQueryAnalyze?.(timeRange[0], timeRange[1])
-      setAnalyzing(false)
-    }
-
-    analyze()
-  }, [timeRange])
-
   return (
     <div className={styles.list_container}>
       <Head title={t('slow_query_v2.overview.head.title')}>
@@ -140,19 +123,13 @@ function List() {
           onTimeRangeChange={setTimeRange}
         />
         <div style={{ height: '300px' }}>
-          {analyzing ? (
-            <Skeleton
-              active
-              style={{ height: '100%' }}
-              paragraph={{ rows: 5 }}
-            />
-          ) : (
+          <Analyzing timeRange={timeRange} rows={5}>
             <SlowQueryScatterChart
               timeRange={timeRange}
               displayOptions={urlSelection}
               onLegendChange={onLegendChange}
             />
-          )}
+          </Analyzing>
         </div>
       </Head>
 

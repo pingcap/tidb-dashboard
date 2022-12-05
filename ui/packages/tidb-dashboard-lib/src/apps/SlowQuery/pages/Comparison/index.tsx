@@ -20,7 +20,7 @@ export const SlowQueryComparison: React.FC = () => {
       urlSelection as Record<string, string>
     )
     deleteSpecialTimeRangeQuery(urlParams)
-    return `/slow_query_v2?${urlParams.toString()}`
+    return `/slow_query/v2?${urlParams.toString()}`
   }, [urlSelection])
 
   return (

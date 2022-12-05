@@ -18,6 +18,7 @@ import { tz } from '@lib/utils'
 import { LimitTimeRange } from '../../../components/LimitTimeRange'
 import { ScatterCharts } from './ScatterCharts'
 import { DisplayOptions } from '@lib/apps/SlowQuery/components/charts/ScatterChart'
+import { Analyzing } from '../../ListV2/Analyzing'
 
 const { Title } = Typography
 
@@ -62,125 +63,133 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
         onTimeRangeBChange={onTimeRangeBChange}
       />
       <Row style={{ marginTop: '20px' }}>
-        <Col span={12} style={{ padding: '10px 10px 10px 0' }}>
-          <Row>
-            <Col span={12}>
-              <Title level={5}>Slow Query Count</Title>
-              <TimeSeriesChart
-                timeRange={timeRangeA}
-                height={300}
-                type="line"
-                promql={`count(query_time{${genLabels(
-                  selection
-                )}}) by (${groupBy})`}
-                name={`{${groupBy!}}`}
-                unit="short"
-              />
-            </Col>
-            <Col span={12}>
-              <Title level={5}>Avg. Slow Query Latency</Title>
-              <TimeSeriesChart
-                timeRange={timeRangeA}
-                height={300}
-                type="line"
-                promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
-                  selection
-                )}}))`}
-                name={`{${groupBy!}}`}
-                unit="s"
-              />
-            </Col>
-          </Row>
-          <Row style={{ marginTop: '10px' }}>
-            <Col span={12}>
-              <Title level={5}>Avg. Slow Query Count by {groupByLabel}</Title>
-              <GroupBarChart
-                height={600}
-                promql={`count(query_time{${genLabels(
-                  selection
-                )}}) by (${groupBy})`}
-                timeRange={timeRangeA}
-                // timeRange={timeRangeAA}
-                label={groupBy!}
-                unit="short"
-                onDataChange={(d) => setSlowQueryCountA(d)}
-              />
-            </Col>
-            <Col span={12}>
-              <Title level={5}>Avg. Slow Query Latency by {groupByLabel}</Title>
-              <GroupBarChart
-                height={600}
-                promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
-                  selection
-                )}}))`}
-                timeRange={timeRangeA}
-                label={groupBy!}
-                unit="s"
-                onDataChange={(d) => setSlowQueryLatencyA(d)}
-              />
-            </Col>
-          </Row>
-        </Col>
+        <Analyzing timeRange={timeRangeA} rows={5}>
+          <Col span={12} style={{ padding: '10px 10px 10px 0' }}>
+            <Row>
+              <Col span={12}>
+                <Title level={5}>Slow Query Count</Title>
+                <TimeSeriesChart
+                  timeRange={timeRangeA}
+                  height={300}
+                  type="line"
+                  promql={`count(query_time{${genLabels(
+                    selection
+                  )}}) by (${groupBy})`}
+                  name={`{${groupBy!}}`}
+                  unit="short"
+                />
+              </Col>
+              <Col span={12}>
+                <Title level={5}>Avg. Slow Query Latency</Title>
+                <TimeSeriesChart
+                  timeRange={timeRangeA}
+                  height={300}
+                  type="line"
+                  promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                    selection
+                  )}}))`}
+                  name={`{${groupBy!}}`}
+                  unit="s"
+                />
+              </Col>
+            </Row>
+            <Row style={{ marginTop: '10px' }}>
+              <Col span={12}>
+                <Title level={5}>Avg. Slow Query Count by {groupByLabel}</Title>
+                <GroupBarChart
+                  height={600}
+                  promql={`count(query_time{${genLabels(
+                    selection
+                  )}}) by (${groupBy})`}
+                  timeRange={timeRangeA}
+                  // timeRange={timeRangeAA}
+                  label={groupBy!}
+                  unit="short"
+                  onDataChange={(d) => setSlowQueryCountA(d)}
+                />
+              </Col>
+              <Col span={12}>
+                <Title level={5}>
+                  Avg. Slow Query Latency by {groupByLabel}
+                </Title>
+                <GroupBarChart
+                  height={600}
+                  promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                    selection
+                  )}}))`}
+                  timeRange={timeRangeA}
+                  label={groupBy!}
+                  unit="s"
+                  onDataChange={(d) => setSlowQueryLatencyA(d)}
+                />
+              </Col>
+            </Row>
+          </Col>
+        </Analyzing>
 
-        <Col span={12} style={{ background: '#fafafa', padding: '10px' }}>
-          <Row>
-            <Col span={12}>
-              <Title level={5}>Slow Query Count</Title>
-              <TimeSeriesChart
-                timeRange={timeRangeB}
-                height={300}
-                type="line"
-                promql={`count(query_time{${genLabels(
-                  selection
-                )}}) by (${groupBy})`}
-                name={`{${groupBy!}}`}
-                unit="short"
-              />
-            </Col>
-            <Col span={12}>
-              <Title level={5}>Avg. Slow Query Latency</Title>
-              <TimeSeriesChart
-                timeRange={timeRangeB}
-                height={300}
-                type="line"
-                promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
-                  selection
-                )}}))`}
-                name={`{${groupBy!}}`}
-                unit="s"
-              />
-            </Col>
-          </Row>
-          <Row style={{ marginTop: '10px' }}>
-            <Col span={12}>
-              <Title level={5}>Avg. Slow Query Count by {groupByLabel}</Title>
-              <GroupBarChart
-                height={600}
-                promql={`count(query_time{${genLabels(
-                  selection
-                )}}) by (${groupBy})`}
-                timeRange={timeRangeB}
-                // timeRange={timeRangeBB}
-                label={groupBy!}
-                unit="short"
-                diff={slowQueryCountA}
-              />
-            </Col>
-            <Col span={12}>
-              <Title level={5}>Avg. Slow Query Latency by {groupByLabel}</Title>
-              <GroupBarChart
-                height={600}
-                promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
-                  selection
-                )}}))`}
-                timeRange={timeRangeB}
-                label={groupBy!}
-                unit="s"
-                diff={slowQueryLatencyA}
-              />
-            </Col>
-          </Row>
-        </Col>
+        <Analyzing timeRange={timeRangeA} rows={5}>
+          <Col span={12} style={{ background: '#fafafa', padding: '10px' }}>
+            <Row>
+              <Col span={12}>
+                <Title level={5}>Slow Query Count</Title>
+                <TimeSeriesChart
+                  timeRange={timeRangeB}
+                  height={300}
+                  type="line"
+                  promql={`count(query_time{${genLabels(
+                    selection
+                  )}}) by (${groupBy})`}
+                  name={`{${groupBy!}}`}
+                  unit="short"
+                />
+              </Col>
+              <Col span={12}>
+                <Title level={5}>Avg. Slow Query Latency</Title>
+                <TimeSeriesChart
+                  timeRange={timeRangeB}
+                  height={300}
+                  type="line"
+                  promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                    selection
+                  )}}))`}
+                  name={`{${groupBy!}}`}
+                  unit="s"
+                />
+              </Col>
+            </Row>
+            <Row style={{ marginTop: '10px' }}>
+              <Col span={12}>
+                <Title level={5}>Avg. Slow Query Count by {groupByLabel}</Title>
+                <GroupBarChart
+                  height={600}
+                  promql={`count(query_time{${genLabels(
+                    selection
+                  )}}) by (${groupBy})`}
+                  timeRange={timeRangeB}
+                  // timeRange={timeRangeBB}
+                  label={groupBy!}
+                  unit="short"
+                  diff={slowQueryCountA}
+                />
+              </Col>
+              <Col span={12}>
+                <Title level={5}>
+                  Avg. Slow Query Latency by {groupByLabel}
+                </Title>
+                <GroupBarChart
+                  height={600}
+                  promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                    selection
+                  )}}))`}
+                  timeRange={timeRangeB}
+                  label={groupBy!}
+                  unit="s"
+                  diff={slowQueryLatencyA}
+                />
+              </Col>
+            </Row>
+          </Col>
+        </Analyzing>
       </Row>
 
       <Divider />

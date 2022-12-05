@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Bar, BarConfig } from '@ant-design/plots'
 import { TimeRange, TimeRangeValue, toTimeRangeValue } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
+import { SlowQueryContext } from '@lib/apps/SlowQuery/context'
 
 interface GroupBarChartProps {
   promql: string
@@ -28,6 +29,7 @@ export const GroupBarChart: React.FC<GroupBarChartProps> = ({
   diff,
   onDataChange
 }) => {
+  const ctx = useContext(SlowQueryContext)
   const dataFormatter = (v: any) => {
     if (v === null) {
       return v
@@ -73,8 +75,11 @@ export const GroupBarChart: React.FC<GroupBarChartProps> = ({
   )
 
   useEffect(() => {
-    fetchData(promql, toTimeRangeValue(timeRange)).then((res) => {
-      const result = res?.data?.result
+    const timeRangeValue = toTimeRangeValue(timeRange)
+    const time = timeRangeValue[1]
+    const timeout = `${timeRangeValue[1] - timeRangeValue[0]}s`
+    ctx?.ds.promqlQuery(promql, time, timeout).then((res) => {
+      const result = (res?.data as any)?.result
       if (!result) {
         return
       }
@@ -89,17 +94,6 @@ export const GroupBarChart: React.FC<GroupBarChartProps> = ({
   }, [timeRange, promql])
 
   return <Bar {...config}></Bar>
-}
-
-const fetchData = (promql: string, timeRange: TimeRangeValue) => {
-  const time = timeRange[1]
-  const timeout = `${timeRange[1] - timeRange[0]}s`
-  return fetch(
-    `http://127.0.0.1:8428/api/v1/query?query=${promql}&time=${time}&timeout=${timeout}`
-    // `http://127.0.0.1:8428/api/v1/query?query=${promql}&time=${1668938500}&timeout=${
-    //   1668938500 - 1668936700
-    // }s`
-  ).then((resp) => resp.json())
 }
 
 const transformDiffData = (

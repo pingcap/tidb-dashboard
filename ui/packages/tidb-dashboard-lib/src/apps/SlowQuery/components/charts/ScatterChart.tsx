@@ -13,7 +13,7 @@ import React, { useContext, useRef } from 'react'
 import { SlowQueryContext } from '../../context'
 
 export interface DisplayOptions {
-  aggrBy?: 'query_time' | 'memory_max'
+  aggrBy?: 'slow_query_query_time' | 'slow_query_memory_max'
   groupBy?: 'query' | 'user' | 'database' | 'use_tiflash'
   tiflash?: 'all' | 'yes' | 'no'
 }
@@ -69,7 +69,7 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
                 type: 'scatter'
               }
             ]}
-            unit={aggrBy === 'query_time' ? 's' : 'bytes'}
+            unit={aggrBy === 'slow_query_query_time' ? 's' : 'bytes'}
           />
         </TimeSeriesChart>
       </PromDataAccessor>

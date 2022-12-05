@@ -77,7 +77,7 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                     timeRange={timeRangeA}
                     height={300}
                     type="line"
-                    promql={`count(query_time{${genLabels(
+                    promql={`count(slow_query_query_time{${genLabels(
                       selection
                     )}}) by (${groupBy})`}
                     name={`{${groupBy!}}`}
@@ -90,7 +90,7 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                     timeRange={timeRangeA}
                     height={300}
                     type="line"
-                    promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                    promql={`sum by (${groupBy}) (rate(slow_query_query_time{${genLabels(
                       selection
                     )}}))`}
                     name={`{${groupBy!}}`}
@@ -105,7 +105,7 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                   </Title>
                   <GroupBarChart
                     height={600}
-                    promql={`count(query_time{${genLabels(
+                    promql={`count(slow_query_query_time{${genLabels(
                       selection
                     )}}) by (${groupBy})`}
                     timeRange={timeRangeA}
@@ -121,7 +121,7 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                   </Title>
                   <GroupBarChart
                     height={600}
-                    promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                    promql={`sum by (${groupBy}) (rate(slow_query_query_time{${genLabels(
                       selection
                     )}}))`}
                     timeRange={timeRangeA}
@@ -147,7 +147,7 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                     timeRange={timeRangeB}
                     height={300}
                     type="line"
-                    promql={`count(query_time{${genLabels(
+                    promql={`count(slow_query_query_time{${genLabels(
                       selection
                     )}}) by (${groupBy})`}
                     name={`{${groupBy!}}`}
@@ -160,7 +160,7 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                     timeRange={timeRangeB}
                     height={300}
                     type="line"
-                    promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                    promql={`sum by (${groupBy}) (rate(slow_query_query_time{${genLabels(
                       selection
                     )}}))`}
                     name={`{${groupBy!}}`}
@@ -175,7 +175,7 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                   </Title>
                   <GroupBarChart
                     height={600}
-                    promql={`count(query_time{${genLabels(
+                    promql={`count(slow_query_query_time{${genLabels(
                       selection
                     )}}) by (${groupBy})`}
                     timeRange={timeRangeB}
@@ -191,7 +191,7 @@ export const ComparisonCharts: React.FC<ComparisonChartsProps> = ({
                   </Title>
                   <GroupBarChart
                     height={600}
-                    promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                    promql={`sum by (${groupBy}) (rate(slow_query_query_time{${genLabels(
                       selection
                     )}}))`}
                     timeRange={timeRangeB}

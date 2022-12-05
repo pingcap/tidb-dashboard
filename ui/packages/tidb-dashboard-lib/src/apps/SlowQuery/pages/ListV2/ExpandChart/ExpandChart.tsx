@@ -89,7 +89,7 @@ const ModalContent: React.FC<ModalContentProps> = ({
                   timeRange={timeRange}
                   height={300}
                   type="line"
-                  promql={`count(query_time{${genLabels(
+                  promql={`count(slow_query_query_time{${genLabels(
                     selection
                   )}}) by (${groupBy})`}
                   name={`{${groupBy!}}`}
@@ -104,7 +104,7 @@ const ModalContent: React.FC<ModalContentProps> = ({
                   timeRange={timeRange}
                   height={300}
                   type="line"
-                  promql={`sum by (${groupBy}) (rate(query_time{${genLabels(
+                  promql={`sum by (${groupBy}) (rate(slow_query_query_time{${genLabels(
                     selection
                   )}}))`}
                   name={`{${groupBy!}}`}

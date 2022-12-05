@@ -21,11 +21,11 @@ interface SelectionsProps {
 
 export const AGGR_BY = [
   {
-    value: 'query_time',
+    value: 'slow_query_query_time',
     label: 'Latency'
   },
   {
-    value: 'memory_max',
+    value: 'slow_query_memory_max',
     label: 'Memory'
   }
 ]
@@ -144,7 +144,7 @@ export const Selections: React.FC<SelectionsProps> = ({
 }
 
 export const DEFAULT_URL_QUERY_PARAMS: DisplayOptions = {
-  aggrBy: 'query_time',
+  aggrBy: 'slow_query_query_time',
   groupBy: 'query',
   tiflash: 'all'
 }

@@ -93,6 +93,7 @@ class DataSource implements ISlowQueryDataSource {
       .get(
         `/slow_query/vm_query?query=${query}&time=${time}&timeout=${timeout}`
       )
+      .then((res) => res.data)
   }
 
   promqlQueryRange(query: string, start: number, end: number, step: string) {
@@ -101,6 +102,7 @@ class DataSource implements ISlowQueryDataSource {
       .get(
         `/slow_query/vm_query_range?query=${query}&start=${start}&end=${end}&step=${step}`
       )
+      .then((res) => res.data)
   }
 }
 

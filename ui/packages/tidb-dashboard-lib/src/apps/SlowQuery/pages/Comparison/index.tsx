@@ -10,15 +10,13 @@ import {
   deleteSpecialTimeRangeQuery
 } from './charts/ComparisonCharts'
 import { Selections } from './Selections'
-import { useUrlSelection } from '../ListV2/Selections'
+import { createUrlSearchParams, useUrlSelection } from '../ListV2/Selections'
 
 export const SlowQueryComparison: React.FC = () => {
   const { t } = useTranslation()
   const [urlSelection, setUrlSelection] = useUrlSelection()
   const backURL = useMemo(() => {
-    const urlParams = new URLSearchParams(
-      urlSelection as Record<string, string>
-    )
+    const urlParams = createUrlSearchParams(urlSelection)
     deleteSpecialTimeRangeQuery(urlParams)
     return `/slow_query/v2?${urlParams.toString()}`
   }, [urlSelection])

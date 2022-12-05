@@ -114,9 +114,7 @@ export const Selections: React.FC<SelectionsProps> = ({
               type="text"
               icon={<FieldTimeOutlined />}
               onClick={() => {
-                const urlParams = new URLSearchParams(
-                  selection as Record<string, string>
-                )
+                const urlParams = createUrlSearchParams(selection)
                 navigate(`comparison?${urlParams.toString()}`)
               }}
             />
@@ -153,4 +151,16 @@ export const useUrlSelection = () => {
   return useUrlState<DisplayOptions>(DEFAULT_URL_QUERY_PARAMS, {
     navigateMode: 'replace'
   })
+}
+
+export const createUrlSearchParams = (opts: DisplayOptions) => {
+  const urlParams = new URLSearchParams()
+  Object.entries(opts).forEach(([k, v]) => {
+    if (Array.isArray(v)) {
+      v.forEach((vv) => urlParams.append(k, vv))
+    } else {
+      urlParams.append(k, v)
+    }
+  })
+  return urlParams
 }

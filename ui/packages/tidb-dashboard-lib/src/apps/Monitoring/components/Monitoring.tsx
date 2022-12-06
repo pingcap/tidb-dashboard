@@ -62,7 +62,7 @@ export default function Monitoring() {
       <ErrorBar errors={[error]} />
       {promAddrConfigurable && (
         <Link to="/user_profile?blink=profile.prometheus">
-          {t('components.metricChart.changePromButton')}
+          {t('monitoring.change_prom_button')}
         </Link>
       )}
     </Space>

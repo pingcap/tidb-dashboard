@@ -2,6 +2,7 @@ overview:
   nav_title: 概况
   panel_no_data_tips: 文档
   view_more_metrics: 查看更多指标
+  change_prom_button: 更改 promethues 地址
   top_statements:
     title: 最耗时的 SQL 语句
   recent_slow_query:

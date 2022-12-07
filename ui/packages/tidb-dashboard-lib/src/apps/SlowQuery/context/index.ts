@@ -38,15 +38,15 @@ export interface ISlowQueryDataSource {
     options?: ReqConfig
   ): AxiosPromise<string>
 
-  slowQueryAnalyze(start: number, end: number): AxiosPromise
+  slowQueryAnalyze?(start: number, end: number): AxiosPromise
 
-  promqlQuery(
+  promqlQuery?(
     query: string,
     time: number,
     timeout: string
   ): AxiosPromise<PromDataSuccessResponse>
 
-  promqlQueryRange(
+  promqlQueryRange?(
     query: string,
     start: number,
     end: number,

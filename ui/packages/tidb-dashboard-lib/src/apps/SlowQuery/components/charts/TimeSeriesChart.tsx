@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { useContext, useRef } from 'react'
 
-import { TimeRange, toTimeRangeValue } from '@lib/components'
+import { TimeRangeValue } from '@lib/components'
 import {
   TimeSeriesChart as DiagTimeSeriesChart,
   PromDataAccessor,
@@ -9,10 +9,11 @@ import {
   Trigger
 } from '@diag-ui/chart'
 import { SlowQueryContext } from '../../context'
+import { useChange } from '@lib/utils/useChange'
 
 interface LineChartProps {
   height?: number
-  timeRange: TimeRange
+  timeRangeValue: TimeRangeValue
   type: 'line' | 'scatter'
   promql: string
   name: string
@@ -21,7 +22,7 @@ interface LineChartProps {
 
 export const TimeSeriesChart: React.FC<LineChartProps> = ({
   height,
-  timeRange,
+  timeRangeValue,
   type,
   promql,
   name,
@@ -30,7 +31,6 @@ export const TimeSeriesChart: React.FC<LineChartProps> = ({
   const ctx = useContext(SlowQueryContext)
   const triggerRef = useRef<Trigger>(null as any)
   const refreshChart = () => {
-    const timeRangeValue = toTimeRangeValue(timeRange)
     // triggerRef.current({ start_time: 1668936700, end_time: 1668938500 })
     triggerRef.current({
       start_time: timeRangeValue[0],
@@ -39,9 +39,9 @@ export const TimeSeriesChart: React.FC<LineChartProps> = ({
   }
   const chartRef = useRef<Chart>(null)
 
-  useEffect(() => {
+  useChange(() => {
     refreshChart()
-  }, [timeRange, promql])
+  }, [timeRangeValue, promql])
 
   return (
     <PromDataAccessor

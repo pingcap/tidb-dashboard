@@ -7,7 +7,7 @@ import {
   Trigger,
   Chart
 } from '@diag-ui/chart'
-import { TimeRange, toTimeRangeValue } from '@lib/components'
+import { TimeRangeValue } from '@lib/components'
 import { useChange } from '@lib/utils/useChange'
 import React, { useContext, useRef } from 'react'
 import { SlowQueryContext } from '../../context'
@@ -19,14 +19,14 @@ export interface DisplayOptions {
 }
 
 interface SlowQueryChartProps {
-  timeRange: TimeRange
+  timeRangeValue: TimeRangeValue
   displayOptions: DisplayOptions
   onLegendChange?: OnLegendChange
   height?: number
 }
 
 export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
-  ({ timeRange, displayOptions, height, onLegendChange }) => {
+  ({ timeRangeValue, displayOptions, height, onLegendChange }) => {
     const triggerRef = useRef<Trigger>(null as any)
     const chartRef = useRef<Chart>(null)
     const { aggrBy, groupBy, tiflash } = displayOptions
@@ -35,16 +35,18 @@ export const SlowQueryScatterChart: React.FC<SlowQueryChartProps> = React.memo(
     const { bindLegendClick } = useLegendAction(onLegendChange)
 
     const refreshChart = (inPlace = false) => {
-      const tr = toTimeRangeValue(timeRange)
       markInPlace(inPlace)
       onLegendChange?.({ isSelectAll: true, data: [] })
       // triggerRef.current({ start_time: 1668936700, end_time: 1668938500 })
-      triggerRef.current({ start_time: tr[0], end_time: tr[1] })
+      triggerRef.current({
+        start_time: timeRangeValue[0],
+        end_time: timeRangeValue[1]
+      })
     }
 
     useChange(() => {
       refreshChart()
-    }, [aggrBy, timeRange])
+    }, [aggrBy, timeRangeValue.toString()])
 
     useChange(() => {
       if (!inited.current) {

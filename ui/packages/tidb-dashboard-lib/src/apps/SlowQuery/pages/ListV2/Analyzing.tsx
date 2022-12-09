@@ -1,34 +1,40 @@
-import { TimeRange, toTimeRangeValue } from '@lib/components'
+import { TimeRangeValue } from '@lib/components'
 import { useChange } from '@lib/utils/useChange'
 import { Skeleton } from 'antd'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import { SlowQueryContext } from '../../context'
 
 interface AnalyzingProps {
-  timeRange: TimeRange
+  timeRangeValue: TimeRangeValue
   rows: number
   skipInit?: boolean
 }
 
 export const Analyzing: React.FC<AnalyzingProps> = React.memo(
-  ({ timeRange, rows, skipInit = false, children }) => {
-    const { analyzing } = useAnalyzing(timeRange, skipInit)
+  ({ timeRangeValue, rows, skipInit = false, children }) => {
+    const { analyzing } = useAnalyzing(timeRangeValue, skipInit)
     return (
       <>{analyzing ? <Skeleton active paragraph={{ rows }} /> : children}</>
     )
   }
 )
 
-export const useAnalyzing = (timeRange: TimeRange, skipInit = false) => {
+export const useAnalyzing = (
+  timeRangeValue: TimeRangeValue,
+  skipInit = false
+) => {
   const inited = useRef(false)
   const [analyzing, setAnalyzing] = useState(true)
   const ctx = useContext(SlowQueryContext)
-  const timeRangeValue = toTimeRangeValue(timeRange)
+  const prevTimeRange = useRef(timeRangeValue)
+  const timeRangeNotEqual =
+    prevTimeRange.current.toString() !== timeRangeValue.toString()
 
   useChange(() => {
     const analyze = async () => {
       setAnalyzing(true)
       await ctx?.ds.slowQueryAnalyze?.(timeRangeValue[0], timeRangeValue[1])
+      prevTimeRange.current = timeRangeValue
       setAnalyzing(false)
     }
 
@@ -37,7 +43,7 @@ export const useAnalyzing = (timeRange: TimeRange, skipInit = false) => {
       return
     }
     analyze()
-  }, [timeRangeValue.toString()])
+  }, [timeRangeValue[0], timeRangeValue[1]])
 
-  return { analyzing }
+  return { analyzing: analyzing || timeRangeNotEqual }
 }

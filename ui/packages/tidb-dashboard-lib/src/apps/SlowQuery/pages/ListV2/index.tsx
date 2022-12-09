@@ -10,7 +10,9 @@ import {
   TimeRange,
   IColumnKeys,
   Head,
-  DEFAULT_TIME_RANGE
+  DEFAULT_TIME_RANGE,
+  TimeRangeValue,
+  toTimeRangeValue
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
@@ -49,7 +51,7 @@ function List() {
     { defaultValue: false }
   )
   const [filters, setFilters] = useState<Set<string>>()
-  const { timeRange, setTimeRange } =
+  const { timeRange, setTimeRange, timeRangeValue } =
     useURLTimeRangeToTimeRange(DEFAULT_TIME_RANGE)
 
   const controller = useSlowQueryTableController({
@@ -123,9 +125,9 @@ function List() {
           onTimeRangeChange={setTimeRange}
         />
         <div style={{ height: '300px' }}>
-          <Analyzing timeRange={timeRange} rows={5}>
+          <Analyzing timeRangeValue={timeRangeValue} rows={5}>
             <SlowQueryScatterChart
-              timeRange={timeRange}
+              timeRangeValue={timeRangeValue}
               displayOptions={urlSelection}
               onLegendChange={onLegendChange}
             />
@@ -219,8 +221,13 @@ export const useURLTimeRangeToTimeRange = (
     },
     [_setTimeRange, typeKey, valueKey]
   )
+  const timeRangeValue: TimeRangeValue = useMemo(
+    () => toTimeRangeValue(timeRange),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [timeRange.type, timeRange.value.toString()]
+  )
 
-  return { timeRange, setTimeRange }
+  return { timeRange, setTimeRange, timeRangeValue }
 }
 
 export default List

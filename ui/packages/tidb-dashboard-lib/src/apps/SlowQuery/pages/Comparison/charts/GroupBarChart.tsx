@@ -1,12 +1,13 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { Bar, BarConfig } from '@ant-design/plots'
-import { TimeRange, TimeRangeValue, toTimeRangeValue } from '@lib/components'
+import { TimeRangeValue } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { SlowQueryContext } from '@lib/apps/SlowQuery/context'
+import { useChange } from '@lib/utils/useChange'
 
 interface GroupBarChartProps {
   promql: string
-  timeRange: TimeRange
+  timeRangeValue: TimeRangeValue
   label: string
   unit: string
   height?: number
@@ -22,7 +23,7 @@ export interface GroupData {
 
 export const GroupBarChart: React.FC<GroupBarChartProps> = ({
   promql,
-  timeRange,
+  timeRangeValue,
   label,
   unit,
   height,
@@ -71,11 +72,11 @@ export const GroupBarChart: React.FC<GroupBarChartProps> = ({
           }
         }
       } as BarConfig),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, height, diff]
   )
 
-  useEffect(() => {
-    const timeRangeValue = toTimeRangeValue(timeRange)
+  useChange(() => {
     const time = timeRangeValue[1]
     const timeout = `${timeRangeValue[1] - timeRangeValue[0]}s`
     ctx?.ds.promqlQuery?.(promql, time, timeout).then((res) => {
@@ -91,7 +92,7 @@ export const GroupBarChart: React.FC<GroupBarChartProps> = ({
       setData(d)
       onDataChange?.(d)
     })
-  }, [timeRange, promql])
+  }, [timeRangeValue, promql])
 
   return <Bar {...config}></Bar>
 }

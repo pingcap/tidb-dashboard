@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Col, Modal, Row, Typography } from 'antd'
 
 import { TimeSeriesChart } from '../../../components/charts/TimeSeriesChart'
@@ -7,7 +7,7 @@ import {
   SlowQueryScatterChart
 } from '../../../components/charts/ScatterChart'
 import { genLabels } from '../../Comparison/charts/ComparisonCharts'
-import { TimeRange } from '@lib/components'
+import { TimeRange, TimeRangeValue, toTimeRangeValue } from '@lib/components'
 import { Selections } from './Selections'
 import { Analyzing } from '../Analyzing'
 
@@ -59,6 +59,11 @@ const ModalContent: React.FC<ModalContentProps> = ({
   const [timeRange, setTimeRange] = useState<TimeRange>(defaultTimeRange)
   const [selection, setSelection] = useState<DisplayOptions>(defaultSelection)
   const { groupBy } = selection
+  const timeRangeValue: TimeRangeValue = useMemo(
+    () => toTimeRangeValue(timeRange),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [timeRange.type, timeRange.value.toString()]
+  )
 
   return (
     <>
@@ -71,12 +76,12 @@ const ModalContent: React.FC<ModalContentProps> = ({
         />
       </Row>
 
-      <Analyzing timeRange={timeRange} rows={5}>
+      <Analyzing timeRangeValue={timeRangeValue} rows={5}>
         <Row>
           <Col span={16}>
             <Title level={5}>Slow Query Detail</Title>
             <SlowQueryScatterChart
-              timeRange={timeRange}
+              timeRangeValue={timeRangeValue}
               displayOptions={selection}
               height={640}
             />
@@ -86,7 +91,7 @@ const ModalContent: React.FC<ModalContentProps> = ({
               <Col span={24}>
                 <Title level={5}>Slow Query Count</Title>
                 <TimeSeriesChart
-                  timeRange={timeRange}
+                  timeRangeValue={timeRangeValue}
                   height={300}
                   type="line"
                   promql={`count(slow_query_query_time{${genLabels(
@@ -101,7 +106,7 @@ const ModalContent: React.FC<ModalContentProps> = ({
               <Col span={24}>
                 <Title level={5}>Avg. Slow Query Latency</Title>
                 <TimeSeriesChart
-                  timeRange={timeRange}
+                  timeRangeValue={timeRangeValue}
                   height={300}
                   type="line"
                   promql={`sum by (${groupBy}) (rate(slow_query_query_time{${genLabels(

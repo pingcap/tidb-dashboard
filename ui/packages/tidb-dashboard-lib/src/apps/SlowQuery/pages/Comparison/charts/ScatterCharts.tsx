@@ -2,7 +2,7 @@ import {
   DisplayOptions,
   SlowQueryScatterChart
 } from '@lib/apps/SlowQuery/components/charts/ScatterChart'
-import { TimeRange, Toolbar } from '@lib/components'
+import { TimeRangeValue, Toolbar } from '@lib/components'
 import { Col, Row, Select, Skeleton, Space, Typography } from 'antd'
 import React from 'react'
 import { AGGR_BY } from '../../ListV2/Selections'
@@ -10,8 +10,8 @@ import { AGGR_BY } from '../../ListV2/Selections'
 const { Title } = Typography
 
 interface ScatterChartsProps {
-  timeRangeA: TimeRange
-  timeRangeB: TimeRange
+  timeRangeValueA: TimeRangeValue
+  timeRangeValueB: TimeRangeValue
   selection: DisplayOptions
   onSelectionChange: (
     s: React.SetStateAction<Partial<{ [key in keyof DisplayOptions]: any }>>
@@ -21,8 +21,8 @@ interface ScatterChartsProps {
 }
 
 export const ScatterCharts: React.FC<ScatterChartsProps> = ({
-  timeRangeA,
-  timeRangeB,
+  timeRangeValueA,
+  timeRangeValueB,
   selection,
   onSelectionChange,
   analyzingA,
@@ -51,7 +51,7 @@ export const ScatterCharts: React.FC<ScatterChartsProps> = ({
             <Skeleton active paragraph={{ rows: 5 }} />
           ) : (
             <SlowQueryScatterChart
-              timeRange={timeRangeA}
+              timeRangeValue={timeRangeValueA}
               displayOptions={selection}
             />
           )}
@@ -63,7 +63,7 @@ export const ScatterCharts: React.FC<ScatterChartsProps> = ({
             <Skeleton active paragraph={{ rows: 5 }} />
           ) : (
             <SlowQueryScatterChart
-              timeRange={timeRangeB}
+              timeRangeValue={timeRangeValueB}
               displayOptions={selection}
             />
           )}

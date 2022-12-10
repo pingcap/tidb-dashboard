@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react'
-import { Space, Modal, Tabs } from 'antd'
+import { Space, Modal, Tabs, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router-dom'
+import { To, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -37,14 +37,13 @@ export interface IPageQuery {
 
 const SLOW_QUERY_DETAIL_EXPAND = 'slow_query.detail_expand'
 
-function DetailPage({
-  historyBack = false
-}): React.FC<{ historyBack?: boolean }> {
+function DetailPage({ historyBack = false }: { historyBack?: boolean }) {
   const ctx = useContext(SlowQueryContext)
 
   const query = DetailPage.parseQuery(useLocation().search)
 
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
     ctx!.ds.slowQueryDetailGet(
@@ -86,9 +85,11 @@ function DetailPage({
       <Head
         title={t('slow_query.detail.head.title')}
         back={
-          <Link to={historyBack ? -1 : `/slow_query`}>
+          <Typography.Link
+            onClick={() => navigate((historyBack ? -1 : '/slow_query') as To)}
+          >
             <ArrowLeftOutlined /> {t('slow_query.detail.head.back')}
-          </Link>
+          </Typography.Link>
         }
       >
         <AnimatedSkeleton showSkeleton={isLoading}>

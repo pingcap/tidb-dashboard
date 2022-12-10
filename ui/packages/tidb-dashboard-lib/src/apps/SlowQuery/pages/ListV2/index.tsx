@@ -185,7 +185,11 @@ function List() {
           </Card>
           <div style={{ height: '100%', position: 'relative' }}>
             <ScrollablePane>
-              <SlowQueriesTable cardNoMarginTop controller={controller} />
+              <SlowQueriesTable
+                cardNoMarginTop
+                controller={controller}
+                detailPathPrefix="/slow_query/v2/detail"
+              />
             </ScrollablePane>
           </div>
         </div>

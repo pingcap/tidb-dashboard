@@ -37,7 +37,9 @@ export interface IPageQuery {
 
 const SLOW_QUERY_DETAIL_EXPAND = 'slow_query.detail_expand'
 
-function DetailPage() {
+function DetailPage({
+  historyBack = false
+}): React.FC<{ historyBack?: boolean }> {
   const ctx = useContext(SlowQueryContext)
 
   const query = DetailPage.parseQuery(useLocation().search)
@@ -84,7 +86,7 @@ function DetailPage() {
       <Head
         title={t('slow_query.detail.head.title')}
         back={
-          <Link to={`/slow_query`}>
+          <Link to={historyBack ? -1 : `/slow_query`}>
             <ArrowLeftOutlined /> {t('slow_query.detail.head.back')}
           </Link>
         }

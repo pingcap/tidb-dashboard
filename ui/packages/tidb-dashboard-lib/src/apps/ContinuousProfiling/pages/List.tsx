@@ -39,12 +39,8 @@ export default function Page() {
   const ctx = useContext(ConProfilingContext)
 
   const { timeRange, setTimeRange } = useURLTimeRange()
-  const [endTime, _setEndTime] = useSessionStorageState<Dayjs | string>(
-    'conprof.end_time',
-    { defaultValue: timeRange.type === 'recent' ? '' : `${timeRange.value[1]}` }
-  )
+  const endTime = timeRange.type === 'recent' ? '' : `${timeRange.value[1]}`
   const setEndTime = (v) => {
-    _setEndTime(v)
     if (!v) {
       setTimeRange({ type: 'recent', value: 2 * 60 * 60 })
     } else {
@@ -62,7 +58,7 @@ export default function Page() {
       if (endTime === '') {
         _rangeEndTime = undefined
       } else {
-        _rangeEndTime = dayjs(endTime)
+        _rangeEndTime = dayjs(parseInt(endTime) * 1000)
       }
     } else {
       _rangeEndTime = endTime

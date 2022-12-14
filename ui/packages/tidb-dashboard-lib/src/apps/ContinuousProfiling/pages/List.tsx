@@ -33,14 +33,29 @@ import styles from './List.module.less'
 import { telemetry } from '../utils/telemetry'
 import { isDistro } from '@lib/utils/distro'
 import { ConProfilingContext } from '../context'
+import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 
 export default function Page() {
   const ctx = useContext(ConProfilingContext)
 
-  const [endTime, setEndTime] = useSessionStorageState<Dayjs | string>(
+  const { timeRange, setTimeRange } = useURLTimeRange()
+  const [endTime, _setEndTime] = useSessionStorageState<Dayjs | string>(
     'conprof.end_time',
-    { defaultValue: '' }
+    { defaultValue: timeRange.type === 'recent' ? '' : `${timeRange.value[1]}` }
   )
+  const setEndTime = (v) => {
+    _setEndTime(v)
+    if (!v) {
+      setTimeRange({ type: 'recent', value: 2 * 60 * 60 })
+    } else {
+      const endUnix = v.unix()
+      setTimeRange({
+        type: 'absolute',
+        value: [endUnix - 2 * 60 * 60, endUnix]
+      })
+    }
+  }
+
   const rangeEndTime: Dayjs | undefined = useMemo(() => {
     let _rangeEndTime: Dayjs | undefined
     if (typeof endTime === 'string') {

@@ -19,7 +19,7 @@
     "@antv/g2plot": "^2.4.22",
     "@baurine/grafana-value-formats": "^1.0.4",
     "@baurine/sql-formatter-plus": "^1.5.3",
-    "@diag-ui/chart": "^1.0.1",
+    "@diag-ui/chart": "^1.0.3",
     "@elastic/charts": "^46.10.1",
     "@g07cha/flexbox-react": "^5.0.0",
     "@uifabric/utilities": "^7.33.5",

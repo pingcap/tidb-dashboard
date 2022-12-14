@@ -1,4 +1,5 @@
 import { TimeRange } from '@lib/components'
+import { useMemo } from 'react'
 import { useQueryParams } from './useQueryParams'
 
 export const useURLTimeRange = () => {
@@ -11,12 +12,16 @@ export const useURLTimeRange = () => {
   })
   const { from, to } = queryParams
   const isRecent = to === 'now'
-  const timeRange: TimeRange = {
-    type: isRecent ? 'recent' : 'absolute',
-    value: isRecent
-      ? parseInt(`${from}`)
-      : [parseInt(`${from}`), parseInt(`${to}`)]
-  } as TimeRange
+  const timeRange: TimeRange = useMemo(
+    () =>
+      ({
+        type: isRecent ? 'recent' : 'absolute',
+        value: isRecent
+          ? parseInt(`${from}`)
+          : [parseInt(`${from}`), parseInt(`${to}`)]
+      } as TimeRange),
+    [from, to, isRecent]
+  )
   const setTimeRange = (tr: TimeRange) => {
     const isRecent = tr.type === 'recent'
     setQueryParams({

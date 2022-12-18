@@ -1,3 +1,4 @@
 import StatementsTable from './StatementsTable'
+import InsightList from './InsightList'
 
-export { StatementsTable }
+export { StatementsTable, InsightList }

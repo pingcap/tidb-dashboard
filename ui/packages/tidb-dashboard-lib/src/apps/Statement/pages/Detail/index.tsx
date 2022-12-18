@@ -28,6 +28,8 @@ import { planColumns as genPlanColumns } from '../../utils/tableColumns'
 import PlanDetail from './PlanDetail'
 import { StatementContext } from '../../context'
 
+import InsightList from '../../components/InsightList'
+
 export interface IPageQuery {
   digest?: string
   schema?: string
@@ -187,6 +189,7 @@ function DetailPage() {
                   selectionPreservedOnEmptyClick
                 />
               </div>
+              <InsightList />
             </>
           )}
         </AnimatedSkeleton>

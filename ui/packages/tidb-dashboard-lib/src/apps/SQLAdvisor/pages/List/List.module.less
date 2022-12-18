@@ -1,0 +1,15 @@
+@import 'antd/es/style/themes/default.less';
+
+.list {
+  &_container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  &_toolbar {
+    @media only screen and (max-width: @screen-md) {
+      flex-direction: column;
+    }
+  }
+}

@@ -5,7 +5,7 @@ import * as singleSpa from 'single-spa'
 
 import { i18n, routing } from '@pingcap/tidb-dashboard-lib'
 
-import { AppOptions, getGlobalConfig } from './globalConfig'
+import { AppOptions } from './globalConfig'
 
 export default class AppRegistry {
   public defaultRouter = ''
@@ -48,16 +48,6 @@ export default class AppRegistry {
    * }} app
    */
   register(app) {
-    // return if this app is disabled
-    const disabledApps = getGlobalConfig().appsDisabled
-    if (disabledApps && disabledApps.includes(app.id)) {
-      return this
-    }
-    const enabledApps = getGlobalConfig().appsEnabled
-    if (enabledApps && !enabledApps.includes(app.id)) {
-      return this
-    }
-
     if (app.translations) {
       i18n.addTranslations(app.translations)
     }

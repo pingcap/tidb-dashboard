@@ -106,6 +106,7 @@ export interface ISlowQueryTableController {
 
   orderOptions: IOrderOptions
   changeOrder: (orderBy: string, desc: boolean) => void
+  resetOrder: () => void
 
   isLoading: boolean
 
@@ -133,6 +134,9 @@ export default function useSlowQueryTableController({
     persistQueryInSession,
     DEF_ORDER_OPTIONS
   )
+  function resetOrder() {
+    changeOrder(DEF_ORDER_OPTIONS.orderBy, DEF_ORDER_OPTIONS.desc)
+  }
 
   const { queryOptions, setQueryOptions } = useQueryOptions(
     initialQueryOptions,
@@ -274,6 +278,7 @@ export default function useSlowQueryTableController({
 
     orderOptions,
     changeOrder,
+    resetOrder,
 
     isLoading: isColumnsLoading || isDataLoading || isOptionsLoading,
 

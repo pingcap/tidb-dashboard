@@ -18,9 +18,14 @@ export * from '@pingcap/tidb-dashboard-client'
 //////////////////////////////
 
 const client = {
-  init(apiBasePath: string, apiInstance: DashboardApi) {
+  init(
+    apiBasePath: string,
+    apiInstance: DashboardApi,
+    axiosInstance: AxiosInstance
+  ) {
     this.apiBasePath = apiBasePath
     this.apiInstance = apiInstance
+    this.axiosInstance = axiosInstance
   },
 
   getInstance(): DashboardApi {
@@ -29,6 +34,10 @@ const client = {
 
   getBasePath(): string {
     return this.apiBasePath
+  },
+
+  getAxiosInstance(): AxiosInstance {
+    return this.axiosInstance
   }
 }
 
@@ -123,7 +132,10 @@ function initAxios(clientOptions: ClientOptions, clusterInfo: ClusterInfo) {
   if (deployType) {
     headers['x-deploy-type'] = deployType
   }
-  const instance = axios.create({ headers })
+  const instance = axios.create({
+    baseURL: clientOptions.apiPathBase,
+    headers
+  })
   applyErrorHandlerInterceptor(instance)
 
   return instance
@@ -138,14 +150,17 @@ export function setupClient(
   const axiosInstance = initAxios(clientOptions, clusterInfo)
   const dashboardApi = new DashboardApi(
     new Configuration({
-      basePath: clientOptions.apiPathBase,
       baseOptions: {
         handleError: 'default'
       }
     }),
-    undefined,
+    // basePath, it's set in the axiosInstance, so we pass empty string to dashboard Api
+    // if basePath and baseURL are both relative path
+    // the final api path will be the value that combined by dashboardApi basePath and axiosInstance baseURL
+    // if we use undefined for this param, dashboardApi basePath will be the default value `/dashboard/api`
+    '',
     axiosInstance
   )
 
-  client.init(clientOptions.apiPathBase, dashboardApi)
+  client.init(clientOptions.apiPathBase, dashboardApi, axiosInstance)
 }

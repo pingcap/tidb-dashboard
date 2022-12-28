@@ -57,9 +57,14 @@ export interface IOverviewDataSource {
   }): Promise<MetricsQueryResponse>
 }
 
+export type IOverviewConfig = IContextConfig &
+  IMetricConfig & {
+    showViewMoreMetrics: boolean
+  }
+
 export interface IOverviewContext {
   ds: IOverviewDataSource
-  cfg: IContextConfig & IMetricConfig
+  cfg: IOverviewConfig
 }
 
 export const OverviewContext = createContext<IOverviewContext | null>(null)

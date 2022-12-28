@@ -43,10 +43,13 @@ type Model struct {
 	BinaryPlan string `gorm:"column:Binary_plan" json:"binary_plan"`
 
 	// Basic
-	IsInternal   int    `gorm:"column:Is_internal" json:"is_internal"`
-	IndexNames   string `gorm:"column:Index_names" json:"index_names"`
-	Stats        string `gorm:"column:Stats" json:"stats"`
-	BackoffTypes string `gorm:"column:Backoff_types" json:"backoff_types"`
+	IsInternal      int    `gorm:"column:Is_internal" json:"is_internal"`
+	IndexNames      string `gorm:"column:Index_names" json:"index_names"`
+	Stats           string `gorm:"column:Stats" json:"stats"`
+	BackoffTypes    string `gorm:"column:Backoff_types" json:"backoff_types"`
+	Prepared        int    `gorm:"column:Prepared" json:"prepared"`
+	PlanFromCache   int    `gorm:"column:Plan_from_cache" json:"plan_from_cache"`
+	PlanFromBinding int    `gorm:"column:Plan_from_binding" json:"plan_from_binding"`
 
 	// Connection
 	User string `gorm:"column:User" json:"user"`

@@ -211,6 +211,24 @@ export interface SlowqueryModel {
      * @type {number}
      * @memberof SlowqueryModel
      */
+    'plan_from_binding'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'plan_from_cache'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'prepared'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
     'preproc_subqueries_time'?: number;
     /**
      * Detail

@@ -1,6 +1,13 @@
 import { Space, Typography, Row, Col, Collapse, Tooltip } from 'antd'
 import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Stack } from 'office-ui-fabric-react'
+import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
+import { useMemoizedFn } from 'ahooks'
+import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
+import { Link } from 'react-router-dom'
+import { debounce } from 'lodash'
+
 import {
   AutoRefreshButton,
   Card,
@@ -10,17 +17,11 @@ import {
   Toolbar,
   ErrorBar
 } from '@lib/components'
-import { Stack } from 'office-ui-fabric-react'
-import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
-import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
-import { MonitoringContext } from '../context'
-import { useMemoizedFn } from 'ahooks'
-
-import { Link } from 'react-router-dom'
-import { debounce } from 'lodash'
 import { store } from '@lib/utils/store'
+import { tz } from '@lib/utils'
+import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { telemetry } from '../utils/telemetry'
-import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
+import { MonitoringContext } from '../context'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)
@@ -154,6 +155,7 @@ export default function Monitoring() {
                             range={chartRange}
                             nullValue={m.nullValue}
                             unit={m.unit!}
+                            timezone={tz.getTimeZone()}
                             fetchPromeData={ctx!.ds.metricsQueryGet}
                             onLoading={onLoadingStateChange}
                             onBrush={handleOnBrush}

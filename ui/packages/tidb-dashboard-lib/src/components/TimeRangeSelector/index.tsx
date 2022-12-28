@@ -104,6 +104,74 @@ export interface ITimeRangeSelectorProps {
   customAbsoluteRangePicker?: boolean
 }
 
+const trySubstract = (value1, value2) => {
+  if (
+    value1 !== null &&
+    value1 !== undefined &&
+    value2 !== null &&
+    value2 !== undefined
+  ) {
+    return value1 - value2
+  }
+  return undefined
+}
+
+const customValueFormat = (
+  size: number,
+  decimals?: DecimalCount,
+  scaledDecimals?: DecimalCount
+) => {
+  if (size === null) {
+    return ''
+  }
+  // Less than 1 µs, divide in ns
+  if (Math.abs(size) < 0.000001) {
+    return toFixedScaled(
+      size * 1e9,
+      decimals,
+      trySubstract(scaledDecimals, decimals),
+      -9,
+      ' ns'
+    )
+  }
+  // Less than 1 ms, divide in µs
+  if (Math.abs(size) < 0.001) {
+    return toFixedScaled(
+      size * 1e6,
+      decimals,
+      trySubstract(scaledDecimals, decimals),
+      -6,
+      ' µs'
+    )
+  }
+  // Less than 1 second, divide in ms
+  if (Math.abs(size) < 1) {
+    return toFixedScaled(
+      size * 1e3,
+      decimals,
+      trySubstract(scaledDecimals, decimals),
+      -3,
+      ' ms'
+    )
+  }
+
+  if (Math.abs(size) < 60) {
+    return toFixed(size, decimals) + ' s'
+  } else if (Math.abs(size) < 3600) {
+    // Less than 1 hour, divide in minutes
+    return toFixedScaled(size / 60, decimals, scaledDecimals, 1, ' min')
+  } else if (Math.abs(size) < 86400) {
+    // Less than one day, divide in hours
+    return toFixedScaled(size / 3600, decimals, scaledDecimals, 4, ' hour')
+  } else {
+    // Less than one week, divide in days
+    return toFixedScaled(size / 86400, decimals, scaledDecimals, 5, ' day')
+  }
+}
+
+// array of 24 numbers, start from 0
+const hours = [...Array(24).keys()]
+
 function TimeRangeSelector({
   value,
   onChange,
@@ -147,71 +215,6 @@ function TimeRangeSelector({
     setDropdownVisible(false)
   })
 
-  const trySubstract = (value1, value2) => {
-    if (
-      value1 !== null &&
-      value1 !== undefined &&
-      value2 !== null &&
-      value2 !== undefined
-    ) {
-      return value1 - value2
-    }
-    return undefined
-  }
-
-  const customValueFormat = (
-    size: number,
-    decimals?: DecimalCount,
-    scaledDecimals?: DecimalCount
-  ) => {
-    if (size === null) {
-      return ''
-    }
-    // Less than 1 µs, divide in ns
-    if (Math.abs(size) < 0.000001) {
-      return toFixedScaled(
-        size * 1e9,
-        decimals,
-        trySubstract(scaledDecimals, decimals),
-        -9,
-        ' ns'
-      )
-    }
-    // Less than 1 ms, divide in µs
-    if (Math.abs(size) < 0.001) {
-      return toFixedScaled(
-        size * 1e6,
-        decimals,
-        trySubstract(scaledDecimals, decimals),
-        -6,
-        ' µs'
-      )
-    }
-    // Less than 1 second, divide in ms
-    if (Math.abs(size) < 1) {
-      return toFixedScaled(
-        size * 1e3,
-        decimals,
-        trySubstract(scaledDecimals, decimals),
-        -3,
-        ' ms'
-      )
-    }
-
-    if (Math.abs(size) < 60) {
-      return toFixed(size, decimals) + ' s'
-    } else if (Math.abs(size) < 3600) {
-      // Less than 1 hour, divide in minutes
-      return toFixedScaled(size / 60, decimals, scaledDecimals, 1, ' min')
-    } else if (Math.abs(size) < 86400) {
-      // Less than one day, divide in hours
-      return toFixedScaled(size / 3600, decimals, scaledDecimals, 4, ' hour')
-    } else {
-      // Less than one week, divide in days
-      return toFixedScaled(size / 86400, decimals, scaledDecimals, 5, ' day')
-    }
-  }
-
   // get the selectable time range value from rencent_seconds
   const selectableHours = useMemo(() => {
     return recent_seconds[recent_seconds.length - 1] / 3600
@@ -226,9 +229,6 @@ function TimeRangeSelector({
     const tooLate = today < dayjs(current).startOf('hour')
     return current && (tooEarly || tooLate)
   }
-
-  // array of 24 numbers, start from 0
-  const hours = [...Array(24).keys()]
 
   const disabledTime = (current) => {
     // current hour

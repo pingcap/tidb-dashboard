@@ -170,7 +170,8 @@ const customValueFormat = (
 }
 
 // array of 24 numbers, start from 0
-const hours = [...Array(24).keys()]
+const hoursRange = [...Array(24).keys()]
+const minutesRange = [...Array(60).keys()]
 
 function TimeRangeSelector({
   value,
@@ -230,13 +231,16 @@ function TimeRangeSelector({
     return current && (tooEarly || tooLate)
   }
 
+  // control avaliable time on Minute level
   const disabledTime = (current) => {
     // current hour
     const hour = dayjs().hour()
+    const minute = dayjs().minute()
     // is current day
     if (current && current.isSame(dayjs(), 'day')) {
       return {
-        disabledHours: () => hours.slice(hour)
+        disabledHours: () => hoursRange.slice(hour + 1),
+        disabledMinutes: () => minutesRange.slice(minute)
       }
     }
 
@@ -246,7 +250,8 @@ function TimeRangeSelector({
       current.isSame(dayjs().subtract(selectableHours / 24, 'day'), 'day')
     ) {
       return {
-        disabledHours: () => hours.slice(0, hour)
+        disabledHours: () => hoursRange.slice(0, hour),
+        disabledMinutes: () => minutesRange.slice(0, minute)
       }
     }
 

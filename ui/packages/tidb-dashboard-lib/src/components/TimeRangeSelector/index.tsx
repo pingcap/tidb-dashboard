@@ -240,7 +240,7 @@ function TimeRangeSelector({
     if (current && current.isSame(dayjs(), 'day')) {
       return {
         disabledHours: () => hoursRange.slice(hour + 1),
-        disabledMinutes: () => minutesRange.slice(minute)
+        disabledMinutes: () => minutesRange.slice(minute + 1)
       }
     }
 

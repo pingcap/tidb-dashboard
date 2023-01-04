@@ -2,7 +2,12 @@ import React, { useState, useMemo } from 'react'
 import { Dropdown, Button } from 'antd'
 import DatePicker from '../DatePicker'
 import { ClockCircleOutlined, DownOutlined } from '@ant-design/icons'
-import { getValueFormat } from '@baurine/grafana-value-formats'
+import {
+  getValueFormat,
+  toFixedScaled,
+  toFixed,
+  DecimalCount
+} from '@baurine/grafana-value-formats'
 import cx from 'classnames'
 import dayjs, { Dayjs } from 'dayjs'
 import { useTranslation } from 'react-i18next'
@@ -97,23 +102,91 @@ export interface ITimeRangeSelectorProps {
   onChange?: (val: TimeRange) => void
   disabled?: boolean
   recent_seconds?: number[]
-  withAbsoluteRangePicker?: boolean
   disabledDate?: RangePickerProps<dayjs.Dayjs>['disabledDate']
   disabledTime?: RangePickerProps<dayjs.Dayjs>['disabledTime']
   onCalendarChange?: RangePickerProps<dayjs.Dayjs>['onCalendarChange']
   onOpenChange?: RangePickerProps<dayjs.Dayjs>['onOpenChange']
+  customAbsoluteRangePicker?: boolean
 }
+
+const trySubstract = (value1, value2) => {
+  if (
+    value1 !== null &&
+    value1 !== undefined &&
+    value2 !== null &&
+    value2 !== undefined
+  ) {
+    return value1 - value2
+  }
+  return undefined
+}
+
+const customValueFormat = (
+  size: number,
+  decimals?: DecimalCount,
+  scaledDecimals?: DecimalCount
+) => {
+  if (size === null) {
+    return ''
+  }
+  // Less than 1 µs, divide in ns
+  if (Math.abs(size) < 0.000001) {
+    return toFixedScaled(
+      size * 1e9,
+      decimals,
+      trySubstract(scaledDecimals, decimals),
+      -9,
+      ' ns'
+    )
+  }
+  // Less than 1 ms, divide in µs
+  if (Math.abs(size) < 0.001) {
+    return toFixedScaled(
+      size * 1e6,
+      decimals,
+      trySubstract(scaledDecimals, decimals),
+      -6,
+      ' µs'
+    )
+  }
+  // Less than 1 second, divide in ms
+  if (Math.abs(size) < 1) {
+    return toFixedScaled(
+      size * 1e3,
+      decimals,
+      trySubstract(scaledDecimals, decimals),
+      -3,
+      ' ms'
+    )
+  }
+
+  if (Math.abs(size) < 60) {
+    return toFixed(size, decimals) + ' s'
+  } else if (Math.abs(size) < 3600) {
+    // Less than 1 hour, divide in minutes
+    return toFixedScaled(size / 60, decimals, scaledDecimals, 1, ' min')
+  } else if (Math.abs(size) < 86400) {
+    // Less than one day, divide in hours
+    return toFixedScaled(size / 3600, decimals, scaledDecimals, 4, ' hour')
+  } else {
+    // Less than one week, divide in days
+    return toFixedScaled(size / 86400, decimals, scaledDecimals, 5, ' day')
+  }
+}
+
+// array of 24 numbers, start from 0
+// const hours = [...Array(24).keys()]
 
 function TimeRangeSelector({
   value,
   onChange,
   disabled = false,
   recent_seconds = DEFAULT_RECENT_SECONDS,
-  withAbsoluteRangePicker = true,
   disabledDate,
   disabledTime,
   onCalendarChange,
-  onOpenChange
+  onOpenChange,
+  customAbsoluteRangePicker = false
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -151,6 +224,44 @@ function TimeRangeSelector({
     setDropdownVisible(false)
   })
 
+  // get the selectable time range value from rencent_seconds
+  // const selectableHours = useMemo(() => {
+  //   return recent_seconds[recent_seconds.length - 1] / 3600
+  // }, [recent_seconds])
+
+  // const disabledDate = (current) => {
+  //   const today = dayjs().startOf('hour')
+  //   // Can not select days before 15 days ago
+  //   const tooEarly =
+  //     today.subtract(selectableHours, 'hour') > dayjs(current).startOf('hour')
+  //   // Can not select days after today
+  //   const tooLate = today < dayjs(current).startOf('hour')
+  //   return current && (tooEarly || tooLate)
+  // }
+
+  // const disabledTime = (current) => {
+  //   // current hour
+  //   const hour = dayjs().hour()
+  //   // is current day
+  //   if (current && current.isSame(dayjs(), 'day')) {
+  //     return {
+  //       disabledHours: () => hours.slice(hour)
+  //     }
+  //   }
+
+  //   // is 15 day ago
+  //   if (
+  //     current &&
+  //     current.isSame(dayjs().subtract(selectableHours / 24, 'day'), 'day')
+  //   ) {
+  //     return {
+  //       disabledHours: () => hours.slice(0, hour)
+  //     }
+  //   }
+
+  //   return { disabledHours: () => [] }
+  // }
+
   const dropdownContent = (
     <div
       className={styles.dropdown_content_container}
@@ -175,12 +286,32 @@ function TimeRangeSelector({
               data-e2e={`timerange-${seconds}`}
             >
               {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
-              {getValueFormat('s')(seconds, 0)}
+              {customAbsoluteRangePicker
+                ? customValueFormat(seconds, 0)
+                : getValueFormat('s')(seconds, 0)}
             </div>
           ))}
         </div>
       </div>
-      {withAbsoluteRangePicker && (
+      {customAbsoluteRangePicker ? (
+        <div className={styles.custom_time_ranges}>
+          <span>
+            {t(
+              'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
+            )}
+          </span>
+          <div style={{ marginTop: 8 }}>
+            <RangePicker
+              showTime
+              format="YYYY-MM-DD HH:mm:ss"
+              value={rangePickerValue}
+              onChange={handleRangePickerChange}
+              disabledDate={disabledDate}
+              disabledTime={disabledTime}
+            />
+          </div>
+        </div>
+      ) : (
         <div className={styles.custom_time_ranges}>
           <span>
             {t(
@@ -216,7 +347,9 @@ function TimeRangeSelector({
         {value && value.type === 'recent' && (
           <span data-e2e="selected_timerange">
             {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
-            {getValueFormat('s')(value.value, 0)}
+            {customAbsoluteRangePicker
+              ? customValueFormat(value.value, 0)
+              : getValueFormat('s')(value.value, 0)}
           </span>
         )}
         {value && value.type === 'absolute' && (

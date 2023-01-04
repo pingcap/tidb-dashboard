@@ -1,4 +1,4 @@
-# Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+# Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 name: Upload E2E Snapshots
 
 on:
@@ -40,9 +40,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
-          cache: 'pnpm'
-          cache-dependency-path: 'ui/pnpm-lock.yaml'
+          node-version: "16"
+          cache: "pnpm"
+          cache-dependency-path: "ui/pnpm-lock.yaml"
       - uses: actions/setup-go@v3
         with:
           go-version: "1.18"

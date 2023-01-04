@@ -26,7 +26,8 @@ import {
   Toolbar,
   MultiSelect,
   toTimeRangeValue,
-  IColumnKeys
+  IColumnKeys,
+  TimeRange
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
@@ -71,14 +72,15 @@ function List() {
     cacheMgr,
     showFullSQL,
     fetchSchemas: ctx?.cfg.showDBFilter,
+    timeRange,
     initialQueryOptions: {
       ...DEF_SLOW_QUERY_OPTIONS,
-      visibleColumnKeys,
-      timeRange
+      visibleColumnKeys
     },
 
     ds: ctx!.ds
   })
+
   function updateVisibleColumnKeys(v: IColumnKeys) {
     setVisibleColumnKeys(v)
     if (!v[controller.orderOptions.orderBy]) {

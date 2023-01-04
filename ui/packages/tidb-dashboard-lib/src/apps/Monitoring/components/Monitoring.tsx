@@ -73,20 +73,30 @@ export default function Monitoring() {
       <Card>
         <Toolbar>
           <Space>
-            <TimeRangeSelector.WithZoomOut
-              value={timeRange}
-              onChange={(v) => {
-                setTimeRange(v)
-                telemetry.selectTimeRange(v)
-              }}
-              recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
-              withAbsoluteRangePicker={
-                ctx?.cfg.timeRangeSelector?.withAbsoluteRangePicker
-              }
-              onZoomOutClick={(start, end) =>
-                telemetry.clickZoomOut([start, end])
-              }
-            />
+            {ctx?.cfg.timeRangeSelector?.customAbsoluteRangePicker ? (
+              <TimeRangeSelector
+                value={timeRange}
+                onChange={(v) => {
+                  setTimeRange(v)
+                  telemetry.selectTimeRange(v)
+                }}
+                recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
+                customAbsoluteRangePicker={true}
+              />
+            ) : (
+              <TimeRangeSelector.WithZoomOut
+                value={timeRange}
+                onChange={(v) => {
+                  setTimeRange(v)
+                  telemetry.selectTimeRange(v)
+                }}
+                recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
+                customAbsoluteRangePicker={false}
+                onZoomOutClick={(start, end) =>
+                  telemetry.clickZoomOut([start, end])
+                }
+              />
+            )}
             <AutoRefreshButton
               onChange={telemetry.selectAutoRefreshOption}
               onRefresh={handleManualRefreshClick}

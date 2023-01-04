@@ -97,7 +97,6 @@ export interface ISlowQueryTableControllerOpts {
   initialQueryOptions?: ISlowQueryOptions
   persistQueryInSession?: boolean
   filters?: Set<string>
-  timeRange: TimeRange
 
   ds: ISlowQueryDataSource
 }
@@ -130,7 +129,6 @@ export default function useSlowQueryTableController({
   initialQueryOptions,
   persistQueryInSession = true,
   ds,
-  timeRange,
   filters
 }: ISlowQueryTableControllerOpts): ISlowQueryTableController {
   const { orderOptions, changeOrder } = useOrderState(
@@ -195,7 +193,7 @@ export default function useSlowQueryTableController({
     }
 
     doRequest()
-  }, [queryOptions, timeRange])
+  }, [queryOptions])
 
   useChange(() => {
     async function getSlowQueryList() {
@@ -233,15 +231,15 @@ export default function useSlowQueryTableController({
       const requestBeginAt = performance.now()
       setDataLoading(true)
 
-      const timeRangeValue = toTimeRangeValue(timeRange)
+      const timeRange = toTimeRangeValue(queryOptions.timeRange)
 
       try {
         const res = await ds.slowQueryListGet(
-          timeRangeValue[0],
+          timeRange[0],
           queryOptions.schemas,
           orderOptions.desc,
           queryOptions.digest,
-          timeRangeValue[1],
+          timeRange[1],
           actualVisibleColumnKeys,
           queryOptions.limit,
           orderOptions.orderBy,
@@ -273,7 +271,7 @@ export default function useSlowQueryTableController({
     }
 
     getSlowQueryList()
-  }, [queryOptions, orderOptions, timeRange])
+  }, [queryOptions, orderOptions])
 
   const availableColumnsInTable = useMemo(
     () => slowQueryColumns(data ?? [], schemaColumns, showFullSQL),

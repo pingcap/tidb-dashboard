@@ -96,6 +96,7 @@ export interface ISlowQueryTableControllerOpts {
   fetchSchemas?: boolean
   initialQueryOptions?: ISlowQueryOptions
   persistQueryInSession?: boolean
+  filters?: Set<string>
 
   ds: ISlowQueryDataSource
 }
@@ -127,7 +128,8 @@ export default function useSlowQueryTableController({
   fetchSchemas = true,
   initialQueryOptions,
   persistQueryInSession = true,
-  ds
+  ds,
+  filters
 }: ISlowQueryTableControllerOpts): ISlowQueryTableController {
   const { orderOptions, changeOrder } = useOrderState(
     'slow_query',
@@ -154,6 +156,13 @@ export default function useSlowQueryTableController({
   const { schemaColumns, isLoading: isColumnsLoading } = useSchemaColumns(
     ds.slowQueryAvailableFieldsGet
   )
+
+  const filteredData = useMemo(() => {
+    if (!filters) {
+      return data
+    }
+    return data?.filter((d) => filters.has(d.digest!))
+  }, [data, filters])
 
   // Reload these options when sending a new request.
   useChange(() => {
@@ -282,7 +291,7 @@ export default function useSlowQueryTableController({
 
     isLoading: isColumnsLoading || isDataLoading || isOptionsLoading,
 
-    data,
+    data: filteredData,
     isDataLoadedSlowly,
     allSchemas,
     errors,

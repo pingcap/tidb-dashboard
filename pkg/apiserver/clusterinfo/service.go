@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 // clusterinfo is a directory for ClusterInfoServer, which could load topology from pd
 // using Etcd v3 interface and pd interface.

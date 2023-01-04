@@ -9,9 +9,14 @@ import { SlowQueryContext } from '../context'
 
 interface Props extends Partial<ICardTableProps> {
   controller: ISlowQueryTableController
+  detailPathPrefix?: string
 }
 
-function SlowQueriesTable({ controller, ...restProps }: Props) {
+function SlowQueriesTable({
+  controller,
+  detailPathPrefix = '/slow_query/detail',
+  ...restProps
+}: Props) {
   const ctx = useContext(SlowQueryContext)
   const navigate = useNavigate()
   const handleRowClick = useMemoizedFn(
@@ -23,7 +28,7 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
         connectId: rec.connection_id,
         timestamp: rec.timestamp
       })
-      openLink(`/slow_query/detail?${qs}`, ev, navigate)
+      openLink(`${detailPathPrefix}?${qs}`, ev, navigate)
     }
   )
 

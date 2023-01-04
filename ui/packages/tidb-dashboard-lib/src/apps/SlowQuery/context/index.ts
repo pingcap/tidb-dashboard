@@ -5,6 +5,7 @@ import { AxiosPromise } from 'axios'
 import { SlowqueryModel, SlowqueryGetListRequest } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
+import { PromDataSuccessResponse } from '@lib/utils'
 
 export interface ISlowQueryDataSource {
   infoListDatabases(options?: ReqConfig): AxiosPromise<Array<string>>
@@ -36,6 +37,21 @@ export interface ISlowQueryDataSource {
     request: SlowqueryGetListRequest,
     options?: ReqConfig
   ): AxiosPromise<string>
+
+  slowQueryAnalyze?(start: number, end: number): AxiosPromise
+
+  promqlQuery?(
+    query: string,
+    time: number,
+    timeout: string
+  ): AxiosPromise<PromDataSuccessResponse>
+
+  promqlQueryRange?(
+    query: string,
+    start: number,
+    end: number,
+    step: string
+  ): AxiosPromise<PromDataSuccessResponse>
 }
 
 export interface ISlowQueryEvent {

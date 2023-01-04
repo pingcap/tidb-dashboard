@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package hostinfo
 
@@ -52,8 +52,8 @@ type InfoMap = map[string]*Info
 
 var clusterTableQueryTemplate = template.Must(template.New("").Parse(`
 SELECT
-	*, 
-	FIELD(LOWER(A.TYPE), 'tiflash', 'tikv', 'pd', 'tidb') AS _ORDER 
+	*,
+	FIELD(LOWER(A.TYPE), 'tiflash', 'tikv', 'pd', 'tidb') AS _ORDER
 FROM (
 	SELECT
 		TYPE, INSTANCE, DEVICE_TYPE, DEVICE_NAME, JSON_OBJECTAGG(NAME, VALUE) AS JSON_VALUE

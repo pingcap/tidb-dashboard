@@ -6,7 +6,6 @@ import {
   Card,
   DEFAULT_TIME_RANGE,
   TimeRange,
-  TimeRangeSelector,
   Toolbar,
   ErrorBar
 } from '@lib/components'
@@ -19,6 +18,7 @@ import { OverviewContext } from '../context'
 
 import { useMemoizedFn } from 'ahooks'
 import { telemetry } from '../utils/telemetry'
+import { LimitTimeRange } from '@lib/apps/Overview/components/LimitTimeRange'
 
 import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
 export default function Metrics() {
@@ -58,7 +58,7 @@ export default function Metrics() {
       <ErrorBar errors={[error]} />
       {promAddrConfigurable && (
         <Link to="/user_profile?blink=profile.prometheus">
-          {t('components.metricChart.changePromButton')}
+          {t('overview.change_prom_button')}
         </Link>
       )}
     </Space>
@@ -69,30 +69,20 @@ export default function Metrics() {
       <Card>
         <Toolbar>
           <Space>
-            {ctx?.cfg.timeRangeSelector?.customAbsoluteRangePicker ? (
-              <TimeRangeSelector
-                value={timeRange}
-                onChange={(v) => {
-                  setTimeRange(v)
-                  telemetry.selectTimeRange(v)
-                }}
-                recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
-                customAbsoluteRangePicker={true}
-              />
-            ) : (
-              <TimeRangeSelector.WithZoomOut
-                value={timeRange}
-                onChange={(v) => {
-                  setTimeRange(v)
-                  telemetry.selectTimeRange(v)
-                }}
-                recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
-                customAbsoluteRangePicker={false}
-                onZoomOutClick={(start, end) =>
-                  telemetry.clickZoomOut([start, end])
-                }
-              />
-            )}
+            <LimitTimeRange
+              value={timeRange}
+              recent_seconds={ctx?.cfg.timeRangeSelector?.recent_seconds}
+              customAbsoluteRangePicker={
+                ctx?.cfg.timeRangeSelector?.customAbsoluteRangePicker
+              }
+              onChange={(v) => {
+                setTimeRange(v)
+                telemetry.selectTimeRange(v)
+              }}
+              onZoomOutClick={(start, end) =>
+                telemetry.clickZoomOut([start, end])
+              }
+            />
             <AutoRefreshButton
               onChange={telemetry.selectAutoRefreshOption}
               onRefresh={handleManualRefreshClick}

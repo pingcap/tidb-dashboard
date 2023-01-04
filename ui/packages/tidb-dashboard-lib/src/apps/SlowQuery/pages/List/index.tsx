@@ -72,9 +72,9 @@ function List() {
     cacheMgr,
     showFullSQL,
     fetchSchemas: ctx?.cfg.showDBFilter,
-    timeRange,
     initialQueryOptions: {
       ...DEF_SLOW_QUERY_OPTIONS,
+      timeRange,
       visibleColumnKeys
     },
 

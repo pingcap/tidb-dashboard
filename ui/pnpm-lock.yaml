@@ -414,7 +414,7 @@ importers:
       '@baurine/esbuild-plugin-postcss3': ^0.3.3
       '@baurine/grafana-value-formats': ^1.0.4
       '@baurine/sql-formatter-plus': ^1.5.3
-      '@diag-ui/chart': ^1.0.3
+      '@diag-ui/chart': ^1.0.6
       '@elastic/charts': ^46.10.1
       '@g07cha/flexbox-react': ^5.0.0
       '@openapitools/openapi-generator-cli': ^2.4.26
@@ -492,7 +492,7 @@ importers:
       '@antv/g2plot': registry.npmmirror.com/@antv/g2plot/2.4.22
       '@baurine/grafana-value-formats': 1.0.4_dayjs@1.11.6
       '@baurine/sql-formatter-plus': 1.5.3
-      '@diag-ui/chart': 1.0.3_acfgri5l4fesrdycwkpmd6gbky
+      '@diag-ui/chart': 1.0.6_acfgri5l4fesrdycwkpmd6gbky
       '@elastic/charts': 46.13.0_qc2mrcmaomojh5afq77uhiryvu
       '@g07cha/flexbox-react': 5.0.0_oxfzelaz5ynxsop2v2nu2h2m64
       '@uifabric/utilities': 7.34.1_itbvd6nzuoidgzct3pixmtsxhi
@@ -2725,8 +2725,8 @@ packages:
       lodash: 4.17.21
     dev: false
 
-  /@diag-ui/chart/1.0.3_acfgri5l4fesrdycwkpmd6gbky:
-    resolution: {integrity: sha512-SKzBpLPCAzvbFMD9E0LoIqvImPtWszxx1hk7YTs+UoTlhHipkEZQMcnriGabW+qTs8alUXZgKexA/sMLOB6vPw==}
+  /@diag-ui/chart/1.0.6_acfgri5l4fesrdycwkpmd6gbky:
+    resolution: {integrity: sha512-ySzNO3bC11H1dlu3cD6lherCU5TOvFLB9BoIgbicZMzZvMyGJj97r1B3ar+pJ0icO84tTqZTP6UCkbXMnReEVA==}
     peerDependencies:
       dayjs: ^1.11.6
       react: ^17.0.2
@@ -4051,7 +4051,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       '@typescript-eslint/types': 5.30.7
-      eslint-visitor-keys: registry.npmmirror.com/eslint-visitor-keys/3.3.0
+      eslint-visitor-keys: 3.3.0
     dev: true
 
   /@uifabric/foundation/7.10.4_itbvd6nzuoidgzct3pixmtsxhi:
@@ -4279,6 +4279,11 @@ packages:
     resolution: {integrity: sha512-TIGnTpdo+E3+pCyAluZvtED5p5wCqLdezCyhPZzKPcxvFplEt4i+W7OONCKgeZFT3+y5NZZfOOS/Bdcanm1MYA==}
     engines: {node: '>=0.10.0'}
     dev: false
+
+  /ansi-regex/5.0.1:
+    resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
+    engines: {node: '>=8'}
+    dev: true
 
   /ansi-styles/2.2.1:
     resolution: {integrity: sha512-kmCevFghRiWM7HB5zTPULl4r9bVFSWjz62MhqizDGUrq2NWuNMQyuv4tHHoKJHs69M/MF64lEcHdYIocrdWQYA==}
@@ -12252,7 +12257,7 @@ packages:
     resolution: {integrity: sha512-hTdwr+7yYNIT5n4AMYp85KA6yw2Va0FLa3Rguvbpa4W3I5xynaBZo41cM3XM+4Q6fRMj3sBYIR1VAmZMXYJvRQ==}
     engines: {npm: '>=2.0.0'}
     dependencies:
-      tslib: registry.npmmirror.com/tslib/1.14.1
+      tslib: 1.14.1
 
   /rxjs/7.5.5:
     resolution: {integrity: sha512-sy+H0pQofO95VDmFLzyaw9xNJU4KTRSwQIGM6+iG3SypAtCiLDzpeG8sJrNCWn2Up9km+KhkvTdbkrdy+yzZdw==}
@@ -12827,7 +12832,7 @@ packages:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
     dependencies:
-      ansi-regex: registry.npmmirror.com/ansi-regex/5.0.1
+      ansi-regex: 5.0.1
     dev: true
 
   /strip-bom/2.0.0:
@@ -18837,13 +18842,6 @@ packages:
     name: eslint-visitor-keys
     version: 2.1.0
     engines: {node: '>=10'}
-    dev: true
-
-  registry.npmmirror.com/eslint-visitor-keys/3.3.0:
-    resolution: {integrity: sha512-mQ+suqKJVyeuwGYHAdjMFqjCyfl8+Ldnxuyp3ldiMBFKkvytrXUZWaiPCEav8qDHKty44bD+qV1IP4T+w+xXRA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/eslint-visitor-keys/-/eslint-visitor-keys-3.3.0.tgz}
-    name: eslint-visitor-keys
-    version: 3.3.0
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
   registry.npmmirror.com/eslint/7.32.0:

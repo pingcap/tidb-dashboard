@@ -174,9 +174,6 @@ const customValueFormat = (
   }
 }
 
-// array of 24 numbers, start from 0
-// const hours = [...Array(24).keys()]
-
 function TimeRangeSelector({
   value,
   onChange,
@@ -224,44 +221,6 @@ function TimeRangeSelector({
     setDropdownVisible(false)
   })
 
-  // get the selectable time range value from rencent_seconds
-  // const selectableHours = useMemo(() => {
-  //   return recent_seconds[recent_seconds.length - 1] / 3600
-  // }, [recent_seconds])
-
-  // const disabledDate = (current) => {
-  //   const today = dayjs().startOf('hour')
-  //   // Can not select days before 15 days ago
-  //   const tooEarly =
-  //     today.subtract(selectableHours, 'hour') > dayjs(current).startOf('hour')
-  //   // Can not select days after today
-  //   const tooLate = today < dayjs(current).startOf('hour')
-  //   return current && (tooEarly || tooLate)
-  // }
-
-  // const disabledTime = (current) => {
-  //   // current hour
-  //   const hour = dayjs().hour()
-  //   // is current day
-  //   if (current && current.isSame(dayjs(), 'day')) {
-  //     return {
-  //       disabledHours: () => hours.slice(hour)
-  //     }
-  //   }
-
-  //   // is 15 day ago
-  //   if (
-  //     current &&
-  //     current.isSame(dayjs().subtract(selectableHours / 24, 'day'), 'day')
-  //   ) {
-  //     return {
-  //       disabledHours: () => hours.slice(0, hour)
-  //     }
-  //   }
-
-  //   return { disabledHours: () => [] }
-  // }
-
   const dropdownContent = (
     <div
       className={styles.dropdown_content_container}
@@ -293,45 +252,25 @@ function TimeRangeSelector({
           ))}
         </div>
       </div>
-      {customAbsoluteRangePicker ? (
-        <div className={styles.custom_time_ranges}>
-          <span>
-            {t(
-              'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
-            )}
-          </span>
-          <div style={{ marginTop: 8 }}>
-            <RangePicker
-              showTime
-              format="YYYY-MM-DD HH:mm:ss"
-              value={rangePickerValue}
-              onChange={handleRangePickerChange}
-              disabledDate={disabledDate}
-              disabledTime={disabledTime}
-            />
-          </div>
+      <div className={styles.custom_time_ranges}>
+        <span>
+          {t(
+            'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
+          )}
+        </span>
+        <div style={{ marginTop: 8 }}>
+          <RangePicker
+            showTime
+            format="YYYY-MM-DD HH:mm:ss"
+            value={rangePickerValue}
+            onChange={handleRangePickerChange}
+            disabledDate={disabledDate}
+            disabledTime={disabledTime}
+            onCalendarChange={onCalendarChange}
+            onOpenChange={onOpenChange}
+          />
         </div>
-      ) : (
-        <div className={styles.custom_time_ranges}>
-          <span>
-            {t(
-              'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
-            )}
-          </span>
-          <div style={{ marginTop: 8 }}>
-            <RangePicker
-              showTime
-              format="YYYY-MM-DD HH:mm:ss"
-              value={rangePickerValue}
-              onChange={handleRangePickerChange}
-              disabledDate={disabledDate}
-              disabledTime={disabledTime}
-              onCalendarChange={onCalendarChange}
-              onOpenChange={onOpenChange}
-            />
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   )
 

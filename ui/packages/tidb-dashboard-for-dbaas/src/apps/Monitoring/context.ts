@@ -66,6 +66,8 @@ export const ctx: (globalConfig: IGlobalConfig) => IMonitoringContext = (
     timeRangeSelector: {
       recent_seconds: RECENT_SECONDS,
       customAbsoluteRangePicker: true
-    }
+    },
+    metricsWithoutCategory:
+      globalConfig.clusterInfo.deployType === 'Dedicated' ? false : true
   }
 })

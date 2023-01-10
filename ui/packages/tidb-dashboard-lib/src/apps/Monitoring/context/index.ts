@@ -4,23 +4,28 @@ import { MetricsQueryResponse } from '@lib/client'
 
 import { QueryConfig, TransformNullValue } from 'metrics-chart'
 
+export interface MetricsType {
+  title: string
+  queries: QueryConfig[]
+  unit: string
+  nullValue?: TransformNullValue
+}
+
 export interface MetricsQueryType {
   category: string
-  metrics: {
-    title: string
-    queries: QueryConfig[]
-    unit: string
-    nullValue?: TransformNullValue
-  }[]
+  metrics: MetricsType[]
 }
 
 interface IMetricConfig {
-  getMetricsQueries: (pdVersion: string | undefined) => MetricsQueryType[]
+  getMetricsQueries: (
+    pdVersion: string | undefined
+  ) => MetricsQueryType[] | MetricsType[]
   promAddrConfigurable?: boolean
   timeRangeSelector?: {
     recent_seconds: number[]
     customAbsoluteRangePicker: boolean
   }
+  metricsWithoutCategory?: boolean
 }
 
 export interface IMonitoringDataSource {

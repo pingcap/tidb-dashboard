@@ -111,56 +111,99 @@ export default function Monitoring() {
       <SyncChartPointer>
         <Stack tokens={{ childrenGap: 16 }}>
           <Card noMarginTop noMarginBottom>
-            {ctx!.cfg.getMetricsQueries(pdVersion).map((item) => (
-              <Collapse defaultActiveKey={['1']} ghost key={item.category}>
-                <Collapse.Panel
-                  header={t(`monitoring.category.${item.category}`)}
-                  key="1"
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 500,
-                    padding: 0,
-                    marginLeft: -16
-                  }}
-                >
-                  <Row gutter={[16, 16]}>
-                    {item.metrics.map((m) => (
-                      <Col xl={12} sm={24} key={m.title}>
-                        <Card
-                          noMargin
-                          style={{
-                            border: '1px solid #f1f0f0',
-                            padding: '10px 2rem',
-                            backgroundColor: '#fcfcfd'
-                          }}
-                        >
-                          <Typography.Title
-                            level={5}
-                            style={{ textAlign: 'center' }}
-                          >
-                            {m.title}
-                          </Typography.Title>
-                          <MetricsChart
-                            queries={m.queries}
-                            range={chartRange}
-                            nullValue={m.nullValue}
-                            unit={m.unit!}
-                            timezone={tz.getTimeZone()}
-                            fetchPromeData={ctx!.ds.metricsQueryGet}
-                            onLoading={onLoadingStateChange}
-                            onBrush={handleOnBrush}
-                            errorComponent={ErrorComponent}
-                            onClickSeriesLabel={(seriesName) =>
-                              telemetry.clickSeriesLabel(m.title, seriesName)
-                            }
-                          />
-                        </Card>
-                      </Col>
-                    ))}
-                  </Row>
-                </Collapse.Panel>
-              </Collapse>
-            ))}
+            {ctx!.cfg.metricsWithoutCategory ? (
+              <Row gutter={[16, 16]}>
+                {ctx?.cfg.getMetricsQueries(pdVersion).map((item) => (
+                  <Col xl={12} sm={24} key={item.title}>
+                    <Card
+                      noMargin
+                      style={{
+                        border: '1px solid #f1f0f0',
+                        padding: '10px 2rem',
+                        backgroundColor: '#fcfcfd'
+                      }}
+                    >
+                      <Typography.Title
+                        level={5}
+                        style={{ textAlign: 'center' }}
+                      >
+                        {item.title}
+                      </Typography.Title>
+                      <MetricsChart
+                        queries={item.queries}
+                        range={chartRange}
+                        nullValue={item.nullValue}
+                        unit={item.unit!}
+                        timezone={tz.getTimeZone()}
+                        fetchPromeData={ctx!.ds.metricsQueryGet}
+                        onLoading={onLoadingStateChange}
+                        onBrush={handleOnBrush}
+                        errorComponent={ErrorComponent}
+                        onClickSeriesLabel={(seriesName) =>
+                          telemetry.clickSeriesLabel(item.title, seriesName)
+                        }
+                      />
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            ) : (
+              <>
+                {ctx!.cfg.getMetricsQueries(pdVersion).map((item) => (
+                  <Collapse defaultActiveKey={['1']} ghost key={item.category}>
+                    <Collapse.Panel
+                      header={t(`monitoring.category.${item.category}`)}
+                      key="1"
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        padding: 0,
+                        marginLeft: -16
+                      }}
+                    >
+                      <Row gutter={[16, 16]}>
+                        {item.metrics.map((item) => (
+                          <Col xl={12} sm={24} key={item.title}>
+                            <Card
+                              noMargin
+                              style={{
+                                border: '1px solid #f1f0f0',
+                                padding: '10px 2rem',
+                                backgroundColor: '#fcfcfd'
+                              }}
+                            >
+                              <Typography.Title
+                                level={5}
+                                style={{ textAlign: 'center' }}
+                              >
+                                {item.title}
+                              </Typography.Title>
+                              <MetricsChart
+                                queries={item.queries}
+                                range={chartRange}
+                                nullValue={item.nullValue}
+                                unit={item.unit!}
+                                timezone={tz.getTimeZone()}
+                                fetchPromeData={ctx!.ds.metricsQueryGet}
+                                onLoading={onLoadingStateChange}
+                                onBrush={handleOnBrush}
+                                errorComponent={ErrorComponent}
+                                onClickSeriesLabel={(seriesName) =>
+                                  telemetry.clickSeriesLabel(
+                                    item.title,
+                                    seriesName
+                                  )
+                                }
+                              />
+                            </Card>
+                          </Col>
+                        ))}
+                      </Row>
+                    </Collapse.Panel>
+                  </Collapse>
+                ))}
+              </>
+            )}
           </Card>
         </Stack>
       </SyncChartPointer>

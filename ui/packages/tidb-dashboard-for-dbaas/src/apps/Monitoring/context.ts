@@ -62,7 +62,7 @@ export const ctx: (globalConfig: IGlobalConfig) => IMonitoringContext = (
   ds: new DataSource(globalConfig),
   cfg: {
     getMetricsQueries: (pdVersion: string | undefined) =>
-      getMonitoringItems(pdVersion),
+      getMonitoringItems(pdVersion, globalConfig.clusterInfo.deployType),
     timeRangeSelector: {
       recent_seconds: RECENT_SECONDS,
       customAbsoluteRangePicker: true

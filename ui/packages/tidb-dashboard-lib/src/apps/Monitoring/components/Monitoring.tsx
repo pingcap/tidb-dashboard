@@ -4,7 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { Stack } from 'office-ui-fabric-react'
 import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
 import { useMemoizedFn } from 'ahooks'
-import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
+import {
+  MetricsChart,
+  SyncChartPointer,
+  TimeRangeValue,
+  QueryConfig,
+  TransformNullValue
+} from 'metrics-chart'
 import { Link } from 'react-router-dom'
 import { debounce } from 'lodash'
 
@@ -25,48 +31,17 @@ import { LimitTimeRange } from '@lib/apps/Overview/components/LimitTimeRange'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)
-  const promAddrConfigurable = ctx?.cfg.promAddrConfigurable || false
   const info = store.useState((s) => s.appInfo)
   const pdVersion = info?.version?.pd_version
+  const [isSomeLoading, setIsSomeLoading] = useState(false)
   const { t } = useTranslation()
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE)
-  const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
-  const loadingCounter = useRef(0)
-  const [isSomeLoading, setIsSomeLoading] = useState(false)
-
-  // eslint-disable-next-line
-  const setIsSomeLoadingDebounce = useCallback(
-    debounce(setIsSomeLoading, 100, { leading: true }),
-    []
-  )
-
-  const onLoadingStateChange = useMemoizedFn((loading: boolean) => {
-    loading
-      ? (loadingCounter.current += 1)
-      : loadingCounter.current > 0 && (loadingCounter.current -= 1)
-    setIsSomeLoadingDebounce(loadingCounter.current > 0)
-  })
 
   const handleManualRefreshClick = () => {
     telemetry.clickManualRefresh()
     return setTimeRange((r) => ({ ...r }))
   }
-
-  const handleOnBrush = (range: TimeRangeValue) => {
-    setChartRange(range)
-  }
-
-  const ErrorComponent = (error: Error) => (
-    <Space direction="vertical">
-      <ErrorBar errors={[error]} />
-      {promAddrConfigurable && (
-        <Link to="/user_profile?blink=profile.prometheus">
-          {t('monitoring.change_prom_button')}
-        </Link>
-      )}
-    </Space>
-  )
 
   return (
     <>
@@ -92,64 +67,33 @@ export default function Monitoring() {
               onRefresh={handleManualRefreshClick}
               disabled={isSomeLoading}
             />
-            <Tooltip placement="top" title={t('monitoring.panel_no_data_tips')}>
-              <a
-                // TODO: replace reference link on op side
-                href="https://docs.pingcap.com/tidbcloud/built-in-monitoring"
-                target="_blank"
-                rel="noopener noreferrer"
+            {ctx?.cfg.metricsReferenceLink && (
+              <Tooltip
+                placement="top"
+                title={t('monitoring.panel_no_data_tips')}
               >
-                <FileTextOutlined
-                  onClick={() => telemetry.clickDocumentationIcon()}
-                />
-              </a>
-            </Tooltip>
+                <a
+                  href={ctx?.cfg.metricsReferenceLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FileTextOutlined
+                    onClick={() => telemetry.clickDocumentationIcon()}
+                  />
+                </a>
+              </Tooltip>
+            )}
+
             {isSomeLoading && <LoadingOutlined />}
           </Space>
         </Toolbar>
       </Card>
       <SyncChartPointer>
         <Stack tokens={{ childrenGap: 16 }}>
-          <Card noMarginTop noMarginBottom>
-            {ctx!.cfg.metricsWithoutCategory ? (
-              <Row gutter={[16, 16]}>
-                {ctx?.cfg.getMetricsQueries(pdVersion).map((item) => (
-                  <Col xl={12} sm={24} key={item.title}>
-                    <Card
-                      noMargin
-                      style={{
-                        border: '1px solid #f1f0f0',
-                        padding: '10px 2rem',
-                        backgroundColor: '#fcfcfd'
-                      }}
-                    >
-                      <Typography.Title
-                        level={5}
-                        style={{ textAlign: 'center' }}
-                      >
-                        {item.title}
-                      </Typography.Title>
-                      <MetricsChart
-                        queries={item.queries}
-                        range={chartRange}
-                        nullValue={item.nullValue}
-                        unit={item.unit!}
-                        timezone={tz.getTimeZone()}
-                        fetchPromeData={ctx!.ds.metricsQueryGet}
-                        onLoading={onLoadingStateChange}
-                        onBrush={handleOnBrush}
-                        errorComponent={ErrorComponent}
-                        onClickSeriesLabel={(seriesName) =>
-                          telemetry.clickSeriesLabel(item.title, seriesName)
-                        }
-                      />
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-            ) : (
+          <Card noMarginTop>
+            {ctx?.cfg.getMetricsQueries(pdVersion).map((item) => (
               <>
-                {ctx!.cfg.getMetricsQueries(pdVersion).map((item) => (
+                {item.category ? (
                   <Collapse defaultActiveKey={['1']} ghost key={item.category}>
                     <Collapse.Panel
                       header={t(`monitoring.category.${item.category}`)}
@@ -161,52 +105,115 @@ export default function Monitoring() {
                         marginLeft: -16
                       }}
                     >
-                      <Row gutter={[16, 16]}>
-                        {item.metrics.map((item) => (
-                          <Col xl={12} sm={24} key={item.title}>
-                            <Card
-                              noMargin
-                              style={{
-                                border: '1px solid #f1f0f0',
-                                padding: '10px 2rem',
-                                backgroundColor: '#fcfcfd'
-                              }}
-                            >
-                              <Typography.Title
-                                level={5}
-                                style={{ textAlign: 'center' }}
-                              >
-                                {item.title}
-                              </Typography.Title>
-                              <MetricsChart
-                                queries={item.queries}
-                                range={chartRange}
-                                nullValue={item.nullValue}
-                                unit={item.unit!}
-                                timezone={tz.getTimeZone()}
-                                fetchPromeData={ctx!.ds.metricsQueryGet}
-                                onLoading={onLoadingStateChange}
-                                onBrush={handleOnBrush}
-                                errorComponent={ErrorComponent}
-                                onClickSeriesLabel={(seriesName) =>
-                                  telemetry.clickSeriesLabel(
-                                    item.title,
-                                    seriesName
-                                  )
-                                }
-                              />
-                            </Card>
-                          </Col>
-                        ))}
-                      </Row>
+                      <MetricsChartWrapper
+                        metrics={item.metrics}
+                        timeRange={timeRange}
+                        setTimeRange={setTimeRange}
+                        setIsSomeLoading={setIsSomeLoading}
+                      />
                     </Collapse.Panel>
                   </Collapse>
-                ))}
+                ) : (
+                  <MetricsChartWrapper
+                    metrics={item.metrics}
+                    timeRange={timeRange}
+                    setTimeRange={setTimeRange}
+                    setIsSomeLoading={setIsSomeLoading}
+                  />
+                )}
               </>
-            )}
+            ))}
           </Card>
         </Stack>
       </SyncChartPointer>
     </>
+  )
+}
+
+interface MetricsChartWrapperProps {
+  metrics: {
+    title: string
+    queries: QueryConfig[]
+    unit: string
+    nullValue?: TransformNullValue
+  }[]
+  timeRange: TimeRange
+  setTimeRange: (timeRange: TimeRange) => void
+  setIsSomeLoading: (isLoading: boolean) => void
+}
+
+const MetricsChartWrapper: React.FC<MetricsChartWrapperProps> = ({
+  metrics,
+  timeRange,
+  setTimeRange,
+  setIsSomeLoading
+}) => {
+  const ctx = useContext(MonitoringContext)
+  const loadingCounter = useRef(0)
+  const [chartRange, setChartRange] = useTimeRangeValue(timeRange, setTimeRange)
+  const { t } = useTranslation()
+  const promAddrConfigurable = ctx?.cfg.promAddrConfigurable || false
+
+  // eslint-disable-next-line
+  const setIsSomeLoadingDebounce = useCallback(
+    debounce(setIsSomeLoading, 100, { leading: true }),
+    []
+  )
+
+  const handleOnBrush = (range: TimeRangeValue) => {
+    setChartRange(range)
+  }
+
+  const onLoadingStateChange = useMemoizedFn((loading: boolean) => {
+    loading
+      ? (loadingCounter.current += 1)
+      : loadingCounter.current > 0 && (loadingCounter.current -= 1)
+    setIsSomeLoadingDebounce(loadingCounter.current > 0)
+  })
+
+  const ErrorComponent = (error: Error) => (
+    <Space direction="vertical">
+      <ErrorBar errors={[error]} />
+      {promAddrConfigurable && (
+        <Link to="/user_profile?blink=profile.prometheus">
+          {t('monitoring.change_prom_button')}
+        </Link>
+      )}
+    </Space>
+  )
+
+  return (
+    <Row gutter={[16, 16]}>
+      {metrics.map((item) => (
+        <Col xl={12} sm={24} key={item.title}>
+          <Card
+            noMargin
+            style={{
+              border: '1px solid #f1f0f0',
+              padding: '10px 2rem',
+              backgroundColor: '#fcfcfd'
+            }}
+          >
+            <Typography.Title level={5} style={{ textAlign: 'center' }}>
+              {item.title}
+            </Typography.Title>
+            <MetricsChart
+              queries={item.queries}
+              range={chartRange}
+              nullValue={item.nullValue}
+              unit={item.unit!}
+              timezone={tz.getTimeZone()}
+              fetchPromeData={ctx!.ds.metricsQueryGet}
+              onLoading={onLoadingStateChange}
+              onBrush={handleOnBrush}
+              errorComponent={ErrorComponent}
+              onClickSeriesLabel={(seriesName) =>
+                telemetry.clickSeriesLabel(item.title, seriesName)
+              }
+            />
+          </Card>
+        </Col>
+      ))}
+    </Row>
   )
 }

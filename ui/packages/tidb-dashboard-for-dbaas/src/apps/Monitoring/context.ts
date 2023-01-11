@@ -67,7 +67,9 @@ export const ctx: (globalConfig: IGlobalConfig) => IMonitoringContext = (
       recent_seconds: RECENT_SECONDS,
       customAbsoluteRangePicker: true
     },
-    metricsWithoutCategory:
-      globalConfig.clusterInfo.deployType === 'Dedicated' ? false : true
+    metricsReferenceLink:
+      globalConfig.clusterInfo.deployType === 'Dedicated'
+        ? 'https://docs.pingcap.com/tidbcloud/built-in-monitoring'
+        : ''
   }
 })

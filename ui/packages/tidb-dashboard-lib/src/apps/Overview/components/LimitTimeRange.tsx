@@ -43,12 +43,22 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
   }, [recent_seconds])
 
   const disabledDate = (current) => {
-    const today = dayjs().startOf('hour')
+    const todayStartWithHour = dayjs().startOf('hour')
+    const todayStartWithDay = dayjs().startOf('day')
+    const todayEndWidthDay = dayjs().endOf('day')
+
     // Can not select days before 2 days ago
     const tooEarly =
-      today.subtract(selectableHours, 'hour') > dayjs(current).startOf('hour')
+      todayStartWithHour.subtract(selectableHours, 'hour') >
+        dayjs(current).startOf('hour') &&
+      todayStartWithDay.subtract(selectableHours / 24, 'day') >
+        dayjs(current).startOf('day')
+
     // Can not select days after today
-    const tooLate = today < dayjs(current).startOf('hour')
+    const tooLate =
+      todayStartWithHour < dayjs(current).startOf('hour') &&
+      todayEndWidthDay < dayjs(current).endOf('day')
+
     return current && (tooEarly || tooLate)
   }
 

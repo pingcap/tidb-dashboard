@@ -61,7 +61,9 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
     if (current && current.isSame(dayjs(), 'day')) {
       return {
         disabledHours: () => hoursRange.slice(hour + 1),
-        disabledMinutes: () => minutesRange.slice(minute + 1)
+        disabledMinutes: () =>
+          // if current hour, disable minutes before current minute
+          dayjs(current).hour() === hour ? minutesRange.slice(minute + 1) : []
       }
     }
 
@@ -72,7 +74,9 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
     ) {
       return {
         disabledHours: () => hoursRange.slice(0, hour),
-        disabledMinutes: () => minutesRange.slice(0, minute)
+        disabledMinutes: () =>
+          // if current hour, disable minutes after current minute
+          dayjs(current).hour() === hour ? minutesRange.slice(0, minute) : []
       }
     }
 

@@ -812,7 +812,7 @@ const getMonitoringItems = (
             {
               promql:
                 'sum(rate(tidb_server_execute_error_total[$__rate_interval])) by (type)',
-              name: 'total',
+              name: '{type}',
               type: 'line'
             }
           ],
@@ -858,45 +858,20 @@ const getMonitoringItems = (
           nullValue: TransformNullValue.AS_ZERO
         },
         {
-          title: 'Acquire Pessimistic Locks Duration',
-          queries: [
-            {
-              promql:
-                'sum(rate(tidb_tikvclient_pessimistic_lock_keys_duration_sum[$__rate_interval])) / sum(rate(tidb_tikvclient_pessimistic_lock_keys_duration_count[$__rate_interval]))',
-              name: 'avg',
-              type: 'line'
-            }
-          ],
-          unit: 's',
-          nullValue: TransformNullValue.AS_ZERO
-        },
-        {
-          title: 'Total Connection',
+          title: 'Connection Count',
           queries: [
             {
               promql: 'sum(tidb_server_connections)',
-              name: 'total',
+              name: 'Total',
+              type: 'line'
+            },
+            {
+              promql: 'sum(tidb_server_tokens)',
+              name: 'active connections',
               type: 'line'
             }
           ],
           unit: 'short',
-          nullValue: TransformNullValue.AS_ZERO
-        },
-        {
-          title: 'Average Idle Connection Duration',
-          queries: [
-            {
-              promql: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='1'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='1'}[$__rate_interval])))`,
-              name: 'avg-in-txn',
-              type: 'line'
-            },
-            {
-              promql: `(sum(rate(tidb_server_conn_idle_duration_seconds_sum{in_txn='0'}[$__rate_interval])) / sum(rate(tidb_server_conn_idle_duration_seconds_count{in_txn='0'}[$__rate_interval])))`,
-              name: 'avg-not-in-txn',
-              type: 'line'
-            }
-          ],
-          unit: 's',
           nullValue: TransformNullValue.AS_ZERO
         }
       ]

@@ -132,6 +132,9 @@ If you want to develop docker image locally 🤔.
 
    # Or, if you want to build cross-platform image and push it to your dev docker registry, run:
    REPOSITORY=your-tidb-dashboard-repository make docker-build-and-push-image
+   
+    # Or, if you want to build centos7 based image, run:
+   DOCKERFILE=./dockerfiles/centos7.Dockerfile make docker-build-image-locally-arm64
 
    # Finally, if you update npm modules or go modules, and want to disable docker layer cache to force rebuild, set NO_CACHE="--pull --no-cache" before make command. For example:
    NO_CACHE="--pull --no-cache" make docker-build-image-locally-amd64

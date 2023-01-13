@@ -18,8 +18,7 @@ RUN yum -y install nodejs
 RUN npm install -g pnpm
 
 # Install java.
-COPY centos.adoptium.repo /etc/yum.repos.d/adoptium.repo
-RUN yum -y install temurin-17-jdk
+RUN yum -y install java-11-openjdk
 
 RUN mkdir -p /go/src/github.com/pingcap/tidb-dashboard/ui
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard

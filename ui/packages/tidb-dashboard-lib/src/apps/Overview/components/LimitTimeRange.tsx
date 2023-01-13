@@ -43,21 +43,24 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
   }, [recent_seconds])
 
   const disabledDate = (current) => {
-    const todayStartWithHour = dayjs().startOf('hour')
-    const todayStartWithDay = dayjs().startOf('day')
-    const todayEndWidthDay = dayjs().endOf('day')
+    const today = dayjs()
+    const todayStartWithHour = today.startOf('hour')
+    const todayStartWithDay = today.startOf('day')
+    const todayEndWithDay = today.endOf('day')
+
+    const curDate = dayjs(current)
 
     // Can not select days before 2 days ago
     const tooEarly =
       todayStartWithHour.subtract(selectableHours, 'hour') >
-        dayjs(current).startOf('hour') &&
+        curDate.startOf('hour') &&
       todayStartWithDay.subtract(selectableHours / 24, 'day') >
-        dayjs(current).startOf('day')
+        curDate.startOf('day')
 
     // Can not select days after today
     const tooLate =
-      todayStartWithHour < dayjs(current).startOf('hour') &&
-      todayEndWidthDay < dayjs(current).endOf('day')
+      todayStartWithHour < curDate.startOf('hour') &&
+      todayEndWithDay < curDate.endOf('day')
 
     return current && (tooEarly || tooLate)
   }
@@ -67,13 +70,15 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
     // current hour
     const hour = dayjs().hour()
     const minute = dayjs().minute()
+
+    const curHour = dayjs(current).hour()
     // is current day
     if (current && current.isSame(dayjs(), 'day')) {
       return {
         disabledHours: () => hoursRange.slice(hour + 1),
         disabledMinutes: () =>
           // if current hour, disable minutes before current minute
-          dayjs(current).hour() === hour ? minutesRange.slice(minute + 1) : []
+          curHour === hour ? minutesRange.slice(minute + 1) : []
       }
     }
 
@@ -86,7 +91,7 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
         disabledHours: () => hoursRange.slice(0, hour),
         disabledMinutes: () =>
           // if current hour, disable minutes after current minute
-          dayjs(current).hour() === hour ? minutesRange.slice(0, minute) : []
+          curHour === hour ? minutesRange.slice(0, minute) : []
       }
     }
 

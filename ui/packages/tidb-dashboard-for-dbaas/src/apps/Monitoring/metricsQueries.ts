@@ -3,6 +3,7 @@ import {
   TransformNullValue,
   MetricsQueryType
 } from '@pingcap/tidb-dashboard-lib'
+import { DeployType } from '../../utils/global-config'
 
 import { compare } from 'compare-versions'
 
@@ -51,7 +52,7 @@ function transformColorByExecTimeOverview(legendLabel: string) {
 
 const getMonitoringItems = (
   pdVersion: string | undefined,
-  deployType: string
+  deployType: DeployType
 ): MetricsQueryType[] => {
   function loadTiKVStoragePromql() {
     const PDVersion = pdVersion?.replace('v', '')
@@ -878,7 +879,7 @@ const getMonitoringItems = (
     }
   ]
 
-  return deployType === 'Dedicated'
+  return deployType === DeployType.Dedicated
     ? monitoringItemsDedicated
     : monitoringItemsServerless
 }

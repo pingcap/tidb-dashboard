@@ -10,7 +10,7 @@ concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 jobs:
-  test-cross-platform-image:
+  test-build-docker-image:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -29,6 +29,7 @@ jobs:
       - name: Build
         uses: docker/build-push-action@v3
         with:
+          file: ./dockerfiles/centos7.Dockerfile
           context: .
           # Currently github action runner only supports linux/amd64, it take a lot of time to build multi-arch image.
           # So we only build amd64 image for now.

@@ -148,7 +148,7 @@ If you want to develop docker image locally 🤔.
 
 4. Access TiDB Dashboard at [http://localhost:12333/dashboard](http://localhost:12333/dashboard).
 
-> Dashboard in PD can be accessed at [http://localhost:2379/dashboard](http://localhost:2379/dashboard).
+> The old Dashboard **_in PD_** can be accessed at [http://localhost:2379/dashboard](http://localhost:2379/dashboard).
 
 ## Contribution flow
 

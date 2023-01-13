@@ -104,7 +104,7 @@ export default function HostTable() {
               <Tooltip
                 title={t('cluster_info.list.host_table.instanceUnavailable')}
               >
-                <Typography.Text type="danger">
+                <Typography.Text type="warning">
                   <WarningOutlined /> {row.host}
                 </Typography.Text>
               </Tooltip>

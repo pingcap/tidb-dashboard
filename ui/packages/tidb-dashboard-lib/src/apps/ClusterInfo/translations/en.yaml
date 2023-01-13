@@ -24,7 +24,7 @@ cluster_info:
         memory: Memory
         memory_usage: Memory Usage
         instances: Instances
-      instanceUnavailable: Host information is unavailable due to instances on the host is down
+      instanceUnavailable: Failed to get the host information
     disk_table:
       title: Disks
       columns:

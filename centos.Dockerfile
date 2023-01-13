@@ -18,29 +18,29 @@ RUN yum -y install nodejs
 RUN npm install -g pnpm
 
 # Install java.
-COPY centos.adoptium.repo /etc/yum.repos.d/adoptium.repo
+COPY ./scripts/centos.adoptium.repo /etc/yum.repos.d/adoptium.repo
 RUN yum -y install temurin-17-jdk
 
 RUN mkdir -p /go/src/github.com/pingcap/tidb-dashboard/ui
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard
 
 # Cache go module dependencies.
-COPY ../go.mod .
-COPY ../go.sum .
+COPY go.mod .
+COPY go.sum .
 RUN GO111MODULE=on go mod download
 
 # Cache go tools.
-COPY ../scripts scripts/
+COPY scripts/ scripts/
 RUN scripts/install_go_tools.sh
 
 # Cache npm dependencies.
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard/ui
-COPY ../ui/pnpm-lock.yaml .
+COPY ui/pnpm-lock.yaml .
 RUN pnpm fetch
 
 # Build.
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard
-COPY .. .
+COPY . .
 RUN make package PNPM_INSTALL_TAGS=--offline
 
 FROM centos:8

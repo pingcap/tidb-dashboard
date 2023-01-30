@@ -172,3 +172,18 @@ func (s *Service) queryPlanDetail(
 	err = query.Scan(&result).Error
 	return
 }
+
+func (s *Service) queryPlanBinding(db *gorm.DB, sqlDigest string) (bindings []Binding, err error) {
+	query := db.Raw("SHOW GLOBAL BINDINGS WHERE sql_digest = ? AND source = ? AND status IN (?)", sqlDigest, "history", []string{"Enabled", "Using"})
+	return nil, query.Scan(&bindings).Error
+}
+
+func (s *Service) createPlanBinding(db *gorm.DB, planDigest string) (err error) {
+	query := db.Exec("CREATE BINDING FROM HISTORY USING PLAN DIGEST ?", planDigest)
+	return query.Error
+}
+
+func (s *Service) dropPlanBinding(db *gorm.DB, sqlDigest string) (err error) {
+	query := db.Exec("DROP BINDING FOR SQL DIGEST ?", sqlDigest)
+	return query.Error
+}

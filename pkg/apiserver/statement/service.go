@@ -53,6 +53,10 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 			endpoint.GET("/plans", s.plansHandler)
 			endpoint.GET("/plan/detail", s.planDetailHandler)
 
+			endpoint.GET("/plan/binding", s.getPlanBindingHandler)
+			endpoint.POST("/plan/binding", s.createPlanBindingHandler)
+			endpoint.DELETE("/plan/binding", s.planDetailHandler)
+
 			endpoint.POST("/download/token", s.downloadTokenHandler)
 
 			endpoint.GET("/available_fields", s.getAvailableFields)
@@ -69,6 +73,7 @@ type EditableConfig struct {
 }
 
 // @Summary Get statement configurations
+// @Tags	statement
 // @Success 200 {object} statement.EditableConfig
 // @Router /statements/config [get]
 // @Security JwtAuth
@@ -85,6 +90,7 @@ func (s *Service) configHandler(c *gin.Context) {
 }
 
 // @Summary Update statement configurations
+// @Tags	statement
 // @Param request body statement.EditableConfig true "Request body"
 // @Success 204 {object} string
 // @Router /statements/config [post]
@@ -114,6 +120,7 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 }
 
 // @Summary Get all statement types
+// @Tags	statement
 // @Success 200 {array} string
 // @Router /statements/stmt_types [get]
 // @Security JwtAuth
@@ -138,6 +145,7 @@ type GetStatementsRequest struct {
 }
 
 // @Summary Get a list of statements
+// @Tags	statement
 // @Param q query GetStatementsRequest true "Query"
 // @Success 200 {array} Model
 // @Router /statements/list [get]
@@ -177,6 +185,7 @@ type GetPlansRequest struct {
 }
 
 // @Summary Get execution plans of a statement
+// @Tags	statement
 // @Param q query GetPlansRequest true "Query"
 // @Success 200 {array} Model
 // @Router /statements/plans [get]
@@ -203,6 +212,7 @@ type GetPlanDetailRequest struct {
 }
 
 // @Summary Get details of a statement in an execution plan
+// @Tags	statement
 // @Param q query GetPlanDetailRequest true "Query"
 // @Success 200 {object} Model
 // @Router /statements/plan/detail [get]
@@ -231,7 +241,81 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// @Summary	Get the bound plan digest (if exists) of a statement
+// @Tags	statement
+// @Param	sql_digest	query	string	true	"query template id"
+// @Success	200	{array}	Binding
+// @Router	/statements/plan/binding	[get]
+// @Security	JwtAuth
+// @Failure	401	{object}	rest.ErrorResponse
+// @Failure	404	{object}	rest.ErrorResponse
+func (s *Service) getPlanBindingHandler(c *gin.Context) {
+	digest := c.Param("sql_digest")
+	if digest == "" {
+		rest.Error(c, rest.ErrBadRequest.New("sql_digest cannot be empty"))
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	result, err := s.queryPlanBinding(db, digest)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// @Summary	Create a binding for a statement and a plan
+// @Tags	statement
+// @Param	plan_digest	query	string	true	"plan digest id"
+// @Success	200	{string}	string	"success"
+// @Router	/statements/plan/binding	[post]
+// @Security	JwtAuth
+// @Failure	401	{object}	rest.ErrorResponse
+func (s *Service) createPlanBindingHandler(c *gin.Context) {
+	digest := c.Param("plan_digest")
+	if digest == "" {
+		rest.Error(c, rest.ErrBadRequest.New("plan_digest cannot be empty"))
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	err := s.createPlanBinding(db, digest)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	c.String(http.StatusOK, "success")
+}
+
+// @Summary	Drop a binding for a statement and a plan
+// @Tags	statement
+// @Param	sql_digest	query	string	true	"query template ID (a.k.a. sql digest)"
+// @Success	200	{string}	string	"success"
+// @Router	/statements/plan/binding	[delete]
+// @Security	JwtAuth
+// @Failure	401	{object}	rest.ErrorResponse
+func (s *Service) dropPlanBindingHandler(c *gin.Context) {
+	digest := c.Param("sql_digest")
+	if digest == "" {
+		rest.Error(c, rest.ErrBadRequest.New("sql_digest cannot be empty"))
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	err := s.dropPlanBinding(db, digest)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	c.String(http.StatusOK, "success")
+}
+
 // @Router /statements/download/token [post]
+// @Tags	statement
 // @Summary Generate a download token for exported statements
 // @Produce plain
 // @Param request body GetStatementsRequest true "Request body"
@@ -290,6 +374,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 }
 
 // @Router /statements/download [get]
+// @Tags	statement
 // @Summary Download statements
 // @Produce text/csv
 // @Param token query string true "download token"
@@ -301,6 +386,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 }
 
 // @Summary Get available field names
+// @Tags	statement
 // @Description Get available field names by statements table columns
 // @Success 200 {array} string
 // @Failure 401 {object} rest.ErrorResponse

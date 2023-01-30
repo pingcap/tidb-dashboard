@@ -2621,6 +2621,119 @@
                 }
             }
         },
+        "/statements/plan/binding": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "tags": [
+                    "statement"
+                ],
+                "summary": "Get the bound plan digest (if exists) of a statement",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "query template id",
+                        "name": "sql_digest",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/statement.Binding"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "tags": [
+                    "statement"
+                ],
+                "summary": "Create a binding for a statement and a plan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "plan digest id",
+                        "name": "plan_digest",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "tags": [
+                    "statement"
+                ],
+                "summary": "Drop a binding for a statement and a plan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "query template ID (a.k.a. sql digest)",
+                        "name": "sql_digest",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/statements/plan/detail": {
             "get": {
                 "security": [
@@ -4839,6 +4952,40 @@
             "properties": {
                 "config": {
                     "$ref": "#/definitions/config.SSOCoreConfig"
+                }
+            }
+        },
+        "statement.Binding": {
+            "type": "object",
+            "properties": {
+                "plan_digest": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string",
+                    "enum": [
+                        "manual",
+                        "history",
+                        "capture",
+                        "evolve"
+                    ],
+                    "example": "manual"
+                },
+                "sql_digest": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "Enabled",
+                        "Using",
+                        "Disabled",
+                        "Deleted",
+                        "Invalid",
+                        "Rejected",
+                        "Pending verification"
+                    ],
+                    "example": "Enabled"
                 }
             }
         },

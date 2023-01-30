@@ -73,7 +73,6 @@ type EditableConfig struct {
 }
 
 // @Summary Get statement configurations
-// @Tags	statement
 // @Success 200 {object} statement.EditableConfig
 // @Router /statements/config [get]
 // @Security JwtAuth
@@ -90,7 +89,6 @@ func (s *Service) configHandler(c *gin.Context) {
 }
 
 // @Summary Update statement configurations
-// @Tags	statement
 // @Param request body statement.EditableConfig true "Request body"
 // @Success 204 {object} string
 // @Router /statements/config [post]
@@ -120,7 +118,6 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 }
 
 // @Summary Get all statement types
-// @Tags	statement
 // @Success 200 {array} string
 // @Router /statements/stmt_types [get]
 // @Security JwtAuth
@@ -145,7 +142,6 @@ type GetStatementsRequest struct {
 }
 
 // @Summary Get a list of statements
-// @Tags	statement
 // @Param q query GetStatementsRequest true "Query"
 // @Success 200 {array} Model
 // @Router /statements/list [get]
@@ -185,7 +181,6 @@ type GetPlansRequest struct {
 }
 
 // @Summary Get execution plans of a statement
-// @Tags	statement
 // @Param q query GetPlansRequest true "Query"
 // @Success 200 {array} Model
 // @Router /statements/plans [get]
@@ -212,7 +207,6 @@ type GetPlanDetailRequest struct {
 }
 
 // @Summary Get details of a statement in an execution plan
-// @Tags	statement
 // @Param q query GetPlanDetailRequest true "Query"
 // @Success 200 {object} Model
 // @Router /statements/plan/detail [get]
@@ -315,7 +309,6 @@ func (s *Service) dropPlanBindingHandler(c *gin.Context) {
 }
 
 // @Router /statements/download/token [post]
-// @Tags	statement
 // @Summary Generate a download token for exported statements
 // @Produce plain
 // @Param request body GetStatementsRequest true "Request body"
@@ -374,7 +367,6 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 }
 
 // @Router /statements/download [get]
-// @Tags	statement
 // @Summary Download statements
 // @Produce text/csv
 // @Param token query string true "download token"
@@ -386,7 +378,6 @@ func (s *Service) downloadHandler(c *gin.Context) {
 }
 
 // @Summary Get available field names
-// @Tags	statement
 // @Description Get available field names by statements table columns
 // @Success 200 {array} string
 // @Failure 401 {object} rest.ErrorResponse

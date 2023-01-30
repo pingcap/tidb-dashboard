@@ -15,4 +15,5 @@
 
 
 export * from './api/default-api';
+export * from './api/statement-api';
 

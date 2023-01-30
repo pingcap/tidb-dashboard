@@ -2538,6 +2538,62 @@ export interface SsoSSOImpersonationModel {
 /**
  * 
  * @export
+ * @interface StatementBinding
+ */
+export interface StatementBinding {
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementBinding
+     */
+    'plan_digest'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementBinding
+     */
+    'source'?: StatementBindingSourceEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementBinding
+     */
+    'sql_digest'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementBinding
+     */
+    'status'?: StatementBindingStatusEnum;
+}
+
+export const StatementBindingSourceEnum = {
+    manual: 'manual',
+    history: 'history',
+    capture: 'capture',
+    evolve: 'evolve'
+} as const;
+
+export type StatementBindingSourceEnum = typeof StatementBindingSourceEnum[keyof typeof StatementBindingSourceEnum];
+export const StatementBindingStatusEnum = {
+    Enabled: 'Enabled',
+    Using: 'Using',
+    Disabled: 'Disabled',
+    Deleted: 'Deleted',
+    Invalid: 'Invalid',
+    Rejected: 'Rejected',
+    Pending_verification: 'Pending verification'
+} as const;
+
+export type StatementBindingStatusEnum = typeof StatementBindingStatusEnum[keyof typeof StatementBindingStatusEnum];
+
+
+
+
+
+/**
+ * 
+ * @export
  * @interface StatementEditableConfig
  */
 export interface StatementEditableConfig {

@@ -5,6 +5,8 @@ package slowquery
 import (
 	"strings"
 
+	"gorm.io/datatypes"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/util/reflectutil"
 )
@@ -38,9 +40,10 @@ type Model struct {
 	TxnStartTS string `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 
 	// Detail
-	PrevStmt   string `gorm:"column:Prev_stmt" json:"prev_stmt"`
-	Plan       string `gorm:"column:Plan" json:"plan"`
-	BinaryPlan string `gorm:"column:Binary_plan" json:"binary_plan"`
+	PrevStmt   string         `gorm:"column:Prev_stmt" json:"prev_stmt"`
+	Plan       string         `gorm:"column:Plan" json:"plan"`
+	BinaryPlan string         `gorm:"column:Binary_plan" json:"binary_plan"`
+	Warnings   datatypes.JSON `gorm:"column:Warnings" json:"warnings"`
 
 	// Basic
 	IsInternal      int    `gorm:"column:Is_internal" json:"is_internal"`

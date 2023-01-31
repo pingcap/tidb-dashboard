@@ -4800,6 +4800,9 @@
                 "wait_ts": {
                     "type": "number"
                 },
+                "warnings": {
+                    "type": "string"
+                },
                 "write_keys": {
                     "description": "Transaction",
                     "type": "integer"

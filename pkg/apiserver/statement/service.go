@@ -55,7 +55,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 			endpoint.GET("/plan/binding", s.getPlanBindingHandler)
 			endpoint.POST("/plan/binding", s.createPlanBindingHandler)
-			endpoint.DELETE("/plan/binding", s.planDetailHandler)
+			endpoint.DELETE("/plan/binding", s.dropPlanBindingHandler)
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
 
@@ -244,7 +244,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 // @Failure	401	{object}	rest.ErrorResponse
 // @Failure	404	{object}	rest.ErrorResponse
 func (s *Service) getPlanBindingHandler(c *gin.Context) {
-	digest := c.Param("sql_digest")
+	digest := c.Query("sql_digest")
 	if digest == "" {
 		rest.Error(c, rest.ErrBadRequest.New("sql_digest cannot be empty"))
 		return
@@ -254,6 +254,10 @@ func (s *Service) getPlanBindingHandler(c *gin.Context) {
 	result, err := s.queryPlanBinding(db, digest)
 	if err != nil {
 		rest.Error(c, err)
+		return
+	}
+	if len(result) <= 0 {
+		rest.Error(c, rest.ErrNotFound.New("no bindings with source = 'history' AND status IN ('enabled','using')"))
 		return
 	}
 
@@ -268,7 +272,7 @@ func (s *Service) getPlanBindingHandler(c *gin.Context) {
 // @Security	JwtAuth
 // @Failure	401	{object}	rest.ErrorResponse
 func (s *Service) createPlanBindingHandler(c *gin.Context) {
-	digest := c.Param("plan_digest")
+	digest := c.Query("plan_digest")
 	if digest == "" {
 		rest.Error(c, rest.ErrBadRequest.New("plan_digest cannot be empty"))
 		return
@@ -292,7 +296,7 @@ func (s *Service) createPlanBindingHandler(c *gin.Context) {
 // @Security	JwtAuth
 // @Failure	401	{object}	rest.ErrorResponse
 func (s *Service) dropPlanBindingHandler(c *gin.Context) {
-	digest := c.Param("sql_digest")
+	digest := c.Query("sql_digest")
 	if digest == "" {
 		rest.Error(c, rest.ErrBadRequest.New("sql_digest cannot be empty"))
 		return

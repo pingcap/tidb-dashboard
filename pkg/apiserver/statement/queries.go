@@ -7,11 +7,16 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/pingcap/errors"
 	"gorm.io/gorm"
 )
 
 const (
 	statementsTable = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
+)
+
+var (
+	injectChecker = regexp.MustCompile(`\s`)
 )
 
 func queryStmtTypes(db *gorm.DB) (result []string, err error) {
@@ -174,16 +179,30 @@ func (s *Service) queryPlanDetail(
 }
 
 func (s *Service) queryPlanBinding(db *gorm.DB, sqlDigest string) (bindings []Binding, err error) {
-	query := db.Raw("SHOW GLOBAL BINDINGS WHERE sql_digest = ? AND source = ? AND status IN (?)", sqlDigest, "history", []string{"Enabled", "Using"})
-	return nil, query.Scan(&bindings).Error
+	query := db.Raw("SHOW GLOBAL BINDINGS WHERE sql_digest = ? AND source = ? AND status IN (?)", sqlDigest, "history", []string{"enabled", "using"})
+	return bindings, query.Scan(&bindings).Error
 }
 
 func (s *Service) createPlanBinding(db *gorm.DB, planDigest string) (err error) {
-	query := db.Exec("CREATE BINDING FROM HISTORY USING PLAN DIGEST ?", planDigest)
+	// Caution! SQL injection vulnerability!
+	// We have to interpolate sql string here, since plan binding stmt does not support session level prepare.
+	// go-sql-driver can enable interpolation globally. Refer to https://github.com/go-sql-driver/mysql#interpolateparams.
+	if injectChecker.MatchString(planDigest) {
+		return errors.New("invalid planDigest")
+	}
+
+	query := db.Exec(fmt.Sprintf("CREATE GLOBAL BINDING FROM HISTORY USING PLAN DIGEST '%s'", planDigest))
 	return query.Error
 }
 
 func (s *Service) dropPlanBinding(db *gorm.DB, sqlDigest string) (err error) {
-	query := db.Exec("DROP BINDING FOR SQL DIGEST ?", sqlDigest)
+	// Caution! SQL injection vulnerability!
+	// We have to interpolate sql string here, since plan binding stmt does not support session level prepare.
+	// go-sql-driver can enable interpolation globally. Refer to https://github.com/go-sql-driver/mysql#interpolateparams.
+	if injectChecker.MatchString(sqlDigest) {
+		return errors.New("invalid planDigest")
+	}
+
+	query := db.Exec(fmt.Sprintf("DROP GLOBAL BINDING FOR SQL DIGEST '%s'", sqlDigest))
 	return query.Error
 }

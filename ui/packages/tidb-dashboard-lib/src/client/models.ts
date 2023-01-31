@@ -2558,12 +2558,6 @@ export interface StatementBinding {
      * @type {string}
      * @memberof StatementBinding
      */
-    'sql_digest'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof StatementBinding
-     */
     'status'?: StatementBindingStatusEnum;
 }
 
@@ -2576,13 +2570,13 @@ export const StatementBindingSourceEnum = {
 
 export type StatementBindingSourceEnum = typeof StatementBindingSourceEnum[keyof typeof StatementBindingSourceEnum];
 export const StatementBindingStatusEnum = {
-    Enabled: 'Enabled',
-    Using: 'Using',
-    Disabled: 'Disabled',
-    Deleted: 'Deleted',
-    Invalid: 'Invalid',
-    Rejected: 'Rejected',
-    Pending_verification: 'Pending verification'
+    enabled: 'enabled',
+    using: 'using',
+    disabled: 'disabled',
+    deleted: 'deleted',
+    invalid: 'invalid',
+    rejected: 'rejected',
+    pending_verify: 'pending verify'
 } as const;
 
 export type StatementBindingStatusEnum = typeof StatementBindingStatusEnum[keyof typeof StatementBindingStatusEnum];

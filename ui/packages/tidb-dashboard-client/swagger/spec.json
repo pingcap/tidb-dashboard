@@ -2639,6 +2639,20 @@
                         "name": "sql_digest",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "begin time",
+                        "name": "begin_time",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end time",
+                        "name": "end_time",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -2708,7 +2722,7 @@
                 "tags": [
                     "statement"
                 ],
-                "summary": "Drop a binding for a statement and a plan",
+                "summary": "Drop all manually created bindings for a statement",
                 "parameters": [
                     {
                         "type": "string",
@@ -4971,21 +4985,18 @@
                     ],
                     "example": "manual"
                 },
-                "sql_digest": {
-                    "type": "string"
-                },
                 "status": {
                     "type": "string",
                     "enum": [
-                        "Enabled",
-                        "Using",
-                        "Disabled",
-                        "Deleted",
-                        "Invalid",
-                        "Rejected",
-                        "Pending verification"
+                        "enabled",
+                        "using",
+                        "disabled",
+                        "deleted",
+                        "invalid",
+                        "rejected",
+                        "pending verify"
                     ],
-                    "example": "Enabled"
+                    "example": "enabled"
                 }
             }
         },

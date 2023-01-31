@@ -5,6 +5,7 @@ package statement
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -238,6 +239,8 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 // @Summary	Get the bound plan digest (if exists) of a statement
 // @Tags	statement
 // @Param	sql_digest	query	string	true	"query template id"
+// @Param	begin_time	query	int	true	"begin time"
+// @Param	end_time	query	int	true	"end time"
 // @Success	200	{array}	Binding
 // @Router	/statements/plan/binding	[get]
 // @Security	JwtAuth
@@ -249,9 +252,21 @@ func (s *Service) getPlanBindingHandler(c *gin.Context) {
 		rest.Error(c, rest.ErrBadRequest.New("sql_digest cannot be empty"))
 		return
 	}
+	bTimeS := c.Query("begin_time")
+	bTime, err := strconv.Atoi(bTimeS)
+	if err != nil {
+		rest.Error(c, rest.ErrBadRequest.New("begin_time is not a valid timestamp second int"))
+		return
+	}
+	eTimeS := c.Query("end_time")
+	eTime, err := strconv.Atoi(eTimeS)
+	if err != nil {
+		rest.Error(c, rest.ErrBadRequest.New("end_time is not a valid timestamp second int"))
+		return
+	}
 
 	db := utils.GetTiDBConnection(c)
-	result, err := s.queryPlanBinding(db, digest)
+	result, err := s.queryPlanBinding(db, digest, bTime, eTime)
 	if err != nil {
 		rest.Error(c, err)
 		return
@@ -288,7 +303,7 @@ func (s *Service) createPlanBindingHandler(c *gin.Context) {
 	c.String(http.StatusOK, "success")
 }
 
-// @Summary	Drop a binding for a statement and a plan
+// @Summary	Drop all manually created bindings for a statement
 // @Tags	statement
 // @Param	sql_digest	query	string	true	"query template ID (a.k.a. sql digest)"
 // @Success	200	{string}	string	"success"

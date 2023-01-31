@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/pingcap/errors"
 	"gorm.io/gorm"
@@ -178,8 +179,30 @@ func (s *Service) queryPlanDetail(
 	return
 }
 
-func (s *Service) queryPlanBinding(db *gorm.DB, sqlDigest string) (bindings []Binding, err error) {
-	query := db.Raw("SHOW GLOBAL BINDINGS WHERE sql_digest = ? AND source = ? AND status IN (?)", sqlDigest, "history", []string{"enabled", "using"})
+func (s *Service) queryPlanBinding(db *gorm.DB, sqlDigest string, beginTime, endTime int) (bindings []Binding, err error) {
+	// The binding sql digest is newly generated and different from the original sql digest,
+	// we have to do one more query here.
+
+	// First, get plan digests by sql digest.
+	q1 := db.
+		Table(statementsTable).
+		Select("plan_digest").
+		Where("digest = ? AND summary_begin_time <= FROM_UNIXTIME(?) AND summary_end_time > FROM_UNIXTIME(?)", sqlDigest, endTime, beginTime)
+	q1Res := make([]map[string]any, 0)
+	if err := q1.Find(&q1Res).Error; err != nil {
+		return nil, err
+	}
+	planDigests := make([]string, 0, len(q1Res))
+	for _, row := range q1Res {
+		s, ok := row["plan_digest"].(string)
+		if !ok {
+			return nil, errors.New("invalid plan digest value")
+		}
+		planDigests = append(planDigests, s)
+	}
+
+	// Second, get bindings.
+	query := db.Raw("SHOW GLOBAL BINDINGS WHERE plan_digest IN (?) AND source = ? AND status IN (?)", planDigests, "history", []string{"enabled", "using"})
 	return bindings, query.Scan(&bindings).Error
 }
 
@@ -196,13 +219,20 @@ func (s *Service) createPlanBinding(db *gorm.DB, planDigest string) (err error) 
 }
 
 func (s *Service) dropPlanBinding(db *gorm.DB, sqlDigest string) (err error) {
-	// Caution! SQL injection vulnerability!
-	// We have to interpolate sql string here, since plan binding stmt does not support session level prepare.
-	// go-sql-driver can enable interpolation globally. Refer to https://github.com/go-sql-driver/mysql#interpolateparams.
-	if injectChecker.MatchString(sqlDigest) {
-		return errors.New("invalid planDigest")
+	// The binding sql digest is newly generated and different from the original sql digest,
+	// we have to do one more query here.
+	bindings, err := s.queryPlanBinding(db, sqlDigest, 0, int(time.Now().Unix()))
+	if err != nil {
+		return err
 	}
 
-	query := db.Exec(fmt.Sprintf("DROP GLOBAL BINDING FOR SQL DIGEST '%s'", sqlDigest))
-	return query.Error
+	for _, binding := range bindings {
+		// No SQL injection vulnerability here.
+		query := db.Exec(fmt.Sprintf("DROP GLOBAL BINDING FOR SQL DIGEST '%s'", binding.SqlDigest))
+		if query.Error != nil {
+			return query.Error
+		}
+	}
+
+	return nil
 }

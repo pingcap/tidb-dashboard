@@ -17,6 +17,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
@@ -32,35 +33,37 @@ type ServiceParams struct {
 }
 
 type Service struct {
-	params ServiceParams
+	params                 ServiceParams
+	planBindingFeatureFlag *featureflag.FeatureFlag
 }
 
-func newService(p ServiceParams) *Service {
-	return &Service{params: p}
+func newService(p ServiceParams, ff *featureflag.Registry) *Service {
+	return &Service{params: p, planBindingFeatureFlag: ff.Register("plan_binding", ">= 6.6.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
+	endpoint.Use(auth.MWAuthRequired())
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	{
 		endpoint.GET("/download", s.downloadHandler)
+		endpoint.POST("/download/token", s.downloadTokenHandler)
 
-		endpoint.Use(auth.MWAuthRequired())
-		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+		endpoint.GET("/config", s.configHandler)
+		endpoint.POST("/config", auth.MWRequireWritePriv(), s.modifyConfigHandler)
+		endpoint.GET("/stmt_types", s.stmtTypesHandler)
+		endpoint.GET("/list", s.listHandler)
+		endpoint.GET("/plans", s.plansHandler)
+		endpoint.GET("/plan/detail", s.planDetailHandler)
+
+		endpoint.GET("/available_fields", s.getAvailableFields)
+
+		binding := endpoint.Group("/plan/binding")
+		binding.Use(s.planBindingFeatureFlag.VersionGuard())
 		{
-			endpoint.GET("/config", s.configHandler)
-			endpoint.POST("/config", auth.MWRequireWritePriv(), s.modifyConfigHandler)
-			endpoint.GET("/stmt_types", s.stmtTypesHandler)
-			endpoint.GET("/list", s.listHandler)
-			endpoint.GET("/plans", s.plansHandler)
-			endpoint.GET("/plan/detail", s.planDetailHandler)
-
-			endpoint.GET("/plan/binding", s.getPlanBindingHandler)
-			endpoint.POST("/plan/binding", s.createPlanBindingHandler)
-			endpoint.DELETE("/plan/binding", s.dropPlanBindingHandler)
-
-			endpoint.POST("/download/token", s.downloadTokenHandler)
-
-			endpoint.GET("/available_fields", s.getAvailableFields)
+			binding.GET("", s.getPlanBindingHandler)
+			binding.POST("", s.createPlanBindingHandler)
+			binding.DELETE("", s.dropPlanBindingHandler)
 		}
 	}
 }

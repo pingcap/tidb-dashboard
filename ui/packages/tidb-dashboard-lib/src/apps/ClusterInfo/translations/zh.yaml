@@ -24,7 +24,7 @@ cluster_info:
         memory: 物理内存
         memory_usage: 内存使用率
         instances: 实例
-      instanceUnavailable: 由于该主机上没有实例存活，因此无法获取主机信息
+      instanceUnavailable: 获取主机信息失败
     disk_table:
       title: 磁盘
       columns:

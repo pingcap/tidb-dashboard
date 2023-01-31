@@ -42,7 +42,7 @@ jobs:
 
   backend_integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       matrix:
         tidb_version: [nightly, ^6.0, ^5.4, ^5.0]

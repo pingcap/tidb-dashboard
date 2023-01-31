@@ -68,12 +68,13 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
   // control avaliable time on Minute level
   const disabledTime = (current) => {
     // current hour
-    const hour = dayjs().hour()
-    const minute = dayjs().minute()
+    const today = dayjs()
+    const hour = today.hour()
+    const minute = today.minute()
 
     const curHour = dayjs(current).hour()
     // is current day
-    if (current && current.isSame(dayjs(), 'day')) {
+    if (current && current.isSame(today, 'day')) {
       return {
         disabledHours: () => hoursRange.slice(hour + 1),
         disabledMinutes: () =>
@@ -85,7 +86,7 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
     // is 2 day ago
     if (
       current &&
-      current.isSame(dayjs().subtract(selectableHours / 24, 'day'), 'day')
+      current.isSame(today.subtract(selectableHours / 24, 'day'), 'day')
     ) {
       return {
         disabledHours: () => hoursRange.slice(0, hour),

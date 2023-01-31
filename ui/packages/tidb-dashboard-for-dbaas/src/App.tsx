@@ -29,7 +29,7 @@ export default function () {
     return <Statement />
   }
 
-  if (locHashPrefix === 'slow_query') {
+  if (locHashPrefix.startsWith('slow_query')) {
     return <SlowQuery />
   }
 

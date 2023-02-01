@@ -3,6 +3,7 @@ import {
   TransformNullValue,
   MetricsQueryType
 } from '@pingcap/tidb-dashboard-lib'
+import { DeployType } from '../../utils/global-config'
 
 import { compare } from 'compare-versions'
 
@@ -50,7 +51,8 @@ function transformColorByExecTimeOverview(legendLabel: string) {
 }
 
 const getMonitoringItems = (
-  pdVersion: string | undefined
+  pdVersion: string | undefined,
+  deployType: DeployType
 ): MetricsQueryType[] => {
   function loadTiKVStoragePromql() {
     const PDVersion = pdVersion?.replace('v', '')
@@ -61,7 +63,7 @@ const getMonitoringItems = (
     return 'sum(tikv_store_size_bytes{type="used"}) by (instance)'
   }
 
-  const monitoringItems: MetricsQueryType[] = [
+  const monitoringItemsDedicated: MetricsQueryType[] = [
     {
       category: 'database_time',
       metrics: [
@@ -766,7 +768,120 @@ const getMonitoringItems = (
     }
   ]
 
-  return monitoringItems
+  const monitoringItemsServerless: MetricsQueryType[] = [
+    {
+      metrics: [
+        {
+          title: 'Query Per Second',
+          queries: [
+            {
+              promql: `sum(rate(tidb_executor_statement_total[$__rate_interval]))`,
+              name: 'total',
+              type: 'line'
+            },
+            {
+              promql: `sum(rate(tidb_executor_statement_total[$__rate_interval])) by (type)`,
+              name: '{type}',
+              type: 'line'
+            }
+          ],
+          nullValue: TransformNullValue.AS_ZERO,
+          unit: 'short'
+        },
+        {
+          title: 'Average Query Duration',
+          queries: [
+            {
+              promql:
+                'sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval]))',
+              name: 'avg',
+              type: 'line'
+            },
+            {
+              promql:
+                'sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!="internal"}[$__rate_interval])) by (sql_type) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!="internal"}[$__rate_interval])) by (sql_type)',
+              name: 'avg-{sql_type}',
+              type: 'line'
+            }
+          ],
+          nullValue: TransformNullValue.AS_ZERO,
+          unit: 's'
+        },
+        {
+          title: 'Failed Queries',
+          queries: [
+            {
+              promql:
+                'sum(rate(tidb_server_execute_error_total[$__rate_interval])) by (type)',
+              name: '{type}',
+              type: 'line'
+            }
+          ],
+          nullValue: TransformNullValue.AS_ZERO,
+          unit: 'short'
+        },
+        {
+          title: 'Transaction Per Second',
+          queries: [
+            {
+              promql:
+                'sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval]))',
+              name: 'total',
+              type: 'line'
+            },
+            {
+              promql:
+                'sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval])) by (type, txn_mode)',
+              name: '{type}-{txn_mode}',
+              type: 'line'
+            }
+          ],
+          nullValue: TransformNullValue.AS_ZERO,
+          unit: 'short'
+        },
+        {
+          title: 'Average Transaction Duration',
+          queries: [
+            {
+              promql:
+                'sum(rate(tidb_session_transaction_duration_seconds_sum[$__rate_interval]))/ sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval]))',
+              name: 'avg',
+              type: 'line'
+            },
+            {
+              promql:
+                'sum(rate(tidb_session_transaction_duration_seconds_sum[$__rate_interval])) by (txn_mode)/ sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval])) by (txn_mode)',
+              name: 'avg-{txn_mode}',
+              type: 'line'
+            }
+          ],
+          unit: 's',
+          nullValue: TransformNullValue.AS_ZERO
+        },
+        {
+          title: 'Connection Count',
+          queries: [
+            {
+              promql: 'sum(tidb_server_connections)',
+              name: 'Total',
+              type: 'line'
+            },
+            {
+              promql: 'sum(tidb_server_tokens)',
+              name: 'active connections',
+              type: 'line'
+            }
+          ],
+          unit: 'short',
+          nullValue: TransformNullValue.AS_ZERO
+        }
+      ]
+    }
+  ]
+
+  return deployType === DeployType.Dedicated
+    ? monitoringItemsDedicated
+    : monitoringItemsServerless
 }
 
 export { getMonitoringItems }

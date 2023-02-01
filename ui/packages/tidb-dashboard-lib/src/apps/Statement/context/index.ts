@@ -5,7 +5,8 @@ import { AxiosPromise } from 'axios'
 import {
   StatementEditableConfig,
   StatementGetStatementsRequest,
-  StatementModel
+  StatementModel,
+  StatementBinding
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
@@ -67,6 +68,13 @@ export interface IStatementDataSource extends ISlowQueryDataSource {
   statementsTimeRangesGet(
     options?: ReqConfig
   ): AxiosPromise<Array<StatementTimeRange>>
+
+  statementsPlanBindInfoGet(
+    digest: string,
+    beginTime: number,
+    endTime: number,
+    options?: ReqConfig
+  ): AxiosPromise<Array<StatementBinding>>
 }
 
 export interface IStatementContext {

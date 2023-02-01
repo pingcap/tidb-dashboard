@@ -7,7 +7,8 @@ import * as singleSpa from 'single-spa'
 import { routing, i18n } from '@pingcap/tidb-dashboard-lib'
 import {
   Configuration,
-  DefaultApi as DashboardApi
+  DefaultApi as DashboardApi,
+  StatementApi
 } from '@pingcap/tidb-dashboard-client'
 
 import auth from '~/uilts/auth'
@@ -22,7 +23,7 @@ export * from '@pingcap/tidb-dashboard-client'
 const client = {
   _init(
     apiBasePath: string,
-    apiInstance: DashboardApi,
+    apiInstance: DashboardApi & StatementApi,
     axiosInstance: AxiosInstance
   ) {
     this.apiBasePath = apiBasePath
@@ -30,7 +31,7 @@ const client = {
     this.axiosInstance = axiosInstance
   },
 
-  getInstance(): DashboardApi {
+  getInstance(): DashboardApi & StatementApi {
     return this.apiInstance
   },
 

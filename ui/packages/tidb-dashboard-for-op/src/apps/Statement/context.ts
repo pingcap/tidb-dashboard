@@ -114,6 +114,22 @@ class DataSource implements IStatementDataSource {
     })
   }
 
+  statementsPlanBindInfoGet(
+    digest: string,
+    beginTime: number,
+    endTime: number,
+    options?: ReqConfig
+  ) {
+    return client.getInstance().statementsPlanBindingGet(
+      {
+        sqlDigest: digest,
+        beginTime,
+        endTime
+      },
+      options
+    )
+  }
+
   // slow query
   slowQueryAvailableFieldsGet(options?: ReqConfig) {
     return client.getInstance().slowQueryAvailableFieldsGet(options)

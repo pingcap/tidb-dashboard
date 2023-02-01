@@ -26,6 +26,7 @@ import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStora
 
 import { planColumns as genPlanColumns } from '../../utils/tableColumns'
 import PlanDetail from './PlanDetail'
+import PlanBind from './PlanBind'
 import { StatementContext } from '../../context'
 
 export interface IPageQuery {
@@ -54,6 +55,18 @@ function DetailPage() {
       reqConfig
     )
   )
+
+  const { data } = useClientRequest((reqConfig) =>
+    ctx!.ds.statementsPlanBindInfoGet(
+      query.digest!,
+      query.beginTime!,
+      query.endTime!,
+      reqConfig
+    )
+  )
+
+  console.log('data', data)
+
   const { t } = useTranslation()
   const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
 
@@ -88,6 +101,7 @@ function DetailPage() {
             <ArrowLeftOutlined /> {t('statement.pages.detail.head.back')}
           </Link>
         }
+        titleExtra={<>title Extra</>}
       >
         <AnimatedSkeleton showSkeleton={isLoading}>
           {error && <ErrorBar errors={[error]} />}
@@ -182,7 +196,7 @@ function DetailPage() {
                   cardNoMargin
                   columns={planColumns}
                   items={plans}
-                  selectionMode={SelectionMode.multiple}
+                  selectionMode={SelectionMode.single}
                   selection={selection.current}
                   selectionPreservedOnEmptyClick
                 />

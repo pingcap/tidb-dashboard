@@ -5,7 +5,6 @@ package diagnose
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -91,7 +90,7 @@ func (s *Service) generateMetricsRelation(startTime, endTime time.Time, graphTyp
 		return "", err
 	}
 
-	file, err := ioutil.TempFile("", "metrics*.svg")
+	file, err := os.CreateTemp("", "metrics*.svg")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
@@ -168,7 +167,7 @@ func (s *Service) metricsRelationViewHandler(c *gin.Context) {
 		return
 	}
 
-	data, err := ioutil.ReadFile(filepath.Clean(path))
+	data, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		rest.Error(c, err)
 		return

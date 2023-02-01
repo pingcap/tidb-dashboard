@@ -65,7 +65,8 @@ func (c HTTPClients) GetHTTPClientByNodeKind(kind topo.Kind) *httpclient.Client 
 // RequestPayloadResolver resolves the request payload using specified API definitions.
 //
 // The relationship is below:
-// 	 RequestPayload ---(RequestPayloadResolver.ResolvePayload)---> ResolvedRequestPayload
+//
+//	RequestPayload ---(RequestPayloadResolver.ResolvePayload)---> ResolvedRequestPayload
 type RequestPayloadResolver struct {
 	apis       []APIDefinition
 	apiMapByID map[string]*APIDefinition

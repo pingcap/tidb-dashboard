@@ -16,9 +16,7 @@ const (
 	statementsTable = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
 )
 
-var (
-	injectChecker = regexp.MustCompile(`\s`)
-)
+var injectChecker = regexp.MustCompile(`\s`)
 
 func queryStmtTypes(db *gorm.DB) (result []string, err error) {
 	// why should put DISTINCT inside the `Pluck()` method, see here:
@@ -228,7 +226,7 @@ func (s *Service) dropPlanBinding(db *gorm.DB, sqlDigest string) (err error) {
 
 	for _, binding := range bindings {
 		// No SQL injection vulnerability here.
-		query := db.Exec(fmt.Sprintf("DROP GLOBAL BINDING FOR SQL DIGEST '%s'", binding.SqlDigest))
+		query := db.Exec(fmt.Sprintf("DROP GLOBAL BINDING FOR SQL DIGEST '%s'", binding.SQLDigest))
 		if query.Error != nil {
 			return query.Error
 		}

@@ -16,23 +16,28 @@ import (
 // the `vexpr` tag in the model.
 //
 // For a model field like:
-//     AggLastSeen   int  `vexpr:"UNIX_TIMESTAMP(MAX(last_seen))"`
+//
+//	AggLastSeen   int  `vexpr:"UNIX_TIMESTAMP(MAX(last_seen))"`
 //
 // VirtualView can build projections like:
-//     SELECT UNIX_TIMESTAMP(MAX(last_seen)) AS agg_last_seen ....
-// 												^^^^^^^^^^^^^ This follows the GORM naming strategy and
-//															  can be controlled by gorm:"column:xxx".
+//
+//	    SELECT UNIX_TIMESTAMP(MAX(last_seen)) AS agg_last_seen ....
+//													^^^^^^^^^^^^^ This follows the GORM naming strategy and
+//																  can be controlled by gorm:"column:xxx".
 //
 // Then, when selecting the result of this projection into the same model, fields will be filled out naturally:
-//     {
-// 	     AggLastSeen: <the result of `UNIX_TIMESTAMP(MAX(last_seen))`>
-//     }
+//
+//	    {
+//		     AggLastSeen: <the result of `UNIX_TIMESTAMP(MAX(last_seen))`>
+//	    }
 //
 // If `vexpr` is not specified in the model field, the field can be transparently used. For example:
-//     FieldFoo  int
+//
+//	FieldFoo  int
 //
 // The projection will be:
-//     SELECT field_foo ...
+//
+//	SELECT field_foo ...
 //
 // Callers must specify the fields to be used in clauses. The field can be specified via its JSON name.
 //

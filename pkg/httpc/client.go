@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/tls"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"time"
@@ -117,7 +116,7 @@ func (c *Client) Send(
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		defer resp.Body.Close()
-		data, _ := ioutil.ReadAll(resp.Body)
+		data, _ := io.ReadAll(resp.Body)
 		e := errType.New("Request failed with status code %d from %s API: %s", resp.StatusCode, errOriginComponent, string(data))
 		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
 		return nil, e
@@ -132,5 +131,5 @@ type Response struct {
 
 func (r *Response) Body() ([]byte, error) {
 	defer r.Response.Body.Close()
-	return ioutil.ReadAll(r.Response.Body)
+	return io.ReadAll(r.Response.Body)
 }

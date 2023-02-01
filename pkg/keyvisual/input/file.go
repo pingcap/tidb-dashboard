@@ -4,7 +4,7 @@ package input
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -55,7 +55,7 @@ func readFile(fileTime time.Time) (*RegionsInfo, error) {
 		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.R().PD, fileName)
 	}
 	defer file.Close() // #nosec
-	data, err := ioutil.ReadAll(file)
+	data, err := io.ReadAll(file)
 	if err != nil {
 		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.R().PD, fileName)
 	}

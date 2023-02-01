@@ -2628,9 +2628,6 @@
                         "JwtAuth": []
                     }
                 ],
-                "tags": [
-                    "statement"
-                ],
                 "summary": "Get the bound plan digest (if exists) of a statement",
                 "parameters": [
                     {
@@ -2685,9 +2682,6 @@
                         "JwtAuth": []
                     }
                 ],
-                "tags": [
-                    "statement"
-                ],
                 "summary": "Create a binding for a statement and a plan",
                 "parameters": [
                     {
@@ -2718,9 +2712,6 @@
                     {
                         "JwtAuth": []
                     }
-                ],
-                "tags": [
-                    "statement"
                 ],
                 "summary": "Drop all manually created bindings for a statement",
                 "parameters": [

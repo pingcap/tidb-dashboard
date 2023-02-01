@@ -240,7 +240,6 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 }
 
 // @Summary	Get the bound plan digest (if exists) of a statement
-// @Tags	statement
 // @Param	sql_digest	query	string	true	"query template id"
 // @Param	begin_time	query	int	true	"begin time"
 // @Param	end_time	query	int	true	"end time"
@@ -283,7 +282,6 @@ func (s *Service) getPlanBindingHandler(c *gin.Context) {
 }
 
 // @Summary	Create a binding for a statement and a plan
-// @Tags	statement
 // @Param	plan_digest	query	string	true	"plan digest id"
 // @Success	200	{string}	string	"success"
 // @Router	/statements/plan/binding	[post]
@@ -307,7 +305,6 @@ func (s *Service) createPlanBindingHandler(c *gin.Context) {
 }
 
 // @Summary	Drop all manually created bindings for a statement
-// @Tags	statement
 // @Param	sql_digest	query	string	true	"query template ID (a.k.a. sql digest)"
 // @Success	200	{string}	string	"success"
 // @Router	/statements/plan/binding	[delete]

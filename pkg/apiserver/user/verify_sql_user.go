@@ -15,11 +15,11 @@ var ErrInsufficientPrivs = ErrNSSignIn.NewType("insufficient_priv")
 
 // TiDB config response
 //
-// "security": {
-//   ...
-//   "enable-sem": true/false,
-//   ...
-// },.
+//	"security": {
+//	  ...
+//	  "enable-sem": true/false,
+//	  ...
+//	},.
 type tidbSecurityConfig struct {
 	Security tidbSEMConfig `json:"security"`
 }

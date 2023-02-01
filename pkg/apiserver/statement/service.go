@@ -5,6 +5,7 @@ package statement
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
@@ -31,31 +33,37 @@ type ServiceParams struct {
 }
 
 type Service struct {
-	params ServiceParams
+	params                 ServiceParams
+	planBindingFeatureFlag *featureflag.FeatureFlag
 }
 
-func newService(p ServiceParams) *Service {
-	return &Service{params: p}
+func newService(p ServiceParams, ff *featureflag.Registry) *Service {
+	return &Service{params: p, planBindingFeatureFlag: ff.Register("plan_binding", ">= 6.6.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
+	endpoint.Use(auth.MWAuthRequired())
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	{
 		endpoint.GET("/download", s.downloadHandler)
+		endpoint.POST("/download/token", s.downloadTokenHandler)
 
-		endpoint.Use(auth.MWAuthRequired())
-		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+		endpoint.GET("/config", s.configHandler)
+		endpoint.POST("/config", auth.MWRequireWritePriv(), s.modifyConfigHandler)
+		endpoint.GET("/stmt_types", s.stmtTypesHandler)
+		endpoint.GET("/list", s.listHandler)
+		endpoint.GET("/plans", s.plansHandler)
+		endpoint.GET("/plan/detail", s.planDetailHandler)
+
+		endpoint.GET("/available_fields", s.getAvailableFields)
+
+		binding := endpoint.Group("/plan/binding")
+		binding.Use(s.planBindingFeatureFlag.VersionGuard())
 		{
-			endpoint.GET("/config", s.configHandler)
-			endpoint.POST("/config", auth.MWRequireWritePriv(), s.modifyConfigHandler)
-			endpoint.GET("/stmt_types", s.stmtTypesHandler)
-			endpoint.GET("/list", s.listHandler)
-			endpoint.GET("/plans", s.plansHandler)
-			endpoint.GET("/plan/detail", s.planDetailHandler)
-
-			endpoint.POST("/download/token", s.downloadTokenHandler)
-
-			endpoint.GET("/available_fields", s.getAvailableFields)
+			binding.GET("", s.getPlanBindingHandler)
+			binding.POST("", s.createPlanBindingHandler)
+			binding.DELETE("", s.dropPlanBindingHandler)
 		}
 	}
 }
@@ -229,6 +237,94 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, result)
+}
+
+// @Summary	Get the bound plan digest (if exists) of a statement
+// @Param	sql_digest	query	string	true	"query template id"
+// @Param	begin_time	query	int	true	"begin time"
+// @Param	end_time	query	int	true	"end time"
+// @Success	200	{array}	Binding
+// @Router	/statements/plan/binding	[get]
+// @Security	JwtAuth
+// @Failure	401	{object}	rest.ErrorResponse
+// @Failure	404	{object}	rest.ErrorResponse
+func (s *Service) getPlanBindingHandler(c *gin.Context) {
+	digest := c.Query("sql_digest")
+	if digest == "" {
+		rest.Error(c, rest.ErrBadRequest.New("sql_digest cannot be empty"))
+		return
+	}
+	bTimeS := c.Query("begin_time")
+	bTime, err := strconv.Atoi(bTimeS)
+	if err != nil {
+		rest.Error(c, rest.ErrBadRequest.New("begin_time is not a valid timestamp second int"))
+		return
+	}
+	eTimeS := c.Query("end_time")
+	eTime, err := strconv.Atoi(eTimeS)
+	if err != nil {
+		rest.Error(c, rest.ErrBadRequest.New("end_time is not a valid timestamp second int"))
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	result, err := s.queryPlanBinding(db, digest, bTime, eTime)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+	if len(result) <= 0 {
+		rest.Error(c, rest.ErrNotFound.New("no bindings with source = 'history' AND status IN ('enabled','using')"))
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// @Summary	Create a binding for a statement and a plan
+// @Param	plan_digest	query	string	true	"plan digest id"
+// @Success	200	{string}	string	"success"
+// @Router	/statements/plan/binding	[post]
+// @Security	JwtAuth
+// @Failure	401	{object}	rest.ErrorResponse
+func (s *Service) createPlanBindingHandler(c *gin.Context) {
+	digest := c.Query("plan_digest")
+	if digest == "" {
+		rest.Error(c, rest.ErrBadRequest.New("plan_digest cannot be empty"))
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	err := s.createPlanBinding(db, digest)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	c.String(http.StatusOK, "success")
+}
+
+// @Summary	Drop all manually created bindings for a statement
+// @Param	sql_digest	query	string	true	"query template ID (a.k.a. sql digest)"
+// @Success	200	{string}	string	"success"
+// @Router	/statements/plan/binding	[delete]
+// @Security	JwtAuth
+// @Failure	401	{object}	rest.ErrorResponse
+func (s *Service) dropPlanBindingHandler(c *gin.Context) {
+	digest := c.Query("sql_digest")
+	if digest == "" {
+		rest.Error(c, rest.ErrBadRequest.New("sql_digest cannot be empty"))
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	err := s.dropPlanBinding(db, digest)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	c.String(http.StatusOK, "success")
 }
 
 // @Router /statements/download/token [post]

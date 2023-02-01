@@ -115,6 +115,8 @@ import { SsoSSOImpersonationModel } from '../models';
 // @ts-ignore
 import { SsoSetConfigRequest } from '../models';
 // @ts-ignore
+import { StatementBinding } from '../models';
+// @ts-ignore
 import { StatementEditableConfig } from '../models';
 // @ts-ignore
 import { StatementGetStatementsRequest } from '../models';
@@ -2938,6 +2940,140 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary Drop all manually created bindings for a statement
+         * @param {string} sqlDigest query template ID (a.k.a. sql digest)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        statementsPlanBindingDelete: async (sqlDigest: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'sqlDigest' is not null or undefined
+            assertParamExists('statementsPlanBindingDelete', 'sqlDigest', sqlDigest)
+            const localVarPath = `/statements/plan/binding`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (sqlDigest !== undefined) {
+                localVarQueryParameter['sql_digest'] = sqlDigest;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get the bound plan digest (if exists) of a statement
+         * @param {string} sqlDigest query template id
+         * @param {number} beginTime begin time
+         * @param {number} endTime end time
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        statementsPlanBindingGet: async (sqlDigest: string, beginTime: number, endTime: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'sqlDigest' is not null or undefined
+            assertParamExists('statementsPlanBindingGet', 'sqlDigest', sqlDigest)
+            // verify required parameter 'beginTime' is not null or undefined
+            assertParamExists('statementsPlanBindingGet', 'beginTime', beginTime)
+            // verify required parameter 'endTime' is not null or undefined
+            assertParamExists('statementsPlanBindingGet', 'endTime', endTime)
+            const localVarPath = `/statements/plan/binding`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (sqlDigest !== undefined) {
+                localVarQueryParameter['sql_digest'] = sqlDigest;
+            }
+
+            if (beginTime !== undefined) {
+                localVarQueryParameter['begin_time'] = beginTime;
+            }
+
+            if (endTime !== undefined) {
+                localVarQueryParameter['end_time'] = endTime;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Create a binding for a statement and a plan
+         * @param {string} planDigest plan digest id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        statementsPlanBindingPost: async (planDigest: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'planDigest' is not null or undefined
+            assertParamExists('statementsPlanBindingPost', 'planDigest', planDigest)
+            const localVarPath = `/statements/plan/binding`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (planDigest !== undefined) {
+                localVarQueryParameter['plan_digest'] = planDigest;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get details of a statement in an execution plan
          * @param {number} [beginTime] 
          * @param {string} [digest] 
@@ -4484,6 +4620,41 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Drop all manually created bindings for a statement
+         * @param {string} sqlDigest query template ID (a.k.a. sql digest)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async statementsPlanBindingDelete(sqlDigest: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.statementsPlanBindingDelete(sqlDigest, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Get the bound plan digest (if exists) of a statement
+         * @param {string} sqlDigest query template id
+         * @param {number} beginTime begin time
+         * @param {number} endTime end time
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async statementsPlanBindingGet(sqlDigest: string, beginTime: number, endTime: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StatementBinding>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.statementsPlanBindingGet(sqlDigest, beginTime, endTime, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Create a binding for a statement and a plan
+         * @param {string} planDigest plan digest id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async statementsPlanBindingPost(planDigest: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.statementsPlanBindingPost(planDigest, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary Get details of a statement in an execution plan
          * @param {number} [beginTime] 
          * @param {string} [digest] 
@@ -5431,6 +5602,38 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         statementsListGet(beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: any): AxiosPromise<Array<StatementModel>> {
             return localVarFp.statementsListGet(beginTime, endTime, fields, schemas, stmtTypes, text, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Drop all manually created bindings for a statement
+         * @param {string} sqlDigest query template ID (a.k.a. sql digest)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        statementsPlanBindingDelete(sqlDigest: string, options?: any): AxiosPromise<string> {
+            return localVarFp.statementsPlanBindingDelete(sqlDigest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get the bound plan digest (if exists) of a statement
+         * @param {string} sqlDigest query template id
+         * @param {number} beginTime begin time
+         * @param {number} endTime end time
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        statementsPlanBindingGet(sqlDigest: string, beginTime: number, endTime: number, options?: any): AxiosPromise<Array<StatementBinding>> {
+            return localVarFp.statementsPlanBindingGet(sqlDigest, beginTime, endTime, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Create a binding for a statement and a plan
+         * @param {string} planDigest plan digest id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        statementsPlanBindingPost(planDigest: string, options?: any): AxiosPromise<string> {
+            return localVarFp.statementsPlanBindingPost(planDigest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6477,6 +6680,62 @@ export interface DefaultApiStatementsListGetRequest {
      * @memberof DefaultApiStatementsListGet
      */
     readonly text?: string
+}
+
+/**
+ * Request parameters for statementsPlanBindingDelete operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStatementsPlanBindingDeleteRequest
+ */
+export interface DefaultApiStatementsPlanBindingDeleteRequest {
+    /**
+     * query template ID (a.k.a. sql digest)
+     * @type {string}
+     * @memberof DefaultApiStatementsPlanBindingDelete
+     */
+    readonly sqlDigest: string
+}
+
+/**
+ * Request parameters for statementsPlanBindingGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStatementsPlanBindingGetRequest
+ */
+export interface DefaultApiStatementsPlanBindingGetRequest {
+    /**
+     * query template id
+     * @type {string}
+     * @memberof DefaultApiStatementsPlanBindingGet
+     */
+    readonly sqlDigest: string
+
+    /**
+     * begin time
+     * @type {number}
+     * @memberof DefaultApiStatementsPlanBindingGet
+     */
+    readonly beginTime: number
+
+    /**
+     * end time
+     * @type {number}
+     * @memberof DefaultApiStatementsPlanBindingGet
+     */
+    readonly endTime: number
+}
+
+/**
+ * Request parameters for statementsPlanBindingPost operation in DefaultApi.
+ * @export
+ * @interface DefaultApiStatementsPlanBindingPostRequest
+ */
+export interface DefaultApiStatementsPlanBindingPostRequest {
+    /**
+     * plan digest id
+     * @type {string}
+     * @memberof DefaultApiStatementsPlanBindingPost
+     */
+    readonly planDigest: string
 }
 
 /**
@@ -7621,6 +7880,42 @@ export class DefaultApi extends BaseAPI {
      */
     public statementsListGet(requestParameters: DefaultApiStatementsListGetRequest = {}, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).statementsListGet(requestParameters.beginTime, requestParameters.endTime, requestParameters.fields, requestParameters.schemas, requestParameters.stmtTypes, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Drop all manually created bindings for a statement
+     * @param {DefaultApiStatementsPlanBindingDeleteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public statementsPlanBindingDelete(requestParameters: DefaultApiStatementsPlanBindingDeleteRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).statementsPlanBindingDelete(requestParameters.sqlDigest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get the bound plan digest (if exists) of a statement
+     * @param {DefaultApiStatementsPlanBindingGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public statementsPlanBindingGet(requestParameters: DefaultApiStatementsPlanBindingGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).statementsPlanBindingGet(requestParameters.sqlDigest, requestParameters.beginTime, requestParameters.endTime, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Create a binding for a statement and a plan
+     * @param {DefaultApiStatementsPlanBindingPostRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public statementsPlanBindingPost(requestParameters: DefaultApiStatementsPlanBindingPostRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).statementsPlanBindingPost(requestParameters.planDigest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

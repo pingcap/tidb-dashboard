@@ -4,8 +4,8 @@ package logsearch
 
 import (
 	"context"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -36,7 +36,7 @@ func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service
 	dir := config.TempDir
 	if dir == "" {
 		var err error
-		dir, err = ioutil.TempDir("", "dashboard-logs")
+		dir, err = os.MkdirTemp("", "dashboard-logs")
 		if err != nil {
 			log.Fatal("Failed to create directory for storing logs", zap.Error(err))
 		}

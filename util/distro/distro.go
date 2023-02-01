@@ -8,7 +8,7 @@ package distro
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -88,7 +88,7 @@ func ReadResourceStringsFromFile(filePath string) (DistributionResource, error) 
 		_ = distroStringsFile.Close()
 	}()
 
-	data, err := ioutil.ReadAll(distroStringsFile)
+	data, err := io.ReadAll(distroStringsFile)
 	if err != nil {
 		return distroStringsRes, err
 	}

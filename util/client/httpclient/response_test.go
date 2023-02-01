@@ -9,7 +9,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -458,7 +458,7 @@ func TestGet(t *testing.T) {
 
 func TestPost(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		_, _ = fmt.Fprintf(w, "Body is %s", string(body))
 	}))
 	defer ts.Close()

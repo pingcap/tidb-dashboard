@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"runtime"
@@ -125,7 +124,7 @@ func (lResp *LazyResponse) doExecutionOnce() {
 	if err != nil {
 		// Turn response into nil when there is an error.
 		if restyResp != nil && restyResp.RawResponse != nil {
-			data, _ := ioutil.ReadAll(restyResp.RawResponse.Body)
+			data, _ := io.ReadAll(restyResp.RawResponse.Body)
 			_ = restyResp.RawResponse.Body.Close()
 			info.respStatus = restyResp.Status()
 			info.respBody = string(data)
@@ -194,7 +193,7 @@ func (lResp *LazyResponse) ReadBodyAsBytes() (bytes []byte, respNoBody *http.Res
 		return nil, nil, lResp.executedError
 	}
 	respNoBody = lResp.executedResponseWithoutBody
-	bytes, err = ioutil.ReadAll(lResp.executedResponseBody)
+	bytes, err = io.ReadAll(lResp.executedResponseBody)
 	if err != nil {
 		bytes = nil
 		respNoBody = nil

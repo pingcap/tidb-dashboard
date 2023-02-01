@@ -28,7 +28,7 @@ func NewHTTPServerAtHost(response string, host string) *httptest.Server {
 	}
 	server := &httptest.Server{
 		Listener: l,
-		Config: &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		Config: &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { // nolint:gosec
 			_, _ = fmt.Fprintln(w, response)
 		})},
 	}

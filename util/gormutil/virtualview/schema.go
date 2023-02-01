@@ -101,10 +101,11 @@ func parseExprDependencies(expr string) ([]string, error) {
 }
 
 // updateAvailability updates field's availability according to the `knownColumnNamesL` parameter:
-// - For calculated fields (vexpr is specified), the field is available when
-//   all of its dependency columns exist in knownColumnNamesL.
-// - For normal fields (vexpr is not specified), the field is available when
-//   itself exists in knownColumnNamesL.
+//   - For calculated fields (vexpr is specified), the field is available when
+//     all of its dependency columns exist in knownColumnNamesL.
+//   - For normal fields (vexpr is not specified), the field is available when
+//     itself exists in knownColumnNamesL.
+//
 // If knownColumnNamesL is nil, all fields will be set to available.
 func (fp *viewFieldProps) updateAvailability(knownColumnNamesL map[string]struct{}) {
 	fp.isInvalid = false

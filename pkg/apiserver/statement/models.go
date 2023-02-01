@@ -170,3 +170,11 @@ func filterFieldsByColumns(fields []Field, columns []string) []Field {
 
 	return filteredFields
 }
+
+// Binding struct maps to the response of `SHOW BINDINGS` query.
+type Binding struct {
+	Status     string `json:"status" example:"enabled" enums:"enabled,using,disabled,deleted,invalid,rejected,pending verify"`
+	Source     string `json:"source" example:"manual" enums:"manual,history,capture,evolve"`
+	SQLDigest  string `json:"-" gorm:"column:Sql_digest"`
+	PlanDigest string `json:"plan_digest" gorm:"column:Plan_digest"`
+}

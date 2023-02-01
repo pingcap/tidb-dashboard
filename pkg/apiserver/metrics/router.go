@@ -4,7 +4,7 @@ package metrics
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -84,7 +84,7 @@ func (s *Service) queryMetrics(c *gin.Context) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(promResp.Body)
+	body, err := io.ReadAll(promResp.Body)
 	if err != nil {
 		rest.Error(c, ErrPrometheusQueryFailed.Wrap(err, "failed to read Prometheus query result"))
 		return

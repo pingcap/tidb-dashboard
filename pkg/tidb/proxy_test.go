@@ -5,7 +5,7 @@ package tidb
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -45,7 +45,7 @@ func TestProxy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := ioutil.ReadAll(res.Body)
+	got, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestProxyPick(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err = ioutil.ReadAll(res.Body)
+		_, err = io.ReadAll(res.Body)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -134,7 +134,7 @@ func assertRespData(t *testing.T, client *http.Client, expect string, target str
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
 	}

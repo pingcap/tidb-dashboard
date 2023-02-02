@@ -247,7 +247,6 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 // @Router	/statements/plan/binding	[get]
 // @Security	JwtAuth
 // @Failure	401	{object}	rest.ErrorResponse
-// @Failure	404	{object}	rest.ErrorResponse
 func (s *Service) getPlanBindingHandler(c *gin.Context) {
 	digest := c.Query("sql_digest")
 	if digest == "" {
@@ -271,10 +270,6 @@ func (s *Service) getPlanBindingHandler(c *gin.Context) {
 	result, err := s.queryPlanBinding(db, digest, bTime, eTime)
 	if err != nil {
 		rest.Error(c, err)
-		return
-	}
-	if len(result) <= 0 {
-		rest.Error(c, rest.ErrNotFound.New("no bindings with source = 'history' AND status IN ('enabled','using')"))
 		return
 	}
 

@@ -273,6 +273,10 @@ func (s *Service) getPlanBindingHandler(c *gin.Context) {
 		return
 	}
 
+	if result == nil {
+		result = []Binding{}
+	}
+
 	c.JSON(http.StatusOK, result)
 }
 

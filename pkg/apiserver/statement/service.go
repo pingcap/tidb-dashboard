@@ -275,9 +275,9 @@ func (s *Service) getPlanBindingHandler(c *gin.Context) {
 
 	// Creating binding with the same plan digest will override the previous one.
 	// Therefore, we only need to return the first result.
-	var result Binding
-	if len(results) > 1 {
-		result = results[0]
+	var result *Binding
+	if len(results) >= 1 {
+		result = &results[0]
 	}
 
 	c.JSON(http.StatusOK, result)

@@ -56,17 +56,6 @@ function DetailPage() {
     )
   )
 
-  const { data } = useClientRequest((reqConfig) =>
-    ctx!.ds.statementsPlanBindInfoGet(
-      query.digest!,
-      query.beginTime!,
-      query.endTime!,
-      reqConfig
-    )
-  )
-
-  console.log('data', data)
-
   const { t } = useTranslation()
   const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
 
@@ -79,7 +68,6 @@ function DetailPage() {
       }
     })
   )
-
   const [sqlExpanded, setSqlExpanded] = useVersionedLocalStorageState(
     STMT_DETAIL_EXPAND,
     { defaultValue: false }
@@ -101,7 +89,11 @@ function DetailPage() {
             <ArrowLeftOutlined /> {t('statement.pages.detail.head.back')}
           </Link>
         }
-        titleExtra={<>title Extra</>}
+        titleExtra={
+          ctx?.cfg.enablePlanBinding && plans && plans.length > 0 ? (
+            <PlanBind query={query} plans={plans!} />
+          ) : null
+        }
       >
         <AnimatedSkeleton showSkeleton={isLoading}>
           {error && <ErrorBar errors={[error]} />}
@@ -196,7 +188,7 @@ function DetailPage() {
                   cardNoMargin
                   columns={planColumns}
                   items={plans}
-                  selectionMode={SelectionMode.single}
+                  selectionMode={SelectionMode.multiple}
                   selection={selection.current}
                   selectionPreservedOnEmptyClick
                 />

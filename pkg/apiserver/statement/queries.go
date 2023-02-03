@@ -223,6 +223,9 @@ func (s *Service) dropPlanBinding(db *gorm.DB, sqlDigest string) (err error) {
 	if err != nil {
 		return err
 	}
+	if len(bindings) <= 0 {
+		return errors.New("no binding found")
+	}
 
 	for _, binding := range bindings {
 		// No SQL injection vulnerability here.

@@ -4638,7 +4638,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async statementsPlanBindingGet(sqlDigest: string, beginTime: number, endTime: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StatementBinding>>> {
+        async statementsPlanBindingGet(sqlDigest: string, beginTime: number, endTime: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatementBinding>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.statementsPlanBindingGet(sqlDigest, beginTime, endTime, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -5622,7 +5622,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        statementsPlanBindingGet(sqlDigest: string, beginTime: number, endTime: number, options?: any): AxiosPromise<Array<StatementBinding>> {
+        statementsPlanBindingGet(sqlDigest: string, beginTime: number, endTime: number, options?: any): AxiosPromise<StatementBinding> {
             return localVarFp.statementsPlanBindingGet(sqlDigest, beginTime, endTime, options).then((request) => request(axios, basePath));
         },
         /**

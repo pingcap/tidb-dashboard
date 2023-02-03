@@ -243,7 +243,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 // @Param	sql_digest	query	string	true	"query template id"
 // @Param	begin_time	query	int	true	"begin time"
 // @Param	end_time	query	int	true	"end time"
-// @Success	200	{array}	Binding
+// @Success	200	{object}	Binding
 // @Router	/statements/plan/binding	[get]
 // @Security	JwtAuth
 // @Failure	401	{object}	rest.ErrorResponse
@@ -267,14 +267,17 @@ func (s *Service) getPlanBindingHandler(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	result, err := s.queryPlanBinding(db, digest, bTime, eTime)
+	results, err := s.queryPlanBinding(db, digest, bTime, eTime)
 	if err != nil {
 		rest.Error(c, err)
 		return
 	}
 
-	if result == nil {
-		result = []Binding{}
+	// Creating binding with the same plan digest will override the previous one.
+	// Therefore, we only need to return the first result.
+	var result Binding
+	if len(results) > 1 {
+		result = results[0]
 	}
 
 	c.JSON(http.StatusOK, result)

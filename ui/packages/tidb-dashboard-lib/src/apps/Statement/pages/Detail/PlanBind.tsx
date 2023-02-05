@@ -6,6 +6,7 @@ import { StatementModel } from '@lib/client'
 import { IPageQuery } from '.'
 import { StatementContext } from '../../context'
 import { CardTable } from '@lib/components'
+import styles from './PlanBind.module.less'
 import { planColumns as genPlanColumns } from '../../utils/tableColumns'
 import {
   SelectionMode,
@@ -48,7 +49,17 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
 
   return (
     <Space align="center">
-      {boundPlanDigest ? 'Bound' : 'Not Bound'}
+      {boundPlanDigest ? (
+        <Space>
+          <span className={styles.GreenDot} />
+          Bound
+        </Space>
+      ) : (
+        <Space>
+          <span className={styles.GreyDot} />
+          Not Bound
+        </Space>
+      )}
       <Button onClick={() => handleModalVisibility(true)}>Plan Binding</Button>
       <PlanBindModal
         showPlanBindModal={showPlanBindModal}
@@ -108,7 +119,6 @@ const PlanBindModal = ({
       if (res.data === 'success') {
         setSelectedPlan(null)
         onHandleSetBoundPlanDigets(null)
-        console.log('drop plan success')
       }
     } catch (error) {
       console.log(error)
@@ -126,23 +136,42 @@ const PlanBindModal = ({
     <Modal
       visible={showPlanBindModal}
       title={
-        <Space>
-          <span>Plan Bind Modal</span>
-          <span>{boundPlanDigest ? 'Bound' : 'Not Bound'}</span>{' '}
+        <Space direction="vertical">
+          <Space size={10}>
+            Plan Binding{' '}
+            {boundPlanDigest ? (
+              <Space className={`${styles.SmallFont}`}>
+                <span className={styles.GreenDot} />
+                Bound
+              </Space>
+            ) : (
+              <Space className={`${styles.SmallFont}`}>
+                <span className={styles.GreyDot} />
+                Not Bound
+              </Space>
+            )}
+          </Space>
+          <span className={`${styles.SmallFont}`}>
+            Notice: This feature does not work for queries with subqueries,
+            queries that access TiFlash, or queries that join 3 or more tables.
+          </span>
         </Space>
       }
       onCancel={handleOnCancel}
       width={1000}
       footer={
-        <div style={{ textAlign: 'center' }}>
+        <div className={styles.Center}>
           {boundPlanDigest ? (
-            <Button
-              onClick={handleDropPlan}
-              loading={isDropping}
-              disabled={isDropping}
-            >
-              {isDropping ? 'Dropping...' : 'Drop'}
-            </Button>
+            <Space direction="vertical">
+              The plan is bound on this SQL.
+              <Button
+                onClick={handleDropPlan}
+                loading={isDropping}
+                disabled={isDropping}
+              >
+                {isDropping ? 'Dropping...' : 'Drop'}
+              </Button>
+            </Space>
           ) : (
             <Button
               onClick={handlePlanBind}
@@ -187,12 +216,10 @@ const ModalContent = ({
 }: ModalContentProps) => {
   return (
     <>
-      <p>
-        Notice: This feature does not work for queries with subqueries, queries
-        that access TiFlash, or queries that join 3 or more tables.
-      </p>
       <p>Bind this SQL</p>
-      <pre style={{ background: '#f1f1f1', padding: '10px' }}>{sqlDigest}</pre>
+      <pre className={`${styles.PreBlock} ${styles.SmallFont}`}>
+        {sqlDigest}
+      </pre>
       <p>to a special plan</p>
       {!isBinding && !isDropping && (
         <PlanTable

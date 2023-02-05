@@ -29,7 +29,7 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
     )
   )
 
-  const [boundPlanDigets, setBoundPlanDigets] = useState<string | null>(null)
+  const [boundPlanDigest, setBoundPlanDigest] = useState<string | null>(null)
   const [showPlanBindModal, setShowPlanBindModal] = useState(false)
 
   const handleModalVisibility = (visibility: boolean) => {
@@ -37,22 +37,22 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
   }
 
   const handleSetBoundPlanDigets = (planDigest: string | null) => {
-    setBoundPlanDigets(planDigest)
+    setBoundPlanDigest(planDigest)
   }
 
   useEffect(() => {
     if (planBindingStatus) {
-      setBoundPlanDigets(planBindingStatus.plan_digest!)
+      setBoundPlanDigest(planBindingStatus.plan_digest!)
     }
   }, [planBindingStatus])
 
   return (
     <Space align="center">
-      {boundPlanDigets ? 'Bound' : 'Not Bound'}
+      {boundPlanDigest ? 'Bound' : 'Not Bound'}
       <Button onClick={() => handleModalVisibility(true)}>Plan Binding</Button>
       <PlanBindModal
         showPlanBindModal={showPlanBindModal}
-        boundPlanDigets={boundPlanDigets}
+        boundPlanDigest={boundPlanDigest}
         plans={plans}
         sqlDigest={query.digest!}
         onHandleModalVisibility={handleModalVisibility}
@@ -64,7 +64,7 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
 
 interface PlanBindModalProps {
   showPlanBindModal: boolean
-  boundPlanDigets: string | null
+  boundPlanDigest: string | null
   plans: StatementModel[]
   sqlDigest: string
   onHandleModalVisibility: (visibility: boolean) => void
@@ -73,7 +73,7 @@ interface PlanBindModalProps {
 
 const PlanBindModal = ({
   showPlanBindModal,
-  boundPlanDigets,
+  boundPlanDigest,
   plans,
   sqlDigest,
   onHandleModalVisibility,
@@ -128,14 +128,14 @@ const PlanBindModal = ({
       title={
         <Space>
           <span>Plan Bind Modal</span>
-          <span>{boundPlanDigets ? 'Bound' : 'Not Bound'}</span>{' '}
+          <span>{boundPlanDigest ? 'Bound' : 'Not Bound'}</span>{' '}
         </Space>
       }
       onCancel={handleOnCancel}
       width={1000}
       footer={
         <div style={{ textAlign: 'center' }}>
-          {boundPlanDigets ? (
+          {boundPlanDigest ? (
             <Button
               onClick={handleDropPlan}
               loading={isDropping}
@@ -157,9 +157,11 @@ const PlanBindModal = ({
       destroyOnClose
     >
       <ModalContent
-        boundPlanDigets={boundPlanDigets}
+        boundPlanDigest={boundPlanDigest}
         plans={plans}
         sqlDigest={sqlDigest}
+        isBinding={isBinding}
+        isDropping={isDropping}
         onHandleSelectedPlanChange={handleSelectedPlanChange}
       />
     </Modal>
@@ -167,35 +169,63 @@ const PlanBindModal = ({
 }
 
 interface ModalContentProps {
-  boundPlanDigets: string | null
+  boundPlanDigest: string | null
   plans: StatementModel[]
   sqlDigest: string
+  isBinding: boolean
+  isDropping: boolean
   onHandleSelectedPlanChange: (plan: StatementModel[] | []) => void
 }
 
 const ModalContent = ({
-  boundPlanDigets,
+  boundPlanDigest,
   plans,
   sqlDigest,
+  isBinding,
+  isDropping,
   onHandleSelectedPlanChange
 }: ModalContentProps) => {
+  return (
+    <>
+      <p>
+        Notice: This feature does not work for queries with subqueries, queries
+        that access TiFlash, or queries that join 3 or more tables.
+      </p>
+      <p>Bind this SQL</p>
+      <pre style={{ background: '#f1f1f1', padding: '10px' }}>{sqlDigest}</pre>
+      <p>to a special plan</p>
+      {!isBinding && !isDropping && (
+        <PlanTable
+          plans={plans}
+          boundPlanDigest={boundPlanDigest}
+          onHandleSelectedPlanChange={onHandleSelectedPlanChange}
+        />
+      )}
+    </>
+  )
+}
+
+const PlanTable = ({ boundPlanDigest, plans, onHandleSelectedPlanChange }) => {
   const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
+
   const selection = useRef(
     new Selection({
       canSelectItem: (item) => {
         const digest = (item as StatementModel).plan_digest
-        return !boundPlanDigets
+        return !boundPlanDigest
           ? true
-          : digest === boundPlanDigets
+          : digest === boundPlanDigest
           ? true
           : false
       },
       onSelectionChanged: () => {
         const s = selection.current.getSelection() as StatementModel[]
         onHandleSelectedPlanChange(s)
-        if (!boundPlanDigets) return
+        if (!boundPlanDigest) return
+
+        // if bound plan is selected, keep it selected
         const selectedPlanIndex = plans.findIndex(
-          (v) => v.plan_digest === boundPlanDigets
+          (v) => v.plan_digest === boundPlanDigest
         )
 
         if (s.length === 0) {
@@ -206,44 +236,28 @@ const ModalContent = ({
   )
 
   useEffect(() => {
-    console.log('useEffect boundPlanDigets', boundPlanDigets)
-    if (boundPlanDigets && plans.length > 0) {
-      // selection.current.canSelectItem = (item) => {
-      //   const digest = (item as StatementModel).plan_digest
-      //   return digest === boundPlanDigets ? true : false
-      // }
+    boundPlanDigest = boundPlanDigest
+    if (boundPlanDigest && plans.length > 0) {
       const selectedPlanIndex = plans.findIndex(
-        (v) => v.plan_digest === boundPlanDigets
+        (v) => v.plan_digest === boundPlanDigest
       )
 
       selection.current.setIndexSelected(selectedPlanIndex, true, true)
-    } else if (!boundPlanDigets) {
+    } else if (!boundPlanDigest) {
       selection.current.setAllSelected(false)
     }
-  }, [boundPlanDigets])
-
+  }, [boundPlanDigest])
   return (
-    <>
-      <p>
-        Notice: This feature does not work for queries with subqueries, queries
-        that access TiFlash, or queries that join 3 or more tables.
-      </p>
-      <p>Bind this SQL</p>
-      <pre style={{ background: '#f1f1f1', padding: '10px' }}>{sqlDigest}</pre>
-      <p>to a special plan</p>
-      {plans && plans.length > 0 && (
-        <CardTable
-          cardNoMarginTop
-          cardNoMarginBottom
-          columns={planColumns}
-          items={plans}
-          selectionMode={SelectionMode.single}
-          checkboxVisibility={CheckboxVisibility.always}
-          selection={selection.current}
-          selectionPreservedOnEmptyClick
-        />
-      )}
-    </>
+    <CardTable
+      cardNoMarginTop
+      cardNoMarginBottom
+      columns={planColumns}
+      items={plans}
+      selectionMode={SelectionMode.single}
+      checkboxVisibility={CheckboxVisibility.always}
+      selection={selection.current}
+      selectionPreservedOnEmptyClick
+    />
   )
 }
 

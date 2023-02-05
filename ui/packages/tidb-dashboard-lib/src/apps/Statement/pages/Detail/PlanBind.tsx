@@ -154,6 +154,7 @@ const PlanBindModal = ({
           )}
         </div>
       }
+      destroyOnClose
     >
       <ModalContent
         boundPlanDigets={boundPlanDigets}
@@ -181,26 +182,25 @@ const ModalContent = ({
   const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
   const selection = useRef(
     new Selection({
-      // canSelectItem: (item) => {
-      //   console.log('use ref item', item)
-      //   const digest = (item as StatementModel).plan_digest
-      //   return !boundPlanDigets
-      //     ? true
-      //     : digest === boundPlanDigets
-      //     ? true
-      //     : false
-      // },
+      canSelectItem: (item) => {
+        const digest = (item as StatementModel).plan_digest
+        return !boundPlanDigets
+          ? true
+          : digest === boundPlanDigets
+          ? true
+          : false
+      },
       onSelectionChanged: () => {
         const s = selection.current.getSelection() as StatementModel[]
         onHandleSelectedPlanChange(s)
-        // if (!boundPlanDigets) return
-        // const selectedPlanIndex = plans.findIndex(
-        //   (v) => v.plan_digest === boundPlanDigets
-        // )
+        if (!boundPlanDigets) return
+        const selectedPlanIndex = plans.findIndex(
+          (v) => v.plan_digest === boundPlanDigets
+        )
 
-        // if (s.length === 0) {
-        //   selection.current.setIndexSelected(selectedPlanIndex, true, true)
-        // }
+        if (s.length === 0) {
+          selection.current.setIndexSelected(selectedPlanIndex, true, true)
+        }
       }
     })
   )
@@ -208,11 +208,17 @@ const ModalContent = ({
   useEffect(() => {
     console.log('useEffect boundPlanDigets', boundPlanDigets)
     if (boundPlanDigets && plans.length > 0) {
+      // selection.current.canSelectItem = (item) => {
+      //   const digest = (item as StatementModel).plan_digest
+      //   return digest === boundPlanDigets ? true : false
+      // }
       const selectedPlanIndex = plans.findIndex(
         (v) => v.plan_digest === boundPlanDigets
       )
 
       selection.current.setIndexSelected(selectedPlanIndex, true, true)
+    } else if (!boundPlanDigets) {
+      selection.current.setAllSelected(false)
     }
   }, [boundPlanDigets])
 

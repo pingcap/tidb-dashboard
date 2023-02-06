@@ -8,7 +8,7 @@ RUN apk add --no-cache \
     findutils \
     gcc \
     libc-dev \
-    nodejs \
+    nodejs=16.17.1-r0 \
     npm \
     openjdk11
 

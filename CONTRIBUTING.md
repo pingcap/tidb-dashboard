@@ -44,8 +44,8 @@ The followings are required for developing TiDB Dashboard:
 
 - git - Version control
 - make - Build tool (run common workflows)
-- [Golang 1.15+](https://golang.org/) - To compile the server.
-- [Node.js 16+](https://nodejs.org/) - To compile the front-end.
+- [Golang 1.19+](https://golang.org/) - To compile the server.
+- [Node.js 16](https://nodejs.org/) - To compile the front-end.
 - [PNPM 7](https://pnpm.io/) - To manage front-end dependencies.
 - [Java 8+](https://www.java.com/ES/download/) - To generate JavaScript API client by OpenAPI specification.
 
@@ -143,7 +143,7 @@ If you want to develop docker image locally 🤔.
    
       ```bash
       # On repository root directory, run:
-      docker-compose up
+      docker-compose -f ./dockerfiles/docker-compose.yml up
       ```
 
 4. Access TiDB Dashboard at [http://localhost:12333/dashboard](http://localhost:12333/dashboard).

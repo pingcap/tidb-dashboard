@@ -5,6 +5,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
+import { useIsFeatureSupport } from '@lib/utils/store'
 
 import { StatementModel } from '@lib/client'
 import {
@@ -80,6 +81,8 @@ function DetailPage() {
     }
   }, [plans])
 
+  const supportPlanBinding = useIsFeatureSupport('plan_binding')
+
   return (
     <div>
       <Head
@@ -90,7 +93,10 @@ function DetailPage() {
           </Link>
         }
         titleExtra={
-          ctx?.cfg.enablePlanBinding && plans && plans.length > 0 ? (
+          ctx?.cfg.enablePlanBinding &&
+          supportPlanBinding &&
+          plans &&
+          plans.length > 0 ? (
             <PlanBind query={query} plans={plans!} />
           ) : null
         }

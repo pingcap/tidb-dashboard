@@ -5,6 +5,17 @@ statement:
       head:
         back: 返回列表
         title: SQL 语句信息
+      plan_bind:
+        title: 绑定执行计划
+        bound: 已绑定
+        not_bound: 未绑定
+        bound_available_tooltip: 该 SQL 没有执行计划，无法绑定
+        notice: '注意: 此功能不适用于带有子查询的查询、访问 TiFlash 的查询或连接 3 个或更多表的查询。'
+        bound_sql: '绑定这条 SQL'
+        to_plan: '到执行计划'
+        bound_status_desc: 该 SQL 已绑定执行计划
+        drop_btn_txt: 解绑
+        bind_btn_txt: 绑定
       desc:
         time_range: 时间范围
         plans:

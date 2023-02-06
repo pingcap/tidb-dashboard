@@ -1,8 +1,10 @@
 import React, { useContext, useState, useMemo, useRef, useEffect } from 'react'
-import { Space, Button, Modal } from 'antd'
+import { Space, Button, Modal, Tooltip } from 'antd'
+import { InfoCircleOutlined } from '@ant-design/icons'
 
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { StatementModel } from '@lib/client'
+import { useTranslation } from 'react-i18next'
 import { IPageQuery } from '.'
 import { StatementContext } from '../../context'
 import { CardTable } from '@lib/components'
@@ -21,6 +23,7 @@ interface PlanBindProps {
 
 const PlanBind = ({ query, plans }: PlanBindProps) => {
   const ctx = useContext(StatementContext)
+  const { t } = useTranslation()
   const { data: planBindingStatus } = useClientRequest((reqConfig) =>
     ctx!.ds.statementsPlanBindStatusGet!(
       query.digest!,
@@ -30,6 +33,7 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
     )
   )
 
+  const [hasPlanToBind, setHasPlanToBind] = useState(false)
   const [boundPlanDigest, setBoundPlanDigest] = useState<string | null>(null)
   const [showPlanBindModal, setShowPlanBindModal] = useState(false)
 
@@ -47,20 +51,41 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
     }
   }, [planBindingStatus])
 
+  useEffect(() => {
+    plans.forEach((plan) => {
+      if (plan.plan_digest) {
+        setHasPlanToBind(true)
+      }
+    })
+  }, [plans])
+
   return (
     <Space align="center">
       {boundPlanDigest ? (
         <Space>
           <span className={styles.GreenDot} />
-          Bound
+          {t('statement.pages.detail.plan_bind.bound')}
         </Space>
       ) : (
         <Space>
           <span className={styles.GreyDot} />
-          Not Bound
+          {t('statement.pages.detail.plan_bind.not_bound')}
         </Space>
       )}
-      <Button onClick={() => handleModalVisibility(true)}>Plan Binding</Button>
+      <Button
+        onClick={() => handleModalVisibility(true)}
+        disabled={!hasPlanToBind}
+      >
+        {t('statement.pages.detail.plan_bind.title')}
+      </Button>
+      {!hasPlanToBind && (
+        <Tooltip
+          title={t('statement.pages.detail.plan_bind.bound_available_tooltip')}
+          placement="rightTop"
+        >
+          <InfoCircleOutlined />
+        </Tooltip>
+      )}
       <PlanBindModal
         showPlanBindModal={showPlanBindModal}
         boundPlanDigest={boundPlanDigest}
@@ -91,6 +116,7 @@ const PlanBindModal = ({
   onHandleSetBoundPlanDigets
 }: PlanBindModalProps) => {
   const ctx = useContext(StatementContext)
+  const { t } = useTranslation()
   const handleOnCancel = () => {
     onHandleModalVisibility(false)
   }
@@ -138,22 +164,21 @@ const PlanBindModal = ({
       title={
         <Space direction="vertical">
           <Space size={10}>
-            Plan Binding{' '}
+            {t('statement.pages.detail.plan_bind.title')}{' '}
             {boundPlanDigest ? (
               <Space className={`${styles.SmallFont}`}>
                 <span className={styles.GreenDot} />
-                Bound
+                {t('statement.pages.detail.plan_bind.bound')}
               </Space>
             ) : (
               <Space className={`${styles.SmallFont}`}>
                 <span className={styles.GreyDot} />
-                Not Bound
+                {t('statement.pages.detail.plan_bind.not_bound')}
               </Space>
             )}
           </Space>
           <span className={`${styles.SmallFont}`}>
-            Notice: This feature does not work for queries with subqueries,
-            queries that access TiFlash, or queries that join 3 or more tables.
+            {t('statement.pages.detail.plan_bind.notice')}
           </span>
         </Space>
       }
@@ -163,13 +188,13 @@ const PlanBindModal = ({
         <div className={styles.Center}>
           {boundPlanDigest ? (
             <Space direction="vertical">
-              The plan is bound on this SQL.
+              {t('statement.pages.detail.plan_bind.bound_status_desc')}
               <Button
                 onClick={handleDropPlan}
                 loading={isDropping}
                 disabled={isDropping}
               >
-                {isDropping ? 'Dropping...' : 'Drop'}
+                {t('statement.pages.detail.plan_bind.drop_btn_txt')}
               </Button>
             </Space>
           ) : (
@@ -178,61 +203,40 @@ const PlanBindModal = ({
               loading={isBinding}
               disabled={isBinding || !selectedPlan}
             >
-              {isBinding ? 'Binding...' : 'Bind'}
+              {t('statement.pages.detail.plan_bind.bind_btn_txt')}
             </Button>
           )}
         </div>
       }
       destroyOnClose
     >
-      <ModalContent
-        boundPlanDigest={boundPlanDigest}
-        plans={plans}
-        sqlDigest={sqlDigest}
-        isBinding={isBinding}
-        isDropping={isDropping}
-        onHandleSelectedPlanChange={handleSelectedPlanChange}
-      />
-    </Modal>
-  )
-}
-
-interface ModalContentProps {
-  boundPlanDigest: string | null
-  plans: StatementModel[]
-  sqlDigest: string
-  isBinding: boolean
-  isDropping: boolean
-  onHandleSelectedPlanChange: (plan: StatementModel[] | []) => void
-}
-
-const ModalContent = ({
-  boundPlanDigest,
-  plans,
-  sqlDigest,
-  isBinding,
-  isDropping,
-  onHandleSelectedPlanChange
-}: ModalContentProps) => {
-  return (
-    <>
-      <p>Bind this SQL</p>
+      <p>{t('statement.pages.detail.plan_bind.bound_sql')}</p>
       <pre className={`${styles.PreBlock} ${styles.SmallFont}`}>
         {sqlDigest}
       </pre>
-      <p>to a special plan</p>
+      <p>{t('statement.pages.detail.plan_bind.to_plan')}</p>
       {!isBinding && !isDropping && (
         <PlanTable
           plans={plans}
           boundPlanDigest={boundPlanDigest}
-          onHandleSelectedPlanChange={onHandleSelectedPlanChange}
+          onHandleSelectedPlanChange={handleSelectedPlanChange}
         />
       )}
-    </>
+    </Modal>
   )
 }
 
-const PlanTable = ({ boundPlanDigest, plans, onHandleSelectedPlanChange }) => {
+interface PlanTableProps {
+  boundPlanDigest: string | null
+  plans: StatementModel[]
+  onHandleSelectedPlanChange: (plan: StatementModel[] | []) => void
+}
+
+const PlanTable = ({
+  boundPlanDigest,
+  plans,
+  onHandleSelectedPlanChange
+}: PlanTableProps) => {
   const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
 
   const selection = useRef(

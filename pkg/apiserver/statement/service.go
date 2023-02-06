@@ -38,7 +38,7 @@ type Service struct {
 }
 
 func newService(p ServiceParams, ff *featureflag.Registry) *Service {
-	return &Service{params: p, planBindingFeatureFlag: ff.Register("plan_binding", ">= 6.6.0")}
+	return &Service{params: p, planBindingFeatureFlag: ff.Register("plan_binding", ">= 6.5.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {

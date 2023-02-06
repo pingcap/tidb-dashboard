@@ -6,7 +6,7 @@ statement:
         back: 返回列表
         title: SQL 语句信息
       plan_bind:
-        title: 绑定执行计划
+        title: 执行计划绑定
         bound: 已绑定
         not_bound: 未绑定
         bound_available_tooltip: 该 SQL 没有执行计划，无法绑定

@@ -267,7 +267,6 @@ const PlanTable = ({
   )
 
   useEffect(() => {
-    boundPlanDigest = boundPlanDigest
     if (boundPlanDigest && plans.length > 0) {
       const selectedPlanIndex = plans.findIndex(
         (v) => v.plan_digest === boundPlanDigest
@@ -278,6 +277,7 @@ const PlanTable = ({
       selection.current.setAllSelected(false)
     }
   }, [boundPlanDigest])
+
   return (
     <CardTable
       cardNoMarginTop
@@ -288,7 +288,9 @@ const PlanTable = ({
       checkboxVisibility={CheckboxVisibility.always}
       selection={selection.current}
       selectionPreservedOnEmptyClick
-      onRenderCheckbox={(props) => <Radio checked={props?.checked} />}
+      onRenderCheckbox={(props) => (
+        <Radio checked={props?.checked} disabled={!!boundPlanDigest} />
+      )}
     />
   )
 }

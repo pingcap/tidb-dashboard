@@ -1,5 +1,5 @@
 import React, { useContext, useState, useMemo, useRef, useEffect } from 'react'
-import { Space, Button, Modal, Tooltip } from 'antd'
+import { Space, Button, Modal, Tooltip, Radio } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -288,6 +288,7 @@ const PlanTable = ({
       checkboxVisibility={CheckboxVisibility.always}
       selection={selection.current}
       selectionPreservedOnEmptyClick
+      onRenderCheckbox={(props) => <Radio checked={props?.checked} />}
     />
   )
 }

@@ -1,5 +1,10 @@
 import { createContext } from 'react'
 
+export enum DeployType {
+  ServerlessTier = 'Serverless Tier',
+  Dedicated = 'Dedicated'
+}
+
 export interface IGlobalConfig {
   apiPathBase: string
   apiToken: string
@@ -13,7 +18,7 @@ export interface IGlobalConfig {
     tenantPlan: string // FREE_TRIAL / POC / ON_DEMAND
     projectId: string
     clusterId: string
-    deployType: string // Dedicated / Dev Tier
+    deployType: DeployType
   }
 }
 

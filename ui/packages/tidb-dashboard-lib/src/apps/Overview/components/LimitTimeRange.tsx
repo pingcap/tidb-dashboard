@@ -43,36 +43,56 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
   }, [recent_seconds])
 
   const disabledDate = (current) => {
-    const today = dayjs().startOf('hour')
+    const today = dayjs()
+    const todayStartWithHour = today.startOf('hour')
+    const todayStartWithDay = today.startOf('day')
+    const todayEndWithDay = today.endOf('day')
+
+    const curDate = dayjs(current)
+
     // Can not select days before 2 days ago
     const tooEarly =
-      today.subtract(selectableHours, 'hour') > dayjs(current).startOf('hour')
+      todayStartWithHour.subtract(selectableHours, 'hour') >
+        curDate.startOf('hour') &&
+      todayStartWithDay.subtract(selectableHours / 24, 'day') >
+        curDate.startOf('day')
+
     // Can not select days after today
-    const tooLate = today < dayjs(current).startOf('hour')
+    const tooLate =
+      todayStartWithHour < curDate.startOf('hour') &&
+      todayEndWithDay < curDate.endOf('day')
+
     return current && (tooEarly || tooLate)
   }
 
   // control avaliable time on Minute level
   const disabledTime = (current) => {
     // current hour
-    const hour = dayjs().hour()
-    const minute = dayjs().minute()
+    const today = dayjs()
+    const hour = today.hour()
+    const minute = today.minute()
+
+    const curHour = dayjs(current).hour()
     // is current day
-    if (current && current.isSame(dayjs(), 'day')) {
+    if (current && current.isSame(today, 'day')) {
       return {
         disabledHours: () => hoursRange.slice(hour + 1),
-        disabledMinutes: () => minutesRange.slice(minute + 1)
+        disabledMinutes: () =>
+          // if current hour, disable minutes before current minute
+          curHour === hour ? minutesRange.slice(minute + 1) : []
       }
     }
 
     // is 2 day ago
     if (
       current &&
-      current.isSame(dayjs().subtract(selectableHours / 24, 'day'), 'day')
+      current.isSame(today.subtract(selectableHours / 24, 'day'), 'day')
     ) {
       return {
         disabledHours: () => hoursRange.slice(0, hour),
-        disabledMinutes: () => minutesRange.slice(0, minute)
+        disabledMinutes: () =>
+          // if current hour, disable minutes after current minute
+          curHour === hour ? minutesRange.slice(0, minute) : []
       }
     }
 

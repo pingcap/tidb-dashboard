@@ -33,7 +33,6 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
     )
   )
 
-  const [hasPlanToBind, setHasPlanToBind] = useState(false)
   const [boundPlanDigest, setBoundPlanDigest] = useState<string | null>(null)
   const [showPlanBindModal, setShowPlanBindModal] = useState(false)
 
@@ -43,13 +42,10 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
     }
   }, [planBindingStatus])
 
-  useEffect(() => {
-    plans.forEach((plan) => {
-      if (plan.plan_digest) {
-        setHasPlanToBind(true)
-      }
-    })
-  }, [plans])
+  const hasPlanToBind = useMemo(
+    () => plans.find((plan) => !!plan.plan_digest) !== undefined,
+    [plans]
+  )
 
   return (
     <Space align="center">
@@ -120,10 +116,8 @@ const PlanBindModal = ({
   const handlePlanBind = async () => {
     setIsLoading(true)
     try {
-      const res = await ctx!.ds.statementsPlanBindCreate!(selectedPlan!)
-      if (res.data === 'success') {
-        onHandleSetBoundPlanDigets(selectedPlan!)
-      }
+      await ctx!.ds.statementsPlanBindCreate!(selectedPlan!)
+      onHandleSetBoundPlanDigets(selectedPlan!)
     } catch (error) {
       console.log(error)
     } finally {
@@ -134,11 +128,9 @@ const PlanBindModal = ({
   const handleDropPlan = async () => {
     setIsLoading(true)
     try {
-      const res = await ctx!.ds.statementsPlanBindDelete!(sqlDigest)
-      if (res.data === 'success') {
-        setSelectedPlan(null)
-        onHandleSetBoundPlanDigets(null)
-      }
+      await ctx!.ds.statementsPlanBindDelete!(sqlDigest)
+      setSelectedPlan(null)
+      onHandleSetBoundPlanDigets(null)
     } catch (error) {
       console.log(error)
     } finally {
@@ -238,11 +230,7 @@ const PlanTable = ({
     new Selection({
       canSelectItem: (item) => {
         const digest = (item as StatementModel).plan_digest
-        return !boundPlanDigest
-          ? true
-          : digest === boundPlanDigest
-          ? true
-          : false
+        return !boundPlanDigest || digest === boundPlanDigest
       },
       onSelectionChanged: () => {
         const s = selection.current.getSelection() as StatementModel[]

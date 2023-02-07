@@ -9,7 +9,7 @@ statement:
         title: 执行计划绑定
         bound: 已绑定
         not_bound: 未绑定
-        bound_available_tooltip: 该 SQL 没有执行计划，无法绑定
+        bound_available_tooltip: 计划绑定仅支持可绑定的 SQL 语句，包括 SELECT、DELETE、UPDATE 和 INSERT / REPLACE with SELECT 子查询。
         notice: '注意: 此功能不适用于带有子查询的查询、访问 TiFlash 的查询或连接 3 个或更多表的查询。'
         bound_sql: '绑定这条 SQL'
         to_plan: '到执行计划'

@@ -39,6 +39,16 @@ export interface IPageQuery {
 
 const STMT_DETAIL_EXPAND = 'statement.detail_expand'
 
+// sort plans by plan_count first,
+// if plan_count is the same, sort plans by ava_latency
+const compareFn = (a: StatementModel, b: StatementModel) => {
+  if (a.exec_count! === b.exec_count!) {
+    return b.avg_latency! - a.avg_latency!
+  }
+
+  return b.exec_count! - a.exec_count!
+}
+
 function DetailPage() {
   const ctx = useContext(StatementContext)
 
@@ -78,6 +88,7 @@ function DetailPage() {
   useEffect(() => {
     if (plans && plans.length > 0) {
       selection.current.setAllSelected(true)
+      plans.sort(compareFn)
     }
   }, [plans])
 
@@ -194,6 +205,7 @@ function DetailPage() {
                   cardNoMargin
                   columns={planColumns}
                   items={plans}
+                  orderBy="exec_count"
                   selectionMode={SelectionMode.multiple}
                   selection={selection.current}
                   selectionPreservedOnEmptyClick

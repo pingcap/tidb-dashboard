@@ -1,5 +1,5 @@
 import React, { useContext, useState, useMemo, useRef, useEffect } from 'react'
-import { Space, Button, Modal, Tooltip, Radio } from 'antd'
+import { Space, Button, Modal, Tooltip, Radio, Alert } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -61,31 +61,35 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
 
   return (
     <Space align="center">
-      {boundPlanDigest ? (
-        <Space>
-          <span className={styles.GreenDot} />
-          {t('statement.pages.detail.plan_bind.bound')}
-        </Space>
+      {!hasPlanToBind ? (
+        <Tooltip
+          title={t('statement.pages.detail.plan_bind.bound_available_tooltip')}
+          placement="leftTop"
+        >
+          <InfoCircleOutlined /> Unavailable
+        </Tooltip>
       ) : (
-        <Space>
-          <span className={styles.GreyDot} />
-          {t('statement.pages.detail.plan_bind.not_bound')}
-        </Space>
+        <>
+          {boundPlanDigest ? (
+            <Space>
+              <span className={styles.GreenDot} />
+              {t('statement.pages.detail.plan_bind.bound')}
+            </Space>
+          ) : (
+            <Space>
+              <span className={styles.GreyDot} />
+              {t('statement.pages.detail.plan_bind.not_bound')}
+            </Space>
+          )}
+        </>
       )}
+
       <Button
         onClick={() => handleModalVisibility(true)}
         disabled={!hasPlanToBind}
       >
         {t('statement.pages.detail.plan_bind.title')}
       </Button>
-      {!hasPlanToBind && (
-        <Tooltip
-          title={t('statement.pages.detail.plan_bind.bound_available_tooltip')}
-          placement="rightTop"
-        >
-          <InfoCircleOutlined />
-        </Tooltip>
-      )}
       <PlanBindModal
         showPlanBindModal={showPlanBindModal}
         boundPlanDigest={boundPlanDigest}
@@ -177,9 +181,11 @@ const PlanBindModal = ({
               </Space>
             )}
           </Space>
-          <span className={`${styles.SmallFont}`}>
-            {t('statement.pages.detail.plan_bind.notice')}
-          </span>
+          <Alert
+            type="warning"
+            message={t('statement.pages.detail.plan_bind.notice')}
+            className={`${styles.SmallFont}`}
+          />
         </Space>
       }
       onCancel={handleOnCancel}
@@ -271,7 +277,6 @@ const PlanTable = ({
       const selectedPlanIndex = plans.findIndex(
         (v) => v.plan_digest === boundPlanDigest
       )
-
       selection.current.setIndexSelected(selectedPlanIndex, true, true)
     } else if (!boundPlanDigest) {
       selection.current.setAllSelected(false)

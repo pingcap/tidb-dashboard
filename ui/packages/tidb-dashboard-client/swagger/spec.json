@@ -5237,10 +5237,16 @@
                 "plan": {
                     "type": "string"
                 },
+                "plan_can_be_bound": {
+                    "type": "boolean"
+                },
                 "plan_count": {
                     "type": "integer"
                 },
                 "plan_digest": {
+                    "type": "string"
+                },
+                "plan_hint": {
                     "type": "string"
                 },
                 "prev_sample_text": {
@@ -5257,6 +5263,9 @@
                     "type": "string"
                 },
                 "schema_name": {
+                    "type": "string"
+                },
+                "stmt_type": {
                     "type": "string"
                 },
                 "sum_backoff_times": {

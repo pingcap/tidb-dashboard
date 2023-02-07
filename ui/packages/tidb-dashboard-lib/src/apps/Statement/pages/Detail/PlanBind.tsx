@@ -37,14 +37,6 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
   const [boundPlanDigest, setBoundPlanDigest] = useState<string | null>(null)
   const [showPlanBindModal, setShowPlanBindModal] = useState(false)
 
-  const handleModalVisibility = (visibility: boolean) => {
-    setShowPlanBindModal(visibility)
-  }
-
-  const handleSetBoundPlanDigets = (planDigest: string | null) => {
-    setBoundPlanDigest(planDigest)
-  }
-
   useEffect(() => {
     if (planBindingStatus) {
       setBoundPlanDigest(planBindingStatus.plan_digest!)
@@ -85,7 +77,7 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
       )}
 
       <Button
-        onClick={() => handleModalVisibility(true)}
+        onClick={() => setShowPlanBindModal(true)}
         disabled={!hasPlanToBind}
       >
         {t('statement.pages.detail.plan_bind.title')}
@@ -95,8 +87,8 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
         boundPlanDigest={boundPlanDigest}
         plans={plans}
         sqlDigest={query.digest!}
-        onHandleModalVisibility={handleModalVisibility}
-        onHandleSetBoundPlanDigets={handleSetBoundPlanDigets}
+        onHandleModalVisibility={setShowPlanBindModal}
+        onHandleSetBoundPlanDigets={setBoundPlanDigest}
       />
     </Space>
   )
@@ -121,15 +113,12 @@ const PlanBindModal = ({
 }: PlanBindModalProps) => {
   const ctx = useContext(StatementContext)
   const { t } = useTranslation()
-  const handleOnCancel = () => {
-    onHandleModalVisibility(false)
-  }
+
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
-  const [isBinding, setIsBinding] = useState(false)
-  const [isDropping, setIsDropping] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handlePlanBind = async () => {
-    setIsBinding(true)
+    setIsLoading(true)
     try {
       const res = await ctx!.ds.statementsPlanBindCreate!(selectedPlan!)
       if (res.data === 'success') {
@@ -138,12 +127,12 @@ const PlanBindModal = ({
     } catch (error) {
       console.log(error)
     } finally {
-      setIsBinding(false)
+      setIsLoading(false)
     }
   }
 
   const handleDropPlan = async () => {
-    setIsDropping(true)
+    setIsLoading(true)
     try {
       const res = await ctx!.ds.statementsPlanBindDelete!(sqlDigest)
       if (res.data === 'success') {
@@ -153,7 +142,7 @@ const PlanBindModal = ({
     } catch (error) {
       console.log(error)
     } finally {
-      setIsDropping(false)
+      setIsLoading(false)
     }
   }
 
@@ -188,7 +177,7 @@ const PlanBindModal = ({
           />
         </Space>
       }
-      onCancel={handleOnCancel}
+      onCancel={() => onHandleModalVisibility(false)}
       width={1000}
       footer={
         <div className={styles.Center}>
@@ -197,8 +186,8 @@ const PlanBindModal = ({
               {t('statement.pages.detail.plan_bind.bound_status_desc')}
               <Button
                 onClick={handleDropPlan}
-                loading={isDropping}
-                disabled={isDropping}
+                loading={isLoading}
+                disabled={isLoading}
               >
                 {t('statement.pages.detail.plan_bind.drop_btn_txt')}
               </Button>
@@ -206,8 +195,8 @@ const PlanBindModal = ({
           ) : (
             <Button
               onClick={handlePlanBind}
-              loading={isBinding}
-              disabled={isBinding || !selectedPlan}
+              loading={isLoading}
+              disabled={isLoading || !selectedPlan}
             >
               {t('statement.pages.detail.plan_bind.bind_btn_txt')}
             </Button>
@@ -221,7 +210,7 @@ const PlanBindModal = ({
         {sqlDigest}
       </pre>
       <p>{t('statement.pages.detail.plan_bind.to_plan')}</p>
-      {!isBinding && !isDropping && (
+      {!isLoading && (
         <PlanTable
           plans={plans}
           boundPlanDigest={boundPlanDigest}

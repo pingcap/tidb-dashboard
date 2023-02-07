@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	"github.com/pingcap/log"
-	"github.com/thoas/go-funk"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -44,7 +44,7 @@ func (s *Service) fetchAllInstanceHosts() ([]string, error) {
 		allHostsMap[i.IP] = struct{}{}
 	}
 
-	allHosts := funk.Keys(allHostsMap).([]string)
+	allHosts := lo.Keys(allHostsMap)
 	sort.Strings(allHosts)
 
 	return allHosts, nil

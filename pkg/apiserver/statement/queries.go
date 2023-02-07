@@ -113,6 +113,8 @@ func (s *Service) queryPlans(
 		"exec_count",
 		"avg_mem",
 		"max_mem",
+		"stmt_type", // required by quick plan binding
+		"plan_hint", // required by quick plan binding, only available in TiDB 6.6.0+, could be filter out by `tableColumns`
 	})
 	if err != nil {
 		return nil, err

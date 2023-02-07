@@ -4,6 +4,7 @@ package statement
 
 import (
 	"fmt"
+	"github.com/pingcap/errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -299,7 +300,7 @@ func (s *Service) createPlanBindingHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	err := s.createPlanBinding(db, digest)
 	if err != nil {
-		rest.Error(c, err)
+		rest.Error(c, errors.Annotate(err, "create plan binding failed due to internal failure, please refer to https://docs.pingcap.com/tidb/stable/sql-plan-management"))
 		return
 	}
 

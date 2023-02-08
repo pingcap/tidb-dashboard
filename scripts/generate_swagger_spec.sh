@@ -12,5 +12,5 @@ PROJECT_DIR=$(cd "$DIR/.."; pwd)
 cd $PROJECT_DIR
 
 echo "+ Generate swagger spec"
-bin/swag init --generalInfo cmd/tidb-dashboard/main.go --propertyStrategy snakecase \
+bin/swag init --parseDependency --parseDepth 1 --generalInfo cmd/tidb-dashboard/main.go --propertyStrategy snakecase \
   --exclude ui --output swaggerspec

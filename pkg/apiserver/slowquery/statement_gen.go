@@ -17,7 +17,7 @@ func genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, erro
 	// use required fields filter when not all fields are requested
 	if reqJSONColumns[0] != "*" {
 		// These three fields are the most basic information of a slow query record and should contain them
-		requiredFields := lo.FindUniques(append(reqJSONColumns, "digest", "connection_id", "timestamp"))
+		requiredFields := lo.Uniq(append(reqJSONColumns, "digest", "connection_id", "timestamp"))
 		fields = lo.Filter(fields, func(f Field, _ int) bool {
 			return lo.Contains(requiredFields, f.JSONName)
 		})

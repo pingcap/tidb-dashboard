@@ -141,6 +141,7 @@ slow_query:
       time: Time
       copr: Coprocessor
       txn: Transaction
+      warnings: Warnings
   toolbar:
     schemas:
       placeholder: All Databases

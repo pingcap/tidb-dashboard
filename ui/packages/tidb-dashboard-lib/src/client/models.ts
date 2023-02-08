@@ -2450,6 +2450,12 @@ export interface SlowqueryModel {
      */
     'wait_ts'?: number;
     /**
+     * 
+     * @type {Array<number>}
+     * @memberof SlowqueryModel
+     */
+    'warnings'?: Array<number>;
+    /**
      * Transaction
      * @type {number}
      * @memberof SlowqueryModel

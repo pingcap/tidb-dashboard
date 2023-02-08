@@ -17,7 +17,7 @@ require (
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-resty/resty/v2 v2.6.0
-	github.com/go-sql-driver/mysql v1.6.0
+	github.com/go-sql-driver/mysql v1.7.0
 	github.com/goccy/go-graphviz v0.0.9
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/golang/snappy v0.0.4
@@ -54,9 +54,10 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
 	google.golang.org/protobuf v1.28.0
-	gorm.io/driver/mysql v1.0.6
-	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.21.9
+	gorm.io/datatypes v1.1.0
+	gorm.io/driver/mysql v1.4.5
+	gorm.io/driver/sqlite v1.4.3
+	gorm.io/gorm v1.24.3
 	moul.io/zapgorm2 v1.1.0
 )
 
@@ -82,11 +83,11 @@ require (
 	github.com/golang/protobuf v1.5.0 // indirect
 	github.com/ianlancetaylor/demangle v0.0.0-20210905161508-09a460cdf81d // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.2 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
-	github.com/mattn/go-sqlite3 v1.14.9 // indirect
+	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

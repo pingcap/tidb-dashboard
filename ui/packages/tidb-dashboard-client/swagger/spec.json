@@ -4801,7 +4801,10 @@
                     "type": "number"
                 },
                 "warnings": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "write_keys": {
                     "description": "Transaction",

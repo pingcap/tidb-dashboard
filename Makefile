@@ -6,7 +6,7 @@ PNPM_INSTALL_TAGS ?=
 
 LDFLAGS ?=
 
-FEATURE_VERSION ?= 6.2.0
+FEATURE_VERSION ?= 999.999.999
 
 WITHOUT_NGM ?= false
 
@@ -54,7 +54,7 @@ test: clean unit_test integration_test
 .PHONY: unit_test
 unit_test:
 	@mkdir -p ./coverage
-	GO111MODULE=on go test -v -cover -coverprofile=coverage/unit_test.txt ./pkg/... ./util/...
+	go test -v -cover -coverprofile=coverage/unit_test.txt ./pkg/... ./util/...
 
 .PHONY: integration_test
 integration_test:

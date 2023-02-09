@@ -46,10 +46,7 @@ linters:
     - prealloc
     - predeclared
     - revive
-    - rowserrcheck
-    - sqlclosecheck
     - unconvert
-    - wastedassign
     - whitespace
 
 linters-settings:

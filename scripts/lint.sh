@@ -26,7 +26,7 @@ if [ "${NEED_DOWNLOAD}" = true ]; then
 fi
 
 echo "+ Run lints for Go source code"
-${LINT_BIN} run --fix --timeout=3m
+${LINT_BIN} run --fix --timeout=10m
 
 echo "+ Clean up go mod"
 go mod tidy

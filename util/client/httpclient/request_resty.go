@@ -24,10 +24,6 @@ import (
 //		SetHeader("Content-Type", "application/json").
 //		SetHeader("Accept", "application/json")
 //
-//	client.LR().
-//		SetHeader("Content-Type", "application/json").
-//		SetHeader("Accept", "application/json")
-//
 // Also you can override header value, which was set at client instance level.
 func (lReq *LazyRequest) SetHeader(header, value string) *LazyRequest {
 	lReq.opsR = append(lReq.opsR, func(r *resty.Request) {
@@ -57,10 +53,6 @@ func (lReq *LazyRequest) SetHeaders(headers map[string]string) *LazyRequest {
 // SetHeaderVerbatim method is to set a single header field and its value verbatim in the current request.
 //
 // For Example: To set `all_lowercase` and `UPPERCASE` as `available`.
-//
-//	client.LR().
-//		SetHeaderVerbatim("all_lowercase", "available").
-//		SetHeaderVerbatim("UPPERCASE", "available")
 //
 //	client.LR().
 //		SetHeaderVerbatim("all_lowercase", "available").
@@ -191,12 +183,6 @@ func (lReq *LazyRequest) SetFormDataFromValues(data url.Values) *LazyRequest {
 //			Password: "welcome2resty",
 //		})
 //
-//	client.LR().
-//		SetBody(User{
-//			Username: "jeeva@myjeeva.com",
-//			Password: "welcome2resty",
-//		})
-//
 // Map as a body input, based on content type, it will be marshalled.
 //
 //	client.LR().
@@ -212,26 +198,7 @@ func (lReq *LazyRequest) SetFormDataFromValues(data url.Values) *LazyRequest {
 //			},
 //		})
 //
-//	client.LR().
-//		SetBody(map[string]interface{}{
-//			"username": "jeeva@myjeeva.com",
-//			"password": "welcome2resty",
-//			"address": &Address{
-//				Address1: "1111 This is my street",
-//				Address2: "Apt 201",
-//				City: "My City",
-//				State: "My State",
-//				ZipCode: 00000,
-//			},
-//		})
-//
 // String as a body input. Suitable for any need as a string input.
-//
-//	client.LR().
-//		SetBody(`{
-//			"username": "jeeva@getrightcare.com",
-//			"password": "admin"
-//		}`)
 //
 //	client.LR().
 //		SetBody(`{
@@ -358,11 +325,7 @@ func (lReq *LazyRequest) SetContentLength(l bool) *LazyRequest {
 //
 //	Authorization: Basic <base64-encoded-value>
 //
-//	Authorization: Basic <base64-encoded-value>
-//
 // To set the header for username "go-resty" and password "welcome"
-//
-//	client.LR().SetBasicAuth("go-resty", "welcome")
 //
 //	client.LR().SetBasicAuth("go-resty", "welcome")
 //
@@ -375,8 +338,6 @@ func (lReq *LazyRequest) SetBasicAuth(username, password string) *LazyRequest {
 }
 
 // SetAuthToken method sets the auth token header(Default Scheme: Bearer) in the current HTTP request. Header example:
-//
-//	Authorization: Bearer <auth-token-value-comes-here>
 //
 //	Authorization: Bearer <auth-token-value-comes-here>
 //
@@ -396,8 +357,6 @@ func (lReq *LazyRequest) SetAuthToken(token string) *LazyRequest {
 //
 //	Authorization: <auth-scheme-value-set-here> <auth-token-value>
 //
-//	Authorization: <auth-scheme-value-set-here> <auth-token-value>
-//
 // For Example: To set the scheme to use OAuth
 //
 //	client.LR().SetAuthScheme("OAuth")
@@ -407,9 +366,6 @@ func (lReq *LazyRequest) SetAuthToken(token string) *LazyRequest {
 //
 // Information about Auth schemes can be found in RFC7235 which is linked to below along with the page containing
 // the currently defined official authentication schemes:
-//
-//	https://tools.ietf.org/html/rfc7235
-//	https://www.iana.org/assignments/http-authschemes/http-authschemes.xhtml#authschemes
 //
 //	https://tools.ietf.org/html/rfc7235
 //	https://www.iana.org/assignments/http-authschemes/http-authschemes.xhtml#authschemes
@@ -505,11 +461,6 @@ func (lReq *LazyRequest) SetJSONEscapeHTML(b bool) *LazyRequest {
 }
 
 // SetCookie method appends a single cookie in the current request instance.
-//
-//	client.LR().SetCookie(&http.Cookie{
-//		Name:"go-resty",
-//		Value:"This is cookie value",
-//	})
 //
 //	client.LR().SetCookie(&http.Cookie{
 //		Name:"go-resty",

@@ -12,7 +12,7 @@ Although TiDB Dashboard can also be integrated into [PD], this form is not conve
 
 ### Step 1. Start a TiDB cluster
 
-[TiUP] is the offical component manager for [TiDB]. It can help you set up a local TiDB cluster in a few minutes.
+[TiUP](https://docs.pingcap.com/tidb/stable/tiup-overview) is the official component manager for [TiDB]. It can help you set up a local TiDB cluster in a few minutes.
 
 Download and install TiUP:
 
@@ -33,39 +33,48 @@ source ~/.bash_profile
 Start a local TiDB cluster:
 
 ```bash
-tiup playground nightly
+tiup playground
 ```
 
 You might notice that there is already a TiDB Dashboard integrated into the PD started by TiUP. For development purpose, it will not be used intentionally.
 
-### Step 2. Prepare Prerequisites
+### Step 2. Prepare Dev Prerequisites
 
 The followings are required for developing TiDB Dashboard:
 
 - git - Version control
 - make - Build tool (run common workflows)
-- [Golang 1.15+](https://golang.org/) - To compile the server.
-- [Node.js 16+](https://nodejs.org/) - To compile the front-end.
+- [Golang 1.19+](https://golang.org/) - To compile the server.
+- [Node.js 16](https://nodejs.org/) - To compile the front-end.
 - [PNPM 7](https://pnpm.io/) - To manage front-end dependencies.
 - [Java 8+](https://www.java.com/ES/download/) - To generate JavaScript API client by OpenAPI specification.
 
 ### Step 3. Build and Run TiDB Dashboard
 
-1. Clone the repository:
+> Make sure that `tiup playground` is running on the background.
+
+Package frontend and backend into a single binary:
 
    ```bash
-   git clone https://github.com/pingcap/tidb-dashboard.git
-   cd tidb-dashboard
+   # Build a binary into `bin/tidb-dashboard`.
+   make package
+   
+   # Run.
+   make run
    ```
 
-2. Build and run TiDB Dashboard back-end server:
+   You can access TiDB Dashboard now: [http://127.0.0.1:12333/dashboard](http://127.0.0.1:12333/dashboard)
+
+#### Develop Frontend and Backend Separately
+
+1. Build and run TiDB Dashboard back-end server:
 
    ```bash
    # In tidb-dashboard directory:
    make dev && make run
    ```
 
-3. Build and run front-end server in a new terminal:
+2. Build and run front-end server in a new terminal:
 
    ```bash
    # In tidb-dashboard directory:
@@ -74,19 +83,7 @@ The followings are required for developing TiDB Dashboard:
    pnpm dev
    ```
 
-4. That's it! You can access TiDB Dashboard now: [http://127.0.0.1:3001](http://127.0.0.1:3001)
-
-5. (Optional) Package frontend and backend into a single binary:
-
-   ```bash
-   # In tidb-dashboard directory:
-   make package
-   
-   # Run the binary without separate frontend server:
-   make run
-   ```
-
-   You can access TiDB Dashboard now: [http://127.0.0.1:12333/dashboard](http://127.0.0.1:12333/dashboard)
+3. That's it! You can access TiDB Dashboard now: [http://127.0.0.1:3001](http://127.0.0.1:3001)
 
 ### Step 4. Run E2E Tests (optional)
 
@@ -146,7 +143,7 @@ If you want to develop docker image locally 🤔.
    
       ```bash
       # On repository root directory, run:
-      docker-compose up
+      docker-compose -f ./dockerfiles/docker-compose.yml up
       ```
 
 4. Access TiDB Dashboard at [http://localhost:12333/dashboard](http://localhost:12333/dashboard).

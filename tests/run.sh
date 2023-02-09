@@ -28,7 +28,7 @@ $PROJECT_DIR/tests/create_table.sh
 PRECISE_TIDB_VERSION=$(mysql --host 127.0.0.1 --port 4000 -u root -se "SELECT VERSION()" | sed -r "s/.*TiDB-(v[0-9]+\.[0-9]+\.[0-9]+).*/\1/g")
 
 echo "+ Run integration tests on tidb $PRECISE_TIDB_VERSION"
-GO111MODUTIDB_VERSION=$PRECISE_TIDB_VERSION go test -race -v -cover \
+TIDB_VERSION=$PRECISE_TIDB_VERSION go test -race -v -cover \
 -coverprofile=coverage/integration_${TIDB_VERSION}.txt \
 -coverpkg=${COVER_PKG:-./pkg/...} \
 ./tests/integration/...

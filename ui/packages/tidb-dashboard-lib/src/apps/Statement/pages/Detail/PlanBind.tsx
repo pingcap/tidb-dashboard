@@ -42,7 +42,7 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
     }
   }, [planBindingStatus])
 
-  const hasPlanToBind = useMemo(() => plans[0].plan_can_be_bound, [plans])
+  const hasPlanToBind = plans[0].plan_can_be_bound
 
   return (
     <Space align="center">

@@ -5,7 +5,8 @@ import { AxiosPromise } from 'axios'
 import {
   StatementEditableConfig,
   StatementGetStatementsRequest,
-  StatementModel
+  StatementModel,
+  StatementBinding
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
@@ -67,6 +68,23 @@ export interface IStatementDataSource extends ISlowQueryDataSource {
   statementsTimeRangesGet(
     options?: ReqConfig
   ): AxiosPromise<Array<StatementTimeRange>>
+
+  statementsPlanBindStatusGet?(
+    sqlDigest: string,
+    beginTime: number,
+    endTime: number,
+    options?: ReqConfig
+  ): AxiosPromise<StatementBinding>
+
+  statementsPlanBindCreate?(
+    planDigest: string,
+    options?: ReqConfig
+  ): AxiosPromise<string>
+
+  statementsPlanBindDelete?(
+    sqlDigest: string,
+    options?: ReqConfig
+  ): AxiosPromise<string>
 }
 
 export interface IStatementContext {
@@ -74,6 +92,7 @@ export interface IStatementContext {
   cfg: IContextConfig & {
     enableExport: boolean
     showHelp?: boolean
+    enablePlanBinding?: boolean
   }
 }
 

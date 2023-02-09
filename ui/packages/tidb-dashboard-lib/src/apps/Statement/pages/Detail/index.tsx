@@ -5,6 +5,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
+import { useIsFeatureSupport } from '@lib/utils/store'
 
 import { StatementModel } from '@lib/client'
 import {
@@ -26,6 +27,7 @@ import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStora
 
 import { planColumns as genPlanColumns } from '../../utils/tableColumns'
 import PlanDetail from './PlanDetail'
+import PlanBind from './PlanBind'
 import { StatementContext } from '../../context'
 
 export interface IPageQuery {
@@ -36,6 +38,16 @@ export interface IPageQuery {
 }
 
 const STMT_DETAIL_EXPAND = 'statement.detail_expand'
+
+// sort plans by plan_count first,
+// if plan_count is the same, sort plans by ava_latency
+const compareFn = (a: StatementModel, b: StatementModel) => {
+  if (a.exec_count! === b.exec_count!) {
+    return b.avg_latency! - a.avg_latency!
+  }
+
+  return b.exec_count! - a.exec_count!
+}
 
 function DetailPage() {
   const ctx = useContext(StatementContext)
@@ -54,6 +66,7 @@ function DetailPage() {
       reqConfig
     )
   )
+
   const { t } = useTranslation()
   const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
 
@@ -66,7 +79,6 @@ function DetailPage() {
       }
     })
   )
-
   const [sqlExpanded, setSqlExpanded] = useVersionedLocalStorageState(
     STMT_DETAIL_EXPAND,
     { defaultValue: false }
@@ -76,8 +88,11 @@ function DetailPage() {
   useEffect(() => {
     if (plans && plans.length > 0) {
       selection.current.setAllSelected(true)
+      plans.sort(compareFn)
     }
   }, [plans])
+
+  const supportPlanBinding = useIsFeatureSupport('plan_binding')
 
   return (
     <div>
@@ -87,6 +102,14 @@ function DetailPage() {
           <Link to={`/statement`}>
             <ArrowLeftOutlined /> {t('statement.pages.detail.head.back')}
           </Link>
+        }
+        titleExtra={
+          ctx?.cfg.enablePlanBinding &&
+          supportPlanBinding &&
+          plans &&
+          plans.length > 0 ? (
+            <PlanBind query={query} plans={plans!} />
+          ) : null
         }
       >
         <AnimatedSkeleton showSkeleton={isLoading}>
@@ -182,6 +205,7 @@ function DetailPage() {
                   cardNoMargin
                   columns={planColumns}
                   items={plans}
+                  orderBy="exec_count"
                   selectionMode={SelectionMode.multiple}
                   selection={selection.current}
                   selectionPreservedOnEmptyClick

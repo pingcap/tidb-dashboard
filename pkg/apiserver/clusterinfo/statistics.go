@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/thoas/go-funk"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo/hostinfo"
@@ -56,11 +56,11 @@ func sumInt(array []int) int {
 
 func (info *instanceKindImmediateInfo) ToResult() *ClusterStatisticsPartial {
 	return &ClusterStatisticsPartial{
-		NumberOfHosts:            len(funk.Keys(info.hosts).([]string)),
-		NumberOfInstances:        len(funk.Keys(info.instances).([]string)),
-		TotalMemoryCapacityBytes: sumInt(funk.Map(funk.Values(info.hosts), func(x *instanceKindHostImmediateInfo) int { return x.memoryCapacity }).([]int)),
-		TotalPhysicalCores:       sumInt(funk.Map(funk.Values(info.hosts), func(x *instanceKindHostImmediateInfo) int { return x.physicalCores }).([]int)),
-		TotalLogicalCores:        sumInt(funk.Map(funk.Values(info.hosts), func(x *instanceKindHostImmediateInfo) int { return x.logicalCores }).([]int)),
+		NumberOfHosts:            len(lo.Keys(info.hosts)),
+		NumberOfInstances:        len(lo.Keys(info.instances)),
+		TotalMemoryCapacityBytes: sumInt(lo.Map(lo.Values(info.hosts), func(x *instanceKindHostImmediateInfo, _ int) int { return x.memoryCapacity })),
+		TotalPhysicalCores:       sumInt(lo.Map(lo.Values(info.hosts), func(x *instanceKindHostImmediateInfo, _ int) int { return x.physicalCores })),
+		TotalLogicalCores:        sumInt(lo.Map(lo.Values(info.hosts), func(x *instanceKindHostImmediateInfo, _ int) int { return x.logicalCores })),
 	}
 }
 
@@ -163,7 +163,7 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	}
 
 	// Generate result..
-	versions := funk.Keys(globalVersionsSet).([]string)
+	versions := lo.Keys(globalVersionsSet)
 	sort.Strings(versions)
 
 	statsByIk := make(map[string]*ClusterStatisticsPartial)
@@ -172,7 +172,7 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	}
 
 	return &ClusterStatistics{
-		ProbeFailureHosts:   len(funk.Keys(globalFailureHostsSet).([]string)),
+		ProbeFailureHosts:   len(lo.Keys(globalFailureHostsSet)),
 		Versions:            versions,
 		TotalStats:          globalInfo.ToResult(),
 		StatsByInstanceKind: statsByIk,

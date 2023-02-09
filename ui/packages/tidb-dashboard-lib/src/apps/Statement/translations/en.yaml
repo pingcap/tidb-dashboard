@@ -5,6 +5,17 @@ statement:
       head:
         back: List
         title: Statement Information
+      plan_bind:
+        title: Plan Binding
+        bound: Bound
+        not_bound: Not Bound
+        bound_available_tooltip: 'Plan Binding only supported bindable SQL statements including SELECT, DELETE, UPDATE, and INSERT / REPLACE with SELECT subqueries.'
+        notice: 'Notice: This feature does not work for queries with subqueries, queries that access TiFlash, or queries that join 3 or more tables.'
+        bound_sql: 'Bind this SQL'
+        to_plan: 'to a special plan'
+        bound_status_desc: The plan has bound to this SQL
+        drop_btn_txt: Drop
+        bind_btn_txt: Bind
       desc:
         time_range: Time Range
         plans:

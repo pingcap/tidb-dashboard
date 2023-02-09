@@ -19,13 +19,7 @@ import (
 //
 //	AggLastSeen   int  `vexpr:"UNIX_TIMESTAMP(MAX(last_seen))"`
 //
-//	AggLastSeen   int  `vexpr:"UNIX_TIMESTAMP(MAX(last_seen))"`
-//
 // VirtualView can build projections like:
-//
-//	    SELECT UNIX_TIMESTAMP(MAX(last_seen)) AS agg_last_seen ....
-//													^^^^^^^^^^^^^ This follows the GORM naming strategy and
-//																  can be controlled by gorm:"column:xxx".
 //
 //	    SELECT UNIX_TIMESTAMP(MAX(last_seen)) AS agg_last_seen ....
 //													^^^^^^^^^^^^^ This follows the GORM naming strategy and
@@ -37,13 +31,7 @@ import (
 //		     AggLastSeen: <the result of `UNIX_TIMESTAMP(MAX(last_seen))`>
 //	    }
 //
-//	    {
-//		     AggLastSeen: <the result of `UNIX_TIMESTAMP(MAX(last_seen))`>
-//	    }
-//
 // If `vexpr` is not specified in the model field, the field can be transparently used. For example:
-//
-//	FieldFoo  int
 //
 //	FieldFoo  int
 //

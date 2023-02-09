@@ -8,7 +8,7 @@ RUN apk add --no-cache \
     findutils \
     gcc \
     libc-dev \
-    nodejs \
+    nodejs=16.17.1-r0 \
     npm \
     openjdk11
 
@@ -20,7 +20,7 @@ WORKDIR /go/src/github.com/pingcap/tidb-dashboard
 # Cache go module dependencies.
 COPY ../go.mod .
 COPY ../go.sum .
-RUN GO111MODULE=on go mod download
+RUN go mod download
 
 # Cache go tools.
 COPY ../scripts scripts/

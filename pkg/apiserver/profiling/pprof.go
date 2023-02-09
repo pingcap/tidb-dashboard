@@ -4,7 +4,7 @@ package profiling
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
@@ -58,7 +58,7 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, 
 		fileExtenstion = "*.txt"
 	}
 
-	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt+"_"+fileExtenstion)
+	tmpfile, err := os.CreateTemp("", fileNameWithoutExt+"_"+fileExtenstion)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create tmpfile to write profile: %v", err)
 	}

@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -31,7 +31,7 @@ func fetchAlertManagerCounts(ctx context.Context, alertManagerAddr string, httpC
 		return 0, fmt.Errorf("alert manager API returns non success status code")
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return 0, err
 	}

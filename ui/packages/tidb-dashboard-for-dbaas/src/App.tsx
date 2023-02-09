@@ -25,23 +25,23 @@ export default function () {
     }
   }, [locHashPrefix])
 
-  if (locHashPrefix === 'statement') {
+  if (locHashPrefix.startsWith('statement')) {
     return <Statement />
   }
 
-  if (locHashPrefix === 'slow_query') {
+  if (locHashPrefix.startsWith('slow_query')) {
     return <SlowQuery />
   }
 
-  if (locHashPrefix === 'keyviz') {
+  if (locHashPrefix.startsWith('keyviz')) {
     return <KeyViz />
   }
 
-  if (locHashPrefix === 'topsql') {
+  if (locHashPrefix.startsWith('topsql')) {
     return <TopSQL />
   }
 
-  if (locHashPrefix === 'monitoring') {
+  if (locHashPrefix.startsWith('monitoring')) {
     return <Monitoring />
   }
 

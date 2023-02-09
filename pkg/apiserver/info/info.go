@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package info
 
@@ -10,7 +10,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/gin-gonic/gin"
-	"github.com/thoas/go-funk"
+	"github.com/samber/lo"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
@@ -186,9 +186,9 @@ func (s *Service) tablesHandler(c *gin.Context) {
 		return
 	}
 
-	result = funk.Map(result, func(item tableSchema) tableSchema {
+	result = lo.Map(result, func(item tableSchema, _ int) tableSchema {
 		item.TableName = strings.ToLower(item.TableName)
 		return item
-	}).([]tableSchema)
+	})
 	c.JSON(http.StatusOK, result)
 }

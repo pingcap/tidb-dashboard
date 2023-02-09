@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package version
 
@@ -20,12 +20,12 @@ type Info struct {
 	BuildGitHash    string `json:"build_git_hash"`
 }
 
-// Version information. It will be overwritten by LDFLAGS.
+// Zero-value version information. It will be overwritten by LDFLAGS.
 var (
-	InternalVersion = "Unknown"
-	Standalone      = "Unknown" // Unknown, Yes or No
-	PDVersion       = "Unknown"
-	BuildTime       = "Unknown"
+	InternalVersion = "0.0.0"
+	Standalone      = "Yes" // Unknown, Yes or No
+	PDVersion       = "0.0.0"
+	BuildTime       = "1970-01-01 00:00:00"
 	BuildGitHash    = "Unknown"
 )
 

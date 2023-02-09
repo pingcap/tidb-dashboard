@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package utils
 
@@ -7,7 +7,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -75,7 +74,7 @@ func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []str
 
 // TODO: Better to be a streaming interface.
 func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, err error) {
-	csvFile, err := ioutil.TempFile("", filename)
+	csvFile, err := os.CreateTemp("", filename)
 	if err != nil {
 		return
 	}

@@ -10,7 +10,7 @@ PROJECT_DIR="$(dirname "$DIR")"
 cd $PROJECT_DIR
 
 LINT_BIN=./bin/golangci-lint
-REQUIRED_VERSION=1.45.0
+REQUIRED_VERSION=1.51.1
 NEED_DOWNLOAD=true
 
 echo "+ Check golangci-lint binary"
@@ -26,7 +26,7 @@ if [ "${NEED_DOWNLOAD}" = true ]; then
 fi
 
 echo "+ Run lints for Go source code"
-${LINT_BIN} run --fix --timeout=3m
+${LINT_BIN} run --fix --timeout=10m
 
 echo "+ Clean up go mod"
 go mod tidy

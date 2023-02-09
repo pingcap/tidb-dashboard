@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Package distro provides a type-safe distribution resource framework.
 // Distribution resource determines how component names are displayed in errors, logs and so on.
@@ -8,7 +8,7 @@ package distro
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -88,7 +88,7 @@ func ReadResourceStringsFromFile(filePath string) (DistributionResource, error) 
 		_ = distroStringsFile.Close()
 	}()
 
-	data, err := ioutil.ReadAll(distroStringsFile)
+	data, err := io.ReadAll(distroStringsFile)
 	if err != nil {
 		return distroStringsRes, err
 	}

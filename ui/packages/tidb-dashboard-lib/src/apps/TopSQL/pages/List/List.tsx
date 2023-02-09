@@ -22,7 +22,6 @@ import {
   Card,
   TimeRangeSelector,
   toTimeRangeValue as _toTimeRangeValue,
-  DEFAULT_TIME_RANGE,
   Toolbar,
   AutoRefreshButton,
   TimeRange,
@@ -41,6 +40,7 @@ import { onLegendItemOver, onLegendItemOut } from './legendAction'
 import { InstanceType } from './ListDetail/ListDetailTable'
 import { isDistro } from '@lib/utils/distro'
 import { TopSQLContext } from '../../context'
+import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 
 const TOP_N = 5
 const CHART_BAR_WIDTH = 8
@@ -60,10 +60,7 @@ export function TopSQLList() {
     'topsql.instance',
     null
   )
-  const [timeRange, setTimeRange] = useSessionStorage(
-    'topsql.recent_time_range',
-    DEFAULT_TIME_RANGE
-  )
+  const { timeRange, setTimeRange } = useURLTimeRange()
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const computeTimeWindowSize = useMemoizedFn(

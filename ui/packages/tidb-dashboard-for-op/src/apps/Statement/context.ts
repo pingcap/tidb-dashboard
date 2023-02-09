@@ -114,6 +114,40 @@ class DataSource implements IStatementDataSource {
     })
   }
 
+  statementsPlanBindStatusGet(
+    sqlDigest: string,
+    beginTime: number,
+    endTime: number,
+    options?: ReqConfig
+  ) {
+    return client.getInstance().statementsPlanBindingGet(
+      {
+        sqlDigest,
+        beginTime,
+        endTime
+      },
+      options
+    )
+  }
+
+  statementsPlanBindCreate(planDigest: string, options?: ReqConfig) {
+    return client.getInstance().statementsPlanBindingPost(
+      {
+        planDigest
+      },
+      options
+    )
+  }
+
+  statementsPlanBindDelete(sqlDigest: string, options?: ReqConfig) {
+    return client.getInstance().statementsPlanBindingDelete(
+      {
+        sqlDigest
+      },
+      options
+    )
+  }
+
   // slow query
   slowQueryAvailableFieldsGet(options?: ReqConfig) {
     return client.getInstance().slowQueryAvailableFieldsGet(options)
@@ -174,5 +208,9 @@ const ds = new DataSource()
 
 export const ctx: IStatementContext = {
   ds,
-  cfg: { apiPathBase: client.getBasePath(), enableExport: true }
+  cfg: {
+    apiPathBase: client.getBasePath(),
+    enableExport: true,
+    enablePlanBinding: true
+  }
 }

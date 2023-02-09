@@ -2621,6 +2621,115 @@
                 }
             }
         },
+        "/statements/plan/binding": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Get the bound plan digest (if exists) of a statement",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "query template id",
+                        "name": "sql_digest",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "begin time",
+                        "name": "begin_time",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end time",
+                        "name": "end_time",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/statement.Binding"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Create a binding for a statement and a plan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "plan digest id",
+                        "name": "plan_digest",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Drop all manually created bindings for a statement",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "query template ID (a.k.a. sql digest)",
+                        "name": "sql_digest",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/statements/plan/detail": {
             "get": {
                 "security": [
@@ -4800,6 +4909,12 @@
                 "wait_ts": {
                     "type": "number"
                 },
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "write_keys": {
                     "description": "Transaction",
                     "type": "integer"
@@ -4839,6 +4954,37 @@
             "properties": {
                 "config": {
                     "$ref": "#/definitions/config.SSOCoreConfig"
+                }
+            }
+        },
+        "statement.Binding": {
+            "type": "object",
+            "properties": {
+                "plan_digest": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string",
+                    "enum": [
+                        "manual",
+                        "history",
+                        "capture",
+                        "evolve"
+                    ],
+                    "example": "manual"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "enabled",
+                        "using",
+                        "disabled",
+                        "deleted",
+                        "invalid",
+                        "rejected",
+                        "pending verify"
+                    ],
+                    "example": "enabled"
                 }
             }
         },
@@ -5097,10 +5243,16 @@
                 "plan": {
                     "type": "string"
                 },
+                "plan_can_be_bound": {
+                    "type": "boolean"
+                },
                 "plan_count": {
                     "type": "integer"
                 },
                 "plan_digest": {
+                    "type": "string"
+                },
+                "plan_hint": {
                     "type": "string"
                 },
                 "prev_sample_text": {
@@ -5117,6 +5269,9 @@
                     "type": "string"
                 },
                 "schema_name": {
+                    "type": "string"
+                },
+                "stmt_type": {
                     "type": "string"
                 },
                 "sum_backoff_times": {

@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package profiling
 
@@ -6,7 +6,6 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -399,7 +398,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 		return
 	}
 
-	content, err := ioutil.ReadFile(task.FilePath)
+	content, err := os.ReadFile(task.FilePath)
 	if err != nil {
 		rest.Error(c, err)
 		return

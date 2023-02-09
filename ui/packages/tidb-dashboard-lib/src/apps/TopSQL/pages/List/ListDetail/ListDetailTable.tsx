@@ -36,7 +36,7 @@ const formatZero = (v: number) => {
   return v
 }
 const shortFormat = (v: number = 0) => {
-  return getValueFormat('short')(formatZero(v), 1)
+  return v && v < 0.1 ? '<0.1' : getValueFormat('short')(formatZero(v), 1)
 }
 const msFormat = (v: number = 0) => {
   return getValueFormat('ms')(formatZero(v), 1)

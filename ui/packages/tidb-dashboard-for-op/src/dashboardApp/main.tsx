@@ -87,7 +87,8 @@ async function webPageStart() {
   )
   if (info?.enable_telemetry) {
     // mixpanel
-    telemetry.enable(info.version?.internal_version!)
+    // close mixpanel telemetry for tidb-dashboard op
+    // telemetry.enable(info.version?.internal_version!)
     let preRoute = ''
     window.addEventListener('single-spa:routing-event', () => {
       const curRoute = routing.getPathInLocationHash()

@@ -40,7 +40,7 @@ func Default() *Config {
 		PublicPathPrefix:   defaultPublicPathPrefix,
 		ClusterTLSConfig:   nil,
 		TiDBTLSConfig:      nil,
-		EnableTelemetry:    true,
+		EnableTelemetry:    false,
 		EnableExperimental: false,
 		FeatureVersion:     version.PDVersion,
 	}

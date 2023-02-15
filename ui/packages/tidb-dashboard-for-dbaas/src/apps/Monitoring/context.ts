@@ -58,7 +58,7 @@ export const ctx: (globalConfig: IGlobalConfig) => IMonitoringContext = (
           3 * 60 * 60,
           12 * 60 * 60,
           24 * 60 * 60,
-          3 * 60 * 60,
+          3 * 24 * 60 * 60,
           7 * 24 * 60 * 60
         ]
       : [
@@ -69,7 +69,7 @@ export const ctx: (globalConfig: IGlobalConfig) => IMonitoringContext = (
           3 * 60 * 60,
           12 * 60 * 60,
           24 * 60 * 60,
-          2 * 60 * 60,
+          2 * 24 * 60 * 60,
           3 * 24 * 60 * 60
         ]
     : [

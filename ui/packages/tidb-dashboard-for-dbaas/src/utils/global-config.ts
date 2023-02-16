@@ -13,6 +13,8 @@ export interface IGlobalConfig {
   timezone: number | null
   promBaseUrl: string
 
+  expandMetricsData: boolean
+
   clusterInfo: {
     orgId: string
     tenantPlan: string // FREE_TRIAL / POC / ON_DEMAND

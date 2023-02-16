@@ -1,3 +1,5 @@
-import InsightIndexTable from './InsightIndexTable'
+import IndexInsightTable from './IndexInsightTable'
+import IndexInsightListWithRegister from './IndexInsightListWithRegister'
+import IndexInsightList from './IndexInsightList'
 
-export { InsightIndexTable }
+export { IndexInsightTable, IndexInsightListWithRegister, IndexInsightList }

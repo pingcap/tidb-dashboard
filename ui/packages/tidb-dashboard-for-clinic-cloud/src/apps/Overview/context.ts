@@ -58,7 +58,8 @@ const RECENT_SECONDS = [
   3 * 60 * 60,
   6 * 60 * 60,
   12 * 60 * 60,
-  24 * 60 * 60
+  24 * 60 * 60,
+  2 * 24 * 60 * 60
 ]
 
 export const ctx: (cfg: Partial<IOverviewConfig>) => IOverviewContext = (
@@ -70,7 +71,7 @@ export const ctx: (cfg: Partial<IOverviewConfig>) => IOverviewContext = (
     metricsQueries: overviewMetrics,
     timeRangeSelector: {
       recent_seconds: RECENT_SECONDS,
-      withAbsoluteRangePicker: false
+      customAbsoluteRangePicker: true
     },
     showViewMoreMetrics: false,
     ...cfg

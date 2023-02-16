@@ -52,7 +52,8 @@ const RECENT_SECONDS = [
   3 * 60 * 60,
   6 * 60 * 60,
   12 * 60 * 60,
-  24 * 60 * 60
+  24 * 60 * 60,
+  2 * 24 * 60 * 60
 ]
 
 export const ctx: (globalConfig: IGlobalConfig) => IMonitoringContext = (
@@ -61,10 +62,14 @@ export const ctx: (globalConfig: IGlobalConfig) => IMonitoringContext = (
   ds: new DataSource(globalConfig),
   cfg: {
     getMetricsQueries: (pdVersion: string | undefined) =>
-      getMonitoringItems(pdVersion),
+      getMonitoringItems(pdVersion, globalConfig.clusterInfo.deployType),
     timeRangeSelector: {
       recent_seconds: RECENT_SECONDS,
-      withAbsoluteRangePicker: false
-    }
+      customAbsoluteRangePicker: true
+    },
+    metricsReferenceLink:
+      globalConfig.clusterInfo.deployType === 'Dedicated'
+        ? 'https://docs.pingcap.com/tidbcloud/built-in-monitoring'
+        : ''
   }
 })

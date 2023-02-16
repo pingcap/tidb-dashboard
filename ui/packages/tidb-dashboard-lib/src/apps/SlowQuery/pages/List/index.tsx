@@ -25,10 +25,11 @@ import {
   TimeRangeSelector,
   Toolbar,
   MultiSelect,
-  TimeRange,
   toTimeRangeValue,
-  IColumnKeys
+  IColumnKeys,
+  TimeRange
 } from '@lib/components'
+import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 import { CacheContext } from '@lib/utils/useCache'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
@@ -65,17 +66,28 @@ function List() {
   )
   const [downloading, setDownloading] = useState(false)
 
+  const { timeRange, setTimeRange: _setTimeRange } = useURLTimeRange()
+
   const controller = useSlowQueryTableController({
     cacheMgr,
     showFullSQL,
     fetchSchemas: ctx?.cfg.showDBFilter,
     initialQueryOptions: {
       ...DEF_SLOW_QUERY_OPTIONS,
+      timeRange,
       visibleColumnKeys
     },
 
+    persistQueryInSession: false,
+
     ds: ctx!.ds
   })
+
+  const setTimeRange = (tr: TimeRange) => {
+    _setTimeRange(tr)
+    controller.setQueryOptions((v) => ({ ...v, timeRange: tr }))
+  }
+
   function updateVisibleColumnKeys(v: IColumnKeys) {
     setVisibleColumnKeys(v)
     if (!v[controller.orderOptions.orderBy]) {
@@ -110,9 +122,6 @@ function List() {
     </Menu>
   )
 
-  const [timeRange, setTimeRange] = useState<TimeRange>(
-    controller.queryOptions.timeRange
-  )
   const [filterSchema, setFilterSchema] = useState<string[]>(
     controller.queryOptions.schemas
   )

@@ -19,11 +19,11 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 
 import { InfoInfoResponse } from '~/client'
-import auth from '~/uilts/auth'
-import { handleSSOCallback, isSSOCallback } from '~/uilts/authSSO'
-import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
-import { loadAppOptions, saveAppOptions } from '~/uilts/appOptions'
-import AppRegistry from '~/uilts/registry'
+import auth from '~/utils/auth'
+import { handleSSOCallback, isSSOCallback } from '~/utils/authSSO'
+import { mustLoadAppInfo, reloadWhoAmI } from '~/utils/store'
+import { loadAppOptions, saveAppOptions } from '~/utils/appOptions'
+import AppRegistry from '~/utils/registry'
 
 import AppOverview from '~/apps/Overview/meta'
 import AppMonitoring from '~/apps/Monitoring/meta'
@@ -50,7 +50,7 @@ import LayoutSignIn from './layout/signin'
 import translations from './layout/translations'
 
 // for update distro strings resource
-import '~/uilts/distro/stringsRes'
+import '~/utils/distro/stringsRes'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -87,7 +87,8 @@ async function webPageStart() {
   )
   if (info?.enable_telemetry) {
     // mixpanel
-    telemetry.enable(info.version?.internal_version!)
+    // close mixpanel telemetry for tidb-dashboard op
+    // telemetry.enable(info.version?.internal_version!)
     let preRoute = ''
     window.addEventListener('single-spa:routing-event', () => {
       const curRoute = routing.getPathInLocationHash()

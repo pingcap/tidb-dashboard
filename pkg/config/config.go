@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package config
 
@@ -40,7 +40,7 @@ func Default() *Config {
 		PublicPathPrefix:   defaultPublicPathPrefix,
 		ClusterTLSConfig:   nil,
 		TiDBTLSConfig:      nil,
-		EnableTelemetry:    true,
+		EnableTelemetry:    false,
 		EnableExperimental: false,
 		FeatureVersion:     version.PDVersion,
 	}

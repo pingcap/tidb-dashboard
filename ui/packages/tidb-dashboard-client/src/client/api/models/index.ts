@@ -65,6 +65,7 @@ export * from './slowquery-model';
 export * from './sso-create-impersonation-request';
 export * from './sso-ssoimpersonation-model';
 export * from './sso-set-config-request';
+export * from './statement-binding';
 export * from './statement-editable-config';
 export * from './statement-get-statements-request';
 export * from './statement-model';

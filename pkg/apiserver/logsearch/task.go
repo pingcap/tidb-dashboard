@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package logsearch
 
@@ -28,7 +28,7 @@ import (
 
 // MaxRecvMsgSize set max gRPC receive message size received from server. If any message size is larger than
 // current value, an error will be reported from gRPC.
-var MaxRecvMsgSize = math.MaxInt64
+var MaxRecvMsgSize = math.MaxInt64 - 1
 
 type TaskGroup struct {
 	service                *Service

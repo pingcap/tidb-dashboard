@@ -1,20 +1,20 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package utils
 
 import (
 	"strings"
 
-	"github.com/thoas/go-funk"
+	"github.com/samber/lo"
 )
 
-func IsSubsets(a []string, b []string) bool {
-	lowercaseA := funk.Map(a, func(x string) string {
+func IsSubsetICaseInsensitive(a []string, b []string) bool {
+	lowercaseA := lo.Map(a, func(x string, _ int) string {
 		return strings.ToLower(x)
-	}).([]string)
-	lowercaseB := funk.Map(b, func(x string) string {
+	})
+	lowercaseB := lo.Map(b, func(x string, _ int) string {
 		return strings.ToLower(x)
-	}).([]string)
+	})
 
-	return len(funk.Join(lowercaseA, lowercaseB, funk.InnerJoin).([]string)) == len(lowercaseB)
+	return len(lo.Intersect(lowercaseA, lowercaseB)) == len(lowercaseB)
 }

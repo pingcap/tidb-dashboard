@@ -8,7 +8,7 @@ RUN apk add --no-cache \
     findutils \
     gcc \
     libc-dev \
-    nodejs \
+    nodejs=16.17.1-r0 \
     npm \
     openjdk11
 
@@ -18,18 +18,22 @@ RUN mkdir -p /go/src/github.com/pingcap/tidb-dashboard/ui
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard
 
 # Cache go module dependencies.
-COPY go.mod .
-COPY go.sum .
-RUN GO111MODULE=on go mod download
+COPY ../go.mod .
+COPY ../go.sum .
+RUN go mod download
+
+# Cache go tools.
+COPY ../scripts scripts/
+RUN scripts/install_go_tools.sh
 
 # Cache npm dependencies.
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard/ui
-COPY ui/pnpm-lock.yaml .
+COPY ../ui/pnpm-lock.yaml .
 RUN pnpm fetch
 
 # Build.
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard
-COPY . .
+COPY .. .
 RUN make package PNPM_INSTALL_TAGS=--offline
 
 FROM alpine:3.16

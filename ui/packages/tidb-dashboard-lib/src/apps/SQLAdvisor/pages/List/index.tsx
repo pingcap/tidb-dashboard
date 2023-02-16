@@ -1,27 +1,19 @@
-import React from 'react'
+import React, { useContext } from 'react'
 
 import styles from './List.module.less'
-import InsightIndexTable from '../../component/InsightIndexTable'
-
-import { Space, Button } from 'antd'
-
-import { Card, Toolbar } from '@lib/components'
+import { IndexInsightListWithRegister, IndexInsightList } from '../../component'
+import { SQLAdvisorContext } from '../../context'
 
 export default function SQLAdvisorOverview() {
-  const handleIndexCheckUp = async () => {
-    const res = await Promise.resolve()
-  }
+  const ctx = useContext(SQLAdvisorContext)
+
   return (
     <div className={styles.list_container}>
-      <Card>
-        <Toolbar className={styles.list_toolbar} data-e2e="statement_toolbar">
-          <Space>Insight Index</Space>
-          <Space>
-            <Button onClick={handleIndexCheckUp}>Index Check Up</Button>
-          </Space>
-        </Toolbar>
-      </Card>
-      <InsightIndexTable />
+      {ctx?.registerUserDB ? (
+        <IndexInsightListWithRegister />
+      ) : (
+        <IndexInsightList />
+      )}
     </div>
   )
 }

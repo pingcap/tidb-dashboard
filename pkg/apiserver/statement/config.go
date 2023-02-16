@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package statement
 
@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/thoas/go-funk"
+	"github.com/samber/lo"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
@@ -33,7 +33,7 @@ func buildGlobalConfigProjectionSelectSQL(config interface{}) string {
 func buildGlobalConfigNamedArgsUpdateSQL(config interface{}, allowedFields ...string) string {
 	str := buildStringByStructField(config, func(f reflect.StructField) (string, bool) {
 		// extract fields on demand
-		if len(allowedFields) != 0 && !funk.ContainsString(allowedFields, f.Name) {
+		if len(allowedFields) != 0 && !lo.Contains(allowedFields, f.Name) {
 			return "", false
 		}
 

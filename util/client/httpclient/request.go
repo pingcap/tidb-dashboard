@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Copyright (c) 2015-2021 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
@@ -81,10 +81,11 @@ func (lReq *LazyRequest) SetTimeout(timeout time.Duration) *LazyRequest {
 }
 
 // SetURL sets the URL for current request. This URL will be used when calling Send().
-//  	resp := client.LR().
-//  		SetMethod("GET").
-// 			SetURL("http://httpbin.org/get").
-//			Send()
+//
+//	 	resp := client.LR().
+//	 		SetMethod("GET").
+//				SetURL("http://httpbin.org/get").
+//				Send()
 func (lReq *LazyRequest) SetURL(url string) *LazyRequest {
 	lReq.opsR = append(lReq.opsR, func(r *resty.Request) {
 		r.URL = url
@@ -93,10 +94,11 @@ func (lReq *LazyRequest) SetURL(url string) *LazyRequest {
 }
 
 // SetMethod sets the method of the request. This method will be used when calling Send().
-//  	resp := client.LR().
-//  		SetMethod("GET").
-// 			SetURL("http://httpbin.org/get").
-//			Send()
+//
+//	 	resp := client.LR().
+//	 		SetMethod("GET").
+//				SetURL("http://httpbin.org/get").
+//				Send()
 func (lReq *LazyRequest) SetMethod(method string) *LazyRequest {
 	lReq.opsR = append(lReq.opsR, func(r *resty.Request) {
 		r.Method = method
@@ -123,9 +125,9 @@ func isMTLSConfigured(r http.RoundTripper) bool {
 // SetTLSAwareBaseURL sets the base URL for current request. Relative URLs will be based on this base URL.
 // If the client is built with TLS certs, http scheme will be changed to https automatically.
 //
-//		resp := client.LR().
-//			SetTLSAwareBaseURL("http://myjeeva.com").
-//			Get("/foo")
+//	resp := client.LR().
+//		SetTLSAwareBaseURL("http://myjeeva.com").
+//		Get("/foo")
 func (lReq *LazyRequest) SetTLSAwareBaseURL(baseURL string) *LazyRequest {
 	// Rewrite http URL to https if TLS certificate is specified.
 	if isMTLSConfigured(lReq.transport) && strings.HasPrefix(baseURL, "http://") {
@@ -139,18 +141,20 @@ func (lReq *LazyRequest) SetTLSAwareBaseURL(baseURL string) *LazyRequest {
 
 // Send method lazily send the HTTP request using the method and URL already defined
 // for current LazyRequest.
-//  	resp := client.LR().
-//  		SetMethod("GET").
-// 			SetURL("http://httpbin.org/get").
-//			Send()
+//
+//	 	resp := client.LR().
+//	 		SetMethod("GET").
+//				SetURL("http://httpbin.org/get").
+//				Send()
 func (lReq *LazyRequest) Send() *LazyResponse {
 	return newResponse(lReq.Clone())
 }
 
 // Execute lazily sends the HTTP request with given HTTP method and URL
 // for current LazyRequest.
-//  	resp := client.LR().
-//  		Execute("GET", "http://httpbin.org/get")
+//
+//	resp := client.LR().
+//		Execute("GET", "http://httpbin.org/get")
 func (lReq *LazyRequest) Execute(method, url string) *LazyResponse {
 	cloned := lReq.Clone()
 	cloned.opsR = append(cloned.opsR, func(r *resty.Request) {

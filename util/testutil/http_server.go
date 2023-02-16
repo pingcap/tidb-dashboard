@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package testutil
 
@@ -28,7 +28,7 @@ func NewHTTPServerAtHost(response string, host string) *httptest.Server {
 	}
 	server := &httptest.Server{
 		Listener: l,
-		Config: &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		Config: &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { // nolint:gosec
 			_, _ = fmt.Fprintln(w, response)
 		})},
 	}

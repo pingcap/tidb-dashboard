@@ -5,7 +5,7 @@ import { MetricsQueryResponse } from '@lib/client'
 import { QueryConfig, TransformNullValue } from 'metrics-chart'
 
 export interface MetricsQueryType {
-  category: string
+  category?: string
   metrics: {
     title: string
     queries: QueryConfig[]
@@ -19,8 +19,9 @@ interface IMetricConfig {
   promAddrConfigurable?: boolean
   timeRangeSelector?: {
     recent_seconds: number[]
-    withAbsoluteRangePicker: boolean
+    customAbsoluteRangePicker: boolean
   }
+  metricsReferenceLink?: string
 }
 
 export interface IMonitoringDataSource {

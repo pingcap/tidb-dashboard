@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package clusterinfo
 
@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	"github.com/pingcap/log"
-	"github.com/thoas/go-funk"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -44,7 +44,7 @@ func (s *Service) fetchAllInstanceHosts() ([]string, error) {
 		allHostsMap[i.IP] = struct{}{}
 	}
 
-	allHosts := funk.Keys(allHostsMap).([]string)
+	allHosts := lo.Keys(allHostsMap)
 	sort.Strings(allHosts)
 
 	return allHosts, nil

@@ -406,6 +406,12 @@ export interface StatementModel {
     'plan'?: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof StatementModel
+     */
+    'plan_can_be_bound'?: boolean;
+    /**
+     * 
      * @type {number}
      * @memberof StatementModel
      */
@@ -416,6 +422,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'plan_digest'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'plan_hint'?: string;
     /**
      * 
      * @type {string}
@@ -446,6 +458,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'schema_name'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'stmt_type'?: string;
     /**
      * 
      * @type {number}

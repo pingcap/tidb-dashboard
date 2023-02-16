@@ -17,6 +17,7 @@ interface Props {
   sql: string
   compact?: boolean
   theme?: 'dark' | 'light'
+  format?: boolean
 }
 
 function simpleSqlMinify(str) {
@@ -29,14 +30,14 @@ function simpleSqlMinify(str) {
     .replace(/\*\/\s{1,}/g, '*/')
 }
 
-function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
+function HighlightSQL({ sql, compact, theme = 'light', format = true }: Props) {
   const formattedSql = useMemo(() => {
-    let f = formatSql(sql)
+    let f = format ? formatSql(sql) : sql
     if (compact) {
       f = simpleSqlMinify(f)
     }
     return f
-  }, [sql, compact])
+  }, [sql, compact, format])
 
   return (
     <SyntaxHighlighter

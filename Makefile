@@ -6,7 +6,7 @@ PNPM_INSTALL_TAGS ?=
 
 LDFLAGS ?=
 
-FEATURE_VERSION ?= 6.2.0
+FEATURE_VERSION ?= 999.999.999
 
 WITHOUT_NGM ?= false
 
@@ -30,6 +30,7 @@ IMAGE ?= $(REPOSITORY):$(RELEASE_VERSION)
 AMD64 := linux/amd64
 ARM64 := linux/arm64
 PLATFORMS := $(AMD64),$(ARM64)
+DOCKERFILE ?= ./dockerfiles/alpine316.Dockerfile
 # If you want to build with no cache (after update go module, npm module, etc.), set "NO_CACHE=--pull --no-cache".
 NO_CACHE ?=
 
@@ -53,7 +54,7 @@ test: clean unit_test integration_test
 .PHONY: unit_test
 unit_test:
 	@mkdir -p ./coverage
-	GO111MODULE=on go test -v -cover -coverprofile=coverage/unit_test.txt ./pkg/... ./util/...
+	go test -v -cover -coverprofile=coverage/unit_test.txt ./pkg/... ./util/...
 
 .PHONY: integration_test
 integration_test:
@@ -136,16 +137,16 @@ package: embed_ui_assets server
 
 .PHONY: docker-build-and-push-image # For locally dev, set IMAGE to your dev docker registry.
 docker-build-and-push-image: clean
-	docker buildx build ${NO_CACHE} --push -t $(IMAGE) --platform $(PLATFORMS) .
+	docker buildx build ${NO_CACHE} --push -t $(IMAGE) --platform $(PLATFORMS) -f $(DOCKERFILE) .
 
 .PHONY: docker-build-image-locally-amd64
 docker-build-image-locally-amd64: clean
-	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(AMD64) .
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(AMD64) -f $(DOCKERFILE) .
 	docker run --rm $(IMAGE) -v
 
 .PHONY: docker-build-image-locally-arm64
 docker-build-image-locally-arm64: clean
-	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(ARM64) .
+	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(ARM64) -f $(DOCKERFILE) .
 	docker run --rm $(IMAGE) -v
 
 .PHONY: run # please ensure that tiup playground is running in the background.

@@ -1,4 +1,5 @@
 - INSTANCE: "1"
+  Warnings: null
   Time: 2021-12-19T23:45:30.786521+08:00
   Txn_start_ts: 1
   User: "1"
@@ -71,6 +72,7 @@
   Prev_stmt: "test prev stmt"
   Query: CREATE DATABASE IF NOT EXISTS `mysql`;
 - INSTANCE: ""
+  Warnings: null
   Time: 2021-12-19T23:49:47.79658+08:00
   Txn_start_ts: 0
   User: root
@@ -143,6 +145,7 @@
   Prev_stmt: ""
   Query: SET tidb_slow_log_threshold = 0;
 - INSTANCE: ""
+  Warnings: null
   Time: 2021-12-19T23:49:47.797894+08:00
   Txn_start_ts: 0
   User: root
@@ -215,6 +218,7 @@
   Prev_stmt: ""
   Query: SET time_zone='+00:00';
 - INSTANCE: ""
+  Warnings: null
   Time: 2021-12-19T23:49:47.798101+08:00
   Txn_start_ts: 0
   User: root
@@ -287,6 +291,7 @@
   Prev_stmt: ""
   Query: SET time_zone='+00:00';
 - INSTANCE: ""
+  Warnings: null
   Time: 2021-12-19T23:49:47.799045+08:00
   Txn_start_ts: 0
   User: root
@@ -359,6 +364,7 @@
   Prev_stmt: ""
   Query: SET time_zone='+00:00';
 - INSTANCE: ""
+  Warnings: null
   Time: 2021-12-19T23:49:47.802016+08:00
   Txn_start_ts: 429897544566046725
   User: root
@@ -445,6 +451,7 @@
   Prev_stmt: ""
   Query: SELECT count(*) FROM INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY;
 - INSTANCE: ""
+  Warnings: null
   Time: 2021-12-19T23:49:47.802039+08:00
   Txn_start_ts: 429897544566046730
   User: root
@@ -531,6 +538,7 @@
   Prev_stmt: ""
   Query: SELECT count(*) FROM INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY;
 - INSTANCE: ""
+  Warnings: null
   Time: 2021-12-19T23:49:47.802044+08:00
   Txn_start_ts: 429897544566046731
   User: root
@@ -617,6 +625,7 @@
   Prev_stmt: ""
   Query: SELECT count(*) FROM INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY;
 - INSTANCE: ""
+  Warnings: null
   Time: 2021-12-19T23:49:48.802373+08:00
   Txn_start_ts: 429897544566046734
   User: root

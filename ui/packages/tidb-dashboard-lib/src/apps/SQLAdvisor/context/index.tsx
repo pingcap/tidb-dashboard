@@ -1,14 +1,29 @@
 import { createContext } from 'react'
-import { AxiosPromise } from 'axios'
-
-import { ReqConfig } from '@lib/types'
+import { TuningDetailProps, TuningTaskStatus } from '../types/'
 
 export interface ISQLAdvisorDataSource {
-  sqlAdvisorGet(token: string, options?: ReqConfig): AxiosPromise<void>
+  tuningListGet(type?: string): Promise<TuningDetailProps[]>
+
+  tuningTaskStatusGet(): Promise<TuningTaskStatus>
+
+  tuningTaskCreate(startTime: number, endTime: number): Promise<any>
+
+  tuningDetailGet(id: number): Promise<TuningDetailProps>
+
+  registerUserDB?(params: { userName: string; password: string }): Promise<any>
+
+  unRegisterUserDB?(): Promise<any>
+
+  registerUserDBStatusGet?(): Promise<any>
+
+  sqlValidationGet?(): Promise<any>
 }
 
 export interface ISQLAdvisorContext {
   ds: ISQLAdvisorDataSource
+  orgId?: string
+  clusterId?: string
+  registerUserDB?: boolean
 }
 
 export const SQLAdvisorContext = createContext<ISQLAdvisorContext | null>(null)

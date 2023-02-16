@@ -1,4 +1,4 @@
-import publicPathPrefix from '~/uilts/publicPathPrefix'
+import publicPathPrefix from '~/utils/publicPathPrefix'
 
 export const API_HOST = (function () {
   let apiPrefix

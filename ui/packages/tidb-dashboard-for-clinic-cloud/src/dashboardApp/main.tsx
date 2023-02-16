@@ -19,20 +19,21 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 
 import { InfoInfoResponse, setupClient } from '~/client'
-import { mustLoadAppInfo, reloadWhoAmI } from '~/uilts/store'
+import { mustLoadAppInfo, reloadWhoAmI } from '~/utils/store'
 import {
   AppOptions,
   defAppOptions,
   GlobalConfig,
   setGlobalConfig
-} from '~/uilts/globalConfig'
-import AppRegistry from '~/uilts/registry'
+} from '~/utils/globalConfig'
+import AppRegistry from '~/utils/registry'
 
 import AppOverview from '~/apps/Overview/meta'
 import AppMonitoring from '~/apps/Monitoring/meta'
 import AppClusterInfo from '~/apps/ClusterInfo/meta'
 import AppTopSQL from '~/apps/TopSQL/meta'
 import AppSlowQuery from '~/apps/SlowQuery/meta'
+import AppSQLAdvisor from '~/apps/SQLAdvisor/meta'
 import AppStatement from '~/apps/Statement/meta'
 import AppKeyViz from '~/apps/KeyViz/meta'
 import AppSystemReport from '~/apps/SystemReport/meta'
@@ -52,7 +53,7 @@ import LayoutMain from './layout/main'
 import translations from './layout/translations'
 
 // for update distro strings resource
-// import '~/uilts/distro/stringsRes'
+// import '~/utils/distro/stringsRes'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -154,6 +155,7 @@ async function webPageStart(appOptions: AppOptions) {
     .register(AppClusterInfo)
     .register(AppKeyViz)
     .register(AppTopSQL)
+    .register(AppSQLAdvisor)
     .register(AppStatement)
     .register(AppSystemReport)
     .register(AppSlowQuery)

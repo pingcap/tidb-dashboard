@@ -1,3 +1,11 @@
+slow_query_v2:
+  overview:
+    head:
+      title: 慢查询
+  detail:
+    head:
+      title: 慢查询对比
+
 slow_query:
   nav_title: 慢查询
   fields:
@@ -135,6 +143,7 @@ slow_query:
       time: 执行时间
       copr: Coprocessor 读取
       txn: 事务
+      warnings: 警告
   toolbar:
     schemas:
       placeholder: 所有数据库

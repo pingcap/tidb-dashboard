@@ -32,11 +32,9 @@ export default function () {
 
   return (
     <Root>
-      <SQLAdvisorContext.Provider value={ctx}>
-        <Router>
-          <AppRoutes />
-        </Router>
-      </SQLAdvisorContext.Provider>
+      <Router>
+        <AppRoutes />
+      </Router>
     </Root>
   )
 }

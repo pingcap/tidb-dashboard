@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 // @title Dashboard API
 // @version 1.0
@@ -224,7 +224,7 @@ func main() {
 	log.Info(fmt.Sprintf("API:     http://%s:%d/dashboard/api/", cliConfig.ListenHost, cliConfig.ListenPort))
 	log.Info(fmt.Sprintf("Swagger: http://%s:%d/dashboard/api/swagger/", cliConfig.ListenHost, cliConfig.ListenPort))
 
-	srv := &http.Server{Handler: mux}
+	srv := &http.Server{Handler: mux} // nolint:gosec
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {

@@ -2450,6 +2450,12 @@ export interface SlowqueryModel {
      */
     'wait_ts'?: number;
     /**
+     * 
+     * @type {Array<number>}
+     * @memberof SlowqueryModel
+     */
+    'warnings'?: Array<number>;
+    /**
      * Transaction
      * @type {number}
      * @memberof SlowqueryModel
@@ -2531,6 +2537,56 @@ export interface SsoSSOImpersonationModel {
      */
     'sql_user'?: string;
 }
+
+
+
+
+/**
+ * 
+ * @export
+ * @interface StatementBinding
+ */
+export interface StatementBinding {
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementBinding
+     */
+    'plan_digest'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementBinding
+     */
+    'source'?: StatementBindingSourceEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementBinding
+     */
+    'status'?: StatementBindingStatusEnum;
+}
+
+export const StatementBindingSourceEnum = {
+    manual: 'manual',
+    history: 'history',
+    capture: 'capture',
+    evolve: 'evolve'
+} as const;
+
+export type StatementBindingSourceEnum = typeof StatementBindingSourceEnum[keyof typeof StatementBindingSourceEnum];
+export const StatementBindingStatusEnum = {
+    enabled: 'enabled',
+    using: 'using',
+    disabled: 'disabled',
+    deleted: 'deleted',
+    invalid: 'invalid',
+    rejected: 'rejected',
+    pending_verify: 'pending verify'
+} as const;
+
+export type StatementBindingStatusEnum = typeof StatementBindingStatusEnum[keyof typeof StatementBindingStatusEnum];
+
 
 
 
@@ -3015,6 +3071,12 @@ export interface StatementModel {
     'plan'?: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof StatementModel
+     */
+    'plan_can_be_bound'?: boolean;
+    /**
+     * 
      * @type {number}
      * @memberof StatementModel
      */
@@ -3025,6 +3087,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'plan_digest'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'plan_hint'?: string;
     /**
      * 
      * @type {string}
@@ -3055,6 +3123,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'schema_name'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'stmt_type'?: string;
     /**
      * 
      * @type {number}

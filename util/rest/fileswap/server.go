@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package fileswap
 
@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -41,7 +40,7 @@ func New() *Handler {
 // NewFileWriter creates a writer for storing data into FS. A download token can be generated from the writer
 // for downloading later. The downloading can be handled by the HandleDownloadRequest.
 func (s *Handler) NewFileWriter(tempFilePattern string) (*FileWriter, error) {
-	file, err := ioutil.TempFile("", tempFilePattern)
+	file, err := os.CreateTemp("", tempFilePattern)
 	if err != nil {
 		return nil, err
 	}

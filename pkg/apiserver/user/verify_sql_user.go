@@ -1,4 +1,4 @@
-// Copyright 2022 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
 package user
 
@@ -15,11 +15,11 @@ var ErrInsufficientPrivs = ErrNSSignIn.NewType("insufficient_priv")
 
 // TiDB config response
 //
-// "security": {
-//   ...
-//   "enable-sem": true/false,
-//   ...
-// },.
+//	"security": {
+//	  ...
+//	  "enable-sem": true/false,
+//	  ...
+//	},.
 type tidbSecurityConfig struct {
 	Security tidbSEMConfig `json:"security"`
 }

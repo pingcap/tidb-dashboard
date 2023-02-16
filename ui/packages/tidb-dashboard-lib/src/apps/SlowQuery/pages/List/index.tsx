@@ -66,7 +66,7 @@ function List() {
   )
   const [downloading, setDownloading] = useState(false)
 
-  const { timeRange, setTimeRange: _setTimeRange } = useURLTimeRange()
+  const { timeRange, setTimeRange } = useURLTimeRange()
 
   const controller = useSlowQueryTableController({
     cacheMgr,
@@ -82,11 +82,6 @@ function List() {
 
     ds: ctx!.ds
   })
-
-  const setTimeRange = (tr: TimeRange) => {
-    _setTimeRange(tr)
-    controller.setQueryOptions((v) => ({ ...v, timeRange: tr }))
-  }
 
   function updateVisibleColumnKeys(v: IColumnKeys) {
     setVisibleColumnKeys(v)

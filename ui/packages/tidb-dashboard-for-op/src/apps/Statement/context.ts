@@ -114,6 +114,7 @@ class DataSource implements IStatementDataSource {
     })
   }
 
+  // quick plan bind api
   statementsPlanBindStatusGet(
     sqlDigest: string,
     beginTime: number,

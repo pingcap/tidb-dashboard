@@ -107,6 +107,41 @@ class DataSource implements IStatementDataSource {
     return client.getAxiosInstance().get('/statements/time_ranges', options)
   }
 
+  // quick plan bind api
+  statementsPlanBindStatusGet(
+    sqlDigest: string,
+    beginTime: number,
+    endTime: number,
+    options?: ReqConfig
+  ) {
+    return client.getInstance().statementsPlanBindingGet(
+      {
+        sqlDigest,
+        beginTime,
+        endTime
+      },
+      options
+    )
+  }
+
+  statementsPlanBindCreate(planDigest: string, options?: ReqConfig) {
+    return client.getInstance().statementsPlanBindingPost(
+      {
+        planDigest
+      },
+      options
+    )
+  }
+
+  statementsPlanBindDelete(sqlDigest: string, options?: ReqConfig) {
+    return client.getInstance().statementsPlanBindingDelete(
+      {
+        sqlDigest
+      },
+      options
+    )
+  }
+
   // slow query
   slowQueryAvailableFieldsGet(options?: ReqConfig) {
     return client.getInstance().slowQueryAvailableFieldsGet(options)
@@ -170,6 +205,7 @@ export const ctx: () => IStatementContext = () => ({
   cfg: {
     apiPathBase: client.getBasePath(),
     enableExport: false,
-    showHelp: false
+    showHelp: false,
+    enablePlanBinding: true
   }
 })

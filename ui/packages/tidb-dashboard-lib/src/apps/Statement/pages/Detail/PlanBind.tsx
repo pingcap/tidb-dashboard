@@ -270,6 +270,7 @@ const PlanTable = ({
       onRenderCheckbox={(props) => (
         <Radio checked={props?.checked} disabled={!!boundPlanDigest} />
       )}
+      style={{ overflow: 'scroll' }}
     />
   )
 }

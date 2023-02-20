@@ -12,6 +12,7 @@ export interface IGlobalConfig {
   mixpanelUser: string
   timezone: number | null
   promBaseUrl: string
+  performanceInsightBaseUrl: string
 
   expandMetricsData: boolean
 

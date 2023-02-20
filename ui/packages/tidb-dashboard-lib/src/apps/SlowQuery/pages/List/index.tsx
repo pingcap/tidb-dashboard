@@ -29,6 +29,7 @@ import {
   IColumnKeys,
   TimeRange
 } from '@lib/components'
+import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 import { CacheContext } from '@lib/utils/useCache'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
@@ -41,7 +42,6 @@ import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
-import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 
 const { Option } = Select
 
@@ -77,6 +77,8 @@ function List() {
       timeRange,
       visibleColumnKeys
     },
+
+    persistQueryInSession: false,
 
     ds: ctx!.ds
   })

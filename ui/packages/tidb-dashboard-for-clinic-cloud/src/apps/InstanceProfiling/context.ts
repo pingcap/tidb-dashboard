@@ -6,7 +6,7 @@ import {
 
 import client, { ProfilingStartRequest } from '~/client'
 
-import publicPathBase from '~/uilts/publicPathPrefix'
+import publicPathBase from '~/utils/publicPathPrefix'
 
 class DataSource implements IInstanceProfilingDataSource {
   getActionToken(id?: string, action?: string, options?: ReqConfig) {

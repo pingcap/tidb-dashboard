@@ -36,9 +36,9 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, { UserAuthenticateForm } from '~/client'
-import auth from '~/uilts/auth'
-import { getAuthURL } from '~/uilts/authSSO'
-import { landingSvg, logoSvg } from '~/uilts/distro/assetsRes'
+import auth from '~/utils/auth'
+import { getAuthURL } from '~/utils/authSSO'
+import { landingSvg, logoSvg } from '~/utils/distro/assetsRes'
 
 import styles from './index.module.less'
 

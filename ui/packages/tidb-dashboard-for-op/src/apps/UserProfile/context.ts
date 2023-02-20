@@ -11,7 +11,7 @@ import client, {
   CodeShareRequest,
   MetricsPutCustomPromAddressRequest
 } from '~/client'
-import auth from '~/uilts/auth'
+import auth from '~/utils/auth'
 
 class DataSource implements IUserProfileDataSource {
   userGetSignOutInfo(redirectUrl?: string, options?: ReqConfig) {

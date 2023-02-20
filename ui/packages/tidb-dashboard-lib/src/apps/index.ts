@@ -10,6 +10,9 @@ export * from './ClusterInfo'
 export { default as TopSQLApp } from './TopSQL'
 export * from './TopSQL'
 
+export { default as SQLAdvisorAPP } from './SQLAdvisor'
+export * from './SQLAdvisor'
+
 export { default as StatementApp } from './Statement'
 export * from './Statement'
 

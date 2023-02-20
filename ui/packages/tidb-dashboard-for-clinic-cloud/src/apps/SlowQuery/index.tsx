@@ -1,6 +1,6 @@
 import React from 'react'
 import { SlowQueryApp, SlowQueryProvider } from '@pingcap/tidb-dashboard-lib'
-import { getGlobalConfig } from '~/uilts/globalConfig'
+import { getGlobalConfig } from '~/utils/globalConfig'
 import { ctx } from './context'
 
 export default function () {

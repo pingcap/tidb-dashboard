@@ -49,6 +49,9 @@ export type GlobalConfig = {
 
   appsConfig?: AppsConfig
 
+  // internal api for performance insight
+  performanceInsightBaseUrl: string
+
   // appsDisabled has a higher priority than appsEnabled
   appsDisabled?: string[]
   appsEnabled?: string[]

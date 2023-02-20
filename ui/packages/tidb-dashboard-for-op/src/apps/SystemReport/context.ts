@@ -10,7 +10,7 @@ import client, {
   DiagnoseGenerateMetricsRelationRequest
 } from '~/client'
 
-import publicPathBase from '~/uilts/publicPathPrefix'
+import publicPathBase from '~/utils/publicPathPrefix'
 
 class DataSource implements ISystemReportDataSource {
   diagnoseReportsGet(options?: ReqConfig) {

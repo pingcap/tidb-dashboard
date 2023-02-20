@@ -19,6 +19,7 @@ import {
   MenuOutlined,
   QuestionCircleOutlined
 } from '@ant-design/icons'
+import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
 import { CacheContext } from '@lib/utils/useCache'
@@ -28,7 +29,6 @@ import {
   Toolbar,
   MultiSelect,
   TimeRangeSelector,
-  TimeRange,
   DateTime,
   toTimeRangeValue,
   IColumnKeys
@@ -91,12 +91,15 @@ export default function StatementsOverview() {
   )
   const [downloading, setDownloading] = useState(false)
 
+  const { timeRange, setTimeRange } = useURLTimeRange()
+
   const controller = useStatementTableController({
     cacheMgr,
     showFullSQL,
     initialQueryOptions: {
       ...DEF_STMT_QUERY_OPTIONS,
-      visibleColumnKeys
+      visibleColumnKeys,
+      timeRange
     },
     ds: ctx!.ds
   })
@@ -137,9 +140,6 @@ export default function StatementsOverview() {
     </Menu>
   )
 
-  const [timeRange, setTimeRange] = useState<TimeRange>(
-    controller.queryOptions.timeRange
-  )
   const [filterSchema, setFilterSchema] = useState<string[]>(
     controller.queryOptions.schemas
   )

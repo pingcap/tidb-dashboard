@@ -21,10 +21,10 @@ import { DbassSecuritySettingImg } from '../utils/dbaasSecuritySetting'
 const { Title } = Typography
 
 const sql = [
-  `CREATE user 'clinic'@'%' IDENTIFIED by 'yourpasswrod';`,
-  `GRANT SELECT ON information_schema.* TO 'clinic'@'%';`,
-  `GRANT SELECT ON mysql.* TO 'clinic'@'%';`,
-  `GRANT PROCESS, REFERENCES ON *.* TO 'clinic'@'%';`,
+  `CREATE user 'yourusername'@'%' IDENTIFIED by 'yourpassword';`,
+  `GRANT SELECT ON information_schema.* TO 'yourusername'@'%';`,
+  `GRANT SELECT ON mysql.* TO 'yourusername'@'%';`,
+  `GRANT PROCESS, REFERENCES ON *.* TO 'yourusername'@'%';`,
   `FLUSH PRIVILEGES;`
 ]
 

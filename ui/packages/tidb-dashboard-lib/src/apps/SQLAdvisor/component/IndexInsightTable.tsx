@@ -66,13 +66,6 @@ const IndexInsightTable = ({
         ellipsis: true,
         render: (_, record) => {
           return <>{record.insight_type}</>
-        },
-        filters: TYPE__OPTIONS.map((type) => ({
-          text: type,
-          value: type
-        })),
-        onFilter: (value, record) => {
-          return record.insight_type.indexOf(value as string) === 0
         }
       },
       {

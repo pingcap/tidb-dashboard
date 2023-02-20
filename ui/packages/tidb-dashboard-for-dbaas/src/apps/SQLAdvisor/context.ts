@@ -15,9 +15,9 @@ class DataSource implements ISQLAdvisorDataSource {
   token = this.globalConfig.apiToken
   performanceInsightBaseUrl = this.globalConfig.performanceInsightBaseUrl
 
-  tuningListGet(type: string) {
+  tuningListGet(type: string, pageNumber: number, pageSize: number) {
     return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=GetTunedIndexLists&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}&type=${type}`,
+      `${this.performanceInsightBaseUrl}?BackMethod=GetTunedIndexLists&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}&type=${type}&pageNumber=${pageNumber}&pageSize=${pageSize}`,
       {
         headers: {
           token: `Bearer ${this.token}`
@@ -29,6 +29,17 @@ class DataSource implements ISQLAdvisorDataSource {
   tuningTaskCreate(startTime: number, endTime: number) {
     return fetch(
       `${this.performanceInsightBaseUrl}?BackMethod=CreateAdviseTask&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}&startTime=${startTime}&endTime=${endTime}`,
+      {
+        headers: {
+          token: `Bearer ${this.token}`
+        }
+      }
+    ).then((res) => res.json())
+  }
+
+  cancelRunningTask() {
+    return fetch(
+      `${this.performanceInsightBaseUrl}?BackMethod=CancelAdvisorTask&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}`,
       {
         headers: {
           token: `Bearer ${this.token}`

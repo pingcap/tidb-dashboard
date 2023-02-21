@@ -209,9 +209,6 @@ export default function SQLAdvisorDetail() {
                       <HighlightSQL sql={sqlTunedDetail.sql_statement} />
                     </Expand>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Insight Type" span={2}>
-                    {sqlTunedDetail.insight_type}
-                  </Descriptions.Item>
                   <Descriptions.Item label="Impact" span={2}>
                     {sqlTunedDetail.impact}
                   </Descriptions.Item>

@@ -10,12 +10,14 @@ import {
   Alert,
   Modal,
   Tooltip,
-  Drawer
+  Drawer,
+  Checkbox
 } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { Card, Toolbar } from '@lib/components'
 import { SQLAdvisorContext } from '../context'
 import dayjs from 'dayjs'
+import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 
 const ONE_DAY = 24 * 60 * 60 // unit: second
 
@@ -34,7 +36,9 @@ const IndexInsightList = ({
   const [showDeactivateModal, setShowDeactivateModal] = useState<boolean>(false)
   const [showSetting, setShowSetting] = useState(false)
   const [showCheckUpModal, setShowCheckUpModal] = useState(false)
-
+  const [dontRemindCheckUpNotice, setDontRemindCheckUpNotice] = useState<
+    string | boolean
+  >(localStorage.getItem('dont_remind_checkup_notice') || false)
   const { sqlTunedList, refreshSQLTunedList, loading } = useSQLTunedListGet()
 
   const taskRunningStatusGet = useRef(() => {
@@ -103,6 +107,10 @@ const IndexInsightList = ({
     } finally {
       setNoTaskRunning(false)
       setShowCheckUpModal(false)
+      localStorage.setItem(
+        'dont_remind_checkup_notice',
+        JSON.stringify(dontRemindCheckUpNotice)
+      )
       startCheckTaskStatusLoop.current()
     }
   }
@@ -136,6 +144,15 @@ const IndexInsightList = ({
     setShowSetting(false)
   }
 
+  const handleCheckUpBtnClick = () => {
+    // if dont_remind_checkup_notice has been checked, don't show comfirm modal again, checkup directly.
+    if (!dontRemindCheckUpNotice) {
+      setShowCheckUpModal(true)
+    } else {
+      handleIndexCheckUp()
+    }
+  }
+
   return (
     <>
       <Card>
@@ -143,7 +160,7 @@ const IndexInsightList = ({
           <Space align="center">
             <Typography.Title level={4}>Performance Insight</Typography.Title>
           </Space>
-          <Space>
+          <Space align="center" style={{ marginTop: 0 }}>
             <Tooltip
               title="Each insight will cover diagnosis data from the past 24 hours."
               placement="rightTop"
@@ -152,7 +169,7 @@ const IndexInsightList = ({
             </Tooltip>
             <Button
               disabled={!noTaskRunning || showAlert}
-              onClick={() => setShowCheckUpModal(true)}
+              onClick={handleCheckUpBtnClick}
               loading={!noTaskRunning}
             >
               {noTaskRunning ? 'Check Up' : 'Task is Running'}
@@ -199,14 +216,25 @@ const IndexInsightList = ({
           visible={showCheckUpModal}
           onCancel={() => setShowCheckUpModal(false)}
           destroyOnClose={true}
-          onOk={handleIndexCheckUp}
-          okText="Comfirm"
+          footer={null}
         >
           <p>
             When performing checks, system tables are queried. It is not
             recommended to perform checks when the cluster is already under
             heavy load.
           </p>
+          <div style={{ textAlign: 'center' }}>
+            <Space direction="vertical" align="center">
+              <Checkbox
+                onChange={(e) => setDontRemindCheckUpNotice(e.target.checked)}
+              >
+                Don't remind me again.
+              </Checkbox>
+              <Button onClick={handleIndexCheckUp} type="primary">
+                Comfirm
+              </Button>
+            </Space>
+          </div>
         </Modal>
         {showAlert && (
           <Alert

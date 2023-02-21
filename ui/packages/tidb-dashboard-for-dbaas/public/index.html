@@ -121,7 +121,9 @@
         timezone = null
       }
       const promBaseUrl = localStorage.getItem('dbaas.cluster_prom_base_url')
-      const performanceInsightBaseUrl = localStorage.getItem('dbaas.performance_insight_api_base_url')
+      const performanceInsightBaseUrl = localStorage.getItem(
+        'dbaas.performance_insight_api_base_url'
+      )
 
       const clusterInfo = JSON.parse(
         localStorage.getItem('dbaas.cluster_info') ?? '{}'

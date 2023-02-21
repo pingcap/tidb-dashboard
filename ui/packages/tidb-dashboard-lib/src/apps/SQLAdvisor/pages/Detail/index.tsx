@@ -28,8 +28,6 @@ const PanelMaps: Record<string, string> = {
   table_healthies: 'Table Healthies'
 }
 
-const ONE_DAY = 24 * 60 * 60 // unit: second
-
 export default function SQLAdvisorDetail() {
   const ctx = useContext(SQLAdvisorContext)
   const { id } = useQueryParams()
@@ -152,12 +150,13 @@ export default function SQLAdvisorDetail() {
 
   useEffect(() => {
     const sqlTunedDetailGet = async () => {
-      await ctx?.ds
-        .tuningDetailGet(id)
-        .then((data) => {
-          setSqlTunedDetail(data)
-        })
-        .finally(() => setLoading(false))
+      try {
+        const res = await ctx?.ds.tuningDetailGet(id)
+        setSqlTunedDetail(res!)
+      } catch (e) {
+      } finally {
+        setLoading(false)
+      }
     }
 
     sqlTunedDetailGet()
@@ -186,12 +185,6 @@ export default function SQLAdvisorDetail() {
             <Collapse defaultActiveKey={['1']} expandIconPosition="end">
               <Panel header="Basic Information" key="1">
                 <Descriptions>
-                  <Descriptions.Item label="Insight Type" span={2}>
-                    {sqlTunedDetail.insight_type}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Impact" span={2}>
-                    {sqlTunedDetail.impact}
-                  </Descriptions.Item>
                   <Descriptions.Item
                     span={2}
                     label={
@@ -215,6 +208,12 @@ export default function SQLAdvisorDetail() {
                     >
                       <HighlightSQL sql={sqlTunedDetail.sql_statement} />
                     </Expand>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Insight Type" span={2}>
+                    {sqlTunedDetail.insight_type}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Impact" span={2}>
+                    {sqlTunedDetail.impact}
                   </Descriptions.Item>
                   <Descriptions.Item
                     span={2}
@@ -249,9 +248,8 @@ export default function SQLAdvisorDetail() {
                           />
                         </Space>
                       }
-                      style={{ overflow: 'scroll' }}
                     >
-                      <div style={{ display: 'block' }}>
+                      <div style={{ display: 'block', width: '100%' }}>
                         {suggestedCommands.map((command) => (
                           <div
                             style={{
@@ -270,75 +268,6 @@ export default function SQLAdvisorDetail() {
                 </Descriptions>
               </Panel>
             </Collapse>
-            {/* {tableClauses && tableClauses.length > 0 && (
-              <Collapse
-                defaultActiveKey={[PanelMaps.why_give_this_sugguestion]}
-                expandIconPosition="end"
-              >
-                <Panel
-                  header={PanelMaps.why_give_this_sugguestion}
-                  key={PanelMaps.why_give_this_sugguestion}
-                >
-                  <Typography style={{ marginBottom: 10 }}>
-                    1. Confirm the scope of the tables
-                  </Typography>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      marginBottom: 20
-                    }}
-                  >
-                    {tableClauses &&
-                      tableClauses.map((item) => (
-                        <div
-                          style={{
-                            marginRight: 5,
-                            marginTop: 10,
-                            marginBottom: 10
-                          }}
-                        >
-                          <Tag icon={<TableOutlined />} style={{ padding: 5 }}>
-                            {item.table_name}
-                          </Tag>
-                        </div>
-                      ))}
-                  </div>
-                  <Typography style={{ marginBottom: 10 }}>
-                    2. Detect some clauses
-                  </Typography>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      marginBottom: 20
-                    }}
-                  >
-                    {tableClauses &&
-                      tableClauses.map((item) => (
-                        <>
-                          {item.clauses.map((clause) => (
-                            <div
-                              style={{
-                                marginRight: 5,
-                                marginTop: 10,
-                                marginBottom: 10
-                              }}
-                            >
-                              <Tag
-                                icon={<FilterOutlined />}
-                                style={{ padding: 5 }}
-                              >
-                                {clause}
-                              </Tag>
-                            </div>
-                          ))}
-                        </>
-                      ))}
-                  </div>
-                </Panel>
-              </Collapse>
-            )} */}
             {sqlTunedDetail.table_clauses &&
               existingIndexes &&
               existingIndexes.flat().length > 0 && (
@@ -354,6 +283,7 @@ export default function SQLAdvisorDetail() {
                       columns={tableClausesColumns}
                       dataSource={existingIndexes.flat()}
                       size="small"
+                      pagination={false}
                     />
                   </Panel>
                 </Collapse>
@@ -372,6 +302,7 @@ export default function SQLAdvisorDetail() {
                       columns={tableHealthiesColumns}
                       dataSource={sqlTunedDetail.table_healthies}
                       size="small"
+                      pagination={false}
                     />
                   </Panel>
                 </Collapse>

@@ -10,8 +10,6 @@ import { TuningDetailProps } from '../types'
 import dayjs from 'dayjs'
 import tz from '@lib/utils/timezone'
 
-const TYPE__OPTIONS = ['missing_index', 'sql_not_parse', 'poor_stats']
-
 export const useSQLTunedListGet = () => {
   const ctx = useContext(SQLAdvisorContext)
   const [sqlTunedList, setSqlTunedList] = useState<TuningDetailProps[] | null>(
@@ -20,14 +18,14 @@ export const useSQLTunedListGet = () => {
   const [loading, setLoading] = useState(true)
 
   const sqlTunedListGet = useRef(async () => {
-    await ctx?.ds
-      .tuningListGet()
-      .then((data) => {
-        setSqlTunedList(data)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    try {
+      const res = await ctx?.ds.tuningListGet()
+      setSqlTunedList(res!)
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setLoading(false)
+    }
   })
 
   useEffect(() => {
@@ -66,13 +64,6 @@ const IndexInsightTable = ({
         ellipsis: true,
         render: (_, record) => {
           return <>{record.insight_type}</>
-        },
-        filters: TYPE__OPTIONS.map((type) => ({
-          text: type,
-          value: type
-        })),
-        onFilter: (value, record) => {
-          return record.insight_type.indexOf(value as string) === 0
         }
       },
       {

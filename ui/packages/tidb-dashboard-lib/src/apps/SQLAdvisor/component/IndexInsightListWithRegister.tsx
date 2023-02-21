@@ -21,10 +21,10 @@ import { DbassSecuritySettingImg } from '../utils/dbaasSecuritySetting'
 const { Title } = Typography
 
 const sql = [
-  `CREATE user 'clinic'@'%' IDENTIFIED by 'yourpasswrod';`,
-  `GRANT SELECT ON information_schema.* TO 'clinic'@'%';`,
-  `GRANT SELECT ON mysql.* TO 'clinic'@'%';`,
-  `GRANT PROCESS, REFERENCES ON *.* TO 'clinic'@'%';`,
+  `CREATE user 'yourusername'@'%' IDENTIFIED by 'yourpassword';`,
+  `GRANT SELECT ON information_schema.* TO 'yourusername'@'%';`,
+  `GRANT SELECT ON mysql.* TO 'yourusername'@'%';`,
+  `GRANT PROCESS, REFERENCES ON *.* TO 'yourusername'@'%';`,
   `FLUSH PRIVILEGES;`
 ]
 
@@ -182,38 +182,36 @@ const IndexInsightListWithRegister = () => {
 
   useEffect(() => {
     const registerUserDBStatusGet = async () => {
-      await ctx?.ds
-        .registerUserDBStatusGet?.()
-        .then((data) => {
-          setIsLoading(false)
-          setIsUserDBRegistered(data)
-        })
-        .catch((e) => console.log(e))
+      try {
+        const res = await ctx?.ds.registerUserDBStatusGet?.()
+        setIsLoading(false)
+        setIsUserDBRegistered(res)
+      } catch (e) {
+        console.log(e)
+      }
     }
 
     registerUserDBStatusGet()
   }, [ctx])
 
   const handleDeactivate = async () => {
-    await ctx?.ds
-      .unRegisterUserDB?.()
-      .then((res) => {
-        if (res.code === 'success') {
-          setIsDeactivating(false)
-          setIsUserDBRegistered(false)
-          notification.success({
-            message: res.message
-          })
-        } else {
-          notification.error({
-            message: res.message
-          })
-        }
-      })
-      .catch((e) => console.log(e))
-      .finally(() => {
-        setIsDeactivating(false)
-      })
+    try {
+      const res = await ctx?.ds.unRegisterUserDB?.()
+      if (res.code === 'success') {
+        setIsUserDBRegistered(false)
+        notification.success({
+          message: res.message
+        })
+      } else {
+        notification.error({
+          message: res.message
+        })
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setIsDeactivating(false)
+    }
   }
 
   return (

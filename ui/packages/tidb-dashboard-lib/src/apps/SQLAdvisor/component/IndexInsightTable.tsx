@@ -10,6 +10,11 @@ import { TuningDetailProps } from '../types'
 import dayjs from 'dayjs'
 import tz from '@lib/utils/timezone'
 
+const DEF_PAGINATION_PARAMS = {
+  pageNumber: 0,
+  pageSize: 5
+}
+
 export const useSQLTunedListGet = () => {
   const ctx = useContext(SQLAdvisorContext)
   const [sqlTunedList, setSqlTunedList] = useState<TuningDetailProps[] | null>(
@@ -17,16 +22,22 @@ export const useSQLTunedListGet = () => {
   )
   const [loading, setLoading] = useState(true)
 
-  const sqlTunedListGet = useRef(async () => {
-    try {
-      const res = await ctx?.ds.tuningListGet()
-      setSqlTunedList(res!)
-    } catch (e) {
-      console.log(e)
-    } finally {
-      setLoading(false)
+  const sqlTunedListGet = useRef(
+    async (pageNumber?: number, pageSize?: number) => {
+      console.log('fetching...', pageNumber, pageSize)
+      try {
+        const res = await ctx?.ds.tuningListGet(
+          pageNumber || DEF_PAGINATION_PARAMS.pageNumber,
+          pageSize || DEF_PAGINATION_PARAMS.pageSize
+        )
+        setSqlTunedList(res!)
+      } catch (e) {
+        console.log(e)
+      } finally {
+        setLoading(false)
+      }
     }
-  })
+  )
 
   useEffect(() => {
     sqlTunedListGet.current()
@@ -38,11 +49,13 @@ export const useSQLTunedListGet = () => {
 interface IndexInsightTableProps {
   sqlTunedList: TuningDetailProps[] | null
   loading: boolean
+  onHandlePaginationChange?: (pageNumber: number, pageSize: number) => void
 }
 
 const IndexInsightTable = ({
   sqlTunedList,
-  loading
+  loading,
+  onHandlePaginationChange
 }: IndexInsightTableProps) => {
   const columns = useMemo(
     () => [
@@ -153,6 +166,14 @@ const IndexInsightTable = ({
         columns={columns}
         loading={loading}
         size="small"
+        pagination={{
+          total: 8,
+          defaultCurrent: DEF_PAGINATION_PARAMS.pageNumber + 1,
+          pageSize: DEF_PAGINATION_PARAMS.pageSize,
+          onChange: (pageNumber, pageSize) => {
+            onHandlePaginationChange?.(pageNumber, pageSize)
+          }
+        }}
       />
     </Card>
   )

@@ -153,6 +153,10 @@ const IndexInsightList = ({
     }
   }
 
+  const handlePaginationChange = (pageNumber: number, pageSize: number) => {
+    refreshSQLTunedList(pageNumber, pageSize)
+  }
+
   return (
     <>
       <Card>
@@ -245,7 +249,11 @@ const IndexInsightList = ({
           />
         )}
       </Card>
-      <IndexInsightTable sqlTunedList={sqlTunedList} loading={loading} />
+      <IndexInsightTable
+        sqlTunedList={sqlTunedList}
+        loading={loading}
+        onHandlePaginationChange={handlePaginationChange}
+      />
     </>
   )
 }

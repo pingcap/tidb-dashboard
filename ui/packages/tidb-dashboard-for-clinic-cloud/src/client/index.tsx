@@ -113,7 +113,10 @@ function initAxios(clientOptions: ClientOptions, clusterInfo: ClusterInfo) {
     clusterInfo
 
   let headers = {}
+  // for clinic
   headers['x-csrf-token'] = apiToken
+  // for tidb cloud
+  headers['authorization'] = `Bearer ${apiToken}`
   if (provider) {
     headers['x-provider'] = provider
   }

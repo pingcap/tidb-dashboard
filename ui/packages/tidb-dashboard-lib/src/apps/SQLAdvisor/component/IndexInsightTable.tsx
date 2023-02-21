@@ -18,14 +18,14 @@ export const useSQLTunedListGet = () => {
   const [loading, setLoading] = useState(true)
 
   const sqlTunedListGet = useRef(async () => {
-    await ctx?.ds
-      .tuningListGet()
-      .then((data) => {
-        setSqlTunedList(data)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    try {
+      const res = await ctx?.ds.tuningListGet()
+      setSqlTunedList(res!)
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setLoading(false)
+    }
   })
 
   useEffect(() => {

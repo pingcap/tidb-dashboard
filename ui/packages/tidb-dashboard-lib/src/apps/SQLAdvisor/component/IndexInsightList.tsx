@@ -72,38 +72,39 @@ const IndexInsightList = ({
 
   useEffect(() => {
     const checkSQLValidation = async () => {
-      await ctx?.ds
-        .sqlValidationGet?.()
-        .then((res) => {
-          setShowAlert(!res)
-        })
-        .catch((e) => console.log(e))
+      try {
+        const res = await ctx?.ds.sqlValidationGet?.()
+        setShowAlert(!res)
+      } catch (e) {
+        console.log(e)
+      }
     }
 
     checkSQLValidation()
   }, [ctx])
 
   const handleIndexCheckUp = async () => {
-    setNoTaskRunning(false)
-    setShowCheckUpModal(false)
-    await ctx?.ds
-      .tuningTaskCreate(
+    try {
+      const res = await ctx?.ds.tuningTaskCreate(
         (dayjs().unix() - ONE_DAY) * 1000,
         dayjs().unix() * 1000
       )
-      .then((res) => {
-        if (res.code === 'success') {
-          notification.success({
-            message: res.message
-          })
-        } else {
-          notification.error({
-            message: res.message
-          })
-        }
-      })
-      .catch((e) => console.log(e))
-    startCheckTaskStatusLoop.current()
+      if (res.code === 'success') {
+        notification.success({
+          message: res.message
+        })
+      } else {
+        notification.error({
+          message: res.message
+        })
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setNoTaskRunning(false)
+      setShowCheckUpModal(false)
+      startCheckTaskStatusLoop.current()
+    }
   }
 
   const hanleDeactivate = () => {
@@ -113,21 +114,21 @@ const IndexInsightList = ({
   }
 
   const handleCancelTask = async () => {
-    await ctx?.ds
-      .cancelRunningTask?.()
-      .then((res) => {
-        if (res.code === 'success') {
-          notification.success({
-            message: res.message
-          })
-          setNoTaskRunning(true)
-        } else {
-          notification.error({
-            message: res.message
-          })
-        }
-      })
-      .catch((e) => console.log(e))
+    try {
+      const res = await ctx?.ds.cancelRunningTask?.()
+      if (res.code === 'success') {
+        notification.success({
+          message: res.message
+        })
+        setNoTaskRunning(true)
+      } else {
+        notification.error({
+          message: res.message
+        })
+      }
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   const handleDeactivateModalCancel = () => {

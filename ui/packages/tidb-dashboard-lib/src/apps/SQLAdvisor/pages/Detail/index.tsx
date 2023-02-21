@@ -150,12 +150,13 @@ export default function SQLAdvisorDetail() {
 
   useEffect(() => {
     const sqlTunedDetailGet = async () => {
-      await ctx?.ds
-        .tuningDetailGet(id)
-        .then((data) => {
-          setSqlTunedDetail(data)
-        })
-        .finally(() => setLoading(false))
+      try {
+        const res = await ctx?.ds.tuningDetailGet(id)
+        setSqlTunedDetail(res!)
+      } catch (e) {
+      } finally {
+        setLoading(false)
+      }
     }
 
     sqlTunedDetailGet()

@@ -15,9 +15,9 @@ class DataSource implements ISQLAdvisorDataSource {
   token = this.globalConfig.apiToken
   performanceInsightBaseUrl = this.globalConfig.performanceInsightBaseUrl
 
-  tuningListGet(type: string, pageNumber: number, pageSize: number) {
+  tuningListGet() {
     return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=GetTunedIndexLists&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}&type=${type}&pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      `${this.performanceInsightBaseUrl}?BackMethod=GetTunedIndexLists&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}`,
       {
         headers: {
           token: `Bearer ${this.token}`

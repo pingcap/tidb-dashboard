@@ -32,6 +32,8 @@ const IndexInsightList = ({
   const [showAlert, setShowAlert] = useState<boolean>(false)
   const [noTaskRunning, setNoTaskRunning] = useState<boolean>(true)
   const [showDeactivateModal, setShowDeactivateModal] = useState<boolean>(false)
+  const [showSetting, setShowSetting] = useState(false)
+  const [showCheckUpModal, setShowCheckUpModal] = useState(false)
 
   const { sqlTunedList, refreshSQLTunedList, loading } = useSQLTunedListGet()
 
@@ -83,6 +85,7 @@ const IndexInsightList = ({
 
   const handleIndexCheckUp = async () => {
     setNoTaskRunning(false)
+    setShowCheckUpModal(false)
     await ctx?.ds
       .tuningTaskCreate(
         (dayjs().unix() - ONE_DAY) * 1000,
@@ -105,20 +108,19 @@ const IndexInsightList = ({
 
   const hanleDeactivate = () => {
     setShowDeactivateModal(false)
+    setShowSetting(false)
     onHandleDeactivate?.()
   }
 
-  const [showSetting, setShowSetting] = useState(false)
-  const [showCheckUpModal, setShowCheckUpModal] = useState(false)
-
   const handleCancelTask = async () => {
     await ctx?.ds
-      .cancelRunningTask()
+      .cancelRunningTask?.()
       .then((res) => {
         if (res.code === 'success') {
           notification.success({
             message: res.message
           })
+          setNoTaskRunning(true)
         } else {
           notification.error({
             message: res.message
@@ -126,6 +128,11 @@ const IndexInsightList = ({
         }
       })
       .catch((e) => console.log(e))
+  }
+
+  const handleDeactivateModalCancel = () => {
+    setShowDeactivateModal(false)
+    setShowSetting(false)
   }
 
   return (
@@ -136,6 +143,12 @@ const IndexInsightList = ({
             <Typography.Title level={4}>Performance Insight</Typography.Title>
           </Space>
           <Space>
+            <Tooltip
+              title="Each insight will cover diagnosis data from the past 24 hours."
+              placement="rightTop"
+            >
+              <InfoCircleOutlined />
+            </Tooltip>
             <Button
               disabled={!noTaskRunning || showAlert}
               onClick={() => setShowCheckUpModal(true)}
@@ -147,12 +160,6 @@ const IndexInsightList = ({
               <Button onClick={handleCancelTask}>Cancel Task</Button>
             )}
             <Button onClick={() => setShowSetting(true)}>Setting</Button>
-            <Tooltip
-              title="Each insight will cover diagnosis data from the past 24 hours."
-              placement="rightTop"
-            >
-              <InfoCircleOutlined />
-            </Tooltip>
           </Space>
         </Toolbar>
         <Drawer
@@ -177,7 +184,7 @@ const IndexInsightList = ({
         <Modal
           title="Deactivate Perfomance Insight"
           visible={showDeactivateModal}
-          onCancel={() => setShowDeactivateModal(false)}
+          onCancel={handleDeactivateModalCancel}
           destroyOnClose={true}
           onOk={hanleDeactivate}
         >
@@ -187,7 +194,7 @@ const IndexInsightList = ({
           </p>
         </Modal>
         <Modal
-          title="Notice"
+          title="Check Up Notice"
           visible={showCheckUpModal}
           onCancel={() => setShowCheckUpModal(false)}
           destroyOnClose={true}

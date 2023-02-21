@@ -3,7 +3,6 @@ import { TuningDetailProps, TuningTaskStatus } from '../types/'
 
 export interface ISQLAdvisorDataSource {
   tuningListGet(
-    type?: string,
     pageNumber?: number,
     pageSize?: number
   ): Promise<TuningDetailProps[]>
@@ -12,7 +11,7 @@ export interface ISQLAdvisorDataSource {
 
   tuningTaskCreate(startTime: number, endTime: number): Promise<any>
 
-  cancelRunningTask(): Promise<any>
+  cancelRunningTask?(): Promise<any>
 
   tuningDetailGet(id: number): Promise<TuningDetailProps>
 

@@ -28,8 +28,6 @@ const PanelMaps: Record<string, string> = {
   table_healthies: 'Table Healthies'
 }
 
-const ONE_DAY = 24 * 60 * 60 // unit: second
-
 export default function SQLAdvisorDetail() {
   const ctx = useContext(SQLAdvisorContext)
   const { id } = useQueryParams()
@@ -249,7 +247,6 @@ export default function SQLAdvisorDetail() {
                           />
                         </Space>
                       }
-                      style={{ overflow: 'scroll' }}
                     >
                       <div style={{ display: 'block', width: '100%' }}>
                         {suggestedCommands.map((command) => (
@@ -285,6 +282,7 @@ export default function SQLAdvisorDetail() {
                       columns={tableClausesColumns}
                       dataSource={existingIndexes.flat()}
                       size="small"
+                      pagination={false}
                     />
                   </Panel>
                 </Collapse>
@@ -303,6 +301,7 @@ export default function SQLAdvisorDetail() {
                       columns={tableHealthiesColumns}
                       dataSource={sqlTunedDetail.table_healthies}
                       size="small"
+                      pagination={false}
                     />
                   </Panel>
                 </Collapse>

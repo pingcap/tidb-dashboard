@@ -10,8 +10,6 @@ import { TuningDetailProps } from '../types'
 import dayjs from 'dayjs'
 import tz from '@lib/utils/timezone'
 
-const TYPE__OPTIONS = ['missing_index', 'sql_not_parse', 'poor_stats']
-
 export const useSQLTunedListGet = () => {
   const ctx = useContext(SQLAdvisorContext)
   const [sqlTunedList, setSqlTunedList] = useState<TuningDetailProps[] | null>(

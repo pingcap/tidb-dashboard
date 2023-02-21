@@ -9,7 +9,8 @@ import {
   notification,
   Alert,
   Modal,
-  Tooltip
+  Tooltip,
+  Drawer
 } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { Card, Toolbar } from '@lib/components'
@@ -31,6 +32,8 @@ const IndexInsightList = ({
   const [showAlert, setShowAlert] = useState<boolean>(false)
   const [noTaskRunning, setNoTaskRunning] = useState<boolean>(true)
   const [showDeactivateModal, setShowDeactivateModal] = useState<boolean>(false)
+  const [showSetting, setShowSetting] = useState(false)
+  const [showCheckUpModal, setShowCheckUpModal] = useState(false)
 
   const { sqlTunedList, refreshSQLTunedList, loading } = useSQLTunedListGet()
 
@@ -69,83 +72,140 @@ const IndexInsightList = ({
 
   useEffect(() => {
     const checkSQLValidation = async () => {
-      await ctx?.ds
-        .sqlValidationGet?.()
-        .then((res) => {
-          setShowAlert(!res)
-        })
-        .catch((e) => console.log(e))
+      try {
+        const res = await ctx?.ds.sqlValidationGet?.()
+        setShowAlert(!res)
+      } catch (e) {
+        console.log(e)
+      }
     }
 
     checkSQLValidation()
   }, [ctx])
 
   const handleIndexCheckUp = async () => {
-    setNoTaskRunning(false)
-    await ctx?.ds
-      .tuningTaskCreate(
+    try {
+      const res = await ctx?.ds.tuningTaskCreate(
         (dayjs().unix() - ONE_DAY) * 1000,
         dayjs().unix() * 1000
       )
-      .then((res) => {
-        if (res.code === 'success') {
-          notification.success({
-            message: res.message
-          })
-        } else {
-          notification.error({
-            message: res.message
-          })
-        }
-      })
-      .catch((e) => console.log(e))
-    startCheckTaskStatusLoop.current()
+      if (res.code === 'success') {
+        notification.success({
+          message: res.message
+        })
+      } else {
+        notification.error({
+          message: res.message
+        })
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setNoTaskRunning(false)
+      setShowCheckUpModal(false)
+      startCheckTaskStatusLoop.current()
+    }
   }
 
   const hanleDeactivate = () => {
     setShowDeactivateModal(false)
+    setShowSetting(false)
     onHandleDeactivate?.()
+  }
+
+  const handleCancelTask = async () => {
+    try {
+      const res = await ctx?.ds.cancelRunningTask?.()
+      if (res.code === 'success') {
+        notification.success({
+          message: res.message
+        })
+        setNoTaskRunning(true)
+      } else {
+        notification.error({
+          message: res.message
+        })
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const handleDeactivateModalCancel = () => {
+    setShowDeactivateModal(false)
+    setShowSetting(false)
   }
 
   return (
     <>
       <Card>
         <Toolbar>
-          <Space>
+          <Space align="center">
             <Typography.Title level={4}>Performance Insight</Typography.Title>
           </Space>
-          <Space align="center" size={8}>
-            <Button
-              disabled={!noTaskRunning || showAlert}
-              onClick={handleIndexCheckUp}
-              loading={!noTaskRunning}
-            >
-              {noTaskRunning ? 'Seeking Insight' : 'Task is Running'}
-            </Button>
-            <Button
-              onClick={() => setShowDeactivateModal(true)}
-              loading={isDeactivating}
-            >
-              Deactivate
-            </Button>
+          <Space>
             <Tooltip
               title="Each insight will cover diagnosis data from the past 24 hours."
               placement="rightTop"
             >
               <InfoCircleOutlined />
             </Tooltip>
+            <Button
+              disabled={!noTaskRunning || showAlert}
+              onClick={() => setShowCheckUpModal(true)}
+              loading={!noTaskRunning}
+            >
+              {noTaskRunning ? 'Check Up' : 'Task is Running'}
+            </Button>
+            {!noTaskRunning && (
+              <Button onClick={handleCancelTask}>Cancel Task</Button>
+            )}
+            <Button onClick={() => setShowSetting(true)}>Setting</Button>
           </Space>
         </Toolbar>
+        <Drawer
+          title="Setting"
+          width={300}
+          visible={showSetting}
+          closable={true}
+          onClose={() => setShowSetting(false)}
+          destroyOnClose={true}
+        >
+          <p>
+            After deactivation, the system will delete all historical insight
+            data.
+          </p>
+          <Button
+            onClick={() => setShowDeactivateModal(true)}
+            loading={isDeactivating}
+          >
+            Deactivate
+          </Button>
+        </Drawer>
         <Modal
           title="Deactivate Perfomance Insight"
           visible={showDeactivateModal}
-          onCancel={() => setShowDeactivateModal(false)}
+          onCancel={handleDeactivateModalCancel}
           destroyOnClose={true}
           onOk={hanleDeactivate}
         >
           <p>
-            After deactivation, the system will delete all data including SQL
-            user account and passwords, and all historical insights data.
+            After disabling, all generated insight data by this feature will be
+            deleted.
+          </p>
+        </Modal>
+        <Modal
+          title="Check Up Notice"
+          visible={showCheckUpModal}
+          onCancel={() => setShowCheckUpModal(false)}
+          destroyOnClose={true}
+          onOk={handleIndexCheckUp}
+          okText="Comfirm"
+        >
+          <p>
+            When performing checks, system tables are queried. It is not
+            recommended to perform checks when the cluster is already under
+            heavy load.
           </p>
         </Modal>
         {showAlert && (

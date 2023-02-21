@@ -2,11 +2,16 @@ import { createContext } from 'react'
 import { TuningDetailProps, TuningTaskStatus } from '../types/'
 
 export interface ISQLAdvisorDataSource {
-  tuningListGet(type?: string): Promise<TuningDetailProps[]>
+  tuningListGet(
+    pageNumber?: number,
+    pageSize?: number
+  ): Promise<TuningDetailProps[]>
 
   tuningTaskStatusGet(): Promise<TuningTaskStatus>
 
   tuningTaskCreate(startTime: number, endTime: number): Promise<any>
+
+  cancelRunningTask?(): Promise<any>
 
   tuningDetailGet(id: number): Promise<TuningDetailProps>
 

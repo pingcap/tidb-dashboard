@@ -6,18 +6,18 @@ import { Tooltip, Table } from 'antd'
 import { Link } from 'react-router-dom'
 import { getSuggestedCommand } from '../utils/suggestedCommandMaps'
 import { SQLAdvisorContext } from '../context'
-import { TuningDetailProps } from '../types'
+import { SQLTunedListProps } from '../types'
 import dayjs from 'dayjs'
 import tz from '@lib/utils/timezone'
 
 const DEF_PAGINATION_PARAMS = {
-  pageNumber: 0,
+  pageNumber: 1,
   pageSize: 5
 }
 
 export const useSQLTunedListGet = () => {
   const ctx = useContext(SQLAdvisorContext)
-  const [sqlTunedList, setSqlTunedList] = useState<TuningDetailProps[] | null>(
+  const [sqlTunedList, setSqlTunedList] = useState<SQLTunedListProps | null>(
     null
   )
   const [loading, setLoading] = useState(true)
@@ -47,7 +47,7 @@ export const useSQLTunedListGet = () => {
 }
 
 interface IndexInsightTableProps {
-  sqlTunedList: TuningDetailProps[] | null
+  sqlTunedList: SQLTunedListProps | null
   loading: boolean
   onHandlePaginationChange?: (pageNumber: number, pageSize: number) => void
 }
@@ -162,13 +162,13 @@ const IndexInsightTable = ({
   return (
     <Card noMarginTop>
       <Table
-        dataSource={sqlTunedList!}
+        dataSource={sqlTunedList?.tuned_results!}
         columns={columns}
         loading={loading}
         size="small"
         pagination={{
-          total: 8,
-          defaultCurrent: DEF_PAGINATION_PARAMS.pageNumber + 1,
+          total: sqlTunedList?.count,
+          defaultCurrent: DEF_PAGINATION_PARAMS.pageNumber,
           pageSize: DEF_PAGINATION_PARAMS.pageSize,
           onChange: (pageNumber, pageSize) => {
             onHandlePaginationChange?.(pageNumber, pageSize)

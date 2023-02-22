@@ -17,7 +17,6 @@ import { InfoCircleOutlined } from '@ant-design/icons'
 import { Card, Toolbar } from '@lib/components'
 import { SQLAdvisorContext } from '../context'
 import dayjs from 'dayjs'
-import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 
 const ONE_DAY = 24 * 60 * 60 // unit: second
 

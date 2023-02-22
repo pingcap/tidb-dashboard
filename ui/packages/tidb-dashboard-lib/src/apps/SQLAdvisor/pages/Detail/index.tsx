@@ -148,6 +148,21 @@ export default function SQLAdvisorDetail() {
       SuggestedCommandMaps[command.suggestion_key](command.params)
     )
 
+  const suggestedCMDExplanation =
+    suggestedCommands &&
+    suggestedCommands
+      .map((cmd) => {
+        const fields = cmd.cmd_explanation.fields
+        const table_name = cmd.cmd_explanation.table_name
+        const explanation = {
+          fields: fields,
+          table_name: table_name
+        }
+
+        return fields && table_name ? explanation : null
+      })
+      .filter((cmd) => cmd)
+
   useEffect(() => {
     const sqlTunedDetailGet = async () => {
       try {
@@ -234,35 +249,44 @@ export default function SQLAdvisorDetail() {
                   >
                     {sqlTunedDetail.plan_digest}
                   </Descriptions.Item>
-                  {suggestedCommands && suggestedCommandsCopyData && (
-                    <Descriptions.Item
-                      span={2}
-                      label={
-                        <Space>
-                          <span>Suggested Command</span>
-                          <CopyLink
-                            data={suggestedCommandsCopyData.join('\n')}
-                          />
-                        </Space>
-                      }
-                    >
-                      <div style={{ display: 'block', width: '100%' }}>
-                        {suggestedCommands.map((command) => (
-                          <div
-                            style={{
-                              background: '#f1f1f1',
-                              padding: '3px 10px'
-                            }}
-                          >
-                            {SuggestedCommandMaps[command!.suggestion_key](
-                              command!.params
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </Descriptions.Item>
-                  )}
                 </Descriptions>
+                {suggestedCMDExplanation && suggestedCMDExplanation.length > 0 && (
+                  <ul>
+                    {suggestedCMDExplanation.map((cmdExp) => (
+                      <li>
+                        fields{' '}
+                        {cmdExp!.fields.map((field) => (
+                          <span>{field}</span>
+                        ))}{' '}
+                        in the {cmdExp!.table_name} table
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {suggestedCommands && suggestedCommandsCopyData && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      width: '100%',
+                      flexFlow: 'row',
+                      justifyContent: 'space-between',
+                      backgroundColor: '#ff1f1f1'
+                    }}
+                  >
+                    {suggestedCommands.map((command) => (
+                      <div
+                        style={{
+                          padding: '3px 10px'
+                        }}
+                      >
+                        {SuggestedCommandMaps[command!.suggestion_key](
+                          command!.params
+                        )}
+                      </div>
+                    ))}
+                    <CopyLink data={suggestedCommandsCopyData.join('\n')} />
+                  </div>
+                )}
               </Panel>
             </Collapse>
             {sqlTunedDetail.table_clauses &&

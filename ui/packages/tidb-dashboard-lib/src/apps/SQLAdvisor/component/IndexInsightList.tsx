@@ -35,9 +35,13 @@ const IndexInsightList = ({
   const [showDeactivateModal, setShowDeactivateModal] = useState<boolean>(false)
   const [showSetting, setShowSetting] = useState(false)
   const [showCheckUpModal, setShowCheckUpModal] = useState(false)
-  const [dontRemindCheckUpNotice, setDontRemindCheckUpNotice] = useState<
-    string | boolean
-  >(localStorage.getItem('dont_remind_checkup_notice') || false)
+  const [dontRemindCheckUpNotice, setDontRemindCheckUpNotice] =
+    useState<boolean>(() =>
+      JSON.parse(
+        localStorage.getItem('index_insight_dont_remind_checkup_notice') ||
+          'false'
+      )
+    )
   const { sqlTunedList, refreshSQLTunedList, loading } = useSQLTunedListGet()
   const [cancelRunningTask, setCancelRunningTask] = useState(false)
 
@@ -108,7 +112,7 @@ const IndexInsightList = ({
       setNoTaskRunning(false)
       setShowCheckUpModal(false)
       localStorage.setItem(
-        'dont_remind_checkup_notice',
+        'index_insight_dont_remind_checkup_notice',
         JSON.stringify(dontRemindCheckUpNotice)
       )
       startCheckTaskStatusLoop.current()
@@ -147,7 +151,7 @@ const IndexInsightList = ({
   }
 
   const handleCheckUpBtnClick = () => {
-    // if dont_remind_checkup_notice has been checked, don't show comfirm modal again, checkup directly.
+    // if index_insight_dont_remind_checkup_notice has been checked, don't show comfirm modal again, checkup directly.
     if (!dontRemindCheckUpNotice) {
       setShowCheckUpModal(true)
     } else {

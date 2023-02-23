@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pingcap/log"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"

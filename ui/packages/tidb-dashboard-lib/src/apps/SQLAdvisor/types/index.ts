@@ -24,8 +24,8 @@ export interface TuningDetailProps {
       table_name: string
       columns: string
       index_name: string
-      clusterd: true
-      visible: true
+      clusterd: boolean
+      visible: boolean
     }[]
   }[]
   table_healthies: {

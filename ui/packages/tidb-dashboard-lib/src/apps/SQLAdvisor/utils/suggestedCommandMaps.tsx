@@ -20,5 +20,7 @@ export const SuggestedCommandMaps: Record<
 }
 
 export function getSuggestedCommand(suggestion_key: string, params: string[]) {
-  return SuggestedCommandMaps[suggestion_key](params) || suggestion_key
+  return SuggestedCommandMaps[suggestion_key]
+    ? SuggestedCommandMaps[suggestion_key](params)
+    : suggestion_key
 }

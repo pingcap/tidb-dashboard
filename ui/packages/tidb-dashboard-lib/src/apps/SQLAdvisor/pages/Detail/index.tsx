@@ -13,17 +13,17 @@ import useQueryParams from '@lib/utils/useQueryParams'
 import { Space, Collapse, Tooltip, Table } from 'antd'
 
 import { LoadingOutlined } from '@ant-design/icons'
-import { SuggestedCommandMaps } from '../../utils/suggestedCommandMaps'
+import { getSuggestedCommand } from '../../utils/suggestedCommandMaps'
 import { TuningDetailProps } from '../../types'
 import { SQLAdvisorContext } from '../../context'
 import dayjs from 'dayjs'
 import tz from '@lib/utils/timezone'
+import styles from './index.module.less'
 
 const { Panel } = Collapse
 
 const PanelMaps: Record<string, string> = {
   basic: 'Basic Information',
-  // why_give_this_sugguestion: 'Why give this suggestion',
   table_clause: 'Existing Indexes',
   table_healthies: 'Table Healthies'
 }
@@ -43,7 +43,7 @@ export default function SQLAdvisorDetail() {
         title: 'Table',
         dataIndex: 'table_name',
         key: 'table_name',
-        width: 350,
+        ellipsis: true,
         render: (_, row) => {
           return (
             <Tooltip title={row.table_name} placement="topLeft">
@@ -56,7 +56,7 @@ export default function SQLAdvisorDetail() {
         title: 'Index Name',
         dataIndex: 'index_name',
         key: 'index_name',
-        width: 250,
+        ellipsis: true,
         render: (_, row) => {
           return <>{row.index_name}</>
         }
@@ -65,7 +65,7 @@ export default function SQLAdvisorDetail() {
         title: 'Column',
         dataIndex: 'columns',
         key: 'columns',
-        width: 350,
+        ellipsis: true,
         render: (_, row) => {
           return <>{row.columns}</>
         }
@@ -75,6 +75,7 @@ export default function SQLAdvisorDetail() {
         dataIndex: 'clusterd',
         key: 'clusterd',
         width: 100,
+        ellipsis: true,
         render: (_, row) => {
           return <>{row.clusterd ? 'Yes' : 'No'}</>
         }
@@ -83,7 +84,7 @@ export default function SQLAdvisorDetail() {
         title: 'Visible',
         dataIndex: 'visible',
         key: 'visible',
-        width: 100,
+        ellipsis: true,
         render: (_, row) => {
           return <>{row.visible ? 'Yes' : 'No'}</>
         }
@@ -98,7 +99,7 @@ export default function SQLAdvisorDetail() {
         title: 'Table',
         dataIndex: 'table_name',
         key: 'table_name',
-        width: 350,
+        ellipsis: true,
         render: (_, row) => {
           return (
             <Tooltip title={row.table_name} placement="topLeft">
@@ -111,7 +112,7 @@ export default function SQLAdvisorDetail() {
         title: 'Healthy',
         dataIndex: 'healthy',
         key: 'healthy',
-        width: 150,
+        ellipsis: true,
         render: (_, row) => {
           return <>{row.healthy}</>
         }
@@ -122,7 +123,7 @@ export default function SQLAdvisorDetail() {
         }${tz.getTimeZone()})`,
         dataIndex: 'checked_time',
         key: 'checked_time',
-        width: 150,
+        ellipsis: true,
         render: () => {
           return (
             <>
@@ -145,8 +146,22 @@ export default function SQLAdvisorDetail() {
   const suggestedCommandsCopyData =
     suggestedCommands &&
     suggestedCommands.map((command) =>
-      SuggestedCommandMaps[command.suggestion_key](command.params)
+      getSuggestedCommand(command.suggestion_key, command.params)
     )
+
+  const suggestedCMDExplanation =
+    suggestedCommands &&
+    suggestedCommands
+      .map((cmd) => {
+        const fields = cmd.cmd_explanation.fields
+        const table_name = cmd.cmd_explanation.table_name
+        const explanation = {
+          fields: fields,
+          table_name: table_name
+        }
+        return fields && table_name ? explanation : null
+      })
+      .filter((cmd) => cmd)
 
   useEffect(() => {
     const sqlTunedDetailGet = async () => {
@@ -209,12 +224,6 @@ export default function SQLAdvisorDetail() {
                       <HighlightSQL sql={sqlTunedDetail.sql_statement} />
                     </Expand>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Insight Type" span={2}>
-                    {sqlTunedDetail.insight_type}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Impact" span={2}>
-                    {sqlTunedDetail.impact}
-                  </Descriptions.Item>
                   <Descriptions.Item
                     span={2}
                     label={
@@ -237,35 +246,61 @@ export default function SQLAdvisorDetail() {
                   >
                     {sqlTunedDetail.plan_digest}
                   </Descriptions.Item>
-                  {suggestedCommands && suggestedCommandsCopyData && (
-                    <Descriptions.Item
-                      span={2}
-                      label={
-                        <Space>
-                          <span>Suggested Command</span>
-                          <CopyLink
-                            data={suggestedCommandsCopyData.join('\n')}
-                          />
-                        </Space>
-                      }
-                    >
-                      <div style={{ display: 'block', width: '100%' }}>
-                        {suggestedCommands.map((command) => (
-                          <div
-                            style={{
-                              background: '#f1f1f1',
-                              padding: '3px 10px'
-                            }}
-                          >
-                            {SuggestedCommandMaps[command!.suggestion_key](
-                              command!.params
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </Descriptions.Item>
-                  )}
                 </Descriptions>
+                {suggestedCMDExplanation && suggestedCMDExplanation.length > 0 && (
+                  <>
+                    <p>The query is {sqlTunedDetail.insight_type} on</p>
+                    <ul>
+                      {suggestedCMDExplanation.map((cmdExp) => (
+                        <li>
+                          fields{' '}
+                          <span className={styles.InlineCodeBlock}>
+                            {cmdExp?.fields.join(', ')}
+                          </span>{' '}
+                          in the{' '}
+                          <span className={styles.InlineCodeBlock}>
+                            {cmdExp!.table_name}
+                          </span>{' '}
+                          table
+                        </li>
+                      ))}
+                    </ul>
+                    <p>
+                      which is expected to have a{' '}
+                      <span
+                        className={`${
+                          sqlTunedDetail.impact.toUpperCase() === 'HIGH'
+                            ? styles.HighImpact
+                            : sqlTunedDetail.impact.toUpperCase() === 'MEDIUM'
+                            ? styles.MiddleImpact
+                            : styles.LowImpact
+                        }`}
+                      >
+                        {sqlTunedDetail.impact.toUpperCase()}{' '}
+                      </span>
+                      on query performance.
+                    </p>
+                  </>
+                )}
+                <p>
+                  You can execute this command on create teh corresponding
+                  index:{' '}
+                </p>
+                {suggestedCommands && suggestedCommandsCopyData && (
+                  <div className={styles.SuggestedCommand}>
+                    <div>
+                      {suggestedCommands.map((command) => (
+                        <div>
+                          {getSuggestedCommand(
+                            command!.suggestion_key,
+                            command!.params
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <CopyLink data={suggestedCommandsCopyData.join('\n')} />
+                  </div>
+                )}
               </Panel>
             </Collapse>
             {sqlTunedDetail.table_clauses &&

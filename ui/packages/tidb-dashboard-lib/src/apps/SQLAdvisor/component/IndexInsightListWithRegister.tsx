@@ -127,7 +127,7 @@ const UnRegisteredUserDB: React.FC<UnRegisteredUserDBProps> = ({
           <Card className={styles.instructionCard}>
             <Title level={5}>Permissions required:</Title>
             <Alert
-              message={`Please replace your password in the 'yourpassword' field.`}
+              message={`Please replace your user name and password in the 'yourusername' and 'yourpassword' field.`}
               type="warning"
               showIcon
             />

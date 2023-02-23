@@ -9,6 +9,10 @@ export interface TuningDetailProps {
   sql_digest: string
   sql_statement: string
   suggested_command: {
+    cmd_explanation: {
+      table_name: string
+      fields: string[]
+    }
     suggestion_key: string
     params: string[]
   }[]
@@ -20,8 +24,8 @@ export interface TuningDetailProps {
       table_name: string
       columns: string
       index_name: string
-      clusterd: true
-      visible: true
+      clusterd: boolean
+      visible: boolean
     }[]
   }[]
   table_healthies: {
@@ -31,6 +35,11 @@ export interface TuningDetailProps {
   }[]
   use_Stats: boolean
   use_index: boolean
+}
+
+export interface SQLTunedListProps {
+  tuned_results: TuningDetailProps[]
+  count: number
 }
 
 export type TuningTaskStatus = boolean

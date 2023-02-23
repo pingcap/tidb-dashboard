@@ -1,11 +1,15 @@
 import { createContext } from 'react'
-import { TuningDetailProps, TuningTaskStatus } from '../types/'
+import {
+  TuningDetailProps,
+  TuningTaskStatus,
+  SQLTunedListProps
+} from '../types/'
 
 export interface ISQLAdvisorDataSource {
   tuningListGet(
     pageNumber?: number,
     pageSize?: number
-  ): Promise<TuningDetailProps[]>
+  ): Promise<SQLTunedListProps>
 
   tuningTaskStatusGet(): Promise<TuningTaskStatus>
 

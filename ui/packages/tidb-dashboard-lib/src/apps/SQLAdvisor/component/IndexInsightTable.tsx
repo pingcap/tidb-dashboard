@@ -6,27 +6,37 @@ import { Tooltip, Table } from 'antd'
 import { Link } from 'react-router-dom'
 import { getSuggestedCommand } from '../utils/suggestedCommandMaps'
 import { SQLAdvisorContext } from '../context'
-import { TuningDetailProps } from '../types'
+import { SQLTunedListProps } from '../types'
 import dayjs from 'dayjs'
 import tz from '@lib/utils/timezone'
 
+const DEF_PAGINATION_PARAMS = {
+  pageNumber: 1,
+  pageSize: 20
+}
+
 export const useSQLTunedListGet = () => {
   const ctx = useContext(SQLAdvisorContext)
-  const [sqlTunedList, setSqlTunedList] = useState<TuningDetailProps[] | null>(
+  const [sqlTunedList, setSqlTunedList] = useState<SQLTunedListProps | null>(
     null
   )
   const [loading, setLoading] = useState(true)
 
-  const sqlTunedListGet = useRef(async () => {
-    try {
-      const res = await ctx?.ds.tuningListGet()
-      setSqlTunedList(res!)
-    } catch (e) {
-      console.log(e)
-    } finally {
-      setLoading(false)
+  const sqlTunedListGet = useRef(
+    async (pageNumber?: number, pageSize?: number) => {
+      try {
+        const res = await ctx?.ds.tuningListGet(
+          pageNumber || DEF_PAGINATION_PARAMS.pageNumber,
+          pageSize || DEF_PAGINATION_PARAMS.pageSize
+        )
+        setSqlTunedList(res!)
+      } catch (e) {
+        console.log(e)
+      } finally {
+        setLoading(false)
+      }
     }
-  })
+  )
 
   useEffect(() => {
     sqlTunedListGet.current()
@@ -36,13 +46,15 @@ export const useSQLTunedListGet = () => {
 }
 
 interface IndexInsightTableProps {
-  sqlTunedList: TuningDetailProps[] | null
+  sqlTunedList: SQLTunedListProps | null
   loading: boolean
+  onHandlePaginationChange?: (pageNumber: number, pageSize: number) => void
 }
 
 const IndexInsightTable = ({
   sqlTunedList,
-  loading
+  loading,
+  onHandlePaginationChange
 }: IndexInsightTableProps) => {
   const columns = useMemo(
     () => [
@@ -50,7 +62,6 @@ const IndexInsightTable = ({
         title: 'Impact',
         dataIndex: 'impact',
         key: 'impact',
-        width: 50,
         ellipsis: true,
         render: (_, record) => {
           return <>{record.impact}</>
@@ -60,7 +71,6 @@ const IndexInsightTable = ({
         title: 'Type',
         dataIndex: 'insight_type',
         key: 'type',
-        width: 90,
         ellipsis: true,
         render: (_, record) => {
           return <>{record.insight_type}</>
@@ -70,7 +80,6 @@ const IndexInsightTable = ({
         title: 'Suggested Command',
         dataIndex: 'suggested_command',
         key: 'suggested_command',
-        width: 200,
         ellipsis: true,
         render: (_, record) => {
           return (
@@ -100,7 +109,6 @@ const IndexInsightTable = ({
         title: 'Related Slow SQL',
         dataIndex: 'sql_statement',
         key: 'related_slow_sql',
-        width: 250,
         ellipsis: true,
         render: (_, record) => {
           return (
@@ -121,7 +129,6 @@ const IndexInsightTable = ({
         }${tz.getTimeZone()})`,
         dataIndex: 'checked_time',
         key: 'check_up_time',
-        width: 140,
         ellipsis: true,
         render: (_, record) => {
           return (
@@ -137,7 +144,6 @@ const IndexInsightTable = ({
         title: 'Results',
         dataIndex: 'detail',
         key: 'detail',
-        width: 80,
         render: (_, record) => {
           return <Link to={`/sql_advisor/detail?id=${record.id}`}>Detail</Link>
         }
@@ -149,10 +155,18 @@ const IndexInsightTable = ({
   return (
     <Card noMarginTop>
       <Table
-        dataSource={sqlTunedList!}
+        dataSource={sqlTunedList?.tuned_results!}
         columns={columns}
         loading={loading}
         size="small"
+        pagination={{
+          total: sqlTunedList?.count,
+          defaultCurrent: DEF_PAGINATION_PARAMS.pageNumber,
+          pageSize: DEF_PAGINATION_PARAMS.pageSize,
+          onChange: (pageNumber, pageSize) => {
+            onHandlePaginationChange?.(pageNumber, pageSize)
+          }
+        }}
       />
     </Card>
   )

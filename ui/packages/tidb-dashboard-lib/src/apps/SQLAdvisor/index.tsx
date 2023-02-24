@@ -4,7 +4,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { Root } from '@lib/components'
 import { addTranslations } from '@lib/utils/i18n'
 
-import { List, Detail } from './pages'
+import { List, SQLAdvisorDetail, UnstablePlanDetail } from './pages'
 import { SQLAdvisorContext } from './context'
 
 import translations from './translations'
@@ -18,7 +18,14 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/sql_advisor" element={<List />} />
-      <Route path="/sql_advisor/detail" element={<Detail />} />
+      <Route
+        path="/sql_advisor/index_insight_detail"
+        element={<SQLAdvisorDetail />}
+      />
+      <Route
+        path="/sql_advisor/unstable_plan_detail"
+        element={<UnstablePlanDetail />}
+      />
     </Routes>
   )
 }

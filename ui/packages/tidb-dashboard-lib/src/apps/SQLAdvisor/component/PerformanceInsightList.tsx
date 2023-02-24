@@ -1,6 +1,7 @@
 import React, { useEffect, useContext, useState, useRef } from 'react'
 
 import IndexInsightTable, { useSQLTunedListGet } from './IndexInsightTable'
+import UnstablePlanTable, { useUnstablePlanListGet } from './UnstabelPlanTable'
 
 import {
   Space,
@@ -11,7 +12,8 @@ import {
   Modal,
   Tooltip,
   Drawer,
-  Checkbox
+  Checkbox,
+  Tabs
 } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { Card, Toolbar } from '@lib/components'
@@ -25,7 +27,7 @@ interface IndexInsightListProps {
   isDeactivating?: boolean
 }
 
-const IndexInsightList = ({
+const PerformanceInsightList = ({
   onHandleDeactivate,
   isDeactivating
 }: IndexInsightListProps) => {
@@ -43,6 +45,7 @@ const IndexInsightList = ({
       )
     )
   const { sqlTunedList, refreshSQLTunedList, loading } = useSQLTunedListGet()
+  const { unstablePlanList, refreshUnstablePlanList } = useUnstablePlanListGet()
   const [cancelRunningTask, setCancelRunningTask] = useState(false)
 
   const taskRunningStatusGet = useRef(() => {
@@ -172,7 +175,7 @@ const IndexInsightList = ({
           </Space>
           <Space align="center" style={{ marginTop: 0 }}>
             <Tooltip
-              title="Each insight will cover diagnosis data from the past 24 hours."
+              title="Each insight will cover diagnosis data from the past 3 hours."
               placement="rightTop"
             >
               <InfoCircleOutlined />
@@ -252,16 +255,27 @@ const IndexInsightList = ({
             type="warning"
             showIcon
             closable
+            style={{ marginBottom: '10px' }}
           />
         )}
+        <Tabs defaultActiveKey="index_insight">
+          <Tabs.TabPane tab="Index Insight" key="index_insight">
+            <IndexInsightTable
+              sqlTunedList={sqlTunedList}
+              loading={loading}
+              onHandlePaginationChange={handlePaginationChange}
+            />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Unstable Plan" key="unstable_plan">
+            <UnstablePlanTable
+              unstablePlanList={unstablePlanList}
+              loading={loading}
+            />
+          </Tabs.TabPane>
+        </Tabs>
       </Card>
-      <IndexInsightTable
-        sqlTunedList={sqlTunedList}
-        loading={loading}
-        onHandlePaginationChange={handlePaginationChange}
-      />
     </>
   )
 }
 
-export default IndexInsightList
+export default PerformanceInsightList

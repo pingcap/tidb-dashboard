@@ -183,7 +183,7 @@ function List() {
 
   return (
     <div className={styles.list_container}>
-      <Card>
+      <Card noMarginBottom>
         <Toolbar className={styles.list_toolbar} data-e2e="slow_query_toolbar">
           <Space>
             <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
@@ -270,6 +270,8 @@ function List() {
           </Space>
         </Toolbar>
       </Card>
+
+      <div style={{ height: 16 }} />
 
       {controller.data?.length === 0 ? (
         <Result title={t('slow_query.overview.empty_result')} />

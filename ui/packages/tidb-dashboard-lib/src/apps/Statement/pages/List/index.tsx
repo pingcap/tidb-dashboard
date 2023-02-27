@@ -207,7 +207,7 @@ export default function StatementsOverview() {
 
   return (
     <div className={styles.list_container}>
-      <Card>
+      <Card noMarginBottom>
         <Toolbar className={styles.list_toolbar} data-e2e="statement_toolbar">
           <Space>
             <TimeRangeSelector
@@ -334,6 +334,8 @@ export default function StatementsOverview() {
           </Space>
         </Toolbar>
       </Card>
+
+      <div style={{ height: 16 }} />
 
       {controller.isEnabled ? (
         <div

@@ -212,5 +212,6 @@ export const ctx: IStatementContext = {
     apiPathBase: client.getBasePath(),
     enableExport: true,
     enablePlanBinding: true
+    // instantQuery: false
   }
 }

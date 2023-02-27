@@ -168,6 +168,7 @@ export default function StatementsOverview() {
 
   useDeepCompareChange(() => {
     if (
+      ctx?.cfg.instantQuery === false ||
       controller.isDataLoadedSlowly || // if data was loaded slowly
       controller.isDataLoadedSlowly === null // or a request is not yet finished (which means slow network)..
     ) {

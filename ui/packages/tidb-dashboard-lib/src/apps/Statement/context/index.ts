@@ -93,6 +93,7 @@ export interface IStatementContext {
     enableExport: boolean
     showHelp?: boolean
     enablePlanBinding?: boolean
+    instantQuery?: boolean
   }
 }
 

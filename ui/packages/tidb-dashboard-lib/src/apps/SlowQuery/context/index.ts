@@ -62,7 +62,14 @@ export interface ISlowQueryConfig extends IContextConfig {
   enableExport: boolean
   showDBFilter: boolean
   showHelp?: boolean
-  listApiReturnDetail?: boolean // true means the list api will return all fields value of an item, not just the selected fields
+
+  // true means the list api will return all fields value of an item, not just the selected fields
+  // in this case, the detail page doesn't need to request detail api any more
+  listApiReturnDetail?: boolean
+
+  // true means start to search instantly after changing any filter options
+  // false means only to start searching after clicking the "Query" button
+  instantQuery?: boolean
 }
 
 export interface ISlowQueryContext {

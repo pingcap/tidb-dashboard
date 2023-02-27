@@ -74,5 +74,6 @@ export const ctx: ISlowQueryContext = {
     apiPathBase: client.getBasePath(),
     enableExport: true,
     showDBFilter: true
+    // instantQuery: false,
   }
 }

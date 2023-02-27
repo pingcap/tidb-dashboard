@@ -78,8 +78,6 @@ function List() {
       visibleColumnKeys
     },
 
-    persistQueryInSession: false,
-
     ds: ctx!.ds
   })
 

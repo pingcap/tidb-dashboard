@@ -344,7 +344,7 @@ export default function StatementsOverview() {
           data-e2e="statements_table"
         >
           <ScrollablePane>
-            {controller.isDataLoadedSlowly && (
+            {controller.isDataLoadedSlowly && (ctx?.cfg.instantQuery ?? true) && (
               <Card noMarginBottom noMarginTop>
                 <Alert
                   message={t('statement.pages.overview.slow_load_info')}

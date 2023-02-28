@@ -290,7 +290,7 @@ function List() {
       ) : (
         <div style={{ height: '100%', position: 'relative' }}>
           <ScrollablePane>
-            {controller.isDataLoadedSlowly && (
+            {controller.isDataLoadedSlowly && (ctx?.cfg.instantQuery ?? true) && (
               <Card noMarginBottom noMarginTop>
                 <Alert
                   message={t('slow_query.overview.slow_load_info')}

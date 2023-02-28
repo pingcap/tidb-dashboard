@@ -42,6 +42,7 @@ import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
+import { LimitTimeRange } from '@lib/apps/Overview/components/LimitTimeRange'
 
 const { Option } = Select
 
@@ -187,7 +188,17 @@ function List() {
       <Card noMarginBottom>
         <Toolbar className={styles.list_toolbar} data-e2e="slow_query_toolbar">
           <Space>
-            <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+            {ctx?.cfg.timeRangeSelector !== undefined ? (
+              <LimitTimeRange
+                value={timeRange}
+                onChange={setTimeRange}
+                recent_seconds={ctx.cfg.timeRangeSelector.recentSeconds}
+                customAbsoluteRangePicker={true}
+                onZoomOutClick={() => {}}
+              />
+            ) : (
+              <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+            )}
             {ctx!.cfg.showDBFilter && (
               <MultiSelect.Plain
                 placeholder={t('slow_query.toolbar.schemas.placeholder')}

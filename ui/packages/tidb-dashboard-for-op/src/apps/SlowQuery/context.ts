@@ -75,5 +75,9 @@ export const ctx: ISlowQueryContext = {
     enableExport: true,
     showDBFilter: true
     // instantQuery: false,
+    // timeRangeSelector: {
+    //   recentSeconds: [3 * 24 * 60 * 60],
+    //   customAbsoluteRangePicker: true
+    // }
   }
 }

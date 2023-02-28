@@ -70,6 +70,12 @@ export interface ISlowQueryConfig extends IContextConfig {
   // true means start to search instantly after changing any filter options
   // false means only to start searching after clicking the "Query" button
   instantQuery?: boolean
+
+  // to limit the time range picker range
+  timeRangeSelector?: {
+    recentSeconds: number[]
+    customAbsoluteRangePicker: boolean
+  }
 }
 
 export interface ISlowQueryContext {

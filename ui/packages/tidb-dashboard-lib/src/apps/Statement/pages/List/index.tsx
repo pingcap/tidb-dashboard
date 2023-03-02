@@ -168,6 +168,7 @@ export default function StatementsOverview() {
 
   useDeepCompareChange(() => {
     if (
+      ctx?.cfg.instantQuery === false ||
       controller.isDataLoadedSlowly || // if data was loaded slowly
       controller.isDataLoadedSlowly === null // or a request is not yet finished (which means slow network)..
     ) {
@@ -207,7 +208,7 @@ export default function StatementsOverview() {
 
   return (
     <div className={styles.list_container}>
-      <Card>
+      <Card noMarginBottom>
         <Toolbar className={styles.list_toolbar} data-e2e="statement_toolbar">
           <Space>
             <TimeRangeSelector
@@ -335,13 +336,15 @@ export default function StatementsOverview() {
         </Toolbar>
       </Card>
 
+      <div style={{ height: 16 }} />
+
       {controller.isEnabled ? (
         <div
           style={{ height: '100%', position: 'relative' }}
           data-e2e="statements_table"
         >
           <ScrollablePane>
-            {controller.isDataLoadedSlowly && (
+            {controller.isDataLoadedSlowly && (ctx?.cfg.instantQuery ?? true) && (
               <Card noMarginBottom noMarginTop>
                 <Alert
                   message={t('statement.pages.overview.slow_load_info')}

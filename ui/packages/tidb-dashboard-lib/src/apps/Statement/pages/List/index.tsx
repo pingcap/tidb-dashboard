@@ -47,6 +47,7 @@ import { StatementModel } from '@lib/client'
 import { isDistro } from '@lib/utils/distro'
 import { StatementContext } from '../../context'
 import { telemetry as stmtTelmetry } from '../../utils/telemetry'
+import { LimitTimeRange } from '@lib/apps/Overview/components/LimitTimeRange'
 
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'
@@ -96,6 +97,8 @@ export default function StatementsOverview() {
   const controller = useStatementTableController({
     cacheMgr,
     showFullSQL,
+    fetchSchemas: ctx?.cfg.showDBFilter,
+    fetchConfig: ctx?.cfg.showConfig,
     initialQueryOptions: {
       ...DEF_STMT_QUERY_OPTIONS,
       visibleColumnKeys,
@@ -211,31 +214,43 @@ export default function StatementsOverview() {
       <Card noMarginBottom>
         <Toolbar className={styles.list_toolbar} data-e2e="statement_toolbar">
           <Space>
-            <TimeRangeSelector
-              value={timeRange}
-              onChange={(t) => {
-                setTimeRange(t)
-                stmtTelmetry.changeTimeRange(t)
-              }}
-              data-e2e="statement_time_range_selector"
-            />
-            <MultiSelect.Plain
-              placeholder={t(
-                'statement.pages.overview.toolbar.schemas.placeholder'
-              )}
-              selectedValueTransKey="statement.pages.overview.toolbar.schemas.selected"
-              columnTitle={t(
-                'statement.pages.overview.toolbar.schemas.columnTitle'
-              )}
-              value={filterSchema}
-              style={{ width: 150 }}
-              onChange={(d) => {
-                setFilterSchema(d)
-                stmtTelmetry.changeDatabases()
-              }}
-              items={controller.allSchemas}
-              data-e2e="execution_database_name"
-            />
+            {ctx?.cfg.timeRangeSelector !== undefined ? (
+              <LimitTimeRange
+                value={timeRange}
+                onChange={setTimeRange}
+                recent_seconds={ctx.cfg.timeRangeSelector.recentSeconds}
+                customAbsoluteRangePicker={true}
+                onZoomOutClick={() => {}}
+              />
+            ) : (
+              <TimeRangeSelector
+                value={timeRange}
+                onChange={(t) => {
+                  setTimeRange(t)
+                  stmtTelmetry.changeTimeRange(t)
+                }}
+                data-e2e="statement_time_range_selector"
+              />
+            )}
+            {(ctx?.cfg.showDBFilter ?? true) && (
+              <MultiSelect.Plain
+                placeholder={t(
+                  'statement.pages.overview.toolbar.schemas.placeholder'
+                )}
+                selectedValueTransKey="statement.pages.overview.toolbar.schemas.selected"
+                columnTitle={t(
+                  'statement.pages.overview.toolbar.schemas.columnTitle'
+                )}
+                value={filterSchema}
+                style={{ width: 150 }}
+                onChange={(d) => {
+                  setFilterSchema(d)
+                  stmtTelmetry.changeDatabases()
+                }}
+                items={controller.allSchemas}
+                data-e2e="execution_database_name"
+              />
+            )}
             <MultiSelect.Plain
               placeholder={t(
                 'statement.pages.overview.toolbar.statement_types.placeholder'
@@ -293,21 +308,23 @@ export default function StatementsOverview() {
                 }
               />
             )}
-            <Tooltip
-              mouseEnterDelay={0}
-              mouseLeaveDelay={0}
-              title={t('statement.settings.title')}
-              placement="bottom"
-            >
-              <SettingOutlined
-                onClick={() => {
-                  setShowSettings(true)
-                  stmtTelmetry.openSetting()
-                }}
-                data-e2e="statement_setting"
-              />
-            </Tooltip>
-            {ctx!.cfg.enableExport && (
+            {(ctx?.cfg.showConfig ?? true) && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('statement.settings.title')}
+                placement="bottom"
+              >
+                <SettingOutlined
+                  onClick={() => {
+                    setShowSettings(true)
+                    stmtTelmetry.openSetting()
+                  }}
+                  data-e2e="statement_setting"
+                />
+              </Tooltip>
+            )}
+            {(ctx?.cfg.enableExport ?? true) && (
               <Dropdown overlay={dropdownMenu} placement="bottomRight">
                 <div
                   style={{ cursor: 'pointer' }}
@@ -355,7 +372,7 @@ export default function StatementsOverview() {
             )}
             <Card noMarginBottom noMarginTop>
               <p className="ant-form-item-extra">
-                {dataTimeRange && (
+                {dataTimeRange && (ctx?.cfg.showActualTimeRange ?? true) && (
                   <div>
                     {t('statement.pages.overview.actual_range')}
                     <DateTime.Calendar

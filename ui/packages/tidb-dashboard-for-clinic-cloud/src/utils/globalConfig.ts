@@ -8,6 +8,8 @@ import {
 export type AppOptions = {
   lang: string
   hideNav: boolean
+  // hidePageLoadProgress controls whether show the thin progress bar in the top of the page when switching pages
+  hidePageLoadProgress: boolean
 
   skipNgmCheck: boolean
   skipLoadAppInfo: boolean
@@ -17,6 +19,7 @@ export type AppOptions = {
 export const defAppOptions: AppOptions = {
   lang: 'en',
   hideNav: false,
+  hidePageLoadProgress: false,
 
   skipNgmCheck: false,
   skipLoadAppInfo: false,

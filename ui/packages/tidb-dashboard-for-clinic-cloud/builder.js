@@ -24,7 +24,7 @@ if (isDev && fs.pathExistsSync(path.resolve(process.cwd(), '.env.local'))) {
 }
 
 const outDir = 'dist'
-const clinicUIDashboardPath = process.env.CLINIC_UI_DASHBOARD_PATH
+const targetVariantDashboardPath = process.env.TARGET_VARIANT_DASHBOARD_PATH
 
 function genDefine() {
   const define = {}
@@ -107,15 +107,15 @@ function handleAssets() {
 }
 
 function copyAssets() {
-  if (!fs.existsSync(clinicUIDashboardPath)) {
+  if (!fs.existsSync(targetVariantDashboardPath)) {
     console.log(
-      `clinic ui dashboard path ${clinicUIDashboardPath} doesn't exist, ignore`
+      `target variant dashboard path ${targetVariantDashboardPath} doesn't exist, ignore`
     )
     return
   }
-  fs.removeSync(clinicUIDashboardPath)
-  fs.copySync(`./${outDir}`, clinicUIDashboardPath)
-  console.log('copy dashboard to clinic ui')
+  fs.removeSync(targetVariantDashboardPath)
+  fs.copySync(`./${outDir}`, targetVariantDashboardPath)
+  console.log('copy dashboard to target variant')
 }
 
 async function main() {

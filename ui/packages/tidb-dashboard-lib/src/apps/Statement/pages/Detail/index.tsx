@@ -157,7 +157,9 @@ function DetailPage() {
                     </Space>
                   }
                 >
-                  {plans[0].digest}
+                  <div style={{ whiteSpace: 'pre-wrap', paddingRight: '8px' }}>
+                    {plans[0].digest}
+                  </div>
                 </Descriptions.Item>
                 <Descriptions.Item
                   label={

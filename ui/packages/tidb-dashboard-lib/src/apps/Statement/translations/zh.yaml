@@ -43,7 +43,7 @@ statement:
           columnTitle: 执行数据库名
         statement_types:
           placeholder: 所有类型
-          selected: '{{ n }} 类型'
+          selected: '{{ count }} 类型'
           columnTitle: SQL 语句类型
         select_columns:
           show_full_sql: 显示完整 SQL 文本

@@ -43,7 +43,8 @@ statement:
           columnTitle: Execution Database Name
         statement_types:
           placeholder: All Kinds
-          selected: '{{ n }} Kinds'
+          selected_one: '{{ count }} Kind'
+          selected_other: '{{ count }} Kinds'
           columnTitle: Statement Kind
         select_columns:
           show_full_sql: Show Full Query Text

@@ -26,8 +26,7 @@ import {
   Toolbar,
   MultiSelect,
   toTimeRangeValue,
-  IColumnKeys,
-  TimeRange
+  IColumnKeys
 } from '@lib/components'
 import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 import { CacheContext } from '@lib/utils/useCache'

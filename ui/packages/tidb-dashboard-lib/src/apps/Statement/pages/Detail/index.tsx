@@ -1,9 +1,9 @@
-import { Alert, Space } from 'antd'
+import { Alert, Space, Typography } from 'antd'
 import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useIsFeatureSupport } from '@lib/utils/store'
 
@@ -52,6 +52,8 @@ const compareFn = (a: StatementModel, b: StatementModel) => {
 function DetailPage() {
   const ctx = useContext(StatementContext)
 
+  const navigate = useNavigate()
+
   const query = DetailPage.parseQuery(useLocation().search)
   const {
     data: plans,
@@ -99,9 +101,9 @@ function DetailPage() {
       <Head
         title={t('statement.pages.detail.head.title')}
         back={
-          <Link to={`/statement`}>
+          <Typography.Link onClick={() => navigate(-1)}>
             <ArrowLeftOutlined /> {t('statement.pages.detail.head.back')}
-          </Link>
+          </Typography.Link>
         }
         titleExtra={
           ctx?.cfg.enablePlanBinding &&
@@ -155,7 +157,9 @@ function DetailPage() {
                     </Space>
                   }
                 >
-                  {plans[0].digest}
+                  <div style={{ whiteSpace: 'pre-wrap', paddingRight: '8px' }}>
+                    {plans[0].digest}
+                  </div>
                 </Descriptions.Item>
                 <Descriptions.Item
                   label={

@@ -130,15 +130,17 @@ async function webPageStart(appOptions: AppOptions) {
 
   const registry = new AppRegistry(appOptions)
 
-  NProgress.configure({
-    showSpinner: false
-  })
-  window.addEventListener('single-spa:before-routing-event', () => {
-    NProgress.set(0.2)
-  })
-  window.addEventListener('single-spa:routing-event', () => {
-    NProgress.done(true)
-  })
+  if (!appOptions.hidePageLoadProgress) {
+    NProgress.configure({
+      showSpinner: false
+    })
+    window.addEventListener('single-spa:before-routing-event', () => {
+      NProgress.set(0.2)
+    })
+    window.addEventListener('single-spa:routing-event', () => {
+      NProgress.done(true)
+    })
+  }
 
   singleSpa.registerApplication(
     'layout',

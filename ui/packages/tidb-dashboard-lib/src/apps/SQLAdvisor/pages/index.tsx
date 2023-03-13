@@ -1,4 +1,4 @@
 import List from './List'
-import Detail from './Detail'
+import { SQLAdvisorDetail, UnstablePlanDetail } from './Detail'
 
-export { List, Detail }
+export { List, SQLAdvisorDetail, UnstablePlanDetail }

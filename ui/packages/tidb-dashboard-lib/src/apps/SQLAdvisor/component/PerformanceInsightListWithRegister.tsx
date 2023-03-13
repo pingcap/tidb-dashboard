@@ -12,10 +12,10 @@ import {
   Skeleton,
   Alert
 } from 'antd'
-import styles from './IndexInsightListWithRegister.module.less'
+import styles from './PerformanceInsightListWithRegister.module.less'
 import { HighlightSQL, CopyLink } from '@lib/components'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import IndexInsightList from './IndexInsightList'
+import PerformanceInsightList from './PerformanceInsightList'
 import { DbassSecuritySettingImg } from '../utils/dbaasSecuritySetting'
 
 const { Title } = Typography
@@ -174,7 +174,7 @@ const UnRegisteredUserDB: React.FC<UnRegisteredUserDBProps> = ({
   )
 }
 
-const IndexInsightListWithRegister = () => {
+const PerformanceInsightListWithRegister = () => {
   const ctx = useContext(SQLAdvisorContext)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isUserDBRegistered, setIsUserDBRegistered] = useState<boolean>(false)
@@ -221,7 +221,7 @@ const IndexInsightListWithRegister = () => {
       ) : (
         <>
           {isUserDBRegistered ? (
-            <IndexInsightList
+            <PerformanceInsightList
               onHandleDeactivate={handleDeactivate}
               isDeactivating={isDeactivating}
             />
@@ -234,4 +234,4 @@ const IndexInsightListWithRegister = () => {
   )
 }
 
-export default IndexInsightListWithRegister
+export default PerformanceInsightListWithRegister

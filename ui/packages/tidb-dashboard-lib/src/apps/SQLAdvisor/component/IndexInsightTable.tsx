@@ -9,6 +9,7 @@ import { SQLAdvisorContext } from '../context'
 import { SQLTunedListProps } from '../types'
 import dayjs from 'dayjs'
 import tz from '@lib/utils/timezone'
+import { TunedData } from '../pages/Detail/indexInsightData'
 
 const DEF_PAGINATION_PARAMS = {
   pageNumber: 1,
@@ -29,7 +30,7 @@ export const useSQLTunedListGet = () => {
           pageNumber || DEF_PAGINATION_PARAMS.pageNumber,
           pageSize || DEF_PAGINATION_PARAMS.pageSize
         )
-        setSqlTunedList(res!)
+        setSqlTunedList(TunedData!)
       } catch (e) {
         console.log(e)
       } finally {
@@ -62,6 +63,7 @@ const IndexInsightTable = ({
         title: 'Impact',
         dataIndex: 'impact',
         key: 'impact',
+        width: 100,
         ellipsis: true,
         render: (_, record) => {
           return <>{record.impact}</>
@@ -71,6 +73,7 @@ const IndexInsightTable = ({
         title: 'Type',
         dataIndex: 'insight_type',
         key: 'type',
+        width: 100,
         ellipsis: true,
         render: (_, record) => {
           return <>{record.insight_type}</>
@@ -145,15 +148,21 @@ const IndexInsightTable = ({
         dataIndex: 'detail',
         key: 'detail',
         render: (_, record) => {
-          return <Link to={`/sql_advisor/detail?id=${record.id}`}>Detail</Link>
+          return (
+            <Link to={`/sql_advisor/index_insight_detail?id=${record.id}`}>
+              Detail
+            </Link>
+          )
         }
       }
     ],
     []
   )
 
+  console.log('sqlTunedList', sqlTunedList)
+
   return (
-    <Card noMarginTop>
+    <Card noMarginLeft noMarginRight noMarginTop>
       <Table
         dataSource={sqlTunedList?.tuned_results!}
         columns={columns}

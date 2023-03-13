@@ -1,7 +1,10 @@
 import React, { useContext } from 'react'
 
 import styles from './List.module.less'
-import { IndexInsightListWithRegister, IndexInsightList } from '../../component'
+import {
+  PerformanceInsightListWithRegister,
+  PerformanceInsightList
+} from '../../component'
 import { SQLAdvisorContext } from '../../context'
 
 export default function SQLAdvisorOverview() {
@@ -9,11 +12,11 @@ export default function SQLAdvisorOverview() {
 
   return (
     <div className={styles.list_container}>
-      {ctx?.registerUserDB ? (
-        <IndexInsightListWithRegister />
-      ) : (
-        <IndexInsightList />
-      )}
+      {/* {ctx?.registerUserDB ? (
+        <PerformanceInsightListWithRegister />
+      ) : ( */}
+      <PerformanceInsightList />
+      {/* )} */}
     </div>
   )
 }

@@ -283,7 +283,7 @@ export default function SQLAdvisorDetail() {
                   </>
                 )}
                 <p>
-                  You can execute this command on create teh corresponding
+                  You can execute this command on create the corresponding
                   index:{' '}
                 </p>
                 {suggestedCommands && suggestedCommandsCopyData && (

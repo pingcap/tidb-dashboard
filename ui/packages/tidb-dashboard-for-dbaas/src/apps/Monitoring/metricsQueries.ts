@@ -600,7 +600,8 @@ const getMonitoringItems = (
           title: 'TiDB Uptime',
           queries: [
             {
-              promql: 'avg by (cluster_id, instance) ((time() - process_start_time_seconds{component="tidb"}))',
+              promql:
+                'avg by (cluster_id, instance) ((time() - process_start_time_seconds{component="tidb"}))',
               name: '{instance}',
               type: 'line'
             }
@@ -640,7 +641,8 @@ const getMonitoringItems = (
           title: 'TiKV Uptime',
           queries: [
             {
-              promql: 'avg by (cluster_id, instance) ((time() - process_start_time_seconds{component="tikv"}))',
+              promql:
+                'avg by (cluster_id, instance) ((time() - process_start_time_seconds{component="tikv"}))',
               name: '{instance}',
               type: 'line'
             }
@@ -706,7 +708,8 @@ const getMonitoringItems = (
           title: 'TiFlash Uptime',
           queries: [
             {
-              promql: 'avg by (cluster_id, instance) (tiflash_system_asynchronous_metric_Uptime)',
+              promql:
+                'avg by (cluster_id, instance) (tiflash_system_asynchronous_metric_Uptime)',
               name: '{instance}',
               type: 'line'
             }

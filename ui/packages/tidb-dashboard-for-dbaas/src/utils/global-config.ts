@@ -15,6 +15,7 @@ export interface IGlobalConfig {
   performanceInsightBaseUrl: string
 
   expandMetricsData: boolean
+  enableNodeMetrics: boolean
 
   clusterInfo: {
     orgId: string

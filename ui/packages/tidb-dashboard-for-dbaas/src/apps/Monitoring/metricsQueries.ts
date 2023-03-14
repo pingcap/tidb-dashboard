@@ -52,7 +52,8 @@ function transformColorByExecTimeOverview(legendLabel: string) {
 
 const getMonitoringItems = (
   pdVersion: string | undefined,
-  deployType: DeployType
+  deployType: DeployType,
+  enableNodeMetrics: boolean
 ): MetricsQueryType[] => {
   function loadTiKVStoragePromql() {
     const PDVersion = pdVersion?.replace('v', '')
@@ -611,8 +612,9 @@ const getMonitoringItems = (
           title: 'TiDB CPU Usage',
           queries: [
             {
-              promql:
-                'irate(process_cpu_seconds_total{component="tidb"}[$__rate_interval])',
+              promql: enableNodeMetrics
+                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tidb"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tidb"}) by (cpu)'
+                : 'irate(process_cpu_seconds_total{component="tidb"}[$__rate_interval])',
               name: '{instance}',
               type: 'line'
             }
@@ -624,7 +626,9 @@ const getMonitoringItems = (
           title: 'TiDB Memory Usage',
           queries: [
             {
-              promql: 'process_resident_memory_bytes{component="tidb"}',
+              promql: enableNodeMetrics
+                ? 'avg(node_memory_MemTotal_bytes{component="tidb"} - node_memory_MemAvailable_bytes{component="tidb"}) by (instance)'
+                : 'process_resident_memory_bytes{component="tidb"}',
               name: '{instance}',
               type: 'line'
             }
@@ -647,8 +651,9 @@ const getMonitoringItems = (
           title: 'TiKV CPU Usage',
           queries: [
             {
-              promql:
-                'sum(rate(tikv_thread_cpu_seconds_total[$__rate_interval])) by (instance)',
+              promql: enableNodeMetrics
+                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tikv"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tikv"}) by (cpu)'
+                : 'sum(rate(tikv_thread_cpu_seconds_total[$__rate_interval])) by (instance)',
               name: '{instance}',
               type: 'line'
             }
@@ -659,8 +664,9 @@ const getMonitoringItems = (
           title: 'TiKV Memory Usage',
           queries: [
             {
-              promql:
-                'avg(process_resident_memory_bytes{component="tikv"}) by (instance)',
+              promql: enableNodeMetrics
+                ? 'avg(node_memory_MemTotal_bytes{component="tikv"} - node_memory_MemAvailable_bytes{component="tikv"}) by (instance)'
+                : 'avg(process_resident_memory_bytes{component="tikv"}) by (instance)',
               name: '{instance}',
               type: 'line'
             }
@@ -712,8 +718,9 @@ const getMonitoringItems = (
           title: 'TiFlash CPU Usage',
           queries: [
             {
-              promql:
-                'rate(tiflash_proxy_process_cpu_seconds_total{component="tiflash"}[$__rate_interval])',
+              promql: enableNodeMetrics
+                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tiflash"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tiflash"}) by (cpu)'
+                : 'rate(tiflash_proxy_process_cpu_seconds_total{component="tiflash"}[$__rate_interval])',
               name: '{instance}',
               type: 'line'
             }
@@ -725,8 +732,9 @@ const getMonitoringItems = (
           title: 'TiFlash Memory',
           queries: [
             {
-              promql:
-                'tiflash_proxy_process_resident_memory_bytes{component="tiflash"}',
+              promql: enableNodeMetrics
+                ? 'avg(node_memory_MemTotal_bytes{component="tiflash"} - node_memory_MemAvailable_bytes{component="tiflash"}) by (instance)'
+                : 'tiflash_proxy_process_resident_memory_bytes{component="tiflash"}',
               name: '{instance}',
               type: 'line'
             }

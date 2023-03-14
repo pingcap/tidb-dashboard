@@ -600,7 +600,7 @@ const getMonitoringItems = (
           title: 'TiDB Uptime',
           queries: [
             {
-              promql: '(time() - process_start_time_seconds{component="tidb"})',
+              promql: 'avg by (cluster_id, instance) ((time() - process_start_time_seconds{component="tidb"}))',
               name: '{instance}',
               type: 'line'
             }
@@ -613,8 +613,8 @@ const getMonitoringItems = (
           queries: [
             {
               promql: enableNodeMetrics
-                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tidb"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tidb"}) by (cpu))'
-                : 'irate(process_cpu_seconds_total{component="tidb"}[$__rate_interval])',
+                ? 'sum(rate(node_cpu_seconds_total{mode!="idle",component="tidb"}[$__rate_interval])) by (instance)'
+                : 'avg by (cluster_id, instance) (irate(process_cpu_seconds_total{component="tidb"}[$__rate_interval]))',
               name: '{instance}',
               type: 'line'
             }
@@ -628,7 +628,7 @@ const getMonitoringItems = (
             {
               promql: enableNodeMetrics
                 ? 'avg(node_memory_MemTotal_bytes{component="tidb"} - node_memory_MemAvailable_bytes{component="tidb"}) by (instance)'
-                : 'process_resident_memory_bytes{component="tidb"}',
+                : 'avg by (cluster_id, instance) (process_resident_memory_bytes{component="tidb"})',
               name: '{instance}',
               type: 'line'
             }
@@ -640,7 +640,7 @@ const getMonitoringItems = (
           title: 'TiKV Uptime',
           queries: [
             {
-              promql: '(time() - process_start_time_seconds{component="tikv"})',
+              promql: 'avg by (cluster_id, instance) ((time() - process_start_time_seconds{component="tikv"}))',
               name: '{instance}',
               type: 'line'
             }
@@ -652,7 +652,7 @@ const getMonitoringItems = (
           queries: [
             {
               promql: enableNodeMetrics
-                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tikv"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tikv"}) by (cpu))'
+                ? 'sum(rate(node_cpu_seconds_total{mode!="idle",component="tikv"}[$__rate_interval])) by (instance)'
                 : 'sum(rate(tikv_thread_cpu_seconds_total[$__rate_interval])) by (instance)',
               name: '{instance}',
               type: 'line'
@@ -706,7 +706,7 @@ const getMonitoringItems = (
           title: 'TiFlash Uptime',
           queries: [
             {
-              promql: 'tiflash_system_asynchronous_metric_Uptime',
+              promql: 'avg by (cluster_id, instance) (tiflash_system_asynchronous_metric_Uptime)',
               name: '{instance}',
               type: 'line'
             }
@@ -719,8 +719,8 @@ const getMonitoringItems = (
           queries: [
             {
               promql: enableNodeMetrics
-                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tiflash"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tiflash"}) by (cpu))'
-                : 'rate(tiflash_proxy_process_cpu_seconds_total{component="tiflash"}[$__rate_interval])',
+                ? 'sum(rate(node_cpu_seconds_total{mode!="idle",component="tiflash"}[$__rate_interval])) by (instance)'
+                : 'avg by (cluster_id, instance) (rate(tiflash_proxy_process_cpu_seconds_total{component="tiflash"}[$__rate_interval]))',
               name: '{instance}',
               type: 'line'
             }
@@ -734,7 +734,7 @@ const getMonitoringItems = (
             {
               promql: enableNodeMetrics
                 ? 'avg(node_memory_MemTotal_bytes{component="tiflash"} - node_memory_MemAvailable_bytes{component="tiflash"}) by (instance)'
-                : 'tiflash_proxy_process_resident_memory_bytes{component="tiflash"}',
+                : 'avg by (cluster_id, instance) (tiflash_proxy_process_resident_memory_bytes{component="tiflash"})',
               name: '{instance}',
               type: 'line'
             }

@@ -18,8 +18,6 @@ import { Card, Toolbar } from '@lib/components'
 import { SQLAdvisorContext } from '../context'
 import dayjs from 'dayjs'
 
-const ONE_DAY = 24 * 60 * 60 // unit: second
-
 interface IndexInsightListProps {
   onHandleDeactivate?: () => void
   isDeactivating?: boolean
@@ -94,7 +92,7 @@ const IndexInsightList = ({
   const handleIndexCheckUp = async () => {
     try {
       const res = await ctx?.ds.tuningTaskCreate(
-        (dayjs().unix() - ONE_DAY) * 1000,
+        (dayjs().unix() - 3 * 60 * 60) * 1000,
         dayjs().unix() * 1000
       )
       if (res.code === 'success') {
@@ -172,7 +170,7 @@ const IndexInsightList = ({
           </Space>
           <Space align="center" style={{ marginTop: 0 }}>
             <Tooltip
-              title="Each insight will cover diagnosis data from the past 24 hours."
+              title="Each insight will cover diagnosis data from the past 3 hours."
               placement="rightTop"
             >
               <InfoCircleOutlined />

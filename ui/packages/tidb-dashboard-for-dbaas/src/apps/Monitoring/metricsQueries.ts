@@ -613,7 +613,7 @@ const getMonitoringItems = (
           queries: [
             {
               promql: enableNodeMetrics
-                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tidb"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tidb"}) by (cpu)'
+                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tidb"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tidb"}) by (cpu))'
                 : 'irate(process_cpu_seconds_total{component="tidb"}[$__rate_interval])',
               name: '{instance}',
               type: 'line'
@@ -652,7 +652,7 @@ const getMonitoringItems = (
           queries: [
             {
               promql: enableNodeMetrics
-                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tikv"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tikv"}) by (cpu)'
+                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tikv"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tikv"}) by (cpu))'
                 : 'sum(rate(tikv_thread_cpu_seconds_total[$__rate_interval])) by (instance)',
               name: '{instance}',
               type: 'line'
@@ -719,7 +719,7 @@ const getMonitoringItems = (
           queries: [
             {
               promql: enableNodeMetrics
-                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tiflash"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tiflash"}) by (cpu)'
+                ? '(1-avg(rate(node_cpu_seconds_total{mode="idle",component="tiflash"}[$__rate_interval])) by (instance))*count(sum(node_cpu_seconds_total{component="tiflash"}) by (cpu))'
                 : 'rate(tiflash_proxy_process_cpu_seconds_total{component="tiflash"}[$__rate_interval])',
               name: '{instance}',
               type: 'line'

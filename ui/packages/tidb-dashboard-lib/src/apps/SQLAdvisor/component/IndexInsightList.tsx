@@ -58,34 +58,40 @@ const IndexInsightList = ({
   const checkStatusLoop = useRef(async () => {
     clearTimeout(timer.current)
 
-    const res = await ctx?.ds.tuningLatestGet()
-    latestTask.current = res
+    try {
+      const res = await ctx?.ds.tuningLatestGet()
+      latestTask.current = res
 
-    // No tasks
-    if (!res) {
-      return
+      // No tasks
+      if (!res) {
+        return
+      }
+
+      setTaskStatus(res.status)
+
+      if (res.status === 'failed') {
+        notification.error({
+          message: 'Last Task Error',
+          description: res.last_failed_message || 'Unknown error'
+        })
+      }
+
+      if (res.status !== 'succeeded' && res.status !== 'failed') {
+        timer.current = window.setTimeout(async () => {
+          const nextRes = await checkStatusLoop.current()
+          // refresh when status change: !successed -> successed
+          if (nextRes?.status === 'succeeded') {
+            refreshSQLTunedList()
+          }
+        }, CHECK_TASK_INTERVAL)
+      }
+
+      return res
+    } catch (e) {
+      latestTask.current = undefined
+      setTaskStatus('failed')
+      throw e
     }
-
-    setTaskStatus(res.status)
-
-    if (res.status === 'failed') {
-      notification.error({
-        message: 'Last Task Error',
-        description: res.last_failed_message || 'Unknown error'
-      })
-    }
-
-    if (res.status !== 'succeeded' && res.status !== 'failed') {
-      timer.current = window.setTimeout(async () => {
-        const nextRes = await checkStatusLoop.current()
-        // refresh when status change: !successed -> successed
-        if (nextRes?.status === 'succeeded') {
-          refreshSQLTunedList()
-        }
-      }, CHECK_TASK_INTERVAL)
-    }
-
-    return res
   })
 
   useEffect(() => {

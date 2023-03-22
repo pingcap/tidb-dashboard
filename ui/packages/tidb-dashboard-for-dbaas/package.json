@@ -1,6 +1,6 @@
 {
   "name": "@pingcap/tidb-dashboard-for-dbaas",
-  "version": "0.0.89",
+  "version": "0.0.91",
   "main": "dist/main.js",
   "module": "dist/main.js",
   "files": [

@@ -168,7 +168,6 @@ export default function SQLAdvisorDetail() {
       try {
         const res = await ctx?.ds.tuningDetailGet(id)
         setSqlTunedDetail(res!)
-      } catch (e) {
       } finally {
         setLoading(false)
       }

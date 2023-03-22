@@ -1,4 +1,10 @@
-import React, { useEffect, useContext, useState, useRef } from 'react'
+import React, {
+  useEffect,
+  useContext,
+  useState,
+  useRef,
+  MutableRefObject
+} from 'react'
 
 import IndexInsightTable, { useSQLTunedListGet } from './IndexInsightTable'
 
@@ -7,7 +13,7 @@ import {
   Button,
   Typography,
   notification,
-  Alert,
+  // Alert,
   Modal,
   Tooltip,
   Drawer,
@@ -17,104 +23,105 @@ import { InfoCircleOutlined } from '@ant-design/icons'
 import { Card, Toolbar } from '@lib/components'
 import { SQLAdvisorContext } from '../context'
 import dayjs from 'dayjs'
+import { PerfInsightTask, PerfInsightTaskStatus } from '../types'
 
 interface IndexInsightListProps {
   onHandleDeactivate?: () => void
   isDeactivating?: boolean
 }
 
+const CHECK_TASK_INTERVAL = 60 * 1000
+
 const IndexInsightList = ({
   onHandleDeactivate,
   isDeactivating
 }: IndexInsightListProps) => {
   const ctx = useContext(SQLAdvisorContext)
-  const [showAlert, setShowAlert] = useState<boolean>(false)
-  const [noTaskRunning, setNoTaskRunning] = useState<boolean>(true)
   const [showDeactivateModal, setShowDeactivateModal] = useState<boolean>(false)
+  const { sqlTunedList, refreshSQLTunedList, loading } = useSQLTunedListGet()
+  // const [showAlert, setShowAlert] = useState<boolean>(false)
   const [showSetting, setShowSetting] = useState(false)
   const [showCheckUpModal, setShowCheckUpModal] = useState(false)
-  const [dontRemindCheckUpNotice, setDontRemindCheckUpNotice] =
-    useState<boolean>(() =>
-      JSON.parse(
-        localStorage.getItem('index_insight_dont_remind_checkup_notice') ||
-          'false'
-      )
+  const [taskStatus, setTaskStatus] = useState<PerfInsightTaskStatus>()
+  const isTaskRunning = taskStatus === 'running' || taskStatus === 'created'
+  const latestTask = useRef<PerfInsightTask>(null) as MutableRefObject<
+    PerfInsightTask | undefined
+  >
+  const dontRemindCheckUpNotice = useRef(
+    JSON.parse(
+      localStorage.getItem('index_insight_dont_remind_checkup_notice') ||
+        'false'
     )
-  const { sqlTunedList, refreshSQLTunedList, loading } = useSQLTunedListGet()
-  const [cancelRunningTask, setCancelRunningTask] = useState(false)
-
-  const taskRunningStatusGet = useRef(() => {
-    return ctx?.ds
-      .tuningTaskStatusGet()
-      .then((data) => {
-        setNoTaskRunning(data)
-        return data
-      })
-      .catch((e) => console.log(e))
-  })
+  )
 
   const timer = useRef(0)
-  const startCheckTaskStatusLoop = useRef(() => {
+  const checkStatusLoop = useRef(async () => {
     clearTimeout(timer.current)
-    timer.current = window.setTimeout(async () => {
-      const _noTaskRunning = (await taskRunningStatusGet.current()) as boolean
-      if (_noTaskRunning) {
-        refreshSQLTunedList()
-        return
-      }
-      startCheckTaskStatusLoop.current()
-    }, 1000 * 60)
+
+    const res = await ctx?.ds.tuningLatestGet()
+    latestTask.current = res
+
+    // No tasks
+    if (!res) {
+      return
+    }
+
+    setTaskStatus(res.status)
+
+    if (res.status === 'failed') {
+      notification.error({
+        message: 'Last Task Error',
+        description: res.last_failed_message || 'Unknown error'
+      })
+    }
+
+    if (res.status !== 'succeeded' && res.status !== 'failed') {
+      timer.current = window.setTimeout(async () => {
+        const nextRes = await checkStatusLoop.current()
+        // refresh when status change: !successed -> successed
+        if (nextRes?.status === 'succeeded') {
+          refreshSQLTunedList()
+        }
+      }, CHECK_TASK_INTERVAL)
+    }
+
+    return res
   })
 
   useEffect(() => {
-    const checkStatus = async () => {
-      const _noTaskRunning = (await taskRunningStatusGet.current()) as boolean
-      if (!_noTaskRunning) {
-        startCheckTaskStatusLoop.current()
-      }
-    }
-    checkStatus()
-  }, [cancelRunningTask])
-
-  useEffect(() => {
-    const checkSQLValidation = async () => {
-      try {
-        const res = await ctx?.ds.sqlValidationGet?.()
-        setShowAlert(!res)
-      } catch (e) {
-        console.log(e)
-      }
-    }
-
-    checkSQLValidation()
+    checkStatusLoop.current()
+    return () => window.clearTimeout(timer.current)
   }, [ctx])
 
-  const handleIndexCheckUp = async () => {
+  const handleCheckUpTask = async () => {
     try {
-      const res = await ctx?.ds.tuningTaskCreate(
+      await ctx?.ds.tuningTaskCreate(
         (dayjs().unix() - 3 * 60 * 60) * 1000,
         dayjs().unix() * 1000
       )
-      if (res.code === 'success') {
-        notification.success({
-          message: res.message
-        })
-      } else {
-        notification.error({
-          message: res.message
-        })
-      }
-    } catch (e) {
-      console.log(e)
+      notification.success({
+        message: 'Successed'
+      })
+    } catch (e: any) {
+      notification.error({
+        message: e.message
+      })
     } finally {
-      setNoTaskRunning(false)
-      setShowCheckUpModal(false)
-      localStorage.setItem(
-        'index_insight_dont_remind_checkup_notice',
-        JSON.stringify(dontRemindCheckUpNotice)
-      )
-      startCheckTaskStatusLoop.current()
-      setCancelRunningTask(false)
+      checkStatusLoop.current()
+    }
+  }
+  const handleCancelTask = async () => {
+    try {
+      await ctx?.ds.tuningTaskCancel(latestTask.current!.task_id)
+      notification.success({
+        message: 'Successed'
+      })
+    } catch (e: any) {
+      notification.error({
+        message: e.message
+      })
+    } finally {
+      checkStatusLoop.current()
     }
   }
 
@@ -124,41 +131,9 @@ const IndexInsightList = ({
     onHandleDeactivate?.()
   }
 
-  const handleCancelTask = async () => {
-    try {
-      const res = await ctx?.ds.cancelRunningTask?.()
-      if (res.code === 'success') {
-        notification.success({
-          message: res.message
-        })
-      } else {
-        notification.error({
-          message: res.message
-        })
-      }
-    } catch (e) {
-      console.log(e)
-    } finally {
-      setCancelRunningTask(true)
-    }
-  }
-
   const handleDeactivateModalCancel = () => {
     setShowDeactivateModal(false)
     setShowSetting(false)
-  }
-
-  const handleCheckUpBtnClick = () => {
-    // if index_insight_dont_remind_checkup_notice has been checked, don't show comfirm modal again, checkup directly.
-    if (!dontRemindCheckUpNotice) {
-      setShowCheckUpModal(true)
-    } else {
-      handleIndexCheckUp()
-    }
-  }
-
-  const handlePaginationChange = (pageNumber: number, pageSize: number) => {
-    refreshSQLTunedList(pageNumber, pageSize)
   }
 
   return (
@@ -176,13 +151,20 @@ const IndexInsightList = ({
               <InfoCircleOutlined />
             </Tooltip>
             <Button
-              disabled={!noTaskRunning || showAlert}
-              onClick={handleCheckUpBtnClick}
-              loading={!noTaskRunning}
+              disabled={isTaskRunning}
+              onClick={() => {
+                // if index_insight_dont_remind_checkup_notice has been checked, don't show comfirm modal again, checkup directly.
+                if (!dontRemindCheckUpNotice.current) {
+                  setShowCheckUpModal(true)
+                } else {
+                  handleCheckUpTask()
+                }
+              }}
+              loading={isTaskRunning}
             >
-              {noTaskRunning ? 'Check Up' : 'Task is Running'}
+              {isTaskRunning ? 'Task is Running' : 'Check Up'}
             </Button>
-            {!noTaskRunning && (
+            {isTaskRunning && (
               <Button onClick={handleCancelTask}>Cancel Task</Button>
             )}
             <Button onClick={() => setShowSetting(true)}>Setting</Button>
@@ -234,29 +216,38 @@ const IndexInsightList = ({
           <div style={{ textAlign: 'center' }}>
             <Space direction="vertical" align="center">
               <Checkbox
-                onChange={(e) => setDontRemindCheckUpNotice(e.target.checked)}
+                // FIXME: set value after confirmed
+                onChange={(e) =>
+                  (dontRemindCheckUpNotice.current = e.target.checked)
+                }
               >
                 Don't remind me again.
               </Checkbox>
-              <Button onClick={handleIndexCheckUp} type="primary">
+              <Button
+                onClick={async () => {
+                  await handleCheckUpTask()
+                  setShowCheckUpModal(false)
+                }}
+                type="primary"
+              >
                 Comfirm
               </Button>
             </Space>
           </div>
         </Modal>
-        {showAlert && (
+        {/* {showAlert && (
           <Alert
             message="The SQL user being used during activation is no longer available, please deactivate the function first and then reactivate the function to use it."
             type="warning"
             showIcon
             closable
           />
-        )}
+        )} */}
       </Card>
       <IndexInsightTable
         sqlTunedList={sqlTunedList}
         loading={loading}
-        onHandlePaginationChange={handlePaginationChange}
+        onHandlePaginationChange={refreshSQLTunedList}
       />
     </>
   )

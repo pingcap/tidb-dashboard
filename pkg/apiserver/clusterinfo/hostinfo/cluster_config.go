@@ -23,7 +23,8 @@ func FillInstances(db *gorm.DB, m InfoMap) error {
 		Table("INFORMATION_SCHEMA.CLUSTER_CONFIG").
 		Where("(`TYPE` = 'tidb' AND `KEY` = 'log.file.filename') " +
 			"OR (`TYPE` = 'tikv' AND `KEY` = 'storage.data-dir') " +
-			"OR (`TYPE` = 'pd' AND `KEY` = 'data-dir')").
+			"OR (`TYPE` = 'pd' AND `KEY` = 'data-dir') " +
+			"OR (`TYPE` = 'tiflash' AND `KEY` = 'engine-store.path')").
 		Find(&rows).Error; err != nil {
 		return err
 	}

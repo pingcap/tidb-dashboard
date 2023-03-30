@@ -18,7 +18,7 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 # Install nodejs.
 RUN curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
 RUN yum -y install nodejs
-RUN npm install -g pnpm
+RUN npm install -g pnpm@7.30.5
 
 # Install java.
 RUN yum -y install java-11-openjdk

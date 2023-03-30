@@ -12,7 +12,7 @@ RUN apk add --no-cache \
     npm \
     openjdk11
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@7.30.5
 
 RUN mkdir -p /go/src/github.com/pingcap/tidb-dashboard/ui
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard

@@ -43,8 +43,6 @@ func FillFromClusterHardwareTable(db *gorm.DB, m InfoMap) error {
 		return err
 	}
 
-	tiFlashDisks := make([]clusterTableModel, 0)
-
 	for _, row := range rows {
 		hostname, _, err := netutil.ParseHostAndPortFromAddress(row.Instance)
 		if err != nil {
@@ -70,10 +68,6 @@ func FillFromClusterHardwareTable(db *gorm.DB, m InfoMap) error {
 				PhysicalCores: v.PhysicalCores,
 			}
 		case row.DeviceType == "disk":
-			if row.Type == "tiflash" {
-				// Collect TiFlash related information for later processing.
-				tiFlashDisks = append(tiFlashDisks, row)
-			}
 			if m[hostname].PartitionProviderType != "" && m[hostname].PartitionProviderType != row.Type {
 				// Another instance on the same host has already provided disk information, skip.
 				continue
@@ -92,47 +86,6 @@ func FillFromClusterHardwareTable(db *gorm.DB, m InfoMap) error {
 				Free:   v.Free,
 				Total:  v.Total,
 			}
-		}
-	}
-
-	// ==========================================================================================
-	// HACK: TiFlash special logic
-	// For now, we can only infer TiFlash instances from its reported disk information.
-	// Due to a bug, TiFlash will return all disks that has the prefix of actual deployed disk.
-	type tiFlashDiskEntity struct {
-		maxLen     int
-		maxLenPath string
-	}
-	tiFlashDiskInfo := make(map[string]tiFlashDiskEntity) // key is TiFlash instance address
-	for _, d := range tiFlashDisks {
-		var v clusterHardwareDiskModel
-		err := json.Unmarshal([]byte(d.JSONValue), &v)
-		if err != nil {
-			continue
-		}
-		// For each TiFlash instance, it may report multiple disks. We keep the disk that has longest path.
-		if _, ok := tiFlashDiskInfo[d.Instance]; !ok {
-			tiFlashDiskInfo[d.Instance] = tiFlashDiskEntity{
-				maxLen:     0,
-				maxLenPath: "",
-			}
-		}
-		if len(v.Path) > tiFlashDiskInfo[d.Instance].maxLen {
-			tiFlashDiskInfo[d.Instance] = tiFlashDiskEntity{
-				maxLen:     len(v.Path),
-				maxLenPath: v.Path,
-			}
-		}
-	}
-	// Back fill TiFlash instances
-	for instance, de := range tiFlashDiskInfo {
-		hostname, _, err := netutil.ParseHostAndPortFromAddress(instance)
-		if err != nil {
-			panic(err)
-		}
-		m[hostname].Instances[instance] = &InstanceInfo{
-			Type:           "tiflash",
-			PartitionPathL: strings.ToLower(de.maxLenPath),
 		}
 	}
 

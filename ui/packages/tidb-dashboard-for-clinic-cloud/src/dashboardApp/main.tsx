@@ -33,7 +33,6 @@ import AppMonitoring from '~/apps/Monitoring/meta'
 import AppClusterInfo from '~/apps/ClusterInfo/meta'
 import AppTopSQL from '~/apps/TopSQL/meta'
 import AppSlowQuery from '~/apps/SlowQuery/meta'
-import AppSQLAdvisor from '~/apps/SQLAdvisor/meta'
 import AppStatement from '~/apps/Statement/meta'
 import AppKeyViz from '~/apps/KeyViz/meta'
 import AppSystemReport from '~/apps/SystemReport/meta'
@@ -157,7 +156,6 @@ async function webPageStart(appOptions: AppOptions) {
     .register(AppClusterInfo)
     .register(AppKeyViz)
     .register(AppTopSQL)
-    .register(AppSQLAdvisor)
     .register(AppStatement)
     .register(AppSystemReport)
     .register(AppSlowQuery)

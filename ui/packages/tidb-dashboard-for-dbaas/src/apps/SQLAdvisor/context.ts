@@ -4,6 +4,7 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 
 import { IGlobalConfig } from '~/utils/global-config'
+import client from '~/client'
 
 class DataSource implements ISQLAdvisorDataSource {
   constructor(public globalConfig: IGlobalConfig) {}
@@ -12,121 +13,70 @@ class DataSource implements ISQLAdvisorDataSource {
   orgId = this.clusterInfo.orgId
   clusterId = this.clusterInfo.clusterId
   projectId = this.clusterInfo.projectId
-  token = this.globalConfig.apiToken
   performanceInsightBaseUrl = this.globalConfig.performanceInsightBaseUrl
 
+  client = client.getAxiosInstance()
+
   tuningListGet(pageNumber?: number, pageSize?: number) {
-    return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=GetTunedIndexLists&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}&pageNumber=${pageNumber}&pageSize=${pageSize}`,
-      {
-        headers: {
-          token: `Bearer ${this.token}`
-        }
-      }
-    ).then((res) => res.json())
-  }
-
-  tuningTaskCreate(startTime: number, endTime: number) {
-    return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=CreateAdviseTask&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}&startTime=${startTime}&endTime=${endTime}`,
-      {
-        headers: {
-          token: `Bearer ${this.token}`
-        }
-      }
-    ).then((res) => res.json())
-  }
-
-  cancelRunningTask() {
-    return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=CancelAdvisorTask&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}`,
-      {
-        headers: {
-          token: `Bearer ${this.token}`
-        }
-      }
-    ).then((res) => res.json())
-  }
-
-  tuningTaskStatusGet() {
-    return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=IsOKForTuningTask&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}`,
-      {
-        headers: {
-          token: `Bearer ${this.token}`
-        }
-      }
-    ).then((res) => res.json())
+    return this.client
+      .get(
+        `${this.performanceInsightBaseUrl}/performance_insight/index_advisor/results?page=${pageNumber}&limit=${pageSize}`
+      )
+      .then((res) => res.data)
   }
 
   tuningDetailGet(id: number) {
-    return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=GetTuningResult&ID=${id}&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}`,
-      {
-        headers: {
-          token: `Bearer ${this.token}`
-        }
-      }
-    ).then((res) => res.json())
+    return this.client
+      .get(
+        `${this.performanceInsightBaseUrl}/performance_insight/index_advisor/results/${id}`
+      )
+      .then((res) => res.data)
   }
 
-  registerUserDB(params: { userName: string; password: string }) {
+  tuningLatestGet() {
+    return this.client
+      .get(`${this.performanceInsightBaseUrl}/performance_insight/tasks/latest`)
+      .then((res) => res.data)
+  }
+
+  tuningTaskCreate() {
+    return this.client
+      .post(`${this.performanceInsightBaseUrl}/performance_insight/tasks`, {})
+      .then((res) => res.data)
+  }
+
+  tuningTaskCancel(id: number) {
+    return this.client
+      .delete(
+        `${this.performanceInsightBaseUrl}/performance_insight/tasks/${id}`
+      )
+      .then((res) => res.data)
+  }
+
+  activateDBConnection(params: { userName: string; password: string }) {
     const { userName, password } = params
-    return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=RegisterUserDB&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}&userName=${userName}&password=${password}`,
-      {
-        headers: {
-          token: `Bearer ${this.token}`
-        }
-      }
-    ).then((res) => res.json())
+    return this.client
+      .post(
+        `${this.performanceInsightBaseUrl}/performance_insight/tidb_connection`,
+        { user: userName, password }
+      )
+      .then((res) => res.data)
   }
 
-  // registerUserDB(params: { userName: string; password: string }) {
-  //   // const { userName, password } = params
-  //   return fetch(
-  //     `${this.performanceInsightBaseUrl}?BackMethod=RegisterUserDB&orgId=${this.orgId}&projectId=${this.projectId}&clusterId=${this.clusterId}`,
-  //     {
-  //       method: 'POST',
-  //       headers: {
-  //         token: `Bearer ${this.token}`
-  //       },
-  //       body: JSON.stringify(params)
-  //     }
-  //   ).then((res) => res.json())
-  // }
-
-  unRegisterUserDB() {
-    return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=UnRegisterUserDB&clusterId=${this.clusterId}&projectId=${this.projectId}&orgId=${this.orgId}`,
-      {
-        headers: {
-          token: `Bearer ${this.token}`
-        }
-      }
-    ).then((res) => res.json())
+  deactivateDBConnection() {
+    return this.client
+      .delete(
+        `${this.performanceInsightBaseUrl}/performance_insight/tidb_connection`
+      )
+      .then((res) => res.data)
   }
 
-  registerUserDBStatusGet() {
-    return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=IsTiDBOKForAdvisor&clusterId=${this.clusterId}&projectId=${this.projectId}&orgId=${this.orgId}`,
-      {
-        headers: {
-          token: `Bearer ${this.token}`
-        }
-      }
-    ).then((res) => res.json())
-  }
-
-  sqlValidationGet() {
-    return fetch(
-      `${this.performanceInsightBaseUrl}?BackMethod=CheckIfUserTiDBOK&clusterId=${this.clusterId}&projectId=${this.projectId}&orgId=${this.orgId}`,
-      {
-        headers: {
-          token: `Bearer ${this.token}`
-        }
-      }
-    ).then((res) => res.json())
+  checkDBConnection() {
+    return this.client
+      .get(
+        `${this.performanceInsightBaseUrl}/performance_insight/tidb_connection`
+      )
+      .then((res) => res.data)
   }
 }
 

@@ -20,10 +20,11 @@ export const useSQLTunedListGet = () => {
   const [sqlTunedList, setSqlTunedList] = useState<SQLTunedListProps | null>(
     null
   )
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   const sqlTunedListGet = useRef(
     async (pageNumber?: number, pageSize?: number) => {
+      setLoading(true)
       try {
         const res = await ctx?.ds.tuningListGet(
           pageNumber || DEF_PAGINATION_PARAMS.pageNumber,

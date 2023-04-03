@@ -43,20 +43,15 @@ const RegisterForm = ({ setIsUserDBRegistered }: UnRegisteredUserDBProps) => {
       }
 
       try {
-        await ctx?.ds.registerUserDB?.(params).then((res) => {
-          if (res.code === 'success') {
-            notification.success({
-              message: res.message
-            })
-            setIsUserDBRegistered(true)
-          } else {
-            notification.error({
-              message: res.message
-            })
-          }
+        const res = await ctx?.ds.activateDBConnection(params)
+        notification.success({
+          message: res
         })
-      } catch (e) {
-        console.log(e)
+        setIsUserDBRegistered(true)
+      } catch (e: any) {
+        notification.error({
+          message: e.message
+        })
       } finally {
         setIsPosting(false)
       }
@@ -139,7 +134,7 @@ const UnRegisteredUserDB: React.FC<UnRegisteredUserDBProps> = ({
             <div className={styles.commandBlock}>
               <div>
                 {sql.map((s) => (
-                  <HighlightSQL sql={s} compact format={false} />
+                  <HighlightSQL key={s} sql={s} compact format={false} />
                 ))}
               </div>
               <CopyLink data={sql.join('\n')} />
@@ -183,11 +178,13 @@ const IndexInsightListWithRegister = () => {
   useEffect(() => {
     const registerUserDBStatusGet = async () => {
       try {
-        const res = await ctx?.ds.registerUserDBStatusGet?.()
-        setIsLoading(false)
-        setIsUserDBRegistered(res)
+        setIsLoading(true)
+        const status = await ctx?.ds.checkDBConnection()
+        setIsUserDBRegistered(status)
       } catch (e) {
-        console.log(e)
+        setIsUserDBRegistered(false)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -196,19 +193,16 @@ const IndexInsightListWithRegister = () => {
 
   const handleDeactivate = async () => {
     try {
-      const res = await ctx?.ds.unRegisterUserDB?.()
-      if (res.code === 'success') {
-        setIsUserDBRegistered(false)
-        notification.success({
-          message: res.message
-        })
-      } else {
-        notification.error({
-          message: res.message
-        })
-      }
-    } catch (e) {
-      console.log(e)
+      setIsDeactivating(true)
+      const res = await ctx?.ds.deactivateDBConnection()
+      setIsUserDBRegistered(false)
+      notification.success({
+        message: res
+      })
+    } catch (e: any) {
+      notification.error({
+        message: e.message
+      })
     } finally {
       setIsDeactivating(false)
     }

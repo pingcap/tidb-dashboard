@@ -1,8 +1,8 @@
 import { createContext } from 'react'
 import {
   TuningDetailProps,
-  TuningTaskStatus,
-  SQLTunedListProps
+  SQLTunedListProps,
+  PerfInsightTask
 } from '../types/'
 
 export interface ISQLAdvisorDataSource {
@@ -11,21 +11,22 @@ export interface ISQLAdvisorDataSource {
     pageSize?: number
   ): Promise<SQLTunedListProps>
 
-  tuningTaskStatusGet(): Promise<TuningTaskStatus>
+  tuningDetailGet(id: number): Promise<TuningDetailProps>
+
+  tuningLatestGet(): Promise<PerfInsightTask>
 
   tuningTaskCreate(startTime: number, endTime: number): Promise<any>
 
-  cancelRunningTask?(): Promise<any>
+  tuningTaskCancel(id: number): Promise<any>
 
-  tuningDetailGet(id: number): Promise<TuningDetailProps>
+  activateDBConnection(params: {
+    userName: string
+    password: string
+  }): Promise<any>
 
-  registerUserDB?(params: { userName: string; password: string }): Promise<any>
+  deactivateDBConnection(): Promise<any>
 
-  unRegisterUserDB?(): Promise<any>
-
-  registerUserDBStatusGet?(): Promise<any>
-
-  sqlValidationGet?(): Promise<any>
+  checkDBConnection(): Promise<any>
 }
 
 export interface ISQLAdvisorContext {

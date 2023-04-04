@@ -87,13 +87,35 @@ export interface IStatementDataSource extends ISlowQueryDataSource {
   ): AxiosPromise<string>
 }
 
+export interface IStatementConfig extends IContextConfig {
+  enableExport?: boolean
+  showConfig?: boolean // default is true
+  showDBFilter?: boolean // default is true
+  showHelp?: boolean // default is true
+
+  // control whether show statement actual time range
+  // for example:
+  // Due to time window and expiration configurations, currently displaying data in time range: Today at 1:00 PM (UTC+08:00) ~ Today at 3:30 PM (UTC+08:00)
+  // for serverless, the statement window is 1 minutes, instead of 30 mins in OP
+  // so for serverless, this message is unnecessary
+  showActualTimeRange?: boolean
+
+  enablePlanBinding?: boolean
+
+  // true means start to search instantly after changing any filter options
+  // false means only to start searching after clicking the "Query" button
+  instantQuery?: boolean
+
+  // to limit the time range picker range
+  timeRangeSelector?: {
+    recentSeconds: number[]
+    customAbsoluteRangePicker: boolean
+  }
+}
+
 export interface IStatementContext {
   ds: IStatementDataSource
-  cfg: IContextConfig & {
-    enableExport: boolean
-    showHelp?: boolean
-    enablePlanBinding?: boolean
-  }
+  cfg: IStatementConfig
 }
 
 export const StatementContext = createContext<IStatementContext | null>(null)

@@ -10,7 +10,7 @@ import {
   DefaultApi as DashboardApi
 } from '@pingcap/tidb-dashboard-client'
 
-import auth from '~/uilts/auth'
+import auth from '~/utils/auth'
 
 import { getApiBasePath } from './apiBasePath'
 import translations from './translations'

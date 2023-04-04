@@ -8,7 +8,7 @@ import client, {
   StatementEditableConfig,
   StatementGetStatementsRequest
 } from '~/client'
-import auth from '~/uilts/auth'
+import auth from '~/utils/auth'
 
 class DataSource implements IStatementDataSource {
   infoListDatabases(options?: ReqConfig) {
@@ -212,5 +212,6 @@ export const ctx: IStatementContext = {
     apiPathBase: client.getBasePath(),
     enableExport: true,
     enablePlanBinding: true
+    // instantQuery: false
   }
 }

@@ -6,7 +6,7 @@ import {
 
 import client, { ConprofNgMonitoringConfig } from '~/client'
 
-import publicPathBase from '~/uilts/publicPathPrefix'
+import publicPathBase from '~/utils/publicPathPrefix'
 
 class DataSource implements IConProfilingDataSource {
   continuousProfilingActionTokenGet(q: string, options?: ReqConfig) {

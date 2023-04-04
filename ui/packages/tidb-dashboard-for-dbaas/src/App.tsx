@@ -4,6 +4,7 @@ import SlowQuery from './apps/SlowQuery'
 import KeyViz from './apps/KeyViz'
 import TopSQL from './apps/TopSQL'
 import Monitoring from './apps/Monitoring'
+import SQLAdvisor from './apps/SQLAdvisor'
 
 function getLocHashPrefix() {
   return window.location.hash.split('/')[1]
@@ -43,6 +44,10 @@ export default function () {
 
   if (locHashPrefix.startsWith('monitoring')) {
     return <Monitoring />
+  }
+
+  if (locHashPrefix === 'sql_advisor') {
+    return <SQLAdvisor />
   }
 
   return <p>No Matched Route!</p>

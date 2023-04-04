@@ -26,9 +26,9 @@ import {
   Toolbar,
   MultiSelect,
   toTimeRangeValue,
-  IColumnKeys,
-  TimeRange
+  IColumnKeys
 } from '@lib/components'
+import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 import { CacheContext } from '@lib/utils/useCache'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
@@ -41,7 +41,7 @@ import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
-import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
+import { LimitTimeRange } from '@lib/apps/Overview/components/LimitTimeRange'
 
 const { Option } = Select
 
@@ -144,6 +144,7 @@ function List() {
 
   useDeepCompareChange(() => {
     if (
+      ctx?.cfg.instantQuery === false ||
       controller.isDataLoadedSlowly || // if data was loaded slowly
       controller.isDataLoadedSlowly === null // or a request is not yet finished (which means slow network)..
     ) {
@@ -183,10 +184,20 @@ function List() {
 
   return (
     <div className={styles.list_container}>
-      <Card>
+      <Card noMarginBottom>
         <Toolbar className={styles.list_toolbar} data-e2e="slow_query_toolbar">
           <Space>
-            <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+            {ctx?.cfg.timeRangeSelector !== undefined ? (
+              <LimitTimeRange
+                value={timeRange}
+                onChange={setTimeRange}
+                recent_seconds={ctx.cfg.timeRangeSelector.recentSeconds}
+                customAbsoluteRangePicker={true}
+                onZoomOutClick={() => {}}
+              />
+            ) : (
+              <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+            )}
             {ctx!.cfg.showDBFilter && (
               <MultiSelect.Plain
                 placeholder={t('slow_query.toolbar.schemas.placeholder')}
@@ -271,12 +282,14 @@ function List() {
         </Toolbar>
       </Card>
 
+      <div style={{ height: 16 }} />
+
       {controller.data?.length === 0 ? (
         <Result title={t('slow_query.overview.empty_result')} />
       ) : (
         <div style={{ height: '100%', position: 'relative' }}>
           <ScrollablePane>
-            {controller.isDataLoadedSlowly && (
+            {controller.isDataLoadedSlowly && (ctx?.cfg.instantQuery ?? true) && (
               <Card noMarginBottom noMarginTop>
                 <Alert
                   message={t('slow_query.overview.slow_load_info')}

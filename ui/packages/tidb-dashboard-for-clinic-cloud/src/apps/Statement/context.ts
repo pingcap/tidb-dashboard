@@ -1,7 +1,8 @@
 import {
   IStatementDataSource,
   IStatementContext,
-  ReqConfig
+  ReqConfig,
+  IStatementConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, {
@@ -163,9 +164,14 @@ class DataSource implements IStatementDataSource {
   }
 }
 
-const ds = new DataSource()
-
-export const ctx: IStatementContext = {
-  ds,
-  cfg: { apiPathBase: client.getBasePath(), enableExport: true }
+export const ctx: (cfg: Partial<IStatementConfig>) => IStatementContext = (
+  cfg
+) => {
+  return {
+    ds: new DataSource(),
+    cfg: {
+      apiPathBase: client.getBasePath(),
+      ...cfg
+    }
+  }
 }

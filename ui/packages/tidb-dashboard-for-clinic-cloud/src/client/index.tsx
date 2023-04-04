@@ -9,7 +9,7 @@ import {
   DefaultApi as DashboardApi
 } from '@pingcap/tidb-dashboard-client'
 
-import { ClientOptions, ClusterInfo } from '~/uilts/globalConfig'
+import { ClientOptions, ClusterInfo } from '~/utils/globalConfig'
 
 import translations from './translations'
 
@@ -113,7 +113,10 @@ function initAxios(clientOptions: ClientOptions, clusterInfo: ClusterInfo) {
     clusterInfo
 
   let headers = {}
+  // for clinic
   headers['x-csrf-token'] = apiToken
+  // for tidb cloud
+  headers['authorization'] = `Bearer ${apiToken}`
   if (provider) {
     headers['x-provider'] = provider
   }

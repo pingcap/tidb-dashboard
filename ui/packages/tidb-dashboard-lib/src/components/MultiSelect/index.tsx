@@ -144,7 +144,8 @@ function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
       return null
     }
     return t(selectedValueTransKey ?? 'component.multiSelect.selected', {
-      n: internalVal?.length ?? 0
+      n: internalVal?.length ?? 0,
+      count: internalVal?.length ?? 0
     })
   }, [t, internalVal, selectedValueTransKey, placeholder])
 

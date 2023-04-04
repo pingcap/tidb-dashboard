@@ -44,32 +44,62 @@ class DataSource implements IMonitoringDataSource {
   }
 }
 
-const RECENT_SECONDS = [
-  5 * 60,
-  15 * 60,
-  30 * 60,
-  60 * 60,
-  3 * 60 * 60,
-  6 * 60 * 60,
-  12 * 60 * 60,
-  24 * 60 * 60,
-  2 * 24 * 60 * 60
-]
-
 export const ctx: (globalConfig: IGlobalConfig) => IMonitoringContext = (
   globalConfig
-) => ({
-  ds: new DataSource(globalConfig),
-  cfg: {
-    getMetricsQueries: (pdVersion: string | undefined) =>
-      getMonitoringItems(pdVersion, globalConfig.clusterInfo.deployType),
-    timeRangeSelector: {
-      recent_seconds: RECENT_SECONDS,
-      customAbsoluteRangePicker: true
-    },
-    metricsReferenceLink:
-      globalConfig.clusterInfo.deployType === 'Dedicated'
+) => {
+  const isDedicated = globalConfig.clusterInfo.deployType === 'Dedicated'
+  const RECENT_SECONDS = globalConfig.expandMetricsData
+    ? isDedicated
+      ? [
+          5 * 60,
+          15 * 60,
+          30 * 60,
+          60 * 60,
+          3 * 60 * 60,
+          12 * 60 * 60,
+          24 * 60 * 60,
+          3 * 24 * 60 * 60,
+          7 * 24 * 60 * 60
+        ]
+      : [
+          5 * 60,
+          15 * 60,
+          30 * 60,
+          60 * 60,
+          3 * 60 * 60,
+          12 * 60 * 60,
+          24 * 60 * 60,
+          2 * 24 * 60 * 60,
+          3 * 24 * 60 * 60
+        ]
+    : [
+        5 * 60,
+        15 * 60,
+        30 * 60,
+        60 * 60,
+        3 * 60 * 60,
+        6 * 60 * 60,
+        12 * 60 * 60,
+        24 * 60 * 60,
+        2 * 24 * 60 * 60
+      ]
+
+  return {
+    ds: new DataSource(globalConfig),
+    cfg: {
+      getMetricsQueries: (pdVersion: string | undefined) =>
+        getMonitoringItems(
+          pdVersion,
+          globalConfig.clusterInfo.deployType,
+          globalConfig.enableNodeMetrics
+        ),
+      timeRangeSelector: {
+        recent_seconds: RECENT_SECONDS,
+        customAbsoluteRangePicker: true
+      },
+      metricsReferenceLink: isDedicated
         ? 'https://docs.pingcap.com/tidbcloud/built-in-monitoring'
         : ''
+    }
   }
-})
+}

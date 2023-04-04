@@ -93,6 +93,8 @@ function useQueryOptions(
 export interface IStatementTableControllerOpts {
   cacheMgr?: CacheMgr
   showFullSQL?: boolean
+  fetchSchemas?: boolean
+  fetchConfig?: boolean
   initialQueryOptions?: IStatementQueryOptions
   persistQueryInSession?: boolean
 
@@ -125,6 +127,8 @@ export interface IStatementTableController {
 export default function useStatementTableController({
   cacheMgr,
   showFullSQL = false,
+  fetchSchemas = true,
+  fetchConfig = true,
   initialQueryOptions,
   persistQueryInSession = true,
   ds
@@ -189,6 +193,9 @@ export default function useStatementTableController({
   // Reload these options when sending a new request.
   useChange(() => {
     async function queryStatementStatus() {
+      if (!fetchConfig) {
+        return
+      }
       try {
         const res = await ds.statementsConfigGet({ handleError: 'custom' })
         setEnabled(res?.data.enable!)
@@ -199,6 +206,9 @@ export default function useStatementTableController({
     }
 
     async function querySchemas() {
+      if (!fetchSchemas) {
+        return
+      }
       try {
         const res = await ds.infoListDatabases({ handleError: 'custom' })
         setAllSchemas(res?.data || [])
@@ -210,7 +220,8 @@ export default function useStatementTableController({
     async function queryStmtTypes() {
       try {
         const res = await ds.statementsStmtTypesGet({ handleError: 'custom' })
-        setAllStmtTypes(res?.data || [])
+        const stmtTypes = (res?.data || []).sort()
+        setAllStmtTypes(stmtTypes)
       } catch (e) {
         setErrors((prev) => prev.concat(e))
       }

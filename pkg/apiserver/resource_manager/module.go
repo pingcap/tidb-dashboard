@@ -1,0 +1,10 @@
+// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+
+package resource_manager
+
+import "go.uber.org/fx"
+
+var Module = fx.Options(
+	fx.Provide(newService),
+	fx.Invoke(registerRouter),
+)

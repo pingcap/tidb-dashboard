@@ -1,11 +1,12 @@
 // Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
 
-package resource_manager
+package resourcemanager
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
-	"net/http"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
@@ -61,10 +62,10 @@ func (s *Service) GetConfig(c *gin.Context) {
 }
 
 type TableRowDef struct {
-	name      string `json:"name" gorm:"column:NAME"`
-	ruPerSec  string `json:"ru_per_sec" gorm:"column:RU_PER_SEC"`
-	priority  string `json:"priority" gorm:"column:PRIORITY"`
-	burstable string `json:"burstable" gorm:"column:BURSTABLE"`
+	Name      string `json:"name" gorm:"column:NAME"`
+	RuPerSec  string `json:"ru_per_sec" gorm:"column:RU_PER_SEC"`
+	Priority  string `json:"priority" gorm:"column:PRIORITY"`
+	Burstable string `json:"burstable" gorm:"column:BURSTABLE"`
 }
 
 // @Summary Get Information of Resource Groups
@@ -76,7 +77,7 @@ type TableRowDef struct {
 func (s *Service) GetInformation(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	cfg := &TableRowDef{}
-	err := db.Table("INFORMATION_SCHEMA.RESOURCE_GROUPS").Take(cfg).Error
+	err := db.Table("INFORMATION_SCHEMA.RESOURCE_GROUPS").Find(cfg).Error
 	if err != nil {
 		rest.Error(c, err)
 		return
@@ -86,7 +87,7 @@ func (s *Service) GetInformation(c *gin.Context) {
 
 // @Summary Get calibrate of Resource Groups by workload
 // @Router /resource-manager/calibrate [get]
-// @Param workload string "workload"
+// @Param workload query string true "workload" default("tpcc")
 // @Security JwtAuth
 // @Success 200 {string} resourceNums
 // @Failure 401 {object} rest.ErrorResponse
@@ -94,12 +95,9 @@ func (s *Service) GetInformation(c *gin.Context) {
 func (s *Service) GetCalibrate(c *gin.Context) {
 	w := c.Param("workload")
 	db := utils.GetTiDBConnection(c)
-	if w != "" {
-		w = "tpcc"
-	}
 
 	var resourceNums string
-	err := db.Raw("calibrate resource workload (?)", w).Find(resourceNums).Error
+	err := db.Raw("calibrate resource workload (?)", w).Scan(resourceNums).Error
 	if err != nil {
 		rest.Error(c, err)
 		return

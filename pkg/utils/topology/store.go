@@ -27,7 +27,7 @@ func FetchStoreTopology(pdClient *pd.Client) ([]StoreInfo, []StoreInfo, error) {
 	for _, store := range stores {
 		isTiFlash := false
 		for _, label := range store.Labels {
-			if label.Key == "engine" && label.Value == "tiflash" {
+			if label.Key == "engine" && (label.Value == "tiflash" || label.Value == "tiflash_compute") {
 				isTiFlash = true
 			}
 		}

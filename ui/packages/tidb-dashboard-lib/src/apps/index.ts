@@ -54,3 +54,6 @@ export * from './OptimizerTrace'
 
 export { default as DeadlockApp } from './Deadlock'
 export * from './Deadlock'
+
+export { default as ResourceManagerApp } from './ResourceManager'
+export * from './ResourceManager'

@@ -3,10 +3,10 @@
 package resourcemanager
 
 import (
-	"net/http"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
+	"net/http"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
@@ -27,7 +27,7 @@ type Service struct {
 }
 
 func newService(p ServiceParams, ff *featureflag.Registry) *Service {
-	return &Service{params: p, FeatureResourceManager: ff.Register("resource_manager", ">= 7.0.0")}
+	return &Service{params: p, FeatureResourceManager: ff.Register("resource_manager", ">= 5.0.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -40,8 +40,13 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	{
 		endpoint.GET("/information", s.GetInformation)
 		endpoint.GET("/config", s.GetConfig)
-		endpoint.GET("/calibrate", s.GetCalibrate)
+		endpoint.GET("/calibrate/hardware", s.GetCalibrateByHardware)
+		endpoint.GET("/calibrate/actual", s.GetCalibrateByActual)
 	}
+}
+
+type GetConfigResponse struct {
+	Enable bool `json:"enable" gorm:"column:tidb_enable_resource_control"`
 }
 
 // @Summary Get Resource Control enable config
@@ -52,16 +57,16 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Failure 500 {object} rest.ErrorResponse
 func (s *Service) GetConfig(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	var enable string
-	err := db.Raw("SELECT @@GLOBAL.tidb_enable_resource_control as tidb_enable_resource_control").Find(&enable).Error
+	resp := &GetConfigResponse{}
+	err := db.Raw("SELECT @@GLOBAL.tidb_enable_resource_control as tidb_enable_resource_control").Find(resp).Error
 	if err != nil {
 		rest.Error(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, enable)
+	c.JSON(http.StatusOK, resp)
 }
 
-type TableRowDef struct {
+type ResourceInfoRowDef struct {
 	Name      string `json:"name" gorm:"column:NAME"`
 	RuPerSec  string `json:"ru_per_sec" gorm:"column:RU_PER_SEC"`
 	Priority  string `json:"priority" gorm:"column:PRIORITY"`
@@ -71,13 +76,13 @@ type TableRowDef struct {
 // @Summary Get Information of Resource Groups
 // @Router /resource-manager/information [get]
 // @Security JwtAuth
-// @Success 200 {object} TableRowDef
+// @Success 200 {object} []ResourceInfoRowDef
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
 func (s *Service) GetInformation(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cfg := &TableRowDef{}
-	err := db.Table("INFORMATION_SCHEMA.RESOURCE_GROUPS").Find(cfg).Error
+	var cfg []ResourceInfoRowDef
+	err := db.Table("INFORMATION_SCHEMA.RESOURCE_GROUPS").Scan(&cfg).Error
 	if err != nil {
 		rest.Error(c, err)
 		return
@@ -85,22 +90,59 @@ func (s *Service) GetInformation(c *gin.Context) {
 	c.JSON(http.StatusOK, cfg)
 }
 
-// @Summary Get calibrate of Resource Groups by workload
-// @Router /resource-manager/calibrate [get]
+type CalibrateResponse struct {
+	EstimatedCapacity int `json:"estimated_capacity" gorm:"column:QUOTA"`
+}
+
+// @Summary Get calibrate of Resource Groups by hardware deployment
+// @Router /resource-manager/calibrate/hardware [get]
 // @Param workload query string true "workload" default("tpcc")
-// @Security JwtAuth
-// @Success 200 {string} resourceNums
+// @Success 200 {object} CalibrateResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) GetCalibrate(c *gin.Context) {
-	w := c.Param("workload")
-	db := utils.GetTiDBConnection(c)
+func (s *Service) GetCalibrateByHardware(c *gin.Context) {
+	w := c.Query("workload")
+	if w == "" {
+		rest.Error(c, rest.ErrBadRequest.New("workload cannot be empty"))
+		return
+	}
 
-	var resourceNums string
-	err := db.Raw("calibrate resource workload (?)", w).Scan(resourceNums).Error
+	db := utils.GetTiDBConnection(c)
+	resp := &CalibrateResponse{}
+	err := db.Exec(fmt.Sprintf("calibrate resource workload %s", w)).Scan(resp).Error
 	if err != nil {
 		rest.Error(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, resourceNums)
+	c.JSON(http.StatusOK, resp)
+}
+
+// @Summary Get calibrate of Resource Groups by actual workload
+// @Router /resource-manager/calibrate/actual [get]
+// @Param start_time query string true "start_time"
+// @Param end_time query string true "end_time"
+// @Success 200 {object} CalibrateResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
+func (s *Service) GetCalibrateByActual(c *gin.Context) {
+	sTime := c.Query("start_time")
+	if sTime == "" {
+		rest.Error(c, rest.ErrBadRequest.New("start_time cannot be empty"))
+		return
+	}
+
+	eTime := c.Query("end_time")
+	if eTime == "" {
+		rest.Error(c, rest.ErrBadRequest.New("end_time cannot be empty"))
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	resp := &CalibrateResponse{}
+	err := db.Exec(fmt.Sprintf("calibrate resource start_time '%s' end_time '%s'", sTime, eTime)).Scan(resp).Error
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
 }

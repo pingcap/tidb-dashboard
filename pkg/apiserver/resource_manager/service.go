@@ -51,7 +51,7 @@ type GetConfigResponse struct {
 }
 
 // @Summary Get Resource Control enable config
-// @Router /resource-manager/config [get]
+// @Router /resource_manager/config [get]
 // @Security JwtAuth
 // @Success 200 {string} enable
 // @Failure 401 {object} rest.ErrorResponse
@@ -75,7 +75,7 @@ type ResourceInfoRowDef struct {
 }
 
 // @Summary Get Information of Resource Groups
-// @Router /resource-manager/information [get]
+// @Router /resource_manager/information [get]
 // @Security JwtAuth
 // @Success 200 {object} []ResourceInfoRowDef
 // @Failure 401 {object} rest.ErrorResponse
@@ -96,7 +96,7 @@ type CalibrateResponse struct {
 }
 
 // @Summary Get calibrate of Resource Groups by hardware deployment
-// @Router /resource-manager/calibrate/hardware [get]
+// @Router /resource_manager/calibrate/hardware [get]
 // @Param workload query string true "workload" default("tpcc")
 // @Success 200 {object} CalibrateResponse
 // @Failure 401 {object} rest.ErrorResponse
@@ -119,7 +119,7 @@ func (s *Service) GetCalibrateByHardware(c *gin.Context) {
 }
 
 // @Summary Get calibrate of Resource Groups by actual workload
-// @Router /resource-manager/calibrate/actual [get]
+// @Router /resource_manager/calibrate/actual [get]
 // @Param start_time query string true "start_time"
 // @Param end_time query string true "end_time"
 // @Success 200 {object} CalibrateResponse

@@ -4,9 +4,10 @@ package resourcemanager
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
-	"net/http"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
@@ -27,7 +28,7 @@ type Service struct {
 }
 
 func newService(p ServiceParams, ff *featureflag.Registry) *Service {
-	return &Service{params: p, FeatureResourceManager: ff.Register("resource_manager", ">= 5.0.0")}
+	return &Service{params: p, FeatureResourceManager: ff.Register("resource_manager", ">= 6.5.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -109,7 +110,7 @@ func (s *Service) GetCalibrateByHardware(c *gin.Context) {
 
 	db := utils.GetTiDBConnection(c)
 	resp := &CalibrateResponse{}
-	err := db.Exec(fmt.Sprintf("calibrate resource workload %s", w)).Scan(resp).Error
+	err := db.Raw(fmt.Sprintf("calibrate resource workload %s", w)).Scan(resp).Error
 	if err != nil {
 		rest.Error(c, err)
 		return
@@ -139,7 +140,7 @@ func (s *Service) GetCalibrateByActual(c *gin.Context) {
 
 	db := utils.GetTiDBConnection(c)
 	resp := &CalibrateResponse{}
-	err := db.Exec(fmt.Sprintf("calibrate resource start_time '%s' end_time '%s'", sTime, eTime)).Scan(resp).Error
+	err := db.Raw(fmt.Sprintf("calibrate resource start_time '%s' end_time '%s'", sTime, eTime)).Scan(resp).Error
 	if err != nil {
 		rest.Error(c, err)
 		return

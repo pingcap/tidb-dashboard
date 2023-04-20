@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -90,18 +91,18 @@ func (c Client) WithStatusAPITimeout(timeout time.Duration) *Client {
 }
 
 func (c Client) WithStatusAPIAddress(host string, statusPort int) *Client {
-	c.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
+	c.statusAPIAddress = net.JoinHostPort(host, strconv.Itoa(statusPort))
 	return &c
 }
 
 func (c Client) WithEnforcedStatusAPIAddress(host string, statusPort int) *Client {
 	c.enforceStatusAPIAddresss = true
-	c.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
+	c.statusAPIAddress = net.JoinHostPort(host, strconv.Itoa(statusPort))
 	return &c
 }
 
 func (c Client) WithSQLAPIAddress(host string, sqlPort int) *Client {
-	c.sqlAPIAddress = fmt.Sprintf("%s:%d", host, sqlPort)
+	c.sqlAPIAddress = net.JoinHostPort(host, strconv.Itoa(sqlPort))
 	return &c
 }
 

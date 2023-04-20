@@ -7,7 +7,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"sort"
+	"strconv"
 
 	"github.com/joomcode/errorx"
 	"go.etcd.io/etcd/clientv3"
@@ -105,7 +107,7 @@ func (s *Service) getConfigItemsFromPD() (map[string]interface{}, error) {
 }
 
 func (s *Service) getConfigItemsFromTiDBToChannel(tidb *topology.TiDBInfo, ch chan<- channelItem) {
-	displayAddress := fmt.Sprintf("%s:%d", tidb.IP, tidb.Port)
+	displayAddress := net.JoinHostPort(tidb.IP, strconv.Itoa(int(tidb.Port)))
 
 	r, err := s.getConfigItemsFromTiDB(tidb.IP, int(tidb.StatusPort))
 	if err != nil {
@@ -129,7 +131,7 @@ func (s *Service) getConfigItemsFromTiDB(host string, statusPort int) (map[strin
 }
 
 func (s *Service) getConfigItemsFromTiKVToChannel(tikv *topology.StoreInfo, ch chan<- channelItem) {
-	displayAddress := fmt.Sprintf("%s:%d", tikv.IP, tikv.Port)
+	displayAddress := net.JoinHostPort(tikv.IP, strconv.Itoa(int(tikv.Port)))
 
 	r, err := s.getConfigItemsFromTiKV(tikv.IP, int(tikv.StatusPort))
 	if err != nil {
@@ -335,7 +337,7 @@ func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue int
 			// TODO: What about tombstone stores?
 			_, err := s.params.TiKVClient.SendPostRequest(kvStore.IP, int(kvStore.StatusPort), "/config", bytes.NewBuffer(bodyJSON))
 			if err != nil {
-				failures = append(failures, ErrEditFailed.Wrap(err, "Failed to edit config for TiKV instance `%s:%d`", kvStore.IP, kvStore.Port))
+				failures = append(failures, ErrEditFailed.Wrap(err, "Failed to edit config for TiKV instance `%s`", net.JoinHostPort(kvStore.IP, strconv.Itoa(int(kvStore.Port)))))
 			}
 		}
 		if len(failures) == len(tikvInfo) {

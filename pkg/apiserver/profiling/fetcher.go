@@ -4,6 +4,8 @@ package profiling
 
 import (
 	"fmt"
+	"net"
+	"strconv"
 	"time"
 
 	"go.uber.org/fx"
@@ -90,7 +92,7 @@ type pdFetcher struct {
 }
 
 func (f *pdFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	baseURL := fmt.Sprintf("%s://%s:%d", f.statusAPIHTTPScheme, op.ip, op.port)
+	baseURL := fmt.Sprintf("%s://%s", f.statusAPIHTTPScheme, net.JoinHostPort(op.ip, strconv.Itoa(op.port)))
 	return f.client.
 		WithTimeout(maxProfilingTimeout).
 		WithBaseURL(baseURL).

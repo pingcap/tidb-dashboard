@@ -6,7 +6,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"go.uber.org/fx"
@@ -56,7 +58,7 @@ func (c Client) WithBaseURL(baseURL string) *Client {
 }
 
 func (c Client) WithAddress(host string, port int) *Client {
-	c.baseURL = fmt.Sprintf("%s://%s:%d", c.httpScheme, host, port)
+	c.baseURL = fmt.Sprintf("%s://%s", c.httpScheme, net.JoinHostPort(host, strconv.Itoa(port)))
 	return &c
 }
 

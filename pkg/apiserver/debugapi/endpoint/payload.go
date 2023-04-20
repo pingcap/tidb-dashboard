@@ -5,9 +5,11 @@ package endpoint
 import (
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 
 	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
 	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
@@ -178,7 +180,7 @@ func (p *ResolvedRequestPayload) SendRequestAndPipe(clientsToUse HTTPClients, w 
 	}
 	req := httpClient.LR().
 		SetDebugTag("origin:debug_api").
-		SetTLSAwareBaseURL(fmt.Sprintf("http://%s:%d", p.host, p.port)).
+		SetTLSAwareBaseURL(fmt.Sprintf("http://%s", net.JoinHostPort(p.host, strconv.Itoa(p.port)))).
 		SetMethod(p.api.Method).
 		SetURL(p.path).
 		SetQueryParamsFromValues(p.queryValues)

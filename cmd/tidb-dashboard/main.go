@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -187,7 +188,7 @@ func main() {
 
 	loadDistroStringsRes()
 
-	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
+	listenAddr := net.JoinHostPort(cliConfig.ListenHost, strconv.Itoa(cliConfig.ListenPort))
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
@@ -220,9 +221,9 @@ func main() {
 	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())
 
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
-	log.Info(fmt.Sprintf("UI:      http://%s:%d/dashboard/", cliConfig.ListenHost, cliConfig.ListenPort))
-	log.Info(fmt.Sprintf("API:     http://%s:%d/dashboard/api/", cliConfig.ListenHost, cliConfig.ListenPort))
-	log.Info(fmt.Sprintf("Swagger: http://%s:%d/dashboard/api/swagger/", cliConfig.ListenHost, cliConfig.ListenPort))
+	log.Info(fmt.Sprintf("UI:      http://%s/dashboard/", net.JoinHostPort(cliConfig.ListenHost, strconv.Itoa(cliConfig.ListenPort))))
+	log.Info(fmt.Sprintf("API:     http://%s/dashboard/api/", net.JoinHostPort(cliConfig.ListenHost, strconv.Itoa(cliConfig.ListenPort))))
+	log.Info(fmt.Sprintf("Swagger: http://%s/dashboard/api/swagger/", net.JoinHostPort(cliConfig.ListenHost, strconv.Itoa(cliConfig.ListenPort))))
 
 	srv := &http.Server{Handler: mux} // nolint:gosec
 	var wg sync.WaitGroup

@@ -28,7 +28,7 @@ type Service struct {
 }
 
 func newService(p ServiceParams, ff *featureflag.Registry) *Service {
-	return &Service{params: p, FeatureResourceManager: ff.Register("resource_manager", ">= 6.5.0")}
+	return &Service{params: p, FeatureResourceManager: ff.Register("resource_manager", ">= 7.1.0")}
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {

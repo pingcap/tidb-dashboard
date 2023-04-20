@@ -32,7 +32,7 @@ func newService(p ServiceParams, ff *featureflag.Registry) *Service {
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
-	endpoint := r.Group("/resource-manager")
+	endpoint := r.Group("/resource_manager")
 	endpoint.Use(
 		auth.MWAuthRequired(),
 		s.FeatureResourceManager.VersionGuard(),

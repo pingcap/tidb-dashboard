@@ -1980,6 +1980,58 @@ export interface QueryeditorRunResponse {
 /**
  * 
  * @export
+ * @interface ResourcemanagerCalibrateResponse
+ */
+export interface ResourcemanagerCalibrateResponse {
+    /**
+     * 
+     * @type {number}
+     * @memberof ResourcemanagerCalibrateResponse
+     */
+    'estimated_capacity'?: number;
+}
+
+
+
+
+/**
+ * 
+ * @export
+ * @interface ResourcemanagerResourceInfoRowDef
+ */
+export interface ResourcemanagerResourceInfoRowDef {
+    /**
+     * 
+     * @type {string}
+     * @memberof ResourcemanagerResourceInfoRowDef
+     */
+    'burstable'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ResourcemanagerResourceInfoRowDef
+     */
+    'name'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ResourcemanagerResourceInfoRowDef
+     */
+    'priority'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ResourcemanagerResourceInfoRowDef
+     */
+    'ru_per_sec'?: string;
+}
+
+
+
+
+/**
+ * 
+ * @export
  * @interface RestErrorResponse
  */
 export interface RestErrorResponse {

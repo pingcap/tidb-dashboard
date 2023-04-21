@@ -59,6 +59,8 @@ export * from './profiling-task-group-model';
 export * from './profiling-task-model';
 export * from './queryeditor-run-request';
 export * from './queryeditor-run-response';
+export * from './resourcemanager-calibrate-response';
+export * from './resourcemanager-resource-info-row-def';
 export * from './rest-error-response';
 export * from './slowquery-get-list-request';
 export * from './slowquery-model';

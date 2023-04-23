@@ -1,5 +1,12 @@
 import React from 'react'
+import { Configuration, EstimateCapacity, Metrics } from '../components'
 
 export const Home: React.FC = () => {
-  return <div>Page</div>
+  return (
+    <div>
+      <Configuration />
+      <EstimateCapacity />
+      <Metrics />
+    </div>
+  )
 }

@@ -1997,6 +1997,23 @@ export interface ResourcemanagerCalibrateResponse {
 /**
  * 
  * @export
+ * @interface ResourcemanagerGetConfigResponse
+ */
+export interface ResourcemanagerGetConfigResponse {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ResourcemanagerGetConfigResponse
+     */
+    'enable'?: boolean;
+}
+
+
+
+
+/**
+ * 
+ * @export
  * @interface ResourcemanagerResourceInfoRowDef
  */
 export interface ResourcemanagerResourceInfoRowDef {

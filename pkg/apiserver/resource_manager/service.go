@@ -39,8 +39,8 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		utils.MWConnectTiDB(s.params.TiDBClient),
 	)
 	{
-		endpoint.GET("/information", s.GetInformation)
 		endpoint.GET("/config", s.GetConfig)
+		endpoint.GET("/information", s.GetInformation)
 		endpoint.GET("/calibrate/hardware", s.GetCalibrateByHardware)
 		endpoint.GET("/calibrate/actual", s.GetCalibrateByActual)
 	}
@@ -53,7 +53,7 @@ type GetConfigResponse struct {
 // @Summary Get Resource Control enable config
 // @Router /resource_manager/config [get]
 // @Security JwtAuth
-// @Success 200 {string} enable
+// @Success 200 {object} GetConfigResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
 func (s *Service) GetConfig(c *gin.Context) {

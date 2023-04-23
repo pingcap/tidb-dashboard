@@ -105,6 +105,8 @@ import { QueryeditorRunResponse } from '../models';
 // @ts-ignore
 import { ResourcemanagerCalibrateResponse } from '../models';
 // @ts-ignore
+import { ResourcemanagerGetConfigResponse } from '../models';
+// @ts-ignore
 import { ResourcemanagerResourceInfoRowDef } from '../models';
 // @ts-ignore
 import { RestErrorResponse } from '../models';
@@ -4653,7 +4655,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async resourceManagerConfigGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+        async resourceManagerConfigGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResourcemanagerGetConfigResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.resourceManagerConfigGet(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -5691,7 +5693,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        resourceManagerConfigGet(options?: any): AxiosPromise<string> {
+        resourceManagerConfigGet(options?: any): AxiosPromise<ResourcemanagerGetConfigResponse> {
             return localVarFp.resourceManagerConfigGet(options).then((request) => request(axios, basePath));
         },
         /**

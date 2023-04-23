@@ -2230,7 +2230,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/resourcemanager.GetConfigResponse"
                         }
                     },
                     "401": {
@@ -4797,6 +4797,14 @@
             "properties": {
                 "estimated_capacity": {
                     "type": "integer"
+                }
+            }
+        },
+        "resourcemanager.GetConfigResponse": {
+            "type": "object",
+            "properties": {
+                "enable": {
+                    "type": "boolean"
                 }
             }
         },

@@ -5,10 +5,9 @@ import {
   urlToTimeRange
 } from '@lib/components/TimeRangeSelector'
 import { useCallback, useMemo } from 'react'
+import { DEFAULT_TIME_WINDOW, WORKLOAD_TYPES } from './helpers'
 
-type UrlState = Partial<Record<'from' | 'to', string>>
-
-const DEFAULT_TIME_RANGE: TimeRange = { type: 'recent', value: 30 * 60 }
+type UrlState = Partial<Record<'from' | 'to' | 'workload', string>>
 
 export function useResourceManagerUrlState() {
   const [queryParams, setQueryParams] = useUrlState<UrlState>()
@@ -18,7 +17,7 @@ export function useResourceManagerUrlState() {
     if (from && to) {
       return urlToTimeRange({ from, to })
     }
-    return DEFAULT_TIME_RANGE
+    return DEFAULT_TIME_WINDOW
   }, [queryParams.from, queryParams.to])
 
   const setTimeRange = useCallback(
@@ -28,8 +27,19 @@ export function useResourceManagerUrlState() {
     [setQueryParams]
   )
 
+  const workload = queryParams.workload || WORKLOAD_TYPES[0]
+  const setWorkload = useCallback(
+    (w: string) => {
+      setQueryParams({ workload: w || undefined })
+    },
+    [setQueryParams]
+  )
+
   return {
     timeRange,
-    setTimeRange
+    setTimeRange,
+
+    workload,
+    setWorkload
   }
 }

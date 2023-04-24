@@ -4,14 +4,20 @@ import { useResourceManagerContext } from '../context'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { Space, Switch, Typography } from 'antd'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import { ResourcemanagerResourceInfoRowDef } from '@lib/client'
 
-export const Configuration: React.FC = () => {
+type ConfigurationProps = {
+  info: ResourcemanagerResourceInfoRowDef[]
+  loadingInfo: boolean
+}
+
+export const Configuration: React.FC<ConfigurationProps> = ({
+  info,
+  loadingInfo
+}) => {
   const ctx = useResourceManagerContext()
   const { data: config, isLoading: loadingConfig } = useClientRequest(
     ctx.ds.getConfig
-  )
-  const { data: info, isLoading: loadingInfo } = useClientRequest(
-    ctx.ds.getInformation
   )
 
   const columns: IColumn[] = useMemo(() => {
@@ -57,7 +63,7 @@ export const Configuration: React.FC = () => {
 
   return (
     <Card title="Configuration">
-      <Space direction="vertical">
+      <Space direction="vertical" style={{ paddingBottom: 8 }}>
         <Typography.Text>TiDB Resource Manager Enabled</Typography.Text>
         <Switch
           loading={loadingConfig}
@@ -70,7 +76,7 @@ export const Configuration: React.FC = () => {
         cardNoMargin
         loading={loadingInfo}
         columns={columns}
-        items={info ?? []}
+        items={info}
       />
     </Card>
   )

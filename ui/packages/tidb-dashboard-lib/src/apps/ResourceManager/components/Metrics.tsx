@@ -1,6 +1,15 @@
-import { Card } from '@lib/components'
+import { Card, TimeRangeSelector } from '@lib/components'
 import React from 'react'
+import { useResourceManagerUrlState } from '../uilts/url-state'
 
 export const Metrics: React.FC = () => {
-  return <Card title="Metrics"></Card>
+  const { timeRange, setTimeRange } = useResourceManagerUrlState()
+
+  return (
+    <Card title="Metrics">
+      <div>
+        <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+      </div>
+    </Card>
+  )
 }

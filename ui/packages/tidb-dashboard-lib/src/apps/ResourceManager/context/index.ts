@@ -1,4 +1,5 @@
 import {
+  MetricsQueryResponse,
   ResourcemanagerCalibrateResponse,
   ResourcemanagerGetConfigResponse,
   ResourcemanagerResourceInfoRowDef
@@ -21,6 +22,13 @@ export interface IResourceManagerDataSource {
     params: { startTime: string; endTime: string },
     options?: ReqConfig
   ): AxiosPromise<ResourcemanagerCalibrateResponse>
+
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }): Promise<MetricsQueryResponse>
 }
 
 export interface IResourceManagerConfig {}

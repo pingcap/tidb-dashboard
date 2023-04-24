@@ -39,6 +39,20 @@ class DataSource implements IResourceManagerDataSource {
       .getInstance()
       .resourceManagerCalibrateActualGet(params, options)
   }
+
+  metricsQueryGet(params: {
+    endTimeSec?: number
+    query?: string
+    startTimeSec?: number
+    stepSec?: number
+  }) {
+    return client
+      .getInstance()
+      .metricsQueryGet(params, {
+        handleError: 'custom'
+      } as ReqConfig)
+      .then((res) => res.data)
+  }
 }
 
 export const getResourceManagerContext: () => IResourceManagerContext = () => {

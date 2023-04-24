@@ -6,7 +6,16 @@ import {
   TimeRangeSelector,
   toTimeRangeValue
 } from '@lib/components'
-import { Col, Row, Select, Space, Statistic, Tooltip, Typography } from 'antd'
+import {
+  Alert,
+  Col,
+  Row,
+  Select,
+  Space,
+  Statistic,
+  Tooltip,
+  Typography
+} from 'antd'
 import React, { useEffect, useMemo } from 'react'
 import { useResourceManagerContext } from '../context'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -15,7 +24,7 @@ import { useResourceManagerUrlState } from '../uilts/url-state'
 import { TIME_WINDOW_RECENT_SECONDS, WORKLOAD_TYPES } from '../uilts/helpers'
 
 const { Option } = Select
-const { Text, Link } = Typography
+const { Paragraph, Text, Link } = Typography
 
 const workloadTypeTooltip = `Select a workload type which is similar with your actual workload.
 
@@ -29,6 +38,25 @@ const timeWindowTooltip = `Select the time window with classic workload in the p
 Time window length: 10 mins ~ 24 hours
 `
 
+const CapacityWarning: React.FC<{ totalRU: number; estimatedRU: number }> = ({
+  totalRU,
+  estimatedRU
+}) => {
+  if (totalRU > estimatedRU) {
+    return (
+      <div style={{ paddingTop: 16 }}>
+        <Alert
+          type="warning"
+          showIcon
+          message='The total RU of all customized resource groups exceeds the  "estimated capacity". The RU allocated to some resource groups could not be satisfied.'
+        />
+      </div>
+    )
+  }
+
+  return null
+}
+
 const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
   const ctx = useResourceManagerContext()
   const { workload, setWorkload } = useResourceManagerUrlState()
@@ -38,6 +66,7 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
   useEffect(() => {
     sendRequest()
   }, [workload])
+  const estimatedRU = data?.estimated_capacity ?? 0
 
   return (
     <div>
@@ -59,7 +88,7 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           <Col span={6}>
             <Statistic
               title="Estimated Capacity"
-              value={data?.estimated_capacity ?? 0}
+              value={estimatedRU}
               loading={isLoading}
               suffix={
                 <Typography.Text type="secondary" style={{ fontSize: 14 }}>
@@ -83,6 +112,8 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           <ErrorBar errors={[error]} />{' '}
         </div>
       )}
+
+      <CapacityWarning totalRU={totalRU} estimatedRU={estimatedRU} />
     </div>
   )
 }
@@ -102,6 +133,7 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
   useEffect(() => {
     sendRequest()
   }, [timeRange])
+  const estimatedRU = data?.estimated_capacity ?? 0
 
   return (
     <div>
@@ -122,7 +154,7 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           <Col span={6}>
             <Statistic
               title="Estimated Capacity"
-              value={data?.estimated_capacity ?? 0}
+              value={estimatedRU}
               loading={isLoading}
               suffix={
                 <Typography.Text type="secondary" style={{ fontSize: 14 }}>
@@ -146,6 +178,8 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           <ErrorBar errors={[error]} />{' '}
         </div>
       )}
+
+      <CapacityWarning totalRU={totalRU} estimatedRU={estimatedRU} />
     </div>
   )
 }
@@ -170,34 +204,39 @@ export const EstimateCapacity: React.FC<{ totalRU: number }> = ({
 
   return (
     <Card title="Estimate Capacity">
-      <Typography.Paragraph>
-        Request Unit (RU) is a unified abstraction unit in TiDB for system
-        resources, which is relavant to resource comsuption. Please notice the
-        "estimated capacity" refers to a result that is hardware specs or past
-        statistics, and may deviate from actual capacity.
-      </Typography.Paragraph>
-
-      <details style={{ marginBottom: 16 }}>
-        <summary>Change the Resource Allocation</summary>
-        <Typography>
-          <Text>To change the resource allocation for resource group:</Text>
-          <div style={{ paddingTop: 8, paddingBottom: 8 }}>
-            <Text code>
-              {`ALTER RESOURCE GROUP <resource group name> RU_PER_SEC=<#ru> \\[BURSTALE];`}
-            </Text>
-          </div>
-          <Text>
-            For detail information, please refer to{' '}
-            <Link
-              href="https://docs.pingcap.com/tidb/dev/tidb-resource-control"
-              target="_blank"
-            >
-              user manual
-            </Link>
-            .
-          </Text>
-        </Typography>
-      </details>
+      <Paragraph>
+        <blockquote>
+          Request Unit (RU) is a unified abstraction unit in TiDB for system
+          resources, which is relavant to resource comsuption.
+          <br />
+          Please notice the "estimated capacity" refers to a result that is
+          hardware specs or past statistics, and may deviate from actual
+          capacity.
+          <br />
+          <br />
+          <details>
+            <summary>Change the Resource Allocation</summary>
+            <Typography>
+              <Text>To change the resource allocation for resource group:</Text>
+              <div style={{ paddingTop: 8, paddingBottom: 8 }}>
+                <Text code>
+                  {`ALTER RESOURCE GROUP <resource group name> RU_PER_SEC=<#ru> \\[BURSTALE];`}
+                </Text>
+              </div>
+              <Text>
+                For detail information, please refer to{' '}
+                <Link
+                  href="https://docs.pingcap.com/tidb/dev/tidb-resource-control"
+                  target="_blank"
+                >
+                  user manual
+                </Link>
+                .
+              </Text>
+            </Typography>
+          </details>
+        </blockquote>
+      </Paragraph>
 
       <CardTabs tabs={tabs} />
     </Card>

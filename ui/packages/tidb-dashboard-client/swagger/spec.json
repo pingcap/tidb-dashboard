@@ -2144,6 +2144,11 @@
         },
         "/resource_manager/calibrate/actual": {
             "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
                 "summary": "Get calibrate of Resource Groups by actual workload",
                 "parameters": [
                     {
@@ -2185,6 +2190,11 @@
         },
         "/resource_manager/calibrate/hardware": {
             "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
                 "summary": "Get calibrate of Resource Groups by hardware deployment",
                 "parameters": [
                     {

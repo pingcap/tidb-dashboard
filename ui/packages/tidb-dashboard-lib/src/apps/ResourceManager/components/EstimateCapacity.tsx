@@ -1,4 +1,11 @@
-import { Card, CardTabs, Pre, TimeRangeSelector } from '@lib/components'
+import {
+  Card,
+  CardTabs,
+  ErrorBar,
+  Pre,
+  TimeRangeSelector,
+  toTimeRangeValue
+} from '@lib/components'
 import { Col, Row, Select, Space, Statistic, Tooltip, Typography } from 'antd'
 import React, { useEffect, useMemo } from 'react'
 import { useResourceManagerContext } from '../context'
@@ -25,6 +32,12 @@ Time window length: 10 mins ~ 24 hours
 const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
   const ctx = useResourceManagerContext()
   const { workload, setWorkload } = useResourceManagerUrlState()
+  const { data, isLoading, sendRequest, error } = useClientRequest(
+    (reqConfig) => ctx.ds.getCalibrateByHardware({ workload }, reqConfig)
+  )
+  useEffect(() => {
+    sendRequest()
+  }, [workload])
 
   return (
     <div>
@@ -46,7 +59,8 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           <Col span={6}>
             <Statistic
               title="Estimated Capacity"
-              value={0}
+              value={data?.estimated_capacity ?? 0}
+              loading={isLoading}
               suffix={
                 <Typography.Text type="secondary" style={{ fontSize: 14 }}>
                   RUs/sec
@@ -62,12 +76,32 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           </Col>
         </Row>
       </div>
+
+      {error && (
+        <div style={{ paddingTop: 16 }}>
+          {' '}
+          <ErrorBar errors={[error]} />{' '}
+        </div>
+      )}
     </div>
   )
 }
 
 const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
+  const ctx = useResourceManagerContext()
   const { timeRange, setTimeRange } = useResourceManagerUrlState()
+  const { data, isLoading, sendRequest, error } = useClientRequest(
+    (reqConfig) => {
+      const [start, end] = toTimeRangeValue(timeRange)
+      return ctx.ds.getCalibrateByActual(
+        { startTime: start + '', endTime: end + '' },
+        reqConfig
+      )
+    }
+  )
+  useEffect(() => {
+    sendRequest()
+  }, [timeRange])
 
   return (
     <div>
@@ -88,7 +122,8 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           <Col span={6}>
             <Statistic
               title="Estimated Capacity"
-              value={0}
+              value={data?.estimated_capacity ?? 0}
+              loading={isLoading}
               suffix={
                 <Typography.Text type="secondary" style={{ fontSize: 14 }}>
                   RUs/sec
@@ -104,6 +139,13 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           </Col>
         </Row>
       </div>
+
+      {error && (
+        <div style={{ paddingTop: 16 }}>
+          {' '}
+          <ErrorBar errors={[error]} />{' '}
+        </div>
+      )}
     </div>
   )
 }
@@ -124,7 +166,7 @@ export const EstimateCapacity: React.FC<{ totalRU: number }> = ({
         content: () => <WorkloadCalibrate totalRU={totalRU} />
       }
     ]
-  }, [])
+  }, [totalRU])
 
   return (
     <Card title="Estimate Capacity">
@@ -135,7 +177,7 @@ export const EstimateCapacity: React.FC<{ totalRU: number }> = ({
         statistics, and may deviate from actual capacity.
       </Typography.Paragraph>
 
-      <details>
+      <details style={{ marginBottom: 16 }}>
         <summary>Change the Resource Allocation</summary>
         <Typography>
           <Text>To change the resource allocation for resource group:</Text>

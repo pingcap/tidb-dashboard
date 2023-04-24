@@ -98,6 +98,7 @@ type CalibrateResponse struct {
 // @Summary Get calibrate of Resource Groups by hardware deployment
 // @Router /resource_manager/calibrate/hardware [get]
 // @Param workload query string true "workload" default("tpcc")
+// @Security JwtAuth
 // @Success 200 {object} CalibrateResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
@@ -122,6 +123,7 @@ func (s *Service) GetCalibrateByHardware(c *gin.Context) {
 // @Router /resource_manager/calibrate/actual [get]
 // @Param start_time query string true "start_time"
 // @Param end_time query string true "end_time"
+// @Security JwtAuth
 // @Success 200 {object} CalibrateResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse

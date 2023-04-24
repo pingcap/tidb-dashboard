@@ -6,6 +6,7 @@ import {
 import { AxiosPromise } from 'axios'
 
 import client, {
+  ResourcemanagerCalibrateResponse,
   ResourcemanagerGetConfigResponse,
   ResourcemanagerResourceInfoRowDef
 } from '~/client'
@@ -20,6 +21,23 @@ class DataSource implements IResourceManagerDataSource {
     options?: ReqConfig
   ): AxiosPromise<ResourcemanagerResourceInfoRowDef[]> {
     return client.getInstance().resourceManagerInformationGet(options)
+  }
+
+  getCalibrateByHardware(
+    params: { workload: string },
+    options?: ReqConfig | undefined
+  ): AxiosPromise<ResourcemanagerCalibrateResponse> {
+    return client
+      .getInstance()
+      .resourceManagerCalibrateHardwareGet(params, options)
+  }
+  getCalibrateByActual(
+    params: { startTime: string; endTime: string },
+    options?: ReqConfig | undefined
+  ): AxiosPromise<ResourcemanagerCalibrateResponse> {
+    return client
+      .getInstance()
+      .resourceManagerCalibrateActualGet(params, options)
   }
 }
 

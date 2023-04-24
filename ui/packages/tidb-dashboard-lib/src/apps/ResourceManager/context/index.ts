@@ -1,4 +1,5 @@
 import {
+  ResourcemanagerCalibrateResponse,
   ResourcemanagerGetConfigResponse,
   ResourcemanagerResourceInfoRowDef
 } from '@lib/client'
@@ -11,6 +12,15 @@ export interface IResourceManagerDataSource {
   getInformation(
     options?: ReqConfig
   ): AxiosPromise<ResourcemanagerResourceInfoRowDef[]>
+
+  getCalibrateByHardware(
+    params: { workload: string },
+    options?: ReqConfig
+  ): AxiosPromise<ResourcemanagerCalibrateResponse>
+  getCalibrateByActual(
+    params: { startTime: string; endTime: string },
+    options?: ReqConfig
+  ): AxiosPromise<ResourcemanagerCalibrateResponse>
 }
 
 export interface IResourceManagerConfig {}

@@ -5,6 +5,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { Space, Switch, Typography } from 'antd'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { ResourcemanagerResourceInfoRowDef } from '@lib/client'
+import { useTranslation } from 'react-i18next'
 
 type ConfigurationProps = {
   info: ResourcemanagerResourceInfoRowDef[]
@@ -19,11 +20,12 @@ export const Configuration: React.FC<ConfigurationProps> = ({
   const { data: config, isLoading: loadingConfig } = useClientRequest(
     ctx.ds.getConfig
   )
+  const { t } = useTranslation()
 
   const columns: IColumn[] = useMemo(() => {
     return [
       {
-        name: 'Resource Group',
+        name: t('resource_manager.configuration.table_fields.resource_group'),
         key: 'resource_group',
         minWidth: 100,
         maxWidth: 200,
@@ -32,7 +34,7 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         }
       },
       {
-        name: 'RUs/sec',
+        name: t('resource_manager.configuration.table_fields.ru_per_sec'),
         key: 'ru_per_sec',
         minWidth: 100,
         maxWidth: 150,
@@ -41,7 +43,7 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         }
       },
       {
-        name: 'Priority',
+        name: t('resource_manager.configuration.table_fields.priority'),
         key: 'priority',
         minWidth: 100,
         maxWidth: 150,
@@ -50,7 +52,7 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         }
       },
       {
-        name: 'Burstable',
+        name: t('resource_manager.configuration.table_fields.burstable'),
         key: 'burstable',
         minWidth: 100,
         maxWidth: 150,
@@ -59,12 +61,14 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         }
       }
     ]
-  }, [])
+  }, [t])
 
   return (
-    <Card title="Configuration">
+    <Card title={t('resource_manager.configuration.title')}>
       <Space direction="vertical" style={{ paddingBottom: 8 }}>
-        <Typography.Text>TiDB Resource Manager Enabled</Typography.Text>
+        <Typography.Text>
+          {t('resource_manager.configuration.enabled')}
+        </Typography.Text>
         <Switch
           loading={loadingConfig}
           checked={config?.enable}

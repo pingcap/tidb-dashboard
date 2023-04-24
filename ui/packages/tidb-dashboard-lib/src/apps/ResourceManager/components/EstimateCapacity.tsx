@@ -22,33 +22,24 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { useResourceManagerUrlState } from '../uilts/url-state'
 import { TIME_WINDOW_RECENT_SECONDS, WORKLOAD_TYPES } from '../uilts/helpers'
+import { useTranslation } from 'react-i18next'
 
 const { Option } = Select
 const { Paragraph, Text, Link } = Typography
-
-const workloadTypeTooltip = `Select a workload type which is similar with your actual workload.
-
-- oltp_read_write: mixed read & write
-- oltp_read_only: read intensive  workload
-- oltp_write_only: write intensive workload
-- tpcc: write intensive workload`
-
-const timeWindowTooltip = `Select the time window with classic workload in the past, with which TiDB can come a better estimation of RU capacity.
-
-Time window length: 10 mins ~ 24 hours
-`
 
 const CapacityWarning: React.FC<{ totalRU: number; estimatedRU: number }> = ({
   totalRU,
   estimatedRU
 }) => {
+  const { t } = useTranslation()
+
   if (totalRU > estimatedRU) {
     return (
       <div style={{ paddingTop: 16 }}>
         <Alert
           type="warning"
           showIcon
-          message='The total RU of all customized resource groups exceeds the  "estimated capacity". The RU allocated to some resource groups could not be satisfied.'
+          message={t('resource_manager.estimate_capacity.exceed_warning')}
         />
       </div>
     )
@@ -67,6 +58,7 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
     sendRequest()
   }, [workload])
   const estimatedRU = data?.estimated_capacity ?? 0
+  const { t } = useTranslation()
 
   return (
     <div>
@@ -78,7 +70,13 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
             </Option>
           ))}
         </Select>
-        <Tooltip title={<Pre>{workloadTypeTooltip}</Pre>}>
+        <Tooltip
+          title={
+            <Pre>
+              {t('resource_manager.estimate_capacity.workload_select_tooltip')}
+            </Pre>
+          }
+        >
           <InfoCircleOutlined />
         </Tooltip>
       </Space>
@@ -87,7 +85,7 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
         <Row gutter={16}>
           <Col span={6}>
             <Statistic
-              title="Estimated Capacity"
+              title={t('resource_manager.estimate_capacity.estimated_capacity')}
               value={estimatedRU}
               loading={isLoading}
               suffix={
@@ -99,7 +97,7 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           </Col>
           <Col span={6}>
             <Statistic
-              title="Total RU of user resource groups"
+              title={t('resource_manager.estimate_capacity.total_ru')}
               value={totalRU}
             />
           </Col>
@@ -135,6 +133,8 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
   }, [timeRange])
   const estimatedRU = data?.estimated_capacity ?? 0
 
+  const { t } = useTranslation()
+
   return (
     <div>
       <Space>
@@ -144,7 +144,15 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           onChange={setTimeRange}
         />
 
-        <Tooltip title={<Pre>{timeWindowTooltip}</Pre>}>
+        <Tooltip
+          title={
+            <Pre>
+              {t(
+                'resource_manager.estimate_capacity.time_window_select_tooltip'
+              )}
+            </Pre>
+          }
+        >
           <InfoCircleOutlined />
         </Tooltip>
       </Space>
@@ -153,7 +161,7 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
         <Row gutter={16}>
           <Col span={6}>
             <Statistic
-              title="Estimated Capacity"
+              title={t('resource_manager.estimate_capacity.estimated_capacity')}
               value={estimatedRU}
               loading={isLoading}
               suffix={
@@ -165,7 +173,7 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           </Col>
           <Col span={6}>
             <Statistic
-              title="Total RU of user resource groups"
+              title={t('resource_manager.estimate_capacity.total_ru')}
               value={totalRU}
             />
           </Col>
@@ -187,49 +195,59 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
 export const EstimateCapacity: React.FC<{ totalRU: number }> = ({
   totalRU
 }) => {
+  const { t } = useTranslation()
   const tabs = useMemo(() => {
     return [
       {
         key: 'calibrate_by_hardware',
-        title: 'Calibrate by Hardware',
+        title: t('resource_manager.estimate_capacity.calibrate_by_hardware'),
         content: () => <HardwareCalibrate totalRU={totalRU} />
       },
       {
         key: 'calibrate_by_workload',
-        title: 'Calibrate by Workload',
+        title: t('resource_manager.estimate_capacity.calibrate_by_workload'),
         content: () => <WorkloadCalibrate totalRU={totalRU} />
       }
     ]
-  }, [totalRU])
+  }, [totalRU, t])
 
   return (
-    <Card title="Estimate Capacity">
+    <Card title={t('resource_manager.estimate_capacity.title')}>
       <Paragraph>
         <blockquote>
-          Request Unit (RU) is a unified abstraction unit in TiDB for system
-          resources, which is relavant to resource comsuption.
+          {t('resource_manager.estimate_capacity.ru_desc_line_1')}
           <br />
-          Please notice the "estimated capacity" refers to a result that is
-          hardware specs or past statistics, and may deviate from actual
-          capacity.
+          {t('resource_manager.estimate_capacity.ru_desc_line_2')}
           <br />
           <br />
           <details>
-            <summary>Change the Resource Allocation</summary>
+            <summary>
+              {t(
+                'resource_manager.estimate_capacity.change_resource_allocation'
+              )}
+            </summary>
             <Typography>
-              <Text>To change the resource allocation for resource group:</Text>
+              <Text>
+                {t(
+                  'resource_manager.estimate_capacity.resource_allocation_line_1'
+                )}
+              </Text>
               <div style={{ paddingTop: 8, paddingBottom: 8 }}>
                 <Text code>
                   {`ALTER RESOURCE GROUP <resource group name> RU_PER_SEC=<#ru> \\[BURSTALE];`}
                 </Text>
               </div>
               <Text>
-                For detail information, please refer to{' '}
+                {t(
+                  'resource_manager.estimate_capacity.resource_allocation_ref'
+                )}
                 <Link
                   href="https://docs.pingcap.com/tidb/dev/tidb-resource-control"
                   target="_blank"
                 >
-                  user manual
+                  {t(
+                    'resource_manager.estimate_capacity.resource_allocation_user_manual'
+                  )}
                 </Link>
                 .
               </Text>

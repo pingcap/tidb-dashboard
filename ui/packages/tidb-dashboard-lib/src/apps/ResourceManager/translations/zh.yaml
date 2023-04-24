@@ -1,2 +1,36 @@
 resource_manager:
   nav_title: 资源管控
+  configuration:
+    title: 配置
+    enabled: 启用 TiDB 资源管控
+    table_fields:
+      resource_group: 资源分组
+      ru_per_sec: 每秒请求单元
+      priority: 优先级
+      burstable: 是否可突发
+  estimate_capacity:
+    title: 容量估算
+    ru_desc_line_1: 请求单元 (RU) 是一个统一的抽象单元，用于表示 TiDB 系统资源，与资源消耗相关。
+    ru_desc_line_2: 请注意，"估算容量" 是基于硬件配置或过去的统计数据，可能与实际容量有所偏差。
+    change_resource_allocation: 修改资源分配
+    resource_allocation_line_1: '执行以下命令修改资源分配：'
+    resource_allocation_ref: 想了解更多，请参考
+    resource_allocation_user_manual: 用户手册
+    calibrate_by_hardware: 通过硬件配置校准
+    calibrate_by_workload: 通过负截校准
+    estimated_capacity: 估算容量
+    total_ru: 用户资源分组总请求单元
+    exceed_warning: 所有自定义资源分组的总请求单元超过了 "估算容量"。部分资源分组的请求单元可能无法满足。
+    workload_select_tooltip: |
+      选择一个与实际工作负载相似的工作负载类型。
+
+      - oltp_read_write: 读写混合型工作负载
+      - oltp_read_only: 读取密集型工作负载
+      - oltp_write_only: 写入密集型工作负载
+      - tpcc: 写入密集型工作负载
+    time_window_select_tooltip: |
+      选择一个过去的典型工作负载时间窗口，TiDB 会基于该时间窗口的统计数据来估算 RU 容量。
+
+      时间窗口长度：10 分钟 ~ 24 小时
+  metrics:
+    title: 监控指标

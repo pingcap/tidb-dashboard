@@ -1,8 +1,8 @@
-import { SyncOutlined } from '@ant-design/icons'
+import { HddOutlined } from '@ant-design/icons'
 
 export default {
   id: 'resource_manager',
   routerPrefix: '/resource_manager',
-  icon: SyncOutlined,
+  icon: HddOutlined,
   reactRoot: () => import('.')
 }

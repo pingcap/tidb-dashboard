@@ -1,2 +1,36 @@
 resource_manager:
   nav_title: Resource Manager
+  configuration:
+    title: Configuration
+    enabled: TiDB Resource Manager Enabled
+    table_fields:
+      resource_group: Resource Group
+      ru_per_sec: RUs/sec
+      priority: Priority
+      burstable: Burstable
+  estimate_capacity:
+    title: Estimate Capacity
+    ru_desc_line_1: Request Unit (RU) is a unified abstraction unit in TiDB for system resources, which is relavant to resource comsuption.
+    ru_desc_line_2: Please notice the "estimated capacity" refers to a result that is hardware specs or past statistics, and may deviate from actual capacity.
+    change_resource_allocation: Change the Resource Allocation
+    resource_allocation_line_1: 'To change the resource allocation for resource group:'
+    resource_allocation_ref: For detail information, please refer to
+    resource_allocation_user_manual: user manual
+    calibrate_by_hardware: Calibrate by Hardware
+    calibrate_by_workload: Calibrate by Workload
+    estimated_capacity: Estimated Capacity
+    total_ru: Total RU of user resource groups
+    exceed_warning: The total RU of all customized resource groups exceeds the "estimated capacity". The RU allocated to some resource groups could not be satisfied.
+    workload_select_tooltip: |
+      Select a workload type which is similar with your actual workload.
+
+      - oltp_read_write: mixed read & write
+      - oltp_read_only: read intensive workload
+      - oltp_write_only: write intensive workload
+      - tpcc: write intensive workload
+    time_window_select_tooltip: |
+      Select the time window with classic workload in the past, with which TiDB can come a better estimation of RU capacity.
+
+      Time window length: 10 mins ~ 24 hours
+  metrics:
+    title: Metrics

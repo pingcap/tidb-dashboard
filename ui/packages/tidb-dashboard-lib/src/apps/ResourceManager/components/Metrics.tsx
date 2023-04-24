@@ -10,13 +10,15 @@ import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { useResourceManagerContext } from '../context'
 import { useResourceManagerUrlState } from '../uilts/url-state'
 import { MetricConfig, metrics } from '../uilts/metricQueries'
+import { useTranslation } from 'react-i18next'
 
 export const Metrics: React.FC = () => {
   const { timeRange, setTimeRange } = useResourceManagerUrlState()
   const [, setIsSomeLoading] = useState(false)
+  const { t } = useTranslation()
 
   return (
-    <Card title="Metrics">
+    <Card title={t('resource_manager.metrics.title')}>
       <div style={{ marginBottom: 24 }}>
         <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
       </div>

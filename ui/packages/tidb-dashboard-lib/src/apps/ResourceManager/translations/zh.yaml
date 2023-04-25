@@ -17,7 +17,7 @@ resource_manager:
     resource_allocation_ref: 想了解更多，请参考
     resource_allocation_user_manual: 用户手册
     calibrate_by_hardware: 通过硬件配置校准
-    calibrate_by_workload: 通过负截校准
+    calibrate_by_workload: 通过负载校准
     estimated_capacity: 估算容量
     total_ru: 用户资源分组总请求单元
     exceed_warning: 所有自定义资源分组的总请求单元超过了 "估算容量"。部分资源分组的请求单元可能无法满足。

@@ -5,6 +5,7 @@ package resourcemanager
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -39,8 +40,8 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		utils.MWConnectTiDB(s.params.TiDBClient),
 	)
 	{
-		endpoint.GET("/information", s.GetInformation)
 		endpoint.GET("/config", s.GetConfig)
+		endpoint.GET("/information", s.GetInformation)
 		endpoint.GET("/calibrate/hardware", s.GetCalibrateByHardware)
 		endpoint.GET("/calibrate/actual", s.GetCalibrateByActual)
 	}
@@ -53,7 +54,7 @@ type GetConfigResponse struct {
 // @Summary Get Resource Control enable config
 // @Router /resource_manager/config [get]
 // @Security JwtAuth
-// @Success 200 {string} enable
+// @Success 200 {object} GetConfigResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
 func (s *Service) GetConfig(c *gin.Context) {
@@ -98,6 +99,7 @@ type CalibrateResponse struct {
 // @Summary Get calibrate of Resource Groups by hardware deployment
 // @Router /resource_manager/calibrate/hardware [get]
 // @Param workload query string true "workload" default("tpcc")
+// @Security JwtAuth
 // @Success 200 {object} CalibrateResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
@@ -118,29 +120,31 @@ func (s *Service) GetCalibrateByHardware(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+type GetCalibrateByActualRequest struct {
+	StartTime int64 `json:"start_time" form:"start_time"`
+	EndTime   int64 `json:"end_time" form:"end_time"`
+}
+
 // @Summary Get calibrate of Resource Groups by actual workload
 // @Router /resource_manager/calibrate/actual [get]
-// @Param start_time query string true "start_time"
-// @Param end_time query string true "end_time"
+// @Param q query GetCalibrateByActualRequest true "Query"
+// @Security JwtAuth
 // @Success 200 {object} CalibrateResponse
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
 func (s *Service) GetCalibrateByActual(c *gin.Context) {
-	sTime := c.Query("start_time")
-	if sTime == "" {
-		rest.Error(c, rest.ErrBadRequest.New("start_time cannot be empty"))
+	var req GetCalibrateByActualRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 
-	eTime := c.Query("end_time")
-	if eTime == "" {
-		rest.Error(c, rest.ErrBadRequest.New("end_time cannot be empty"))
-		return
-	}
+	startTime := time.Unix(req.StartTime, 0).Format("2006-01-02 15:04:05")
+	endTime := time.Unix(req.EndTime, 0).Format("2006-01-02 15:04:05")
 
 	db := utils.GetTiDBConnection(c)
 	resp := &CalibrateResponse{}
-	err := db.Raw(fmt.Sprintf("calibrate resource start_time '%s' end_time '%s'", sTime, eTime)).Scan(resp).Error
+	err := db.Raw(fmt.Sprintf("calibrate resource start_time '%s' end_time '%s'", startTime, endTime)).Scan(resp).Error
 	if err != nil {
 		rest.Error(c, err)
 		return

@@ -2424,16 +2424,12 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary Get calibrate of Resource Groups by actual workload
-         * @param {string} startTime start_time
-         * @param {string} endTime end_time
+         * @param {number} [endTime] 
+         * @param {number} [startTime] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        resourceManagerCalibrateActualGet: async (startTime: string, endTime: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'startTime' is not null or undefined
-            assertParamExists('resourceManagerCalibrateActualGet', 'startTime', startTime)
-            // verify required parameter 'endTime' is not null or undefined
-            assertParamExists('resourceManagerCalibrateActualGet', 'endTime', endTime)
+        resourceManagerCalibrateActualGet: async (endTime?: number, startTime?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/resource_manager/calibrate/actual`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2449,12 +2445,12 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             // authentication JwtAuth required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
-            if (startTime !== undefined) {
-                localVarQueryParameter['start_time'] = startTime;
-            }
-
             if (endTime !== undefined) {
                 localVarQueryParameter['end_time'] = endTime;
+            }
+
+            if (startTime !== undefined) {
+                localVarQueryParameter['start_time'] = startTime;
             }
 
 
@@ -4635,13 +4631,13 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get calibrate of Resource Groups by actual workload
-         * @param {string} startTime start_time
-         * @param {string} endTime end_time
+         * @param {number} [endTime] 
+         * @param {number} [startTime] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async resourceManagerCalibrateActualGet(startTime: string, endTime: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResourcemanagerCalibrateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.resourceManagerCalibrateActualGet(startTime, endTime, options);
+        async resourceManagerCalibrateActualGet(endTime?: number, startTime?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResourcemanagerCalibrateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.resourceManagerCalibrateActualGet(endTime, startTime, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5675,13 +5671,13 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary Get calibrate of Resource Groups by actual workload
-         * @param {string} startTime start_time
-         * @param {string} endTime end_time
+         * @param {number} [endTime] 
+         * @param {number} [startTime] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        resourceManagerCalibrateActualGet(startTime: string, endTime: string, options?: any): AxiosPromise<ResourcemanagerCalibrateResponse> {
-            return localVarFp.resourceManagerCalibrateActualGet(startTime, endTime, options).then((request) => request(axios, basePath));
+        resourceManagerCalibrateActualGet(endTime?: number, startTime?: number, options?: any): AxiosPromise<ResourcemanagerCalibrateResponse> {
+            return localVarFp.resourceManagerCalibrateActualGet(endTime, startTime, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6692,18 +6688,18 @@ export interface DefaultApiQueryEditorRunRequest {
  */
 export interface DefaultApiResourceManagerCalibrateActualGetRequest {
     /**
-     * start_time
-     * @type {string}
+     * 
+     * @type {number}
      * @memberof DefaultApiResourceManagerCalibrateActualGet
      */
-    readonly startTime: string
+    readonly endTime?: number
 
     /**
-     * end_time
-     * @type {string}
+     * 
+     * @type {number}
      * @memberof DefaultApiResourceManagerCalibrateActualGet
      */
-    readonly endTime: string
+    readonly startTime?: number
 }
 
 /**
@@ -8025,8 +8021,8 @@ export class DefaultApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public resourceManagerCalibrateActualGet(requestParameters: DefaultApiResourceManagerCalibrateActualGetRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).resourceManagerCalibrateActualGet(requestParameters.startTime, requestParameters.endTime, options).then((request) => request(this.axios, this.basePath));
+    public resourceManagerCalibrateActualGet(requestParameters: DefaultApiResourceManagerCalibrateActualGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).resourceManagerCalibrateActualGet(requestParameters.endTime, requestParameters.startTime, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

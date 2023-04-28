@@ -2152,18 +2152,14 @@
                 "summary": "Get calibrate of Resource Groups by actual workload",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "start_time",
-                        "name": "start_time",
-                        "in": "query",
-                        "required": true
+                        "type": "integer",
+                        "name": "end_time",
+                        "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "end_time",
-                        "name": "end_time",
-                        "in": "query",
-                        "required": true
+                        "type": "integer",
+                        "name": "start_time",
+                        "in": "query"
                     }
                 ],
                 "responses": {

@@ -123,7 +123,7 @@ const WorkloadCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
     (reqConfig) => {
       const [start, end] = toTimeRangeValue(timeRange)
       return ctx.ds.getCalibrateByActual(
-        { startTime: start + '', endTime: end + '' },
+        { startTime: start, endTime: end },
         reqConfig
       )
     }

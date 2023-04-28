@@ -32,7 +32,7 @@ class DataSource implements IResourceManagerDataSource {
       .resourceManagerCalibrateHardwareGet(params, options)
   }
   getCalibrateByActual(
-    params: { startTime: string; endTime: string },
+    params: { startTime: number; endTime: number },
     options?: ReqConfig | undefined
   ): AxiosPromise<ResourcemanagerCalibrateResponse> {
     return client

@@ -19,7 +19,7 @@ export interface IResourceManagerDataSource {
     options?: ReqConfig
   ): AxiosPromise<ResourcemanagerCalibrateResponse>
   getCalibrateByActual(
-    params: { startTime: string; endTime: string },
+    params: { startTime: number; endTime: number },
     options?: ReqConfig
   ): AxiosPromise<ResourcemanagerCalibrateResponse>
 

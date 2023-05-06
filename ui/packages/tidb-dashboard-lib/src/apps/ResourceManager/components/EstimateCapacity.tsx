@@ -33,7 +33,7 @@ const CapacityWarning: React.FC<{ totalRU: number; estimatedRU: number }> = ({
 }) => {
   const { t } = useTranslation()
 
-  if (totalRU > estimatedRU) {
+  if (estimatedRU > 0 && totalRU > estimatedRU) {
     return (
       <div style={{ paddingTop: 16 }}>
         <Alert

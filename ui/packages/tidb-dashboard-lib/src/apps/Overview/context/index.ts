@@ -27,6 +27,7 @@ interface IMetricConfig {
     recent_seconds: number[]
     customAbsoluteRangePicker: boolean
   }
+  metricsReferenceLink?: string
 }
 
 export interface IOverviewDataSource {

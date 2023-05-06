@@ -88,18 +88,19 @@ export default function Metrics() {
               onRefresh={handleManualRefreshClick}
               disabled={isSomeLoading}
             />
-            <Tooltip placement="top" title={t('overview.panel_no_data_tips')}>
-              <a
-                // TODO: replace reference link on op side
-                href="https://docs.pingcap.com/tidbcloud/built-in-monitoring"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FileTextOutlined
-                  onClick={() => telemetry.clickDocumentationIcon()}
-                />
-              </a>
-            </Tooltip>
+            {ctx?.cfg.metricsReferenceLink && (
+              <Tooltip placement="top" title={t('overview.panel_no_data_tips')}>
+                <a
+                  href={ctx.cfg.metricsReferenceLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FileTextOutlined
+                    onClick={() => telemetry.clickDocumentationIcon()}
+                  />
+                </a>
+              </Tooltip>
+            )}
             {isSomeLoading && <LoadingOutlined />}
           </Space>
           <Space>

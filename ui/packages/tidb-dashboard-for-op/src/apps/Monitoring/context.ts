@@ -31,6 +31,8 @@ export const ctx: IMonitoringContext = {
   cfg: {
     getMetricsQueries: (pdVersion: string | undefined) =>
       getMonitoringItems(pdVersion),
-    promAddrConfigurable: true
+    promAddrConfigurable: true,
+    metricsReferenceLink:
+      'https://docs.pingcap.com/tidb/stable/dashboard-monitoring'
   }
 }

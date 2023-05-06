@@ -5,8 +5,8 @@ import { Button, Form, Input, Radio, Space, Typography } from 'antd'
 import React, { useContext } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DEFAULT_FORM_ITEM_STYLE } from './constants'
-import { UserProfileContext } from './context'
+import { DEFAULT_FORM_ITEM_STYLE } from '../utils/helper'
+import { UserProfileContext } from '../context'
 
 export function PrometheusAddressForm() {
   const ctx = useContext(UserProfileContext)

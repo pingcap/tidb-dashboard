@@ -1,6 +1,6 @@
 import { Form, Select } from 'antd'
 import React, { useCallback } from 'react'
-import { DEFAULT_FORM_ITEM_STYLE } from './constants'
+import { DEFAULT_FORM_ITEM_STYLE } from '../utils/helper'
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
 import _ from 'lodash'
 import { useTranslation } from 'react-i18next'

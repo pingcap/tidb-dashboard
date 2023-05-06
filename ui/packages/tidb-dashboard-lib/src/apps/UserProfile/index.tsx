@@ -6,9 +6,9 @@ import {
   SSOForm,
   SessionForm,
   PrometheusAddressForm,
-  VersionForm
+  VersionForm,
+  LanguageForm
 } from './components'
-import { LanguageForm } from './components/Form.Language'
 
 import { addTranslations } from '@lib/utils/i18n'
 import translations from './translations'

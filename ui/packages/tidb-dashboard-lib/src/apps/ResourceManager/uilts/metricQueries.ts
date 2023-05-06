@@ -41,6 +41,11 @@ export const metrics: MetricConfig[] = [
         promql: 'rate(process_cpu_seconds_total{job="tidb"}[30s])',
         name: '{instance}',
         type: 'line'
+      },
+      {
+        promql: 'sum(tidb_server_maxprocs)',
+        name: 'TiDB CPU Quota',
+        type: 'line'
       }
     ],
     unit: 'percentunit',
@@ -53,6 +58,11 @@ export const metrics: MetricConfig[] = [
         promql:
           'sum(rate(tikv_thread_cpu_seconds_total[$__rate_interval])) by (instance)',
         name: '{instance}',
+        type: 'line'
+      },
+      {
+        promql: 'sum(tikv_server_cpu_cores_quota)',
+        name: 'TiKV CPU Quota',
         type: 'line'
       }
     ],

@@ -101,11 +101,13 @@ func (s *Service) getDetails(c *gin.Context) {
 	}
 
 	// generate binary plan
-	result.BinaryPlan, err = utils.GenerateBinaryPlanJSON(result.BinaryPlan)
-	if err != nil {
-		rest.Error(c, err)
-		return
-	}
+	//
+	// Due to a kernel bug, the binary plan may fail to parse due to
+	// encoding issues. Additionally, since the binary plan field is
+	// not a required field, we can mask this error.
+	//
+	// See: https://github.com/pingcap/tidb-dashboard/issues/1515
+	result.BinaryPlan, _ = utils.GenerateBinaryPlanJSON(result.BinaryPlan)
 
 	c.JSON(http.StatusOK, *result)
 }

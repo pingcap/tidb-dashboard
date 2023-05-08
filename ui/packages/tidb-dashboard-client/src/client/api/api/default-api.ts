@@ -103,6 +103,12 @@ import { QueryeditorRunRequest } from '../models';
 // @ts-ignore
 import { QueryeditorRunResponse } from '../models';
 // @ts-ignore
+import { ResourcemanagerCalibrateResponse } from '../models';
+// @ts-ignore
+import { ResourcemanagerGetConfigResponse } from '../models';
+// @ts-ignore
+import { ResourcemanagerResourceInfoRowDef } from '../models';
+// @ts-ignore
 import { RestErrorResponse } from '../models';
 // @ts-ignore
 import { SlowqueryGetListRequest } from '../models';
@@ -2416,6 +2422,155 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * 
+         * @summary Get calibrate of Resource Groups by actual workload
+         * @param {number} [endTime] 
+         * @param {number} [startTime] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerCalibrateActualGet: async (endTime?: number, startTime?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/resource_manager/calibrate/actual`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (endTime !== undefined) {
+                localVarQueryParameter['end_time'] = endTime;
+            }
+
+            if (startTime !== undefined) {
+                localVarQueryParameter['start_time'] = startTime;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get calibrate of Resource Groups by hardware deployment
+         * @param {string} workload workload
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerCalibrateHardwareGet: async (workload: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'workload' is not null or undefined
+            assertParamExists('resourceManagerCalibrateHardwareGet', 'workload', workload)
+            const localVarPath = `/resource_manager/calibrate/hardware`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (workload !== undefined) {
+                localVarQueryParameter['workload'] = workload;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get Resource Control enable config
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerConfigGet: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/resource_manager/config`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get Information of Resource Groups
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerInformationGet: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/resource_manager/information`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Get available field names by slowquery table columns
          * @summary Get available field names
          * @param {*} [options] Override http request option.
@@ -4474,6 +4629,49 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
+         * 
+         * @summary Get calibrate of Resource Groups by actual workload
+         * @param {number} [endTime] 
+         * @param {number} [startTime] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async resourceManagerCalibrateActualGet(endTime?: number, startTime?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResourcemanagerCalibrateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.resourceManagerCalibrateActualGet(endTime, startTime, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Get calibrate of Resource Groups by hardware deployment
+         * @param {string} workload workload
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async resourceManagerCalibrateHardwareGet(workload: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResourcemanagerCalibrateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.resourceManagerCalibrateHardwareGet(workload, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Get Resource Control enable config
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async resourceManagerConfigGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResourcemanagerGetConfigResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.resourceManagerConfigGet(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Get Information of Resource Groups
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async resourceManagerInformationGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ResourcemanagerResourceInfoRowDef>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.resourceManagerInformationGet(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * Get available field names by slowquery table columns
          * @summary Get available field names
          * @param {*} [options] Override http request option.
@@ -5471,6 +5669,45 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.queryEditorRun(request, options).then((request) => request(axios, basePath));
         },
         /**
+         * 
+         * @summary Get calibrate of Resource Groups by actual workload
+         * @param {number} [endTime] 
+         * @param {number} [startTime] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerCalibrateActualGet(endTime?: number, startTime?: number, options?: any): AxiosPromise<ResourcemanagerCalibrateResponse> {
+            return localVarFp.resourceManagerCalibrateActualGet(endTime, startTime, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get calibrate of Resource Groups by hardware deployment
+         * @param {string} workload workload
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerCalibrateHardwareGet(workload: string, options?: any): AxiosPromise<ResourcemanagerCalibrateResponse> {
+            return localVarFp.resourceManagerCalibrateHardwareGet(workload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get Resource Control enable config
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerConfigGet(options?: any): AxiosPromise<ResourcemanagerGetConfigResponse> {
+            return localVarFp.resourceManagerConfigGet(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get Information of Resource Groups
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerInformationGet(options?: any): AxiosPromise<Array<ResourcemanagerResourceInfoRowDef>> {
+            return localVarFp.resourceManagerInformationGet(options).then((request) => request(axios, basePath));
+        },
+        /**
          * Get available field names by slowquery table columns
          * @summary Get available field names
          * @param {*} [options] Override http request option.
@@ -6442,6 +6679,41 @@ export interface DefaultApiQueryEditorRunRequest {
      * @memberof DefaultApiQueryEditorRun
      */
     readonly request: QueryeditorRunRequest
+}
+
+/**
+ * Request parameters for resourceManagerCalibrateActualGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiResourceManagerCalibrateActualGetRequest
+ */
+export interface DefaultApiResourceManagerCalibrateActualGetRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiResourceManagerCalibrateActualGet
+     */
+    readonly endTime?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiResourceManagerCalibrateActualGet
+     */
+    readonly startTime?: number
+}
+
+/**
+ * Request parameters for resourceManagerCalibrateHardwareGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiResourceManagerCalibrateHardwareGetRequest
+ */
+export interface DefaultApiResourceManagerCalibrateHardwareGetRequest {
+    /**
+     * workload
+     * @type {string}
+     * @memberof DefaultApiResourceManagerCalibrateHardwareGet
+     */
+    readonly workload: string
 }
 
 /**
@@ -7739,6 +8011,52 @@ export class DefaultApi extends BaseAPI {
      */
     public queryEditorRun(requestParameters: DefaultApiQueryEditorRunRequest, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).queryEditorRun(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get calibrate of Resource Groups by actual workload
+     * @param {DefaultApiResourceManagerCalibrateActualGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public resourceManagerCalibrateActualGet(requestParameters: DefaultApiResourceManagerCalibrateActualGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).resourceManagerCalibrateActualGet(requestParameters.endTime, requestParameters.startTime, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get calibrate of Resource Groups by hardware deployment
+     * @param {DefaultApiResourceManagerCalibrateHardwareGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public resourceManagerCalibrateHardwareGet(requestParameters: DefaultApiResourceManagerCalibrateHardwareGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).resourceManagerCalibrateHardwareGet(requestParameters.workload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get Resource Control enable config
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public resourceManagerConfigGet(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).resourceManagerConfigGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get Information of Resource Groups
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public resourceManagerInformationGet(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).resourceManagerInformationGet(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

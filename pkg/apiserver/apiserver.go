@@ -44,6 +44,7 @@ import (
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator.
+	resourcemanager "github.com/pingcap/tidb-dashboard/pkg/apiserver/resource_manager"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -139,6 +140,7 @@ var Modules = fx.Options(
 	topsql.Module,
 	visualplan.Module,
 	deadlock.Module,
+	resourcemanager.Module,
 )
 
 func (s *Service) Start(ctx context.Context) error {

@@ -24,7 +24,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import ReactMarkdown from 'react-markdown'
 import Checkbox from 'antd/lib/checkbox/Checkbox'
 import { store } from '@lib/utils/store'
-import { UserProfileContext } from './context'
+import { UserProfileContext } from '../context'
 
 const SHARE_SESSION_EXPIRY_HOURS = [
   0.25,

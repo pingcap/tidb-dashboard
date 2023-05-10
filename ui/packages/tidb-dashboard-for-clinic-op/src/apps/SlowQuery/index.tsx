@@ -12,8 +12,8 @@ function getDsExtra(): DsExtra {
     window.location.hash.indexOf('?')
   )
   const params = new URLSearchParams(urlHashParmasStr)
-  const beginTime = params.get('from') || ''
-  const endTime = params.get('to') || ''
+  const beginTime = parseInt(params.get('from') || '0')
+  const endTime = parseInt(params.get('to') || '0')
 
   return {
     oid,
@@ -40,10 +40,10 @@ export default function () {
           query_time: true,
           memory_max: true
         },
-        // timeRange: {
-        //   type: 'absolute',
-        //   value: [dsExtra.beginTime, dsExtra.endTime]
-        // },
+        timeRange: {
+          type: 'absolute',
+          value: [dsExtra.beginTime, dsExtra.endTime]
+        },
         schemas: [],
         searchText: '',
         limit: 100,
@@ -62,6 +62,5 @@ export default function () {
       </SlowQueryProvider>
     )
   }
-
   return <div>loading...</div>
 }

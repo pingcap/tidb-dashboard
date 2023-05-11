@@ -2,11 +2,13 @@ import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import { Card, Root } from '@lib/components'
-import { SSOForm } from './Form.SSO'
-import { SessionForm } from './Form.Session'
-import { PrometheusAddressForm } from './Form.PrometheusAddr'
-import { VersionForm } from './Form.Version'
-import { LanguageForm } from './Form.Language'
+import {
+  SSOForm,
+  SessionForm,
+  PrometheusAddressForm,
+  VersionForm,
+  LanguageForm
+} from './components'
 
 import { addTranslations } from '@lib/utils/i18n'
 import translations from './translations'

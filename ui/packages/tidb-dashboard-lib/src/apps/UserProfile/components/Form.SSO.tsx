@@ -18,8 +18,8 @@ import {
 import React, { useContext } from 'react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DEFAULT_FORM_ITEM_STYLE } from './constants'
-import { UserProfileContext } from './context'
+import { DEFAULT_FORM_ITEM_STYLE } from '../utils/helper'
+import { UserProfileContext } from '../context'
 
 interface IUserAuthInputProps {
   value?: SsoSSOImpersonationModel

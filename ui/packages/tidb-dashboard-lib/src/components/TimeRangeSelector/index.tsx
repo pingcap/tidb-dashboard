@@ -76,6 +76,37 @@ export function fromTimeRangeValue(v: TimeRangeValue): AbsoluteTimeRange {
   }
 }
 
+//////////////////////
+
+export type URLTimeRange = { from: string; to: string }
+
+export const toURLTimeRange = (timeRange: TimeRange): URLTimeRange => {
+  if (timeRange.type === 'recent') {
+    return { from: `${timeRange.value}`, to: 'now' }
+  }
+
+  const timeRangeValue = toTimeRangeValue(timeRange)
+  return { from: `${timeRangeValue[0]}`, to: `${timeRangeValue[1]}` }
+}
+
+export const urlToTimeRange = (urlTimeRange: URLTimeRange): TimeRange => {
+  if (urlTimeRange.to === 'now') {
+    return { type: 'recent', value: Number(urlTimeRange.from) }
+  }
+  return {
+    type: 'absolute',
+    value: [Number(urlTimeRange.from), Number(urlTimeRange.to)]
+  }
+}
+
+export const urlToTimeRangeValue = (
+  urlTimeRange: URLTimeRange
+): TimeRangeValue => {
+  return toTimeRangeValue(urlToTimeRange(urlTimeRange))
+}
+
+//////////////////////
+
 /**
  * @deprecated
  */

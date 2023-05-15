@@ -2,13 +2,8 @@
 approvers:
   # diagnostic-maintainers:
   - baurine
-  - breezewish
   # diagnostic-committers:
-  - crazycs520
-  - Deardrops
-  - iosmanthus
   - shhdgit
   - zhongzc
 reviewers:
   # diagnostic-reviewers:
-  - Renkai

@@ -1,0 +1,9 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+approvers:
+  # diagnostic-maintainers:
+  - baurine
+  # diagnostic-committers:
+  - shhdgit
+  - zhongzc
+reviewers:
+  # diagnostic-reviewers:

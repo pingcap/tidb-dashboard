@@ -11,8 +11,8 @@ export type DsExtra = {
   oid: string
   cid: string
   itemID: string
-  beginTime: string
-  endTime: string
+  beginTime: number
+  endTime: number
   curQueryID: string
 }
 

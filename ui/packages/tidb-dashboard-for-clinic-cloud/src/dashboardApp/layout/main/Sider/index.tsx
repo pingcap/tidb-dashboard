@@ -152,7 +152,7 @@ function Sider({
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),
-    useAppMenuItem(registry, 'system_report'),
+    // useAppMenuItem(registry, 'system_report'),
     // warning: "diagnose" app doesn't release yet
     // useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'monitoring'),

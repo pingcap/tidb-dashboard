@@ -1,9 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
+reviewers:
+  - Fullstop000
+  - Renkai
 approvers:
-  # diagnostic-maintainers:
   - baurine
-  # diagnostic-committers:
+  - breezewish
+  - crazycs520
+  - Deardrops
+  - HunDunDM
+  - iosmanthus
   - shhdgit
   - zhongzc
-reviewers:
-  # diagnostic-reviewers:

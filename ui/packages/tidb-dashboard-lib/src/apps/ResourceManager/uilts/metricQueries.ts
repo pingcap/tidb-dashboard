@@ -61,7 +61,7 @@ export const metrics: MetricConfig[] = [
         type: 'line'
       },
       {
-        promql: 'sum(tikv_server_cpu_cores_quota)',
+        promql: 'tikv_server_cpu_cores_quota',
         name: 'TiKV CPU Quota',
         type: 'line'
       }

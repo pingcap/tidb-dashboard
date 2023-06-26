@@ -44,7 +44,7 @@ export const metrics: MetricConfig[] = [
       },
       {
         promql: 'tidb_server_maxprocs',
-        name: 'TiDB CPU Quota',
+        name: 'CPU Quota-{instance}',
         type: 'line'
       }
     ],
@@ -62,7 +62,7 @@ export const metrics: MetricConfig[] = [
       },
       {
         promql: 'tikv_server_cpu_cores_quota',
-        name: 'TiKV CPU Quota',
+        name: 'CPU Quota-{instance}',
         type: 'line'
       }
     ],

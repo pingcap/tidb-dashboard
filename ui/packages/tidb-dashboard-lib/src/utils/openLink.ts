@@ -17,6 +17,6 @@ export default function openLink(
     // open in a new window
     window.open(fullUrl)
   } else {
-    navigate(url)
+    navigate(url, { state: { historyBack: true } })
   }
 }

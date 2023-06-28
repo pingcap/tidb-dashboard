@@ -7,8 +7,8 @@ export default function openLink(
   ev: React.MouseEvent<HTMLElement>,
   navigate: NavigateFunction
 ) {
-  const { origin, pathname } = window.location
-  const fullUrl = `${origin}${pathname}#${url}`
+  const { origin, pathname, search } = window.location
+  const fullUrl = `${origin}${pathname}${search}#${url}`
 
   if (ev.metaKey || ev.altKey || ev.ctrlKey) {
     // open in a new tab

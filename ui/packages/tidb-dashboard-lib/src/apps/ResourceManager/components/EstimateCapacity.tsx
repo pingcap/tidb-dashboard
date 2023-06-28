@@ -234,7 +234,7 @@ export const EstimateCapacity: React.FC<{ totalRU: number }> = ({
               </Text>
               <div style={{ paddingTop: 8, paddingBottom: 8 }}>
                 <Text code>
-                  {`ALTER RESOURCE GROUP <resource group name> RU_PER_SEC=<#ru> \\[BURSTALE];`}
+                  {`ALTER RESOURCE GROUP <resource group name> RU_PER_SEC=<#ru> [BURSTABLE];`}
                 </Text>
               </div>
               <Text>

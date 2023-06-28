@@ -259,7 +259,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
   })
 
   const lastLoginUsername = useMemo(() => {
-    return localStorage.getItem(LAST_LOGIN_USERNAME_KEY) || 'root'
+    return localStorage.getItem(LAST_LOGIN_USERNAME_KEY) || ''
   }, [])
 
   return (

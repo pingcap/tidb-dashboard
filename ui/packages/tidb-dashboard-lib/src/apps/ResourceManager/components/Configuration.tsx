@@ -28,7 +28,7 @@ export const Configuration: React.FC<ConfigurationProps> = ({
         name: t('resource_manager.configuration.table_fields.resource_group'),
         key: 'resource_group',
         minWidth: 100,
-        maxWidth: 200,
+        maxWidth: 400,
         onRender: (row: any) => {
           return <span>{row.name}</span>
         }

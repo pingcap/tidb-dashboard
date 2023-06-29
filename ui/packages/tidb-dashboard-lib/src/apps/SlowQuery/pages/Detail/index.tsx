@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react'
 import { Space, Modal, Tabs, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { To, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -37,13 +37,14 @@ export interface IPageQuery {
 
 const SLOW_QUERY_DETAIL_EXPAND = 'slow_query.detail_expand'
 
-function DetailPage({ historyBack = false }: { historyBack?: boolean }) {
+function DetailPage() {
   const ctx = useContext(SlowQueryContext)
-
-  const query = DetailPage.parseQuery(useLocation().search)
-
-  const { t } = useTranslation()
+  const location = useLocation()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+
+  const query = DetailPage.parseQuery(location.search)
+  const historyBack = (location.state ?? ({} as any)).historyBack ?? false
 
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
     ctx!.ds.slowQueryDetailGet(
@@ -86,7 +87,9 @@ function DetailPage({ historyBack = false }: { historyBack?: boolean }) {
         title={t('slow_query.detail.head.title')}
         back={
           <Typography.Link
-            onClick={() => navigate((historyBack ? -1 : '/slow_query') as To)}
+            onClick={() =>
+              historyBack ? navigate(-1) : navigate('/slow_query')
+            }
           >
             <ArrowLeftOutlined /> {t('slow_query.detail.head.back')}
           </Typography.Link>

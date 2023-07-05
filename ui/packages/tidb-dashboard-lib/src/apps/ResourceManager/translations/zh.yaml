@@ -24,10 +24,10 @@ resource_manager:
     workload_select_tooltip: |
       选择一个与实际工作负载相似的工作负载类型。
 
-      - oltp_read_write: 读写混合型工作负载
-      - oltp_read_only: 读取密集型工作负载
-      - oltp_write_only: 写入密集型工作负载
-      - tpcc: 写入密集型工作负载
+      - **oltp_read_write**: 数据读写平衡的负载，根据类似 `sysbench oltp_read_write` 的负载模型预测
+      - **oltp_read_only**: 数据读取较重的负载，根据类似 `sysbench oltp_read_only` 的负载模型预测
+      - **oltp_write_only**: 数据写入较重的负载，根据类似 `sysbench oltp_write_only` 的负载模型预测
+      - **tpcc**: 数据写入较重的负载，根据类似 `TPC-C` 的负载模型预测
     time_window_select_tooltip: |
       选择一个过去的典型工作负载时间窗口，TiDB 会基于该时间窗口的统计数据来估算 RU 容量。
 

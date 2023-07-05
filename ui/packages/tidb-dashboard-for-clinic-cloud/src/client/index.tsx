@@ -72,11 +72,12 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
     err.message = content
     err.errCode = errCode
 
-    if (errCode === 'common.unauthenticated') {
+    if (errCode === 'common.unauthenticated' || response?.status === 401) {
       // Handle unauthorized error in a unified way
       if (!routing.isLocationMatch('/') && !routing.isSignInPage()) {
-        message.error({ content, key: errCode })
+        message.error({ content, key: errCode ?? '401' })
       }
+      window.location.href = window.location.origin
       err.handled = true
     } else if (handleError === 'default') {
       if (method === 'get') {

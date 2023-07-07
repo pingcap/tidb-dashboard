@@ -1,7 +1,7 @@
 monitoring:
   nav_title: Monitoring
   panel_no_data_tips: Documentation
-  change_prom_button: Change Promethues Address
+  change_prom_button: Change Prometheus Address
   category:
     application_connection: Application Connection
     database_time: Database Time

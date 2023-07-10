@@ -69,7 +69,7 @@ function mapData(data) {
       ]
     } else if (task.raw_data_type === RawDataType.Text) {
       task.view_options = [ViewOptions.Text]
-    } else if (task.raw_data_type === '') {
+    } else if (!task.raw_data_type) {
       switch (task.target.kind) {
         case 'tidb':
         case 'pd':

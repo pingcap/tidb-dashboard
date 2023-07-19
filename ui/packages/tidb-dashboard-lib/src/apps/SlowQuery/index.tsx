@@ -20,7 +20,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/slow_query" element={<List />} />
-      <Route path="/slow_query/detail" element={<Detail historyBack />} />
+      <Route path="/slow_query/detail" element={<Detail />} />
     </Routes>
   )
 }

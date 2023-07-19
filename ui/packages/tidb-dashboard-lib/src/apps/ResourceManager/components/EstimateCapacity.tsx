@@ -16,6 +16,7 @@ import {
   Tooltip,
   Typography
 } from 'antd'
+import ReactMarkdown from 'react-markdown'
 import React, { useEffect, useMemo } from 'react'
 import { useResourceManagerContext } from '../context'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -71,10 +72,11 @@ const HardwareCalibrate: React.FC<{ totalRU: number }> = ({ totalRU }) => {
           ))}
         </Select>
         <Tooltip
+          overlayStyle={{ maxWidth: 720 }}
           title={
-            <Pre>
+            <ReactMarkdown>
               {t('resource_manager.estimate_capacity.workload_select_tooltip')}
-            </Pre>
+            </ReactMarkdown>
           }
         >
           <InfoCircleOutlined />
@@ -234,13 +236,13 @@ export const EstimateCapacity: React.FC<{ totalRU: number }> = ({
               </Text>
               <div style={{ paddingTop: 8, paddingBottom: 8 }}>
                 <Text code>
-                  {`ALTER RESOURCE GROUP <resource group name> RU_PER_SEC=<#ru> \\[BURSTALE];`}
+                  {`ALTER RESOURCE GROUP <resource group name> RU_PER_SEC=<#ru> [BURSTABLE];`}
                 </Text>
               </div>
               <Text>
                 {t(
                   'resource_manager.estimate_capacity.resource_allocation_ref'
-                )}
+                )}{' '}
                 <Link
                   href="https://docs.pingcap.com/tidb/dev/tidb-resource-control"
                   target="_blank"

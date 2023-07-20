@@ -5313,6 +5313,9 @@
                 "binary_plan": {
                     "type": "string"
                 },
+                "binary_plan_text": {
+                    "type": "string"
+                },
                 "digest": {
                     "type": "string"
                 },

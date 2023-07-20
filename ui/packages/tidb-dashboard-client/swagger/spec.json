@@ -4906,6 +4906,9 @@
                 "binary_plan": {
                     "type": "string"
                 },
+                "binary_plan_text": {
+                    "type": "string"
+                },
                 "commit_backoff_time": {
                     "type": "number"
                 },

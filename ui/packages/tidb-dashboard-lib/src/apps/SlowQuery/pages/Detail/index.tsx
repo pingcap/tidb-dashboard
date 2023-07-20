@@ -225,12 +225,16 @@ function DetailPage() {
                                 expanded={detailExpand.plan}
                                 onClick={togglePlan}
                               />
-                              <CopyLink data={data.plan ?? ''} />
+                              <CopyLink
+                                data={data.binary_plan_text ?? data.plan ?? ''}
+                              />
                             </Space>
                           }
                         >
                           <Expand expanded={detailExpand.plan}>
-                            <Pre noWrap>{data.plan}</Pre>
+                            <Pre noWrap>
+                              {data.binary_plan_text ?? data.plan}
+                            </Pre>
                           </Expand>
                         </Descriptions.Item>
                       </Descriptions>

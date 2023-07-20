@@ -1,0 +1,184 @@
+{
+  "discardedDueToTooLong": false,
+  "main": {
+    "accessObjects": [],
+    "actRows": 6,
+    "children": [
+      {
+        "accessObjects": [],
+        "actRows": 6,
+        "children": [
+          {
+            "accessObjects": [],
+            "actRows": 6,
+            "children": [
+              {
+                "accessObjects": [],
+                "actRows": 6,
+                "children": [
+                  {
+                    "accessObjects": [],
+                    "actRows": 6,
+                    "children": [
+                      {
+                        "accessObjects": [],
+                        "actRows": 0,
+                        "children": [
+                          {
+                            "accessObjects": [
+                              {
+                                "scanObject": {
+                                  "database": "INFORMATION_SCHEMA",
+                                  "table": "CLUSTER_STATEMENTS_SUMMARY_HISTORY"
+                                }
+                              }
+                            ],
+                            "actRows": 0,
+                            "copExecInfo": {},
+                            "cost": 3387024.734619157,
+                            "diagnosis": [],
+                            "diskBytes": "N/A",
+                            "duration": "0s",
+                            "estRows": 10000,
+                            "labels": [],
+                            "memoryBytes": "N/A",
+                            "name": "TableFullScan_10",
+                            "operatorInfo": "keep order:false, stats:pseudo",
+                            "rootBasicExecInfo": {},
+                            "rootGroupExecInfo": [],
+                            "storeType": "tidb",
+                            "taskType": "cop"
+                          }
+                        ],
+                        "copExecInfo": {},
+                        "cost": 4385024.734619157,
+                        "diagnosis": ["high_est_error"],
+                        "diskBytes": "N/A",
+                        "duration": "0s",
+                        "estRows": 1107.777777777778,
+                        "labels": [],
+                        "memoryBytes": "N/A",
+                        "name": "Selection_11",
+                        "operatorInfo": "ge(information_schema.cluster_statements_summary_history.summary_end_time, 2023-07-17 14:48:34), le(information_schema.cluster_statements_summary_history.summary_begin_time, 2023-07-17 15:18:35)",
+                        "rootBasicExecInfo": {},
+                        "rootGroupExecInfo": [],
+                        "storeType": "tidb",
+                        "taskType": "cop"
+                      }
+                    ],
+                    "copExecInfo": {},
+                    "cost": 385920.0489746105,
+                    "diagnosis": [],
+                    "diskBytes": "N/A",
+                    "duration": "1.98ms",
+                    "estRows": 1107.777777777778,
+                    "labels": [],
+                    "memoryBytes": "2224",
+                    "name": "TableReader_12",
+                    "operatorInfo": "data:Selection_11",
+                    "rootBasicExecInfo": {
+                      "loops": "2",
+                      "time": "1.98ms"
+                    },
+                    "rootGroupExecInfo": [
+                      {
+                        "cop_task": {
+                          "copr_cache_hit_ratio": "0.00",
+                          "max": "1.97ms",
+                          "max_distsql_concurrency": "1",
+                          "num": "1",
+                          "proc_keys": "0",
+                          "rpc_num": "1",
+                          "rpc_time": "1.91ms"
+                        }
+                      }
+                    ],
+                    "storeType": "tidb",
+                    "taskType": "root"
+                  }
+                ],
+                "copExecInfo": {},
+                "cost": 420192.47786349937,
+                "diagnosis": [],
+                "diskBytes": "N/A",
+                "duration": "2.2ms",
+                "estRows": 1107.777777777778,
+                "labels": [],
+                "memoryBytes": "75200",
+                "name": "Projection_14",
+                "operatorInfo": "information_schema.cluster_statements_summary_history.summary_begin_time, information_schema.cluster_statements_summary_history.summary_end_time, cast(information_schema.cluster_statements_summary_history.exec_count, decimal(20,0) UNSIGNED BINARY)-\u003eColumn#120, cast(information_schema.cluster_statements_summary_history.sum_latency, decimal(20,0) UNSIGNED BINARY)-\u003eColumn#121, information_schema.cluster_statements_summary_history.max_latency, information_schema.cluster_statements_summary_history.min_latency, cast(mul(information_schema.cluster_statements_summary_history.exec_count, information_schema.cluster_statements_summary_history.avg_latency), decimal(20,0) UNSIGNED BINARY)-\u003eColumn#124, information_schema.cluster_statements_summary_history.plan_digest, information_schema.cluster_statements_summary_history.schema_name, information_schema.cluster_statements_summary_history.digest, information_schema.cluster_statements_summary_history.digest_text, information_schema.cluster_statements_summary_history.schema_name, information_schema.cluster_statements_summary_history.digest",
+                "rootBasicExecInfo": {
+                  "loops": "2",
+                  "time": "2.2ms"
+                },
+                "rootGroupExecInfo": [
+                  {
+                    "Concurrency": "5"
+                  }
+                ],
+                "storeType": "tidb",
+                "taskType": "root"
+              }
+            ],
+            "copExecInfo": {},
+            "cost": 579159.6458634995,
+            "diagnosis": [],
+            "diskBytes": "N/A",
+            "duration": "2.31ms",
+            "estRows": 886.2222222222225,
+            "labels": [],
+            "memoryBytes": "16809",
+            "name": "HashAgg_9",
+            "operatorInfo": "group by:Column#129, Column#130, funcs:min(Column#118)-\u003eColumn#98, funcs:max(Column#119)-\u003eColumn#99, funcs:sum(Column#120)-\u003eColumn#100, funcs:sum(Column#121)-\u003eColumn#101, funcs:max(Column#122)-\u003eColumn#102, funcs:min(Column#123)-\u003eColumn#103, funcs:sum(Column#124)-\u003eColumn#104, funcs:count(distinct Column#125)-\u003eColumn#105, funcs:firstrow(Column#126)-\u003einformation_schema.cluster_statements_summary_history.schema_name, funcs:firstrow(Column#127)-\u003einformation_schema.cluster_statements_summary_history.digest, funcs:firstrow(Column#128)-\u003einformation_schema.cluster_statements_summary_history.digest_text",
+            "rootBasicExecInfo": {
+              "loops": "2",
+              "time": "2.31ms"
+            },
+            "rootGroupExecInfo": [],
+            "storeType": "tidb",
+            "taskType": "root"
+          }
+        ],
+        "copExecInfo": {},
+        "cost": 632668.8574190551,
+        "diagnosis": [],
+        "diskBytes": "N/A",
+        "duration": "2.37ms",
+        "estRows": 886.2222222222225,
+        "labels": [],
+        "memoryBytes": "9140",
+        "name": "Projection_8",
+        "operatorInfo": "floor(unix_timestamp(Column#98))-\u003eColumn#106, floor(unix_timestamp(Column#99))-\u003eColumn#107, any_value(information_schema.cluster_statements_summary_history.digest_text)-\u003eColumn#108, any_value(information_schema.cluster_statements_summary_history.digest)-\u003eColumn#109, Column#100, Column#101, Column#102, Column#103, cast(div(Column#104, Column#100), bigint(22) BINARY)-\u003eColumn#110, any_value(information_schema.cluster_statements_summary_history.schema_name)-\u003eColumn#111, Column#105",
+        "rootBasicExecInfo": {
+          "loops": "2",
+          "time": "2.37ms"
+        },
+        "rootGroupExecInfo": [
+          {
+            "Concurrency": "OFF"
+          }
+        ],
+        "storeType": "tidb",
+        "taskType": "root"
+      }
+    ],
+    "copExecInfo": {},
+    "cost": 1111049.0271363556,
+    "diagnosis": [],
+    "diskBytes": "N/A",
+    "duration": "2.46ms",
+    "estRows": 886.2222222222225,
+    "labels": [],
+    "memoryBytes": "7812",
+    "name": "Sort_6",
+    "operatorInfo": "Column#101:desc",
+    "rootBasicExecInfo": {
+      "loops": "2",
+      "time": "2.46ms"
+    },
+    "rootGroupExecInfo": [],
+    "storeType": "tidb",
+    "taskType": "root"
+  },
+  "withRuntimeStats": true
+}

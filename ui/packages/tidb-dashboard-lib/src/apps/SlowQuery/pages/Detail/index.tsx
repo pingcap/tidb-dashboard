@@ -9,6 +9,7 @@ import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 import formatSql from '@lib/utils/sqlFormatter'
 import {
   AnimatedSkeleton,
+  BinaryPlanTable,
   CopyLink,
   Descriptions,
   ErrorBar,
@@ -56,6 +57,7 @@ function DetailPage() {
   )
 
   const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
+  // console.log('binaryPlan', binaryPlan)
 
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     SLOW_QUERY_DETAIL_EXPAND,
@@ -172,45 +174,11 @@ function DetailPage() {
                     {t('slow_query.detail.plan.title')}
                   </Space>
                   <Tabs
-                    defaultActiveKey={
-                      binaryPlan && !binaryPlan.main.discardedDueToTooLong
-                        ? 'binary_plan'
-                        : 'text_plan'
-                    }
+                    defaultActiveKey="text_plan"
                     onTabClick={(key) =>
                       telemetry.clickPlanTabs(key, data.digest!)
                     }
                   >
-                    {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
-                      <Tabs.TabPane
-                        tab={t('slow_query.detail.plan.visual')}
-                        key="binary_plan"
-                      >
-                        <Modal
-                          title={t('slow_query.detail.plan.modal_title')}
-                          centered
-                          visible={isVpVisible}
-                          width={window.innerWidth}
-                          onCancel={() => toggleVisualPlan('close')}
-                          footer={null}
-                          destroyOnClose={true}
-                          bodyStyle={{
-                            background: '#f5f5f5',
-                            height: window.innerHeight - 100
-                          }}
-                        >
-                          <VisualPlanView data={binaryPlan} />
-                        </Modal>
-                        <Descriptions>
-                          <Descriptions.Item span={2}>
-                            <div onClick={() => toggleVisualPlan('open')}>
-                              <VisualPlanThumbnailView data={binaryPlan} />
-                            </div>
-                          </Descriptions.Item>
-                        </Descriptions>
-                      </Tabs.TabPane>
-                    )}
-
                     <Tabs.TabPane
                       tab={t('slow_query.detail.plan.text')}
                       key="text_plan"
@@ -239,6 +207,41 @@ function DetailPage() {
                         </Descriptions.Item>
                       </Descriptions>
                     </Tabs.TabPane>
+
+                    {binaryPlan && !binaryPlan.discardedDueToTooLong && (
+                      <Tabs.TabPane tab={'Table'} key="binary_plan_table">
+                        <BinaryPlanTable data={binaryPlan} />
+                      </Tabs.TabPane>
+                    )}
+                    {binaryPlan && !binaryPlan.discardedDueToTooLong && (
+                      <Tabs.TabPane
+                        tab={t('slow_query.detail.plan.visual')}
+                        key="binary_plan"
+                      >
+                        <Modal
+                          title={t('slow_query.detail.plan.modal_title')}
+                          centered
+                          visible={isVpVisible}
+                          width={window.innerWidth}
+                          onCancel={() => toggleVisualPlan('close')}
+                          footer={null}
+                          destroyOnClose={true}
+                          bodyStyle={{
+                            background: '#f5f5f5',
+                            height: window.innerHeight - 100
+                          }}
+                        >
+                          <VisualPlanView data={binaryPlan} />
+                        </Modal>
+                        <Descriptions>
+                          <Descriptions.Item span={2}>
+                            <div onClick={() => toggleVisualPlan('open')}>
+                              <VisualPlanThumbnailView data={binaryPlan} />
+                            </div>
+                          </Descriptions.Item>
+                        </Descriptions>
+                      </Tabs.TabPane>
+                    )}
                   </Tabs>
                 </>
               )}

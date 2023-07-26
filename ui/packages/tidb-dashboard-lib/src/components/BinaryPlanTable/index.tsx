@@ -1,0 +1,229 @@
+import { IColumn } from 'office-ui-fabric-react'
+import React, { useMemo } from 'react'
+import CardTable from '../CardTable'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+import { Tooltip } from 'antd'
+
+type BinaryPlanItem = {
+  name: string // id
+
+  estRows: number
+  cost: number // estCost
+  actRows: number
+
+  taskType: string // task
+  storeType: string // task
+
+  accessObjects: any[] // access object
+
+  rootBasicExecInfo: object // execution info
+  rootGroupExecInfo: any[] // execution info
+  copExecInfo: object // execution info
+
+  operatorInfo: string // operator info
+
+  memoryBytes: string // memory
+  diskBytes: string // disk
+
+  children?: BinaryPlanItem[]
+}
+
+type BinaryPlan = {
+  discardedDueToTooLong: boolean
+  withRuntimeStats: boolean
+  main: BinaryPlanItem
+}
+
+type BinaryPlanTableProps = {
+  data: BinaryPlan
+}
+
+function convertBinaryPlanToArray(binaryPlan: BinaryPlan): BinaryPlanItem[] {
+  // console.log('binaryPlan', binaryPlan)
+  const result: BinaryPlanItem[] = []
+  const stack: BinaryPlanItem[] = [binaryPlan.main]
+  while (stack.length > 0) {
+    const item = stack.pop()!
+    result.push(item)
+
+    if (item.children !== undefined) {
+      for (let i = item.children.length - 1; i >= 0; i--) {
+        stack.push(item.children[i])
+      }
+    }
+    // item.children = []
+  }
+  return result
+}
+
+function getTableName(item: BinaryPlanItem): string {
+  let tableName = ''
+  if (!item?.accessObjects?.length) return ''
+
+  const scanObject = item.accessObjects.find((obj) =>
+    Object.keys(obj).includes('scanObject')
+  )
+
+  if (scanObject) {
+    tableName = scanObject['scanObject']['table']
+  }
+
+  return tableName
+}
+
+function getExecutionInfo(item: BinaryPlanItem) {
+  let execInfo: string[] = []
+  if (Object.keys(item.rootBasicExecInfo).length > 0) {
+    execInfo.push(JSON.stringify(item.rootBasicExecInfo))
+  }
+  if (item.rootGroupExecInfo.length > 0) {
+    item.rootGroupExecInfo
+      .filter((i) => !!i) // filter out the NULL value
+      .forEach((info) => {
+        execInfo.push(JSON.stringify(info))
+      })
+  }
+  if (Object.keys(item.copExecInfo).length > 0) {
+    execInfo.push(JSON.stringify(item.copExecInfo))
+  }
+  execInfo = execInfo.map((info) =>
+    info.replaceAll('"', '').replaceAll(',', ', ')
+  )
+  return execInfo
+}
+
+function getMemorySize(item: BinaryPlanItem): string {
+  if (item.memoryBytes === 'N/A') {
+    return 'N/A'
+  }
+  return getValueFormat('bytes')(Number(item.memoryBytes), 1)
+}
+
+function getDiskSize(item: BinaryPlanItem): string {
+  if (item.diskBytes === 'N/A') {
+    return 'N/A'
+  }
+  return getValueFormat('bytes')(Number(item.diskBytes), 1)
+}
+
+export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
+  const arr = useMemo(() => convertBinaryPlanToArray(data), [data])
+  const columns: IColumn[] = useMemo(() => {
+    return [
+      {
+        name: 'id',
+        key: 'name',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          return <span>└─{row.name}</span>
+        }
+      },
+      {
+        name: 'estRows',
+        key: 'estRows',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          return <span>{row.estRows.toFixed(2)}</span>
+        }
+      },
+      {
+        name: 'cost',
+        key: 'cost',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          return <span>{(row.cost ?? 0).toFixed(2)}</span>
+        }
+      },
+      {
+        name: 'actRows',
+        key: 'actRows',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          return <span>{row.actRows.toFixed(2)}</span>
+        }
+      },
+      {
+        name: 'task',
+        key: 'taskType',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          let task = row.taskType
+          if (row.storeType !== 'tidb') {
+            task += `[${row.storeType}]`
+          }
+          return <span>{task}</span>
+        }
+      },
+      {
+        name: 'access object',
+        key: 'accessObjects',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          const tableName = getTableName(row)
+          return tableName && <span>table: {tableName}</span>
+        }
+      },
+      {
+        name: 'execution info',
+        key: 'rootGroupExecInfo',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          const execInfo = getExecutionInfo(row)
+          return (
+            <Tooltip
+              title={
+                <>
+                  {execInfo.map((info, idx) => (
+                    <div key={idx}>{info}</div>
+                  ))}
+                </>
+              }
+            >
+              <span>{execInfo.join(', ')}</span>
+            </Tooltip>
+          )
+        }
+      },
+      {
+        name: 'operator info',
+        key: 'operatorInfo',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          return (
+            <Tooltip title={row.operatorInfo}>
+              <span>{row.operatorInfo}</span>
+            </Tooltip>
+          )
+        }
+      },
+      {
+        name: 'memory',
+        key: 'memoryBytes',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          return <span>{getMemorySize(row)}</span>
+        }
+      },
+      {
+        name: 'disk',
+        key: 'diskBytes',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: BinaryPlanItem) => {
+          return <span>{getDiskSize(row)}</span>
+        }
+      }
+    ]
+  }, [])
+
+  return <CardTable cardNoMargin columns={columns} items={arr} />
+}

@@ -132,7 +132,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
-          return <span>{row.estRows.toFixed(2)}</span>
+          return row.estRows.toFixed(2)
         }
       },
       {
@@ -141,7 +141,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
-          return <span>{(row.cost ?? 0).toFixed(2)}</span>
+          return (row.cost ?? 0).toFixed(2)
         }
       },
       {
@@ -150,7 +150,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
-          return <span>{row.actRows.toFixed(2)}</span>
+          return row.actRows.toFixed(2)
         }
       },
       {
@@ -160,10 +160,10 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
           let task = row.taskType
-          if (row.storeType !== 'tidb') {
+          if (task !== 'root') {
             task += `[${row.storeType}]`
           }
-          return <span>{task}</span>
+          return task
         }
       },
       {
@@ -173,9 +173,8 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
           const tableName = getTableName(row)
-          let content = ''
-
-          return tableName && <span>table: {tableName}</span>
+          let content = !!tableName ? `table: ${tableName}` : ''
+          return content && <Tooltip title={content}>{content}</Tooltip>
         }
       },
       {
@@ -195,7 +194,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
                 </>
               }
             >
-              <span>{execInfo.join(', ')}</span>
+              {execInfo.join(', ')}
             </Tooltip>
           )
         }
@@ -206,11 +205,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 300,
         onRender: (row: BinaryPlanItem) => {
-          return (
-            <Tooltip title={row.operatorInfo}>
-              <span>{row.operatorInfo}</span>
-            </Tooltip>
-          )
+          return <Tooltip title={row.operatorInfo}>{row.operatorInfo}</Tooltip>
         }
       },
       {
@@ -219,7 +214,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 60,
         maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
-          return <span>{getMemorySize(row)}</span>
+          return getMemorySize(row)
         }
       },
       {
@@ -228,7 +223,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 60,
         maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
-          return <span>{getDiskSize(row)}</span>
+          return getDiskSize(row)
         }
       }
     ]

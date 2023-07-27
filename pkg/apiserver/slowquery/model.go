@@ -41,7 +41,7 @@ type Model struct {
 
 	// Detail
 	PrevStmt       string         `gorm:"column:Prev_stmt" json:"prev_stmt"`
-	Plan           string         `gorm:"column:Plan" json:"plan"`
+	Plan           string         `gorm:"column:Plan" json:"plan"` // deprecated, replaced by BinaryPlanText
 	BinaryPlan     string         `gorm:"column:Binary_plan" json:"binary_plan"`
 	BinaryPlanText string         `gorm:"column:Binary_plan_text" proj:"tidb_decode_binary_plan(Binary_plan)" json:"binary_plan_text"`
 	Warnings       datatypes.JSON `gorm:"column:Warnings" json:"warnings"`

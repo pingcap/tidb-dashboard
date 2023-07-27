@@ -57,7 +57,6 @@ function DetailPage() {
   )
 
   const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
-  // console.log('binaryPlan', binaryPlan)
 
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     SLOW_QUERY_DETAIL_EXPAND,
@@ -74,8 +73,8 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, prev_query: !prev.prev_query }))
   const toggleQuery = () =>
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
-  const togglePlan = () =>
-    setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
+  // const togglePlan = () =>
+  //   setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   const [isVpVisible, setIsVpVisable] = useState(false)
   const toggleVisualPlan = (action: 'open' | 'close') => {
@@ -186,24 +185,23 @@ function DetailPage() {
                       <Descriptions>
                         <Descriptions.Item
                           span={2}
-                          multiline={detailExpand.plan}
+                          multiline={true}
+                          // multiline={detailExpand.plan}
                           label={
                             <Space size="middle">
-                              <Expand.Link
+                              {/* <Expand.Link
                                 expanded={detailExpand.plan}
                                 onClick={togglePlan}
-                              />
+                              /> */}
                               <CopyLink
                                 data={data.binary_plan_text ?? data.plan ?? ''}
                               />
                             </Space>
                           }
                         >
-                          <Expand expanded={detailExpand.plan}>
-                            <Pre noWrap>
-                              {data.binary_plan_text ?? data.plan}
-                            </Pre>
-                          </Expand>
+                          {/* <Expand expanded={detailExpand.plan}>
+                          </Expand> */}
+                          <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
                         </Descriptions.Item>
                       </Descriptions>
                     </Tabs.TabPane>

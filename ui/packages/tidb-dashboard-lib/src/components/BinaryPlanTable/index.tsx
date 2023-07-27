@@ -26,6 +26,7 @@ type BinaryPlanItem = {
   diskBytes: string // disk
 
   children?: BinaryPlanItem[]
+  level: number
 }
 
 type BinaryPlan = {
@@ -39,19 +40,20 @@ type BinaryPlanTableProps = {
 }
 
 function convertBinaryPlanToArray(binaryPlan: BinaryPlan): BinaryPlanItem[] {
-  // console.log('binaryPlan', binaryPlan)
   const result: BinaryPlanItem[] = []
   const stack: BinaryPlanItem[] = [binaryPlan.main]
+  stack[0].level = 0
   while (stack.length > 0) {
     const item = stack.pop()!
     result.push(item)
 
     if (item.children !== undefined) {
       for (let i = item.children.length - 1; i >= 0; i--) {
-        stack.push(item.children[i])
+        const child = item.children[i]
+        child.level = item.level + 1
+        stack.push(child)
       }
     }
-    // item.children = []
   }
   return result
 }
@@ -114,25 +116,30 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         name: 'id',
         key: 'name',
         minWidth: 100,
-        maxWidth: 200,
+        maxWidth: 300,
         onRender: (row: BinaryPlanItem) => {
-          return <span>└─{row.name}</span>
+          return (
+            <span style={{ marginLeft: Math.max(24 * (row.level - 1), 0) }}>
+              {row.level > 0 && '└─'}
+              {row.name}
+            </span>
+          )
         }
       },
       {
         name: 'estRows',
         key: 'estRows',
         minWidth: 100,
-        maxWidth: 200,
+        maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
           return <span>{row.estRows.toFixed(2)}</span>
         }
       },
       {
-        name: 'cost',
-        key: 'cost',
+        name: 'estCost',
+        key: 'estCost',
         minWidth: 100,
-        maxWidth: 200,
+        maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
           return <span>{(row.cost ?? 0).toFixed(2)}</span>
         }
@@ -141,7 +148,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         name: 'actRows',
         key: 'actRows',
         minWidth: 100,
-        maxWidth: 200,
+        maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
           return <span>{row.actRows.toFixed(2)}</span>
         }
@@ -149,8 +156,8 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
       {
         name: 'task',
         key: 'taskType',
-        minWidth: 100,
-        maxWidth: 200,
+        minWidth: 60,
+        maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
           let task = row.taskType
           if (row.storeType !== 'tidb') {
@@ -163,9 +170,11 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         name: 'access object',
         key: 'accessObjects',
         minWidth: 100,
-        maxWidth: 200,
+        maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
           const tableName = getTableName(row)
+          let content = ''
+
           return tableName && <span>table: {tableName}</span>
         }
       },
@@ -173,7 +182,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         name: 'execution info',
         key: 'rootGroupExecInfo',
         minWidth: 100,
-        maxWidth: 200,
+        maxWidth: 300,
         onRender: (row: BinaryPlanItem) => {
           const execInfo = getExecutionInfo(row)
           return (
@@ -195,7 +204,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         name: 'operator info',
         key: 'operatorInfo',
         minWidth: 100,
-        maxWidth: 200,
+        maxWidth: 300,
         onRender: (row: BinaryPlanItem) => {
           return (
             <Tooltip title={row.operatorInfo}>
@@ -207,8 +216,8 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
       {
         name: 'memory',
         key: 'memoryBytes',
-        minWidth: 100,
-        maxWidth: 200,
+        minWidth: 60,
+        maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
           return <span>{getMemorySize(row)}</span>
         }
@@ -216,8 +225,8 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
       {
         name: 'disk',
         key: 'diskBytes',
-        minWidth: 100,
-        maxWidth: 200,
+        minWidth: 60,
+        maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
           return <span>{getDiskSize(row)}</span>
         }

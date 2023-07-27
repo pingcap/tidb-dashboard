@@ -209,10 +209,15 @@ function DetailPage() {
                     </Tabs.TabPane>
 
                     {binaryPlan && !binaryPlan.discardedDueToTooLong && (
-                      <Tabs.TabPane tab={'Table'} key="binary_plan_table">
+                      <Tabs.TabPane
+                        tab={t('slow_query.detail.plan.table')}
+                        key="binary_plan_table"
+                      >
                         <BinaryPlanTable data={binaryPlan} />
+                        <div style={{ height: 24 }} />
                       </Tabs.TabPane>
                     )}
+
                     {binaryPlan && !binaryPlan.discardedDueToTooLong && (
                       <Tabs.TabPane
                         tab={t('slow_query.detail.plan.visual')}

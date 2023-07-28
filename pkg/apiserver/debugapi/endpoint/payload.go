@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"regexp"
 
+	"go.etcd.io/etcd/clientv3"
+
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
@@ -19,7 +21,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/topo"
-	"go.etcd.io/etcd/clientv3"
 )
 
 // RequestPayload describes how a server-side request should be sent, by describing the API endpoint to send
@@ -178,7 +179,8 @@ func (p *ResolvedRequestPayload) SendRequestAndPipe(
 	clientsToUse HTTPClients,
 	etcdClient *clientv3.Client,
 	pdClient *pd.Client,
-	w io.Writer) (respNoBody *http.Response, err error) {
+	w io.Writer,
+) (respNoBody *http.Response, err error) {
 	if etcdClient != nil && pdClient != nil { // It can only be false in tests.
 		if err := p.verifyEndpoint(ctx, etcdClient, pdClient); err != nil {
 			return nil, err

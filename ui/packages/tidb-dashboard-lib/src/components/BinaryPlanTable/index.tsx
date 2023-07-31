@@ -205,7 +205,14 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 300,
         onRender: (row: BinaryPlanItem) => {
-          return <Tooltip title={row.operatorInfo}>{row.operatorInfo}</Tooltip>
+          // truncate the string if it's too long
+          // operation info may be super super long
+          const truncateLength = 1000
+          let truncatedStr = row.operatorInfo
+          if (truncatedStr.length > truncateLength) {
+            truncatedStr = row.operatorInfo.slice(0, truncateLength) + '...'
+          }
+          return <Tooltip title={row.operatorInfo}>{truncatedStr}</Tooltip>
         }
       },
       {

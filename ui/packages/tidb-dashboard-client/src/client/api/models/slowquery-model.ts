@@ -207,7 +207,7 @@ export interface SlowqueryModel {
      */
     'parse_time'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof SlowqueryModel
      */

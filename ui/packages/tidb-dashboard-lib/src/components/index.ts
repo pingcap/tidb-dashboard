@@ -55,6 +55,7 @@ export * from './DrawerFooter'
 export { default as DrawerFooter } from './DrawerFooter'
 
 export * from './VisualPlan'
+export * from './BinaryPlanTable'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'

@@ -40,6 +40,12 @@ export interface SlowqueryModel {
     'binary_plan'?: string;
     /**
      * 
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan_text'?: string;
+    /**
+     * 
      * @type {number}
      * @memberof SlowqueryModel
      */

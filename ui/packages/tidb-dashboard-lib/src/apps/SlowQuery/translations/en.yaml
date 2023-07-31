@@ -133,8 +133,9 @@ slow_query:
       previous_sql: Previous Query
     plan:
       title: Execution Plan
-      visual: Visual
       text: Text
+      table: Table
+      visual: Visual
       modal_title: Visual Plan
     tabs:
       basic: Basic

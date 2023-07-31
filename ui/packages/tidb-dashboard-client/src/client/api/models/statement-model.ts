@@ -405,7 +405,7 @@ export interface StatementModel {
      */
     'min_latency'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof StatementModel
      */

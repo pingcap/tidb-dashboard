@@ -9,4 +9,5 @@ import (
 var (
 	ErrNS               = errorx.NewNamespace("debug_api.endpoint")
 	ErrUnknownComponent = ErrNS.NewType("unknown_component")
+	ErrInvalidEndpoint  = ErrNS.NewType("invalid_endpoint")
 )

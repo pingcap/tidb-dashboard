@@ -4993,6 +4993,7 @@
                     "type": "number"
                 },
                 "plan": {
+                    "description": "deprecated, replaced by BinaryPlanText",
                     "type": "string"
                 },
                 "plan_from_binding": {
@@ -5425,6 +5426,7 @@
                     "type": "integer"
                 },
                 "plan": {
+                    "description": "deprecated, replaced by BinaryPlanText",
                     "type": "string"
                 },
                 "plan_can_be_bound": {

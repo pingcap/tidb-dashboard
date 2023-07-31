@@ -2345,7 +2345,7 @@ export interface SlowqueryModel {
      */
     'parse_time'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof SlowqueryModel
      */
@@ -3145,7 +3145,7 @@ export interface StatementModel {
      */
     'min_latency'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof StatementModel
      */

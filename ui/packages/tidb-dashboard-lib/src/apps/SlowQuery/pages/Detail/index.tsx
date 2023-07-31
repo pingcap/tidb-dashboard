@@ -9,6 +9,7 @@ import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 import formatSql from '@lib/utils/sqlFormatter'
 import {
   AnimatedSkeleton,
+  BinaryPlanTable,
   CopyLink,
   Descriptions,
   ErrorBar,
@@ -72,8 +73,8 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, prev_query: !prev.prev_query }))
   const toggleQuery = () =>
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
-  const togglePlan = () =>
-    setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
+  // const togglePlan = () =>
+  //   setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   const [isVpVisible, setIsVpVisable] = useState(false)
   const toggleVisualPlan = (action: 'open' | 'close') => {
@@ -172,16 +173,50 @@ function DetailPage() {
                     {t('slow_query.detail.plan.title')}
                   </Space>
                   <Tabs
-                    defaultActiveKey={
-                      binaryPlan && !binaryPlan.main.discardedDueToTooLong
-                        ? 'binary_plan'
-                        : 'text_plan'
-                    }
+                    defaultActiveKey="text_plan"
                     onTabClick={(key) =>
                       telemetry.clickPlanTabs(key, data.digest!)
                     }
                   >
-                    {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
+                    <Tabs.TabPane
+                      tab={t('slow_query.detail.plan.text')}
+                      key="text_plan"
+                    >
+                      <Descriptions>
+                        <Descriptions.Item
+                          span={2}
+                          multiline={true}
+                          // multiline={detailExpand.plan}
+                          label={
+                            <Space size="middle">
+                              {/* <Expand.Link
+                                expanded={detailExpand.plan}
+                                onClick={togglePlan}
+                              /> */}
+                              <CopyLink
+                                data={data.binary_plan_text ?? data.plan ?? ''}
+                              />
+                            </Space>
+                          }
+                        >
+                          {/* <Expand expanded={detailExpand.plan}>
+                          </Expand> */}
+                          <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Tabs.TabPane>
+
+                    {binaryPlan && !binaryPlan.discardedDueToTooLong && (
+                      <Tabs.TabPane
+                        tab={t('slow_query.detail.plan.table')}
+                        key="binary_plan_table"
+                      >
+                        <BinaryPlanTable data={binaryPlan} />
+                        <div style={{ height: 24 }} />
+                      </Tabs.TabPane>
+                    )}
+
+                    {binaryPlan && !binaryPlan.discardedDueToTooLong && (
                       <Tabs.TabPane
                         tab={t('slow_query.detail.plan.visual')}
                         key="binary_plan"
@@ -210,31 +245,6 @@ function DetailPage() {
                         </Descriptions>
                       </Tabs.TabPane>
                     )}
-
-                    <Tabs.TabPane
-                      tab={t('slow_query.detail.plan.text')}
-                      key="text_plan"
-                    >
-                      <Descriptions>
-                        <Descriptions.Item
-                          span={2}
-                          multiline={detailExpand.plan}
-                          label={
-                            <Space size="middle">
-                              <Expand.Link
-                                expanded={detailExpand.plan}
-                                onClick={togglePlan}
-                              />
-                              <CopyLink data={data.plan ?? ''} />
-                            </Space>
-                          }
-                        >
-                          <Expand expanded={detailExpand.plan}>
-                            <Pre noWrap>{data.plan}</Pre>
-                          </Expand>
-                        </Descriptions.Item>
-                      </Descriptions>
-                    </Tabs.TabPane>
                   </Tabs>
                 </>
               )}

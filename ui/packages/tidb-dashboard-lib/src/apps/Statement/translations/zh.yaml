@@ -26,8 +26,9 @@ statement:
             some: '{{n}} 个执行计划的执行详情'
           execution:
             title: 执行计划
-            visual: 图形
             text: 文本
+            table: 表格
+            visual: 图形
             modal_title: 执行计划可视化
       tabs:
         basic: 基本信息

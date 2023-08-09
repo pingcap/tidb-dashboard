@@ -6,6 +6,8 @@ user_profile:
       extra: 支持基于 OIDC 的 SSO 登录
     form:
       client_id: OIDC Client ID
+      client_secret: OIDC Client Secret
+      scopes: 附加 OIDC Scope（空格分隔）
       discovery_url: OIDC Discovery URL
       is_read_only: 以只读权限登录
       user:

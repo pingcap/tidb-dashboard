@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
 import { Space, Modal, Tabs, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -56,7 +56,13 @@ function DetailPage() {
     )
   )
 
-  const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
+  const binaryPlanObj = useMemo(() => {
+    const json = data?.binary_plan_json ?? data?.binary_plan
+    if (json) {
+      return JSON.parse(json)
+    }
+    return undefined
+  }, [data?.binary_plan, data?.binary_plan_json])
 
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     SLOW_QUERY_DETAIL_EXPAND,
@@ -167,7 +173,7 @@ function DetailPage() {
                     )
                 })()}
               </Descriptions>
-              {(binaryPlan || !!data.plan) && (
+              {(binaryPlanObj || !!data.plan) && (
                 <>
                   <Space size="middle" style={{ color: '#8c8c8c' }}>
                     {t('slow_query.detail.plan.title')}
@@ -206,17 +212,17 @@ function DetailPage() {
                       </Descriptions>
                     </Tabs.TabPane>
 
-                    {binaryPlan && !binaryPlan.discardedDueToTooLong && (
+                    {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
                       <Tabs.TabPane
                         tab={t('slow_query.detail.plan.table')}
                         key="binary_plan_table"
                       >
-                        <BinaryPlanTable data={binaryPlan} />
+                        <BinaryPlanTable data={binaryPlanObj} />
                         <div style={{ height: 24 }} />
                       </Tabs.TabPane>
                     )}
 
-                    {binaryPlan && !binaryPlan.discardedDueToTooLong && (
+                    {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
                       <Tabs.TabPane
                         tab={t('slow_query.detail.plan.visual')}
                         key="binary_plan"
@@ -234,12 +240,12 @@ function DetailPage() {
                             height: window.innerHeight - 100
                           }}
                         >
-                          <VisualPlanView data={binaryPlan} />
+                          <VisualPlanView data={binaryPlanObj} />
                         </Modal>
                         <Descriptions>
                           <Descriptions.Item span={2}>
                             <div onClick={() => toggleVisualPlan('open')}>
-                              <VisualPlanThumbnailView data={binaryPlan} />
+                              <VisualPlanThumbnailView data={binaryPlanObj} />
                             </div>
                           </Descriptions.Item>
                         </Descriptions>

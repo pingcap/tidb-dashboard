@@ -208,7 +208,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
           // truncate the string if it's too long
           // operation info may be super super long
           const truncateLength = 1000
-          let truncatedStr = row.operatorInfo
+          let truncatedStr = row.operatorInfo ?? ''
           if (truncatedStr.length > truncateLength) {
             truncatedStr = row.operatorInfo.slice(0, truncateLength) + '...'
           }

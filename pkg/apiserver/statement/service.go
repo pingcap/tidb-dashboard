@@ -233,9 +233,16 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 		return
 	}
 
-	// get binary plan
-	// may failed but it's ok
-	result.AggBinaryPlan, _ = utils.GenerateBinaryPlanJSON(result.AggBinaryPlan)
+	if result.AggBinaryPlan != "" {
+		// may failed but it's ok
+		result.BinaryPlanText, _ = utils.GenerateBinaryPlanText(db, result.AggBinaryPlan)
+		// may failed but it's ok
+		result.BinaryPlanJSON, _ = utils.GenerateBinaryPlanJSON(result.AggBinaryPlan)
+
+		// reduce response size
+		result.AggBinaryPlan = ""
+		result.AggPlan = ""
+	}
 
 	c.JSON(http.StatusOK, result)
 }

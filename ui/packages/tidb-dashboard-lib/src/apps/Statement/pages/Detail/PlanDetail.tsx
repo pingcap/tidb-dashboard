@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
 import { Space, Tabs, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import {
@@ -62,7 +62,13 @@ function PlanDetail({ query }: IPlanDetailProps) {
   )
   const isLoading = isDataLoading || isSchemaLoading
 
-  const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
+  const binaryPlanObj = useMemo(() => {
+    const json = data?.binary_plan_json ?? data?.binary_plan
+    if (json) {
+      return JSON.parse(json)
+    }
+    return undefined
+  }, [data?.binary_plan, data?.binary_plan_json])
 
   const [isVpVisible, setIsVpVisable] = useState(false)
   const toggleVisualPlan = (action: 'open' | 'close') => {
@@ -172,7 +178,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
               ) : null}
             </Descriptions>
 
-            {(binaryPlan || data.plan) && (
+            {(binaryPlanObj || data.plan) && (
               <>
                 <Space size="middle" style={{ color: '#8c8c8c' }}>
                   {t('statement.pages.detail.desc.plans.execution.title')}
@@ -212,19 +218,19 @@ function PlanDetail({ query }: IPlanDetailProps) {
                     </Descriptions>
                   </Tabs.TabPane>
 
-                  {binaryPlan && !binaryPlan.discardedDueToTooLong && (
+                  {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
                     <Tabs.TabPane
                       tab={t(
                         'statement.pages.detail.desc.plans.execution.table'
                       )}
                       key="binary_plan_table"
                     >
-                      <BinaryPlanTable data={binaryPlan} />
+                      <BinaryPlanTable data={binaryPlanObj} />
                       <div style={{ height: 24 }} />
                     </Tabs.TabPane>
                   )}
 
-                  {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
+                  {binaryPlanObj && !binaryPlanObj.main.discardedDueToTooLong && (
                     <Tabs.TabPane
                       tab={t(
                         'statement.pages.detail.desc.plans.execution.visual'
@@ -244,12 +250,12 @@ function PlanDetail({ query }: IPlanDetailProps) {
                           height: window.innerHeight - 100
                         }}
                       >
-                        <VisualPlanView data={binaryPlan} />
+                        <VisualPlanView data={binaryPlanObj} />
                       </Modal>
                       <Descriptions>
                         <Descriptions.Item span={2}>
                           <div onClick={() => toggleVisualPlan('open')}>
-                            <VisualPlanThumbnailView data={binaryPlan} />
+                            <VisualPlanThumbnailView data={binaryPlanObj} />
                           </div>
                         </Descriptions.Item>
                       </Descriptions>

@@ -179,11 +179,21 @@ function DetailPage() {
                     {t('slow_query.detail.plan.title')}
                   </Space>
                   <Tabs
-                    defaultActiveKey="text_plan"
+                    defaultActiveKey="binary_plan_table"
                     onTabClick={(key) =>
                       telemetry.clickPlanTabs(key, data.digest!)
                     }
                   >
+                    {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
+                      <Tabs.TabPane
+                        tab={t('slow_query.detail.plan.table')}
+                        key="binary_plan_table"
+                      >
+                        <BinaryPlanTable data={binaryPlanObj} />
+                        <div style={{ height: 24 }} />
+                      </Tabs.TabPane>
+                    )}
+
                     <Tabs.TabPane
                       tab={t('slow_query.detail.plan.text')}
                       key="text_plan"
@@ -211,16 +221,6 @@ function DetailPage() {
                         </Descriptions.Item>
                       </Descriptions>
                     </Tabs.TabPane>
-
-                    {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
-                      <Tabs.TabPane
-                        tab={t('slow_query.detail.plan.table')}
-                        key="binary_plan_table"
-                      >
-                        <BinaryPlanTable data={binaryPlanObj} />
-                        <div style={{ height: 24 }} />
-                      </Tabs.TabPane>
-                    )}
 
                     {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
                       <Tabs.TabPane

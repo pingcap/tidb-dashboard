@@ -185,11 +185,23 @@ function PlanDetail({ query }: IPlanDetailProps) {
                 </Space>
 
                 <Tabs
-                  defaultActiveKey="text_plan"
+                  defaultActiveKey="binary_plan_table"
                   onTabClick={(key) =>
                     telemetry.clickPlanTabs(key, data.digest!)
                   }
                 >
+                  {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
+                    <Tabs.TabPane
+                      tab={t(
+                        'statement.pages.detail.desc.plans.execution.table'
+                      )}
+                      key="binary_plan_table"
+                    >
+                      <BinaryPlanTable data={binaryPlanObj} />
+                      <div style={{ height: 24 }} />
+                    </Tabs.TabPane>
+                  )}
+
                   <Tabs.TabPane
                     tab={t('statement.pages.detail.desc.plans.execution.text')}
                     key="text_plan"
@@ -217,18 +229,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       </Descriptions.Item>
                     </Descriptions>
                   </Tabs.TabPane>
-
-                  {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
-                    <Tabs.TabPane
-                      tab={t(
-                        'statement.pages.detail.desc.plans.execution.table'
-                      )}
-                      key="binary_plan_table"
-                    >
-                      <BinaryPlanTable data={binaryPlanObj} />
-                      <div style={{ height: 24 }} />
-                    </Tabs.TabPane>
-                  )}
 
                   {binaryPlanObj && !binaryPlanObj.main.discardedDueToTooLong && (
                     <Tabs.TabPane

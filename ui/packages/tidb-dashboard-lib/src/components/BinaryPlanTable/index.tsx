@@ -1,7 +1,8 @@
 import { IColumn } from 'office-ui-fabric-react'
 import React, { useMemo } from 'react'
 import CardTable from '../CardTable'
-import { Tooltip } from 'antd'
+import { Tooltip, Space } from 'antd'
+import { CopyLink, TxtDownloadLink } from '@lib/components'
 
 type BinaryPlanItem = Record<
   | 'id'
@@ -35,6 +36,7 @@ type BinaryPlanFiledPosition = Record<
 
 type BinaryPlanTableProps = {
   data: string
+  downloadFileName: string
 }
 
 function convertBinaryPlanTextToArray(
@@ -189,7 +191,10 @@ function convertBinaryPlanTextToArray(
   return result
 }
 
-export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
+export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
+  data,
+  downloadFileName
+}) => {
   const arr = useMemo(() => convertBinaryPlanTextToArray(data), [data])
   const columns: IColumn[] = useMemo(() => {
     return [
@@ -309,7 +314,15 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
   }, [])
 
   if (arr.length > 0) {
-    return <CardTable cardNoMargin columns={columns} items={arr} />
+    return (
+      <>
+        <Space size="middle">
+          <CopyLink data={data} />
+          <TxtDownloadLink data={data} fileName={downloadFileName} />
+        </Space>
+        <CardTable cardNoMargin columns={columns} items={arr} />
+      </>
+    )
   }
   return (
     <div>

@@ -4,20 +4,19 @@ import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,
   BinaryPlanTable,
+  BinaryPlanText,
   Card,
   CopyLink,
   Descriptions,
   ErrorBar,
   Expand,
   HighlightSQL,
-  Pre,
   TextWithInfo
 } from '@lib/components'
 import {
   VisualPlanThumbnailView,
   VisualPlanView
 } from '@lib/components/VisualPlan'
-import TxtDownloadLink from '@lib/components/TxtDownloadLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import formatSql from '@lib/utils/sqlFormatter'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
@@ -197,14 +196,10 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       )}
                       key="binary_plan_table"
                     >
-                      <Space size="middle">
-                        <CopyLink data={data.binary_plan_text} />
-                        <TxtDownloadLink
-                          data={data.binary_plan_text}
-                          fileName={`${data.digest}.txt`}
-                        />
-                      </Space>
-                      <BinaryPlanTable data={data.binary_plan_text} />
+                      <BinaryPlanTable
+                        data={data.binary_plan_text}
+                        downloadFileName={`${data.digest}.txt`}
+                      />
                       <div>length: {data.binary_plan_text.length}</div>
                       <div style={{ height: 24 }} />
                     </Tabs.TabPane>
@@ -214,16 +209,10 @@ function PlanDetail({ query }: IPlanDetailProps) {
                     tab={t('statement.pages.detail.desc.plans.execution.text')}
                     key="text_plan"
                   >
-                    <Space size="middle">
-                      <CopyLink
-                        data={data.binary_plan_text ?? data.plan ?? ''}
-                      />
-                      <TxtDownloadLink
-                        data={data.binary_plan_text ?? data.plan ?? ''}
-                        fileName={`${data.digest}.txt`}
-                      />
-                    </Space>
-                    <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
+                    <BinaryPlanText
+                      data={data.binary_plan_text ?? data.plan ?? ''}
+                      downloadFileName={`${data.digest}.txt`}
+                    />
                     <div>length: {data.binary_plan_text?.length}</div>
                   </Tabs.TabPane>
 

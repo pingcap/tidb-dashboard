@@ -10,20 +10,19 @@ import formatSql from '@lib/utils/sqlFormatter'
 import {
   AnimatedSkeleton,
   BinaryPlanTable,
+  BinaryPlanText,
   CopyLink,
   Descriptions,
   ErrorBar,
   Expand,
   Head,
   HighlightSQL,
-  Pre,
   TextWithInfo
 } from '@lib/components'
 import {
   VisualPlanThumbnailView,
   VisualPlanView
 } from '@lib/components/VisualPlan'
-import TxtDownloadLink from '@lib/components/TxtDownloadLink'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { telemetry } from '../../utils/telemetry'
 
@@ -191,14 +190,10 @@ function DetailPage() {
                         tab={t('slow_query.detail.plan.table')}
                         key="binary_plan_table"
                       >
-                        <Space size="middle">
-                          <CopyLink data={data.binary_plan_text} />
-                          <TxtDownloadLink
-                            data={data.binary_plan_text}
-                            fileName={`${data.digest}.txt`}
-                          />
-                        </Space>
-                        <BinaryPlanTable data={data.binary_plan_text} />
+                        <BinaryPlanTable
+                          data={data.binary_plan_text}
+                          downloadFileName={`${data.digest}.txt`}
+                        />
                         <div style={{ height: 24 }} />
                       </Tabs.TabPane>
                     )}
@@ -207,16 +202,10 @@ function DetailPage() {
                       tab={t('slow_query.detail.plan.text')}
                       key="text_plan"
                     >
-                      <Space size="middle">
-                        <CopyLink
-                          data={data.binary_plan_text ?? data.plan ?? ''}
-                        />
-                        <TxtDownloadLink
-                          data={data.binary_plan_text ?? data.plan ?? ''}
-                          fileName={`${data.digest}.txt`}
-                        />
-                      </Space>
-                      <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
+                      <BinaryPlanText
+                        data={data.binary_plan_text ?? data.plan ?? ''}
+                        downloadFileName={`${data.digest}.txt`}
+                      />
                     </Tabs.TabPane>
 
                     {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (

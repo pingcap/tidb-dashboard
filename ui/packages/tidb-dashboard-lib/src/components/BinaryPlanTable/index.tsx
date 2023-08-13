@@ -1,33 +1,27 @@
 import { IColumn } from 'office-ui-fabric-react'
 import React, { useMemo } from 'react'
 import CardTable from '../CardTable'
-import { Tooltip, Space } from 'antd'
+import { Tooltip } from 'antd'
 import { CopyLink, TxtDownloadLink } from '@lib/components'
+import { BinaryPlanColsSelector } from './BinaryPlanColsSelector'
+import { EyeOutlined } from '@ant-design/icons'
 
-type BinaryPlanItem = Record<
-  | 'id'
-  | 'estRows'
-  | 'estCost'
-  | 'actRows'
-  | 'task'
-  | 'accessObject'
-  | 'executionInfo'
-  | 'operatorInfo'
-  | 'memory'
-  | 'disk',
-  string
->
+const COLUM_KEYS = [
+  'id',
+  'estRows',
+  'estCost',
+  'actRows',
+  'task',
+  'accessObject',
+  'executionInfo',
+  'operatorInfo',
+  'memory',
+  'disk'
+] as const
+type COLUM_KEYS_UNION = typeof COLUM_KEYS[number]
+type BinaryPlanItem = Record<COLUM_KEYS_UNION, string>
 type BinaryPlanFiledPosition = Record<
-  | 'id'
-  | 'estRows'
-  | 'estCost'
-  | 'actRows'
-  | 'task'
-  | 'accessObject'
-  | 'executionInfo'
-  | 'operatorInfo'
-  | 'memory'
-  | 'disk',
+  COLUM_KEYS_UNION,
   {
     start: number
     len: number
@@ -45,7 +39,7 @@ function convertBinaryPlanTextToArray(
   const result: BinaryPlanItem[] = []
   let positions: BinaryPlanFiledPosition | null = null
 
-  const lines = binaryPlanText.split('\n')
+  const lines = binaryPlanText.split('\n') // TODO: fix this, some columns may contain \n
   for (const line of lines) {
     if (line === '') {
       continue
@@ -196,11 +190,26 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
   downloadFileName
 }) => {
   const arr = useMemo(() => convertBinaryPlanTextToArray(data), [data])
+
+  function hideColumn(columnKey: COLUM_KEYS_UNION) {
+    setVisibleColumnKeys((prev) => {
+      return {
+        ...prev,
+        [columnKey]: false
+      }
+    })
+  }
+
   const columns: IColumn[] = useMemo(() => {
     return [
       {
-        name: 'id',
-        key: 'name',
+        name: (
+          <div>
+            id <EyeOutlined onClick={() => hideColumn('id')} />
+          </div>
+        ) as any,
+        extra: 'id',
+        key: 'id',
         minWidth: 100,
         maxWidth: 600,
         onRender: (row: BinaryPlanItem) => {
@@ -214,7 +223,12 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
         }
       },
       {
-        name: 'estRows',
+        name: (
+          <div>
+            estRows <EyeOutlined onClick={() => hideColumn('estRows')} />
+          </div>
+        ) as any,
+        extra: 'estRows',
         key: 'estRows',
         minWidth: 100,
         maxWidth: 120,
@@ -223,7 +237,12 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
         }
       },
       {
-        name: 'estCost',
+        name: (
+          <div>
+            estCost <EyeOutlined onClick={() => hideColumn('estCost')} />
+          </div>
+        ) as any,
+        extra: 'estCost',
         key: 'estCost',
         minWidth: 100,
         maxWidth: 120,
@@ -232,7 +251,12 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
         }
       },
       {
-        name: 'actRows',
+        name: (
+          <div>
+            actRows <EyeOutlined onClick={() => hideColumn('actRows')} />
+          </div>
+        ) as any,
+        extra: 'actRows',
         key: 'actRows',
         minWidth: 100,
         maxWidth: 120,
@@ -241,8 +265,13 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
         }
       },
       {
-        name: 'task',
-        key: 'taskType',
+        name: (
+          <div>
+            task <EyeOutlined onClick={() => hideColumn('task')} />
+          </div>
+        ) as any,
+        extra: 'task',
+        key: 'task',
         minWidth: 60,
         maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
@@ -250,18 +279,30 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
         }
       },
       {
-        name: 'access object',
-        key: 'accessObjects',
-        minWidth: 100,
-        maxWidth: 120,
+        name: (
+          <div>
+            access object{' '}
+            <EyeOutlined onClick={() => hideColumn('accessObject')} />
+          </div>
+        ) as any,
+        extra: 'access object',
+        key: 'accessObject',
+        minWidth: 120,
+        maxWidth: 140,
         onRender: (row: BinaryPlanItem) => {
           return <Tooltip title={row.accessObject}>{row.accessObject}</Tooltip>
         }
       },
       {
-        name: 'execution info',
-        key: 'rootGroupExecInfo',
-        minWidth: 100,
+        name: (
+          <div>
+            execution info{' '}
+            <EyeOutlined onClick={() => hideColumn('executionInfo')} />
+          </div>
+        ) as any,
+        extra: 'execution info',
+        key: 'executionInfo',
+        minWidth: 120,
         maxWidth: 300,
         onRender: (row: BinaryPlanItem) => {
           return (
@@ -270,9 +311,15 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
         }
       },
       {
-        name: 'operator info',
+        name: (
+          <div>
+            operator info{' '}
+            <EyeOutlined onClick={() => hideColumn('operatorInfo')} />
+          </div>
+        ) as any,
+        extra: 'operator info',
         key: 'operatorInfo',
-        minWidth: 100,
+        minWidth: 120,
         maxWidth: 300,
         onRender: (row: BinaryPlanItem) => {
           // truncate the string if it's too long
@@ -293,17 +340,27 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
         }
       },
       {
-        name: 'memory',
-        key: 'memoryBytes',
-        minWidth: 60,
+        name: (
+          <div>
+            memory <EyeOutlined onClick={() => hideColumn('memory')} />
+          </div>
+        ) as any,
+        extra: 'memory',
+        key: 'memory',
+        minWidth: 80,
         maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
           return row.memory
         }
       },
       {
-        name: 'disk',
-        key: 'diskBytes',
+        name: (
+          <div>
+            disk <EyeOutlined onClick={() => hideColumn('disk')} />
+          </div>
+        ) as any,
+        extra: 'disk',
+        key: 'disk',
         minWidth: 60,
         maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
@@ -313,14 +370,32 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
     ]
   }, [])
 
+  const [visibleColumnKeys, setVisibleColumnKeys] = React.useState(() => {
+    return COLUM_KEYS.reduce((acc, cur) => {
+      acc[cur] = true
+      return acc
+    }, {})
+  })
+
+  const filteredColumns = useMemo(() => {
+    return columns.filter((c) => visibleColumnKeys[c.key as COLUM_KEYS_UNION])
+  }, [columns, visibleColumnKeys])
+
   if (arr.length > 0) {
     return (
       <>
-        <Space size="middle">
+        <div style={{ display: 'flex', gap: 16 }}>
           <CopyLink data={data} />
           <TxtDownloadLink data={data} fileName={downloadFileName} />
-        </Space>
-        <CardTable cardNoMargin columns={columns} items={arr} />
+          <div style={{ marginLeft: 'auto' }}>
+            <BinaryPlanColsSelector
+              columns={columns}
+              visibleColumnKeys={visibleColumnKeys}
+              onChange={setVisibleColumnKeys}
+            />
+          </div>
+        </div>
+        <CardTable cardNoMargin columns={filteredColumns} items={arr} />
       </>
     )
   }

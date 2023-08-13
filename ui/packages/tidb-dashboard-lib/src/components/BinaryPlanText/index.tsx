@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react'
-import { Space } from 'antd'
 import { CopyLink, TxtDownloadLink, Pre } from '@lib/components'
 
 type BinaryPlanTextProps = {
@@ -44,10 +43,10 @@ export const BinaryPlanText: React.FC<BinaryPlanTextProps> = ({
   }
   return (
     <>
-      <Space size="middle">
+      <div style={{ display: 'flex', gap: 16 }}>
         <CopyLink data={data} />
         <TxtDownloadLink data={data} fileName={downloadFileName} />
-      </Space>
+      </div>
       <Pre noWrap>{truncatedStr}</Pre>
     </>
   )

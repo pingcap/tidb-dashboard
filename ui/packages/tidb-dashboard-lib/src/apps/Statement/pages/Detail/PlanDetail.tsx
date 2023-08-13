@@ -200,7 +200,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
                         data={data.binary_plan_text}
                         downloadFileName={`${data.digest}.txt`}
                       />
-                      <div>length: {data.binary_plan_text.length}</div>
                       <div style={{ height: 24 }} />
                     </Tabs.TabPane>
                   )}
@@ -213,7 +212,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       data={data.binary_plan_text ?? data.plan ?? ''}
                       downloadFileName={`${data.digest}.txt`}
                     />
-                    <div>length: {data.binary_plan_text?.length}</div>
                   </Tabs.TabPane>
 
                   {binaryPlanObj && !binaryPlanObj.main.discardedDueToTooLong && (

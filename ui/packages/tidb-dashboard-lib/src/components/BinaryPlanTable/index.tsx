@@ -200,9 +200,11 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         maxWidth: 600,
         onRender: (row: BinaryPlanItem) => {
           return (
-            <span style={{ whiteSpace: 'pre', fontFamily: 'monospace' }}>
-              {row.id}
-            </span>
+            <Tooltip title={row.id}>
+              <span style={{ whiteSpace: 'pre', fontFamily: 'monospace' }}>
+                {row.id}
+              </span>
+            </Tooltip>
           )
         }
       },
@@ -270,12 +272,19 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         onRender: (row: BinaryPlanItem) => {
           // truncate the string if it's too long
           // operation info may be super super long
-          const truncateLength = 1000
+          const truncateLength = 100
           let truncatedStr = row.operatorInfo ?? ''
           if (truncatedStr.length > truncateLength) {
             truncatedStr = row.operatorInfo.slice(0, truncateLength) + '...'
           }
-          return <Tooltip title={row.operatorInfo}>{truncatedStr}</Tooltip>
+          const truncateTooltipLen = 2000
+          let truncatedTooltipStr = row.operatorInfo ?? ''
+          if (truncatedTooltipStr.length > truncateTooltipLen) {
+            truncatedTooltipStr =
+              row.operatorInfo.slice(0, truncateTooltipLen) +
+              '...(too long to show, copy or download to analyze)'
+          }
+          return <Tooltip title={truncatedTooltipStr}>{truncatedStr}</Tooltip>
         }
       },
       {
@@ -299,5 +308,13 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
     ]
   }, [])
 
-  return <CardTable cardNoMargin columns={columns} items={arr} />
+  if (arr.length > 0) {
+    return <CardTable cardNoMargin columns={columns} items={arr} />
+  }
+  return (
+    <div>
+      Parse plan text failed, original content:
+      <div>{data}</div>
+    </div>
+  )
 }

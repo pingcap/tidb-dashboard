@@ -176,19 +176,21 @@ function PlanDetail({ query }: IPlanDetailProps) {
               ) : null}
             </Descriptions>
 
-            {(binaryPlanObj || data.plan) && (
+            {(binaryPlanObj || !!data.plan) && (
               <>
                 <Space size="middle" style={{ color: '#8c8c8c' }}>
                   {t('statement.pages.detail.desc.plans.execution.title')}
                 </Space>
 
                 <Tabs
-                  defaultActiveKey="binary_plan_table"
+                  defaultActiveKey={
+                    !!data.binary_plan_text ? 'binary_plan_table' : 'text_plan'
+                  }
                   onTabClick={(key) =>
                     telemetry.clickPlanTabs(key, data.digest!)
                   }
                 >
-                  {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
+                  {!!data.binary_plan_text && (
                     <Tabs.TabPane
                       tab={t(
                         'statement.pages.detail.desc.plans.execution.table'
@@ -196,16 +198,14 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       key="binary_plan_table"
                     >
                       <Space size="middle">
-                        <CopyLink
-                          data={data.binary_plan_text ?? data.plan ?? ''}
-                        />
+                        <CopyLink data={data.binary_plan_text} />
                         <TxtDownloadLink
-                          data={data.binary_plan_text ?? data.plan ?? ''}
+                          data={data.binary_plan_text}
                           fileName={`${data.digest}.txt`}
                         />
                       </Space>
-                      <BinaryPlanTable data={data.binary_plan_text ?? ''} />
-                      <div>length: {data.binary_plan_text?.length}</div>
+                      <BinaryPlanTable data={data.binary_plan_text} />
+                      <div>length: {data.binary_plan_text.length}</div>
                       <div style={{ height: 24 }} />
                     </Tabs.TabPane>
                   )}

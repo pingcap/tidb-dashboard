@@ -177,26 +177,28 @@ function DetailPage() {
                     {t('slow_query.detail.plan.title')}
                   </Space>
                   <Tabs
-                    defaultActiveKey="binary_plan_table"
+                    defaultActiveKey={
+                      !!data.binary_plan_text
+                        ? 'binary_plan_table'
+                        : 'text_plan'
+                    }
                     onTabClick={(key) =>
                       telemetry.clickPlanTabs(key, data.digest!)
                     }
                   >
-                    {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
+                    {!!data.binary_plan_text && (
                       <Tabs.TabPane
                         tab={t('slow_query.detail.plan.table')}
                         key="binary_plan_table"
                       >
                         <Space size="middle">
-                          <CopyLink
-                            data={data.binary_plan_text ?? data.plan ?? ''}
-                          />
+                          <CopyLink data={data.binary_plan_text} />
                           <TxtDownloadLink
-                            data={data.binary_plan_text ?? data.plan ?? ''}
+                            data={data.binary_plan_text}
                             fileName={`${data.digest}.txt`}
                           />
                         </Space>
-                        <BinaryPlanTable data={data.binary_plan_text ?? ''} />
+                        <BinaryPlanTable data={data.binary_plan_text} />
                         <div style={{ height: 24 }} />
                       </Tabs.TabPane>
                     )}

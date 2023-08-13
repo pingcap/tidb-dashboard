@@ -33,99 +33,108 @@ type BinaryPlanTableProps = {
   downloadFileName: string
 }
 
+// see binary_plan_text example from sample-data/detail-res.json
 function convertBinaryPlanTextToArray(
   binaryPlanText: string
 ): BinaryPlanItem[] {
   const result: BinaryPlanItem[] = []
   let positions: BinaryPlanFiledPosition | null = null
 
-  const lines = binaryPlanText.split('\n') // TODO: fix this, some columns may contain \n
-  for (const line of lines) {
-    if (line === '') {
-      continue
+  // we can't simply split by '\n', because operator info column may contain '\n'
+  // for example, execution plan for "select `tidb_decode_binary_plan` ( ? ) as `binary_plan_text`;"
+  // const lines = binaryPlanText.split('\n')
+
+  const headerEndPos = binaryPlanText.indexOf('\n', 1)
+  const headerLine = binaryPlanText.slice(1, headerEndPos)
+  if (!headerLine.startsWith('| id')) {
+    console.error('invalid binary plan text format')
+    return result
+  }
+  const headerLineLen = headerLine.length
+
+  const headers = headerLine.split('|')
+  // 0: ""
+  // 1: " id                      "
+  // 2: " estRows  "
+  // 3: " estCost    "
+  // 4: " actRows "
+  // 5: " task "
+  // 6: " access object      "
+  // 7: " execution info     "
+  // 8: " operator info                                   "
+  // 9: " memory   "
+  // 10: " disk     "
+  // 11: ""
+  if (headers.length !== 12) {
+    console.error('invalid binary plan text format')
+    return result
+  }
+  positions = {
+    id: {
+      start: 0,
+      len: headers[1].length
+    },
+    estRows: {
+      start: 0,
+      len: headers[2].length
+    },
+    estCost: {
+      start: 0,
+      len: headers[3].length
+    },
+    actRows: {
+      start: 0,
+      len: headers[4].length
+    },
+    task: {
+      start: 0,
+      len: headers[5].length
+    },
+    accessObject: {
+      start: 0,
+      len: headers[6].length
+    },
+    executionInfo: {
+      start: 0,
+      len: headers[7].length
+    },
+    operatorInfo: {
+      start: 0,
+      len: headers[8].length
+    },
+    memory: {
+      start: 0,
+      len: headers[9].length
+    },
+    disk: {
+      start: 0,
+      len: headers[10].length
     }
-    // headers
-    if (line.startsWith('| id')) {
-      let headers = line.split('|')
-      // 0: ""
-      // 1: " id                      "
-      // 2: " estRows  "
-      // 3: " estCost    "
-      // 4: " actRows "
-      // 5: " task "
-      // 6: " access object      "
-      // 7: " execution info     "
-      // 8: " operator info                                   "
-      // 9: " memory   "
-      // 10: " disk     "
-      // 11: ""
-      if (headers.length !== 12) {
-        console.error('invalid binary plan text format')
-        break
-      }
-      positions = {
-        id: {
-          start: 0,
-          len: headers[1].length
-        },
-        estRows: {
-          start: 0,
-          len: headers[2].length
-        },
-        estCost: {
-          start: 0,
-          len: headers[3].length
-        },
-        actRows: {
-          start: 0,
-          len: headers[4].length
-        },
-        task: {
-          start: 0,
-          len: headers[5].length
-        },
-        accessObject: {
-          start: 0,
-          len: headers[6].length
-        },
-        executionInfo: {
-          start: 0,
-          len: headers[7].length
-        },
-        operatorInfo: {
-          start: 0,
-          len: headers[8].length
-        },
-        memory: {
-          start: 0,
-          len: headers[9].length
-        },
-        disk: {
-          start: 0,
-          len: headers[10].length
-        }
-      }
-      positions.id.start = 1
-      positions.estRows.start = positions.id.start + positions.id.len + 1
-      positions.estCost.start =
-        positions.estRows.start + positions.estRows.len + 1
-      positions.actRows.start =
-        positions.estCost.start + positions.estCost.len + 1
-      positions.task.start = positions.actRows.start + positions.actRows.len + 1
-      positions.accessObject.start =
-        positions.task.start + positions.task.len + 1
-      positions.executionInfo.start =
-        positions.accessObject.start + positions.accessObject.len + 1
-      positions.operatorInfo.start =
-        positions.executionInfo.start + positions.executionInfo.len + 1
-      positions.memory.start =
-        positions.operatorInfo.start + positions.operatorInfo.len + 1
-      positions.disk.start = positions.memory.start + positions.memory.len + 1
-      continue
+  }
+  positions.id.start = 1
+  positions.estRows.start = positions.id.start + positions.id.len + 1
+  positions.estCost.start = positions.estRows.start + positions.estRows.len + 1
+  positions.actRows.start = positions.estCost.start + positions.estCost.len + 1
+  positions.task.start = positions.actRows.start + positions.actRows.len + 1
+  positions.accessObject.start = positions.task.start + positions.task.len + 1
+  positions.executionInfo.start =
+    positions.accessObject.start + positions.accessObject.len + 1
+  positions.operatorInfo.start =
+    positions.executionInfo.start + positions.executionInfo.len + 1
+  positions.memory.start =
+    positions.operatorInfo.start + positions.operatorInfo.len + 1
+  positions.disk.start = positions.memory.start + positions.memory.len + 1
+
+  let lineIdx = 1
+  while (true) {
+    const lineStart = 1 + (headerLineLen + 1) * lineIdx
+    const lineEnd = 1 + (headerLineLen + 1) * (lineIdx + 1)
+    if (lineEnd > binaryPlanText.length) {
+      break
     }
-    if (positions === null) {
-      continue
-    }
+    lineIdx++
+
+    const line = binaryPlanText.slice(lineStart, lineEnd)
     const item: BinaryPlanItem = {
       id: line
         .slice(positions.id.start + 1, positions.id.start + positions.id.len)

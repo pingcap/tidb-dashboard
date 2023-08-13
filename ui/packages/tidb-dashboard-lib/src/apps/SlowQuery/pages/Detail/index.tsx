@@ -19,16 +19,16 @@ import {
   Pre,
   TextWithInfo
 } from '@lib/components'
+import {
+  VisualPlanThumbnailView,
+  VisualPlanView
+} from '@lib/components/VisualPlan'
+import TxtDownloadLink from '@lib/components/TxtDownloadLink'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { telemetry } from '../../utils/telemetry'
 
 import DetailTabs from './DetailTabs'
 import { SlowQueryContext } from '../../context'
-
-import {
-  VisualPlanThumbnailView,
-  VisualPlanView
-} from '@lib/components/VisualPlan'
 
 export interface IPageQuery {
   connectId?: string
@@ -79,13 +79,11 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, prev_query: !prev.prev_query }))
   const toggleQuery = () =>
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
-  // const togglePlan = () =>
-  //   setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
-  const [isVpVisible, setIsVpVisable] = useState(false)
+  const [isVpVisible, setIsVpVisible] = useState(false)
   const toggleVisualPlan = (action: 'open' | 'close') => {
     telemetry.toggleVisualPlanModal(action)
-    setIsVpVisable(!isVpVisible)
+    setIsVpVisible(!isVpVisible)
   }
 
   return (
@@ -189,6 +187,15 @@ function DetailPage() {
                         tab={t('slow_query.detail.plan.table')}
                         key="binary_plan_table"
                       >
+                        <Space size="middle">
+                          <CopyLink
+                            data={data.binary_plan_text ?? data.plan ?? ''}
+                          />
+                          <TxtDownloadLink
+                            data={data.binary_plan_text ?? data.plan ?? ''}
+                            fileName={`${data.digest}.txt`}
+                          />
+                        </Space>
                         <BinaryPlanTable data={binaryPlanObj} />
                         <div style={{ height: 24 }} />
                       </Tabs.TabPane>
@@ -198,28 +205,16 @@ function DetailPage() {
                       tab={t('slow_query.detail.plan.text')}
                       key="text_plan"
                     >
-                      <Descriptions>
-                        <Descriptions.Item
-                          span={2}
-                          multiline={true}
-                          // multiline={detailExpand.plan}
-                          label={
-                            <Space size="middle">
-                              {/* <Expand.Link
-                                expanded={detailExpand.plan}
-                                onClick={togglePlan}
-                              /> */}
-                              <CopyLink
-                                data={data.binary_plan_text ?? data.plan ?? ''}
-                              />
-                            </Space>
-                          }
-                        >
-                          {/* <Expand expanded={detailExpand.plan}>
-                          </Expand> */}
-                          <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
-                        </Descriptions.Item>
-                      </Descriptions>
+                      <Space size="middle">
+                        <CopyLink
+                          data={data.binary_plan_text ?? data.plan ?? ''}
+                        />
+                        <TxtDownloadLink
+                          data={data.binary_plan_text ?? data.plan ?? ''}
+                          fileName={`${data.digest}.txt`}
+                        />
+                      </Space>
+                      <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
                     </Tabs.TabPane>
 
                     {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (

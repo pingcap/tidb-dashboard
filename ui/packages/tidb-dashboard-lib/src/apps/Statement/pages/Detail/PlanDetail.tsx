@@ -13,6 +13,11 @@ import {
   Pre,
   TextWithInfo
 } from '@lib/components'
+import {
+  VisualPlanThumbnailView,
+  VisualPlanView
+} from '@lib/components/VisualPlan'
+import TxtDownloadLink from '@lib/components/TxtDownloadLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import formatSql from '@lib/utils/sqlFormatter'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
@@ -22,11 +27,6 @@ import DetailTabs from './PlanDetailTabs'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import { telemetry } from '../../utils/telemetry'
 import { StatementContext } from '../../context'
-
-import {
-  VisualPlanThumbnailView,
-  VisualPlanView
-} from '@lib/components/VisualPlan'
 
 export interface IQuery extends IPageQuery {
   plans: string[]
@@ -91,8 +91,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
     setDetailExpand((prev) => ({ ...prev, prev_query: !prev.prev_query }))
   const toggleQuery = () =>
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
-  // const togglePlan = () =>
-  //   setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   let titleKey
   if (query.allPlans === 1) {
@@ -197,6 +195,15 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       )}
                       key="binary_plan_table"
                     >
+                      <Space size="middle">
+                        <CopyLink
+                          data={data.binary_plan_text ?? data.plan ?? ''}
+                        />
+                        <TxtDownloadLink
+                          data={data.binary_plan_text ?? data.plan ?? ''}
+                          fileName={`${data.digest}.txt`}
+                        />
+                      </Space>
                       <BinaryPlanTable data={binaryPlanObj} />
                       <div style={{ height: 24 }} />
                     </Tabs.TabPane>
@@ -206,28 +213,16 @@ function PlanDetail({ query }: IPlanDetailProps) {
                     tab={t('statement.pages.detail.desc.plans.execution.text')}
                     key="text_plan"
                   >
-                    <Descriptions>
-                      <Descriptions.Item
-                        span={2}
-                        // multiline={detailExpand.plan}
-                        multiline={true}
-                        label={
-                          <Space size="middle">
-                            {/* <Expand.Link
-                              expanded={detailExpand.plan}
-                              onClick={togglePlan}
-                            /> */}
-                            <CopyLink
-                              data={data.binary_plan_text ?? data.plan ?? ''}
-                            />
-                          </Space>
-                        }
-                      >
-                        {/* <Expand expanded={detailExpand.plan}>
-                        </Expand> */}
-                        <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
-                      </Descriptions.Item>
-                    </Descriptions>
+                    <Space size="middle">
+                      <CopyLink
+                        data={data.binary_plan_text ?? data.plan ?? ''}
+                      />
+                      <TxtDownloadLink
+                        data={data.binary_plan_text ?? data.plan ?? ''}
+                        fileName={`${data.digest}.txt`}
+                      />
+                    </Space>
+                    <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
                   </Tabs.TabPane>
 
                   {binaryPlanObj && !binaryPlanObj.main.discardedDueToTooLong && (

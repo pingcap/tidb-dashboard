@@ -204,7 +204,8 @@ function PlanDetail({ query }: IPlanDetailProps) {
                           fileName={`${data.digest}.txt`}
                         />
                       </Space>
-                      <BinaryPlanTable data={binaryPlanObj} />
+                      <BinaryPlanTable data={data.binary_plan_text ?? ''} />
+                      <div>length: {data.binary_plan_text?.length}</div>
                       <div style={{ height: 24 }} />
                     </Tabs.TabPane>
                   )}
@@ -223,6 +224,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       />
                     </Space>
                     <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
+                    <div>length: {data.binary_plan_text?.length}</div>
                   </Tabs.TabPane>
 
                   {binaryPlanObj && !binaryPlanObj.main.discardedDueToTooLong && (

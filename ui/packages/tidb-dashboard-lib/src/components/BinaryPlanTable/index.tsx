@@ -1,127 +1,207 @@
 import { IColumn } from 'office-ui-fabric-react'
 import React, { useMemo } from 'react'
 import CardTable from '../CardTable'
-import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Tooltip } from 'antd'
 
-type BinaryPlanItem = {
-  name: string // id
-
-  estRows: number
-  cost: number // estCost
-  actRows: number
-
-  taskType: string // task
-  storeType: string // task
-
-  accessObjects: any[] // access object
-
-  rootBasicExecInfo: object // execution info
-  rootGroupExecInfo: any[] // execution info
-  copExecInfo: object // execution info
-
-  operatorInfo: string // operator info
-
-  memoryBytes: string // memory
-  diskBytes: string // disk
-
-  children?: BinaryPlanItem[]
-  level: number
-}
-
-type BinaryPlan = {
-  discardedDueToTooLong: boolean
-  withRuntimeStats: boolean
-  main: BinaryPlanItem
-}
+type BinaryPlanItem = Record<
+  | 'id'
+  | 'estRows'
+  | 'estCost'
+  | 'actRows'
+  | 'task'
+  | 'accessObject'
+  | 'executionInfo'
+  | 'operatorInfo'
+  | 'memory'
+  | 'disk',
+  string
+>
+type BinaryPlanFiledPosition = Record<
+  | 'id'
+  | 'estRows'
+  | 'estCost'
+  | 'actRows'
+  | 'task'
+  | 'accessObject'
+  | 'executionInfo'
+  | 'operatorInfo'
+  | 'memory'
+  | 'disk',
+  {
+    start: number
+    len: number
+  }
+>
 
 type BinaryPlanTableProps = {
-  data: BinaryPlan
+  data: string
 }
 
-function convertBinaryPlanToArray(binaryPlan: BinaryPlan): BinaryPlanItem[] {
+function convertBinaryPlanTextToArray(
+  binaryPlanText: string
+): BinaryPlanItem[] {
   const result: BinaryPlanItem[] = []
-  const stack: BinaryPlanItem[] = [binaryPlan.main]
-  stack[0].level = 0
-  while (stack.length > 0) {
-    const item = stack.pop()!
-    result.push(item)
+  let positions: BinaryPlanFiledPosition | null = null
 
-    if (item.children !== undefined) {
-      for (let i = item.children.length - 1; i >= 0; i--) {
-        const child = item.children[i]
-        child.level = item.level + 1
-        stack.push(child)
-      }
+  const lines = binaryPlanText.split('\n')
+  for (const line of lines) {
+    if (line === '') {
+      continue
     }
+    // headers
+    if (line.startsWith('| id')) {
+      let headers = line.split('|')
+      // 0: ""
+      // 1: " id                      "
+      // 2: " estRows  "
+      // 3: " estCost    "
+      // 4: " actRows "
+      // 5: " task "
+      // 6: " access object      "
+      // 7: " execution info     "
+      // 8: " operator info                                   "
+      // 9: " memory   "
+      // 10: " disk     "
+      // 11: ""
+      if (headers.length !== 12) {
+        console.error('invalid binary plan text format')
+        break
+      }
+      positions = {
+        id: {
+          start: 0,
+          len: headers[1].length
+        },
+        estRows: {
+          start: 0,
+          len: headers[2].length
+        },
+        estCost: {
+          start: 0,
+          len: headers[3].length
+        },
+        actRows: {
+          start: 0,
+          len: headers[4].length
+        },
+        task: {
+          start: 0,
+          len: headers[5].length
+        },
+        accessObject: {
+          start: 0,
+          len: headers[6].length
+        },
+        executionInfo: {
+          start: 0,
+          len: headers[7].length
+        },
+        operatorInfo: {
+          start: 0,
+          len: headers[8].length
+        },
+        memory: {
+          start: 0,
+          len: headers[9].length
+        },
+        disk: {
+          start: 0,
+          len: headers[10].length
+        }
+      }
+      positions.id.start = 1
+      positions.estRows.start = positions.id.start + positions.id.len + 1
+      positions.estCost.start =
+        positions.estRows.start + positions.estRows.len + 1
+      positions.actRows.start =
+        positions.estCost.start + positions.estCost.len + 1
+      positions.task.start = positions.actRows.start + positions.actRows.len + 1
+      positions.accessObject.start =
+        positions.task.start + positions.task.len + 1
+      positions.executionInfo.start =
+        positions.accessObject.start + positions.accessObject.len + 1
+      positions.operatorInfo.start =
+        positions.executionInfo.start + positions.executionInfo.len + 1
+      positions.memory.start =
+        positions.operatorInfo.start + positions.operatorInfo.len + 1
+      positions.disk.start = positions.memory.start + positions.memory.len + 1
+      continue
+    }
+    if (positions === null) {
+      continue
+    }
+    const item: BinaryPlanItem = {
+      id: line
+        .slice(positions.id.start + 1, positions.id.start + positions.id.len)
+        .trimEnd(), // start+1 for removing the leading white space
+      estRows: line
+        .slice(
+          positions.estRows.start,
+          positions.estRows.start + positions.estRows.len
+        )
+        .trim(),
+      estCost: line
+        .slice(
+          positions.estCost.start,
+          positions.estCost.start + positions.estCost.len
+        )
+        .trim(),
+      actRows: line
+        .slice(
+          positions.actRows.start,
+          positions.actRows.start + positions.actRows.len
+        )
+        .trim(),
+      task: line
+        .slice(positions.task.start, positions.task.start + positions.task.len)
+        .trim(),
+      accessObject: line
+        .slice(
+          positions.accessObject.start,
+          positions.accessObject.start + positions.accessObject.len
+        )
+        .trim(),
+      executionInfo: line
+        .slice(
+          positions.executionInfo.start,
+          positions.executionInfo.start + positions.executionInfo.len
+        )
+        .trim(),
+      operatorInfo: line
+        .slice(
+          positions.operatorInfo.start,
+          positions.operatorInfo.start + positions.operatorInfo.len
+        )
+        .trim(),
+      memory: line
+        .slice(
+          positions.memory.start,
+          positions.memory.start + positions.memory.len
+        )
+        .trim(),
+      disk: line
+        .slice(positions.disk.start, positions.disk.start + positions.disk.len)
+        .trim()
+    }
+    result.push(item)
   }
+
   return result
 }
 
-function getTableName(item: BinaryPlanItem): string {
-  let tableName = ''
-  if (!item?.accessObjects?.length) return ''
-
-  const scanObject = item.accessObjects.find((obj) =>
-    Object.keys(obj).includes('scanObject')
-  )
-
-  if (scanObject) {
-    tableName = scanObject['scanObject']['table']
-  }
-
-  return tableName
-}
-
-function getExecutionInfo(item: BinaryPlanItem) {
-  let execInfo: string[] = []
-  if (Object.keys(item.rootBasicExecInfo).length > 0) {
-    execInfo.push(JSON.stringify(item.rootBasicExecInfo))
-  }
-  if (item.rootGroupExecInfo.length > 0) {
-    item.rootGroupExecInfo
-      .filter((i) => !!i) // filter out the NULL value
-      .forEach((info) => {
-        execInfo.push(JSON.stringify(info))
-      })
-  }
-  if (Object.keys(item.copExecInfo).length > 0) {
-    execInfo.push(JSON.stringify(item.copExecInfo))
-  }
-  execInfo = execInfo.map((info) =>
-    info.replaceAll('"', '').replaceAll(',', ', ')
-  )
-  return execInfo
-}
-
-function getMemorySize(item: BinaryPlanItem): string {
-  if (item.memoryBytes === 'N/A') {
-    return 'N/A'
-  }
-  return getValueFormat('bytes')(Number(item.memoryBytes), 1)
-}
-
-function getDiskSize(item: BinaryPlanItem): string {
-  if (item.diskBytes === 'N/A') {
-    return 'N/A'
-  }
-  return getValueFormat('bytes')(Number(item.diskBytes), 1)
-}
-
 export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
-  const arr = useMemo(() => convertBinaryPlanToArray(data), [data])
+  const arr = useMemo(() => convertBinaryPlanTextToArray(data), [data])
   const columns: IColumn[] = useMemo(() => {
     return [
       {
         name: 'id',
         key: 'name',
         minWidth: 100,
-        maxWidth: 300,
+        maxWidth: 600,
         onRender: (row: BinaryPlanItem) => {
           return (
-            <span style={{ marginLeft: Math.max(24 * (row.level - 1), 0) }}>
-              {row.level > 0 && '└─'}
-              {row.name}
+            <span style={{ whiteSpace: 'pre', fontFamily: 'monospace' }}>
+              {row.id}
             </span>
           )
         }
@@ -132,7 +212,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
-          return row.estRows.toFixed(2)
+          return row.estRows
         }
       },
       {
@@ -141,7 +221,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
-          return (row.cost ?? 0).toFixed(2)
+          return row.estCost
         }
       },
       {
@@ -150,7 +230,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
-          return row.actRows.toFixed(2)
+          return row.actRows
         }
       },
       {
@@ -159,11 +239,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 60,
         maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
-          let task = row.taskType
-          if (task !== 'root') {
-            task += `[${row.storeType}]`
-          }
-          return task
+          return row.task
         }
       },
       {
@@ -172,9 +248,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: BinaryPlanItem) => {
-          const tableName = getTableName(row)
-          let content = !!tableName ? `table: ${tableName}` : ''
-          return content && <Tooltip title={content}>{content}</Tooltip>
+          return <Tooltip title={row.accessObject}>{row.accessObject}</Tooltip>
         }
       },
       {
@@ -183,19 +257,8 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 100,
         maxWidth: 300,
         onRender: (row: BinaryPlanItem) => {
-          const execInfo = getExecutionInfo(row)
           return (
-            <Tooltip
-              title={
-                <>
-                  {execInfo.map((info, idx) => (
-                    <div key={idx}>{info}</div>
-                  ))}
-                </>
-              }
-            >
-              {execInfo.join(', ')}
-            </Tooltip>
+            <Tooltip title={row.executionInfo}>{row.executionInfo}</Tooltip>
           )
         }
       },
@@ -221,7 +284,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 60,
         maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
-          return getMemorySize(row)
+          return row.memory
         }
       },
       {
@@ -230,7 +293,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({ data }) => {
         minWidth: 60,
         maxWidth: 100,
         onRender: (row: BinaryPlanItem) => {
-          return getDiskSize(row)
+          return row.disk
         }
       }
     ]

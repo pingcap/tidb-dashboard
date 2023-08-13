@@ -196,7 +196,7 @@ function DetailPage() {
                             fileName={`${data.digest}.txt`}
                           />
                         </Space>
-                        <BinaryPlanTable data={binaryPlanObj} />
+                        <BinaryPlanTable data={data.binary_plan_text ?? ''} />
                         <div style={{ height: 24 }} />
                       </Tabs.TabPane>
                     )}

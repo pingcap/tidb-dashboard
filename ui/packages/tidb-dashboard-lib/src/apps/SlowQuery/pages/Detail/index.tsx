@@ -10,7 +10,7 @@ import formatSql from '@lib/utils/sqlFormatter'
 import {
   AnimatedSkeleton,
   BinaryPlanTable,
-  BinaryPlanText,
+  PlanText,
   CopyLink,
   Descriptions,
   ErrorBar,
@@ -202,8 +202,8 @@ function DetailPage() {
                       tab={t('slow_query.detail.plan.text')}
                       key="text_plan"
                     >
-                      <BinaryPlanText
-                        data={data.binary_plan_text ?? data.plan ?? ''}
+                      <PlanText
+                        data={data.binary_plan_text || data.plan || ''}
                         downloadFileName={`${data.digest}.txt`}
                       />
                     </Tabs.TabPane>

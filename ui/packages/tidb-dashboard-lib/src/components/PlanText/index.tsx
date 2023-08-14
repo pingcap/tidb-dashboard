@@ -18,7 +18,7 @@ const DISCARDED_TOO_LONG = 'plan discarded because too long'
 
 const MAX_SHOW_LEN = 500 * 1024 // 500KB
 
-export const BinaryPlanText: React.FC<BinaryPlanTextProps> = ({
+export const PlanText: React.FC<BinaryPlanTextProps> = ({
   data,
   downloadFileName
 }) => {
@@ -35,6 +35,12 @@ export const BinaryPlanText: React.FC<BinaryPlanTextProps> = ({
         str.slice(0, MAX_SHOW_LEN) +
         '\n...(too long to show, copy or download to analyze)'
     }
+    // binary_plan_text field starts with '\n' which will show an extra empty line
+    // plan field starts with `\t`
+    if (str.startsWith('\n')) {
+      // remove the first empty line
+      str = str.slice(1)
+    }
     return str
   }, [data])
 
@@ -47,7 +53,9 @@ export const BinaryPlanText: React.FC<BinaryPlanTextProps> = ({
         <CopyLink data={data} />
         <TxtDownloadLink data={data} fileName={downloadFileName} />
       </div>
-      <Pre noWrap>{truncatedStr}</Pre>
+      <Pre noWrap style={{ paddingBlock: 8 }}>
+        {truncatedStr}
+      </Pre>
     </>
   )
 }

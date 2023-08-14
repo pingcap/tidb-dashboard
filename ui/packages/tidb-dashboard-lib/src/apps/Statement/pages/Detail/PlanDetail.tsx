@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,
   BinaryPlanTable,
-  BinaryPlanText,
+  PlanText,
   Card,
   CopyLink,
   Descriptions,
@@ -208,8 +208,8 @@ function PlanDetail({ query }: IPlanDetailProps) {
                     tab={t('statement.pages.detail.desc.plans.execution.text')}
                     key="text_plan"
                   >
-                    <BinaryPlanText
-                      data={data.binary_plan_text ?? data.plan ?? ''}
+                    <PlanText
+                      data={data.binary_plan_text || data.plan || ''}
                       downloadFileName={`${data.digest}.txt`}
                     />
                   </Tabs.TabPane>

@@ -109,19 +109,11 @@ func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.
 func QuerySlowLogDetail(req *GetDetailRequest, db *gorm.DB) (*Model, error) {
 	var result Model
 	err := db.
-		Select("*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp, tidb_decode_binary_plan(Binary_plan) AS Binary_plan_text").
+		Select("*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp").
 		Where("Digest = ?", req.Digest).
 		Where("Time = FROM_UNIXTIME(?)", req.Timestamp).
 		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
-	if err != nil {
-		err = db.
-			Select("*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp").
-			Where("Digest = ?", req.Digest).
-			Where("Time = FROM_UNIXTIME(?)", req.Timestamp).
-			Where("Conn_id = ?", req.ConnectID).
-			First(&result).Error
-	}
 	if err != nil {
 		return nil, err
 	}

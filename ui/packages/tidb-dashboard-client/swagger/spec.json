@@ -4906,7 +4906,12 @@
                 "binary_plan": {
                     "type": "string"
                 },
+                "binary_plan_json": {
+                    "description": "Computed fields",
+                    "type": "string"
+                },
                 "binary_plan_text": {
+                    "description": "binary plan plain text",
                     "type": "string"
                 },
                 "commit_backoff_time": {
@@ -5312,6 +5317,9 @@
                     "type": "integer"
                 },
                 "binary_plan": {
+                    "type": "string"
+                },
+                "binary_plan_json": {
                     "type": "string"
                 },
                 "binary_plan_text": {

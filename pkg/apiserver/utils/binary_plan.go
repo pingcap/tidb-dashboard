@@ -15,6 +15,7 @@ import (
 	"github.com/pingcap/tipb/go-tipb"
 	json "google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/runtime/protoimpl"
+	"gorm.io/gorm"
 )
 
 const (
@@ -974,4 +975,18 @@ func formatJSON(s string) (*simplejson.Json, error) {
 	s = strings.ReplaceAll(s, `{""}`, "{}")
 
 	return simplejson.NewJson([]byte(s))
+}
+
+/////////////////
+
+func GenerateBinaryPlanText(db *gorm.DB, b string) (string, error) {
+	type binaryPlanText struct {
+		Text string `gorm:"column:binary_plan_text"`
+	}
+	ret := &binaryPlanText{}
+	err := db.Raw(fmt.Sprintf("select tidb_decode_binary_plan('%s') as binary_plan_text", b)).Find(ret).Error
+	if err != nil {
+		return "", err
+	}
+	return ret.Text, err
 }

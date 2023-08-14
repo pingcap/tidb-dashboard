@@ -81,9 +81,8 @@ type Model struct {
 	AggIndexNames            string  `json:"index_names" agg:"ANY_VALUE(index_names)"`
 	AggPlanCount             int     `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)" related:"plan_digest"`
 	AggPlan                  string  `json:"plan" agg:"ANY_VALUE(plan)"` // deprecated, replaced by BinaryPlanText
-	AggPlanDigest            string  `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
 	AggBinaryPlan            string  `json:"binary_plan" agg:"ANY_VALUE(binary_plan)"`
-	AggBinaryPlanText        string  `json:"binary_plan_text" related:"binary_plan" agg:"tidb_decode_binary_plan(ANY_VALUE(binary_plan))"`
+	AggPlanDigest            string  `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
 	AggPlanHint              *string `json:"plan_hint" agg:"ANY_VALUE(plan_hint)"`
 	// RocksDB
 	AggMaxRocksdbDeleteSkippedCount uint `json:"max_rocksdb_delete_skipped_count" agg:"MAX(max_rocksdb_delete_skipped_count)"`
@@ -99,6 +98,8 @@ type Model struct {
 	// Computed fields
 	RelatedSchemas string `json:"related_schemas"`
 	PlanCanBeBound bool   `json:"plan_can_be_bound"`
+	BinaryPlanJSON string `json:"binary_plan_json"`
+	BinaryPlanText string `json:"binary_plan_text"`
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"

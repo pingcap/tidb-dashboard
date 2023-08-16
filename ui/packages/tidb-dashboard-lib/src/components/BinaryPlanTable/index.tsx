@@ -6,6 +6,8 @@ import { CopyLink, TxtDownloadLink } from '@lib/components'
 import { BinaryPlanColsSelector } from './BinaryPlanColsSelector'
 import { EyeOutlined } from '@ant-design/icons'
 
+import styles from './index.module.less'
+
 const COLUM_KEYS = [
   'id',
   'estRows',
@@ -213,13 +215,13 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
     return [
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             id <EyeOutlined onClick={() => hideColumn('id')} />
           </div>
         ) as any,
         extra: 'id',
         key: 'id',
-        minWidth: 100,
+        minWidth: 200,
         maxWidth: 600,
         onRender: (row: BinaryPlanItem) => {
           return (
@@ -233,7 +235,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
       },
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             estRows <EyeOutlined onClick={() => hideColumn('estRows')} />
           </div>
         ) as any,
@@ -247,7 +249,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
       },
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             estCost <EyeOutlined onClick={() => hideColumn('estCost')} />
           </div>
         ) as any,
@@ -261,7 +263,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
       },
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             actRows <EyeOutlined onClick={() => hideColumn('actRows')} />
           </div>
         ) as any,
@@ -275,7 +277,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
       },
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             task <EyeOutlined onClick={() => hideColumn('task')} />
           </div>
         ) as any,
@@ -289,7 +291,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
       },
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             access object{' '}
             <EyeOutlined onClick={() => hideColumn('accessObject')} />
           </div>
@@ -304,7 +306,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
       },
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             execution info{' '}
             <EyeOutlined onClick={() => hideColumn('executionInfo')} />
           </div>
@@ -321,7 +323,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
       },
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             operator info{' '}
             <EyeOutlined onClick={() => hideColumn('operatorInfo')} />
           </div>
@@ -350,7 +352,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
       },
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             memory <EyeOutlined onClick={() => hideColumn('memory')} />
           </div>
         ) as any,
@@ -364,7 +366,7 @@ export const BinaryPlanTable: React.FC<BinaryPlanTableProps> = ({
       },
       {
         name: (
-          <div>
+          <div className={styles.colHeader}>
             disk <EyeOutlined onClick={() => hideColumn('disk')} />
           </div>
         ) as any,

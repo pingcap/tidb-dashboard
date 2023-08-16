@@ -9,10 +9,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
@@ -37,10 +39,14 @@ type ServiceParams struct {
 	TiDBStatusClient    *tidbclient.StatusClient
 	TiKVStatusClient    *tikvclient.StatusClient
 	TiFlashStatusClient *tiflashclient.StatusClient
+	EtcdClient          *clientv3.Client
+	PDClient            *pd.Client
 }
 
 type Service struct {
 	httpClients endpoint.HTTPClients
+	etcdClient  *clientv3.Client
+	pdClient    *pd.Client
 	resolver    *endpoint.RequestPayloadResolver
 	fSwap       *fileswap.Handler
 }
@@ -54,6 +60,8 @@ func newService(p ServiceParams) *Service {
 	}
 	return &Service{
 		httpClients: httpClients,
+		etcdClient:  p.EtcdClient,
+		pdClient:    p.PDClient,
 		resolver:    endpoint.NewRequestPayloadResolver(apiEndpoints, httpClients),
 		fSwap:       fileswap.New(),
 	}
@@ -110,7 +118,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		_ = writer.Close()
 	}()
 
-	resp, err := resolved.SendRequestAndPipe(s.httpClients, writer)
+	resp, err := resolved.SendRequestAndPipe(c.Request.Context(), s.httpClients, s.etcdClient, s.pdClient, writer)
 	if err != nil {
 		rest.Error(c, err)
 		return

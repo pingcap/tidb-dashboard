@@ -30,6 +30,8 @@ type Config struct {
 	EnableTelemetry    bool
 	EnableExperimental bool
 	FeatureVersion     string // assign the target TiDB version when running TiDB Dashboard as standalone mode
+
+	NgmTimeout int // in seconds
 }
 
 func Default() *Config {
@@ -43,6 +45,7 @@ func Default() *Config {
 		EnableTelemetry:    false,
 		EnableExperimental: false,
 		FeatureVersion:     version.PDVersion,
+		NgmTimeout:         30, // s
 	}
 }
 

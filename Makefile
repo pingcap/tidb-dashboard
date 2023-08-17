@@ -30,7 +30,7 @@ IMAGE ?= $(REPOSITORY):$(RELEASE_VERSION)
 AMD64 := linux/amd64
 ARM64 := linux/arm64
 PLATFORMS := $(AMD64),$(ARM64)
-DOCKERFILE ?= ./dockerfiles/alpine316.Dockerfile
+DOCKERFILE ?= ./dockerfiles/alpine318.Dockerfile
 # If you want to build with no cache (after update go module, npm module, etc.), set "NO_CACHE=--pull --no-cache".
 NO_CACHE ?=
 

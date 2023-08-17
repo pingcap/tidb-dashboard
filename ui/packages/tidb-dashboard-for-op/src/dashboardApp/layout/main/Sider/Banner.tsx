@@ -3,8 +3,7 @@ import { CaretRightOutlined, CaretLeftOutlined } from '@ant-design/icons'
 import { useSize } from 'ahooks'
 import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
-import { useTranslation } from 'react-i18next'
-import { TFunction } from 'i18next'
+import { useTranslation, TFunction } from 'react-i18next'
 
 import { InfoInfoResponse } from '~/client'
 

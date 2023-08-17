@@ -1,6 +1,6 @@
 module scripts
 
-go 1.18
+go 1.20
 
 require (
 	github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe

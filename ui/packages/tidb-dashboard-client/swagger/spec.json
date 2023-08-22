@@ -3923,6 +3923,9 @@
                 "pd": {
                     "type": "integer"
                 },
+                "ticdc": {
+                    "type": "integer"
+                },
                 "tidb": {
                     "type": "integer"
                 },

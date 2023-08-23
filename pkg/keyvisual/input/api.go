@@ -5,6 +5,8 @@ package input
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"sort"
 
 	"github.com/joomcode/errorx"
@@ -13,6 +15,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/util/distro"
 )
+
+const ScanRegionsLimit = 51200
 
 var (
 	ErrNS          = errorx.NewNamespace("error.keyvisual")
@@ -110,10 +114,55 @@ func read(data []byte) (*RegionsInfo, error) {
 
 func NewAPIPeriodicGetter(pdClient *pd.Client) regionpkg.RegionsInfoGenerator {
 	return func() (regionpkg.RegionsInfo, error) {
-		data, err := pdClient.SendGetRequest("/regions")
-		if err != nil {
-			return nil, err
+		var mergedRegionsInfo RegionsInfo
+		startKey := ""
+		for {
+			regionsInfo, err := scanRegions(pdClient, startKey, "", ScanRegionsLimit)
+			if err != nil {
+				return nil, err
+			}
+			// Decode the the hex encode code start key and end key.
+			for _, region := range regionsInfo.Regions {
+				startBytes, err := hex.DecodeString(region.StartKey)
+				if err != nil {
+					return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.R().PD)
+				}
+				region.StartKey = regionpkg.String(startBytes)
+				endBytes, err := hex.DecodeString(region.EndKey)
+				if err != nil {
+					return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.R().PD)
+				}
+				region.EndKey = regionpkg.String(endBytes)
+			}
+			mergedRegionsInfo.Regions = append(mergedRegionsInfo.Regions, regionsInfo.Regions...)
+			mergedRegionsInfo.Count += regionsInfo.Count
+			if regionsInfo.Count == 0 || regionsInfo.Regions[len(regionsInfo.Regions)-1].EndKey == "" {
+				break
+			}
+			startKey = regionsInfo.Regions[len(regionsInfo.Regions)-1].EndKey
 		}
-		return read(data)
+		return &mergedRegionsInfo, nil
 	}
+}
+
+func scanRegions(pdclient *pd.Client, key, endKey string, limit int) (*RegionsInfo, error) {
+	values := url.Values{
+		"key":     {key},
+		"end_key": {endKey},
+		"limit":   {fmt.Sprintf("%d", limit)},
+	}
+
+	url := "/regions/key" + "?" + values.Encode()
+
+	data, err := pdclient.SendGetRequest(url)
+	if err != nil {
+		return nil, err
+	}
+
+	var regionsInfo RegionsInfo
+	err = json.Unmarshal(data, &regionsInfo)
+	if err != nil {
+		return nil, err
+	}
+	return &regionsInfo, nil
 }

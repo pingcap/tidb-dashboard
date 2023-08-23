@@ -1,7 +1,7 @@
 import React from 'react'
 import { StatementModel } from '@lib/client'
 import { Typography } from 'antd'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 
 export const tabTimeItems = (data: StatementModel, t: TFunction) => [
   {

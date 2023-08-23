@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
 import { Space, Modal, Tabs, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -10,25 +10,24 @@ import formatSql from '@lib/utils/sqlFormatter'
 import {
   AnimatedSkeleton,
   BinaryPlanTable,
+  PlanText,
   CopyLink,
   Descriptions,
   ErrorBar,
   Expand,
   Head,
   HighlightSQL,
-  Pre,
   TextWithInfo
 } from '@lib/components'
+import {
+  VisualPlanThumbnailView,
+  VisualPlanView
+} from '@lib/components/VisualPlan'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { telemetry } from '../../utils/telemetry'
 
 import DetailTabs from './DetailTabs'
 import { SlowQueryContext } from '../../context'
-
-import {
-  VisualPlanThumbnailView,
-  VisualPlanView
-} from '@lib/components/VisualPlan'
 
 export interface IPageQuery {
   connectId?: string
@@ -56,7 +55,13 @@ function DetailPage() {
     )
   )
 
-  const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
+  const binaryPlanObj = useMemo(() => {
+    const json = data?.binary_plan_json ?? data?.binary_plan
+    if (json) {
+      return JSON.parse(json)
+    }
+    return undefined
+  }, [data?.binary_plan, data?.binary_plan_json])
 
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     SLOW_QUERY_DETAIL_EXPAND,
@@ -73,13 +78,11 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, prev_query: !prev.prev_query }))
   const toggleQuery = () =>
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
-  // const togglePlan = () =>
-  //   setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
-  const [isVpVisible, setIsVpVisable] = useState(false)
+  const [isVpVisible, setIsVpVisible] = useState(false)
   const toggleVisualPlan = (action: 'open' | 'close') => {
     telemetry.toggleVisualPlanModal(action)
-    setIsVpVisable(!isVpVisible)
+    setIsVpVisible(!isVpVisible)
   }
 
   return (
@@ -167,56 +170,45 @@ function DetailPage() {
                     )
                 })()}
               </Descriptions>
-              {(binaryPlan || !!data.plan) && (
+              {(binaryPlanObj || !!data.plan) && (
                 <>
                   <Space size="middle" style={{ color: '#8c8c8c' }}>
                     {t('slow_query.detail.plan.title')}
                   </Space>
                   <Tabs
-                    defaultActiveKey="text_plan"
+                    defaultActiveKey={
+                      !!data.binary_plan_text
+                        ? 'binary_plan_table'
+                        : 'text_plan'
+                    }
                     onTabClick={(key) =>
                       telemetry.clickPlanTabs(key, data.digest!)
                     }
                   >
-                    <Tabs.TabPane
-                      tab={t('slow_query.detail.plan.text')}
-                      key="text_plan"
-                    >
-                      <Descriptions>
-                        <Descriptions.Item
-                          span={2}
-                          multiline={true}
-                          // multiline={detailExpand.plan}
-                          label={
-                            <Space size="middle">
-                              {/* <Expand.Link
-                                expanded={detailExpand.plan}
-                                onClick={togglePlan}
-                              /> */}
-                              <CopyLink
-                                data={data.binary_plan_text ?? data.plan ?? ''}
-                              />
-                            </Space>
-                          }
-                        >
-                          {/* <Expand expanded={detailExpand.plan}>
-                          </Expand> */}
-                          <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
-                        </Descriptions.Item>
-                      </Descriptions>
-                    </Tabs.TabPane>
-
-                    {binaryPlan && !binaryPlan.discardedDueToTooLong && (
+                    {!!data.binary_plan_text && (
                       <Tabs.TabPane
                         tab={t('slow_query.detail.plan.table')}
                         key="binary_plan_table"
                       >
-                        <BinaryPlanTable data={binaryPlan} />
+                        <BinaryPlanTable
+                          data={data.binary_plan_text}
+                          downloadFileName={`${data.digest}.txt`}
+                        />
                         <div style={{ height: 24 }} />
                       </Tabs.TabPane>
                     )}
 
-                    {binaryPlan && !binaryPlan.discardedDueToTooLong && (
+                    <Tabs.TabPane
+                      tab={t('slow_query.detail.plan.text')}
+                      key="text_plan"
+                    >
+                      <PlanText
+                        data={data.binary_plan_text || data.plan || ''}
+                        downloadFileName={`${data.digest}.txt`}
+                      />
+                    </Tabs.TabPane>
+
+                    {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
                       <Tabs.TabPane
                         tab={t('slow_query.detail.plan.visual')}
                         key="binary_plan"
@@ -234,12 +226,12 @@ function DetailPage() {
                             height: window.innerHeight - 100
                           }}
                         >
-                          <VisualPlanView data={binaryPlan} />
+                          <VisualPlanView data={binaryPlanObj} />
                         </Modal>
                         <Descriptions>
                           <Descriptions.Item span={2}>
                             <div onClick={() => toggleVisualPlan('open')}>
-                              <VisualPlanThumbnailView data={binaryPlan} />
+                              <VisualPlanThumbnailView data={binaryPlanObj} />
                             </div>
                           </Descriptions.Item>
                         </Descriptions>

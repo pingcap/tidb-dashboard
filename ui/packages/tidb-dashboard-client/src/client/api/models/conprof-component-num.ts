@@ -31,6 +31,12 @@ export interface ConprofComponentNum {
      * @type {number}
      * @memberof ConprofComponentNum
      */
+    'ticdc'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ConprofComponentNum
+     */
     'tidb'?: number;
     /**
      * 

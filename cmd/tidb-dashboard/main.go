@@ -67,6 +67,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", cfg.CoreConfig.EnableTelemetry, "allow telemetry")
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
 	flag.StringVar(&cfg.CoreConfig.FeatureVersion, "feature-version", cfg.CoreConfig.FeatureVersion, "target TiDB version for standalone mode")
+	flag.IntVar(&cfg.CoreConfig.NgmTimeout, "ngm-timeout", cfg.CoreConfig.NgmTimeout, "timeout secs for accessing the ngm API")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 

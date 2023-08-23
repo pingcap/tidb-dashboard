@@ -380,6 +380,12 @@ export interface ConprofComponentNum {
      * @type {number}
      * @memberof ConprofComponentNum
      */
+    'ticdc'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ConprofComponentNum
+     */
     'tidb'?: number;
     /**
      * 
@@ -2177,7 +2183,13 @@ export interface SlowqueryModel {
      */
     'binary_plan'?: string;
     /**
-     * 
+     * Computed fields
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan_json'?: string;
+    /**
+     * binary plan plain text
      * @type {string}
      * @memberof SlowqueryModel
      */
@@ -2934,6 +2946,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'binary_plan'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'binary_plan_json'?: string;
     /**
      * 
      * @type {string}

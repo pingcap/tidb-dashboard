@@ -45,8 +45,8 @@ The followings are required for developing TiDB Dashboard:
 - git - Version control
 - make - Build tool (run common workflows)
 - [Golang 1.19+](https://golang.org/) - To compile the server.
-- [Node.js 16](https://nodejs.org/) - To compile the front-end.
-- [PNPM 7](https://pnpm.io/) - To manage front-end dependencies.
+- [Node.js 18](https://nodejs.org/) - To compile the front-end.
+- [PNPM 8](https://pnpm.io/) - To manage front-end dependencies.
 - [Java 8+](https://www.java.com/ES/download/) - To generate JavaScript API client by OpenAPI specification.
 
 ### Step 3. Build and Run TiDB Dashboard

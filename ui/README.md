@@ -4,6 +4,11 @@
 
 ![ui arch](./ui_arch.png)
 
+## Requirements
+
+- Node >= 18.16.0
+- pnpm >= 8.6.12
+
 ## Run
 
 ### Dev

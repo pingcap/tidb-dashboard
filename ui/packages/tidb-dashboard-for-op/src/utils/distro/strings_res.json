@@ -1,1 +1,7 @@
-{"tidb":"TiDB","tikv":"TiKV","pd":"PD","tiflash":"TiFlash"}
+{
+  "tidb": "TiDB",
+  "tikv": "TiKV",
+  "pd": "PD",
+  "tiflash": "TiFlash",
+  "ticdc": "TiCDC"
+}

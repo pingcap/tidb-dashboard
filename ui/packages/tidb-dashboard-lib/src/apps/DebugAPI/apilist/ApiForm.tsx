@@ -47,8 +47,6 @@ export default function ApiForm({
 
   const download = useCallback(
     async (values: any) => {
-      console.log('values:', values)
-      console.log('params:', params)
       try {
         setLoading(true)
         const { [endpointHostParamKey]: host, ...p } = values

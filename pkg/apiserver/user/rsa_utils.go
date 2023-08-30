@@ -48,20 +48,6 @@ func ExportPublicKeyAsString(publicKey *rsa.PublicKey) (string, error) {
 	return publicKeyString, nil
 }
 
-// Dump private key to base64 string
-//  1. Have no header/tailer line
-//  2. Key content is merged into one-line format
-//
-// The output is:
-//
-//	MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2y8mEdCRE8siiI7udpge......2QIDAQAB
-func DumpPrivateKeyBase64(privatekey *rsa.PrivateKey) (string, error) {
-	keyBytes := x509.MarshalPKCS1PrivateKey(privatekey)
-
-	keyBase64 := base64.StdEncoding.EncodeToString(keyBytes)
-	return keyBase64, nil
-}
-
 // Dump public key to base64 string
 //  1. Have no header/tailer line
 //  2. Key content is merged into one-line format
@@ -74,6 +60,20 @@ func DumpPublicKeyBase64(publicKey *rsa.PublicKey) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	keyBase64 := base64.StdEncoding.EncodeToString(keyBytes)
+	return keyBase64, nil
+}
+
+// Dump private key to base64 string
+//  1. Have no header/tailer line
+//  2. Key content is merged into one-line format
+//
+// The output is:
+//
+//	MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2y8mEdCRE8siiI7udpge......2QIDAQAB
+func DumpPrivateKeyBase64(privatekey *rsa.PrivateKey) (string, error) {
+	keyBytes := x509.MarshalPKCS1PrivateKey(privatekey)
 
 	keyBase64 := base64.StdEncoding.EncodeToString(keyBytes)
 	return keyBase64, nil

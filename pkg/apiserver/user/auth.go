@@ -311,8 +311,8 @@ func (s *AuthService) GetLoginInfoHandler(c *gin.Context) {
 	}
 	sort.Ints(supportedAuth)
 	// both work
-	// publicKeyStr, err := DumpPublicKeyBase64(s.rsaPublicKey)
-	publicKeyStr, err := ExportPublicKeyAsString(s.rsaPublicKey)
+	// publicKeyStr, err := ExportPublicKeyAsString(s.rsaPublicKey)
+	publicKeyStr, err := DumpPublicKeyBase64(s.rsaPublicKey)
 	if err != nil {
 		rest.Error(c, err)
 		return

@@ -105,6 +105,10 @@ var apiEndpoints = []endpoint.APIDefinition{
 		Component: topo.KindTiDB,
 		Path:      "/ddl/history",
 		Method:    resty.MethodGet,
+		QueryParams: []endpoint.APIParamDefinition{
+			endpoint.APIParamInt("start_job_id", false),
+			endpoint.APIParamIntWithDefaultVal("limit", false, "10"),
+		},
 	},
 	{
 		ID:        "tidb_server_info",

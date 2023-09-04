@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/joomcode/errorx"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/atomic"
 	"go.uber.org/fx"
 	"golang.org/x/sync/singleflight"

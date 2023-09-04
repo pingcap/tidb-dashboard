@@ -3923,6 +3923,9 @@
                 "pd": {
                     "type": "integer"
                 },
+                "ticdc": {
+                    "type": "integer"
+                },
                 "tidb": {
                     "type": "integer"
                 },
@@ -5773,6 +5776,9 @@
         "user.GetLoginInfoResponse": {
             "type": "object",
             "properties": {
+                "sql_auth_public_key": {
+                    "type": "string"
+                },
                 "supported_auth_types": {
                     "type": "array",
                     "items": {

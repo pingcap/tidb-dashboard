@@ -34,7 +34,7 @@ RUN pnpm fetch
 # Build.
 WORKDIR /go/src/github.com/pingcap/tidb-dashboard
 COPY .. .
-RUN make package PNPM_INSTALL_TAGS=--offline
+RUN make package
 
 FROM alpine:3.16
 

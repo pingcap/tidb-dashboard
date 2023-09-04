@@ -46,6 +46,7 @@ import AppUserProfile from '~/apps/UserProfile/meta'
 import AppDiagnose from '~/apps/Diagnose/meta'
 import AppOptimizerTrace from '~/apps/OptimizerTrace/meta'
 import AppDeadlock from '~/apps/Deadlock/meta'
+import AppResourceManager from '~/apps/ResourceManager/meta'
 
 import LayoutMain from './layout/main'
 
@@ -169,6 +170,7 @@ async function webPageStart(appOptions: AppOptions) {
     .register(AppDebugAPI)
     .register(AppOptimizerTrace)
     .register(AppDeadlock)
+    .register(AppResourceManager)
 
   if (!appOptions.skipReloadWhoAmI) {
     try {

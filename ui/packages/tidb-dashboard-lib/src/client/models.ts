@@ -380,6 +380,12 @@ export interface ConprofComponentNum {
      * @type {number}
      * @memberof ConprofComponentNum
      */
+    'ticdc'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ConprofComponentNum
+     */
     'tidb'?: number;
     /**
      * 
@@ -3803,6 +3809,12 @@ export interface UserAuthenticateForm {
  * @interface UserGetLoginInfoResponse
  */
 export interface UserGetLoginInfoResponse {
+    /**
+     * 
+     * @type {string}
+     * @memberof UserGetLoginInfoResponse
+     */
+    'sql_auth_public_key'?: string;
     /**
      * 
      * @type {Array<number>}

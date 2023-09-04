@@ -46,6 +46,7 @@ func (d *APIParamDefinition) Resolve(value string) ([]string, error) {
 // UIComponentTextProps is the type of UIComponentProps when UIComponentKind is "text".
 type UIComponentTextProps struct {
 	Placeholder string `json:"placeholder"`
+	DefaultVal  string `json:"default_val"`
 }
 
 func APIParamText(name string, required bool) APIParamDefinition {
@@ -57,12 +58,21 @@ func APIParamText(name string, required bool) APIParamDefinition {
 }
 
 func APIParamInt(name string, required bool) APIParamDefinition {
+	return APIParamIntWithDefaultVal(name, required, "")
+}
+
+func APIParamIntWithDefaultVal(name string, required bool, defVal string) APIParamDefinition {
+	placeHolder := "(int)"
+	if defVal != "" {
+		placeHolder = fmt.Sprintf("(int, default: %s)", defVal)
+	}
 	return APIParamDefinition{
 		Name:            name,
 		Required:        required,
 		UIComponentKind: "text",
 		UIComponentProps: UIComponentTextProps{
-			Placeholder: "(int)",
+			Placeholder: placeHolder,
+			DefaultVal:  defVal,
 		},
 		OnResolve: func(value string) ([]string, error) {
 			if _, err := strconv.Atoi(value); err != nil {

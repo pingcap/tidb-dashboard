@@ -51,10 +51,17 @@ export default function ApiForm({
         setLoading(true)
         const { [endpointHostParamKey]: host, ...p } = values
         const [hostname, port] = host.split(':')
-        // filter the null value params
         const param_values = Object.entries(p).reduce((prev, [k, v]) => {
           if (!(isUndefined(v) || isNull(v) || v === '')) {
             prev[k] = v
+          } else {
+            // handle the null value params
+            // fill it with the default value if it has
+            const param = params.find((p) => p.name === k)
+            const defVal = (param?.ui_props as any)?.default_val
+            if (!!defVal) {
+              prev[k] = defVal
+            }
           }
           return prev
         }, {})

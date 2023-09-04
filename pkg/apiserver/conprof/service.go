@@ -144,6 +144,7 @@ type ComponentNum struct {
 	PD      int `json:"pd"`
 	TiKV    int `json:"tikv"`
 	TiFlash int `json:"tiflash"`
+	TiCDC   int `json:"ticdc"`
 }
 
 type GroupProfiles struct {

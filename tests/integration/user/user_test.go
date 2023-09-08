@@ -216,6 +216,32 @@ func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
 	s.Require().Nil(err)
 }
 
+func (s *testUserSuite) TestLoginWithSamePayloadTwice() {
+	param := make(map[string]interface{})
+	param["type"] = 0
+	param["username"] = "root"
+	pwd, _ := user.Encrypt("", s.authService.RsaPublicKey)
+	param["password"] = pwd
+
+	// success at the first time
+	jsonByte, _ := json.Marshal(param)
+	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
+
+	s.Require().Len(c.Errors, 0)
+	s.Require().Equal(200, c.Writer.Status())
+	s.Require().Equal(200, w.Code)
+
+	// fail at the second time
+	req, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
+	c, w = util.TestReqWithHandlers(req, s.authService.LoginHandler)
+
+	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
+	s.Require().Contains(c.Errors.Last().Err.Error(), "crypto/rsa: decryption error")
+	s.Require().Equal(401, c.Writer.Status())
+	s.Require().Equal(401, w.Code)
+}
+
 func (s *testUserSuite) TestLoginInfo() {
 	req, _ := http.NewRequest(http.MethodGet, "/user/login_info", nil)
 	c, w := util.TestReqWithHandlers(req, s.authService.GetLoginInfoHandler)

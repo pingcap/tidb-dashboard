@@ -37,7 +37,7 @@ type AuthService struct {
 	middleware     *jwt.GinJWTMiddleware
 	authenticators map[utils.AuthType]Authenticator
 
-	rsaPublicKey  *rsa.PublicKey
+	RsaPublicKey  *rsa.PublicKey
 	RsaPrivateKey *rsa.PrivateKey
 }
 
@@ -104,7 +104,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 		middleware:              nil,
 		authenticators:          map[utils.AuthType]Authenticator{},
 		RsaPrivateKey:           privateKey,
-		rsaPublicKey:            publicKey,
+		RsaPublicKey:            publicKey,
 	}
 
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
@@ -128,7 +128,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 				// if generate successfully, replace the old key pair
 				if err == nil {
 					service.RsaPrivateKey = privateKey
-					service.rsaPublicKey = publicKey
+					service.RsaPublicKey = publicKey
 				}
 			}
 			return u, nil
@@ -321,7 +321,7 @@ func (s *AuthService) GetLoginInfoHandler(c *gin.Context) {
 	sort.Ints(supportedAuth)
 	// both work
 	// publicKeyStr, err := ExportPublicKeyAsString(s.rsaPublicKey)
-	publicKeyStr, err := DumpPublicKeyBase64(s.rsaPublicKey)
+	publicKeyStr, err := DumpPublicKeyBase64(s.RsaPublicKey)
 	if err != nil {
 		rest.Error(c, err)
 		return

@@ -93,7 +93,8 @@ func (s *testUserSuite) TestLoginWithNotExistUser() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "not_exist"
-	param["password"] = "aaa"
+	pwd, _ := user.Encrypt("aaa", s.authService.RsaPublicKey)
+	param["password"] = pwd
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -109,7 +110,8 @@ func (s *testUserSuite) TestLoginWithWrongPassword() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "dashboardAdmin"
-	param["password"] = "123456789"
+	pwd, _ := user.Encrypt("123456789", s.authService.RsaPublicKey)
+	param["password"] = pwd
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -125,7 +127,8 @@ func (s *testUserSuite) TestLoginWithInsufficientPrivs() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "dashboardAdmin-2"
-	param["password"] = "12345678"
+	pwd, _ := user.Encrypt("12345678", s.authService.RsaPublicKey)
+	param["password"] = pwd
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -142,7 +145,8 @@ func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 		param := make(map[string]interface{})
 		param["type"] = 0
 		param["username"] = "dashboardAdmin"
-		param["password"] = "12345678"
+		pwd, _ := user.Encrypt("12345678", s.authService.RsaPublicKey)
+		param["password"] = pwd
 
 		jsonByte, _ := json.Marshal(param)
 		req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -177,7 +181,8 @@ func (s *testUserSuite) TestLoginWithWrongPasswordForRoot() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "root"
-	param["password"] = "aaa"
+	pwd, _ := user.Encrypt("aaa", s.authService.RsaPublicKey)
+	param["password"] = pwd
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -193,7 +198,8 @@ func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "root"
-	param["password"] = ""
+	pwd, _ := user.Encrypt("", s.authService.RsaPublicKey)
+	param["password"] = pwd
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))

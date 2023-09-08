@@ -122,6 +122,15 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 			if err != nil {
 				return nil, errorx.Decorate(err, "authenticate failed")
 			}
+			if form.Type == 0 {
+				// generate new rsa key pair for each sql auth login
+				privateKey, publicKey, err := GenerateKey()
+				// if generate successfully, replace the old key pair
+				if err == nil {
+					service.RsaPrivateKey = privateKey
+					service.rsaPublicKey = publicKey
+				}
+			}
 			return u, nil
 		},
 		PayloadFunc: func(data interface{}) jwt.MapClaims {

@@ -3,8 +3,6 @@
 package sqlauth
 
 import (
-	"crypto/rsa"
-
 	"github.com/joomcode/errorx"
 	"go.uber.org/fx"
 
@@ -17,8 +15,8 @@ const typeID utils.AuthType = 0
 
 type Authenticator struct {
 	user.BaseAuthenticator
-	tidbClient    *tidb.Client
-	rsaPrivateKey *rsa.PrivateKey
+	tidbClient  *tidb.Client
+	authService *user.AuthService
 }
 
 func NewAuthenticator(tidbClient *tidb.Client) *Authenticator {
@@ -29,7 +27,7 @@ func NewAuthenticator(tidbClient *tidb.Client) *Authenticator {
 
 func registerAuthenticator(a *Authenticator, authService *user.AuthService) {
 	authService.RegisterAuthenticator(typeID, a)
-	a.rsaPrivateKey = authService.RsaPrivateKey
+	a.authService = authService
 }
 
 var Module = fx.Options(
@@ -38,7 +36,7 @@ var Module = fx.Options(
 )
 
 func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUser, error) {
-	plainPwd, err := user.Decrypt(f.Password, a.rsaPrivateKey)
+	plainPwd, err := user.Decrypt(f.Password, a.authService.RsaPrivateKey)
 	if err != nil {
 		return nil, user.ErrSignInOther.WrapWithNoMessage(err)
 	}

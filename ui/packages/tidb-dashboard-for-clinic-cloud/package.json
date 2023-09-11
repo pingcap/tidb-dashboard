@@ -36,7 +36,7 @@
     "classnames": "^2.3.1",
     "compare-versions": "^5.0.1",
     "eventemitter2": "^6.4.5",
-    "i18next": "^21.6.11",
+    "i18next": "^23.2.9",
     "nprogress": "^0.2.0",
     "rc-animate": "^3.1.0",
     "react": "^17.0.2",

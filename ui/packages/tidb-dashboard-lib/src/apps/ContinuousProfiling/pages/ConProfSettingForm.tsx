@@ -10,8 +10,7 @@ import {
   Select
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
-import { useTranslation } from 'react-i18next'
-import { TFunction } from 'i18next'
+import { useTranslation, TFunction } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { ConprofContinuousProfilingConfig } from '@lib/client'

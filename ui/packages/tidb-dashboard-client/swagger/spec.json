@@ -3923,6 +3923,9 @@
                 "pd": {
                     "type": "integer"
                 },
+                "ticdc": {
+                    "type": "integer"
+                },
                 "tidb": {
                     "type": "integer"
                 },
@@ -4906,6 +4909,14 @@
                 "binary_plan": {
                     "type": "string"
                 },
+                "binary_plan_json": {
+                    "description": "Computed fields",
+                    "type": "string"
+                },
+                "binary_plan_text": {
+                    "description": "binary plan plain text",
+                    "type": "string"
+                },
                 "commit_backoff_time": {
                     "type": "number"
                 },
@@ -4990,6 +5001,7 @@
                     "type": "number"
                 },
                 "plan": {
+                    "description": "deprecated, replaced by BinaryPlanText",
                     "type": "string"
                 },
                 "plan_from_binding": {
@@ -5310,6 +5322,12 @@
                 "binary_plan": {
                     "type": "string"
                 },
+                "binary_plan_json": {
+                    "type": "string"
+                },
+                "binary_plan_text": {
+                    "type": "string"
+                },
                 "digest": {
                     "type": "string"
                 },
@@ -5419,6 +5437,7 @@
                     "type": "integer"
                 },
                 "plan": {
+                    "description": "deprecated, replaced by BinaryPlanText",
                     "type": "string"
                 },
                 "plan_can_be_bound": {
@@ -5757,6 +5776,9 @@
         "user.GetLoginInfoResponse": {
             "type": "object",
             "properties": {
+                "sql_auth_public_key": {
+                    "type": "string"
+                },
                 "supported_auth_types": {
                     "type": "array",
                     "items": {

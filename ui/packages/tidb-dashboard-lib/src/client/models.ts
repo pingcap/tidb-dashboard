@@ -380,6 +380,12 @@ export interface ConprofComponentNum {
      * @type {number}
      * @memberof ConprofComponentNum
      */
+    'ticdc'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ConprofComponentNum
+     */
     'tidb'?: number;
     /**
      * 
@@ -2177,6 +2183,18 @@ export interface SlowqueryModel {
      */
     'binary_plan'?: string;
     /**
+     * Computed fields
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan_json'?: string;
+    /**
+     * binary plan plain text
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan_text'?: string;
+    /**
      * 
      * @type {number}
      * @memberof SlowqueryModel
@@ -2339,7 +2357,7 @@ export interface SlowqueryModel {
      */
     'parse_time'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof SlowqueryModel
      */
@@ -2933,6 +2951,18 @@ export interface StatementModel {
      * @type {string}
      * @memberof StatementModel
      */
+    'binary_plan_json'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'binary_plan_text'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
     'digest'?: string;
     /**
      * 
@@ -3133,7 +3163,7 @@ export interface StatementModel {
      */
     'min_latency'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof StatementModel
      */
@@ -3779,6 +3809,12 @@ export interface UserAuthenticateForm {
  * @interface UserGetLoginInfoResponse
  */
 export interface UserGetLoginInfoResponse {
+    /**
+     * 
+     * @type {string}
+     * @memberof UserGetLoginInfoResponse
+     */
+    'sql_auth_public_key'?: string;
     /**
      * 
      * @type {Array<number>}

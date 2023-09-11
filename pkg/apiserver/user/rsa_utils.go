@@ -79,6 +79,18 @@ func DumpPrivateKeyBase64(privatekey *rsa.PrivateKey) (string, error) {
 	return keyBase64, nil
 }
 
+// Encrypt by public key.
+func Encrypt(plainText string, publicKey *rsa.PublicKey) (string, error) {
+	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, []byte(plainText))
+	if err != nil {
+		return "", err
+	}
+
+	// the encryptedText is encoded by base64 in the frontend by jsEncrypt
+	encodedText := base64.StdEncoding.EncodeToString(encryptedText)
+	return encodedText, nil
+}
+
 // Decrypt by private key.
 func Decrypt(cipherText string, privateKey *rsa.PrivateKey) (string, error) {
 	// the cipherText is encoded by base64 in the frontend by jsEncrypt

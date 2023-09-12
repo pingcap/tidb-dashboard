@@ -73,7 +73,7 @@ export const ctx: (cfg: Partial<IOverviewConfig>) => IOverviewContext = (
       recent_seconds: RECENT_SECONDS,
       customAbsoluteRangePicker: true
     },
-    showViewMoreMetrics: false,
+    showMetrics: false,
     ...cfg
   }
 })

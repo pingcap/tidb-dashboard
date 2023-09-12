@@ -16,12 +16,25 @@ addTranslations(translations)
 
 function AppRoutes() {
   useLocationChange()
+  const ctx = useContext(OverviewContext)
+
+  if (ctx?.cfg.showMetrics) {
+    return (
+      <Row>
+        <Col span={18}>
+          <Metrics />
+        </Col>
+        <Col span={6}>
+          <Instances />
+          <MonitorAlert />
+        </Col>
+      </Row>
+    )
+  }
+
   return (
     <Row>
-      <Col span={18}>
-        <Metrics />
-      </Col>
-      <Col span={6}>
+      <Col span={8}>
         <Instances />
         <MonitorAlert />
       </Col>

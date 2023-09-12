@@ -55,7 +55,7 @@ export const ctx: IOverviewContext = {
     apiPathBase: client.getBasePath(),
     metricsQueries: overviewMetrics,
     promAddrConfigurable: true,
-    showViewMoreMetrics: true,
+    showMetrics: true,
     metricsReferenceLink:
       'https://docs.pingcap.com/tidb/stable/dashboard-monitoring'
   }

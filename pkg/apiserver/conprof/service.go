@@ -228,6 +228,7 @@ func (s *Service) parseJWTToken(c *gin.Context) {
 	queryStr, err := utils.ParseJWTString("conprof", token)
 	if err != nil {
 		rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
+		c.Abort()
 		return
 	}
 	c.Request.URL.RawQuery = queryStr

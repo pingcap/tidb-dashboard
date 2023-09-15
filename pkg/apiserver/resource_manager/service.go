@@ -3,8 +3,10 @@
 package resourcemanager
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +18,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
+
+var workloadInjectChecker = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 
 type ServiceParams struct {
 	fx.In
@@ -107,6 +111,10 @@ func (s *Service) GetCalibrateByHardware(c *gin.Context) {
 	w := c.Query("workload")
 	if w == "" {
 		rest.Error(c, rest.ErrBadRequest.New("workload cannot be empty"))
+		return
+	}
+	if !workloadInjectChecker.MatchString(w) {
+		rest.Error(c, errors.New("invalid workload"))
 		return
 	}
 

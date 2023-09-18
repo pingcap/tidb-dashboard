@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joomcode/errorx"
 
 	"github.com/pingcap/tidb-dashboard/util/jsonserde/ginadapter"
 )
@@ -16,7 +15,8 @@ import (
 // Otherwise there will be no error message written to the client.
 // See `ErrorHandlerFn` for more details.
 func Error(c *gin.Context, err error) {
-	_ = c.Error(errorx.EnsureStackTrace(err))
+	// For security reasons, we need to hide detailed stacktrace info.
+	_ = c.Error(err) // before: c.Error(errorx.EnsureStackTrace(err))
 }
 
 // JSON writes a JSON string to the client with the given status code.

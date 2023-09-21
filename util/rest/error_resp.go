@@ -95,9 +95,10 @@ func buildDetailMessage(err error) string {
 
 func NewErrorResponse(err error) ErrorResponse {
 	return ErrorResponse{
-		Error:    true,
-		Message:  buildSimpleMessage(err),
-		Code:     removeErrorPrefix(buildCode(err)),
-		FullText: buildDetailMessage(err),
+		Error:   true,
+		Message: buildSimpleMessage(err),
+		Code:    removeErrorPrefix(buildCode(err)),
+		// For security reasons, we need to hide detailed stacktrace info.
+		// FullText: buildDetailMessage(err),
 	}
 }

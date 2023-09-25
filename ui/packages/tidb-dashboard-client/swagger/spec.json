@@ -5440,6 +5440,9 @@
                     "description": "deprecated, replaced by BinaryPlanText",
                     "type": "string"
                 },
+                "plan_cache_hits": {
+                    "type": "integer"
+                },
                 "plan_can_be_bound": {
                     "type": "boolean"
                 },

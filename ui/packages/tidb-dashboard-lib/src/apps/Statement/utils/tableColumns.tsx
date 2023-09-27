@@ -186,6 +186,7 @@ export function statementColumns(
       maxWidth: 300,
       columnActionsMode: ColumnActionsMode.clickable
     }),
+    tcf.bar.single('plan_cache_hits', 'short', rows),
     avgMaxColumn(tcf, 'avg_mem', 'bytes', rows),
     avgMaxColumn(tcf, 'avg_disk', 'bytes', rows),
     errorsWarningsColumn(tcf, rows),

@@ -84,6 +84,8 @@ type Model struct {
 	AggBinaryPlan            string  `json:"binary_plan" agg:"ANY_VALUE(binary_plan)"`
 	AggPlanDigest            string  `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
 	AggPlanHint              *string `json:"plan_hint" agg:"ANY_VALUE(plan_hint)"`
+	AggPlanCacheHits         int     `json:"plan_cache_hits" agg:"SUM(plan_cache_hits)"`
+
 	// RocksDB
 	AggMaxRocksdbDeleteSkippedCount uint `json:"max_rocksdb_delete_skipped_count" agg:"MAX(max_rocksdb_delete_skipped_count)"`
 	AggAvgRocksdbDeleteSkippedCount uint `json:"avg_rocksdb_delete_skipped_count" agg:"CAST(SUM(exec_count * avg_rocksdb_delete_skipped_count) / SUM(exec_count) as SIGNED)"`

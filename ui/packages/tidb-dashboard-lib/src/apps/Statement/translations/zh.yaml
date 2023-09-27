@@ -102,6 +102,8 @@ statement:
     exec_count_tooltip: 该类 SQL 语句在时间段内被执行的总次数
     plan_count: 计划数
     plan_count_tooltip: 该类 SQL 语句在时间段内的不同执行计划数量
+    plan_cache_hits: 计划缓存命中次数
+    plan_cache_hits_tooltip: 该类 SQL 语句在时间段内的计划缓存命中次数
     avg_latency: 平均耗时
     avg_latency_tooltip: 单条 SQL 查询的执行时间
     avg_mem: 平均内存

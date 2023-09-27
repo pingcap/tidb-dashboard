@@ -418,6 +418,12 @@ export interface StatementModel {
     'plan'?: string;
     /**
      * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'plan_cache_hits'?: number;
+    /**
+     * 
      * @type {boolean}
      * @memberof StatementModel
      */

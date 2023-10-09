@@ -3929,6 +3929,9 @@
                 "pd": {
                     "type": "integer"
                 },
+                "ticdc": {
+                    "type": "integer"
+                },
                 "tidb": {
                     "type": "integer"
                 },
@@ -4912,7 +4915,12 @@
                 "binary_plan": {
                     "type": "string"
                 },
+                "binary_plan_json": {
+                    "description": "Computed fields",
+                    "type": "string"
+                },
                 "binary_plan_text": {
+                    "description": "binary plan plain text",
                     "type": "string"
                 },
                 "commit_backoff_time": {
@@ -5320,6 +5328,9 @@
                 "binary_plan": {
                     "type": "string"
                 },
+                "binary_plan_json": {
+                    "type": "string"
+                },
                 "binary_plan_text": {
                     "type": "string"
                 },
@@ -5434,6 +5445,9 @@
                 "plan": {
                     "description": "deprecated, replaced by BinaryPlanText",
                     "type": "string"
+                },
+                "plan_cache_hits": {
+                    "type": "integer"
                 },
                 "plan_can_be_bound": {
                     "type": "boolean"
@@ -5771,6 +5785,9 @@
         "user.GetLoginInfoResponse": {
             "type": "object",
             "properties": {
+                "sql_auth_public_key": {
+                    "type": "string"
+                },
                 "supported_auth_types": {
                     "type": "array",
                     "items": {

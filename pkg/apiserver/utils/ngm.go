@@ -5,6 +5,8 @@ package utils
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"sync/atomic"
@@ -16,6 +18,7 @@ import (
 	"go.uber.org/fx"
 	"golang.org/x/sync/singleflight"
 
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
@@ -48,10 +51,14 @@ type NgmProxy struct {
 	etcdClient   *clientv3.Client
 	ngmReqGroup  singleflight.Group
 	ngmAddrCache atomic.Value
+	timeout      time.Duration
 }
 
-func NewNgmProxy(lc fx.Lifecycle, etcdClient *clientv3.Client) (*NgmProxy, error) {
-	s := &NgmProxy{etcdClient: etcdClient}
+func NewNgmProxy(lc fx.Lifecycle, etcdClient *clientv3.Client, config *config.Config) (*NgmProxy, error) {
+	s := &NgmProxy{
+		etcdClient: etcdClient,
+		timeout:    time.Duration(config.NgmTimeout) * time.Second,
+	}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.lifecycleCtx = ctx
@@ -74,6 +81,18 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 
 		ngmURL, _ := url.Parse(ngmAddr)
 		proxy := httputil.NewSingleHostReverseProxy(ngmURL)
+		proxy.Transport = &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: defaultTransportDialContext(&net.Dialer{
+				Timeout:   n.timeout,
+				KeepAlive: n.timeout,
+			}),
+			ForceAttemptHTTP2:     true,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		}
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
 }
@@ -111,4 +130,8 @@ func (n *NgmProxy) resolveNgmAddress() (string, error) {
 		return fmt.Sprintf("http://%s", addr), nil
 	}
 	return "", ErrNgmNotStart.Wrap(err, "NgMonitoring component is not started")
+}
+
+func defaultTransportDialContext(dialer *net.Dialer) func(context.Context, string, string) (net.Conn, error) {
+	return dialer.DialContext
 }

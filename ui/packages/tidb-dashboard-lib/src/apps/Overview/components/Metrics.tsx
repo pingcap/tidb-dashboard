@@ -104,13 +104,11 @@ export default function Metrics() {
             {isSomeLoading && <LoadingOutlined />}
           </Space>
           <Space>
-            {ctx?.cfg.showViewMoreMetrics && (
-              <Link to={`/monitoring`}>
-                <Button type="primary" onClick={telemetry.clickViewMoreMetrics}>
-                  {t('overview.view_more_metrics')}
-                </Button>
-              </Link>
-            )}
+            <Link to={`/monitoring`}>
+              <Button type="primary" onClick={telemetry.clickViewMoreMetrics}>
+                {t('overview.view_more_metrics')}
+              </Button>
+            </Link>
           </Space>
         </Toolbar>
       </Card>

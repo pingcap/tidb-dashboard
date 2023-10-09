@@ -8,7 +8,7 @@ require (
 	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
 	github.com/pingcap/tidb-dashboard v0.0.0-00010101000000-000000000000
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
-	github.com/swaggo/swag v1.7.6
+	github.com/swaggo/swag v1.7.9
 	github.com/vektra/mockery/v2 v2.14.1
 	go.uber.org/zap v1.19.0
 	golang.org/x/mod v0.6.0
@@ -23,9 +23,9 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.19.5 // indirect
-	github.com/go-openapi/spec v0.20.3 // indirect
-	github.com/go-openapi/swag v0.19.14 // indirect
+	github.com/go-openapi/jsonreference v0.19.6 // indirect
+	github.com/go-openapi/spec v0.20.4 // indirect
+	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect

@@ -199,6 +199,12 @@ export interface StatementModel {
      * @type {string}
      * @memberof StatementModel
      */
+    'binary_plan_json'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
     'binary_plan_text'?: string;
     /**
      * 
@@ -410,6 +416,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'plan'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'plan_cache_hits'?: number;
     /**
      * 
      * @type {boolean}

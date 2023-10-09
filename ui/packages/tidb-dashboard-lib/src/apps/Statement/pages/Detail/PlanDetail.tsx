@@ -1,18 +1,22 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
 import { Space, Tabs, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,
   BinaryPlanTable,
+  PlanText,
   Card,
   CopyLink,
   Descriptions,
   ErrorBar,
   Expand,
   HighlightSQL,
-  Pre,
   TextWithInfo
 } from '@lib/components'
+import {
+  VisualPlanThumbnailView,
+  VisualPlanView
+} from '@lib/components/VisualPlan'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import formatSql from '@lib/utils/sqlFormatter'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
@@ -22,11 +26,6 @@ import DetailTabs from './PlanDetailTabs'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import { telemetry } from '../../utils/telemetry'
 import { StatementContext } from '../../context'
-
-import {
-  VisualPlanThumbnailView,
-  VisualPlanView
-} from '@lib/components/VisualPlan'
 
 export interface IQuery extends IPageQuery {
   plans: string[]
@@ -62,7 +61,13 @@ function PlanDetail({ query }: IPlanDetailProps) {
   )
   const isLoading = isDataLoading || isSchemaLoading
 
-  const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
+  const binaryPlanObj = useMemo(() => {
+    const json = data?.binary_plan_json ?? data?.binary_plan
+    if (json) {
+      return JSON.parse(json)
+    }
+    return undefined
+  }, [data?.binary_plan, data?.binary_plan_json])
 
   const [isVpVisible, setIsVpVisable] = useState(false)
   const toggleVisualPlan = (action: 'open' | 'close') => {
@@ -85,8 +90,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
     setDetailExpand((prev) => ({ ...prev, prev_query: !prev.prev_query }))
   const toggleQuery = () =>
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
-  // const togglePlan = () =>
-  //   setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   let titleKey
   if (query.allPlans === 1) {
@@ -172,59 +175,46 @@ function PlanDetail({ query }: IPlanDetailProps) {
               ) : null}
             </Descriptions>
 
-            {(binaryPlan || data.plan) && (
+            {(binaryPlanObj || !!data.plan) && (
               <>
                 <Space size="middle" style={{ color: '#8c8c8c' }}>
                   {t('statement.pages.detail.desc.plans.execution.title')}
                 </Space>
 
                 <Tabs
-                  defaultActiveKey="text_plan"
+                  defaultActiveKey={
+                    !!data.binary_plan_text ? 'binary_plan_table' : 'text_plan'
+                  }
                   onTabClick={(key) =>
                     telemetry.clickPlanTabs(key, data.digest!)
                   }
                 >
-                  <Tabs.TabPane
-                    tab={t('statement.pages.detail.desc.plans.execution.text')}
-                    key="text_plan"
-                  >
-                    <Descriptions>
-                      <Descriptions.Item
-                        span={2}
-                        // multiline={detailExpand.plan}
-                        multiline={true}
-                        label={
-                          <Space size="middle">
-                            {/* <Expand.Link
-                              expanded={detailExpand.plan}
-                              onClick={togglePlan}
-                            /> */}
-                            <CopyLink
-                              data={data.binary_plan_text ?? data.plan ?? ''}
-                            />
-                          </Space>
-                        }
-                      >
-                        {/* <Expand expanded={detailExpand.plan}>
-                        </Expand> */}
-                        <Pre noWrap>{data.binary_plan_text ?? data.plan}</Pre>
-                      </Descriptions.Item>
-                    </Descriptions>
-                  </Tabs.TabPane>
-
-                  {binaryPlan && !binaryPlan.discardedDueToTooLong && (
+                  {!!data.binary_plan_text && (
                     <Tabs.TabPane
                       tab={t(
                         'statement.pages.detail.desc.plans.execution.table'
                       )}
                       key="binary_plan_table"
                     >
-                      <BinaryPlanTable data={binaryPlan} />
+                      <BinaryPlanTable
+                        data={data.binary_plan_text}
+                        downloadFileName={`${data.digest}.txt`}
+                      />
                       <div style={{ height: 24 }} />
                     </Tabs.TabPane>
                   )}
 
-                  {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
+                  <Tabs.TabPane
+                    tab={t('statement.pages.detail.desc.plans.execution.text')}
+                    key="text_plan"
+                  >
+                    <PlanText
+                      data={data.binary_plan_text || data.plan || ''}
+                      downloadFileName={`${data.digest}.txt`}
+                    />
+                  </Tabs.TabPane>
+
+                  {binaryPlanObj && !binaryPlanObj.main.discardedDueToTooLong && (
                     <Tabs.TabPane
                       tab={t(
                         'statement.pages.detail.desc.plans.execution.visual'
@@ -244,12 +234,12 @@ function PlanDetail({ query }: IPlanDetailProps) {
                           height: window.innerHeight - 100
                         }}
                       >
-                        <VisualPlanView data={binaryPlan} />
+                        <VisualPlanView data={binaryPlanObj} />
                       </Modal>
                       <Descriptions>
                         <Descriptions.Item span={2}>
                           <div onClick={() => toggleVisualPlan('open')}>
-                            <VisualPlanThumbnailView data={binaryPlan} />
+                            <VisualPlanThumbnailView data={binaryPlanObj} />
                           </div>
                         </Descriptions.Item>
                       </Descriptions>

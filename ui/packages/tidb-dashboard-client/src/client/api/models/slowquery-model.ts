@@ -39,7 +39,13 @@ export interface SlowqueryModel {
      */
     'binary_plan'?: string;
     /**
-     * 
+     * Computed fields
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan_json'?: string;
+    /**
+     * binary plan plain text
      * @type {string}
      * @memberof SlowqueryModel
      */

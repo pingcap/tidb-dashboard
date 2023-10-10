@@ -253,6 +253,7 @@ export function SSOForm() {
                   rules={[{ required: true }]}
                 >
                   <Input
+                    width={400}
                     disabled={!isWriteable}
                     style={DEFAULT_FORM_ITEM_STYLE}
                   />
@@ -263,11 +264,13 @@ export function SSOForm() {
                   rules={[{ required: false }]}
                 >
                   <Input
+                    width={400}
+                    type="password"
                     disabled={!isWriteable}
                     style={DEFAULT_FORM_ITEM_STYLE}
                   />
                 </Form.Item>
-                <Form.Item
+                {/* <Form.Item
                   name="scopes"
                   label={t('user_profile.sso.form.scopes')}
                   rules={[{ required: false }]}
@@ -277,13 +280,14 @@ export function SSOForm() {
                     style={DEFAULT_FORM_ITEM_STYLE}
                     placeholder="openid profile email"
                   />
-                </Form.Item>
+                </Form.Item> */}
                 <Form.Item
                   name="discovery_url"
                   label={t('user_profile.sso.form.discovery_url')}
                   rules={[{ required: true }]}
                 >
                   <Input
+                    width={400}
                     disabled={!isWriteable}
                     style={DEFAULT_FORM_ITEM_STYLE}
                     placeholder="https://example.com"

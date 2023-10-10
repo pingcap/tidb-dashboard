@@ -6,6 +6,8 @@ user_profile:
       extra: OIDC based SSO is supported
     form:
       client_id: OIDC Client ID
+      client_secret: OIDC Client Secret
+      scopes: Additional OIDC Scopes (space-separated)
       discovery_url: OIDC Discovery URL
       is_read_only: Sign in as read-only privilege
       user:

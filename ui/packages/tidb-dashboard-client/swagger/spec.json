@@ -3828,6 +3828,9 @@
                 "client_id": {
                     "type": "string"
                 },
+                "client_secret": {
+                    "type": "string"
+                },
                 "discovery_url": {
                     "type": "string"
                 },
@@ -3836,6 +3839,9 @@
                 },
                 "is_read_only": {
                     "type": "boolean"
+                },
+                "scopes": {
+                    "type": "string"
                 }
             }
         },

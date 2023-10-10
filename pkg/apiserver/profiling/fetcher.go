@@ -3,7 +3,11 @@
 package profiling
 
 import (
+	_ "embed"
 	"fmt"
+	"os/exec"
+	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/fx"
@@ -64,8 +68,22 @@ type tikvFetcher struct {
 	client *tikv.Client
 }
 
+//go:embed jeprof.in
+var jeprof string
+
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
+	if strings.HasSuffix(op.path, "heap") {
+		cmd := exec.Command("bash", "/dev/stdin", "--show_bytes", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path)
+		cmd.Stdin = strings.NewReader(jeprof)
+		// use jeprof to fetch tikv heap profile
+		data, err := cmd.Output()
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
+	} else {
+		return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
+	}
 }
 
 type tiflashFetcher struct {

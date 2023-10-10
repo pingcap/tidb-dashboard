@@ -8,8 +8,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -424,6 +426,35 @@ func (s *Service) viewSingle(c *gin.Context) {
 			rest.Error(c, rest.ErrBadRequest.New("Cannot output protobuf as %s", outputType))
 			return
 		}
+	} else if task.RawDataType == RawDataTypeJeprof {
+		// call jeprof to convert svg
+		switch outputType {
+		case string(ViewOutputTypeGraph):
+			cmd := exec.Command("bash", "/dev/stdin", "--svg", "--show_bytes", task.FilePath)
+			cmd.Stdin = strings.NewReader(jeprof)
+			svgContent, err := cmd.Output()
+			if err != nil {
+				rest.Error(c, err)
+				return
+			}
+			content = svgContent
+			contentType = "image/svg+xml"
+		case string(ViewOutputTypeText):
+			// Brendan Gregg's collapsed stack format
+			cmd := exec.Command("bash", "/dev/stdin", "--collapsed", "--show_bytes", task.FilePath)
+			cmd.Stdin = strings.NewReader(jeprof)
+			textContent, err := cmd.Output()
+			if err != nil {
+				rest.Error(c, err)
+				return
+			}
+			content = textContent
+			contentType = "text/plain"
+		default:
+			// Will not handle converting jeprof raw data to other formats except flamegraph and graph
+			rest.Error(c, rest.ErrBadRequest.New("Cannot output jeprof raw data as %s", outputType))
+			return
+		}	
 	} else if task.RawDataType == RawDataTypeText {
 		switch outputType {
 		case string(ViewOutputTypeText):

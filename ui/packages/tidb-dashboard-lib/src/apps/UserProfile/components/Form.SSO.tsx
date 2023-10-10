@@ -258,6 +258,27 @@ export function SSOForm() {
                   />
                 </Form.Item>
                 <Form.Item
+                  name="client_secret"
+                  label={t('user_profile.sso.form.client_secret')}
+                  rules={[{ required: false }]}
+                >
+                  <Input
+                    disabled={!isWriteable}
+                    style={DEFAULT_FORM_ITEM_STYLE}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="scopes"
+                  label={t('user_profile.sso.form.scopes')}
+                  rules={[{ required: false }]}
+                >
+                  <Input
+                    disabled={!isWriteable}
+                    style={DEFAULT_FORM_ITEM_STYLE}
+                    placeholder="openid profile email"
+                  />
+                </Form.Item>
+                <Form.Item
                   name="discovery_url"
                   label={t('user_profile.sso.form.discovery_url')}
                   rules={[{ required: true }]}

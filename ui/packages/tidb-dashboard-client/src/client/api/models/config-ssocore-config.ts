@@ -31,6 +31,12 @@ export interface ConfigSSOCoreConfig {
      * @type {string}
      * @memberof ConfigSSOCoreConfig
      */
+    'client_secret'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConfigSSOCoreConfig
+     */
     'discovery_url'?: string;
     /**
      * 
@@ -44,5 +50,11 @@ export interface ConfigSSOCoreConfig {
      * @memberof ConfigSSOCoreConfig
      */
     'is_read_only'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConfigSSOCoreConfig
+     */
+    'scopes'?: string;
 }
 

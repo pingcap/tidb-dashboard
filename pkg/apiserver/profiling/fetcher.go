@@ -12,12 +12,13 @@ import (
 
 	"go.uber.org/fx"
 
+	"github.com/pkg/errors"
+
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -74,17 +75,16 @@ var jeprof string
 
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	if strings.HasSuffix(op.path, "heap") {
-		cmd := exec.Command("perl", "/dev/stdin", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path)
+		cmd := exec.Command("perl", "/dev/stdin", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path) //nolint:gosec
 		cmd.Stdin = strings.NewReader(jeprof)
 		// use jeprof to fetch tikv heap profile
 		data, err := cmd.Output()
 		if err != nil {
-			return nil, errors.Errorf("failed to fetch tikv heap profile: %s\n", err)
+			return nil, errors.Errorf("failed to fetch tikv heap profile: %s", err)
 		}
 		return data, nil
-	} else {
-		return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 	}
+	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 }
 
 type tiflashFetcher struct {

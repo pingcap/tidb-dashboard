@@ -77,9 +77,9 @@ func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 		cmd := exec.Command("perl", "/dev/stdin", "--show_bytes", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path)
 		cmd.Stdin = strings.NewReader(jeprof)
 		// use jeprof to fetch tikv heap profile
-		data, err := cmd.CombinedOutput()
+		data, err := cmd.Output()
 		if err != nil {
-			return nil, errors.Errorf("failed to fetch tikv heap profile: %s %s\n", err, data)
+			return nil, errors.Errorf("failed to fetch tikv heap profile: %s\n", err)
 		}
 		return data, nil
 	} else {

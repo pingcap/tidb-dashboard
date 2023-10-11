@@ -454,7 +454,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 			// Will not handle converting jeprof raw data to other formats except flamegraph and graph
 			rest.Error(c, rest.ErrBadRequest.New("Cannot output jeprof raw data as %s", outputType))
 			return
-		}	
+		}
 	} else if task.RawDataType == RawDataTypeText {
 		switch outputType {
 		case string(ViewOutputTypeText):

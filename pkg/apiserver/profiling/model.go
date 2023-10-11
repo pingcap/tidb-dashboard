@@ -30,7 +30,7 @@ const (
 type TaskRawDataType string
 
 const (
-	RawDataTypeJeprof TaskRawDataType = "jeprof"
+	RawDataTypeJeprof   TaskRawDataType = "jeprof"
 	RawDataTypeProtobuf TaskRawDataType = "protobuf"
 	RawDataTypeText     TaskRawDataType = "text"
 )

@@ -74,7 +74,7 @@ var jeprof string
 
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	if strings.HasSuffix(op.path, "heap") {
-		cmd := exec.Command("perl", "/dev/stdin", "--show_bytes", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path)
+		cmd := exec.Command("perl", "/dev/stdin", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path)
 		cmd.Stdin = strings.NewReader(jeprof)
 		// use jeprof to fetch tikv heap profile
 		data, err := cmd.Output()

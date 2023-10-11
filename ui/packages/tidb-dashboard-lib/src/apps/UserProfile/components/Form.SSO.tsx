@@ -252,44 +252,47 @@ export function SSOForm() {
                   label={t('user_profile.sso.form.client_id')}
                   rules={[{ required: true }]}
                 >
-                  <Input
-                    width={400}
-                    disabled={!isWriteable}
-                    style={DEFAULT_FORM_ITEM_STYLE}
-                  />
+                  <Input disabled={!isWriteable} style={{ width: 320 }} />
                 </Form.Item>
-                <Form.Item
-                  name="client_secret"
-                  label={t('user_profile.sso.form.client_secret')}
-                  rules={[{ required: false }]}
-                >
-                  <Input
-                    width={400}
-                    type="password"
-                    disabled={!isWriteable}
-                    style={DEFAULT_FORM_ITEM_STYLE}
-                  />
-                </Form.Item>
-                {/* <Form.Item
-                  name="scopes"
-                  label={t('user_profile.sso.form.scopes')}
-                  rules={[{ required: false }]}
-                >
-                  <Input
-                    disabled={!isWriteable}
-                    style={DEFAULT_FORM_ITEM_STYLE}
-                    placeholder="openid profile email"
-                  />
-                </Form.Item> */}
+                {
+                  // to compatible with old version
+                  config?.client_secret !== undefined && (
+                    <Form.Item
+                      name="client_secret"
+                      label={t('user_profile.sso.form.client_secret')}
+                      rules={[{ required: false }]}
+                      tooltip={t('user_profile.sso.form.client_secret_tooltip')}
+                    >
+                      <Input
+                        disabled={!isWriteable}
+                        style={{ width: 320 }}
+                        placeholder="********"
+                      />
+                    </Form.Item>
+                  )
+                }
+                {
+                  // we can uncomment this if we really need it
+                  /* <Form.Item
+                    name="scopes"
+                    label={t('user_profile.sso.form.scopes')}
+                    rules={[{ required: false }]}
+                  >
+                    <Input
+                      disabled={!isWriteable}
+                      style={{width: 320}}
+                      placeholder="openid profile email"
+                    />
+                  </Form.Item> */
+                }
                 <Form.Item
                   name="discovery_url"
                   label={t('user_profile.sso.form.discovery_url')}
                   rules={[{ required: true }]}
                 >
                   <Input
-                    width={400}
                     disabled={!isWriteable}
-                    style={DEFAULT_FORM_ITEM_STYLE}
+                    style={{ width: 320 }}
                     placeholder="https://example.com"
                   />
                 </Form.Item>

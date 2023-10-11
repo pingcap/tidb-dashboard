@@ -164,7 +164,8 @@ func (m *DynamicConfigManager) load() (*DynamicConfig, error) {
 		log.Warn("Dynamic config does not exist in etcd")
 		return nil, nil
 	case 1:
-		log.Info("Load dynamic config from etcd", zap.ByteString("json", resp.Kvs[0].Value))
+		// the log contains the sso client secret, so we should not log it
+		// log.Info("Load dynamic config from etcd", zap.ByteString("json", resp.Kvs[0].Value))
 		var dc DynamicConfig
 		if err = json.Unmarshal(resp.Kvs[0].Value, &dc); err != nil {
 			return nil, err
@@ -185,7 +186,8 @@ func (m *DynamicConfigManager) store(dc *DynamicConfig) error {
 	ctx, cancel := context.WithTimeout(m.lifecycleCtx, Timeout)
 	defer cancel()
 	_, err = m.etcdClient.Put(ctx, DynamicConfigPath, string(bs))
-	log.Info("Save dynamic config to etcd", zap.ByteString("json", bs))
+	// the log contains the sso client secret, so we should not log it
+	// log.Info("Save dynamic config to etcd", zap.ByteString("json", bs))
 
 	return err
 }

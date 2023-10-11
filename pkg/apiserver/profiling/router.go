@@ -432,7 +432,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 		case string(ViewOutputTypeGraph):
 			cmd := exec.Command("perl", "/dev/stdin", "--svg", "--show_bytes", task.FilePath)
 			cmd.Stdin = strings.NewReader(jeprof)
-			svgContent, err := cmd.Output()
+			svgContent, err := cmd.CombinedOutput()
 			if err != nil {
 				rest.Error(c, err)
 				return
@@ -443,7 +443,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 			// Brendan Gregg's collapsed stack format
 			cmd := exec.Command("perl", "/dev/stdin", "--collapsed", "--show_bytes", task.FilePath)
 			cmd.Stdin = strings.NewReader(jeprof)
-			textContent, err := cmd.Output()
+			textContent, err := cmd.CombinedOutput()
 			if err != nil {
 				rest.Error(c, err)
 				return

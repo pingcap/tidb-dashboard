@@ -17,6 +17,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -76,9 +77,9 @@ func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 		cmd := exec.Command("perl", "/dev/stdin", "--show_bytes", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path)
 		cmd.Stdin = strings.NewReader(jeprof)
 		// use jeprof to fetch tikv heap profile
-		data, err := cmd.Output()
+		data, err := cmd.CombinedOutput()
 		if err != nil {
-			return nil, err
+			return nil, errors.Errorf("failed to fetch tikv heap profile: %s %s\n", err, data)
 		}
 		return data, nil
 	} else {

@@ -26,7 +26,8 @@ import {
   Toolbar,
   MultiSelect,
   toTimeRangeValue,
-  IColumnKeys
+  IColumnKeys,
+  LimitTimeRange
 } from '@lib/components'
 import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 import { CacheContext } from '@lib/utils/useCache'
@@ -41,7 +42,6 @@ import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
-import { LimitTimeRange } from '@lib/apps/Overview/components/LimitTimeRange'
 
 const { Option } = Select
 

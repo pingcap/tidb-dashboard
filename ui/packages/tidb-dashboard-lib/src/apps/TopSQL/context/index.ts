@@ -38,6 +38,16 @@ export interface ITopSQLDataSource {
 export interface ITopSQLConfig {
   checkNgm: boolean
   showSetting: boolean
+
+  // to limit the time range picker range
+  timeRangeSelector?: {
+    recentSeconds: number[]
+    customAbsoluteRangePicker: boolean
+  }
+
+  // for clinic
+  orgName?: string
+  userName?: string
 }
 
 export interface ITopSQLContext {

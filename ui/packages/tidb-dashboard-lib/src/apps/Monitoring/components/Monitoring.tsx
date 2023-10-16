@@ -20,15 +20,14 @@ import {
   DEFAULT_TIME_RANGE,
   TimeRange,
   Toolbar,
-  ErrorBar
+  ErrorBar,
+  LimitTimeRange
 } from '@lib/components'
+import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { store } from '@lib/utils/store'
 import { tz } from '@lib/utils'
-import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
 import { telemetry } from '../utils/telemetry'
 import { MonitoringContext } from '../context'
-// TODO: move to shared folder
-import { LimitTimeRange } from '@lib/apps/Overview/components/LimitTimeRange'
 
 export default function Monitoring() {
   const ctx = useContext(MonitoringContext)

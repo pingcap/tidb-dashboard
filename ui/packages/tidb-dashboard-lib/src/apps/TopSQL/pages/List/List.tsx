@@ -20,13 +20,13 @@ import formatSql from '@lib/utils/sqlFormatter'
 import { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import {
   Card,
-  TimeRangeSelector,
   toTimeRangeValue as _toTimeRangeValue,
   Toolbar,
   AutoRefreshButton,
   TimeRange,
   fromTimeRangeValue,
-  TimeRangeValue
+  TimeRangeValue,
+  LimitTimeRange
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
@@ -156,6 +156,12 @@ export function TopSQLList() {
         )}
 
         <Card noMarginBottom>
+          {ctx?.cfg.orgName && (
+            <div style={{ marginBottom: 8, textAlign: 'right' }}>
+              Org: {ctx?.cfg.orgName} | User: {ctx.cfg.userName}
+            </div>
+          )}
+
           <Toolbar>
             <Space>
               <InstanceSelect
@@ -172,16 +178,20 @@ export function TopSQLList() {
                   open && telemetry.openSelectInstance()
                 }
               />
-              <TimeRangeSelector.WithZoomOut
+              <LimitTimeRange
                 value={timeRange}
+                recent_seconds={ctx?.cfg.timeRangeSelector?.recentSeconds}
+                customAbsoluteRangePicker={
+                  ctx?.cfg.timeRangeSelector?.customAbsoluteRangePicker
+                }
                 onChange={(v) => {
                   setTimeRange(v)
                   telemetry.selectTimeRange(v)
                 }}
-                disabled={isLoading}
                 onZoomOutClick={(start, end) =>
                   telemetry.clickZoomOut([start, end])
                 }
+                disabled={isLoading}
               />
               <AutoRefreshButton
                 disabled={isLoading}

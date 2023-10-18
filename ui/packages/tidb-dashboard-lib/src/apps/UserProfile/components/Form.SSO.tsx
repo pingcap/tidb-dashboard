@@ -271,20 +271,17 @@ export function SSOForm() {
                     </Form.Item>
                   )
                 }
-                {
-                  // we can uncomment this if we really need it
-                  /* <Form.Item
-                    name="scopes"
-                    label={t('user_profile.sso.form.scopes')}
-                    rules={[{ required: false }]}
-                  >
-                    <Input
-                      disabled={!isWriteable}
-                      style={{width: 320}}
-                      placeholder="openid profile email"
-                    />
-                  </Form.Item> */
-                }
+                <Form.Item
+                  name="scopes"
+                  label={t('user_profile.sso.form.scopes')}
+                  rules={[{ required: false }]}
+                >
+                  <Input
+                    disabled={!isWriteable}
+                    style={{ width: 320 }}
+                    placeholder="openid profile email"
+                  />
+                </Form.Item>
                 <Form.Item
                   name="discovery_url"
                   label={t('user_profile.sso.form.discovery_url')}

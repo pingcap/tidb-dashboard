@@ -158,7 +158,7 @@ export function TopSQLList() {
         <Card noMarginBottom>
           {ctx?.cfg.orgName && (
             <div style={{ marginBottom: 8, textAlign: 'right' }}>
-              Org: {ctx?.cfg.orgName} | User: {ctx.cfg.userName}
+              Org: {ctx?.cfg.orgName}
             </div>
           )}
 

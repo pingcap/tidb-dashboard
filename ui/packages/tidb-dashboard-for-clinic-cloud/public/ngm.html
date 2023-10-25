@@ -121,11 +121,14 @@
       const provider = searchParams.get('provider') || ''
       const region = searchParams.get('region') || ''
       const orgId = searchParams.get('orgId') || ''
-      const orgName = searchParams.get('orgName') || ''
       const projectId = searchParams.get('projectId') || ''
       const clusterId = searchParams.get('clusterId') || ''
       const deployType = searchParams.get('deployType') || ''
+
+      const orgName = searchParams.get('orgName') || ''
+      const clusterName = searchParams.get('clusterName') || ''
       const userName = searchParams.get('userName') || ''
+
       if (
         apiToken === '' ||
         provider === '' ||
@@ -170,6 +173,7 @@
             checkNgm: false,
             showSetting: false,
             orgName,
+            clusterName,
             userName,
 
             timeRangeSelector: {
@@ -183,7 +187,8 @@
                 24 * 60 * 60
               ],
               customAbsoluteRangePicker: true
-            }
+            },
+            autoRefresh: false
           }
         }
       })

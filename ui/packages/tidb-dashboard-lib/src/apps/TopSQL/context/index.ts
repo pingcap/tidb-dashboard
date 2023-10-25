@@ -44,9 +44,11 @@ export interface ITopSQLConfig {
     recentSeconds: number[]
     customAbsoluteRangePicker: boolean
   }
+  autoRefresh?: boolean
 
   // for clinic
   orgName?: string
+  clusterName?: string
   userName?: string
 }
 

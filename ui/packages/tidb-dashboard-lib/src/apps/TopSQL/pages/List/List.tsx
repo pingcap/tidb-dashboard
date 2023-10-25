@@ -4,7 +4,8 @@ import React, {
   useContext,
   useEffect,
   useRef,
-  useState
+  useState,
+  useMemo
 } from 'react'
 import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
 import {
@@ -126,6 +127,18 @@ export function TopSQLList() {
 
   const chartRef = useRef<any>(null)
 
+  // only for clinic
+  const clusterInfo = useMemo(() => {
+    const infos: string[] = []
+    if (ctx?.cfg.orgName) {
+      infos.push(`Org: ${ctx?.cfg.orgName}`)
+    }
+    if (ctx?.cfg.clusterName) {
+      infos.push(`Cluster: ${ctx?.cfg.clusterName}`)
+    }
+    return infos.join(' | ')
+  }, [ctx?.cfg.orgName, ctx?.cfg.clusterName])
+
   return (
     <>
       <div className={styles.container} ref={containerRef}>
@@ -156,9 +169,9 @@ export function TopSQLList() {
         )}
 
         <Card noMarginBottom>
-          {ctx?.cfg.orgName && (
+          {clusterInfo && (
             <div style={{ marginBottom: 8, textAlign: 'right' }}>
-              Org: {ctx?.cfg.orgName}
+              {clusterInfo}
             </div>
           )}
 
@@ -194,6 +207,7 @@ export function TopSQLList() {
                 disabled={isLoading}
               />
               <AutoRefreshButton
+                defaultValue={ctx?.cfg.autoRefresh === false ? 0 : undefined}
                 disabled={isLoading}
                 onRefresh={async () => {
                   await fetchInstancesAndSelectInstance()

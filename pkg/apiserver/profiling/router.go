@@ -430,7 +430,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 		// call jeprof to convert svg
 		switch outputType {
 		case string(ViewOutputTypeGraph):
-			cmd := exec.Command("perl", "/dev/stdin", "--svg", "--show_bytes", task.FilePath) //nolint:gosec
+			cmd := exec.Command("perl", "/dev/stdin", "--svg", task.FilePath) //nolint:gosec
 			cmd.Stdin = strings.NewReader(jeprof)
 			svgContent, err := cmd.Output()
 			if err != nil {
@@ -441,7 +441,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 			contentType = "image/svg+xml"
 		case string(ViewOutputTypeText):
 			// Brendan Gregg's collapsed stack format
-			cmd := exec.Command("perl", "/dev/stdin", "--collapsed", "--show_bytes", task.FilePath) //nolint:gosec
+			cmd := exec.Command("perl", "/dev/stdin", "--collapsed", task.FilePath) //nolint:gosec
 			cmd.Stdin = strings.NewReader(jeprof)
 			textContent, err := cmd.Output()
 			if err != nil {

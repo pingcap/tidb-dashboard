@@ -342,9 +342,11 @@ func writeZipFromFile(zw *zip.Writer, file string, compress bool) error {
 
 func zipREADME(zw *zip.Writer) error {
 	const downloadREADME = `
-To review the CPU profiling or heap profiling result interactively:
-
+To review the CPU profiling or go heap profiling result interactively:
 $ go tool pprof --http=0.0.0.0:1234 cpu_xxx.proto
+
+To review the jemalloc profile data whose file name suffix is '.prof' interactively:
+$ jeprof --web profile_xxx.prof
 `
 	zipFile, err := zw.CreateHeader(&zip.FileHeader{
 		Name:     "README.md",

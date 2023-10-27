@@ -33,7 +33,7 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "*.+(json|css|md)": "prettier --write"
+    "*.+(json|css|md|html)": "prettier --write"
   },
   "husky": {
     "hooks": {

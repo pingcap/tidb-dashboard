@@ -1,18 +1,20 @@
 import i18next from 'i18next'
 
 interface IDistro {
+  pd: string
   tidb: string
   tikv: string
   tiflash: string
-  pd: string
+  ticdc: string
   is_distro: boolean
 }
 
 const DEF_DISTRO: IDistro = {
+  pd: 'PD',
   tidb: 'TiDB',
   tikv: 'TiKV',
-  pd: 'PD',
   tiflash: 'TiFlash',
+  ticdc: 'TiCDC',
   is_distro: false
 }
 

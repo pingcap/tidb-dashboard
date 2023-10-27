@@ -37,17 +37,18 @@ import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 
 export default function Page() {
   const ctx = useContext(ConProfilingContext)
+  const durationHour = ctx?.cfg.listDuration ?? 2
 
   const { timeRange, setTimeRange } = useURLTimeRange()
   const endTime = timeRange.type === 'recent' ? '' : `${timeRange.value[1]}`
   const setEndTime = (v) => {
     if (!v) {
-      setTimeRange({ type: 'recent', value: 2 * 60 * 60 })
+      setTimeRange({ type: 'recent', value: durationHour * 60 * 60 })
     } else {
       const endUnix = v.unix()
       setTimeRange({
         type: 'absolute',
-        value: [endUnix - 2 * 60 * 60, endUnix]
+        value: [endUnix - durationHour * 60 * 60, endUnix]
       })
     }
   }
@@ -78,7 +79,7 @@ export default function Page() {
     } else {
       _rangeEndTime = rangeEndTime
     }
-    const _rangeStartTime = _rangeEndTime.subtract(2, 'h')
+    const _rangeStartTime = _rangeEndTime.subtract(durationHour, 'h')
 
     return ctx!.ds.continuousProfilingGroupProfilesGet(
       _rangeStartTime.unix(),
@@ -234,7 +235,7 @@ export default function Page() {
                 />
               </Form.Item>
               <Form.Item label={t('conprof.list.toolbar.range_duration')}>
-                <span>-2h</span>
+                <span>-{durationHour}h</span>
               </Form.Item>
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={listLoading}>
@@ -256,19 +257,21 @@ export default function Page() {
                 <ReloadOutlined onClick={refresh} />
               )}
             </Tooltip>
-            <Tooltip
-              mouseEnterDelay={0}
-              mouseLeaveDelay={0}
-              title={t('conprof.list.toolbar.settings')}
-              placement="bottom"
-            >
-              <SettingOutlined
-                onClick={() => {
-                  setShowSettings(true)
-                  telemetry.clickSettings('settingIcon')
-                }}
-              />
-            </Tooltip>
+            {ctx?.cfg.showSetting && (
+              <Tooltip
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                title={t('conprof.list.toolbar.settings')}
+                placement="bottom"
+              >
+                <SettingOutlined
+                  onClick={() => {
+                    setShowSettings(true)
+                    telemetry.clickSettings('settingIcon')
+                  }}
+                />
+              </Tooltip>
+            )}
             {!isDistro() && (
               <Tooltip
                 mouseEnterDelay={0}

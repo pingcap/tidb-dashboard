@@ -58,9 +58,16 @@ export interface IConProfilingDataSource {
   getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
 }
 
+export interface IConProfilingConfig extends IContextConfig {
+  publicPathBase: string
+  checkNgm: boolean
+  showSetting: boolean
+  listDuration?: number // unit hour, 1 means 1 hour, 2 means 2 hours
+}
+
 export interface IConProfilingContext {
   ds: IConProfilingDataSource
-  cfg: IContextConfig & { publicPathBase: string }
+  cfg: IConProfilingConfig
 }
 
 export const ConProfilingContext = createContext<IConProfilingContext | null>(

@@ -195,14 +195,16 @@ export default function Page() {
         }
         profileURL = `${
           ctx!.cfg.apiPathBase
-          }/profiling/single/view?token=${token}`
+        }/profiling/single/view?token=${token}`
         const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
-        const type = rec.raw_data_type === RawDataType.Protobuf ? "protobuf" : "text"
-        profileURL = `${ctx!.cfg.publicPathBase
-          }/speedscope/#profileURL=${encodeURIComponent(
-            // protobuf can be rendered to flamegraph by speedscope
-            profileURL + `&output_type=${type}`
-          )}&title=${titleOnTab}`
+        const type =
+          rec.raw_data_type === RawDataType.Protobuf ? 'protobuf' : 'text'
+        profileURL = `${
+          ctx!.cfg.publicPathBase
+        }/speedscope/#profileURL=${encodeURIComponent(
+          // protobuf can be rendered to flamegraph by speedscope
+          profileURL + `&output_type=${type}`
+        )}&title=${titleOnTab}`
 
         window.open(`${profileURL}`, '_blank')
         break

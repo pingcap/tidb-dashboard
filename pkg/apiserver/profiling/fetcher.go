@@ -5,14 +5,13 @@ package profiling
 import (
 	_ "embed"
 	"fmt"
+	"io"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
 	"go.uber.org/fx"
-
-	"github.com/pkg/errors"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
@@ -77,10 +76,16 @@ func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	if strings.HasSuffix(op.path, "heap") {
 		cmd := exec.Command("perl", "/dev/stdin", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path) //nolint:gosec
 		cmd.Stdin = strings.NewReader(jeprof)
+		stderr, _ := cmd.StderrPipe()
 		// use jeprof to fetch tikv heap profile
 		data, err := cmd.Output()
 		if err != nil {
-			return nil, errors.Errorf("failed to fetch tikv heap profile: %s", err)
+			if stderr != nil {
+				errMsg, _ := io.ReadAll(stderr)
+				return nil, fmt.Errorf("failed to fetch tikv heap profile: %s", errMsg)
+			} else {
+				return nil, fmt.Errorf("failed to fetch tikv heap profile: %s", err)
+			}
 		}
 		return data, nil
 	}

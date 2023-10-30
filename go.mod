@@ -36,7 +36,6 @@ require (
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
 	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
 	github.com/pingcap/tipb v0.0.0-20220718022156-3e2483c20a9e
-	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
 	github.com/samber/lo v1.37.0
 	github.com/shhdgit/testfixtures/v3 v3.6.2-0.20211219171712-c4f264d673d3
@@ -92,6 +91,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2 // indirect

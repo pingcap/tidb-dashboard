@@ -11,8 +11,8 @@ import (
 func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, profilingType TaskProfilingType) (string, TaskRawDataType, error) {
 	switch target.Kind {
 	case model.NodeKindTiKV:
-		// TiKV only supports CPU Profiling
-		if profilingType != ProfilingTypeCPU {
+		// TiKV only supports CPU/heap Profiling
+		if profilingType != ProfilingTypeCPU && profilingType != ProfilingTypeHeap {
 			return "", "", ErrUnsupportedProfilingType.NewWithNoMessage()
 		}
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv, profilingType: profilingType})

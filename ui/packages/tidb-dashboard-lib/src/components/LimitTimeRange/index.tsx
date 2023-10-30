@@ -8,6 +8,7 @@ interface LimitTimeRangeProps {
   customAbsoluteRangePicker?: boolean
   onChange: (val: TimeRange) => void
   onZoomOutClick: (start: number, end: number) => void
+  disabled?: boolean
 }
 
 // array of 24 numbers, start from 0
@@ -35,7 +36,8 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
   recent_seconds = DEFAULT_RECENT_SECONDS,
   customAbsoluteRangePicker,
   onChange,
-  onZoomOutClick
+  onZoomOutClick,
+  disabled
 }) => {
   // get the selectable time range value from rencent_seconds
   const selectableHours = useMemo(() => {
@@ -109,6 +111,7 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
           disabledDate={disabledDate}
           disabledTime={disabledTime}
           customAbsoluteRangePicker={true}
+          disabled={disabled}
         />
       ) : (
         <TimeRangeSelector.WithZoomOut
@@ -116,6 +119,7 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
           onChange={onChange}
           recent_seconds={recent_seconds}
           onZoomOutClick={onZoomOutClick}
+          disabled={disabled}
         />
       )}
     </>

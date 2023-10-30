@@ -31,7 +31,8 @@ import {
   TimeRangeSelector,
   DateTime,
   toTimeRangeValue,
-  IColumnKeys
+  IColumnKeys,
+  LimitTimeRange
 } from '@lib/components'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { StatementsTable } from '../../components'
@@ -47,7 +48,6 @@ import { StatementModel } from '@lib/client'
 import { isDistro } from '@lib/utils/distro'
 import { StatementContext } from '../../context'
 import { telemetry as stmtTelmetry } from '../../utils/telemetry'
-import { LimitTimeRange } from '@lib/apps/Overview/components/LimitTimeRange'
 
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'

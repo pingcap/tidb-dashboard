@@ -252,9 +252,34 @@ export function SSOForm() {
                   label={t('user_profile.sso.form.client_id')}
                   rules={[{ required: true }]}
                 >
+                  <Input disabled={!isWriteable} style={{ width: 320 }} />
+                </Form.Item>
+                {
+                  // to compatible with old version
+                  config?.client_secret !== undefined && (
+                    <Form.Item
+                      name="client_secret"
+                      label={t('user_profile.sso.form.client_secret')}
+                      rules={[{ required: false }]}
+                      tooltip={t('user_profile.sso.form.client_secret_tooltip')}
+                    >
+                      <Input
+                        disabled={!isWriteable}
+                        style={{ width: 320 }}
+                        placeholder="********"
+                      />
+                    </Form.Item>
+                  )
+                }
+                <Form.Item
+                  name="scopes"
+                  label={t('user_profile.sso.form.scopes')}
+                  rules={[{ required: false }]}
+                >
                   <Input
                     disabled={!isWriteable}
-                    style={DEFAULT_FORM_ITEM_STYLE}
+                    style={{ width: 320 }}
+                    placeholder="openid profile email"
                   />
                 </Form.Item>
                 <Form.Item
@@ -264,7 +289,7 @@ export function SSOForm() {
                 >
                   <Input
                     disabled={!isWriteable}
-                    style={DEFAULT_FORM_ITEM_STYLE}
+                    style={{ width: 320 }}
                     placeholder="https://example.com"
                   />
                 </Form.Item>

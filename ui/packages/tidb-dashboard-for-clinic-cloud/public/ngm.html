@@ -115,8 +115,8 @@
       const apiToken = localStorage.getItem('clinic.auth.csrf_token')
 
       // example entry link:
-      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992&deployType=shared#/slow_query
-      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgId=30052&projectId=43584&clusterId=61992&deployType=dedicated#/topsql
+      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgName=xxx&orgId=30052&projectId=43584&clusterId=61992&deployType=shared&userName=xxx#/slow_query
+      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgName=xxx&orgId=30052&projectId=43584&clusterId=61992&deployType=dedicated&userName=xxx#/topsql
       const searchParams = new URLSearchParams(window.location.search)
       const provider = searchParams.get('provider') || ''
       const region = searchParams.get('region') || ''
@@ -124,6 +124,11 @@
       const projectId = searchParams.get('projectId') || ''
       const clusterId = searchParams.get('clusterId') || ''
       const deployType = searchParams.get('deployType') || ''
+
+      const orgName = searchParams.get('orgName') || ''
+      const clusterName = searchParams.get('clusterName') || ''
+      const userName = searchParams.get('userName') || ''
+
       if (
         apiToken === '' ||
         provider === '' ||
@@ -166,7 +171,24 @@
           },
           topSQL: {
             checkNgm: false,
-            showSetting: false
+            showSetting: false,
+            orgName,
+            clusterName,
+            userName,
+
+            timeRangeSelector: {
+              recentSeconds: [
+                5 * 60,
+                15 * 60,
+                30 * 60,
+                60 * 60,
+                6 * 60 * 60,
+                12 * 60 * 60,
+                24 * 60 * 60
+              ],
+              customAbsoluteRangePicker: true
+            },
+            autoRefresh: false
           }
         }
       })

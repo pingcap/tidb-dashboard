@@ -4,7 +4,8 @@ import React, {
   useContext,
   useEffect,
   useRef,
-  useState
+  useState,
+  useMemo
 } from 'react'
 import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
 import {
@@ -20,13 +21,13 @@ import formatSql from '@lib/utils/sqlFormatter'
 import { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
 import {
   Card,
-  TimeRangeSelector,
   toTimeRangeValue as _toTimeRangeValue,
   Toolbar,
   AutoRefreshButton,
   TimeRange,
   fromTimeRangeValue,
-  TimeRangeValue
+  TimeRangeValue,
+  LimitTimeRange
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
@@ -126,6 +127,18 @@ export function TopSQLList() {
 
   const chartRef = useRef<any>(null)
 
+  // only for clinic
+  const clusterInfo = useMemo(() => {
+    const infos: string[] = []
+    if (ctx?.cfg.orgName) {
+      infos.push(`Org: ${ctx?.cfg.orgName}`)
+    }
+    if (ctx?.cfg.clusterName) {
+      infos.push(`Cluster: ${ctx?.cfg.clusterName}`)
+    }
+    return infos.join(' | ')
+  }, [ctx?.cfg.orgName, ctx?.cfg.clusterName])
+
   return (
     <>
       <div className={styles.container} ref={containerRef}>
@@ -156,6 +169,12 @@ export function TopSQLList() {
         )}
 
         <Card noMarginBottom>
+          {clusterInfo && (
+            <div style={{ marginBottom: 8, textAlign: 'right' }}>
+              {clusterInfo}
+            </div>
+          )}
+
           <Toolbar>
             <Space>
               <InstanceSelect
@@ -172,18 +191,23 @@ export function TopSQLList() {
                   open && telemetry.openSelectInstance()
                 }
               />
-              <TimeRangeSelector.WithZoomOut
+              <LimitTimeRange
                 value={timeRange}
+                recent_seconds={ctx?.cfg.timeRangeSelector?.recentSeconds}
+                customAbsoluteRangePicker={
+                  ctx?.cfg.timeRangeSelector?.customAbsoluteRangePicker
+                }
                 onChange={(v) => {
                   setTimeRange(v)
                   telemetry.selectTimeRange(v)
                 }}
-                disabled={isLoading}
                 onZoomOutClick={(start, end) =>
                   telemetry.clickZoomOut([start, end])
                 }
+                disabled={isLoading}
               />
               <AutoRefreshButton
+                defaultValue={ctx?.cfg.autoRefresh === false ? 0 : undefined}
                 disabled={isLoading}
                 onRefresh={async () => {
                   await fetchInstancesAndSelectInstance()

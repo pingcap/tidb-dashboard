@@ -46,8 +46,13 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, 
 		fileExtenstion = "*.proto"
 	case ProfilingTypeHeap:
 		url = "/debug/pprof/heap"
-		profilingRawDataType = RawDataTypeProtobuf
-		fileExtenstion = "*.proto"
+		if f.target.Kind == model.NodeKindTiKV {
+			profilingRawDataType = RawDataTypeJeprof
+			fileExtenstion = "*.prof"
+		} else {
+			profilingRawDataType = RawDataTypeProtobuf
+			fileExtenstion = "*.proto"
+		}
 	case ProfilingTypeGoroutine:
 		url = "/debug/pprof/goroutine?debug=2"
 		profilingRawDataType = RawDataTypeText

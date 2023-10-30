@@ -84,8 +84,34 @@ export default function Page() {
       const { profile_type, target } = rec
       const { component, address } = target!
       let dataFormat = ''
-      if (action === 'view_flamegraph' || action === 'download') {
-        dataFormat = 'protobuf'
+      if (component === 'tikv' && profile_type === 'heap') {
+        switch (action) {
+          case 'view_flamegraph':
+            // tikv heap flamegraph uses Brendan Gregg's collapsed stack format which is text based
+            dataFormat = 'text'
+            break
+          case 'view_graph':
+            dataFormat = 'svg'
+            break
+          case 'download':
+            dataFormat = 'jeprof'
+            break
+          default:
+        }
+      } else {
+        switch (action) {
+          case 'view_graph':
+            dataFormat = 'svg'
+            break
+          case 'view_text':
+            dataFormat = 'text'
+            break
+          case 'view_flamegraph':
+          case 'download':
+            dataFormat = 'protobuf'
+            break
+          default:
+        }
       }
       const res = await ctx!.ds.continuousProfilingActionTokenGet(
         `ts=${ts}&profile_type=${profile_type}&component=${component}&address=${address}&data_format=${dataFormat}`
@@ -118,7 +144,7 @@ export default function Page() {
         const speedscopeURL = `${
           ctx!.cfg.publicPathBase
         }/speedscope/#profileURL=${encodeURIComponent(
-          profileURL
+          profileURL + `&output_type=${dataFormat}`
         )}&title=${speedscopeTitle}`
         window.open(speedscopeURL, '_blank')
         return

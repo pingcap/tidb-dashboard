@@ -143,8 +143,7 @@ function Sider({
   )
 
   const supportTopSQL = useIsFeatureSupport('topsql')
-  // const supportResourceManager = useIsFeatureSupport('resource_manager')
-  const supportResourceManager = true
+  const supportResourceManager = useIsFeatureSupport('resource_manager')
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),

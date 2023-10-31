@@ -3,9 +3,13 @@
 package profiling
 
 import (
+	_ "embed"
 	"fmt"
+	"io"
 	"net"
+	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/fx"
@@ -66,7 +70,40 @@ type tikvFetcher struct {
 	client *tikv.Client
 }
 
+//go:embed jeprof.in
+var jeprof string
+
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
+	if strings.HasSuffix(op.path, "heap") {
+		cmd := exec.Command("perl", "/dev/stdin", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path) //nolint:gosec
+		cmd.Stdin = strings.NewReader(jeprof)
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			return nil, err
+		}
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			return nil, err
+		}
+		// use jeprof to fetch tikv heap profile
+		err = cmd.Start()
+		if err != nil {
+			return nil, err
+		}
+		data, err := io.ReadAll(stdout)
+		if err != nil {
+			return nil, err
+		}
+		errMsg, err := io.ReadAll(stderr)
+		if err != nil {
+			return nil, err
+		}
+		err = cmd.Wait()
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch tikv heap profile: %s", errMsg)
+		}
+		return data, nil
+	}
 	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 }
 

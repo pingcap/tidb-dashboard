@@ -44,27 +44,30 @@ func newService(p ServiceParams, ff *featureflag.Registry) *Service {
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
-	endpoint.Use(auth.MWAuthRequired())
-	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	{
 		endpoint.GET("/download", s.downloadHandler)
-		endpoint.POST("/download/token", s.downloadTokenHandler)
 
-		endpoint.GET("/config", s.configHandler)
-		endpoint.POST("/config", auth.MWRequireWritePriv(), s.modifyConfigHandler)
-		endpoint.GET("/stmt_types", s.stmtTypesHandler)
-		endpoint.GET("/list", s.listHandler)
-		endpoint.GET("/plans", s.plansHandler)
-		endpoint.GET("/plan/detail", s.planDetailHandler)
-
-		endpoint.GET("/available_fields", s.getAvailableFields)
-
-		binding := endpoint.Group("/plan/binding")
-		binding.Use(s.planBindingFeatureFlag.VersionGuard())
+		endpoint.Use(auth.MWAuthRequired())
+		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 		{
-			binding.GET("", s.getPlanBindingHandler)
-			binding.POST("", s.createPlanBindingHandler)
-			binding.DELETE("", s.dropPlanBindingHandler)
+			endpoint.POST("/download/token", s.downloadTokenHandler)
+
+			endpoint.GET("/config", s.configHandler)
+			endpoint.POST("/config", auth.MWRequireWritePriv(), s.modifyConfigHandler)
+			endpoint.GET("/stmt_types", s.stmtTypesHandler)
+			endpoint.GET("/list", s.listHandler)
+			endpoint.GET("/plans", s.plansHandler)
+			endpoint.GET("/plan/detail", s.planDetailHandler)
+
+			endpoint.GET("/available_fields", s.getAvailableFields)
+
+			binding := endpoint.Group("/plan/binding")
+			binding.Use(s.planBindingFeatureFlag.VersionGuard())
+			{
+				binding.GET("", s.getPlanBindingHandler)
+				binding.POST("", s.createPlanBindingHandler)
+				binding.DELETE("", s.dropPlanBindingHandler)
+			}
 		}
 	}
 }
@@ -230,11 +233,15 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 		return
 	}
 
-	// get binary plan
-	result.AggBinaryPlan, err = utils.GenerateBinaryPlanJSON(result.AggBinaryPlan)
-	if err != nil {
-		rest.Error(c, err)
-		return
+	if result.AggBinaryPlan != "" {
+		// may failed but it's ok
+		result.BinaryPlanText, _ = utils.GenerateBinaryPlanText(db, result.AggBinaryPlan)
+		// may failed but it's ok
+		result.BinaryPlanJSON, _ = utils.GenerateBinaryPlanJSON(result.AggBinaryPlan)
+
+		// reduce response size
+		result.AggBinaryPlan = ""
+		result.AggPlan = ""
 	}
 
 	c.JSON(http.StatusOK, result)

@@ -26,8 +26,9 @@ statement:
             some: 'Execution Detail of Selected {{n}} Plans'
           execution:
             title: Execution Plan
-            visual: Visual
             text: Text
+            table: Table
+            visual: Visual
             modal_title: Visual Plan
       tabs:
         basic: Basic
@@ -103,6 +104,8 @@ statement:
     exec_count_tooltip: Total execution count for this kind of statement
     plan_count: '# Plans'
     plan_count_tooltip: Number of distinct execution plans of this statement in current time range
+    plan_cache_hits: '# Plan Cache Hits'
+    plan_cache_hits_tooltip: Number of times the execution plan cache is hit
     avg_latency: Mean Latency
     avg_latency_tooltip: Execution time of single query
     avg_mem: Mean Memory

@@ -3828,6 +3828,9 @@
                 "client_id": {
                     "type": "string"
                 },
+                "client_secret": {
+                    "type": "string"
+                },
                 "discovery_url": {
                     "type": "string"
                 },
@@ -3836,6 +3839,9 @@
                 },
                 "is_read_only": {
                     "type": "boolean"
+                },
+                "scopes": {
+                    "type": "string"
                 }
             }
         },
@@ -3921,6 +3927,9 @@
             "type": "object",
             "properties": {
                 "pd": {
+                    "type": "integer"
+                },
+                "ticdc": {
                     "type": "integer"
                 },
                 "tidb": {
@@ -4906,6 +4915,14 @@
                 "binary_plan": {
                     "type": "string"
                 },
+                "binary_plan_json": {
+                    "description": "Computed fields",
+                    "type": "string"
+                },
+                "binary_plan_text": {
+                    "description": "binary plan plain text",
+                    "type": "string"
+                },
                 "commit_backoff_time": {
                     "type": "number"
                 },
@@ -4990,6 +5007,7 @@
                     "type": "number"
                 },
                 "plan": {
+                    "description": "deprecated, replaced by BinaryPlanText",
                     "type": "string"
                 },
                 "plan_from_binding": {
@@ -5310,6 +5328,12 @@
                 "binary_plan": {
                     "type": "string"
                 },
+                "binary_plan_json": {
+                    "type": "string"
+                },
+                "binary_plan_text": {
+                    "type": "string"
+                },
                 "digest": {
                     "type": "string"
                 },
@@ -5419,7 +5443,11 @@
                     "type": "integer"
                 },
                 "plan": {
+                    "description": "deprecated, replaced by BinaryPlanText",
                     "type": "string"
+                },
+                "plan_cache_hits": {
+                    "type": "integer"
                 },
                 "plan_can_be_bound": {
                     "type": "boolean"
@@ -5757,6 +5785,9 @@
         "user.GetLoginInfoResponse": {
             "type": "object",
             "properties": {
+                "sql_auth_public_key": {
+                    "type": "string"
+                },
                 "supported_auth_types": {
                     "type": "array",
                     "items": {

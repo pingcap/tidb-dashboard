@@ -52,9 +52,12 @@ const compareFn = (a: StatementModel, b: StatementModel) => {
 function DetailPage() {
   const ctx = useContext(StatementContext)
 
+  const location = useLocation()
   const navigate = useNavigate()
 
-  const query = DetailPage.parseQuery(useLocation().search)
+  const query = DetailPage.parseQuery(location.search)
+  const historyBack = (location.state ?? ({} as any)).historyBack ?? false
+
   const {
     data: plans,
     isLoading,
@@ -101,7 +104,11 @@ function DetailPage() {
       <Head
         title={t('statement.pages.detail.head.title')}
         back={
-          <Typography.Link onClick={() => navigate(-1)}>
+          <Typography.Link
+            onClick={() =>
+              historyBack ? navigate(-1) : navigate('/statement')
+            }
+          >
             <ArrowLeftOutlined /> {t('statement.pages.detail.head.back')}
           </Typography.Link>
         }

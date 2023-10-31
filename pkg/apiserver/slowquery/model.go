@@ -41,7 +41,7 @@ type Model struct {
 
 	// Detail
 	PrevStmt   string         `gorm:"column:Prev_stmt" json:"prev_stmt"`
-	Plan       string         `gorm:"column:Plan" json:"plan"`
+	Plan       string         `gorm:"column:Plan" json:"plan"` // deprecated, replaced by BinaryPlanText
 	BinaryPlan string         `gorm:"column:Binary_plan" json:"binary_plan"`
 	Warnings   datatypes.JSON `gorm:"column:Warnings" json:"warnings"`
 
@@ -95,6 +95,10 @@ type Model struct {
 	RocksdbBlockCacheHitCount uint `gorm:"column:Rocksdb_block_cache_hit_count" json:"rocksdb_block_cache_hit_count"`
 	RocksdbBlockReadCount     uint `gorm:"column:Rocksdb_block_read_count" json:"rocksdb_block_read_count"`
 	RocksdbBlockReadByte      uint `gorm:"column:Rocksdb_block_read_byte" json:"rocksdb_block_read_byte"`
+
+	// Computed fields
+	BinaryPlanJSON string `json:"binary_plan_json"` // binary plan json format
+	BinaryPlanText string `json:"binary_plan_text"` // binary plan plain text
 }
 
 type Field struct {

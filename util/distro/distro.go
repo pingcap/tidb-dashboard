@@ -22,6 +22,7 @@ type DistributionResource struct {
 	TiKV     string `json:"tikv,omitempty"`
 	PD       string `json:"pd,omitempty"`
 	TiFlash  string `json:"tiflash,omitempty"`
+	TiCDC    string `json:"ticdc,omitempty"`
 }
 
 var defaultDistroRes = DistributionResource{
@@ -30,6 +31,7 @@ var defaultDistroRes = DistributionResource{
 	TiKV:     "TiKV",
 	PD:       "PD",
 	TiFlash:  "TiFlash",
+	TiCDC:    "TiCDC",
 }
 
 var (

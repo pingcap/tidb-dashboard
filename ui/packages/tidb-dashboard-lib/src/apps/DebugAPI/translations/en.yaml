@@ -24,7 +24,7 @@ debug_api:
       tidb_schema_by_db: Schema Information - by Database
       tidb_schema_by_table: Schema Information - by Database + Table
       tidb_schema_by_table_id: Schema and Table Information - by TableID
-      tidb_ddl_history: DDL History - All
+      tidb_ddl_history: DDL History
       tidb_server_info: Server Information - Current
       tidb_all_servers_info: Server Information - All Servers
       tidb_all_regions_meta: Region - All
@@ -44,7 +44,6 @@ debug_api:
       tidb_schema_db: Schema Information - by Database
       tidb_schema_db_table: Schema Information - by Database + Table
       tidb_dbtable_tableid: Schema and Table Information - by TableID
-      # tidb_ddl_history: DDL History - All
       tidb_info: Server Information - Current
       tidb_info_all: Server Information - All Servers
       tidb_regions_meta: Region - All

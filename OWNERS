@@ -1,0 +1,13 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+approvers:
+  - baurine
+  - breezewish
+  - crazycs520
+  - Deardrops
+  - HunDunDM
+  - iosmanthus
+  - shhdgit
+  - zhongzc
+reviewers:
+  - Fullstop000
+  - Renkai

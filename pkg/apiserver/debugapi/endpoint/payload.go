@@ -3,6 +3,7 @@
 package endpoint
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -11,6 +12,10 @@ import (
 	"regexp"
 	"strconv"
 
+	"go.etcd.io/etcd/clientv3"
+
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
 	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
@@ -112,8 +117,6 @@ func (r *RequestPayloadResolver) ResolvePayload(payload RequestPayload) (*Resolv
 		return nil, rest.ErrBadRequest.New("Unknown API endpoint '%s'", payload.API)
 	}
 
-	// TODO: Verify host and port
-
 	resolvedPayload := &ResolvedRequestPayload{
 		api:         api,
 		host:        payload.Host,
@@ -173,7 +176,18 @@ type ResolvedRequestPayload struct {
 	queryValues url.Values
 }
 
-func (p *ResolvedRequestPayload) SendRequestAndPipe(clientsToUse HTTPClients, w io.Writer) (respNoBody *http.Response, err error) {
+func (p *ResolvedRequestPayload) SendRequestAndPipe(
+	ctx context.Context,
+	clientsToUse HTTPClients,
+	etcdClient *clientv3.Client,
+	pdClient *pd.Client,
+	w io.Writer,
+) (respNoBody *http.Response, err error) {
+	if etcdClient != nil && pdClient != nil { // It can only be false in tests.
+		if err := p.verifyEndpoint(ctx, etcdClient, pdClient); err != nil {
+			return nil, err
+		}
+	}
 	httpClient := clientsToUse.GetHTTPClientByNodeKind(p.api.Component)
 	if httpClient == nil {
 		return nil, ErrUnknownComponent.New("Unknown component '%s'", p.api.Component)
@@ -190,4 +204,66 @@ func (p *ResolvedRequestPayload) SendRequestAndPipe(clientsToUse HTTPClients, w 
 	resp := req.Send()
 	_, respNoBody, err = resp.PipeBody(w)
 	return
+}
+
+func (p *ResolvedRequestPayload) verifyEndpoint(ctx context.Context, etcdClient *clientv3.Client, pdClient *pd.Client) error {
+	switch p.api.Component {
+	case topo.KindTiDB:
+		infos, err := topology.FetchTiDBTopology(ctx, etcdClient)
+		if err != nil {
+			return ErrInvalidEndpoint.Wrap(err, "failed to fetch tidb topology")
+		}
+		matched := false
+		for _, info := range infos {
+			if info.IP == p.host && info.StatusPort == uint(p.port) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return ErrInvalidEndpoint.New("invalid endpoint '%s:%d'", p.host, p.port)
+		}
+	case topo.KindTiKV, topo.KindTiFlash:
+		tikvInfos, tiflashInfos, err := topology.FetchStoreTopology(pdClient)
+		if err != nil {
+			return ErrInvalidEndpoint.Wrap(err, "failed to fetch store topology")
+		}
+		matched := false
+		if p.api.Component == topo.KindTiKV {
+			for _, info := range tikvInfos {
+				if info.IP == p.host && info.StatusPort == uint(p.port) {
+					matched = true
+					break
+				}
+			}
+		} else {
+			for _, info := range tiflashInfos {
+				if info.IP == p.host && info.StatusPort == uint(p.port) {
+					matched = true
+					break
+				}
+			}
+		}
+		if !matched {
+			return ErrInvalidEndpoint.New("invalid endpoint '%s:%d'", p.host, p.port)
+		}
+	case topo.KindPD:
+		infos, err := topology.FetchPDTopology(pdClient)
+		if err != nil {
+			return ErrInvalidEndpoint.Wrap(err, "failed to fetch pd topology")
+		}
+		matched := false
+		for _, info := range infos {
+			if info.IP == p.host && info.Port == uint(p.port) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return ErrInvalidEndpoint.New("invalid endpoint '%s:%d'", p.host, p.port)
+		}
+	default:
+		return ErrUnknownComponent.New("Unknown component '%s'", p.api.Component)
+	}
+	return nil
 }

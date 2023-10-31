@@ -241,6 +241,12 @@ export interface ConfigSSOCoreConfig {
      * @type {string}
      * @memberof ConfigSSOCoreConfig
      */
+    'client_secret'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConfigSSOCoreConfig
+     */
     'discovery_url'?: string;
     /**
      * 
@@ -254,6 +260,12 @@ export interface ConfigSSOCoreConfig {
      * @memberof ConfigSSOCoreConfig
      */
     'is_read_only'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConfigSSOCoreConfig
+     */
+    'scopes'?: string;
 }
 
 
@@ -375,6 +387,12 @@ export interface ConprofComponentNum {
      * @memberof ConprofComponentNum
      */
     'pd'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ConprofComponentNum
+     */
+    'ticdc'?: number;
     /**
      * 
      * @type {number}
@@ -2177,6 +2195,18 @@ export interface SlowqueryModel {
      */
     'binary_plan'?: string;
     /**
+     * Computed fields
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan_json'?: string;
+    /**
+     * binary plan plain text
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan_text'?: string;
+    /**
      * 
      * @type {number}
      * @memberof SlowqueryModel
@@ -2339,7 +2369,7 @@ export interface SlowqueryModel {
      */
     'parse_time'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof SlowqueryModel
      */
@@ -2933,6 +2963,18 @@ export interface StatementModel {
      * @type {string}
      * @memberof StatementModel
      */
+    'binary_plan_json'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'binary_plan_text'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
     'digest'?: string;
     /**
      * 
@@ -3133,11 +3175,17 @@ export interface StatementModel {
      */
     'min_latency'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof StatementModel
      */
     'plan'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'plan_cache_hits'?: number;
     /**
      * 
      * @type {boolean}
@@ -3779,6 +3827,12 @@ export interface UserAuthenticateForm {
  * @interface UserGetLoginInfoResponse
  */
 export interface UserGetLoginInfoResponse {
+    /**
+     * 
+     * @type {string}
+     * @memberof UserGetLoginInfoResponse
+     */
+    'sql_auth_public_key'?: string;
     /**
      * 
      * @type {Array<number>}

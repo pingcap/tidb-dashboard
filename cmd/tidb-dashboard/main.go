@@ -15,6 +15,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"net"
 	"net/http"
@@ -67,16 +68,19 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", cfg.CoreConfig.EnableTelemetry, "allow telemetry")
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
 	flag.StringVar(&cfg.CoreConfig.FeatureVersion, "feature-version", cfg.CoreConfig.FeatureVersion, "target TiDB version for standalone mode")
+	flag.IntVar(&cfg.CoreConfig.NgmTimeout, "ngm-timeout", cfg.CoreConfig.NgmTimeout, "timeout secs for accessing the ngm API")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 
 	clusterCaPath := flag.String("cluster-ca", "", "(TLS between components of the TiDB cluster) path of file that contains list of trusted SSL CAs")
 	clusterCertPath := flag.String("cluster-cert", "", "(TLS between components of the TiDB cluster) path of file that contains X509 certificate in PEM format")
 	clusterKeyPath := flag.String("cluster-key", "", "(TLS between components of the TiDB cluster) path of file that contains X509 key in PEM format")
+	clusterAllowedNames := flag.String("cluster-allowed-names", "", "comma-delimited list of acceptable peer certificate SAN identities")
 
 	tidbCaPath := flag.String("tidb-ca", "", "(TLS for MySQL client) path of file that contains list of trusted SSL CAs")
 	tidbCertPath := flag.String("tidb-cert", "", "(TLS for MySQL client) path of file that contains X509 certificate in PEM format")
 	tidbKeyPath := flag.String("tidb-key", "", "(TLS for MySQL client) path of file that contains X509 key in PEM format")
+	tidbAllowedNames := flag.String("tidb-allowed-names", "", "comma-delimited list of acceptable peer certificate SAN identities")
 
 	// debug for keyvisual，hide help information
 	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
@@ -95,13 +99,13 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	// setup TLS config for TiDB components
 	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
-		cfg.CoreConfig.ClusterTLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath)
+		cfg.CoreConfig.ClusterTLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath, clusterAllowedNames)
 	}
 
 	// setup TLS config for MySQL client
 	// See https://github.com/pingcap/docs/blob/7a62321b3ce9318cbda8697503c920b2a01aeb3d/how-to/secure/enable-tls-clients.md#enable-authentication
 	if (len(*tidbCertPath) != 0 && len(*tidbKeyPath) != 0) || len(*tidbCaPath) != 0 {
-		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath)
+		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath, tidbAllowedNames)
 	}
 
 	if err := cfg.CoreConfig.NormalizePDEndPoint(); err != nil {
@@ -136,16 +140,65 @@ func getContext() context.Context {
 	return ctx
 }
 
-func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
+func buildTLSConfig(caPath, keyPath, certPath, allowedNames *string) *tls.Config {
 	tlsInfo := transport.TLSInfo{
 		TrustedCAFile: *caPath,
 		KeyFile:       *keyPath,
 		CertFile:      *certPath,
 	}
+
 	tlsConfig, err := tlsInfo.ClientConfig()
 	if err != nil {
 		log.Fatal("Failed to load certificates", zap.Error(err))
 	}
+
+	// Disable the default server verification routine in favor of a manually defined connection
+	// verification callback. The custom verification process verifies that the server
+	// certificate is issued by a trusted root CA, and that the peer certificate identities
+	// matches at least one entry specified in verifyNames (if specified). This is required
+	// because tidb-dashboard directs requests to a loopback-bound forwarding proxy, which would
+	// otherwise cause server hostname verification to fail.
+	tlsConfig.InsecureSkipVerify = true
+	tlsConfig.VerifyConnection = func(state tls.ConnectionState) error {
+		opts := x509.VerifyOptions{
+			Intermediates: x509.NewCertPool(),
+			Roots:         tlsConfig.RootCAs,
+		}
+
+		for _, cert := range state.PeerCertificates[1:] {
+			opts.Intermediates.AddCert(cert)
+		}
+
+		_, err := state.PeerCertificates[0].Verify(opts)
+
+		// Optionally verify the peer SANs when available. If no peer identities are
+		// provided, simply reuse the verification result of the CA verification.
+		if err != nil || *allowedNames == "" {
+			return err
+		}
+
+		for _, name := range strings.Split(*allowedNames, ",") {
+			for _, dns := range state.PeerCertificates[0].DNSNames {
+				if name == dns {
+					return nil
+				}
+			}
+
+			for _, uri := range state.PeerCertificates[0].URIs {
+				if name == uri.String() {
+					return nil
+				}
+			}
+		}
+
+		return fmt.Errorf(
+			"no SANs in server certificate (%v, %v) match allowed names %v",
+			state.PeerCertificates[0].DNSNames,
+			state.PeerCertificates[0].URIs,
+			strings.Split(*allowedNames, ","),
+		)
+	}
+
 	return tlsConfig
 }
 

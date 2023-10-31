@@ -325,14 +325,20 @@ func (s *Service) buildOAuth2Config(redirectURL string) (*oauth2.Config, error) 
 	if !dc.SSO.CoreConfig.Enabled {
 		return nil, ErrBadConfig.New("SSO is not enabled")
 	}
+	scopes := []string{"openid", "profile", "email"}
+	if len(dc.SSO.CoreConfig.Scopes) > 0 {
+		userSupplied := strings.Split(dc.SSO.CoreConfig.Scopes, " ")
+		scopes = append(scopes, userSupplied...)
+	}
 	return &oauth2.Config{
-		ClientID:    dc.SSO.CoreConfig.ClientID,
-		RedirectURL: redirectURL,
+		ClientID:     dc.SSO.CoreConfig.ClientID,
+		ClientSecret: dc.SSO.CoreConfig.ClientSecret,
+		RedirectURL:  redirectURL,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  dc.SSO.AuthURL,
 			TokenURL: dc.SSO.TokenURL,
 		},
-		Scopes: []string{"openid", "profile", "email"},
+		Scopes: scopes,
 	}, nil
 }
 

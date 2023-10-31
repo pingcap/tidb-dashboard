@@ -45,7 +45,7 @@ func normalizeCustomizedPromAddress(addr string) (string, error) {
 		return "", fmt.Errorf("invalid Prometheus address format")
 	}
 	// Normalize the address, remove unnecessary parts.
-	addr = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+	addr = fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, strings.TrimSuffix(u.Path, "/"))
 	return addr, nil
 }
 

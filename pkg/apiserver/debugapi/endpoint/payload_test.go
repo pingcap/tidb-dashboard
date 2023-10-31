@@ -4,6 +4,7 @@ package endpoint
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -287,7 +288,7 @@ func TestResolvedRequestPayload(t *testing.T) {
 	}
 
 	buf := bytes.Buffer{}
-	_, err := rp.SendRequestAndPipe(clients, &buf)
+	_, err := rp.SendRequestAndPipe(context.Background(), clients, nil, nil, &buf)
 
 	assert.Nil(t, err)
 	assert.Equal(t, "/abc\nhello\n", buf.String())

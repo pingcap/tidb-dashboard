@@ -1,26 +1,27 @@
 import { Space, Typography, Button, Tooltip } from 'antd'
 import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useMemoizedFn } from 'ahooks'
+import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
+import { Link } from 'react-router-dom'
+import { Stack } from 'office-ui-fabric-react'
+import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
+import { debounce } from 'lodash'
+
 import {
   AutoRefreshButton,
   Card,
   DEFAULT_TIME_RANGE,
   TimeRange,
   Toolbar,
-  ErrorBar
+  ErrorBar,
+  LimitTimeRange
 } from '@lib/components'
-import { Link } from 'react-router-dom'
-import { Stack } from 'office-ui-fabric-react'
 import { useTimeRangeValue } from '@lib/components/TimeRangeSelector/hook'
-import { LoadingOutlined, FileTextOutlined } from '@ant-design/icons'
-import { debounce } from 'lodash'
+
 import { OverviewContext } from '../context'
-
-import { useMemoizedFn } from 'ahooks'
 import { telemetry } from '../utils/telemetry'
-import { LimitTimeRange } from '@lib/apps/Overview/components/LimitTimeRange'
 
-import { MetricsChart, SyncChartPointer, TimeRangeValue } from 'metrics-chart'
 export default function Metrics() {
   const ctx = useContext(OverviewContext)
   const promAddrConfigurable = ctx?.cfg.promAddrConfigurable || false
@@ -104,13 +105,11 @@ export default function Metrics() {
             {isSomeLoading && <LoadingOutlined />}
           </Space>
           <Space>
-            {ctx?.cfg.showViewMoreMetrics && (
-              <Link to={`/monitoring`}>
-                <Button type="primary" onClick={telemetry.clickViewMoreMetrics}>
-                  {t('overview.view_more_metrics')}
-                </Button>
-              </Link>
-            )}
+            <Link to={`/monitoring`}>
+              <Button type="primary" onClick={telemetry.clickViewMoreMetrics}>
+                {t('overview.view_more_metrics')}
+              </Button>
+            </Link>
           </Space>
         </Toolbar>
       </Card>

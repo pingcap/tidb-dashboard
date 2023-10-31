@@ -39,6 +39,18 @@ export interface SlowqueryModel {
      */
     'binary_plan'?: string;
     /**
+     * Computed fields
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan_json'?: string;
+    /**
+     * binary plan plain text
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'binary_plan_text'?: string;
+    /**
      * 
      * @type {number}
      * @memberof SlowqueryModel
@@ -201,7 +213,7 @@ export interface SlowqueryModel {
      */
     'parse_time'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof SlowqueryModel
      */

@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
 import { Space, Modal, Tabs, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { To, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -9,25 +9,25 @@ import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 import formatSql from '@lib/utils/sqlFormatter'
 import {
   AnimatedSkeleton,
+  BinaryPlanTable,
+  PlanText,
   CopyLink,
   Descriptions,
   ErrorBar,
   Expand,
   Head,
   HighlightSQL,
-  Pre,
   TextWithInfo
 } from '@lib/components'
+import {
+  VisualPlanThumbnailView,
+  VisualPlanView
+} from '@lib/components/VisualPlan'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { telemetry } from '../../utils/telemetry'
 
 import DetailTabs from './DetailTabs'
 import { SlowQueryContext } from '../../context'
-
-import {
-  VisualPlanThumbnailView,
-  VisualPlanView
-} from '@lib/components/VisualPlan'
 
 export interface IPageQuery {
   connectId?: string
@@ -37,13 +37,14 @@ export interface IPageQuery {
 
 const SLOW_QUERY_DETAIL_EXPAND = 'slow_query.detail_expand'
 
-function DetailPage({ historyBack = false }: { historyBack?: boolean }) {
+function DetailPage() {
   const ctx = useContext(SlowQueryContext)
-
-  const query = DetailPage.parseQuery(useLocation().search)
-
-  const { t } = useTranslation()
+  const location = useLocation()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+
+  const query = DetailPage.parseQuery(location.search)
+  const historyBack = (location.state ?? ({} as any)).historyBack ?? false
 
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
     ctx!.ds.slowQueryDetailGet(
@@ -54,7 +55,13 @@ function DetailPage({ historyBack = false }: { historyBack?: boolean }) {
     )
   )
 
-  const binaryPlan = data?.binary_plan && JSON.parse(data.binary_plan)
+  const binaryPlanObj = useMemo(() => {
+    const json = data?.binary_plan_json ?? data?.binary_plan
+    if (json) {
+      return JSON.parse(json)
+    }
+    return undefined
+  }, [data?.binary_plan, data?.binary_plan_json])
 
   const [detailExpand, setDetailExpand] = useVersionedLocalStorageState(
     SLOW_QUERY_DETAIL_EXPAND,
@@ -71,13 +78,11 @@ function DetailPage({ historyBack = false }: { historyBack?: boolean }) {
     setDetailExpand((prev) => ({ ...prev, prev_query: !prev.prev_query }))
   const toggleQuery = () =>
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
-  const togglePlan = () =>
-    setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
-  const [isVpVisible, setIsVpVisable] = useState(false)
+  const [isVpVisible, setIsVpVisible] = useState(false)
   const toggleVisualPlan = (action: 'open' | 'close') => {
     telemetry.toggleVisualPlanModal(action)
-    setIsVpVisable(!isVpVisible)
+    setIsVpVisible(!isVpVisible)
   }
 
   return (
@@ -86,7 +91,9 @@ function DetailPage({ historyBack = false }: { historyBack?: boolean }) {
         title={t('slow_query.detail.head.title')}
         back={
           <Typography.Link
-            onClick={() => navigate((historyBack ? -1 : '/slow_query') as To)}
+            onClick={() =>
+              historyBack ? navigate(-1) : navigate('/slow_query')
+            }
           >
             <ArrowLeftOutlined /> {t('slow_query.detail.head.back')}
           </Typography.Link>
@@ -163,22 +170,45 @@ function DetailPage({ historyBack = false }: { historyBack?: boolean }) {
                     )
                 })()}
               </Descriptions>
-              {(binaryPlan || !!data.plan) && (
+              {(binaryPlanObj || !!data.plan) && (
                 <>
                   <Space size="middle" style={{ color: '#8c8c8c' }}>
                     {t('slow_query.detail.plan.title')}
                   </Space>
                   <Tabs
                     defaultActiveKey={
-                      binaryPlan && !binaryPlan.main.discardedDueToTooLong
-                        ? 'binary_plan'
+                      !!data.binary_plan_text
+                        ? 'binary_plan_table'
                         : 'text_plan'
                     }
                     onTabClick={(key) =>
                       telemetry.clickPlanTabs(key, data.digest!)
                     }
                   >
-                    {binaryPlan && !binaryPlan.main.discardedDueToTooLong && (
+                    {!!data.binary_plan_text && (
+                      <Tabs.TabPane
+                        tab={t('slow_query.detail.plan.table')}
+                        key="binary_plan_table"
+                      >
+                        <BinaryPlanTable
+                          data={data.binary_plan_text}
+                          downloadFileName={`${data.digest}.txt`}
+                        />
+                        <div style={{ height: 24 }} />
+                      </Tabs.TabPane>
+                    )}
+
+                    <Tabs.TabPane
+                      tab={t('slow_query.detail.plan.text')}
+                      key="text_plan"
+                    >
+                      <PlanText
+                        data={data.binary_plan_text || data.plan || ''}
+                        downloadFileName={`${data.digest}.txt`}
+                      />
+                    </Tabs.TabPane>
+
+                    {binaryPlanObj && !binaryPlanObj.discardedDueToTooLong && (
                       <Tabs.TabPane
                         tab={t('slow_query.detail.plan.visual')}
                         key="binary_plan"
@@ -196,42 +226,17 @@ function DetailPage({ historyBack = false }: { historyBack?: boolean }) {
                             height: window.innerHeight - 100
                           }}
                         >
-                          <VisualPlanView data={binaryPlan} />
+                          <VisualPlanView data={binaryPlanObj} />
                         </Modal>
                         <Descriptions>
                           <Descriptions.Item span={2}>
                             <div onClick={() => toggleVisualPlan('open')}>
-                              <VisualPlanThumbnailView data={binaryPlan} />
+                              <VisualPlanThumbnailView data={binaryPlanObj} />
                             </div>
                           </Descriptions.Item>
                         </Descriptions>
                       </Tabs.TabPane>
                     )}
-
-                    <Tabs.TabPane
-                      tab={t('slow_query.detail.plan.text')}
-                      key="text_plan"
-                    >
-                      <Descriptions>
-                        <Descriptions.Item
-                          span={2}
-                          multiline={detailExpand.plan}
-                          label={
-                            <Space size="middle">
-                              <Expand.Link
-                                expanded={detailExpand.plan}
-                                onClick={togglePlan}
-                              />
-                              <CopyLink data={data.plan ?? ''} />
-                            </Space>
-                          }
-                        >
-                          <Expand expanded={detailExpand.plan}>
-                            <Pre noWrap>{data.plan}</Pre>
-                          </Expand>
-                        </Descriptions.Item>
-                      </Descriptions>
-                    </Tabs.TabPane>
                   </Tabs>
                 </>
               )}

@@ -144,6 +144,7 @@ type ComponentNum struct {
 	PD      int `json:"pd"`
 	TiKV    int `json:"tikv"`
 	TiFlash int `json:"tiflash"`
+	TiCDC   int `json:"ticdc"`
 }
 
 type GroupProfiles struct {
@@ -227,6 +228,7 @@ func (s *Service) parseJWTToken(c *gin.Context) {
 	queryStr, err := utils.ParseJWTString("conprof", token)
 	if err != nil {
 		rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
+		c.Abort()
 		return
 	}
 	c.Request.URL.RawQuery = queryStr

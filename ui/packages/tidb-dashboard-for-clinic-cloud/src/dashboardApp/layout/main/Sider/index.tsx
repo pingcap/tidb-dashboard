@@ -15,10 +15,16 @@ import styles from './index.module.less'
 
 import { store, useIsFeatureSupport } from '@pingcap/tidb-dashboard-lib'
 
-function useAppMenuItem(registry, appId, title?: string, hideIcon?: boolean) {
+function useAppMenuItem(
+  registry,
+  appId,
+  enable: boolean = true,
+  title?: string,
+  hideIcon?: boolean
+) {
   const { t } = useTranslation()
   const app = registry.apps[appId]
-  if (!app) {
+  if (!enable || !app) {
     return null
   }
   return (
@@ -63,17 +69,11 @@ function Sider({
   const whoAmI = store.useState((s) => s.whoAmI)
   const appInfo = store.useState((s) => s.appInfo)
 
-  const instanceProfilingMenuItem = useAppMenuItem(
-    registry,
-    'instance_profiling',
-    '',
-    true
-  )
-  const conprofMenuItem = useAppMenuItem(registry, 'conprof', '', true)
-  const profilingSubMenuItems = [instanceProfilingMenuItem]
-  if (useIsFeatureSupport('conprof')) {
-    profilingSubMenuItems.push(conprofMenuItem)
-  }
+  const supportConProf = useIsFeatureSupport('conprof')
+  const profilingSubMenuItems = [
+    useAppMenuItem(registry, 'instance_profiling', true, '', true),
+    useAppMenuItem(registry, 'conprof', supportConProf, '', true)
+  ]
 
   const profilingSubMenu = (
     <Menu.SubMenu
@@ -142,13 +142,13 @@ function Sider({
     </Menu.SubMenu>
   )
 
-  const topSQLSupport = useIsFeatureSupport('topsql')
-  const topSQLMenu = useAppMenuItem(registry, 'topsql')
-
+  const supportTopSQL = useIsFeatureSupport('topsql')
+  const supportResourceManager = useIsFeatureSupport('resource_manager')
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
     // topSQL
+    useAppMenuItem(registry, 'topsql', supportTopSQL),
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'keyviz'),
@@ -157,14 +157,12 @@ function Sider({
     // useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'monitoring'),
     useAppMenuItem(registry, 'search_logs'),
+    useAppMenuItem(registry, 'resource_manager', supportResourceManager),
     // useAppMenuItem(registry, '__APP_NAME__'),
     // NOTE: Don't remove above comment line, it is a placeholder for code generator
     debugSubMenu
     // conflictSubMenu
   ]
-  if (topSQLSupport) {
-    menuItems.splice(2, 0, topSQLMenu)
-  }
 
   if (appInfo?.enable_experimental) {
     menuItems.push(experimentalSubMenu)
@@ -174,7 +172,7 @@ function Sider({
 
   const extraMenuItems = [
     useAppMenuItem(registry, 'dashboard_settings'),
-    useAppMenuItem(registry, 'user_profile', displayName)
+    useAppMenuItem(registry, 'user_profile', true, displayName)
   ]
 
   const transSider = useSpring({

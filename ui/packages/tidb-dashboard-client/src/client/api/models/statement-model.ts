@@ -199,6 +199,18 @@ export interface StatementModel {
      * @type {string}
      * @memberof StatementModel
      */
+    'binary_plan_json'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'binary_plan_text'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StatementModel
+     */
     'digest'?: string;
     /**
      * 
@@ -399,11 +411,17 @@ export interface StatementModel {
      */
     'min_latency'?: number;
     /**
-     * 
+     * deprecated, replaced by BinaryPlanText
      * @type {string}
      * @memberof StatementModel
      */
     'plan'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'plan_cache_hits'?: number;
     /**
      * 
      * @type {boolean}

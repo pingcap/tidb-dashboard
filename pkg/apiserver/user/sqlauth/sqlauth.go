@@ -15,7 +15,8 @@ const typeID utils.AuthType = 0
 
 type Authenticator struct {
 	user.BaseAuthenticator
-	tidbClient *tidb.Client
+	tidbClient  *tidb.Client
+	authService *user.AuthService
 }
 
 func NewAuthenticator(tidbClient *tidb.Client) *Authenticator {
@@ -26,6 +27,7 @@ func NewAuthenticator(tidbClient *tidb.Client) *Authenticator {
 
 func registerAuthenticator(a *Authenticator, authService *user.AuthService) {
 	authService.RegisterAuthenticator(typeID, a)
+	a.authService = authService
 }
 
 var Module = fx.Options(
@@ -34,7 +36,12 @@ var Module = fx.Options(
 )
 
 func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUser, error) {
-	writeable, err := user.VerifySQLUser(a.tidbClient, f.Username, f.Password)
+	plainPwd, err := user.Decrypt(f.Password, a.authService.RsaPrivateKey)
+	if err != nil {
+		return nil, user.ErrSignInOther.WrapWithNoMessage(err)
+	}
+
+	writeable, err := user.VerifySQLUser(a.tidbClient, f.Username, plainPwd)
 	if err != nil {
 		if errorx.Cast(err) == nil {
 			return nil, user.ErrSignInOther.WrapWithNoMessage(err)
@@ -52,7 +59,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		Version:      utils.SessionVersion,
 		HasTiDBAuth:  true,
 		TiDBUsername: f.Username,
-		TiDBPassword: f.Password,
+		TiDBPassword: plainPwd,
 		DisplayName:  f.Username,
 		IsShareable:  true,
 		IsWriteable:  writeable,

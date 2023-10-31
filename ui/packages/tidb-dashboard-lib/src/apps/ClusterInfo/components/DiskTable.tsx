@@ -41,7 +41,8 @@ function expandDisksItems(rows: HostinfoInfo[]): IExpandedDiskItem[] {
           pd: 0,
           tidb: 0,
           tikv: 0,
-          tiflash: 0
+          tiflash: 0,
+          ticdc: 0
         }
       }
       instancesPerPartition[i.partition_path_lower!][i.type!]++
@@ -72,7 +73,8 @@ function expandDisksItems(rows: HostinfoInfo[]): IExpandedDiskItem[] {
           pd: 0,
           tidb: 0,
           tikv: 0,
-          tiflash: 0
+          tiflash: 0,
+          ticdc: 0
         }
       })
     }

@@ -104,16 +104,21 @@ export default function Page() {
       {
         name: t('conprof.list.table.columns.targets'),
         key: 'targets',
-        minWidth: 150,
-        maxWidth: 250,
+        minWidth: 250,
+        maxWidth: 300,
         onRender: (rec) => {
-          const { tikv, tidb, pd, tiflash } = rec.component_num
-          const s = `${tikv} ${instanceKindName(
+          const { tikv, tidb, pd, tiflash, ticdc } = rec.component_num
+          let s = `${tikv} ${instanceKindName(
             'tikv'
           )}, ${tidb} ${instanceKindName('tidb')}, ${pd} ${instanceKindName(
             'pd'
           )}, ${tiflash} ${instanceKindName('tiflash')}`
-          return <span>{s}</span>
+          // to be compatible with old version
+          // this field doesn't not exist in the old version
+          if (ticdc !== undefined) {
+            s = `${s}, ${ticdc} ${instanceKindName('ticdc')}`
+          }
+          return s
         }
       },
       {
@@ -166,8 +171,8 @@ export default function Page() {
       {
         name: t('conprof.list.table.columns.start_at'),
         key: 'ts',
-        minWidth: 160,
-        maxWidth: 220,
+        minWidth: 200,
+        maxWidth: 250,
         onRender: (rec) => {
           return <DateTime.Long unixTimestampMs={rec.ts * 1000} />
         }

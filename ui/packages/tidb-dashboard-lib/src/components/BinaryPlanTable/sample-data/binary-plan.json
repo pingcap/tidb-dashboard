@@ -1,0 +1,189 @@
+{
+  "discardedDueToTooLong": false,
+  "main": {
+    "accessObjects": [],
+    "actRows": 12,
+    "children": [
+      {
+        "accessObjects": [],
+        "actRows": 12,
+        "children": [
+          {
+            "accessObjects": [],
+            "actRows": 12,
+            "children": [
+              {
+                "accessObjects": [],
+                "actRows": 69,
+                "children": [
+                  {
+                    "accessObjects": [
+                      {
+                        "scanObject": {
+                          "database": "INFORMATION_SCHEMA",
+                          "table": "CLUSTER_LOAD"
+                        }
+                      }
+                    ],
+                    "actRows": 1193,
+                    "copExecInfo": {},
+                    "diagnosis": [],
+                    "diskBytes": "N/A",
+                    "duration": "1.51s",
+                    "estRows": 10000,
+                    "labels": [],
+                    "memoryBytes": "N/A",
+                    "name": "MemTableScan_12",
+                    "rootBasicExecInfo": {
+                      "loops": "3",
+                      "time": "1.51s"
+                    },
+                    "rootGroupExecInfo": [],
+                    "storeType": "tidb",
+                    "taskType": "root",
+                    "__node_attrs": {
+                      "id": "5",
+                      "collapsed": false,
+                      "collapsiable": false,
+                      "isNodeDetailVisible": false,
+                      "nodeFlexSize": {
+                        "width": 280,
+                        "height": 230
+                      }
+                    }
+                  }
+                ],
+                "copExecInfo": {},
+                "cost": 499000,
+                "diagnosis": ["high_est_error"],
+                "diskBytes": "N/A",
+                "duration": "1.51s",
+                "estRows": 8000,
+                "labels": [],
+                "memoryBytes": "138400",
+                "name": "Selection_11",
+                "operatorInfo": "in(Column#3, \"memory\", \"cpu\")",
+                "rootBasicExecInfo": {
+                  "loops": "2",
+                  "time": "1.51s"
+                },
+                "rootGroupExecInfo": [],
+                "storeType": "tidb",
+                "taskType": "root",
+                "__node_attrs": {
+                  "id": "4",
+                  "collapsed": false,
+                  "collapsiable": true,
+                  "isNodeDetailVisible": false,
+                  "nodeFlexSize": {
+                    "width": 280,
+                    "height": 200
+                  }
+                }
+              }
+            ],
+            "copExecInfo": {},
+            "cost": 1772970.6,
+            "diagnosis": [],
+            "diskBytes": "N/A",
+            "duration": "1.51s",
+            "estRows": 8000,
+            "labels": [],
+            "memoryBytes": "48580",
+            "name": "HashAgg_10",
+            "operatorInfo": "group by:Column#1, Column#2, Column#3, Column#4, funcs:json_objectagg(Column#5, Column#6)->Column#7, funcs:firstrow(Column#1)->Column#1, funcs:firstrow(Column#2)->Column#2, funcs:firstrow(Column#3)->Column#3, funcs:firstrow(Column#4)->Column#4",
+            "rootBasicExecInfo": {
+              "loops": "6",
+              "time": "1.51s"
+            },
+            "rootGroupExecInfo": [
+              {
+                "final_worker": {
+                  "concurrency": "5",
+                  "max": "1.513316486s",
+                  "p95": "1.513316486s",
+                  "task_num": "5",
+                  "tot_exec": "223.043µs",
+                  "tot_time": "7.566371614s",
+                  "tot_wait": "7.566142195s",
+                  "wall_time": "1.5133523s"
+                },
+                "partial_worker": {
+                  "concurrency": "5",
+                  "max": "1.513153823s",
+                  "p95": "1.513153823s",
+                  "task_num": "1",
+                  "tot_exec": "149.691µs",
+                  "tot_time": "7.56536502s",
+                  "tot_wait": "7.565194284s",
+                  "wall_time": "1.513240352s"
+                }
+              }
+            ],
+            "storeType": "tidb",
+            "taskType": "root",
+            "__node_attrs": {
+              "id": "3",
+              "collapsed": false,
+              "collapsiable": true,
+              "isNodeDetailVisible": false,
+              "nodeFlexSize": {
+                "width": 280,
+                "height": 200
+              }
+            }
+          }
+        ],
+        "copExecInfo": {},
+        "cost": 1856802.6,
+        "diagnosis": [],
+        "diskBytes": "N/A",
+        "duration": "1.51s",
+        "estRows": 8000,
+        "labels": [],
+        "memoryBytes": "34596",
+        "name": "Projection_9",
+        "operatorInfo": "Column#1, Column#2, Column#3, Column#4, Column#7, field(lower(Column#1), tiflash, tikv, pd, tidb)->Column#8",
+        "rootBasicExecInfo": {
+          "loops": "6",
+          "time": "1.51s"
+        },
+        "rootGroupExecInfo": [
+          {
+            "Concurrency": "5"
+          }
+        ],
+        "storeType": "tidb",
+        "taskType": "root",
+        "__node_attrs": {
+          "id": "2",
+          "collapsed": false,
+          "collapsiable": true,
+          "isNodeDetailVisible": false,
+          "nodeFlexSize": {
+            "width": 280,
+            "height": 200
+          }
+        }
+      }
+    ],
+    "copExecInfo": {},
+    "cost": 7403943.686437106,
+    "diagnosis": [],
+    "diskBytes": "N/A",
+    "duration": "1.51s",
+    "estRows": 8000,
+    "labels": [],
+    "memoryBytes": "18792",
+    "name": "Sort_7",
+    "operatorInfo": "Column#8:desc, Column#2, Column#3, Column#4",
+    "rootBasicExecInfo": {
+      "loops": "2",
+      "time": "1.51s"
+    },
+    "rootGroupExecInfo": [],
+    "storeType": "tidb",
+    "taskType": "root"
+  },
+  "withRuntimeStats": true
+}

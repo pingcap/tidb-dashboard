@@ -6,6 +6,9 @@ user_profile:
       extra: OIDC based SSO is supported
     form:
       client_id: OIDC Client ID
+      client_secret: OIDC Client Secret
+      client_secret_tooltip: Optional, it is needed when using "Client Secret Post" authentication method, and it is only can be seen when setting.
+      scopes: Additional OIDC Scopes (space-separated)
       discovery_url: OIDC Discovery URL
       is_read_only: Sign in as read-only privilege
       user:

@@ -60,7 +60,7 @@ export interface IOverviewDataSource {
 
 export type IOverviewConfig = IContextConfig &
   IMetricConfig & {
-    showViewMoreMetrics: boolean
+    showMetrics: boolean
   }
 
 export interface IOverviewContext {

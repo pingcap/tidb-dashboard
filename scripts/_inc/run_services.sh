@@ -28,7 +28,7 @@ stop_tidb() {
 
 ensure_tidb() {
   i=1
-  while ! grep "CLUSTER START SUCCESSFULLY" $INTEGRATION_LOG_PATH; do
+  while ! grep "TiDB Playground Cluster is started" $INTEGRATION_LOG_PATH; do
     i=$((i+1))
     if [ "$i" -gt 90 ]; then
       echo 'Failed to start TiDB'

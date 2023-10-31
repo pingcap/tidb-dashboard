@@ -34,6 +34,10 @@ export const tabBasicItems = (data: StatementModel) => [
     value: <ValueWithTooltip.Short value={data.exec_count} />
   },
   {
+    key: 'plan_cache_hits',
+    value: <ValueWithTooltip.Short value={data.plan_cache_hits} />
+  },
+  {
     key: 'sum_latency',
     value: getValueFormat('ns')(data.sum_latency || 0, 1)
   },

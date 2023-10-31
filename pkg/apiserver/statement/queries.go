@@ -16,7 +16,7 @@ const (
 	statementsTable = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
 )
 
-var injectChecker = regexp.MustCompile(`\s`)
+var digestInjectChecker = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
 
 func queryStmtTypes(db *gorm.DB) (result []string, err error) {
 	// why should put DISTINCT inside the `Pluck()` method, see here:
@@ -210,7 +210,7 @@ func (s *Service) createPlanBinding(db *gorm.DB, planDigest string) (err error) 
 	// Caution! SQL injection vulnerability!
 	// We have to interpolate sql string here, since plan binding stmt does not support session level prepare.
 	// go-sql-driver can enable interpolation globally. Refer to https://github.com/go-sql-driver/mysql#interpolateparams.
-	if injectChecker.MatchString(planDigest) {
+	if !digestInjectChecker.MatchString(planDigest) {
 		return errors.New("invalid planDigest")
 	}
 

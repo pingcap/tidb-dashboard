@@ -15,6 +15,7 @@ import (
 	"github.com/pingcap/tipb/go-tipb"
 	json "google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/runtime/protoimpl"
+	"gorm.io/gorm"
 )
 
 const (
@@ -505,9 +506,9 @@ func analyzeDurationNode(node *simplejson.Json, concurrency concurrency) (time.D
 
 	// cop task
 	if ts == "" {
-		ts = getCopTaskDuratuon(node, concurrency)
+		ts = getCopTaskDuration(node, concurrency)
 	} else {
-		ts = getOperatorDuratuon(ts, concurrency)
+		ts = getOperatorDuration(ts, concurrency)
 	}
 
 	operator := getOperatorType(node)
@@ -773,11 +774,11 @@ func getConcurrency(node *simplejson.Json, operator operator, concurrency concur
 				}
 
 			case Shuffle:
-				tmpSuffleConcurrencyStr := rootGroupInfo.GetIndex(i).Get("ShuffleConcurrency").MustString()
-				tmpSuffleConcurrency, _ := strconv.Atoi(tmpSuffleConcurrencyStr)
+				tmpShuffleConcurrencyStr := rootGroupInfo.GetIndex(i).Get("ShuffleConcurrency").MustString()
+				tmpShuffleConcurrency, _ := strconv.Atoi(tmpShuffleConcurrencyStr)
 
-				if tmpSuffleConcurrency > 0 {
-					concurrency.shuffleConcurrency = tmpSuffleConcurrency * concurrency.shuffleConcurrency
+				if tmpShuffleConcurrency > 0 {
+					concurrency.shuffleConcurrency = tmpShuffleConcurrency * concurrency.shuffleConcurrency
 				}
 			}
 
@@ -792,7 +793,7 @@ func getConcurrency(node *simplejson.Json, operator operator, concurrency concur
 	return concurrency
 }
 
-func getCopTaskDuratuon(node *simplejson.Json, concurrency concurrency) string {
+func getCopTaskDuration(node *simplejson.Json, concurrency concurrency) string {
 	storeType := node.GetPath(StoreType).MustString()
 	// task == 1
 	ts := node.GetPath(CopExecInfo, fmt.Sprintf("%s_task", storeType), "time").MustString()
@@ -842,7 +843,7 @@ func getCopTaskDuratuon(node *simplejson.Json, concurrency concurrency) string {
 	return ts
 }
 
-func getOperatorDuratuon(ts string, concurrency concurrency) string {
+func getOperatorDuration(ts string, concurrency concurrency) string {
 	t, err := time.ParseDuration(ts)
 	if err != nil {
 		return "0s"
@@ -974,4 +975,18 @@ func formatJSON(s string) (*simplejson.Json, error) {
 	s = strings.ReplaceAll(s, `{""}`, "{}")
 
 	return simplejson.NewJson([]byte(s))
+}
+
+/////////////////
+
+func GenerateBinaryPlanText(db *gorm.DB, b string) (string, error) {
+	type binaryPlanText struct {
+		Text string `gorm:"column:binary_plan_text"`
+	}
+	ret := &binaryPlanText{}
+	err := db.Raw(fmt.Sprintf("select tidb_decode_binary_plan('%s') as binary_plan_text", b)).Find(ret).Error
+	if err != nil {
+		return "", err
+	}
+	return ret.Text, err
 }

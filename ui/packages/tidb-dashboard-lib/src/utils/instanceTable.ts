@@ -8,9 +8,8 @@ import {
   TopologyStoreInfo
 } from '@lib/client'
 
-export type InstanceKind = 'pd' | 'tidb' | 'tikv' | 'tiflash'
-
-export const InstanceKinds: InstanceKind[] = ['pd', 'tidb', 'tikv', 'tiflash']
+export const InstanceKinds = ['pd', 'tidb', 'tikv', 'tiflash', 'ticdc'] as const
+export type InstanceKind = typeof InstanceKinds[number]
 
 export const InstanceStatus = {
   Unreachable: 0,

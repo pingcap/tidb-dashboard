@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Collapse, Space, Input, Empty, Alert } from 'antd'
-import { useTranslation } from 'react-i18next'
-import { TFunction } from 'i18next'
+import { useTranslation, TFunction } from 'react-i18next'
 import { SearchOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'

@@ -6,7 +6,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -84,7 +86,7 @@ func (s *Service) resolveDeployedPromAddress() (string, error) {
 	if pi == nil {
 		return "", nil
 	}
-	return fmt.Sprintf("http://%s:%d", pi.IP, pi.Port), nil
+	return fmt.Sprintf("http://%s", net.JoinHostPort(pi.IP, strconv.Itoa(int(pi.Port)))), nil
 }
 
 // Resolve the final Prometheus address. When user has customized an address, this address is returned. Otherwise,

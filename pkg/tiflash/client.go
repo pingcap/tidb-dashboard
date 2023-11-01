@@ -6,7 +6,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"go.uber.org/fx"
@@ -58,7 +60,7 @@ func (c Client) AddRequestHeader(key, value string) *Client {
 }
 
 func (c *Client) Get(host string, statusPort int, relativeURI string) (*httpc.Response, error) {
-	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
+	uri := fmt.Sprintf("%s://%s%s", c.httpScheme, net.JoinHostPort(host, strconv.Itoa(statusPort)), relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, distro.R().TiFlash)
 }
 
@@ -71,6 +73,6 @@ func (c *Client) SendGetRequest(host string, statusPort int, relativeURI string)
 }
 
 func (c *Client) SendPostRequest(host string, statusPort int, relativeURI string, body io.Reader) ([]byte, error) {
-	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
+	uri := fmt.Sprintf("%s://%s%s", c.httpScheme, net.JoinHostPort(host, strconv.Itoa(statusPort)), relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, distro.R().TiFlash)
 }

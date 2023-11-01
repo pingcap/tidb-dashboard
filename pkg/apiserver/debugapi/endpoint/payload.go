@@ -6,9 +6,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 
 	"go.etcd.io/etcd/clientv3"
 
@@ -192,7 +194,7 @@ func (p *ResolvedRequestPayload) SendRequestAndPipe(
 	}
 	req := httpClient.LR().
 		SetDebugTag("origin:debug_api").
-		SetTLSAwareBaseURL(fmt.Sprintf("http://%s:%d", p.host, p.port)).
+		SetTLSAwareBaseURL(fmt.Sprintf("http://%s", net.JoinHostPort(p.host, strconv.Itoa(p.port)))).
 		SetMethod(p.api.Method).
 		SetURL(p.path).
 		SetQueryParamsFromValues(p.queryValues)

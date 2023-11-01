@@ -3,8 +3,9 @@
 package clusterinfo
 
 import (
-	"fmt"
+	"net"
 	"sort"
+	"strconv"
 
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -83,8 +84,8 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	for _, i := range pdInfo {
 		globalHostsSet[i.IP] = struct{}{}
 		globalVersionsSet[i.Version] = struct{}{}
-		globalInfo.instances[fmt.Sprintf("%s:%d", i.IP, i.Port)] = struct{}{}
-		infoByIk["pd"].instances[fmt.Sprintf("%s:%d", i.IP, i.Port)] = struct{}{}
+		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+		infoByIk["pd"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
 	}
 	tikvInfo, tiFlashInfo, err := topology.FetchStoreTopology(s.params.PDClient)
 	if err != nil {
@@ -93,14 +94,14 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	for _, i := range tikvInfo {
 		globalHostsSet[i.IP] = struct{}{}
 		globalVersionsSet[i.Version] = struct{}{}
-		globalInfo.instances[fmt.Sprintf("%s:%d", i.IP, i.Port)] = struct{}{}
-		infoByIk["tikv"].instances[fmt.Sprintf("%s:%d", i.IP, i.Port)] = struct{}{}
+		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+		infoByIk["tikv"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
 	}
 	for _, i := range tiFlashInfo {
 		globalHostsSet[i.IP] = struct{}{}
 		globalVersionsSet[i.Version] = struct{}{}
-		globalInfo.instances[fmt.Sprintf("%s:%d", i.IP, i.Port)] = struct{}{}
-		infoByIk["tiflash"].instances[fmt.Sprintf("%s:%d", i.IP, i.Port)] = struct{}{}
+		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+		infoByIk["tiflash"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
 	}
 	tidbInfo, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
@@ -109,8 +110,8 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	for _, i := range tidbInfo {
 		globalHostsSet[i.IP] = struct{}{}
 		globalVersionsSet[i.Version] = struct{}{}
-		globalInfo.instances[fmt.Sprintf("%s:%d", i.IP, i.Port)] = struct{}{}
-		infoByIk["tidb"].instances[fmt.Sprintf("%s:%d", i.IP, i.Port)] = struct{}{}
+		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+		infoByIk["tidb"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
 	}
 
 	// Fill from hardware info

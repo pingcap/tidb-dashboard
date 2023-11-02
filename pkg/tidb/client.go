@@ -34,7 +34,8 @@ var (
 )
 
 const (
-	defaultTiDBStatusAPITimeout = time.Second * 10
+	defaultTiDBStatusAPITimeout      = time.Second * 10
+	defaultTiDBSQLExecutionTimeoutMs = 600000 // 600s
 
 	// When this environment variable is set, SQL requests will be always sent to this specific TiDB instance.
 	// Calling `WithSQLAPIAddress` to enforce a SQL request endpoint will fail when opening the connection.
@@ -158,6 +159,11 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 		}
 		log.Warn(fmt.Sprintf("Unknown error occurred while opening %s connection", distro.R().TiDB), zap.Error(err))
 		return nil, err
+	}
+
+	if err := db.Exec(fmt.Sprintf("SET SESSION max_execution_time = '%d'", defaultTiDBSQLExecutionTimeoutMs)).Error; err != nil {
+		log.Error("Failed to set max_execution_time", zap.Error(err))
+		return nil, ErrTiDBClientRequestFailed.Wrap(err, "failed to set max_execution_time")
 	}
 
 	return db, nil

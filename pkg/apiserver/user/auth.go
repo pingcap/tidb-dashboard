@@ -37,7 +37,7 @@ type AuthService struct {
 	middleware     *jwt.GinJWTMiddleware
 	authenticators map[utils.AuthType]Authenticator
 
-	RsaPublicKey  *rsa.PublicKey
+	rsaPublicKey  *rsa.PublicKey
 	RsaPrivateKey *rsa.PrivateKey
 }
 
@@ -104,7 +104,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 		middleware:              nil,
 		authenticators:          map[utils.AuthType]Authenticator{},
 		RsaPrivateKey:           privateKey,
-		RsaPublicKey:            publicKey,
+		rsaPublicKey:            publicKey,
 	}
 
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
@@ -122,16 +122,6 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 			if err != nil {
 				return nil, errorx.Decorate(err, "authenticate failed")
 			}
-			// TODO: uncomment it after thinking clearly
-			// if form.Type == 0 {
-			// 	// generate new rsa key pair for each sql auth login
-			// 	privateKey, publicKey, err := GenerateKey()
-			// 	// if generate successfully, replace the old key pair
-			// 	if err == nil {
-			// 		service.RsaPrivateKey = privateKey
-			// 		service.RsaPublicKey = publicKey
-			// 	}
-			// }
 			return u, nil
 		},
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
@@ -322,7 +312,7 @@ func (s *AuthService) GetLoginInfoHandler(c *gin.Context) {
 	sort.Ints(supportedAuth)
 	// both work
 	// publicKeyStr, err := ExportPublicKeyAsString(s.rsaPublicKey)
-	publicKeyStr, err := DumpPublicKeyBase64(s.RsaPublicKey)
+	publicKeyStr, err := DumpPublicKeyBase64(s.rsaPublicKey)
 	if err != nil {
 		rest.Error(c, err)
 		return

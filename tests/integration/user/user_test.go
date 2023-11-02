@@ -93,8 +93,7 @@ func (s *testUserSuite) TestLoginWithNotExistUser() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "not_exist"
-	pwd, _ := user.Encrypt("aaa", s.authService.RsaPublicKey)
-	param["password"] = pwd
+	param["password"] = "aaa"
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -110,8 +109,7 @@ func (s *testUserSuite) TestLoginWithWrongPassword() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "dashboardAdmin"
-	pwd, _ := user.Encrypt("123456789", s.authService.RsaPublicKey)
-	param["password"] = pwd
+	param["password"] = "123456789"
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -127,8 +125,7 @@ func (s *testUserSuite) TestLoginWithInsufficientPrivs() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "dashboardAdmin-2"
-	pwd, _ := user.Encrypt("12345678", s.authService.RsaPublicKey)
-	param["password"] = pwd
+	param["password"] = "12345678"
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -145,8 +142,7 @@ func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 		param := make(map[string]interface{})
 		param["type"] = 0
 		param["username"] = "dashboardAdmin"
-		pwd, _ := user.Encrypt("12345678", s.authService.RsaPublicKey)
-		param["password"] = pwd
+		param["password"] = "12345678"
 
 		jsonByte, _ := json.Marshal(param)
 		req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -181,8 +177,7 @@ func (s *testUserSuite) TestLoginWithWrongPasswordForRoot() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "root"
-	pwd, _ := user.Encrypt("aaa", s.authService.RsaPublicKey)
-	param["password"] = pwd
+	param["password"] = "aaa"
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -198,8 +193,7 @@ func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "root"
-	pwd, _ := user.Encrypt("", s.authService.RsaPublicKey)
-	param["password"] = pwd
+	param["password"] = ""
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
@@ -215,33 +209,6 @@ func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
 	err := json.Unmarshal(w.Body.Bytes(), &res)
 	s.Require().Nil(err)
 }
-
-// TODO: uncomment it after thinking clearly
-// func (s *testUserSuite) TestLoginWithSamePayloadTwice() {
-// 	param := make(map[string]interface{})
-// 	param["type"] = 0
-// 	param["username"] = "root"
-// 	pwd, _ := user.Encrypt("", s.authService.RsaPublicKey)
-// 	param["password"] = pwd
-
-// 	// success at the first time
-// 	jsonByte, _ := json.Marshal(param)
-// 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
-// 	c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
-
-// 	s.Require().Len(c.Errors, 0)
-// 	s.Require().Equal(200, c.Writer.Status())
-// 	s.Require().Equal(200, w.Code)
-
-// 	// fail at the second time
-// 	req, _ = http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))
-// 	c, w = util.TestReqWithHandlers(req, s.authService.LoginHandler)
-
-// 	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
-// 	s.Require().Contains(c.Errors.Last().Err.Error(), "crypto/rsa: decryption error")
-// 	s.Require().Equal(401, c.Writer.Status())
-// 	s.Require().Equal(401, w.Code)
-// }
 
 func (s *testUserSuite) TestLoginInfo() {
 	req, _ := http.NewRequest(http.MethodGet, "/user/login_info", nil)

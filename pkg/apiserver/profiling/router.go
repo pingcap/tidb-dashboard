@@ -432,9 +432,14 @@ func (s *Service) viewSingle(c *gin.Context) {
 		// call jeprof to convert svg
 		switch outputType {
 		case string(ViewOutputTypeGraph):
-			cmd := exec.Command("perl", "/dev/stdin", "--svg", task.FilePath) //nolint:gosec
+			cmd := exec.Command("perl", "/dev/stdin", "--dot", task.FilePath) //nolint:gosec
 			cmd.Stdin = strings.NewReader(jeprof)
-			svgContent, err := cmd.Output()
+			dotContent, err := cmd.Output()
+			if err != nil {
+				rest.Error(c, err)
+				return
+			}
+			svgContent, err := convertDotToSVG(dotContent)
 			if err != nil {
 				rest.Error(c, err)
 				return

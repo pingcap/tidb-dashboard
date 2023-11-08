@@ -241,6 +241,12 @@ export interface ConfigSSOCoreConfig {
      * @type {string}
      * @memberof ConfigSSOCoreConfig
      */
+    'client_secret'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConfigSSOCoreConfig
+     */
     'discovery_url'?: string;
     /**
      * 
@@ -254,6 +260,12 @@ export interface ConfigSSOCoreConfig {
      * @memberof ConfigSSOCoreConfig
      */
     'is_read_only'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConfigSSOCoreConfig
+     */
+    'scopes'?: string;
 }
 
 
@@ -3170,6 +3182,12 @@ export interface StatementModel {
     'plan'?: string;
     /**
      * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'plan_cache_hits'?: number;
+    /**
+     * 
      * @type {boolean}
      * @memberof StatementModel
      */
@@ -3809,6 +3827,12 @@ export interface UserAuthenticateForm {
  * @interface UserGetLoginInfoResponse
  */
 export interface UserGetLoginInfoResponse {
+    /**
+     * 
+     * @type {string}
+     * @memberof UserGetLoginInfoResponse
+     */
+    'sql_auth_public_key'?: string;
     /**
      * 
      * @type {Array<number>}

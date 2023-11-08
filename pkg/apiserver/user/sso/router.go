@@ -111,6 +111,8 @@ func (s *Service) getConfig(c *gin.Context) {
 		rest.Error(c, err)
 		return
 	}
+	// Hide client secret for security
+	dc.SSO.CoreConfig.ClientSecret = ""
 	c.JSON(http.StatusOK, dc.SSO.CoreConfig)
 }
 

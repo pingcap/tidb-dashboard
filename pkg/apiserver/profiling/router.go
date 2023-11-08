@@ -8,8 +8,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -340,9 +342,11 @@ func writeZipFromFile(zw *zip.Writer, file string, compress bool) error {
 
 func zipREADME(zw *zip.Writer) error {
 	const downloadREADME = `
-To review the CPU profiling or heap profiling result interactively:
-
+To review the CPU profiling or go heap profiling result interactively:
 $ go tool pprof --http=0.0.0.0:1234 cpu_xxx.proto
+
+To review the jemalloc profile data whose file name suffix is '.prof' interactively:
+$ jeprof --web profile_xxx.prof
 `
 	zipFile, err := zw.CreateHeader(&zip.FileHeader{
 		Name:     "README.md",
@@ -422,6 +426,40 @@ func (s *Service) viewSingle(c *gin.Context) {
 		default:
 			// Will not handle converting protobuf to other formats except flamegraph and graph
 			rest.Error(c, rest.ErrBadRequest.New("Cannot output protobuf as %s", outputType))
+			return
+		}
+	} else if task.RawDataType == RawDataTypeJeprof {
+		// call jeprof to convert svg
+		switch outputType {
+		case string(ViewOutputTypeGraph):
+			cmd := exec.Command("perl", "/dev/stdin", "--dot", task.FilePath) //nolint:gosec
+			cmd.Stdin = strings.NewReader(jeprof)
+			dotContent, err := cmd.Output()
+			if err != nil {
+				rest.Error(c, err)
+				return
+			}
+			svgContent, err := convertDotToSVG(dotContent)
+			if err != nil {
+				rest.Error(c, err)
+				return
+			}
+			content = svgContent
+			contentType = "image/svg+xml"
+		case string(ViewOutputTypeText):
+			// Brendan Gregg's collapsed stack format
+			cmd := exec.Command("perl", "/dev/stdin", "--collapsed", task.FilePath) //nolint:gosec
+			cmd.Stdin = strings.NewReader(jeprof)
+			textContent, err := cmd.Output()
+			if err != nil {
+				rest.Error(c, err)
+				return
+			}
+			content = textContent
+			contentType = "text/plain"
+		default:
+			// Will not handle converting jeprof raw data to other formats except flamegraph and graph
+			rest.Error(c, rest.ErrBadRequest.New("Cannot output jeprof raw data as %s", outputType))
 			return
 		}
 	} else if task.RawDataType == RawDataTypeText {

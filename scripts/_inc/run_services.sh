@@ -10,7 +10,7 @@ PROJECT_DIR="$(dirname "$0")/.."
 BIN="${PROJECT_DIR}/bin"
 
 start_tidb() {
-  echo "+ Waiting for TiDB start, for at most 10 min..."
+  echo "+ Waiting for TiDB start, for at most 15 min..."
 
   rm -rf $INTEGRATION_LOG_PATH
   TIDB_VERSION=${1:-latest}
@@ -30,7 +30,7 @@ ensure_tidb() {
   i=1
   while ! grep "TiDB Playground Cluster is started" $INTEGRATION_LOG_PATH; do
     i=$((i+1))
-    if [ "$i" -gt 60 ]; then
+    if [ "$i" -gt 90 ]; then
       echo 'Failed to start TiDB'
       return 1
     fi

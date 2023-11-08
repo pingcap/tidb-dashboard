@@ -77,7 +77,12 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
       if (!routing.isLocationMatch('/') && !routing.isSignInPage()) {
         message.error({ content, key: errCode ?? '401' })
       }
-      window.location.href = window.location.origin
+      // Remember the current url before redirecting to login page,
+      // to support redirect back after login.
+      localStorage.setItem('clinic.login.from', window.location.href)
+      setTimeout(() => {
+        window.location.href = window.location.origin
+      }, 2000)
       err.handled = true
     } else if (handleError === 'default') {
       if (method === 'get') {

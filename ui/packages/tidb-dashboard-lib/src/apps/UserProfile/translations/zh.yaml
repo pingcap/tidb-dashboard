@@ -6,6 +6,9 @@ user_profile:
       extra: 支持基于 OIDC 的 SSO 登录
     form:
       client_id: OIDC Client ID
+      client_secret: OIDC Client Secret
+      client_secret_tooltip: 可选，使用 "Client Secret Post" 认证方法时需要，且仅在设置时可见。
+      scopes: 附加 OIDC Scope（空格分隔）
       discovery_url: OIDC Discovery URL
       is_read_only: 以只读权限登录
       user:

@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -85,8 +86,8 @@ func (f *Forwarder) pollingForTiDB() {
 			tidbEndpoints := make(map[string]struct{}, len(allTiDB))
 			for _, server := range allTiDB {
 				if server.Status == topology.ComponentStatusUp {
-					tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
-					statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
+					tidbEndpoints[net.JoinHostPort(server.IP, strconv.Itoa(int(server.Port)))] = struct{}{}
+					statusEndpoints[net.JoinHostPort(server.IP, strconv.Itoa(int(server.StatusPort)))] = struct{}{}
 				}
 			}
 			f.sqlProxy.updateRemotes(tidbEndpoints)

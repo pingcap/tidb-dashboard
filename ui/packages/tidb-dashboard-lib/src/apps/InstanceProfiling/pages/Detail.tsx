@@ -34,6 +34,7 @@ enum taskState {
 
 enum RawDataType {
   Protobuf = 'protobuf',
+  Jeprof = 'jeprof',
   Text = 'text'
 }
 
@@ -62,6 +63,12 @@ function mapData(data) {
 
     // set profiling output options for previous generated SVG files and protobuf files.
     if (task.raw_data_type === RawDataType.Protobuf) {
+      task.view_options = [
+        ViewOptions.FlameGraph,
+        ViewOptions.Graph,
+        ViewOptions.Download
+      ]
+    } else if (task.raw_data_type === RawDataType.Jeprof) {
       task.view_options = [
         ViewOptions.FlameGraph,
         ViewOptions.Graph,
@@ -159,7 +166,6 @@ export default function Page() {
   }, [data])
 
   const openResult = useMemoizedFn(async (openAs: string, rec: IRecord) => {
-    const isProtobuf = rec.raw_data_type === RawDataType.Protobuf
     let token: string | undefined
     let profileURL: string
 
@@ -190,15 +196,15 @@ export default function Page() {
         profileURL = `${
           ctx!.cfg.apiPathBase
         }/profiling/single/view?token=${token}`
-        if (isProtobuf) {
-          const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
-          profileURL = `${
-            ctx!.cfg.publicPathBase
-          }/speedscope/#profileURL=${encodeURIComponent(
-            // protobuf can be rendered to flamegraph by speedscope
-            profileURL + `&output_type=protobuf`
-          )}&title=${titleOnTab}`
-        }
+        const titleOnTab = rec.target?.kind + '_' + rec.target?.display_name
+        const type =
+          rec.raw_data_type === RawDataType.Protobuf ? 'protobuf' : 'text'
+        profileURL = `${
+          ctx!.cfg.publicPathBase
+        }/speedscope/#profileURL=${encodeURIComponent(
+          // protobuf can be rendered to flamegraph by speedscope
+          profileURL + `&output_type=${type}`
+        )}&title=${titleOnTab}`
 
         window.open(`${profileURL}`, '_blank')
         break

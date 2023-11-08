@@ -96,7 +96,8 @@ func (s *testInfoSuite) getTokenBySQLRoot() string {
 	param := make(map[string]interface{})
 	param["type"] = 0
 	param["username"] = "root"
-	param["password"] = ""
+	pwd, _ := user.Encrypt("", s.authService.RsaPublicKey)
+	param["password"] = pwd
 
 	jsonByte, _ := json.Marshal(param)
 	req, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewReader(jsonByte))

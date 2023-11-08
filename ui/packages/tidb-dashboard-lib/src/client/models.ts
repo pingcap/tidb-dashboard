@@ -3811,6 +3811,12 @@ export interface UserAuthenticateForm {
 export interface UserGetLoginInfoResponse {
     /**
      * 
+     * @type {string}
+     * @memberof UserGetLoginInfoResponse
+     */
+    'sql_auth_public_key'?: string;
+    /**
+     * 
      * @type {Array<number>}
      * @memberof UserGetLoginInfoResponse
      */

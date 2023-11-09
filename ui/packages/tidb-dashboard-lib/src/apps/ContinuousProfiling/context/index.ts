@@ -58,9 +58,20 @@ export interface IConProfilingDataSource {
   getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
 }
 
+export interface IConProfilingConfig extends IContextConfig {
+  publicPathBase: string
+
+  checkNgm?: boolean // default value is true
+  showSetting?: boolean // default value is true
+  enableDownloadGroup?: boolean // default value is true
+  enableDotGraph?: boolean // default value is true
+  enablePreviewGoroutine?: boolean // default value is true
+  listDuration?: number // unit hour, 1 means 1 hour, 2 means 2 hours, default value is 2 hours
+}
+
 export interface IConProfilingContext {
   ds: IConProfilingDataSource
-  cfg: IContextConfig & { publicPathBase: string }
+  cfg: IConProfilingConfig
 }
 
 export const ConProfilingContext = createContext<IConProfilingContext | null>(

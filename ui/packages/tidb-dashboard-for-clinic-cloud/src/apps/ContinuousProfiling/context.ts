@@ -1,7 +1,8 @@
 import {
   IConProfilingDataSource,
   IConProfilingContext,
-  ReqConfig
+  ReqConfig,
+  IConProfilingConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, { ConprofNgMonitoringConfig } from '~/client'
@@ -84,7 +85,13 @@ class DataSource implements IConProfilingDataSource {
 
 const ds = new DataSource()
 
-export const ctx: IConProfilingContext = {
+export const ctx: (
+  cfg: Partial<IConProfilingConfig>
+) => IConProfilingContext = (cfg) => ({
   ds,
-  cfg: { apiPathBase: client.getBasePath(), publicPathBase }
-}
+  cfg: {
+    apiPathBase: client.getBasePath(),
+    publicPathBase,
+    ...cfg
+  }
+})

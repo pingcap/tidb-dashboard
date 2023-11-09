@@ -1,4 +1,5 @@
 import {
+  IConProfilingConfig,
   IOverviewConfig,
   ISlowQueryConfig,
   IStatementConfig,
@@ -45,6 +46,7 @@ export type AppsConfig = {
   slowQuery?: Partial<ISlowQueryConfig>
   statement?: Partial<IStatementConfig>
   topSQL?: Partial<ITopSQLConfig>
+  conProf?: Partial<IConProfilingConfig>
 }
 
 export type GlobalConfig = {

@@ -16,8 +16,12 @@ import { telemetry } from '../utils/telemetry'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { ConProfilingContext } from '../context'
 
-const COMMON_ACTIONS: string[] = ['view_flamegraph', 'view_graph', 'download']
-const TEXT_ACTIONS: string[] = ['view_text']
+enum Action {
+  VIEW_FLAMEGRAPH = 'view_flamegraph',
+  VIEW_GRAPH = 'view_graph',
+  VIEW_TEXT = 'view_text',
+  DOWNLOAD = 'download'
+}
 
 const profileTypeSortOrder: { [key: string]: number } = {
   profile: 1,
@@ -28,6 +32,10 @@ const profileTypeSortOrder: { [key: string]: number } = {
 
 export default function Page() {
   const ctx = useContext(ConProfilingContext)
+
+  const enableDownloadGroup = ctx?.cfg.enableDownloadGroup ?? true
+  const enableDotGraph = ctx?.cfg.enableDotGraph ?? true
+  const enablePreviewGoroutine = ctx?.cfg.enablePreviewGoroutine ?? true
 
   const { t } = useTranslation()
   const { ts } = useQueryParams()
@@ -86,28 +94,28 @@ export default function Page() {
       let dataFormat = ''
       if (component === 'tikv' && profile_type === 'heap') {
         switch (action) {
-          case 'view_flamegraph':
+          case Action.VIEW_FLAMEGRAPH:
             // tikv heap flamegraph uses Brendan Gregg's collapsed stack format which is text based
             dataFormat = 'text'
             break
-          case 'view_graph':
+          case Action.VIEW_GRAPH:
             dataFormat = 'svg'
             break
-          case 'download':
+          case Action.DOWNLOAD:
             dataFormat = 'jeprof'
             break
           default:
         }
       } else {
         switch (action) {
-          case 'view_graph':
+          case Action.VIEW_GRAPH:
             dataFormat = 'svg'
             break
-          case 'view_text':
+          case Action.VIEW_TEXT:
             dataFormat = 'text'
             break
-          case 'view_flamegraph':
-          case 'download':
+          case Action.VIEW_FLAMEGRAPH:
+          case Action.DOWNLOAD:
             dataFormat = 'protobuf'
             break
           default:
@@ -127,7 +135,7 @@ export default function Page() {
         component: component!
       })
 
-      if (action === 'view_graph' || action === 'view_text') {
+      if (action === Action.VIEW_GRAPH || action === Action.VIEW_TEXT) {
         const profileURL = `${
           ctx!.cfg.apiPathBase
         }/continuous_profiling/single_profile/view?token=${token}`
@@ -135,7 +143,7 @@ export default function Page() {
         return
       }
 
-      if (action === 'view_flamegraph') {
+      if (action === Action.VIEW_FLAMEGRAPH) {
         // view flamegraph by speedscope
         const speedscopeTitle = `${rec.target?.component}_${rec.target?.address}_${rec.profile_type}`
         const profileURL = `${
@@ -150,7 +158,7 @@ export default function Page() {
         return
       }
 
-      if (action === 'download') {
+      if (action === Action.DOWNLOAD) {
         window.location.href = `${
           ctx!.cfg.apiPathBase
         }/continuous_profiling/download?token=${token}`
@@ -247,9 +255,23 @@ export default function Page() {
           }
 
           const rec = record as ConprofProfileDetail
-          let actionsKey = TEXT_ACTIONS
-          if (rec.profile_type !== 'goroutine') {
-            actionsKey = COMMON_ACTIONS
+          let actionsKey: string[] = []
+          if (rec.profile_type === 'goroutine') {
+            if (enablePreviewGoroutine) {
+              actionsKey = [Action.VIEW_TEXT]
+            } else {
+              actionsKey = [Action.DOWNLOAD]
+            }
+          } else {
+            if (enableDotGraph) {
+              actionsKey = [
+                Action.VIEW_FLAMEGRAPH,
+                Action.VIEW_GRAPH,
+                Action.DOWNLOAD
+              ]
+            } else {
+              actionsKey = [Action.VIEW_FLAMEGRAPH, Action.DOWNLOAD]
+            }
           }
 
           return (
@@ -279,9 +301,11 @@ export default function Page() {
           </Link>
         }
         titleExtra={
-          <Button type="primary" onClick={handleDownloadGroup}>
-            {t('conprof.detail.download')}
-          </Button>
+          enableDownloadGroup && (
+            <Button type="primary" onClick={handleDownloadGroup}>
+              {t('conprof.detail.download')}
+            </Button>
+          )
         }
       />
       <div style={{ height: '100%', position: 'relative' }}>

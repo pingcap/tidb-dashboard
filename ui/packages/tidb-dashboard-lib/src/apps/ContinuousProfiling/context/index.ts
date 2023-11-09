@@ -61,7 +61,12 @@ export interface IConProfilingDataSource {
 export interface IConProfilingConfig extends IContextConfig {
   publicPathBase: string
   checkNgm: boolean
+
   showSetting: boolean
+  enableDownloadGroup?: boolean // default value is true
+  enableDotGraph?: boolean // default value is true
+  enablePreviewGoroutine?: boolean // default value is true
+
   listDuration?: number // unit hour, 1 means 1 hour, 2 means 2 hours
 }
 

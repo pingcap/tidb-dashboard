@@ -14,13 +14,14 @@ addTranslations(translations)
 function AppRoutes() {
   useLocationChange()
   const ctx = useContext(ConProfilingContext)
+  const checkNgm = ctx?.cfg.checkNgm ?? true
 
   return (
     <Routes>
       <Route
         path="/continuous_profiling"
         element={
-          ctx?.cfg.checkNgm ? (
+          checkNgm ? (
             <NgmNotStartedGuard>
               <List />
             </NgmNotStartedGuard>
@@ -32,7 +33,7 @@ function AppRoutes() {
       <Route
         path="/continuous_profiling/detail"
         element={
-          ctx?.cfg.checkNgm ? (
+          checkNgm ? (
             <NgmNotStartedGuard>
               <ParamsPageWrapper>
                 <Detail />

@@ -197,7 +197,7 @@ export default function Page() {
         maxWidth: 100,
         onRender: (record) => {
           const profileType = record.profile_type
-          // in the ngm, the `profile` is `cpu`
+          // in the cloud ngm, the `profile` is `cpu`
           if (profileType === 'profile' || profileType === 'cpu') {
             return `CPU - ${profileDuration}s`
           }

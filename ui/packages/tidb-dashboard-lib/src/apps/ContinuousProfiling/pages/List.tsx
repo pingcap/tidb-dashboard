@@ -37,6 +37,7 @@ import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 
 export default function Page() {
   const ctx = useContext(ConProfilingContext)
+  const showSetting = ctx?.cfg.showSetting ?? true
   const durationHour = ctx?.cfg.listDuration ?? 2
 
   const { timeRange, setTimeRange } = useURLTimeRange()
@@ -257,7 +258,7 @@ export default function Page() {
                 <ReloadOutlined onClick={refresh} />
               )}
             </Tooltip>
-            {ctx?.cfg.showSetting && (
+            {showSetting && (
               <Tooltip
                 mouseEnterDelay={0}
                 mouseLeaveDelay={0}

@@ -92,8 +92,6 @@ export const ctx: (
   cfg: {
     apiPathBase: client.getBasePath(),
     publicPathBase,
-    checkNgm: true,
-    showSetting: true,
     ...cfg
   }
 })

@@ -34,6 +34,15 @@ DOCKERFILE ?= ./dockerfiles/alpine316.Dockerfile
 # If you want to build with no cache (after update go module, npm module, etc.), set "NO_CACHE=--pull --no-cache".
 NO_CACHE ?=
 
+BUILD_GOEXPERIMENT ?=
+BUILD_CGO_ENABLED ?=
+ifeq ("${ENABLE_FIPS}", "1")
+	RELEASE_VERSION := $(RELEASE_VERSION)-fips
+	BUILD_TAGS += boringcrypto
+	BUILD_GOEXPERIMENT = GOEXPERIMENT=boringcrypto
+	BUILD_CGO_ENABLED = CGO_ENABLED=1
+endif
+
 default: server
 
 .PHONY: clean
@@ -125,7 +134,7 @@ server: install_tools go_generate
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif
-	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
+	$(BUILD_GOEXPERIMENT) $(BUILD_CGO_ENABLED) go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
 .PHONY: embed_ui_assets
 embed_ui_assets: ui

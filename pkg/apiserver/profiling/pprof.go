@@ -54,7 +54,7 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, 
 			fileExtenstion = "*.proto"
 		}
 	case ProfilingTypeGoroutine:
-		url = "/debug/pprof/goroutine?debug=2"
+		url = "/debug/pprof/goroutine?debug=1"
 		profilingRawDataType = RawDataTypeText
 		fileExtenstion = "*.txt"
 	case ProfilingTypeMutex:

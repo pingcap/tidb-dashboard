@@ -54,6 +54,7 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, 
 			fileExtenstion = "*.proto"
 		}
 	case ProfilingTypeGoroutine:
+		// debug=2 causes STW when collecting the stacks. See https://github.com/pingcap/tidb/issues/48695.
 		url = "/debug/pprof/goroutine?debug=1"
 		profilingRawDataType = RawDataTypeText
 		fileExtenstion = "*.txt"

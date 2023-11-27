@@ -24,6 +24,9 @@ func enableDebugLog() {
 func TestMain(m *testing.M) {
 	enableDebugLog()
 	gin.SetMode(gin.TestMode)
-	goleak.VerifyTestMain(m)
+	opts := []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/ReneKroon/ttlcache/v2.(*Cache).startExpirationProcessing"),
+	}
+	goleak.VerifyTestMain(m, opts...)
 	runtime.GC()
 }

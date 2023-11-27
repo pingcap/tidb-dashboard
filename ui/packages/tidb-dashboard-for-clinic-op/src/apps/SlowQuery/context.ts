@@ -27,7 +27,7 @@ class DataSource implements ISlowQueryDataSource {
       statusText: 'ok',
       headers: {},
       config: {}
-    })
+    } as any)
   }
 
   slowQueryAvailableFieldsGet(options?: ReqConfig) {
@@ -38,7 +38,7 @@ class DataSource implements ISlowQueryDataSource {
       statusText: 'ok',
       headers: {},
       config: {}
-    })
+    } as any)
   }
 
   slowQueryListGet(

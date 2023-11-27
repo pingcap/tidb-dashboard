@@ -64,7 +64,7 @@ class DataSource implements ISlowQueryDataSource {
         statusText: 'ok',
         headers: {},
         config: {}
-      })
+      } as any)
     } else {
       return client.getInstance().slowQueryDetailGet(
         {

@@ -76,6 +76,10 @@ export interface ISlowQueryConfig extends IContextConfig {
     recentSeconds: number[]
     customAbsoluteRangePicker: boolean
   }
+
+  // for clinic
+  orgName?: string
+  clusterName?: string
 }
 
 export interface ISlowQueryContext {

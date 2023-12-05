@@ -167,14 +167,27 @@
           slowQuery: {
             enableExport: false,
             showDBFilter: false,
-            listApiReturnDetail: false // so we can use the result returned by list api in the detail page, avoid reqeust detail api
+            listApiReturnDetail: false, // so we can use the result returned by list api in the detail page, avoid request detail api
+
+            orgName,
+            clusterName,
+            timeRangeSelector: {
+              recentSeconds: [
+                5 * 60,
+                15 * 60,
+                30 * 60,
+                60 * 60,
+                2 * 60 * 60,
+                3 * 60 * 60
+              ],
+              customAbsoluteRangePicker: true
+            }
           },
           topSQL: {
             checkNgm: false,
             showSetting: false,
             orgName,
             clusterName,
-            userName,
 
             timeRangeSelector: {
               recentSeconds: [

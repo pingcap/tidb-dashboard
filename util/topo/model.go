@@ -20,6 +20,7 @@ const (
 	KindTiKV         Kind = "tikv"
 	KindPD           Kind = "pd"
 	KindTiFlash      Kind = "tiflash"
+	KindTiCDC        Kind = "ticdc"
 	KindAlertManager Kind = "alert_manager"
 	KindGrafana      Kind = "grafana"
 	KindPrometheus   Kind = "prometheus"
@@ -116,6 +117,33 @@ func (i *TiFlashStoreInfo) Info() CompInfo {
 			Port:       i.Port,
 			StatusPort: i.StatusPort,
 			Kind:       KindTiFlash,
+		},
+		Version: i.Version,
+		Status:  i.Status,
+	}
+}
+
+type TiCDCInfo struct {
+	ClusterName    string
+	GitHash        string
+	Version        string
+	IP             string
+	Port           uint
+	DeployPath     string
+	Status         CompStatus
+	StatusPort     uint
+	StartTimestamp int64
+}
+
+var _ Info = &TiCDCInfo{}
+
+func (i *TiCDCInfo) Info() CompInfo {
+	return CompInfo{
+		CompDescriptor: CompDescriptor{
+			IP:         i.IP,
+			Port:       i.Port,
+			StatusPort: i.StatusPort,
+			Kind:       KindTiCDC,
 		},
 		Version: i.Version,
 		Status:  i.Status,

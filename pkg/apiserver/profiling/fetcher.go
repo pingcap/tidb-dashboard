@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -14,6 +15,7 @@ import (
 
 	"go.uber.org/fx"
 
+	"github.com/pingcap/log"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
@@ -79,7 +81,7 @@ func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 		cmd := exec.Command("perl", "/dev/stdin", "--raw", scheme+"://"+op.ip+":"+strconv.Itoa(op.port)+op.path) //nolint:gosec
 		cmd.Stdin = strings.NewReader(jeprof)
 		if f.client.GetTLSInfo() != nil {
-			cmd.Env = append(cmd.Env,
+			cmd.Env = append(os.Environ(),
 				fmt.Sprintf(
 					"URL_FETCHER=\"curl -s --cert %s --key %s --cacert %s\"",
 					f.client.GetTLSInfo().CertFile,
@@ -87,6 +89,7 @@ func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 					f.client.GetTLSInfo().TrustedCAFile,
 				),
 			)
+			log.Info(fmt.Sprintf("fetch tikv heap profile with TLS %v", cmd.Env))
 		}
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {

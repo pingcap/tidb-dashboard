@@ -43,6 +43,7 @@ func Default() *Config {
 		PDEndPoint:         "http://127.0.0.1:2379",
 		PublicPathPrefix:   defaultPublicPathPrefix,
 		ClusterTLSConfig:   nil,
+		ClusterTLSInfo: 	nil,	
 		TiDBTLSConfig:      nil,
 		EnableTelemetry:    false,
 		EnableExperimental: false,

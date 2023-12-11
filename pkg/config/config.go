@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	"go.etcd.io/etcd/pkg/transport"
 )
 
 const (
@@ -24,8 +25,9 @@ type Config struct {
 	PDEndPoint       string
 	PublicPathPrefix string
 
-	ClusterTLSConfig *tls.Config // TLS config for mTLS authentication between TiDB components.
-	TiDBTLSConfig    *tls.Config // TLS config for mTLS authentication between TiDB and MySQL client.
+	ClusterTLSConfig *tls.Config        // TLS config for mTLS authentication between TiDB components.
+	ClusterTLSInfo   *transport.TLSInfo // TLS info for mTLS authentication between TiDB components.
+	TiDBTLSConfig    *tls.Config        // TLS config for mTLS authentication between TiDB and MySQL client.
 
 	EnableTelemetry    bool
 	EnableExperimental bool

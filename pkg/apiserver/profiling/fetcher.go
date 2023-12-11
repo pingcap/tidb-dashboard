@@ -75,8 +75,19 @@ var jeprof string
 
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	if strings.HasSuffix(op.path, "heap") {
-		cmd := exec.Command("perl", "/dev/stdin", "--raw", "http://"+op.ip+":"+strconv.Itoa(op.port)+op.path) //nolint:gosec
+		scheme := f.client.GetHTTPScheme()
+		cmd := exec.Command("perl", "/dev/stdin", "--raw", scheme+"://"+op.ip+":"+strconv.Itoa(op.port)+op.path) //nolint:gosec
 		cmd.Stdin = strings.NewReader(jeprof)
+		if f.client.GetTLSInfo() != nil {
+			cmd.Env = append(cmd.Env,
+				fmt.Sprintf(
+					"URL_FETCHER=\"curl -s --cert %s --key %s --cacert %s\"",
+					f.client.GetTLSInfo().CertFile,
+					f.client.GetTLSInfo().KeyFile,
+					f.client.GetTLSInfo().TrustedCAFile,
+				),
+			)
+		}
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			return nil, err

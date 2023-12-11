@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -29,6 +30,7 @@ type Client struct {
 	httpScheme   string
 	lifecycleCtx context.Context
 	timeout      time.Duration
+	tlsInfo      *transport.TLSInfo
 }
 
 func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
@@ -37,6 +39,7 @@ func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Con
 		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
 		timeout:      defaultTiKVStatusAPITimeout,
+		tlsInfo:      config.ClusterTLSInfo,
 	}
 
 	lc.Append(fx.Hook{
@@ -57,6 +60,14 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 func (c Client) AddRequestHeader(key, value string) *Client {
 	c.httpClient = c.httpClient.CloneAndAddRequestHeader(key, value)
 	return &c
+}
+
+func (c *Client) GetHTTPScheme() string {
+	return c.httpScheme
+}
+
+func (c *Client) GetTLSInfo() *transport.TLSInfo {
+	return c.tlsInfo
 }
 
 func (c *Client) Get(host string, statusPort int, relativeURI string) (*httpc.Response, error) {

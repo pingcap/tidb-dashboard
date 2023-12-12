@@ -7,8 +7,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 	"go.etcd.io/etcd/pkg/transport"
+
+	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
 const (

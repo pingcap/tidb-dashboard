@@ -5324,23 +5324,12 @@ sub cleanup {
   unlink($main::tmpfile_sym);
   unlink(keys %main::tempnames);
 
-  # We leave any collected profiles in $HOME/jeprof in case the user wants
-  # to look at them later.  We print a message informing them of this.
   if ((scalar(@main::profile_files) > 0) &&
       defined($main::collected_profile)) {
     my @profiles = split(" \\\n    ", $main::collected_profile);
     foreach my $profile (@profiles) {
       unlink($profile);
     }
-    # if (scalar(@main::profile_files) == 1) {
-    #   print STDERR "Dynamically gathered profile is in $main::collected_profile\n";
-    # }
-    # print STDERR "If you want to investigate this profile further, you can do:\n";
-    # print STDERR "\n";
-    # print STDERR "  jeprof \\\n";
-    # print STDERR "    $main::prog \\\n";
-    # print STDERR "    $main::collected_profile\n";
-    # print STDERR "\n";
   }
 }
 

@@ -82,15 +82,13 @@ func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 		cmd.Stdin = strings.NewReader(jeprof)
 		if f.client.GetTLSInfo() != nil {
 			str := fmt.Sprintf(
-				"URL_FETCHER='curl -s --cert %s --key %s --cacert %s'",
+				"URL_FETCHER=curl -s --cert %s --key %s --cacert %s",
 				f.client.GetTLSInfo().CertFile,
 				f.client.GetTLSInfo().KeyFile,
 				f.client.GetTLSInfo().TrustedCAFile,
 			)
 			log.Info(fmt.Sprintf("fetch tikv heap profile %v", str))
-			cmd.Env = append(os.Environ(),
-				str,
-			)
+			cmd.Env = append(os.Environ(), str)
 		}
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {

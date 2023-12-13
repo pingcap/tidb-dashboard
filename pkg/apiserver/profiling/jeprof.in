@@ -245,6 +245,7 @@ Miscellaneous:
 Environment Variables:
    JEPROF_TMPDIR        Profiles directory. Defaults to \$HOME/jeprof
    JEPROF_TOOLS         Prefix for object tools pathnames
+   URL_FETCHER          Command to fetch remote profiles
 
 Examples:
 
@@ -521,6 +522,11 @@ sub Init() {
   $main::prog = "";
   @main::pfile_args = ();
 
+  # Override url_fetcher variable if URL_FETCHER environment variable is set
+  if ($ENV{URL_FETCHER}) {
+    @URL_FETCHER = split(' ', $ENV{URL_FETCHER});
+  }
+
   # Remote profiling without a binary (using $SYMBOL_PAGE instead)
   if (@ARGV > 0) {
     if (IsProfileURL($ARGV[0])) {
@@ -688,15 +694,15 @@ sub Main() {
   my $symbol_map = {};
 
   # Read one profile, pick the last item on the list
-  my $data = ReadProfile($main::prog, pop(@main::profile_files));
+  my $data = ReadProfile($main::prog, $main::profile_files[0]);
   my $profile = $data->{profile};
   my $pcs = $data->{pcs};
   my $libs = $data->{libs};   # Info about main program and shared libraries
   $symbol_map = MergeSymbols($symbol_map, $data->{symbols});
 
   # Add additional profiles, if available.
-  if (scalar(@main::profile_files) > 0) {
-    foreach my $pname (@main::profile_files) {
+  if (scalar(@main::profile_files) > 1) {
+    foreach my $pname (@main::profile_files[1..$#main::profile_files]) {
       my $data2 = ReadProfile($main::prog, $pname);
       $profile = AddProfile($profile, $data2->{profile});
       $pcs = AddPcs($pcs, $data2->{pcs});
@@ -3359,21 +3365,18 @@ sub ParseProfileURL {
   my $prefix = $3;
   my $profile = $4 || "/";
 
-  my $host = $hostport;
-  $host =~ s/:.*//;
-
   my $baseurl = "$proto$hostport$prefix";
-  return ($host, $baseurl, $profile);
+  return ($hostport, $baseurl, $profile);
 }
 
 # We fetch symbols from the first profile argument.
 sub SymbolPageURL {
-  my ($host, $baseURL, $path) = ParseProfileURL($main::pfile_args[0]);
+  my ($hostport, $baseURL, $path) = ParseProfileURL($main::pfile_args[0]);
   return "$baseURL$SYMBOL_PAGE";
 }
 
 sub FetchProgramName() {
-  my ($host, $baseURL, $path) = ParseProfileURL($main::pfile_args[0]);
+  my ($hostport, $baseURL, $path) = ParseProfileURL($main::pfile_args[0]);
   my $url = "$baseURL$PROGRAM_NAME_PAGE";
   my $command_line = ShellEscape(@URL_FETCHER, $url);
   open(CMDLINE, "$command_line |") or error($command_line);
@@ -3550,10 +3553,10 @@ sub BaseName {
 
 sub MakeProfileBaseName {
   my ($binary_name, $profile_name) = @_;
-  my ($host, $baseURL, $path) = ParseProfileURL($profile_name);
+  my ($hostport, $baseURL, $path) = ParseProfileURL($profile_name);
   my $binary_shortname = BaseName($binary_name);
   return sprintf("%s.%s.%s",
-                 $binary_shortname, $main::op_time, $host);
+                 $binary_shortname, $main::op_time, $hostport);
 }
 
 sub FetchDynamicProfile {
@@ -3565,7 +3568,7 @@ sub FetchDynamicProfile {
   if (!IsProfileURL($profile_name)) {
     return $profile_name;
   } else {
-    my ($host, $baseURL, $path) = ParseProfileURL($profile_name);
+    my ($hostport, $baseURL, $path) = ParseProfileURL($profile_name);
     if ($path eq "" || $path eq "/") {
       # Missing type specifier defaults to cpu-profile
       $path = $PROFILE_PAGE;
@@ -5321,19 +5324,12 @@ sub cleanup {
   unlink($main::tmpfile_sym);
   unlink(keys %main::tempnames);
 
-  # We leave any collected profiles in $HOME/jeprof in case the user wants
-  # to look at them later.  We print a message informing them of this.
   if ((scalar(@main::profile_files) > 0) &&
       defined($main::collected_profile)) {
-    if (scalar(@main::profile_files) == 1) {
-      print STDERR "Dynamically gathered profile is in $main::collected_profile\n";
+    my @profiles = split(" \\\n    ", $main::collected_profile);
+    foreach my $profile (@profiles) {
+      unlink($profile);
     }
-    print STDERR "If you want to investigate this profile further, you can do:\n";
-    print STDERR "\n";
-    print STDERR "  jeprof \\\n";
-    print STDERR "    $main::prog \\\n";
-    print STDERR "    $main::collected_profile\n";
-    print STDERR "\n";
   }
 }
 

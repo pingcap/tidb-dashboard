@@ -27,7 +27,7 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 
 	resp, err := etcdClient.Get(ctx2, tidbTopologyKeyPrefix, clientv3.WithPrefix())
 	if err != nil {
-		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", tidbTopologyKeyPrefix, distro.R().TiDB)
+		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", tidbTopologyKeyPrefix, distro.R().PD)
 	}
 
 	nodesAlive := make(map[string]struct{}, len(resp.Kvs))

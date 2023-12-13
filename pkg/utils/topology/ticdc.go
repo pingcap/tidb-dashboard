@@ -27,7 +27,7 @@ func FetchTiCDCTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiC
 
 	resp, err := etcdClient.Get(ctx2, ticdcTopologyKeyPrefix, clientv3.WithPrefix())
 	if err != nil {
-		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", ticdcTopologyKeyPrefix, distro.R().TiCDC)
+		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", ticdcTopologyKeyPrefix, distro.R().PD)
 	}
 
 	nodes := make([]TiCDCInfo, 0)

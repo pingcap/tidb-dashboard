@@ -18,8 +18,10 @@ import (
 )
 
 // TODO: refactor this with topology prefix since it is compatible with other components.
-const ticdcTopologyKeyPrefix = "/tidb/cdc/"
-const ticdcCaptureKeyIdent = "__cdc_meta__/capture/"
+const (
+	ticdcTopologyKeyPrefix = "/tidb/cdc/"
+	ticdcCaptureKeyIdent   = "__cdc_meta__/capture/"
+)
 
 func FetchTiCDCTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiCDCInfo, error) {
 	ctx2, cancel := context.WithTimeout(ctx, defaultFetchTimeout)

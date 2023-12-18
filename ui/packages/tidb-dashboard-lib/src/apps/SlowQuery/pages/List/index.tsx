@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Select,
@@ -182,9 +182,27 @@ function List() {
     }
   })
 
+  // only for clinic
+  const clusterInfo = useMemo(() => {
+    const infos: string[] = []
+    if (ctx?.cfg.orgName) {
+      infos.push(`Org: ${ctx?.cfg.orgName}`)
+    }
+    if (ctx?.cfg.clusterName) {
+      infos.push(`Cluster: ${ctx?.cfg.clusterName}`)
+    }
+    return infos.join(' | ')
+  }, [ctx?.cfg.orgName, ctx?.cfg.clusterName])
+
   return (
     <div className={styles.list_container}>
       <Card noMarginBottom>
+        {clusterInfo && (
+          <div style={{ marginBottom: 8, textAlign: 'right' }}>
+            {clusterInfo}
+          </div>
+        )}
+
         <Toolbar className={styles.list_toolbar} data-e2e="slow_query_toolbar">
           <Space>
             {ctx?.cfg.timeRangeSelector !== undefined ? (

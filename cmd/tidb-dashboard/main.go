@@ -99,13 +99,24 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	// setup TLS config for TiDB components
 	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
-		cfg.CoreConfig.ClusterTLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath, clusterAllowedNames)
+		tlsInfo := &transport.TLSInfo{
+			TrustedCAFile: *clusterCaPath,
+			KeyFile:       *clusterKeyPath,
+			CertFile:      *clusterCertPath,
+		}
+		cfg.CoreConfig.ClusterTLSInfo = tlsInfo
+		cfg.CoreConfig.ClusterTLSConfig = buildTLSConfig(tlsInfo, clusterAllowedNames)
 	}
 
 	// setup TLS config for MySQL client
 	// See https://github.com/pingcap/docs/blob/7a62321b3ce9318cbda8697503c920b2a01aeb3d/how-to/secure/enable-tls-clients.md#enable-authentication
 	if (len(*tidbCertPath) != 0 && len(*tidbKeyPath) != 0) || len(*tidbCaPath) != 0 {
-		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath, tidbAllowedNames)
+		tlsInfo := &transport.TLSInfo{
+			TrustedCAFile: *tidbCaPath,
+			KeyFile:       *tidbKeyPath,
+			CertFile:      *tidbCertPath,
+		}
+		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tlsInfo, tidbAllowedNames)
 	}
 
 	if err := cfg.CoreConfig.NormalizePDEndPoint(); err != nil {
@@ -140,13 +151,7 @@ func getContext() context.Context {
 	return ctx
 }
 
-func buildTLSConfig(caPath, keyPath, certPath, allowedNames *string) *tls.Config {
-	tlsInfo := transport.TLSInfo{
-		TrustedCAFile: *caPath,
-		KeyFile:       *keyPath,
-		CertFile:      *certPath,
-	}
-
+func buildTLSConfig(tlsInfo *transport.TLSInfo, allowedNames *string) *tls.Config {
 	tlsConfig, err := tlsInfo.ClientConfig()
 	if err != nil {
 		log.Fatal("Failed to load certificates", zap.Error(err))

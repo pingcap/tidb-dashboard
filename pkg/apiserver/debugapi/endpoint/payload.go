@@ -262,6 +262,21 @@ func (p *ResolvedRequestPayload) verifyEndpoint(ctx context.Context, etcdClient 
 		if !matched {
 			return ErrInvalidEndpoint.New("invalid endpoint '%s:%d'", p.host, p.port)
 		}
+	case topo.KindTiCDC:
+		infos, err := topology.FetchTiCDCTopology(ctx, etcdClient)
+		if err != nil {
+			return ErrInvalidEndpoint.Wrap(err, "failed to fetch ticdc topology")
+		}
+		matched := false
+		for _, info := range infos {
+			if info.IP == p.host && info.Port == uint(p.port) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return ErrInvalidEndpoint.New("invalid endpoint '%s:%d'", p.host, p.port)
+		}
 	default:
 		return ErrUnknownComponent.New("Unknown component '%s'", p.api.Component)
 	}

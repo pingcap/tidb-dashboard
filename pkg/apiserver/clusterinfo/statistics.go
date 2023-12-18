@@ -75,6 +75,7 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	infoByIk["tidb"] = newInstanceKindImmediateInfo()
 	infoByIk["tikv"] = newInstanceKindImmediateInfo()
 	infoByIk["tiflash"] = newInstanceKindImmediateInfo()
+	infoByIk["ticdc"] = newInstanceKindImmediateInfo()
 
 	// Fill from topology info
 	pdInfo, err := topology.FetchPDTopology(s.params.PDClient)
@@ -112,6 +113,16 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 		globalVersionsSet[i.Version] = struct{}{}
 		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
 		infoByIk["tidb"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+	}
+	ticdcInfo, err := topology.FetchTiCDCTopology(s.lifecycleCtx, s.params.EtcdClient)
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range ticdcInfo {
+		globalHostsSet[i.IP] = struct{}{}
+		globalVersionsSet[i.Version] = struct{}{}
+		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+		infoByIk["ticdc"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
 	}
 
 	// Fill from hardware info
@@ -158,6 +169,13 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	for _, i := range tidbInfo {
 		if v, ok := globalInfo.hosts[i.IP]; ok {
 			infoByIk["tidb"].hosts[i.IP] = v
+		} else {
+			globalFailureHostsSet[i.IP] = struct{}{}
+		}
+	}
+	for _, i := range ticdcInfo {
+		if v, ok := globalInfo.hosts[i.IP]; ok {
+			infoByIk["ticdc"].hosts[i.IP] = v
 		} else {
 			globalFailureHostsSet[i.IP] = struct{}{}
 		}

@@ -199,6 +199,7 @@ func newClients(lc fx.Lifecycle, config *config.Config) (
 	kvClient = tikvclient.NewStatusClient(httpConfig)
 	csClient = tiflashclient.NewStatusClient(httpConfig)
 	pdClient = pdclient.NewAPIClient(httpConfig)
+	// cdcClient = ticdcclient.NewStatusClient(httpConfig)
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			dbClient.SetDefaultCtx(ctx)

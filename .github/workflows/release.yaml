@@ -4,13 +4,12 @@ on:
   push:
     tags:
       - "v*"
+      - "!v*-alpha"
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    outputs:
-      release_version: v${{ steps.lookup_release_version.outputs.release_version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -37,10 +36,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: Lookup release version
-        id: lookup_release_version
-        run: |
-          echo "::set-output name=release_version::$(git describe --tags --dirty --always)"
       - name: Build UI
         env:
           REACT_APP_MIXPANEL_TOKEN: ${{ secrets.REACT_APP_MIXPANEL_TOKEN }}
@@ -56,8 +51,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.lookup_release_version.outputs.release_version }}
-          release_name: Internal Version ${{ steps.lookup_release_version.outputs.release_version }}
+          tag_name: ${{ github.ref }}
+          release_name: Internal Version ${{ github.ref }}
           draft: false
           prerelease: false
       - name: Upload UI assets

@@ -14,7 +14,8 @@ E2E_SPEC ?=
 
 UI ?=
 
-RELEASE_VERSION := $(shell grep -v '^\#' ./release-version)
+# RELEASE_VERSION := $(shell grep -v '^\#' ./release-version)
+RELEASE_VERSION ?= $(shell git describe --tags --dirty --always)
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(RELEASE_VERSION)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.Standalone=Yes"

@@ -4,7 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: "Release version, e.g. v2021.07.09.1"
+        description: "Release version, e.g. 2021.07.09.1"
+        required: true
+      pd_branchs:
+        description: 'PD branch, e.g. ["master", "release-7.6"]'
+        default: '["master"]'
         required: true
 
 jobs:
@@ -13,7 +17,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [master, release-5.4, release-6.1]
+        # https://stackoverflow.com/questions/69781005/combine-dynamic-github-workflow-matrix-with-input-values-and-predefined-values
+        branch: ${{ fromJson(github.event.inputs.pd_branchs) }} 
     name: Create PD PR - ${{ matrix.branch }}
     steps:
       - name: Check out PD code base
@@ -23,7 +28,7 @@ jobs:
           ref: ${{ matrix.branch }}
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.18"
+          go-version: "1.21"
       - name: Load go module cache
         uses: actions/cache@v3
         with:
@@ -35,23 +40,17 @@ jobs:
             ${{ runner.os }}-go-pd-
       - name: Update TiDB Dashboard in PD code base
         run: |
-          go get -d "github.com/pingcap/tidb-dashboard@${{ github.event.inputs.release_version }}"
-          go mod tidy
-          make pd-server
-          go mod tidy
-          cd tests/client
-          go mod tidy
-          cd ../..
+          scripts/update-dashboard.sh ${{ github.event.inputs.release_version }}
       - name: Commit PD code base change
         id: git_commit
         run: |
           git diff
-          git config user.name "tidb-dashboard-bot"
-          git config user.email "tidb-dashboard-bot@pingcap.com"
+          git config user.name "baurine"
+          git config user.email "2008.hbl@gmail.com"
           git add .
           if git status | grep -q "Changes to be committed"
           then
-            git commit --signoff --message "Update TiDB Dashboard to ${{ github.event.inputs.release_version }}, ref #4257"
+            git commit --signoff --message "Update TiDB Dashboard to v${{ github.event.inputs.release_version }}"
             echo "::set-output name=committed::1"
           else
             echo "No changes detected, skipped"
@@ -65,19 +64,17 @@ jobs:
         with:
           token: ${{ secrets.BOT_PAT }}
           branch: update-tidb-dashboard/${{ matrix.branch }}-${{ github.event.inputs.release_version }}-${{ steps.build_id.outputs.id }}
-          title: Update TiDB Dashboard to ${{ github.event.inputs.release_version }} [${{ matrix.branch }}]
+          title: Update TiDB Dashboard to v${{ github.event.inputs.release_version }} [${{ matrix.branch }}]
           body: |
             ### What problem does this PR solve?
 
             Issue Number: ref #4257
 
-            Update TiDB Dashboard to ${{ github.event.inputs.release_version }}.
-
-            Upstream commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }} .
+            Update TiDB Dashboard to [v${{ github.event.inputs.release_version }}](https://github.com/pingcap/tidb-dashboard/releases/tag/v${{ github.event.inputs.release_version }}).
 
             ### Release note
 
             ```release-note
             None
             ```
-          push-to-fork: tidb-dashboard-bot/pd
+          push-to-fork: baurine/pd

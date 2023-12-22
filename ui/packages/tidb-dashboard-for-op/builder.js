@@ -48,20 +48,6 @@ const devServerParams = {
   ]
 }
 
-function getInternalVersion() {
-  const version = fs
-    .readFileSync('../../../release-version', 'utf8')
-    .split(os.EOL)
-    .map((l) => l.trim())
-    .filter((l) => !l.startsWith('#') && l !== '')[0]
-  if (version === '') {
-    throw new Error(
-      `invalid release version, please check the release-version file`
-    )
-  }
-  return version
-}
-
 function genDefine() {
   const define = {}
   for (const k in process.env) {
@@ -75,10 +61,6 @@ function genDefine() {
       define[`process.env.${k}`] = JSON.stringify(envVal)
     }
   }
-  // REACT_APP_RELEASE_VERSION was used in sentry before
-  define['process.env.REACT_APP_RELEASE_VERSION'] = JSON.stringify(
-    getInternalVersion()
-  )
   define['process.env.E2E_TEST'] = JSON.stringify(process.env.E2E_TEST)
   return define
 }

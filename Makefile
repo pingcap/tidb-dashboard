@@ -159,6 +159,10 @@ docker-build-image-locally-arm64: clean
 	docker buildx build ${NO_CACHE} --load -t $(IMAGE) --platform $(ARM64) -f $(DOCKERFILE) .
 	docker run --rm $(IMAGE) -v
 
+.PHONY: tag
+tag:
+	node scripts/create_release_tag.js
+
 .PHONY: run # please ensure that tiup playground is running in the background.
 run:
 	bin/tidb-dashboard --debug --experimental --feature-version "$(FEATURE_VERSION)" --host 0.0.0.0

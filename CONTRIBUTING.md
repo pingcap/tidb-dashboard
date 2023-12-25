@@ -150,6 +150,16 @@ If you want to develop docker image locally 🤔.
 
 > The old Dashboard **_in PD_** can be accessed at [http://localhost:2379/dashboard](http://localhost:2379/dashboard).
 
+### How to update TiDB Dashboard in PD
+
+To update the TiDB Dashboard in PD, we need to release a TiDB Dashboard version and submit a PR to PD.
+
+1. In a release branch, likes `release-7.6`, run `make tag` to add a new tag for TiDB Dashboard. The new tag is like `v7.6.x-<sha>`.
+
+1. Push the new tag to the remote repository, it will trigger the CI to release a new TiDB Dashboard version.
+
+1. After the new version is created, go to https://github.com/pingcap/tidb-dashboard/actions/workflows/manual-create-pd-pr.yaml, click `Run workflow` button, fill the required parameters and submit the workflow, it will trigger the CI to create a PR to PD which will update the TiDB Dashboard version in PD.
+
 ## Contribution flow
 
 This is a rough outline of what a contributor's workflow looks like:

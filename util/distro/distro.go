@@ -23,6 +23,7 @@ type DistributionResource struct {
 	PD       string `json:"pd,omitempty"`
 	TiFlash  string `json:"tiflash,omitempty"`
 	TiCDC    string `json:"ticdc,omitempty"`
+	TiProxy  string `json:"tiproxy,omitempty"`
 }
 
 var defaultDistroRes = DistributionResource{
@@ -32,6 +33,7 @@ var defaultDistroRes = DistributionResource{
 	PD:       "PD",
 	TiFlash:  "TiFlash",
 	TiCDC:    "TiCDC",
+	TiProxy:  "TiProxy",
 }
 
 var (

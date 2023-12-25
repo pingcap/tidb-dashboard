@@ -16,9 +16,11 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
+	"github.com/pingcap/tidb-dashboard/util/client/ticdcclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tiproxyclient"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/rest/fileswap"
 )
@@ -39,6 +41,8 @@ type ServiceParams struct {
 	TiDBStatusClient    *tidbclient.StatusClient
 	TiKVStatusClient    *tikvclient.StatusClient
 	TiFlashStatusClient *tiflashclient.StatusClient
+	TiCDCStatusClient   *ticdcclient.StatusClient
+	TiProxyStatusClient *tiproxyclient.StatusClient
 	EtcdClient          *clientv3.Client
 	PDClient            *pd.Client
 }
@@ -57,6 +61,8 @@ func newService(p ServiceParams) *Service {
 		TiDBStatusClient:    p.TiDBStatusClient,
 		TiKVStatusClient:    p.TiKVStatusClient,
 		TiFlashStatusClient: p.TiFlashStatusClient,
+		TiCDCStatusClient:   p.TiCDCStatusClient,
+		TiProxyStatusClient: p.TiProxyStatusClient,
 	}
 	return &Service{
 		httpClients: httpClients,

@@ -18,9 +18,11 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
 	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
+	"github.com/pingcap/tidb-dashboard/util/client/ticdcclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tiproxyclient"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/topo"
 )
@@ -40,6 +42,8 @@ type HTTPClients struct {
 	TiDBStatusClient    *tidbclient.StatusClient
 	TiKVStatusClient    *tikvclient.StatusClient
 	TiFlashStatusClient *tiflashclient.StatusClient
+	TiCDCStatusClient   *ticdcclient.StatusClient
+	TiProxyStatusClient *tiproxyclient.StatusClient
 }
 
 func (c HTTPClients) GetHTTPClientByNodeKind(kind topo.Kind) *httpclient.Client {
@@ -64,6 +68,16 @@ func (c HTTPClients) GetHTTPClientByNodeKind(kind topo.Kind) *httpclient.Client 
 			return nil
 		}
 		return c.TiFlashStatusClient.Client
+	case topo.KindTiCDC:
+		if c.TiCDCStatusClient == nil {
+			return nil
+		}
+		return c.TiCDCStatusClient.Client
+	case topo.KindTiProxy:
+		if c.TiProxyStatusClient == nil {
+			return nil
+		}
+		return c.TiProxyStatusClient.Client
 	default:
 		return nil
 	}
@@ -266,6 +280,21 @@ func (p *ResolvedRequestPayload) verifyEndpoint(ctx context.Context, etcdClient 
 		infos, err := topology.FetchTiCDCTopology(ctx, etcdClient)
 		if err != nil {
 			return ErrInvalidEndpoint.Wrap(err, "failed to fetch ticdc topology")
+		}
+		matched := false
+		for _, info := range infos {
+			if info.IP == p.host && info.Port == uint(p.port) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return ErrInvalidEndpoint.New("invalid endpoint '%s:%d'", p.host, p.port)
+		}
+	case topo.KindTiProxy:
+		infos, err := topology.FetchTiProxyTopology(ctx, etcdClient)
+		if err != nil {
+			return ErrInvalidEndpoint.Wrap(err, "failed to fetch tiproxy topology")
 		}
 		matched := false
 		for _, info := range infos {

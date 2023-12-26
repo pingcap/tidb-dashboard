@@ -27,6 +27,14 @@ class DataSource implements IClusterInfoDataSource {
     return client.getInstance().getPDTopology(options)
   }
 
+  getTiCDCTopology(options?: ReqConfig) {
+    return client.getInstance().getTiCDCTopology(options)
+  }
+
+  getTiProxyTopology(options?: ReqConfig) {
+    return client.getInstance().getTiProxyTopology(options)
+  }
+
   topologyTidbAddressDelete(address: string, options?: ReqConfig) {
     return client.getInstance().topologyTidbAddressDelete({ address }, options)
   }

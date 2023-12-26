@@ -169,6 +169,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
           getTiDBTopology={ctx!.ds.getTiDBTopology}
           getStoreTopology={ctx!.ds.getStoreTopology}
           getPDTopology={ctx!.ds.getPDTopology}
+          getTiCDCTopology={ctx!.ds.getTiCDCTopology}
+          getTiProxyTopology={ctx!.ds.getTiProxyTopology}
         />
       </Form.Item>
       <Form.Item name="keywords">

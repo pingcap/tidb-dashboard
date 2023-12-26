@@ -4,6 +4,7 @@ package topology
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -31,33 +32,24 @@ func FetchTiProxyTopology(ctx context.Context, etcdClient *clientv3.Client) ([]T
 
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
-		if !strings.HasPrefix(key, tidbTopologyKeyPrefix) {
+		if !strings.HasPrefix(key, tiproxyTopologyKeyPrefix) {
 			continue
 		}
 		// remainingKey looks like `ip:port/info` or `ip:port/ttl`.
-		remainingKey := key[len(tidbTopologyKeyPrefix):]
+		remainingKey := key[len(tiproxyTopologyKeyPrefix):]
 		keyParts := strings.Split(remainingKey, "/")
 		if len(keyParts) != 2 {
-			log.Warn("Ignored invalid topology key", zap.String("component", distro.R().TiDB), zap.String("key", key))
+			log.Warn("Ignored invalid topology key", zap.String("component", distro.R().TiProxy), zap.String("key", key))
 			continue
 		}
 
 		switch keyParts[1] {
 		case "info":
-			node, err := parseTiDBInfo(keyParts[0], kv.Value)
+			node, err := parseTiProxyInfo(keyParts[0], kv.Value)
 			if err == nil {
-				nodesInfo[keyParts[0]] = &TiProxyInfo{
-					GitHash:        node.GitHash,
-					Version:        node.Version,
-					IP:             node.IP,
-					Port:           node.Port,
-					DeployPath:     node.DeployPath,
-					Status:         node.Status,
-					StatusPort:     node.StatusPort,
-					StartTimestamp: node.StartTimestamp,
-				}
+				nodesInfo[keyParts[0]] = node
 			} else {
-				log.Warn(fmt.Sprintf("Ignored invalid %s topology info entry", distro.R().TiDB),
+				log.Warn(fmt.Sprintf("Ignored invalid %s topology info entry", distro.R().TiProxy),
 					zap.String("key", key),
 					zap.String("value", string(kv.Value)),
 					zap.Error(err))
@@ -67,12 +59,12 @@ func FetchTiProxyTopology(ctx context.Context, etcdClient *clientv3.Client) ([]T
 			if err == nil {
 				nodesAlive[keyParts[0]] = struct{}{}
 				if !alive {
-					log.Warn(fmt.Sprintf("Alive of %s has expired, maybe local time in different hosts are not synchronized", distro.R().TiDB),
+					log.Warn(fmt.Sprintf("Alive of %s has expired, maybe local time in different hosts are not synchronized", distro.R().TiProxy),
 						zap.String("key", key),
 						zap.String("value", string(kv.Value)))
 				}
 			} else {
-				log.Warn(fmt.Sprintf("Ignored invalid %s topology TTL entry", distro.R().TiDB),
+				log.Warn(fmt.Sprintf("Ignored invalid %s topology TTL entry", distro.R().TiProxy),
 					zap.String("key", key),
 					zap.String("value", string(kv.Value)),
 					zap.Error(err))
@@ -100,4 +92,30 @@ func FetchTiProxyTopology(ctx context.Context, etcdClient *clientv3.Client) ([]T
 	})
 
 	return nodes, nil
+}
+
+func parseTiProxyInfo(address string, value []byte) (*TiProxyInfo, error) {
+	ds := struct {
+		GitHash        string `json:"git_hash"`
+		Version        string `json:"version"`
+		IP             string `json:"ip"`
+		Port           string `json:"port"`
+		DeployPath     string `json:"deploy_path"`
+		StatusPort     string `json:"status_port"`
+		StartTimestamp int64  `json:"start_timestamp"`
+	}{}
+	err := json.Unmarshal(value, &ds)
+	if err != nil {
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s info unmarshal failed", distro.R().TiDB)
+	}
+	return &TiProxyInfo{
+		GitHash:        ds.GitHash,
+		Version:        ds.Version,
+		IP:             ds.IP,
+		Port:           ds.Port,
+		DeployPath:     ds.DeployPath,
+		Status:         ComponentStatusUnreachable,
+		StatusPort:     ds.StatusPort,
+		StartTimestamp: ds.StartTimestamp,
+	}, nil
 }

@@ -132,8 +132,8 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	for _, i := range tiproxyInfo {
 		globalHostsSet[i.IP] = struct{}{}
 		globalVersionsSet[i.Version] = struct{}{}
-		globalInfo.instances[net.JoinHostPort(i.IP, i.Port)] = struct{}{}
-		infoByIk["tiproxy"].instances[net.JoinHostPort(i.IP, i.Port)] = struct{}{}
+		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+		infoByIk["tiproxy"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
 	}
 
 	// Fill from hardware info

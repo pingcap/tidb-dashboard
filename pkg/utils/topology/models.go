@@ -49,10 +49,10 @@ type TiProxyInfo struct {
 	GitHash        string          `json:"git_hash"`
 	Version        string          `json:"version"`
 	IP             string          `json:"ip"`
-	Port           string          `json:"port"`
+	Port           uint            `json:"port"`
 	DeployPath     string          `json:"deploy_path"`
 	Status         ComponentStatus `json:"status"`
-	StatusPort     string          `json:"status_port"`
+	StatusPort     uint            `json:"status_port"`
 	StartTimestamp int64           `json:"start_timestamp"`
 }
 

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/pingcap/log"
@@ -106,16 +107,24 @@ func parseTiProxyInfo(address string, value []byte) (*TiProxyInfo, error) {
 	}{}
 	err := json.Unmarshal(value, &ds)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s info unmarshal failed", distro.R().TiDB)
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s info unmarshal failed", distro.R().TiProxy)
+	}
+	port, err := strconv.ParseUint(ds.Port, 10, 64)
+	if err != nil {
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s port parse failed", distro.R().TiProxy)
+	}
+	statusPort, err := strconv.ParseUint(ds.StatusPort, 10, 64)
+	if err != nil {
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s port parse failed", distro.R().TiProxy)
 	}
 	return &TiProxyInfo{
 		GitHash:        ds.GitHash,
 		Version:        ds.Version,
 		IP:             ds.IP,
-		Port:           ds.Port,
+		Port:           uint(port),
 		DeployPath:     ds.DeployPath,
 		Status:         ComponentStatusUnreachable,
-		StatusPort:     ds.StatusPort,
+		StatusPort:     uint(statusPort),
 		StartTimestamp: ds.StartTimestamp,
 	}, nil
 }

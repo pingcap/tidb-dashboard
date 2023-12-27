@@ -47,10 +47,12 @@ export interface IInstanceSelectProps
     options?: ReqConfig
   ): AxiosPromise<ClusterinfoStoreTopologyResponse>
   getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
-  getTiCDCTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTiCDCInfo>>
-  getTiProxyTopology(
+  getTiCDCTopology?: (
     options?: ReqConfig
-  ): AxiosPromise<Array<TopologyTiProxyInfo>>
+  ) => AxiosPromise<Array<TopologyTiCDCInfo>>
+  getTiProxyTopology?: (
+    options?: ReqConfig
+  ) => AxiosPromise<Array<TopologyTiProxyInfo>>
 }
 
 export interface IInstanceSelectRefProps {

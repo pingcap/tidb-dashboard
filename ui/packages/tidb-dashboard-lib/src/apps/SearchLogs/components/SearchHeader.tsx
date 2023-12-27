@@ -91,9 +91,11 @@ export default function SearchHeader({ taskGroupID }: Props) {
             case 'pd':
             case 'tikv':
             case 'tiflash':
+            case 'ticdc':
               port = instance.port
               break
             case 'tidb':
+            case 'tiproxy':
               port = instance.status_port
               break
           }

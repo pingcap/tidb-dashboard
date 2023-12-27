@@ -163,7 +163,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
           ref={instanceSelect}
           defaultSelectAll
           enableTiFlash
-          style={{ width: 200 }}
+          style={{ width: 320 }}
           data-e2e="log_search_instances"
           dropContainerProps={
             { 'data-e2e': 'log_search_instances_drop' } as any

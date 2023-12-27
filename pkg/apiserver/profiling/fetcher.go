@@ -172,5 +172,5 @@ type tiproxyFecther struct {
 }
 
 func (f *tiproxyFecther) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, fmt.Sprintf("/api%s", op.path))
 }

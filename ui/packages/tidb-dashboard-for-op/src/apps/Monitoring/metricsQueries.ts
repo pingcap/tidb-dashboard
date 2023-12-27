@@ -759,6 +759,44 @@ const getMonitoringItems = (
             }
           ],
           unit: 'bytes'
+        },
+        {
+          title: 'TiProxy Uptime',
+          queries: [
+            {
+              promql:
+                '(time() - process_start_time_seconds{component="tiproxy"})',
+              name: '{instance}',
+              type: 'line'
+            }
+          ],
+          nullValue: TransformNullValue.AS_ZERO,
+          unit: 's'
+        },
+        {
+          title: 'TiProxy CPU Usage',
+          queries: [
+            {
+              promql:
+                'irate(process_cpu_seconds_total{component="tiproxy"}[30s])',
+              name: '{instance}',
+              type: 'line'
+            }
+          ],
+          nullValue: TransformNullValue.AS_ZERO,
+          unit: 'percentunit'
+        },
+        {
+          title: 'TiProxy Memory Usage',
+          queries: [
+            {
+              promql: 'process_resident_memory_bytes{component="tiproxy"}',
+              name: '{instance}',
+              type: 'line'
+            }
+          ],
+          nullValue: TransformNullValue.AS_ZERO,
+          unit: 'bytes'
         }
       ]
     }

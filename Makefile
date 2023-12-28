@@ -14,8 +14,7 @@ E2E_SPEC ?=
 
 UI ?=
 
-# RELEASE_VERSION := $(shell grep -v '^\#' ./release-version)
-RELEASE_VERSION ?= $(shell git describe --tags --dirty --always)
+RELEASE_VERSION := $(shell git describe --tags --dirty --always)
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(RELEASE_VERSION)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.Standalone=Yes"
@@ -38,7 +37,6 @@ NO_CACHE ?=
 BUILD_GOEXPERIMENT ?=
 BUILD_CGO_ENABLED ?=
 ifeq ("${ENABLE_FIPS}", "1")
-	RELEASE_VERSION := $(RELEASE_VERSION)-fips
 	BUILD_TAGS += boringcrypto
 	BUILD_GOEXPERIMENT = GOEXPERIMENT=boringcrypto
 	BUILD_CGO_ENABLED = CGO_ENABLED=1

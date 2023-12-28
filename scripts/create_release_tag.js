@@ -29,7 +29,7 @@ function createReleaseTag() {
   }
 
   const branchVer = branch.replace('release-', '');
-  const latestTag = getGitLatestTag();
+  const latestTag = getGitLatestTag().replace('-fips', '');
 
   if (!latestTag.startsWith(`v${branchVer}.`)) {
     console.error(`Err: latest tag ${latestTag} doesn't match the branch ${branch}, you need to add the new tag manually`);

@@ -764,8 +764,7 @@ const getMonitoringItems = (
           title: 'TiProxy Uptime',
           queries: [
             {
-              promql:
-                '(time() - process_start_time_seconds{component="tiproxy"})',
+              promql: '(time() - process_start_time_seconds{job="tiproxy"})',
               name: '{instance}',
               type: 'line'
             }
@@ -777,8 +776,7 @@ const getMonitoringItems = (
           title: 'TiProxy CPU Usage',
           queries: [
             {
-              promql:
-                'irate(process_cpu_seconds_total{component="tiproxy"}[30s])',
+              promql: 'rate(process_cpu_seconds_total{job="tiproxy"}[30s])',
               name: '{instance}',
               type: 'line'
             }
@@ -790,7 +788,7 @@ const getMonitoringItems = (
           title: 'TiProxy Memory Usage',
           queries: [
             {
-              promql: 'process_resident_memory_bytes{component="tiproxy"}',
+              promql: 'process_resident_memory_bytes{job="tiproxy"}',
               name: '{instance}',
               type: 'line'
             }

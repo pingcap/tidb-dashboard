@@ -36,6 +36,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
       - name: Build UI
         env:
           REACT_APP_MIXPANEL_TOKEN: ${{ secrets.REACT_APP_MIXPANEL_TOKEN }}
@@ -45,6 +46,10 @@ jobs:
         working-directory: ui/packages/tidb-dashboard-for-op/dist
         run: |
           zip -r ../static-assets.zip .
+
+      - name: Generate Changelog
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v4.1.0
       - name: Create release
         id: create_release
         uses: fleskesvor/create-release@feature/support-target-commitish
@@ -55,6 +60,8 @@ jobs:
           release_name: Internal Version ${{ github.ref }}
           draft: false
           prerelease: false
+          body: ${{steps.build_changelog.outputs.changelog}}
+
       - name: Upload UI assets
         uses: actions/upload-release-asset@v1.0.1
         env:

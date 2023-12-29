@@ -50,7 +50,7 @@ jobs:
           git add .
           if git status | grep -q "Changes to be committed"
           then
-            git commit --signoff --message "Update TiDB Dashboard to ${{ github.event.inputs.release_version }}"
+            git commit --signoff --message "chore(dashboard): update TiDB Dashboard to ${{ github.event.inputs.release_version }}"
             echo "::set-output name=committed::1"
           else
             echo "No changes detected, skipped"
@@ -59,12 +59,14 @@ jobs:
         id: build_id
         run: echo "::set-output name=id::$(date +%s)"
       - name: Create PR based on PD code base
+        id: cpr
         uses: peter-evans/create-pull-request@v3
         if: steps.git_commit.outputs.committed == 1
         with:
+          push-to-fork: baurine/pd
           token: ${{ secrets.PAT_TO_PUSH_PD_FORK }}
           branch: update-tidb-dashboard/${{ matrix.branch }}-${{ github.event.inputs.release_version }}-${{ steps.build_id.outputs.id }}
-          title: Update TiDB Dashboard to ${{ github.event.inputs.release_version }} [${{ matrix.branch }}]
+          title: "chore(dashboard): update TiDB Dashboard to ${{ github.event.inputs.release_version }} [${{ matrix.branch }}]"
           body: |
             ### What problem does this PR solve?
 
@@ -77,4 +79,8 @@ jobs:
             ```release-note
             None
             ```
-          push-to-fork: baurine/pd
+      - name: Check outputs
+        if: steps.git_commit.outputs.committed == 1
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"

@@ -70,9 +70,12 @@ func FetchTiCDCTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiC
 
 func parseTiCDCInfo(clusterName string, value []byte) (*TiCDCInfo, error) {
 	ds := struct {
-		ID      string `json:"id"`
-		Address string `json:"address"`
-		Version string `json:"version"`
+		ID             string `json:"id"`
+		Address        string `json:"address"`
+		Version        string `json:"version"`
+		GitHash        string `json:"git-hash"`
+		DeployPath     string `json:"deploy-path"`
+		StartTimestamp int64  `json:"start-timestamp"`
 	}{}
 
 	err := json.Unmarshal(value, &ds)
@@ -85,11 +88,14 @@ func parseTiCDCInfo(clusterName string, value []byte) (*TiCDCInfo, error) {
 	}
 
 	return &TiCDCInfo{
-		ClusterName: clusterName,
-		Version:     ds.Version,
-		IP:          hostname,
-		Port:        port,
-		Status:      ComponentStatusUp,
-		StatusPort:  port,
+		ClusterName:    clusterName,
+		GitHash:        ds.GitHash,
+		Version:        ds.Version,
+		IP:             hostname,
+		Port:           port,
+		DeployPath:     ds.DeployPath,
+		Status:         ComponentStatusUp,
+		StatusPort:     port,
+		StartTimestamp: ds.StartTimestamp,
 	}, nil
 }

@@ -25,7 +25,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Read VERSION file
         id: getversion
-        run: echo "::set-output name=version::$(grep -v '^\#' ./release-version)"
+        run: echo "::set-output name=version::$(git describe --tags --dirty --always)"
       - name: Build
         uses: docker/build-push-action@v3
         with:

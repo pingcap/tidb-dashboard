@@ -35,7 +35,11 @@ function parseVersion(i: InfoInfoResponse, t: TFunction) {
     }
     if (i.version.internal_version) {
       // e.g. v2020.07.01.1
-      return `v${i.version.internal_version}`
+      if (i.version.internal_version.startsWith('v')) {
+        return i.version.internal_version
+      } else {
+        return `v${i.version.internal_version}`
+      }
     }
     return null
   }

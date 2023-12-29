@@ -25,7 +25,7 @@ interface State<T> {
 }
 
 export function useClientRequest<T>(
-  reqFactory: RequestFactory<T>,
+  reqFactory?: RequestFactory<T>,
   options?: Options
 ) {
   const {
@@ -61,16 +61,22 @@ export function useClientRequest<T>(
     }))
 
     try {
-      const reqConfig: ClientReqConfig = {
-        cancelToken: cancelTokenSource.current.token,
-        handleError: 'custom' // handle the error by componenent self
-      }
-      const resp = await reqFactory(reqConfig)
-      if (mounted.current) {
+      if (!reqFactory) {
         setState({
-          data: resp.data,
           isLoading: false
         })
+      } else {
+        const reqConfig: ClientReqConfig = {
+          cancelToken: cancelTokenSource.current.token,
+          handleError: 'custom' // handle the error by component self
+        }
+        const resp = await reqFactory(reqConfig)
+        if (mounted.current) {
+          setState({
+            data: resp.data,
+            isLoading: false
+          })
+        }
       }
     } catch (e) {
       if (mounted.current) {

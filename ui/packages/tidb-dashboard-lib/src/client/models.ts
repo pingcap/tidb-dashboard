@@ -1749,6 +1749,12 @@ export interface ModelRequestTargetStatistics {
      * @type {number}
      * @memberof ModelRequestTargetStatistics
      */
+    'num_ticdc_nodes'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelRequestTargetStatistics
+     */
     'num_tidb_nodes'?: number;
     /**
      * 
@@ -1762,6 +1768,12 @@ export interface ModelRequestTargetStatistics {
      * @memberof ModelRequestTargetStatistics
      */
     'num_tikv_nodes'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelRequestTargetStatistics
+     */
+    'num_tiproxy_nodes'?: number;
 }
 
 
@@ -3532,6 +3544,71 @@ export interface TopologyStoreLocation {
 /**
  * 
  * @export
+ * @interface TopologyTiCDCInfo
+ */
+export interface TopologyTiCDCInfo {
+    /**
+     * 
+     * @type {string}
+     * @memberof TopologyTiCDCInfo
+     */
+    'cluster_name'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TopologyTiCDCInfo
+     */
+    'deploy_path'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TopologyTiCDCInfo
+     */
+    'git_hash'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TopologyTiCDCInfo
+     */
+    'ip'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopologyTiCDCInfo
+     */
+    'port'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopologyTiCDCInfo
+     */
+    'start_timestamp'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopologyTiCDCInfo
+     */
+    'status'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopologyTiCDCInfo
+     */
+    'status_port'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof TopologyTiCDCInfo
+     */
+    'version'?: string;
+}
+
+
+
+
+/**
+ * 
+ * @export
  * @interface TopologyTiDBInfo
  */
 export interface TopologyTiDBInfo {
@@ -3581,6 +3658,65 @@ export interface TopologyTiDBInfo {
      * 
      * @type {string}
      * @memberof TopologyTiDBInfo
+     */
+    'version'?: string;
+}
+
+
+
+
+/**
+ * 
+ * @export
+ * @interface TopologyTiProxyInfo
+ */
+export interface TopologyTiProxyInfo {
+    /**
+     * 
+     * @type {string}
+     * @memberof TopologyTiProxyInfo
+     */
+    'deploy_path'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TopologyTiProxyInfo
+     */
+    'git_hash'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TopologyTiProxyInfo
+     */
+    'ip'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopologyTiProxyInfo
+     */
+    'port'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopologyTiProxyInfo
+     */
+    'start_timestamp'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopologyTiProxyInfo
+     */
+    'status'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopologyTiProxyInfo
+     */
+    'status_port'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof TopologyTiProxyInfo
      */
     'version'?: string;
 }

@@ -44,11 +44,19 @@ func (s *Service) fetchAllInstanceHosts() ([]string, error) {
 		allHostsMap[i.IP] = struct{}{}
 	}
 
-	ticdcIndo, err := topology.FetchTiCDCTopology(s.lifecycleCtx, s.params.EtcdClient)
+	ticdcInfo, err := topology.FetchTiCDCTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
 		return nil, err
 	}
-	for _, i := range ticdcIndo {
+	for _, i := range ticdcInfo {
+		allHostsMap[i.IP] = struct{}{}
+	}
+
+	tiproxyInfo, err := topology.FetchTiProxyTopology(s.lifecycleCtx, s.params.EtcdClient)
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range tiproxyInfo {
 		allHostsMap[i.IP] = struct{}{}
 	}
 

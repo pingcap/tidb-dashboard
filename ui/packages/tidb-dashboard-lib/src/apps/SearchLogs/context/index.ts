@@ -9,7 +9,9 @@ import {
   LogsearchPreviewModel,
   TopologyTiDBInfo,
   ClusterinfoStoreTopologyResponse,
-  TopologyPDInfo
+  TopologyPDInfo,
+  TopologyTiCDCInfo,
+  TopologyTiProxyInfo
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
@@ -60,6 +62,12 @@ export interface ISearchLogsDataSource {
   ): AxiosPromise<ClusterinfoStoreTopologyResponse>
 
   getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
+
+  getTiCDCTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTiCDCInfo>>
+
+  getTiProxyTopology(
+    options?: ReqConfig
+  ): AxiosPromise<Array<TopologyTiProxyInfo>>
 }
 
 export interface ISearchLogsContext {

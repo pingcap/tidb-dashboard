@@ -17,9 +17,11 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/tidb-dashboard/pkg/ticdc"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
+	"github.com/pingcap/tidb-dashboard/pkg/tiproxy"
 )
 
 const (
@@ -41,6 +43,8 @@ type fetchers struct {
 	tiflash profileFetcher
 	tidb    profileFetcher
 	pd      profileFetcher
+	ticdc   profileFetcher
+	tiproxy profileFetcher
 }
 
 var newFetchers = fx.Provide(func(
@@ -48,6 +52,8 @@ var newFetchers = fx.Provide(func(
 	tidbClient *tidb.Client,
 	pdClient *pd.Client,
 	tiflashClient *tiflash.Client,
+	ticdcClient *ticdc.Client,
+	tiproxyClient *tiproxy.Client,
 	config *config.Config,
 ) *fetchers {
 	return &fetchers{
@@ -63,6 +69,12 @@ var newFetchers = fx.Provide(func(
 		pd: &pdFetcher{
 			client:              pdClient,
 			statusAPIHTTPScheme: config.GetClusterHTTPScheme(),
+		},
+		ticdc: &ticdcFecther{
+			client: ticdcClient,
+		},
+		tiproxy: &tiproxyFecther{
+			client: tiproxyClient,
 		},
 	}
 })
@@ -145,4 +157,20 @@ func (f *pdFetcher) fetch(op *fetchOptions) ([]byte, error) {
 		WithBaseURL(baseURL).
 		WithoutPrefix(). // pprof API does not have /pd/api/v1 prefix
 		SendGetRequest(op.path)
+}
+
+type ticdcFecther struct {
+	client *ticdc.Client
+}
+
+func (f *ticdcFecther) fetch(op *fetchOptions) ([]byte, error) {
+	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+}
+
+type tiproxyFecther struct {
+	client *tiproxy.Client
+}
+
+func (f *tiproxyFecther) fetch(op *fetchOptions) ([]byte, error) {
+	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
 }

@@ -15,6 +15,7 @@ const (
 	NodeKindPD      NodeKind = "pd"
 	NodeKindTiFlash NodeKind = "tiflash"
 	NodeKindTiCDC   NodeKind = "ticdc"
+	NodeKindTiProxy NodeKind = "tiproxy"
 )
 
 type RequestTargetNode struct {
@@ -39,6 +40,7 @@ type RequestTargetStatistics struct {
 	NumPDNodes      int `json:"num_pd_nodes"`
 	NumTiFlashNodes int `json:"num_tiflash_nodes"`
 	NumTiCDCNodes   int `json:"num_ticdc_nodes"`
+	NumTiProxyNodes int `json:"num_tiproxy_nodes"`
 }
 
 func NewRequestTargetStatisticsFromArray(arr *[]RequestTargetNode) RequestTargetStatistics {
@@ -55,6 +57,8 @@ func NewRequestTargetStatisticsFromArray(arr *[]RequestTargetNode) RequestTarget
 			stats.NumTiFlashNodes++
 		case NodeKindTiCDC:
 			stats.NumTiCDCNodes++
+		case NodeKindTiProxy:
+			stats.NumTiProxyNodes++
 		}
 	}
 	return stats

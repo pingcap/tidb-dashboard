@@ -3168,6 +3168,34 @@
                 }
             }
         },
+        "/topology/ticdc": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Get all TiCDC instances",
+                "operationId": "getTiCDCTopology",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/topology.TiCDCInfo"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/topology/tidb": {
             "get": {
                 "security": [
@@ -3216,6 +3244,34 @@
                 "responses": {
                     "200": {
                         "description": "delete ok"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/topology/tiproxy": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Get all TiProxy instances",
+                "operationId": "getTiProxyTopology",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/topology.TiProxyInfo"
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -4663,6 +4719,9 @@
                 "num_pd_nodes": {
                     "type": "integer"
                 },
+                "num_ticdc_nodes": {
+                    "type": "integer"
+                },
                 "num_tidb_nodes": {
                     "type": "integer"
                 },
@@ -4670,6 +4729,9 @@
                     "type": "integer"
                 },
                 "num_tikv_nodes": {
+                    "type": "integer"
+                },
+                "num_tiproxy_nodes": {
                     "type": "integer"
                 }
             }
@@ -5621,7 +5683,68 @@
                 }
             }
         },
+        "topology.TiCDCInfo": {
+            "type": "object",
+            "properties": {
+                "cluster_name": {
+                    "type": "string"
+                },
+                "deploy_path": {
+                    "type": "string"
+                },
+                "git_hash": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "start_timestamp": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "status_port": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "topology.TiDBInfo": {
+            "type": "object",
+            "properties": {
+                "deploy_path": {
+                    "type": "string"
+                },
+                "git_hash": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "start_timestamp": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "status_port": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "topology.TiProxyInfo": {
             "type": "object",
             "properties": {
                 "deploy_path": {

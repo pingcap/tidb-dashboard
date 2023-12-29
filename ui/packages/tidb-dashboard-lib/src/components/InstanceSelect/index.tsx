@@ -26,7 +26,9 @@ import { useChange } from '@lib/utils/useChange'
 import {
   TopologyTiDBInfo,
   ClusterinfoStoreTopologyResponse,
-  TopologyPDInfo
+  TopologyPDInfo,
+  TopologyTiCDCInfo,
+  TopologyTiProxyInfo
 } from '@lib/client'
 
 import { ReqConfig } from '@lib/types'
@@ -45,6 +47,12 @@ export interface IInstanceSelectProps
     options?: ReqConfig
   ): AxiosPromise<ClusterinfoStoreTopologyResponse>
   getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
+  getTiCDCTopology?: (
+    options?: ReqConfig
+  ) => AxiosPromise<Array<TopologyTiCDCInfo>>
+  getTiProxyTopology?: (
+    options?: ReqConfig
+  ) => AxiosPromise<Array<TopologyTiProxyInfo>>
 }
 
 export interface IInstanceSelectRefProps {
@@ -108,6 +116,8 @@ function InstanceSelect(
     getTiDBTopology,
     getPDTopology,
     getStoreTopology,
+    getTiCDCTopology,
+    getTiProxyTopology,
     ...restProps
   } = props
 
@@ -118,6 +128,10 @@ function InstanceSelect(
   const { data: dataStores, isLoading: loadingStores } =
     useClientRequest(getStoreTopology)
   const { data: dataPD, isLoading: loadingPD } = useClientRequest(getPDTopology)
+  const { data: dataTiCDC, isLoading: loadingTiCDC } =
+    useClientRequest(getTiCDCTopology)
+  const { data: dataTiProxy, isLoading: loadingTiProxy } =
+    useClientRequest(getTiProxyTopology)
 
   const columns: IColumn[] = useMemo(
     () => [
@@ -162,6 +176,8 @@ function InstanceSelect(
       dataTiDB,
       dataTiKV: dataStores?.tikv,
       dataTiFlash: dataStores?.tiflash,
+      dataTiCDC,
+      dataTiProxy,
       includeTiFlash: enableTiFlash
     })
   }, [
@@ -169,9 +185,13 @@ function InstanceSelect(
     dataTiDB,
     dataStores,
     dataPD,
+    dataTiCDC,
+    dataTiProxy,
     loadingTiDB,
     loadingStores,
-    loadingPD
+    loadingPD,
+    loadingTiCDC,
+    loadingTiProxy
   ])
 
   const selection = useRef(

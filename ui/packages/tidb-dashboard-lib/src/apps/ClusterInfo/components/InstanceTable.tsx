@@ -79,6 +79,18 @@ export default function ListPage() {
     error: errPD
   } = useClientRequest(ctx!.ds.getPDTopology)
 
+  const {
+    data: dataTiCDC,
+    isLoading: loadingTiCDC,
+    error: errTiCDC
+  } = useClientRequest(ctx!.ds.getTiCDCTopology)
+
+  const {
+    data: dataTiProxy,
+    isLoading: loadingTiProxy,
+    error: errTiProxy
+  } = useClientRequest(ctx!.ds.getTiProxyTopology)
+
   const [tableData, groupData] = useMemo(
     () =>
       buildInstanceTable({
@@ -86,9 +98,11 @@ export default function ListPage() {
         dataTiDB,
         dataTiKV: dataStores?.tikv,
         dataTiFlash: dataStores?.tiflash,
+        dataTiCDC,
+        dataTiProxy,
         includeTiFlash: true
       }),
-    [dataTiDB, dataStores, dataPD]
+    [dataTiDB, dataStores, dataPD, dataTiCDC, dataTiProxy]
   )
 
   const handleHideTiDB = useCallback(
@@ -179,11 +193,17 @@ export default function ListPage() {
     <CardTable
       disableSelectionZone
       cardNoMargin
-      loading={loadingTiDB || loadingStores || loadingPD}
+      loading={
+        loadingTiDB ||
+        loadingStores ||
+        loadingPD ||
+        loadingTiCDC ||
+        loadingTiProxy
+      }
       columns={columns}
       items={tableData}
       groups={groupData}
-      errors={[errTiDB, errStores, errPD]}
+      errors={[errTiDB, errStores, errPD, errTiCDC, errTiProxy]}
     />
   )
 }

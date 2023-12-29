@@ -5,10 +5,19 @@ import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 import {
   TopologyPDInfo,
   TopologyTiDBInfo,
-  TopologyStoreInfo
+  TopologyStoreInfo,
+  TopologyTiCDCInfo,
+  TopologyTiProxyInfo
 } from '@lib/client'
 
-export const InstanceKinds = ['pd', 'tidb', 'tikv', 'tiflash', 'ticdc'] as const
+export const InstanceKinds = [
+  'pd',
+  'tidb',
+  'tikv',
+  'tiflash',
+  'ticdc',
+  'tiproxy'
+] as const
 export type InstanceKind = typeof InstanceKinds[number]
 
 export const InstanceStatus = {
@@ -26,7 +35,9 @@ export function instanceKindName(kind: InstanceKind) {
 export interface IInstanceTableItem
   extends TopologyPDInfo,
     TopologyTiDBInfo,
-    TopologyStoreInfo {
+    TopologyStoreInfo,
+    TopologyTiCDCInfo,
+    TopologyTiProxyInfo {
   key: string
   instanceKind: InstanceKind
 }
@@ -36,6 +47,8 @@ export interface IBuildInstanceTableProps {
   dataTiDB?: TopologyTiDBInfo[]
   dataTiKV?: TopologyStoreInfo[]
   dataTiFlash?: TopologyStoreInfo[]
+  dataTiCDC?: TopologyTiCDCInfo[]
+  dataTiProxy?: TopologyTiProxyInfo[]
   includeTiFlash?: boolean
 }
 
@@ -44,6 +57,8 @@ export function buildInstanceTable({
   dataTiDB,
   dataTiKV,
   dataTiFlash,
+  dataTiCDC,
+  dataTiProxy,
   includeTiFlash
 }: IBuildInstanceTableProps): [IInstanceTableItem[], IGroup[]] {
   const tableData: IInstanceTableItem[] = []
@@ -55,11 +70,15 @@ export function buildInstanceTable({
       | TopologyPDInfo[]
       | TopologyTiDBInfo[]
       | TopologyStoreInfo[]
+      | TopologyTiCDCInfo[]
+      | TopologyTiProxyInfo[]
       | undefined
   } = {}
   kinds.pd = dataPD
   kinds.tidb = dataTiDB
   kinds.tikv = dataTiKV
+  kinds.ticdc = dataTiCDC
+  kinds.tiproxy = dataTiProxy
   if (includeTiFlash) {
     kinds.tiflash = dataTiFlash
   }

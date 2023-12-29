@@ -137,7 +137,11 @@ import { TopologyPDInfo } from '../models';
 // @ts-ignore
 import { TopologyStoreLocation } from '../models';
 // @ts-ignore
+import { TopologyTiCDCInfo } from '../models';
+// @ts-ignore
 import { TopologyTiDBInfo } from '../models';
+// @ts-ignore
+import { TopologyTiProxyInfo } from '../models';
 // @ts-ignore
 import { TopsqlEditableConfig } from '../models';
 // @ts-ignore
@@ -1555,12 +1559,78 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary Get all TiCDC instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTiCDCTopology: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/topology/ticdc`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get all TiDB instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getTiDBTopology: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/topology/tidb`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get all TiProxy instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTiProxyTopology: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/topology/tiproxy`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -4378,12 +4448,32 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Get all TiCDC instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTiCDCTopology(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TopologyTiCDCInfo>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTiCDCTopology(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary Get all TiDB instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         async getTiDBTopology(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TopologyTiDBInfo>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getTiDBTopology(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Get all TiProxy instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTiProxyTopology(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TopologyTiProxyInfo>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTiProxyTopology(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5441,12 +5531,30 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary Get all TiCDC instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTiCDCTopology(options?: any): AxiosPromise<Array<TopologyTiCDCInfo>> {
+            return localVarFp.getTiCDCTopology(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Get all TiDB instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getTiDBTopology(options?: any): AxiosPromise<Array<TopologyTiDBInfo>> {
             return localVarFp.getTiDBTopology(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get all TiProxy instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTiProxyTopology(options?: any): AxiosPromise<Array<TopologyTiProxyInfo>> {
+            return localVarFp.getTiProxyTopology(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7747,6 +7855,17 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
+     * @summary Get all TiCDC instances
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getTiCDCTopology(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getTiCDCTopology(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary Get all TiDB instances
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -7754,6 +7873,17 @@ export class DefaultApi extends BaseAPI {
      */
     public getTiDBTopology(options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).getTiDBTopology(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get all TiProxy instances
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getTiProxyTopology(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getTiProxyTopology(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

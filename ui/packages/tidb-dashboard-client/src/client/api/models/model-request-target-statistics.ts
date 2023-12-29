@@ -31,6 +31,12 @@ export interface ModelRequestTargetStatistics {
      * @type {number}
      * @memberof ModelRequestTargetStatistics
      */
+    'num_ticdc_nodes'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelRequestTargetStatistics
+     */
     'num_tidb_nodes'?: number;
     /**
      * 
@@ -44,5 +50,11 @@ export interface ModelRequestTargetStatistics {
      * @memberof ModelRequestTargetStatistics
      */
     'num_tikv_nodes'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelRequestTargetStatistics
+     */
+    'num_tiproxy_nodes'?: number;
 }
 

@@ -20,6 +20,14 @@ class DataSource implements IOverviewDataSource {
     return client.getInstance().getPDTopology(options)
   }
 
+  getTiCDCTopology(options?: ReqConfig) {
+    return client.getInstance().getTiCDCTopology(options)
+  }
+
+  getTiProxyTopology(options?: ReqConfig) {
+    return client.getInstance().getTiProxyTopology(options)
+  }
+
   metricsQueryGet(params: {
     endTimeSec?: number
     query?: string

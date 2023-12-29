@@ -81,6 +81,8 @@ export default function Page() {
             case 'tidb':
             case 'tikv':
             case 'tiflash':
+            case 'ticdc':
+            case 'tiproxy':
               port = instance.status_port
               break
           }
@@ -124,8 +126,8 @@ export default function Page() {
       {
         name: t('instance_profiling.list.table.columns.targets'),
         key: 'targets',
-        minWidth: 150,
-        maxWidth: 250,
+        minWidth: 300,
+        maxWidth: 400,
         onRender: (rec) => {
           return combineTargetStats(rec.target_stats)
         }
@@ -229,11 +231,13 @@ export default function Page() {
                   disabled={conprofEnable}
                   enableTiFlash={true}
                   ref={instanceSelect}
-                  style={{ width: 200 }}
+                  style={{ width: 320 }}
                   defaultSelectAll
                   getTiDBTopology={ctx!.ds.getTiDBTopology}
                   getStoreTopology={ctx!.ds.getStoreTopology}
                   getPDTopology={ctx!.ds.getPDTopology}
+                  getTiCDCTopology={ctx!.ds.getTiCDCTopology}
+                  getTiProxyTopology={ctx!.ds.getTiProxyTopology}
                 />
               </Form.Item>
               <Form.Item name="type">

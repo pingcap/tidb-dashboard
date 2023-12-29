@@ -34,6 +34,12 @@ class DataSource implements IInstanceProfilingDataSource {
   getPDTopology(options?: ReqConfig) {
     return client.getInstance().getPDTopology(options)
   }
+  getTiCDCTopology(options?: ReqConfig) {
+    return client.getInstance().getTiCDCTopology(options)
+  }
+  getTiProxyTopology(options?: ReqConfig) {
+    return client.getInstance().getTiProxyTopology(options)
+  }
 }
 
 const ds = new DataSource()

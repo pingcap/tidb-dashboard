@@ -91,9 +91,11 @@ export default function SearchHeader({ taskGroupID }: Props) {
             case 'pd':
             case 'tikv':
             case 'tiflash':
+            case 'ticdc':
               port = instance.port
               break
             case 'tidb':
+            case 'tiproxy':
               port = instance.status_port
               break
           }
@@ -161,7 +163,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
           ref={instanceSelect}
           defaultSelectAll
           enableTiFlash
-          style={{ width: 200 }}
+          style={{ width: 320 }}
           data-e2e="log_search_instances"
           dropContainerProps={
             { 'data-e2e': 'log_search_instances_drop' } as any
@@ -169,6 +171,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
           getTiDBTopology={ctx!.ds.getTiDBTopology}
           getStoreTopology={ctx!.ds.getStoreTopology}
           getPDTopology={ctx!.ds.getPDTopology}
+          getTiCDCTopology={ctx!.ds.getTiCDCTopology}
+          getTiProxyTopology={ctx!.ds.getTiProxyTopology}
         />
       </Form.Item>
       <Form.Item name="keywords">

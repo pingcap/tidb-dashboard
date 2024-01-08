@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Package tidbproxy provides a TiDB cluster proxy service. It forwards incoming SQL API and
 // Status API requests to one of the alive TiDB upstream.

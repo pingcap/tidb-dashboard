@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Package proxy provides a TCP reverse proxy. Unlike normal reverse proxy, the upstream is intentionally fixed.
 // A new upstream will be selected if the current upstream is down.

@@ -131,6 +131,7 @@ export const ctx: (cfg: Partial<ISlowQueryConfig>) => ISlowQueryContext = (
       apiPathBase: client.getBasePath(),
       enableExport: true,
       showDBFilter: true,
+      showDigestFilter: false,
       ...cfg
     }
   }

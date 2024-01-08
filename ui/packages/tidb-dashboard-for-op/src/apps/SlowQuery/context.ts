@@ -73,7 +73,8 @@ export const ctx: ISlowQueryContext = {
   cfg: {
     apiPathBase: client.getBasePath(),
     enableExport: true,
-    showDBFilter: true
+    showDBFilter: true,
+    showDigestFilter: false
     // instantQuery: false,
     // timeRangeSelector: {
     //   recentSeconds: [3 * 24 * 60 * 60],

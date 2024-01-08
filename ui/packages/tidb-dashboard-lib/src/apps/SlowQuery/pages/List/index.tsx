@@ -121,6 +121,9 @@ function List() {
   const [filterLimit, setFilterLimit] = useState<number>(
     controller.queryOptions.limit
   )
+  const [filterDigest, setFilterDigest] = useState<string>(
+    controller.queryOptions.digest
+  )
   const [filterText, setFilterText] = useState<string>(
     controller.queryOptions.searchText
   )
@@ -133,7 +136,7 @@ function List() {
       limit: filterLimit,
       searchText: filterText,
       visibleColumnKeys,
-      digest: '',
+      digest: filterDigest,
       plans: []
     })
   })
@@ -168,7 +171,7 @@ function List() {
         orderBy: controller.orderOptions.orderBy,
         desc: controller.orderOptions.desc,
         limit: 10000,
-        digest: '',
+        digest: filterDigest,
         plans: []
       })
       const token = res.data
@@ -244,6 +247,14 @@ function List() {
                 </Option>
               ))}
             </Select>
+            {ctx!.cfg.showDigestFilter && (
+              <Input
+                value={filterDigest}
+                onChange={(e) => setFilterDigest(e.target.value)}
+                placeholder={t('slow_query.toolbar.digest.placeholder')}
+                data-e2e="slow_query_digest"
+              />
+            )}
             <Input.Search
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}

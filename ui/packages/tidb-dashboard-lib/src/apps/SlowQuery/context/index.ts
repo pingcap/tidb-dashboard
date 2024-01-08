@@ -61,6 +61,7 @@ export interface ISlowQueryEvent {
 export interface ISlowQueryConfig extends IContextConfig {
   enableExport: boolean
   showDBFilter: boolean
+  showDigestFilter: boolean
   showHelp?: boolean
 
   // true means the list api will return all fields value of an item, not just the selected fields

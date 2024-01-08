@@ -38,6 +38,8 @@ function ComponentItem(props: {
     }
     return [up, all]
   }, [resp])
+  // query TiCDC and TiProxy components returns 404 under TiDB 7.6.0
+  const notFoundError = resp.error?.response?.status === 404
 
   return (
     <AnimatedSkeleton showSkeleton={resp.isLoading} paragraph={{ rows: 1 }}>
@@ -51,7 +53,7 @@ function ComponentItem(props: {
           </Descriptions.Item>
         </Descriptions>
       )}
-      {resp.error && (
+      {resp.error && !notFoundError && (
         <Typography.Text type="danger">
           <Space>
             <WarningOutlined /> Error

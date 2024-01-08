@@ -91,6 +91,12 @@ export default function ListPage() {
     error: errTiProxy
   } = useClientRequest(ctx!.ds.getTiProxyTopology)
 
+  // query TiCDC and TiProxy components returns 404 under TiDB 7.6.0
+  // filter out the 404 error
+  const errors = [errTiDB, errStores, errPD, errTiCDC, errTiProxy].filter(
+    (e) => e?.response?.status !== 404
+  )
+
   const [tableData, groupData] = useMemo(
     () =>
       buildInstanceTable({
@@ -203,7 +209,7 @@ export default function ListPage() {
       columns={columns}
       items={tableData}
       groups={groupData}
-      errors={[errTiDB, errStores, errPD, errTiCDC, errTiProxy]}
+      errors={errors}
     />
   )
 }

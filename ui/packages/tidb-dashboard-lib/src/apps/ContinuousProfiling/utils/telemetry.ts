@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 import { ConprofContinuousProfilingConfig } from '@lib/client'
 import { mixpanel } from '@lib/utils/telemetry'
 import { Dayjs } from 'dayjs'

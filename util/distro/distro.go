@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Package distro provides a type-safe distribution resource framework.
 // Distribution resource determines how component names are displayed in errors, logs and so on.

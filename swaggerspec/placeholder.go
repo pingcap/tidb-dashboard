@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 // This file only ensures `swaggerspec` package exist even if swagger is not enabled. This is required for `go mod tidy`.
 

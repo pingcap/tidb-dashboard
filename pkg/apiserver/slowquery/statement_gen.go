@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 package slowquery
 
@@ -52,7 +52,9 @@ func genOrderStmt(tableColumns []string, orderBy string, isDesc bool) (string, e
 	} else {
 		// We have both TiDB 4.x and TiDB 5.x columns listed in the model. Filter out columns that do not exist in current version TiDB schema.
 		fields := lo.Filter(getFieldsAndTags(), func(f Field, _ int) bool {
-			return lo.Contains(tableColumns, f.ColumnName)
+			hasProjection := f.Projection != ""
+			isTableColumnValid := lo.Contains(tableColumns, f.ColumnName)
+			return hasProjection || isTableColumnValid
 		})
 		orderField, ok := lo.Find(fields, func(f Field) bool {
 			return f.JSONName == orderBy

@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 package slowquery
 
@@ -99,6 +99,11 @@ type Model struct {
 	// Computed fields
 	BinaryPlanJSON string `json:"binary_plan_json"` // binary plan json format
 	BinaryPlanText string `json:"binary_plan_text"` // binary plan plain text
+
+	// Resource Control
+	RU            float64 `gorm:"column:RU" json:"ru" proj:"(Request_unit_write + Request_unit_read)"`
+	QueuedTime    float64 `gorm:"column:Time_queued_by_rc" json:"time_queued_by_rc"`
+	ResourceGroup string  `gorm:"column:Resource_group" json:"resource_group"`
 }
 
 type Field struct {

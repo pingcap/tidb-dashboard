@@ -298,6 +298,12 @@ export interface SlowqueryModel {
     'resolve_lock_time'?: number;
     /**
      * 
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'resource_group'?: string;
+    /**
+     * 
      * @type {number}
      * @memberof SlowqueryModel
      */
@@ -333,6 +339,12 @@ export interface SlowqueryModel {
      */
     'rocksdb_key_skipped_count'?: number;
     /**
+     * Resource Control
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'ru'?: number;
+    /**
      * 
      * @type {string}
      * @memberof SlowqueryModel
@@ -344,6 +356,12 @@ export interface SlowqueryModel {
      * @memberof SlowqueryModel
      */
     'success'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'time_queued_by_rc'?: number;
     /**
      * finish time
      * @type {number}

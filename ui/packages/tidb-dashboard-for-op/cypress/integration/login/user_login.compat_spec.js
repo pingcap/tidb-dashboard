@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 // Test User Login Compatibility
 // FEATURE_VERSION < 5.3.0 of TiDB Dashboard does not support nonRootLogin

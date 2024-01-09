@@ -15,6 +15,4 @@ packages/tidb-dashboard-for-op/dist
 packages/tidb-dashboard-for-op/.nyc_output
 packages/tidb-dashboard-for-op/coverage
 
-packages/tidb-dashboard-for-dbaas/dist
-
 pnpm-lock.yaml

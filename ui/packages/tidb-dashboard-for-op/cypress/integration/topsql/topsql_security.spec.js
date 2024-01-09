@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 describe('Top SQL security', function () {
   it("can't access the Top SQL page without login, then redirect to login page", function () {

@@ -59,7 +59,7 @@ export function InstanceSelect({
 
   return (
     <Select
-      style={{ width: 200 }}
+      style={{ minWidth: 200 }}
       placeholder="Select Instance"
       value={combineSelectValue(value)}
       onChange={(value) => {

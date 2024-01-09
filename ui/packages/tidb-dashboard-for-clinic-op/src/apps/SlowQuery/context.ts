@@ -118,6 +118,7 @@ export const ctx: (extra: DsExtra) => ISlowQueryContext = (extra) => ({
   cfg: {
     apiPathBase: client.getBasePath(),
     enableExport: false,
-    showDBFilter: false
+    showDBFilter: false,
+    showDigestFilter: false
   }
 })

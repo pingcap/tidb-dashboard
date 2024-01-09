@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 import type { PlanRecord } from '../pages/List/ListDetail/ListDetailTable'
 import type { SQLRecord } from '../pages/List/ListTable'

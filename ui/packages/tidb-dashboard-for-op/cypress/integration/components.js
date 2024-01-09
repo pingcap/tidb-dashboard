@@ -1,4 +1,4 @@
-// Copyright 2023 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 
 export const testBaseSelectorOptions = (optionsList, dataE2EValue) => {
   cy.get(`[data-e2e=${dataE2EValue}]`)

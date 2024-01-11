@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 var ErrUnknownColumn = ErrNS.NewType("unknown_column")
@@ -25,9 +27,15 @@ func genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, erro
 
 	// We have both TiDB 4.x and TiDB 5.x columns listed in the model. Filter out columns that do not exist in current version TiDB schema.
 	fields = lo.Filter(fields, func(f Field, _ int) bool {
-		hasProjection := f.Projection != ""
-		isTableColumnValid := lo.Contains(tableColumns, f.ColumnName)
-		return hasProjection || isTableColumnValid
+		var representedColumns []string
+		if len(f.Related) != 0 {
+			representedColumns = f.Related
+		} else {
+			representedColumns = []string{f.ColumnName}
+		}
+		// For compatibility with old TiDB, we need to check if the column exists in the table.
+		// Dependent columns of the requested field must exist in the db schema. Otherwise, the requested field will be ignored.
+		return utils.IsSubsetICaseInsensitive(tableColumns, representedColumns)
 	})
 
 	if len(fields) == 0 {
@@ -52,7 +60,15 @@ func genOrderStmt(tableColumns []string, orderBy string, isDesc bool) (string, e
 	} else {
 		// We have both TiDB 4.x and TiDB 5.x columns listed in the model. Filter out columns that do not exist in current version TiDB schema.
 		fields := lo.Filter(getFieldsAndTags(), func(f Field, _ int) bool {
-			return lo.Contains(tableColumns, f.ColumnName)
+			var representedColumns []string
+			if len(f.Related) != 0 {
+				representedColumns = f.Related
+			} else {
+				representedColumns = []string{f.ColumnName}
+			}
+			// For compatibility with old TiDB, we need to check if the column exists in the table.
+			// Dependent columns of the requested field must exist in the db schema. Otherwise, the requested field will be ignored.
+			return utils.IsSubsetICaseInsensitive(tableColumns, representedColumns)
 		})
 		orderField, ok := lo.Find(fields, func(f Field) bool {
 			return f.JSONName == orderBy

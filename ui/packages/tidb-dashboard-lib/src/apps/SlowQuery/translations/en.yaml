@@ -117,6 +117,14 @@ slow_query:
     rocksdb_block_read_count_tooltip: Total number of blocks RocksDB read from file (RocksDB block_read_count)
     rocksdb_block_read_byte: RocksDB Read Size
     rocksdb_block_read_byte_tooltip: Total number of bytes RocksDB read from file (RocksDB block_read_byte)
+
+    ru: RU
+    ru_tooltip: request units
+    resource_group: Resource Group
+    resource_group_tooltip: The resource group that the query belongs to
+    time_queued_by_rc: Time Queued by RC
+    time_queued_by_rc_tooltip: The wait time spent in the resource queue
+
   common:
     status:
       success: Success

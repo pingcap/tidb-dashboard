@@ -184,3 +184,10 @@ statement:
     avg_rocksdb_block_read_byte: Mean RocksDB FS Read Size
     avg_rocksdb_block_read_byte_tooltip: Total number of bytes RocksDB read from file (RocksDB block_read_byte)
     max_rocksdb_block_read_byte: Max RocksDB FS Read Size
+
+    resource_group: Resource Group
+    resource_group_tooltip: The resource group that the query belongs to
+    avg_ru: Mean RU
+    avg_ru_tooltip: The average number of request units (RU) consumed by the query
+    sum_ru: Total RU
+    sum_ru_tooltip: The total number of request units (RU) consumed by the query

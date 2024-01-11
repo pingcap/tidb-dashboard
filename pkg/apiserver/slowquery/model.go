@@ -21,8 +21,8 @@ type Model struct {
 	ConnectionID string `gorm:"column:Conn_ID" json:"connection_id"`
 	Success      int    `gorm:"column:Succ" json:"success"`
 
-	Timestamp             float64 `gorm:"column:timestamp" proj:"(UNIX_TIMESTAMP(Time) + 0E0)" json:"timestamp"` // finish time
-	QueryTime             float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
+	Timestamp             float64 `gorm:"column:timestamp" proj:"(UNIX_TIMESTAMP(Time) + 0E0)" json:"timestamp" related:"time"` // finish time
+	QueryTime             float64 `gorm:"column:Query_time" json:"query_time"`                                                  // latency
 	ParseTime             float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime           float64 `gorm:"column:Compile_time" json:"compile_time"`
 	RewriteTime           float64 `gorm:"column:Rewrite_time" json:"rewrite_time"`
@@ -99,22 +99,33 @@ type Model struct {
 	// Computed fields
 	BinaryPlanJSON string `json:"binary_plan_json"` // binary plan json format
 	BinaryPlanText string `json:"binary_plan_text"` // binary plan plain text
+
+	// Resource Control
+	RU            float64 `gorm:"column:RU" json:"ru" proj:"(Request_unit_write + Request_unit_read)" related:"Request_unit_write,Request_unit_read"`
+	QueuedTime    float64 `gorm:"column:Time_queued_by_rc" json:"time_queued_by_rc"`
+	ResourceGroup string  `gorm:"column:Resource_group" json:"resource_group"`
 }
 
 type Field struct {
 	ColumnName string
 	JSONName   string
 	Projection string
+	// `related` tag is used to verify a non-existent column, which is aggregated/projection from the columns represented by related.
+	Related []string
 }
 
 func getFieldsAndTags() (slowQueryFields []Field) {
-	fields := reflectutil.GetFieldsAndTags(Model{}, []string{"gorm", "proj", "json"})
+	fields := reflectutil.GetFieldsAndTags(Model{}, []string{"gorm", "proj", "json", "related"})
 
 	for _, f := range fields {
 		sqf := Field{
 			ColumnName: utils.GetGormColumnName(f.Tags["gorm"]),
 			JSONName:   f.Tags["json"],
 			Projection: f.Tags["proj"],
+		}
+
+		if f.Tags["related"] != "" {
+			sqf.Related = strings.Split(f.Tags["related"], ",")
 		}
 
 		slowQueryFields = append(slowQueryFields, sqf)

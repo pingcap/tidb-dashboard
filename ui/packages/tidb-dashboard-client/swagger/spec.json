@@ -5115,6 +5115,9 @@
                 "resolve_lock_time": {
                     "type": "number"
                 },
+                "resource_group": {
+                    "type": "string"
+                },
                 "rewrite_time": {
                     "type": "number"
                 },
@@ -5134,11 +5137,18 @@
                 "rocksdb_key_skipped_count": {
                     "type": "integer"
                 },
+                "ru": {
+                    "description": "Resource Control",
+                    "type": "number"
+                },
                 "stats": {
                     "type": "string"
                 },
                 "success": {
                     "type": "integer"
+                },
+                "time_queued_by_rc": {
+                    "type": "number"
                 },
                 "timestamp": {
                     "description": "finish time",
@@ -5371,6 +5381,9 @@
                 "avg_rocksdb_key_skipped_count": {
                     "type": "integer"
                 },
+                "avg_ru": {
+                    "type": "number"
+                },
                 "avg_total_keys": {
                     "type": "integer"
                 },
@@ -5485,6 +5498,9 @@
                 "max_rocksdb_key_skipped_count": {
                     "type": "integer"
                 },
+                "max_ru": {
+                    "type": "number"
+                },
                 "max_total_keys": {
                     "type": "integer"
                 },
@@ -5533,6 +5549,10 @@
                     "description": "Computed fields",
                     "type": "string"
                 },
+                "resource_group": {
+                    "description": "Resource Control",
+                    "type": "string"
+                },
                 "sample_user": {
                     "type": "string"
                 },
@@ -5553,6 +5573,9 @@
                 },
                 "sum_latency": {
                     "type": "integer"
+                },
+                "sum_ru": {
+                    "type": "number"
                 },
                 "sum_warnings": {
                     "type": "integer"

@@ -119,6 +119,14 @@ slow_query:
     rocksdb_block_read_count_tooltip: RocksDB 从文件系统中读数据的次数 (block_read_count)
     rocksdb_block_read_byte: RocksDB 文件系统读数据量
     rocksdb_block_read_byte_tooltip: RocksDB 从文件系统中读数据的数据量 (block_read_byte)
+
+    ru: RU
+    ru_tooltip: 资源单位(RU)
+    resource_group: 资源组
+    resource_group_tooltip: SQL 语句所属的资源组
+    time_queued_by_rc: RC 等待耗时
+    time_queued_by_rc_tooltip: SQL 语句在资源组队列中等待的时间
+
   common:
     status:
       success: 成功

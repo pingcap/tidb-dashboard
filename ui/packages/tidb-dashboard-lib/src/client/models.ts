@@ -2466,6 +2466,12 @@ export interface SlowqueryModel {
     'resolve_lock_time'?: number;
     /**
      * 
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'resource_group'?: string;
+    /**
+     * 
      * @type {number}
      * @memberof SlowqueryModel
      */
@@ -2501,6 +2507,12 @@ export interface SlowqueryModel {
      */
     'rocksdb_key_skipped_count'?: number;
     /**
+     * Resource Control
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'ru'?: number;
+    /**
      * 
      * @type {string}
      * @memberof SlowqueryModel
@@ -2512,6 +2524,12 @@ export interface SlowqueryModel {
      * @memberof SlowqueryModel
      */
     'success'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'time_queued_by_rc'?: number;
     /**
      * finish time
      * @type {number}
@@ -2939,6 +2957,12 @@ export interface StatementModel {
      * @type {number}
      * @memberof StatementModel
      */
+    'avg_ru'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
     'avg_total_keys'?: number;
     /**
      * 
@@ -3155,6 +3179,12 @@ export interface StatementModel {
      * @type {number}
      * @memberof StatementModel
      */
+    'max_ru'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
     'max_total_keys'?: number;
     /**
      * 
@@ -3241,6 +3271,12 @@ export interface StatementModel {
      */
     'related_schemas'?: string;
     /**
+     * Resource Control
+     * @type {string}
+     * @memberof StatementModel
+     */
+    'resource_group'?: string;
+    /**
      * 
      * @type {string}
      * @memberof StatementModel
@@ -3282,6 +3318,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'sum_latency'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_ru'?: number;
     /**
      * 
      * @type {number}

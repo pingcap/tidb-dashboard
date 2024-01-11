@@ -121,6 +121,10 @@ export function slowQueryColumns(
     tcf.bar.single('rocksdb_block_read_byte', 'bytes', rows).patchConfig({
       minWidth: 220,
       maxWidth: 250
-    })
+    }),
+    // resource control
+    tcf.bar.single('ru', 'none', rows),
+    tcf.textWithTooltip('resource_group', rows),
+    tcf.bar.single('time_queued_by_rc', 's', rows)
   ])
 }

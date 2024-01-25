@@ -188,6 +188,13 @@ statement:
     resource_group: Resource Group
     resource_group_tooltip: The resource group that the query belongs to
     avg_ru: Mean RU
-    avg_ru_tooltip: The average number of request units (RU) consumed by the query
+    avg_ru_tooltip: The average number of request units (RU) consumed by the statement
+    max_ru: Max RU
+    max_ru_tooltip: The maximum number of request units (RU) consumed by the statement
     sum_ru: Total RU
-    sum_ru_tooltip: The total number of request units (RU) consumed by the query
+    sum_ru_tooltip: The total number of request units (RU) consumed by the statement
+    avg_time_queued_by_rc: Mean RC Wait Time in Queue
+    avg_time_queued_by_rc_tooltip: The average time that the query waits in the resource control's queue
+    max_time_queued_by_rc: Max RC Wait Time in Queue
+    max_time_queued_by_rc_tooltip: The maximum time that the query waits in the resource control's queue
+    rc_wait_time: Wait Time in Resource Control

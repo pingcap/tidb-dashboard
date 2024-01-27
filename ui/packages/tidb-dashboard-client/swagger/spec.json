@@ -5384,6 +5384,9 @@
                 "avg_ru": {
                     "type": "number"
                 },
+                "avg_time_queued_by_rc": {
+                    "type": "number"
+                },
                 "avg_total_keys": {
                     "type": "integer"
                 },
@@ -5499,6 +5502,9 @@
                     "type": "integer"
                 },
                 "max_ru": {
+                    "type": "number"
+                },
+                "max_time_queued_by_rc": {
                     "type": "number"
                 },
                 "max_total_keys": {

@@ -114,6 +114,11 @@ export const tabTimeItems = (data: SlowqueryModel, t: TFunction) => {
       key: 'wait_prewrite_binlog_time',
       value: data.wait_prewrite_binlog_time! * 10e8,
       indentLevel: 1
+    },
+    {
+      key: 'time_queued_by_rc',
+      value: data.time_queued_by_rc! * 10e8,
+      indentLevel: 1
     }
   ]
 }

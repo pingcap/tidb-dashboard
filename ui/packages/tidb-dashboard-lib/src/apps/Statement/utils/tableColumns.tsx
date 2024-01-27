@@ -97,7 +97,11 @@ export const derivedFields = {
     'avg_rocksdb_block_read_byte',
     'max_rocksdb_block_read_byte'
   ),
-  avg_ru: genDerivedBarSources('avg_ru', 'max_ru')
+  avg_ru: genDerivedBarSources('avg_ru', 'max_ru'),
+  avg_time_queued_by_rc: genDerivedBarSources(
+    'avg_time_queued_by_rc',
+    'max_time_queued_by_rc'
+  )
 }
 
 //////////////////////////////////////////
@@ -282,7 +286,8 @@ export function statementColumns(
       minWidth: 100,
       maxWidth: 300,
       columnActionsMode: ColumnActionsMode.clickable
-    })
+    }),
+    avgMaxColumn(tcf, 'avg_time_queued_by_rc', 'ns', rows)
   ])
 }
 

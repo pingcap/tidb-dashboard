@@ -2963,6 +2963,12 @@ export interface StatementModel {
      * @type {number}
      * @memberof StatementModel
      */
+    'avg_time_queued_by_rc'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
     'avg_total_keys'?: number;
     /**
      * 
@@ -3180,6 +3186,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'max_ru'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'max_time_queued_by_rc'?: number;
     /**
      * 
      * @type {number}

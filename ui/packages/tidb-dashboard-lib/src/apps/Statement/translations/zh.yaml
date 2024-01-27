@@ -195,6 +195,13 @@ statement:
     resource_group: 资源组
     resource_group_tooltip: SQL 语句所属的资源组
     avg_ru: 平均 RU
-    avg_ru_tooltip: SQL 语句的平均 RU
+    avg_ru_tooltip: Statement 语句的平均 RU
+    max_ru: 最大 RU
+    max_ru_tooltip: 该 Statement 执行中使用过的最大 RU
     sum_ru: 累积 RU
-    sum_ru_tooltip: SQL 语句的 RU 累积值
+    sum_ru_tooltip: 该 Statement 的 RU 累积值
+    avg_time_queued_by_rc: RC 平均等待耗时
+    avg_time_queued_by_rc_tooltip: SQL 语句在资源组控制队列中平均等待的时间 (Resource Control)
+    max_time_queued_by_rc: RC 最大等待耗时
+    max_time_queued_by_rc_tooltip: SQL 语句在资源组控制队列中最大等待的时间 (Resource Control)
+    rc_wait_time: RC 资源控制等待耗时

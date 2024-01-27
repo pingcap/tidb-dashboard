@@ -29,5 +29,7 @@ export const tabBasicItems = (data: SlowqueryModel) => [
   { key: 'instance', value: data.instance },
   { key: 'connection_id', value: data.connection_id },
   { key: 'user', value: data.user },
-  { key: 'host', value: data.host }
+  { key: 'host', value: data.host },
+  { key: 'ru', value: data.ru },
+  { key: 'resource_group', value: data.resource_group }
 ]

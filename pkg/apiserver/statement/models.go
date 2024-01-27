@@ -108,6 +108,8 @@ type Model struct {
 	AggAvgRU         float64 `json:"avg_ru" agg:"CAST(AVG(avg_request_unit_write + avg_request_unit_read) AS DECIMAL(64, 2))" related:"avg_request_unit_write,avg_request_unit_read"`
 	AggMaxRU         float64 `json:"max_ru" agg:"MAX(max_request_unit_write + max_request_unit_read)" related:"max_request_unit_write,max_request_unit_read"`
 	AggSumRU         float64 `json:"sum_ru" agg:"CAST(SUM(exec_count * (avg_request_unit_write + avg_request_unit_read)) AS DECIMAL(64, 2))" related:"avg_request_unit_write,avg_request_unit_read"`
+	AvgQueuedTime    float64 `json:"avg_time_queued_by_rc" agg:"CAST(AVG(AVG_QUEUED_RC_TIME) AS DECIMAL(64, 2))" related:"AVG_QUEUED_RC_TIME"`
+	MaxQueuedTime    float64 `json:"max_time_queued_by_rc" agg:"Max(MAX_QUEUED_RC_TIME)" related:"MAX_QUEUED_RC_TIME"`
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"

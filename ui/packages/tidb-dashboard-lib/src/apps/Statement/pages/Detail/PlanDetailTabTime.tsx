@@ -56,6 +56,11 @@ export const tabTimeItems = (data: StatementModel, t: TFunction) => [
     max: data.max_commit_backoff_time
   },
   {
+    key: 'rc_wait_time',
+    avg: data.avg_time_queued_by_rc,
+    max: data.max_time_queued_by_rc
+  },
+  {
     key: 'query_time2',
     keyDisplay: (
       <Typography.Text strong>

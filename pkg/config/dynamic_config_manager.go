@@ -74,7 +74,7 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 		}
 
 		if dc == nil {
-			dc = &DynamicConfig{}
+			dc = NewDynamicConfigWithDefaults()
 		}
 		dc.Adjust()
 

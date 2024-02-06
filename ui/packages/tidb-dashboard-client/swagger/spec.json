@@ -2287,6 +2287,33 @@
                 }
             }
         },
+        "/resource_manager/information/group_names": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "List all resource groups",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/slow_query/available_fields": {
             "get": {
                 "security": [
@@ -2500,6 +2527,15 @@
                         "collectionFormat": "multi",
                         "description": "for showing slow queries in the statement detail page",
                         "name": "plans",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "name": "resource_group",
                         "in": "query"
                     },
                     {
@@ -4955,6 +4991,12 @@
                 },
                 "plans": {
                     "description": "for showing slow queries in the statement detail page",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "resource_group": {
                     "type": "array",
                     "items": {
                         "type": "string"

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -46,6 +48,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	{
 		endpoint.GET("/config", s.GetConfig)
 		endpoint.GET("/information", s.GetInformation)
+		endpoint.GET("/information/group_names", s.resourceGroupNamesHandler)
 		endpoint.GET("/calibrate/hardware", s.GetCalibrateByHardware)
 		endpoint.GET("/calibrate/actual", s.GetCalibrateByActual)
 	}
@@ -94,6 +97,30 @@ func (s *Service) GetInformation(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, cfg)
+}
+
+// @Summary List all resource groups
+// @Router /resource_manager/information/group_names [get]
+// @Security JwtAuth
+// @Success 200 {object} []string
+// @Failure 401 {object} rest.ErrorResponse
+func (s *Service) resourceGroupNamesHandler(c *gin.Context) {
+	type groupSchemas struct {
+		Groups string `gorm:"column:NAME"`
+	}
+	var result []groupSchemas
+	db := utils.GetTiDBConnection(c)
+	err := db.Raw("SELECT NAME FROM INFORMATION_SCHEMA.RESOURCE_GROUPS").Scan(&result).Error
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+	strs := []string{}
+	for _, v := range result {
+		strs = append(strs, strings.ToLower(v.Groups))
+	}
+	sort.Strings(strs)
+	c.JSON(http.StatusOK, strs)
 }
 
 type CalibrateResponse struct {

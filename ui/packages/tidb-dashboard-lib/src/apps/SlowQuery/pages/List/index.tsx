@@ -178,6 +178,7 @@ function List() {
         begin_time: timeRangeValue[0],
         end_time: timeRangeValue[1],
         db: controller.queryOptions.schemas,
+        resource_group: controller.queryOptions.groups,
         text: controller.queryOptions.searchText,
         orderBy: controller.orderOptions.orderBy,
         desc: controller.orderOptions.desc,
@@ -243,7 +244,7 @@ function List() {
               />
             )}
             {ctx!.cfg.showResourceGroupFilter &&
-              controller.allGroups.length > 1 && (
+              controller.allGroups?.length > 1 && (
                 <MultiSelect.Plain
                   placeholder={t(
                     'slow_query.toolbar.resource_groups.placeholder'

@@ -2796,6 +2796,12 @@ export interface StatementGetStatementsRequest {
      * @type {Array<string>}
      * @memberof StatementGetStatementsRequest
      */
+    'resource_groups'?: Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof StatementGetStatementsRequest
+     */
     'schemas'?: Array<string>;
     /**
      * 

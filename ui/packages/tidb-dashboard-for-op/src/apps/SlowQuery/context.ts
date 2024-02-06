@@ -11,6 +11,10 @@ class DataSource implements ISlowQueryDataSource {
     return client.getInstance().infoListDatabases(options)
   }
 
+  infoListResourceGroupNames(options?: ReqConfig) {
+    return client.getInstance().resourceManagerInformationGroupNamesGet(options)
+  }
+
   slowQueryAvailableFieldsGet(options?: ReqConfig) {
     return client.getInstance().slowQueryAvailableFieldsGet(options)
   }
@@ -25,6 +29,7 @@ class DataSource implements ISlowQueryDataSource {
     limit?: number,
     orderBy?: string,
     plans?: Array<string>,
+    resourceGroup?: Array<string>,
     text?: string,
     options?: ReqConfig
   ) {
@@ -39,6 +44,7 @@ class DataSource implements ISlowQueryDataSource {
         limit,
         orderBy,
         plans,
+        resourceGroup,
         text
       },
       options
@@ -74,7 +80,8 @@ export const ctx: ISlowQueryContext = {
     apiPathBase: client.getBasePath(),
     enableExport: true,
     showDBFilter: true,
-    showDigestFilter: false
+    showDigestFilter: false,
+    showResourceGroupFilter: true
     // instantQuery: false,
     // timeRangeSelector: {
     //   recentSeconds: [3 * 24 * 60 * 60],

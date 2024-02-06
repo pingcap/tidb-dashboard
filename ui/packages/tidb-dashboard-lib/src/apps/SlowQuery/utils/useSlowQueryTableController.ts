@@ -42,6 +42,7 @@ export interface ISlowQueryOptions {
   visibleColumnKeys: IColumnKeys
   timeRange: TimeRange
   schemas: string[]
+  groups: string[]
   searchText: string
   limit: number
 
@@ -58,7 +59,8 @@ export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
   limit: 100,
 
   digest: '',
-  plans: []
+  plans: [],
+  groups: []
 }
 
 function useQueryOptions(
@@ -114,6 +116,7 @@ export interface ISlowQueryTableController {
   data?: SlowqueryModel[]
   isDataLoadedSlowly: boolean | null // SLOW_DATA_LOAD_THRESHOLD. NULL = Unknown
   allSchemas: string[]
+  allGroups: string[]
   errors: Error[]
 
   availableColumnsInTable: IColumn[] // returned from backend
@@ -146,6 +149,7 @@ export default function useSlowQueryTableController({
   )
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
+  const [allGroups, setAllGroups] = useState<string[]>([])
   const [isOptionsLoading, setOptionsLoading] = useState(true)
   const [data, setData] = useState<SlowqueryModel[] | undefined>(undefined)
   const [isDataLoading, setDataLoading] = useState(false)
@@ -180,11 +184,23 @@ export default function useSlowQueryTableController({
       }
     }
 
+    async function queryGroups() {
+      try {
+        const res = await ds.infoListResourceGroupNames({
+          handleError: 'custom'
+        })
+        setAllGroups(res?.data || [])
+      } catch (e) {
+        setErrors((prev) => prev.concat(e as Error))
+      }
+    }
+
     async function doRequest() {
       setOptionsLoading(true)
       try {
         await Promise.all([
-          querySchemas()
+          querySchemas(),
+          queryGroups()
           // Multiple query options can be added later
         ])
       } finally {
@@ -244,6 +260,7 @@ export default function useSlowQueryTableController({
           queryOptions.limit,
           orderOptions.orderBy,
           queryOptions.plans,
+          queryOptions.groups,
           queryOptions.searchText,
           {
             handleError: 'custom'
@@ -294,6 +311,7 @@ export default function useSlowQueryTableController({
     data: filteredData,
     isDataLoadedSlowly,
     allSchemas,
+    allGroups,
     errors,
 
     availableColumnsInTable,

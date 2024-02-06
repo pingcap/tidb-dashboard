@@ -30,6 +30,17 @@ class DataSource implements ISlowQueryDataSource {
     } as any)
   }
 
+  infoListResourceGroupNames(options?: ReqConfig) {
+    // return Promise.reject(new Error('no need to implemented'))
+    return Promise.resolve({
+      data: [],
+      status: 200,
+      statusText: 'ok',
+      headers: {},
+      config: {}
+    } as any)
+  }
+
   slowQueryAvailableFieldsGet(options?: ReqConfig) {
     // return Promise.reject(new Error('no need to implemented'))
     return Promise.resolve({
@@ -51,6 +62,7 @@ class DataSource implements ISlowQueryDataSource {
     limit?: number,
     orderBy?: string,
     plans?: Array<string>,
+    resourceGroup?: Array<string>,
     text?: string,
     options?: ReqConfig
   ) {
@@ -119,6 +131,7 @@ export const ctx: (extra: DsExtra) => ISlowQueryContext = (extra) => ({
     apiPathBase: client.getBasePath(),
     enableExport: false,
     showDBFilter: false,
-    showDigestFilter: false
+    showDigestFilter: false,
+    showResourceGroupFilter: true
   }
 })

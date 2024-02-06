@@ -15,13 +15,14 @@ const (
 )
 
 type GetListRequest struct {
-	BeginTime int      `json:"begin_time" form:"begin_time"`
-	EndTime   int      `json:"end_time" form:"end_time"`
-	DB        []string `json:"db" form:"db"`
-	Limit     int      `json:"limit" form:"limit"`
-	Text      string   `json:"text" form:"text"`
-	OrderBy   string   `json:"orderBy" form:"orderBy"`
-	IsDesc    bool     `json:"desc" form:"desc"`
+	BeginTime     int      `json:"begin_time" form:"begin_time"`
+	EndTime       int      `json:"end_time" form:"end_time"`
+	DB            []string `json:"db" form:"db"`
+	ResourceGroup []string `json:"resource_group" form:"resource_group"`
+	Limit         int      `json:"limit" form:"limit"`
+	Text          string   `json:"text" form:"text"`
+	OrderBy       string   `json:"orderBy" form:"orderBy"`
+	IsDesc        bool     `json:"desc" form:"desc"`
 
 	// for showing slow queries in the statement detail page
 	Plans  []string `json:"plans" form:"plans"`
@@ -77,6 +78,10 @@ func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.
 
 	if len(req.DB) > 0 {
 		tx = tx.Where("DB IN (?)", req.DB)
+	}
+
+	if len(req.ResourceGroup) > 0 {
+		tx = tx.Where("RESOURCE_GROUP IN (?)", req.ResourceGroup)
 	}
 
 	// more robust

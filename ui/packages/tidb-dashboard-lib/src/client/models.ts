@@ -2173,6 +2173,12 @@ export interface SlowqueryGetListRequest {
     'plans'?: Array<string>;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof SlowqueryGetListRequest
+     */
+    'resource_group'?: Array<string>;
+    /**
+     * 
      * @type {string}
      * @memberof SlowqueryGetListRequest
      */

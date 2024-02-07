@@ -42,6 +42,10 @@ statement:
           placeholder: 所有数据库
           selected: '{{ n }} 数据库'
           columnTitle: 执行数据库名
+        resource_groups:
+          placeholder: 所有资源组
+          selected: '{{ n }} 资源组'
+          columnTitle: 资源组名
         statement_types:
           placeholder: 所有类型
           selected: '{{ count }} 类型'

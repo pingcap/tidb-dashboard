@@ -49,6 +49,7 @@ class DataSource implements IStatementDataSource {
     endTime?: number,
     fields?: string,
     schemas?: Array<string>,
+    resourceGroups?: Array<string>,
     stmtTypes?: Array<string>,
     text?: string,
     options?: ReqConfig
@@ -59,6 +60,7 @@ class DataSource implements IStatementDataSource {
         endTime,
         fields,
         schemas,
+        resourceGroups,
         stmtTypes,
         text
       },

@@ -98,6 +98,7 @@ export default function StatementsOverview() {
     cacheMgr,
     showFullSQL,
     fetchSchemas: ctx?.cfg.showDBFilter,
+    fetchGroups: ctx?.cfg.showResourceGroupFilter,
     fetchConfig: ctx?.cfg.showConfig,
     initialQueryOptions: {
       ...DEF_STMT_QUERY_OPTIONS,
@@ -146,6 +147,9 @@ export default function StatementsOverview() {
   const [filterSchema, setFilterSchema] = useState<string[]>(
     controller.queryOptions.schemas
   )
+  const [filterGroup, setFilterGroup] = useState<string[]>(
+    controller.queryOptions.groups
+  )
   const [filterStmtType, setFilterStmtType] = useState<string[]>(
     controller.queryOptions.stmtTypes
   )
@@ -158,6 +162,7 @@ export default function StatementsOverview() {
     controller.setQueryOptions({
       timeRange,
       schemas: filterSchema,
+      groups: filterGroup,
       stmtTypes: filterStmtType,
       searchText: filterText,
       visibleColumnKeys
@@ -179,7 +184,14 @@ export default function StatementsOverview() {
       return
     }
     sendQueryDebounced()
-  }, [timeRange, filterSchema, filterStmtType, filterText, visibleColumnKeys])
+  }, [
+    timeRange,
+    filterSchema,
+    filterGroup,
+    filterStmtType,
+    filterText,
+    visibleColumnKeys
+  ])
 
   const downloadCSV = useMemoizedFn(async () => {
     // use last effective query options
@@ -191,6 +203,7 @@ export default function StatementsOverview() {
         end_time: timeRangeValue[1],
         fields: '*',
         schemas: controller.queryOptions.schemas,
+        resource_groups: controller.queryOptions.groups,
         stmt_types: controller.queryOptions.stmtTypes,
         text: controller.queryOptions.searchText
       })
@@ -251,6 +264,26 @@ export default function StatementsOverview() {
                 data-e2e="execution_database_name"
               />
             )}
+
+            {(ctx?.cfg.showResourceGroupFilter ?? true) &&
+              controller.allGroups?.length > 1 && (
+                <MultiSelect.Plain
+                  placeholder={t(
+                    'statement.pages.overview.toolbar.resource_groups.placeholder'
+                  )}
+                  selectedValueTransKey="statement.pages.overview.toolbar.resource_groups.selected"
+                  columnTitle={t(
+                    'statement.pages.overview.toolbar.resource_groups.columnTitle'
+                  )}
+                  value={filterGroup}
+                  style={{ width: 150 }}
+                  onChange={(d) => {
+                    setFilterGroup(d)
+                  }}
+                  items={controller.allGroups}
+                  data-e2e="resource_group_name_select"
+                />
+              )}
             <MultiSelect.Plain
               placeholder={t(
                 'statement.pages.overview.toolbar.statement_types.placeholder'

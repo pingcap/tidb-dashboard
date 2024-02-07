@@ -42,6 +42,10 @@ statement:
           placeholder: All Databases
           selected: '{{ n }} Databases'
           columnTitle: Execution Database Name
+        resource_groups:
+          placeholder: All Resource Groups
+          selected: '{{ n }} Resource Groups'
+          columnTitle: Resource Group Name
         statement_types:
           placeholder: All Kinds
           selected_one: '{{ count }} Kind'

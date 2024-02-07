@@ -67,14 +67,6 @@ type DynamicConfig struct {
 	SSO       SSOConfig       `json:"sso"`
 }
 
-func NewDynamicConfigWithDefaults() *DynamicConfig {
-	return &DynamicConfig{
-		KeyVisual: KeyVisualConfig{
-			AutoCollectionDisabled: true, // auto collection should be disable by default
-		},
-	}
-}
-
 func (c *DynamicConfig) Clone() *DynamicConfig {
 	newCfg := *c
 	newCfg.Profiling.AutoCollectionTargets = make([]model.RequestTargetNode, len(c.Profiling.AutoCollectionTargets))

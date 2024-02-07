@@ -69,6 +69,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
 	flag.StringVar(&cfg.CoreConfig.FeatureVersion, "feature-version", cfg.CoreConfig.FeatureVersion, "target TiDB version for standalone mode")
 	flag.IntVar(&cfg.CoreConfig.NgmTimeout, "ngm-timeout", cfg.CoreConfig.NgmTimeout, "timeout secs for accessing the ngm API")
+	flag.BoolVar(&cfg.CoreConfig.EnableKeyVisualizer, "keyVisualizer", true, "enable/disable key visualizer(default: true)")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 

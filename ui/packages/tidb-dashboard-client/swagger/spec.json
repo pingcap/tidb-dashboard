@@ -2759,6 +2759,15 @@
                             "type": "string"
                         },
                         "collectionFormat": "multi",
+                        "name": "resource_groups",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
                         "name": "schemas",
                         "in": "query"
                     },
@@ -5329,6 +5338,12 @@
                 },
                 "fields": {
                     "type": "string"
+                },
+                "resource_groups": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "schemas": {
                     "type": "array",

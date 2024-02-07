@@ -2641,6 +2641,39 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * 
+         * @summary List all resource groups
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerInformationGroupNamesGet: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/resource_manager/information/group_names`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Get available field names by slowquery table columns
          * @summary Get available field names
          * @param {*} [options] Override http request option.
@@ -2809,11 +2842,12 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [limit] 
          * @param {string} [orderBy] 
          * @param {Array<string>} [plans] for showing slow queries in the statement detail page
+         * @param {Array<string>} [resourceGroup] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        slowQueryListGet: async (beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        slowQueryListGet: async (beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, resourceGroup?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/slow_query/list`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2863,6 +2897,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (plans) {
                 localVarQueryParameter['plans'] = plans;
+            }
+
+            if (resourceGroup) {
+                localVarQueryParameter['resource_group'] = resourceGroup;
             }
 
             if (text !== undefined) {
@@ -3106,13 +3144,14 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
          * @param {string} [fields] 
+         * @param {Array<string>} [resourceGroups] 
          * @param {Array<string>} [schemas] 
          * @param {Array<string>} [stmtTypes] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        statementsListGet: async (beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        statementsListGet: async (beginTime?: number, endTime?: number, fields?: string, resourceGroups?: Array<string>, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/statements/list`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3138,6 +3177,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (fields !== undefined) {
                 localVarQueryParameter['fields'] = fields;
+            }
+
+            if (resourceGroups) {
+                localVarQueryParameter['resource_groups'] = resourceGroups;
             }
 
             if (schemas) {
@@ -4762,6 +4805,16 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
+         * 
+         * @summary List all resource groups
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async resourceManagerInformationGroupNamesGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.resourceManagerInformationGroupNamesGet(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * Get available field names by slowquery table columns
          * @summary Get available field names
          * @param {*} [options] Override http request option.
@@ -4818,12 +4871,13 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {number} [limit] 
          * @param {string} [orderBy] 
          * @param {Array<string>} [plans] for showing slow queries in the statement detail page
+         * @param {Array<string>} [resourceGroup] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async slowQueryListGet(beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<SlowqueryModel>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.slowQueryListGet(beginTime, db, desc, digest, endTime, fields, limit, orderBy, plans, text, options);
+        async slowQueryListGet(beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, resourceGroup?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<SlowqueryModel>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.slowQueryListGet(beginTime, db, desc, digest, endTime, fields, limit, orderBy, plans, resourceGroup, text, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4896,14 +4950,15 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
          * @param {string} [fields] 
+         * @param {Array<string>} [resourceGroups] 
          * @param {Array<string>} [schemas] 
          * @param {Array<string>} [stmtTypes] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async statementsListGet(beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StatementModel>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.statementsListGet(beginTime, endTime, fields, schemas, stmtTypes, text, options);
+        async statementsListGet(beginTime?: number, endTime?: number, fields?: string, resourceGroups?: Array<string>, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StatementModel>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.statementsListGet(beginTime, endTime, fields, resourceGroups, schemas, stmtTypes, text, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5816,6 +5871,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.resourceManagerInformationGet(options).then((request) => request(axios, basePath));
         },
         /**
+         * 
+         * @summary List all resource groups
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resourceManagerInformationGroupNamesGet(options?: any): AxiosPromise<Array<string>> {
+            return localVarFp.resourceManagerInformationGroupNamesGet(options).then((request) => request(axios, basePath));
+        },
+        /**
          * Get available field names by slowquery table columns
          * @summary Get available field names
          * @param {*} [options] Override http request option.
@@ -5868,12 +5932,13 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {number} [limit] 
          * @param {string} [orderBy] 
          * @param {Array<string>} [plans] for showing slow queries in the statement detail page
+         * @param {Array<string>} [resourceGroup] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        slowQueryListGet(beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, text?: string, options?: any): AxiosPromise<Array<SlowqueryModel>> {
-            return localVarFp.slowQueryListGet(beginTime, db, desc, digest, endTime, fields, limit, orderBy, plans, text, options).then((request) => request(axios, basePath));
+        slowQueryListGet(beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, resourceGroup?: Array<string>, text?: string, options?: any): AxiosPromise<Array<SlowqueryModel>> {
+            return localVarFp.slowQueryListGet(beginTime, db, desc, digest, endTime, fields, limit, orderBy, plans, resourceGroup, text, options).then((request) => request(axios, basePath));
         },
         /**
          * Start a profiling task group
@@ -5939,14 +6004,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
          * @param {string} [fields] 
+         * @param {Array<string>} [resourceGroups] 
          * @param {Array<string>} [schemas] 
          * @param {Array<string>} [stmtTypes] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        statementsListGet(beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: any): AxiosPromise<Array<StatementModel>> {
-            return localVarFp.statementsListGet(beginTime, endTime, fields, schemas, stmtTypes, text, options).then((request) => request(axios, basePath));
+        statementsListGet(beginTime?: number, endTime?: number, fields?: string, resourceGroups?: Array<string>, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: any): AxiosPromise<Array<StatementModel>> {
+            return localVarFp.statementsListGet(beginTime, endTime, fields, resourceGroups, schemas, stmtTypes, text, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6951,6 +7017,13 @@ export interface DefaultApiSlowQueryListGetRequest {
 
     /**
      * 
+     * @type {Array<string>}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly resourceGroup?: Array<string>
+
+    /**
+     * 
      * @type {string}
      * @memberof DefaultApiSlowQueryListGet
      */
@@ -7039,6 +7112,13 @@ export interface DefaultApiStatementsListGetRequest {
      * @memberof DefaultApiStatementsListGet
      */
     readonly fields?: string
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiStatementsListGet
+     */
+    readonly resourceGroups?: Array<string>
 
     /**
      * 
@@ -8190,6 +8270,17 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     * 
+     * @summary List all resource groups
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public resourceManagerInformationGroupNamesGet(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).resourceManagerInformationGroupNamesGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Get available field names by slowquery table columns
      * @summary Get available field names
      * @param {*} [options] Override http request option.
@@ -8245,7 +8336,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public slowQueryListGet(requestParameters: DefaultApiSlowQueryListGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).slowQueryListGet(requestParameters.beginTime, requestParameters.db, requestParameters.desc, requestParameters.digest, requestParameters.endTime, requestParameters.fields, requestParameters.limit, requestParameters.orderBy, requestParameters.plans, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).slowQueryListGet(requestParameters.beginTime, requestParameters.db, requestParameters.desc, requestParameters.digest, requestParameters.endTime, requestParameters.fields, requestParameters.limit, requestParameters.orderBy, requestParameters.plans, requestParameters.resourceGroup, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8327,7 +8418,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public statementsListGet(requestParameters: DefaultApiStatementsListGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).statementsListGet(requestParameters.beginTime, requestParameters.endTime, requestParameters.fields, requestParameters.schemas, requestParameters.stmtTypes, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).statementsListGet(requestParameters.beginTime, requestParameters.endTime, requestParameters.fields, requestParameters.resourceGroups, requestParameters.schemas, requestParameters.stmtTypes, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

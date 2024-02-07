@@ -15,6 +15,10 @@ class DataSource implements IStatementDataSource {
     return client.getInstance().infoListDatabases(options)
   }
 
+  infoListResourceGroupNames(options?: ReqConfig) {
+    return client.getInstance().resourceManagerInformationGroupNamesGet(options)
+  }
+
   statementsAvailableFieldsGet(options?: ReqConfig) {
     return client.getInstance().statementsAvailableFieldsGet(options)
   }
@@ -45,6 +49,7 @@ class DataSource implements IStatementDataSource {
     endTime?: number,
     fields?: string,
     schemas?: Array<string>,
+    resourceGroups?: Array<string>,
     stmtTypes?: Array<string>,
     text?: string,
     options?: ReqConfig
@@ -55,6 +60,7 @@ class DataSource implements IStatementDataSource {
         endTime,
         fields,
         schemas,
+        resourceGroups,
         stmtTypes,
         text
       },
@@ -123,6 +129,7 @@ class DataSource implements IStatementDataSource {
     limit?: number,
     orderBy?: string,
     plans?: Array<string>,
+    resourceGroup?: Array<string>,
     text?: string,
     options?: ReqConfig
   ) {
@@ -137,6 +144,7 @@ class DataSource implements IStatementDataSource {
         limit,
         orderBy,
         plans,
+        resourceGroup,
         text
       },
       options

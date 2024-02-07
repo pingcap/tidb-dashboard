@@ -158,6 +158,10 @@ slow_query:
       placeholder: 所有数据库
       selected: '{{ n }} 数据库'
       columnTitle: 执行数据库名
+    resource_groups:
+      placeholder: 所有资源组
+      selected: '{{ n }} 资源组'
+      columnTitle: 资源组名
     select_columns:
       show_full_sql: 显示完整 SQL 文本
     refresh: 刷新

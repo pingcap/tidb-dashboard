@@ -127,6 +127,9 @@ function List() {
   const [filterText, setFilterText] = useState<string>(
     controller.queryOptions.searchText
   )
+  const [filterGroup, setFilterGroup] = useState<string[]>(
+    controller.queryOptions.groups
+  )
 
   const sendQueryNow = useMemoizedFn(() => {
     cacheMgr?.clear()
@@ -137,7 +140,8 @@ function List() {
       searchText: filterText,
       visibleColumnKeys,
       digest: filterDigest,
-      plans: []
+      plans: [],
+      groups: filterGroup
     })
   })
 
@@ -155,7 +159,14 @@ function List() {
       return
     }
     sendQueryDebounced()
-  }, [timeRange, filterSchema, filterLimit, filterText, visibleColumnKeys])
+  }, [
+    timeRange,
+    filterSchema,
+    filterLimit,
+    filterText,
+    filterGroup,
+    visibleColumnKeys
+  ])
 
   const downloadCSV = useMemoizedFn(async () => {
     // use last effective query options
@@ -167,6 +178,7 @@ function List() {
         begin_time: timeRangeValue[0],
         end_time: timeRangeValue[1],
         db: controller.queryOptions.schemas,
+        resource_group: controller.queryOptions.groups,
         text: controller.queryOptions.searchText,
         orderBy: controller.orderOptions.orderBy,
         desc: controller.orderOptions.desc,
@@ -231,6 +243,23 @@ function List() {
                 data-e2e="execution_database_name"
               />
             )}
+            {ctx!.cfg.showResourceGroupFilter &&
+              controller.allGroups?.length > 1 && (
+                <MultiSelect.Plain
+                  placeholder={t(
+                    'slow_query.toolbar.resource_groups.placeholder'
+                  )}
+                  selectedValueTransKey="slow_query.toolbar.resource_groups.selected"
+                  columnTitle={t(
+                    'slow_query.toolbar.resource_groups.columnTitle'
+                  )}
+                  value={filterGroup}
+                  style={{ width: 150 }}
+                  onChange={setFilterGroup}
+                  items={controller.allGroups}
+                  data-e2e="resource_group_name_select"
+                />
+              )}
             <Select
               style={{ width: 150 }}
               value={filterLimit}

@@ -2173,6 +2173,12 @@ export interface SlowqueryGetListRequest {
     'plans'?: Array<string>;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof SlowqueryGetListRequest
+     */
+    'resource_group'?: Array<string>;
+    /**
+     * 
      * @type {string}
      * @memberof SlowqueryGetListRequest
      */
@@ -2785,6 +2791,12 @@ export interface StatementGetStatementsRequest {
      * @memberof StatementGetStatementsRequest
      */
     'fields'?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof StatementGetStatementsRequest
+     */
+    'resource_groups'?: Array<string>;
     /**
      * 
      * @type {Array<string>}

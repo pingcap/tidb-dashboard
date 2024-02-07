@@ -38,7 +38,7 @@ func queryStmtTypes(db *gorm.DB) (result []string, err error) {
 func (s *Service) queryStatements(
 	db *gorm.DB,
 	beginTime, endTime int,
-	schemas, stmtTypes []string,
+	schemas, resourceGroups, stmtTypes []string,
 	text string,
 	reqFields []string,
 ) (result []Model, err error) {
@@ -67,6 +67,10 @@ func (s *Service) queryStatements(
 		}
 		regexAll := strings.Join(regex, "|")
 		query = query.Where("table_names REGEXP ?", regexAll)
+	}
+
+	if len(resourceGroups) > 0 {
+		query = query.Where("resource_group in (?)", resourceGroups)
 	}
 
 	if len(stmtTypes) > 0 {

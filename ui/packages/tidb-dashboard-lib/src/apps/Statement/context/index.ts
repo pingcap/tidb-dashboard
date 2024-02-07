@@ -41,6 +41,7 @@ export interface IStatementDataSource extends ISlowQueryDataSource {
     endTime?: number,
     fields?: string,
     schemas?: Array<string>,
+    resourceGroups?: Array<string>,
     stmtTypes?: Array<string>,
     text?: string,
     options?: ReqConfig
@@ -91,6 +92,7 @@ export interface IStatementConfig extends IContextConfig {
   enableExport?: boolean
   showConfig?: boolean // default is true
   showDBFilter?: boolean // default is true
+  showResourceGroupFilter?: boolean // default is true
   showHelp?: boolean // default is true
 
   // control whether show statement actual time range

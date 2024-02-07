@@ -43,6 +43,7 @@ export interface IStatementQueryOptions {
   visibleColumnKeys: IColumnKeys
   timeRange: TimeRange
   schemas: string[]
+  groups: string[]
   stmtTypes: string[]
   searchText: string
 }
@@ -56,6 +57,7 @@ export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
   visibleColumnKeys: DEF_STMT_COLUMN_KEYS,
   timeRange: DEFAULT_TIME_RANGE,
   schemas: [],
+  groups: [],
   stmtTypes: [],
   searchText: ''
 }
@@ -94,6 +96,7 @@ export interface IStatementTableControllerOpts {
   cacheMgr?: CacheMgr
   showFullSQL?: boolean
   fetchSchemas?: boolean
+  fetchGroups?: boolean
   fetchConfig?: boolean
   initialQueryOptions?: IStatementQueryOptions
   persistQueryInSession?: boolean
@@ -115,6 +118,7 @@ export interface IStatementTableController {
   data?: IStatementList
   isDataLoadedSlowly: boolean | null // SLOW_DATA_LOAD_THRESHOLD. NULL = Unknown
   allSchemas: string[]
+  allGroups: string[]
   allStmtTypes: string[]
   errors: Error[]
 
@@ -128,6 +132,7 @@ export default function useStatementTableController({
   cacheMgr,
   showFullSQL = false,
   fetchSchemas = true,
+  fetchGroups = true,
   fetchConfig = true,
   initialQueryOptions,
   persistQueryInSession = true,
@@ -149,6 +154,7 @@ export default function useStatementTableController({
 
   const [isEnabled, setEnabled] = useState(true)
   const [allSchemas, setAllSchemas] = useState<string[]>([])
+  const [allGroups, setAllGroups] = useState<string[]>([])
   const [allStmtTypes, setAllStmtTypes] = useState<string[]>([])
   const [isOptionsLoading, setOptionsLoading] = useState(true)
   const [data, setData] = useState<IStatementList | undefined>(undefined)
@@ -217,6 +223,20 @@ export default function useStatementTableController({
       }
     }
 
+    async function queryGroups() {
+      if (!fetchGroups) {
+        return
+      }
+      try {
+        const res = await ds.infoListResourceGroupNames({
+          handleError: 'custom'
+        })
+        setAllGroups(res?.data || [])
+      } catch (e) {
+        setErrors((prev) => prev.concat(e as Error))
+      }
+    }
+
     async function queryStmtTypes() {
       try {
         const res = await ds.statementsStmtTypesGet({ handleError: 'custom' })
@@ -233,6 +253,7 @@ export default function useStatementTableController({
         await Promise.all([
           queryStatementStatus(),
           querySchemas(),
+          queryGroups(),
           queryStmtTypes()
         ])
       } finally {
@@ -287,11 +308,13 @@ export default function useStatementTableController({
       }
 
       try {
+        console.log('queryOptions', queryOptions)
         const res = await ds.statementsListGet(
           timeRange[0],
           timeRange[1],
           actualVisibleColumnKeys,
           queryOptions.schemas,
+          queryOptions.groups,
           queryOptions.stmtTypes,
           queryOptions.searchText,
           { handleError: 'custom' }
@@ -345,6 +368,7 @@ export default function useStatementTableController({
     data,
     isDataLoadedSlowly,
     allSchemas,
+    allGroups,
     allStmtTypes,
     errors,
 

@@ -141,12 +141,13 @@ func (s *Service) stmtTypesHandler(c *gin.Context) {
 }
 
 type GetStatementsRequest struct {
-	Schemas   []string `json:"schemas" form:"schemas"`
-	StmtTypes []string `json:"stmt_types" form:"stmt_types"`
-	BeginTime int      `json:"begin_time" form:"begin_time"`
-	EndTime   int      `json:"end_time" form:"end_time"`
-	Text      string   `json:"text" form:"text"`
-	Fields    string   `json:"fields" form:"fields"`
+	Schemas        []string `json:"schemas" form:"schemas"`
+	ResourceGroups []string `json:"resource_groups" form:"resource_groups"`
+	StmtTypes      []string `json:"stmt_types" form:"stmt_types"`
+	BeginTime      int      `json:"begin_time" form:"begin_time"`
+	EndTime        int      `json:"end_time" form:"end_time"`
+	Text           string   `json:"text" form:"text"`
+	Fields         string   `json:"fields" form:"fields"`
 }
 
 // @Summary Get a list of statements
@@ -171,6 +172,7 @@ func (s *Service) listHandler(c *gin.Context) {
 		db,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
+		req.ResourceGroups,
 		req.StmtTypes,
 		req.Text,
 		fields)
@@ -360,6 +362,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		db,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
+		req.ResourceGroups,
 		req.StmtTypes,
 		req.Text,
 		fields)

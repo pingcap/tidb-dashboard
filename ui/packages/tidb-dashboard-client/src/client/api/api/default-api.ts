@@ -3144,13 +3144,14 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
          * @param {string} [fields] 
+         * @param {Array<string>} [resourceGroups] 
          * @param {Array<string>} [schemas] 
          * @param {Array<string>} [stmtTypes] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        statementsListGet: async (beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        statementsListGet: async (beginTime?: number, endTime?: number, fields?: string, resourceGroups?: Array<string>, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/statements/list`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3176,6 +3177,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (fields !== undefined) {
                 localVarQueryParameter['fields'] = fields;
+            }
+
+            if (resourceGroups) {
+                localVarQueryParameter['resource_groups'] = resourceGroups;
             }
 
             if (schemas) {
@@ -4945,14 +4950,15 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
          * @param {string} [fields] 
+         * @param {Array<string>} [resourceGroups] 
          * @param {Array<string>} [schemas] 
          * @param {Array<string>} [stmtTypes] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async statementsListGet(beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StatementModel>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.statementsListGet(beginTime, endTime, fields, schemas, stmtTypes, text, options);
+        async statementsListGet(beginTime?: number, endTime?: number, fields?: string, resourceGroups?: Array<string>, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StatementModel>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.statementsListGet(beginTime, endTime, fields, resourceGroups, schemas, stmtTypes, text, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5998,14 +6004,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
          * @param {string} [fields] 
+         * @param {Array<string>} [resourceGroups] 
          * @param {Array<string>} [schemas] 
          * @param {Array<string>} [stmtTypes] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        statementsListGet(beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: any): AxiosPromise<Array<StatementModel>> {
-            return localVarFp.statementsListGet(beginTime, endTime, fields, schemas, stmtTypes, text, options).then((request) => request(axios, basePath));
+        statementsListGet(beginTime?: number, endTime?: number, fields?: string, resourceGroups?: Array<string>, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: any): AxiosPromise<Array<StatementModel>> {
+            return localVarFp.statementsListGet(beginTime, endTime, fields, resourceGroups, schemas, stmtTypes, text, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7105,6 +7112,13 @@ export interface DefaultApiStatementsListGetRequest {
      * @memberof DefaultApiStatementsListGet
      */
     readonly fields?: string
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiStatementsListGet
+     */
+    readonly resourceGroups?: Array<string>
 
     /**
      * 
@@ -8404,7 +8418,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public statementsListGet(requestParameters: DefaultApiStatementsListGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).statementsListGet(requestParameters.beginTime, requestParameters.endTime, requestParameters.fields, requestParameters.schemas, requestParameters.stmtTypes, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).statementsListGet(requestParameters.beginTime, requestParameters.endTime, requestParameters.fields, requestParameters.resourceGroups, requestParameters.schemas, requestParameters.stmtTypes, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

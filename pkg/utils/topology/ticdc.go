@@ -19,8 +19,7 @@ import (
 
 // TODO: refactor this with topology prefix since it is compatible with other components.
 const (
-	ticdcTopologyKeyPrefix = "/tidb/cdc/"
-	ticdcCaptureKeyIdent   = "__cdc_meta__/capture/"
+	ticdcTopologyKeyPrefix = "/topology/ticdc/"
 )
 
 func FetchTiCDCTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiCDCInfo, error) {
@@ -35,7 +34,7 @@ func FetchTiCDCTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiC
 	nodes := make([]TiCDCInfo, 0)
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
-		if !strings.HasPrefix(key, ticdcTopologyKeyPrefix) || !strings.Contains(key, ticdcCaptureKeyIdent) {
+		if !strings.HasPrefix(key, ticdcTopologyKeyPrefix) {
 			continue
 		}
 

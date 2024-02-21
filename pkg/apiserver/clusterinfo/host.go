@@ -60,6 +60,22 @@ func (s *Service) fetchAllInstanceHosts() ([]string, error) {
 		allHostsMap[i.IP] = struct{}{}
 	}
 
+	tsoInfo, err := topology.FetchTSOTopology(s.lifecycleCtx, s.params.PDClient)
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range tsoInfo {
+		allHostsMap[i.IP] = struct{}{}
+	}
+
+	schedulingInfo, err := topology.FetchSchedulingTopology(s.lifecycleCtx, s.params.PDClient)
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range schedulingInfo {
+		allHostsMap[i.IP] = struct{}{}
+	}
+
 	allHosts := lo.Keys(allHostsMap)
 	sort.Strings(allHosts)
 

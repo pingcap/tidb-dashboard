@@ -3163,6 +3163,34 @@
                 }
             }
         },
+        "/topology/scheduling": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Get all Scheduling instances",
+                "operationId": "getSchedulingTopology",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/topology.SchedulingInfo"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/topology/store": {
             "get": {
                 "security": [
@@ -3315,6 +3343,34 @@
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/topology.TiProxyInfo"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/topology/tso": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Get all TSO instances",
+                "operationId": "getTSOTopology",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/topology.TSOInfo"
                             }
                         }
                     },
@@ -4764,6 +4820,9 @@
                 "num_pd_nodes": {
                     "type": "integer"
                 },
+                "num_scheduling_nodes": {
+                    "type": "integer"
+                },
                 "num_ticdc_nodes": {
                     "type": "integer"
                 },
@@ -4777,6 +4836,9 @@
                     "type": "integer"
                 },
                 "num_tiproxy_nodes": {
+                    "type": "integer"
+                },
+                "num_tso_nodes": {
                     "type": "integer"
                 }
             }
@@ -5703,6 +5765,32 @@
                 }
             }
         },
+        "topology.SchedulingInfo": {
+            "type": "object",
+            "properties": {
+                "deploy_path": {
+                    "type": "string"
+                },
+                "git_hash": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "start_timestamp": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "topology.StoreInfo": {
             "type": "object",
             "properties": {
@@ -5766,6 +5854,32 @@
                     "items": {
                         "$ref": "#/definitions/topology.StoreLabels"
                     }
+                }
+            }
+        },
+        "topology.TSOInfo": {
+            "type": "object",
+            "properties": {
+                "deploy_path": {
+                    "type": "string"
+                },
+                "git_hash": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "start_timestamp": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
                 }
             }
         },

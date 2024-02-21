@@ -59,6 +59,8 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.DELETE("/tidb/:address", s.deleteTiDBTopology)
 	endpoint.GET("/store", s.getStoreTopology)
 	endpoint.GET("/pd", s.getPDTopology)
+	endpoint.GET("/tso", s.getTSOTopology)
+	endpoint.GET("/scheduling", s.getSchedulingTopology)
 	endpoint.GET("/alertmanager", s.getAlertManagerTopology)
 	endpoint.GET("/alertmanager/:address/count", s.getAlertManagerCounts)
 	endpoint.GET("/grafana", s.getGrafanaTopology)
@@ -149,6 +151,36 @@ func (s *Service) getTiCDCTopology(c *gin.Context) {
 // @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getTiProxyTopology(c *gin.Context) {
 	instances, err := topology.FetchTiProxyTopology(s.lifecycleCtx, s.params.EtcdClient)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, instances)
+}
+
+// @ID getTSOTopology
+// @Summary Get all TSO instances
+// @Success 200 {array} topology.TSOInfo
+// @Router /topology/tso [get]
+// @Security JwtAuth
+// @Failure 401 {object} rest.ErrorResponse
+func (s *Service) getTSOTopology(c *gin.Context) {
+	instances, err := topology.FetchTSOTopology(s.lifecycleCtx, s.params.PDClient)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, instances)
+}
+
+// @ID getSchedulingTopology
+// @Summary Get all Scheduling instances
+// @Success 200 {array} topology.SchedulingInfo
+// @Router /topology/scheduling [get]
+// @Security JwtAuth
+// @Failure 401 {object} rest.ErrorResponse
+func (s *Service) getSchedulingTopology(c *gin.Context) {
+	instances, err := topology.FetchSchedulingTopology(s.lifecycleCtx, s.params.PDClient)
 	if err != nil {
 		rest.Error(c, err)
 		return

@@ -76,6 +76,8 @@ export default function Page() {
           let port
           switch (instance.instanceKind) {
             case 'pd':
+            case 'tso':
+            case 'scheduling':
               port = instance.port
               break
             case 'tidb':
@@ -238,6 +240,8 @@ export default function Page() {
                   getPDTopology={ctx!.ds.getPDTopology}
                   getTiCDCTopology={ctx!.ds.getTiCDCTopology}
                   getTiProxyTopology={ctx!.ds.getTiProxyTopology}
+                  getTSOTopology={ctx!.ds.getTSOTopology}
+                  getSchedulingTopology={ctx!.ds.getSchedulingTopology}
                 />
               </Form.Item>
               <Form.Item name="type">

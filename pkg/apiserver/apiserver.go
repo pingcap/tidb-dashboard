@@ -32,17 +32,21 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/visualplan"
+	"github.com/pingcap/tidb-dashboard/pkg/scheduling"
 	"github.com/pingcap/tidb-dashboard/pkg/ticdc"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap/tidb-dashboard/pkg/tiproxy"
+	"github.com/pingcap/tidb-dashboard/pkg/tso"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
 	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
+	"github.com/pingcap/tidb-dashboard/util/client/schedulingclient"
 	"github.com/pingcap/tidb-dashboard/util/client/ticdcclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tiproxyclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tsoclient"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 
@@ -113,6 +117,8 @@ var Modules = fx.Options(
 		httpc.NewHTTPClient,
 		pd.NewEtcdClient,
 		pd.NewPDClient,
+		tso.NewTSOClient,
+		scheduling.NewSchedulingClient,
 		config.NewDynamicConfigManager,
 		tidb.NewTiDBClient,
 		tikv.NewTiKVClient,
@@ -199,6 +205,8 @@ func newClients(lc fx.Lifecycle, config *config.Config) (
 	pdClient *pdclient.APIClient,
 	ticdcClient *ticdcclient.StatusClient,
 	tiproxyClient *tiproxyclient.StatusClient,
+	tsoClient *tsoclient.StatusClient,
+	schedulingClient *schedulingclient.StatusClient,
 ) {
 	httpConfig := httpclient.Config{
 		TLSConfig: config.ClusterTLSConfig,
@@ -209,6 +217,8 @@ func newClients(lc fx.Lifecycle, config *config.Config) (
 	pdClient = pdclient.NewAPIClient(httpConfig)
 	ticdcClient = ticdcclient.NewStatusClient(httpConfig)
 	tiproxyClient = tiproxyclient.NewStatusClient(httpConfig)
+	tsoClient = tsoclient.NewStatusClient(httpConfig)
+	schedulingClient = schedulingclient.NewStatusClient(httpConfig)
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			dbClient.SetDefaultCtx(ctx)

@@ -38,7 +38,9 @@ export default function ValueDisplay({
       tikv: newInstanceStat(),
       tiflash: newInstanceStat(),
       ticdc: newInstanceStat(),
-      tiproxy: newInstanceStat()
+      tiproxy: newInstanceStat(),
+      tso: newInstanceStat(),
+      scheduling: newInstanceStat()
     }
     items.forEach((item) => {
       instanceStats[item.instanceKind].all++

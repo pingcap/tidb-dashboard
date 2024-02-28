@@ -3,6 +3,7 @@
 package hostinfo
 
 import (
+	"encoding/json"
 	"strings"
 
 	"gorm.io/gorm"
@@ -24,7 +25,9 @@ func FillInstances(db *gorm.DB, m InfoMap) error {
 		Where("(`TYPE` = 'tidb' AND `KEY` = 'log.file.filename') " +
 			"OR (`TYPE` = 'tikv' AND `KEY` = 'storage.data-dir') " +
 			"OR (`TYPE` = 'pd' AND `KEY` = 'data-dir') " +
-			"OR (`TYPE` = 'tiflash' AND `KEY` = 'engine-store.path')").
+			"OR (`TYPE` = 'tiflash' AND (`KEY` = 'engine-store.path' " +
+			"    OR `KEY` = 'engine-store.storage.main.dir' " +
+			"    OR `KEY` = 'engine-store.storage.latest.dir'))").
 		Find(&rows).Error; err != nil {
 		return err
 	}
@@ -37,9 +40,44 @@ func FillInstances(db *gorm.DB, m InfoMap) error {
 		if _, ok := m[hostname]; !ok {
 			m[hostname] = NewHostInfo(hostname)
 		}
-		m[hostname].Instances[row.Instance] = &InstanceInfo{
-			Type:           row.Type,
-			PartitionPathL: strings.ToLower(locateInstanceMountPartition(row.Value, m[hostname].Partitions)),
+		switch row.Type {
+		case "tiflash":
+			if ins, ok := m[hostname].Instances[row.Instance]; ok {
+				if ins.Type == row.Type && ins.PartitionPathL != "" {
+					continue
+				}
+			} else {
+				m[hostname].Instances[row.Instance] = &InstanceInfo{
+					Type:           row.Type,
+					PartitionPathL: "",
+				}
+			}
+			var paths []string
+			switch row.Key {
+			case "engine-store.path":
+				items := strings.Split(row.Value, ",")
+				for _, path := range items {
+					paths = append(paths, strings.TrimSpace(path))
+				}
+			case "engine-store.storage.main.dir", "engine-store.storage.latest.dir":
+				if err := json.Unmarshal([]byte(row.Value), &paths); err != nil {
+					return err
+				}
+			default:
+				paths = []string{row.Value}
+			}
+			for _, path := range paths {
+				mountDir := locateInstanceMountPartition(path, m[hostname].Partitions)
+				if mountDir != "" {
+					m[hostname].Instances[row.Instance].PartitionPathL = strings.ToLower(mountDir)
+					break
+				}
+			}
+		default:
+			m[hostname].Instances[row.Instance] = &InstanceInfo{
+				Type:           row.Type,
+				PartitionPathL: strings.ToLower(locateInstanceMountPartition(row.Value, m[hostname].Partitions)),
+			}
 		}
 	}
 	return nil

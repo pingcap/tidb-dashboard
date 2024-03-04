@@ -85,6 +85,7 @@ export interface ISlowQueryConfig extends IContextConfig {
   // for clinic
   orgName?: string
   clusterName?: string
+  showTopSlowQueryLink?: boolean
 }
 
 export interface ISlowQueryContext {

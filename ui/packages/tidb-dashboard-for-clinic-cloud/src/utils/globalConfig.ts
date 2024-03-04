@@ -3,7 +3,8 @@ import {
   IOverviewConfig,
   ISlowQueryConfig,
   IStatementConfig,
-  ITopSQLConfig
+  ITopSQLConfig,
+  ITopSlowQueryConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 export type AppOptions = {
@@ -44,6 +45,7 @@ export type ClusterInfo = {
 export type AppsConfig = {
   overview?: Partial<IOverviewConfig>
   slowQuery?: Partial<ISlowQueryConfig>
+  topSlowQuery?: Partial<ITopSlowQueryConfig>
   statement?: Partial<IStatementConfig>
   topSQL?: Partial<ITopSQLConfig>
   conProf?: Partial<IConProfilingConfig>

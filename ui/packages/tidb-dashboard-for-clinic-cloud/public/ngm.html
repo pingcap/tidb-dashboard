@@ -172,6 +172,7 @@
 
             orgName,
             clusterName,
+            showTopSlowQueryLink: true,
             timeRangeSelector: {
               recentSeconds: [
                 5 * 60,
@@ -183,6 +184,10 @@
               ],
               customAbsoluteRangePicker: true
             }
+          },
+          topSlowQuery: {
+            orgName,
+            clusterName
           },
           topSQL: {
             checkNgm: false,
@@ -213,7 +218,13 @@
             listDuration: 1
           }
         },
-        appsEnabled: ['topsql', 'slow_query', 'conprof', 'sql_advisor']
+        appsEnabled: [
+          'topsql',
+          'slow_query',
+          'conprof',
+          'sql_advisor',
+          'top_slowquery'
+        ]
       })
     </script>
   </body>

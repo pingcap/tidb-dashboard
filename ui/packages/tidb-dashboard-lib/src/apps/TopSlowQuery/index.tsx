@@ -7,8 +7,21 @@ import { useLocationChange } from '@lib/hooks/useLocationChange'
 
 import translations from './translations'
 import { TopSlowQueryList } from './pages/List'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 addTranslations(translations)
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false
+      // refetchOnMount: false,
+      // refetchOnReconnect: false,
+      // retry: false
+    }
+  }
+})
 
 function AppRoutes() {
   useLocationChange()
@@ -22,11 +35,14 @@ function AppRoutes() {
 
 export default function () {
   return (
-    <Root>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </Root>
+    // Provide the client to your App
+    <QueryClientProvider client={queryClient}>
+      <Root>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </Root>
+    </QueryClientProvider>
   )
 }
 

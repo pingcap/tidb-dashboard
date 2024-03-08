@@ -1,8 +1,9 @@
+import { MetricsQueryResponse } from '@lib/client'
 import { createContext, useContext } from 'react'
 
 interface ISlowQuery {}
 
-interface ITimeRange {
+interface ITimeWindow {
   start: number
   end: number
 }
@@ -14,11 +15,29 @@ export interface ITopSlowQueryConfig {
   userName?: string
 }
 
-type TopSlowQueryCtxValue = {
+export type TopSlowQueryCtxValue = {
   // api
   api: {
-    getAvailableTimeRanges(): Promise<ITimeRange[]>
-    getTopSlowQueries(): Promise<ISlowQuery[]>
+    getAvailableTimeWindows(params: {
+      from: number
+      to: number
+      tws: number
+    }): Promise<ITimeWindow[]>
+
+    getMetrics: (params: {
+      start: number
+      end: number
+    }) => Promise<[number, number][]>
+
+    getDatabaseList(): Promise<string[]>
+
+    getTopSlowQueries(params: {
+      start: number
+      end: number
+      topType: string
+      db: string
+      internal: string
+    }): Promise<ISlowQuery[]>
   }
 
   cfg: ITopSlowQueryConfig

@@ -191,7 +191,7 @@ export default function useSlowQueryTableController({
         })
         setAllGroups(res?.data || [])
       } catch (e) {
-        setErrors((prev) => prev.concat(e as Error))
+        // setErrors((prev) => prev.concat(e as Error))
       }
     }
 

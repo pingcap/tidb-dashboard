@@ -216,7 +216,7 @@ function List() {
         {clusterInfo && (
           <div
             style={{
-              marginBottom: 8,
+              marginBottom: 16,
               display: 'flex',
               flexDirection: 'row-reverse',
               justifyContent: 'space-between'
@@ -224,7 +224,7 @@ function List() {
           >
             {clusterInfo}
             {ctx?.cfg.showTopSlowQueryLink && (
-              <span>
+              <span style={{ fontSize: 18, fontWeight: 600 }}>
                 <span>Slow Query Logs</span>
                 <span> | </span>
                 <Link to="/top_slowquery">Top SlowQueries</Link>

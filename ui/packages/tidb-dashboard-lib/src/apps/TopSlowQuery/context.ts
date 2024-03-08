@@ -46,7 +46,6 @@ export type TopSlowQueryCtxValue = {
 export const TopSlowQueryContext = createContext<TopSlowQueryCtxValue | null>(
   null
 )
-export const ChatContext = createContext<TopSlowQueryCtxValue | null>(null)
 
 export const useTopSlowQueryContext = () => {
   const context = useContext(TopSlowQueryContext)

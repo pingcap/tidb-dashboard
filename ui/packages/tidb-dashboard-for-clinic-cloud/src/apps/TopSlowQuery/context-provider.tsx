@@ -4,9 +4,7 @@ import {
   TopSlowQueryCtxValue
 } from '@pingcap/tidb-dashboard-lib'
 import { getGlobalConfig } from '~/utils/globalConfig'
-import client from '~/client'
 
-import metricsJson from './sample-data/metrics.json'
 import slowQueryJson from './sample-data/slowqueries.json'
 
 export function TopSlowQueryProvider(props: { children: React.ReactNode }) {

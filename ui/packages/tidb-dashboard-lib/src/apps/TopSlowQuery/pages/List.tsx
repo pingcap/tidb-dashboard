@@ -96,10 +96,10 @@ function useTimeWindows() {
       if (data.length === 0) {
         return
       }
-      if (data.some((d) => d.start === tw[0] && d.end === tw[1])) {
+      if (data.some((d) => d.begin_time === tw[0] && d.end_time === tw[1])) {
         return
       }
-      setTw(`${data[0].start}-${data[0].end}`)
+      setTw(`${data[0].begin_time}-${data[0].end_time}`)
     }
   })
   return query
@@ -115,13 +115,13 @@ function TimeWindowSelect() {
       return
     }
     const idx = availableTimeWindows.findIndex(
-      (item) => item.start === tw[0] && item.end === tw[1]
+      (item) => item.begin_time === tw[0] && item.end_time === tw[1]
     )
     if (idx === -1 || idx === 0) {
       return
     }
     const item = availableTimeWindows[idx - 1]
-    setTw(`${item.start}-${item.end}`)
+    setTw(`${item.begin_time}-${item.end_time}`)
   }
 
   function nextTw() {
@@ -129,13 +129,13 @@ function TimeWindowSelect() {
       return
     }
     const idx = availableTimeWindows.findIndex(
-      (item) => item.start === tw[0] && item.end === tw[1]
+      (item) => item.begin_time === tw[0] && item.end_time === tw[1]
     )
     if (idx === -1 || idx === availableTimeWindows.length - 1) {
       return
     }
     const item = availableTimeWindows[idx + 1]
-    setTw(`${item.start}-${item.end}`)
+    setTw(`${item.begin_time}-${item.end_time}`)
   }
 
   return (
@@ -169,13 +169,13 @@ function TimeWindowSelect() {
         >
           {(availableTimeWindows ?? []).map((item) => (
             <Select.Option
-              value={`${item.start}-${item.end}`}
-              key={`${item.start}-${item.end}`}
+              value={`${item.begin_time}-${item.end_time}`}
+              key={`${item.begin_time}-${item.end_time}`}
             >
               {`${dayjs
-                .unix(item.start)
+                .unix(item.begin_time)
                 .format('MM-DD HH:mm:ss (UTCZ)')} - ${dayjs
-                .unix(item.end)
+                .unix(item.end_time)
                 .format('MM-DD HH:mm:ss (UTCZ)')}`}
             </Select.Option>
           ))}
@@ -225,15 +225,17 @@ function SlowQueryCountChart() {
 
 function useDatabaseList() {
   const ctx = useTopSlowQueryContext()
+  const { tw } = useTopSlowQueryUrlState()
 
   const query = useQuery({
     queryKey: [
       'top_slowquery_database_list',
       ctx.cfg.orgName,
-      ctx.cfg.clusterName
+      ctx.cfg.clusterName,
+      tw
     ],
     queryFn: () => {
-      return ctx.api.getDatabaseList()
+      return ctx.api.getDatabaseList({ start: tw[0], end: tw[1] })
     }
   })
   return query
@@ -253,7 +255,7 @@ function TopSlowQueryFilters() {
   }, [databaseList])
 
   return (
-    <Space>
+    <Space style={{ marginBottom: 8 }}>
       <div>
         <span>Top 10: </span>
         <Select style={{ width: 180 }} value={topType} onChange={setTopType}>
@@ -267,7 +269,7 @@ function TopSlowQueryFilters() {
 
       <div>
         <span>Database: </span>
-        <Select style={{ minWidth: 100 }} value={db || ''} onChange={setDb}>
+        <Select style={{ minWidth: 160 }} value={db || ''} onChange={setDb}>
           {dataBaseListOptions.map((item) => (
             <Select.Option value={item.value} key={item.value}>
               {item.label}

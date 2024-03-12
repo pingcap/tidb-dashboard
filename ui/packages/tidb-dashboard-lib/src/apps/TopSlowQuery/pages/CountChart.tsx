@@ -12,11 +12,14 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TimeRangeValue } from 'metrics-chart'
 
 export function CountChart({ data }: { data: [number, number][] }) {
+  const convertedData = useMemo(() => {
+    return (data ?? []).map(([time, count]) => [time * 1000, count])
+  }, [data])
   const minMax = useMemo(() => {
     if (data.length === 0) {
       return [0, 0]
     }
-    return [data[0][0] / 1000, data[data.length - 1][0] / 1000]
+    return [data[0][0], data[data.length - 1][0]]
   }, [data])
 
   return (
@@ -42,7 +45,7 @@ export function CountChart({ data }: { data: [number, number][] }) {
         yScaleType={ScaleType.Linear}
         xAccessor={0}
         yAccessors={[1]}
-        data={data}
+        data={convertedData}
       />
     </Chart>
   )

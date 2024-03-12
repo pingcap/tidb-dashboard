@@ -5,7 +5,16 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 import { getGlobalConfig } from '~/utils/globalConfig'
 
-import slowQueryJson from './sample-data/slowqueries.json'
+import client from '~/client'
+
+const debugHeaders = {
+  'x-cluster-id': '1379661944646413143',
+  'x-org-id': '1372813089209061633',
+  'x-project-id': '1372813089454525346',
+  'x-provider': 'aws',
+  'x-region': 'us-east-1',
+  'x-env': 'prod'
+}
 
 export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
   const ctxValue = useMemo<TopSlowQueryCtxValue>(() => {
@@ -20,44 +29,42 @@ export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
           to: number
           tws: number
         }) => {
-          // return client
-          //   .getAxiosInstance()
-          //   .get(`/top_slowquery/time_windows?from=${from}&to=${to}&tws=${tws}`)
-          //   .then((res) => res.data)
-
-          // mock
-          const d = new Date(2024, 3, 6, 18, 0, 0, 0).getTime() / 1000
-          return [
-            {
-              start: d - tws,
-              end: d
-            },
-            {
-              start: d - 2 * tws,
-              end: d - tws
-            },
-            {
-              start: d - 3 * tws,
-              end: d - 2 * tws
-            }
-          ]
+          const hours = tws / 3600
+          return client
+            .getAxiosInstance()
+            .get(
+              `/slow_query/stats/time_windows?begin_time=${from}&end_time=${to}&hours=${hours}`,
+              {
+                headers: debugHeaders
+              }
+            )
+            .then((res) => res.data)
         },
 
         getMetrics: async (params: { start: number; end: number }) => {
-          const res: [number, number][] = []
-          const step = (params.end - params.start) / 10
-          for (let i = 0; i < 10; i++) {
-            res.push([
-              (params.start + i * step) * 1000, // Convert seconds to milliseconds
-              Math.floor(Math.random() * 1000)
-            ])
-          }
-
-          return res
+          const hours = (params.end - params.start) / 3600
+          return client
+            .getAxiosInstance()
+            .get(
+              `/slow_query/stats/metric?begin_time=${params.start}&hours=${hours}&metric_name=count_per_minute`,
+              {
+                headers: debugHeaders
+              }
+            )
+            .then((res) => res.data)
         },
 
-        getDatabaseList: async () => {
-          return ['test1', 'test2', 'test3']
+        getDatabaseList: async (params: { start: number; end: number }) => {
+          const hours = (params.end - params.start) / 3600
+          return client
+            .getAxiosInstance()
+            .get(
+              `/slow_query/stats/databases?begin_time=${params.start}&hours=${hours}`,
+              {
+                headers: debugHeaders
+              }
+            )
+            .then((res) => res.data)
         },
 
         getTopSlowQueries: async (params: {
@@ -67,8 +74,21 @@ export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
           db: string
           internal: string
         }) => {
-          if (params.start === 0) return []
-          return slowQueryJson
+          const hours = (params.end - params.start) / 3600
+          const isInternal = params.internal === 'yes'
+          return client
+            .getAxiosInstance()
+            .get(
+              `/slow_query/stats?begin_time=${
+                params.start
+              }&hours=${hours}&database=${
+                params.db ?? ''
+              }&internal=${isInternal}&order_by=${params.topType}&limit=10`,
+              {
+                headers: debugHeaders
+              }
+            )
+            .then((res) => res.data)
         }
       },
       cfg: getGlobalConfig().appsConfig?.topSlowQuery || {}

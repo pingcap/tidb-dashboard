@@ -25,10 +25,10 @@ export const TIME_WINDOW_SIZES = [
 ]
 
 export const TOP_N_TYPES = [
-  { label: 'Total TiDB Memory', value: 'total_tidb_memory' },
-  { label: 'Max TiDB Memory', value: 'max_tidb_memory' },
-  { label: 'Avg TiDB Memory', value: 'avg_tidb_memory' },
-  { label: 'Total Latency', value: 'total_latency' },
+  { label: 'Total TiDB Memory', value: 'sum_memory' },
+  { label: 'Max TiDB Memory', value: 'max_memory' },
+  { label: 'Avg TiDB Memory', value: 'avg_memory' },
+  { label: 'Total Latency', value: 'sum_latency' },
   { label: 'Max Latency', value: 'max_latency' },
   { label: 'Avg Latency', value: 'avg_latency' },
   { label: 'Count', value: 'count' }

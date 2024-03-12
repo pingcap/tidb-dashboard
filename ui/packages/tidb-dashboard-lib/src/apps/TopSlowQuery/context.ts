@@ -4,8 +4,8 @@ import { createContext, useContext } from 'react'
 interface ISlowQuery {}
 
 interface ITimeWindow {
-  start: number
-  end: number
+  begin_time: number
+  end_time: number
 }
 
 export interface ITopSlowQueryConfig {
@@ -29,7 +29,7 @@ export type TopSlowQueryCtxValue = {
       end: number
     }) => Promise<[number, number][]>
 
-    getDatabaseList(): Promise<string[]>
+    getDatabaseList(params: { start: number; end: number }): Promise<string[]>
 
     getTopSlowQueries(params: {
       start: number

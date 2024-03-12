@@ -54,7 +54,7 @@ export function TopSlowQueryListTable() {
             query_time: true,
             memory_max: true
           },
-          digest: rec.digest,
+          digest: rec.sql_digest,
           limit: 100
         })
       )
@@ -69,15 +69,15 @@ export function TopSlowQueryListTable() {
         name: 'Query',
         key: 'query',
         minWidth: 100,
-        maxWidth: 500,
+        // maxWidth: 500,
         onRender: (row: any) => {
           return (
             <Tooltip
-              title={<HighlightSQL sql={row.digest_text} theme="dark" />}
+              title={<HighlightSQL sql={row.sql_text} theme="dark" />}
               placement="right"
             >
               <TextWrap>
-                <HighlightSQL sql={row.digest_text} compact />
+                <HighlightSQL sql={row.sql_text} compact />
               </TextWrap>
             </Tooltip>
           )
@@ -90,8 +90,8 @@ export function TopSlowQueryListTable() {
         maxWidth: 150,
         onRender: (row: any) => {
           return (
-            <Tooltip title={row.digest}>
-              <TextWrap>{row.digest}</TextWrap>
+            <Tooltip title={row.sql_digest}>
+              <TextWrap>{row.sql_digest}</TextWrap>
             </Tooltip>
           )
         }
@@ -102,7 +102,7 @@ export function TopSlowQueryListTable() {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: any) => {
-          return <span>{getValueFormat('ns')(row.avg_latency, 1)}</span>
+          return <span>{getValueFormat('s')(row.avg_latency, 1)}</span>
         }
       },
       {
@@ -111,7 +111,7 @@ export function TopSlowQueryListTable() {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: any) => {
-          return <span>{getValueFormat('ns')(row.sum_latency, 1)}</span>
+          return <span>{getValueFormat('s')(row.sum_latency, 1)}</span>
         }
       },
       {
@@ -120,7 +120,7 @@ export function TopSlowQueryListTable() {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: any) => {
-          return <span>{getValueFormat('short')(row.exec_count, 0, 1)}</span>
+          return <span>{getValueFormat('short')(row.count, 0, 1)}</span>
         }
       },
       {
@@ -129,7 +129,7 @@ export function TopSlowQueryListTable() {
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: any) => {
-          return <span>{getValueFormat('bytes')(row.max_mem, 1)}</span>
+          return <span>{getValueFormat('bytes')(row.max_memory, 1)}</span>
         }
       },
       {
@@ -140,33 +140,33 @@ export function TopSlowQueryListTable() {
         onRender: (row: any) => {
           return <span>{getValueFormat('bytes')(row.max_disk, 1)}</span>
         }
-      },
-      {
-        name: 'Database',
-        key: 'database',
-        minWidth: 100,
-        maxWidth: 150,
-        onRender: (row: any) => {
-          return (
-            <Tooltip title={row.schema_name}>
-              <TextWrap>{row.schema_name}</TextWrap>
-            </Tooltip>
-          )
-        }
-      },
-      {
-        name: 'Table',
-        key: 'table',
-        minWidth: 100,
-        maxWidth: 150,
-        onRender: (row: any) => {
-          return (
-            <Tooltip title={row.table_names}>
-              <TextWrap>{row.table_names}</TextWrap>
-            </Tooltip>
-          )
-        }
       }
+      // {
+      //   name: 'Database',
+      //   key: 'database',
+      //   minWidth: 100,
+      //   maxWidth: 150,
+      //   onRender: (row: any) => {
+      //     return (
+      //       <Tooltip title={row.schema_name}>
+      //         <TextWrap>{row.schema_name}</TextWrap>
+      //       </Tooltip>
+      //     )
+      //   }
+      // },
+      // {
+      //   name: 'Table',
+      //   key: 'table',
+      //   minWidth: 100,
+      //   maxWidth: 150,
+      //   onRender: (row: any) => {
+      //     return (
+      //       <Tooltip title={row.table_names}>
+      //         <TextWrap>{row.table_names}</TextWrap>
+      //       </Tooltip>
+      //     )
+      //   }
+      // }
     ]
   }, [])
 

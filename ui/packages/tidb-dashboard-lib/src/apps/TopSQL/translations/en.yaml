@@ -34,6 +34,8 @@ topsql:
     fields:
       cpu_time: Total CPU Time
       sql: SQL Statement
+    actions:
+      search_in_statements: Search in SQL Statements
   detail:
     title: SQL Statement Details by Plan
     overall: Overall

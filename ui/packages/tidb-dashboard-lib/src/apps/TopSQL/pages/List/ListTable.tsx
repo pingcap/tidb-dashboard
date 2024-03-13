@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { Tooltip } from 'antd'
+import { Tooltip, Typography } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import {
@@ -15,7 +15,9 @@ import {
   Bar,
   TextWrap,
   HighlightSQL,
-  AppearAnimate
+  AppearAnimate,
+  TimeRange,
+  toTimeRangeValue
 } from '@lib/components'
 
 import { useRecordSelection } from '../../utils/useRecordSelection'
@@ -24,11 +26,14 @@ import { isOthersRecord, isUnknownSQLRecord } from '../../utils/specialRecord'
 import { InstanceType } from './ListDetail/ListDetailTable'
 import { useMemoizedFn } from 'ahooks'
 import { telemetry } from '../../utils/telemetry'
+import openLink from '@lib/utils/openLink'
+import { useNavigate } from 'react-router-dom'
 
 interface ListTableProps {
   data: TopsqlSummaryItem[]
   topN: number
   instanceType: InstanceType
+  timeRange: TimeRange
   onRowOver: (key: string) => void
   onRowLeave: () => void
 }
@@ -43,11 +48,29 @@ export function ListTable({
   data,
   topN,
   instanceType,
+  timeRange,
   onRowLeave,
   onRowOver
 }: ListTableProps) {
   const { t } = useTranslation()
   const { data: tableRecords, capacity } = useTableData(data)
+  const navigate = useNavigate()
+
+  function goDetail(ev: React.MouseEvent<HTMLElement>, record: SQLRecord) {
+    const sv = sessionStorage.getItem('statement.query_options')
+    if (sv) {
+      const queryOptions = JSON.parse(sv)
+      queryOptions.searchText = record.sql_digest
+      sessionStorage.setItem(
+        'statement.query_options',
+        JSON.stringify(queryOptions)
+      )
+    }
+
+    const tv = toTimeRangeValue(timeRange)
+    openLink(`/statement?from=${tv[0]}&to=${tv[1]}`, ev, navigate)
+  }
+
   const tableColumns = useMemo(
     () => [
       {
@@ -65,7 +88,7 @@ export function ListTable({
         name: t('topsql.table.fields.sql'),
         key: 'query',
         minWidth: 250,
-        maxWidth: 550,
+        // maxWidth: 550,
         onRender: (rec: SQLRecord) => {
           const text = isUnknownSQLRecord(rec)
             ? `(SQL ${rec.sql_digest?.slice(0, 8)})`
@@ -96,6 +119,22 @@ export function ListTable({
               </TextWrap>
             </Tooltip>
           )
+        }
+      },
+      {
+        name: '',
+        key: 'actions',
+        minWidth: 200,
+        // maxWidth: 200,
+        onRender: (rec) => {
+          if (!isOthersRecord(rec)) {
+            return (
+              <Typography.Link onClick={(ev) => goDetail(ev, rec)}>
+                {t('topsql.table.actions.search_in_statements')}
+              </Typography.Link>
+            )
+          }
+          return null
         }
       }
     ],

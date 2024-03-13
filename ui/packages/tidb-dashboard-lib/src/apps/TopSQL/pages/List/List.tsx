@@ -307,6 +307,7 @@ export function TopSQLList() {
                 topN={TOP_N}
                 instanceType={instance?.instance_type as InstanceType}
                 data={topSQLData}
+                timeRange={timeRange}
               />
             )}
             {Boolean(!topSQLData?.length && timeRange.type === 'recent') && (

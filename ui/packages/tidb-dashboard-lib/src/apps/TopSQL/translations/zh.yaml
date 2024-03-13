@@ -34,6 +34,8 @@ topsql:
     fields:
       cpu_time: 累计 CPU 耗时
       sql: SQL 语句
+    actions:
+      search_in_statements: 在 SQL 语句分析中搜索
   detail:
     title: SQL 详情
     overall: 总计

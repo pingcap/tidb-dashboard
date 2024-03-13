@@ -298,7 +298,7 @@ func (p *ResolvedRequestPayload) verifyEndpoint(ctx context.Context, etcdClient 
 		}
 		matched := false
 		for _, info := range infos {
-			if info.IP == p.host && info.Port == uint(p.port) {
+			if info.IP == p.host && info.StatusPort == uint(p.port) {
 				matched = true
 				break
 			}

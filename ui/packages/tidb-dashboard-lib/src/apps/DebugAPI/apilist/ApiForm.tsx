@@ -19,6 +19,7 @@ export interface Topology {
   tikv: TopologyStoreInfo[]
   tiflash: TopologyStoreInfo[]
   pd: TopologyPDInfo[]
+  tiproxy: TopologyPDInfo[]
 }
 
 export default function ApiForm({

@@ -168,7 +168,13 @@ function InstanceSelect(
   )
 
   const [tableItems] = useMemo(() => {
-    if (loadingTiDB || loadingStores || loadingPD) {
+    if (
+      loadingTiDB ||
+      loadingStores ||
+      loadingPD ||
+      loadingTiCDC ||
+      loadingTiProxy
+    ) {
       return [[], []]
     }
     return buildInstanceTable({

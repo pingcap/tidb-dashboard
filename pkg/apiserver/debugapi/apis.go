@@ -10,7 +10,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/topo"
 )
 
-var commomParamPprofKinds = endpoint.APIParamEnum("kind", true, []endpoint.EnumItemDefinition{
+var commonParamPprofKinds = endpoint.APIParamEnum("kind", true, []endpoint.EnumItemDefinition{
 	{Value: "allocs"},
 	{Value: "block"},
 	{Value: "cmdline"},
@@ -159,7 +159,7 @@ var apiEndpoints = []endpoint.APIDefinition{
 		Path:      "/debug/pprof/{kind}",
 		Method:    resty.MethodGet,
 		PathParams: []endpoint.APIParamDefinition{
-			commomParamPprofKinds,
+			commonParamPprofKinds,
 		},
 		QueryParams: []endpoint.APIParamDefinition{
 			commonParamPprofSeconds,
@@ -394,7 +394,7 @@ var apiEndpoints = []endpoint.APIDefinition{
 		Path:      "/debug/pprof/{kind}",
 		Method:    resty.MethodGet,
 		PathParams: []endpoint.APIParamDefinition{
-			commomParamPprofKinds,
+			commonParamPprofKinds,
 		},
 		QueryParams: []endpoint.APIParamDefinition{
 			commonParamPprofSeconds,
@@ -437,6 +437,26 @@ var apiEndpoints = []endpoint.APIDefinition{
 		},
 		BeforeSendRequest: func(req *httpclient.LazyRequest) {
 			req.SetHeader("Content-Type", "application/protobuf")
+		},
+	},
+	// TiProxy Endpoints
+	{
+		ID:        "tiproxy_config",
+		Component: topo.KindTiProxy,
+		Path:      "/api/admin/config",
+		Method:    resty.MethodGet,
+	},
+	{
+		ID:        "tiproxy_pprof",
+		Component: topo.KindTiProxy,
+		Path:      "/debug/pprof/{kind}",
+		Method:    resty.MethodGet,
+		PathParams: []endpoint.APIParamDefinition{
+			commonParamPprofKinds,
+		},
+		QueryParams: []endpoint.APIParamDefinition{
+			commonParamPprofSeconds,
+			commonParamPprofDebug,
 		},
 	},
 }

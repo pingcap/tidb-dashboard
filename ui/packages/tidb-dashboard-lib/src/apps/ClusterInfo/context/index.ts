@@ -10,7 +10,9 @@ import {
   TopologyPDInfo,
   ClusterinfoClusterStatistics,
   TopologyTiCDCInfo,
-  TopologyTiProxyInfo
+  TopologyTiProxyInfo,
+  TopologyTSOInfo,
+  TopologySchedulingInfo
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
@@ -37,6 +39,12 @@ export interface IClusterInfoDataSource {
   getTiProxyTopology(
     options?: ReqConfig
   ): AxiosPromise<Array<TopologyTiProxyInfo>>
+
+  getTSOTopology(options?: ReqConfig): AxiosPromise<Array<TopologyTSOInfo>>
+
+  getSchedulingTopology(
+    options?: ReqConfig
+  ): AxiosPromise<Array<TopologySchedulingInfo>>
 
   topologyTidbAddressDelete(
     address: string,

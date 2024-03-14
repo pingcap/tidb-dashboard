@@ -1,1 +1,1 @@
-{"tidb":"TiDB","tikv":"TiKV","pd":"PD","tiflash":"TiFlash","ticdc":"TiCDC","tiproxy":"TiProxy"}
+{"tidb":"TiDB","tikv":"TiKV","pd":"PD","tiflash":"TiFlash","ticdc":"TiCDC","tiproxy":"TiProxy","tso":"TSO","scheduling":"Scheduling"}

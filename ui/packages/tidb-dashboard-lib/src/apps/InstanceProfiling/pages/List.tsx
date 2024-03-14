@@ -76,6 +76,8 @@ export default function Page() {
           let port
           switch (instance.instanceKind) {
             case 'pd':
+            case 'tso':
+            case 'scheduling':
               port = instance.port
               break
             case 'tidb':
@@ -127,7 +129,7 @@ export default function Page() {
         name: t('instance_profiling.list.table.columns.targets'),
         key: 'targets',
         minWidth: 300,
-        maxWidth: 400,
+        maxWidth: 480,
         onRender: (rec) => {
           return combineTargetStats(rec.target_stats)
         }
@@ -238,6 +240,8 @@ export default function Page() {
                   getPDTopology={ctx!.ds.getPDTopology}
                   getTiCDCTopology={ctx!.ds.getTiCDCTopology}
                   getTiProxyTopology={ctx!.ds.getTiProxyTopology}
+                  getTSOTopology={ctx!.ds.getTSOTopology}
+                  getSchedulingTopology={ctx!.ds.getSchedulingTopology}
                 />
               </Form.Item>
               <Form.Item name="type">

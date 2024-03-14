@@ -92,6 +92,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
             case 'tikv':
             case 'tiflash':
             case 'ticdc':
+            case 'tso':
+            case 'scheduling':
               port = instance.port
               break
             case 'tidb':
@@ -173,6 +175,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
           getPDTopology={ctx!.ds.getPDTopology}
           getTiCDCTopology={ctx!.ds.getTiCDCTopology}
           getTiProxyTopology={ctx!.ds.getTiProxyTopology}
+          getTSOTopology={ctx!.ds.getTSOTopology}
+          getSchedulingTopology={ctx!.ds.getSchedulingTopology}
         />
       </Form.Item>
       <Form.Item name="keywords">

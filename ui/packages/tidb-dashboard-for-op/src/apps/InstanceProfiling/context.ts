@@ -40,6 +40,12 @@ class DataSource implements IInstanceProfilingDataSource {
   getTiProxyTopology(options?: ReqConfig) {
     return client.getInstance().getTiProxyTopology(options)
   }
+  getTSOTopology(options?: ReqConfig) {
+    return client.getInstance().getTSOTopology(options)
+  }
+  getSchedulingTopology(options?: ReqConfig) {
+    return client.getInstance().getSchedulingTopology(options)
+  }
 }
 
 const ds = new DataSource()

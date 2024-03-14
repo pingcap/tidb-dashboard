@@ -1,4 +1,3 @@
-import { MetricsQueryResponse } from '@lib/client'
 import { createContext, useContext } from 'react'
 
 interface ISlowQuery {}

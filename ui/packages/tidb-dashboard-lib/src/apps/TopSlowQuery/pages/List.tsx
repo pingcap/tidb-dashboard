@@ -1,17 +1,13 @@
 import React, { useRef, useMemo } from 'react'
-import { Space, Select, Typography } from 'antd'
+import { Space, Select, Typography, Button } from 'antd'
 import { CaretLeftOutlined, CaretRightOutlined } from '@ant-design/icons'
-import { Card, TimeRangeSelector, toTimeRangeValue } from '@lib/components'
+import { Card, toTimeRangeValue } from '@lib/components'
 
 import styles from './List.module.less'
 import { useTopSlowQueryContext } from '../context'
 import { Link } from 'react-router-dom'
 import { useTopSlowQueryUrlState } from '../uilts/url-state'
-import {
-  TIME_RANGE_RECENT_SECONDS,
-  TIME_WINDOW_SIZES,
-  TOP_N_TYPES
-} from '../uilts/helpers'
+import { DEFAULT_TIME_RANGE, TIME_WINDOW_SIZES } from '../uilts/helpers'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { TopSlowQueryListTable } from './ListTable'
@@ -30,6 +26,7 @@ export function TopSlowQueryList() {
         <TimeWindowSelect />
         <SlowQueryCountChart />
 
+        <Typography.Title level={5}>Top 10</Typography.Title>
         <TopSlowQueryFilters />
         <TopSlowQueryListTable />
       </Card>
@@ -74,18 +71,17 @@ function ClusterInfoHeader() {
 
 function useTimeWindows() {
   const ctx = useTopSlowQueryContext()
-  const { timeRange, tws, tw, setTw } = useTopSlowQueryUrlState()
+  const { tws, tw, setTw } = useTopSlowQueryUrlState()
 
   const query = useQuery({
     queryKey: [
       'top_slowquery_time_windows',
-      timeRange,
       tws,
       ctx.cfg.orgName,
       ctx.cfg.clusterName
     ],
     queryFn: () => {
-      const timeVal = toTimeRangeValue(timeRange)
+      const timeVal = toTimeRangeValue(DEFAULT_TIME_RANGE)
       return ctx.api.getAvailableTimeWindows({
         from: timeVal[0],
         to: timeVal[1],
@@ -106,8 +102,7 @@ function useTimeWindows() {
 }
 
 function TimeWindowSelect() {
-  const { timeRange, setTimeRange, tws, setTws, tw, setTw } =
-    useTopSlowQueryUrlState()
+  const { tws, setTws, tw, setTw } = useTopSlowQueryUrlState()
   const { data: availableTimeWindows } = useTimeWindows()
 
   function preTw() {
@@ -140,17 +135,19 @@ function TimeWindowSelect() {
 
   return (
     <Space>
-      <div>
-        <span>Time Range: </span>
-        <TimeRangeSelector
-          value={timeRange}
-          onChange={setTimeRange}
-          recent_seconds={TIME_RANGE_RECENT_SECONDS}
-        />
-      </div>
+      {/*
+        <div>
+          <span>Time Range: </span>
+          <TimeRangeSelector
+            value={timeRange}
+            onChange={setTimeRange}
+            recent_seconds={TIME_RANGE_RECENT_SECONDS}
+          />
+        </div>
+      */}
 
       <div>
-        <span>Time Window Size: </span>
+        <span>Aggregation Time Duration: </span>
         <Select style={{ width: 128 }} value={tws} onChange={setTws}>
           {TIME_WINDOW_SIZES.map((item) => (
             <Select.Option value={item.value} key={item.label}>
@@ -161,9 +158,9 @@ function TimeWindowSelect() {
       </div>
 
       <div>
-        <span>Time Window: </span>
+        <span>Aggregation Start Time: </span>
         <Select
-          style={{ width: 448 }}
+          style={{ width: 264 }}
           value={tw[0] === 0 ? '' : `${tw[0]}-${tw[1]}`}
           onChange={setTw}
         >
@@ -174,15 +171,14 @@ function TimeWindowSelect() {
             >
               {`${dayjs
                 .unix(item.begin_time)
-                .format('MM-DD HH:mm:ss (UTCZ)')} - ${dayjs
-                .unix(item.end_time)
-                .format('MM-DD HH:mm:ss (UTCZ)')}`}
+                .format('YYYY-MM-DD HH:mm (UTCZ)')}`}
             </Select.Option>
           ))}
         </Select>
         <span>
-          <CaretLeftOutlined onClick={preTw} />
-          <CaretRightOutlined onClick={nextTw} />
+          {' '}
+          <Button icon={<CaretLeftOutlined />} onClick={preTw} />{' '}
+          <Button icon={<CaretRightOutlined />} onClick={nextTw} />
         </span>
       </div>
     </Space>
@@ -242,8 +238,7 @@ function useDatabaseList() {
 }
 
 function TopSlowQueryFilters() {
-  const { topType, setTopType, db, setDb, internal, setInternal } =
-    useTopSlowQueryUrlState()
+  const { db, setDb, internal, setInternal } = useTopSlowQueryUrlState()
   const { data: databaseList } = useDatabaseList()
 
   const dataBaseListOptions = useMemo(() => {
@@ -256,20 +251,27 @@ function TopSlowQueryFilters() {
 
   return (
     <Space style={{ marginBottom: 8 }}>
-      <div>
-        <span>Top 10: </span>
-        <Select style={{ width: 180 }} value={topType} onChange={setTopType}>
-          {TOP_N_TYPES.map((item) => (
-            <Select.Option value={item.value} key={item.value}>
-              {item.label}
-            </Select.Option>
-          ))}
-        </Select>
-      </div>
+      {/*
+        <div>
+          <span>Top 10: </span>
+          <Select style={{ width: 180 }} value={topType} onChange={setTopType}>
+            {TOP_N_TYPES.map((item) => (
+              <Select.Option value={item.value} key={item.value}>
+                {item.label}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+      */}
 
       <div>
         <span>Database: </span>
-        <Select style={{ minWidth: 160 }} value={db || ''} onChange={setDb}>
+        <Select
+          style={{ minWidth: 160 }}
+          value={db || ''}
+          onChange={setDb}
+          showSearch
+        >
           {dataBaseListOptions.map((item) => (
             <Select.Option value={item.value} key={item.value}>
               {item.label}

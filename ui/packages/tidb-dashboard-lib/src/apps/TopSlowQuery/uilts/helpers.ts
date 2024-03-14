@@ -12,7 +12,7 @@ export const TIME_RANGE_RECENT_SECONDS = [
 
 export const DEFAULT_TIME_RANGE: TimeRange = {
   type: 'recent',
-  value: TIME_RANGE_RECENT_SECONDS[0]
+  value: TIME_RANGE_RECENT_SECONDS[6]
 }
 
 export const TIME_WINDOW_SIZES = [
@@ -25,11 +25,11 @@ export const TIME_WINDOW_SIZES = [
 ]
 
 export const TOP_N_TYPES = [
-  { label: 'Total TiDB Memory', value: 'sum_memory' },
-  { label: 'Max TiDB Memory', value: 'max_memory' },
-  { label: 'Avg TiDB Memory', value: 'avg_memory' },
   { label: 'Total Latency', value: 'sum_latency' },
   { label: 'Max Latency', value: 'max_latency' },
   { label: 'Avg Latency', value: 'avg_latency' },
+  { label: 'Total TiDB Memory', value: 'sum_memory' },
+  { label: 'Max TiDB Memory', value: 'max_memory' },
+  { label: 'Avg TiDB Memory', value: 'avg_memory' },
   { label: 'Count', value: 'count' }
 ]

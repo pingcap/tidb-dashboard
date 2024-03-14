@@ -4,7 +4,10 @@ import { useTopSlowQueryUrlState } from '../uilts/url-state'
 import { useQuery } from '@tanstack/react-query'
 
 import { CardTable, HighlightSQL, TextWrap } from '@lib/components'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import {
+  ColumnActionsMode,
+  IColumn
+} from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useMemoizedFn } from 'ahooks'
@@ -39,7 +42,7 @@ function useTopSlowQueryData() {
 }
 
 export function TopSlowQueryListTable() {
-  const { tw } = useTopSlowQueryUrlState()
+  const { tw, topType, setTopType } = useTopSlowQueryUrlState()
   const { isLoading, data: slowQueries } = useTopSlowQueryData()
   const navigate = useNavigate()
 
@@ -69,7 +72,7 @@ export function TopSlowQueryListTable() {
         name: 'Query',
         key: 'query',
         minWidth: 100,
-        // maxWidth: 500,
+        maxWidth: 500,
         onRender: (row: any) => {
           return (
             <Tooltip
@@ -97,48 +100,90 @@ export function TopSlowQueryListTable() {
         }
       },
       {
-        name: 'Avg Latency',
-        key: 'avg_latency',
-        minWidth: 100,
-        maxWidth: 120,
-        onRender: (row: any) => {
-          return <span>{getValueFormat('s')(row.avg_latency, 1)}</span>
-        }
-      },
-      {
         name: 'Total Latency',
-        key: 'total_latency',
+        key: 'sum_latency',
+        fieldName: 'sum_latency',
         minWidth: 100,
-        maxWidth: 120,
+        maxWidth: 150,
+        columnActionsMode: ColumnActionsMode.clickable,
         onRender: (row: any) => {
           return <span>{getValueFormat('s')(row.sum_latency, 1)}</span>
         }
       },
       {
-        name: 'Total Count',
-        key: 'total_count',
+        name: 'Max Latency',
+        key: 'max_latency',
+        fieldName: 'max_latency', // fieldName is used to sort
         minWidth: 100,
-        maxWidth: 120,
+        maxWidth: 150,
+        columnActionsMode: ColumnActionsMode.clickable,
         onRender: (row: any) => {
-          return <span>{getValueFormat('short')(row.count, 0, 1)}</span>
+          return <span>{getValueFormat('s')(row.max_latency, 1)}</span>
+        }
+      },
+      {
+        name: 'Avg Latency',
+        key: 'avg_latency',
+        fieldName: 'avg_latency',
+        minWidth: 100,
+        maxWidth: 150,
+        columnActionsMode: ColumnActionsMode.clickable,
+        onRender: (row: any) => {
+          return <span>{getValueFormat('s')(row.avg_latency, 1)}</span>
+        }
+      },
+      {
+        name: 'Total Memory',
+        key: 'sum_memory',
+        fieldName: 'sum_memory',
+        minWidth: 100,
+        maxWidth: 150,
+        columnActionsMode: ColumnActionsMode.clickable,
+        onRender: (row: any) => {
+          return <span>{getValueFormat('bytes')(row.sum_memory, 1)}</span>
         }
       },
       {
         name: 'Max Memory',
-        key: 'max_mem',
+        key: 'max_memory',
+        fieldName: 'max_memory',
         minWidth: 100,
-        maxWidth: 120,
+        maxWidth: 150,
+        columnActionsMode: ColumnActionsMode.clickable,
         onRender: (row: any) => {
           return <span>{getValueFormat('bytes')(row.max_memory, 1)}</span>
         }
       },
       {
+        name: 'Avg Memory',
+        key: 'avg_memory',
+        fieldName: 'avg_memory',
+        minWidth: 100,
+        maxWidth: 150,
+        columnActionsMode: ColumnActionsMode.clickable,
+        onRender: (row: any) => {
+          return <span>{getValueFormat('bytes')(row.avg_memory, 1)}</span>
+        }
+      },
+      {
+        name: 'Total Count',
+        key: 'count',
+        fieldName: 'count',
+        minWidth: 100,
+        maxWidth: 150,
+        columnActionsMode: ColumnActionsMode.clickable,
+        onRender: (row: any) => {
+          return <span>{getValueFormat('short')(row.count, 0, 1)}</span>
+        }
+      },
+      {
         name: 'Total Disk',
-        key: 'total_disk',
+        key: 'sum_disk',
+        fieldName: 'sum_disk',
         minWidth: 100,
         maxWidth: 120,
         onRender: (row: any) => {
-          return <span>{getValueFormat('bytes')(row.max_disk, 1)}</span>
+          return <span>{getValueFormat('bytes')(row.sum_disk, 1)}</span>
         }
       }
       // {
@@ -177,6 +222,8 @@ export function TopSlowQueryListTable() {
       columns={columns}
       items={slowQueries ?? []}
       onRowClicked={handleRowClick}
+      orderBy={topType}
+      onChangeOrder={(c) => setTopType(c)}
     />
   )
 }

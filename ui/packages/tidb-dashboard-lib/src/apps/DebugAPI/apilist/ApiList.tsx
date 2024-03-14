@@ -59,7 +59,7 @@ export default function Page() {
   const { endpoints, filterBy } = useFilterEndpoints(endpointData)
 
   // TODO: refine with components/InstanceSelect
-  const { data: tidbTopology = [], isLoading: isTiDBTopology } =
+  const { data: tidbTopology = [], isLoading: isTiDBLoading } =
     useClientRequest(ctx!.ds.getTiDBTopology)
   const { data: pdTopology = [], isLoading: isPDLoading } = useClientRequest(
     ctx!.ds.getPDTopology
@@ -67,13 +67,17 @@ export default function Page() {
   const { data: storeTopology, isLoading: isStoreLoading } = useClientRequest(
     ctx!.ds.getStoreTopology
   )
+  const { data: tiproxyTopology = [], isLoading: isTiProxyLoading } =
+    useClientRequest(ctx!.ds.getTiProxyTopology)
   const topology: Topology = {
     tidb: tidbTopology!,
     tikv: storeTopology?.tikv || [],
     tiflash: storeTopology?.tiflash || [],
-    pd: pdTopology!
+    pd: pdTopology!,
+    tiproxy: tiproxyTopology!
   }
-  const isTopologyLoading = isTiDBTopology || isPDLoading || isStoreLoading
+  const isTopologyLoading =
+    isTiDBLoading || isPDLoading || isStoreLoading || isTiProxyLoading
 
   const groups = useMemo(
     () =>
@@ -89,7 +93,7 @@ export default function Page() {
   )
   const sortedGroups = useMemo(
     () =>
-      ['tidb', 'tikv', 'tiflash', 'pd']
+      ['tidb', 'tikv', 'tiflash', 'pd', 'tiproxy']
         .filter((sortKey) => groups[sortKey])
         .map((sortKey) => groups[sortKey]),
     [groups]

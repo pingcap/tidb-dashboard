@@ -9,7 +9,8 @@ const portKeys: { [k: string]: string } = {
   tidb: 'status_port',
   tikv: 'status_port',
   tiflash: 'status_port',
-  pd: 'port'
+  pd: 'port',
+  tiproxy: 'status_port'
 }
 
 export const HostSelectWidget: ApiFormWidget = ({ endpoint, topology }) => {

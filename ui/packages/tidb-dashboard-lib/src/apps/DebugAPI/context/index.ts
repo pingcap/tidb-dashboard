@@ -8,7 +8,8 @@ import {
   InfoTableSchema,
   TopologyTiDBInfo,
   ClusterinfoStoreTopologyResponse,
-  TopologyPDInfo
+  TopologyPDInfo,
+  TopologyTiProxyInfo
 } from '@lib/client'
 
 import { IContextConfig, ReqConfig } from '@lib/types'
@@ -37,6 +38,10 @@ export interface IDebugAPIDataSource {
   ): AxiosPromise<ClusterinfoStoreTopologyResponse>
 
   getPDTopology(options?: ReqConfig): AxiosPromise<Array<TopologyPDInfo>>
+
+  getTiProxyTopology(
+    options?: ReqConfig
+  ): AxiosPromise<Array<TopologyTiProxyInfo>>
 }
 
 export interface IDebugAPIContext {

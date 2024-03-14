@@ -14,7 +14,7 @@ import (
 
 func FetchSchedulingTopology(ctx context.Context, pdClient *pd.Client) ([]SchedulingInfo, error) {
 	nodes := make([]SchedulingInfo, 0)
-	data, err := pdClient.WithoutPrefix().SendGetRequest("pd/api/v2/ms/members/scheduling")
+	data, err := pdClient.WithoutPrefix().SendGetRequest("/pd/api/v2/ms/members/scheduling")
 	if err != nil {
 		return nil, err
 	}

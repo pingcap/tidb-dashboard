@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -167,7 +168,12 @@ func (s *Service) getTiProxyTopology(c *gin.Context) {
 func (s *Service) getTSOTopology(c *gin.Context) {
 	instances, err := topology.FetchTSOTopology(s.lifecycleCtx, s.params.PDClient)
 	if err != nil {
-		rest.Error(c, err)
+		// TODO: refine later
+		if strings.Contains(err.Error(), "status code 404") {
+			rest.Error(c, rest.ErrNotFound.Wrap(err, "api not found"))
+		} else {
+			rest.Error(c, err)
+		}
 		return
 	}
 	c.JSON(http.StatusOK, instances)
@@ -182,7 +188,12 @@ func (s *Service) getTSOTopology(c *gin.Context) {
 func (s *Service) getSchedulingTopology(c *gin.Context) {
 	instances, err := topology.FetchSchedulingTopology(s.lifecycleCtx, s.params.PDClient)
 	if err != nil {
-		rest.Error(c, err)
+		// TODO: refine later
+		if strings.Contains(err.Error(), "status code 404") {
+			rest.Error(c, rest.ErrNotFound.Wrap(err, "api not found"))
+		} else {
+			rest.Error(c, err)
+		}
 		return
 	}
 	c.JSON(http.StatusOK, instances)

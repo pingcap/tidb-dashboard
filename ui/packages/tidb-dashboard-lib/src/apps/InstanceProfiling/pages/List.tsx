@@ -129,7 +129,7 @@ export default function Page() {
         name: t('instance_profiling.list.table.columns.targets'),
         key: 'targets',
         minWidth: 300,
-        maxWidth: 400,
+        maxWidth: 480,
         onRender: (rec) => {
           return combineTargetStats(rec.target_stats)
         }

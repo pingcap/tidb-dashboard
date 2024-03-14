@@ -14,7 +14,7 @@ import (
 
 func FetchTSOTopology(ctx context.Context, pdClient *pd.Client) ([]TSOInfo, error) {
 	nodes := make([]TSOInfo, 0)
-	data, err := pdClient.WithoutPrefix().SendGetRequest("pd/api/v2/ms/members/tso")
+	data, err := pdClient.WithoutPrefix().SendGetRequest("/pd/api/v2/ms/members/tso")
 	if err != nil {
 		return nil, err
 	}

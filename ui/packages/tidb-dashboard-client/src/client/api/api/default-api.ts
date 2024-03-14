@@ -193,7 +193,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -204,7 +204,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get information of all hosts
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -226,7 +226,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -237,7 +237,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get cluster statistics
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -259,7 +259,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -270,7 +270,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Edit a configuration
          * @param {ConfigurationEditRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -309,7 +309,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all configurations
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -331,7 +331,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -342,7 +342,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get action token for download or view profile
          * @param {string} q target query string
          * @param {*} [options] Override http request option.
@@ -371,7 +371,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -382,7 +382,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get current scraping components
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -404,7 +404,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -415,7 +415,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Continuous Profiling Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -437,7 +437,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -448,7 +448,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Update Continuous Profiling Config
          * @param {ConprofNgMonitoringConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -487,7 +487,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Download Group Profile files
          * @param {number} ts timestamp
          * @param {*} [options] Override http request option.
@@ -516,7 +516,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -527,7 +527,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Estimate Size
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -549,7 +549,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -560,7 +560,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Group Profile Detail
          * @param {number} ts timestamp
          * @param {*} [options] Override http request option.
@@ -589,7 +589,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -600,7 +600,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Group Profiles
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
@@ -632,7 +632,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -643,7 +643,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary View Single Profile files
          * @param {string} [address] 
          * @param {string} [component] 
@@ -685,7 +685,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -696,7 +696,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary List all deadlock records
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -718,7 +718,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -729,7 +729,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all endpoints
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -751,7 +751,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -762,7 +762,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Send request remote endpoint and return a token for downloading results
          * @param {EndpointRequestPayload} req request payload
          * @param {*} [options] Override http request option.
@@ -801,7 +801,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Download a finished request result
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -827,7 +827,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -864,7 +864,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -914,7 +914,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Generate metrics relationship graph.
          * @param {DiagnoseGenerateMetricsRelationRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -953,7 +953,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary View metrics relationship graph.
          * @param {string} token token
          * @param {*} [options] Override http request option.
@@ -979,7 +979,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1012,7 +1012,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1046,7 +1046,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarQueryParameter = {} as any;
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1080,7 +1080,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarQueryParameter = {} as any;
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1117,7 +1117,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1196,7 +1196,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1236,7 +1236,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1279,7 +1279,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1290,7 +1290,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get current alert count from AlertManager
          * @param {string} address ip:port
          * @param {*} [options] Override http request option.
@@ -1316,7 +1316,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1327,7 +1327,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get AlertManager instance
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1349,7 +1349,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1360,7 +1360,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Grafana instance
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1382,7 +1382,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1393,7 +1393,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all PD instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1415,7 +1415,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1452,7 +1452,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1485,7 +1485,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1496,7 +1496,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all Scheduling instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1518,7 +1518,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1529,7 +1529,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get location labels of all TiKV / TiFlash instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1551,7 +1551,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1562,7 +1562,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all TiKV / TiFlash instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1584,7 +1584,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1595,7 +1595,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all TSO instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1617,7 +1617,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1628,7 +1628,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all TiCDC instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1650,7 +1650,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1661,7 +1661,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all TiDB instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1683,7 +1683,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1694,7 +1694,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all TiProxy instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1716,7 +1716,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1727,7 +1727,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get information about this TiDB Dashboard
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1749,7 +1749,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1760,7 +1760,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary List all databases
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1782,7 +1782,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1793,7 +1793,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary List tables by database name
          * @param {string} [databaseName] Database name
          * @param {*} [options] Override http request option.
@@ -1820,7 +1820,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1831,7 +1831,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get information about current session
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1853,7 +1853,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1864,7 +1864,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Key Visual Dynamic Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1886,7 +1886,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1897,7 +1897,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Set Key Visual Dynamic Config
          * @param {ConfigKeyVisualConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -1983,7 +1983,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1994,7 +1994,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Generate a download token for downloading logs
          * @param {Array<string>} [id] task id
          * @param {*} [options] Override http request option.
@@ -2021,7 +2021,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2032,7 +2032,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Download logs
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -2058,7 +2058,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2069,7 +2069,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Create and run a new log search task group
          * @param {LogsearchCreateTaskGroupRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -2108,7 +2108,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary List all log search task groups
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2130,7 +2130,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2141,7 +2141,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Cancel running tasks in a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -2167,7 +2167,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2178,7 +2178,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Delete a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -2204,7 +2204,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2215,7 +2215,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary List tasks in a log search task group
          * @param {string} id Task Group ID
          * @param {*} [options] Override http request option.
@@ -2241,7 +2241,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2252,7 +2252,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Preview a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -2278,7 +2278,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2289,7 +2289,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Retry failed tasks in a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -2315,7 +2315,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2326,7 +2326,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get the Prometheus address cluster config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2348,7 +2348,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2401,7 +2401,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2412,7 +2412,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Set or clear the customized Prometheus address
          * @param {MetricsPutCustomPromAddressRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -2451,7 +2451,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Profiling Dynamic Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2473,7 +2473,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2484,7 +2484,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Set Profiling Dynamic Config
          * @param {ConfigProfilingConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -2523,7 +2523,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Run statements
          * @param {QueryeditorRunRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -2562,7 +2562,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get calibrate of Resource Groups by actual workload
          * @param {number} [endTime] 
          * @param {number} [startTime] 
@@ -2594,7 +2594,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2605,7 +2605,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get calibrate of Resource Groups by hardware deployment
          * @param {string} workload workload
          * @param {*} [options] Override http request option.
@@ -2634,7 +2634,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2645,7 +2645,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Resource Control enable config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2667,7 +2667,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2678,7 +2678,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Information of Resource Groups
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2700,7 +2700,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2711,7 +2711,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary List all resource groups
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2733,7 +2733,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2766,7 +2766,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2777,7 +2777,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get details of a slow query
          * @param {string} [connectId] TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
          * @param {string} [digest] 
@@ -2814,7 +2814,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2825,7 +2825,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Download slow query statements
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -2851,7 +2851,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2862,7 +2862,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Generate a download token for exported slow query statements
          * @param {SlowqueryGetListRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -2901,7 +2901,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary List all slow queries
          * @param {number} [beginTime] 
          * @param {Array<string>} [db] 
@@ -2978,7 +2978,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3050,7 +3050,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3061,7 +3061,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get statement configurations
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3083,7 +3083,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3094,7 +3094,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Update statement configurations
          * @param {StatementEditableConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -3133,7 +3133,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Download statements
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -3159,7 +3159,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3170,7 +3170,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Generate a download token for exported statements
          * @param {StatementGetStatementsRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -3209,7 +3209,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get a list of statements
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
@@ -3266,7 +3266,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3277,7 +3277,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Drop all manually created bindings for a statement
          * @param {string} sqlDigest query template ID (a.k.a. sql digest)
          * @param {*} [options] Override http request option.
@@ -3306,7 +3306,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3317,7 +3317,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get the bound plan digest (if exists) of a statement
          * @param {string} sqlDigest query template id
          * @param {number} beginTime begin time
@@ -3360,7 +3360,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3371,7 +3371,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Create a binding for a statement and a plan
          * @param {string} planDigest plan digest id
          * @param {*} [options] Override http request option.
@@ -3400,7 +3400,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3411,7 +3411,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get details of a statement in an execution plan
          * @param {number} [beginTime] 
          * @param {string} [digest] 
@@ -3458,7 +3458,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3469,7 +3469,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get execution plans of a statement
          * @param {number} [beginTime] 
          * @param {string} [digest] 
@@ -3511,7 +3511,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3522,7 +3522,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get all statement types
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3544,7 +3544,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3555,7 +3555,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Hide a TiDB instance
          * @param {string} address ip:port
          * @param {*} [options] Override http request option.
@@ -3581,7 +3581,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3592,7 +3592,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get Top SQL config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3614,7 +3614,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3625,7 +3625,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Update Top SQL config
          * @param {TopsqlEditableConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -3664,7 +3664,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get availiable instances
          * @param {string} [end] 
          * @param {string} [start] 
@@ -3696,7 +3696,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3707,7 +3707,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get summaries
          * @param {string} [end] 
          * @param {string} [instance] 
@@ -3759,7 +3759,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3770,7 +3770,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get log in information, like supported authenticate types
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3789,7 +3789,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarQueryParameter = {} as any;
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3800,7 +3800,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get sign out info
          * @param {string} [redirectUrl] 
          * @param {*} [options] Override http request option.
@@ -3827,7 +3827,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3838,7 +3838,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Log in
          * @param {UserAuthenticateForm} message Credentials
          * @param {*} [options] Override http request option.
@@ -3874,7 +3874,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Create an impersonation
          * @param {SsoCreateImpersonationRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -3913,7 +3913,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get SSO Auth URL
          * @param {string} [codeVerifier] 
          * @param {string} [redirectUrl] 
@@ -3947,7 +3947,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3958,7 +3958,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Get SSO config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3980,7 +3980,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -3991,7 +3991,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary List all impersonations
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4013,7 +4013,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -4024,7 +4024,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Set SSO config
          * @param {SsoSetConfigRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -4063,7 +4063,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         *
+         * 
          * @summary Share current session and generate a sharing code
          * @param {CodeShareRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -4131,7 +4131,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
 
-
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -4163,7 +4163,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get information of all hosts
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4173,7 +4173,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get cluster statistics
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4183,7 +4183,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Edit a configuration
          * @param {ConfigurationEditRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -4194,7 +4194,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all configurations
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4204,7 +4204,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get action token for download or view profile
          * @param {string} q target query string
          * @param {*} [options] Override http request option.
@@ -4215,7 +4215,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get current scraping components
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4225,7 +4225,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Continuous Profiling Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4235,7 +4235,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Update Continuous Profiling Config
          * @param {ConprofNgMonitoringConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -4246,7 +4246,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Download Group Profile files
          * @param {number} ts timestamp
          * @param {*} [options] Override http request option.
@@ -4257,7 +4257,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Estimate Size
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4267,7 +4267,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Group Profile Detail
          * @param {number} ts timestamp
          * @param {*} [options] Override http request option.
@@ -4278,7 +4278,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Group Profiles
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
@@ -4290,7 +4290,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary View Single Profile files
          * @param {string} [address] 
          * @param {string} [component] 
@@ -4304,7 +4304,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary List all deadlock records
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4314,7 +4314,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all endpoints
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4324,7 +4324,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Send request remote endpoint and return a token for downloading results
          * @param {EndpointRequestPayload} req request payload
          * @param {*} [options] Override http request option.
@@ -4335,7 +4335,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Download a finished request result
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -4368,7 +4368,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Generate metrics relationship graph.
          * @param {DiagnoseGenerateMetricsRelationRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -4379,7 +4379,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary View metrics relationship graph.
          * @param {string} token token
          * @param {*} [options] Override http request option.
@@ -4478,7 +4478,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get current alert count from AlertManager
          * @param {string} address ip:port
          * @param {*} [options] Override http request option.
@@ -4489,7 +4489,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get AlertManager instance
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4499,7 +4499,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Grafana instance
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4509,7 +4509,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all PD instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4540,7 +4540,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all Scheduling instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4550,7 +4550,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get location labels of all TiKV / TiFlash instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4560,7 +4560,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all TiKV / TiFlash instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4570,7 +4570,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all TSO instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4580,7 +4580,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all TiCDC instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4590,7 +4590,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all TiDB instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4600,7 +4600,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all TiProxy instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4610,7 +4610,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get information about this TiDB Dashboard
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4620,7 +4620,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary List all databases
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4630,7 +4630,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary List tables by database name
          * @param {string} [databaseName] Database name
          * @param {*} [options] Override http request option.
@@ -4641,7 +4641,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get information about current session
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4651,7 +4651,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Key Visual Dynamic Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4661,7 +4661,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Set Key Visual Dynamic Config
          * @param {ConfigKeyVisualConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -4687,7 +4687,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Generate a download token for downloading logs
          * @param {Array<string>} [id] task id
          * @param {*} [options] Override http request option.
@@ -4698,7 +4698,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Download logs
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -4709,7 +4709,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Create and run a new log search task group
          * @param {LogsearchCreateTaskGroupRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -4720,7 +4720,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary List all log search task groups
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4730,7 +4730,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Cancel running tasks in a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -4741,7 +4741,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Delete a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -4752,7 +4752,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary List tasks in a log search task group
          * @param {string} id Task Group ID
          * @param {*} [options] Override http request option.
@@ -4763,7 +4763,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Preview a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -4774,7 +4774,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Retry failed tasks in a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -4785,7 +4785,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get the Prometheus address cluster config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4809,7 +4809,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Set or clear the customized Prometheus address
          * @param {MetricsPutCustomPromAddressRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -4820,7 +4820,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Profiling Dynamic Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4830,7 +4830,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Set Profiling Dynamic Config
          * @param {ConfigProfilingConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -4841,7 +4841,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Run statements
          * @param {QueryeditorRunRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -4852,7 +4852,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get calibrate of Resource Groups by actual workload
          * @param {number} [endTime] 
          * @param {number} [startTime] 
@@ -4864,7 +4864,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get calibrate of Resource Groups by hardware deployment
          * @param {string} workload workload
          * @param {*} [options] Override http request option.
@@ -4875,7 +4875,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Resource Control enable config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4885,7 +4885,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Information of Resource Groups
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4895,7 +4895,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary List all resource groups
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4915,7 +4915,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get details of a slow query
          * @param {string} [connectId] TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
          * @param {string} [digest] 
@@ -4928,7 +4928,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Download slow query statements
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -4939,7 +4939,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Generate a download token for exported slow query statements
          * @param {SlowqueryGetListRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -4950,7 +4950,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary List all slow queries
          * @param {number} [beginTime] 
          * @param {Array<string>} [db] 
@@ -4992,7 +4992,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get statement configurations
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5002,7 +5002,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Update statement configurations
          * @param {StatementEditableConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -5013,7 +5013,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Download statements
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -5024,7 +5024,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Generate a download token for exported statements
          * @param {StatementGetStatementsRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5035,7 +5035,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get a list of statements
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
@@ -5052,7 +5052,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Drop all manually created bindings for a statement
          * @param {string} sqlDigest query template ID (a.k.a. sql digest)
          * @param {*} [options] Override http request option.
@@ -5063,7 +5063,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get the bound plan digest (if exists) of a statement
          * @param {string} sqlDigest query template id
          * @param {number} beginTime begin time
@@ -5076,7 +5076,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Create a binding for a statement and a plan
          * @param {string} planDigest plan digest id
          * @param {*} [options] Override http request option.
@@ -5087,7 +5087,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get details of a statement in an execution plan
          * @param {number} [beginTime] 
          * @param {string} [digest] 
@@ -5102,7 +5102,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get execution plans of a statement
          * @param {number} [beginTime] 
          * @param {string} [digest] 
@@ -5116,7 +5116,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get all statement types
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5126,7 +5126,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Hide a TiDB instance
          * @param {string} address ip:port
          * @param {*} [options] Override http request option.
@@ -5137,7 +5137,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get Top SQL config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5147,7 +5147,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Update Top SQL config
          * @param {TopsqlEditableConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -5158,7 +5158,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get availiable instances
          * @param {string} [end] 
          * @param {string} [start] 
@@ -5170,7 +5170,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get summaries
          * @param {string} [end] 
          * @param {string} [instance] 
@@ -5186,7 +5186,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get log in information, like supported authenticate types
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5196,7 +5196,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get sign out info
          * @param {string} [redirectUrl] 
          * @param {*} [options] Override http request option.
@@ -5207,7 +5207,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Log in
          * @param {UserAuthenticateForm} message Credentials
          * @param {*} [options] Override http request option.
@@ -5218,7 +5218,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Create an impersonation
          * @param {SsoCreateImpersonationRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5229,7 +5229,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get SSO Auth URL
          * @param {string} [codeVerifier] 
          * @param {string} [redirectUrl] 
@@ -5242,7 +5242,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Get SSO config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5252,7 +5252,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary List all impersonations
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5262,7 +5262,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Set SSO config
          * @param {SsoSetConfigRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5273,7 +5273,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         *
+         * 
          * @summary Share current session and generate a sharing code
          * @param {CodeShareRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5315,7 +5315,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.cancelProfilingGroup(groupId, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get information of all hosts
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5324,7 +5324,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.clusterInfoGetHostsInfo(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get cluster statistics
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5333,7 +5333,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.clusterInfoGetStatistics(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Edit a configuration
          * @param {ConfigurationEditRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5343,7 +5343,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.configurationEdit(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all configurations
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5352,7 +5352,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.configurationGetAll(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get action token for download or view profile
          * @param {string} q target query string
          * @param {*} [options] Override http request option.
@@ -5362,7 +5362,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.continuousProfilingActionTokenGet(q, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get current scraping components
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5371,7 +5371,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.continuousProfilingComponentsGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Continuous Profiling Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5380,7 +5380,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.continuousProfilingConfigGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Update Continuous Profiling Config
          * @param {ConprofNgMonitoringConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -5390,7 +5390,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.continuousProfilingConfigPost(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Download Group Profile files
          * @param {number} ts timestamp
          * @param {*} [options] Override http request option.
@@ -5400,7 +5400,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.continuousProfilingDownloadGet(ts, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Estimate Size
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5409,7 +5409,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.continuousProfilingEstimateSizeGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Group Profile Detail
          * @param {number} ts timestamp
          * @param {*} [options] Override http request option.
@@ -5419,7 +5419,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.continuousProfilingGroupProfileDetailGet(ts, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Group Profiles
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
@@ -5430,7 +5430,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.continuousProfilingGroupProfilesGet(beginTime, endTime, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary View Single Profile files
          * @param {string} [address] 
          * @param {string} [component] 
@@ -5443,7 +5443,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.continuousProfilingSingleProfileViewGet(address, component, profileType, ts, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary List all deadlock records
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5452,7 +5452,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.deadlockListGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all endpoints
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5461,7 +5461,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.debugAPIGetEndpoints(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Send request remote endpoint and return a token for downloading results
          * @param {EndpointRequestPayload} req request payload
          * @param {*} [options] Override http request option.
@@ -5471,7 +5471,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.debugAPIRequestEndpoint(req, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Download a finished request result
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -5501,7 +5501,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.diagnoseDiagnosisPost(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Generate metrics relationship graph.
          * @param {DiagnoseGenerateMetricsRelationRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5511,7 +5511,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.diagnoseGenerateMetricsRelationship(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary View metrics relationship graph.
          * @param {string} token token
          * @param {*} [options] Override http request option.
@@ -5601,7 +5601,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getActionToken(id, action, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get current alert count from AlertManager
          * @param {string} address ip:port
          * @param {*} [options] Override http request option.
@@ -5611,7 +5611,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getAlertManagerCounts(address, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get AlertManager instance
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5620,7 +5620,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getAlertManagerTopology(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Grafana instance
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5629,7 +5629,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getGrafanaTopology(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all PD instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5657,7 +5657,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getProfilingGroups(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all Scheduling instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5666,7 +5666,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getSchedulingTopology(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get location labels of all TiKV / TiFlash instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5675,7 +5675,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getStoreLocationTopology(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all TiKV / TiFlash instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5684,7 +5684,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getStoreTopology(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all TSO instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5693,7 +5693,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getTSOTopology(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all TiCDC instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5702,7 +5702,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getTiCDCTopology(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all TiDB instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5711,7 +5711,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getTiDBTopology(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all TiProxy instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5720,7 +5720,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getTiProxyTopology(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get information about this TiDB Dashboard
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5729,7 +5729,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.infoGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary List all databases
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5738,7 +5738,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.infoListDatabases(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary List tables by database name
          * @param {string} [databaseName] Database name
          * @param {*} [options] Override http request option.
@@ -5748,7 +5748,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.infoListTables(databaseName, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get information about current session
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5757,7 +5757,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.infoWhoami(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Key Visual Dynamic Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5766,7 +5766,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.keyvisualConfigGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Set Key Visual Dynamic Config
          * @param {ConfigKeyVisualConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -5790,7 +5790,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.keyvisualHeatmapsGet(startkey, endkey, starttime, endtime, type, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Generate a download token for downloading logs
          * @param {Array<string>} [id] task id
          * @param {*} [options] Override http request option.
@@ -5800,7 +5800,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logsDownloadAcquireTokenGet(id, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Download logs
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -5810,7 +5810,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logsDownloadGet(token, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Create and run a new log search task group
          * @param {LogsearchCreateTaskGroupRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5820,7 +5820,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logsTaskgroupPut(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary List all log search task groups
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5829,7 +5829,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logsTaskgroupsGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Cancel running tasks in a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -5839,7 +5839,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logsTaskgroupsIdCancelPost(id, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Delete a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -5849,7 +5849,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logsTaskgroupsIdDelete(id, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary List tasks in a log search task group
          * @param {string} id Task Group ID
          * @param {*} [options] Override http request option.
@@ -5859,7 +5859,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logsTaskgroupsIdGet(id, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Preview a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -5869,7 +5869,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logsTaskgroupsIdPreviewGet(id, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Retry failed tasks in a log search task group
          * @param {string} id task group id
          * @param {*} [options] Override http request option.
@@ -5879,7 +5879,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logsTaskgroupsIdRetryPost(id, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get the Prometheus address cluster config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5901,7 +5901,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.metricsQueryGet(endTimeSec, query, startTimeSec, stepSec, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Set or clear the customized Prometheus address
          * @param {MetricsPutCustomPromAddressRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5911,7 +5911,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.metricsSetCustomPromAddress(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Profiling Dynamic Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5920,7 +5920,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.profilingConfigGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Set Profiling Dynamic Config
          * @param {ConfigProfilingConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -5930,7 +5930,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.profilingConfigPut(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Run statements
          * @param {QueryeditorRunRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5940,7 +5940,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.queryEditorRun(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get calibrate of Resource Groups by actual workload
          * @param {number} [endTime] 
          * @param {number} [startTime] 
@@ -5951,7 +5951,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.resourceManagerCalibrateActualGet(endTime, startTime, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get calibrate of Resource Groups by hardware deployment
          * @param {string} workload workload
          * @param {*} [options] Override http request option.
@@ -5961,7 +5961,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.resourceManagerCalibrateHardwareGet(workload, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Resource Control enable config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5970,7 +5970,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.resourceManagerConfigGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Information of Resource Groups
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5979,7 +5979,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.resourceManagerInformationGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary List all resource groups
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5997,7 +5997,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.slowQueryAvailableFieldsGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get details of a slow query
          * @param {string} [connectId] TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
          * @param {string} [digest] 
@@ -6009,7 +6009,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.slowQueryDetailGet(connectId, digest, timestamp, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Download slow query statements
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -6019,7 +6019,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.slowQueryDownloadGet(token, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Generate a download token for exported slow query statements
          * @param {SlowqueryGetListRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -6029,7 +6029,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.slowQueryDownloadTokenPost(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary List all slow queries
          * @param {number} [beginTime] 
          * @param {Array<string>} [db] 
@@ -6068,7 +6068,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsAvailableFieldsGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get statement configurations
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6077,7 +6077,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsConfigGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Update statement configurations
          * @param {StatementEditableConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -6087,7 +6087,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsConfigPost(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Download statements
          * @param {string} token download token
          * @param {*} [options] Override http request option.
@@ -6097,7 +6097,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsDownloadGet(token, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Generate a download token for exported statements
          * @param {StatementGetStatementsRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -6107,7 +6107,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsDownloadTokenPost(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get a list of statements
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
@@ -6123,7 +6123,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsListGet(beginTime, endTime, fields, resourceGroups, schemas, stmtTypes, text, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Drop all manually created bindings for a statement
          * @param {string} sqlDigest query template ID (a.k.a. sql digest)
          * @param {*} [options] Override http request option.
@@ -6133,7 +6133,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsPlanBindingDelete(sqlDigest, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get the bound plan digest (if exists) of a statement
          * @param {string} sqlDigest query template id
          * @param {number} beginTime begin time
@@ -6145,7 +6145,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsPlanBindingGet(sqlDigest, beginTime, endTime, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Create a binding for a statement and a plan
          * @param {string} planDigest plan digest id
          * @param {*} [options] Override http request option.
@@ -6155,7 +6155,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsPlanBindingPost(planDigest, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get details of a statement in an execution plan
          * @param {number} [beginTime] 
          * @param {string} [digest] 
@@ -6169,7 +6169,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsPlanDetailGet(beginTime, digest, endTime, plans, schemaName, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get execution plans of a statement
          * @param {number} [beginTime] 
          * @param {string} [digest] 
@@ -6182,7 +6182,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsPlansGet(beginTime, digest, endTime, schemaName, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get all statement types
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6191,7 +6191,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.statementsStmtTypesGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Hide a TiDB instance
          * @param {string} address ip:port
          * @param {*} [options] Override http request option.
@@ -6201,7 +6201,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.topologyTidbAddressDelete(address, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get Top SQL config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6210,7 +6210,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.topsqlConfigGet(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Update Top SQL config
          * @param {TopsqlEditableConfig} request Request body
          * @param {*} [options] Override http request option.
@@ -6220,7 +6220,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.topsqlConfigPost(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get availiable instances
          * @param {string} [end] 
          * @param {string} [start] 
@@ -6231,7 +6231,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.topsqlInstancesGet(end, start, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get summaries
          * @param {string} [end] 
          * @param {string} [instance] 
@@ -6246,7 +6246,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.topsqlSummaryGet(end, instance, instanceType, start, top, window, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get log in information, like supported authenticate types
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6255,7 +6255,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.userGetLoginInfo(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get sign out info
          * @param {string} [redirectUrl] 
          * @param {*} [options] Override http request option.
@@ -6265,7 +6265,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.userGetSignOutInfo(redirectUrl, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Log in
          * @param {UserAuthenticateForm} message Credentials
          * @param {*} [options] Override http request option.
@@ -6275,7 +6275,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.userLogin(message, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Create an impersonation
          * @param {SsoCreateImpersonationRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -6285,7 +6285,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.userSSOCreateImpersonation(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get SSO Auth URL
          * @param {string} [codeVerifier] 
          * @param {string} [redirectUrl] 
@@ -6297,7 +6297,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.userSSOGetAuthURL(codeVerifier, redirectUrl, state, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Get SSO config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6306,7 +6306,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.userSSOGetConfig(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary List all impersonations
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6315,7 +6315,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.userSSOListImpersonations(options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Set SSO config
          * @param {SsoSetConfigRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -6325,7 +6325,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.userSSOSetConfig(request, options).then((request) => request(axios, basePath));
         },
         /**
-         *
+         * 
          * @summary Share current session and generate a sharing code
          * @param {CodeShareRequest} request Request body
          * @param {*} [options] Override http request option.

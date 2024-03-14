@@ -10,12 +10,14 @@ import (
 type NodeKind string
 
 const (
-	NodeKindTiDB    NodeKind = "tidb"
-	NodeKindTiKV    NodeKind = "tikv"
-	NodeKindPD      NodeKind = "pd"
-	NodeKindTiFlash NodeKind = "tiflash"
-	NodeKindTiCDC   NodeKind = "ticdc"
-	NodeKindTiProxy NodeKind = "tiproxy"
+	NodeKindTiDB       NodeKind = "tidb"
+	NodeKindTiKV       NodeKind = "tikv"
+	NodeKindPD         NodeKind = "pd"
+	NodeKindTiFlash    NodeKind = "tiflash"
+	NodeKindTiCDC      NodeKind = "ticdc"
+	NodeKindTiProxy    NodeKind = "tiproxy"
+	NodeKindTSO        NodeKind = "tso"
+	NodeKindScheduling NodeKind = "scheduling"
 )
 
 type RequestTargetNode struct {
@@ -35,12 +37,14 @@ func (n *RequestTargetNode) FileName() string {
 }
 
 type RequestTargetStatistics struct {
-	NumTiKVNodes    int `json:"num_tikv_nodes"`
-	NumTiDBNodes    int `json:"num_tidb_nodes"`
-	NumPDNodes      int `json:"num_pd_nodes"`
-	NumTiFlashNodes int `json:"num_tiflash_nodes"`
-	NumTiCDCNodes   int `json:"num_ticdc_nodes"`
-	NumTiProxyNodes int `json:"num_tiproxy_nodes"`
+	NumTiKVNodes       int `json:"num_tikv_nodes"`
+	NumTiDBNodes       int `json:"num_tidb_nodes"`
+	NumPDNodes         int `json:"num_pd_nodes"`
+	NumTiFlashNodes    int `json:"num_tiflash_nodes"`
+	NumTiCDCNodes      int `json:"num_ticdc_nodes"`
+	NumTiProxyNodes    int `json:"num_tiproxy_nodes"`
+	NumTSONodes        int `json:"num_tso_nodes"`
+	NumSchedulingNodes int `json:"num_scheduling_nodes"`
 }
 
 func NewRequestTargetStatisticsFromArray(arr *[]RequestTargetNode) RequestTargetStatistics {
@@ -59,6 +63,10 @@ func NewRequestTargetStatisticsFromArray(arr *[]RequestTargetNode) RequestTarget
 			stats.NumTiCDCNodes++
 		case NodeKindTiProxy:
 			stats.NumTiProxyNodes++
+		case NodeKindTSO:
+			stats.NumTSONodes++
+		case NodeKindScheduling:
+			stats.NumSchedulingNodes++
 		}
 	}
 	return stats

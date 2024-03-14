@@ -30,6 +30,10 @@ func profileAndWritePprof(ctx context.Context, fts *fetchers, target *model.Requ
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.ticdc, profilingType: profilingType})
 	case model.NodeKindTiProxy:
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tiproxy, profilingType: profilingType})
+	case model.NodeKindTSO:
+		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tso, profilingType: profilingType})
+	case model.NodeKindScheduling:
+		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.scheduling, profilingType: profilingType})
 	default:
 		return "", "", ErrUnsupportedProfilingTarget.New(target.String())
 	}

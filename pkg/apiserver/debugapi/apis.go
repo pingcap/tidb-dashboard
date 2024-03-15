@@ -34,6 +34,11 @@ var commonParamPprofDebug = endpoint.APIParamEnum("debug", false, []endpoint.Enu
 	{Value: "2", DisplayAs: "Text Format"},
 })
 
+var commonParamConfigFormat = endpoint.APIParamEnum("format", false, []endpoint.EnumItemDefinition{
+	{Value: "toml"},
+	{Value: "json"},
+})
+
 var apiEndpoints = []endpoint.APIDefinition{
 	// TiDB Endpoints
 	{
@@ -445,6 +450,9 @@ var apiEndpoints = []endpoint.APIDefinition{
 		Component: topo.KindTiProxy,
 		Path:      "/api/admin/config",
 		Method:    resty.MethodGet,
+		QueryParams: []endpoint.APIParamDefinition{
+			commonParamConfigFormat,
+		},
 	},
 	{
 		ID:        "tiproxy_pprof",

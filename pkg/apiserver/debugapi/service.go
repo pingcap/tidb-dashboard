@@ -90,6 +90,10 @@ func getExtFromContentTypeHeader(contentType string) string {
 		return ".txt"
 	}
 
+	if mediaType == "application/toml" {
+		return ".toml"
+	}
+
 	exts, err := mime.ExtensionsByType(mediaType)
 	if err == nil && len(exts) > 0 {
 		// Note: the first element might not be the most common one

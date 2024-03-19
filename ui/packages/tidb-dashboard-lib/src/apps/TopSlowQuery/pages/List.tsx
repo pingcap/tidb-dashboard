@@ -1,7 +1,7 @@
 import React, { useRef, useMemo } from 'react'
-import { Space, Select, Typography, Button } from 'antd'
+import { Space, Select, Typography, Button, Tag } from 'antd'
 import { CaretLeftOutlined, CaretRightOutlined } from '@ant-design/icons'
-import { Card, toTimeRangeValue } from '@lib/components'
+import { Card, TimeRangeValue, toTimeRangeValue } from '@lib/components'
 
 import styles from './List.module.less'
 import { useTopSlowQueryContext } from '../context'
@@ -60,10 +60,13 @@ function ClusterInfoHeader() {
       }}
     >
       {clusterInfo}
-      <span style={{ fontSize: 18, fontWeight: 600 }}>
-        <Link to="/slow_query">Slow Query Logs</Link>
-        <span> | </span>
-        <span>Top SlowQueries</span>
+      <span>
+        <span style={{ fontSize: 18, fontWeight: 600 }}>
+          <Link to="/slow_query">Slow Query Logs</Link>
+          <span> | </span>
+          <span>Top SlowQueries </span>
+        </span>
+        <Tag color="geekblue">alpha</Tag>
       </span>
     </div>
   )
@@ -101,6 +104,7 @@ function useTimeWindows() {
   return query
 }
 
+const timezone = dayjs().format('UTCZ')
 function TimeWindowSelect() {
   const { tws, setTws, tw, setTw } = useTopSlowQueryUrlState()
   const { data: availableTimeWindows } = useTimeWindows()
@@ -134,7 +138,7 @@ function TimeWindowSelect() {
   }
 
   return (
-    <Space>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       {/*
         <div>
           <span>Time Range: </span>
@@ -147,7 +151,7 @@ function TimeWindowSelect() {
       */}
 
       <div>
-        <span>Aggregation Time Duration: </span>
+        <span>Duration: </span>
         <Select style={{ width: 128 }} value={tws} onChange={setTws}>
           {TIME_WINDOW_SIZES.map((item) => (
             <Select.Option value={item.value} key={item.label}>
@@ -158,22 +162,31 @@ function TimeWindowSelect() {
       </div>
 
       <div>
-        <span>Aggregation Start Time: </span>
+        <span>Time Range: </span>
         <Select
-          style={{ width: 264 }}
+          style={{ width: 240 }}
           value={tw[0] === 0 ? '' : `${tw[0]}-${tw[1]}`}
           onChange={setTw}
         >
-          {(availableTimeWindows ?? []).map((item) => (
-            <Select.Option
-              value={`${item.begin_time}-${item.end_time}`}
-              key={`${item.begin_time}-${item.end_time}`}
-            >
-              {`${dayjs
-                .unix(item.begin_time)
-                .format('YYYY-MM-DD HH:mm (UTCZ)')}`}
-            </Select.Option>
-          ))}
+          {(availableTimeWindows ?? []).map((item) => {
+            const bd = dayjs.unix(item.begin_time)
+            const ed = dayjs.unix(item.end_time)
+            let ts = ''
+            if (bd.day() === ed.day()) {
+              ts = `${bd.format('MM-DD HH:mm')}~${ed.format('HH:mm')}`
+            } else {
+              ts = `${bd.format('MM-DD HH:mm')}~${ed.format('MM-DD HH:mm')}`
+            }
+
+            return (
+              <Select.Option
+                value={`${item.begin_time}-${item.end_time}`}
+                key={`${item.begin_time}-${item.end_time}`}
+              >
+                {ts}
+              </Select.Option>
+            )
+          })}
         </Select>
         <span>
           {' '}
@@ -181,7 +194,8 @@ function TimeWindowSelect() {
           <Button icon={<CaretRightOutlined />} onClick={nextTw} />
         </span>
       </div>
-    </Space>
+      <span style={{ marginLeft: 'auto' }}>Time Zone: {timezone}</span>
+    </div>
   )
 }
 
@@ -208,12 +222,13 @@ function useChartData() {
 
 function SlowQueryCountChart() {
   const { data: chartData } = useChartData()
+  const { tw } = useTopSlowQueryUrlState()
 
   return (
     <div style={{ marginTop: 16, marginBottom: 24 }}>
       <Typography.Title level={5}>Slow Query Count</Typography.Title>
       <div style={{ height: 200 }}>
-        <CountChart data={chartData ?? []} />
+        <CountChart data={chartData ?? []} timeRange={tw as TimeRangeValue} />
       </div>
     </div>
   )

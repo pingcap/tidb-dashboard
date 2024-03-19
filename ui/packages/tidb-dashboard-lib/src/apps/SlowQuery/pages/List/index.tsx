@@ -10,7 +10,8 @@ import {
   Dropdown,
   Alert,
   Tooltip,
-  Result
+  Result,
+  Tag
 } from 'antd'
 import {
   LoadingOutlined,
@@ -224,10 +225,13 @@ function List() {
           >
             {clusterInfo}
             {ctx?.cfg.showTopSlowQueryLink && (
-              <span style={{ fontSize: 18, fontWeight: 600 }}>
-                <span>Slow Query Logs</span>
-                <span> | </span>
-                <Link to="/top_slowquery">Top SlowQueries</Link>
+              <span>
+                <span style={{ fontSize: 18, fontWeight: 600 }}>
+                  <span>Slow Query Logs</span>
+                  <span> | </span>
+                  <Link to="/top_slowquery">Top SlowQueries </Link>
+                </span>
+                <Tag color="geekblue">alpha</Tag>
               </span>
             )}
           </div>

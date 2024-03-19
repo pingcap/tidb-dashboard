@@ -8,12 +8,12 @@ import { getGlobalConfig } from '~/utils/globalConfig'
 import client from '~/client'
 
 const debugHeaders = {
-  'x-cluster-id': '1379661944646413143',
-  'x-org-id': '1372813089209061633',
-  'x-project-id': '1372813089454525346',
-  'x-provider': 'aws',
-  'x-region': 'us-east-1',
-  'x-env': 'prod'
+  // 'x-cluster-id': '1379661944646413143',
+  // 'x-org-id': '1372813089209061633',
+  // 'x-project-id': '1372813089454525346',
+  // 'x-provider': 'aws',
+  // 'x-region': 'us-east-1',
+  // 'x-env': 'prod'
 }
 
 export function TopSlowQueryProvider(props: { children: React.ReactNode }) {

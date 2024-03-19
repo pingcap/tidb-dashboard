@@ -21,6 +21,7 @@
     "@diag-ui/chart": "^1.0.6",
     "@elastic/charts": "^46.10.1",
     "@g07cha/flexbox-react": "^5.0.0",
+    "@tanstack/react-query": "4",
     "@uifabric/utilities": "^7.33.5",
     "ace-builds": "^1.6.0",
     "ahooks": "^3.1.9",

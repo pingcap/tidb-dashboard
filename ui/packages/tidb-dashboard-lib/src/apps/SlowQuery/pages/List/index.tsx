@@ -10,7 +10,8 @@ import {
   Dropdown,
   Alert,
   Tooltip,
-  Result
+  Result,
+  Tag
 } from 'antd'
 import {
   LoadingOutlined,
@@ -42,6 +43,7 @@ import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
+import { Link } from 'react-router-dom'
 
 const { Option } = Select
 
@@ -213,8 +215,25 @@ function List() {
     <div className={styles.list_container}>
       <Card noMarginBottom>
         {clusterInfo && (
-          <div style={{ marginBottom: 8, textAlign: 'right' }}>
+          <div
+            style={{
+              marginBottom: 16,
+              display: 'flex',
+              flexDirection: 'row-reverse',
+              justifyContent: 'space-between'
+            }}
+          >
             {clusterInfo}
+            {ctx?.cfg.showTopSlowQueryLink && (
+              <span>
+                <span style={{ fontSize: 18, fontWeight: 600 }}>
+                  <span>Slow Query Logs</span>
+                  <span> | </span>
+                  <Link to="/top_slowquery">Top SlowQueries </Link>
+                </span>
+                <Tag color="geekblue">alpha</Tag>
+              </span>
+            )}
           </div>
         )}
 

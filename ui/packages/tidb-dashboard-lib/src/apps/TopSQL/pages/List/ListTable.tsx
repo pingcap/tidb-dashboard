@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { Tooltip, Typography } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
@@ -28,6 +28,7 @@ import { useMemoizedFn } from 'ahooks'
 import { telemetry } from '../../utils/telemetry'
 import openLink from '@lib/utils/openLink'
 import { useNavigate } from 'react-router-dom'
+import { TopSQLContext } from '../../context'
 
 interface ListTableProps {
   data: TopsqlSummaryItem[]
@@ -55,6 +56,7 @@ export function ListTable({
   const { t } = useTranslation()
   const { data: tableRecords, capacity } = useTableData(data)
   const navigate = useNavigate()
+  const ctx = useContext(TopSQLContext)
 
   function goDetail(ev: React.MouseEvent<HTMLElement>, record: SQLRecord) {
     const sv = sessionStorage.getItem('statement.query_options')
@@ -71,8 +73,8 @@ export function ListTable({
     openLink(`/statement?from=${tv[0]}&to=${tv[1]}`, ev, navigate)
   }
 
-  const tableColumns = useMemo(
-    () => [
+  const tableColumns = useMemo(() => {
+    let cols = [
       {
         name: t('topsql.table.fields.cpu_time'),
         key: 'cpuTime',
@@ -88,7 +90,7 @@ export function ListTable({
         name: t('topsql.table.fields.sql'),
         key: 'query',
         minWidth: 250,
-        // maxWidth: 550,
+        maxWidth: 550,
         onRender: (rec: SQLRecord) => {
           const text = isUnknownSQLRecord(rec)
             ? `(SQL ${rec.sql_digest?.slice(0, 8)})`
@@ -137,9 +139,12 @@ export function ListTable({
           return null
         }
       }
-    ],
-    [capacity, t, topN]
-  )
+    ]
+    if (ctx?.cfg.showSearchInStatements === false) {
+      cols = cols.filter((c) => c.key !== 'actions')
+    }
+    return cols
+  }, [capacity, t, topN, ctx?.cfg.showSearchInStatements])
 
   const getKey = useMemoizedFn((r: SQLRecord) => r.sql_digest!)
 

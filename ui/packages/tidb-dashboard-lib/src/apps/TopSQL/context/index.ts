@@ -50,6 +50,8 @@ export interface ITopSQLConfig {
   orgName?: string
   clusterName?: string
   userName?: string
+
+  showSearchInStatements?: boolean
 }
 
 export interface ITopSQLContext {

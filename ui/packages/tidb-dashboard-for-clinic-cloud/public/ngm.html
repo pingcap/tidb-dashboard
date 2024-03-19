@@ -144,6 +144,13 @@
         window.location.assign('/')
       }
 
+      // const topslowQueryBlockOrgIds = ['1372813089209061633']
+      // const topslowQueryBlockOrgIds = [
+      //   '1372813089209061633',
+      //   '1369847559691367400'
+      // ]
+      // const enableTopSlowquery = !topslowQueryBlockOrgIds.includes(orgId)
+
       const apiPathBase = `/ngm/api/v1`
       startDashboard({
         appOptions: {
@@ -172,7 +179,7 @@
 
             orgName,
             clusterName,
-            showTopSlowQueryLink: true
+            showTopSlowQueryLink: false
             // timeRangeSelector: {
             //   recentSeconds: [
             //     5 * 60,

@@ -58,7 +58,11 @@ export function TopSlowQueryListTable() {
             memory_max: true
           },
           digest: rec.sql_digest,
-          limit: 100
+          limit: 100,
+          timeRange: {
+            type: 'absolute',
+            value: tw
+          }
         })
       )
 

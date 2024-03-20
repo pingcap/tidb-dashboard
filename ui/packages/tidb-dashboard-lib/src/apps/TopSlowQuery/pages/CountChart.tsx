@@ -5,7 +5,8 @@ import {
   Position,
   ScaleType,
   Settings,
-  LineSeries
+  LineSeries,
+  timeFormatter
 } from '@elastic/charts'
 import { DEFAULT_CHART_SETTINGS, timeTickFormatter } from '@lib/utils/charts'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -36,7 +37,7 @@ export function CountChart({
         id="bottom"
         position={Position.Bottom}
         showOverlappingTicks
-        tickFormat={timeTickFormatter(timeRange)}
+        tickFormat={timeFormatter('MM-DD HH:mm')}
       />
       <Axis
         id="left"

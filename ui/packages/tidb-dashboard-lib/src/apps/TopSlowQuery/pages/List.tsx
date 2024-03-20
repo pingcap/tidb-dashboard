@@ -1,5 +1,5 @@
 import React, { useRef, useMemo } from 'react'
-import { Space, Select, Typography, Button, Tag } from 'antd'
+import { Space, Select, Typography, Button, Tag, Skeleton } from 'antd'
 import { CaretLeftOutlined, CaretRightOutlined } from '@ant-design/icons'
 import { Card, TimeRangeValue, toTimeRangeValue } from '@lib/components'
 
@@ -109,7 +109,7 @@ function TimeWindowSelect() {
   const { tws, setTws, tw, setTw } = useTopSlowQueryUrlState()
   const { data: availableTimeWindows } = useTimeWindows()
 
-  function preTw() {
+  function newerTw() {
     if (!availableTimeWindows) {
       return
     }
@@ -123,7 +123,7 @@ function TimeWindowSelect() {
     setTw(`${item.begin_time}-${item.end_time}`)
   }
 
-  function nextTw() {
+  function olderTw() {
     if (!availableTimeWindows) {
       return
     }
@@ -190,8 +190,8 @@ function TimeWindowSelect() {
         </Select>
         <span>
           {' '}
-          <Button icon={<CaretLeftOutlined />} onClick={preTw} />{' '}
-          <Button icon={<CaretRightOutlined />} onClick={nextTw} />
+          <Button icon={<CaretLeftOutlined />} onClick={olderTw} />{' '}
+          <Button icon={<CaretRightOutlined />} onClick={newerTw} />
         </span>
       </div>
       <span style={{ marginLeft: 'auto' }}>Time Zone: {timezone}</span>
@@ -221,14 +221,16 @@ function useChartData() {
 }
 
 function SlowQueryCountChart() {
-  const { data: chartData } = useChartData()
+  const { data: chartData, isLoading } = useChartData()
   const { tw } = useTopSlowQueryUrlState()
 
   return (
     <div style={{ marginTop: 16, marginBottom: 24 }}>
       <Typography.Title level={5}>Slow Query Count</Typography.Title>
       <div style={{ height: 200 }}>
-        <CountChart data={chartData ?? []} timeRange={tw as TimeRangeValue} />
+        <Skeleton paragraph={{ rows: 4 }} active loading={isLoading}>
+          <CountChart data={chartData ?? []} timeRange={tw as TimeRangeValue} />
+        </Skeleton>
       </div>
     </div>
   )

@@ -70,7 +70,7 @@ export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
         getTopSlowQueries: async (params: {
           start: number
           end: number
-          topType: string
+          order: string
           db: string
           internal: string
         }) => {
@@ -83,7 +83,7 @@ export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
                 params.start
               }&hours=${hours}&database=${
                 params.db ?? ''
-              }&internal=${isInternal}&order_by=${params.topType}&limit=10`,
+              }&internal=${isInternal}&order_by=${params.order}&limit=10`,
               {
                 headers: debugHeaders
               }

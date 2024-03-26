@@ -6,6 +6,7 @@ import (
 	"net"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -139,7 +140,11 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	}
 	tsoInfo, err := topology.FetchTSOTopology(s.lifecycleCtx, s.params.PDClient)
 	if err != nil {
-		return nil, err
+		if strings.Contains(err.Error(), "status code 404") {
+			tsoInfo = []topology.TSOInfo{}
+		} else {
+			return nil, err
+		}
 	}
 	for _, i := range tsoInfo {
 		globalHostsSet[i.IP] = struct{}{}
@@ -149,7 +154,11 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	}
 	schedulingInfo, err := topology.FetchSchedulingTopology(s.lifecycleCtx, s.params.PDClient)
 	if err != nil {
-		return nil, err
+		if strings.Contains(err.Error(), "status code 404") {
+			schedulingInfo = []topology.SchedulingInfo{}
+		} else {
+			return nil, err
+		}
 	}
 	for _, i := range schedulingInfo {
 		globalHostsSet[i.IP] = struct{}{}

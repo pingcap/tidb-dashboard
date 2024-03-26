@@ -231,7 +231,7 @@ function List() {
                   <span> | </span>
                   <Link to="/top_slowquery">Top SlowQueries </Link>
                 </span>
-                <Tag color="geekblue">alpha</Tag>
+                <Tag color="geekblue">beta</Tag>
               </span>
             )}
           </div>

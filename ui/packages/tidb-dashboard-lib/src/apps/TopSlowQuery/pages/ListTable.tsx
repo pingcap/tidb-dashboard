@@ -14,9 +14,11 @@ import { useMemoizedFn } from 'ahooks'
 import { useNavigate } from 'react-router-dom'
 import openLink from '@lib/utils/openLink'
 
+import styles from './List.module.less'
+
 function useTopSlowQueryData() {
   const ctx = useTopSlowQueryContext()
-  const { tw, topType, db, internal } = useTopSlowQueryUrlState()
+  const { tw, order, db, internal } = useTopSlowQueryUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -24,7 +26,7 @@ function useTopSlowQueryData() {
       ctx.cfg.orgName,
       ctx.cfg.clusterName,
       tw,
-      topType,
+      order,
       db,
       internal
     ],
@@ -32,7 +34,7 @@ function useTopSlowQueryData() {
       return ctx.api.getTopSlowQueries({
         start: tw[0],
         end: tw[1],
-        topType,
+        order,
         db,
         internal
       })
@@ -42,7 +44,7 @@ function useTopSlowQueryData() {
 }
 
 export function TopSlowQueryListTable() {
-  const { tw, topType, setTopType } = useTopSlowQueryUrlState()
+  const { tw, order, setOrder } = useTopSlowQueryUrlState()
   const { isLoading, data: slowQueries } = useTopSlowQueryData()
   const navigate = useNavigate()
 
@@ -105,6 +107,8 @@ export function TopSlowQueryListTable() {
       },
       {
         name: 'Total Latency',
+        headerClassName:
+          order === 'sum_latency' ? styles.sorted_column_header : '',
         key: 'sum_latency',
         fieldName: 'sum_latency',
         minWidth: 100,
@@ -116,6 +120,8 @@ export function TopSlowQueryListTable() {
       },
       {
         name: 'Max Latency',
+        headerClassName:
+          order === 'max_latency' ? styles.sorted_column_header : '',
         key: 'max_latency',
         fieldName: 'max_latency', // fieldName is used to sort
         minWidth: 100,
@@ -127,6 +133,8 @@ export function TopSlowQueryListTable() {
       },
       {
         name: 'Avg Latency',
+        headerClassName:
+          order === 'avg_latency' ? styles.sorted_column_header : '',
         key: 'avg_latency',
         fieldName: 'avg_latency',
         minWidth: 100,
@@ -138,6 +146,8 @@ export function TopSlowQueryListTable() {
       },
       {
         name: 'Total Memory',
+        headerClassName:
+          order === 'sum_memory' ? styles.sorted_column_header : '',
         key: 'sum_memory',
         fieldName: 'sum_memory',
         minWidth: 100,
@@ -149,6 +159,8 @@ export function TopSlowQueryListTable() {
       },
       {
         name: 'Max Memory',
+        headerClassName:
+          order === 'max_memory' ? styles.sorted_column_header : '',
         key: 'max_memory',
         fieldName: 'max_memory',
         minWidth: 100,
@@ -160,6 +172,8 @@ export function TopSlowQueryListTable() {
       },
       {
         name: 'Avg Memory',
+        headerClassName:
+          order === 'avg_memory' ? styles.sorted_column_header : '',
         key: 'avg_memory',
         fieldName: 'avg_memory',
         minWidth: 100,
@@ -171,6 +185,7 @@ export function TopSlowQueryListTable() {
       },
       {
         name: 'Total Count',
+        headerClassName: order === 'count' ? styles.sorted_column_header : '',
         key: 'count',
         fieldName: 'count',
         minWidth: 100,
@@ -217,7 +232,7 @@ export function TopSlowQueryListTable() {
       //   }
       // }
     ]
-  }, [])
+  }, [order])
 
   return (
     <CardTable
@@ -226,8 +241,8 @@ export function TopSlowQueryListTable() {
       columns={columns}
       items={slowQueries ?? []}
       onRowClicked={handleRowClick}
-      orderBy={topType}
-      onChangeOrder={(c) => setTopType(c)}
+      orderBy={order}
+      onChangeOrder={setOrder}
     />
   )
 }

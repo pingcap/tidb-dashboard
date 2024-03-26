@@ -24,12 +24,12 @@ export const TIME_WINDOW_SIZES = [
   { label: '7 days', value: 7 * 24 * 60 * 60 }
 ]
 
-export const TOP_N_TYPES = [
+export const ORDER_BY = [
   { label: 'Total Latency', value: 'sum_latency' },
   { label: 'Max Latency', value: 'max_latency' },
   { label: 'Avg Latency', value: 'avg_latency' },
-  { label: 'Total TiDB Memory', value: 'sum_memory' },
-  { label: 'Max TiDB Memory', value: 'max_memory' },
-  { label: 'Avg TiDB Memory', value: 'avg_memory' },
-  { label: 'Count', value: 'count' }
+  { label: 'Total Memory', value: 'sum_memory' },
+  { label: 'Max Memory', value: 'max_memory' },
+  { label: 'Avg Memory', value: 'avg_memory' },
+  { label: 'Total Count', value: 'count' }
 ]

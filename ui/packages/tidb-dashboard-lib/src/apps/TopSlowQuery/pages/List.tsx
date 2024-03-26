@@ -7,7 +7,7 @@ import styles from './List.module.less'
 import { useTopSlowQueryContext } from '../context'
 import { Link } from 'react-router-dom'
 import { useTopSlowQueryUrlState } from '../uilts/url-state'
-import { DEFAULT_TIME_RANGE, TIME_WINDOW_SIZES } from '../uilts/helpers'
+import { TIME_WINDOW_SIZES, ORDER_BY } from '../uilts/helpers'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { TopSlowQueryListTable } from './ListTable'
@@ -66,7 +66,7 @@ function ClusterInfoHeader() {
           <span> | </span>
           <span>Top SlowQueries </span>
         </span>
-        <Tag color="geekblue">alpha</Tag>
+        <Tag color="geekblue">beta</Tag>
       </span>
     </div>
   )
@@ -74,17 +74,18 @@ function ClusterInfoHeader() {
 
 function useTimeWindows() {
   const ctx = useTopSlowQueryContext()
-  const { tws, tw, setTw } = useTopSlowQueryUrlState()
+  const { tws, tw, setTw, timeRange } = useTopSlowQueryUrlState()
 
   const query = useQuery({
     queryKey: [
       'top_slowquery_time_windows',
       tws,
+      timeRange,
       ctx.cfg.orgName,
       ctx.cfg.clusterName
     ],
     queryFn: () => {
-      const timeVal = toTimeRangeValue(DEFAULT_TIME_RANGE)
+      const timeVal = toTimeRangeValue(timeRange)
       return ctx.api.getAvailableTimeWindows({
         from: timeVal[0],
         to: timeVal[1],
@@ -172,7 +173,7 @@ function TimeWindowSelect() {
             const bd = dayjs.unix(item.begin_time)
             const ed = dayjs.unix(item.end_time)
             let ts = ''
-            if (bd.day() === ed.day()) {
+            if (bd.date() === ed.date()) {
               ts = `${bd.format('MM-DD HH:mm')}~${ed.format('HH:mm')}`
             } else {
               ts = `${bd.format('MM-DD HH:mm')}~${ed.format('MM-DD HH:mm')}`
@@ -224,12 +225,39 @@ function SlowQueryCountChart() {
   const { data: chartData, isLoading } = useChartData()
   const { tw } = useTopSlowQueryUrlState()
 
+  // TODO: next pr
+  // function onSelectTimeRange(timeRange: TimeRangeValue) {
+  //   const delta = timeRange[1] - timeRange[0]
+  //   let tws = 60 * 60
+  //   if (delta < 60 * 60) {
+  //     tws = 60 * 60
+  //   } else if (delta < 3 * 60 * 60) {
+  //     tws = 3 * 60 * 60
+  //   } else if (delta < 6 * 60 * 60) {
+  //     tws = 6 * 60 * 60
+  //   } else if (delta < 12 * 60 * 60) {
+  //     tws = 12 * 60 * 60
+  //   } else if (delta < 24 * 60 * 60) {
+  //     tws = 24 * 60 * 60
+  //   } else if (delta < 7 * 24 * 60 * 60) {
+  //     tws = 7 * 24 * 60 * 60
+  //   }
+  //   // console.log('onSelectTimeRange', timeRange, tws)
+  //   // useUrlState has a bug: can not set 2 keys at the same time
+  //   // setTws(tws)
+  //   // setTimeRange(fromTimeRangeValue(timeRange))
+  // }
+
   return (
     <div style={{ marginTop: 16, marginBottom: 24 }}>
       <Typography.Title level={5}>Slow Query Count</Typography.Title>
       <div style={{ height: 200 }}>
         <Skeleton paragraph={{ rows: 4 }} active loading={isLoading}>
-          <CountChart data={chartData ?? []} timeRange={tw as TimeRangeValue} />
+          <CountChart
+            data={chartData ?? []}
+            timeRange={tw as TimeRangeValue}
+            // onSelectTimeRange={onSelectTimeRange}
+          />
         </Skeleton>
       </div>
     </div>
@@ -255,7 +283,8 @@ function useDatabaseList() {
 }
 
 function TopSlowQueryFilters() {
-  const { db, setDb, internal, setInternal } = useTopSlowQueryUrlState()
+  const { db, setDb, internal, setInternal, order, setOrder } =
+    useTopSlowQueryUrlState()
   const { data: databaseList } = useDatabaseList()
 
   const dataBaseListOptions = useMemo(() => {
@@ -268,19 +297,6 @@ function TopSlowQueryFilters() {
 
   return (
     <Space style={{ marginBottom: 8 }}>
-      {/*
-        <div>
-          <span>Top 10: </span>
-          <Select style={{ width: 180 }} value={topType} onChange={setTopType}>
-            {TOP_N_TYPES.map((item) => (
-              <Select.Option value={item.value} key={item.value}>
-                {item.label}
-              </Select.Option>
-            ))}
-          </Select>
-        </div>
-      */}
-
       <div>
         <span>Database: </span>
         <Select
@@ -302,6 +318,17 @@ function TopSlowQueryFilters() {
         <Select style={{ width: 80 }} value={internal} onChange={setInternal}>
           <Select.Option value="no">No</Select.Option>
           <Select.Option value="yes">Yes</Select.Option>
+        </Select>
+      </div>
+
+      <div>
+        <span>Order by: </span>
+        <Select style={{ width: 180 }} value={order} onChange={setOrder}>
+          {ORDER_BY.map((item) => (
+            <Select.Option value={item.value} key={item.value}>
+              {item.label}
+            </Select.Option>
+          ))}
         </Select>
       </div>
     </Space>

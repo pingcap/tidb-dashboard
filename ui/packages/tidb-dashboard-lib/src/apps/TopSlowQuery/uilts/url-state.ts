@@ -5,12 +5,12 @@ import {
   urlToTimeRange
 } from '@lib/components/TimeRangeSelector'
 import { useCallback, useMemo } from 'react'
-import { DEFAULT_TIME_RANGE, TIME_WINDOW_SIZES, TOP_N_TYPES } from './helpers'
+import { DEFAULT_TIME_RANGE, TIME_WINDOW_SIZES, ORDER_BY } from './helpers'
 
 // tws: time window size (1 hour, 2 hours ...)
 // tw: time window (start-end)
 type UrlState = Partial<
-  Record<'from' | 'to' | 'tws' | 'tw' | 'top_type' | 'db' | 'internal', string>
+  Record<'from' | 'to' | 'tws' | 'tw' | 'order' | 'db' | 'internal', string>
 >
 
 export function useTopSlowQueryUrlState() {
@@ -68,9 +68,9 @@ export function useTopSlowQueryUrlState() {
     [setQueryParams]
   )
 
-  const topType = queryParams.top_type || TOP_N_TYPES[0].value
-  const setTopType = useCallback(
-    (v: string) => setQueryParams({ top_type: v }),
+  const order = queryParams.order || ORDER_BY[0].value
+  const setOrder = useCallback(
+    (v: string) => setQueryParams({ order: v }),
     [setQueryParams]
   )
 
@@ -96,8 +96,8 @@ export function useTopSlowQueryUrlState() {
     tw,
     setTw,
 
-    topType,
-    setTopType,
+    order,
+    setOrder,
 
     db,
     setDb,

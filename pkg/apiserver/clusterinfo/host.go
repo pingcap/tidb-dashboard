@@ -4,6 +4,7 @@ package clusterinfo
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/pingcap/log"
 	"github.com/samber/lo"
@@ -62,7 +63,11 @@ func (s *Service) fetchAllInstanceHosts() ([]string, error) {
 
 	tsoInfo, err := topology.FetchTSOTopology(s.lifecycleCtx, s.params.PDClient)
 	if err != nil {
-		return nil, err
+		if strings.Contains(err.Error(), "status code 404") {
+			tsoInfo = []topology.TSOInfo{}
+		} else {
+			return nil, err
+		}
 	}
 	for _, i := range tsoInfo {
 		allHostsMap[i.IP] = struct{}{}
@@ -70,7 +75,11 @@ func (s *Service) fetchAllInstanceHosts() ([]string, error) {
 
 	schedulingInfo, err := topology.FetchSchedulingTopology(s.lifecycleCtx, s.params.PDClient)
 	if err != nil {
-		return nil, err
+		if strings.Contains(err.Error(), "status code 404") {
+			schedulingInfo = []topology.SchedulingInfo{}
+		} else {
+			return nil, err
+		}
 	}
 	for _, i := range schedulingInfo {
 		allHostsMap[i.IP] = struct{}{}

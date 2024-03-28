@@ -1,13 +1,18 @@
 import React, { useRef, useMemo } from 'react'
 import { Space, Select, Typography, Button, Tag, Skeleton } from 'antd'
 import { CaretLeftOutlined, CaretRightOutlined } from '@ant-design/icons'
-import { Card, TimeRangeValue, toTimeRangeValue } from '@lib/components'
+import {
+  Card,
+  TimeRangeValue,
+  fromTimeRangeValue,
+  toTimeRangeValue
+} from '@lib/components'
 
 import styles from './List.module.less'
 import { useTopSlowQueryContext } from '../context'
 import { Link } from 'react-router-dom'
 import { useTopSlowQueryUrlState } from '../uilts/url-state'
-import { TIME_WINDOW_SIZES, ORDER_BY } from '../uilts/helpers'
+import { DEFAULT_TIME_RANGE, DURATIONS, ORDER_BY } from '../uilts/helpers'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { TopSlowQueryListTable } from './ListTable'
@@ -74,12 +79,12 @@ function ClusterInfoHeader() {
 
 function useTimeWindows() {
   const ctx = useTopSlowQueryContext()
-  const { tws, tw, setTw, timeRange } = useTopSlowQueryUrlState()
+  const { duration, tw, setTw, timeRange } = useTopSlowQueryUrlState()
 
   const query = useQuery({
     queryKey: [
       'top_slowquery_time_windows',
-      tws,
+      duration,
       timeRange,
       ctx.cfg.orgName,
       ctx.cfg.clusterName
@@ -89,7 +94,7 @@ function useTimeWindows() {
       return ctx.api.getAvailableTimeWindows({
         from: timeVal[0],
         to: timeVal[1],
-        tws
+        duration
       })
     },
     onSuccess(data) {
@@ -107,7 +112,8 @@ function useTimeWindows() {
 
 const timezone = dayjs().format('UTCZ')
 function TimeWindowSelect() {
-  const { tws, setTws, tw, setTw } = useTopSlowQueryUrlState()
+  const { duration, setDurationAndTimeRange, tw, setTw } =
+    useTopSlowQueryUrlState()
   const { data: availableTimeWindows } = useTimeWindows()
 
   function newerTw() {
@@ -153,8 +159,12 @@ function TimeWindowSelect() {
 
       <div>
         <span>Duration: </span>
-        <Select style={{ width: 128 }} value={tws} onChange={setTws}>
-          {TIME_WINDOW_SIZES.map((item) => (
+        <Select
+          style={{ width: 128 }}
+          value={duration}
+          onChange={(v) => setDurationAndTimeRange(v, DEFAULT_TIME_RANGE)}
+        >
+          {DURATIONS.map((item) => (
             <Select.Option value={item.value} key={item.label}>
               {item.label}
             </Select.Option>
@@ -223,30 +233,26 @@ function useChartData() {
 
 function SlowQueryCountChart() {
   const { data: chartData, isLoading } = useChartData()
-  const { tw } = useTopSlowQueryUrlState()
+  const { tw, setDurationAndTimeRange } = useTopSlowQueryUrlState()
 
-  // TODO: next pr
-  // function onSelectTimeRange(timeRange: TimeRangeValue) {
-  //   const delta = timeRange[1] - timeRange[0]
-  //   let tws = 60 * 60
-  //   if (delta < 60 * 60) {
-  //     tws = 60 * 60
-  //   } else if (delta < 3 * 60 * 60) {
-  //     tws = 3 * 60 * 60
-  //   } else if (delta < 6 * 60 * 60) {
-  //     tws = 6 * 60 * 60
-  //   } else if (delta < 12 * 60 * 60) {
-  //     tws = 12 * 60 * 60
-  //   } else if (delta < 24 * 60 * 60) {
-  //     tws = 24 * 60 * 60
-  //   } else if (delta < 7 * 24 * 60 * 60) {
-  //     tws = 7 * 24 * 60 * 60
-  //   }
-  //   // console.log('onSelectTimeRange', timeRange, tws)
-  //   // useUrlState has a bug: can not set 2 keys at the same time
-  //   // setTws(tws)
-  //   // setTimeRange(fromTimeRangeValue(timeRange))
-  // }
+  function onSelectTimeRange(timeRange: TimeRangeValue) {
+    const delta = timeRange[1] - timeRange[0]
+    let duration = 60 * 60
+    if (delta < 60 * 60) {
+      duration = 60 * 60
+    } else if (delta < 3 * 60 * 60) {
+      duration = 3 * 60 * 60
+    } else if (delta < 6 * 60 * 60) {
+      duration = 6 * 60 * 60
+    } else if (delta < 12 * 60 * 60) {
+      duration = 12 * 60 * 60
+    } else if (delta < 24 * 60 * 60) {
+      duration = 24 * 60 * 60
+    } else if (delta < 7 * 24 * 60 * 60) {
+      duration = 7 * 24 * 60 * 60
+    }
+    setDurationAndTimeRange(duration, fromTimeRangeValue(timeRange))
+  }
 
   return (
     <div style={{ marginTop: 16, marginBottom: 24 }}>
@@ -256,7 +262,7 @@ function SlowQueryCountChart() {
           <CountChart
             data={chartData ?? []}
             timeRange={tw as TimeRangeValue}
-            // onSelectTimeRange={onSelectTimeRange}
+            onSelectTimeRange={onSelectTimeRange}
           />
         </Skeleton>
       </div>

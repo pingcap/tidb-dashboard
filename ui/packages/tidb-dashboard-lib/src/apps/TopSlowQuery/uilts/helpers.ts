@@ -15,7 +15,7 @@ export const DEFAULT_TIME_RANGE: TimeRange = {
   value: TIME_RANGE_RECENT_SECONDS[6]
 }
 
-export const TIME_WINDOW_SIZES = [
+export const DURATIONS = [
   { label: '1 hour', value: 60 * 60 },
   { label: '3 hours', value: 3 * 60 * 60 },
   { label: '6 hours', value: 6 * 60 * 60 },

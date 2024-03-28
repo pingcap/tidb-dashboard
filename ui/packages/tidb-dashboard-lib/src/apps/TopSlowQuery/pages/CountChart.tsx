@@ -26,30 +26,29 @@ export function CountChart({
     return (data ?? []).map(([time, count]) => [time * 1000, count])
   }, [data])
 
-  // TODO: next pr
-  // function onBrushEnd(e: BrushEvent) {
-  //   if (!e.x) {
-  //     return
-  //   }
+  function onBrushEnd(e: BrushEvent) {
+    if (!e.x) {
+      return
+    }
 
-  //   let value: [number, number]
-  //   const tr = e.x.map((d) => d / 1000)
-  //   const delta = tr[1] - tr[0]
-  //   if (delta < 60) {
-  //     const offset = Math.floor(delta / 2)
-  //     value = [Math.ceil(tr[0] + offset - 30), Math.floor(tr[1] - offset + 30)]
-  //   } else {
-  //     value = [Math.ceil(tr[0]), Math.floor(tr[1])]
-  //   }
-  //   onSelectTimeRange?.(value)
-  // }
+    let value: [number, number]
+    const tr = e.x.map((d) => d / 1000)
+    const delta = tr[1] - tr[0]
+    if (delta < 60) {
+      const offset = Math.floor(delta / 2)
+      value = [Math.ceil(tr[0] + offset - 30), Math.floor(tr[1] - offset + 30)]
+    } else {
+      value = [Math.ceil(tr[0]), Math.floor(tr[1])]
+    }
+    onSelectTimeRange?.(value)
+  }
 
   return (
     <Chart>
       <Settings
         {...DEFAULT_CHART_SETTINGS}
         showLegend={false}
-        // onBrushEnd={onBrushEnd}
+        onBrushEnd={onSelectTimeRange ? onBrushEnd : undefined}
         xDomain={{
           min: timeRange[0] * 1000,
           max: timeRange[1] * 1000

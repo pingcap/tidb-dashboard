@@ -13,7 +13,7 @@ const debugHeaders = {
   // 'x-project-id': '1372813089454525346',
   // 'x-provider': 'aws',
   // 'x-region': 'us-east-1',
-  // 'x-env': 'prod'
+  'x-env': 'prod'
 }
 
 export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
@@ -23,13 +23,13 @@ export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
         getAvailableTimeWindows: async ({
           from,
           to,
-          tws
+          duration
         }: {
           from: number
           to: number
-          tws: number
+          duration: number
         }) => {
-          const hours = tws / 3600
+          const hours = duration / 3600
           return client
             .getAxiosInstance()
             .get(

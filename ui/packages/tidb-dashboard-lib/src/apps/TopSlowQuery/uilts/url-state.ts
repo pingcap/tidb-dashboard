@@ -5,12 +5,14 @@ import {
   urlToTimeRange
 } from '@lib/components/TimeRangeSelector'
 import { useCallback, useMemo } from 'react'
-import { DEFAULT_TIME_RANGE, TIME_WINDOW_SIZES, ORDER_BY } from './helpers'
+import { DEFAULT_TIME_RANGE, DURATIONS, ORDER_BY } from './helpers'
 
-// tws: time window size (1 hour, 2 hours ...)
 // tw: time window (start-end)
 type UrlState = Partial<
-  Record<'from' | 'to' | 'tws' | 'tw' | 'order' | 'db' | 'internal', string>
+  Record<
+    'from' | 'to' | 'duration' | 'tw' | 'order' | 'db' | 'internal',
+    string
+  >
 >
 
 export function useTopSlowQueryUrlState() {
@@ -31,19 +33,29 @@ export function useTopSlowQueryUrlState() {
     [setQueryParams]
   )
 
-  const tws: number = useMemo(() => {
-    const v = parseInt(queryParams.tws)
+  const duration: number = useMemo(() => {
+    const v = parseInt(queryParams.duration)
     if (isNaN(v)) {
-      return TIME_WINDOW_SIZES[0].value
+      return DURATIONS[0].value
     }
-    if (TIME_WINDOW_SIZES.some((s) => s.value === v)) {
+    if (DURATIONS.some((s) => s.value === v)) {
       return v
     }
-    return TIME_WINDOW_SIZES[0].value
-  }, [queryParams.tws])
-  const setTws = useCallback(
+    return DURATIONS[0].value
+  }, [queryParams.duration])
+  const setDuration = useCallback(
     (v: number) => {
-      setQueryParams({ tws: v + '' })
+      setQueryParams({ duration: v + '' })
+    },
+    [setQueryParams]
+  )
+
+  // Note: when calling `setDuration(); setTimeRange();` at the same time, only the last one will take effect
+  // the latter one will overwrite the former one
+  // TODO: do we have a better solution? expose the `setQueryParams` as well?
+  const setDurationAndTimeRange = useCallback(
+    (v: number, tr: TimeRange) => {
+      setQueryParams({ duration: v + '', ...toURLTimeRange(tr) })
     },
     [setQueryParams]
   )
@@ -59,7 +71,6 @@ export function useTopSlowQueryUrlState() {
     }
     return [0, 0]
   }, [queryParams.tw])
-
   const setTw = useCallback(
     (v: string) => {
       // v format: "from-to"
@@ -90,8 +101,10 @@ export function useTopSlowQueryUrlState() {
     timeRange,
     setTimeRange,
 
-    tws,
-    setTws,
+    duration,
+    setDuration,
+
+    setDurationAndTimeRange,
 
     tw,
     setTw,

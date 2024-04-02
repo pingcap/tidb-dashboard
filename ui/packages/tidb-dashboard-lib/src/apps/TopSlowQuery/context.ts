@@ -20,7 +20,7 @@ export type TopSlowQueryCtxValue = {
     getAvailableTimeWindows(params: {
       from: number
       to: number
-      tws: number
+      duration: number
     }): Promise<ITimeWindow[]>
 
     getMetrics: (params: {

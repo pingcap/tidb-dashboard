@@ -23,13 +23,13 @@ export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
         getAvailableTimeWindows: async ({
           from,
           to,
-          tws
+          duration
         }: {
           from: number
           to: number
-          tws: number
+          duration: number
         }) => {
-          const hours = tws / 3600
+          const hours = duration / 3600
           return client
             .getAxiosInstance()
             .get(

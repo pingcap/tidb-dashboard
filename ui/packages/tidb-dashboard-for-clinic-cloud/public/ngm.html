@@ -144,12 +144,23 @@
         window.location.assign('/')
       }
 
-      // const topslowQueryBlockOrgIds = ['1372813089209061633']
-      // const topslowQueryBlockOrgIds = [
-      //   '1372813089209061633',
-      //   '1369847559691367400'
-      // ]
-      // const enableTopSlowquery = !topslowQueryBlockOrgIds.includes(orgId)
+      let clusterInfo = {
+        provider,
+        region,
+        orgId,
+        projectId,
+        clusterId,
+        deployType
+      }
+      // test
+      // clusterInfo = {
+      //   provider: 'aws',
+      //   region: 'us-east-1',
+      //   orgId: '1372813089209061633',
+      //   projectId: '1372813089454525346',
+      //   clusterId: '1379661944646413143',
+      //   deployType
+      // }
 
       const apiPathBase = `/ngm/api/v1`
       startDashboard({
@@ -162,14 +173,7 @@
           apiPathBase,
           apiToken
         },
-        clusterInfo: {
-          provider,
-          region,
-          orgId,
-          projectId,
-          clusterId,
-          deployType
-        },
+        clusterInfo,
         appsConfig: {
           slowQuery: {
             enableExport: false,

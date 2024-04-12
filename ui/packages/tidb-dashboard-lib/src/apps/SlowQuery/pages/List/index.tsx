@@ -31,14 +31,7 @@ import {
   LimitTimeRange,
   CardTable
 } from '@lib/components'
-import { CacheContext } from '@lib/utils/useCache'
-import SlowQueriesTable from '../../components/SlowQueriesTable'
-import useSlowQueryTableController, {
-  DEF_SLOW_QUERY_COLUMN_KEYS,
-  DEF_SLOW_QUERY_OPTIONS
-} from '../../utils/useSlowQueryTableController'
-import { useDebounceFn, useMemoizedFn } from 'ahooks'
-import { useDeepCompareChange } from '@lib/utils/useChange'
+import { useMemoizedFn } from 'ahooks'
 import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
 import { Link } from 'react-router-dom'
@@ -47,8 +40,15 @@ import { useQuery } from '@tanstack/react-query'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { derivedFields, slowQueryColumns } from '../../utils/tableColumns'
 
+import {
+  LIMITS,
+  DEF_SLOW_QUERY_COLUMN_KEYS,
+  SLOW_QUERY_VISIBLE_COLUMN_KEYS,
+  SLOW_QUERY_SHOW_FULL_SQL
+} from '../../utils/helpers'
+import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
+
 import styles from './List.module.less'
-import { LIMITS } from '../../utils/helpers'
 
 const { Option } = Select
 
@@ -96,20 +96,11 @@ function useAvailableColumnsData() {
   return query
 }
 
-function useSlowqueryListData() {
+function useSlowqueryListData(visibleColumnKeys: IColumnKeys) {
   const ctx = useContext(SlowQueryContext)
 
-  const {
-    timeRange,
-    dbs,
-    order,
-    digest,
-    visibleColumnKeys,
-    limit,
-    ruGroups,
-    term
-  } = useSlowQueryListUrlState()
-  console.log('visible colums', visibleColumnKeys)
+  const { timeRange, dbs, order, digest, limit, ruGroups, term } =
+    useSlowQueryListUrlState()
 
   const timeRangeValue = toTimeRangeValue(timeRange)
 
@@ -158,15 +149,7 @@ function List() {
 
   const ctx = useContext(SlowQueryContext)
 
-  // const cacheMgr = useContext(CacheContext)
-
   const {
-    visibleColumnKeys,
-    setVisibleColumnKeys,
-
-    showFullSQL,
-    setShowFullSQL,
-
     timeRange,
     setTimeRange,
 
@@ -189,6 +172,14 @@ function List() {
     setOrder,
     resetOrder
   } = useSlowQueryListUrlState()
+  const [visibleColumnKeys, setVisibleColumnKeys] =
+    useVersionedLocalStorageState(SLOW_QUERY_VISIBLE_COLUMN_KEYS, {
+      defaultValue: DEF_SLOW_QUERY_COLUMN_KEYS
+    })
+  const [showFullSQL, setShowFullSQL] = useVersionedLocalStorageState(
+    SLOW_QUERY_SHOW_FULL_SQL,
+    { defaultValue: false }
+  )
 
   const { data: dbsData, isLoading: loadingDbs } = useDbsData()
   const { data: ruGroupsData, isLoading: loadingRuGroups } = useRuGroupsData()
@@ -198,7 +189,7 @@ function List() {
     data: slowQueryData,
     refetch: refetchSlowQueryData,
     isLoading: loadingSlowQueryData
-  } = useSlowqueryListData()
+  } = useSlowqueryListData(visibleColumnKeys)
   const availableColumnsInTable = useMemo(
     () =>
       slowQueryColumns(
@@ -213,24 +204,8 @@ function List() {
 
   const isDataLoadedSlowly = false
 
-  // const controller = useSlowQueryTableController({
-  //   cacheMgr,
-  //   showFullSQL,
-  //   fetchSchemas: ctx?.cfg.showDBFilter,
-  //   initialQueryOptions: {
-  //     ...DEF_SLOW_QUERY_OPTIONS,
-  //     timeRange,
-  //     visibleColumnKeys
-  //   },
-
-  //   ds: ctx!.ds
-  // })
-
   function updateVisibleColumnKeys(v: IColumnKeys) {
     setVisibleColumnKeys(v)
-    // if (!v[controller.orderOptions.orderBy]) {
-    //   controller.resetOrder()
-    // }
     if (!v[order.col]) {
       resetOrder()
     }

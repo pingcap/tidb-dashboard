@@ -6,8 +6,6 @@ import {
   toURLTimeRange,
   urlToTimeRange
 } from '@lib/components/TimeRangeSelector'
-import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
-import { DEF_SLOW_QUERY_COLUMN_KEYS } from './helpers'
 
 type ListUrlState = Partial<
   Record<
@@ -30,20 +28,8 @@ type OrderOpt = {
   type: 'asc' | 'desc'
 }
 
-const SLOW_QUERY_VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
-const SLOW_QUERY_SHOW_FULL_SQL = 'slow_query.show_full_sql'
-
 export function useSlowQueryListUrlState() {
   const [queryParams, setQueryParams] = useUrlState<ListUrlState>()
-
-  const [visibleColumnKeys, setVisibleColumnKeys] =
-    useVersionedLocalStorageState(SLOW_QUERY_VISIBLE_COLUMN_KEYS, {
-      defaultValue: DEF_SLOW_QUERY_COLUMN_KEYS
-    })
-  const [showFullSQL, setShowFullSQL] = useVersionedLocalStorageState(
-    SLOW_QUERY_SHOW_FULL_SQL,
-    { defaultValue: false }
-  )
 
   // from & to
   const timeRange = useMemo(() => {
@@ -112,21 +98,6 @@ export function useSlowQueryListUrlState() {
     [setQueryParams]
   )
 
-  // fields
-  // const fields = useMemo(() => {
-  //   const fields = queryParams.fields
-  //   return fields ? fields.split(',') : []
-  // }, [queryParams.fields])
-  // const setFields = useCallback((v: string[]) => {
-  //   setQueryParams({ fields: v.join(',') })
-  // }, [setQueryParams])
-
-  // full_sql
-  // const fullSql = queryParams.full_sql === 'true'
-  // const setFullSql = useCallback((v: boolean) => {
-  //   setQueryParams({ full_sql: v.toString() })
-  // }, [setQueryParams])
-
   // order
   const order = useMemo<OrderOpt>(() => {
     const _order = queryParams.order ?? '-timestamp'
@@ -170,20 +141,8 @@ export function useSlowQueryListUrlState() {
     limit,
     setLimit,
 
-    // fields,
-    // setFields,
-
-    // fullSql,
-    // setFullSql,
-
     order,
     setOrder,
-    resetOrder,
-
-    visibleColumnKeys,
-    setVisibleColumnKeys,
-
-    showFullSQL,
-    setShowFullSQL
+    resetOrder
   }
 }

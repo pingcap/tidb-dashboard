@@ -8,3 +8,5 @@ export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
   query_time: true,
   memory_max: true
 }
+export const SLOW_QUERY_VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
+export const SLOW_QUERY_SHOW_FULL_SQL = 'slow_query.show_full_sql'

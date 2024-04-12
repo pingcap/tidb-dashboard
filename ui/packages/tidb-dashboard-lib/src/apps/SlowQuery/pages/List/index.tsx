@@ -346,11 +346,11 @@ function List() {
             {ctx?.cfg.showTopSlowQueryLink && (
               <span>
                 <span style={{ fontSize: 18, fontWeight: 600 }}>
-                  <span>Slow Query Logs</span>
-                  <span> | </span>
                   <Link to="/top_slowquery">Top SlowQueries </Link>
+                  <Tag color="geekblue">beta</Tag>
+                  <span>| </span>
+                  <span>Slow Query Logs</span>
                 </span>
-                <Tag color="geekblue">beta</Tag>
               </span>
             )}
           </div>

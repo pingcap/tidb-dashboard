@@ -68,11 +68,11 @@ function ClusterInfoHeader() {
       {clusterInfo}
       <span>
         <span style={{ fontSize: 18, fontWeight: 600 }}>
-          <Link to="/slow_query">Slow Query Logs</Link>
-          <span> | </span>
           <span>Top SlowQueries </span>
+          <Tag color="geekblue">beta</Tag>
+          <span>| </span>
+          <Link to="/slow_query">Slow Query Logs</Link>
         </span>
-        <Tag color="geekblue">beta</Tag>
       </span>
     </div>
   )

@@ -10,3 +10,4 @@ export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
 }
 export const SLOW_QUERY_VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
 export const SLOW_QUERY_SHOW_FULL_SQL = 'slow_query.show_full_sql'
+export const SLOW_DATA_LOAD_THRESHOLD = 2000

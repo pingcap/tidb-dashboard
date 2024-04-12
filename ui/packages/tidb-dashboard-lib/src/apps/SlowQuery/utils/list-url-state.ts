@@ -18,7 +18,8 @@ type ListUrlState = Partial<
     | 'limit'
     | 'fields'
     | 'full_sql'
-    | 'order',
+    | 'order'
+    | 'row',
     string
   >
 >
@@ -119,6 +120,19 @@ export function useSlowQueryListUrlState() {
     setQueryParams({ order: undefined })
   }, [setQueryParams])
 
+  // row
+  const row = useMemo(() => {
+    const r = parseInt(queryParams.row)
+    if (r > 0) return r
+    return -1
+  }, [queryParams.row])
+  const setRow = useCallback(
+    (v: number) => {
+      setQueryParams({ row: v + '' })
+    },
+    [setQueryParams]
+  )
+
   return {
     queryParams,
     setQueryParams,
@@ -143,6 +157,9 @@ export function useSlowQueryListUrlState() {
 
     order,
     setOrder,
-    resetOrder
+    resetOrder,
+
+    row,
+    setRow
   }
 }

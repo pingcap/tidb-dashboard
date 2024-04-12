@@ -318,12 +318,11 @@ function List() {
     (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
       ctx?.event?.selectSlowQueryItem(rec)
       setRow(idx)
-      const qs = DetailPage.buildQuery({
-        digest: rec.digest,
-        connectId: rec.connection_id,
-        timestamp: rec.timestamp
-      })
-      openLink(`/slow_query/detail?${qs}`, ev, navigate)
+      openLink(
+        `/slow_query/detail?digest=${rec.digest}&connection_id=${rec.connection_id}&timestamp=${rec.timestamp}`,
+        ev,
+        navigate
+      )
     }
   )
 

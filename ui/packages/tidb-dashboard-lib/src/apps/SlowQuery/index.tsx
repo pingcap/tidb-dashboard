@@ -16,8 +16,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 addTranslations(translations)
 
-addTranslations(translations)
-
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {

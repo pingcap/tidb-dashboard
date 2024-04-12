@@ -1,10 +1,10 @@
 import { useMemoizedFn } from 'ahooks'
 import React, { useCallback, useContext } from 'react'
 import { CardTable, ICardTableProps } from '@lib/components'
-import DetailPage from '../pages/Detail'
 import { ISlowQueryTableController } from '../utils/useSlowQueryTableController'
 import openLink from '@lib/utils/openLink'
 import { useNavigate } from 'react-router-dom'
+
 import { SlowQueryContext } from '../context'
 
 interface Props extends Partial<ICardTableProps> {
@@ -23,12 +23,11 @@ function SlowQueriesTable({
     (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
       ctx?.event?.selectSlowQueryItem(rec)
       controller.saveClickedItemIndex(idx)
-      const qs = DetailPage.buildQuery({
-        digest: rec.digest,
-        connectId: rec.connection_id,
-        timestamp: rec.timestamp
-      })
-      openLink(`${detailPathPrefix}?${qs}`, ev, navigate)
+      openLink(
+        `/slow_query/detail?digest=${rec.digest}&connection_id=${rec.connection_id}&timestamp=${rec.timestamp}`,
+        ev,
+        navigate
+      )
     }
   )
 

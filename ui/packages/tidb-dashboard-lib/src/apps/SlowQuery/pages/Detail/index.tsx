@@ -36,7 +36,7 @@ function useSlowQueryDetailData() {
   const { digest, connectionId, timestamp } = useSlowQueryDetailUrlState()
 
   const query = useQuery({
-    queryKey: ['slow_query', 'detail'],
+    queryKey: ['slow_query', 'detail', digest, connectionId, timestamp],
     queryFn: () => {
       return ctx?.ds
         .slowQueryDetailGet(connectionId, digest, timestamp, {

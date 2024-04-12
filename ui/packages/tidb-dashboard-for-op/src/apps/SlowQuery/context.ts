@@ -80,9 +80,7 @@ export const ctx: ISlowQueryContext = {
     apiPathBase: client.getBasePath(),
     enableExport: true,
     showDBFilter: true,
-    // showDBFilter: false,
-    // showDigestFilter: false,
-    showDigestFilter: true,
+    showDigestFilter: false,
     showResourceGroupFilter: true
     // instantQuery: false,
     // timeRangeSelector: {

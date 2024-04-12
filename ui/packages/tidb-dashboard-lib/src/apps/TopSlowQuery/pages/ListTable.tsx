@@ -18,7 +18,7 @@ import styles from './List.module.less'
 
 function useTopSlowQueryData() {
   const ctx = useTopSlowQueryContext()
-  const { tw, order, db, internal } = useTopSlowQueryUrlState()
+  const { tw, order, dbs, internal } = useTopSlowQueryUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -27,7 +27,7 @@ function useTopSlowQueryData() {
       ctx.cfg.clusterName,
       tw,
       order,
-      db,
+      dbs,
       internal
     ],
     queryFn: () => {
@@ -35,7 +35,7 @@ function useTopSlowQueryData() {
         start: tw[0],
         end: tw[1],
         order,
-        db,
+        db: dbs.join(','),
         internal
       })
     }
@@ -44,14 +44,16 @@ function useTopSlowQueryData() {
 }
 
 export function TopSlowQueryListTable() {
-  const { tw, order, setOrder } = useTopSlowQueryUrlState()
+  const { tw, dbs, order, setOrder } = useTopSlowQueryUrlState()
   const { isLoading, data: slowQueries } = useTopSlowQueryData()
   const navigate = useNavigate()
 
   const handleRowClick = useMemoizedFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
       openLink(
-        `/slow_query?from=${tw[0]}&to=${tw[1]}&digest=${rec.sql_digest}`,
+        `/slow_query?from=${tw[0]}&to=${tw[1]}&digest=${
+          rec.sql_digest
+        }&dbs=${dbs.join(',')}`,
         ev,
         navigate
       )

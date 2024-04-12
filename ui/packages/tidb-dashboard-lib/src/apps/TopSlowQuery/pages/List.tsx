@@ -3,6 +3,7 @@ import { Space, Select, Typography, Button, Tag, Skeleton } from 'antd'
 import { CaretLeftOutlined, CaretRightOutlined } from '@ant-design/icons'
 import {
   Card,
+  MultiSelect,
   TimeRangeValue,
   fromTimeRangeValue,
   toTimeRangeValue
@@ -289,34 +290,22 @@ function useDatabaseList() {
 }
 
 function TopSlowQueryFilters() {
-  const { db, setDb, internal, setInternal, order, setOrder } =
+  const { dbs, setDbs, internal, setInternal, order, setOrder } =
     useTopSlowQueryUrlState()
   const { data: databaseList } = useDatabaseList()
-
-  const dataBaseListOptions = useMemo(() => {
-    const opts = (databaseList ?? []).map((item) => ({
-      label: item,
-      value: item
-    }))
-    return [{ label: 'All', value: '' }, ...opts]
-  }, [databaseList])
 
   return (
     <Space style={{ marginBottom: 8 }}>
       <div>
-        <span>Database: </span>
-        <Select
-          style={{ minWidth: 160 }}
-          value={db || ''}
-          onChange={setDb}
-          showSearch
-        >
-          {dataBaseListOptions.map((item) => (
-            <Select.Option value={item.value} key={item.value}>
-              {item.label}
-            </Select.Option>
-          ))}
-        </Select>
+        <span>Databases: </span>
+        <MultiSelect.Plain
+          placeholder="All Databases"
+          columnTitle="Databases"
+          value={dbs}
+          style={{ width: 150 }}
+          onChange={setDbs}
+          items={databaseList}
+        />
       </div>
 
       <div>

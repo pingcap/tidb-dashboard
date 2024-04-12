@@ -28,65 +28,211 @@ import {
   MultiSelect,
   toTimeRangeValue,
   IColumnKeys,
-  LimitTimeRange
+  LimitTimeRange,
+  CardTable
 } from '@lib/components'
-import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 import { CacheContext } from '@lib/utils/useCache'
-import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQueryTableController, {
   DEF_SLOW_QUERY_COLUMN_KEYS,
   DEF_SLOW_QUERY_OPTIONS
 } from '../../utils/useSlowQueryTableController'
-import styles from './List.module.less'
 import { useDebounceFn, useMemoizedFn } from 'ahooks'
 import { useDeepCompareChange } from '@lib/utils/useChange'
 import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
 import { Link } from 'react-router-dom'
+import { useSlowQueryListUrlState } from '../../utils/list-url-state'
+import { useQuery } from '@tanstack/react-query'
+import { getSelectedFields } from '@lib/utils/tableColumnFactory'
+import { derivedFields, slowQueryColumns } from '../../utils/tableColumns'
+
+import styles from './List.module.less'
+import { LIMITS } from '../../utils/helpers'
 
 const { Option } = Select
 
-const SLOW_QUERY_VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
-const SLOW_QUERY_SHOW_FULL_SQL = 'slow_query.show_full_sql'
-const LIMITS = [100, 200, 500, 1000]
+function useDbsData() {
+  const ctx = useContext(SlowQueryContext)
+  const { timeRange } = useSlowQueryListUrlState()
+
+  const query = useQuery({
+    queryKey: ['slow_query', 'dbs', timeRange],
+    queryFn: () => {
+      return ctx?.ds
+        .infoListDatabases({ handleError: 'custom' })
+        .then((res) => res.data)
+    },
+    enabled: ctx?.cfg.showDBFilter
+  })
+  return query
+}
+
+function useRuGroupsData() {
+  const ctx = useContext(SlowQueryContext)
+
+  const query = useQuery({
+    queryKey: ['slow_query', 'ru_groups'],
+    queryFn: () => {
+      return ctx?.ds
+        .infoListResourceGroupNames({ handleError: 'custom' })
+        .then((res) => res.data)
+    }
+  })
+  return query
+}
+
+function useAvailableColumnsData() {
+  const ctx = useContext(SlowQueryContext)
+
+  const query = useQuery({
+    queryKey: ['slow_query', 'available_columns'],
+    queryFn: () => {
+      return ctx?.ds
+        .slowQueryAvailableFieldsGet({ handleError: 'custom' })
+        .then((res) => res.data.map((d) => d.toLowerCase()))
+    }
+  })
+  return query
+}
+
+function useSlowqueryListData() {
+  const ctx = useContext(SlowQueryContext)
+
+  const {
+    timeRange,
+    dbs,
+    order,
+    digest,
+    visibleColumnKeys,
+    limit,
+    ruGroups,
+    term
+  } = useSlowQueryListUrlState()
+  console.log('visible colums', visibleColumnKeys)
+
+  const timeRangeValue = toTimeRangeValue(timeRange)
+
+  const actualVisibleColumnKeys = getSelectedFields(
+    visibleColumnKeys,
+    derivedFields
+  ).join(',')
+
+  const query = useQuery({
+    queryKey: [
+      'slow_query',
+      'list',
+      timeRange,
+      dbs,
+      order,
+      digest,
+      visibleColumnKeys,
+      limit,
+      ruGroups,
+      term
+    ],
+    queryFn: () => {
+      return ctx?.ds
+        .slowQueryListGet(
+          timeRangeValue[0],
+          dbs,
+          order.type === 'desc',
+          digest,
+          timeRangeValue[1],
+          actualVisibleColumnKeys,
+          limit,
+          order.col,
+          [],
+          ruGroups,
+          term,
+          { handleError: 'custom' }
+        )
+        .then((res) => res.data)
+    }
+  })
+  return query
+}
 
 function List() {
   const { t } = useTranslation()
 
   const ctx = useContext(SlowQueryContext)
 
-  const cacheMgr = useContext(CacheContext)
+  // const cacheMgr = useContext(CacheContext)
 
-  const [visibleColumnKeys, setVisibleColumnKeys] =
-    useVersionedLocalStorageState(SLOW_QUERY_VISIBLE_COLUMN_KEYS, {
-      defaultValue: DEF_SLOW_QUERY_COLUMN_KEYS
-    })
-  const [showFullSQL, setShowFullSQL] = useVersionedLocalStorageState(
-    SLOW_QUERY_SHOW_FULL_SQL,
-    { defaultValue: false }
+  const {
+    visibleColumnKeys,
+    setVisibleColumnKeys,
+
+    showFullSQL,
+    setShowFullSQL,
+
+    timeRange,
+    setTimeRange,
+
+    dbs,
+    setDbs,
+
+    ruGroups,
+    setRuGroups,
+
+    limit,
+    setLimit,
+
+    digest,
+    setDigest,
+
+    term,
+    setTerm,
+
+    order,
+    setOrder,
+    resetOrder
+  } = useSlowQueryListUrlState()
+
+  const { data: dbsData, isLoading: loadingDbs } = useDbsData()
+  const { data: ruGroupsData, isLoading: loadingRuGroups } = useRuGroupsData()
+  const { data: availableColumnsData, isLoading: loadingAvailableColumns } =
+    useAvailableColumnsData()
+  const {
+    data: slowQueryData,
+    refetch: refetchSlowQueryData,
+    isLoading: loadingSlowQueryData
+  } = useSlowqueryListData()
+  const availableColumnsInTable = useMemo(
+    () =>
+      slowQueryColumns(
+        slowQueryData ?? [],
+        availableColumnsData ?? [],
+        showFullSQL
+      ),
+    [slowQueryData, availableColumnsData, showFullSQL]
   )
+
   const [downloading, setDownloading] = useState(false)
 
-  const { timeRange, setTimeRange } = useURLTimeRange()
+  const isDataLoadedSlowly = false
 
-  const controller = useSlowQueryTableController({
-    cacheMgr,
-    showFullSQL,
-    fetchSchemas: ctx?.cfg.showDBFilter,
-    initialQueryOptions: {
-      ...DEF_SLOW_QUERY_OPTIONS,
-      timeRange,
-      visibleColumnKeys
-    },
+  // const controller = useSlowQueryTableController({
+  //   cacheMgr,
+  //   showFullSQL,
+  //   fetchSchemas: ctx?.cfg.showDBFilter,
+  //   initialQueryOptions: {
+  //     ...DEF_SLOW_QUERY_OPTIONS,
+  //     timeRange,
+  //     visibleColumnKeys
+  //   },
 
-    ds: ctx!.ds
-  })
+  //   ds: ctx!.ds
+  // })
 
   function updateVisibleColumnKeys(v: IColumnKeys) {
     setVisibleColumnKeys(v)
-    if (!v[controller.orderOptions.orderBy]) {
-      controller.resetOrder()
+    // if (!v[controller.orderOptions.orderBy]) {
+    //   controller.resetOrder()
+    // }
+    if (!v[order.col]) {
+      resetOrder()
     }
   }
 
@@ -117,75 +263,49 @@ function List() {
     </Menu>
   )
 
-  const [filterSchema, setFilterSchema] = useState<string[]>(
-    controller.queryOptions.schemas
-  )
-  const [filterLimit, setFilterLimit] = useState<number>(
-    controller.queryOptions.limit
-  )
-  const [filterDigest, setFilterDigest] = useState<string>(
-    controller.queryOptions.digest
-  )
-  const [filterText, setFilterText] = useState<string>(
-    controller.queryOptions.searchText
-  )
-  const [filterGroup, setFilterGroup] = useState<string[]>(
-    controller.queryOptions.groups
-  )
-
   const sendQueryNow = useMemoizedFn(() => {
-    cacheMgr?.clear()
-    controller.setQueryOptions({
-      timeRange,
-      schemas: filterSchema,
-      limit: filterLimit,
-      searchText: filterText,
-      visibleColumnKeys,
-      digest: filterDigest,
-      plans: [],
-      groups: filterGroup
-    })
+    refetchSlowQueryData()
   })
 
-  const sendQueryDebounced = useDebounceFn(sendQueryNow, {
-    wait: 300
-  }).run
+  // const sendQueryDebounced = useDebounceFn(sendQueryNow, {
+  //   wait: 300
+  // }).run
 
-  useDeepCompareChange(() => {
-    if (
-      ctx?.cfg.instantQuery === false ||
-      controller.isDataLoadedSlowly || // if data was loaded slowly
-      controller.isDataLoadedSlowly === null // or a request is not yet finished (which means slow network)..
-    ) {
-      // do not send requests on-the-fly.
-      return
-    }
-    sendQueryDebounced()
-  }, [
-    timeRange,
-    filterSchema,
-    filterLimit,
-    filterText,
-    filterGroup,
-    visibleColumnKeys
-  ])
+  // useDeepCompareChange(() => {
+  //   if (
+  //     ctx?.cfg.instantQuery === false ||
+  //     controller.isDataLoadedSlowly || // if data was loaded slowly
+  //     controller.isDataLoadedSlowly === null // or a request is not yet finished (which means slow network)..
+  //   ) {
+  //     // do not send requests on-the-fly.
+  //     return
+  //   }
+  //   sendQueryDebounced()
+  // }, [
+  //   timeRange,
+  //   filterSchema,
+  //   filterLimit,
+  //   filterText,
+  //   filterGroup,
+  //   visibleColumnKeys
+  // ])
 
   const downloadCSV = useMemoizedFn(async () => {
     // use last effective query options
-    const timeRangeValue = toTimeRangeValue(controller.queryOptions.timeRange)
+    const timeRangeValue = toTimeRangeValue(timeRange)
     try {
       setDownloading(true)
       const res = await ctx!.ds.slowQueryDownloadTokenPost({
         fields: '*',
         begin_time: timeRangeValue[0],
         end_time: timeRangeValue[1],
-        db: controller.queryOptions.schemas,
-        resource_group: controller.queryOptions.groups,
-        text: controller.queryOptions.searchText,
-        orderBy: controller.orderOptions.orderBy,
-        desc: controller.orderOptions.desc,
+        db: dbs,
+        resource_group: ruGroups,
+        text: term,
+        orderBy: order.col,
+        desc: order.type === 'desc',
         limit: 10000,
-        digest: filterDigest,
+        digest: digest,
         plans: []
       })
       const token = res.data
@@ -255,15 +375,15 @@ function List() {
                 placeholder={t('slow_query.toolbar.schemas.placeholder')}
                 selectedValueTransKey="slow_query.toolbar.schemas.selected"
                 columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
-                value={filterSchema}
+                value={dbs}
                 style={{ width: 150 }}
-                onChange={setFilterSchema}
-                items={controller.allSchemas}
+                onChange={setDbs}
+                items={dbsData}
                 data-e2e="execution_database_name"
               />
             )}
             {ctx!.cfg.showResourceGroupFilter &&
-              controller.allGroups?.length > 1 && (
+              (ruGroupsData ?? []).length > 1 && (
                 <MultiSelect.Plain
                   placeholder={t(
                     'slow_query.toolbar.resource_groups.placeholder'
@@ -272,17 +392,17 @@ function List() {
                   columnTitle={t(
                     'slow_query.toolbar.resource_groups.columnTitle'
                   )}
-                  value={filterGroup}
-                  style={{ width: 150 }}
-                  onChange={setFilterGroup}
-                  items={controller.allGroups}
+                  value={ruGroups}
+                  style={{ width: 180 }}
+                  onChange={setRuGroups}
+                  items={ruGroupsData}
                   data-e2e="resource_group_name_select"
                 />
               )}
             <Select
               style={{ width: 150 }}
-              value={filterLimit}
-              onChange={setFilterLimit}
+              value={limit}
+              onChange={setLimit}
               data-e2e="slow_query_limit_select"
             >
               {LIMITS.map((item) => (
@@ -297,26 +417,28 @@ function List() {
             </Select>
             {ctx!.cfg.showDigestFilter && (
               <Input
-                value={filterDigest}
-                onChange={(e) => setFilterDigest(e.target.value)}
+                value={digest}
+                onChange={(e) => setDigest(e.target.value)}
                 placeholder={t('slow_query.toolbar.digest.placeholder')}
                 data-e2e="slow_query_digest"
               />
             )}
             <Input.Search
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
               onSearch={sendQueryNow}
               placeholder={t('slow_query.toolbar.keyword.placeholder')}
               data-e2e="slow_query_search"
               enterButton={t('slow_query.toolbar.query')}
             />
-            {controller.isLoading && <LoadingOutlined />}
+            {(loadingDbs || loadingRuGroups || loadingAvailableColumns) && (
+              <LoadingOutlined />
+            )}
           </Space>
           <Space>
-            {controller.availableColumnsInTable.length > 0 && (
+            {availableColumnsInTable.length > 0 && (
               <ColumnsSelector
-                columns={controller.availableColumnsInTable}
+                columns={availableColumnsInTable}
                 visibleColumnKeys={visibleColumnKeys}
                 defaultVisibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
                 onChange={updateVisibleColumnKeys}
@@ -361,12 +483,12 @@ function List() {
 
       <div style={{ height: 16 }} />
 
-      {controller.data?.length === 0 ? (
+      {slowQueryData?.length === 0 ? (
         <Result title={t('slow_query.overview.empty_result')} />
       ) : (
         <div style={{ height: '100%', position: 'relative' }}>
           <ScrollablePane>
-            {controller.isDataLoadedSlowly && (ctx?.cfg.instantQuery ?? true) && (
+            {isDataLoadedSlowly && (ctx?.cfg.instantQuery ?? true) && (
               <Card noMarginBottom noMarginTop>
                 <Alert
                   message={t('slow_query.overview.slow_load_info')}
@@ -375,16 +497,33 @@ function List() {
                 />
               </Card>
             )}
-            {(controller.data?.length ?? 0) > 0 && (
+            {(slowQueryData?.length ?? 0) > 0 && (
               <Card noMarginBottom noMarginTop>
                 <p className="ant-form-item-extra">
                   {t('slow_query.overview.result_count', {
-                    n: controller.data?.length
+                    n: slowQueryData?.length
                   })}
                 </p>
               </Card>
             )}
-            <SlowQueriesTable cardNoMarginTop controller={controller} />
+            {/* <SlowQueriesTable cardNoMarginTop controller={controller} /> */}
+            <CardTable
+              cardNoMarginTop
+              loading={loadingSlowQueryData}
+              columns={availableColumnsInTable}
+              items={slowQueryData ?? []}
+              orderBy={order.col}
+              desc={order.type === 'desc'}
+              onChangeOrder={(col, desc) =>
+                setOrder({ col, type: desc ? 'desc' : 'asc' })
+              }
+              // errors={controller.errors}
+              visibleColumnKeys={visibleColumnKeys}
+              // onRowClicked={handleRowClick}
+              // clickedRowIndex={controller.getClickedItemIndex()}
+              // getKey={getKey}
+              data-e2e="detail_tabs_slow_query"
+            />
           </ScrollablePane>
         </div>
       )}

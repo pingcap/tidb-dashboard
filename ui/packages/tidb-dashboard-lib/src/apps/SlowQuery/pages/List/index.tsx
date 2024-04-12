@@ -59,10 +59,9 @@ const { Option } = Select
 
 function useDbsData() {
   const ctx = useContext(SlowQueryContext)
-  const { timeRange } = useSlowQueryListUrlState()
 
   const query = useQuery({
-    queryKey: ['slow_query', 'dbs', timeRange],
+    queryKey: ['slow_query', 'dbs'],
     queryFn: () => {
       return ctx?.ds
         .infoListDatabases({ handleError: 'custom' })
@@ -154,7 +153,8 @@ function useSlowqueryListData(visibleColumnKeys: IColumnKeys) {
           setLoadSlowly(isLoadSlow)
         })
     },
-    enabled: !loadSlowly
+    enabled: !loadSlowly,
+    retry: false
   })
   return { query, loadSlowly }
 }

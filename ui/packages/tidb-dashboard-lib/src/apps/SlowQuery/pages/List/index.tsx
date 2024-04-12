@@ -186,8 +186,8 @@ function List() {
     setOrder,
     resetOrder,
 
-    row,
-    setRow
+    rowIdx,
+    setRowIdx
   } = useSlowQueryListUrlState()
 
   const [visibleColumnKeys, setVisibleColumnKeys] =
@@ -316,7 +316,7 @@ function List() {
   const handleRowClick = useMemoizedFn(
     (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
       ctx?.event?.selectSlowQueryItem(rec)
-      setRow(idx)
+      setRowIdx(idx)
       openLink(
         `/slow_query/detail?digest=${rec.digest}&connection_id=${rec.connection_id}&timestamp=${rec.timestamp}`,
         ev,
@@ -532,7 +532,7 @@ function List() {
               errors={slowQueryError ? [slowQueryError] : []}
               visibleColumnKeys={visibleColumnKeys}
               onRowClicked={handleRowClick}
-              clickedRowIndex={row}
+              clickedRowIndex={rowIdx}
               getKey={getKey}
               data-e2e="detail_tabs_slow_query"
             />

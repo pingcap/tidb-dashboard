@@ -121,12 +121,12 @@ export function useSlowQueryListUrlState() {
   }, [setQueryParams])
 
   // row
-  const row = useMemo(() => {
+  const rowIdx = useMemo(() => {
     const r = parseInt(queryParams.row)
-    if (r > 0) return r
+    if (r >= 0) return r
     return -1
   }, [queryParams.row])
-  const setRow = useCallback(
+  const setRowIdx = useCallback(
     (v: number) => {
       setQueryParams({ row: v + '' })
     },
@@ -159,7 +159,7 @@ export function useSlowQueryListUrlState() {
     setOrder,
     resetOrder,
 
-    row,
-    setRow
+    rowIdx,
+    setRowIdx
   }
 }

@@ -40,6 +40,7 @@ import {
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { isDistro } from '@lib/utils/distro'
+import openLink from '@lib/utils/openLink'
 
 import {
   LIMITS,
@@ -53,8 +54,6 @@ import { useSlowQueryListUrlState } from '../../utils/list-url-state'
 import { derivedFields, slowQueryColumns } from '../../utils/tableColumns'
 
 import styles from './List.module.less'
-import openLink from '@lib/utils/openLink'
-import DetailPage from '../Detail'
 
 const { Option } = Select
 

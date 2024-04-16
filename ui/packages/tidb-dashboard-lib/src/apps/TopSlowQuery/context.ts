@@ -36,6 +36,7 @@ export type TopSlowQueryCtxValue = {
       order: string
       db: string
       internal: string
+      stmt_kinds: string
     }): Promise<ISlowQuery[]>
   }
 

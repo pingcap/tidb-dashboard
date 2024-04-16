@@ -73,6 +73,7 @@ export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
           order: string
           db: string
           internal: string
+          stmt_kinds: string
         }) => {
           const hours = (params.end - params.start) / 3600
           const isInternal = params.internal === 'yes'
@@ -83,7 +84,9 @@ export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
                 params.start
               }&hours=${hours}&database=${
                 params.db ?? ''
-              }&internal=${isInternal}&order_by=${params.order}&limit=10`,
+              }&internal=${isInternal}&stmt_kinds=${
+                params.stmt_kinds ?? ''
+              }&order_by=${params.order}&limit=10`,
               {
                 headers: debugHeaders
               }

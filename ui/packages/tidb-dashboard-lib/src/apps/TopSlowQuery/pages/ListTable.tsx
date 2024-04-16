@@ -18,7 +18,7 @@ import styles from './List.module.less'
 
 function useTopSlowQueryData() {
   const ctx = useTopSlowQueryContext()
-  const { tw, order, dbs, internal } = useTopSlowQueryUrlState()
+  const { tw, order, dbs, internal, stmtKinds } = useTopSlowQueryUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -28,7 +28,8 @@ function useTopSlowQueryData() {
       tw,
       order,
       dbs,
-      internal
+      internal,
+      stmtKinds
     ],
     queryFn: () => {
       return ctx.api.getTopSlowQueries({
@@ -36,7 +37,8 @@ function useTopSlowQueryData() {
         end: tw[1],
         order,
         db: dbs.join(','),
-        internal
+        internal,
+        stmt_kinds: stmtKinds.join(',')
       })
     }
   })

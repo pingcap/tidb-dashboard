@@ -13,7 +13,12 @@ import styles from './List.module.less'
 import { useTopSlowQueryContext } from '../context'
 import { Link } from 'react-router-dom'
 import { useTopSlowQueryUrlState } from '../uilts/url-state'
-import { DEFAULT_TIME_RANGE, DURATIONS, ORDER_BY } from '../uilts/helpers'
+import {
+  DEFAULT_TIME_RANGE,
+  DURATIONS,
+  ORDER_BY,
+  STMT_KINDS
+} from '../uilts/helpers'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { TopSlowQueryListTable } from './ListTable'
@@ -290,7 +295,7 @@ function useDatabaseList() {
 }
 
 function TopSlowQueryFilters() {
-  const { dbs, setDbs, internal, setInternal, order, setOrder } =
+  const { dbs, setDbs, order, setOrder, stmtKinds, setStmtKinds } =
     useTopSlowQueryUrlState()
   const { data: databaseList } = useDatabaseList()
 
@@ -309,12 +314,24 @@ function TopSlowQueryFilters() {
       </div>
 
       <div>
+        <span>Statement Kinds: </span>
+        <MultiSelect.Plain
+          placeholder="All Kinds"
+          columnTitle="Statement Kind"
+          value={stmtKinds}
+          style={{ width: 150 }}
+          onChange={setStmtKinds}
+          items={STMT_KINDS}
+        />
+      </div>
+
+      {/* <div>
         <span>Internal: </span>
         <Select style={{ width: 80 }} value={internal} onChange={setInternal}>
           <Select.Option value="no">No</Select.Option>
           <Select.Option value="yes">Yes</Select.Option>
         </Select>
-      </div>
+      </div> */}
 
       <div>
         <span>Order by: </span>

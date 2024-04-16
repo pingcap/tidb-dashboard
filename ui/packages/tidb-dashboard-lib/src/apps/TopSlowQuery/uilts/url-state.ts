@@ -10,7 +10,14 @@ import { DEFAULT_TIME_RANGE, DURATIONS, ORDER_BY } from './helpers'
 // tw: time window (start-end)
 type UrlState = Partial<
   Record<
-    'from' | 'to' | 'duration' | 'tw' | 'order' | 'dbs' | 'internal',
+    | 'from'
+    | 'to'
+    | 'duration'
+    | 'tw'
+    | 'order'
+    | 'dbs'
+    | 'internal'
+    | 'stmt_kinds',
     string
   >
 >
@@ -103,6 +110,17 @@ export function useTopSlowQueryUrlState() {
     [setQueryParams]
   )
 
+  const stmtKinds = useMemo(() => {
+    const stmtTypes = queryParams.stmt_kinds
+    return stmtTypes ? stmtTypes.split(',') : []
+  }, [queryParams.stmt_kinds])
+  const setStmtKinds = useCallback(
+    (v: string[]) => {
+      setQueryParams({ stmt_kinds: v.join(',') })
+    },
+    [setQueryParams]
+  )
+
   const internal = queryParams.internal || 'no'
   const setInternal = useCallback(
     (v: string) => setQueryParams({ internal: v }),
@@ -129,6 +147,9 @@ export function useTopSlowQueryUrlState() {
 
     dbs,
     setDbs,
+
+    stmtKinds,
+    setStmtKinds,
 
     internal,
     setInternal

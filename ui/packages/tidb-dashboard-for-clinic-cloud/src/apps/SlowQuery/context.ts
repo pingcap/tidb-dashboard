@@ -93,6 +93,20 @@ class DataSource implements ISlowQueryDataSource {
       .get(`/slow_query/analyze?begin_time=${start}&end_time=${end}`)
   }
 
+  slowQueryDownloadDBFile(begin_time: number, end_time: number) {
+    return client
+      .getAxiosInstance()
+      .get(
+        `/slow_query/analyze?begin_time=${begin_time}&end_time=${end_time}`,
+        {
+          responseType: 'blob',
+          headers: {
+            Accept: 'application/octet-stream'
+          }
+        }
+      )
+  }
+
   promqlQuery(query: string, time: number, timeout: string) {
     return client
       .getAxiosInstance()
@@ -139,6 +153,7 @@ export const ctx: (cfg: Partial<ISlowQueryConfig>) => ISlowQueryContext = (
       showDBFilter: true,
       showDigestFilter: false,
       showResourceGroupFilter: true,
+      showDownloadSlowQueryDBFile: true,
       ...cfg
     }
   }

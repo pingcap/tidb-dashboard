@@ -43,6 +43,8 @@ export interface ISlowQueryDataSource {
 
   slowQueryAnalyze?(start: number, end: number): AxiosPromise
 
+  slowQueryDownloadDBFile?(begin_time: number, end_time: number): AxiosPromise
+
   promqlQuery?(
     query: string,
     time: number,
@@ -86,6 +88,7 @@ export interface ISlowQueryConfig extends IContextConfig {
   orgName?: string
   clusterName?: string
   showTopSlowQueryLink?: boolean
+  showDownloadSlowQueryDBFile?: boolean
 }
 
 export interface ISlowQueryContext {

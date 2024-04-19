@@ -52,6 +52,7 @@ import {
 import { SlowQueryContext } from '../../context'
 import { useSlowQueryListUrlState } from '../../utils/list-url-state'
 import { derivedFields, slowQueryColumns } from '../../utils/tableColumns'
+import DownloadDBFileModal from './DownloadDBFileModal'
 
 import styles from './List.module.less'
 
@@ -198,6 +199,8 @@ function List() {
     SLOW_QUERY_SHOW_FULL_SQL,
     { defaultValue: false }
   )
+
+  const [downloadModalVisible, setDownloadModalVisible] = useState(false)
 
   const { data: dbsData, isFetching: fetchingDbs } = useDbsData()
   const { data: ruGroupsData, isFetching: fetchingRuGroups } = useRuGroupsData()
@@ -444,6 +447,15 @@ function List() {
             {(fetchingDbs || fetchingRuGroups || fetchingAvailableColumns) && (
               <LoadingOutlined />
             )}
+
+            {ctx!.cfg.showDownloadSlowQueryDBFile && (
+              <Button
+                type="link"
+                onClick={() => setDownloadModalVisible(!downloadModalVisible)}
+              >
+                {t('slow_query.toolbar.download')}
+              </Button>
+            )}
           </Space>
 
           <Space>
@@ -538,6 +550,12 @@ function List() {
             />
           </ScrollablePane>
         </div>
+      )}
+      {ctx!.cfg.showDownloadSlowQueryDBFile && (
+        <DownloadDBFileModal
+          visible={downloadModalVisible}
+          setVisible={setDownloadModalVisible}
+        />
       )}
     </div>
   )

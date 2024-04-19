@@ -11,7 +11,8 @@ import {
   Alert,
   Tooltip,
   Result,
-  Tag
+  Tag,
+  Button
 } from 'antd'
 import {
   LoadingOutlined,
@@ -44,6 +45,7 @@ import { useDeepCompareChange } from '@lib/utils/useChange'
 import { isDistro } from '@lib/utils/distro'
 import { SlowQueryContext } from '../../context'
 import { Link } from 'react-router-dom'
+import DownloadDBFileModal from './DownloadDBFileModal'
 
 const { Option } = Select
 
@@ -67,6 +69,7 @@ function List() {
     { defaultValue: false }
   )
   const [downloading, setDownloading] = useState(false)
+  const [downloadModalVisible, setDownloadModalVisible] = useState(false)
 
   const { timeRange, setTimeRange } = useURLTimeRange()
 
@@ -311,6 +314,14 @@ function List() {
               data-e2e="slow_query_search"
               enterButton={t('slow_query.toolbar.query')}
             />
+            {ctx!.cfg.showDownloadSlowQueryDBFile && (
+              <Button
+                type="link"
+                onClick={() => setDownloadModalVisible(!downloadModalVisible)}
+              >
+                {t('slow_query.toolbar.download')}
+              </Button>
+            )}
             {controller.isLoading && <LoadingOutlined />}
           </Space>
           <Space>
@@ -387,6 +398,12 @@ function List() {
             <SlowQueriesTable cardNoMarginTop controller={controller} />
           </ScrollablePane>
         </div>
+      )}
+      {ctx!.cfg.showDownloadSlowQueryDBFile && (
+        <DownloadDBFileModal
+          visible={downloadModalVisible}
+          setVisible={setDownloadModalVisible}
+        />
       )}
     </div>
   )

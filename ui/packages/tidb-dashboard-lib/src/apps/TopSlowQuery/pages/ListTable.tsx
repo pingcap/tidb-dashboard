@@ -49,26 +49,12 @@ export function TopSlowQueryListTable() {
   const navigate = useNavigate()
 
   const handleRowClick = useMemoizedFn(
-    (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
-      sessionStorage.setItem(
-        'slow_query.query_options',
-        JSON.stringify({
-          visibleColumnKeys: {
-            query: true,
-            timestamp: true,
-            query_time: true,
-            memory_max: true
-          },
-          digest: rec.sql_digest,
-          limit: 100,
-          timeRange: {
-            type: 'absolute',
-            value: tw
-          }
-        })
+    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      openLink(
+        `/slow_query?from=${tw[0]}&to=${tw[1]}&digest=${rec.sql_digest}`,
+        ev,
+        navigate
       )
-
-      openLink(`/slow_query?from=${tw[0]}&to=${tw[1]}`, ev, navigate)
     }
   )
 

@@ -36,9 +36,9 @@ function useTopSlowQueryData() {
         start: tw[0],
         end: tw[1],
         order,
-        db: dbs.join(','),
+        dbs,
         internal,
-        stmt_kinds: stmtKinds.join(',')
+        stmtKinds
       })
     }
   })

@@ -25,11 +25,17 @@ export const DURATIONS = [
 ]
 
 export const STMT_KINDS = [
-  'Select',
+  'AlterTable',
+  'AnalyzeTable',
+  'Begin',
+  'Change',
   'Insert',
   'Update',
   'Commit',
-  'Analyze',
+  'Delete',
+  'Select',
+  'Show',
+  'Set',
   'Others'
 ]
 

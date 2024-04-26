@@ -23,7 +23,7 @@ function DownloadDBFileModal({
   const [rangeTypeVal, setRangeTypeVal] = useState<RangeType>('by_day')
   const [downloading, setDownloading] = useState(false)
 
-  const [dateVal, setDateVal] = useState(dayjs())
+  const [dateVal, setDateVal] = useState<dayjs.Dayjs | null>(null)
   const [hourVal, setHourVal] = useState(0)
 
   const downloadDBFile = useMemoizedFn(
@@ -69,6 +69,9 @@ function DownloadDBFileModal({
       title={t('slow_query.download_modal.title')}
     >
       <Form>
+        <Form.Item label="Timezone" name="timezone">
+          UTC
+        </Form.Item>
         <Form.Item label="Range Type" name="layout">
           <Radio.Group
             onChange={(e) => setRangeTypeVal(e.target.value)}
@@ -103,10 +106,20 @@ function DownloadDBFileModal({
             })}
           />
         </Form.Item>
+        <Form.Item label="Download Range" name="download_range">
+          {dateVal &&
+            `${dateVal.format('YYYY-MM-DD')} ${
+              rangeTypeVal === 'by_day'
+                ? `00:00 ~ 24:00`
+                : `${hourVal}:00~${hourVal + 1}:00`
+            } (UTC)`}
+        </Form.Item>
         <Form.Item>
           <Button
             disabled={downloading}
-            onClick={() => downloadDBFile(dateVal, hourVal, rangeTypeVal)}
+            onClick={() =>
+              dateVal && downloadDBFile(dateVal, hourVal, rangeTypeVal)
+            }
           >
             {t(`slow_query.download_modal.download`)}
           </Button>

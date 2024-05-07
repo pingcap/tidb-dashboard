@@ -21,7 +21,7 @@ export const DURATIONS = [
   { label: '6 hours', value: 6 * 60 * 60 },
   { label: '12 hours', value: 12 * 60 * 60 },
   { label: '1 day', value: 24 * 60 * 60 },
-  { label: '7 days', value: 7 * 24 * 60 * 60 }
+  { label: '3 days', value: 3 * 24 * 60 * 60 }
 ]
 
 export const STMT_KINDS = [

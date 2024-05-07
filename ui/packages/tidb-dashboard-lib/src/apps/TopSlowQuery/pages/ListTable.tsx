@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTopSlowQueryContext } from '../context'
 import { useTopSlowQueryUrlState } from '../uilts/url-state'
 import { useQuery } from '@tanstack/react-query'
@@ -47,8 +47,23 @@ function useTopSlowQueryData() {
 
 export function TopSlowQueryListTable() {
   const { tw, dbs, order, setOrder } = useTopSlowQueryUrlState()
-  const { isLoading, data: slowQueries } = useTopSlowQueryData()
+  const { isLoading, isFetching, data: slowQueries } = useTopSlowQueryData()
   const navigate = useNavigate()
+
+  const [loadSlow, setLoadSlow] = useState(false)
+  useEffect(() => {
+    if (!isFetching) {
+      setLoadSlow(false)
+      return
+    }
+    let timerId = window.setTimeout(() => {
+      setLoadSlow(true)
+    }, 20 * 1000)
+
+    return () => {
+      window.clearTimeout(timerId)
+    }
+  }, [isFetching])
 
   const handleRowClick = useMemoizedFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
@@ -225,14 +240,21 @@ export function TopSlowQueryListTable() {
   }, [order])
 
   return (
-    <CardTable
-      cardNoMargin
-      loading={isLoading}
-      columns={columns}
-      items={slowQueries ?? []}
-      onRowClicked={handleRowClick}
-      orderBy={order}
-      onChangeOrder={setOrder}
-    />
+    <div className={styles.slow_hint_container}>
+      <CardTable
+        cardNoMargin
+        loading={isLoading}
+        columns={columns}
+        items={slowQueries ?? []}
+        onRowClicked={handleRowClick}
+        orderBy={order}
+        onChangeOrder={setOrder}
+      />
+      {loadSlow && (
+        <div className={styles.slow_hint}>
+          <span>We are working to prepare the data, please be patient.</span>
+        </div>
+      )}
+    </div>
   )
 }

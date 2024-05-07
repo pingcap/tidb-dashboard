@@ -13,7 +13,7 @@ const debugHeaders = {
   // 'x-project-id': '1372813089454525346',
   // 'x-provider': 'aws',
   // 'x-region': 'us-east-1',
-  'x-env': 'prod'
+  // 'x-env': 'prod'
 }
 
 export function TopSlowQueryProvider(props: { children: React.ReactNode }) {

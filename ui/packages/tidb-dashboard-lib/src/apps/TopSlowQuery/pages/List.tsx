@@ -3,6 +3,7 @@ import { Space, Select, Typography, Button, Tag, Skeleton } from 'antd'
 import { CaretLeftOutlined, CaretRightOutlined } from '@ant-design/icons'
 import {
   Card,
+  MultiSelect,
   TimeRangeValue,
   fromTimeRangeValue,
   toTimeRangeValue
@@ -12,7 +13,12 @@ import styles from './List.module.less'
 import { useTopSlowQueryContext } from '../context'
 import { Link } from 'react-router-dom'
 import { useTopSlowQueryUrlState } from '../uilts/url-state'
-import { DEFAULT_TIME_RANGE, DURATIONS, ORDER_BY } from '../uilts/helpers'
+import {
+  DEFAULT_TIME_RANGE,
+  DURATIONS,
+  ORDER_BY,
+  STMT_KINDS
+} from '../uilts/helpers'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { TopSlowQueryListTable } from './ListTable'
@@ -67,11 +73,11 @@ function ClusterInfoHeader() {
       {clusterInfo}
       <span>
         <span style={{ fontSize: 18, fontWeight: 600 }}>
-          <Link to="/slow_query">Slow Query Logs</Link>
-          <span> | </span>
           <span>Top SlowQueries </span>
+          <Tag color="geekblue">beta</Tag>
+          <span>| </span>
+          <Link to="/slow_query">Slow Query Logs</Link>
         </span>
-        <Tag color="geekblue">beta</Tag>
       </span>
     </div>
   )
@@ -289,43 +295,43 @@ function useDatabaseList() {
 }
 
 function TopSlowQueryFilters() {
-  const { db, setDb, internal, setInternal, order, setOrder } =
+  const { dbs, setDbs, order, setOrder, stmtKinds, setStmtKinds } =
     useTopSlowQueryUrlState()
   const { data: databaseList } = useDatabaseList()
-
-  const dataBaseListOptions = useMemo(() => {
-    const opts = (databaseList ?? []).map((item) => ({
-      label: item,
-      value: item
-    }))
-    return [{ label: 'All', value: '' }, ...opts]
-  }, [databaseList])
 
   return (
     <Space style={{ marginBottom: 8 }}>
       <div>
-        <span>Database: </span>
-        <Select
-          style={{ minWidth: 160 }}
-          value={db || ''}
-          onChange={setDb}
-          showSearch
-        >
-          {dataBaseListOptions.map((item) => (
-            <Select.Option value={item.value} key={item.value}>
-              {item.label}
-            </Select.Option>
-          ))}
-        </Select>
+        <span>Databases: </span>
+        <MultiSelect.Plain
+          placeholder="All Databases"
+          columnTitle="Databases"
+          value={dbs}
+          style={{ width: 150 }}
+          onChange={setDbs}
+          items={databaseList}
+        />
       </div>
 
       <div>
+        <span>Statement Kinds: </span>
+        <MultiSelect.Plain
+          placeholder="All Kinds"
+          columnTitle="Statement Kind"
+          value={stmtKinds}
+          style={{ width: 150 }}
+          onChange={setStmtKinds}
+          items={STMT_KINDS}
+        />
+      </div>
+
+      {/* <div>
         <span>Internal: </span>
         <Select style={{ width: 80 }} value={internal} onChange={setInternal}>
           <Select.Option value="no">No</Select.Option>
           <Select.Option value="yes">Yes</Select.Option>
         </Select>
-      </div>
+      </div> */}
 
       <div>
         <span>Order by: </span>

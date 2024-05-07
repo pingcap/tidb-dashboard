@@ -191,6 +191,8 @@ function List() {
     setRowIdx
   } = useSlowQueryListUrlState()
 
+  const [defDbs, _] = useState(dbs)
+
   const [visibleColumnKeys, setVisibleColumnKeys] =
     useVersionedLocalStorageState(SLOW_QUERY_VISIBLE_COLUMN_KEYS, {
       defaultValue: DEF_SLOW_QUERY_COLUMN_KEYS
@@ -344,11 +346,11 @@ function List() {
             {ctx?.cfg.showTopSlowQueryLink && (
               <span>
                 <span style={{ fontSize: 18, fontWeight: 600 }}>
-                  <span>Slow Query Logs</span>
-                  <span> | </span>
                   <Link to="/top_slowquery">Top SlowQueries </Link>
+                  <Tag color="geekblue">beta</Tag>
+                  <span>| </span>
+                  <span>Slow Query Logs</span>
                 </span>
-                <Tag color="geekblue">beta</Tag>
               </span>
             )}
           </div>
@@ -368,7 +370,7 @@ function List() {
               <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
             )}
 
-            {ctx!.cfg.showDBFilter && (
+            {(ctx!.cfg.showDBFilter || defDbs.length > 0) && (
               <MultiSelect.Plain
                 placeholder={t('slow_query.toolbar.schemas.placeholder')}
                 selectedValueTransKey="slow_query.toolbar.schemas.selected"
@@ -376,7 +378,7 @@ function List() {
                 value={dbs}
                 style={{ width: 150 }}
                 onChange={setDbs}
-                items={dbsData}
+                items={dbsData ?? defDbs}
                 data-e2e="execution_database_name"
               />
             )}

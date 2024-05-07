@@ -71,23 +71,24 @@ export function TopSlowQueryProvider(props: { children: React.ReactNode }) {
           start: number
           end: number
           order: string
-          db: string
+          dbs: string[]
           internal: string
+          stmtKinds: string[]
         }) => {
           const hours = (params.end - params.start) / 3600
-          const isInternal = params.internal === 'yes'
+          const p = new URLSearchParams()
+          p.append('begin_time', params.start + '')
+          p.append('hours', hours + '')
+          p.append('order_by', params.order)
+          p.append('limit', '10')
+          params.dbs.forEach((d) => p.append('databases', d))
+          params.stmtKinds.forEach((d) => p.append('statement_types', d))
+
           return client
             .getAxiosInstance()
-            .get(
-              `/slow_query/stats?begin_time=${
-                params.start
-              }&hours=${hours}&database=${
-                params.db ?? ''
-              }&internal=${isInternal}&order_by=${params.order}&limit=10`,
-              {
-                headers: debugHeaders
-              }
-            )
+            .get(`/slow_query/stats?${p.toString()}`, {
+              headers: debugHeaders
+            })
             .then((res) => res.data)
         }
       },

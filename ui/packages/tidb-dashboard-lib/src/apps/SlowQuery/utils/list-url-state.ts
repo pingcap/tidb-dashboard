@@ -49,7 +49,7 @@ export function useSlowQueryListUrlState() {
   )
 
   // dbs
-  const dbs = useMemo(() => {
+  const dbs = useMemo<string[]>(() => {
     const dbs = queryParams.dbs
     return dbs ? dbs.split(',') : []
   }, [queryParams.dbs])

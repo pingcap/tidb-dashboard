@@ -10,7 +10,14 @@ import { DEFAULT_TIME_RANGE, DURATIONS, ORDER_BY } from './helpers'
 // tw: time window (start-end)
 type UrlState = Partial<
   Record<
-    'from' | 'to' | 'duration' | 'tw' | 'order' | 'db' | 'internal',
+    | 'from'
+    | 'to'
+    | 'duration'
+    | 'tw'
+    | 'order'
+    | 'dbs'
+    | 'internal'
+    | 'stmt_kinds',
     string
   >
 >
@@ -85,9 +92,32 @@ export function useTopSlowQueryUrlState() {
     [setQueryParams]
   )
 
-  const db = queryParams.db
-  const setDb = useCallback(
-    (v: string) => setQueryParams({ db: v }),
+  // const db = queryParams.db
+  // const setDb = useCallback(
+  //   (v: string) => setQueryParams({ db: v }),
+  //   [setQueryParams]
+  // )
+
+  // dbs
+  const dbs = useMemo(() => {
+    const dbs = queryParams.dbs
+    return dbs ? dbs.split(',') : []
+  }, [queryParams.dbs])
+  const setDbs = useCallback(
+    (v: string[]) => {
+      setQueryParams({ dbs: v.join(',') })
+    },
+    [setQueryParams]
+  )
+
+  const stmtKinds = useMemo(() => {
+    const stmtTypes = queryParams.stmt_kinds
+    return stmtTypes ? stmtTypes.split(',') : []
+  }, [queryParams.stmt_kinds])
+  const setStmtKinds = useCallback(
+    (v: string[]) => {
+      setQueryParams({ stmt_kinds: v.join(',') })
+    },
     [setQueryParams]
   )
 
@@ -112,8 +142,14 @@ export function useTopSlowQueryUrlState() {
     order,
     setOrder,
 
-    db,
-    setDb,
+    // db,
+    // setDb,
+
+    dbs,
+    setDbs,
+
+    stmtKinds,
+    setStmtKinds,
 
     internal,
     setInternal

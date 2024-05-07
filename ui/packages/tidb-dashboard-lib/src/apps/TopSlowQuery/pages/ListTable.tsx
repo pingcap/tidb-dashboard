@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTopSlowQueryContext } from '../context'
 import { useTopSlowQueryUrlState } from '../uilts/url-state'
 import { useQuery } from '@tanstack/react-query'
@@ -18,7 +18,7 @@ import styles from './List.module.less'
 
 function useTopSlowQueryData() {
   const ctx = useTopSlowQueryContext()
-  const { tw, order, db, internal } = useTopSlowQueryUrlState()
+  const { tw, order, dbs, internal, stmtKinds } = useTopSlowQueryUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -27,16 +27,18 @@ function useTopSlowQueryData() {
       ctx.cfg.clusterName,
       tw,
       order,
-      db,
-      internal
+      dbs,
+      internal,
+      stmtKinds
     ],
     queryFn: () => {
       return ctx.api.getTopSlowQueries({
         start: tw[0],
         end: tw[1],
         order,
-        db,
-        internal
+        dbs,
+        internal,
+        stmtKinds
       })
     }
   })
@@ -44,14 +46,31 @@ function useTopSlowQueryData() {
 }
 
 export function TopSlowQueryListTable() {
-  const { tw, order, setOrder } = useTopSlowQueryUrlState()
-  const { isLoading, data: slowQueries } = useTopSlowQueryData()
+  const { tw, dbs, order, setOrder } = useTopSlowQueryUrlState()
+  const { isLoading, isFetching, data: slowQueries } = useTopSlowQueryData()
   const navigate = useNavigate()
+
+  const [loadSlow, setLoadSlow] = useState(false)
+  useEffect(() => {
+    if (!isFetching) {
+      setLoadSlow(false)
+      return
+    }
+    let timerId = window.setTimeout(() => {
+      setLoadSlow(true)
+    }, 20 * 1000)
+
+    return () => {
+      window.clearTimeout(timerId)
+    }
+  }, [isFetching])
 
   const handleRowClick = useMemoizedFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
       openLink(
-        `/slow_query?from=${tw[0]}&to=${tw[1]}&digest=${rec.sql_digest}`,
+        `/slow_query?from=${tw[0]}&to=${tw[1]}&digest=${
+          rec.sql_digest
+        }&dbs=${dbs.join(',')}`,
         ev,
         navigate
       )
@@ -221,14 +240,21 @@ export function TopSlowQueryListTable() {
   }, [order])
 
   return (
-    <CardTable
-      cardNoMargin
-      loading={isLoading}
-      columns={columns}
-      items={slowQueries ?? []}
-      onRowClicked={handleRowClick}
-      orderBy={order}
-      onChangeOrder={setOrder}
-    />
+    <div className={styles.slow_hint_container}>
+      <CardTable
+        cardNoMargin
+        loading={isLoading}
+        columns={columns}
+        items={slowQueries ?? []}
+        onRowClicked={handleRowClick}
+        orderBy={order}
+        onChangeOrder={setOrder}
+      />
+      {loadSlow && (
+        <div className={styles.slow_hint}>
+          <span>We are working to prepare the data, please be patient.</span>
+        </div>
+      )}
+    </div>
   )
 }

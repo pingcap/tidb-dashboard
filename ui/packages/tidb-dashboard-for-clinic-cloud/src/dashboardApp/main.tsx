@@ -54,7 +54,7 @@ import LayoutMain from './layout/main'
 import translations from './layout/translations'
 
 // for update distro strings resource
-// import '~/utils/distro/stringsRes'
+import '~/utils/distro/stringsRes'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')

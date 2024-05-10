@@ -3,5 +3,8 @@
   "tikv": "TiKV",
   "pd": "PD",
   "tiflash": "TiFlash",
-  "ticdc": "TiCDC"
+  "ticdc": "TiCDC",
+  "tiproxy": "TiProxy",
+  "tso": "TSO",
+  "scheduling": "Scheduling"
 }

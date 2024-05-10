@@ -10,7 +10,7 @@ import DiagnosisReport from './components/DiagnosisReport'
 import translations from './translations'
 
 // for update distro strings resource
-// import '~/utils/distro/stringsRes'
+import '~/utils/distro/stringsRes'
 
 import './index.css'
 

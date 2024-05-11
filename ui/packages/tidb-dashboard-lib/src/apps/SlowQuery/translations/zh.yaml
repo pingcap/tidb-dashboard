@@ -174,7 +174,7 @@ slow_query:
     exporting: 正在导出
     help: 帮助
     help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-slow-query
-    download: 下载
+    download_db: 下载 DB
   download_modal:
     download: 下载
     title: '下载慢查询 db 文件'

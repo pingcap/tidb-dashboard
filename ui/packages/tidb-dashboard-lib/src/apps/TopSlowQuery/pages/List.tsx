@@ -1,6 +1,7 @@
 import React, { useRef, useMemo } from 'react'
 import { Space, Select, Typography, Button, Tag, Skeleton } from 'antd'
 import { CaretLeftOutlined, CaretRightOutlined } from '@ant-design/icons'
+
 import {
   Card,
   MultiSelect,
@@ -309,7 +310,7 @@ function TopSlowQueryFilters() {
           value={dbs}
           style={{ width: 150 }}
           onChange={setDbs}
-          items={databaseList}
+          items={databaseList || []}
         />
       </div>
 

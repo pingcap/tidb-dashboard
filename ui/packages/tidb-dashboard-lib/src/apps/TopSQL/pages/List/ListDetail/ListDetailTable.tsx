@@ -4,8 +4,9 @@ import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import { QuestionCircleOutlined } from '@ant-design/icons'
+import { CSVLink } from 'react-csv'
 
-import { Bar, TextWrap, CardTable } from '@lib/components'
+import { Bar, TextWrap, CardTable, Card } from '@lib/components'
 import { TopsqlSummaryPlanItem } from '@lib/client'
 
 import type { SQLRecord } from '../ListTable'
@@ -66,7 +67,7 @@ export function ListDetailTable({
         },
         {
           name: t('topsql.detail.fields.plan'),
-          key: 'plan',
+          key: 'plan_digest',
           minWidth: 150,
           maxWidth: 150,
           onRender: (rec: PlanRecord) => {
@@ -136,7 +137,7 @@ export function ListDetailTable({
         },
         instanceType === 'tidb' && {
           name: t('topsql.detail.fields.duration_per_exec_ms'),
-          key: 'latency',
+          key: 'duration_per_exec_ms',
           minWidth: 50,
           maxWidth: 150,
           onRender: (rec: PlanRecord) => (
@@ -146,6 +147,8 @@ export function ListDetailTable({
       ].filter((c) => !!c) as IColumn[],
     [capacity, instanceType, t]
   )
+
+  const csvHeaders = tableColumns.map((c) => ({ label: c.name, key: c.key }))
 
   const getKey = useCallback((r: PlanRecord) => r?.plan_digest!, [])
 
@@ -168,6 +171,15 @@ export function ListDetailTable({
 
   return (
     <>
+      <Card noMarginBottom noMarginTop>
+        <CSVLink
+          data={planRecords || []}
+          headers={csvHeaders}
+          filename="topsql-plan"
+        >
+          Download to CSV
+        </CSVLink>
+      </Card>
       <CardTable
         listProps={
           {

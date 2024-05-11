@@ -616,6 +616,9 @@ importers:
       react-copy-to-clipboard:
         specifier: ^5.0.2
         version: 5.1.0(react@17.0.2)
+      react-csv:
+        specifier: ^2.2.2
+        version: 2.2.2
       react-dom:
         specifier: ^17.0.2
         version: 17.0.2(react@17.0.2)
@@ -15976,6 +15979,10 @@ packages:
       copy-to-clipboard: 3.3.1
       prop-types: 15.8.1
       react: 17.0.2
+    dev: false
+
+  /react-csv@2.2.2:
+    resolution: {integrity: sha512-RG5hOcZKZFigIGE8LxIEV/OgS1vigFQT4EkaHeKgyuCbUAu9Nbd/1RYq++bJcJJ9VOqO/n9TZRADsXNDR4VEpw==}
     dev: false
 
   /react-devtools-core@4.28.0:

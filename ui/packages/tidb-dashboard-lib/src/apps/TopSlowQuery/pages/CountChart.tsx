@@ -23,7 +23,7 @@ export function CountChart({
   onSelectTimeRange?: (timeRange: TimeRangeValue) => void
 }) {
   const convertedData = useMemo(() => {
-    return (data ?? []).map(([time, count]) => [time * 1000, count])
+    return (data || []).map(([time, count]) => [time * 1000, count])
   }, [data])
 
   function onBrushEnd(e: BrushEvent) {

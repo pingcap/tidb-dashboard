@@ -7,6 +7,7 @@ import {
   DetailsRow
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { QuestionCircleOutlined } from '@ant-design/icons'
+import { CSVLink } from 'react-csv'
 
 import { TopsqlSummaryItem } from '@lib/client'
 import {
@@ -88,7 +89,7 @@ export function ListTable({
       },
       {
         name: t('topsql.table.fields.sql'),
-        key: 'query',
+        key: 'sql_text',
         minWidth: 250,
         maxWidth: 550,
         onRender: (rec: SQLRecord) => {
@@ -146,6 +147,10 @@ export function ListTable({
     return cols
   }, [capacity, t, topN, ctx?.cfg.showSearchInStatements])
 
+  const csvHeaders = tableColumns
+    .slice(0, 2)
+    .map((c) => ({ label: c.name, key: c.key }))
+
   const getKey = useMemoizedFn((r: SQLRecord) => r.sql_digest!)
 
   const { selectedRecord, selection } = useRecordSelection<SQLRecord>({
@@ -171,9 +176,16 @@ export function ListTable({
   return tableRecords.length ? (
     <>
       <Card noMarginBottom noMarginTop>
-        <p className="ant-form-item-extra">
-          {t('topsql.table.description', { topN })}
-        </p>
+        <div className="ant-form-item-extra">
+          {t('topsql.table.description', { topN })}{' '}
+          <CSVLink
+            data={tableRecords || []}
+            headers={csvHeaders}
+            filename="topsql"
+          >
+            Download to CSV
+          </CSVLink>
+        </div>
       </Card>
       <CardTable
         listProps={

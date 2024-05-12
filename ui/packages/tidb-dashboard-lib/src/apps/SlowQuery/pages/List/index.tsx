@@ -25,6 +25,7 @@ import {
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useQuery } from '@tanstack/react-query'
+import { CSVLink } from 'react-csv'
 
 import {
   Card,
@@ -227,6 +228,12 @@ function List() {
       ),
     [slowQueryData, availableColumnsData, showFullSQL]
   )
+  const csvHeaders = availableColumnsInTable
+    .filter((c) => visibleColumnKeys[c.key])
+    .map((c) => ({
+      label: c.key,
+      key: c.key
+    }))
 
   const [downloading, setDownloading] = useState(false)
 
@@ -455,7 +462,7 @@ function List() {
                 type="link"
                 onClick={() => setDownloadModalVisible(!downloadModalVisible)}
               >
-                {t('slow_query.toolbar.download')}
+                {t('slow_query.toolbar.download_db')}
               </Button>
             )}
           </Space>
@@ -526,11 +533,18 @@ function List() {
             )}
             {(slowQueryData?.length ?? 0) > 0 && (
               <Card noMarginBottom noMarginTop>
-                <p className="ant-form-item-extra">
+                <div className="ant-form-item-extra">
                   {t('slow_query.overview.result_count', {
                     n: slowQueryData?.length
-                  })}
-                </p>
+                  })}{' '}
+                  <CSVLink
+                    data={slowQueryData}
+                    headers={csvHeaders}
+                    filename="slowquery"
+                  >
+                    Download to CSV
+                  </CSVLink>
+                </div>
               </Card>
             )}
             <CardTable

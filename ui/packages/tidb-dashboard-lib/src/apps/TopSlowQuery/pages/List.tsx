@@ -24,6 +24,7 @@ import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { TopSlowQueryListTable } from './ListTable'
 import { CountChart } from './CountChart'
+import { telemetry } from '../uilts/telemetry'
 
 export function TopSlowQueryList() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -77,7 +78,9 @@ function ClusterInfoHeader() {
           <span>Top SlowQueries </span>
           <Tag color="geekblue">beta</Tag>
           <span>| </span>
-          <Link to="/slow_query">Slow Query Logs</Link>
+          <Link to="/slow_query" onClick={() => telemetry.clickSlowQueryTab()}>
+            Slow Query Logs
+          </Link>
         </span>
       </span>
     </div>
@@ -169,7 +172,10 @@ function TimeWindowSelect() {
         <Select
           style={{ width: 128 }}
           value={duration}
-          onChange={(v) => setDurationAndTimeRange(v, DEFAULT_TIME_RANGE)}
+          onChange={(v) => {
+            setDurationAndTimeRange(v, DEFAULT_TIME_RANGE)
+            telemetry.changeDuration(v)
+          }}
         >
           {DURATIONS.map((item) => (
             <Select.Option value={item.value} key={item.label}>
@@ -184,7 +190,10 @@ function TimeWindowSelect() {
         <Select
           style={{ width: 240 }}
           value={tw[0] === 0 ? '' : `${tw[0]}-${tw[1]}`}
-          onChange={setTw}
+          onChange={(v) => {
+            setTw(v)
+            telemetry.changeTimeRange()
+          }}
         >
           {(availableTimeWindows ?? []).map((item) => {
             const bd = dayjs.unix(item.begin_time)

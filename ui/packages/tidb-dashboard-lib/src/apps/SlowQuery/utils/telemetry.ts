@@ -2,6 +2,16 @@
 import { mixpanel } from '@lib/utils/telemetry'
 
 export const telemetry = {
+  clickTopSlowQueryTab() {
+    mixpanel.track('Slowquery: Click TopSlowquery Tab')
+  },
+  clickTableRow() {
+    mixpanel.track('Slowquery: Click Table Row')
+  },
+  clickQueryButton() {
+    mixpanel.track('Slowquery: Click Query Button')
+  },
+
   clickPlanTabs(tab: string, queryDigest: string) {
     mixpanel.track('Slowquery: Plan Tab Clicked', { tab, queryDigest })
   },

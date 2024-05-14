@@ -56,6 +56,7 @@ import { derivedFields, slowQueryColumns } from '../../utils/tableColumns'
 import DownloadDBFileModal from './DownloadDBFileModal'
 
 import styles from './List.module.less'
+import { telemetry } from '../../utils/telemetry'
 
 const { Option } = Select
 
@@ -316,6 +317,7 @@ function List() {
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 
   function handleFormSubmit(values: any) {
+    telemetry.clickQueryButton()
     const { term, digest } = values
     setQueryParams({ term, digest })
     setTimeout(() => {
@@ -327,6 +329,7 @@ function List() {
   const navigate = useNavigate()
   const handleRowClick = useMemoizedFn(
     (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
+      telemetry.clickTableRow()
       ctx?.event?.selectSlowQueryItem(rec)
       setRowIdx(idx)
       openLink(
@@ -353,7 +356,12 @@ function List() {
             {ctx?.cfg.showTopSlowQueryLink && (
               <span>
                 <span style={{ fontSize: 18, fontWeight: 600 }}>
-                  <Link to="/top_slowquery">Top SlowQueries </Link>
+                  <Link
+                    to="/top_slowquery"
+                    onClick={() => telemetry.clickTopSlowQueryTab()}
+                  >
+                    Top SlowQueries{' '}
+                  </Link>
                   <Tag color="geekblue">beta</Tag>
                   <span>| </span>
                   <span>Slow Query Logs</span>

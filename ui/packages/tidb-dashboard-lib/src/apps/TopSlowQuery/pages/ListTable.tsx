@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom'
 import openLink from '@lib/utils/openLink'
 
 import styles from './List.module.less'
+import { telemetry } from '../uilts/telemetry'
 
 function useTopSlowQueryData() {
   const ctx = useTopSlowQueryContext()
@@ -68,6 +69,7 @@ export function TopSlowQueryListTable() {
 
   const handleRowClick = useMemoizedFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      telemetry.clickTableRow()
       openLink(
         `/slow_query?from=${tw[0]}&to=${tw[1]}&digest=${
           rec.sql_digest

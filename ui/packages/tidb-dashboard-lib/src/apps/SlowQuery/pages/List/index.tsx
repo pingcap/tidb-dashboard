@@ -62,12 +62,24 @@ const { Option } = Select
 
 function useDbsData() {
   const ctx = useContext(SlowQueryContext)
+  const { timeRange } = useSlowQueryListUrlState()
+  const timeRangeValue = toTimeRangeValue(timeRange)
 
   const query = useQuery({
-    queryKey: ['slow_query', 'dbs'],
+    queryKey: ['slow_query', 'dbs', timeRange],
     queryFn: () => {
+      // get database list from s3
+      if (ctx?.cfg.showTopSlowQueryLink) {
+        return ctx?.ds
+          .getDatabaseList(timeRangeValue[0], timeRangeValue[1], {
+            handleError: 'custom'
+          })
+          .then((res) => res.data)
+      }
+
+      // get database list from PD
       return ctx?.ds
-        .infoListDatabases({ handleError: 'custom' })
+        .getDatabaseList(0, 0, { handleError: 'custom' })
         .then((res) => res.data)
     },
     enabled: ctx?.cfg.showDBFilter

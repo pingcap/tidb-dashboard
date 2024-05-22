@@ -386,7 +386,7 @@ const getMonitoringItems = (
           queries: [
             {
               promql:
-                'sum(rate(tidb_session_transaction_duration_seconds_count[$__rate_interval])) by (type, txn_mode)',
+                'sum(rate(tidb_session_transaction_duration_seconds_count{scope=~"general"}[$__rate_interval])) by (type, txn_mode)',
               name: '{type}-{txn_mode}',
               type: 'line'
             }

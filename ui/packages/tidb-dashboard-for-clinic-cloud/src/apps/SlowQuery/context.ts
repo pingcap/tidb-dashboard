@@ -11,8 +11,16 @@ import client, { SlowqueryModel } from '~/client'
 class DataSource implements ISlowQueryDataSource {
   constructor(public cache: SlowqueryModel[]) {}
 
-  infoListDatabases(options?: ReqConfig) {
-    return client.getInstance().infoListDatabases(options)
+  getDatabaseList(beginTime: number, endTime: number, options?: ReqConfig) {
+    // get database list from PD
+    if (beginTime === 0) {
+      return client.getInstance().infoListDatabases(options)
+    }
+
+    // get database list from s3
+    return client
+      .getAxiosInstance()
+      .get(`/slow_query/databases?begin_time=${beginTime}&end_time=${endTime}`)
   }
 
   infoListResourceGroupNames(options?: ReqConfig) {

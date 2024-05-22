@@ -11,7 +11,11 @@ import client, {
 import auth from '~/utils/auth'
 
 class DataSource implements IStatementDataSource {
-  infoListDatabases(options?: ReqConfig) {
+  getDatabaseList(
+    beginTime: number,
+    endTime: number,
+    options?: ReqConfig | undefined
+  ) {
     return client.getInstance().infoListDatabases(options)
   }
 

@@ -8,7 +8,11 @@ import { IContextConfig, ReqConfig } from '@lib/types'
 import { PromDataSuccessResponse } from '@lib/utils'
 
 export interface ISlowQueryDataSource {
-  infoListDatabases(options?: ReqConfig): AxiosPromise<Array<string>>
+  getDatabaseList(
+    beginTime: number,
+    endTime: number,
+    options?: ReqConfig
+  ): AxiosPromise<Array<string>>
 
   infoListResourceGroupNames(options?: ReqConfig): AxiosPromise<Array<string>>
 

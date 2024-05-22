@@ -60,7 +60,7 @@ export function TopSlowQueryListTable() {
     }
     let timerId = window.setTimeout(() => {
       setLoadSlow(true)
-    }, 20 * 1000)
+    }, 10 * 1000)
 
     return () => {
       window.clearTimeout(timerId)

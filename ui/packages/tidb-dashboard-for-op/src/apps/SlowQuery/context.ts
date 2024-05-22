@@ -7,7 +7,7 @@ import {
 import client from '~/client'
 
 class DataSource implements ISlowQueryDataSource {
-  infoListDatabases(options?: ReqConfig) {
+  getDatabaseList(beginTime: number, endTime: number, options?: ReqConfig) {
     return client.getInstance().infoListDatabases(options)
   }
 

@@ -216,7 +216,7 @@ export default function useStatementTableController({
         return
       }
       try {
-        const res = await ds.infoListDatabases({ handleError: 'custom' })
+        const res = await ds.getDatabaseList(0, 0, { handleError: 'custom' })
         setAllSchemas(res?.data || [])
       } catch (e) {
         setErrors((prev) => prev.concat(e))

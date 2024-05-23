@@ -57,16 +57,6 @@ export function useTopSlowQueryUrlState() {
     [setQueryParams]
   )
 
-  // Note: when calling `setDuration(); setTimeRange();` at the same time, only the last one will take effect
-  // the latter one will overwrite the former one
-  // TODO: do we have a better solution? expose the `setQueryParams` as well?
-  const setDurationAndTimeRange = useCallback(
-    (v: number, tr: TimeRange) => {
-      setQueryParams({ duration: v + '', ...toURLTimeRange(tr) })
-    },
-    [setQueryParams]
-  )
-
   const tw = useMemo(() => {
     const arr = queryParams.tw?.split('-')
     if (arr && arr.length === 2) {
@@ -91,12 +81,6 @@ export function useTopSlowQueryUrlState() {
     (v: string) => setQueryParams({ order: v }),
     [setQueryParams]
   )
-
-  // const db = queryParams.db
-  // const setDb = useCallback(
-  //   (v: string) => setQueryParams({ db: v }),
-  //   [setQueryParams]
-  // )
 
   // dbs
   const dbs = useMemo(() => {
@@ -134,16 +118,11 @@ export function useTopSlowQueryUrlState() {
     duration,
     setDuration,
 
-    setDurationAndTimeRange,
-
     tw,
     setTw,
 
     order,
     setOrder,
-
-    // db,
-    // setDb,
 
     dbs,
     setDbs,
@@ -152,6 +131,9 @@ export function useTopSlowQueryUrlState() {
     setStmtKinds,
 
     internal,
-    setInternal
+    setInternal,
+
+    queryParams,
+    setQueryParams
   }
 }

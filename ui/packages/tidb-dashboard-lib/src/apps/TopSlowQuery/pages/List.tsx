@@ -122,8 +122,7 @@ function useTimeWindows() {
 
 const timezone = dayjs().format('UTCZ')
 function TimeWindowSelect() {
-  const { duration, setDurationAndTimeRange, tw, setTw } =
-    useTopSlowQueryUrlState()
+  const { duration, setQueryParams, tw, setTw } = useTopSlowQueryUrlState()
   const { data: availableTimeWindows } = useTimeWindows()
 
   function newerTw() {
@@ -173,7 +172,11 @@ function TimeWindowSelect() {
           style={{ width: 128 }}
           value={duration}
           onChange={(v) => {
-            setDurationAndTimeRange(v, DEFAULT_TIME_RANGE)
+            setQueryParams({
+              duration: v,
+              from: DEFAULT_TIME_RANGE.value,
+              to: 'now'
+            })
             telemetry.changeDuration(v)
           }}
         >
@@ -249,7 +252,7 @@ function useChartData() {
 
 function SlowQueryCountChart() {
   const { data: chartData, isLoading } = useChartData()
-  const { tw, setDurationAndTimeRange } = useTopSlowQueryUrlState()
+  const { tw, setQueryParams } = useTopSlowQueryUrlState()
 
   function onSelectTimeRange(timeRange: TimeRangeValue) {
     const delta = timeRange[1] - timeRange[0]
@@ -267,7 +270,7 @@ function SlowQueryCountChart() {
     } else if (delta < 7 * 24 * 60 * 60) {
       duration = 7 * 24 * 60 * 60
     }
-    setDurationAndTimeRange(duration, fromTimeRangeValue(timeRange))
+    setQueryParams({ duration, from: timeRange[0], to: timeRange[0] })
   }
 
   return (
@@ -305,7 +308,7 @@ function useDatabaseList() {
 }
 
 function TopSlowQueryFilters() {
-  const { dbs, setDbs, order, setOrder, stmtKinds, setStmtKinds } =
+  const { tw, dbs, setDbs, order, setOrder, stmtKinds, setStmtKinds } =
     useTopSlowQueryUrlState()
   const { data: databaseList } = useDatabaseList()
 
@@ -313,7 +316,9 @@ function TopSlowQueryFilters() {
     <Space style={{ marginBottom: 8 }}>
       <div>
         <span>Databases: </span>
+        {/* this component has a weird bug, sometimes it can't select item after changing the time window, use `key` can fix it */}
         <MultiSelect.Plain
+          key={`${tw[0]}_${tw[1]}`}
           placeholder="All Databases"
           columnTitle="Databases"
           value={dbs}

@@ -206,6 +206,13 @@ function List() {
   } = useSlowQueryListUrlState()
 
   const [defDbs, _] = useState(dbs)
+  const { data: dbsData, isFetching: fetchingDbs } = useDbsData()
+  const finalDbs = useMemo(() => {
+    if (dbsData && dbsData.length > 0) {
+      return dbsData
+    }
+    return defDbs
+  }, [defDbs, dbsData])
 
   const [visibleColumnKeys, setVisibleColumnKeys] =
     useVersionedLocalStorageState(SLOW_QUERY_VISIBLE_COLUMN_KEYS, {
@@ -218,7 +225,6 @@ function List() {
 
   const [downloadModalVisible, setDownloadModalVisible] = useState(false)
 
-  const { data: dbsData, isFetching: fetchingDbs } = useDbsData()
   const { data: ruGroupsData, isFetching: fetchingRuGroups } = useRuGroupsData()
   const { data: availableColumnsData, isFetching: fetchingAvailableColumns } =
     useAvailableColumnsData()
@@ -405,7 +411,7 @@ function List() {
                 value={dbs}
                 style={{ width: 150 }}
                 onChange={setDbs}
-                items={dbsData ?? defDbs}
+                items={finalDbs}
                 data-e2e="execution_database_name"
               />
             )}

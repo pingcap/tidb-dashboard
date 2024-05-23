@@ -8,6 +8,15 @@ import {
 
 import client, { SlowqueryModel } from '~/client'
 
+const debugHeaders = {
+  // 'x-cluster-id': '1379661944646413143',
+  // 'x-org-id': '1372813089209061633',
+  // 'x-project-id': '1372813089454525346',
+  // 'x-provider': 'aws',
+  // 'x-region': 'us-east-1',
+  // 'x-env': 'prod'
+}
+
 class DataSource implements ISlowQueryDataSource {
   constructor(public cache: SlowqueryModel[]) {}
 
@@ -20,7 +29,10 @@ class DataSource implements ISlowQueryDataSource {
     // get database list from s3
     return client
       .getAxiosInstance()
-      .get(`/slow_query/databases?begin_time=${beginTime}&end_time=${endTime}`)
+      .get(
+        `/slow_query/databases?begin_time=${beginTime}&end_time=${endTime}`,
+        { headers: debugHeaders }
+      )
   }
 
   infoListResourceGroupNames(options?: ReqConfig) {

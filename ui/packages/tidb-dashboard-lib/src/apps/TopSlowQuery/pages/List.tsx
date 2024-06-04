@@ -323,7 +323,10 @@ function TopSlowQueryFilters() {
           columnTitle="Databases"
           value={dbs}
           style={{ width: 150 }}
-          onChange={setDbs}
+          onChange={(v) => {
+            telemetry.changeDatabases()
+            setDbs(v)
+          }}
           items={databaseList || []}
         />
       </div>
@@ -335,7 +338,10 @@ function TopSlowQueryFilters() {
           columnTitle="Statement Kind"
           value={stmtKinds}
           style={{ width: 150 }}
-          onChange={setStmtKinds}
+          onChange={(v) => {
+            telemetry.changeStmtKinds()
+            setStmtKinds(v)
+          }}
           items={STMT_KINDS}
         />
       </div>
@@ -350,7 +356,14 @@ function TopSlowQueryFilters() {
 
       <div>
         <span>Order by: </span>
-        <Select style={{ width: 180 }} value={order} onChange={setOrder}>
+        <Select
+          style={{ width: 180 }}
+          value={order}
+          onChange={(v) => {
+            telemetry.changeOrder()
+            setOrder(v)
+          }}
+        >
           {ORDER_BY.map((item) => (
             <Select.Option value={item.value} key={item.value}>
               {item.label}

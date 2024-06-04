@@ -7,7 +7,16 @@ import React, {
   useState,
   useMemo
 } from 'react'
-import { Space, Button, Spin, Alert, Tooltip, Drawer, Result } from 'antd'
+import {
+  Select,
+  Space,
+  Button,
+  Spin,
+  Alert,
+  Tooltip,
+  Drawer,
+  Result
+} from 'antd'
 import {
   LoadingOutlined,
   QuestionCircleOutlined,
@@ -43,9 +52,10 @@ import { isDistro } from '@lib/utils/distro'
 import { TopSQLContext } from '../../context'
 import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 
-const TOP_N = 5
+const { Option } = Select
 const CHART_BAR_WIDTH = 8
 const RECENT_RANGE_OFFSET = -60
+const LIMITS = [5, 20, 100]
 
 const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
   return _toTimeRangeValue(v, v?.type === 'recent' ? RECENT_RANGE_OFFSET : 0)
@@ -62,6 +72,7 @@ export function TopSQLList() {
     null
   )
   const { timeRange, setTimeRange } = useURLTimeRange()
+  const [limit, setLimit] = useState(5)
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const computeTimeWindowSize = useMemoizedFn(
@@ -78,7 +89,7 @@ export function TopSQLList() {
     topSQLData,
     isLoading: isDataLoading,
     updateTopSQLData
-  } = useTopSQLData(instance, timeRange, computeTimeWindowSize)
+  } = useTopSQLData(instance, timeRange, limit, computeTimeWindowSize)
   const isLoading = isConfigLoading || isDataLoading
   const {
     instances,
@@ -206,12 +217,25 @@ export function TopSQLList() {
                 }
                 disabled={isLoading}
               />
+              <Select
+                style={{ width: 150 }}
+                value={limit}
+                onChange={setLimit}
+                data-e2e="limit_select"
+              >
+                {LIMITS.map((item) => (
+                  <Option value={item} key={item} data-e2e="limit_option">
+                    Limit {item}
+                  </Option>
+                ))}
+              </Select>
+
               <AutoRefreshButton
                 defaultValue={ctx?.cfg.autoRefresh === false ? 0 : undefined}
                 disabled={isLoading}
                 onRefresh={async () => {
                   await fetchInstancesAndSelectInstance()
-                  updateTopSQLData(instance, timeRange)
+                  updateTopSQLData(instance, timeRange, limit)
                 }}
               />
               {isLoading && (
@@ -304,7 +328,7 @@ export function TopSQLList() {
                   onLegendItemOver(chartRef.current, key)
                 }
                 onRowLeave={() => onLegendItemOut(chartRef.current)}
-                topN={TOP_N}
+                topN={limit}
                 instanceType={instance?.instance_type as InstanceType}
                 data={topSQLData}
                 timeRange={timeRange}
@@ -341,6 +365,7 @@ export function TopSQLList() {
 const useTopSQLData = (
   instance: TopsqlInstanceItem | null,
   timeRange: TimeRange,
+  limit: number,
   computeTimeWindowSize: (ts: TimeRangeValue) => number
 ) => {
   const ctx = useContext(TopSQLContext)
@@ -348,7 +373,11 @@ const useTopSQLData = (
   const [topSQLData, setTopSQLData] = useState<TopsqlSummaryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const updateTopSQLData = useMemoizedFn(
-    async (_instance: TopsqlInstanceItem | null, _timeRange: TimeRange) => {
+    async (
+      _instance: TopsqlInstanceItem | null,
+      _timeRange: TimeRange,
+      _limit: number | 5
+    ) => {
       if (!_instance) {
         return
       }
@@ -365,7 +394,7 @@ const useTopSQLData = (
           _instance.instance,
           _instance.instance_type,
           String(start),
-          String(TOP_N),
+          String(limit),
           `${timeWindowSize}s`
         )
         data = resp.data.data ?? []
@@ -395,8 +424,8 @@ const useTopSQLData = (
   )
 
   useEffect(() => {
-    updateTopSQLData(instance, timeRange)
-  }, [instance, timeRange, updateTopSQLData])
+    updateTopSQLData(instance, timeRange, limit)
+  }, [instance, timeRange, limit, updateTopSQLData])
 
   return { topSQLData, isLoading, updateTopSQLData }
 }

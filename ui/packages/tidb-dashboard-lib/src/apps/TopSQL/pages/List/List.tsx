@@ -217,18 +217,20 @@ export function TopSQLList() {
                 }
                 disabled={isLoading}
               />
-              <Select
-                style={{ width: 150 }}
-                value={limit}
-                onChange={setLimit}
-                data-e2e="limit_select"
-              >
-                {LIMITS.map((item) => (
-                  <Option value={item} key={item} data-e2e="limit_option">
-                    Limit {item}
-                  </Option>
-                ))}
-              </Select>
+              {ctx?.cfg.showLimit && (
+                <Select
+                  style={{ width: 150 }}
+                  value={limit}
+                  onChange={setLimit}
+                  data-e2e="limit_select"
+                >
+                  {LIMITS.map((item) => (
+                    <Option value={item} key={item} data-e2e="limit_option">
+                      Limit {item}
+                    </Option>
+                  ))}
+                </Select>
+              )}
 
               <AutoRefreshButton
                 defaultValue={ctx?.cfg.autoRefresh === false ? 0 : undefined}

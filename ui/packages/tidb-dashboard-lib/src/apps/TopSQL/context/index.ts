@@ -52,6 +52,7 @@ export interface ITopSQLConfig {
   userName?: string
 
   showSearchInStatements?: boolean
+  showLimit?: boolean
 }
 
 export interface ITopSQLContext {

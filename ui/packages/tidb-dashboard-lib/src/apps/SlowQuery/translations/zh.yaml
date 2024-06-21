@@ -124,8 +124,8 @@ slow_query:
     ru_tooltip: 资源单位(RU)
     resource_group: 资源组
     resource_group_tooltip: SQL 语句所属的资源组
-    time_queued_by_rc: RC 等待耗时
-    time_queued_by_rc_tooltip: SQL 语句在资源组队列中等待的时间
+    time_queued_by_rc: RC 等待累积耗时
+    time_queued_by_rc_tooltip: SQL 语句在资源组队列中等待的累积时间（注：{{distro.tikv}} 会并行等待任务，因此该时间不是自然流逝时间）
 
   common:
     status:

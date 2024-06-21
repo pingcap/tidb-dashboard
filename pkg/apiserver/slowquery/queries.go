@@ -111,10 +111,18 @@ func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.
 	return results, nil
 }
 
-func QuerySlowLogDetail(req *GetDetailRequest, db *gorm.DB) (*Model, error) {
+func QuerySlowLogDetail(req *GetDetailRequest, sysSchema *utils.SysSchema, db *gorm.DB) (*Model, error) {
 	var result Model
-	err := db.
-		Select("*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp").
+	slowQueryColumns, err := sysSchema.GetTableColumnNames(db, SlowQueryTable)
+	if err != nil {
+		return nil, err
+	}
+	selectStmt, err := genSelectStmt(slowQueryColumns, []string{"*"})
+	if err != nil {
+		return nil, err
+	}
+	err = db.
+		Select(selectStmt).
 		Where("Digest = ?", req.Digest).
 		Where("Time = FROM_UNIXTIME(?)", req.Timestamp).
 		Where("Conn_id = ?", req.ConnectID).

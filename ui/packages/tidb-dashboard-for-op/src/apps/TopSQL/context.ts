@@ -48,6 +48,7 @@ export const ctx: ITopSQLContext = {
   ds,
   cfg: {
     checkNgm: true,
-    showSetting: true
+    showSetting: true,
+    showLimit: true
   }
 }

@@ -18,11 +18,13 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/util/client/httpclient"
 	"github.com/pingcap/tidb-dashboard/util/client/pdclient"
+	"github.com/pingcap/tidb-dashboard/util/client/schedulingclient"
 	"github.com/pingcap/tidb-dashboard/util/client/ticdcclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tidbclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tiflashclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tikvclient"
 	"github.com/pingcap/tidb-dashboard/util/client/tiproxyclient"
+	"github.com/pingcap/tidb-dashboard/util/client/tsoclient"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/topo"
 )
@@ -38,12 +40,14 @@ type RequestPayload struct {
 }
 
 type HTTPClients struct {
-	PDAPIClient         *pdclient.APIClient
-	TiDBStatusClient    *tidbclient.StatusClient
-	TiKVStatusClient    *tikvclient.StatusClient
-	TiFlashStatusClient *tiflashclient.StatusClient
-	TiCDCStatusClient   *ticdcclient.StatusClient
-	TiProxyStatusClient *tiproxyclient.StatusClient
+	PDAPIClient            *pdclient.APIClient
+	TiDBStatusClient       *tidbclient.StatusClient
+	TiKVStatusClient       *tikvclient.StatusClient
+	TiFlashStatusClient    *tiflashclient.StatusClient
+	TiCDCStatusClient      *ticdcclient.StatusClient
+	TiProxyStatusClient    *tiproxyclient.StatusClient
+	TSOStatusClient        *tsoclient.StatusClient
+	SchedulingStatusClient *schedulingclient.StatusClient
 }
 
 func (c HTTPClients) GetHTTPClientByNodeKind(kind topo.Kind) *httpclient.Client {
@@ -295,6 +299,36 @@ func (p *ResolvedRequestPayload) verifyEndpoint(ctx context.Context, etcdClient 
 		infos, err := topology.FetchTiProxyTopology(ctx, etcdClient)
 		if err != nil {
 			return ErrInvalidEndpoint.Wrap(err, "failed to fetch tiproxy topology")
+		}
+		matched := false
+		for _, info := range infos {
+			if info.IP == p.host && info.StatusPort == uint(p.port) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return ErrInvalidEndpoint.New("invalid endpoint '%s:%d'", p.host, p.port)
+		}
+	case topo.KindTSO:
+		infos, err := topology.FetchTSOTopology(ctx, pdClient)
+		if err != nil {
+			return ErrInvalidEndpoint.Wrap(err, "failed to fetch tso topology")
+		}
+		matched := false
+		for _, info := range infos {
+			if info.IP == p.host && info.Port == uint(p.port) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return ErrInvalidEndpoint.New("invalid endpoint '%s:%d'", p.host, p.port)
+		}
+	case topo.KindScheduling:
+		infos, err := topology.FetchSchedulingTopology(ctx, pdClient)
+		if err != nil {
+			return ErrInvalidEndpoint.Wrap(err, "failed to fetch scheduling topology")
 		}
 		matched := false
 		for _, info := range infos {

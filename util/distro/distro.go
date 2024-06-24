@@ -17,23 +17,27 @@ import (
 )
 
 type DistributionResource struct {
-	IsDistro bool   `json:"is_distro,omitempty"`
-	TiDB     string `json:"tidb,omitempty"`
-	TiKV     string `json:"tikv,omitempty"`
-	PD       string `json:"pd,omitempty"`
-	TiFlash  string `json:"tiflash,omitempty"`
-	TiCDC    string `json:"ticdc,omitempty"`
-	TiProxy  string `json:"tiproxy,omitempty"`
+	IsDistro   bool   `json:"is_distro,omitempty"`
+	TiDB       string `json:"tidb,omitempty"`
+	TiKV       string `json:"tikv,omitempty"`
+	PD         string `json:"pd,omitempty"`
+	TiFlash    string `json:"tiflash,omitempty"`
+	TiCDC      string `json:"ticdc,omitempty"`
+	TiProxy    string `json:"tiproxy,omitempty"`
+	TSO        string `json:"tso,omitempty"`
+	Scheduling string `json:"scheduling,omitempty"`
 }
 
 var defaultDistroRes = DistributionResource{
-	IsDistro: false,
-	TiDB:     "TiDB",
-	TiKV:     "TiKV",
-	PD:       "PD",
-	TiFlash:  "TiFlash",
-	TiCDC:    "TiCDC",
-	TiProxy:  "TiProxy",
+	IsDistro:   false,
+	TiDB:       "TiDB",
+	TiKV:       "TiKV",
+	PD:         "PD",
+	TiFlash:    "TiFlash",
+	TiCDC:      "TiCDC",
+	TiProxy:    "TiProxy",
+	TSO:        "TSO",
+	Scheduling: "Scheduling",
 }
 
 var (

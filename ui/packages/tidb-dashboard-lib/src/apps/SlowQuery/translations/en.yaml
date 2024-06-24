@@ -172,3 +172,9 @@ slow_query:
     exporting: Exporting
     help: Help
     help_url: https://docs.pingcap.com/tidb/dev/dashboard-slow-query
+    download_db: Download DB
+  download_modal:
+    download: Download
+    title: 'Download Slow Query db File'
+    download_by_day: Download By Day
+    download_by_hour: Download By Hour

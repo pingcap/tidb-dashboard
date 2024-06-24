@@ -28,7 +28,9 @@ import {
   ClusterinfoStoreTopologyResponse,
   TopologyPDInfo,
   TopologyTiCDCInfo,
-  TopologyTiProxyInfo
+  TopologyTiProxyInfo,
+  TopologyTSOInfo,
+  TopologySchedulingInfo
 } from '@lib/client'
 
 import { ReqConfig } from '@lib/types'
@@ -53,6 +55,10 @@ export interface IInstanceSelectProps
   getTiProxyTopology?: (
     options?: ReqConfig
   ) => AxiosPromise<Array<TopologyTiProxyInfo>>
+  getTSOTopology?: (options?: ReqConfig) => AxiosPromise<Array<TopologyTSOInfo>>
+  getSchedulingTopology?: (
+    options?: ReqConfig
+  ) => AxiosPromise<Array<TopologySchedulingInfo>>
 }
 
 export interface IInstanceSelectRefProps {
@@ -118,6 +124,8 @@ function InstanceSelect(
     getStoreTopology,
     getTiCDCTopology,
     getTiProxyTopology,
+    getTSOTopology,
+    getSchedulingTopology,
     ...restProps
   } = props
 
@@ -132,6 +140,10 @@ function InstanceSelect(
     useClientRequest(getTiCDCTopology)
   const { data: dataTiProxy, isLoading: loadingTiProxy } =
     useClientRequest(getTiProxyTopology)
+  const { data: dataTSO, isLoading: loadingTSO } =
+    useClientRequest(getTSOTopology)
+  const { data: dataScheduling, isLoading: loadingScheduling } =
+    useClientRequest(getSchedulingTopology)
 
   const columns: IColumn[] = useMemo(
     () => [
@@ -168,7 +180,15 @@ function InstanceSelect(
   )
 
   const [tableItems] = useMemo(() => {
-    if (loadingTiDB || loadingStores || loadingPD) {
+    if (
+      loadingTiDB ||
+      loadingStores ||
+      loadingPD ||
+      loadingTiCDC ||
+      loadingTiProxy ||
+      loadingTSO ||
+      loadingScheduling
+    ) {
       return [[], []]
     }
     return buildInstanceTable({
@@ -178,6 +198,8 @@ function InstanceSelect(
       dataTiFlash: dataStores?.tiflash,
       dataTiCDC,
       dataTiProxy,
+      dataTSO,
+      dataScheduling,
       includeTiFlash: enableTiFlash
     })
   }, [
@@ -187,11 +209,15 @@ function InstanceSelect(
     dataPD,
     dataTiCDC,
     dataTiProxy,
+    dataTSO,
+    dataScheduling,
     loadingTiDB,
     loadingStores,
     loadingPD,
     loadingTiCDC,
-    loadingTiProxy
+    loadingTiProxy,
+    loadingTSO,
+    loadingScheduling
   ])
 
   const selection = useRef(

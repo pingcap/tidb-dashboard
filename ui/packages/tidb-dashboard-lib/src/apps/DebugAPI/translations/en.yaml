@@ -133,3 +133,9 @@ debug_api:
       pd_store_id: Store - by StoreID (pd-ctl store [id])
       # pd_pprof: pprof
       # pd_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.
+  tiproxy:
+    name: '{{distro.tiproxy}}'
+    endpoints:
+      tiproxy_config: Current Config
+      tiproxy_pprof: pprof
+      tiproxy_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.

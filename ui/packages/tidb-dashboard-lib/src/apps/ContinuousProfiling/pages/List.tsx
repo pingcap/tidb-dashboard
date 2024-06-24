@@ -109,7 +109,7 @@ export default function Page() {
         minWidth: 250,
         maxWidth: 300,
         onRender: (rec) => {
-          const { tikv, tidb, pd, tiflash, ticdc } = rec.component_num
+          const { tikv, tidb, pd, tiflash, ticdc, tiproxy } = rec.component_num
           let s = `${tikv} ${instanceKindName(
             'tikv'
           )}, ${tidb} ${instanceKindName('tidb')}, ${pd} ${instanceKindName(
@@ -119,6 +119,9 @@ export default function Page() {
           // this field doesn't not exist in the old version
           if (ticdc !== undefined) {
             s = `${s}, ${ticdc} ${instanceKindName('ticdc')}`
+          }
+          if (tiproxy !== undefined) {
+            s = `${s}, ${tiproxy} ${instanceKindName('tiproxy')}`
           }
           return s
         }

@@ -6,6 +6,7 @@ import (
 	"net"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -77,6 +78,8 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	infoByIk["tiflash"] = newInstanceKindImmediateInfo()
 	infoByIk["ticdc"] = newInstanceKindImmediateInfo()
 	infoByIk["tiproxy"] = newInstanceKindImmediateInfo()
+	infoByIk["tso"] = newInstanceKindImmediateInfo()
+	infoByIk["scheduling"] = newInstanceKindImmediateInfo()
 
 	// Fill from topology info
 	pdInfo, err := topology.FetchPDTopology(s.params.PDClient)
@@ -134,6 +137,34 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 		globalVersionsSet[i.Version] = struct{}{}
 		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
 		infoByIk["tiproxy"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+	}
+	tsoInfo, err := topology.FetchTSOTopology(s.lifecycleCtx, s.params.PDClient)
+	if err != nil {
+		if strings.Contains(err.Error(), "status code 404") {
+			tsoInfo = []topology.TSOInfo{}
+		} else {
+			return nil, err
+		}
+	}
+	for _, i := range tsoInfo {
+		globalHostsSet[i.IP] = struct{}{}
+		globalVersionsSet[i.Version] = struct{}{}
+		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+		infoByIk["tso"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+	}
+	schedulingInfo, err := topology.FetchSchedulingTopology(s.lifecycleCtx, s.params.PDClient)
+	if err != nil {
+		if strings.Contains(err.Error(), "status code 404") {
+			schedulingInfo = []topology.SchedulingInfo{}
+		} else {
+			return nil, err
+		}
+	}
+	for _, i := range schedulingInfo {
+		globalHostsSet[i.IP] = struct{}{}
+		globalVersionsSet[i.Version] = struct{}{}
+		globalInfo.instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
+		infoByIk["scheduling"].instances[net.JoinHostPort(i.IP, strconv.Itoa(int(i.Port)))] = struct{}{}
 	}
 
 	// Fill from hardware info
@@ -194,6 +225,20 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	for _, i := range tiproxyInfo {
 		if v, ok := globalInfo.hosts[i.IP]; ok {
 			infoByIk["tiproxy"].hosts[i.IP] = v
+		} else {
+			globalFailureHostsSet[i.IP] = struct{}{}
+		}
+	}
+	for _, i := range tsoInfo {
+		if v, ok := globalInfo.hosts[i.IP]; ok {
+			infoByIk["tso"].hosts[i.IP] = v
+		} else {
+			globalFailureHostsSet[i.IP] = struct{}{}
+		}
+	}
+	for _, i := range schedulingInfo {
+		if v, ok := globalInfo.hosts[i.IP]; ok {
+			infoByIk["scheduling"].hosts[i.IP] = v
 		} else {
 			globalFailureHostsSet[i.IP] = struct{}{}
 		}

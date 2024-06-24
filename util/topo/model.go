@@ -22,6 +22,8 @@ const (
 	KindTiFlash      Kind = "tiflash"
 	KindTiCDC        Kind = "ticdc"
 	KindTiProxy      Kind = "tiproxy"
+	KindTSO          Kind = "tso"
+	KindScheduling   Kind = "scheduling"
 	KindAlertManager Kind = "alert_manager"
 	KindGrafana      Kind = "grafana"
 	KindPrometheus   Kind = "prometheus"
@@ -171,6 +173,54 @@ func (i *TiProxyInfo) Info() CompInfo {
 			Port:       i.Port,
 			StatusPort: i.StatusPort,
 			Kind:       KindTiProxy,
+		},
+		Version: i.Version,
+		Status:  i.Status,
+	}
+}
+
+type TSOInfo struct {
+	GitHash        string
+	Version        string
+	IP             string
+	Port           uint
+	DeployPath     string
+	Status         CompStatus
+	StartTimestamp int64
+}
+
+var _ Info = &TSOInfo{}
+
+func (i *TSOInfo) Info() CompInfo {
+	return CompInfo{
+		CompDescriptor: CompDescriptor{
+			IP:   i.IP,
+			Port: i.Port,
+			Kind: KindTSO,
+		},
+		Version: i.Version,
+		Status:  i.Status,
+	}
+}
+
+type SchedulingInfo struct {
+	GitHash        string
+	Version        string
+	IP             string
+	Port           uint
+	DeployPath     string
+	Status         CompStatus
+	StartTimestamp int64
+}
+
+var _ Info = &SchedulingInfo{}
+
+func (i *SchedulingInfo) Info() CompInfo {
+	return CompInfo{
+		CompDescriptor: CompDescriptor{
+			IP:   i.IP,
+			Port: i.Port,
+			Kind: KindScheduling,
 		},
 		Version: i.Version,
 		Status:  i.Status,

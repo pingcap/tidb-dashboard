@@ -36,7 +36,6 @@ function AppRoutes() {
     <Row>
       <Col span={8}>
         <Instances />
-        <MonitorAlert />
       </Col>
     </Row>
   )

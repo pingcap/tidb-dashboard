@@ -8,7 +8,11 @@ import { IContextConfig, ReqConfig } from '@lib/types'
 import { PromDataSuccessResponse } from '@lib/utils'
 
 export interface ISlowQueryDataSource {
-  infoListDatabases(options?: ReqConfig): AxiosPromise<Array<string>>
+  getDatabaseList(
+    beginTime: number,
+    endTime: number,
+    options?: ReqConfig
+  ): AxiosPromise<Array<string>>
 
   infoListResourceGroupNames(options?: ReqConfig): AxiosPromise<Array<string>>
 
@@ -42,6 +46,8 @@ export interface ISlowQueryDataSource {
   ): AxiosPromise<string>
 
   slowQueryAnalyze?(start: number, end: number): AxiosPromise
+
+  slowQueryDownloadDBFile?(begin_time: number, end_time: number): AxiosPromise
 
   promqlQuery?(
     query: string,
@@ -85,6 +91,8 @@ export interface ISlowQueryConfig extends IContextConfig {
   // for clinic
   orgName?: string
   clusterName?: string
+  showTopSlowQueryLink?: boolean
+  showDownloadSlowQueryDBFile?: boolean
 }
 
 export interface ISlowQueryContext {

@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
+	"go.uber.org/zap/zapcore"
 )
 
 type ErrorResponse struct {
@@ -94,11 +96,16 @@ func buildDetailMessage(err error) string {
 }
 
 func NewErrorResponse(err error) ErrorResponse {
+	logLevel := log.GetLevel()
+	fullText := ""
+	if logLevel == zapcore.DebugLevel {
+		fullText = buildDetailMessage(err)
+	}
 	return ErrorResponse{
 		Error:   true,
 		Message: buildSimpleMessage(err),
 		Code:    removeErrorPrefix(buildCode(err)),
-		// For security reasons, we need to hide detailed stacktrace info.
-		// FullText: buildDetailMessage(err),
+		// For security reasons, we need to hide detailed stacktrace info in prod.
+		FullText: fullText,
 	}
 }

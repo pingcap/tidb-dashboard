@@ -31,7 +31,7 @@ import { StatementBinding } from '../models';
 export const StatementApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         *
          * @summary Drop all manually created bindings for a statement
          * @param {string} sqlDigest query template ID (a.k.a. sql digest)
          * @param {*} [options] Override http request option.
@@ -60,7 +60,7 @@ export const StatementApiAxiosParamCreator = function (configuration?: Configura
             }
 
 
-    
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -71,7 +71,7 @@ export const StatementApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * 
+         *
          * @summary Get the bound plan digest (if exists) of a statement
          * @param {string} sqlDigest query template id
          * @param {number} beginTime begin time
@@ -114,7 +114,7 @@ export const StatementApiAxiosParamCreator = function (configuration?: Configura
             }
 
 
-    
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -125,7 +125,7 @@ export const StatementApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * 
+         *
          * @summary Create a binding for a statement and a plan
          * @param {string} planDigest plan digest id
          * @param {*} [options] Override http request option.
@@ -154,7 +154,7 @@ export const StatementApiAxiosParamCreator = function (configuration?: Configura
             }
 
 
-    
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -175,7 +175,7 @@ export const StatementApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = StatementApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         *
          * @summary Drop all manually created bindings for a statement
          * @param {string} sqlDigest query template ID (a.k.a. sql digest)
          * @param {*} [options] Override http request option.
@@ -186,7 +186,7 @@ export const StatementApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * 
+         *
          * @summary Get the bound plan digest (if exists) of a statement
          * @param {string} sqlDigest query template id
          * @param {number} beginTime begin time
@@ -199,7 +199,7 @@ export const StatementApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * 
+         *
          * @summary Create a binding for a statement and a plan
          * @param {string} planDigest plan digest id
          * @param {*} [options] Override http request option.
@@ -220,7 +220,7 @@ export const StatementApiFactory = function (configuration?: Configuration, base
     const localVarFp = StatementApiFp(configuration)
     return {
         /**
-         * 
+         *
          * @summary Drop all manually created bindings for a statement
          * @param {string} sqlDigest query template ID (a.k.a. sql digest)
          * @param {*} [options] Override http request option.
@@ -230,7 +230,7 @@ export const StatementApiFactory = function (configuration?: Configuration, base
             return localVarFp.statementsPlanBindingDelete(sqlDigest, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         *
          * @summary Get the bound plan digest (if exists) of a statement
          * @param {string} sqlDigest query template id
          * @param {number} beginTime begin time
@@ -242,7 +242,7 @@ export const StatementApiFactory = function (configuration?: Configuration, base
             return localVarFp.statementsPlanBindingGet(sqlDigest, beginTime, endTime, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         *
          * @summary Create a binding for a statement and a plan
          * @param {string} planDigest plan digest id
          * @param {*} [options] Override http request option.

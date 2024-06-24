@@ -82,6 +82,8 @@ export default function Nodes() {
   const pdResp = useClientRequest(ctx!.ds.getPDTopology)
   const tiCDCResp = useClientRequest(ctx!.ds.getTiCDCTopology)
   const tiProxyResp = useClientRequest(ctx!.ds.getTiProxyTopology)
+  const tsoResp = useClientRequest(ctx!.ds.getTSOTopology)
+  const schedulingResp = useClientRequest(ctx!.ds.getSchedulingTopology)
 
   return (
     <Card
@@ -116,6 +118,17 @@ export default function Nodes() {
           </Col>
           <Col span={12}>
             <ComponentItem name={t('distro.tiproxy')} resp={tiProxyResp} />
+          </Col>
+        </Row>
+        <Row>
+          <Col span={12}>
+            <ComponentItem name={t('distro.tso')} resp={tsoResp} />
+          </Col>
+          <Col span={12}>
+            <ComponentItem
+              name={t('distro.scheduling')}
+              resp={schedulingResp}
+            />
           </Col>
         </Row>
       </Stack>

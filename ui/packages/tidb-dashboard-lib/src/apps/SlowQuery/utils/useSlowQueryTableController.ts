@@ -175,7 +175,8 @@ export default function useSlowQueryTableController({
         return
       }
       try {
-        const res = await ds.infoListDatabases({
+        // this file will be removed later
+        const res = await ds.getDatabaseList(0, 0, {
           handleError: 'custom'
         })
         setAllSchemas(res?.data || [])
@@ -191,7 +192,7 @@ export default function useSlowQueryTableController({
         })
         setAllGroups(res?.data || [])
       } catch (e) {
-        setErrors((prev) => prev.concat(e as Error))
+        // setErrors((prev) => prev.concat(e as Error))
       }
     }
 

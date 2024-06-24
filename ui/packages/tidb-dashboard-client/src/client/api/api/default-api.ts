@@ -135,7 +135,11 @@ import { TopologyGrafanaInfo } from '../models';
 // @ts-ignore
 import { TopologyPDInfo } from '../models';
 // @ts-ignore
+import { TopologySchedulingInfo } from '../models';
+// @ts-ignore
 import { TopologyStoreLocation } from '../models';
+// @ts-ignore
+import { TopologyTSOInfo } from '../models';
 // @ts-ignore
 import { TopologyTiCDCInfo } from '../models';
 // @ts-ignore
@@ -1493,6 +1497,39 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary Get all Scheduling instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSchedulingTopology: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/topology/scheduling`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get location labels of all TiKV / TiFlash instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1532,6 +1569,39 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          */
         getStoreTopology: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/topology/store`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get all TSO instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTSOTopology: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/topology/tso`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3144,13 +3214,14 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
          * @param {string} [fields] 
+         * @param {Array<string>} [resourceGroups] 
          * @param {Array<string>} [schemas] 
          * @param {Array<string>} [stmtTypes] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        statementsListGet: async (beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        statementsListGet: async (beginTime?: number, endTime?: number, fields?: string, resourceGroups?: Array<string>, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/statements/list`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3176,6 +3247,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (fields !== undefined) {
                 localVarQueryParameter['fields'] = fields;
+            }
+
+            if (resourceGroups) {
+                localVarQueryParameter['resource_groups'] = resourceGroups;
             }
 
             if (schemas) {
@@ -4466,6 +4541,16 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Get all Scheduling instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getSchedulingTopology(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TopologySchedulingInfo>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSchedulingTopology(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary Get location labels of all TiKV / TiFlash instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4482,6 +4567,16 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          */
         async getStoreTopology(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ClusterinfoStoreTopologyResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getStoreTopology(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Get all TSO instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTSOTopology(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TopologyTSOInfo>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTSOTopology(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4945,14 +5040,15 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
          * @param {string} [fields] 
+         * @param {Array<string>} [resourceGroups] 
          * @param {Array<string>} [schemas] 
          * @param {Array<string>} [stmtTypes] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async statementsListGet(beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StatementModel>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.statementsListGet(beginTime, endTime, fields, schemas, stmtTypes, text, options);
+        async statementsListGet(beginTime?: number, endTime?: number, fields?: string, resourceGroups?: Array<string>, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StatementModel>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.statementsListGet(beginTime, endTime, fields, resourceGroups, schemas, stmtTypes, text, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5562,6 +5658,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary Get all Scheduling instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSchedulingTopology(options?: any): AxiosPromise<Array<TopologySchedulingInfo>> {
+            return localVarFp.getSchedulingTopology(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Get location labels of all TiKV / TiFlash instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5577,6 +5682,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         getStoreTopology(options?: any): AxiosPromise<ClusterinfoStoreTopologyResponse> {
             return localVarFp.getStoreTopology(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get all TSO instances
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTSOTopology(options?: any): AxiosPromise<Array<TopologyTSOInfo>> {
+            return localVarFp.getTSOTopology(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5998,14 +6112,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {number} [beginTime] 
          * @param {number} [endTime] 
          * @param {string} [fields] 
+         * @param {Array<string>} [resourceGroups] 
          * @param {Array<string>} [schemas] 
          * @param {Array<string>} [stmtTypes] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        statementsListGet(beginTime?: number, endTime?: number, fields?: string, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: any): AxiosPromise<Array<StatementModel>> {
-            return localVarFp.statementsListGet(beginTime, endTime, fields, schemas, stmtTypes, text, options).then((request) => request(axios, basePath));
+        statementsListGet(beginTime?: number, endTime?: number, fields?: string, resourceGroups?: Array<string>, schemas?: Array<string>, stmtTypes?: Array<string>, text?: string, options?: any): AxiosPromise<Array<StatementModel>> {
+            return localVarFp.statementsListGet(beginTime, endTime, fields, resourceGroups, schemas, stmtTypes, text, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7111,6 +7226,13 @@ export interface DefaultApiStatementsListGetRequest {
      * @type {Array<string>}
      * @memberof DefaultApiStatementsListGet
      */
+    readonly resourceGroups?: Array<string>
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiStatementsListGet
+     */
     readonly schemas?: Array<string>
 
     /**
@@ -7899,6 +8021,17 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
+     * @summary Get all Scheduling instances
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getSchedulingTopology(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getSchedulingTopology(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary Get location labels of all TiKV / TiFlash instances
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -7917,6 +8050,17 @@ export class DefaultApi extends BaseAPI {
      */
     public getStoreTopology(options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).getStoreTopology(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get all TSO instances
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getTSOTopology(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getTSOTopology(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8404,7 +8548,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public statementsListGet(requestParameters: DefaultApiStatementsListGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).statementsListGet(requestParameters.beginTime, requestParameters.endTime, requestParameters.fields, requestParameters.schemas, requestParameters.stmtTypes, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).statementsListGet(requestParameters.beginTime, requestParameters.endTime, requestParameters.fields, requestParameters.resourceGroups, requestParameters.schemas, requestParameters.stmtTypes, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react'
-import { Tooltip } from 'antd'
+import React, { useContext, useMemo } from 'react'
+import { Tooltip, Typography } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import {
@@ -7,6 +7,7 @@ import {
   DetailsRow
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { QuestionCircleOutlined } from '@ant-design/icons'
+import { CSVLink } from 'react-csv'
 
 import { TopsqlSummaryItem } from '@lib/client'
 import {
@@ -15,7 +16,9 @@ import {
   Bar,
   TextWrap,
   HighlightSQL,
-  AppearAnimate
+  AppearAnimate,
+  TimeRange,
+  toTimeRangeValue
 } from '@lib/components'
 
 import { useRecordSelection } from '../../utils/useRecordSelection'
@@ -24,11 +27,15 @@ import { isOthersRecord, isUnknownSQLRecord } from '../../utils/specialRecord'
 import { InstanceType } from './ListDetail/ListDetailTable'
 import { useMemoizedFn } from 'ahooks'
 import { telemetry } from '../../utils/telemetry'
+import openLink from '@lib/utils/openLink'
+import { useNavigate } from 'react-router-dom'
+import { TopSQLContext } from '../../context'
 
 interface ListTableProps {
   data: TopsqlSummaryItem[]
   topN: number
   instanceType: InstanceType
+  timeRange: TimeRange
   onRowOver: (key: string) => void
   onRowLeave: () => void
 }
@@ -43,13 +50,32 @@ export function ListTable({
   data,
   topN,
   instanceType,
+  timeRange,
   onRowLeave,
   onRowOver
 }: ListTableProps) {
   const { t } = useTranslation()
   const { data: tableRecords, capacity } = useTableData(data)
-  const tableColumns = useMemo(
-    () => [
+  const navigate = useNavigate()
+  const ctx = useContext(TopSQLContext)
+
+  function goDetail(ev: React.MouseEvent<HTMLElement>, record: SQLRecord) {
+    const sv = sessionStorage.getItem('statement.query_options')
+    if (sv) {
+      const queryOptions = JSON.parse(sv)
+      queryOptions.searchText = record.sql_digest
+      sessionStorage.setItem(
+        'statement.query_options',
+        JSON.stringify(queryOptions)
+      )
+    }
+
+    const tv = toTimeRangeValue(timeRange)
+    openLink(`/statement?from=${tv[0]}&to=${tv[1]}`, ev, navigate)
+  }
+
+  const tableColumns = useMemo(() => {
+    let cols = [
       {
         name: t('topsql.table.fields.cpu_time'),
         key: 'cpuTime',
@@ -63,7 +89,7 @@ export function ListTable({
       },
       {
         name: t('topsql.table.fields.sql'),
-        key: 'query',
+        key: 'sql_text',
         minWidth: 250,
         maxWidth: 550,
         onRender: (rec: SQLRecord) => {
@@ -97,10 +123,33 @@ export function ListTable({
             </Tooltip>
           )
         }
+      },
+      {
+        name: '',
+        key: 'actions',
+        minWidth: 200,
+        // maxWidth: 200,
+        onRender: (rec) => {
+          if (!isOthersRecord(rec)) {
+            return (
+              <Typography.Link onClick={(ev) => goDetail(ev, rec)}>
+                {t('topsql.table.actions.search_in_statements')}
+              </Typography.Link>
+            )
+          }
+          return null
+        }
       }
-    ],
-    [capacity, t, topN]
-  )
+    ]
+    if (ctx?.cfg.showSearchInStatements === false) {
+      cols = cols.filter((c) => c.key !== 'actions')
+    }
+    return cols
+  }, [capacity, t, topN, ctx?.cfg.showSearchInStatements])
+
+  const csvHeaders = tableColumns
+    .slice(0, 2)
+    .map((c) => ({ label: c.name, key: c.key }))
 
   const getKey = useMemoizedFn((r: SQLRecord) => r.sql_digest!)
 
@@ -127,9 +176,16 @@ export function ListTable({
   return tableRecords.length ? (
     <>
       <Card noMarginBottom noMarginTop>
-        <p className="ant-form-item-extra">
-          {t('topsql.table.description', { topN })}
-        </p>
+        <div className="ant-form-item-extra">
+          {t('topsql.table.description', { topN })}{' '}
+          <CSVLink
+            data={tableRecords || []}
+            headers={csvHeaders}
+            filename="topsql"
+          >
+            Download to CSV
+          </CSVLink>
+        </div>
       </Card>
       <CardTable
         listProps={

@@ -47,13 +47,14 @@ import AppDiagnose from '~/apps/Diagnose/meta'
 import AppOptimizerTrace from '~/apps/OptimizerTrace/meta'
 import AppDeadlock from '~/apps/Deadlock/meta'
 import AppResourceManager from '~/apps/ResourceManager/meta'
+import AppTopSlowQuery from '~/apps/TopSlowQuery/meta'
 
 import LayoutMain from './layout/main'
 
 import translations from './layout/translations'
 
 // for update distro strings resource
-// import '~/utils/distro/stringsRes'
+import '~/utils/distro/stringsRes'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -171,6 +172,7 @@ async function webPageStart(appOptions: AppOptions) {
     .register(AppOptimizerTrace)
     .register(AppDeadlock)
     .register(AppResourceManager)
+    .register(AppTopSlowQuery)
 
   if (!appOptions.skipReloadWhoAmI) {
     try {

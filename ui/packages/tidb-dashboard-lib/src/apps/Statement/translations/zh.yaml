@@ -205,7 +205,8 @@ statement:
     sum_ru: 累积 RU
     sum_ru_tooltip: 该 Statement 的 RU 累积值
     avg_time_queued_by_rc: RC 平均等待耗时
-    avg_time_queued_by_rc_tooltip: SQL 语句在资源组控制队列中平均等待的时间 (Resource Control)
+    avg_time_queued_by_rc_tooltip: SQL 语句在资源组控制队列中平均等待的时间 (Resource Control)（注：{{distro.tikv}} 会并行处理任务，因此该时间不是自然流逝时间）
     max_time_queued_by_rc: RC 最大等待耗时
-    max_time_queued_by_rc_tooltip: SQL 语句在资源组控制队列中最大等待的时间 (Resource Control)
-    rc_wait_time: RC 资源控制等待耗时
+    max_time_queued_by_rc_tooltip: SQL 语句在资源组控制队列中最大等待的时间 (Resource Control)（注：{{distro.tikv}} 会并行处理任务，因此该时间不是自然流逝时间）
+    rc_wait_time: RC 资源控制等待累积耗时
+    rc_wait_time_tooltip: SQL 语句在资源组队列中等待的累积时间（注：{{distro.tikv}} 会并行等待任务，因此该时间不是自然流逝时间）

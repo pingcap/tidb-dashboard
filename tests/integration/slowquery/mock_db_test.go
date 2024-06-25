@@ -52,7 +52,7 @@ func (s *testMockDBSuite) mustQuerySlowLogList(req *slowquery.GetListRequest) []
 }
 
 func (s *testMockDBSuite) mustQuerySlowLogDetail(req *slowquery.GetDetailRequest) (*slowquery.Model, error) {
-	d, err := slowquery.QuerySlowLogDetail(req, s.mockDBSession())
+	d, err := slowquery.QuerySlowLogDetail(req, s.sysSchema, s.mockDBSession())
 	return d, err
 }
 

@@ -18,8 +18,7 @@
 
 declare module 'dayjs' {
   interface Dayjs {
-    // calendar(referenceTime?: ConfigType, formats?: object): string
-    calendar(referenceTime?: any, formats?: object): string
+    calendar(refTime?: any, formats?: object): string
   }
 }
 
@@ -36,29 +35,52 @@ export default (o, c, d) => {
     sameElse: L
   }
   const proto = c.prototype
-  proto.calendar = function (referenceTime, formats) {
+  proto.calendar = function (refTime, formats) {
     const format = formats || this.$locale().calendar || calendarFormat
-    const referenceStartOfDay = d(referenceTime || undefined).startOf('d')
-    const diff = this.diff(referenceStartOfDay, 'd', true)
-    const weekDiff = this.week() - referenceStartOfDay.week()
-    const sameElse = 'sameElse'
-    /* eslint-disable no-nested-ternary */
-    const retVal =
-      weekDiff < -1 || weekDiff > 1
-        ? sameElse
-        : diff < -1
-        ? weekDiff === 0
-          ? 'sameWeek'
-          : 'lastWeek'
-        : diff < 0
-        ? 'lastDay'
-        : diff < 1
-        ? 'sameDay'
-        : diff < 2
-        ? 'nextDay'
-        : weekDiff === 0
-        ? 'sameWeek'
-        : 'nextWeek'
+    const refDayStart = d(refTime || undefined).startOf('d')
+
+    let retVal = ''
+    const dayDiff = this.diff(refDayStart, 'd', true)
+
+    if (dayDiff < -14 || dayDiff > 14) {
+      retVal = 'sameElse'
+    } else if (dayDiff < 0 && dayDiff >= -1) {
+      retVal = 'lastDay'
+    } else if (dayDiff >= 0 && dayDiff < 1) {
+      retVal = 'sameDay'
+    } else if (dayDiff >= 1 && dayDiff < 2) {
+      retVal = 'nextDay'
+    } else if (dayDiff < -1) {
+      // -14 ~ -1
+      if (this.startOf('week').unix() === refDayStart.startOf('week').unix()) {
+        retVal = 'sameWeek'
+      } else {
+        const pass1Week = this.add(1, 'week')
+        if (
+          pass1Week.startOf('week').unix() ===
+          refDayStart.startOf('week').unix()
+        ) {
+          retVal = 'lastWeek'
+        }
+      }
+    } else if (dayDiff >= 2) {
+      // 2 ~ 14
+      if (this.startOf('week').unix() === refDayStart.startOf('week').unix()) {
+        retVal = 'sameWeek'
+      } else {
+        const back1Week = this.subtract(1, 'week')
+        if (
+          back1Week.startOf('week').unix() ===
+          refDayStart.startOf('week').unix()
+        ) {
+          retVal = 'nextWeek'
+        }
+      }
+    }
+    if (retVal === '') {
+      retVal = 'sameElse'
+    }
+
     /* eslint-enable no-nested-ternary */
     const currentFormat = format[retVal] || calendarFormat[retVal]
     if (typeof currentFormat === 'function') {

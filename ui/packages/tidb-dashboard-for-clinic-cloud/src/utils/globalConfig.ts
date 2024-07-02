@@ -1,5 +1,6 @@
 import {
   IConProfilingConfig,
+  IKeyVizConfig,
   IOverviewConfig,
   ISlowQueryConfig,
   IStatementConfig,
@@ -49,6 +50,7 @@ export type AppsConfig = {
   statement?: Partial<IStatementConfig>
   topSQL?: Partial<ITopSQLConfig>
   conProf?: Partial<IConProfilingConfig>
+  keyViz?: Partial<IKeyVizConfig>
 }
 
 export type GlobalConfig = {

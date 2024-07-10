@@ -116,7 +116,6 @@
 
       // example entry link:
       // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgName=xxx&orgId=30052&projectId=43584&clusterId=61992&deployType=shared&userName=xxx#/slow_query
-      // http://localhost:8181/clinic/dashboard/cloud/ngm.html?provider=aws&region=us-west-2&orgName=xxx&orgId=30052&projectId=43584&clusterId=61992&deployType=dedicated&userName=xxx#/topsql
       const searchParams = new URLSearchParams(window.location.search)
       const provider = searchParams.get('provider') || ''
       const region = searchParams.get('region') || ''
@@ -162,6 +161,28 @@
       //   deployType
       // }
 
+      let topSQLTimeRange = [
+        5 * 60,
+        15 * 60,
+        30 * 60,
+        60 * 60,
+        6 * 60 * 60,
+        12 * 60 * 60,
+        24 * 60 * 60
+      ]
+      const longerTimeRangeOrgs = [
+        '1372813089209214865',
+        '1372813089209213994',
+        '1372813089209223465'
+      ]
+      if (longerTimeRangeOrgs.indexOf(orgId) >= 0) {
+        topSQLTimeRange = topSQLTimeRange.concat([
+          2 * 24 * 60 * 60,
+          3 * 24 * 60 * 60,
+          7 * 24 * 60 * 60
+        ])
+      }
+
       const apiPathBase = `/ngm/api/v1`
       startDashboard({
         appOptions: {
@@ -175,6 +196,14 @@
         },
         clusterInfo,
         appsConfig: {
+          statement: {
+            enableExport: false,
+            showDBFilter: false,
+            showConfig: false,
+            showResourceGroupFilter: false,
+            showHelp: false,
+            enablePlanBinding: false
+          },
           slowQuery: {
             enableExport: false,
             showDBFilter: true,
@@ -207,15 +236,7 @@
             clusterName,
 
             timeRangeSelector: {
-              recentSeconds: [
-                5 * 60,
-                15 * 60,
-                30 * 60,
-                60 * 60,
-                6 * 60 * 60,
-                12 * 60 * 60,
-                24 * 60 * 60
-              ],
+              recentSeconds: topSQLTimeRange,
               customAbsoluteRangePicker: true
             },
             autoRefresh: false,
@@ -228,14 +249,19 @@
             enableDotGraph: false,
             enablePreviewGoroutine: false,
             listDuration: 1
+          },
+          keyViz: {
+            showHelp: false,
+            showSetting: false
           }
         },
         appsEnabled: [
           'topsql',
+          'statement',
           'slow_query',
           'conprof',
-          'sql_advisor',
-          'top_slowquery'
+          'top_slowquery',
+          'keyviz'
         ]
       })
     </script>

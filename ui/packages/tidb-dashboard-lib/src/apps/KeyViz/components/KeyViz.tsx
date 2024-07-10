@@ -98,6 +98,9 @@ const KeyViz = () => {
   const enabled = config?.auto_collection_disabled !== true
 
   const updateServiceStatus = useMemoizedFn(async function () {
+    if (ctx?.cfg?.showSetting === false) {
+      return
+    }
     try {
       setLoading(true)
       const resp = await ctx!.ds.keyvisualConfigGet()
@@ -225,6 +228,7 @@ const KeyViz = () => {
         autoRefreshSeconds={autoRefreshSeconds}
         isOnBrush={getOnBrush()}
         showHelp={ctx!.cfg?.showHelp ?? true}
+        showSetting={ctx!.cfg?.showSetting ?? true}
         onChangeBrightLevel={onChangeBrightLevel}
         onChangeMetric={setMetricType}
         onChangeDateRange={onChangeDateRange}

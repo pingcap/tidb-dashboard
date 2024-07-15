@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joomcode/errorx"
@@ -19,8 +20,9 @@ import (
 )
 
 const (
-	schemaVersionPath = "/tidb/ddl/global_schema_version"
-	etcdGetTimeout    = time.Second
+	schemaVersionPath   = "/tidb/ddl/global_schema_version"
+	etcdGetTimeout      = time.Second
+	tableInfosBatchSize = 512
 )
 
 var (
@@ -73,40 +75,90 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 		}
 		var tableInfos []*model.TableInfo
 		encodeName := url.PathEscape(db.Name.O)
-		if err := s.request(fmt.Sprintf("/schema/%s", encodeName), &tableInfos); err != nil {
+		if err := s.request(fmt.Sprintf("/schema/%s?id_name_only=true", encodeName), &tableInfos); err != nil {
 			log.Error("fail to send schema request", zap.String("component", distro.R().TiDB), zap.Error(err))
 			updateSuccess = false
 			continue
 		}
-		for _, table := range tableInfos {
-			indices := make(map[int64]string, len(table.Indices))
-			for _, index := range table.Indices {
-				indices[index.ID] = index.Name.O
+		if len(tableInfos) == 0 {
+			continue
+		}
+		if tableInfos[0].Version != nil {
+			// ?id_name_only=true doesn't work, fallback.
+			log.Debug("use fallback")
+			s.updateTableMap(db.Name.O, tableInfos)
+			continue
+		}
+
+		/* Split into small batches */
+		log.Debug("use batch")
+
+		var tableIDBatches [][]string
+		batch := make([]string, 0, tableInfosBatchSize)
+		n := 0
+		for _, info := range tableInfos {
+			batch = append(batch, strconv.FormatInt(info.ID, 10))
+			n++
+			if n == tableInfosBatchSize {
+				tableIDBatches = append(tableIDBatches, batch)
+				batch = make([]string, 0, tableInfosBatchSize)
+				n = 0
 			}
-			detail := &tableDetail{
-				Name:    table.Name.O,
-				DB:      db.Name.O,
-				ID:      table.ID,
-				Indices: indices,
+		}
+		if len(batch) > 0 {
+			tableIDBatches = append(tableIDBatches, batch)
+		}
+		for _, batch := range tableIDBatches {
+			var tableInfoBatch map[string]*model.TableInfo
+			if err := s.request(fmt.Sprintf("/schema?table_ids=%s", strings.Join(batch, ",")), &tableInfoBatch); err != nil {
+				log.Error("fail to send schema request", zap.String("component", distro.R().TiDB), zap.Error(err))
+				updateSuccess = false
+				continue
 			}
-			s.TableMap.Store(table.ID, detail)
-			if partition := table.GetPartitionInfo(); partition != nil {
-				for _, partitionDef := range partition.Definitions {
-					detail := &tableDetail{
-						Name:    fmt.Sprintf("%s/%s", table.Name.O, partitionDef.Name.O),
-						DB:      db.Name.O,
-						ID:      partitionDef.ID,
-						Indices: indices,
-					}
-					s.TableMap.Store(partitionDef.ID, detail)
-				}
+			if len(tableInfoBatch) == 0 {
+				continue
 			}
+			tableInfoBatchSlice := make([]*model.TableInfo, 0, len(tableInfoBatch))
+			for _, info := range tableInfoBatch {
+				tableInfoBatchSlice = append(tableInfoBatchSlice, info)
+			}
+			s.updateTableMap(db.Name.O, tableInfoBatchSlice)
 		}
 	}
 
 	// update schema version
 	if updateSuccess {
 		s.SchemaVersion = schemaVersion
+	}
+}
+
+func (s *tidbLabelStrategy) updateTableMap(dbname string, tableInfos []*model.TableInfo) {
+	if len(tableInfos) == 0 {
+		return
+	}
+	for _, table := range tableInfos {
+		indices := make(map[int64]string, len(table.Indices))
+		for _, index := range table.Indices {
+			indices[index.ID] = index.Name.O
+		}
+		detail := &tableDetail{
+			Name:    table.Name.O,
+			DB:      dbname,
+			ID:      table.ID,
+			Indices: indices,
+		}
+		s.TableMap.Store(table.ID, detail)
+		if partition := table.GetPartitionInfo(); partition != nil {
+			for _, partitionDef := range partition.Definitions {
+				detail := &tableDetail{
+					Name:    fmt.Sprintf("%s/%s", table.Name.O, partitionDef.Name.O),
+					DB:      dbname,
+					ID:      partitionDef.ID,
+					Indices: indices,
+				}
+				s.TableMap.Store(partitionDef.ID, detail)
+			}
+		}
 	}
 }
 

@@ -41,6 +41,7 @@ export type ClusterInfo = {
   projectId?: string
   clusterId?: string
   deployType?: string // dedicated / shared
+  env?: string
 }
 
 export type AppsConfig = {

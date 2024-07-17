@@ -115,7 +115,7 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
 
 function initAxios(clientOptions: ClientOptions, clusterInfo: ClusterInfo) {
   const { apiToken } = clientOptions
-  const { provider, region, orgId, projectId, clusterId, deployType } =
+  const { provider, region, orgId, projectId, clusterId, deployType, env } =
     clusterInfo
 
   let headers = {}
@@ -142,6 +142,9 @@ function initAxios(clientOptions: ClientOptions, clusterInfo: ClusterInfo) {
   }
   if (deployType) {
     headers['x-deploy-type'] = deployType
+  }
+  if (env) {
+    headers['x-env'] = env
   }
   const instance = axios.create({
     baseURL: clientOptions.apiPathBase,

@@ -12,7 +12,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/netutil"
 )
 
-func FetchTSOTopology(ctx context.Context, pdClient *pd.Client) ([]TSOInfo, error) {
+func FetchTSOTopology(_ context.Context, pdClient *pd.Client) ([]TSOInfo, error) {
 	nodes := make([]TSOInfo, 0)
 	data, err := pdClient.WithoutPrefix().SendGetRequest("/pd/api/v2/ms/members/tso")
 	if err != nil {

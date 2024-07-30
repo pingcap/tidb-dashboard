@@ -3,9 +3,9 @@
 package matrix
 
 import (
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
-var _ = Suite(&testPlaneSuite{})
+var _ = check.Suite(&testPlaneSuite{})
 
 type testPlaneSuite struct{}

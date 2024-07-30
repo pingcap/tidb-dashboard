@@ -30,7 +30,7 @@ linters:
   enable:
     # Additionally enable some checkers
     - asciicheck
-    - depguard
+    # - depguard
     - dogsled
     - durationcheck
     - errorlint

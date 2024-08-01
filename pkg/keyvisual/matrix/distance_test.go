@@ -12,11 +12,11 @@ import (
 	"sync"
 	"testing"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 	"go.uber.org/fx"
 )
 
-var _ = Suite(&testDistanceSuite{})
+var _ = check.Suite(&testDistanceSuite{})
 
 type testDistanceSuite struct{}
 

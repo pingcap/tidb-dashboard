@@ -151,7 +151,7 @@ func (suite *ErrorHandlerFnTestSuite) TestWithRecoveryMiddleware() {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	engine.Use(ErrorHandlerFn())
-	engine.GET("/test", func(c *gin.Context) {
+	engine.GET("/test", func(_ *gin.Context) {
 		panic("some panic")
 	})
 

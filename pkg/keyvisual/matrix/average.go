@@ -11,11 +11,11 @@ type averageSplitStrategy struct{}
 
 type averageSplitter struct{}
 
-func (averageSplitStrategy) NewSplitter(chunks []chunk, compactKeys []string) Splitter {
+func (averageSplitStrategy) NewSplitter(_ []chunk, _ []string) Splitter {
 	return averageSplitter{}
 }
 
-func (averageSplitter) Split(dst, src chunk, tag splitTag, axesIndex int) {
+func (averageSplitter) Split(dst, src chunk, tag splitTag, _ int) {
 	CheckPartOf(dst.Keys, src.Keys)
 
 	if len(dst.Keys) == len(src.Keys) {

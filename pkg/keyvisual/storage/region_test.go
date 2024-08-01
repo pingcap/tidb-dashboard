@@ -5,13 +5,13 @@ package storage
 import (
 	"testing"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
 func TestRegion(t *testing.T) {
-	TestingT(t)
+	check.TestingT(t)
 }
 
-var _ = Suite(&testRegionSuite{})
+var _ = check.Suite(&testRegionSuite{})
 
 type testRegionSuite struct{}

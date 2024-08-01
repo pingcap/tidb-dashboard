@@ -3,9 +3,7 @@
 package matrix
 
 import (
-	"reflect"
 	"sync"
-	"unsafe"
 )
 
 // KeyMap is used for string intern.
@@ -29,7 +27,5 @@ func (km *KeyMap) SaveKeys(keys []string) {
 }
 
 func equal(keyA, keyB string) bool {
-	pA := (*reflect.StringHeader)(unsafe.Pointer(&keyA)) // #nosec
-	pB := (*reflect.StringHeader)(unsafe.Pointer(&keyB)) // #nosec
-	return pA.Data == pB.Data && pA.Len == pB.Len
+	return keyA == keyB
 }

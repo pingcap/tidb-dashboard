@@ -5,15 +5,15 @@ package integration
 import (
 	"testing"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
 func TestT(t *testing.T) {
-	CustomVerboseFlag = true
-	TestingT(t)
+	check.CustomVerboseFlag = true
+	check.TestingT(t)
 }
 
-var _ = Suite(&testReportSuite{})
+var _ = check.Suite(&testReportSuite{})
 
 type testReportSuite struct{}
 

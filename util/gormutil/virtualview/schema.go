@@ -69,7 +69,7 @@ type identVisitor struct {
 	idents []string
 }
 
-func (v *identVisitor) Enter(node *ast.Node) {}
+func (v *identVisitor) Enter(_ *ast.Node) {}
 func (v *identVisitor) Exit(node *ast.Node) {
 	if n, ok := (*node).(*ast.IdentifierNode); ok {
 		v.idents = append(v.idents, n.Value)

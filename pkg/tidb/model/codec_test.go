@@ -5,32 +5,32 @@ package model
 import (
 	"testing"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
 func TestTable(t *testing.T) {
-	TestingT(t)
+	check.TestingT(t)
 }
 
-var _ = Suite(&testCodecSuite{})
+var _ = check.Suite(&testCodecSuite{})
 
 type testCodecSuite struct{}
 
-func (s *testCodecSuite) TestDecodeBytes(c *C) {
+func (s *testCodecSuite) TestDecodeBytes(c *check.C) {
 	key := "abcdefghijklmnopqrstuvwxyz"
 	for i := 0; i < len(key); i++ {
 		_, k, err := decodeBytes(encodeBytes([]byte(key[:i])), nil)
-		c.Assert(err, IsNil)
-		c.Assert(string(k), Equals, key[:i])
+		c.Assert(err, check.IsNil)
+		c.Assert(string(k), check.Equals, key[:i])
 	}
 }
 
-func (s *testCodecSuite) TestTiDBInfo(c *C) {
+func (s *testCodecSuite) TestTiDBInfo(c *check.C) {
 	buf := new(KeyInfoBuffer)
 
 	// no encode
 	_, err := buf.DecodeKey([]byte("t\x80\x00\x00\x00\x00\x00\x00\xff"))
-	c.Assert(err, NotNil)
+	c.Assert(err, check.NotNil)
 
 	testcases := []struct {
 		Key            string
@@ -101,14 +101,14 @@ func (s *testCodecSuite) TestTiDBInfo(c *C) {
 	for _, t := range testcases {
 		key := encodeBytes([]byte(t.Key))
 		_, err := buf.DecodeKey(key)
-		c.Assert(err, IsNil)
+		c.Assert(err, check.IsNil)
 		isMeta, tableID := buf.MetaOrTable()
-		c.Assert(isMeta, Equals, t.IsMeta)
-		c.Assert(tableID, Equals, t.TableID)
+		c.Assert(isMeta, check.Equals, t.IsMeta)
+		c.Assert(tableID, check.Equals, t.TableID)
 		isCommonHandle, rowID := buf.RowInfo()
-		c.Assert(isCommonHandle, Equals, t.IsCommonHandle)
-		c.Assert(rowID, Equals, t.RowID)
+		c.Assert(isCommonHandle, check.Equals, t.IsCommonHandle)
+		c.Assert(rowID, check.Equals, t.RowID)
 		indexID := buf.IndexInfo()
-		c.Assert(indexID, Equals, t.IndexID)
+		c.Assert(indexID, check.Equals, t.IndexID)
 	}
 }

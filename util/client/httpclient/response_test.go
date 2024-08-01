@@ -26,7 +26,7 @@ func TestReadBodyAsString(t *testing.T) {
 	requestTimes := atomic.Int32{}
 	responseStatus := atomic.Int32{}
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requestTimes.Inc()
 		w.WriteHeader(int(responseStatus.Load()))
 		_, _ = fmt.Fprintf(w, "Basically OK, Req #%d", requestTimes.Load())
@@ -106,7 +106,7 @@ func TestFinish(t *testing.T) {
 	requestTimes := atomic.Int32{}
 	responseStatus := atomic.Int32{}
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requestTimes.Inc()
 		w.WriteHeader(int(responseStatus.Load()))
 		_, _ = fmt.Fprintf(w, "Basically OK, Req #%d", requestTimes.Load())
@@ -161,7 +161,7 @@ func TestFinish(t *testing.T) {
 }
 
 func TestReadBodyAsJSON(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = fmt.Fprintln(w, `{"foo":"bar"}`)
 	}))
 	defer ts.Close()
@@ -191,7 +191,7 @@ func TestReadBodyAsJSON(t *testing.T) {
 
 func TestReadBodyAsJSON_UnmarshalFailure(t *testing.T) {
 	requestTimes := atomic.Int32{}
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requestTimes.Inc()
 		_, _ = fmt.Fprintln(w, `bad_json`)
 	}))
@@ -241,7 +241,7 @@ func (w *myWriter) Write(p []byte) (int, error) {
 
 func TestPipeBody(t *testing.T) {
 	requestTimes := atomic.Int32{}
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requestTimes.Inc()
 		_, _ = fmt.Fprintln(w, "Hello world")
 	}))
@@ -273,7 +273,7 @@ func TestPipeBody(t *testing.T) {
 
 	// Now the server write data chunk by chunk...
 	ctx, cancel := context.WithCancel(context.Background())
-	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requestTimes.Inc()
 		_, _ = w.Write([]byte("Partial..."))
 		w.(http.Flusher).Flush()
@@ -324,7 +324,7 @@ func TestPipeBody(t *testing.T) {
 }
 
 func TestResponseHeader(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Add("foo", "bar")
 		w.WriteHeader(http.StatusAlreadyReported)
 		_, _ = fmt.Fprintln(w, "Fine!")
@@ -340,12 +340,12 @@ func TestResponseHeader(t *testing.T) {
 }
 
 func TestSetURL(t *testing.T) {
-	ts1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = fmt.Fprintln(w, "Result from server 1")
 	}))
 	defer ts1.Close()
 
-	ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = fmt.Fprintln(w, "Result from server 2")
 	}))
 	defer ts2.Close()
@@ -397,12 +397,12 @@ func TestLR(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	ts1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = fmt.Fprintln(w, "Result from server 1")
 	}))
 	defer ts1.Close()
 
-	ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = fmt.Fprintln(w, "Result from server 2")
 	}))
 	defer ts2.Close()
@@ -564,7 +564,7 @@ func TestFailureStatusCode(t *testing.T) {
 	requestTimes := atomic.Int32{}
 	responseStatus := atomic.Int32{}
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requestTimes.Inc()
 		w.WriteHeader(int(responseStatus.Load()))
 		_, _ = fmt.Fprintf(w, "Fail from req #%d", requestTimes.Load())
@@ -750,11 +750,11 @@ func TestConnectionReuse(t *testing.T) {
 	closedConn := atomic.Int32{}
 
 	requestTimes := atomic.Int32{}
-	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requestTimes.Inc()
 		_, _ = fmt.Fprintf(w, "Req #%d", requestTimes.Load())
 	}))
-	ts.Config.ConnState = func(c net.Conn, cs http.ConnState) {
+	ts.Config.ConnState = func(_ net.Conn, cs http.ConnState) {
 		switch cs {
 		case http.StateNew:
 			newConn.Inc()
@@ -840,7 +840,7 @@ func TestClone(t *testing.T) {
 func TestTimeoutHeader(t *testing.T) {
 	requestTimes := atomic.Int32{}
 	ctx, cancel := context.WithCancel(context.Background())
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requestTimes.Inc()
 		select {
 		case <-ctx.Done():
@@ -903,7 +903,7 @@ func TestTimeoutHeader(t *testing.T) {
 func TestTimeoutBody(t *testing.T) {
 	requestTimes := atomic.Int32{}
 	ctx, cancel := context.WithCancel(context.Background())
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requestTimes.Inc()
 		_, _ = w.Write([]byte("Partial..."))
 		w.(http.Flusher).Flush()

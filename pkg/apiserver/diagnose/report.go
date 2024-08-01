@@ -302,7 +302,7 @@ func GenerateReportError(errRows []TableRowDef) *TableDef {
 	}
 }
 
-func GetHeaderTimeTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetHeaderTimeTable(startTime, endTime string, _ *gorm.DB) (TableDef, error) {
 	return TableDef{
 		Category: []string{CategoryHeader},
 		Title:    "report_time_range",
@@ -716,7 +716,7 @@ func GetTiDBDDLOwner(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	return table, nil
 }
 
-func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetPDConfigInfo(startTime, _ string, db *gorm.DB) (TableDef, error) {
 	table := TableDef{
 		Category:       []string{CategoryConfig},
 		Title:          "scheduler_initial_config",
@@ -761,7 +761,7 @@ func GetPDConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, er
 	return table, nil
 }
 
-func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetTiDBGCConfigInfo(startTime, _ string, db *gorm.DB) (TableDef, error) {
 	table := TableDef{
 		Category:       []string{CategoryConfig},
 		Title:          "tidb_gc_initial_config",
@@ -804,7 +804,7 @@ func GetTiDBGCConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef
 	return table, nil
 }
 
-func GetTiKVRocksDBConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetTiKVRocksDBConfigInfo(startTime, _ string, db *gorm.DB) (TableDef, error) {
 	table := TableDef{
 		Category:       []string{CategoryConfig},
 		Title:          "tikv_rocksdb_initial_config",
@@ -885,7 +885,7 @@ func GetTiKVRocksDBConfigChangeInfo(startTime, endTime string, db *gorm.DB) (Tab
 	return table, nil
 }
 
-func GetTiKVRaftStoreConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetTiKVRaftStoreConfigInfo(startTime, _ string, db *gorm.DB) (TableDef, error) {
 	table := TableDef{
 		Category: []string{CategoryConfig},
 		Title:    "tikv_raftstore_initial_config",
@@ -1479,7 +1479,7 @@ func GetTiKVErrorTable(startTime, endTime string, db *gorm.DB) (TableDef, error)
 	return table, nil
 }
 
-func GetTiDBCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetTiDBCurrentConfig(_, _ string, db *gorm.DB) (TableDef, error) {
 	sql := "select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tidb' group by `key`,`value` order by `key`;"
 	table := TableDef{
 		Category: []string{CategoryConfig},
@@ -1495,7 +1495,7 @@ func GetTiDBCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, err
 	return table, nil
 }
 
-func GetPDCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetPDCurrentConfig(_, _ string, db *gorm.DB) (TableDef, error) {
 	sql := "select `key`,`value` from information_schema.CLUSTER_CONFIG where type='pd' group by `key`,`value` order by `key`;"
 	table := TableDef{
 		Category: []string{CategoryConfig},
@@ -1511,7 +1511,7 @@ func GetPDCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error
 	return table, nil
 }
 
-func GetTiKVCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetTiKVCurrentConfig(_, _ string, db *gorm.DB) (TableDef, error) {
 	sql := "select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tikv' group by `key`,`value` order by `key`;"
 	table := TableDef{
 		Category: []string{CategoryConfig},
@@ -2038,7 +2038,7 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, err
 	return table, nil
 }
 
-func GetClusterInfoTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+func GetClusterInfoTable(_, _ string, db *gorm.DB) (TableDef, error) {
 	sql := "select * from information_schema.cluster_info order by type,start_time desc"
 	table := TableDef{
 		Category:    []string{CategoryHeader},

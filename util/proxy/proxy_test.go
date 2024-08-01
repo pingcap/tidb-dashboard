@@ -284,7 +284,7 @@ func TestBrokenServer(t *testing.T) {
 	require.NoError(t, err)
 	defer p.Close()
 
-	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = fmt.Fprintln(w, "foo")
 	}))
 	defer server.Close()

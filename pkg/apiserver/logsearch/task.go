@@ -23,6 +23,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
@@ -163,7 +164,7 @@ func (t *Task) SyncRun() {
 		return
 	}
 
-	secureOpt := grpc.WithInsecure()
+	secureOpt := grpc.WithTransportCredentials(insecure.NewCredentials())
 	if t.taskGroup.service.config.ClusterTLSConfig != nil {
 		creds := credentials.NewTLS(t.taskGroup.service.config.ClusterTLSConfig)
 		secureOpt = grpc.WithTransportCredentials(creds)

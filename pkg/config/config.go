@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"go.etcd.io/etcd/pkg/transport"
+	"go.etcd.io/etcd/client/pkg/v3/transport"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )

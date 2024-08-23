@@ -69,6 +69,11 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
 	flag.StringVar(&cfg.CoreConfig.FeatureVersion, "feature-version", cfg.CoreConfig.FeatureVersion, "target TiDB version for standalone mode")
 	flag.IntVar(&cfg.CoreConfig.NgmTimeout, "ngm-timeout", cfg.CoreConfig.NgmTimeout, "timeout secs for accessing the ngm API")
+<<<<<<< HEAD
+=======
+	flag.BoolVar(&cfg.CoreConfig.EnableKeyVisualizer, "keyviz", true, "enable/disable key visualizer(default: true)")
+	flag.BoolVar(&cfg.CoreConfig.DisableCustomPromAddr, "disable-custom-prom-addr", false, "do not allow custom prometheus address")
+>>>>>>> 0db7bc63b (*: add share code revoke api; add a config to allow disabling custom prom addr  (#1717))
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 

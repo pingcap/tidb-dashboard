@@ -142,6 +142,10 @@ func (s *Service) putCustomPromAddress(c *gin.Context) {
 		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
+	if s.params.Config.DisableCustomPromAddr && req.Addr != "" {
+		rest.Error(c, rest.ErrForbidden.New("custom prometheus address has been disabled"))
+		return
+	}
 	addr, err := s.setCustomPromAddress(req.Addr)
 	if err != nil {
 		rest.Error(c, err)

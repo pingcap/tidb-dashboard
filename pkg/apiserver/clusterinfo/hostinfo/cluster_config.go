@@ -25,6 +25,7 @@ func FillInstances(db *gorm.DB, m InfoMap) error {
 		Where("(`TYPE` = 'tidb' AND `KEY` = 'log.file.filename') " +
 			"OR (`TYPE` = 'tikv' AND `KEY` = 'storage.data-dir') " +
 			"OR (`TYPE` = 'pd' AND `KEY` = 'data-dir') " +
+			"OR (`TYPE` = 'ticdc' AND `KEY` = 'data-dir')" +
 			"OR (`TYPE` = 'tiflash' AND (`KEY` = 'engine-store.path' " +
 			"    OR `KEY` = 'engine-store.storage.main.dir' " +
 			"    OR `KEY` = 'engine-store.storage.latest.dir'))").

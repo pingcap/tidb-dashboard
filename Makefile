@@ -163,4 +163,4 @@ tag:
 
 .PHONY: run # please ensure that tiup playground is running in the background.
 run:
-	bin/tidb-dashboard --debug --experimental --feature-version "$(FEATURE_VERSION)" --host 0.0.0.0
+	bin/tidb-dashboard --debug --experimental --feature-version "$(FEATURE_VERSION)" --host 0.0.0.0 --pd 10.2.12.79:5701

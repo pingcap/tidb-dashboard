@@ -146,6 +146,37 @@ type tiflashFetcher struct {
 }
 
 func (f *tiflashFetcher) fetch(op *fetchOptions) ([]byte, error) {
+	if strings.HasSuffix(op.path, "heap") {
+		scheme := f.client.GetHTTPScheme()
+		cmd := exec.Command("perl", "/dev/stdin", "--raw", scheme+"://"+op.ip+":"+strconv.Itoa(op.port)+op.path) //nolint:gosec
+		cmd.Stdin = strings.NewReader(jeprof)
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			return nil, err
+		}
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			return nil, err
+		}
+		// use jeprof to fetch tiflash heap profile
+		err = cmd.Start()
+		if err != nil {
+			return nil, err
+		}
+		data, err := io.ReadAll(stdout)
+		if err != nil {
+			return nil, err
+		}
+		errMsg, err := io.ReadAll(stderr)
+		if err != nil {
+			return nil, err
+		}
+		err = cmd.Wait()
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch tiflash heap profile: %s", errMsg)
+		}
+		return data, nil
+	}
 	return f.client.WithTimeout(maxProfilingTimeout).AddRequestHeader("Content-Type", "application/protobuf").SendGetRequest(op.ip, op.port, op.path)
 }
 

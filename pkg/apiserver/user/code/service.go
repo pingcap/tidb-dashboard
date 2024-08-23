@@ -111,9 +111,11 @@ func (s *Service) SharingCodeFromSession(session *utils.SessionUser, expireIn ti
 }
 
 func (s *Service) ResetEncryptionKey() {
+	//nolint:gosec // Using unsafe is necessary because atomic pointer operations are required.
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&s.sharingSecret)), unsafe.Pointer(cryptopasta.NewEncryptionKey()))
 }
 
 func (s *Service) loadShareingSecret() *[32]byte {
+	//nolint:gosec // Using unsafe is necessary because atomic pointer operations are required.
 	return (*[32]byte)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&s.sharingSecret))))
 }

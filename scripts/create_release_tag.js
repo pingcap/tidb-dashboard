@@ -29,6 +29,7 @@ function getGitShortSha() {
 
 function getGitLatestTag() {
   // v7.6.0-alpha, v7.6.0-<sha>, v7.6.0, v7.6.1-<sha>, v7.6.1
+  // v7.6.0-alpha-3-g383cf602, v7.6.0-<sha>-3-g383cf602, v7.6.0-3-g383cf602, v7.6.1-<sha>-3-g383cf602, v7.6.1-3-g383cf602
   return execSync('git describe --tags --dirty --always').toString().trim();
 }
 
@@ -63,6 +64,11 @@ function createReleaseTag() {
     // then the next tag should be v7.6.1-<sha> for v7.6.0, v7.6.2-<sha> for v7.6.1
     const suffix = latestTag.replace(`v${branchVer}.`, '');
     nextTag = `v${branchVer}.${parseInt(suffix) + 1}-${shortSha}`;
+  } else if (latestTag.match(/^v\d+\.\d+\.\d+-\d+-[0-9a-z]{9}/)) {
+    // the latest tag likes v7.6.0-3-g383cf602, v7.6.1-3-g383cf602
+    // then the next tag should be v7.6.1-<sha> for v7.6.0, v7.6.2-<sha> for v7.6.1
+    const suffix = latestTag.substring(0, splitPos).replace(`v${branchVer}.`, '');
+    nextTag = `v${branchVer}.${parseInt(suffix) + 1}-${shortSha}`;
   } else {
     // the latest tag likes v7.6.0-<sha>, v7.6.1-<sha>
     // then the next tag should be v7.6.0-<sha> for v7.6.0-<sha>, v7.6.1-<sha> for v7.6.1-<sha>
@@ -76,7 +82,7 @@ function createReleaseTag() {
 function createMasterTag() {
   const latestTag = getGitLatestTag();
   // the latest tag must like vX.Y.0-alpha, likes `v8.4.0-alpha`
-  if (!latestTag.match(/^v\d+\.\d+.0-alpha$/)) {
+  if (!latestTag.match(/^v\d+\.\d+.0-alpha/)) {
     console.error(`Err: latest tag ${latestTag} is not a valid alpha tag`)
     process.exit(1)
   }

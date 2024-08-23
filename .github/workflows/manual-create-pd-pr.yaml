@@ -4,11 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: "Release version, e.g. v7.6.0-f7bbcdcf"
+        description: 'Release version, e.g. v7.6.0-f7bbcdcf'
         required: true
       pd_branchs:
         description: 'PD branch, e.g. ["master", "release-7.6"]'
         default: '["master"]'
+        required: true
+      pr_author_name:
+        description: 'PR author name'
+        default: 'baurine'
+        required: true
+      pr_author_email:
+        description: 'PR author email'
+        default: '2008.hbl@gmail.com'
         required: true
 
 jobs:
@@ -18,7 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         # https://stackoverflow.com/questions/69781005/combine-dynamic-github-workflow-matrix-with-input-values-and-predefined-values
-        branch: ${{ fromJson(github.event.inputs.pd_branchs) }} 
+        branch: ${{ fromJson(github.event.inputs.pd_branchs) }}
     name: Create PD PR - ${{ matrix.branch }}
     steps:
       - name: Check out PD code base
@@ -28,7 +36,7 @@ jobs:
           ref: ${{ matrix.branch }}
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.21"
+          go-version: '1.21'
       - name: Load go module cache
         uses: actions/cache@v3
         with:
@@ -45,8 +53,8 @@ jobs:
         id: git_commit
         run: |
           git diff
-          git config user.name "baurine"
-          git config user.email "2008.hbl@gmail.com"
+          git config user.name ${{ github.event.inputs.pr_author_name }}
+          git config user.email ${{ github.event.inputs.pr_author_email }}
           git add .
           if git status | grep -q "Changes to be committed"
           then
@@ -66,7 +74,7 @@ jobs:
           push-to-fork: baurine/pd
           token: ${{ secrets.PAT_TO_PUSH_PD_FORK }}
           branch: update-tidb-dashboard/${{ matrix.branch }}-${{ github.event.inputs.release_version }}-${{ steps.build_id.outputs.id }}
-          title: "chore(dashboard): update TiDB Dashboard to ${{ github.event.inputs.release_version }} [${{ matrix.branch }}]"
+          title: 'chore(dashboard): update TiDB Dashboard to ${{ github.event.inputs.release_version }} [${{ matrix.branch }}]'
           body: |
             ### What problem does this PR solve?
 

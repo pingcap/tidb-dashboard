@@ -5,7 +5,9 @@ package code
 import (
 	"encoding/hex"
 	"fmt"
+	"sync/atomic"
 	"time"
+	"unsafe"
 
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
@@ -52,7 +54,7 @@ func (s *Service) NewSessionFromSharingCode(codeInHex string) *utils.SessionUser
 		return nil
 	}
 
-	b, err := cryptopasta.Decrypt(encrypted, s.sharingSecret)
+	b, err := cryptopasta.Decrypt(encrypted, s.loadShareingSecret())
 	if err != nil {
 		return nil
 	}
@@ -99,11 +101,21 @@ func (s *Service) SharingCodeFromSession(session *utils.SessionUser, expireIn ti
 		return nil
 	}
 
-	encrypted, err := cryptopasta.Encrypt(b, s.sharingSecret)
+	encrypted, err := cryptopasta.Encrypt(b, s.loadShareingSecret())
 	if err != nil {
 		return nil
 	}
 
 	codeInHex := hex.EncodeToString(encrypted)
 	return &codeInHex
+}
+
+func (s *Service) ResetEncryptionKey() {
+	//nolint:gosec // Using unsafe is necessary because atomic pointer operations are required.
+	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&s.sharingSecret)), unsafe.Pointer(cryptopasta.NewEncryptionKey()))
+}
+
+func (s *Service) loadShareingSecret() *[32]byte {
+	//nolint:gosec // Using unsafe is necessary because atomic pointer operations are required.
+	return (*[32]byte)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&s.sharingSecret))))
 }

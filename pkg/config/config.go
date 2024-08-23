@@ -30,28 +30,30 @@ type Config struct {
 	ClusterTLSInfo   *transport.TLSInfo // TLS info for mTLS authentication between TiDB components.
 	TiDBTLSConfig    *tls.Config        // TLS config for mTLS authentication between TiDB and MySQL client.
 
-	EnableTelemetry     bool
-	EnableExperimental  bool
-	EnableKeyVisualizer bool
-	FeatureVersion      string // assign the target TiDB version when running TiDB Dashboard as standalone mode
+	EnableTelemetry       bool
+	EnableExperimental    bool
+	EnableKeyVisualizer   bool
+	DisableCustomPromAddr bool
+	FeatureVersion        string // assign the target TiDB version when running TiDB Dashboard as standalone mode
 
 	NgmTimeout int // in seconds
 }
 
 func Default() *Config {
 	return &Config{
-		DataDir:             "/tmp/dashboard-data",
-		TempDir:             "",
-		PDEndPoint:          "http://127.0.0.1:2379",
-		PublicPathPrefix:    defaultPublicPathPrefix,
-		ClusterTLSConfig:    nil,
-		ClusterTLSInfo:      nil,
-		TiDBTLSConfig:       nil,
-		EnableTelemetry:     false,
-		EnableExperimental:  false,
-		EnableKeyVisualizer: true,
-		FeatureVersion:      version.PDVersion,
-		NgmTimeout:          30, // s
+		DataDir:               "/tmp/dashboard-data",
+		TempDir:               "",
+		PDEndPoint:            "http://127.0.0.1:2379",
+		PublicPathPrefix:      defaultPublicPathPrefix,
+		ClusterTLSConfig:      nil,
+		ClusterTLSInfo:        nil,
+		TiDBTLSConfig:         nil,
+		EnableTelemetry:       false,
+		EnableExperimental:    false,
+		EnableKeyVisualizer:   true,
+		DisableCustomPromAddr: false,
+		FeatureVersion:        version.PDVersion,
+		NgmTimeout:            30, // s
 	}
 }
 

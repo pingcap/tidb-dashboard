@@ -5,6 +5,18 @@
 
 const { execSync } = require('child_process');
 
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+// rl.on('close', () => {
+//   console.log('exit')
+//   process.exit(0);
+// });
+
 function getGitBranch() {
   // master, release-7.6
   return execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
@@ -17,23 +29,31 @@ function getGitShortSha() {
 
 function getGitLatestTag() {
   // v7.6.0-alpha, v7.6.0-<sha>, v7.6.0, v7.6.1-<sha>, v7.6.1
+  // v7.6.0-alpha-3-g383cf602, v7.6.0-<sha>-3-g383cf602, v7.6.0-3-g383cf602, v7.6.1-<sha>-3-g383cf602, v7.6.1-3-g383cf602
   return execSync('git describe --tags --dirty --always').toString().trim();
+}
+
+function question(nextTag) {
+  rl.question(`Do you want to create tag ${nextTag}? (y or enter continue, others exit): `, (answer) => {
+    if (answer.toLowerCase() === 'y' || answer.toLowerCase() === '') {
+      execSync(`git tag ${nextTag}`);
+      console.log(`Created tag ${nextTag}`)
+      process.exit(0);
+    } else {
+      console.log('Cancel create tag')
+      process.exit(0);
+    }
+  })
 }
 
 function createReleaseTag() {
   const branch = getGitBranch();
-
-  if (!branch.match(/release-\d.\d$/)) {
-    console.error('Err: this is not a valid release branch');
-    return
-  }
-
   const branchVer = branch.replace('release-', '');
   const latestTag = getGitLatestTag().replace('-fips', '');
 
   if (!latestTag.startsWith(`v${branchVer}.`)) {
     console.error(`Err: latest tag ${latestTag} doesn't match the branch ${branch}, you need to add the new tag manually`);
-    return
+    process.exit(1)
   }
 
   const shortSha = getGitShortSha();
@@ -44,14 +64,47 @@ function createReleaseTag() {
     // then the next tag should be v7.6.1-<sha> for v7.6.0, v7.6.2-<sha> for v7.6.1
     const suffix = latestTag.replace(`v${branchVer}.`, '');
     nextTag = `v${branchVer}.${parseInt(suffix) + 1}-${shortSha}`;
+  } else if (latestTag.match(/^v\d+\.\d+\.\d+-\d+-[0-9a-z]{9}/)) {
+    // the latest tag likes v7.6.0-3-g383cf602, v7.6.1-3-g383cf602
+    // then the next tag should be v7.6.1-<sha> for v7.6.0, v7.6.2-<sha> for v7.6.1
+    const suffix = latestTag.substring(0, splitPos).replace(`v${branchVer}.`, '');
+    nextTag = `v${branchVer}.${parseInt(suffix) + 1}-${shortSha}`;
   } else {
     // the latest tag likes v7.6.0-<sha>, v7.6.1-<sha>
     // then the next tag should be v7.6.0-<sha> for v7.6.0-<sha>, v7.6.1-<sha> for v7.6.1-<sha>
     const prefix = latestTag.substring(0, splitPos);
     nextTag = `${prefix}-${shortSha}`;
   }
-  execSync(`git tag ${nextTag}`);
-  console.log(`Created tag ${nextTag}`)
+
+  question(nextTag)
 }
 
-createReleaseTag()
+function createMasterTag() {
+  const latestTag = getGitLatestTag();
+  // the latest tag must like vX.Y.0-alpha, likes `v8.4.0-alpha`
+  if (!latestTag.match(/^v\d+\.\d+.0-alpha/)) {
+    console.error(`Err: latest tag ${latestTag} is not a valid alpha tag`)
+    process.exit(1)
+  }
+  const splitPos = latestTag.indexOf('-');
+  const prefix = latestTag.substring(0, splitPos);
+  const shortSha = getGitShortSha();
+  const nextTag = `${prefix}-${shortSha}`
+
+  question(nextTag)
+}
+
+function createTag() {
+  const branch = getGitBranch();
+
+  if (branch.match(/^release-\d+\.\d+$/)) {
+    createReleaseTag()
+  } else if (branch === 'master') {
+    createMasterTag()
+  } else {
+    console.error('Err: this is not a valid branch that can be tagged');
+    process.exit(1)
+  }
+}
+
+createTag()

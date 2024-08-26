@@ -16,7 +16,7 @@ func GetHTTPServerHost(server *httptest.Server) string {
 }
 
 func NewHTTPServer(response string) *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = fmt.Fprintln(w, response)
 	}))
 }
@@ -28,7 +28,7 @@ func NewHTTPServerAtHost(response string, host string) *httptest.Server {
 	}
 	server := &httptest.Server{
 		Listener: l,
-		Config: &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { // nolint:gosec
+		Config: &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { // nolint:gosec
 			_, _ = fmt.Fprintln(w, response)
 		})},
 	}
@@ -49,7 +49,7 @@ func NewMultiServer(n int, responsePattern string) *MultiServerHelper {
 
 	for i := 0; i < n; i++ {
 		func(i int) {
-			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				resp := fmt.Sprintf(responsePattern, i)
 				lastActiveID.Store(int32(i))
 				lastResponse.Store(resp)

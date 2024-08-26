@@ -5,13 +5,13 @@ package matrix
 import (
 	"testing"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
 func TestMatrix(t *testing.T) {
-	TestingT(t)
+	check.TestingT(t)
 }
 
-var _ = Suite(&testMatrixSuite{})
+var _ = check.Suite(&testMatrixSuite{})
 
 type testMatrixSuite struct{}

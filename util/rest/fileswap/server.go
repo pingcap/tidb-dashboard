@@ -69,7 +69,7 @@ func (s *Handler) parseClaimsFromToken(tokenString string) (*downloadTokenClaims
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		&downloadTokenClaims{},
-		func(token *jwt.Token) (interface{}, error) {
+		func(_ *jwt.Token) (interface{}, error) {
 			return s.secret, nil
 		})
 	if token != nil {

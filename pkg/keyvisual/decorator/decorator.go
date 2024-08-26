@@ -39,14 +39,14 @@ type naiveLabelStrategy struct{}
 
 type naiveLabeler struct{}
 
-func (s naiveLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {}
+func (s naiveLabelStrategy) ReloadConfig(_ *config.KeyVisualConfig) {}
 
 func (s naiveLabelStrategy) NewLabeler() Labeler {
 	return naiveLabeler{}
 }
 
 // CrossBorder always returns false. So naiveLabelStrategy believes that there are no cross-border situations.
-func (e naiveLabeler) CrossBorder(startKey, endKey string) bool {
+func (e naiveLabeler) CrossBorder(_, _ string) bool {
 	return false
 }
 

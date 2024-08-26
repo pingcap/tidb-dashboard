@@ -5,20 +5,20 @@ package utils
 import (
 	"testing"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
 func TestT(t *testing.T) {
-	CustomVerboseFlag = true
-	TestingT(t)
+	check.CustomVerboseFlag = true
+	check.TestingT(t)
 }
 
-var _ = Suite(&testGormSuite{})
+var _ = check.Suite(&testGormSuite{})
 
 type testGormSuite struct{}
 
-func (t *testGormSuite) Test_GetGormColumnName(c *C) {
-	c.Assert(GetGormColumnName(`column:db`), Equals, `db`)
-	c.Assert(GetGormColumnName(`primaryKey;index`), Equals, ``)
-	c.Assert(GetGormColumnName(`column:db;primaryKey;index`), Equals, `db`)
+func (t *testGormSuite) Test_GetGormColumnName(c *check.C) {
+	c.Assert(GetGormColumnName(`column:db`), check.Equals, `db`)
+	c.Assert(GetGormColumnName(`primaryKey;index`), check.Equals, ``)
+	c.Assert(GetGormColumnName(`column:db;primaryKey;index`), check.Equals, `db`)
 }

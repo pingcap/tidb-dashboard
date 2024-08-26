@@ -95,7 +95,7 @@ func FetchTiProxyTopology(ctx context.Context, etcdClient *clientv3.Client) ([]T
 	return nodes, nil
 }
 
-func parseTiProxyInfo(address string, value []byte) (*TiProxyInfo, error) {
+func parseTiProxyInfo(_ string, value []byte) (*TiProxyInfo, error) {
 	ds := struct {
 		GitHash        string `json:"git_hash"`
 		Version        string `json:"version"`

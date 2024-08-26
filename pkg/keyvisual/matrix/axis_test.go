@@ -3,14 +3,14 @@
 package matrix
 
 import (
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
-var _ = Suite(&testAxisSuite{})
+var _ = check.Suite(&testAxisSuite{})
 
 type testAxisSuite struct{}
 
-func (s *testAxisSuite) TestChunkReduce(c *C) {
+func (s *testAxisSuite) TestChunkReduce(c *check.C) {
 	testcases := []struct {
 		keys      []string
 		values    []uint64
@@ -34,6 +34,6 @@ func (s *testAxisSuite) TestChunkReduce(c *C) {
 	for _, testcase := range testcases {
 		originChunk := createChunk(testcase.keys, testcase.values)
 		reduceChunk := originChunk.Reduce(testcase.newKeys)
-		c.Assert(reduceChunk.Values, DeepEquals, testcase.newValues)
+		c.Assert(reduceChunk.Values, check.DeepEquals, testcase.newValues)
 	}
 }

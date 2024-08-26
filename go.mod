@@ -1,6 +1,6 @@
 module github.com/pingcap/tidb-dashboard
 
-go 1.18
+go 1.21
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0

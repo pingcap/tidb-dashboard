@@ -87,7 +87,7 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 	return nil
 }
 
-func (m *DynamicConfigManager) Stop(ctx context.Context) error {
+func (m *DynamicConfigManager) Stop(_ context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, ch := range m.pushChannels {

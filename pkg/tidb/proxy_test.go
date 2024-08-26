@@ -24,7 +24,7 @@ func TestProxy(t *testing.T) {
 	}
 	defer l.Close()
 	want := "hello proxy"
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write([]byte(want))
 		if err != nil {
 			t.Fatal(err)
@@ -66,7 +66,7 @@ func TestProxyPick(t *testing.T) {
 	var currentPicked int
 	for i := 0; i < n; i++ {
 		idx := i
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			picked[idx] = true
 			currentPicked = idx
 			_, err := w.Write([]byte(responseData))

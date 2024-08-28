@@ -46,7 +46,7 @@ func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, 
 		fileExtenstion = "*.proto"
 	case ProfilingTypeHeap:
 		url = "/debug/pprof/heap"
-		if f.target.Kind == model.NodeKindTiKV {
+		if f.target.Kind == model.NodeKindTiKV || f.target.Kind == model.NodeKindTiFlash {
 			profilingRawDataType = RawDataTypeJeprof
 			fileExtenstion = "*.prof"
 		} else {

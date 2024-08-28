@@ -17,8 +17,8 @@ func profileAndWritePprof(_ context.Context, fts *fetchers, target *model.Reques
 		}
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv, profilingType: profilingType})
 	case model.NodeKindTiFlash:
-		// TiFlash only supports CPU Profiling
-		if profilingType != ProfilingTypeCPU {
+		// TiFlash only supports CPU/heap Profiling
+		if profilingType != ProfilingTypeCPU && profilingType != ProfilingTypeHeap {
 			return "", "", ErrUnsupportedProfilingType.NewWithNoMessage()
 		}
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tiflash, profilingType: profilingType})

@@ -106,6 +106,19 @@ export default function Page() {
             break
           default:
         }
+      } else if (component === 'tiflash' && profile_type === 'heap') {
+        switch (action) {
+          case Action.VIEW_FLAMEGRAPH:
+            dataFormat = 'text'
+            break
+          case Action.VIEW_GRAPH:
+            dataFormat = 'svg'
+            break
+          case Action.DOWNLOAD:
+            dataFormat = 'jeprof'
+            break
+          default:
+        }
       } else {
         switch (action) {
           case Action.VIEW_GRAPH:

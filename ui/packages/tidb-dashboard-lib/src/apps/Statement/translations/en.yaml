@@ -201,4 +201,4 @@ statement:
     avg_time_queued_by_rc_tooltip: The average time that the query waits in the resource control's queue (not a wall time)
     max_time_queued_by_rc: Max RC Wait Time in Queue
     max_time_queued_by_rc_tooltip: The maximum time that the query waits in the resource control's queue (not a wall time)
-    rc_wait_time_tooltip: 'The total wait time spent in the resource queue (note: {{distro.tikv}} executes requests in parallel so that t this is not a wall time)'
+    rc_wait_time_tooltip: 'The total wait time spent in the resource queue (note: {{distro.tikv}} executes requests in parallel so that this is not a wall time)'

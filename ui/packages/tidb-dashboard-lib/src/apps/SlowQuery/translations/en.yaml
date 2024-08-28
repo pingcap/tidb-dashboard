@@ -123,7 +123,7 @@ slow_query:
     resource_group: Resource Group
     resource_group_tooltip: The resource group that the query belongs to
     time_queued_by_rc: The total time queued by RC
-    time_queued_by_rc_tooltip: 'The total wait time spent in the resource queue (note: {{distro.tikv}} executes requests in parallel so that t this is not a wall time)'
+    time_queued_by_rc_tooltip: 'The total wait time spent in the resource queue (note: {{distro.tikv}} executes requests in parallel so that this is not a wall time)'
 
   common:
     status:

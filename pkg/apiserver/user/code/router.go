@@ -17,6 +17,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/user/share")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.POST("/code", auth.MWRequireSharePriv(), s.ShareHandler)
+	endpoint.POST("/revoke", auth.MWRequireSharePriv(), s.RevokeHandler)
 }
 
 type ShareRequest struct {
@@ -56,4 +57,14 @@ func (s *Service) ShareHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, ShareResponse{Code: *code})
+}
+
+// @ID userRevokeSession
+// @Summary Reset encryption key to revoke all authorized codes
+// @Security JwtAuth
+// @Success 200
+// @Router /user/share/revoke [post]
+func (s *Service) RevokeHandler(c *gin.Context) {
+	s.ResetEncryptionKey()
+	c.JSON(http.StatusOK, nil)
 }

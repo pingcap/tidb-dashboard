@@ -3575,6 +3575,22 @@
                 }
             }
         },
+        "/user/share/revoke": {
+            "post": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Reset encryption key to revoke all authorized codes",
+                "operationId": "userRevokeSession",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/user/sign_out_info": {
             "get": {
                 "security": [

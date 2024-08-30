@@ -44,6 +44,8 @@ export interface IUserProfileDataSource {
     options?: ReqConfig
   ): AxiosPromise<CodeShareResponse>
 
+  userRevokeSession(options?: ReqConfig): AxiosPromise<void>
+
   metricsGetPromAddress(
     options?: ReqConfig
   ): AxiosPromise<MetricsGetPromAddressConfigResponse>

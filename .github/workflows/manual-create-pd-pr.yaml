@@ -10,14 +10,6 @@ on:
         description: 'PD branch, e.g. ["master", "release-7.6"]'
         default: '["master"]'
         required: true
-      pr_author_name:
-        description: 'PR author name'
-        default: 'baurine'
-        required: true
-      pr_author_email:
-        description: 'PR author email'
-        default: '2008.hbl@gmail.com'
-        required: true
 
 jobs:
   pd_pr:
@@ -53,8 +45,8 @@ jobs:
         id: git_commit
         run: |
           git diff
-          git config user.name ${{ github.event.inputs.pr_author_name }}
-          git config user.email ${{ github.event.inputs.pr_author_email }}
+          git config user.name "baurine"
+          git config user.email "2008.hbl@gmail.com"
           git add .
           if git status | grep -q "Changes to be committed"
           then

@@ -3805,6 +3805,39 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary Reset encryption key to revoke all authorized codes
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userRevokeSession: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/user/share/revoke`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Create an impersonation
          * @param {SsoCreateImpersonationRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -5129,6 +5162,16 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Reset encryption key to revoke all authorized codes
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userRevokeSession(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userRevokeSession(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary Create an impersonation
          * @param {SsoCreateImpersonationRequest} request Request body
          * @param {*} [options] Override http request option.
@@ -6165,6 +6208,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         userLogin(message: UserAuthenticateForm, options?: any): AxiosPromise<UserTokenResponse> {
             return localVarFp.userLogin(message, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Reset encryption key to revoke all authorized codes
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userRevokeSession(options?: any): AxiosPromise<void> {
+            return localVarFp.userRevokeSession(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8584,6 +8636,17 @@ export class DefaultApi extends BaseAPI {
      */
     public userLogin(requestParameters: DefaultApiUserLoginRequest, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).userLogin(requestParameters.message, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Reset encryption key to revoke all authorized codes
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public userRevokeSession(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userRevokeSession(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

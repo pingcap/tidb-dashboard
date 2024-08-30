@@ -49,6 +49,10 @@ func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.
 	return client
 }
 
+func (c Client) GetHTTPScheme() string {
+	return c.httpScheme
+}
+
 func (c Client) WithTimeout(timeout time.Duration) *Client {
 	c.timeout = timeout
 	return &c

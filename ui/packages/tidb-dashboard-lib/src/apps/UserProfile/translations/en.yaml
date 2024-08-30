@@ -50,6 +50,8 @@ user_profile:
     sign_out: Sign Out
     share: Share Current Session
     share_unavailable_tooltip: Current session is not allowed to be shared
+    revoke: Revoke Authorization Codes
+    revoke_unavailable_tooltip: You have no permission to revoke the authorization codes
   share_session:
     text: >
       You can invite others to access this {{distro.tidb}} Dashboard by sharing your
@@ -57,12 +59,11 @@ user_profile:
 
       - The Authorization Code can be used multiple times.
 
+      - The shared session has the same privilege as your current session.
+
       - The shared session will be invalidated after the expiry time you specified.
 
-      - The shared session has the same privilege as your current session.
-    warning: >
-      Warning: Shared session will remain valid and cannot be revoked until it is expired.
-      Keep the Authorization Code safe!
+      - The shared session can be revoked in advance by administrator.
     form:
       expire: Expire in
       read_only: Share as read-only privilege
@@ -72,6 +73,12 @@ user_profile:
       title: Authorization Code Generated
       copy: Copy
       copied: Copied
+  revoke_modal:
+    title: Are you sure you want to revoke all authorization codes?
+    content: After revoking, all authorization codes that are authorized before can't be used to login again, and this action can't undo.
+    ok: Revoke
+    cancel: Cancel
+    success_message: Revoke authorization codes successfully!
   version:
     title: Version Information
     internal_version: '{{distro.tidb}} Dashboard Internal Version'

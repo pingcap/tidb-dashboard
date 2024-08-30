@@ -50,17 +50,19 @@ user_profile:
     sign_out: 登出
     share: 分享当前会话
     share_unavailable_tooltip: 当前会话被禁止分享
+    revoke: 撤消授权码
+    revoke_unavailable_tooltip: 你没有权限撤消授权码
   share_session:
     text: >
-      您可以生成一个**授权码**来将您当前的会话分享给其他人、邀请他们使用该 {{distro.tidb}} Dashboard：
+      您可以生成一个**授权码**来将您当前的会话分享给其他人，邀请他们使用该 {{distro.tidb}} Dashboard：
 
       - 授权码可以被重复使用。
 
+      - 分享的会话和您当前会话具有相同权限。
+
       - 分享的会话将在您指定的有效时间后过期。
 
-      - 分享的会话和您当前会话具有相同权限。
-    warning: >
-      警告：已分享的会话无法被提前注销，将保持有效直到有效时间过期，因此请妥善保管授权码。
+      - 分享的会话可以被管理员提前撤消。
     form:
       expire: 有效时间
       read_only: 以只读权限分享
@@ -70,6 +72,12 @@ user_profile:
       title: 授权码已生成
       copy: 复制
       copied: 已复制
+  revoke_modal:
+    title: 你确定你要撤消所有的授权码吗？
+    content: 撤消之后，所有之前授权的授权码都不能再用于登录，而且这个操作不能回滚。
+    ok: 撤消
+    cancel: 取消
+    success_message: 撤消授权码成功！
   version:
     title: 版本信息
     internal_version: '{{distro.tidb}} Dashboard 内部版本号'

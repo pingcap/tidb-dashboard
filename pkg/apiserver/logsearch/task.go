@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"sync"
 	"time"
-	"unsafe"
 
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"github.com/pingcap/log"
@@ -252,7 +251,7 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 		}
 		for _, msg := range res.Messages {
 			line := logMessageToString(msg)
-			_, err := bufWriter.Write(*(*[]byte)(unsafe.Pointer(&line))) // #nosec
+			_, err := bufWriter.WriteString(line)
 			if err != nil {
 				t.setError(err)
 				return

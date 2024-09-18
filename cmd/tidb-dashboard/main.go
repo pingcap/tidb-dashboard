@@ -71,6 +71,8 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.IntVar(&cfg.CoreConfig.NgmTimeout, "ngm-timeout", cfg.CoreConfig.NgmTimeout, "timeout secs for accessing the ngm API")
 	flag.BoolVar(&cfg.CoreConfig.EnableKeyVisualizer, "keyviz", true, "enable/disable key visualizer(default: true)")
 	flag.BoolVar(&cfg.CoreConfig.DisableCustomPromAddr, "disable-custom-prom-addr", false, "do not allow custom prometheus address")
+	flag.Float64Var(&cfg.CoreConfig.UnauthedAPIQpsLimit, "unauthed-api-qps-limit", cfg.CoreConfig.UnauthedAPIQpsLimit, "unauthed API qps limit")
+	flag.IntVar(&cfg.CoreConfig.UnauthedAPIBurstLimit, "unauthed-api-burst-limit", cfg.CoreConfig.UnauthedAPIBurstLimit, "unauthed API burst limit")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 

@@ -37,6 +37,9 @@ type Config struct {
 	FeatureVersion        string // assign the target TiDB version when running TiDB Dashboard as standalone mode
 
 	NgmTimeout int // in seconds
+
+	UnauthedAPIQpsLimit   float64
+	UnauthedAPIBurstLimit int
 }
 
 func Default() *Config {
@@ -54,6 +57,8 @@ func Default() *Config {
 		DisableCustomPromAddr: false,
 		FeatureVersion:        version.PDVersion,
 		NgmTimeout:            30, // s
+		UnauthedAPIQpsLimit:   0,
+		UnauthedAPIBurstLimit: 0,
 	}
 }
 

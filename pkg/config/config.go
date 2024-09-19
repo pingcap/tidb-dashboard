@@ -38,6 +38,7 @@ type Config struct {
 
 	NgmTimeout int // in seconds
 
+	SigningAlgorithm      string
 	UnauthedAPIQpsLimit   float64
 	UnauthedAPIBurstLimit int
 }
@@ -57,6 +58,7 @@ func Default() *Config {
 		DisableCustomPromAddr: false,
 		FeatureVersion:        version.PDVersion,
 		NgmTimeout:            30, // s
+		SigningAlgorithm:      "",
 		UnauthedAPIQpsLimit:   0,
 		UnauthedAPIBurstLimit: 0,
 	}

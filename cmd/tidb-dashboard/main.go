@@ -71,6 +71,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.IntVar(&cfg.CoreConfig.NgmTimeout, "ngm-timeout", cfg.CoreConfig.NgmTimeout, "timeout secs for accessing the ngm API")
 	flag.BoolVar(&cfg.CoreConfig.EnableKeyVisualizer, "keyviz", true, "enable/disable key visualizer(default: true)")
 	flag.BoolVar(&cfg.CoreConfig.DisableCustomPromAddr, "disable-custom-prom-addr", false, "do not allow custom prometheus address")
+	flag.StringVar(&cfg.CoreConfig.SigningAlgorithm, "signing-algorithm", cfg.CoreConfig.SigningAlgorithm, "signing algorithm for jwt (HS256, HS384, HS512, RS256, RS384, RS512)")
 	flag.Float64Var(&cfg.CoreConfig.UnauthedAPIQpsLimit, "unauthed-api-qps-limit", cfg.CoreConfig.UnauthedAPIQpsLimit, "unauthed API qps limit")
 	flag.IntVar(&cfg.CoreConfig.UnauthedAPIBurstLimit, "unauthed-api-burst-limit", cfg.CoreConfig.UnauthedAPIBurstLimit, "unauthed API burst limit")
 

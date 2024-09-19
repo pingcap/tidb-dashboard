@@ -80,7 +80,7 @@ func (a BaseAuthenticator) SignOutInfo(_ *utils.SessionUser, _ string) (*SignOut
 	return &SignOutInfo{}, nil
 }
 
-func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
+func NewAuthService(featureFlags *featureflag.Registry, config *config.Config) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -110,11 +110,12 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 	}
 
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		IdentityKey: utils.SessionUserKey,
-		Realm:       "dashboard",
-		Key:         secret[:],
-		Timeout:     time.Hour * 24,
-		MaxRefresh:  time.Hour * 24,
+		IdentityKey:      utils.SessionUserKey,
+		Realm:            "dashboard",
+		Key:              secret[:],
+		Timeout:          time.Hour * 24,
+		MaxRefresh:       time.Hour * 24,
+		SigningAlgorithm: config.SigningAlgorithm,
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			var form AuthenticateForm
 			if err := c.ShouldBindJSON(&form); err != nil {

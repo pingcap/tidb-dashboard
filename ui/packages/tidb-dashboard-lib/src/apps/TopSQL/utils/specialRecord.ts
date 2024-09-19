@@ -21,10 +21,12 @@ export const createOverallRecord = (record: SQLRecord): PlanRecord => {
 }
 
 export const isOthersRecord = (r: SQLRecord) => {
-  return r.is_other
+  return r.is_other || r.text === 'other'
 }
 
-export const isOthersDigest = (d: string) => !d
+export const isSummaryByRecord = (r: SQLRecord) => {
+  return (r.text?.length ?? 0) > 0
+}
 
 const NO_PLAN_IDENTIFIER = '__NO_PLAN_IDENTIFIER__'
 

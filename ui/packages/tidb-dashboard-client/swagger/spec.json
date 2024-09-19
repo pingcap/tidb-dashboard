@@ -3510,6 +3510,11 @@
                     },
                     {
                         "type": "string",
+                        "name": "group_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "instance",
                         "in": "query"
                     },
@@ -6019,6 +6024,29 @@
                 }
             }
         },
+        "topsql.SummaryByItem": {
+            "type": "object",
+            "properties": {
+                "cpu_time_ms": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "cpu_time_ms_sum": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "timestamp_sec": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "topsql.SummaryItem": {
             "type": "object",
             "properties": {
@@ -6096,6 +6124,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/topsql.SummaryItem"
+                    }
+                },
+                "data_by": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/topsql.SummaryByItem"
                     }
                 }
             }

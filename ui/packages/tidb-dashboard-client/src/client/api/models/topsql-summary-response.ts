@@ -13,6 +13,7 @@
  */
 
 
+import { TopsqlSummaryByItem } from './topsql-summary-by-item';
 import { TopsqlSummaryItem } from './topsql-summary-item';
 
 /**
@@ -27,5 +28,11 @@ export interface TopsqlSummaryResponse {
      * @memberof TopsqlSummaryResponse
      */
     'data'?: Array<TopsqlSummaryItem>;
+    /**
+     * 
+     * @type {Array<TopsqlSummaryByItem>}
+     * @memberof TopsqlSummaryResponse
+     */
+    'data_by'?: Array<TopsqlSummaryByItem>;
 }
 

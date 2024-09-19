@@ -26,6 +26,7 @@ export interface ITopSQLDataSource {
 
   topsqlSummaryGet(
     end?: string,
+    groupBy?: string,
     instance?: string,
     instanceType?: string,
     start?: string,
@@ -53,6 +54,7 @@ export interface ITopSQLConfig {
 
   showSearchInStatements?: boolean
   showLimit?: boolean
+  showGroupBy?: boolean
 }
 
 export interface ITopSQLContext {

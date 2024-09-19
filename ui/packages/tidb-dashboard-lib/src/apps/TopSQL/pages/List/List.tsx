@@ -27,7 +27,12 @@ import { useMount, useSessionStorage } from 'react-use'
 import { useMemoizedFn } from 'ahooks'
 import { sortBy } from 'lodash'
 import formatSql from '@lib/utils/sqlFormatter'
-import { TopsqlInstanceItem, TopsqlSummaryItem } from '@lib/client'
+import {
+  TopsqlInstanceItem,
+  TopsqlSummaryByItem,
+  TopsqlSummaryItem,
+  TopsqlSummaryResponse
+} from '@lib/client'
 import {
   Card,
   toTimeRangeValue as _toTimeRangeValue,
@@ -57,6 +62,19 @@ const CHART_BAR_WIDTH = 8
 const RECENT_RANGE_OFFSET = -60
 const LIMITS = [5, 20, 100]
 
+export enum AggLevel {
+  Query = 'query',
+  Table = 'table',
+  Schema = 'db'
+}
+
+const formatLabel = (item: AggLevel): string => {
+  if (item === AggLevel.Schema) return 'DB' // Special case for 'db'
+  return item.charAt(0).toUpperCase() + item.slice(1) // Capitalize first letter
+}
+
+const GROUP = [AggLevel.Query, AggLevel.Table, AggLevel.Schema]
+
 const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
   return _toTimeRangeValue(v, v?.type === 'recent' ? RECENT_RANGE_OFFSET : 0)
 }
@@ -73,6 +91,7 @@ export function TopSQLList() {
   )
   const { timeRange, setTimeRange } = useURLTimeRange()
   const [limit, setLimit] = useState(5)
+  const [groupBy, setGroupBy] = useState(AggLevel.Query)
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const computeTimeWindowSize = useMemoizedFn(
@@ -89,7 +108,7 @@ export function TopSQLList() {
     topSQLData,
     isLoading: isDataLoading,
     updateTopSQLData
-  } = useTopSQLData(instance, timeRange, limit, computeTimeWindowSize)
+  } = useTopSQLData(instance, timeRange, limit, groupBy, computeTimeWindowSize)
   const isLoading = isConfigLoading || isDataLoading
   const {
     instances,
@@ -195,6 +214,10 @@ export function TopSQLList() {
                   if (inst) {
                     telemetry.finishSelectInstance(inst?.instance_type!)
                   }
+                  // only group by sql when instance is not tikv
+                  if (inst?.instance_type !== 'tikv') {
+                    setGroupBy(AggLevel.Query)
+                  }
                 }}
                 instances={instances}
                 disabled={isLoading || isInstancesLoading}
@@ -227,6 +250,20 @@ export function TopSQLList() {
                   {LIMITS.map((item) => (
                     <Option value={item} key={item} data-e2e="limit_option">
                       Limit {item}
+                    </Option>
+                  ))}
+                </Select>
+              )}
+              {ctx?.cfg.showGroupBy && instance?.instance_type === 'tikv' && (
+                <Select
+                  style={{ width: 150 }}
+                  value={groupBy}
+                  onChange={setGroupBy}
+                  data-e2e="group_select"
+                >
+                  {GROUP.map((item) => (
+                    <Option value={item} key={item} data-e2e="group_option">
+                      By {formatLabel(item)}
                     </Option>
                   ))}
                 </Select>
@@ -319,6 +356,7 @@ export function TopSQLList() {
               <ListChart
                 onBrushEnd={handleBrushEnd}
                 data={topSQLData}
+                groupBy={groupBy}
                 timeRangeTimestamp={toTimeRangeValue(timeRange)}
                 timeWindowSize={timeWindowSize}
                 ref={chartRef}
@@ -333,6 +371,7 @@ export function TopSQLList() {
                 topN={limit}
                 instanceType={instance?.instance_type as InstanceType}
                 data={topSQLData}
+                groupBy={groupBy}
                 timeRange={timeRange}
               />
             )}
@@ -368,11 +407,12 @@ const useTopSQLData = (
   instance: TopsqlInstanceItem | null,
   timeRange: TimeRange,
   limit: number,
+  groupBy: string,
   computeTimeWindowSize: (ts: TimeRangeValue) => number
 ) => {
   const ctx = useContext(TopSQLContext)
 
-  const [topSQLData, setTopSQLData] = useState<TopsqlSummaryItem[]>([])
+  const [topSQLData, setTopSQLData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const updateTopSQLData = useMemoizedFn(
     async (
@@ -384,7 +424,7 @@ const useTopSQLData = (
         return
       }
 
-      let data: TopsqlSummaryItem[]
+      let dataResp: TopsqlSummaryResponse
       const ts = toTimeRangeValue(_timeRange)
       const timeWindowSize = computeTimeWindowSize(ts)
 
@@ -393,41 +433,61 @@ const useTopSQLData = (
         setIsLoading(true)
         const resp = await ctx!.ds.topsqlSummaryGet(
           String(end),
+          _instance.instance_type === 'tidb' ? AggLevel.Query : groupBy,
           _instance.instance,
           _instance.instance_type,
           String(start),
           String(limit),
           `${timeWindowSize}s`
         )
-        data = resp.data.data ?? []
+        dataResp = resp.data
       } finally {
         setIsLoading(false)
       }
 
-      // Sort data by digest
-      // If this digest occurs continuously on the timeline, we can easily see the sequential overhead
-      data.sort((a, b) => a.sql_digest?.localeCompare(b.sql_digest!) || 0)
+      if (groupBy === AggLevel.Query || instance?.instance_type === 'tidb') {
+        // Sort data by digest
+        let data: TopsqlSummaryItem[] = dataResp.data ?? []
+        // If this digest occurs continuously on the timeline, we can easily see the sequential overhead
+        data.sort((a, b) => a.sql_digest?.localeCompare(b.sql_digest!) || 0)
 
-      data.forEach((d) => {
-        d.sql_text = formatSql(d.sql_text)
-        d.plans?.forEach((item) => {
-          // Filter empty cpu time data
-          item.timestamp_sec = item.timestamp_sec?.filter(
-            (_, index) => !!item.cpu_time_ms?.[index]
-          )
-          item.cpu_time_ms = item.cpu_time_ms?.filter((c) => !!c)
+        data.forEach((d) => {
+          d.sql_text = formatSql(d.sql_text)
+          d.plans?.forEach((item) => {
+            // Filter empty cpu time data
+            item.timestamp_sec = item.timestamp_sec?.filter(
+              (_, index) => !!item.cpu_time_ms?.[index]
+            )
+            item.cpu_time_ms = item.cpu_time_ms?.filter((c) => !!c)
 
-          item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000)
+            item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000)
+          })
         })
-      })
+        setTopSQLData(data)
+      }
 
-      setTopSQLData(data)
+      if (groupBy === AggLevel.Table || groupBy === AggLevel.Schema) {
+        let data: TopsqlSummaryByItem[] = dataResp.data_by ?? []
+        // Sort data by table
+        // If this table occurs continuously on the timeline, we can easily see the sequential overhead
+        // data.sort((a, b) => a.table_?.localeCompare(b.table!) || 0)
+        data.forEach((d) => {
+          // Filter empty cpu time data
+          d.timestamp_sec = d.timestamp_sec?.filter(
+            (_, index) => !!d.cpu_time_ms?.[index]
+          )
+          d.cpu_time_ms = d.cpu_time_ms?.filter((c) => !!c)
+
+          d.timestamp_sec = d.timestamp_sec?.map((t) => t * 1000)
+        })
+        setTopSQLData(data)
+      }
     }
   )
 
   useEffect(() => {
     updateTopSQLData(instance, timeRange, limit)
-  }, [instance, timeRange, limit, updateTopSQLData])
+  }, [instance, timeRange, limit, groupBy, updateTopSQLData])
 
   return { topSQLData, isLoading, updateTopSQLData }
 }

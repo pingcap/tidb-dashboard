@@ -29,11 +29,13 @@ topsql:
   table:
     description: 以下表格展示了当前时间范围内消耗负载最多的 {{topN}} 类 SQL 查询，点击后可进一步显示详情。
     description_no_recent_data: 当前暂无数据，您需要等待约 1 分钟完成新数据采集。
-    others: 其他语句
-    others_tooltip: 所有其他非 Top {{topN}} 的语句
+    others: 其他
+    others_tooltip: 所有其他非 Top {{topN}} 的条目
     fields:
       cpu_time: 累计 CPU 耗时
       sql: SQL 语句
+      table: 表名
+      db: 数据库名
     actions:
       search_in_statements: 在 SQL 语句分析中搜索
   detail:

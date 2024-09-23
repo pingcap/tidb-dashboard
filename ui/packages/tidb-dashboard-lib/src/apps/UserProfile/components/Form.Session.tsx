@@ -4,6 +4,7 @@ import {
   CopyOutlined,
   LogoutOutlined,
   QuestionCircleOutlined,
+  RollbackOutlined,
   ShareAltOutlined
 } from '@ant-design/icons'
 import {
@@ -11,6 +12,7 @@ import {
   Button,
   Divider,
   Form,
+  message,
   Modal,
   Select,
   Space,
@@ -39,6 +41,46 @@ const SHARE_SESSION_EXPIRY_HOURS = [
   24 * 7,
   24 * 30
 ]
+
+function RevokeSessionButton() {
+  const whoAmI = store.useState((s) => s.whoAmI)
+  const { t } = useTranslation()
+  const ctx = useContext(UserProfileContext)
+
+  function showRevokeConfirm() {
+    Modal.confirm({
+      title: t('user_profile.revoke_modal.title'),
+      content: t('user_profile.revoke_modal.content'),
+      okText: t('user_profile.revoke_modal.ok'),
+      cancelText: t('user_profile.revoke_modal.cancel'),
+      onOk() {
+        ctx?.ds.userRevokeSession().then(() => {
+          message.success(t('user_profile.revoke_modal.success_message'))
+        })
+      }
+    })
+  }
+
+  let button = (
+    <Button
+      onClick={showRevokeConfirm}
+      disabled={!whoAmI || !whoAmI.is_shareable}
+    >
+      <RollbackOutlined /> {t('user_profile.session.revoke')}
+      {Boolean(whoAmI && !whoAmI.is_shareable) && <QuestionCircleOutlined />}
+    </Button>
+  )
+
+  if (whoAmI && !whoAmI.is_shareable) {
+    button = (
+      <Tooltip title={t('user_profile.session.revoke_unavailable_tooltip')}>
+        {button}
+      </Tooltip>
+    )
+  }
+
+  return <>{button}</>
+}
 
 function ShareSessionButton() {
   const ctx = useContext(UserProfileContext)
@@ -143,11 +185,6 @@ function ShareSessionButton() {
         width={600}
       >
         <ReactMarkdown>{t('user_profile.share_session.text')}</ReactMarkdown>
-        <Alert
-          message={t('user_profile.share_session.warning')}
-          type="warning"
-          showIcon
-        />
         <Divider />
         <Form
           layout="vertical"
@@ -216,6 +253,8 @@ export function SessionForm() {
   return (
     <Space>
       <ShareSessionButton />
+      {/* only available for v8.4.0+, v6.5.11+ */}
+      <RevokeSessionButton />
       <Button danger onClick={handleLogout}>
         <LogoutOutlined /> {t('user_profile.session.sign_out')}
       </Button>

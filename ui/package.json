@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "license": "MIT",
   "engines": {
-    "node": ">=18.16.0"
+    "node": ">= 18.16.0",
+    "pnpm": ">= 8"
   },
   "scripts": {
     "fmt-check": "prettier --check .",
@@ -38,5 +39,6 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
-  }
+  },
+  "packageManager": "pnpm@8.15.9"
 }

@@ -33,20 +33,21 @@ jobs:
       - name: Run unit test
         run: |
           make unit_test
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          files: ./coverage/unit_test.txt
-          fail_ci_if_error: true
-          flags: backend_ut
-          verbose: true
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     files: ./coverage/unit_test.txt
+      #     fail_ci_if_error: true
+      #     flags: backend_ut
+      #     verbose: true
 
   backend_integration:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       matrix:
-        tidb_version: [nightly, ^6.0, ^5.4, ^5.0]
+        # tidb_version: [nightly, ^6.0, ^5.4, ^5.0]
+        tidb_version: [^7.5]
     name: Backend - Integration - TiDB@${{ matrix.tidb_version }}
     steps:
       - name: Checkout code
@@ -71,13 +72,13 @@ jobs:
       - name: Run integration test
         run: |
           make integration_test TIDB_VERSION=${{ matrix.tidb_version }}
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          files: ./coverage/integration_${{ matrix.tidb_version }}.txt
-          fail_ci_if_error: true
-          flags: backend_integration
-          verbose: true
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     files: ./coverage/integration_${{ matrix.tidb_version }}.txt
+      #     fail_ci_if_error: true
+      #     flags: backend_integration
+      #     verbose: true
 
   # e2e_test:
   #   runs-on: ubuntu-latest

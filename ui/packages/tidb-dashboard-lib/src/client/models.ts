@@ -3968,6 +3968,41 @@ export interface TopsqlInstanceResponse {
 /**
  * 
  * @export
+ * @interface TopsqlSummaryByItem
+ */
+export interface TopsqlSummaryByItem {
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryByItem
+     */
+    'cpu_time_ms'?: Array<number>;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryByItem
+     */
+    'cpu_time_ms_sum'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof TopsqlSummaryByItem
+     */
+    'text'?: string;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryByItem
+     */
+    'timestamp_sec'?: Array<number>;
+}
+
+
+
+
+/**
+ * 
+ * @export
  * @interface TopsqlSummaryItem
  */
 export interface TopsqlSummaryItem {
@@ -4101,6 +4136,12 @@ export interface TopsqlSummaryResponse {
      * @memberof TopsqlSummaryResponse
      */
     'data'?: Array<TopsqlSummaryItem>;
+    /**
+     * 
+     * @type {Array<TopsqlSummaryByItem>}
+     * @memberof TopsqlSummaryResponse
+     */
+    'data_by'?: Array<TopsqlSummaryByItem>;
 }
 
 

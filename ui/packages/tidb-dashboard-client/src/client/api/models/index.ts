@@ -86,6 +86,7 @@ export * from './topology-ti-proxy-info';
 export * from './topsql-editable-config';
 export * from './topsql-instance-item';
 export * from './topsql-instance-response';
+export * from './topsql-summary-by-item';
 export * from './topsql-summary-item';
 export * from './topsql-summary-plan-item';
 export * from './topsql-summary-response';

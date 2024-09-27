@@ -218,7 +218,7 @@ func (s *Service) createPlanBinding(db *gorm.DB, planDigest string) (err error) 
 		return errors.New("invalid planDigest")
 	}
 
-	query := db.Exec(fmt.Sprintf("CREATE GLOBAL BINDING FROM HISTORY USING PLAN DIGEST '%s'", planDigest))
+	query := db.Exec("CREATE GLOBAL BINDING FROM HISTORY USING PLAN DIGEST ?", planDigest)
 	return query.Error
 }
 

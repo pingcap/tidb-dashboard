@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
@@ -19,6 +20,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
@@ -30,9 +33,11 @@ type Service struct {
 	logStoreDirectory string
 	db                *dbstore.DB
 	scheduler         *Scheduler
+	etcdClient        *clientv3.Client
+	pdClient          *pd.Client
 }
 
-func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service {
+func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB, etcdClient *clientv3.Client, pdClient *pd.Client) *Service {
 	dir := config.TempDir
 	if dir == "" {
 		var err error
@@ -52,6 +57,8 @@ func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service
 		logStoreDirectory: dir,
 		db:                db,
 		scheduler:         nil, // will be filled after scheduler is created
+		etcdClient:        etcdClient,
+		pdClient:          pdClient,
 	}
 	scheduler := NewScheduler(service)
 	service.scheduler = scheduler
@@ -110,6 +117,10 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 	}
 	if len(req.Targets) == 0 {
 		rest.Error(c, rest.ErrBadRequest.New("Expect at least 1 target"))
+		return
+	}
+	if err := s.verifyTargets(c.Request.Context(), req.Targets); err != nil {
+		rest.Error(c, err)
 		return
 	}
 	stats := model.NewRequestTargetStatisticsFromArray(&req.Targets)
@@ -360,4 +371,158 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 	default:
 		serveMultipleTaskForDownload(tasks, c)
 	}
+}
+
+func (s *Service) verifyTargets(ctx context.Context, targets []model.RequestTargetNode) error {
+	kindToTargets := make(map[model.NodeKind][]model.RequestTargetNode)
+	for _, target := range targets {
+		kindToTargets[target.Kind] = append(kindToTargets[target.Kind], target)
+	}
+	var tikvInfos []topology.StoreInfo
+	var tiflashInfos []topology.StoreInfo
+	for kind, targets := range kindToTargets {
+		switch kind {
+		case model.NodeKindTiDB:
+			infos, err := topology.FetchTiDBTopology(ctx, s.etcdClient)
+			if err != nil {
+				log.Error("failed to fetch tidb topology", zap.Error(err))
+				return rest.ErrInternalServerError.NewWithNoMessage()
+			}
+			for _, target := range targets {
+				matched := false
+				for _, info := range infos {
+					if info.IP == target.IP && info.Port == uint(target.Port) {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					return rest.ErrInvalidEndpoint.NewWithNoMessage()
+				}
+			}
+		case model.NodeKindTiKV, model.NodeKindTiFlash:
+			if len(tikvInfos) == 0 {
+				var err error
+				tikvInfos, tiflashInfos, err = topology.FetchStoreTopology(s.pdClient)
+				if err != nil {
+					log.Error("failed to fetch tikv/tiflash topology", zap.Error(err))
+					return rest.ErrInternalServerError.NewWithNoMessage()
+				}
+			}
+			for _, target := range targets {
+				matched := false
+				if kind == model.NodeKindTiKV {
+					for _, info := range tikvInfos {
+						if info.IP == target.IP && info.Port == uint(target.Port) {
+							matched = true
+							break
+						}
+					}
+				} else {
+					for _, info := range tiflashInfos {
+						if info.IP == target.IP && info.Port == uint(target.Port) {
+							matched = true
+							break
+						}
+					}
+				}
+				if !matched {
+					return rest.ErrInvalidEndpoint.NewWithNoMessage()
+				}
+			}
+		case model.NodeKindPD:
+			infos, err := topology.FetchPDTopology(s.pdClient)
+			if err != nil {
+				log.Error("failed to fetch pd topology", zap.Error(err))
+				return rest.ErrInternalServerError.NewWithNoMessage()
+			}
+			for _, target := range targets {
+				matched := false
+				for _, info := range infos {
+					if info.IP == target.IP && info.Port == uint(target.Port) {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					return rest.ErrInvalidEndpoint.NewWithNoMessage()
+				}
+			}
+		case model.NodeKindTiCDC:
+			infos, err := topology.FetchTiCDCTopology(ctx, s.etcdClient)
+			if err != nil {
+				log.Error("failed to fetch ticdc topology", zap.Error(err))
+				return rest.ErrInternalServerError.NewWithNoMessage()
+			}
+			for _, target := range targets {
+				matched := false
+				for _, info := range infos {
+					if info.IP == target.IP && info.Port == uint(target.Port) {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					return rest.ErrInvalidEndpoint.NewWithNoMessage()
+				}
+			}
+		case model.NodeKindTiProxy:
+			infos, err := topology.FetchTiProxyTopology(ctx, s.etcdClient)
+			if err != nil {
+				log.Error("failed to fetch tiproxy topology", zap.Error(err))
+				return rest.ErrInternalServerError.NewWithNoMessage()
+			}
+			for _, target := range targets {
+				matched := false
+				for _, info := range infos {
+					if info.IP == target.IP && info.Port == uint(target.Port) {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					return rest.ErrInvalidEndpoint.NewWithNoMessage()
+				}
+			}
+		case model.NodeKindTSO:
+			infos, err := topology.FetchTSOTopology(ctx, s.pdClient)
+			if err != nil {
+				log.Error("failed to fetch tso topology", zap.Error(err))
+				return rest.ErrInternalServerError.NewWithNoMessage()
+			}
+			for _, target := range targets {
+				matched := false
+				for _, info := range infos {
+					if info.IP == target.IP && info.Port == uint(target.Port) {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					return rest.ErrInvalidEndpoint.NewWithNoMessage()
+				}
+			}
+		case model.NodeKindScheduling:
+			infos, err := topology.FetchSchedulingTopology(ctx, s.pdClient)
+			if err != nil {
+				log.Error("failed to fetch scheduling topology", zap.Error(err))
+				return rest.ErrInternalServerError.NewWithNoMessage()
+			}
+			for _, target := range targets {
+				matched := false
+				for _, info := range infos {
+					if info.IP == target.IP && info.Port == uint(target.Port) {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					return rest.ErrInvalidEndpoint.NewWithNoMessage()
+				}
+			}
+		default:
+			return rest.ErrInvalidEndpoint.NewWithNoMessage()
+		}
+	}
+	return nil
 }

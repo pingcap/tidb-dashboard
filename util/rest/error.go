@@ -12,10 +12,13 @@ import (
 )
 
 var (
-	ErrUnauthenticated = errorx.CommonErrors.NewType("unauthenticated")
-	ErrForbidden       = errorx.CommonErrors.NewType("forbidden")
-	ErrBadRequest      = errorx.CommonErrors.NewType("bad_request")
-	ErrNotFound        = errorx.CommonErrors.NewType("not_found")
+	ErrUnauthenticated     = errorx.CommonErrors.NewType("unauthenticated")
+	ErrForbidden           = errorx.CommonErrors.NewType("forbidden")
+	ErrBadRequest          = errorx.CommonErrors.NewType("bad_request")
+	ErrNotFound            = errorx.CommonErrors.NewType("not_found")
+	ErrTooManyRequests     = errorx.CommonErrors.NewType("too_many_requests")
+	ErrInvalidEndpoint     = errorx.CommonErrors.NewType("invalid_endpoint")
+	ErrInternalServerError = errorx.CommonErrors.NewType("internal_server_error")
 
 	errInternal  = errorx.CommonErrors.NewType("internal")
 	propHTTPCode = errorx.RegisterProperty("http_code")

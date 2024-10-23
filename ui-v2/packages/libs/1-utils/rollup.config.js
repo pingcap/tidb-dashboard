@@ -1,4 +1,4 @@
-import typescript from "@rollup/plugin-typescript";
+import typescript from "@rollup/plugin-typescript"
 
 export default {
   input: "src/index.ts",
@@ -7,4 +7,4 @@ export default {
     format: "es",
   },
   plugins: [typescript()],
-};
+}

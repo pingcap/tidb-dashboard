@@ -6,7 +6,8 @@
   "scripts": {
     "fmt-check": "prettier --check .",
     "fmt-fix": "prettier --write .",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepare": "cd .. && husky ui-v4/.husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
@@ -14,6 +15,7 @@
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.12",
     "globals": "^15.9.0",
+    "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
     "typescript": "^5.5.3",

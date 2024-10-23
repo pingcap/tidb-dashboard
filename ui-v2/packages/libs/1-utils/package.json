@@ -24,6 +24,7 @@
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.1",
+    "@tidbcloud/uikit": "2.0.0-beta.54",
     "@types/react": "^18.3.12",
     "i18next": "^23.16.2",
     "react": "^18.3.1",
@@ -32,6 +33,7 @@
     "tslib": "^2.8.0"
   },
   "peerDependencies": {
+    "@tidbcloud/uikit": "2.0.0-beta.54",
     "i18next": "^23.16.2",
     "react": "^18.3.1",
     "react-i18next": "^15.1.0"

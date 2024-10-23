@@ -136,6 +136,19 @@ importers:
         version: 2.8.0
 
   packages/libs/5-apps:
+    dependencies:
+      '@pingcap-incubator/tidb-dashboard-lib-biz-ui':
+        specifier: workspace:^
+        version: link:../4-biz-ui
+      '@pingcap-incubator/tidb-dashboard-lib-icons':
+        specifier: workspace:^
+        version: link:../2-icons
+      '@pingcap-incubator/tidb-dashboard-lib-primitive-ui':
+        specifier: workspace:^
+        version: link:../3-primitive-ui
+      '@pingcap-incubator/tidb-dashboard-lib-utils':
+        specifier: workspace:^
+        version: link:../1-utils
     devDependencies:
       '@rollup/plugin-typescript':
         specifier: ^12.1.1

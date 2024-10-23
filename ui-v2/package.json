@@ -7,7 +7,9 @@
     "fmt-check": "prettier --check .",
     "fmt-fix": "prettier --write .",
     "lint": "eslint .",
-    "prepare": "cd .. && husky ui-v2/.husky"
+    "prepare": "cd .. && husky ui-v2/.husky",
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",

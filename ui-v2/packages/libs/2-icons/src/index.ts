@@ -1,1 +1,1 @@
-export * from "@tidbcloud/uikit/icons";
+export * from "@tidbcloud/uikit/icons"

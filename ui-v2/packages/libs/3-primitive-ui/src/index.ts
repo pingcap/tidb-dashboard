@@ -1,1 +1,1 @@
-export * from "@tidbcloud/uikit";
+export * from "@tidbcloud/uikit"

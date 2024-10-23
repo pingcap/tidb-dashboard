@@ -1,1 +1,1 @@
-export { useTn } from "./use-tn";
+export { useTn } from "./use-tn"

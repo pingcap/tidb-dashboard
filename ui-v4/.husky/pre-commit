@@ -1,0 +1,2 @@
+cd ui-v4
+pnpm lint-staged

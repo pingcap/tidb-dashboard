@@ -1,5 +1,5 @@
 {
-  "name": "ui-v4",
+  "name": "ui-v2",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,7 +7,7 @@
     "fmt-check": "prettier --check .",
     "fmt-fix": "prettier --write .",
     "lint": "eslint .",
-    "prepare": "cd .. && husky ui-v4/.husky"
+    "prepare": "cd .. && husky ui-v2/.husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",

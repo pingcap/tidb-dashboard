@@ -1,0 +1,39 @@
+{
+  "name": "@pingcap-incubator/tidb-dashboard-ui-lib-utils",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/*.ts",
+    "package.json",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "tsc:watch": "tsc --watch",
+    "rollup:watch": "rollup -c --watch",
+    "dev": "concurrently --kill-others \"pnpm tsc:watch\" \"pnpm rollup:watch\"",
+    "build": "tsc && rollup -c"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@types/react": "^18.3.12",
+    "i18next": "^23.16.2",
+    "react": "^18.3.1",
+    "react-i18next": "^15.1.0",
+    "rollup": "^4.24.0",
+    "tslib": "^2.8.0"
+  },
+  "peerDependencies": {
+    "i18next": "^23.16.2",
+    "react": "^18.3.1",
+    "react-i18next": "^15.1.0"
+  }
+}

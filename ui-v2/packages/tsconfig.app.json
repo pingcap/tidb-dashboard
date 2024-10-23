@@ -6,12 +6,17 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
+    /* declaration */
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    // "noEmit": false,
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    "resolveJsonModule": true,
     "jsx": "react-jsx",
 
     /* Linting */

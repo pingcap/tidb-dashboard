@@ -1,5 +1,5 @@
 {
-  "name": "@pingcap-incubator/tidb-dashboard-ui-primitive-ui",
+  "name": "@pingcap-incubator/tidb-dashboard-lib-primitive-ui",
   "version": "0.0.1",
   "description": "",
   "type": "module",

@@ -6,10 +6,20 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    "./slow-query": {
+      "import": "./dist/slow-query/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "slow-query": [
+        "./dist/slow-query/index.d.ts"
+      ]
+    }
+  },
   "files": [
-    "dist/*.js",
-    "dist/*.ts",
-    "package.json",
+    "dist",
     "README.md",
     "CHANGELOG.md"
   ],

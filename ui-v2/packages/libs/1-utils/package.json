@@ -7,9 +7,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/*.js",
-    "dist/*.ts",
-    "package.json",
+    "dist",
     "README.md",
     "CHANGELOG.md"
   ],

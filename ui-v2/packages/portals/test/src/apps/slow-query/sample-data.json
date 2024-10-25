@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "query": "select aa from test",
+    "latency": 10
+  },
+  {
+    "id": 2,
+    "query": "select bb from test",
+    "latency": 20
+  },
+  {
+    "id": 3,
+    "query": "select cc from test",
+    "latency": 30
+  },
+  {
+    "id": 4,
+    "query": "select dd from test",
+    "latency": 40
+  },
+  {
+    "id": 5,
+    "query": "select ee from test",
+    "latency": 50
+  }
+]

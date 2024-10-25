@@ -7,12 +7,18 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
     "./slow-query": {
       "import": "./dist/slow-query/index.js"
     }
   },
   "typesVersions": {
     "*": {
+      ".": [
+        "./dist/index.d.ts"
+      ],
       "slow-query": [
         "./dist/slow-query/index.d.ts"
       ]

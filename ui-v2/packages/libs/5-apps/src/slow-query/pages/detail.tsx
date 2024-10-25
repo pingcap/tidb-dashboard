@@ -1,3 +1,4 @@
+import { IconArrowLeft } from "@pingcap-incubator/tidb-dashboard-lib-icons"
 import {
   Box,
   Container,
@@ -5,6 +6,7 @@ import {
   Stack,
   Title,
   Text,
+  Button,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { useQuery } from "@tanstack/react-query"
 
@@ -45,6 +47,9 @@ export function Detail() {
           </Stack>
         ) : null}
       </Box>
+      <Button onClick={cxt.actions.backToList}>
+        <IconArrowLeft size={16} strokeWidth={2} /> Back
+      </Button>
     </Container>
   )
 }

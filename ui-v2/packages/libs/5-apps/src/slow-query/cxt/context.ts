@@ -20,6 +20,7 @@ type AppConfig = {
 
 type AppActions = {
   openDetail(id: number): void
+  backToList(): void
 }
 
 export type AppCtxValue = {

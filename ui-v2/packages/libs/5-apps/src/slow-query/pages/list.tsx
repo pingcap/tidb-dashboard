@@ -18,7 +18,7 @@ export function List() {
   const { term, setTerm } = useListUrlState()
 
   const { data: slowQueryList, isLoading } = useQuery({
-    queryKey: ["slow-query", "list", ctx.extra.clusterId, term],
+    queryKey: [ctx.ctxId, "slow-query", "list", term],
     queryFn: () => {
       return ctx.api.getSlowQueries({ term })
     },

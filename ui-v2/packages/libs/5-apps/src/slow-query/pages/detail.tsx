@@ -17,7 +17,7 @@ export function Detail() {
   const { id } = useDetailUrlState()
 
   const { data: detailData, isLoading } = useQuery({
-    queryKey: ["slow_query", "detail", cxt.extra.clusterId, id],
+    queryKey: [cxt.ctxId, "slow-query", "detail", id],
     queryFn: () => {
       return cxt.api.getSlowQuery({ id })
     },

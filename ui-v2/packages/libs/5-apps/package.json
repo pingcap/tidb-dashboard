@@ -33,9 +33,10 @@
     "react": "^18.3.1"
   },
   "dependencies": {
-    "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
+    "@pingcap-incubator/tidb-dashboard-lib-biz-ui": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-icons": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-primitive-ui": "workspace:^",
-    "@pingcap-incubator/tidb-dashboard-lib-biz-ui": "workspace:^"
+    "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
+    "@tanstack/react-query": "^5.59.16"
   }
 }

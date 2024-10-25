@@ -149,6 +149,9 @@ importers:
       '@pingcap-incubator/tidb-dashboard-lib-utils':
         specifier: workspace:^
         version: link:../1-utils
+      '@tanstack/react-query':
+        specifier: ^5.59.16
+        version: 5.59.16(react@18.3.1)
     devDependencies:
       '@rollup/plugin-typescript':
         specifier: ^12.1.1
@@ -604,6 +607,14 @@ packages:
   '@tanstack/match-sorter-utils@8.7.6':
     resolution: {integrity: sha512-2AMpRiA6QivHOUiBpQAVxjiHAA68Ei23ZUMNaRJrN6omWiSFLoYrxGcT6BXtuzp0Jw4h6HZCmGGIM/gbwebO2A==}
     engines: {node: '>=12'}
+
+  '@tanstack/query-core@5.59.16':
+    resolution: {integrity: sha512-crHn+G3ltqb5JG0oUv6q+PMz1m1YkjpASrXTU+sYWW9pLk0t2GybUHNRqYPZWhxgjPaVGC4yp92gSFEJgYEsPw==}
+
+  '@tanstack/react-query@5.59.16':
+    resolution: {integrity: sha512-MuyWheG47h6ERd4PKQ6V8gDyBu3ThNG22e1fRVwvq6ap3EqsFhyuxCAwhNP/03m/mLg+DAb0upgbPaX6VB+CkQ==}
+    peerDependencies:
+      react: ^18 || ^19
 
   '@tanstack/react-table@8.7.9':
     resolution: {integrity: sha512-6MbbQn5AupSOkek1+6IYu+1yZNthAKTRZw9tW92Vi6++iRrD1GbI3lKTjJalf8lEEKOqapPzQPE20nywu0PjCA==}
@@ -2530,6 +2541,13 @@ snapshots:
   '@tanstack/match-sorter-utils@8.7.6':
     dependencies:
       remove-accents: 0.4.2
+
+  '@tanstack/query-core@5.59.16': {}
+
+  '@tanstack/react-query@5.59.16(react@18.3.1)':
+    dependencies:
+      '@tanstack/query-core': 5.59.16
+      react: 18.3.1
 
   '@tanstack/react-table@8.7.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:

@@ -137,6 +137,9 @@ importers:
 
   packages/libs/5-apps:
     dependencies:
+      '@baurine/use-url-state':
+        specifier: ^0.0.2
+        version: 0.0.2(react@18.3.1)
       '@pingcap-incubator/tidb-dashboard-lib-biz-ui':
         specifier: workspace:^
         version: link:../4-biz-ui
@@ -302,6 +305,11 @@ packages:
   '@babel/types@7.25.9':
     resolution: {integrity: sha512-OwS2CM5KocvQ/k7dFJa8i5bNGJP0hXWfVCfDkqRFP1IreH1JDC7wG6eCYCi0+McbfT8OR/kNqsI0UU0xP9H6PQ==}
     engines: {node: '>=6.9.0'}
+
+  '@baurine/use-url-state@0.0.2':
+    resolution: {integrity: sha512-Os80sLwSkt1yta6OYJUpK4+yOQ5DWuVO+9L4vN8R5SBV9rmuNiCvFusFpRbT2/wsPMURtGVeYv6Y8ziOaFT9Ig==}
+    peerDependencies:
+      react: ^18.3.1
 
   '@emotion/babel-plugin@11.12.0':
     resolution: {integrity: sha512-y2WQb+oP8Jqvvclh8Q55gLUyb7UFvgv7eJfsj7td5TToBrIUtPay2kMrZi4xjq9qw2vD0ZR5fSho0yqoFgX7Rw==}
@@ -2563,6 +2571,10 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
+
+  '@baurine/use-url-state@0.0.2(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
 
   '@emotion/babel-plugin@11.12.0':
     dependencies:

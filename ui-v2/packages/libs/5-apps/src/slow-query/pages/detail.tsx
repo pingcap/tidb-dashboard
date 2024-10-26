@@ -1,12 +1,12 @@
 import { IconArrowLeft } from "@pingcap-incubator/tidb-dashboard-lib-icons"
 import {
   Box,
+  Button,
   Container,
   Loader,
   Stack,
-  Title,
   Text,
-  Button,
+  Title,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { useQuery } from "@tanstack/react-query"
 

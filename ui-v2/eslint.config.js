@@ -25,6 +25,17 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
+      // `import/order` can't sort the multiple imported members from a lib, but `sort-imports` can
+      // so we use them both
+      "sort-imports": [
+        "error",
+        {
+          ignoreCase: false,
+          ignoreDeclarationSort: true,
+          ignoreMemberSort: false,
+          allowSeparatedGroups: true,
+        },
+      ],
       "import/order": [
         "error",
         {

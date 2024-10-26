@@ -1,8 +1,8 @@
 import {
-  AppProvider,
-  List,
-  Detail,
   AppCtxValue,
+  AppProvider,
+  Detail,
+  List,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
 import { useMemo, useState } from "react"
 import { Route, Routes, useNavigate } from "react-router-dom"

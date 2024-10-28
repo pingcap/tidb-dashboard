@@ -1,8 +1,7 @@
 import {
-  Box,
   Button,
-  Container,
   Loader,
+  Stack,
   Table,
   Title,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
@@ -17,21 +16,19 @@ export function List() {
   const { data: slowQueryList, isLoading } = useListData()
 
   return (
-    <Container>
+    <Stack>
       {ctx.cfg.title && (
         <Title order={1} mb="md">
           {ctx.cfg.title}
         </Title>
       )}
 
-      <Box mb="md">
-        <Filters />
-      </Box>
+      <Filters />
 
       {isLoading && <Loader />}
 
       {slowQueryList && (
-        <Table>
+        <Table withBorder>
           <thead>
             <tr>
               <th>Query</th>
@@ -55,6 +52,6 @@ export function List() {
           </tbody>
         </Table>
       )}
-    </Container>
+    </Stack>
   )
 }

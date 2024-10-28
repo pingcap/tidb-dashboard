@@ -39,32 +39,28 @@ export function getIndexAdvisorContext(): IndexAdvisorCtxValue {
         })
       },
       applyAdvisor(params: { advisorId: string }): Promise<void> {
-        return delay(1000)
-          .then(() => ({}))
-          .then((_d) => {
-            // update advisor status
-            const idx = advicesCache.findIndex(
-              (advisor) => advisor.id === params.advisorId,
-            )
-            if (idx >= 0) {
-              advicesCache[idx] = { ...advicesCache[idx], state: "APPLIED" }
-            }
-            // return d
-          })
+        return delay(1000).then((_d) => {
+          // update advisor status
+          const idx = advicesCache.findIndex(
+            (advisor) => advisor.id === params.advisorId,
+          )
+          if (idx >= 0) {
+            advicesCache[idx] = { ...advicesCache[idx], state: "APPLIED" }
+          }
+          // return d
+        })
       },
       closeAdvisor(params: { advisorId: string }): Promise<void> {
-        return delay(1000)
-          .then(() => ({}))
-          .then((_d) => {
-            // update advisor status
-            const idx = advicesCache.findIndex(
-              (advisor) => advisor.id === params.advisorId,
-            )
-            if (idx >= 0) {
-              advicesCache[idx] = { ...advicesCache[idx], state: "CLOSED" }
-            }
-            // return d
-          })
+        return delay(1000).then((_d) => {
+          // update advisor status
+          const idx = advicesCache.findIndex(
+            (advisor) => advisor.id === params.advisorId,
+          )
+          if (idx >= 0) {
+            advicesCache[idx] = { ...advicesCache[idx], state: "CLOSED" }
+          }
+          // return d
+        })
       },
       deleteAdvisor(_params: { advisorId: string }): Promise<void> {
         return delay(1000).then(() => {})

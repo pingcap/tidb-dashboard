@@ -31,9 +31,6 @@ export const UIKitThemeProvider = ({
   const theme = useTheme(colorSchemeResult)
   const [colors, setColors] = useState(theme.colors)
 
-  // useUpdateEffect(() => {
-  //   setColors(theme.colors)
-  // }, [colorSchemeResult])
   useEffect(() => {
     setColors(theme.colors)
   }, [colorSchemeResult])

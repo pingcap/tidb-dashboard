@@ -10,11 +10,11 @@ import { RefreshButton } from "../components/RefreshButton"
 
 export function List() {
   return (
-    <Stack mx={-24}>
+    <Stack>
       {/* temporary hide it */}
       {/* <AdvisorsSummary /> */}
 
-      <Group px={24}>
+      <Group>
         <AdvisorsFilters />
         <RefreshButton />
       </Group>

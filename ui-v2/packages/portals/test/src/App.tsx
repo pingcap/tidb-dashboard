@@ -2,6 +2,10 @@ import {
   UIKitThemeProvider,
   UrlStateProvider,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps"
+import {
+  Group,
+  Stack,
+} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
   Link,
@@ -51,12 +55,16 @@ function App() {
     <UIKitThemeProvider>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <Link to="/slow-query/list">Slow Query</Link>
-          <Link to="/index-advisor/list">Index Advisor</Link>
-          <ReactRouter6UrlStateProvider>
-            <SlowQueryApp />
-            <IndexAdvisorApp />
-          </ReactRouter6UrlStateProvider>
+          <Stack p={16}>
+            <Group>
+              <Link to="/slow-query/list">Slow Query</Link>
+              <Link to="/index-advisor/list">Index Advisor</Link>
+            </Group>
+            <ReactRouter6UrlStateProvider>
+              <SlowQueryApp />
+              <IndexAdvisorApp />
+            </ReactRouter6UrlStateProvider>
+          </Stack>
         </Router>
       </QueryClientProvider>
     </UIKitThemeProvider>

@@ -2,7 +2,6 @@ import { IconArrowLeft } from "@pingcap-incubator/tidb-dashboard-lib-icons"
 import {
   Box,
   Button,
-  Container,
   Loader,
   Stack,
   Text,
@@ -13,15 +12,17 @@ import { useAppContext } from "../cxt/context"
 import { useDetailData } from "../utils/use-data"
 
 export function Detail() {
-  const cxt = useAppContext()
+  const ctx = useAppContext()
 
   const { data: detailData, isLoading } = useDetailData()
 
   return (
-    <Container>
-      <Title order={1} mb="md">
-        {cxt.cfg.title ?? "Slow Query App"}
-      </Title>
+    <Stack>
+      {ctx.cfg.title && (
+        <Title order={1} mb="md">
+          {ctx.cfg.title}
+        </Title>
+      )}
       <Box>
         {isLoading ? (
           <Loader />
@@ -39,9 +40,11 @@ export function Detail() {
           </Stack>
         ) : null}
       </Box>
-      <Button onClick={cxt.actions.backToList}>
-        <IconArrowLeft size={16} strokeWidth={2} /> Back
-      </Button>
-    </Container>
+      <Box>
+        <Button onClick={ctx.actions.backToList}>
+          <IconArrowLeft size={16} strokeWidth={2} /> Back
+        </Button>
+      </Box>
+    </Stack>
   )
 }

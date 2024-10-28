@@ -1,0 +1,232 @@
+{
+  "advices": [
+    {
+      "id": "180005",
+      "name": "idx_a2",
+      "database": "test",
+      "table": "t3",
+      "last_recommend_time": "2024-10-12T02:48:22Z",
+      "state": "APPLIED",
+      "index_statement": "CREATE INDEX idx_a2 ON test.t3 (a2)",
+      "improvement": 0.0767,
+      "index_size": 0,
+      "reason": "Column [a2] appear in Equal or Range Predicate clause(s) in query: select * from `test` . `t3` where `a2` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `test`.`t3` WHERE `a2` = 3",
+          "improvement": 0.920309
+        }
+      ],
+      "state_reason": "",
+      "cost_saving_monthly": 0,
+      "cost_saving_per_query": 4.564837118438721e-8
+    },
+    {
+      "id": "180004",
+      "name": "idx_a12",
+      "database": "test",
+      "table": "t3",
+      "last_recommend_time": "2024-10-12T02:48:22Z",
+      "state": "OPEN",
+      "index_statement": "CREATE INDEX idx_a12 ON test.t3 (a12)",
+      "improvement": 0.0767,
+      "index_size": 0,
+      "reason": "Column [a12] appear in Equal or Range Predicate clause(s) in query: select * from `test` . `t3` where `a12` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `test`.`t3` WHERE `a12` = 3",
+          "improvement": 0.920309
+        }
+      ],
+      "state_reason": "",
+      "cost_saving_monthly": 0,
+      "cost_saving_per_query": 4.564837118438721e-8
+    },
+    {
+      "id": "180003",
+      "name": "idx_a11",
+      "database": "test",
+      "table": "t3",
+      "last_recommend_time": "2024-10-12T02:48:22Z",
+      "state": "OPEN",
+      "index_statement": "CREATE INDEX idx_a11 ON test.t3 (a11)",
+      "improvement": 0.0767,
+      "index_size": 0,
+      "reason": "Column [a11] appear in Equal or Range Predicate clause(s) in query: select * from `test` . `t3` where `a11` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `test`.`t3` WHERE `a11` = 3",
+          "improvement": 0.920309
+        }
+      ],
+      "state_reason": "",
+      "cost_saving_monthly": 0,
+      "cost_saving_per_query": 4.564837118438721e-8
+    },
+    {
+      "id": "180002",
+      "name": "idx_a10",
+      "database": "test",
+      "table": "t3",
+      "last_recommend_time": "2024-10-12T02:48:22Z",
+      "state": "OPEN",
+      "index_statement": "CREATE INDEX idx_a10 ON test.t3 (a10)",
+      "improvement": 0.0767,
+      "index_size": 0,
+      "reason": "Column [a10] appear in Equal or Range Predicate clause(s) in query: select * from `test` . `t3` where `a10` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `test`.`t3` WHERE `a10` = 3",
+          "improvement": 0.920309
+        }
+      ],
+      "state_reason": "",
+      "cost_saving_monthly": 0,
+      "cost_saving_per_query": 4.564837118438721e-8
+    },
+    {
+      "id": "180001",
+      "name": "idx_a1",
+      "database": "test",
+      "table": "t3",
+      "last_recommend_time": "2024-10-12T02:48:22Z",
+      "state": "OPEN",
+      "index_statement": "CREATE INDEX idx_a1 ON test.t3 (a1)",
+      "improvement": 0.0767,
+      "index_size": 0,
+      "reason": "Column [a1] appear in Equal or Range Predicate clause(s) in query: select * from `test` . `t3` where `a1` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `test`.`t3` WHERE `a1` = 3",
+          "improvement": 0.920309
+        }
+      ],
+      "state_reason": "",
+      "cost_saving_monthly": 0,
+      "cost_saving_per_query": 4.564837118438721e-8
+    },
+    {
+      "id": "90012",
+      "name": "idx_actor_id_commit_id",
+      "database": "gharchive_dev",
+      "table": "github_events",
+      "last_recommend_time": "2024-10-09T09:30:06Z",
+      "state": "APPLIED",
+      "index_statement": "CREATE INDEX idx_actor_id_commit_id ON gharchive_dev.github_events (actor_id, commit_id)",
+      "improvement": 0.9651,
+      "index_size": 9.62,
+      "reason": "Column [actor_id commit_id] appear in Equal or Range Predicate clause(s) in query: select * from `gharchive_dev` . `github_events` where `actor_id` = ? and `commit_id` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `gharchive_dev`.`github_events` WHERE `actor_id` = 8346318 AND `commit_id` = ''",
+          "improvement": 0.999346
+        },
+        {
+          "query": "SELECT * FROM `gharchive_dev`.`github_events` WHERE `actor_id` = 8346318",
+          "improvement": 0.926539
+        }
+      ],
+      "state_reason": "",
+      "cost_saving_monthly": 0,
+      "cost_saving_per_query": 0
+    },
+    {
+      "id": "90011",
+      "name": "idx_actor_id_comment_id",
+      "database": "gharchive_dev",
+      "table": "github_events",
+      "last_recommend_time": "2024-10-09T07:47:10Z",
+      "state": "APPLYING",
+      "index_statement": "CREATE INDEX idx_actor_id_comment_id ON gharchive_dev.github_events (actor_id, comment_id)",
+      "improvement": 0.3672,
+      "index_size": 8.08,
+      "reason": "Column [actor_id comment_id] appear in Equal or Range Predicate clause(s) in query: select * from `gharchive_dev` . `github_events` where `actor_id` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `gharchive_dev`.`github_events` WHERE `actor_id` = 58224835",
+          "improvement": 0.92655
+        },
+        {
+          "query": "SELECT DISTINCT (`actor_id`) FROM `gharchive_dev`.`github_events`",
+          "improvement": 0.425599
+        }
+      ],
+      "state_reason": "",
+      "cost_saving_monthly": 0.09,
+      "cost_saving_per_query": 0.001677339357354309
+    },
+    {
+      "id": "90002",
+      "name": "idx_actor_id",
+      "database": "gharchive_dev",
+      "table": "github_events",
+      "last_recommend_time": "2024-10-10T00:22:38Z",
+      "state": "APPLIED",
+      "index_statement": "CREATE INDEX idx_actor_id ON gharchive_dev.github_events (actor_id)",
+      "improvement": 0.9267,
+      "index_size": 8.08,
+      "reason": "Column [actor_id] appear in Equal or Range Predicate clause(s) in query: select * from `gharchive_dev` . `github_events` where `actor_id` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `gharchive_dev`.`github_events` WHERE `actor_id` = 8346318",
+          "improvement": 0.926662
+        }
+      ],
+      "state_reason": "",
+      "cost_saving_monthly": 0,
+      "cost_saving_per_query": 0
+    },
+    {
+      "id": "90001",
+      "name": "idx_repo_id",
+      "database": "gharchive_dev",
+      "table": "github_events",
+      "last_recommend_time": "2024-10-09T06:22:37Z",
+      "state": "APPLIED",
+      "index_statement": "CREATE INDEX idx_repo_id ON gharchive_dev.github_events (repo_id)",
+      "improvement": 0.4144,
+      "index_size": 0,
+      "reason": "Column [repo_id] appear in Equal or Range Predicate clause(s) in query: select * from `gharchive_dev` . `github_events` where `repo_id` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `gharchive_dev`.`github_events` WHERE `repo_id` = 442661923",
+          "improvement": 0.940909
+        },
+        {
+          "query": "SELECT DISTINCT (`repo_id`) FROM `gharchive_dev`.`github_events`",
+          "improvement": 0.065669
+        }
+      ],
+      "state_reason": "",
+      "cost_saving_monthly": 5.81,
+      "cost_saving_per_query": 0.0025045589721554473
+    },
+    {
+      "id": "30025",
+      "name": "idx_a2",
+      "database": "test",
+      "table": "t2",
+      "last_recommend_time": "2024-10-08T07:14:29Z",
+      "state": "CLOSED",
+      "index_statement": "CREATE INDEX idx_a2 ON test.t2 (a2)",
+      "improvement": 0.0731,
+      "index_size": 0,
+      "reason": "Column [a2] appear in Equal or Range Predicate clause(s) in query: select * from `test` . `t2` where `a2` = ?",
+      "top_impacted_queries": [
+        {
+          "query": "SELECT * FROM `test`.`t2` WHERE `a2` = 3",
+          "improvement": 0.920309
+        }
+      ],
+      "state_reason": "User closed it manually",
+      "cost_saving_monthly": 0,
+      "cost_saving_per_query": 0
+    }
+  ],
+  "total": 21,
+  "base_resp": {
+    "tags": {},
+    "err_code": "0",
+    "err_msg": ""
+  }
+}

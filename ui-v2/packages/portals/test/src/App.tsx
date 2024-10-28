@@ -1,5 +1,5 @@
 import {
-  MantineProvider,
+  UIKitThemeProvider,
   UrlStateProvider,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -11,7 +11,9 @@ import {
   useNavigate,
 } from "react-router-dom"
 
+import { IndexAdvisorApp } from "./apps/index-advisor"
 import { SlowQueryApp } from "./apps/slow-query"
+
 import "./App.css"
 
 // Create a react query client
@@ -46,16 +48,18 @@ function ReactRouter6UrlStateProvider(props: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <MantineProvider withGlobalStyles withNormalizeCSS>
+    <UIKitThemeProvider>
       <QueryClientProvider client={queryClient}>
         <Router>
           <Link to="/slow-query/list">Slow Query</Link>
+          <Link to="/index-advisor/list">Index Advisor</Link>
           <ReactRouter6UrlStateProvider>
             <SlowQueryApp />
+            <IndexAdvisorApp />
           </ReactRouter6UrlStateProvider>
         </Router>
       </QueryClientProvider>
-    </MantineProvider>
+    </UIKitThemeProvider>
   )
 }
 

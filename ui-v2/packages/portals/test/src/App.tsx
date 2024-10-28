@@ -5,7 +5,8 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
   Link,
-  BrowserRouter as Router,
+  HashRouter as Router,
+  // BrowserRouter as Router,
   useLocation,
   useNavigate,
 } from "react-router-dom"

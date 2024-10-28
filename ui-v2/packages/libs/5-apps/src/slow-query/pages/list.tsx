@@ -4,45 +4,29 @@ import {
   Container,
   Loader,
   Table,
-  TextInput,
   Title,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import { useQuery } from "@tanstack/react-query"
 
+import { Filters } from "../components/filters"
 import { useAppContext } from "../cxt/context"
-
-import { useListUrlState } from "./list-url-state"
+import { useListData } from "../utils/use-data"
 
 export function List() {
   const ctx = useAppContext()
-  const { term, setTerm } = useListUrlState()
 
-  const { data: slowQueryList, isLoading } = useQuery({
-    queryKey: [ctx.ctxId, "slow-query", "list", term],
-    queryFn: () => {
-      return ctx.api.getSlowQueries({ term })
-    },
-  })
-
-  function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
-    ev.preventDefault()
-    const formData = new FormData(ev.target as HTMLFormElement)
-    setTerm(formData.get("term") as string)
-  }
+  const { data: slowQueryList, isLoading } = useListData()
 
   return (
     <Container>
-      <Title order={1} mb="md">
-        {ctx.cfg.title ?? "Slow Query App"}
-      </Title>
-
-      {ctx.cfg.showSearch && (
-        <Box mb="md">
-          <form onSubmit={handleSubmit}>
-            <TextInput name="term" placeholder="Search" defaultValue={term} />
-          </form>
-        </Box>
+      {ctx.cfg.title && (
+        <Title order={1} mb="md">
+          {ctx.cfg.title}
+        </Title>
       )}
+
+      <Box mb="md">
+        <Filters />
+      </Box>
 
       {isLoading && <Loader />}
 

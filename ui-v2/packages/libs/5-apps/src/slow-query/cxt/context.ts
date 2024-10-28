@@ -1,21 +1,16 @@
 import { createContext, useContext } from "react"
 
-interface ISlowQuery {
-  id: number
-  query: string
-  latency: number
-}
+import { ISlowQuery } from "../utils/model"
 
 ////////////////////////////////
 
 type AppApi = {
-  getSlowQueries(params: { term: string }): Promise<ISlowQuery[]>
+  getSlowQueries(params: { limit: number; term: string }): Promise<ISlowQuery[]>
   getSlowQuery(params: { id: number }): Promise<ISlowQuery>
 }
 
 type AppConfig = {
   title?: string
-  showSearch?: boolean
 }
 
 type AppActions = {

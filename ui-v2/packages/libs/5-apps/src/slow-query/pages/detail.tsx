@@ -8,22 +8,14 @@ import {
   Text,
   Title,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import { useQuery } from "@tanstack/react-query"
 
 import { useAppContext } from "../cxt/context"
-
-import { useDetailUrlState } from "./detail-url-state"
+import { useDetailData } from "../utils/use-data"
 
 export function Detail() {
   const cxt = useAppContext()
-  const { id } = useDetailUrlState()
 
-  const { data: detailData, isLoading } = useQuery({
-    queryKey: [cxt.ctxId, "slow-query", "detail", id],
-    queryFn: () => {
-      return cxt.api.getSlowQuery({ id })
-    },
-  })
+  const { data: detailData, isLoading } = useDetailData()
 
   return (
     <Container>

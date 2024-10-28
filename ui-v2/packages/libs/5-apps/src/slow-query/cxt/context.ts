@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react"
 
-import { ISlowQuery } from "../utils/model"
+import { ISlowQuery } from "../models"
 
 ////////////////////////////////
 

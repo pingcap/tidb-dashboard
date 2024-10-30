@@ -2,7 +2,7 @@ import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-que
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-import sampleData from "./sample-data.json"
+import { http } from "../../rapper"
 
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
@@ -12,27 +12,11 @@ export function useCtxValue(): AppCtxValue {
     () => ({
       ctxId: "unique-id",
       api: {
-        getSlowQueries(params: { term: string }) {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              const filteredData = sampleData.filter((s) =>
-                s.query.includes(params.term),
-              )
-              resolve(filteredData)
-            }, 2000)
-          })
+        getSlowQueries(params: { limit: number; term: string }) {
+          return http("GET/slow-query/list", params).then((d) => d.items)
         },
         getSlowQuery(params: { id: number }) {
-          return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              const slowQuery = sampleData.find((s) => s.id === params.id)
-              if (slowQuery) {
-                resolve(slowQuery)
-              } else {
-                reject(new Error("Slow query not found"))
-              }
-            }, 2000)
-          })
+          return http("GET/slow-query/detail", params)
         },
       },
       cfg: {

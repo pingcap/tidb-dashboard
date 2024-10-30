@@ -1,4 +1,4 @@
-import { useUrlState } from "@baurine/use-url-state"
+import { useUrlState } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useMemo } from "react"
 
 type ListUrlState = Partial<Record<"limit" | "term", string>>

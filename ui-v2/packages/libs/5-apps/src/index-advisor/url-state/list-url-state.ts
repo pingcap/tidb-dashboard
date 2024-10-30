@@ -1,5 +1,4 @@
-import { useUrlState } from "@baurine/use-url-state"
-// import { MantineReactTableProps } from '@pingcap-incubator/tidb-dashboard-lib-biz-ui'
+import { useUrlState } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useMemo } from "react"
 
 import { Pagination, SortRule } from "../utils/type"

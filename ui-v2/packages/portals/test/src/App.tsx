@@ -7,6 +7,7 @@ import {
   Stack,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { useMemo } from "react"
 import {
   Link,
   HashRouter as Router,
@@ -36,18 +37,16 @@ function ReactRouter6UrlStateProvider(props: { children: React.ReactNode }) {
   const loc = useLocation()
   const navigate = useNavigate()
 
-  return (
-    <UrlStateProvider
-      value={{
-        urlQuery: loc.search,
-        setUrlQuery(v: string) {
-          navigate(`${loc.pathname}?${v}`)
-        },
-      }}
-    >
-      {props.children}
-    </UrlStateProvider>
-  )
+  const ctxValue = useMemo(() => {
+    return {
+      urlQuery: loc.search,
+      setUrlQuery(v: string) {
+        navigate(`${loc.pathname}?${v}`)
+      },
+    }
+  }, [loc.pathname, loc.search, navigate])
+
+  return <UrlStateProvider value={ctxValue}>{props.children}</UrlStateProvider>
 }
 
 function App() {

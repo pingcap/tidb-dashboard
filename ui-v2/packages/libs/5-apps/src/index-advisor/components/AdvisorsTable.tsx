@@ -1,6 +1,7 @@
 import {
   LabelTooltip,
   MRT_ColumnDef,
+  MRT_Row,
   MantineReactTableProps,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { ProTable } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
@@ -14,7 +15,7 @@ import {
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { capitalize } from "lodash-es"
-import { useCallback, useMemo } from "react"
+import { ReactNode, useCallback, useMemo } from "react"
 
 // import TimeComponent from 'dbaas/components/TimeComponent'
 
@@ -60,36 +61,46 @@ function ActionMenuButton({ advisor }: { advisor: IndexAdvisorItem }) {
   )
 }
 
-function useColumns() {
+function AdvisorNameCell({
+  renderedCellValue,
+  row,
+}: {
+  renderedCellValue: number | string | ReactNode
+  row: MRT_Row<IndexAdvisorItem>
+}) {
   const { setAdvisorId } = useIndexAdvisorUrlState()
 
-  const columns = useMemo<MRT_ColumnDef<IndexAdvisorItem>[]>(() => {
+  return (
+    <Tooltip label={renderedCellValue} withArrow>
+      <Typography
+        variant="body-lg"
+        c="peacock.7"
+        sx={{
+          cursor: "pointer",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          maxWidth: 280,
+        }}
+        onClick={() => {
+          setAdvisorId(row.original.id)
+        }}
+      >
+        {renderedCellValue}
+      </Typography>
+    </Tooltip>
+  )
+}
+
+function useColumns() {
+  const columns = useMemo(() => {
     const cols: MRT_ColumnDef<IndexAdvisorItem>[] = [
       {
         id: "name",
         header: "Name",
         accessorKey: "name",
         enableSorting: false,
-        Cell: (data) => (
-          <Tooltip label={data.renderedCellValue} withArrow>
-            <Typography
-              variant="body-lg"
-              c="peacock.7"
-              sx={{
-                cursor: "pointer",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                maxWidth: 280,
-              }}
-              onClick={() => {
-                setAdvisorId(data.row.original.id)
-              }}
-            >
-              {data.renderedCellValue}
-            </Typography>
-          </Tooltip>
-        ),
+        Cell: (data) => <AdvisorNameCell {...data} />,
       },
       {
         id: "database",

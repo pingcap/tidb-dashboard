@@ -1,4 +1,4 @@
-export { UrlStateProvider } from "@baurine/use-url-state"
+export { UrlStateProvider } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 export {
   MantineProvider,
   UIKitThemeProvider,

@@ -10,8 +10,8 @@
  * Rap repository url: https://rapapi.cn/repository/editor?id=18
  */
 
-import { IModels } from "./models"
+import { IModels } from './models'
 
 export type Models = IModels
-export * from "./http"
-export * from "./models"
+export * from './http'
+export * from './models'

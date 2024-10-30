@@ -18,8 +18,15 @@ import {
 
 import { IndexAdvisorApp } from "./apps/index-advisor"
 import { SlowQueryApp } from "./apps/slow-query"
+import { http } from "./rapper"
 
 import "./App.css"
+
+// always use mock api, even in production
+http.interceptors.request.use((config) => {
+  config.baseURL = "https://rapapi.cn/api/app/mock/18"
+  return config
+})
 
 // Create a react query client
 const queryClient = new QueryClient({

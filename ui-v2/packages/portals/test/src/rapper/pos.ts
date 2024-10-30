@@ -16,23 +16,23 @@ export const POS_MAP = {
    * Rap url: https://rapapi.cn/repository/editor?id=18&mod=53&itf=224
    *
    */
-  "GET/example/1730195357072": {
-    Query: ["foo"],
+  'GET/example/1730195357072': {
+    Query: ['foo'],
   },
   /**
    * Interface name：get slow query list
    * Rap url: https://rapapi.cn/repository/editor?id=18&mod=55&itf=227
    *
    */
-  "GET/slow-query/list": {
-    Query: ["term", "limit"],
+  'GET/slow-query/list': {
+    Query: ['term', 'limit'],
   },
   /**
    * Interface name：get slow query detail
    * Rap url: https://rapapi.cn/repository/editor?id=18&mod=55&itf=228
    *
    */
-  "GET/slow-query/detail": {
-    Query: ["id"],
+  'GET/slow-query/detail': {
+    Query: ['id'],
   },
 }

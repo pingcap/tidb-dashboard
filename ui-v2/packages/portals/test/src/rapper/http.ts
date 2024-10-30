@@ -14,15 +14,15 @@ import {
   createHttpRequest,
   createFallbackFetch,
   createSeprateInterceptor,
-} from "@rap-api/request"
-import { IModels } from "./models"
-import { POS_MAP } from "./pos"
+} from '@rap-api/request'
+import { IModels } from './models'
+import { POS_MAP } from './pos'
 
 export const http = createHttpRequest<IModels>({
   baseURL:
-    process.env.NODE_ENV === "production"
-      ? "https://rapapi.cn/api/app/mock/18"
-      : "https://rapapi.cn/api/app/mock/18",
+    process.env.NODE_ENV === 'production'
+      ? ''
+      : 'https://rapapi.cn/api/app/mock/18',
 })
 
 http.interceptors.request.use(createSeprateInterceptor(POS_MAP))

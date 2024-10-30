@@ -16,10 +16,10 @@ export interface IModels {
    * Rap url: https://rapapi.cn/repository/editor?id=18&mod=53&itf=224
    *
    */
-  "GET/example/1730195357072": {
-    Req: IModels["GET/example/1730195357072"]["Header"] &
-      IModels["GET/example/1730195357072"]["Query"] &
-      IModels["GET/example/1730195357072"]["Body"]
+  'GET/example/1730195357072': {
+    Req: IModels['GET/example/1730195357072']['Header'] &
+      IModels['GET/example/1730195357072']['Query'] &
+      IModels['GET/example/1730195357072']['Body']
     Header: {}
     Query: {
       /**
@@ -95,10 +95,10 @@ export interface IModels {
    * Rap url: https://rapapi.cn/repository/editor?id=18&mod=55&itf=227
    *
    */
-  "GET/slow-query/list": {
-    Req: IModels["GET/slow-query/list"]["Header"] &
-      IModels["GET/slow-query/list"]["Query"] &
-      IModels["GET/slow-query/list"]["Body"]
+  'GET/slow-query/list': {
+    Req: IModels['GET/slow-query/list']['Header'] &
+      IModels['GET/slow-query/list']['Query'] &
+      IModels['GET/slow-query/list']['Body']
     Header: {}
     Query: {
       term?: string
@@ -123,10 +123,10 @@ export interface IModels {
    * Rap url: https://rapapi.cn/repository/editor?id=18&mod=55&itf=228
    *
    */
-  "GET/slow-query/detail": {
-    Req: IModels["GET/slow-query/detail"]["Header"] &
-      IModels["GET/slow-query/detail"]["Query"] &
-      IModels["GET/slow-query/detail"]["Body"]
+  'GET/slow-query/detail': {
+    Req: IModels['GET/slow-query/detail']['Header'] &
+      IModels['GET/slow-query/detail']['Query'] &
+      IModels['GET/slow-query/detail']['Body']
     Header: {}
     Query: {
       id: number

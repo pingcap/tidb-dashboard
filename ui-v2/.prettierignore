@@ -4,3 +4,6 @@ build
 coverage
 
 pnpm-lock.yaml
+
+# rap-api generated folder
+rapper

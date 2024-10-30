@@ -21,7 +21,7 @@ import { POS_MAP } from "./pos"
 export const http = createHttpRequest<IModels>({
   baseURL:
     process.env.NODE_ENV === "production"
-      ? ""
+      ? "https://rapapi.cn/api/app/mock/18"
       : "https://rapapi.cn/api/app/mock/18",
 })
 

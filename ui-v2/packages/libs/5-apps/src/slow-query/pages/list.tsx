@@ -5,13 +5,14 @@ import {
   Table,
   Title,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
 import { Filters } from "../components/filters"
 import { useAppContext } from "../cxt/context"
 import { useListData } from "../utils/use-data"
-
 export function List() {
   const ctx = useAppContext()
+  const { tn } = useTn()
 
   const { data: slowQueryList, isLoading } = useListData()
 
@@ -44,7 +45,7 @@ export function List() {
                 <td>{s.latency}</td>
                 <td>
                   <Button onClick={() => ctx.actions.openDetail(s.id)}>
-                    View
+                    {tn("slow_query.list_table.action_view", "View")}
                   </Button>
                 </td>
               </tr>

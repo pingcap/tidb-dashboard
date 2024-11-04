@@ -175,7 +175,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
               ) : null}
             </Descriptions>
 
-            {(binaryPlanObj || !!data.plan) && (
+            {(!!data.binary_plan_text || !!data.plan) && (
               <>
                 <Space size="middle" style={{ color: '#8c8c8c' }}>
                   {t('statement.pages.detail.desc.plans.execution.title')}

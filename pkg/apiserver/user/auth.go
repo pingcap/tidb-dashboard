@@ -18,8 +18,10 @@ import (
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+	"golang.org/x/time/rate"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
@@ -78,7 +80,7 @@ func (a BaseAuthenticator) SignOutInfo(_ *utils.SessionUser, _ string) (*SignOut
 	return &SignOutInfo{}, nil
 }
 
-func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
+func NewAuthService(featureFlags *featureflag.Registry, config *config.Config) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -108,11 +110,12 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 	}
 
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		IdentityKey: utils.SessionUserKey,
-		Realm:       "dashboard",
-		Key:         secret[:],
-		Timeout:     time.Hour * 24,
-		MaxRefresh:  time.Hour * 24,
+		IdentityKey:      utils.SessionUserKey,
+		Realm:            "dashboard",
+		Key:              secret[:],
+		Timeout:          time.Hour * 24,
+		MaxRefresh:       time.Hour * 24,
+		SigningAlgorithm: config.SigningAlgorithm,
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			var form AuthenticateForm
 			if err := c.ShouldBindJSON(&form); err != nil {
@@ -244,10 +247,14 @@ func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
 	return u, nil
 }
 
-func registerRouter(r *gin.RouterGroup, s *AuthService) {
+func registerRouter(r *gin.RouterGroup, s *AuthService, cfg *config.Config) {
 	endpoint := r.Group("/user")
 	endpoint.GET("/login_info", s.GetLoginInfoHandler)
-	endpoint.POST("/login", s.LoginHandler)
+	if cfg.UnauthedAPIQpsLimit > 0 && cfg.UnauthedAPIBurstLimit > 0 {
+		endpoint.POST("/login", s.MWRateLimited(rate.Limit(cfg.UnauthedAPIQpsLimit), cfg.UnauthedAPIBurstLimit), s.LoginHandler)
+	} else {
+		endpoint.POST("/login", s.LoginHandler)
+	}
 	endpoint.GET("/sign_out_info", s.MWAuthRequired(), s.getSignOutInfoHandler)
 }
 
@@ -290,6 +297,18 @@ func (s *AuthService) MWRequireWritePriv() gin.HandlerFunc {
 			return
 		}
 		c.Next()
+	}
+}
+
+func (s *AuthService) MWRateLimited(r rate.Limit, b int) gin.HandlerFunc {
+	limiter := rate.NewLimiter(r, b)
+	return func(ctx *gin.Context) {
+		if !limiter.Allow() {
+			rest.Error(ctx, rest.ErrTooManyRequests.NewWithNoMessage())
+			ctx.Abort()
+			return
+		}
+		ctx.Next()
 	}
 }
 

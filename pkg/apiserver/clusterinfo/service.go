@@ -248,6 +248,23 @@ func (s *Service) getGrafanaTopology(c *gin.Context) {
 // @Failure 401 {object} rest.ErrorResponse
 func (s *Service) getAlertManagerCounts(c *gin.Context) {
 	address := c.Param("address")
+	if address == "" {
+		rest.Error(c, rest.ErrBadRequest.New("address is empty"))
+		return
+	}
+	info, err := topology.FetchAlertManagerTopology(c.Request.Context(), s.params.EtcdClient)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+	if info == nil {
+		rest.Error(c, rest.ErrBadRequest.New("alertmanager not found"))
+		return
+	}
+	if address != fmt.Sprintf("%s:%d", info.IP, info.Port) {
+		rest.Error(c, rest.ErrBadRequest.New("address not match"))
+		return
+	}
 	cnt, err := fetchAlertManagerCounts(s.lifecycleCtx, address, s.params.HTTPClient)
 	if err != nil {
 		rest.Error(c, err)

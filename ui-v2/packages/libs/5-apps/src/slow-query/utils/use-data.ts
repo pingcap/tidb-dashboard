@@ -4,12 +4,37 @@ import { useAppContext } from "../cxt/context"
 import { useDetailUrlState } from "../url-state/detail-url-state"
 import { useListUrlState } from "../url-state/list-url-state"
 
+export function useDbsData() {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "slow-query", "dbs"],
+    queryFn: () => ctx.api.getDbs(),
+  })
+}
+
+export function useRuGroupsData() {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "slow-query", "ru-groups"],
+    queryFn: () => ctx.api.getRuGroups(),
+  })
+}
+
 export function useListData() {
   const ctx = useAppContext()
-  const { limit, term } = useListUrlState()
+  const { timeRange, dbs, ruGroups, limit, term } = useListUrlState()
 
   const query = useQuery({
-    queryKey: [ctx.ctxId, "slow-query", "list", limit, term],
+    queryKey: [
+      ctx.ctxId,
+      "slow-query",
+      "list",
+      timeRange,
+      dbs,
+      ruGroups,
+      limit,
+      term,
+    ],
     queryFn: () => {
       return ctx.api.getSlowQueries({ limit, term })
     },

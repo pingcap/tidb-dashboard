@@ -7,6 +7,9 @@ import { ISlowQuery } from "../models"
 type AppApi = {
   getSlowQueries(params: { limit: number; term: string }): Promise<ISlowQuery[]>
   getSlowQuery(params: { id: number }): Promise<ISlowQuery>
+
+  getDbs(): Promise<string[]>
+  getRuGroups(): Promise<string[]>
 }
 
 type AppConfig = {

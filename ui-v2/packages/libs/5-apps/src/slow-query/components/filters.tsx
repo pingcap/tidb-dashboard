@@ -1,3 +1,7 @@
+import {
+  FilterMultiSelect,
+  TimeRangePicker,
+} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { IconXClose } from "@pingcap-incubator/tidb-dashboard-lib-icons"
 import {
   Group,
@@ -6,18 +10,45 @@ import {
   TextInput,
   UnstyledButton,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import dayjs from "dayjs"
 import { useEffect, useState } from "react"
 
 import { useListUrlState } from "../url-state/list-url-state"
-import { useListData } from "../utils/use-data"
+import { useDbsData, useListData, useRuGroupsData } from "../utils/use-data"
 
 const SLOW_QUERY_LIMIT = [100, 200, 500, 1000].map((l) => ({
   value: `${l}`,
   label: `Limit ${l}`,
 }))
 
+const QUICK_RANGES: number[] = [
+  5 * 60, // 5 mins
+  15 * 60,
+  30 * 60,
+  60 * 60,
+  6 * 60 * 60,
+  12 * 60 * 60,
+  24 * 60 * 60,
+  2 * 24 * 60 * 60,
+  3 * 24 * 60 * 60, // 3 days
+  7 * 24 * 60 * 60, // 7 days
+]
+
 export function Filters() {
-  const { limit, setLimit, term, setTerm, reset } = useListUrlState()
+  const {
+    timeRange,
+    setTimeRange,
+    dbs,
+    setDbs,
+    ruGroups,
+    setRuGroups,
+    limit,
+    setLimit,
+    term,
+    setTerm,
+    reset,
+  } = useListUrlState()
 
   const [text, setText] = useState(term)
   useEffect(() => {
@@ -25,6 +56,9 @@ export function Filters() {
   }, [term])
 
   const { isFetching } = useListData()
+  const { data: dbsData } = useDbsData()
+  const { data: ruGroupsData } = useRuGroupsData()
+  const { tn } = useTn()
 
   function handleSearchSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -36,8 +70,52 @@ export function Filters() {
     reset()
   }
 
+  const timeRangePicker = (
+    <TimeRangePicker
+      value={timeRange}
+      onChange={(v) => {
+        setTimeRange(v)
+      }}
+      quickRanges={QUICK_RANGES}
+      minDateTime={() =>
+        dayjs()
+          .subtract(QUICK_RANGES[QUICK_RANGES.length - 1], "seconds")
+          .toDate()
+      }
+      maxDateTime={() => dayjs().toDate()}
+      loading={isFetching}
+    />
+  )
+
+  const dbsSelect = dbsData && dbsData.length > 0 && (
+    <FilterMultiSelect
+      value={dbs}
+      onChange={setDbs}
+      data={dbsData}
+      disabled={isFetching}
+      miw={200}
+      placeholder={tn("slowquery.filters.dbs", "All Databases")}
+      searchable
+      clearable
+    />
+  )
+
+  const ruGroupsSelect = ruGroupsData && ruGroupsData.length > 1 && (
+    <FilterMultiSelect
+      value={ruGroups}
+      onChange={setRuGroups}
+      data={ruGroupsData}
+      disabled={isFetching}
+      miw={200}
+      placeholder={tn("slowquery.filters.ruGroups", "All Resource Groups")}
+      searchable
+      clearable
+    />
+  )
+
   const limitSelect = (
     <Select
+      w={160}
       value={limit + ""}
       onChange={(v) => setLimit(v!)}
       data={SLOW_QUERY_LIMIT}
@@ -48,10 +126,13 @@ export function Filters() {
   const searchInput = (
     <form onSubmit={handleSearchSubmit}>
       <TextInput
-        w={320}
+        w={300}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="search"
+        placeholder={tn(
+          "slowquery.filters.search",
+          "Find digest,query,prev_stmt,txn_start_ts",
+        )}
         rightSection={
           !!text && (
             <IconXClose
@@ -74,14 +155,17 @@ export function Filters() {
       onClick={resetFilters}
       sx={(theme) => ({ color: theme.colors.gray[7] })}
     >
-      <Text pl={8} size="sm" fw="bold">
-        Clear Filters
+      <Text size="sm" fw="bold">
+        {tn("slowquery.filters.clear", "Clear Filters")}
       </Text>
     </UnstyledButton>
   )
 
   return (
     <Group>
+      {timeRangePicker}
+      {dbsSelect}
+      {ruGroupsSelect}
       {limitSelect}
       {searchInput}
       {resetFiltersBtn}

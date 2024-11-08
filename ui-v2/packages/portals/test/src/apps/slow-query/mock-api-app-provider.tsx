@@ -18,6 +18,12 @@ export function useCtxValue(): AppCtxValue {
         getSlowQuery(params: { id: number }) {
           return http("GET/slow-query/detail", params)
         },
+        getDbs() {
+          return Promise.resolve(["db1", "db2"])
+        },
+        getRuGroups() {
+          return Promise.resolve(["default", "ru1", "ru2"])
+        },
       },
       cfg: {
         title: "",

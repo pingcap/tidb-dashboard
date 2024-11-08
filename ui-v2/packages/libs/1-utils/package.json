@@ -35,5 +35,9 @@
     "i18next": "^23.16.2",
     "react": "^18.3.1",
     "react-i18next": "^15.1.0"
+  },
+  "dependencies": {
+    "@baurine/grafana-value-formats": "^1.0.5",
+    "dayjs": "^1.11.13"
   }
 }

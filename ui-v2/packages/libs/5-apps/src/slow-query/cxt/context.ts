@@ -1,12 +1,15 @@
 import { createContext, useContext } from "react"
 
-import { ISlowQuery } from "../models"
+import { SlowqueryModel } from "../models"
 
 ////////////////////////////////
 
 type AppApi = {
-  getSlowQueries(params: { limit: number; term: string }): Promise<ISlowQuery[]>
-  getSlowQuery(params: { id: number }): Promise<ISlowQuery>
+  getSlowQueries(params: {
+    limit: number
+    term: string
+  }): Promise<SlowqueryModel[]>
+  getSlowQuery(params: { id: number }): Promise<SlowqueryModel>
 
   getDbs(): Promise<string[]>
   getRuGroups(): Promise<string[]>

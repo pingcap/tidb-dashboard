@@ -6,8 +6,16 @@ import {
 import { useUrlState } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useMemo } from "react"
 
+export type SortRule = {
+  orderBy: string
+  desc: boolean
+}
+
 type ListUrlState = Partial<
-  Record<"from" | "to" | "dbs" | "ruGroups" | "limit" | "term", string>
+  Record<
+    "from" | "to" | "dbs" | "ruGroups" | "limit" | "term" | "orderBy" | "desc",
+    string
+  >
 >
 
 export const DEFAULT_TIME_RANGE: TimeRange = {
@@ -82,7 +90,8 @@ export function useListUrlState() {
     [setQueryParams],
   )
 
-  const reset = useCallback(() => {
+  // reset filters, not include sort
+  const resetFilters = useCallback(() => {
     setQueryParams({
       from: undefined,
       to: undefined,
@@ -92,6 +101,23 @@ export function useListUrlState() {
       term: undefined,
     })
   }, [setQueryParams])
+
+  // sort
+  const sortRule = useMemo<SortRule>(() => {
+    return {
+      orderBy: queryParams.orderBy ?? "timestamp",
+      desc: queryParams.desc !== "false",
+    }
+  }, [queryParams.orderBy, queryParams.desc])
+  const setSortRule = useCallback(
+    (newSortRule: SortRule) => {
+      setQueryParams({
+        orderBy: newSortRule.orderBy || undefined,
+        desc: newSortRule.desc ? "true" : "false",
+      })
+    },
+    [setQueryParams],
+  )
 
   return {
     timeRange,
@@ -109,7 +135,10 @@ export function useListUrlState() {
     term,
     setTerm,
 
-    reset,
+    resetFilters,
+
+    sortRule,
+    setSortRule,
 
     queryParams,
     setQueryParams,

@@ -28,15 +28,11 @@ export function Detail() {
           <Loader />
         ) : detailData ? (
           <Stack>
-            <Text>
-              <strong>ID:</strong> {detailData.id}
-            </Text>
+            <Text>{/* <strong>ID:</strong> {detailData.id} */}</Text>
             <Text>
               <strong>Query:</strong> {detailData.query}
             </Text>
-            <Text>
-              <strong>Latency:</strong> {detailData.latency}
-            </Text>
+            <Text>{/* <strong>Latency:</strong> {detailData.latency} */}</Text>
           </Stack>
         ) : null}
       </Box>

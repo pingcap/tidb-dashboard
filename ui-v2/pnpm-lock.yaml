@@ -46,6 +46,13 @@ importers:
         version: 8.11.0(eslint@9.13.0)(typescript@5.6.3)
 
   packages/libs/1-utils:
+    dependencies:
+      '@baurine/grafana-value-formats':
+        specifier: ^1.0.5
+        version: 1.0.5(dayjs@1.11.13)
+      dayjs:
+        specifier: ^1.11.13
+        version: 1.11.13
     devDependencies:
       '@rollup/plugin-typescript':
         specifier: ^12.1.1
@@ -320,6 +327,11 @@ packages:
   '@babel/types@7.25.9':
     resolution: {integrity: sha512-OwS2CM5KocvQ/k7dFJa8i5bNGJP0hXWfVCfDkqRFP1IreH1JDC7wG6eCYCi0+McbfT8OR/kNqsI0UU0xP9H6PQ==}
     engines: {node: '>=6.9.0'}
+
+  '@baurine/grafana-value-formats@1.0.5':
+    resolution: {integrity: sha512-l2z8FMKx0DO111KmmnNA73iKRiWh/XvTFDBrm+mZbWBJngoNzvShjPONrY/1bAn8I9cE+v9qWjC7RtjCy/a9dg==}
+    peerDependencies:
+      dayjs: ^1.10.1
 
   '@bcherny/json-schema-ref-parser@10.0.5-fork':
     resolution: {integrity: sha512-E/jKbPoca1tfUPj3iSbitDZTGnq6FUFjkH6L8U2oDwSuwK1WhnnVtCG7oFOTg/DDnyoXbQYUiUiGOibHqaGVnw==}
@@ -2942,6 +2954,10 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
+
+  '@baurine/grafana-value-formats@1.0.5(dayjs@1.11.13)':
+    dependencies:
+      dayjs: 1.11.13
 
   '@bcherny/json-schema-ref-parser@10.0.5-fork':
     dependencies:

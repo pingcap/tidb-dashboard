@@ -47,7 +47,7 @@ export function Filters() {
     setLimit,
     term,
     setTerm,
-    reset,
+    resetFilters,
   } = useListUrlState()
 
   const [text, setText] = useState(term)
@@ -65,9 +65,9 @@ export function Filters() {
     setTerm(text)
   }
 
-  function resetFilters() {
+  function reset() {
     setText("")
-    reset()
+    resetFilters()
   }
 
   const timeRangePicker = (
@@ -152,7 +152,7 @@ export function Filters() {
 
   const resetFiltersBtn = (
     <UnstyledButton
-      onClick={resetFilters}
+      onClick={reset}
       sx={(theme) => ({ color: theme.colors.gray[7] })}
     >
       <Text size="sm" fw="bold">

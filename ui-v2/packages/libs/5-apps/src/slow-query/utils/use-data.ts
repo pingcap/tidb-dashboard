@@ -22,7 +22,7 @@ export function useRuGroupsData() {
 
 export function useListData() {
   const ctx = useAppContext()
-  const { timeRange, dbs, ruGroups, limit, term } = useListUrlState()
+  const { timeRange, dbs, ruGroups, limit, term, sortRule } = useListUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -34,6 +34,7 @@ export function useListData() {
       ruGroups,
       limit,
       term,
+      sortRule,
     ],
     queryFn: () => {
       return ctx.api.getSlowQueries({ limit, term })

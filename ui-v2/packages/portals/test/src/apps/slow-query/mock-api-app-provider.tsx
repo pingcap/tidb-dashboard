@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom"
 
 import { http } from "../../rapper"
 
+import listData from "./sample-data/list.json"
+
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
   const [enableBack, setEnableBack] = useState(false)
@@ -12,8 +14,9 @@ export function useCtxValue(): AppCtxValue {
     () => ({
       ctxId: "unique-id",
       api: {
-        getSlowQueries(params: { limit: number; term: string }) {
-          return http("GET/slow-query/list", params).then((d) => d.items)
+        getSlowQueries(_params: { limit: number; term: string }) {
+          // return http("GET/slow-query/list", params).then((d) => d.items)
+          return Promise.resolve(listData)
         },
         getSlowQuery(params: { id: number }) {
           return http("GET/slow-query/detail", params)

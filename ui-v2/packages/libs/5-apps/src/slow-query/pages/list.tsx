@@ -1,5 +1,6 @@
 import {
   Button,
+  Group,
   Loader,
   Stack,
   Table,
@@ -8,8 +9,10 @@ import {
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
 import { Filters } from "../components/filters"
+import { RefreshButton } from "../components/refresh-button"
 import { useAppContext } from "../cxt/context"
 import { useListData } from "../utils/use-data"
+
 export function List() {
   const ctx = useAppContext()
   const { tn } = useTn()
@@ -24,7 +27,10 @@ export function List() {
         </Title>
       )}
 
-      <Filters />
+      <Group>
+        <Filters />
+        <RefreshButton />
+      </Group>
 
       {isLoading && <Loader />}
 

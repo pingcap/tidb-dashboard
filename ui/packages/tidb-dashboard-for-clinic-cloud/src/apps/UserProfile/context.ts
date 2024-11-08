@@ -39,6 +39,11 @@ class DataSource implements IUserProfileDataSource {
   userShareSession(request: CodeShareRequest, options?: ReqConfig) {
     return client.getInstance().userShareSession({ request }, options)
   }
+
+  userRevokeSession(options?: ReqConfig) {
+    return client.getInstance().userRevokeSession(options)
+  }
+
   metricsGetPromAddress(options?: ReqConfig) {
     return client.getInstance().metricsGetPromAddress(options)
   }

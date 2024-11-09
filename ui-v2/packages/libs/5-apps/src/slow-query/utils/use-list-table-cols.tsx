@@ -1,14 +1,19 @@
 import {
   MRT_ColumnDef,
+  MRT_Row,
   SQLWithHover,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { Typography } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import {
+  Box,
+  Typography,
+} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
   formatTime,
   formatValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
+import { useAppContext } from "../cxt/context"
 import { SlowqueryModel } from "../models"
 
 export const SLOW_QUERY_COLUMNS = [
@@ -18,6 +23,25 @@ export const SLOW_QUERY_COLUMNS = [
   "memory_max",
 ]
 
+function QueryCell({ row }: { row: MRT_Row<SlowqueryModel> }) {
+  const ctx = useAppContext()
+  return (
+    <Box
+      sx={{ cursor: "pointer" }}
+      onClick={() => {
+        const query = new URLSearchParams({
+          digest: row.original.digest!,
+          connection_id: row.original.connection_id! + "",
+          timestamp: row.original.timestamp! + "",
+        }).toString()
+        ctx.actions.openDetail(query)
+      }}
+    >
+      <SQLWithHover sql={row.original.query!} />
+    </Box>
+  )
+}
+
 export function useSlowQueryColumns() {
   const columns = useMemo<MRT_ColumnDef<SlowqueryModel>[]>(() => {
     return [
@@ -26,7 +50,7 @@ export function useSlowQueryColumns() {
         header: "Query",
         minSize: 300,
         enableSorting: false,
-        accessorFn: (row) => <SQLWithHover sql={row.query!} />,
+        Cell: (data) => <QueryCell {...data} />,
       },
       {
         id: "timestamp",

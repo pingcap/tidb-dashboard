@@ -20,7 +20,7 @@ type AppConfig = {
 }
 
 type AppActions = {
-  openDetail(id: number): void
+  openDetail(query: string): void
   backToList(): void
 }
 

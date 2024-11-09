@@ -32,9 +32,9 @@ export function useCtxValue(): AppCtxValue {
         title: "",
       },
       actions: {
-        openDetail: (id: number) => {
+        openDetail: (query: string) => {
           setEnableBack(true)
-          navigate(`/slow-query/detail?id=${id}`)
+          navigate(`/slow-query/detail?${query}`)
         },
         backToList: () => {
           if (enableBack) {

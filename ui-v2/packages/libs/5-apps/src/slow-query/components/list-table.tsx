@@ -36,10 +36,12 @@ export function ListTable() {
       manualSorting
       sortDescFirst
       enableColumnResizing
+      enablePinning
       onSortingChange={setSortRules}
+      state={{ isLoading: isLoading || isFetching, sorting: sortRules }}
+      initialState={{ columnPinning: { left: ["query"] } }}
       columns={cols}
       data={data ?? []}
-      state={{ isLoading: isLoading || isFetching, sorting: sortRules }}
     />
   )
 }

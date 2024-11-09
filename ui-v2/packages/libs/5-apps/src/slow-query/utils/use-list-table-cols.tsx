@@ -1,4 +1,7 @@
-import { MRT_ColumnDef } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import {
+  MRT_ColumnDef,
+  SQLWithHover,
+} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Typography } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
   formatTime,
@@ -23,7 +26,7 @@ export function useSlowQueryColumns() {
         header: "Query",
         minSize: 300,
         enableSorting: false,
-        accessorFn: (row) => row.query,
+        accessorFn: (row) => <SQLWithHover sql={row.query!} />,
       },
       {
         id: "timestamp",

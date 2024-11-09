@@ -35,9 +35,10 @@ export function ListTable() {
       enableSorting
       manualSorting
       sortDescFirst
+      enableColumnResizing
+      onSortingChange={setSortRules}
       columns={cols}
       data={data ?? []}
-      onSortingChange={setSortRules}
       state={{ isLoading: isLoading || isFetching, sorting: sortRules }}
     />
   )

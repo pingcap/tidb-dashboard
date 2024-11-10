@@ -11,6 +11,7 @@ import { useDetailData } from "../../utils/use-data"
 
 import { DetailTabs } from "./detail-tabs"
 import { DetailPlan } from "./plan"
+import { DetailQuery } from "./query"
 
 export function Detail() {
   const ctx = useAppContext()
@@ -29,6 +30,7 @@ export function Detail() {
 
       {detailData && (
         <Stack spacing="xl">
+          <DetailQuery query={detailData.query || ""} />
           <DetailPlan
             plan={detailData.binary_plan_text || detailData.plan || ""}
           />

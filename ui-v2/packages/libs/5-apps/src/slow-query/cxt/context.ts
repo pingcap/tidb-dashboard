@@ -9,7 +9,7 @@ type AppApi = {
     limit: number
     term: string
   }): Promise<SlowqueryModel[]>
-  getSlowQuery(params: { id: number }): Promise<SlowqueryModel>
+  getSlowQuery(params: { id: string }): Promise<SlowqueryModel>
 
   getDbs(): Promise<string[]>
   getRuGroups(): Promise<string[]>
@@ -20,7 +20,7 @@ type AppConfig = {
 }
 
 type AppActions = {
-  openDetail(query: string): void
+  openDetail(id: string): void
   backToList(): void
 }
 

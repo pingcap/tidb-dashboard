@@ -399,7 +399,7 @@ export interface SlowqueryModel {
    * @type {Array<number>}
    * @memberof SlowqueryModel
    */
-  warnings?: Array<string>
+  warnings?: Array<object>
   /**
    * Transaction
    * @type {number}

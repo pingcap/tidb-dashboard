@@ -2,8 +2,9 @@ import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-que
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-import { http } from "../../rapper"
+// import { http } from "../../rapper"
 
+import detailData from "./sample-data/detail.json"
 import listData from "./sample-data/list.json"
 
 export function useCtxValue(): AppCtxValue {
@@ -18,8 +19,9 @@ export function useCtxValue(): AppCtxValue {
           // return http("GET/slow-query/list", params).then((d) => d.items)
           return Promise.resolve(listData)
         },
-        getSlowQuery(params: { id: number }) {
-          return http("GET/slow-query/detail", params)
+        getSlowQuery(_params: { id: string }) {
+          // return http("GET/slow-query/detail", params)
+          return Promise.resolve(detailData)
         },
         getDbs() {
           return Promise.resolve(["db1", "db2"])
@@ -32,9 +34,9 @@ export function useCtxValue(): AppCtxValue {
         title: "",
       },
       actions: {
-        openDetail: (query: string) => {
+        openDetail: (id: string) => {
           setEnableBack(true)
-          navigate(`/slow-query/detail?${query}`)
+          navigate(`/slow-query/detail?id=${id}`)
         },
         backToList: () => {
           if (enableBack) {

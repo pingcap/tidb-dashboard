@@ -29,12 +29,9 @@ function QueryCell({ row }: { row: MRT_Row<SlowqueryModel> }) {
     <Box
       sx={{ cursor: "pointer" }}
       onClick={() => {
-        const query = new URLSearchParams({
-          digest: row.original.digest!,
-          connection_id: row.original.connection_id! + "",
-          timestamp: row.original.timestamp! + "",
-        }).toString()
-        ctx.actions.openDetail(query)
+        ctx.actions.openDetail(
+          `${row.original.digest}_${row.original.connection_id}_${row.original.timestamp}`,
+        )
       }}
     >
       <SQLWithHover sql={row.original.query!} />

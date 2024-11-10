@@ -31,9 +31,7 @@ export function Detail() {
       {detailData && (
         <Stack spacing="xl">
           <DetailQuery query={detailData.query || ""} />
-          <DetailPlan
-            plan={detailData.binary_plan_text || detailData.plan || ""}
-          />
+          <DetailPlan plan={detailData.plan || ""} />
           <DetailTabs data={detailData} />
         </Stack>
       )}

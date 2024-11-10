@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 
 // import { http } from "../../rapper"
 
-import detailData from "./sample-data/detail-2.json"
+import detailData from "./sample-data/detail-3.json"
 import listData from "./sample-data/list.json"
 
 export function useCtxValue(): AppCtxValue {
@@ -21,7 +21,12 @@ export function useCtxValue(): AppCtxValue {
         },
         getSlowQuery(_params: { id: string }) {
           // return http("GET/slow-query/detail", params)
-          return Promise.resolve(detailData)
+          return Promise.resolve(detailData).then((d) => {
+            if (d.binary_plan_text) {
+              d.plan = d.binary_plan_text
+            }
+            return d
+          })
         },
         getDbs() {
           return Promise.resolve(["db1", "db2"])

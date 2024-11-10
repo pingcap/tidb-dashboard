@@ -2,7 +2,7 @@ import { Tooltip, Typography } from "@tidbcloud/uikit"
 import { MRT_ColumnDef, ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
-import { PlanItem, parsePlanV2TextToArray } from "./parser"
+import { PlanItem, getPlanTextType, parsePlanTextToArray } from "./parser"
 
 const columns: MRT_ColumnDef<PlanItem>[] = [
   {
@@ -103,6 +103,19 @@ const columns: MRT_ColumnDef<PlanItem>[] = [
 ]
 
 export function PlanTable({ plan }: { plan: string }) {
-  const planItems = useMemo(() => parsePlanV2TextToArray(plan), [plan])
-  return <ProTable data={planItems} columns={columns} />
+  const planType = getPlanTextType(plan)
+  const planItems = useMemo(() => parsePlanTextToArray(plan), [plan])
+
+  return (
+    <ProTable
+      data={planItems}
+      columns={columns}
+      initialState={{
+        columnVisibility: {
+          estCost: planType === "v2",
+          accessObject: planType === "v2",
+        },
+      }}
+    />
+  )
 }

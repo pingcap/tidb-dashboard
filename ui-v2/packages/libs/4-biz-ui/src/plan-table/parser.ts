@@ -20,9 +20,117 @@ type PlanFiledPosition = Record<
 >
 export type PlanItem = Record<PLAN_COLUMN_KEYS_UNION, string>
 
-// see binary_plan_text example from sample-data/slow-query-detail.json
-// plan field in the sample-data/slow-query-detail.json is the plan v1 format, it is outdate
-// binary_plan field is the plan v2 format
+// in sample data sample-data/slow-query-detail.json, plan field is the plan v1 format
+// it uses '\t' as separator for each column
+// it has a header line starts with '\tid'
+// it has "id, task, estRows, operator info, actRows, execution info, memory, disk" columns
+export function parsePlanV1TextToArray(planV1Text: string): PlanItem[] {
+  const result: PlanItem[] = []
+
+  if (!planV1Text.startsWith("\tid")) {
+    console.error("invalid plan text format")
+    return result
+  }
+
+  const headerEndPos = planV1Text.indexOf("\n")
+  const headerLine = planV1Text.slice(0, headerEndPos)
+  const headers = headerLine.split("\t")
+  if (headers.length !== 9) {
+    console.error("invalid plan text format")
+    return result
+  }
+
+  let curPos = headerEndPos + 2
+  while (true) {
+    // id
+    let nextTabPos = planV1Text.indexOf("\t", curPos)
+    if (nextTabPos === -1) {
+      break
+    }
+    const id = planV1Text.slice(curPos, nextTabPos).trimEnd()
+
+    // task
+    curPos = nextTabPos + 1
+    nextTabPos = planV1Text.indexOf("\t", curPos)
+    if (nextTabPos === -1) {
+      break
+    }
+    const task = planV1Text.slice(curPos, nextTabPos).trim()
+
+    // estRows
+    curPos = nextTabPos + 1
+    nextTabPos = planV1Text.indexOf("\t", curPos)
+    if (nextTabPos === -1) {
+      break
+    }
+    const estRows = planV1Text.slice(curPos, nextTabPos).trim()
+
+    // operator info
+    curPos = nextTabPos + 1
+    nextTabPos = planV1Text.indexOf("\t", curPos)
+    if (nextTabPos === -1) {
+      break
+    }
+    const operatorInfo = planV1Text.slice(curPos, nextTabPos).trim()
+
+    // actRows
+    curPos = nextTabPos + 1
+    nextTabPos = planV1Text.indexOf("\t", curPos)
+    if (nextTabPos === -1) {
+      break
+    }
+    const actRows = planV1Text.slice(curPos, nextTabPos).trim()
+
+    // execution info
+    curPos = nextTabPos + 1
+    nextTabPos = planV1Text.indexOf("\t", curPos)
+    if (nextTabPos === -1) {
+      break
+    }
+    const executionInfo = planV1Text.slice(curPos, nextTabPos).trim()
+
+    // memory
+    curPos = nextTabPos + 1
+    nextTabPos = planV1Text.indexOf("\t", curPos)
+    if (nextTabPos === -1) {
+      break
+    }
+    const memory = planV1Text.slice(curPos, nextTabPos).trim()
+
+    // disk
+    curPos = nextTabPos + 1
+    nextTabPos = planV1Text.indexOf("\t", curPos)
+    if (nextTabPos === -1) {
+      nextTabPos = planV1Text.length
+    }
+    const disk = planV1Text.slice(curPos, nextTabPos).trim()
+
+    result.push({
+      id,
+      estRows,
+      estCost: "",
+      actRows,
+      task,
+      accessObject: "",
+      executionInfo,
+      operatorInfo,
+      memory,
+      disk,
+    })
+
+    if (nextTabPos >= planV1Text.length) {
+      break
+    }
+    curPos = nextTabPos + 1
+  }
+
+  return result
+}
+
+// in sample data sample-data/slow-query-detail.json, binary_plan_text field is the plan v2 format
+// it uses '|' as separator for each column
+// it has a header line starts with '\n| id'
+// it has "id, estRows, estCost, actRows, task, access object, execution info, operator info, memory, disk" columns
 export function parsePlanV2TextToArray(planV2Text: string): PlanItem[] {
   const result: PlanItem[] = []
   let positions: PlanFiledPosition | null = null
@@ -179,4 +287,24 @@ export function parsePlanV2TextToArray(planV2Text: string): PlanItem[] {
   }
 
   return result
+}
+
+export function parsePlanTextToArray(plan: string): PlanItem[] {
+  const planType = getPlanTextType(plan)
+  if (planType === "v1") {
+    return parsePlanV1TextToArray(plan)
+  } else if (planType === "v2") {
+    return parsePlanV2TextToArray(plan)
+  }
+  return []
+}
+
+export function getPlanTextType(plan: string): "v1" | "v2" | "unknown" {
+  if (plan.startsWith("\tid")) {
+    return "v1"
+  } else if (plan.startsWith("\n| id")) {
+    return "v2"
+  }
+  console.error("invalid plan text format")
+  return "unknown"
 }

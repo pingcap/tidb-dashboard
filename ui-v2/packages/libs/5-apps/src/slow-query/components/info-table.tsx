@@ -31,11 +31,7 @@ const columns: MRT_ColumnDef<InfoModel>[] = [
   {
     id: "value",
     header: "Value",
-    accessorFn: (row) => (
-      <Tooltip label={row.value} position="top-start" withArrow>
-        <Typography truncate>{row.value}</Typography>
-      </Tooltip>
-    ),
+    accessorFn: (row) => <Typography truncate>{row.value}</Typography>,
   },
   {
     id: "desc",

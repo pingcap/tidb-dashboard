@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 
 // import { http } from "../../rapper"
 
-import detailData from "./sample-data/detail.json"
+import detailData from "./sample-data/detail-2.json"
 import listData from "./sample-data/list.json"
 
 export function useCtxValue(): AppCtxValue {

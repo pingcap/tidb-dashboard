@@ -62,6 +62,7 @@
     "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
     "@tanstack/react-query": "^5.59.16",
     "dayjs": "^1.11.13",
-    "lodash-es": "^4.17.21"
+    "lodash-es": "^4.17.21",
+    "react-json-view": "^1.21.3"
   }
 }

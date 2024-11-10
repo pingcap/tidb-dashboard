@@ -5,6 +5,7 @@ import {
   Title,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { useMemo } from "react"
+import ReactJson from "react-json-view"
 
 import { SlowqueryModel } from "../../models"
 
@@ -15,7 +16,7 @@ import { DetailTxn } from "./detail-txn"
 
 export function DetailTabs({ data }: { data: SlowqueryModel }) {
   const tabs = useMemo(() => {
-    return [
+    const _tabs = [
       {
         label: "Basic",
         value: "basic",
@@ -33,6 +34,24 @@ export function DetailTabs({ data }: { data: SlowqueryModel }) {
         component: <DetailTxn data={data} />,
       },
     ]
+    if (data.warnings) {
+      _tabs.push({
+        label: "Warnings",
+        value: "warnings",
+        component: (
+          <ReactJson
+            src={data.warnings}
+            enableClipboard={false}
+            displayObjectSize={false}
+            displayDataTypes={false}
+            name={false}
+            iconStyle="circle"
+            groupArraysAfterLength={10}
+          />
+        ),
+      })
+    }
+    return _tabs
   }, [data])
 
   return (

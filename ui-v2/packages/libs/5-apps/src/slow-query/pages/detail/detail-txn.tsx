@@ -9,7 +9,7 @@ function getData(data: SlowqueryModel): InfoModel[] {
     {
       name: "Start Timestamp",
       value: data.txn_start_ts!,
-      description: "Transaction start timestamp, a.k.a. Transaction ID",
+      desc: "Transaction start timestamp, a.k.a. Transaction ID",
     },
     {
       name: "Write Keys",

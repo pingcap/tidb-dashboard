@@ -11,7 +11,7 @@ export type InfoModel = {
   name: string
   level?: number
   value: string
-  description?: string
+  desc?: string
 }
 
 const columns: MRT_ColumnDef<InfoModel>[] = [
@@ -44,12 +44,12 @@ const columns: MRT_ColumnDef<InfoModel>[] = [
       <Tooltip
         multiline
         maw={600}
-        label={row.description}
+        label={row.desc}
         position="top-start"
         withArrow
       >
         <Typography maw={800} truncate>
-          {row.description}
+          {row.desc}
         </Typography>
       </Tooltip>
     ),

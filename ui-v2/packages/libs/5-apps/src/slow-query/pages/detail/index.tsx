@@ -6,7 +6,7 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 
 import { LoadingSkeleton } from "../../components/loading-skeleton"
-import { useAppContext } from "../../cxt/context"
+import { useAppContext } from "../../ctx/context"
 import { useDetailData } from "../../utils/use-data"
 
 import { DetailTabs } from "./detail-tabs"

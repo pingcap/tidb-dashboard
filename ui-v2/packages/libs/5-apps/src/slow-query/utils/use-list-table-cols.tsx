@@ -13,7 +13,7 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
-import { useAppContext } from "../cxt/context"
+import { useAppContext } from "../ctx/context"
 import { SlowqueryModel } from "../models"
 
 export const SLOW_QUERY_COLUMNS = [

@@ -95,11 +95,14 @@ func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.
 
 	tx = tx.Order(orderStmt)
 
+	// in TiDB Dashboard SQL Statements detail page, we can get multiple plan digests for a certain SQL statement.
+	// we can get related slow queries for these plan digests.
 	if len(req.Plans) > 0 {
 		tx = tx.Where("Plan_digest IN (?)", req.Plans)
 	}
 
-	if len(req.Digest) > 0 {
+	// in TiDB Dashboard SQL Statements detail page, we can get related slow queries by its SQL statement digest.
+	if req.Digest != "" {
 		tx = tx.Where("Digest = ?", req.Digest)
 	}
 

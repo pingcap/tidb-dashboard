@@ -1,5 +1,5 @@
-export * from "./cxt/app-provider"
-export * from "./cxt/context"
+export * from "./ctx/app-provider"
+export * from "./ctx/context"
 
 export * from "./pages/list"
 export * from "./pages/detail"

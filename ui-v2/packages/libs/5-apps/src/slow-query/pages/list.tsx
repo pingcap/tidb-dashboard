@@ -7,7 +7,7 @@ import {
 import { Filters } from "../components/filters"
 import { ListTable } from "../components/list-table"
 import { RefreshButton } from "../components/refresh-button"
-import { useAppContext } from "../cxt/context"
+import { useAppContext } from "../ctx/context"
 
 export function List() {
   const ctx = useAppContext()

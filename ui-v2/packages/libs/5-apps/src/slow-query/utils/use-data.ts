@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { useAppContext } from "../cxt/context"
+import { useAppContext } from "../ctx/context"
 import { useDetailUrlState } from "../url-state/detail-url-state"
 import { useListUrlState } from "../url-state/list-url-state"
 

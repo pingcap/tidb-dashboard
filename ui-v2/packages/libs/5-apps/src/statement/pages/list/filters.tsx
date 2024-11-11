@@ -13,13 +13,13 @@ import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import dayjs from "dayjs"
 import { useEffect, useState } from "react"
 
-import { useListUrlState } from "../url-state/list-url-state"
+import { useListUrlState } from "../../url-state/list-url-state"
 import {
   useDbsData,
   useListData,
   useRuGroupsData,
   useStmtKindsData,
-} from "../utils/use-data"
+} from "../../utils/use-data"
 
 const QUICK_RANGES: number[] = [
   5 * 60, // 5 mins
@@ -134,7 +134,7 @@ export function Filters() {
         onChange={(e) => setText(e.target.value)}
         placeholder={tn(
           "slowquery.filters.search",
-          "Find digest,query,prev_stmt,txn_start_ts",
+          "Find digest,digest_text,schema,table",
         )}
         rightSection={
           !!text && (

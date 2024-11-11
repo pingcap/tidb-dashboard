@@ -5,9 +5,10 @@ import {
 import { useMemo } from "react"
 import { useCallback } from "react"
 
-import { useListUrlState } from "../url-state/list-url-state"
-import { useListData } from "../utils/use-data"
-import { useSlowQueryColumns } from "../utils/use-list-table-cols"
+import { useListUrlState } from "../../url-state/list-url-state"
+import { useListData } from "../../utils/use-data"
+
+import { useSlowQueryColumns } from "./use-list-table-cols"
 
 export function ListTable() {
   const cols = useSlowQueryColumns()

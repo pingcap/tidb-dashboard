@@ -1,7 +1,10 @@
+import {
+  InfoModel,
+  InfoTable,
+} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { formatValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
-import { InfoModel, InfoTable } from "../../components/info-table"
 import { SlowqueryModel } from "../../models"
 
 function getData(data: SlowqueryModel): InfoModel[] {

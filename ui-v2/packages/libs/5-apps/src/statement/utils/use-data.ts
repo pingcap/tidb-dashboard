@@ -43,7 +43,7 @@ export function useListData() {
       term,
     ],
     queryFn: () => {
-      return ctx.api.getStmtList({})
+      return ctx.api.getStmtList({ term })
     },
   })
 

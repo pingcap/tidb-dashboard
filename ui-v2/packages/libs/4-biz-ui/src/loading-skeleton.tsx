@@ -1,7 +1,4 @@
-import {
-  Group,
-  Skeleton,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Group, Skeleton } from "@tidbcloud/uikit"
 
 export function LoadingSkeleton() {
   return (

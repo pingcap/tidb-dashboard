@@ -14,8 +14,8 @@ import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import dayjs from "dayjs"
 import { useEffect, useState } from "react"
 
-import { useListUrlState } from "../url-state/list-url-state"
-import { useDbsData, useListData, useRuGroupsData } from "../utils/use-data"
+import { useListUrlState } from "../../url-state/list-url-state"
+import { useDbsData, useListData, useRuGroupsData } from "../../utils/use-data"
 
 const SLOW_QUERY_LIMIT = [100, 200, 500, 1000].map((l) => ({
   value: `${l}`,

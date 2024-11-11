@@ -4,10 +4,11 @@ import {
   Title,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 
-import { Filters } from "../components/filters"
-import { ListTable } from "../components/list-table"
-import { RefreshButton } from "../components/refresh-button"
-import { useAppContext } from "../ctx/context"
+import { useAppContext } from "../../ctx/context"
+
+import { Filters } from "./filters"
+import { ListTable } from "./list-table"
+import { RefreshButton } from "./refresh-button"
 
 export function List() {
   const ctx = useAppContext()
@@ -22,7 +23,9 @@ export function List() {
 
       <Group>
         <Filters />
-        <RefreshButton />
+        <Group ml="auto">
+          <RefreshButton />
+        </Group>
       </Group>
 
       <ListTable />

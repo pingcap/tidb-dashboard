@@ -1,11 +1,5 @@
-import {
-  MRT_ColumnDef,
-  ProTable,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import {
-  Tooltip,
-  Typography,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Tooltip, Typography } from "@tidbcloud/uikit"
+import { MRT_ColumnDef, ProTable } from "@tidbcloud/uikit/biz"
 
 export type InfoModel = {
   name: string

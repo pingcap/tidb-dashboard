@@ -3,5 +3,3 @@ export * from "./ctx/context"
 
 export * from "./pages/list"
 export * from "./pages/detail"
-
-export * from "./components/filters"

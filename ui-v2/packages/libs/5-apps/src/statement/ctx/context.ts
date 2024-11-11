@@ -1,18 +1,17 @@
 import { createContext, useContext } from "react"
 
-import { SlowqueryModel } from "../models"
+import { StatementModel } from "../models"
 
 ////////////////////////////////
 
 type AppApi = {
   getDbs(): Promise<string[]>
   getRuGroups(): Promise<string[]>
+  getStmtKinds(): Promise<string[]>
 
-  getSlowQueries(params: {
-    limit: number
-    term: string
-  }): Promise<SlowqueryModel[]>
-  getSlowQuery(params: { id: string }): Promise<SlowqueryModel>
+  getStmtList(params: { term: string }): Promise<StatementModel[]>
+  getStmtPlans(params: { digest: string }): Promise<StatementModel[]>
+  getStmtPlansDetail(params: { digest: string }): Promise<StatementModel>
 }
 
 type AppConfig = {
@@ -39,7 +38,7 @@ export const useAppContext = () => {
   const context = useContext(AppContext)
 
   if (!context) {
-    throw new Error("SlowQuery AppContext must be used within a provider")
+    throw new Error("Statement AppContext must be used within a provider")
   }
 
   return context

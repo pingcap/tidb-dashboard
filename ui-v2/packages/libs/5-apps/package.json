@@ -13,6 +13,9 @@
     "./slow-query": {
       "import": "./dist/slow-query/index.js"
     },
+    "./statement": {
+      "import": "./dist/statement/index.js"
+    },
     "./index-advisor": {
       "import": "./dist/index-advisor/index.js"
     }
@@ -24,6 +27,9 @@
       ],
       "slow-query": [
         "./dist/slow-query/index.d.ts"
+      ],
+      "statement": [
+        "./dist/statement/index.d.ts"
       ],
       "index-advisor": [
         "./dist/index-advisor/index.d.ts"

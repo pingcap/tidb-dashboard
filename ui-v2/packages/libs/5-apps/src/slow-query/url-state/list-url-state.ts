@@ -1,22 +1,18 @@
+import { TimeRange } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
-  TimeRange,
-  toURLTimeRange,
-  urlToTimeRange,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { useUrlState } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+  SortUrlState,
+  TimeRangeUrlState,
+  useSortUrlState,
+  useTimeRangeUrlState,
+  useUrlState,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useMemo } from "react"
 
-export type SortRule = {
-  orderBy: string
-  desc: boolean
-}
-
 type ListUrlState = Partial<
-  Record<
-    "from" | "to" | "dbs" | "ruGroups" | "limit" | "term" | "orderBy" | "desc",
-    string
-  >
->
+  Record<"dbs" | "ruGroups" | "limit" | "term", string>
+> &
+  SortUrlState &
+  TimeRangeUrlState
 
 export const DEFAULT_TIME_RANGE: TimeRange = {
   type: "relative",
@@ -25,26 +21,13 @@ export const DEFAULT_TIME_RANGE: TimeRange = {
 
 export function useListUrlState() {
   const [queryParams, setQueryParams] = useUrlState<ListUrlState>()
-
-  // timeRange
-  const timeRange = useMemo(() => {
-    const { from, to } = queryParams
-    if (from && to) {
-      return urlToTimeRange({ from, to })
-    }
-    return DEFAULT_TIME_RANGE
-  }, [queryParams.from, queryParams.to])
-  const setTimeRange = useCallback(
-    (newTimeRange: TimeRange) => {
-      setQueryParams({ ...toURLTimeRange(newTimeRange) })
-    },
-    [setQueryParams],
-  )
+  const { sortRule, setSortRule } = useSortUrlState()
+  const { timeRange, setTimeRange } = useTimeRangeUrlState(DEFAULT_TIME_RANGE)
 
   // dbs
   const dbs = useMemo<string[]>(() => {
-    const dbs = queryParams.dbs
-    return dbs ? dbs.split(",") : []
+    const _dbs = queryParams.dbs
+    return _dbs ? _dbs.split(",") : []
   }, [queryParams.dbs])
   const setDbs = useCallback(
     (v: string[]) => {
@@ -55,8 +38,8 @@ export function useListUrlState() {
 
   // ruGroups
   const ruGroups = useMemo(() => {
-    const ruGroups = queryParams.ruGroups
-    return ruGroups ? ruGroups.split(",") : []
+    const _ruGroups = queryParams.ruGroups
+    return _ruGroups ? _ruGroups.split(",") : []
   }, [queryParams.ruGroups])
   const setRuGroups = useCallback(
     (v: string[]) => {
@@ -101,23 +84,6 @@ export function useListUrlState() {
       term: undefined,
     })
   }, [setQueryParams])
-
-  // sort
-  const sortRule = useMemo<SortRule>(() => {
-    return {
-      orderBy: queryParams.orderBy ?? "timestamp",
-      desc: queryParams.desc !== "false",
-    }
-  }, [queryParams.orderBy, queryParams.desc])
-  const setSortRule = useCallback(
-    (newSortRule: SortRule) => {
-      setQueryParams({
-        orderBy: newSortRule.orderBy || undefined,
-        desc: newSortRule.desc ? "true" : "false",
-      })
-    },
-    [setQueryParams],
-  )
 
   return {
     timeRange,

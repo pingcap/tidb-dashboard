@@ -23,16 +23,6 @@ export type IndexAdvisorsListReq = {
   pageSize: number
 }
 
-export type Pagination = {
-  curPage: number
-  pageSize: number
-}
-
-export type SortRule = {
-  orderBy: string
-  desc: boolean
-}
-
 export const FEATURE_NAME = "Index Advisor"
 export const STATUS_OPTIONS = ["OPEN", "CLOSED", "APPLYING", "APPLIED"].map(
   (s) => ({ label: capitalize(s), value: s }),

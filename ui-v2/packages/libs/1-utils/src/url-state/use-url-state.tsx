@@ -42,7 +42,7 @@ export function UrlStateProvider(props: {
 
   const [urlQuery, _setUrlQuery] = useState(val.urlQuery)
 
-  // sync external urlQuery changes
+  // sync urlQuery from props changes
   useEffect(() => {
     _setUrlQuery(val.urlQuery)
   }, [val.urlQuery])

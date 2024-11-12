@@ -3,7 +3,7 @@ import {
   AppCtxValue,
   StatementModel,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
-import { useMemo, useState } from "react"
+import { useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 
 import listData from "./sample-data/list-2.json"
@@ -12,7 +12,7 @@ import plansListData from "./sample-data/plans-list-1.json"
 
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
-  const [enableBack, setEnableBack] = useState(false)
+  const preListUrl = useRef("")
 
   return useMemo(
     () => ({
@@ -50,18 +50,18 @@ export function useCtxValue(): AppCtxValue {
       },
       actions: {
         openDetail: (id: string) => {
-          setEnableBack(true)
+          preListUrl.current = window.location.hash.slice(1)
           navigate(`/statement/detail?id=${id}`)
         },
         backToList: () => {
-          if (enableBack) {
-            navigate(-1)
+          if (preListUrl.current) {
+            navigate(preListUrl.current)
           } else {
             navigate("/statement/list")
           }
         },
       },
     }),
-    [navigate, enableBack],
+    [navigate],
   )
 }

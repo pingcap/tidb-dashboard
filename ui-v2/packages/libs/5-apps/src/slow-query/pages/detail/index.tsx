@@ -29,8 +29,8 @@ export function Detail() {
       {isLoading && <LoadingSkeleton />}
 
       {detailData && (
-        <Stack spacing="xl">
-          <DetailQuery query={detailData.query || ""} />
+        <Stack>
+          <DetailQuery sql={detailData.query || ""} />
           <DetailPlan plan={detailData.plan || ""} />
           <DetailTabs data={detailData} />
         </Stack>

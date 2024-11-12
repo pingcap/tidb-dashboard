@@ -1,9 +1,6 @@
-import {
-  MantineReactTableProps,
-  ProTable,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { ProTable } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { useProTableSortState } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
-import { useCallback } from "react"
 
 import { StatementModel } from "../../models"
 import { useListUrlState } from "../../url-state/list-url-state"
@@ -14,30 +11,18 @@ import { useListTableColumns } from "./list-table-cols"
 export function ListTable() {
   const cols = useListTableColumns()
   const { data, isLoading, isFetching } = useListData()
-  const { sortRule, setSortRule, pagination, setPagination } = useListUrlState()
-
-  const sortRules = useMemo(() => {
-    return [{ id: sortRule.orderBy, desc: sortRule.desc }]
-  }, [sortRule.orderBy, sortRule.desc])
-  type onSortChangeFn = Required<MantineReactTableProps>["onSortingChange"]
-  const setSortRules = useCallback<onSortChangeFn>(
-    (updater) => {
-      const newSort =
-        typeof updater === "function" ? updater(sortRules) : updater
-      if (newSort === sortRules) {
-        return
-      }
-      setSortRule({ orderBy: newSort[0].id, desc: newSort[0].desc })
-    },
-    [setSortRule, sortRules],
-  )
+  const { pagination, setPagination, sortRule, setSortRule } = useListUrlState()
+  const { sorting, setSorting } = useProTableSortState(sortRule, setSortRule)
 
   // do sorting in local for statement list
   const sortedData = useMemo(() => {
-    if (!data || !sortRules[0]) {
+    if (!data) {
       return []
     }
-    const [{ id, desc }] = sortRules
+    if (!sorting[0]) {
+      return data
+    }
+    const [{ id, desc }] = sorting
     const sorted = [...data]
     sorted.sort((a, b) => {
       const aVal = a[id as keyof StatementModel] ?? 0
@@ -49,13 +34,13 @@ export function ListTable() {
       }
     })
     return sorted
-  }, [data, sortRules])
+  }, [data, sorting])
 
   // do pagination in local for statement list
   const finalData = useMemo(() => {
     const { curPage, pageSize } = pagination
     return sortedData.slice((curPage - 1) * pageSize, curPage * pageSize)
-  }, [sortedData, pagination?.curPage, pagination?.pageSize])
+  }, [sortedData, pagination])
 
   return (
     <ProTable
@@ -64,8 +49,8 @@ export function ListTable() {
       enableSorting
       manualSorting
       sortDescFirst
-      onSortingChange={setSortRules}
-      state={{ isLoading: isLoading || isFetching, sorting: sortRules }}
+      onSortingChange={setSorting}
+      state={{ isLoading: isLoading || isFetching, sorting }}
       initialState={{ columnPinning: { left: ["digest_text"] } }}
       pagination={{
         page: pagination.curPage,

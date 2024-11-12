@@ -24,11 +24,10 @@ export function useTimeRangeUrlState(
   }, [queryParams.from, queryParams.to])
   const setTimeRange = useCallback(
     (newTimeRange: TimeRange) => {
-      if (affectPagination) {
-        setQueryParams({ ...toURLTimeRange(newTimeRange), curPage: undefined })
-      } else {
-        setQueryParams({ ...toURLTimeRange(newTimeRange) })
-      }
+      setQueryParams({
+        ...toURLTimeRange(newTimeRange),
+        ...(affectPagination ? { curPage: undefined } : {}),
+      })
     },
     [setQueryParams],
   )

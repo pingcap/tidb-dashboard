@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react"
 
+import { PaginationUrlState } from "./pagination-url-state"
 import { useUrlState } from "./use-url-state"
 
 export type SortRule = {
@@ -9,12 +10,17 @@ export type SortRule = {
 
 export type SortUrlState = Partial<Record<"orderBy" | "desc", string>>
 
-export function useSortUrlState() {
-  const [queryParams, setQueryParams] = useUrlState<SortUrlState>()
+export function useSortUrlState(
+  defOrderBy: string = "",
+  affectPagination: boolean = false,
+) {
+  const [queryParams, setQueryParams] = useUrlState<
+    SortUrlState & PaginationUrlState
+  >()
 
   const sortRule = useMemo<SortRule>(() => {
     return {
-      orderBy: queryParams.orderBy ?? "",
+      orderBy: queryParams.orderBy ?? defOrderBy,
       desc: queryParams.desc !== "false",
     }
   }, [queryParams.orderBy, queryParams.desc])
@@ -23,6 +29,7 @@ export function useSortUrlState() {
       setQueryParams({
         orderBy: newSortRule.orderBy || undefined,
         desc: newSortRule.desc ? undefined : "false",
+        ...(affectPagination ? { curPage: undefined } : {}),
       })
     },
     [setQueryParams],

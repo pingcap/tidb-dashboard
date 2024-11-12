@@ -7,18 +7,18 @@ import {
 import { formatSql } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
-export function StmtTemplate({ sql }: { sql: string }) {
+export function StmtSQL({ title, sql }: { title: string; sql: string }) {
   const formattedSQL = useMemo(() => formatSql(sql), [sql])
 
   return (
     <Card shadow="xs" p="xl">
       <Stack spacing="xs">
-        <Title order={5}>Statement Template</Title>
+        <Title order={5}>{title}</Title>
 
         <CodeBlock
           language="sql"
           foldProps={{
-            persistenceKey: "statement.detail.stmt-template",
+            persistenceKey: `statement.detail.${title}`,
             iconVisible: true,
           }}
         >

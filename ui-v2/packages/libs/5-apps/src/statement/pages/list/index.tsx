@@ -7,6 +7,7 @@ import {
 import { useAppContext } from "../../ctx/context"
 
 import { Filters } from "./filters"
+import { ListTable } from "./list-table"
 import { RefreshButton } from "./refresh-button"
 
 export function List() {
@@ -26,6 +27,8 @@ export function List() {
           <RefreshButton />
         </Group>
       </Group>
+
+      <ListTable />
     </Stack>
   )
 }

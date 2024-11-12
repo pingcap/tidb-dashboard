@@ -3,10 +3,7 @@ import {
   MRT_Row,
   SQLWithHover,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import {
-  Box,
-  Typography,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Box } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
   formatTime,
   formatValue,
@@ -15,13 +12,6 @@ import { useMemo } from "react"
 
 import { useAppContext } from "../../ctx/context"
 import { SlowqueryModel } from "../../models"
-
-export const SLOW_QUERY_COLUMNS = [
-  "query",
-  "timestamp",
-  "query_time",
-  "memory_max",
-]
 
 function QueryCell({ row }: { row: MRT_Row<SlowqueryModel> }) {
   const ctx = useAppContext()
@@ -39,7 +29,7 @@ function QueryCell({ row }: { row: MRT_Row<SlowqueryModel> }) {
   )
 }
 
-export function useSlowQueryColumns() {
+export function useListTableColumns() {
   const columns = useMemo<MRT_ColumnDef<SlowqueryModel>[]>(() => {
     return [
       {
@@ -53,33 +43,21 @@ export function useSlowQueryColumns() {
         id: "timestamp",
         header: "Finish Time",
         enableResizing: false,
-        accessorFn: (row) => (
-          <Typography truncate variant="body-lg">
-            {formatTime(row.timestamp! * 1000)}
-          </Typography>
-        ),
+        accessorFn: (row) => formatTime(row.timestamp! * 1000),
       },
       {
         id: "query_time",
         header: "Latency",
         size: 120,
         enableResizing: false,
-        accessorFn: (row) => (
-          <Typography w={80} variant="body-lg">
-            {formatValue(row.query_time!, "s")}
-          </Typography>
-        ),
+        accessorFn: (row) => formatValue(row.query_time!, "s"),
       },
       {
         id: "memory_max",
         header: "Max Memory",
         size: 132,
         enableResizing: false,
-        accessorFn: (row) => (
-          <Typography w={80} variant="body-lg">
-            {formatValue(row.memory_max!, "bytes")}
-          </Typography>
-        ),
+        accessorFn: (row) => formatValue(row.memory_max!, "bytes"),
       },
     ]
   }, [])

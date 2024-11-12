@@ -40,7 +40,7 @@ export function ListTable() {
       sortDescFirst
       onSortingChange={setSortRules}
       state={{ isLoading: isLoading || isFetching, sorting: sortRules }}
-      initialState={{ columnPinning: { left: ["query"] } }}
+      initialState={{ columnPinning: { left: ["digest_text"] } }}
       columns={cols}
       data={data ?? []}
     />

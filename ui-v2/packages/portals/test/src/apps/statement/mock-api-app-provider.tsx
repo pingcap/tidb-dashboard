@@ -2,6 +2,8 @@ import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/statemen
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
+import listData from "./sample-data/list-2.json"
+
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
   const [enableBack, setEnableBack] = useState(false)
@@ -21,7 +23,7 @@ export function useCtxValue(): AppCtxValue {
         },
 
         getStmtList() {
-          return Promise.resolve([])
+          return Promise.resolve(listData)
         },
         getStmtPlans() {
           return Promise.resolve([])

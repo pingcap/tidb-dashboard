@@ -45,7 +45,7 @@ export function EvictedSQL() {
           Others
         </Text>
       </HoverCard.Target>
-      <HoverCard.Dropdown>
+      <HoverCard.Dropdown onClick={(e) => e.stopPropagation()}>
         <Text>All of other dropped SQL statements</Text>
       </HoverCard.Dropdown>
     </HoverCard>

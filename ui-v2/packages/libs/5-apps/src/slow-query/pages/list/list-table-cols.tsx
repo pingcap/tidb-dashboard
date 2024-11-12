@@ -15,15 +15,15 @@ import { SlowqueryModel } from "../../models"
 
 function QueryCell({ row }: { row: MRT_Row<SlowqueryModel> }) {
   const ctx = useAppContext()
+
+  function handleClick() {
+    const { digest, connection_id, timestamp } = row.original
+    const id = [timestamp, digest, connection_id].join(",")
+    ctx.actions.openDetail(id)
+  }
+
   return (
-    <Box
-      sx={{ cursor: "pointer" }}
-      onClick={() => {
-        ctx.actions.openDetail(
-          `${row.original.digest}_${row.original.connection_id}_${row.original.timestamp}`,
-        )
-      }}
-    >
+    <Box sx={{ cursor: "pointer" }} onClick={handleClick}>
       <SQLWithHover sql={row.original.query!} />
     </Box>
   )

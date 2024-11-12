@@ -10,8 +10,11 @@ type AppApi = {
   getStmtKinds(): Promise<string[]>
 
   getStmtList(params: { term: string }): Promise<StatementModel[]>
-  getStmtPlans(params: { digest: string }): Promise<StatementModel[]>
-  getStmtPlansDetail(params: { digest: string }): Promise<StatementModel>
+  getStmtPlans(params: { id: string }): Promise<StatementModel[]>
+  getStmtPlansDetail(params: {
+    id: string
+    plans: string[]
+  }): Promise<StatementModel>
 }
 
 type AppConfig = {

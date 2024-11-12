@@ -1,8 +1,14 @@
-import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
+import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
+import {
+  AppCtxValue,
+  StatementModel,
+} from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import listData from "./sample-data/list-2.json"
+import plansDetailData from "./sample-data/plans-detail-1.json"
+import plansListData from "./sample-data/plans-list-1.json"
 
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
@@ -13,23 +19,30 @@ export function useCtxValue(): AppCtxValue {
       ctxId: "statement",
       api: {
         getStmtKinds() {
-          return Promise.resolve(["Select", "Update", "Delete"])
+          return delay(1000).then(() => ["Select", "Update", "Delete"])
         },
         getDbs() {
-          return Promise.resolve(["db1", "db2"])
+          return delay(1000).then(() => ["db1", "db2"])
         },
         getRuGroups() {
-          return Promise.resolve(["default", "ru1", "ru2"])
+          return delay(1000).then(() => ["default", "ru1", "ru2"])
         },
 
         getStmtList() {
-          return Promise.resolve(listData)
+          return delay(1000).then(() => listData)
         },
         getStmtPlans() {
-          return Promise.resolve([])
+          return delay(1000).then(() => plansListData)
         },
         getStmtPlansDetail() {
-          return Promise.reject("not implement yet")
+          return delay(1000)
+            .then(() => plansDetailData as StatementModel)
+            .then((d) => {
+              if (d.binary_plan_text) {
+                d.plan = d.binary_plan_text
+              }
+              return d
+            })
         },
       },
       cfg: {

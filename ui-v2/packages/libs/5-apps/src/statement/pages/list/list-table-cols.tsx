@@ -13,13 +13,23 @@ import { StatementModel } from "../../models"
 
 function QueryCell({ row }: { row: MRT_Row<StatementModel> }) {
   const ctx = useAppContext()
+
+  function handleClick() {
+    if (row.original.digest_text) {
+      const { digest, schema_name, summary_begin_time, summary_end_time } =
+        row.original
+      const id = [
+        summary_begin_time,
+        summary_end_time,
+        digest,
+        schema_name,
+      ].join(",")
+      ctx.actions.openDetail(id)
+    }
+  }
+
   return (
-    <Box
-      sx={{ cursor: "pointer" }}
-      onClick={() => {
-        ctx.actions.openDetail(row.original.digest ?? "")
-      }}
-    >
+    <Box sx={{ cursor: "pointer" }} onClick={handleClick}>
       {row.original.digest_text ? (
         <SQLWithHover sql={row.original.digest_text} />
       ) : (

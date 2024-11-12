@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx/context"
+import { useDetailUrlState } from "../url-state/detail-url-state"
 import { useListUrlState } from "../url-state/list-url-state"
 
 export function useDbsData() {
@@ -48,4 +49,22 @@ export function useListData() {
   })
 
   return query
+}
+
+export function usePlansListData() {
+  const ctx = useAppContext()
+  const { id } = useDetailUrlState()
+  return useQuery({
+    queryKey: [ctx.ctxId, "statement", "plans-list", id],
+    queryFn: () => ctx.api.getStmtPlans({ id }),
+  })
+}
+
+export function useDetailData() {
+  const ctx = useAppContext()
+  const { id, plans } = useDetailUrlState()
+  return useQuery({
+    queryKey: [ctx.ctxId, "statement", "detail", id, plans.join(",")],
+    queryFn: () => ctx.api.getStmtPlansDetail({ id, plans }),
+  })
 }

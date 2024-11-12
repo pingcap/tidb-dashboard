@@ -1,3 +1,4 @@
+import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -17,22 +18,24 @@ export function useCtxValue(): AppCtxValue {
       api: {
         getSlowQueries(_params: { limit: number; term: string }) {
           // return http("GET/slow-query/list", params).then((d) => d.items)
-          return Promise.resolve(listData)
+          return delay(1000).then(() => listData)
         },
         getSlowQuery(_params: { id: string }) {
           // return http("GET/slow-query/detail", params)
-          return Promise.resolve(detailData).then((d) => {
-            if (d.binary_plan_text) {
-              d.plan = d.binary_plan_text
-            }
-            return d
-          })
+          return delay(1000)
+            .then(() => detailData)
+            .then((d) => {
+              if (d.binary_plan_text) {
+                d.plan = d.binary_plan_text
+              }
+              return d
+            })
         },
         getDbs() {
-          return Promise.resolve(["db1", "db2"])
+          return delay(1000).then(() => ["db1", "db2"])
         },
         getRuGroups() {
-          return Promise.resolve(["default", "ru1", "ru2"])
+          return delay(1000).then(() => ["default", "ru1", "ru2"])
         },
       },
       cfg: {

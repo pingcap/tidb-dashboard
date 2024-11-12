@@ -9,7 +9,7 @@ import { useListTableColumns } from "./list-table-cols"
 
 export function ListTable() {
   const cols = useListTableColumns()
-  const { data, isLoading, isFetching } = useListData()
+  const { data, isLoading } = useListData()
   const { sortRule, setSortRule, pagination, setPagination } = useListUrlState()
   const { sorting, setSorting } = useProTableSortState(sortRule, setSortRule)
 
@@ -28,7 +28,7 @@ export function ListTable() {
       manualSorting
       sortDescFirst
       onSortingChange={setSorting}
-      state={{ isLoading: isLoading || isFetching, sorting }}
+      state={{ isLoading, sorting }}
       initialState={{ columnPinning: { left: ["query"] } }}
       pagination={{
         page: pagination.curPage,

@@ -1,4 +1,7 @@
-export { UrlStateProvider } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+export {
+  UrlStateProvider,
+  delay,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 export {
   MantineProvider,
   UIKitThemeProvider,

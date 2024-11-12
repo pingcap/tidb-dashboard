@@ -7,9 +7,14 @@ import { useUrlState } from "./use-url-state"
 
 export type TimeRangeUrlState = Partial<Record<"from" | "to", string>>
 
+const DEF_TIME_RANGE: TimeRange = {
+  type: "relative",
+  value: 30 * 60,
+}
+
 export function useTimeRangeUrlState(
-  defTimeRange: TimeRange,
-  affectPagination: boolean = false,
+  defTimeRange?: TimeRange,
+  affectPagination?: boolean,
 ) {
   const [queryParams, setQueryParams] = useUrlState<
     TimeRangeUrlState & PaginationUrlState
@@ -20,7 +25,7 @@ export function useTimeRangeUrlState(
     if (from && to) {
       return urlToTimeRange({ from, to })
     }
-    return defTimeRange
+    return defTimeRange || DEF_TIME_RANGE
   }, [queryParams.from, queryParams.to])
   const setTimeRange = useCallback(
     (newTimeRange: TimeRange) => {

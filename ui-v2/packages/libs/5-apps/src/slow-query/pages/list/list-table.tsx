@@ -13,7 +13,7 @@ import { useListTableColumns } from "./list-table-cols"
 export function ListTable() {
   const cols = useListTableColumns()
   const { data, isLoading, isFetching } = useListData()
-  const { sortRule, setSortRule } = useListUrlState()
+  const { sortRule, setSortRule, pagination, setPagination } = useListUrlState()
 
   const sortRules = useMemo(() => {
     return [{ id: sortRule.orderBy, desc: sortRule.desc }]
@@ -31,6 +31,13 @@ export function ListTable() {
     [setSortRule, sortRules],
   )
 
+  // do sorting in server for slow query list
+  // do pagination in local for slow query list
+  const finalData = useMemo(() => {
+    const { curPage, pageSize } = pagination
+    return data?.slice((curPage - 1) * pageSize, curPage * pageSize)
+  }, [data, pagination?.curPage, pagination?.pageSize])
+
   return (
     <ProTable
       enableColumnResizing
@@ -41,8 +48,14 @@ export function ListTable() {
       onSortingChange={setSortRules}
       state={{ isLoading: isLoading || isFetching, sorting: sortRules }}
       initialState={{ columnPinning: { left: ["query"] } }}
+      pagination={{
+        page: pagination.curPage,
+        total: Math.ceil((data?.length ?? 0) / pagination.pageSize),
+        onChange: (v) => setPagination({ ...pagination, curPage: v }),
+        position: "center",
+      }}
       columns={cols}
-      data={data ?? []}
+      data={finalData ?? []}
     />
   )
 }

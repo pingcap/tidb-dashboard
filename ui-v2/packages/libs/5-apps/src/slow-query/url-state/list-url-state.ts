@@ -1,7 +1,9 @@
 import { TimeRange } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
+  PaginationUrlState,
   SortUrlState,
   TimeRangeUrlState,
+  usePaginationUrlState,
   useSortUrlState,
   useTimeRangeUrlState,
   useUrlState,
@@ -12,6 +14,7 @@ type ListUrlState = Partial<
   Record<"dbs" | "ruGroups" | "limit" | "term", string>
 > &
   SortUrlState &
+  PaginationUrlState &
   TimeRangeUrlState
 
 export const DEFAULT_TIME_RANGE: TimeRange = {
@@ -22,6 +25,7 @@ export const DEFAULT_TIME_RANGE: TimeRange = {
 export function useListUrlState() {
   const [queryParams, setQueryParams] = useUrlState<ListUrlState>()
   const { sortRule, setSortRule } = useSortUrlState()
+  const { pagination, setPagination } = usePaginationUrlState(20)
   const { timeRange, setTimeRange } = useTimeRangeUrlState(DEFAULT_TIME_RANGE)
 
   // dbs
@@ -31,7 +35,7 @@ export function useListUrlState() {
   }, [queryParams.dbs])
   const setDbs = useCallback(
     (v: string[]) => {
-      setQueryParams({ dbs: v.join(",") })
+      setQueryParams({ dbs: v.join(","), curPage: undefined })
     },
     [setQueryParams],
   )
@@ -43,7 +47,7 @@ export function useListUrlState() {
   }, [queryParams.ruGroups])
   const setRuGroups = useCallback(
     (v: string[]) => {
-      setQueryParams({ ruGroups: v.join(",") })
+      setQueryParams({ ruGroups: v.join(","), curPage: undefined })
     },
     [setQueryParams],
   )
@@ -59,7 +63,7 @@ export function useListUrlState() {
   }, [queryParams.limit])
   const setLimit = useCallback(
     (v: string) => {
-      setQueryParams({ limit: v })
+      setQueryParams({ limit: v, curPage: undefined })
     },
     [setQueryParams],
   )
@@ -68,7 +72,7 @@ export function useListUrlState() {
   const term = queryParams.term ?? ""
   const setTerm = useCallback(
     (v?: string) => {
-      setQueryParams({ term: v })
+      setQueryParams({ term: v, curPage: undefined })
     },
     [setQueryParams],
   )
@@ -82,6 +86,7 @@ export function useListUrlState() {
       ruGroups: undefined,
       limit: undefined,
       term: undefined,
+      curPage: undefined,
     })
   }, [setQueryParams])
 
@@ -105,6 +110,8 @@ export function useListUrlState() {
 
     sortRule,
     setSortRule,
+    pagination,
+    setPagination,
 
     queryParams,
     setQueryParams,

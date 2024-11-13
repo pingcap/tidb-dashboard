@@ -19,8 +19,15 @@ export function useCtxValue(): AppCtxValue {
 
   return useMemo(
     () => ({
-      ctxId: "unique-id",
+      ctxId: "slow-query",
       api: {
+        getDbs() {
+          return delay(1000).then(() => ["db1", "db2"])
+        },
+        getRuGroups() {
+          return delay(1000).then(() => ["default", "ru1", "ru2"])
+        },
+
         getSlowQueries(_params: { limit: number; term: string }) {
           // return http("GET/slow-query/list", params).then((d) => d.items)
           return delay(1000).then(() => listData)
@@ -35,12 +42,6 @@ export function useCtxValue(): AppCtxValue {
               }
               return d
             })
-        },
-        getDbs() {
-          return delay(1000).then(() => ["db1", "db2"])
-        },
-        getRuGroups() {
-          return delay(1000).then(() => ["default", "ru1", "ru2"])
         },
       },
       cfg: {

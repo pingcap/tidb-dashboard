@@ -28,14 +28,12 @@ function QueryCell({ row }: { row: MRT_Row<StatementModel> }) {
     }
   }
 
-  return (
+  return row.original.digest_text ? (
     <Box sx={{ cursor: "pointer" }} onClick={handleClick}>
-      {row.original.digest_text ? (
-        <SQLWithHover sql={row.original.digest_text} />
-      ) : (
-        <EvictedSQL />
-      )}
+      <SQLWithHover sql={row.original.digest_text} />
     </Box>
+  ) : (
+    <EvictedSQL />
   )
 }
 

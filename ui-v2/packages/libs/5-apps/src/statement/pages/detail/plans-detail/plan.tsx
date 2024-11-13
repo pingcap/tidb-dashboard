@@ -10,7 +10,7 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { useMemo } from "react"
 
-export function ExecutionPlan({ plan }: { plan: string }) {
+export function Plan({ plan }: { plan: string }) {
   const tabs = useMemo(() => {
     return [
       {
@@ -25,7 +25,7 @@ export function ExecutionPlan({ plan }: { plan: string }) {
           <CodeBlock
             codeRender={(content) => <pre>{content}</pre>}
             foldProps={{
-              persistenceKey: "statement.detail.execution-plan",
+              persistenceKey: "statement.detail.plan",
               iconVisible: true,
             }}
           >

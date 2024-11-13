@@ -8,7 +8,8 @@ import { useMemo } from "react"
 import { usePlansDetailData } from "../../../utils/use-data"
 import { StmtSQL } from "../stmt-sql"
 
-import { ExecutionPlan } from "./execution-plan"
+import { DetailTabs } from "./detail-tabs"
+import { Plan } from "./plan"
 
 type PlanDetailProps = {
   allPlansCount: number
@@ -45,7 +46,9 @@ export function PlansDetail({
               sql={plansDetailData.prev_sample_text!}
             />
           )}
-          <ExecutionPlan plan={plansDetailData.plan!} />
+          <Plan plan={plansDetailData.plan!} />
+
+          <DetailTabs data={plansDetailData} />
         </>
       )}
     </Stack>

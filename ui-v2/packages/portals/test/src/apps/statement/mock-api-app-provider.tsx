@@ -3,7 +3,7 @@ import {
   AppCtxValue,
   StatementModel,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
-import { useMemo, useRef } from "react"
+import { useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 
 import listData from "./sample-data/list-2.json"
@@ -11,9 +11,14 @@ import plansDetailData from "./sample-data/plans-detail-1.json"
 import plansListData from "./sample-data/plans-list-1.json"
 import slowQueryListData from "./sample-data/slow-query-list-1.json"
 
+declare global {
+  interface Window {
+    preUrl?: string[]
+  }
+}
+
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
-  const preListUrl = useRef("")
 
   return useMemo(
     () => ({
@@ -54,15 +59,19 @@ export function useCtxValue(): AppCtxValue {
       },
       actions: {
         openDetail: (id: string) => {
-          preListUrl.current = window.location.hash.slice(1)
+          window.preUrl = [window.location.hash.slice(1)]
           navigate(`/statement/detail?id=${id}`)
         },
         backToList: () => {
-          if (preListUrl.current) {
-            navigate(preListUrl.current)
-          } else {
-            navigate("/statement/list")
-          }
+          const preUrl = window.preUrl?.pop()
+          navigate(preUrl || "/statement/list")
+        },
+        openSlowQueryDetail: (id: string) => {
+          window.preUrl = [
+            ...(window.preUrl || []),
+            window.location.hash.slice(1),
+          ]
+          navigate(`/slow-query/detail?id=${id}`)
         },
       },
     }),

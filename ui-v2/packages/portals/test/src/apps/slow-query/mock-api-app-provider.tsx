@@ -1,6 +1,6 @@
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 
 // import { http } from "../../rapper"
@@ -8,9 +8,14 @@ import { useNavigate } from "react-router-dom"
 import detailData from "./sample-data/detail-3.json"
 import listData from "./sample-data/list-2.json"
 
+declare global {
+  interface Window {
+    preUrl?: string[]
+  }
+}
+
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
-  const [enableBack, setEnableBack] = useState(false)
 
   return useMemo(
     () => ({
@@ -43,18 +48,15 @@ export function useCtxValue(): AppCtxValue {
       },
       actions: {
         openDetail: (id: string) => {
-          setEnableBack(true)
+          window.preUrl = [window.location.hash.slice(1)]
           navigate(`/slow-query/detail?id=${id}`)
         },
         backToList: () => {
-          if (enableBack) {
-            navigate(-1)
-          } else {
-            navigate("/slow-query/list")
-          }
+          const preUrl = window.preUrl?.pop()
+          navigate(preUrl || "/slow-query/list")
         },
       },
     }),
-    [navigate, enableBack],
+    [navigate],
   )
 }

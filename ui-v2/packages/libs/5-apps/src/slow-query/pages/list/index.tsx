@@ -7,8 +7,8 @@ import {
 import { useAppContext } from "../../ctx/context"
 
 import { Filters } from "./filters"
-import { ListTable } from "./list-table"
 import { RefreshButton } from "./refresh-button"
+import { ListTable } from "./table"
 
 export function List() {
   const ctx = useAppContext()

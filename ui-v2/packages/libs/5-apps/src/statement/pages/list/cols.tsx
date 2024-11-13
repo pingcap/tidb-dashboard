@@ -1,7 +1,6 @@
 import {
   EvictedSQL,
   MRT_ColumnDef,
-  MRT_Row,
   SQLWithHover,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Box } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
@@ -11,26 +10,20 @@ import { useMemo } from "react"
 import { useAppContext } from "../../ctx/context"
 import { StatementModel } from "../../models"
 
-function QueryCell({ row }: { row: MRT_Row<StatementModel> }) {
+function SqlCell({ row }: { row: StatementModel }) {
   const ctx = useAppContext()
 
   function handleClick() {
-    if (row.original.digest_text) {
-      const { digest, schema_name, summary_begin_time, summary_end_time } =
-        row.original
-      const id = [
-        summary_begin_time,
-        summary_end_time,
-        digest,
-        schema_name,
-      ].join(",")
-      ctx.actions.openDetail(id)
-    }
+    const { digest, schema_name, summary_begin_time, summary_end_time } = row
+    const id = [summary_begin_time, summary_end_time, digest, schema_name].join(
+      ",",
+    )
+    ctx.actions.openDetail(id)
   }
 
-  return row.original.digest_text ? (
+  return row.digest_text ? (
     <Box sx={{ cursor: "pointer" }} onClick={handleClick}>
-      <SQLWithHover sql={row.original.digest_text} />
+      <SQLWithHover sql={row.digest_text} />
     </Box>
   ) : (
     <EvictedSQL />
@@ -45,7 +38,7 @@ export function useListTableColumns() {
         header: "Statement Template",
         minSize: 300,
         enableSorting: false,
-        Cell: (data) => <QueryCell {...data} />,
+        accessorFn: (row) => <SqlCell row={row} />,
       },
       {
         id: "sum_latency",

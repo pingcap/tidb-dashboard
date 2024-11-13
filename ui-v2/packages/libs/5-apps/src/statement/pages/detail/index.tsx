@@ -13,6 +13,7 @@ import { usePlansListData } from "../../utils/use-data"
 
 import { PlansDetail } from "./plans-detail"
 import { PlansList } from "./plans-list"
+import { RelatedSlowQuery } from "./slow-query-list"
 import { StmtBasic } from "./stmt-basic"
 import { StmtSQL } from "./stmt-sql"
 
@@ -51,10 +52,13 @@ export function Detail() {
           {plansListData.length > 1 && <PlansList data={plansListData} />}
 
           {selectedPlans.length > 0 && (
-            <PlansDetail
-              allPlansCount={plansListData.length}
-              selectedPlansCount={selectedPlans.length}
-            />
+            <>
+              <PlansDetail
+                allPlansCount={plansListData.length}
+                selectedPlansCount={selectedPlans.length}
+              />
+              <RelatedSlowQuery />
+            </>
           )}
         </Stack>
       )}

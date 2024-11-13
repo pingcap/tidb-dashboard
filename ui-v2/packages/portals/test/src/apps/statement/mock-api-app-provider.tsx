@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom"
 import listData from "./sample-data/list-2.json"
 import plansDetailData from "./sample-data/plans-detail-1.json"
 import plansListData from "./sample-data/plans-list-1.json"
+import slowQueryListData from "./sample-data/slow-query-list-1.json"
 
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
@@ -43,6 +44,9 @@ export function useCtxValue(): AppCtxValue {
               }
               return d
             })
+        },
+        getSlowQueryList() {
+          return delay(1000).then(() => slowQueryListData)
         },
       },
       cfg: {

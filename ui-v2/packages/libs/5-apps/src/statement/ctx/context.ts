@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react"
 
-import { StatementModel } from "../models"
+import { SlowqueryModel, StatementModel } from "../models"
 
 ////////////////////////////////
 
@@ -15,6 +15,13 @@ type AppApi = {
     id: string
     plans: string[]
   }): Promise<StatementModel>
+
+  getSlowQueryList(params: {
+    id: string
+    plans: string[]
+    orderBy: string
+    desc: boolean
+  }): Promise<SlowqueryModel[]>
 }
 
 type AppConfig = {
@@ -24,6 +31,7 @@ type AppConfig = {
 type AppActions = {
   openDetail(id: string): void
   backToList(): void
+  openSlowQueryDetail(id: string): void
 }
 
 export type AppCtxValue = {

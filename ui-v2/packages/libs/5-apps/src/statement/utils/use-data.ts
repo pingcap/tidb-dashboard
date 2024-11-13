@@ -69,3 +69,20 @@ export function usePlansDetailData() {
     enabled: plans.length > 0 && plans[0] !== "empty",
   })
 }
+
+export function useSlowQueryListData(orderBy: string, desc: boolean) {
+  const ctx = useAppContext()
+  const { id, plans } = useDetailUrlState()
+  return useQuery({
+    queryKey: [
+      ctx.ctxId,
+      "statement",
+      "slow-query-list",
+      id,
+      plans,
+      orderBy,
+      desc,
+    ],
+    queryFn: () => ctx.api.getSlowQueryList({ id, plans, orderBy, desc }),
+  })
+}

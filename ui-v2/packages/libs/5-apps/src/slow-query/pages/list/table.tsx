@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { useListUrlState } from "../../url-state/list-url-state"
 import { useListData } from "../../utils/use-data"
 
-import { useListTableColumns } from "./list-table-cols"
+import { useListTableColumns } from "./cols"
 
 export function ListTable() {
   const cols = useListTableColumns()

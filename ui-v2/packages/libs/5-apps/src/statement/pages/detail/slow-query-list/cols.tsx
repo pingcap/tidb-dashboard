@@ -1,6 +1,5 @@
 import {
   MRT_ColumnDef,
-  MRT_Row,
   SQLWithHover,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Box } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
@@ -10,21 +9,21 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
-import { useAppContext } from "../../ctx/context"
-import { SlowqueryModel } from "../../models"
+import { useAppContext } from "../../../ctx/context"
+import { SlowqueryModel } from "../../../models"
 
-function QueryCell({ row }: { row: MRT_Row<SlowqueryModel> }) {
+function SqlCell({ row }: { row: SlowqueryModel }) {
   const ctx = useAppContext()
 
   function handleClick() {
-    const { digest, connection_id, timestamp } = row.original
+    const { digest, connection_id, timestamp } = row
     const id = [timestamp, digest, connection_id].join(",")
-    ctx.actions.openDetail(id)
+    ctx.actions.openSlowQueryDetail(id)
   }
 
   return (
     <Box sx={{ cursor: "pointer" }} onClick={handleClick}>
-      <SQLWithHover sql={row.original.query!} />
+      <SQLWithHover sql={row.query!} />
     </Box>
   )
 }
@@ -37,7 +36,7 @@ export function useListTableColumns() {
         header: "Query",
         minSize: 300,
         enableSorting: false,
-        Cell: (data) => <QueryCell {...data} />,
+        accessorFn: (row) => <SqlCell row={row} />,
       },
       {
         id: "timestamp",

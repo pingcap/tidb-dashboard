@@ -17,6 +17,7 @@ import {
 } from "react-router-dom"
 
 import { IndexAdvisorApp } from "./apps/index-advisor"
+import { MetricsApp } from "./apps/metric"
 import { SlowQueryApp } from "./apps/slow-query"
 import { StatementApp } from "./apps/statement"
 import { http } from "./rapper"
@@ -66,11 +67,13 @@ function App() {
             <Group>
               <Link to="/slow-query/list">Slow Query</Link>
               <Link to="/statement/list">Statement</Link>
+              <Link to="/metrics">Metrics</Link>
               <Link to="/index-advisor/list">Index Advisor</Link>
             </Group>
             <ReactRouter6UrlStateProvider>
               <SlowQueryApp />
               <StatementApp />
+              <MetricsApp />
               <IndexAdvisorApp />
             </ReactRouter6UrlStateProvider>
           </Stack>

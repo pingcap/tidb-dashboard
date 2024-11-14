@@ -16,6 +16,9 @@
     "./statement": {
       "import": "./dist/statement/index.js"
     },
+    "./metric": {
+      "import": "./dist/metric/index.js"
+    },
     "./index-advisor": {
       "import": "./dist/index-advisor/index.js"
     }
@@ -30,6 +33,9 @@
       ],
       "statement": [
         "./dist/statement/index.d.ts"
+      ],
+      "metric": [
+        "./dist/metric/index.d.ts"
       ],
       "index-advisor": [
         "./dist/index-advisor/index.d.ts"

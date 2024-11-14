@@ -4,7 +4,7 @@ import {
   Title,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 
-import { useAppContext } from "../../ctx/context"
+import { useAppContext } from "../../ctx"
 
 import { Filters } from "./filters"
 import { RefreshButton } from "./refresh-button"

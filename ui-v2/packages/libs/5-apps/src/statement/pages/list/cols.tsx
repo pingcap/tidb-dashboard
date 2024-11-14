@@ -7,7 +7,7 @@ import { Box } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { formatValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
-import { useAppContext } from "../../ctx/context"
+import { useAppContext } from "../../ctx"
 import { StatementModel } from "../../models"
 
 function SqlCell({ row }: { row: StatementModel }) {

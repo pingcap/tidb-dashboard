@@ -6,7 +6,7 @@ import {
   Stack,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 
-import { useAppContext } from "../../ctx/context"
+import { useAppContext } from "../../ctx"
 import { useDetailData } from "../../utils/use-data"
 
 import { DetailTabs } from "./detail-tabs"

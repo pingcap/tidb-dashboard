@@ -7,7 +7,7 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { useEffect, useMemo } from "react"
 
-import { useAppContext } from "../../ctx/context"
+import { useAppContext } from "../../ctx"
 import { useDetailUrlState } from "../../url-state/detail-url-state"
 import { usePlansListData } from "../../utils/use-data"
 

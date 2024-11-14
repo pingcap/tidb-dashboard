@@ -1,7 +1,5 @@
-export * from "./ctx/app-provider"
-export * from "./ctx/context"
+export * from "./models"
+export * from "./ctx"
 
 export * from "./pages/list"
 export * from "./pages/detail"
-
-export * from "./models"

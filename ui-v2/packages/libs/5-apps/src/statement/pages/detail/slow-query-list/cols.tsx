@@ -9,7 +9,7 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
-import { useAppContext } from "../../../ctx/context"
+import { useAppContext } from "../../../ctx"
 import { SlowqueryModel } from "../../../models"
 
 function SqlCell({ row }: { row: SlowqueryModel }) {

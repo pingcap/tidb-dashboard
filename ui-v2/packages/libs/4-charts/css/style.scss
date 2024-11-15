@@ -1,0 +1,9 @@
+body {
+  &.charts-light-theme {
+    @import '../node_modules/@elastic/charts/dist/theme_only_light.css';
+  }
+
+  &.charts-dark-theme {
+    @import '../node_modules/@elastic/charts/dist/theme_only_dark.css';
+  }
+}

@@ -1,0 +1,8 @@
+body {
+  &.charts-light-theme {
+    @import '~@elastic/charts/src/theme_only_light';
+
+  &.charts-dark-theme {
+    @import '~@elastic/charts/src/theme_only_dark';
+  }
+}

@@ -1,4 +1,11 @@
-import { Axis, Chart, LIGHT_THEME, Position, Settings } from "@elastic/charts"
+import {
+  Axis,
+  Chart,
+  DARK_THEME,
+  LIGHT_THEME,
+  Position,
+  Settings,
+} from "@elastic/charts"
 
 import { renderSeriesData } from "./series-render"
 import { SeriesData } from "./type"
@@ -8,16 +15,22 @@ import "@elastic/charts/dist/theme_only_light.css"
 
 type SeriesChartProps = {
   height?: number
+  theme?: "light" | "dark"
   data: SeriesData[]
 }
 
-export function SeriesChart({ height = 200, data }: SeriesChartProps) {
+export function SeriesChart({
+  height = 200,
+  theme = "light",
+  data,
+}: SeriesChartProps) {
   return (
     <Chart size={{ height }}>
       <Settings
-        baseTheme={LIGHT_THEME}
+        baseTheme={theme === "light" ? LIGHT_THEME : DARK_THEME}
         showLegend
         legendPosition={Position.Right}
+        legendSize={140}
       />
 
       <Axis id="bottom" position={Position.Bottom} ticks={7} />
@@ -33,7 +46,7 @@ export function SeriesChart({ height = 200, data }: SeriesChartProps) {
         xAccessor={0}
         yAccessors={[1]}
         data={KIBANA_METRICS.metrics.kibana_os_load.v1.data}
-      /> 
+      />
       */}
     </Chart>
   )

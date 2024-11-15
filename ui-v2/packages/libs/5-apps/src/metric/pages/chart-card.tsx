@@ -5,7 +5,9 @@ import {
 import {
   Box,
   Card,
+  Flex,
   Group,
+  Loader,
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 
@@ -13,7 +15,7 @@ import { SingleChartConfig } from "../utils/type"
 import { useMetricData } from "../utils/use-data"
 
 export function ChartCard({ config }: { config: SingleChartConfig }) {
-  const { data } = useMetricData(config, 0, 0, 10)
+  const { data, loading } = useMetricData(config, 0, 0, 10)
 
   return (
     <Card p={16} bg="carbon.0" shadow="none">
@@ -33,9 +35,23 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
         ]}
       /> */}
 
-      <Box h={200}>
-        <SeriesChart unit={config.unit} data={data} />
-      </Box>
+      {loading && (
+        <Flex h={200} align="center" justify="center">
+          <Loader size="xs" />
+        </Flex>
+      )}
+
+      {!loading && data.length > 0 && (
+        <Box h={200}>
+          <SeriesChart unit={config.unit} data={data} />
+        </Box>
+      )}
+
+      {!loading && data.length === 0 && (
+        <Flex h={200} align="center" justify="center">
+          <Typography variant="body-md">No data</Typography>
+        </Flex>
+      )}
     </Card>
   )
 }

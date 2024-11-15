@@ -5,7 +5,12 @@ import { PromResult, SinglePanelConfig } from "../utils/type"
 ////////////////////////////////
 
 type AppApi = {
-  getMetrics(): Promise<PromResult>
+  getMetric(params: {
+    promql: string
+    beginTime: number
+    endTime: number
+    step: number
+  }): Promise<PromResult>
 }
 
 type AppConfig = {

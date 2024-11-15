@@ -36,10 +36,10 @@ export interface PromMetric {
 
 export type PromValue = [number, string]
 
-export type PromResult = {
+export type PromResult = Array<{
   metric: PromMetric
   values: PromValue[]
-}[]
+}>
 
 export interface PromMatrixData {
   resultType: "matrix"

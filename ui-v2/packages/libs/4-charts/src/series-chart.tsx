@@ -1,3 +1,4 @@
+import { getValueFormat } from "@baurine/grafana-value-formats"
 import {
   Axis,
   Chart,
@@ -5,6 +6,8 @@ import {
   LIGHT_THEME,
   Position,
   Settings,
+  niceTimeFormatByDay,
+  timeFormatter,
 } from "@elastic/charts"
 
 import { renderSeriesData } from "./series-render"
@@ -13,15 +16,28 @@ import { SeriesData } from "./type"
 import "@elastic/charts/dist/theme_only_light.css"
 // import '@elastic/charts/dist/theme_only_dark.css';
 
+function formatValue(value: number, unit: string) {
+  const formatFn = getValueFormat(unit)
+  if (unit === "short") {
+    return formatFn(value, 0, 1)
+  }
+  return formatFn(value, 1)
+}
+
 type SeriesChartProps = {
   height?: number
   theme?: "light" | "dark"
+
+  unit: string
   data: SeriesData[]
 }
+
+const dateFormatter = timeFormatter(niceTimeFormatByDay(1))
 
 export function SeriesChart({
   height = 200,
   theme = "light",
+  unit,
   data,
 }: SeriesChartProps) {
   return (
@@ -33,8 +49,19 @@ export function SeriesChart({
         legendSize={140}
       />
 
-      <Axis id="bottom" position={Position.Bottom} ticks={7} />
-      <Axis id="left" position={Position.Left} ticks={5} />
+      <Axis
+        id="bottom"
+        position={Position.Bottom}
+        ticks={7}
+        showOverlappingTicks
+        tickFormat={dateFormatter}
+      />
+      <Axis
+        id="left"
+        position={Position.Left}
+        ticks={5}
+        tickFormat={(v) => formatValue(v, unit)}
+      />
 
       {data.map(renderSeriesData)}
 

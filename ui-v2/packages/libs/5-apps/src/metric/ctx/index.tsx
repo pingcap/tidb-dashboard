@@ -1,12 +1,11 @@
 import { createContext, useContext } from "react"
 
-import { MetricModel } from "../models"
-import { SinglePanelConfig } from "../utils/type"
+import { PromResult, SinglePanelConfig } from "../utils/type"
 
 ////////////////////////////////
 
 type AppApi = {
-  getMetrics(): Promise<MetricModel[]>
+  getMetrics(): Promise<PromResult>
 }
 
 type AppConfig = {

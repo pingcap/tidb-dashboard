@@ -1,4 +1,5 @@
-export type SeriesType = "bar_stacked" | "area_stack" | "line" | "area"
+import { SeriesType } from "@pingcap-incubator/tidb-dashboard-lib-charts"
+
 export enum TransformNullValue {
   NULL = "null",
   AS_ZERO = "as_zero",
@@ -24,4 +25,23 @@ export interface SingleChartConfig {
 export interface SinglePanelConfig {
   category: string
   charts: SingleChartConfig[]
+}
+
+////////////////////////////////
+// prom
+
+export interface PromMetric {
+  [key: string]: string
+}
+
+export type PromValue = [number, string]
+
+export type PromResult = {
+  metric: PromMetric
+  values: PromValue[]
+}[]
+
+export interface PromMatrixData {
+  resultType: "matrix"
+  result: PromResult
 }

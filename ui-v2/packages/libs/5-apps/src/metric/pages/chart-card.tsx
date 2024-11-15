@@ -16,7 +16,9 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
       <Group mb="xs" spacing={0} sx={{ justifyContent: "center" }}>
         <Typography variant="title-md">{config.title}</Typography>
       </Group>
+
       <SeriesChart
+        unit={config.unit}
         data={[
           {
             data: KIBANA_METRICS.metrics.kibana_os_load.v1.data,

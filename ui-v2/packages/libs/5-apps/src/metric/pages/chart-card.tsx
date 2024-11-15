@@ -1,4 +1,7 @@
-import { MetricChart } from "@pingcap-incubator/tidb-dashboard-lib-charts"
+import {
+  KIBANA_METRICS,
+  SeriesChart,
+} from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
   Card,
   Group,
@@ -13,7 +16,16 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
       <Group mb="xs" spacing={0} sx={{ justifyContent: "center" }}>
         <Typography variant="title-md">{config.title}</Typography>
       </Group>
-      <MetricChart />
+      <SeriesChart
+        data={[
+          {
+            data: KIBANA_METRICS.metrics.kibana_os_load.v1.data,
+            id: "kibana_os_load",
+            name: "kibana_os_load",
+            type: "line",
+          },
+        ]}
+      />
     </Card>
   )
 }

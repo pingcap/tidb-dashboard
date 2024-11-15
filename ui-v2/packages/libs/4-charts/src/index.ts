@@ -1,1 +1,3 @@
-export * from "./metric-chart"
+export * from "./series-chart"
+
+export * from "./sample-data"

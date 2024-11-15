@@ -1,10 +1,10 @@
+import { MetricChart } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
   Card,
   Group,
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 
-import { MetricChart } from "../components/chart"
 import { SingleChartConfig } from "../utils/type"
 
 export function ChartCard({ config }: { config: SingleChartConfig }) {

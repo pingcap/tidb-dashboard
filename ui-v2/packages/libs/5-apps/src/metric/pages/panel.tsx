@@ -9,9 +9,9 @@ export function Panel() {
   const ctx = useAppContext()
   const { panel } = useMetricsUrlState()
 
-  const panelConfig = ctx.cfg.metricQueriesConfig.find(
-    (p) => p.category === panel,
-  )
+  const panelConfig =
+    ctx.cfg.metricQueriesConfig.find((p) => p.category === panel) ||
+    ctx.cfg.metricQueriesConfig[0]
 
   return (
     <SimpleGrid

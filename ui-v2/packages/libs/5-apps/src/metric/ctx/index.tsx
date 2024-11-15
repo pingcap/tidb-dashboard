@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react"
 
-import { PromResult, SinglePanelConfig } from "../utils/type"
+import { PromResultItem, SinglePanelConfig } from "../utils/type"
 
 ////////////////////////////////
 
@@ -10,7 +10,7 @@ type AppApi = {
     beginTime: number
     endTime: number
     step: number
-  }): Promise<PromResult>
+  }): Promise<PromResultItem[]>
 }
 
 type AppConfig = {

@@ -5,7 +5,7 @@ import interpolate from "string-template"
 import { useAppContext } from "../ctx"
 
 import {
-  PromResult,
+  PromResultItem,
   SingleChartConfig,
   SingleQueryConfig,
   TransformNullValue,
@@ -38,7 +38,7 @@ function transformStrVal(value: string, nullValue?: TransformNullValue) {
 }
 
 function transformData(
-  data: PromResult,
+  data: PromResultItem[],
   qIdx: number,
   query: SingleQueryConfig,
   nullValue?: TransformNullValue,
@@ -59,12 +59,12 @@ function transformData(
   })
 }
 
-export const DEFAULT_MIN_INTERVAL_SEC = 15
+export const DEFAULT_MIN_INTERVAL_SEC = 30
 
 export function resolvePromQLTemplate(promql: string, step: number): string {
   return promql.replace(
     /\$__rate_interval/g,
-    `${Math.max(step, 4 * DEFAULT_MIN_INTERVAL_SEC)}s`,
+    `${Math.max(step + DEFAULT_MIN_INTERVAL_SEC, 4 * DEFAULT_MIN_INTERVAL_SEC)}s`,
   )
 }
 

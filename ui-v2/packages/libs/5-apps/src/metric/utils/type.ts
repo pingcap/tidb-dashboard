@@ -30,18 +30,8 @@ export interface SinglePanelConfig {
 ////////////////////////////////
 // prom
 
-export interface PromMetric {
-  [key: string]: string
+export type PromResultItem = {
+  metric: Record<string, string>
+  values: [number, string][]
 }
-
-export type PromValue = [number, string]
-
-export type PromResult = Array<{
-  metric: PromMetric
-  values: PromValue[]
-}>
-
-export interface PromMatrixData {
-  resultType: "matrix"
-  result: PromResult
-}
+// export type PromResult = PromResultItem[]

@@ -4,6 +4,7 @@ import {
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 
+import { MetricChart } from "../components/chart"
 import { SingleChartConfig } from "../utils/type"
 
 export function ChartCard({ config }: { config: SingleChartConfig }) {
@@ -12,6 +13,7 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
       <Group mb="xs" spacing={0} sx={{ justifyContent: "center" }}>
         <Typography variant="title-md">{config.title}</Typography>
       </Group>
+      <MetricChart />
     </Card>
   )
 }

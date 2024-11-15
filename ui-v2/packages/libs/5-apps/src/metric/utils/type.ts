@@ -34,4 +34,3 @@ export type PromResultItem = {
   metric: Record<string, string>
   values: [number, string][]
 }
-// export type PromResult = PromResultItem[]

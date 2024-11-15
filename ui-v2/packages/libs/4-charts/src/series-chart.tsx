@@ -25,23 +25,16 @@ function formatValue(value: number, unit: string) {
 }
 
 type SeriesChartProps = {
-  height?: number
   theme?: "light" | "dark"
-
-  unit: string
   data: SeriesData[]
+  unit: string
 }
 
 const dateFormatter = timeFormatter(niceTimeFormatByDay(1))
 
-export function SeriesChart({
-  height = 200,
-  theme = "light",
-  unit,
-  data,
-}: SeriesChartProps) {
+export function SeriesChart({ theme = "light", data, unit }: SeriesChartProps) {
   return (
-    <Chart size={{ height }}>
+    <Chart>
       <Settings
         baseTheme={theme === "light" ? LIGHT_THEME : DARK_THEME}
         showLegend

@@ -3,6 +3,7 @@ import {
   SeriesChart,
 } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
+  Box,
   Card,
   Group,
   Typography,
@@ -32,7 +33,9 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
         ]}
       /> */}
 
-      <SeriesChart unit={config.unit} data={data} />
+      <Box h={200}>
+        <SeriesChart unit={config.unit} data={data} />
+      </Box>
     </Card>
   )
 }

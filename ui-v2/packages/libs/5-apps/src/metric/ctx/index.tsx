@@ -1,6 +1,7 @@
+import { PromResultItem } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { createContext, useContext } from "react"
 
-import { PromResultItem, SinglePanelConfig } from "../utils/type"
+import { SinglePanelConfig } from "../utils/type"
 
 ////////////////////////////////
 

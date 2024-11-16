@@ -11,11 +11,12 @@ import {
   Loader,
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { calcPromQueryStep } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useMetricsUrlState } from "../url-state"
 import { SingleChartConfig } from "../utils/type"
-import { calcStep, useMetricData } from "../utils/use-data"
+import { useMetricData } from "../utils/use-data"
 
 export function ChartCard({ config }: { config: SingleChartConfig }) {
   const { timeRange, refresh } = useMetricsUrlState()
@@ -26,7 +27,7 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
     (node: HTMLDivElement | null) => {
       if (node) {
         // 140 is the width of the chart legend
-        setStep(calcStep(tr, node.offsetWidth - 140))
+        setStep(calcPromQueryStep(tr, node.offsetWidth - 140))
       }
     },
     [tr],

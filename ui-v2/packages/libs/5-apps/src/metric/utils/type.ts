@@ -1,9 +1,5 @@
 import { SeriesType } from "@pingcap-incubator/tidb-dashboard-lib-charts"
-
-export enum TransformNullValue {
-  NULL = "null",
-  AS_ZERO = "as_zero",
-}
+import { TransformNullValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
 export interface SingleQueryConfig {
   promql: string
@@ -25,12 +21,4 @@ export interface SingleChartConfig {
 export interface SinglePanelConfig {
   category: string
   charts: SingleChartConfig[]
-}
-
-////////////////////////////////
-// prom
-
-export type PromResultItem = {
-  metric: Record<string, string>
-  values: [number, string][]
 }

@@ -11,8 +11,8 @@ import {
 import dayjs from "dayjs"
 import { useRef, useState } from "react"
 
-import { useMetricsUrlState } from "../url-state"
-import { useMetricQueriesConfigData } from "../utils/use-data"
+import { useMetricsUrlState } from "../../url-state"
+import { useMetricQueriesConfigData } from "../../utils/use-data"
 
 const QUICK_RANGES: number[] = [
   5 * 60, // 5 mins
@@ -30,7 +30,7 @@ const QUICK_RANGES: number[] = [
 export function Filters() {
   const { panel, timeRange, setTimeRange, setRefresh, setQueryParams } =
     useMetricsUrlState()
-  const { data: panelConfigData } = useMetricQueriesConfigData()
+  const { data: panelConfigData } = useMetricQueriesConfigData("normal")
   const tabs = panelConfigData?.map((p) => ({
     label: p.displayName,
     value: p.category,

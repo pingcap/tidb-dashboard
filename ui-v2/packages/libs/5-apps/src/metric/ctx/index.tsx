@@ -6,7 +6,7 @@ import { SinglePanelConfig } from "../utils/type"
 ////////////////////////////////
 
 type AppApi = {
-  getMetricQueriesConfig(): Promise<SinglePanelConfig[]>
+  getMetricQueriesConfig(kind: string): Promise<SinglePanelConfig[]>
 
   getMetric(params: {
     promql: string

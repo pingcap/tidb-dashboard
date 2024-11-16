@@ -21,9 +21,9 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { useAppContext } from "../ctx"
-import { useMetricsUrlState } from "../url-state"
-import { SingleChartConfig, SingleQueryConfig } from "../utils/type"
+import { useAppContext } from "../../ctx"
+import { useMetricsUrlState } from "../../url-state"
+import { SingleChartConfig, SingleQueryConfig } from "../../utils/type"
 
 export function transformData(
   items: PromResultItem[],

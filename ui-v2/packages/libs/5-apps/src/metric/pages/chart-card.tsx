@@ -49,7 +49,9 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
     (node: HTMLDivElement | null) => {
       if (node) {
         // 140 is the width of the chart legend, will make it configurable in the future
-        setStep(calcPromQueryStep(tr, node.offsetWidth - 140))
+        setStep(
+          calcPromQueryStep(tr, node.offsetWidth - 140, ctx.cfg.scrapeInterval),
+        )
       }
     },
     [tr],
@@ -59,7 +61,7 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
   const [data, setData] = useState<SeriesData[]>([])
   useEffect(() => {
     async function fetchData() {
-      if (step === 0 || loading) {
+      if (step === 0) {
         return
       }
 
@@ -69,7 +71,11 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
           config.queries.map((q, idx) =>
             ctx.api
               .getMetric({
-                promql: resolvePromQLTemplate(q.promql, step),
+                promql: resolvePromQLTemplate(
+                  q.promql,
+                  step,
+                  ctx.cfg.scrapeInterval,
+                ),
                 beginTime: tr[0],
                 endTime: tr[1],
                 step,

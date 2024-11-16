@@ -11,8 +11,8 @@ import {
 import dayjs from "dayjs"
 import { useRef, useState } from "react"
 
-import { useAppContext } from "../ctx"
 import { useMetricsUrlState } from "../url-state"
+import { useMetricQueriesConfigData } from "../utils/use-data"
 
 const QUICK_RANGES: number[] = [
   5 * 60, // 5 mins
@@ -28,12 +28,11 @@ const QUICK_RANGES: number[] = [
 ]
 
 export function Filters() {
-  const ctx = useAppContext()
   const { panel, timeRange, setTimeRange, setRefresh, setQueryParams } =
     useMetricsUrlState()
-
-  const tabs = ctx.cfg.metricQueriesConfig.map((p) => ({
-    label: p.category,
+  const { data: panelConfigData } = useMetricQueriesConfigData()
+  const tabs = panelConfigData?.map((p) => ({
+    label: p.displayName,
     value: p.category,
   }))
 
@@ -59,7 +58,7 @@ export function Filters() {
     setRefresh()
   }
 
-  const panelSwitch = tabs.length > 0 && (
+  const panelSwitch = tabs && tabs.length > 0 && (
     <SegmentedControl
       data={tabs}
       value={panel || tabs[0].value}

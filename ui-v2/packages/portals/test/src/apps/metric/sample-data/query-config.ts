@@ -5,7 +5,8 @@ import {
 
 export const queryConfig: SinglePanelConfig[] = [
   {
-    category: "Cluster Status",
+    category: "cluster_status",
+    displayName: "Cluster Status",
     charts: [
       {
         title: "Query Per Second",
@@ -49,7 +50,8 @@ export const queryConfig: SinglePanelConfig[] = [
     ],
   },
   {
-    category: "Database Status",
+    category: "database_status",
+    displayName: "Database Status",
     charts: [
       {
         title: "QPS Per DB",

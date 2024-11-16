@@ -13,6 +13,9 @@ export function useCtxValue(): AppCtxValue {
     () => ({
       ctxId: "metric",
       api: {
+        getMetricQueriesConfig() {
+          return delay(1000).then(() => queryConfig)
+        },
         getMetric(_params: {
           promql: string
           beginTime: number
@@ -27,9 +30,8 @@ export function useCtxValue(): AppCtxValue {
       },
       cfg: {
         title: "",
-        metricQueriesConfig: queryConfig,
+        scrapeInterval: 15,
       },
-      actions: {},
     }),
     [],
   )

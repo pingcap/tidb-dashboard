@@ -1,17 +1,20 @@
+import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { SimpleGrid } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 
-import { useAppContext } from "../ctx"
 import { useMetricsUrlState } from "../url-state"
+import { useMetricQueriesConfigData } from "../utils/use-data"
 
 import { ChartCard } from "./chart-card"
 
 export function Panel() {
-  const ctx = useAppContext()
   const { panel } = useMetricsUrlState()
-
+  const { data: panelConfigData, isLoading } = useMetricQueriesConfigData()
   const panelConfig =
-    ctx.cfg.metricQueriesConfig.find((p) => p.category === panel) ||
-    ctx.cfg.metricQueriesConfig[0]
+    panelConfigData?.find((p) => p.category === panel) || panelConfigData?.[0]
+
+  if (isLoading) {
+    return <LoadingSkeleton />
+  }
 
   return (
     <SimpleGrid

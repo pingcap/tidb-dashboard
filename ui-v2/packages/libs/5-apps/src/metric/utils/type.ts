@@ -20,5 +20,6 @@ export interface SingleChartConfig {
 
 export interface SinglePanelConfig {
   category: string
+  displayName: string
   charts: SingleChartConfig[]
 }

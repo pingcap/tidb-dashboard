@@ -6,6 +6,8 @@ import { SinglePanelConfig } from "../utils/type"
 ////////////////////////////////
 
 type AppApi = {
+  getMetricQueriesConfig(): Promise<SinglePanelConfig[]>
+
   getMetric(params: {
     promql: string
     beginTime: number
@@ -16,7 +18,7 @@ type AppApi = {
 
 type AppConfig = {
   title?: string
-  metricQueriesConfig: SinglePanelConfig[]
+  scrapeInterval?: number
 }
 
 export type AppCtxValue = {

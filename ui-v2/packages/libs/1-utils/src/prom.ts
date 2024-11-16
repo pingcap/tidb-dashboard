@@ -77,13 +77,13 @@ export function calcPromQueryStep(
   tr: [number, number],
   width: number,
   minBinWidth: number = 5,
-  scrapeInteravl: number = DEF_SCRAPE_INTERVAL,
+  scrapeInterval: number = DEF_SCRAPE_INTERVAL,
 ) {
   if (width <= 0) {
-    return scrapeInteravl
+    return scrapeInterval
   }
   const points = width / minBinWidth
   const step = (tr[1] - tr[0]) / points
-  const fixedStep = Math.ceil(step / scrapeInteravl) * scrapeInteravl
+  const fixedStep = Math.ceil(step / scrapeInterval) * scrapeInterval
   return fixedStep
 }

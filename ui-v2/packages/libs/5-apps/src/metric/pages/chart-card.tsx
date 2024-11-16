@@ -2,6 +2,7 @@ import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
   // KIBANA_METRICS,
   SeriesChart,
+  SeriesData,
 } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
   Box,
@@ -11,35 +12,81 @@ import {
   Loader,
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import { calcPromQueryStep } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  PromResultItem,
+  TransformNullValue,
+  calcPromQueryStep,
+  resolvePromQLTemplate,
+  transformPromResultItem,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { useAppContext } from "../ctx"
 import { useMetricsUrlState } from "../url-state"
-import { SingleChartConfig } from "../utils/type"
-import { useMetricData } from "../utils/use-data"
+import { SingleChartConfig, SingleQueryConfig } from "../utils/type"
+
+export function transformData(
+  items: PromResultItem[],
+  qIdx: number,
+  query: SingleQueryConfig,
+  nullValue?: TransformNullValue,
+): SeriesData[] {
+  return items.map((d, dIdx) => ({
+    ...transformPromResultItem(d, query.name, nullValue),
+    id: `${qIdx}-${dIdx}`,
+    type: query.type,
+    color: query.color,
+    // lineSeriesStyle: query.lineSeriesStyle,
+  }))
+}
 
 export function ChartCard({ config }: { config: SingleChartConfig }) {
+  const ctx = useAppContext()
   const { timeRange, refresh } = useMetricsUrlState()
-  const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
-
+  const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange, refresh])
   const [step, setStep] = useState(0)
   const chartRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (node) {
-        // 140 is the width of the chart legend
+        // 140 is the width of the chart legend, will make it configurable in the future
         setStep(calcPromQueryStep(tr, node.offsetWidth - 140))
       }
     },
     [tr],
   )
 
-  const { data, loading, refetchAll } = useMetricData(config, timeRange, step)
-
+  const [loading, setLoading] = useState(false)
+  const [data, setData] = useState<SeriesData[]>([])
   useEffect(() => {
-    if (refresh !== "") {
-      refetchAll()
+    async function fetchData() {
+      if (step === 0 || loading) {
+        return
+      }
+
+      setLoading(true)
+      try {
+        const ret = await Promise.all(
+          config.queries.map((q, idx) =>
+            ctx.api
+              .getMetric({
+                promql: resolvePromQLTemplate(q.promql, step),
+                beginTime: tr[0],
+                endTime: tr[1],
+                step,
+              })
+              .then((data) => transformData(data, idx, q, config.nullValue)),
+          ),
+        )
+        setData(ret.flat())
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [refresh])
+
+    fetchData()
+  }, [tr, step])
 
   return (
     <Card p={16} bg="carbon.0" shadow="none">
@@ -60,12 +107,12 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
       /> */}
 
       <Box h={200} ref={chartRef}>
-        {loading ? (
+        {data.length > 0 || !loading ? (
+          <SeriesChart unit={config.unit} data={data} timeRange={tr} />
+        ) : (
           <Flex h={200} align="center" justify="center">
             <Loader size="xs" />
           </Flex>
-        ) : (
-          <SeriesChart unit={config.unit} data={data} timeRange={tr} />
         )}
       </Box>
     </Card>

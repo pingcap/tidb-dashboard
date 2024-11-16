@@ -5,7 +5,8 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback } from "react"
 
-type MetricsUrlState = Partial<Record<"panel", string>> & TimeRangeUrlState
+type MetricsUrlState = Partial<Record<"panel" | "refresh", string>> &
+  TimeRangeUrlState
 
 export function useMetricsUrlState() {
   const [queryParams, setQueryParams] = useUrlState<MetricsUrlState>()
@@ -19,11 +20,22 @@ export function useMetricsUrlState() {
     [setQueryParams],
   )
 
+  const refresh = queryParams.refresh ?? ""
+  const setRefresh = useCallback(() => {
+    setQueryParams({ refresh: new Date().valueOf().toString() })
+  }, [setQueryParams])
+
   return {
     panel,
     setPanel,
 
     timeRange,
     setTimeRange,
+
+    refresh,
+    setRefresh,
+
+    queryParams,
+    setQueryParams,
   }
 }

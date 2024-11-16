@@ -80,6 +80,7 @@ export function useMetricData(
     queries: chartConfig.queries.map((q, qIdx) => {
       const promql = resolvePromQLTemplate(q.promql, step)
       return {
+        enabled: step > 0 && beginTime > 0 && endTime > 0,
         queryKey: [ctx.ctxId, "metric", promql, beginTime, endTime, step],
         queryFn: () =>
           ctx.api

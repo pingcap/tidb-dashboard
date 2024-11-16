@@ -1,3 +1,7 @@
+import {
+  TimeRange,
+  toTimeRangeValue,
+} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { SeriesData } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import { useQueries } from "@tanstack/react-query"
 import interpolate from "string-template"
@@ -59,44 +63,60 @@ function transformData(
   })
 }
 
-export const DEFAULT_MIN_INTERVAL_SEC = 30
+export const DEF_SCRAPE_INTERVAL = 30
 
 export function resolvePromQLTemplate(promql: string, step: number): string {
   return promql.replace(
     /\$__rate_interval/g,
-    `${Math.max(step + DEFAULT_MIN_INTERVAL_SEC, 4 * DEFAULT_MIN_INTERVAL_SEC)}s`,
+    `${Math.max(step + DEF_SCRAPE_INTERVAL, 4 * DEF_SCRAPE_INTERVAL)}s`,
   )
+}
+
+export function calcStep(
+  tr: [number, number],
+  width: number,
+  minBinWidth: number = 5,
+  scrapeInteravl: number = DEF_SCRAPE_INTERVAL,
+) {
+  if (width <= 0) {
+    return scrapeInteravl
+  }
+  const points = width / minBinWidth
+  const step = (tr[1] - tr[0]) / points
+  const fixedStep = Math.ceil(step / scrapeInteravl) * scrapeInteravl
+  return fixedStep
 }
 
 export function useMetricData(
   chartConfig: SingleChartConfig,
-  beginTime: number,
-  endTime: number,
+  timeRange: TimeRange,
   step: number,
 ) {
   const ctx = useAppContext()
 
   const query = useQueries({
     queries: chartConfig.queries.map((q, qIdx) => {
-      const promql = resolvePromQLTemplate(q.promql, step)
       return {
-        enabled: step > 0 && beginTime > 0 && endTime > 0,
-        queryKey: [ctx.ctxId, "metric", promql, beginTime, endTime, step],
-        queryFn: () =>
-          ctx.api
+        enabled: step > 0,
+        queryKey: [ctx.ctxId, "metric", q.promql, timeRange, step],
+        queryFn: () => {
+          const promql = resolvePromQLTemplate(q.promql, step)
+          const [beginTime, endTime] = toTimeRangeValue(timeRange)
+          return ctx.api
             .getMetric({
               promql,
               beginTime,
               endTime,
               step,
             })
-            .then((data) =>
-              transformData(data, qIdx, q, chartConfig.nullValue),
-            ),
+            .then((data) => transformData(data, qIdx, q, chartConfig.nullValue))
+        },
+        // placeholderData: (previousData: SeriesData[]) => previousData
       }
     }),
     combine: (results) => {
       return {
+        refetchAll: () => results.forEach((result) => result.refetch()),
         data: results.map((result) => result.data ?? []).flat(),
         loading: results.some((result) => result.isLoading),
         error: results.find((result) => result.isError)?.error,

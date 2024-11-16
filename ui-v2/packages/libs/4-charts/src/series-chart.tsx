@@ -4,7 +4,9 @@ import {
   Chart,
   DARK_THEME,
   LIGHT_THEME,
+  LineSeries,
   Position,
+  ScaleType,
   Settings,
   niceTimeFormatByDay,
   timeFormatter,
@@ -24,15 +26,21 @@ function formatValue(value: number, unit: string) {
   return formatFn(value, 1)
 }
 
+const dateFormatter = timeFormatter(niceTimeFormatByDay(1))
+
 type SeriesChartProps = {
   theme?: "light" | "dark"
   data: SeriesData[]
   unit: string
+  timeRange: [number, number]
 }
 
-const dateFormatter = timeFormatter(niceTimeFormatByDay(1))
-
-export function SeriesChart({ theme = "light", data, unit }: SeriesChartProps) {
+export function SeriesChart({
+  theme = "light",
+  data,
+  unit,
+  timeRange,
+}: SeriesChartProps) {
   return (
     <Chart>
       <Settings
@@ -57,6 +65,22 @@ export function SeriesChart({ theme = "light", data, unit }: SeriesChartProps) {
       />
 
       {data.map(renderSeriesData)}
+
+      {/* for avoid chart to show "no data" when data is empty */}
+      {data.length === 0 && (
+        <LineSeries
+          id="_placeholder"
+          xScaleType={ScaleType.Time}
+          yScaleType={ScaleType.Linear}
+          xAccessor={0}
+          yAccessors={[1]}
+          hideInLegend
+          data={[
+            [timeRange[0] * 1000, null],
+            [timeRange[1] * 1000, null],
+          ]}
+        />
+      )}
 
       {/* 
       <LineSeries

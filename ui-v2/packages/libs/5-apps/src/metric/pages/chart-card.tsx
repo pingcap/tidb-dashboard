@@ -1,3 +1,4 @@
+import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
   // KIBANA_METRICS,
   SeriesChart,
@@ -10,12 +11,34 @@ import {
   Loader,
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { useMetricsUrlState } from "../url-state"
 import { SingleChartConfig } from "../utils/type"
-import { useMetricData } from "../utils/use-data"
+import { calcStep, useMetricData } from "../utils/use-data"
 
 export function ChartCard({ config }: { config: SingleChartConfig }) {
-  const { data, loading } = useMetricData(config, 0, 0, 10)
+  const { timeRange, refresh } = useMetricsUrlState()
+  const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
+
+  const [step, setStep] = useState(0)
+  const chartRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node) {
+        // 140 is the width of the chart legend
+        setStep(calcStep(tr, node.offsetWidth - 140))
+      }
+    },
+    [tr],
+  )
+
+  const { data, loading, refetchAll } = useMetricData(config, timeRange, step)
+
+  useEffect(() => {
+    if (refresh !== "") {
+      refetchAll()
+    }
+  }, [refresh])
 
   return (
     <Card p={16} bg="carbon.0" shadow="none">
@@ -35,23 +58,15 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
         ]}
       /> */}
 
-      {loading && (
-        <Flex h={200} align="center" justify="center">
-          <Loader size="xs" />
-        </Flex>
-      )}
-
-      {!loading && data.length > 0 && (
-        <Box h={200}>
-          <SeriesChart unit={config.unit} data={data} />
-        </Box>
-      )}
-
-      {!loading && data.length === 0 && (
-        <Flex h={200} align="center" justify="center">
-          <Typography variant="body-md">No data</Typography>
-        </Flex>
-      )}
+      <Box h={200} ref={chartRef}>
+        {loading ? (
+          <Flex h={200} align="center" justify="center">
+            <Loader size="xs" />
+          </Flex>
+        ) : (
+          <SeriesChart unit={config.unit} data={data} timeRange={tr} />
+        )}
+      </Box>
     </Card>
   )
 }

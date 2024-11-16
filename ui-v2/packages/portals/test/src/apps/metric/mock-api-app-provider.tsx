@@ -19,6 +19,7 @@ export function useCtxValue(): AppCtxValue {
           endTime: number
           step: number
         }) {
+          console.log("getMetric", _params)
           return delay(1000).then(
             () => qpsType.data.result as unknown as PromResultItem[],
           )

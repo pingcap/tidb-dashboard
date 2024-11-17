@@ -25,6 +25,8 @@ import { http } from "./rapper"
 
 import "./App.css"
 
+import "@tidbcloud/uikit/style.css"
+
 // always use mock api, even in production
 http.interceptors.request.use((config) => {
   config.baseURL = "https://rapapi.cn/api/app/mock/18"

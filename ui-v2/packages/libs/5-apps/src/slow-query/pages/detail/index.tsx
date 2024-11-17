@@ -9,9 +9,9 @@ import {
 import { useAppContext } from "../../ctx"
 import { useDetailData } from "../../utils/use-data"
 
-import { DetailTabs } from "./detail-tabs"
-import { DetailPlan } from "./plan"
-import { DetailQuery } from "./query"
+// import { DetailTabs } from "./detail-tabs"
+// import { DetailPlan } from "./plan"
+// import { DetailQuery } from "./query"
 
 export function Detail() {
   const ctx = useAppContext()
@@ -30,9 +30,9 @@ export function Detail() {
 
       {detailData && (
         <Stack>
-          <DetailQuery sql={detailData.query || ""} />
+          {/* <DetailQuery sql={detailData.query || ""} />
           <DetailPlan plan={detailData.plan || ""} />
-          <DetailTabs data={detailData} />
+          <DetailTabs data={detailData} /> */}
         </Stack>
       )}
     </Stack>

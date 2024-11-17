@@ -3,6 +3,6 @@ export {
   delay,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 export {
-  MantineProvider,
+  // MantineProvider,
   UIKitThemeProvider,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"

@@ -55,9 +55,11 @@ export function TemOverviewPanel(props: { config: SinglePanelConfig }) {
 
       <SimpleGrid
         px="md"
-        cols={2}
+        type="container"
+        cols={{ base: 1, "500px": 2 }}
+        // cols={2}
         spacing="xl"
-        breakpoints={[{ maxWidth: 980, cols: 1 }]}
+        // breakpoints={[{ maxWidth: 980, cols: 1 }]}
       >
         {props.config.charts.map((c) => (
           <ChartCard key={c.title} config={c} timeRange={timeRange} />

@@ -1,35 +1,35 @@
 import {
-  Badge,
-  Group,
+  // Badge,
+  // Group,
   MultiSelect,
   MultiSelectProps,
-  MultiSelectValueProps,
-  SelectItem,
-  Typography,
-  useMantineTheme,
+  // MultiSelectValueProps,
+  // SelectItem,
+  // Typography,
+  // useMantineTheme,
 } from "@tidbcloud/uikit"
-import { IconCheck } from "@tidbcloud/uikit/icons"
-import { forwardRef, useMemo } from "react"
+// import { IconCheck } from "@tidbcloud/uikit/icons"
+// import { forwardRef, useMemo } from "react"
 
-interface KindItemProps extends React.ComponentPropsWithoutRef<"div"> {
-  value: string
-  label: string
-}
+// interface KindItemProps extends React.ComponentPropsWithoutRef<"div"> {
+//   value: string
+//   label: string
+// }
 
-const KindSelectItem = forwardRef<HTMLDivElement, KindItemProps>(
-  ({ value, label, ...others }: KindItemProps, ref) => {
-    const showTick = value.startsWith("_")
-    const theme = useMantineTheme()
-    return (
-      <div ref={ref} {...others}>
-        <Group position="apart">
-          <span>{label}</span>
-          {showTick && <IconCheck size={16} color={theme.colors.peacock[5]} />}
-        </Group>
-      </div>
-    )
-  },
-)
+// const KindSelectItem = forwardRef<HTMLDivElement, KindItemProps>(
+//   ({ value, label, ...others }: KindItemProps, ref) => {
+//     const showTick = value.startsWith("_")
+//     const theme = useMantineTheme()
+//     return (
+//       <div ref={ref} {...others}>
+//         <Group position="apart">
+//           <span>{label}</span>
+//           {showTick && <IconCheck size={16} color={theme.colors.peacock[5]} />}
+//         </Group>
+//       </div>
+//     )
+//   },
+// )
 
 export const FilterMultiSelect = ({
   value,
@@ -37,26 +37,26 @@ export const FilterMultiSelect = ({
   onChange,
   ...rest
 }: MultiSelectProps) => {
-  const allKinds = useMemo(() => {
-    return data
-      .map((ko) => {
-        if (typeof ko === "string") {
-          if (value?.includes(ko)) {
-            return [
-              { value: ko, label: ko },
-              { value: "_" + ko, label: ko },
-            ]
-          }
-          return { value: ko, label: ko }
-        } else {
-          if (value?.some((v) => ko.value === v)) {
-            return [ko, { value: "_" + ko.value, label: ko.label }]
-          }
-          return ko
-        }
-      })
-      .flat()
-  }, [data, value])
+  // const allKinds = useMemo(() => {
+  //   return data
+  //     .map((ko) => {
+  //       if (typeof ko === "string") {
+  //         if (value?.includes(ko)) {
+  //           return [
+  //             { value: ko, label: ko },
+  //             { value: "_" + ko, label: ko },
+  //           ]
+  //         }
+  //         return { value: ko, label: ko }
+  //       } else {
+  //         if (value?.some((v) => ko.value === v)) {
+  //           return [ko, { value: "_" + ko.value, label: ko.label }]
+  //         }
+  //         return ko
+  //       }
+  //     })
+  //     .flat()
+  // }, [data, value])
 
   // a hack way
   // in default, selected items are not shown in dropdown
@@ -77,48 +77,48 @@ export const FilterMultiSelect = ({
     onChange?.(newSelectedKinds)
   }
 
-  const isStringArray = useMemo(
-    () => data.every((item) => typeof item === "string"),
-    [data],
-  )
+  // const isStringArray = useMemo(
+  //   () => data.every((item) => typeof item === "string"),
+  //   [data],
+  // )
 
-  const kindValueComponent: React.FC<
-    React.PropsWithChildren<MultiSelectValueProps & { value: string }>
-  > = ({ value: itemValue }) => {
-    if (itemValue === value?.[value.length - 1]) {
-      let displayValue
-      if (isStringArray) {
-        displayValue = value?.join(",")
-      } else {
-        displayValue = value?.map(
-          (k) => (data as SelectItem[]).find((v) => v.value == k)?.label,
-        )
-      }
-      return (
-        <Group gap={4} ml={4} sx={{ overflow: "hidden", flex: 1 }}>
-          <Typography size="sm" lineClamp={1} sx={{ flex: 1 }}>
-            {displayValue}
-          </Typography>
-          {value.length > 1 && (
-            <Badge bg="carbon.5" c="carbon.8" radius={8}>
-              {value.length}
-            </Badge>
-          )}
-        </Group>
-      )
-    }
-    return null
-  }
+  // const kindValueComponent: React.FC<
+  //   React.PropsWithChildren<MultiSelectValueProps & { value: string }>
+  // > = ({ value: itemValue }) => {
+  //   if (itemValue === value?.[value.length - 1]) {
+  //     let displayValue
+  //     if (isStringArray) {
+  //       displayValue = value?.join(",")
+  //     } else {
+  //       displayValue = value?.map(
+  //         (k) => (data as SelectItem[]).find((v) => v.value == k)?.label,
+  //       )
+  //     }
+  //     return (
+  //       <Group gap={4} ml={4} sx={{ overflow: "hidden", flex: 1 }}>
+  //         <Typography size="sm" lineClamp={1} sx={{ flex: 1 }}>
+  //           {displayValue}
+  //         </Typography>
+  //         {value.length > 1 && (
+  //           <Badge bg="carbon.5" c="carbon.8" radius={8}>
+  //             {value.length}
+  //           </Badge>
+  //         )}
+  //       </Group>
+  //     )
+  //   }
+  //   return null
+  // }
 
   return (
     <MultiSelect
       miw={240}
       {...rest}
-      data={allKinds}
+      // data={allKinds}
       value={value}
       onChange={handleKindsChange}
-      itemComponent={KindSelectItem}
-      valueComponent={kindValueComponent}
+      // itemComponent={KindSelectItem}
+      // valueComponent={kindValueComponent}
     />
   )
 }

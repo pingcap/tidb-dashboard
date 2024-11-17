@@ -11,11 +11,11 @@ import { useAppContext } from "../../ctx"
 import { useDetailUrlState } from "../../url-state/detail-url-state"
 import { usePlansListData } from "../../utils/use-data"
 
-import { PlansDetail } from "./plans-detail"
-import { PlansList } from "./plans-list"
-import { RelatedSlowQuery } from "./slow-query-list"
-import { StmtBasic } from "./stmt-basic"
-import { StmtSQL } from "./stmt-sql"
+// import { PlansDetail } from "./plans-detail"
+// import { PlansList } from "./plans-list"
+// import { RelatedSlowQuery } from "./slow-query-list"
+// import { StmtBasic } from "./stmt-basic"
+// import { StmtSQL } from "./stmt-sql"
 
 export function Detail() {
   const ctx = useAppContext()
@@ -47,18 +47,18 @@ export function Detail() {
 
       {planData && (
         <Stack>
-          <StmtSQL title="Statement Template" sql={planData.digest_text!} />
-          <StmtBasic stmt={planData} plansCount={plansListData.length} />
+          {/* <StmtSQL title="Statement Template" sql={planData.digest_text!} />
+          <StmtBasic stmt={planData} plansCount={plansListData.length} /> */}
 
-          {plansListData.length > 1 && <PlansList data={plansListData} />}
+          {/* {plansListData.length > 1 && <PlansList data={plansListData} />} */}
 
           {selectedPlans.length > 0 && (
             <>
-              <PlansDetail
+              {/* <PlansDetail
                 allPlansCount={plansListData.length}
                 selectedPlansCount={selectedPlans.length}
               />
-              <RelatedSlowQuery />
+              <RelatedSlowQuery /> */}
             </>
           )}
         </Stack>

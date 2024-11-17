@@ -1,5 +1,5 @@
 import { formatSql } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Box, Prism } from "@tidbcloud/uikit"
+import { Box } from "@tidbcloud/uikit"
 import React, { useMemo } from "react"
 
 interface Props {
@@ -14,7 +14,8 @@ function HighlightSQL({ sql, compact = false }: Props) {
 
   return (
     <Box mah="90vh" sx={{ overflow: "auto" }}>
-      <Prism
+      {formattedSql}
+      {/* <Prism
         language="sql"
         styles={{
           code: {
@@ -35,7 +36,7 @@ function HighlightSQL({ sql, compact = false }: Props) {
         }}
       >
         {formattedSql}
-      </Prism>
+      </Prism> */}
     </Box>
   )
 }

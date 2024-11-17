@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@baurine/grafana-value-formats": "^1.0.5",
-    "@elastic/charts": "^68.0.2"
+    "@elastic/charts": "^68.0.2",
+    "string-template": "^1.0.0"
   }
 }

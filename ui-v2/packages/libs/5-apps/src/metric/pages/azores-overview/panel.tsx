@@ -46,6 +46,7 @@ export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
         <Group ml="auto">
           <SegmentedControl
             size="xs"
+            withItemsBorders={false}
             data={timeRangeOptions}
             onChange={(v) => {
               setTimeRange(timeRangeOptions.find((t) => t.value === v)!.tr)

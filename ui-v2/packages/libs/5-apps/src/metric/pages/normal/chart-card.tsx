@@ -71,6 +71,7 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
           config.queries.map((q, idx) =>
             ctx.api
               .getMetric({
+                name: q.name,
                 promql: resolvePromQLTemplate(
                   q.promql,
                   step,

@@ -1,4 +1,7 @@
-import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import {
+  RelativeTimeRange,
+  toTimeRangeValue,
+} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
   // KIBANA_METRICS,
   SeriesChart,
@@ -20,7 +23,6 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useAppContext } from "../../ctx"
-import { useMetricsUrlState } from "../../url-state"
 import { SingleChartConfig, SingleQueryConfig } from "../../utils/type"
 
 export function transformData(
@@ -38,10 +40,15 @@ export function transformData(
   }))
 }
 
-export function ChartCard({ config }: { config: SingleChartConfig }) {
+export function ChartCard({
+  config,
+  timeRange,
+}: {
+  config: SingleChartConfig
+  timeRange: RelativeTimeRange
+}) {
   const ctx = useAppContext()
-  const { timeRange, refresh } = useMetricsUrlState()
-  const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange, refresh])
+  const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
   const [step, setStep] = useState(0)
   const chartRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -69,6 +76,7 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
           config.queries.map((q, idx) =>
             ctx.api
               .getMetric({
+                name: q.name,
                 promql: resolvePromQLTemplate(
                   q.promql,
                   step,
@@ -94,7 +102,9 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
 
   return (
     <Box>
-      <Typography variant="body-lg">{config.title}</Typography>
+      <Typography variant="label-lg" mb={16}>
+        {config.title}
+      </Typography>
 
       <Box h={200} ref={chartRef}>
         {data.length > 0 || !loading ? (

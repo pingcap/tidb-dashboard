@@ -13,10 +13,11 @@ export function useCtxValue(): AppCtxValue {
     () => ({
       ctxId: "metric",
       api: {
-        getMetricQueriesConfig() {
+        getMetricQueriesConfig(_kind: string) {
           return delay(1000).then(() => queryConfig)
         },
         getMetric(_params: {
+          name?: string
           promql: string
           beginTime: number
           endTime: number

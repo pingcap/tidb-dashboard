@@ -1,4 +1,4 @@
-import { Box, HoverCard, HoverCardProps, Text } from "@tidbcloud/uikit"
+import { Box, HoverCard, HoverCardProps, Typography } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
 import HighlightSQL from "./HighlightSQL"
@@ -41,12 +41,12 @@ export function EvictedSQL() {
   return (
     <HoverCard withinPortal withArrow position="right" shadow="md">
       <HoverCard.Target>
-        <Text color="dimmed" italic>
+        <Typography c="dimmed" fs="italic">
           Others
-        </Text>
+        </Typography>
       </HoverCard.Target>
       <HoverCard.Dropdown onClick={(e) => e.stopPropagation()}>
-        <Text>All of other dropped SQL statements</Text>
+        <Typography>All of other dropped SQL statements</Typography>
       </HoverCard.Dropdown>
     </HoverCard>
   )

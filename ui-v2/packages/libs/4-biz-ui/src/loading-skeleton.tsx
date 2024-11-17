@@ -2,7 +2,7 @@ import { Group, Skeleton } from "@tidbcloud/uikit"
 
 export function LoadingSkeleton() {
   return (
-    <Group spacing="xs">
+    <Group gap="xs">
       <Skeleton height={10} />
       <Skeleton height={10} />
       <Skeleton height={10} width="70%" />

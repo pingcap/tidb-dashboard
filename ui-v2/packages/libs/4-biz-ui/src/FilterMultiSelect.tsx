@@ -95,7 +95,7 @@ export const FilterMultiSelect = ({
         )
       }
       return (
-        <Group spacing={4} ml={4} sx={{ overflow: "hidden", flex: 1 }}>
+        <Group gap={4} ml={4} sx={{ overflow: "hidden", flex: 1 }}>
           <Typography size="sm" lineClamp={1} sx={{ flex: 1 }}>
             {displayValue}
           </Typography>

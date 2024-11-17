@@ -1,12 +1,9 @@
 import { formatValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { Button, Menu, Text, Tooltip } from "@tidbcloud/uikit"
 import {
-  Button,
-  Menu,
-  SelectChevronIcon,
-  Text,
-  Tooltip,
-} from "@tidbcloud/uikit"
-import { IconRefreshCw01 } from "@tidbcloud/uikit/icons"
+  IconChevronSelectorVertical,
+  IconRefreshCw01,
+} from "@tidbcloud/uikit/icons"
 import { useRafInterval } from "ahooks"
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react"
 
@@ -107,7 +104,7 @@ const AutoRefreshButton = forwardRef<
             label: { fontWeight: 400 },
           })}
           onClick={handleRefresh}
-          leftIcon={
+          leftSection={
             autoRefreshValue && !disabled ? (
               <RefreshProgress
                 value={Math.floor(
@@ -155,13 +152,12 @@ const AutoRefreshButton = forwardRef<
                 px={12}
                 loading={loading}
                 loaderProps={{ size: 0 }}
-                loaderPosition="center"
               >
                 {!!autoRefreshValue && (
                   <Text mr={8}>{formatValue(autoRefreshValue, "s", 0)}</Text>
                 )}
 
-                <SelectChevronIcon size="md" error={false} />
+                <IconChevronSelectorVertical size={16} />
               </Button>
             </Tooltip>
           </Menu.Target>

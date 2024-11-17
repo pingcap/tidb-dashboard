@@ -1,9 +1,9 @@
-import { MRT_SortingState, MantineReactTableProps } from "@tidbcloud/uikit/biz"
+import { MRT_SortingState, ProTableOptions } from "@tidbcloud/uikit/biz"
 import { useCallback, useMemo } from "react"
 
 import { SortRule } from "./sort-url-state"
 
-type onSortChangeFn = Required<MantineReactTableProps>["onSortingChange"]
+type onSortChangeFn = Required<ProTableOptions>["onSortingChange"]
 
 export function useProTableSortState(
   sortRule: SortRule,

@@ -11,7 +11,7 @@ export const StatusIndicator: React.FC<
   }>
 > = ({ label, dotColor, dotFill = false, tip }) => {
   return (
-    <Group spacing={0} p={4} align="center">
+    <Group gap={0} p={4} align="center">
       <Box
         w={8}
         h={8}

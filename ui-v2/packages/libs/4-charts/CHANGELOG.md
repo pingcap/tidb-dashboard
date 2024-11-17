@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.0.5
+
+### Patch Changes
+
+- refactor metric
+
 ## 0.0.4
 
 ### Patch Changes

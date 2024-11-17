@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-primitive-ui
 
+## 0.0.5
+
+### Patch Changes
+
+- refine
+
 ## 0.0.4
 
 ### Patch Changes

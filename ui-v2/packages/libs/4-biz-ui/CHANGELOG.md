@@ -1,5 +1,13 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.0.5
+
+### Patch Changes
+
+- refine
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.0.5
+
 ## 0.0.4
 
 ### Patch Changes

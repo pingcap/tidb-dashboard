@@ -57,10 +57,8 @@ export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
       <SimpleGrid
         px="md"
         type="container"
-        cols={{ base: 1, "500px": 2 }}
-        // cols={2}
+        cols={{ base: 1, "900px": 2 }}
         spacing="xl"
-        // breakpoints={[{ maxWidth: 980, cols: 1 }]}
       >
         {props.config.charts.map((c) => (
           <ChartCard key={c.title} config={c} timeRange={timeRange} />

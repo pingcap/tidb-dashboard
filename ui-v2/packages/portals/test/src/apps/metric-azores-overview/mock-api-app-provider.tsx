@@ -2,7 +2,6 @@ import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import {
   AppCtxValue,
   PromResult,
-  SeriesType,
   TransformNullValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
 import { useMemo } from "react"
@@ -22,11 +21,12 @@ const transformedConfigs = [
       metricName: m.name,
       title: m.displayName,
       label: m.description,
-      queries: m.metric.expressions.map((e) => ({
-        promql: e.promql,
-        legendName: e.legendName,
-        type: "line" as SeriesType,
-      })),
+      // queries: m.metric.expressions.map((e) => ({
+      //   promql: e.promql,
+      //   legendName: e.legendName,
+      //   type: "line" as SeriesType,
+      // })),
+      queries: [],
       nullValue: TransformNullValue.AS_ZERO,
       unit: m.metric.unit,
     })),
@@ -50,7 +50,7 @@ export function useCtxValue(): AppCtxValue {
           step: number
         }) {
           console.log("getMetric", _params)
-          return Promise.resolve(qpsType.data as unknown as PromResult[])
+          return delay(1000).then(() => qpsType.data as unknown as PromResult[])
         },
       },
       cfg: {

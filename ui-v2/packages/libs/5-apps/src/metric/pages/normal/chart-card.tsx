@@ -70,8 +70,8 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
         const ret = await Promise.all(
           config.queries.map((q, idx) =>
             ctx.api
-              .getMetricData({
-                metricName: "",
+              .getMetricDataByPromQL({
+                // metricName: "",
                 promql: resolvePromQLTemplate(
                   q.promql,
                   step,

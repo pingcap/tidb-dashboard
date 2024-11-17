@@ -40,11 +40,12 @@ export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
   )
 
   return (
-    <Card p={24} bg="carbon.0" shadow="none">
+    <Card p={24} bg="carbon.0">
       <Group mb={20}>
         <Typography variant="title-lg">{props.config.displayName}</Typography>
         <Group ml="auto">
           <SegmentedControl
+            size="xs"
             data={timeRangeOptions}
             onChange={(v) => {
               setTimeRange(timeRangeOptions.find((t) => t.value === v)!.tr)

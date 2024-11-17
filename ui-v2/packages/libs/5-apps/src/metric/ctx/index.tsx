@@ -1,4 +1,7 @@
-import { PromResultItem } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  PromResult,
+  PromResultItem,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { createContext, useContext } from "react"
 
 import { SinglePanelConfig } from "../utils/type"
@@ -8,13 +11,19 @@ import { SinglePanelConfig } from "../utils/type"
 type AppApi = {
   getMetricQueriesConfig(kind: string): Promise<SinglePanelConfig[]>
 
-  getMetricData(params: {
-    metricName: string
+  getMetricDataByPromQL(params: {
     promql: string
     beginTime: number
     endTime: number
     step: number
   }): Promise<PromResultItem[]>
+
+  getMetricDataByMetricName(params: {
+    metricName: string
+    beginTime: number
+    endTime: number
+    step: number
+  }): Promise<PromResult[]>
 }
 
 type AppConfig = {

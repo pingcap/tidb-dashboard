@@ -22,19 +22,20 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../../ctx"
-import { SingleChartConfig, SingleQueryConfig } from "../../utils/type"
+import { SingleChartConfig } from "../../utils/type"
 
 export function transformData(
   items: PromResultItem[],
   qIdx: number,
-  query: SingleQueryConfig,
+  // query: SingleQueryConfig,
+  legendName: string,
   nullValue?: TransformNullValue,
 ): SeriesData[] {
   return items.map((d, dIdx) => ({
-    ...transformPromResultItem(d, query.legendName, nullValue),
+    ...transformPromResultItem(d, legendName, nullValue),
     id: `${qIdx}-${dIdx}`,
-    type: query.type,
-    color: query.color,
+    // type: query.type,
+    // color: query.color,
     // lineSeriesStyle: query.lineSeriesStyle,
   }))
 }
@@ -74,24 +75,18 @@ export function ChartCard({
 
       setLoading(true)
       try {
-        const ret = await Promise.all(
-          config.queries.map((q, idx) =>
-            ctx.api
-              .getMetricData({
-                metricName: config.metricName,
-                promql: q.promql,
-                // promql: resolvePromQLTemplate(
-                //   q.promql,
-                //   step.current,
-                //   ctx.cfg.scrapeInterval,
-                // ),
-                beginTime: tr[0],
-                endTime: tr[1],
-                step: step.current,
-              })
-              .then((data) => transformData(data, idx, q, config.nullValue)),
-          ),
-        )
+        const ret = await ctx.api
+          .getMetricDataByMetricName({
+            metricName: config.metricName,
+            beginTime: tr[0],
+            endTime: tr[1],
+            step: step.current,
+          })
+          .then((data) =>
+            data.map((d, idx) =>
+              transformData(d.result, idx, d.legend, config.nullValue),
+            ),
+          )
         setData(ret.flat())
       } catch (e) {
         console.error(e)

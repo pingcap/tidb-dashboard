@@ -1,7 +1,7 @@
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import {
   AppCtxValue,
-  PromResultItem,
+  PromResult,
   SeriesType,
   TransformNullValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
@@ -9,7 +9,6 @@ import { useMemo } from "react"
 
 import configs from "./sample-data/configs.json"
 import qpsType from "./sample-data/qps-type.json"
-// import { queryConfig } from "./sample-data/query-config"
 
 const transformedConfigs = [
   {
@@ -56,20 +55,19 @@ export function useCtxValue(): AppCtxValue {
       ctxId: "metric",
       api: {
         getMetricQueriesConfig(_kind: string) {
-          // return delay(1000).then(() => queryConfig)
           return delay(1000).then(() => transformedConfigs)
         },
-        getMetricData(_params: {
+        getMetricDataByPromQL() {
+          return Promise.resolve([])
+        },
+        getMetricDataByMetricName(_params: {
           metricName: string
-          promql: string
           beginTime: number
           endTime: number
           step: number
         }) {
           console.log("getMetric", _params)
-          return delay(1000).then(
-            () => qpsType.data.result as unknown as PromResultItem[],
-          )
+          return Promise.resolve(qpsType.data as unknown as PromResult[])
         },
       },
       cfg: {

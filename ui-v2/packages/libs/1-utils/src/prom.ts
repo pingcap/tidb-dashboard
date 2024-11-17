@@ -10,7 +10,14 @@ export type PromResultItem = {
   values: ([number, string] | { timestamp: number; value: string })[]
 }
 
-export type PromChartItem = {
+// TODO: bad name, should update later
+export type PromResult = {
+  expr: string
+  legend: string
+  result: PromResultItem[]
+}
+
+export type PromSeriesItem = {
   name: string
   data: [number, number | null][]
 }
@@ -47,7 +54,7 @@ export function transformPromResultItem(
   item: PromResultItem,
   nameTemplate: string,
   nullValue?: TransformNullValue,
-): PromChartItem {
+): PromSeriesItem {
   const name = interpolate(nameTemplate, item.metric)
   return {
     name,

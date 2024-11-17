@@ -8,17 +8,17 @@ import {
   SeriesData,
 } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
-  PromResultItem,
-  TransformNullValue,
-  calcPromQueryStep,
-  transformPromResultItem,
-} from "@pingcap-incubator/tidb-dashboard-lib-charts"
-import {
   Box,
   Flex,
   Loader,
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import {
+  PromResultItem,
+  TransformNullValue,
+  calcPromQueryStep,
+  transformPromResultItem,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../../ctx"

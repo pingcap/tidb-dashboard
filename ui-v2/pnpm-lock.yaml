@@ -166,9 +166,6 @@ importers:
       '@elastic/charts':
         specifier: ^68.0.2
         version: 68.0.2(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      string-template:
-        specifier: ^1.0.0
-        version: 1.0.0
     devDependencies:
       '@rollup/plugin-typescript':
         specifier: ^12.1.1

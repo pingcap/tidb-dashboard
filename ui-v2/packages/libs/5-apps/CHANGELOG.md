@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.0.7
+
+### Patch Changes
+
+- add loading for panel, remove segement control items border
+
 ## 0.0.6
 
 ### Patch Changes

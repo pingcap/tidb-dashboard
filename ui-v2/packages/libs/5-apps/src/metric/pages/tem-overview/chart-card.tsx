@@ -20,7 +20,7 @@ import {
   resolvePromQLTemplate,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../../ctx"
 import { SingleChartConfig, SingleQueryConfig } from "../../utils/type"
@@ -49,13 +49,16 @@ export function ChartCard({
 }) {
   const ctx = useAppContext()
   const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
-  const [step, setStep] = useState(0)
+
+  const step = useRef(0)
   const chartRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (node) {
         // 140 is the width of the chart legend, will make it configurable in the future
-        setStep(
-          calcPromQueryStep(tr, node.offsetWidth - 140, ctx.cfg.scrapeInterval),
+        step.current = calcPromQueryStep(
+          tr,
+          node.offsetWidth - 140,
+          ctx.cfg.scrapeInterval,
         )
       }
     },
@@ -66,7 +69,7 @@ export function ChartCard({
   const [data, setData] = useState<SeriesData[]>([])
   useEffect(() => {
     async function fetchData() {
-      if (step === 0) {
+      if (step.current === 0 || loading) {
         return
       }
 
@@ -79,12 +82,12 @@ export function ChartCard({
                 name: q.name,
                 promql: resolvePromQLTemplate(
                   q.promql,
-                  step,
+                  step.current,
                   ctx.cfg.scrapeInterval,
                 ),
                 beginTime: tr[0],
                 endTime: tr[1],
-                step,
+                step: step.current,
               })
               .then((data) => transformData(data, idx, q, config.nullValue)),
           ),
@@ -98,7 +101,7 @@ export function ChartCard({
     }
 
     fetchData()
-  }, [tr, step])
+  }, [tr])
 
   return (
     <Box>

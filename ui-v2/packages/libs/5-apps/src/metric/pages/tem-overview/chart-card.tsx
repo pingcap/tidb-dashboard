@@ -11,7 +11,6 @@ import {
   PromResultItem,
   TransformNullValue,
   calcPromQueryStep,
-  resolvePromQLTemplate,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
@@ -32,7 +31,7 @@ export function transformData(
   nullValue?: TransformNullValue,
 ): SeriesData[] {
   return items.map((d, dIdx) => ({
-    ...transformPromResultItem(d, query.name, nullValue),
+    ...transformPromResultItem(d, query.legendName, nullValue),
     id: `${qIdx}-${dIdx}`,
     type: query.type,
     color: query.color,
@@ -78,13 +77,14 @@ export function ChartCard({
         const ret = await Promise.all(
           config.queries.map((q, idx) =>
             ctx.api
-              .getMetric({
-                name: q.name,
-                promql: resolvePromQLTemplate(
-                  q.promql,
-                  step.current,
-                  ctx.cfg.scrapeInterval,
-                ),
+              .getMetricData({
+                metricName: config.metricName,
+                promql: q.promql,
+                // promql: resolvePromQLTemplate(
+                //   q.promql,
+                //   step.current,
+                //   ctx.cfg.scrapeInterval,
+                // ),
                 beginTime: tr[0],
                 endTime: tr[1],
                 step: step.current,

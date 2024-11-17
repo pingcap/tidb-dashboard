@@ -8,8 +8,8 @@ import { SinglePanelConfig } from "../utils/type"
 type AppApi = {
   getMetricQueriesConfig(kind: string): Promise<SinglePanelConfig[]>
 
-  getMetric(params: {
-    name: string
+  getMetricData(params: {
+    metricName: string
     promql: string
     beginTime: number
     endTime: number

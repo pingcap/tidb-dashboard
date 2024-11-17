@@ -3,13 +3,14 @@ import { TransformNullValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
 export interface SingleQueryConfig {
   promql: string
-  name: string
+  legendName: string
   type: SeriesType
   color?: string | ((seriesName: string) => string | undefined)
   // lineSeriesStyle?: RecursivePartial<LineSeriesStyle>
 }
 
 export interface SingleChartConfig {
+  metricName: string
   title: string
   label?: string
   queries: SingleQueryConfig[]

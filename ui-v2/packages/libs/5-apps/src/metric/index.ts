@@ -9,3 +9,4 @@ export * from "./utils/type"
 
 export type { PromResultItem } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 export { TransformNullValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+export type { SeriesType } from "@pingcap-incubator/tidb-dashboard-lib-charts"

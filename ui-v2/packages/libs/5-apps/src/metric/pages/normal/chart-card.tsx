@@ -32,7 +32,7 @@ export function transformData(
   nullValue?: TransformNullValue,
 ): SeriesData[] {
   return items.map((d, dIdx) => ({
-    ...transformPromResultItem(d, query.name, nullValue),
+    ...transformPromResultItem(d, query.legendName, nullValue),
     id: `${qIdx}-${dIdx}`,
     type: query.type,
     color: query.color,
@@ -70,8 +70,8 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
         const ret = await Promise.all(
           config.queries.map((q, idx) =>
             ctx.api
-              .getMetric({
-                name: q.name,
+              .getMetricData({
+                metricName: "",
                 promql: resolvePromQLTemplate(
                   q.promql,
                   step,

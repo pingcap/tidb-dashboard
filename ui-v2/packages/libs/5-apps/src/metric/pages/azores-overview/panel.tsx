@@ -34,7 +34,7 @@ const timeRangeOptions: {
   },
 ]
 
-export function TemOverviewPanel(props: { config: SinglePanelConfig }) {
+export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
   const [timeRange, setTimeRange] = useState<RelativeTimeRange>(
     timeRangeOptions[0].tr,
   )

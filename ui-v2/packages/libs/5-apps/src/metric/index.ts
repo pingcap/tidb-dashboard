@@ -2,8 +2,8 @@ export * from "./ctx"
 export * from "./utils/type"
 
 export * from "./pages/normal"
-export * from "./pages/tem-overview"
-export * from "./pages/tem-overview/chart-card"
+export * from "./pages/azores-overview"
+export * from "./pages/azores-overview/chart-card"
 
 export * from "./utils/type"
 

@@ -1,17 +1,20 @@
 import {
   AppProvider,
-  TemOverviewPage,
+  AzoresOverviewPage,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
 import { Route, Routes } from "react-router-dom"
 
 import { useCtxValue } from "./mock-api-app-provider"
 
-export function MetricsTemOverviewApp() {
+export function MetricsAzoresOverviewApp() {
   const ctxValue = useCtxValue()
   return (
     <AppProvider ctxValue={ctxValue}>
       <Routes>
-        <Route path="/metrics-tem-overview" element={<TemOverviewPage />} />
+        <Route
+          path="/metrics-azores-overview"
+          element={<AzoresOverviewPage />}
+        />
       </Routes>
     </AppProvider>
   )

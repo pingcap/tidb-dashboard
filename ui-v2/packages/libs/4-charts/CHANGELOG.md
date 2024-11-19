@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.0.7
+
+### Patch Changes
+
+- support dark mode for lib-charts
+
 ## 0.0.6
 
 ### Patch Changes

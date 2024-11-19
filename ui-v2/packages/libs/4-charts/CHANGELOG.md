@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.0.8
+
+### Patch Changes
+
+- set time formatter
+
 ## 0.0.7
 
 ### Patch Changes

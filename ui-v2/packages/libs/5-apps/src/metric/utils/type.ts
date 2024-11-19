@@ -1,10 +1,10 @@
-import { SeriesType } from "@pingcap-incubator/tidb-dashboard-lib-charts"
+import { SeriesDataType } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import { TransformNullValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
 export interface SingleQueryConfig {
   promql: string
   legendName: string
-  type: SeriesType
+  type: SeriesDataType
   color?: string | ((seriesName: string) => string | undefined)
   // lineSeriesStyle?: RecursivePartial<LineSeriesStyle>
 }

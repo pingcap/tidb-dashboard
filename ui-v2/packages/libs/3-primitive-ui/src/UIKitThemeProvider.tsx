@@ -1,13 +1,20 @@
-import { useColorScheme } from "@tidbcloud/uikit"
+import { ColorScheme, useColorScheme } from "@tidbcloud/uikit"
+import { useHotkeys } from "@tidbcloud/uikit/hooks"
 import { ThemeProvider } from "@tidbcloud/uikit/theme"
 
 export const UIKitThemeProvider = ({
   children,
 }: React.PropsWithChildren<unknown>) => {
-  const { colorScheme } = useColorScheme("auto", {
+  const { colorScheme, setColorScheme } = useColorScheme("auto", {
     getInitialValueInEffect: false,
     key: "mantine-color-scheme",
   })
+
+  const toggleColorScheme = (value?: ColorScheme) => {
+    setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"))
+  }
+
+  useHotkeys([["mod+J", () => toggleColorScheme()]])
 
   return (
     <ThemeProvider

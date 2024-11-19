@@ -13,4 +13,6 @@ export type {
   PromResult,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 export { TransformNullValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-export type { SeriesType } from "@pingcap-incubator/tidb-dashboard-lib-charts"
+export type { SeriesDataType } from "@pingcap-incubator/tidb-dashboard-lib-charts"
+
+import "@pingcap-incubator/tidb-dashboard-lib-charts/dist/style.css"

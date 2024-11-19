@@ -14,8 +14,10 @@
   "scripts": {
     "tsc:watch": "tsc --watch",
     "rollup:watch": "rollup -c --watch",
-    "dev": "concurrently --kill-others \"pnpm tsc:watch\" \"pnpm rollup:watch\"",
-    "build": "tsc && rollup -c"
+    "css:watch": "sass src/style.scss dist/style.css --watch",
+    "dev": "concurrently --kill-others \"pnpm tsc:watch\" \"pnpm rollup:watch\" \"pnpm css:watch\"",
+    "css:build": "sass src/style.scss dist/style.css",
+    "build": "tsc && rollup -c && pnpm css:build"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +27,7 @@
     "@types/react": "^18.3.12",
     "react": "^18.3.1",
     "rollup": "^4.24.0",
+    "sass": "^1.81.0",
     "tslib": "^2.8.0"
   },
   "peerDependencies": {

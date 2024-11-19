@@ -15,9 +15,6 @@ import {
 import { renderSeriesData } from "./series-render"
 import { SeriesData } from "./type"
 
-import "@elastic/charts/dist/theme_only_light.css"
-// import '@elastic/charts/dist/theme_only_dark.css';
-
 function formatValue(value: number, unit: string) {
   const formatFn = getValueFormat(unit)
   if (unit === "short") {

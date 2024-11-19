@@ -14,3 +14,8 @@ export function useChartTheme(theme: "light" | "dark") {
     }
   }, [theme])
 }
+
+export function ChartThemeSwitch({ value }: { value: "light" | "dark" }) {
+  useChartTheme(value)
+  return null
+}

@@ -2,6 +2,6 @@ export * from "./series-chart"
 
 export * from "./sample-data"
 
-export * from "./use-theme"
+export * from "./chart-theme-switch"
 
 export * from "./type"

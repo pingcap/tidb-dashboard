@@ -11,6 +11,7 @@ import {
   Group,
   Loader,
   Typography,
+  useComputedColorScheme,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
   PromResultItem,
@@ -41,6 +42,7 @@ export function transformData(
 }
 
 export function ChartCard({ config }: { config: SingleChartConfig }) {
+  const colorScheme = useComputedColorScheme()
   const ctx = useAppContext()
   const { timeRange, refresh } = useMetricsUrlState()
   const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange, refresh])
@@ -115,7 +117,12 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
 
       <Box h={200} ref={chartRef}>
         {data.length > 0 || !loading ? (
-          <SeriesChart unit={config.unit} data={data} timeRange={tr} />
+          <SeriesChart
+            unit={config.unit}
+            data={data}
+            timeRange={tr}
+            theme={colorScheme}
+          />
         ) : (
           <Flex h={200} align="center" justify="center">
             <Loader size="xs" />

@@ -12,6 +12,7 @@ import {
   Flex,
   Loader,
   Typography,
+  useComputedColorScheme,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
   PromResultItem,
@@ -47,6 +48,7 @@ export function ChartCard({
   config: SingleChartConfig
   timeRange: RelativeTimeRange
 }) {
+  const colorScheme = useComputedColorScheme()
   const ctx = useAppContext()
   const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
 
@@ -106,7 +108,12 @@ export function ChartCard({
 
       <Box h={200} ref={chartRef}>
         {data.length > 0 || !loading ? (
-          <SeriesChart unit={config.unit} data={data} timeRange={tr} />
+          <SeriesChart
+            unit={config.unit}
+            data={data}
+            timeRange={tr}
+            theme={colorScheme}
+          />
         ) : (
           <Flex h={200} align="center" justify="center">
             <Loader size="xs" />

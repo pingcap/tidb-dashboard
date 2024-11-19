@@ -8,9 +8,9 @@ import {
   Position,
   ScaleType,
   Settings,
-  niceTimeFormatByDay,
   timeFormatter,
 } from "@elastic/charts"
+import { useMemo } from "react"
 
 import { renderSeriesData } from "./series-render"
 import { SeriesData } from "./type"
@@ -23,7 +23,17 @@ function formatValue(value: number, unit: string) {
   return formatFn(value, 1)
 }
 
-const dateFormatter = timeFormatter(niceTimeFormatByDay(1))
+function niceTimeFormat(seconds: number) {
+  // if (max time - min time > 5 days)
+  if (seconds > 5 * 24 * 60 * 60) return "MM-DD"
+  // if (max time - min time > 1 day)
+  if (seconds > 1 * 24 * 60 * 60) return "MM-DD HH:mm"
+  // if (max time - min time > 5 minutes)
+  if (seconds > 5 * 60) return "HH:mm"
+  return "HH:mm:ss"
+}
+
+const tooltipHeaderFormatter = timeFormatter("YYYY-MM-DD HH:mm:ss")
 
 type SeriesChartProps = {
   theme?: "light" | "dark"
@@ -38,6 +48,11 @@ export function SeriesChart({
   unit,
   timeRange,
 }: SeriesChartProps) {
+  const xAxisFormatter = useMemo(
+    () => timeFormatter(niceTimeFormat(timeRange[1] - timeRange[0])),
+    [timeRange[0], timeRange[1]],
+  )
+
   return (
     <Chart>
       <Settings
@@ -52,7 +67,8 @@ export function SeriesChart({
         position={Position.Bottom}
         ticks={7}
         showOverlappingTicks
-        tickFormat={dateFormatter}
+        tickFormat={tooltipHeaderFormatter}
+        labelFormat={xAxisFormatter}
       />
       <Axis
         id="left"

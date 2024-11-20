@@ -53,7 +53,7 @@ export function ListTable() {
       state={{ isLoading, sorting }}
       initialState={{ columnPinning: { left: ["digest_text"] } }}
       pagination={{
-        value: pagination.curPage,
+        page: pagination.curPage,
         total: Math.ceil((data?.length ?? 0) / pagination.pageSize),
         onChange: (v) => setPagination({ ...pagination, curPage: v }),
         position: "center",

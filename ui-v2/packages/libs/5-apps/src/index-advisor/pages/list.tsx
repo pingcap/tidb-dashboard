@@ -3,10 +3,10 @@ import {
   Stack,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 
-// import { AdvisorsFilters } from "../components/AdvisorsFilters"
+import { AdvisorsFilters } from "../components/AdvisorsFilters"
 // import { AdvisorsSummary } from './components/AdvisorsSummary'
-// import { AdvisorsTable } from "../components/AdvisorsTable"
-// import { RefreshButton } from "../components/RefreshButton"
+import { AdvisorsTable } from "../components/AdvisorsTable"
+import { RefreshButton } from "../components/RefreshButton"
 
 export function List() {
   return (
@@ -15,11 +15,11 @@ export function List() {
       {/* <AdvisorsSummary /> */}
 
       <Group>
-        {/* <AdvisorsFilters />
-        <RefreshButton /> */}
+        <AdvisorsFilters />
+        <RefreshButton />
       </Group>
 
-      {/* <AdvisorsTable /> */}
+      <AdvisorsTable />
       {/* <AdvisorHelperDrawer /> */}
     </Stack>
   )

@@ -6,9 +6,9 @@ import {
 
 import { useAppContext } from "../../ctx"
 
-// import { Filters } from "./filters"
-// import { RefreshButton } from "./refresh-button"
-// import { ListTable } from "./table"
+import { Filters } from "./filters"
+import { RefreshButton } from "./refresh-button"
+import { ListTable } from "./table"
 
 export function List() {
   const ctx = useAppContext()
@@ -22,11 +22,13 @@ export function List() {
       )}
 
       <Group>
-        {/* <Filters /> */}
-        <Group ml="auto">{/* <RefreshButton /> */}</Group>
+        <Filters />
+        <Group ml="auto">
+          <RefreshButton />
+        </Group>
       </Group>
 
-      {/* <ListTable /> */}
+      <ListTable />
     </Stack>
   )
 }

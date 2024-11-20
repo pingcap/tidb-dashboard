@@ -15,7 +15,6 @@
     "@pingcap-incubator/tidb-dashboard-lib-primitive-ui": "workspace:^",
     "@rap-api/request": "^0.0.2",
     "@tanstack/react-query": "^5.59.16",
-    "@tidbcloud/uikit": "2.0.0-beta.64",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router": "^6.27.0",

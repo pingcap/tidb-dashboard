@@ -13,7 +13,7 @@ import { PlansListTable } from "./table"
 export function PlansList({ data }: { data: StatementModel[] }) {
   return (
     <Card shadow="xs" p="xl">
-      <Stack spacing="xs">
+      <Stack gap="xs">
         <Title order={5}>Execution Plans</Title>
 
         <Alert>

@@ -12,7 +12,7 @@ export function StmtSQL({ title, sql }: { title: string; sql: string }) {
 
   return (
     <Card shadow="xs" p="xl">
-      <Stack spacing="xs">
+      <Stack gap="xs">
         <Title order={5}>{title}</Title>
 
         <CodeBlock

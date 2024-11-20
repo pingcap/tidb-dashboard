@@ -38,7 +38,7 @@ export function DetailTabs({ data }: { data: StatementModel }) {
 
   return (
     <Card shadow="xs" p="xl">
-      <Stack spacing="xs">
+      <Stack gap="xs">
         <Title order={5}>Detail</Title>
         <Tabs defaultValue={tabs[0].value}>
           <Tabs.List mb="md">

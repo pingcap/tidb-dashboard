@@ -1,5 +1,5 @@
 import { formatSql } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Box, Prism } from "@tidbcloud/uikit"
+import { CodeBlock } from "@tidbcloud/uikit/biz"
 import React, { useMemo } from "react"
 
 interface Props {
@@ -13,31 +13,50 @@ function HighlightSQL({ sql, compact = false }: Props) {
   }, [sql, compact])
 
   return (
-    <Box mah="90vh" sx={{ overflow: "auto" }}>
-      <Prism
-        language="sql"
-        styles={{
+    <CodeBlock
+      mah={"90vh"}
+      sx={{ overflow: "auto" }}
+      language="sql"
+      codeHightlightProps={{
+        code: "",
+        styles: {
           code: {
-            backgroundColor: "transparent !important",
             padding: 0,
             fontSize: compact ? 13 : 12,
           },
-          line: {
-            padding: 0,
-          },
-          lineContent: compact
-            ? {
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-              }
-            : {},
-        }}
-      >
-        {formattedSql}
-      </Prism>
-    </Box>
+        },
+      }}
+    >
+      {formattedSql}
+    </CodeBlock>
   )
+
+  // return (
+  //   <Box mah="90vh" sx={{ overflow: "auto" }}>
+  //     <Prism
+  //       language="sql"
+  //       styles={{
+  //         code: {
+  //           backgroundColor: "transparent !important",
+  //           padding: 0,
+  //           fontSize: compact ? 13 : 12,
+  //         },
+  //         line: {
+  //           padding: 0,
+  //         },
+  //         lineContent: compact
+  //           ? {
+  //               overflow: "hidden",
+  //               whiteSpace: "nowrap",
+  //               textOverflow: "ellipsis",
+  //             }
+  //           : {},
+  //       }}
+  //     >
+  //       {formattedSql}
+  //     </Prism>
+  //   </Box>
+  // )
 }
 
 export default React.memo(HighlightSQL)

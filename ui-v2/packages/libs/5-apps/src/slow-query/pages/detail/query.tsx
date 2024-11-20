@@ -12,7 +12,7 @@ export function DetailQuery({ sql }: { sql: string }) {
 
   return (
     <Card shadow="xs" p="xl">
-      <Stack spacing="xs">
+      <Stack gap="xs">
         <Title order={5}>Query</Title>
 
         <CodeBlock

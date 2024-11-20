@@ -23,6 +23,7 @@ import { SlowQueryApp } from "./apps/slow-query"
 import { StatementApp } from "./apps/statement"
 import { http } from "./rapper"
 
+import "@tidbcloud/uikit/style.css"
 import "./App.css"
 
 // always use mock api, even in production

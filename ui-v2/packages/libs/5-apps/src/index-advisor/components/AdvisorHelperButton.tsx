@@ -11,7 +11,7 @@ export function AdvisorHelperButton() {
       h={32}
       variant="default"
       onClick={() => showHelper()}
-      leftIcon={<IconArrowUpRight strokeWidth={2} />}
+      leftSection={<IconArrowUpRight strokeWidth={2} />}
     >
       Index advisor helper
     </Button>

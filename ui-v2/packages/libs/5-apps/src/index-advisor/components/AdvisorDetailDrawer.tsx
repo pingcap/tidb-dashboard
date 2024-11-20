@@ -35,7 +35,7 @@ import { TopImpactedQueriesTable } from "./TopImpactedQueriesTable"
 
 function Filed({ label, value }: { label: ReactNode; value: ReactNode }) {
   return (
-    <Group noWrap spacing={48}>
+    <Group wrap="nowrap" gap={48}>
       <Typography variant="label-lg" w={160} sx={{ flex: "none" }}>
         {label}
       </Typography>
@@ -51,7 +51,7 @@ function Filed({ label, value }: { label: ReactNode; value: ReactNode }) {
 
 function LoadingSkeleton() {
   return (
-    <Stack spacing="xl" px="xl">
+    <Stack gap="xl" px="xl">
       <Skeleton height={10} />
       <Skeleton height={10} />
       <Skeleton height={10} />
@@ -70,8 +70,8 @@ function Statistic({
   children: ReactNode
 }) {
   return (
-    <Stack spacing={8}>
-      <Group spacing={0}>
+    <Stack gap={8}>
+      <Group gap={0}>
         <Typography variant="body-lg">{label}</Typography>
         {hint && <LabelTooltip label={hint} />}
       </Group>
@@ -106,7 +106,7 @@ export function AdvisorDetailDrawer({
       onClose={() => setAdvisorId()}
       position="right"
       size={560}
-      overlayOpacity={0.4}
+      overlayProps={{ opacity: 0.4 }}
       styles={() => ({
         drawer: {
           display: "flex",
@@ -130,7 +130,7 @@ export function AdvisorDetailDrawer({
         <LoadingSkeleton />
       ) : advisor ? (
         <>
-          <Stack spacing="xl" px="xl" style={{ overflowY: "auto" }}>
+          <Stack gap="xl" px="xl" style={{ overflowY: "auto" }}>
             <Filed label="Name" value={advisor.name} />
             <Filed label="Database" value={advisor.database} />
             <Filed label="Table" value={advisor.table} />
@@ -166,12 +166,12 @@ export function AdvisorDetailDrawer({
               </Typography>
             </Box>
 
-            <Stack spacing={16}>
+            <Stack gap={16}>
               <Typography variant="title-md">Impacts</Typography>
               <Group grow>
                 <Card>
                   <Statistic label="Estimated improvement" hint="">
-                    <Group spacing={4}>
+                    <Group gap={4}>
                       <Typography variant="headline-sm">
                         {(advisor.improvement! * 100).toFixed(2)}
                       </Typography>
@@ -182,7 +182,7 @@ export function AdvisorDetailDrawer({
                 </Card>
                 <Card>
                   <Statistic label="Estimated index size" hint="">
-                    <Group spacing={4}>
+                    <Group gap={4}>
                       <Typography variant="headline-sm">
                         {advisor.index_size}
                       </Typography>
@@ -193,7 +193,7 @@ export function AdvisorDetailDrawer({
               </Group>
               <Card>
                 <Statistic label="Estimated cost saving" hint="">
-                  <Group spacing={4}>
+                  <Group gap={4}>
                     <Typography variant="headline-sm">
                       ${(advisor.cost_saving_per_query! * 1000000).toFixed(2)}
                     </Typography>
@@ -207,7 +207,7 @@ export function AdvisorDetailDrawer({
               </Card>
             </Stack>
 
-            <Stack spacing={16}>
+            <Stack gap={16}>
               <Typography variant="title-md">Top impacted queries</Typography>
               <TopImpactedQueriesTable
                 impactedQueries={advisor.top_impacted_queries!}
@@ -233,7 +233,7 @@ export function AdvisorDetailDrawer({
           </Stack>
           <Box>
             <Divider mt="xs" />
-            <Group px="xl" py="xs" position="left">
+            <Group px="xl" py="xs" justify="left">
               <ActionIcon
                 size={32}
                 variant="default"
@@ -259,7 +259,7 @@ export function AdvisorDetailDrawer({
           </Box>
         </>
       ) : (
-        <Stack spacing="xl" px="xl">
+        <Stack gap="xl" px="xl">
           Something wrong happened.
         </Stack>
       )}

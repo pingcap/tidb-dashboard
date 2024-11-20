@@ -2,7 +2,7 @@ import {
   LabelTooltip,
   MRT_ColumnDef,
   MRT_Row,
-  MantineReactTableProps,
+  ProTableOptions,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { ProTable } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { IconDotsHorizontal } from "@pingcap-incubator/tidb-dashboard-lib-icons"
@@ -171,7 +171,7 @@ function useColumns() {
         accessorFn: (row) => {
           if (row.index_size! < 0.01) {
             return (
-              <Group spacing={0}>
+              <Group gap={0}>
                 {"< 0.01"}
                 <LabelTooltip label={`${row.index_size} MiB`} />
               </Group>
@@ -205,7 +205,7 @@ export function AdvisorsTable() {
   const sortRules = useMemo(() => {
     return [{ id: sortRule.orderBy, desc: sortRule.desc }]
   }, [sortRule.orderBy, sortRule.desc])
-  type onSortChangeFn = Required<MantineReactTableProps>["onSortingChange"]
+  type onSortChangeFn = Required<ProTableOptions>["onSortingChange"]
   const setSortRules = useCallback<onSortChangeFn>(
     (updater) => {
       const newSort =
@@ -229,7 +229,7 @@ export function AdvisorsTable() {
         onSortingChange={setSortRules}
         state={{ isLoading: isLoading || isFetching, sorting: sortRules }}
         pagination={{
-          page: pagination.curPage,
+          value: pagination.curPage,
           total: Math.ceil((data?.total ?? 0) / pagination.pageSize),
           onChange: (v) => setPagination({ ...pagination, curPage: v }),
           position: "center",

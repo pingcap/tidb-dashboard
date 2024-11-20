@@ -13,7 +13,7 @@ import { useAdvisorData, useCloseAdvisor } from "../utils/use-data"
 
 function LoadingSkeleton() {
   return (
-    <Stack spacing="xl">
+    <Stack gap="xl">
       <Skeleton height={10} />
       <Skeleton height={10} />
       <Skeleton height={10} />

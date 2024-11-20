@@ -9,7 +9,7 @@ import { ListTable } from "./table"
 export function RelatedSlowQuery() {
   return (
     <Card shadow="xs" p="xl">
-      <Stack spacing="xs">
+      <Stack gap="xs">
         <Title order={5}>Related Slow Query</Title>
 
         <ListTable />

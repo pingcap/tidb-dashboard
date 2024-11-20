@@ -38,7 +38,7 @@ export function Plan({ plan }: { plan: string }) {
 
   return (
     <Card shadow="xs" p="xl">
-      <Stack spacing="xs">
+      <Stack gap="xs">
         <Title order={5}>Execution Plan</Title>
 
         <Tabs defaultValue={tabs[0].value}>

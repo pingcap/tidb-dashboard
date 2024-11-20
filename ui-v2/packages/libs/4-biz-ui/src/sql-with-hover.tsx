@@ -1,7 +1,7 @@
 import { Box, HoverCard, HoverCardProps, Typography } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
-import HighlightSQL from "./HighlightSQL"
+import HighlightSQL from "./highlight-sql"
 
 export function SQLWithHover({
   sql,

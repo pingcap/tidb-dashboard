@@ -1,9 +1,9 @@
 export * from "@tidbcloud/uikit/biz"
 
-export * from "./StatusIndicator"
+export * from "./status-indicator"
 export * from "./FilterMultiSelect"
-export { default as HighlightSQL } from "./HighlightSQL"
-export * from "./SQLWithHover"
+export { default as HighlightSQL } from "./highlight-sql"
+export * from "./sql-with-hover"
 
 export * from "./plan-table"
 export * from "./info-table"

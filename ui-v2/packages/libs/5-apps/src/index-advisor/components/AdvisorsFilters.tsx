@@ -73,7 +73,7 @@ export function AdvisorsFilters() {
   const resetFiltersBtn = (
     <UnstyledButton
       onClick={resetFilters}
-      sx={(theme) => ({ color: theme.colors.gray[7] })}
+      sx={(theme) => ({ color: theme.colors.carbon[7] })}
     >
       <Text pl={8} size="sm" fw="bold">
         Clear Filters

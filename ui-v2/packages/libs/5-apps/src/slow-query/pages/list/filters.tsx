@@ -89,27 +89,23 @@ export function Filters() {
 
   const dbsSelect = dbsData && dbsData.length > 0 && (
     <FilterMultiSelect
+      kind="Databases"
+      data={dbsData}
       value={dbs}
       onChange={setDbs}
-      data={dbsData}
+      width={200}
       disabled={isFetching}
-      miw={200}
-      placeholder={tn("slowquery.filters.dbs", "All Databases")}
-      searchable
-      clearable
     />
   )
 
   const ruGroupsSelect = ruGroupsData && ruGroupsData.length > 1 && (
     <FilterMultiSelect
+      kind="Resource Groups"
+      data={ruGroupsData}
       value={ruGroups}
       onChange={setRuGroups}
-      data={ruGroupsData}
+      width={240}
       disabled={isFetching}
-      miw={200}
-      placeholder={tn("slowquery.filters.ruGroups", "All Resource Groups")}
-      searchable
-      clearable
     />
   )
 
@@ -153,7 +149,7 @@ export function Filters() {
   const resetFiltersBtn = (
     <UnstyledButton
       onClick={reset}
-      sx={(theme) => ({ color: theme.colors.gray[7] })}
+      sx={(theme) => ({ color: theme.colors.carbon[7] })}
     >
       <Text size="sm" fw="bold">
         {tn("slowquery.filters.clear", "Clear Filters")}

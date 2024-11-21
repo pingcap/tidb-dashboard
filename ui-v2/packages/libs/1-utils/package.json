@@ -25,6 +25,7 @@
     "@tidbcloud/uikit": "catalog:",
     "@types/react": "^18.3.12",
     "i18next": "^23.16.2",
+    "i18next-browser-languagedetector": "^8.0.0",
     "react": "^18.3.1",
     "react-i18next": "^15.1.0",
     "rollup": "^4.24.0",
@@ -33,6 +34,7 @@
   "peerDependencies": {
     "@tidbcloud/uikit": "catalog:",
     "i18next": "^23.16.2",
+    "i18next-browser-languagedetector": "^8.0.0",
     "react": "^18.3.1",
     "react-i18next": "^15.1.0"
   },

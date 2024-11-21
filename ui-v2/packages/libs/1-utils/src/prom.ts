@@ -10,7 +10,7 @@ export type PromResultItem = {
   values: ([number, string] | { timestamp: number; value: string })[]
 }
 
-// TODO: bad name, should update later
+// TODO: bad name, should update later, or define it in lib-apps/metric
 export type PromResult = {
   expr: string
   legend: string

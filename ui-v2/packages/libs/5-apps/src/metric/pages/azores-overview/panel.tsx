@@ -6,50 +6,46 @@ import {
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { Card } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import { useState } from "react"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { useMemo, useState } from "react"
 
 import { SinglePanelConfig } from "../../utils/type"
 
 import { ChartCard } from "./chart-card"
 
-const timeRangeOptions: {
-  label: string
-  value: string
-  tr: RelativeTimeRange
-}[] = [
-  {
-    label: "1 hr",
-    value: "1h",
-    tr: { type: "relative", value: 60 * 60 },
-  },
-  {
-    label: "24 hrs",
-    value: "24h",
-    tr: { type: "relative", value: 24 * 60 * 60 },
-  },
-  {
-    label: "7 days",
-    value: "7d",
-    tr: { type: "relative", value: 7 * 24 * 60 * 60 },
-  },
-]
-
 export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
-  const [timeRange, setTimeRange] = useState<RelativeTimeRange>(
-    timeRangeOptions[0].tr,
-  )
+  const { tn } = useTn()
+  const timeRangeOptions = useMemo(() => {
+    return [
+      { label: tn("common.hour", "1 hr", { count: 1 }), value: 60 * 60 + "" },
+      {
+        label: tn("common.hour", "24 hrs", { count: 24 }),
+        value: 24 * 60 * 60 + "",
+      },
+      {
+        label: tn("common.day", "7 days", { count: 7 }),
+        value: 7 * 24 * 60 * 60 + "",
+      },
+    ]
+  }, [tn])
+  const [timeRange, setTimeRange] = useState<RelativeTimeRange>({
+    type: "relative",
+    value: parseInt(timeRangeOptions[0].value),
+  })
 
   return (
     <Card p={24} bg="carbon.0">
       <Group mb={20}>
-        <Typography variant="title-lg">{props.config.displayName}</Typography>
+        <Typography variant="title-lg">
+          {tn(`o11ylib.metric.${props.config.category}.title`)}
+        </Typography>
         <Group ml="auto">
           <SegmentedControl
             size="xs"
             withItemsBorders={false}
             data={timeRangeOptions}
             onChange={(v) => {
-              setTimeRange(timeRangeOptions.find((t) => t.value === v)!.tr)
+              setTimeRange({ type: "relative", value: parseInt(v) })
             }}
           />
         </Group>

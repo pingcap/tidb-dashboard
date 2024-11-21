@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.0.9
+
+### Patch Changes
+
+- add i18n
+
 ## 0.0.8
 
 ### Patch Changes

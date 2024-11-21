@@ -54,6 +54,55 @@ importers:
         specifier: ^8.7.0
         version: 8.11.0(eslint@9.13.0)(typescript@5.6.3)
 
+  packages/libs/1-charts:
+    dependencies:
+      '@baurine/grafana-value-formats':
+        specifier: ^1.0.5
+        version: 1.0.5(dayjs@1.11.13)
+      '@elastic/charts':
+        specifier: ^68.0.2
+        version: 68.0.2(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    devDependencies:
+      '@rollup/plugin-typescript':
+        specifier: ^12.1.1
+        version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
+      '@types/react':
+        specifier: ^18.3.12
+        version: 18.3.12
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      rollup:
+        specifier: ^4.24.0
+        version: 4.24.0
+      sass:
+        specifier: ^1.81.0
+        version: 1.81.0
+      tslib:
+        specifier: ^2.8.0
+        version: 2.8.0
+
+  packages/libs/1-icons:
+    devDependencies:
+      '@rollup/plugin-typescript':
+        specifier: ^12.1.1
+        version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
+      '@tidbcloud/uikit':
+        specifier: 'catalog:'
+        version: 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ^18.3.12
+        version: 18.3.12
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      rollup:
+        specifier: ^4.24.0
+        version: 4.24.0
+      tslib:
+        specifier: ^2.8.0
+        version: 2.8.0
+
   packages/libs/1-utils:
     dependencies:
       '@baurine/grafana-value-formats':
@@ -97,7 +146,7 @@ importers:
         specifier: ^2.8.0
         version: 2.8.0
 
-  packages/libs/2-icons:
+  packages/libs/2-primitive-ui:
     devDependencies:
       '@rollup/plugin-typescript':
         specifier: ^12.1.1
@@ -118,28 +167,7 @@ importers:
         specifier: ^2.8.0
         version: 2.8.0
 
-  packages/libs/3-primitive-ui:
-    devDependencies:
-      '@rollup/plugin-typescript':
-        specifier: ^12.1.1
-        version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
-      '@tidbcloud/uikit':
-        specifier: 'catalog:'
-        version: 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/react':
-        specifier: ^18.3.12
-        version: 18.3.12
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      rollup:
-        specifier: ^4.24.0
-        version: 4.24.0
-      tslib:
-        specifier: ^2.8.0
-        version: 2.8.0
-
-  packages/libs/4-biz-ui:
+  packages/libs/3-biz-ui:
     dependencies:
       '@pingcap-incubator/tidb-dashboard-lib-utils':
         specifier: workspace:^
@@ -167,48 +195,20 @@ importers:
         specifier: ^2.8.0
         version: 2.8.0
 
-  packages/libs/4-charts:
-    dependencies:
-      '@baurine/grafana-value-formats':
-        specifier: ^1.0.5
-        version: 1.0.5(dayjs@1.11.13)
-      '@elastic/charts':
-        specifier: ^68.0.2
-        version: 68.0.2(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-    devDependencies:
-      '@rollup/plugin-typescript':
-        specifier: ^12.1.1
-        version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
-      '@types/react':
-        specifier: ^18.3.12
-        version: 18.3.12
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      rollup:
-        specifier: ^4.24.0
-        version: 4.24.0
-      sass:
-        specifier: ^1.81.0
-        version: 1.81.0
-      tslib:
-        specifier: ^2.8.0
-        version: 2.8.0
-
-  packages/libs/5-apps:
+  packages/libs/4-apps:
     dependencies:
       '@pingcap-incubator/tidb-dashboard-lib-biz-ui':
         specifier: workspace:^
-        version: link:../4-biz-ui
+        version: link:../3-biz-ui
       '@pingcap-incubator/tidb-dashboard-lib-charts':
         specifier: workspace:^
-        version: link:../4-charts
+        version: link:../1-charts
       '@pingcap-incubator/tidb-dashboard-lib-icons':
         specifier: workspace:^
-        version: link:../2-icons
+        version: link:../1-icons
       '@pingcap-incubator/tidb-dashboard-lib-primitive-ui':
         specifier: workspace:^
-        version: link:../3-primitive-ui
+        version: link:../2-primitive-ui
       '@pingcap-incubator/tidb-dashboard-lib-utils':
         specifier: workspace:^
         version: link:../1-utils
@@ -251,10 +251,10 @@ importers:
     dependencies:
       '@pingcap-incubator/tidb-dashboard-lib-apps':
         specifier: workspace:^
-        version: link:../../libs/5-apps
+        version: link:../../libs/4-apps
       '@pingcap-incubator/tidb-dashboard-lib-primitive-ui':
         specifier: workspace:^
-        version: link:../../libs/3-primitive-ui
+        version: link:../../libs/2-primitive-ui
       '@pingcap-incubator/tidb-dashboard-lib-utils':
         specifier: workspace:^
         version: link:../../libs/1-utils
@@ -2399,7 +2399,7 @@ packages:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
 
   lodash.flow@3.5.0:
-    resolution: {integrity: sha1-h79AKSuM+D5OjOGjrkIJ4gBxZ1o=}
+    resolution: {integrity: sha512-ff3BX/tSioo+XojX4MOsOMhJw0nZoUEF011LX8g8d3gvjVbxd89cCio4BCXronjxcTUIJUoqKEUA+n4CqvvRPw==}
 
   lodash.memoize@4.1.2:
     resolution: {integrity: sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==}
@@ -2925,12 +2925,6 @@ packages:
     resolution: {integrity: sha512-hNaz4ygkZO4bESeFfnfOft73iBUj8K5oKi1EcSHPAibEydfsX2MyU6Z8KCr3mv3C9Kqqh71U+DhZkFvibbnPbA==}
     peerDependencies:
       react: ^16.8.3 || ^17.0.0-0 || ^18.0.0
-
-  react-textarea-autosize@8.3.4:
-    resolution: {integrity: sha512-CdtmP8Dc19xL8/R6sWvtknD/eCXkQr30dtvC4VmGInhRsfF8X/ihXCq6+9l9qbxmKRiq407/7z5fxE7cVWQNgQ==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   react-textarea-autosize@8.5.3:
     resolution: {integrity: sha512-XT1024o2pqCuZSuBt9FwHlaDeNtVrtCXu0Rnz88t1jUGheCLa3PhjE1GH8Ctm2axEtvdCl5SUHYschyQ0L5QHQ==}
@@ -6352,7 +6346,7 @@ snapshots:
       react-base16-styling: 0.6.0
       react-dom: 18.3.1(react@18.3.1)
       react-lifecycles-compat: 3.0.4
-      react-textarea-autosize: 8.3.4(@types/react@18.3.12)(react@18.3.1)
+      react-textarea-autosize: 8.5.3(@types/react@18.3.12)(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
       - encoding
@@ -6436,15 +6430,6 @@ snapshots:
   react-table@7.8.0(react@18.3.1):
     dependencies:
       react: 18.3.1
-
-  react-textarea-autosize@8.3.4(@types/react@18.3.12)(react@18.3.1):
-    dependencies:
-      '@babel/runtime': 7.25.9
-      react: 18.3.1
-      use-composed-ref: 1.3.0(react@18.3.1)
-      use-latest: 1.2.1(@types/react@18.3.12)(react@18.3.1)
-    transitivePeerDependencies:
-      - '@types/react'
 
   react-textarea-autosize@8.5.3(@types/react@18.3.12)(react@18.3.1):
     dependencies:

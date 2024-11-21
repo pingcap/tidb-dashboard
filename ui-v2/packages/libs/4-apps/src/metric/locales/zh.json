@@ -1,21 +1,15 @@
 {
-  "common": {
-    "hour_one": "{{count}} 小时",
-    "hour_other": "{{count}} 小时",
-    "day_one": "{{count}} 天",
-    "day_other": "{{count}} 天"
-  },
-  "o11ylib": {
-    "metric": {
-      "instance_top": {
-        "title": "前 5 节点利用率"
-      },
-      "host_top": {
-        "title": "前 5 主机性能"
-      },
-      "cluster_top": {
-        "title": "前 5 SQL 性能"
-      }
+  "metric": {
+    "time_range": {
+      "hour_one": "{{count}} 小时",
+      "hour_other": "{{count}} 小时",
+      "day_one": "{{count}} 天",
+      "day_other": "{{count}} 天"
+    },
+    "panels": {
+      "instance_top": "前 5 节点利用率",
+      "host_top": "前 5 主机性能",
+      "cluster_top": "前 5 SQL 性能"
     }
   }
 }

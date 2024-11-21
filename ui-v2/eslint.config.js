@@ -36,6 +36,8 @@ export default tseslint.config(
           allowSeparatedGroups: true,
         },
       ],
+      // prevents you from having duplicate import statements from the same module
+      "import/no-duplicates": "error",
       "import/order": [
         "error",
         {

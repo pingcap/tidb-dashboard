@@ -24,7 +24,7 @@ export function changeLang(lang: string) {
   i18next.changeLanguage(lang)
 }
 
-const NAMESPACE = "translation"
+const NAMESPACE = "dashboard-lib"
 
 function addResourceBundles(langsLocales: Resource) {
   Object.keys(langsLocales).forEach((key) => {
@@ -42,14 +42,15 @@ export function addLangsLocales(langsLocales: Resource) {
   }
 }
 
-export function useTn() {
+export function useTn(keyPrefix: string = "") {
   const { t, i18n } = useTranslation()
 
   const tn = useCallback(
     (i18nKey: string, defVal?: string, options?: TOptions) => {
-      return t(i18nKey, defVal ?? i18nKey, { ns: NAMESPACE, ...options })
+      const fullKey = keyPrefix ? `${keyPrefix}.${i18nKey}` : i18nKey
+      return t(fullKey, defVal ?? fullKey, { ns: NAMESPACE, ...options })
     },
-    [t],
+    [t, keyPrefix],
   )
   const ret = useMemo(() => {
     return { tn, i18n, t }

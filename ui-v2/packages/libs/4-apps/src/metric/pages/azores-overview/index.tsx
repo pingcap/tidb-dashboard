@@ -1,3 +1,4 @@
+import { LanguageSwitch } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { ChartThemeSwitch } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
   Card,
@@ -8,8 +9,6 @@ import {
 import { useMetricQueriesConfigData } from "../../utils/use-data"
 
 import { AzoresOverviewPanel } from "./panel"
-
-// import "@pingcap-incubator/tidb-dashboard-lib-charts/dist/style.css"
 
 export function AzoresOverviewPage() {
   const { data: panelConfigData, isLoading } =
@@ -32,6 +31,7 @@ export function AzoresOverviewPage() {
           return <AzoresOverviewPanel key={panel.category} config={panel} />
         })}
       <ChartThemeSwitch value={theme} />
+      <LanguageSwitch />
     </>
   )
 }

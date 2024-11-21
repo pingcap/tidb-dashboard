@@ -1,6 +1,6 @@
-// should move to utils package
-import { TimeRange, toURLTimeRange, urlToTimeRange } from "@tidbcloud/uikit/biz"
 import { useCallback, useMemo } from "react"
+
+import { TimeRange, toURLTimeRange, urlToTimeRange } from "../time-range"
 
 import { PaginationUrlState } from "./pagination-url-state"
 import { useUrlState } from "./use-url-state"

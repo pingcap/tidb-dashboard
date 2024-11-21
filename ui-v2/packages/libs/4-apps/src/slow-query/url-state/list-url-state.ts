@@ -1,4 +1,4 @@
-import { TimeRange } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { TimeRange } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   PaginationUrlState,
   SortUrlState,

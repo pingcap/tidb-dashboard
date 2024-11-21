@@ -1,4 +1,3 @@
-import { RelativeTimeRange } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
   Group,
   SegmentedControl,
@@ -6,6 +5,7 @@ import {
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { Card } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { RelativeTimeRange } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo, useState } from "react"
 

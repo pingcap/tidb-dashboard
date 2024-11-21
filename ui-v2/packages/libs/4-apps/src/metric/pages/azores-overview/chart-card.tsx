@@ -1,8 +1,4 @@
 import {
-  RelativeTimeRange,
-  toTimeRangeValue,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import {
   // KIBANA_METRICS,
   SeriesChart,
   SeriesData,
@@ -14,6 +10,10 @@ import {
   Typography,
   useComputedColorScheme,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import {
+  RelativeTimeRange,
+  toTimeRangeValue,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   PromResultItem,
   TransformNullValue,

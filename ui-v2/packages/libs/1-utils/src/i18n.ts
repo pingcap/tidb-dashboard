@@ -24,20 +24,30 @@ export function changeLang(lang: string) {
   i18next.changeLanguage(lang)
 }
 
-export function addLangsLocales(langsLocales: Resource) {
-  i18next.on("initialized", function (_options) {
-    console.log("langsLocales:", langsLocales)
-    Object.keys(langsLocales).forEach((key) => {
-      // `addResourceBundle` should be called after `initialized`, else it reports error
-      i18next.addResourceBundle(
-        key,
-        "translation",
-        langsLocales[key],
-        true,
-        false,
-      )
-    })
+function addResourceBundles(langsLocales: Resource) {
+  Object.keys(langsLocales).forEach((key) => {
+    i18next.addResourceBundle(
+      key,
+      "translation",
+      langsLocales[key],
+      true,
+      false,
+    )
   })
+}
+
+export function addLangsLocales(langsLocales: Resource) {
+  console.log("addLangsLocales:", langsLocales)
+
+  if (i18next.isInitialized) {
+    console.log("is initialized:", langsLocales)
+    addResourceBundles(langsLocales)
+  } else {
+    i18next.on("initialized", function (_options) {
+      console.log("initialized callback", langsLocales)
+      addResourceBundles(langsLocales)
+    })
+  }
 }
 
 export function useTn() {

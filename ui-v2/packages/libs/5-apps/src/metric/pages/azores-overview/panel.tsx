@@ -14,7 +14,9 @@ import { SinglePanelConfig } from "../../utils/type"
 import { ChartCard } from "./chart-card"
 
 export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
-  const { tn } = useTn()
+  const { tn, i18n } = useTn()
+  console.log("locales:", i18n.getDataByLanguage("en"))
+
   const timeRangeOptions = useMemo(() => {
     return [
       { label: tn("common.hour", "1 hr", { count: 1 }), value: 60 * 60 + "" },

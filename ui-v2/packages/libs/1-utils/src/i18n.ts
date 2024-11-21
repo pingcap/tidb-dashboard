@@ -26,6 +26,7 @@ export function changeLang(lang: string) {
 
 export function addLangsLocales(langsLocales: Resource) {
   i18next.on("initialized", function (_options) {
+    console.log("langsLocales:", langsLocales)
     Object.keys(langsLocales).forEach((key) => {
       // `addResourceBundle` should be called after `initialized`, else it reports error
       i18next.addResourceBundle(
@@ -40,7 +41,7 @@ export function addLangsLocales(langsLocales: Resource) {
 }
 
 export function useTn() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const tn = useCallback(
     (i18nKey: string, defVal?: string, options?: TOptions) => {
@@ -49,8 +50,8 @@ export function useTn() {
     [t],
   )
   const ret = useMemo(() => {
-    return { tn }
-  }, [tn])
+    return { tn, i18n, t }
+  }, [tn, i18n, t])
 
   return ret
 }

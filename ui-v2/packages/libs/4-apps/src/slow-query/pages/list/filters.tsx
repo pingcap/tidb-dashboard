@@ -58,7 +58,7 @@ export function Filters() {
   const { isFetching } = useListData()
   const { data: dbsData } = useDbsData()
   const { data: ruGroupsData } = useRuGroupsData()
-  const { tn } = useTn()
+  const { tt } = useTn("slowquery")
 
   function handleSearchSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -125,10 +125,7 @@ export function Filters() {
         w={300}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={tn(
-          "slowquery.filters.search",
-          "Find digest,query,prev_stmt,txn_start_ts",
-        )}
+        placeholder={tt("Find digest,query,prev_stmt,txn_start_ts")}
         rightSection={
           !!text && (
             <IconXClose
@@ -152,7 +149,7 @@ export function Filters() {
       sx={(theme) => ({ color: theme.colors.carbon[7] })}
     >
       <Text size="sm" fw="bold">
-        {tn("slowquery.filters.clear", "Clear Filters")}
+        {tt("Clear Filters")}
       </Text>
     </UnstyledButton>
   )

@@ -58,7 +58,7 @@ export function Filters() {
   const { data: dbsData } = useDbsData()
   const { data: ruGroupsData } = useRuGroupsData()
   const { data: stmtKindsData } = useStmtKindsData()
-  const { tn } = useTn()
+  const { tt } = useTn("statement")
 
   function handleSearchSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -126,10 +126,7 @@ export function Filters() {
         w={300}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={tn(
-          "slowquery.filters.search",
-          "Find digest,digest_text,schema,table",
-        )}
+        placeholder={tt("Find digest,digest_text,schema,table")}
         rightSection={
           !!text && (
             <IconXClose
@@ -153,7 +150,7 @@ export function Filters() {
       sx={(theme) => ({ color: theme.colors.carbon[7] })}
     >
       <Text size="sm" fw="bold">
-        {tn("statement.filters.clear", "Clear Filters")}
+        {tt("Clear Filters")}
       </Text>
     </UnstyledButton>
   )

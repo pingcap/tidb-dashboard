@@ -16,24 +16,29 @@ import { SinglePanelConfig } from "../../utils/type"
 import { ChartCard } from "./chart-card"
 
 export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
-  const { tn } = useTn("metric")
+  const { tk } = useTn("metric")
+
+  // used for gogocode to scan and generate en.json in build time
+  tk("panels.instance_top", "Top 5 Node Utilization")
+  tk("panels.host_top", "Top 5 Host Performance")
+  tk("panels.cluster_top", "Top 5 SQL Performance")
 
   const timeRangeOptions = useMemo(() => {
     return [
       {
-        label: tn("time_range.hour", "1 hr", { count: 1 }),
+        label: tk("time_range.hour", "{{count}} hr", { count: 1 }),
         value: 60 * 60 + "",
       },
       {
-        label: tn("time_range.hour", "24 hrs", { count: 24 }),
+        label: tk("time_range.hour", "{{count}} hrs", { count: 24 }),
         value: 24 * 60 * 60 + "",
       },
       {
-        label: tn("time_range.day", "7 days", { count: 7 }),
+        label: tk("time_range.day", "{{count}} days", { count: 7 }),
         value: 7 * 24 * 60 * 60 + "",
       },
     ]
-  }, [tn])
+  }, [tk])
   const [timeRange, setTimeRange] = useState<RelativeTimeRange>({
     type: "relative",
     value: parseInt(timeRangeOptions[0].value),
@@ -43,7 +48,7 @@ export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
     <Card p={24} bg="carbon.0">
       <Group mb={20}>
         <Typography variant="title-lg">
-          {tn(`panels.${props.config.category}`)}
+          {tk(`panels.${props.config.category}`)}
         </Typography>
         <Group ml="auto">
           <SegmentedControl

@@ -1,5 +1,4 @@
-import { Resource, TOptions } from "i18next"
-import i18next from "i18next"
+import i18next, { Resource, TOptions } from "i18next"
 import LanguageDetector from "i18next-browser-languagedetector"
 import { useCallback, useMemo } from "react"
 import { initReactI18next, useTranslation } from "react-i18next"
@@ -45,16 +44,32 @@ export function addLangsLocales(langsLocales: Resource) {
 export function useTn(keyPrefix: string = "") {
   const { t, i18n } = useTranslation()
 
-  const tn = useCallback(
+  // translate by key
+  // example: tk("time_range.hour", "{{count}} hr", { count: 1 })
+  // example: tk("time_range.hour", "{{count}} hrs", { count: 24 })
+  const tk = useCallback(
     (i18nKey: string, defVal?: string, options?: TOptions) => {
-      const fullKey = keyPrefix ? `${keyPrefix}.${i18nKey}` : i18nKey
+      const fullKey = keyPrefix ? `${keyPrefix}.keys.${i18nKey}` : i18nKey
       return t(fullKey, defVal ?? fullKey, { ns: NAMESPACE, ...options })
     },
     [t, keyPrefix],
   )
+
+  // translate by text
+  // example: tt("how are you?")
+  // example: tt("Hello.World")
+  // example: tt("{{count}} apples", { count: 2 })
+  const tt = useCallback(
+    (text: string, options?: TOptions) => {
+      const fullKey = keyPrefix ? `${keyPrefix}.texts.${text}` : text
+      return t(fullKey, text, { ns: NAMESPACE, ...options })
+    },
+    [t, keyPrefix],
+  )
+
   const ret = useMemo(() => {
-    return { tn, i18n, t }
-  }, [tn, i18n, t])
+    return { tk, tt, i18n, t }
+  }, [tk, tt, i18n, t])
 
   return ret
 }

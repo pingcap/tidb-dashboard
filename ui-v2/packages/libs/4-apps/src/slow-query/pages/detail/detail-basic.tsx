@@ -3,8 +3,8 @@ import {
   InfoTable,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
+  formatNumByUnit,
   formatTime,
-  formatValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
@@ -65,12 +65,12 @@ function getData(data: SlowqueryModel): InfoModel[] {
     },
     {
       name: "Max Memory",
-      value: formatValue(data.memory_max || 0, "bytes"),
+      value: formatNumByUnit(data.memory_max || 0, "bytes"),
       desc: "Maximum memory usage of the query",
     },
     {
       name: "Max Disk",
-      value: formatValue(data.disk_max || 0, "bytes"),
+      value: formatNumByUnit(data.disk_max || 0, "bytes"),
       desc: "Maximum disk usage of the query",
     },
     {

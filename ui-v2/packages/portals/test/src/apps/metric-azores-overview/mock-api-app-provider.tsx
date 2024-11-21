@@ -1,7 +1,7 @@
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import {
   AppCtxValue,
-  PromResult,
+  MetricDataByNameResultItem,
   TransformNullValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
 import { useMemo } from "react"
@@ -50,7 +50,9 @@ export function useCtxValue(): AppCtxValue {
           step: number
         }) {
           console.log("getMetric", _params)
-          return delay(1000).then(() => qpsType.data as unknown as PromResult[])
+          return delay(1000).then(
+            () => qpsType.data as unknown as MetricDataByNameResultItem[],
+          )
         },
       },
       cfg: {

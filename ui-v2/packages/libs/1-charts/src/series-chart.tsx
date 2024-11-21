@@ -15,8 +15,11 @@ import { useMemo } from "react"
 import { renderSeriesData } from "./series-render"
 import { SeriesData } from "./type"
 
-function formatValue(value: number, unit: string) {
+function formatNumByUnit(value: number, unit: string) {
   const formatFn = getValueFormat(unit)
+  if (!formatFn) {
+    return value + ""
+  }
   if (unit === "short") {
     return formatFn(value, 0, 1)
   }
@@ -74,7 +77,7 @@ export function SeriesChart({
         id="left"
         position={Position.Left}
         ticks={5}
-        tickFormat={(v) => formatValue(v, unit)}
+        tickFormat={(v) => formatNumByUnit(v, unit)}
       />
 
       {data.map(renderSeriesData)}

@@ -6,7 +6,6 @@ export interface SingleQueryConfig {
   legendName: string
   type: SeriesDataType
   color?: string | ((seriesName: string) => string | undefined)
-  // lineSeriesStyle?: RecursivePartial<LineSeriesStyle>
 }
 
 export interface SingleChartConfig {
@@ -16,11 +15,10 @@ export interface SingleChartConfig {
   queries: SingleQueryConfig[]
   nullValue?: TransformNullValue
   unit: string
-  // yAxisFormat?: TickFormatter<any>
 }
 
 export interface SinglePanelConfig {
   category: string
-  displayName: string
+  displayName?: string
   charts: SingleChartConfig[]
 }

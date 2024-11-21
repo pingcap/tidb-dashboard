@@ -3,8 +3,8 @@ import {
   InfoTable,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
+  formatNumByUnit,
   formatTime,
-  formatValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
@@ -31,12 +31,12 @@ function getData(data: StatementModel): InfoModel[] {
     },
     {
       name: "Executions Count",
-      value: formatValue(data.exec_count ?? 0, "short"),
+      value: formatNumByUnit(data.exec_count ?? 0, "short"),
       desc: "Total execution count for this kind of statement",
     },
     {
       name: "Total Latency",
-      value: formatValue(data.sum_latency ?? 0, "ns"),
+      value: formatNumByUnit(data.sum_latency ?? 0, "ns"),
       desc: "Total execution time for this kind of statement",
     },
     {
@@ -46,30 +46,30 @@ function getData(data: StatementModel): InfoModel[] {
     },
     {
       name: "Total Errors",
-      value: formatValue(data.sum_errors ?? 0, "short"),
+      value: formatNumByUnit(data.sum_errors ?? 0, "short"),
     },
     {
       name: "Total Warnings",
-      value: formatValue(data.sum_warnings ?? 0, "short"),
+      value: formatNumByUnit(data.sum_warnings ?? 0, "short"),
     },
     {
       name: "Mean Memory",
-      value: formatValue(data.avg_mem ?? 0, "bytes"),
+      value: formatNumByUnit(data.avg_mem ?? 0, "bytes"),
       desc: "Memory usage of single query",
     },
     {
       name: "Max Memory",
-      value: formatValue(data.max_mem ?? 0, "bytes"),
+      value: formatNumByUnit(data.max_mem ?? 0, "bytes"),
       desc: "Maximum memory usage of single query",
     },
     {
       name: "Mean Disk",
-      value: formatValue(data.avg_disk ?? 0, "bytes"),
+      value: formatNumByUnit(data.avg_disk ?? 0, "bytes"),
       desc: "Disk usage of single query",
     },
     {
       name: "Max Disk",
-      value: formatValue(data.max_disk ?? 0, "bytes"),
+      value: formatNumByUnit(data.max_disk ?? 0, "bytes"),
       desc: "Maximum disk usage of single query",
     },
   ]

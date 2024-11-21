@@ -10,13 +10,6 @@ export type PromResultItem = {
   values: ([number, string] | { timestamp: number; value: string })[]
 }
 
-// TODO: bad name, should update later, or define it in lib-apps/metric
-export type PromResult = {
-  expr: string
-  legend: string
-  result: PromResultItem[]
-}
-
 export type PromSeriesItem = {
   name: string
   data: [number, number | null][]

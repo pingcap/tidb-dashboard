@@ -4,8 +4,8 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Box } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
+  formatNumByUnit,
   formatTime,
-  formatValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
@@ -49,14 +49,14 @@ export function useListTableColumns() {
         header: "Latency",
         size: 120,
         enableResizing: false,
-        accessorFn: (row) => formatValue(row.query_time!, "s"),
+        accessorFn: (row) => formatNumByUnit(row.query_time!, "s"),
       },
       {
         id: "memory_max",
         header: "Max Memory",
         size: 132,
         enableResizing: false,
-        accessorFn: (row) => formatValue(row.memory_max!, "bytes"),
+        accessorFn: (row) => formatNumByUnit(row.memory_max!, "bytes"),
       },
     ]
   }, [])

@@ -1,4 +1,4 @@
-import { formatValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Button, Menu, Text, Tooltip } from "@tidbcloud/uikit"
 import {
   IconChevronSelectorVertical,
@@ -154,7 +154,9 @@ const AutoRefreshButton = forwardRef<
                 loaderProps={{ size: 0 }}
               >
                 {!!autoRefreshValue && (
-                  <Text mr={8}>{formatValue(autoRefreshValue, "s", 0)}</Text>
+                  <Text mr={8}>
+                    {formatNumByUnit(autoRefreshValue, "s", 0)}
+                  </Text>
                 )}
 
                 <IconChevronSelectorVertical size={16} />
@@ -189,7 +191,7 @@ const AutoRefreshButton = forwardRef<
                   })}
                   onClick={() => handleAutoRefreshChange(seconds)}
                 >
-                  {formatValue(seconds, "s", 0)}
+                  {formatNumByUnit(seconds, "s", 0)}
                 </Menu.Item>
               ))}
             </>

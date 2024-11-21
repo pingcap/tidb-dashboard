@@ -8,10 +8,7 @@ export * from "./pages/azores-overview/panel"
 
 export * from "./utils/type"
 
-export type {
-  PromResultItem,
-  PromResult,
-} from "@pingcap-incubator/tidb-dashboard-lib-utils"
+export type { PromResultItem } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 export { TransformNullValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 export type { SeriesDataType } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 

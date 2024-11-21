@@ -4,7 +4,7 @@ import {
   SQLWithHover,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Box } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import { formatValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
 import { useAppContext } from "../../ctx"
@@ -44,19 +44,19 @@ export function useListTableColumns() {
         id: "sum_latency",
         header: "Total Latency",
         enableResizing: false,
-        accessorFn: (row) => formatValue(row.sum_latency!, "ns"),
+        accessorFn: (row) => formatNumByUnit(row.sum_latency!, "ns"),
       },
       {
         id: "avg_latency",
         header: "Mean Latency",
         enableResizing: false,
-        accessorFn: (row) => formatValue(row.avg_latency!, "ns"),
+        accessorFn: (row) => formatNumByUnit(row.avg_latency!, "ns"),
       },
       {
         id: "exec_count",
         header: "Executions Count",
         enableResizing: false,
-        accessorFn: (row) => formatValue(row.exec_count!, "short"),
+        accessorFn: (row) => formatNumByUnit(row.exec_count!, "short"),
       },
       {
         id: "plan_count",

@@ -6,12 +6,15 @@ export function formatTime(ms: number, format: string = "YYYY-MM-DD HH:mm:ss") {
   return dayjs(ms).format(format)
 }
 
-export function formatValue(
+export function formatNumByUnit(
   value: number,
   unit: string,
   precision: number = 1,
 ) {
   const formatFn = getValueFormat(unit)
+  if (!formatFn) {
+    return value + ""
+  }
   if (unit === "short") {
     return formatFn(value, 0, precision)
   }

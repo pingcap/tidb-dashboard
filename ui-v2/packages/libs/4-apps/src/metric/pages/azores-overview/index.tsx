@@ -1,10 +1,10 @@
-import { LanguageSwitch } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { ChartThemeSwitch } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
   Card,
   Skeleton,
   useComputedColorScheme,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { useHotkeyChangeLang } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
 import { useMetricQueriesConfigData } from "../../utils/use-data"
 
@@ -14,6 +14,7 @@ export function AzoresOverviewPage() {
   const { data: panelConfigData, isLoading } =
     useMetricQueriesConfigData("azores-overview")
   const theme = useComputedColorScheme()
+  useHotkeyChangeLang()
 
   if (isLoading) {
     return (
@@ -31,7 +32,6 @@ export function AzoresOverviewPage() {
           return <AzoresOverviewPanel key={panel.category} config={panel} />
         })}
       <ChartThemeSwitch value={theme} />
-      <LanguageSwitch />
     </>
   )
 }

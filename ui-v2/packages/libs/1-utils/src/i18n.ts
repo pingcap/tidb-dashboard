@@ -1,3 +1,4 @@
+import { useHotkeys } from "@tidbcloud/uikit/hooks"
 import i18next, { Resource, TOptions } from "i18next"
 import LanguageDetector from "i18next-browser-languagedetector"
 import { useCallback, useMemo } from "react"
@@ -72,4 +73,11 @@ export function useTn(keyPrefix: string = "") {
   }, [tk, tt, i18n, t])
 
   return ret
+}
+
+export function useHotkeyChangeLang(hotkey: string = "mod+L") {
+  const { i18n } = useTranslation()
+  useHotkeys([
+    [hotkey, () => i18n.changeLanguage(i18n.language === "en" ? "zh" : "en")],
+  ])
 }

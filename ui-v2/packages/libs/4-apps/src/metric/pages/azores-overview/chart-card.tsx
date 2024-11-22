@@ -11,13 +11,11 @@ import {
   useComputedColorScheme,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
-  RelativeTimeRange,
-  toTimeRangeValue,
-} from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import {
   PromResultItem,
+  RelativeTimeRange,
   TransformNullValue,
   calcPromQueryStep,
+  toTimeRangeValue,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -64,7 +62,7 @@ export function ChartCard({
         )
       }
     },
-    [tr],
+    [tr, ctx.cfg.scrapeInterval],
   )
 
   const [loading, setLoading] = useState(false)

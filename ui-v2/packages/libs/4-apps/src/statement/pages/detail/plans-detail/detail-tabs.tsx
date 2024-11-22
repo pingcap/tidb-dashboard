@@ -1,7 +1,7 @@
-import { Tabs } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
   Card,
   Stack,
+  Tabs,
   Title,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { useMemo } from "react"

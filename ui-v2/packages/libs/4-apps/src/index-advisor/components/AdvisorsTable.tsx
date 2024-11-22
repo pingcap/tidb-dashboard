@@ -2,9 +2,9 @@ import {
   LabelTooltip,
   MRT_ColumnDef,
   MRT_Row,
+  ProTable,
   ProTableOptions,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { ProTable } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { IconDotsHorizontal } from "@pingcap-incubator/tidb-dashboard-lib-icons"
 import {
   ActionIcon,

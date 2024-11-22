@@ -12,12 +12,12 @@ import {
   Typography,
   useComputedColorScheme,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   PromResultItem,
   TransformNullValue,
   calcPromQueryStep,
   resolvePromQLTemplate,
+  toTimeRangeValue,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useCallback, useEffect, useMemo, useState } from "react"

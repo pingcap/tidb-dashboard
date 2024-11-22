@@ -17,7 +17,7 @@ export function usePaginationUrlState(defPageSize: number = 10) {
       curPage: Number(queryParams.curPage) || 1,
       pageSize: Number(queryParams.pageSize) || defPageSize,
     }
-  }, [queryParams.curPage, queryParams.pageSize])
+  }, [queryParams.curPage, queryParams.pageSize, defPageSize])
 
   const setPagination = useCallback(
     (newPagination: Pagination) => {

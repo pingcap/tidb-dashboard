@@ -23,7 +23,7 @@ export function useSortUrlState(
       orderBy: queryParams.orderBy ?? defOrderBy,
       desc: queryParams.desc !== "false",
     }
-  }, [queryParams.orderBy, queryParams.desc])
+  }, [queryParams.orderBy, queryParams.desc, defOrderBy])
   const setSortRule = useCallback(
     (newSortRule: SortRule) => {
       setQueryParams({
@@ -32,7 +32,7 @@ export function useSortUrlState(
         ...(affectPagination ? { curPage: undefined } : {}),
       })
     },
-    [setQueryParams],
+    [setQueryParams, affectPagination],
   )
 
   return { sortRule, setSortRule }

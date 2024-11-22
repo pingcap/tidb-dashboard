@@ -53,7 +53,7 @@ export function SeriesChart({
 }: SeriesChartProps) {
   const xAxisFormatter = useMemo(
     () => timeFormatter(niceTimeFormat(timeRange[1] - timeRange[0])),
-    [timeRange[0], timeRange[1]],
+    [timeRange],
   )
 
   return (

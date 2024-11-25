@@ -123,13 +123,59 @@ async function generateLocales() {
     // Write en.json
     fs.writeFileSync(
       path.join(outputDir, "en.json"),
-      JSON.stringify(outputData, null, 2),
+      JSON.stringify(outputData, null, 2) + "\n",
     )
 
     // Write zh.json (same structure as en.json for now)
+    // Check if zh.json exists and merge with existing translations
+    const zhPath = path.join(outputDir, "zh.json")
+    if (fs.existsSync(zhPath)) {
+      const existingZh = JSON.parse(fs.readFileSync(zhPath, "utf-8"))
+
+      // Deep merge function to preserve existing translations
+      const deepMerge = (target, source) => {
+        for (const key in source) {
+          if (typeof source[key] === "object" && !Array.isArray(source[key])) {
+            target[key] = target[key] || {}
+            deepMerge(target[key], source[key])
+          } else {
+            // Keep existing translation if it exists
+            if (!(key in target)) {
+              target[key] = source[key]
+            }
+          }
+        }
+        return target
+      }
+
+      const merged = {
+        [app]: {
+          keys: deepMerge(
+            JSON.parse(JSON.stringify(existingZh[app]?.keys || {})),
+            outputData[app].keys,
+          ),
+          texts: {
+            ...outputData[app].texts,
+            ...existingZh[app]?.texts,
+          },
+        },
+      }
+      fs.writeFileSync(zhPath, JSON.stringify(merged, null, 2) + "\n")
+    } else {
+      fs.writeFileSync(zhPath, JSON.stringify(outputData, null, 2) + "\n")
+    }
+
+    // write index.ts
+    const indexPath = path.join(outputDir, "index.ts")
     fs.writeFileSync(
-      path.join(outputDir, "zh.json"),
-      JSON.stringify(outputData, null, 2),
+      indexPath,
+      `import { addLangsLocales } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+
+import en from "./en.json"
+import zh from "./zh.json"
+
+addLangsLocales({ en, zh })
+`,
     )
   }
 }

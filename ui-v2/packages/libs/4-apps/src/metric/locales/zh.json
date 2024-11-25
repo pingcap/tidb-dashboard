@@ -7,11 +7,13 @@
         "cluster_top": "Top 5 SQL Performance"
       },
       "time_range": {
-        "hour_one": "{{count}} hr",
-        "hour_other": "{{count}} hrs",
+        "hour_one": "{{count}} 小时",
+        "hour_other": "{{count}} 小时",
         "day_other": "{{count}} days"
       }
     },
-    "texts": {}
+    "texts": {
+      "Clear Filters": "清空筛选条件"
+    }
   }
 }

@@ -58,7 +58,7 @@ export function Filters() {
   const { isFetching } = useListData()
   const { data: dbsData } = useDbsData()
   const { data: ruGroupsData } = useRuGroupsData()
-  const { tt } = useTn("slowquery")
+  const { tt } = useTn("slow-query")
 
   function handleSearchSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()

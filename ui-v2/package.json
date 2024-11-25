@@ -10,7 +10,8 @@
     "prepare": "cd .. && husky ui-v2/.husky",
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
-    "dev:portals:test": "pnpm -r --parallel --filter test-tidb-dashboard-ui-lib... dev"
+    "dev:portals:test": "pnpm -r --parallel --filter test-tidb-dashboard-ui-lib... dev",
+    "gen:locales": "tsx scripts/gen-locales.ts"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.9",
@@ -20,10 +21,13 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.12",
+    "glob": "^11.0.0",
     "globals": "^15.9.0",
+    "gogocode": "^1.0.55",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
+    "tsx": "^4.19.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.7.0"
   },

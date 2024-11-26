@@ -2,18 +2,16 @@
   "metric": {
     "keys": {
       "panels": {
-        "instance_top": "Top 5 Node Utilization",
-        "host_top": "Top 5 Host Performance",
-        "cluster_top": "Top 5 SQL Performance"
+        "instance_top": "前 5 节点利用率",
+        "host_top": "前 5 主机性能",
+        "cluster_top": "前 5 SQL 性能"
       },
       "time_range": {
         "hour_one": "{{count}} 小时",
         "hour_other": "{{count}} 小时",
-        "day_other": "{{count}} days"
+        "day_other": "{{count}} 天"
       }
     },
-    "texts": {
-      "Clear Filters": "清空筛选条件"
-    }
+    "texts": {}
   }
 }

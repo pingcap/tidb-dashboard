@@ -126,14 +126,27 @@ async function generateLocales() {
       JSON.stringify(outputData, null, 2) + "\n",
     )
 
-    // Write zh.json (same structure as en.json for now)
+    // Update zh.json
     // Check if zh.json exists and merge with existing translations
     const zhPath = path.join(outputDir, "zh.json")
     if (fs.existsSync(zhPath)) {
       const existingZh = JSON.parse(fs.readFileSync(zhPath, "utf-8"))
 
-      // Deep merge function to preserve existing translations
+      // Deep merge function to preserve existing translations and remove deleted items
       const deepMerge = (target, source) => {
+        // First pass: Remove keys that don't exist in source
+        for (const key in target) {
+          if (!(key in source)) {
+            delete target[key]
+          } else if (
+            typeof target[key] === "object" &&
+            !Array.isArray(target[key])
+          ) {
+            deepMerge(target[key], source[key])
+          }
+        }
+
+        // Second pass: Add new keys from source
         for (const key in source) {
           if (typeof source[key] === "object" && !Array.isArray(source[key])) {
             target[key] = target[key] || {}
@@ -148,6 +161,14 @@ async function generateLocales() {
         return target
       }
 
+      // Clean up texts by removing entries that don't exist in outputData
+      const cleanedTexts = {}
+      for (const key in existingZh[app]?.texts) {
+        if (key in outputData[app].texts) {
+          cleanedTexts[key] = existingZh[app].texts[key]
+        }
+      }
+
       const merged = {
         [app]: {
           keys: deepMerge(
@@ -156,7 +177,7 @@ async function generateLocales() {
           ),
           texts: {
             ...outputData[app].texts,
-            ...existingZh[app]?.texts,
+            ...cleanedTexts,
           },
         },
       }

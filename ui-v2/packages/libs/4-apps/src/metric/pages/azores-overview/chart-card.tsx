@@ -18,7 +18,7 @@ import {
   toTimeRangeValue,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../../ctx"
 import { SingleChartConfig } from "../../utils/type"
@@ -50,28 +50,21 @@ export function ChartCard({
   const ctx = useAppContext()
   const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
 
-  const step = useRef(0)
-  const chartRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (node) {
-        // 140 is the width of the chart legend, will make it configurable in the future
-        step.current = calcPromQueryStep(
-          tr,
-          node.offsetWidth - 140,
-          ctx.cfg.scrapeInterval,
-        )
-      }
-    },
-    [tr, ctx.cfg.scrapeInterval],
-  )
+  const chartRef = useRef<HTMLDivElement | null>(null)
 
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<SeriesData[]>([])
   useEffect(() => {
     async function fetchData() {
-      if (step.current === 0 || loading) {
-        return
-      }
+      if (!chartRef.current) return
+
+      const step = calcPromQueryStep(
+        tr,
+        chartRef.current.offsetWidth - 140,
+        ctx.cfg.scrapeInterval,
+      )
+
+      if (step === 0) return
 
       setLoading(true)
       try {
@@ -80,7 +73,7 @@ export function ChartCard({
             metricName: config.metricName,
             beginTime: tr[0],
             endTime: tr[1],
-            step: step.current,
+            step,
           })
           .then((data) =>
             data.map((d, idx) =>
@@ -96,7 +89,7 @@ export function ChartCard({
     }
 
     fetchData()
-  }, [tr])
+  }, [tr, config.queries, ctx.api, ctx.cfg.scrapeInterval])
 
   return (
     <Box>

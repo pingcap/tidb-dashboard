@@ -1,5 +1,4 @@
 import {
-  // KIBANA_METRICS,
   SeriesChart,
   SeriesData,
 } from "@pingcap-incubator/tidb-dashboard-lib-charts"
@@ -16,15 +15,15 @@ import {
   PromResultItem,
   TransformNullValue,
   calcPromQueryStep,
-  resolvePromQLTemplate,
   toTimeRangeValue,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 import { useAppContext } from "../../ctx"
 import { useMetricsUrlState } from "../../url-state"
 import { SingleChartConfig, SingleQueryConfig } from "../../utils/type"
+import { useMetricDataByPromQLs } from "../../utils/use-data"
 
 export function transformData(
   items: PromResultItem[],
@@ -46,55 +45,40 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
   const ctx = useAppContext()
   const { timeRange, refresh } = useMetricsUrlState()
   const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange, refresh])
-  const [step, setStep] = useState(0)
-  const chartRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (node) {
-        // 140 is the width of the chart legend, will make it configurable in the future
-        setStep(
-          calcPromQueryStep(tr, node.offsetWidth - 140, ctx.cfg.scrapeInterval),
+  const chartRef = useRef<HTMLDivElement | null>(null)
+
+  // a function can always get the latest value
+  function getStep() {
+    if (!chartRef.current) return 0
+    return calcPromQueryStep(
+      tr,
+      chartRef.current.offsetWidth - 140,
+      ctx.cfg.scrapeInterval,
+    )
+  }
+
+  const {
+    data: metricData,
+    isLoading,
+    refetch,
+  } = useMetricDataByPromQLs(
+    config.queries.map((q) => q.promql),
+    timeRange,
+    getStep,
+  )
+  const seriesData = useMemo(
+    () =>
+      (metricData ?? [])
+        .map((d, idx) =>
+          transformData(d, idx, config.queries[idx], config.nullValue),
         )
-      }
-    },
-    [tr],
+        .flat(),
+    [metricData],
   )
 
-  const [loading, setLoading] = useState(false)
-  const [data, setData] = useState<SeriesData[]>([])
   useEffect(() => {
-    async function fetchData() {
-      if (step === 0) {
-        return
-      }
-
-      setLoading(true)
-      try {
-        const ret = await Promise.all(
-          config.queries.map((q, idx) =>
-            ctx.api
-              .getMetricDataByPromQL({
-                promql: resolvePromQLTemplate(
-                  q.promql,
-                  step,
-                  ctx.cfg.scrapeInterval,
-                ),
-                beginTime: tr[0],
-                endTime: tr[1],
-                step,
-              })
-              .then((data) => transformData(data, idx, q, config.nullValue)),
-          ),
-        )
-        setData(ret.flat())
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [tr, step])
+    refetch()
+  }, [timeRange, refresh])
 
   return (
     <Card p={16} bg="carbon.0" shadow="none">
@@ -102,23 +86,11 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
         <Typography variant="title-md">{config.title}</Typography>
       </Group>
 
-      {/* <SeriesChart
-        unit={config.unit}
-        data={[
-          {
-            data: KIBANA_METRICS.metrics.kibana_os_load.v1.data,
-            id: "kibana_os_load",
-            name: "kibana_os_load",
-            type: "line",
-          },
-        ]}
-      /> */}
-
       <Box h={200} ref={chartRef}>
-        {data.length > 0 || !loading ? (
+        {seriesData.length > 0 || !isLoading ? (
           <SeriesChart
             unit={config.unit}
-            data={data}
+            data={seriesData}
             timeRange={tr}
             theme={colorScheme}
           />

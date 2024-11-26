@@ -15,7 +15,7 @@ type AppApi = {
   getMetricQueriesConfig(kind: string): Promise<SinglePanelConfig[]>
 
   getMetricDataByPromQL(params: {
-    promql: string
+    promQL: string
     beginTime: number
     endTime: number
     step: number

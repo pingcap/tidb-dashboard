@@ -5,8 +5,8 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
 import { useMemo } from "react"
 
+import { queryConfig } from "./sample-data/configs"
 import qpsType from "./sample-data/qps-type.json"
-import { queryConfig } from "./sample-data/query-config"
 
 export function useCtxValue(): AppCtxValue {
   return useMemo(
@@ -17,7 +17,7 @@ export function useCtxValue(): AppCtxValue {
           return delay(1000).then(() => queryConfig)
         },
         getMetricDataByPromQL(_params: {
-          promql: string
+          promQL: string
           beginTime: number
           endTime: number
           step: number

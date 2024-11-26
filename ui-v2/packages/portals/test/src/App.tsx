@@ -6,6 +6,7 @@ import {
   Group,
   Stack,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { useHotkeyChangeLang } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useMemo } from "react"
 import {
@@ -61,6 +62,8 @@ function ReactRouter6UrlStateProvider(props: { children: React.ReactNode }) {
 }
 
 function App() {
+  useHotkeyChangeLang()
+
   return (
     <UIKitThemeProvider>
       <QueryClientProvider client={queryClient}>

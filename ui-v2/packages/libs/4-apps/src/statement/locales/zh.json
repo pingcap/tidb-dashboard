@@ -2,8 +2,8 @@
   "statement": {
     "keys": {},
     "texts": {
-      "Find digest,digest_text,schema,table": "Find digest,digest_text,schema,table",
-      "Clear Filters": "Clear Filters"
+      "Find digest,digest_text,schema,table": "查找 digest,digest_text,schema,table",
+      "Clear Filters": "清空筛选条件"
     }
   }
 }

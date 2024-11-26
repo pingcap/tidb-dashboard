@@ -1,4 +1,5 @@
 {
+  "comment": "this file can be updated by running `pnpm gen:locales` command",
   "statement": {
     "keys": {},
     "texts": {

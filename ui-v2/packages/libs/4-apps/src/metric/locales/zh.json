@@ -1,16 +1,13 @@
 {
+  "comment": "this file can be updated by running `pnpm gen:locales` command",
   "metric": {
     "keys": {
-      "panels": {
-        "instance_top": "前 5 节点利用率",
-        "host_top": "前 5 主机性能",
-        "cluster_top": "前 5 SQL 性能"
-      },
-      "time_range": {
-        "hour_one": "{{count}} 小时",
-        "hour_other": "{{count}} 小时",
-        "day_other": "{{count}} 天"
-      }
+      "panels.instance_top": "前 5 节点利用率",
+      "panels.host_top": "前 5 主机性能",
+      "panels.cluster_top": "前 5 SQL 性能",
+      "time_range.hour_one": "{{count}} 小时",
+      "time_range.hour_other": "{{count}} 小时",
+      "time_range.day_other": "{{count}} 天"
     },
     "texts": {}
   }

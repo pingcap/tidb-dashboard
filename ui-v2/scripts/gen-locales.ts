@@ -53,10 +53,9 @@ async function generateLocales() {
       }
     }
 
-    // Find tt calls
     // Handle `tt` calls, likes:
     // tt('Clear Filters')
-    // tt('{{count}} items', { count: 10 })
+    // tt("hello {{name}}", { name: "world" })
     ast
       .find("tt($_$)")
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,12 +64,12 @@ async function generateLocales() {
         localeData[appName].texts[text] = text
       })
 
-    // Find tk calls
     // Handle `tk` calls, likes:
     // tk(`panels.${props.config.category}`)
     // tk("panels.instance_top", "Top 5 Node Utilization")
     // tk("time_range.hour", "{{count}} hr", { count: 1 })
     // tk("time_range.hour", "{{count}} hrs", { count: 24 })
+    // tk("time_range.hour", "", {count: n})
     ast
       .find("tk($$$0)")
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,10 +78,13 @@ async function generateLocales() {
         if (match.length === 1 || match[0].value === undefined) {
           // ignore this kind of case, likes:
           // tk(`panels.${props.config.category}`)
-          // console.log('skip')
         } else {
           let key = match[0].value
           const value = match[1].value
+          if (!value) {
+            // exist this loop
+            return
+          }
           if (match.length === 3) {
             // handle plural case
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,25 +92,28 @@ async function generateLocales() {
             for (const option of match[2].properties) {
               options[option.key.name] = option.value.value
             }
+            // {count: n}  --> {count: undefined}
+            // {count: 1}  --> {count: 1}
+            // {count: 24} --> {count: 24}
             if (options.count === 0) {
               key = `${key}_zero`
             } else if (options.count === 1) {
               key = `${key}_one`
-            } else {
+            } else if (options.count > 1) {
               key = `${key}_other`
             }
           }
 
-          const keyParts = key.split(".")
-          let current = localeData[appName].keys
-          for (let i = 0; i < keyParts.length - 1; i++) {
-            if (!current[keyParts[i]]) {
-              current[keyParts[i]] = {}
-            }
-            current = current[keyParts[i]]
+          // check whether value is existed
+          const existedVal = localeData[appName].keys[key]
+          if (existedVal !== undefined && existedVal !== value) {
+            console.error(
+              `same keys but have differe values, key: ${key}, values: ${existedVal}, ${value}`,
+            )
+            // exist in advance
+            return false
           }
-          const lastKey = keyParts.at(-1)
-          current[lastKey] = value
+          localeData[appName].keys[key] = value
         }
       })
   }
@@ -118,8 +123,11 @@ async function generateLocales() {
     const outputDir = `packages/libs/4-apps/src/${app}/locales`
     fs.mkdirSync(outputDir, { recursive: true })
 
-    const outputData = {}
+    const outputData = {
+      comment: "this file can be updated by running `pnpm gen:locales` command",
+    }
     outputData[app] = localeData[app]
+
     // Write en.json
     fs.writeFileSync(
       path.join(outputDir, "en.json"),
@@ -132,33 +140,12 @@ async function generateLocales() {
     if (fs.existsSync(zhPath)) {
       const existingZh = JSON.parse(fs.readFileSync(zhPath, "utf-8"))
 
-      // Deep merge function to preserve existing translations and remove deleted items
-      const deepMerge = (target, source) => {
-        // First pass: Remove keys that don't exist in source
-        for (const key in target) {
-          if (!(key in source)) {
-            delete target[key]
-          } else if (
-            typeof target[key] === "object" &&
-            !Array.isArray(target[key])
-          ) {
-            deepMerge(target[key], source[key])
-          }
+      // Clean up keys by removing entries that don't exist in outputData
+      const cleanedKeys = {}
+      for (const key in existingZh[app]?.keys) {
+        if (key in outputData[app].keys) {
+          cleanedKeys[key] = existingZh[app].keys[key]
         }
-
-        // Second pass: Add new keys from source
-        for (const key in source) {
-          if (typeof source[key] === "object" && !Array.isArray(source[key])) {
-            target[key] = target[key] || {}
-            deepMerge(target[key], source[key])
-          } else {
-            // Keep existing translation if it exists
-            if (!(key in target)) {
-              target[key] = source[key]
-            }
-          }
-        }
-        return target
       }
 
       // Clean up texts by removing entries that don't exist in outputData
@@ -170,11 +157,12 @@ async function generateLocales() {
       }
 
       const merged = {
+        comment: outputData.comment,
         [app]: {
-          keys: deepMerge(
-            JSON.parse(JSON.stringify(existingZh[app]?.keys || {})),
-            outputData[app].keys,
-          ),
+          keys: {
+            ...outputData[app].keys,
+            ...cleanedKeys,
+          },
           texts: {
             ...outputData[app].texts,
             ...cleanedTexts,

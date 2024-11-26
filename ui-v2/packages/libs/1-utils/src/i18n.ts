@@ -46,8 +46,12 @@ export function useTn(keyPrefix: string = "") {
   const { t, i18n } = useTranslation()
 
   // translate by key
-  // example: tk("time_range.hour", "{{count}} hr", { count: 1 })
-  // example: tk("time_range.hour", "{{count}} hrs", { count: 24 })
+  // example:
+  // tk('panels.instance_top.title', 'Top 5 Node Utilization')
+  // tk(`panels.${category}.title`)
+  // tk("time_range.hour", "{{count}} hr", { count: 1 })
+  // tk("time_range.hour", "{{count}} hrs", { count: 24 })
+  // tk("time_range.hour", "", {count: n})
   const tk = useCallback(
     (i18nKey: string, defVal?: string, options?: TOptions) => {
       const fullKey = keyPrefix ? `${keyPrefix}.keys.${i18nKey}` : i18nKey
@@ -57,9 +61,11 @@ export function useTn(keyPrefix: string = "") {
   )
 
   // translate by text
-  // example: tt("how are you?")
-  // example: tt("Hello.World")
-  // example: tt("{{count}} apples", { count: 2 })
+  // example:
+  // tt("how are you?")
+  // tt("Hello.World")
+  // tt("Clear Filters")
+  // tt("hello {{name}}", { name: "world" })
   const tt = useCallback(
     (text: string, options?: TOptions) => {
       const fullKey = keyPrefix ? `${keyPrefix}.texts.${text}` : text

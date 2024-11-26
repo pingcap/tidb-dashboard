@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-primitive-ui
 
+## 0.1.0
+
+### Minor Changes
+
+- update i18n, format utils
+
 ## 0.0.7
 
 ### Patch Changes

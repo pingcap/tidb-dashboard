@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@pingcap-incubator/tidb-dashboard-lib-apps": "workspace:^",
+    "@pingcap-incubator/tidb-dashboard-lib-charts": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-primitive-ui": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
     "@rap-api/request": "^0.0.2",

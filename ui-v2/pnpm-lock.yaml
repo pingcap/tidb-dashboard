@@ -261,6 +261,9 @@ importers:
       '@pingcap-incubator/tidb-dashboard-lib-apps':
         specifier: workspace:^
         version: link:../../libs/4-apps
+      '@pingcap-incubator/tidb-dashboard-lib-charts':
+        specifier: workspace:^
+        version: link:../../libs/1-charts
       '@pingcap-incubator/tidb-dashboard-lib-primitive-ui':
         specifier: workspace:^
         version: link:../../libs/2-primitive-ui

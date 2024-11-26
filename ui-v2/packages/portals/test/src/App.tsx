@@ -2,9 +2,11 @@ import {
   UIKitThemeProvider,
   UrlStateProvider,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps"
+import { ChartThemeSwitch } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
   Group,
   Stack,
+  useComputedColorScheme,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { useHotkeyChangeLang } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -61,30 +63,38 @@ function ReactRouter6UrlStateProvider(props: { children: React.ReactNode }) {
   return <UrlStateProvider value={ctxValue}>{props.children}</UrlStateProvider>
 }
 
-function App() {
+function Routes() {
   useHotkeyChangeLang()
+  const theme = useComputedColorScheme()
 
+  return (
+    <Router>
+      <Stack p={16}>
+        <Group>
+          <Link to="/slow-query/list">Slow Query</Link>
+          <Link to="/statement/list">Statement</Link>
+          <Link to="/metrics">Metrics</Link>
+          <Link to="/metrics-azores-overview">Metrics Azores Overview</Link>
+          <Link to="/index-advisor/list">Index Advisor</Link>
+        </Group>
+        <ReactRouter6UrlStateProvider>
+          <SlowQueryApp />
+          <StatementApp />
+          <MetricsApp />
+          <MetricsAzoresOverviewApp />
+          <IndexAdvisorApp />
+        </ReactRouter6UrlStateProvider>
+        <ChartThemeSwitch value={theme} />
+      </Stack>
+    </Router>
+  )
+}
+
+function App() {
   return (
     <UIKitThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <Router>
-          <Stack p={16}>
-            <Group>
-              <Link to="/slow-query/list">Slow Query</Link>
-              <Link to="/statement/list">Statement</Link>
-              <Link to="/metrics">Metrics</Link>
-              <Link to="/metrics-azores-overview">Metrics Azores Overview</Link>
-              <Link to="/index-advisor/list">Index Advisor</Link>
-            </Group>
-            <ReactRouter6UrlStateProvider>
-              <SlowQueryApp />
-              <StatementApp />
-              <MetricsApp />
-              <MetricsAzoresOverviewApp />
-              <IndexAdvisorApp />
-            </ReactRouter6UrlStateProvider>
-          </Stack>
-        </Router>
+        <Routes />
       </QueryClientProvider>
     </UIKitThemeProvider>
   )

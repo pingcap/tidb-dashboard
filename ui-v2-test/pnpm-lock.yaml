@@ -9,14 +9,20 @@ importers:
   .:
     dependencies:
       '@pingcap-incubator/tidb-dashboard-lib-apps':
-        specifier: ^0.0.6
-        version: 0.0.6(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.12)(i18next@23.16.5)(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        specifier: ^0.1.0
+        version: 0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.12)(i18next-browser-languagedetector@8.0.0)(i18next@23.16.5)(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@pingcap-incubator/tidb-dashboard-lib-charts':
+        specifier: ^0.1.0
+        version: 0.1.0(dayjs@1.11.13)(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@pingcap-incubator/tidb-dashboard-lib-utils':
+        specifier: ^0.1.0
+        version: 0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next-browser-languagedetector@8.0.0)(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: ^5.60.5
         version: 5.60.5(react@18.3.1)
       '@tidbcloud/uikit':
-        specifier: 2.0.0-beta.64
-        version: 2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 2.0.0-beta.67
+        version: 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -537,39 +543,40 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@pingcap-incubator/tidb-dashboard-lib-apps@0.0.6':
-    resolution: {integrity: sha512-Ft1bHe9Ob7zOg4zAqSaeYydG5MAdA9Q6S0ZHCYB1LZfddaMK/msy7+PFj8fO14I2zYyMTVRI/BFXtbQD9R+GNg==}
+  '@pingcap-incubator/tidb-dashboard-lib-apps@0.1.0':
+    resolution: {integrity: sha512-Sabic6dm3mgGCuzt58hzcmZEF6jXCIbwSHEcsTSYhMHf2M9M+LAYPFHeT+JZYo1l1rPANBDOgVkZCQDaYsGASQ==}
     peerDependencies:
       react: ^18.3.1
 
-  '@pingcap-incubator/tidb-dashboard-lib-biz-ui@0.0.5':
-    resolution: {integrity: sha512-j9ws0ia3cD82d0eX23r6FQ+ncVjuzcwyfTu0ebjGRg4w5PCCOfAPRoA+v4lWmGKt2MQmUeXcqRF2ewLmseH2mA==}
+  '@pingcap-incubator/tidb-dashboard-lib-biz-ui@0.1.0':
+    resolution: {integrity: sha512-a5m+RGxmrDu++eT6aR6jrHwVq48vO/BLQ0SqXGF9BG3tlW5H7lG73vbkyDwC6EKbltEEqz+fiJrMZfSYJcfrQg==}
     peerDependencies:
-      '@tidbcloud/uikit': 2.0.0-beta.64
+      '@tidbcloud/uikit': ^2.0.0-beta.67
       react: ^18.3.1
 
-  '@pingcap-incubator/tidb-dashboard-lib-charts@0.0.6':
-    resolution: {integrity: sha512-4ffWO7tOnsB6S1hsXqmdtGphjTUXeLXAnTdhqjp1HiWgQyKcMpr75BiMAuX3KVQNBA7l2mIrew6VIcqJpqlsGQ==}
+  '@pingcap-incubator/tidb-dashboard-lib-charts@0.1.0':
+    resolution: {integrity: sha512-DRbH63KeD5K7ENmM1dbEnJJSAnwMU3tCHkBtTnvQtlB2pzp/NXHrVwL2x9oOVU16W7sDrbDZ2sxODensCy2JYA==}
     peerDependencies:
       react: ^18.3.1
 
-  '@pingcap-incubator/tidb-dashboard-lib-icons@0.0.5':
-    resolution: {integrity: sha512-0nxSL3iddxjl0VO2PWOAMKxLycq74gCxtTS4l3Lf98kZrylZnGJVP++3LJROacRnjH6dpBaeNg+mv4xzgqFYyA==}
+  '@pingcap-incubator/tidb-dashboard-lib-icons@0.1.0':
+    resolution: {integrity: sha512-fEw9Oh50FrFPZfzh65RuUQeTyF3nhShqV4uwi+Sx4AosVn5NLT87wxb/IWYVgYR8vkRcr7m89KdZNEDThZlJjw==}
     peerDependencies:
-      '@tidbcloud/uikit': 2.0.0-beta.64
+      '@tidbcloud/uikit': ^2.0.0-beta.67
       react: ^18.3.1
 
-  '@pingcap-incubator/tidb-dashboard-lib-primitive-ui@0.0.5':
-    resolution: {integrity: sha512-8y01CMwV+E8BMw63RaFsZ7Jb5wlus1POjy2yOsxSeof6IxTeQefvXeelOlu+YxjCrfX534Q9kZV+d8FV09g43Q==}
+  '@pingcap-incubator/tidb-dashboard-lib-primitive-ui@0.1.0':
+    resolution: {integrity: sha512-iaQbbINLqE2Hx+VkNt4LvYbg4ghkOyilj76no30tzSgO3lyUv30vz5degpQt1XsVyu6ra4yFqbg0GxkhHQWGYQ==}
     peerDependencies:
-      '@tidbcloud/uikit': 2.0.0-beta.64
+      '@tidbcloud/uikit': ^2.0.0-beta.67
       react: ^18.3.1
 
-  '@pingcap-incubator/tidb-dashboard-lib-utils@0.0.5':
-    resolution: {integrity: sha512-MKNFIGkaYBxPNP02N1+z80xVnypMFjLA8OdWNtgof1I/oHnFbN/Td/I6+TupedeqJ/xMjGLVnQZnv/+CKlqXBA==}
+  '@pingcap-incubator/tidb-dashboard-lib-utils@0.1.0':
+    resolution: {integrity: sha512-9iuAabOO4PONJNkOje3JHlv1CC3HaQWU9G1yeyrLTKMN99KRgylSzvkoHahau+kmmeBAWY4/+DayOxWPtzBd3Q==}
     peerDependencies:
-      '@tidbcloud/uikit': 2.0.0-beta.64
+      '@tidbcloud/uikit': ^2.0.0-beta.67
       i18next: ^23.16.2
+      i18next-browser-languagedetector: ^8.0.0
       react: ^18.3.1
       react-i18next: ^15.1.0
 
@@ -706,8 +713,8 @@ packages:
   '@tanstack/virtual-core@3.10.8':
     resolution: {integrity: sha512-PBu00mtt95jbKFi6Llk9aik8bnR3tR/oQP1o3TSi+iG//+Q2RTIzCEgKkHG8BB86kxMNW6O8wku+Lmi+QFR6jA==}
 
-  '@tidbcloud/uikit@2.0.0-beta.64':
-    resolution: {integrity: sha512-GfTw8xHRNUCy+GOBgPXYbQD41XDPDiUf8KMifLWHp2OG8bQDreh0qMUPOLxOvKuMnWCxu7MgODqxKZJDMhUYZA==}
+  '@tidbcloud/uikit@2.0.0-beta.67':
+    resolution: {integrity: sha512-iqhxeFD4Ll+HTOukKKqqxC/F/QxypHEx9993xVzy0ghYgENmAX/4tococCOYmdXgWGx20iXRNc0rW+X+t7Ctmg==}
     peerDependencies:
       react: '>=17 || 18'
       react-dom: '>=17 || 18'
@@ -1218,6 +1225,9 @@ packages:
 
   htmlparser2@9.1.0:
     resolution: {integrity: sha512-5zfg6mHUoaer/97TxnGpxmbR7zJtPwIYFMZ/H5ucTlPZhKvtum05yiPK3Mgai3a0DyVxv7qYqoweaEd2nrYQzQ==}
+
+  i18next-browser-languagedetector@8.0.0:
+    resolution: {integrity: sha512-zhXdJXTTCoG39QsrOCiOabnWj2jecouOqbchu3EfhtSHxIB5Uugnm9JaizenOy39h7ne3+fLikIjeW88+rgszw==}
 
   i18next@23.16.5:
     resolution: {integrity: sha512-KTlhE3EP9x6pPTAW7dy0WKIhoCpfOGhRQlO+jttQLgzVaoOjWwBWramu7Pp0i+8wDNduuzXfe3kkVbzrKyrbTA==}
@@ -1954,7 +1964,7 @@ packages:
         optional: true
 
   void-elements@3.1.0:
-    resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
+    resolution: {integrity: sha1-YU9/v42AHwu18GYfWy9XhXUOTwk=}
     engines: {node: '>=0.10.0'}
 
   webidl-conversions@3.0.1:
@@ -2478,13 +2488,13 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  '@pingcap-incubator/tidb-dashboard-lib-apps@0.0.6(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.12)(i18next@23.16.5)(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@pingcap-incubator/tidb-dashboard-lib-apps@0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.12)(i18next-browser-languagedetector@8.0.0)(i18next@23.16.5)(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@pingcap-incubator/tidb-dashboard-lib-biz-ui': 0.0.5(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
-      '@pingcap-incubator/tidb-dashboard-lib-charts': 0.0.6(dayjs@1.11.13)(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@pingcap-incubator/tidb-dashboard-lib-icons': 0.0.5(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
-      '@pingcap-incubator/tidb-dashboard-lib-primitive-ui': 0.0.5(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
-      '@pingcap-incubator/tidb-dashboard-lib-utils': 0.0.5(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@pingcap-incubator/tidb-dashboard-lib-biz-ui': 0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next-browser-languagedetector@8.0.0)(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@pingcap-incubator/tidb-dashboard-lib-charts': 0.1.0(dayjs@1.11.13)(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@pingcap-incubator/tidb-dashboard-lib-icons': 0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@pingcap-incubator/tidb-dashboard-lib-primitive-ui': 0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@pingcap-incubator/tidb-dashboard-lib-utils': 0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next-browser-languagedetector@8.0.0)(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query': 5.60.5(react@18.3.1)
       dayjs: 1.11.13
       lodash-es: 4.17.21
@@ -2495,23 +2505,25 @@ snapshots:
       - '@types/react'
       - encoding
       - i18next
+      - i18next-browser-languagedetector
       - moment
       - moment-timezone
       - react-dom
       - react-i18next
       - react-native
 
-  '@pingcap-incubator/tidb-dashboard-lib-biz-ui@0.0.5(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@pingcap-incubator/tidb-dashboard-lib-biz-ui@0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next-browser-languagedetector@8.0.0)(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@pingcap-incubator/tidb-dashboard-lib-utils': 0.0.5(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
-      '@tidbcloud/uikit': 2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@pingcap-incubator/tidb-dashboard-lib-utils': 0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next-browser-languagedetector@8.0.0)(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@tidbcloud/uikit': 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ahooks: 3.8.1(react@18.3.1)
       react: 18.3.1
     transitivePeerDependencies:
       - i18next
+      - i18next-browser-languagedetector
       - react-i18next
 
-  '@pingcap-incubator/tidb-dashboard-lib-charts@0.0.6(dayjs@1.11.13)(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@pingcap-incubator/tidb-dashboard-lib-charts@0.1.0(dayjs@1.11.13)(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@baurine/grafana-value-formats': 1.0.5(dayjs@1.11.13)
       '@elastic/charts': 68.0.2(moment-timezone@0.5.46)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2523,23 +2535,24 @@ snapshots:
       - react-dom
       - react-native
 
-  '@pingcap-incubator/tidb-dashboard-lib-icons@0.0.5(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@pingcap-incubator/tidb-dashboard-lib-icons@0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tidbcloud/uikit': 2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tidbcloud/uikit': 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
 
-  '@pingcap-incubator/tidb-dashboard-lib-primitive-ui@0.0.5(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@pingcap-incubator/tidb-dashboard-lib-primitive-ui@0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tidbcloud/uikit': 2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tidbcloud/uikit': 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
 
-  '@pingcap-incubator/tidb-dashboard-lib-utils@0.0.5(@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@pingcap-incubator/tidb-dashboard-lib-utils@0.1.0(@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(i18next-browser-languagedetector@8.0.0)(i18next@23.16.5)(react-i18next@15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@baurine/grafana-value-formats': 1.0.5(dayjs@1.11.13)
       '@baurine/sql-formatter-plus': 1.5.3
-      '@tidbcloud/uikit': 2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tidbcloud/uikit': 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       dayjs: 1.11.13
       i18next: 23.16.5
+      i18next-browser-languagedetector: 8.0.0
       react: 18.3.1
       react-i18next: 15.1.1(i18next@23.16.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       string-template: 1.0.0
@@ -2635,7 +2648,7 @@ snapshots:
 
   '@tanstack/virtual-core@3.10.8': {}
 
-  '@tidbcloud/uikit@2.0.0-beta.64(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@emotion/cache': 11.13.1
       '@emotion/react': 11.13.3(@types/react@18.3.12)(react@18.3.1)
@@ -3269,6 +3282,10 @@ snapshots:
       domhandler: 5.0.3
       domutils: 3.1.0
       entities: 4.5.0
+
+  i18next-browser-languagedetector@8.0.0:
+    dependencies:
+      '@babel/runtime': 7.26.0
 
   i18next@23.16.5:
     dependencies:

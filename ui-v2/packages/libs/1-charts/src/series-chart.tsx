@@ -8,6 +8,7 @@ import {
   Position,
   ScaleType,
   Settings,
+  SettingsProps,
   timeFormatter,
 } from "@elastic/charts"
 import { useMemo } from "react"
@@ -43,6 +44,7 @@ type SeriesChartProps = {
   data: SeriesData[]
   unit: string
   timeRange: [number, number]
+  charSetting?: SettingsProps
 }
 
 export function SeriesChart({
@@ -50,6 +52,7 @@ export function SeriesChart({
   data,
   unit,
   timeRange,
+  charSetting,
 }: SeriesChartProps) {
   const xAxisFormatter = useMemo(
     () => timeFormatter(niceTimeFormat(timeRange[1] - timeRange[0])),
@@ -63,6 +66,7 @@ export function SeriesChart({
         showLegend
         legendPosition={Position.Right}
         legendSize={140}
+        {...charSetting}
       />
 
       <Axis

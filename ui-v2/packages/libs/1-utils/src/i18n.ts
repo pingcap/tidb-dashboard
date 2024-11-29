@@ -11,7 +11,7 @@ export function initI18n() {
     .init({
       resources: {},
       fallbackLng: "en", // fallbackLng won't change the detected language
-      supportedLngs: ["zh", "en"], // supportedLngs will change the detected lanuage
+      supportedLngs: ["zh", "en"], // supportedLngs will change the detected language
       interpolation: {
         escapeValue: false,
       },

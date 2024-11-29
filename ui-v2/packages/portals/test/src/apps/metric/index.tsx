@@ -1,8 +1,8 @@
 import {
   AppProvider,
   AzoresHostMetricsPage,
-  AzoresOverviewPage,
-  MetricsNormalPage,
+  AzoresOverviewMetricsPage,
+  NormalMetricsPage,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
 import { Route, Routes } from "react-router-dom"
 
@@ -13,10 +13,10 @@ export function MetricsApp() {
   return (
     <AppProvider ctxValue={ctxValue}>
       <Routes>
-        <Route path="/metrics" element={<MetricsNormalPage />} />
+        <Route path="/metrics" element={<NormalMetricsPage />} />
         <Route
           path="/metrics-azores-overview"
-          element={<AzoresOverviewPage />}
+          element={<AzoresOverviewMetricsPage />}
         />
         <Route
           path="/metrics-azores-host"

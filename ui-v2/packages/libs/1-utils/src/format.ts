@@ -22,16 +22,16 @@ export function formatNumByUnit(
 }
 
 export function formatSql(sql: string, compact: boolean = false): string {
-  let formatedSQL = sql
+  let formattedSQL = sql
   try {
-    formatedSQL = format(sql, { uppercase: true, language: "tidb" })
+    formattedSQL = format(sql, { uppercase: true, language: "tidb" })
   } catch (_e) {
     console.log(sql)
   }
   if (compact) {
-    formatedSQL = simpleMinifySql(formatedSQL)
+    formattedSQL = simpleMinifySql(formattedSQL)
   }
-  return formatedSQL
+  return formattedSQL
 }
 
 // remove extra spaces to make sql more compact

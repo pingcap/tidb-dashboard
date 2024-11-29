@@ -14,7 +14,9 @@ import { useMemo, useState } from "react"
 import { ChartCard } from "../../components/chart-card"
 import { SinglePanelConfig } from "../../utils/type"
 
-export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
+export function AzoresOverviewMetricsPanel(props: {
+  config: SinglePanelConfig
+}) {
   const { tk } = useTn("metric")
 
   // used for gogocode to scan and generate en.json in build time

@@ -3,7 +3,7 @@ import { Stack } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { Filters } from "./filters"
 import { Panel } from "./panel"
 
-export function MetricsNormalPage() {
+export function NormalMetricsPage() {
   return (
     <Stack>
       <Filters />

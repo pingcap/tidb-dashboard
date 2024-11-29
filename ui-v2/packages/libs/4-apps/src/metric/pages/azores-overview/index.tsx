@@ -5,9 +5,9 @@ import {
 
 import { useMetricQueriesConfigData } from "../../utils/use-data"
 
-import { AzoresOverviewPanel } from "./panel"
+import { AzoresOverviewMetricsPanel } from "./panel"
 
-export function AzoresOverviewPage() {
+export function AzoresOverviewMetricsPage() {
   const { data: panelConfigData, isLoading } =
     useMetricQueriesConfigData("azores-overview")
 
@@ -22,6 +22,6 @@ export function AzoresOverviewPage() {
   return panelConfigData
     ?.filter((p) => p.charts.length > 0)
     .map((panel) => {
-      return <AzoresOverviewPanel key={panel.category} config={panel} />
+      return <AzoresOverviewMetricsPanel key={panel.category} config={panel} />
     })
 }

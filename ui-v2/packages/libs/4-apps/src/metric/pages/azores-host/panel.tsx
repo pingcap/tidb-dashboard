@@ -64,9 +64,9 @@ export function AzoresHostMetricsPanel(props: { config: SinglePanelConfig }) {
       </Group>
 
       <SimpleGrid
-        px="md"
+        // px="md"
         type="container"
-        cols={{ base: 1, "900px": 2, "1200px": 3 }}
+        cols={{ base: 1, "900px": 2, "1200px": 3, "1400px": 4 }}
         spacing="xl"
       >
         {props.config.charts.map((c) => (

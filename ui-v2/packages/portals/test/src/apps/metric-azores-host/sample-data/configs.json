@@ -60,6 +60,64 @@
     },
     {
       "class": "host",
+      "group": "performance",
+      "type": "performance",
+      "order": 2,
+      "displayName": "TiKV Memory",
+      "name": "tikv_memory_usage",
+      "description": "Memory usage of TiDB instances, showing the percentage of memory resources being utilized",
+      "metric": {
+        "name": "tidb_memory_usage",
+        "unit": "percentunit",
+        "description": "CPU usage of TiDB instances, expressed as a percentage.",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltIn": true,
+        "expressions": [
+          {
+            "name": "tidb_memory_usage",
+            "promql": "irate(process_memory_bytes{ job=\"tidb\",@LABEL}[1m])",
+            "promMetric": "process_memory_bytes",
+            "labels": ["instance"],
+            "type": "tidb",
+            "legendName": "{type}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "performance",
+      "type": "performance",
+      "order": 2,
+      "displayName": "PD Memory",
+      "name": "pd_memory_usage",
+      "description": "Memory usage of TiDB instances, showing the percentage of memory resources being utilized",
+      "metric": {
+        "name": "tidb_memory_usage",
+        "unit": "percentunit",
+        "description": "CPU usage of TiDB instances, expressed as a percentage.",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltIn": true,
+        "expressions": [
+          {
+            "name": "tidb_memory_usage",
+            "promql": "irate(process_memory_bytes{ job=\"tidb\",@LABEL}[1m])",
+            "promMetric": "process_memory_bytes",
+            "labels": ["instance"],
+            "type": "tidb",
+            "legendName": "{type}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
       "group": "resource",
       "type": "resource",
       "order": 1,

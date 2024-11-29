@@ -4,7 +4,6 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import { ChartThemeSwitch } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
-  Group,
   Stack,
   useComputedColorScheme,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
@@ -12,7 +11,6 @@ import { useHotkeyChangeLang } from "@pingcap-incubator/tidb-dashboard-lib-utils
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useMemo } from "react"
 import {
-  Link,
   HashRouter as Router,
   // BrowserRouter as Router,
   useLocation,
@@ -21,10 +19,9 @@ import {
 
 import { IndexAdvisorApp } from "./apps/index-advisor"
 import { MetricsApp } from "./apps/metric"
-import { MetricsAzoresHostApp } from "./apps/metric-azores-host"
-import { MetricsAzoresOverviewApp } from "./apps/metric-azores-overview"
 import { SlowQueryApp } from "./apps/slow-query"
 import { StatementApp } from "./apps/statement"
+import { AppLayout } from "./components/app-layout"
 import { http } from "./rapper"
 
 import "@tidbcloud/uikit/style.css"
@@ -69,27 +66,15 @@ function Routes() {
   const theme = useComputedColorScheme()
 
   return (
-    <Router>
-      <Stack p={16}>
-        <Group>
-          <Link to="/slow-query/list">Slow Query</Link>
-          <Link to="/statement/list">Statement</Link>
-          <Link to="/metrics">Metrics</Link>
-          <Link to="/metrics-azores-overview">Metrics Azores Overview</Link>
-          <Link to="/metrics-azores-host">Metrics Azores Host</Link>
-          <Link to="/index-advisor/list">Index Advisor</Link>
-        </Group>
-        <ReactRouter6UrlStateProvider>
-          <SlowQueryApp />
-          <StatementApp />
-          <MetricsApp />
-          <MetricsAzoresOverviewApp />
-          <MetricsAzoresHostApp />
-          <IndexAdvisorApp />
-        </ReactRouter6UrlStateProvider>
-        <ChartThemeSwitch value={theme} />
-      </Stack>
-    </Router>
+    <Stack p={16}>
+      <ReactRouter6UrlStateProvider>
+        <MetricsApp />
+        <SlowQueryApp />
+        <StatementApp />
+        <IndexAdvisorApp />
+      </ReactRouter6UrlStateProvider>
+      <ChartThemeSwitch value={theme} />
+    </Stack>
   )
 }
 
@@ -97,7 +82,11 @@ function App() {
   return (
     <UIKitThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <Routes />
+        <Router>
+          <AppLayout>
+            <Routes />
+          </AppLayout>
+        </Router>
       </QueryClientProvider>
     </UIKitThemeProvider>
   )

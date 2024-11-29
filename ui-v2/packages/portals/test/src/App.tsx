@@ -21,6 +21,7 @@ import {
 
 import { IndexAdvisorApp } from "./apps/index-advisor"
 import { MetricsApp } from "./apps/metric"
+import { MetricsAzoresHostApp } from "./apps/metric-azores-host"
 import { MetricsAzoresOverviewApp } from "./apps/metric-azores-overview"
 import { SlowQueryApp } from "./apps/slow-query"
 import { StatementApp } from "./apps/statement"
@@ -75,6 +76,7 @@ function Routes() {
           <Link to="/statement/list">Statement</Link>
           <Link to="/metrics">Metrics</Link>
           <Link to="/metrics-azores-overview">Metrics Azores Overview</Link>
+          <Link to="/metrics-azores-host">Metrics Azores Host</Link>
           <Link to="/index-advisor/list">Index Advisor</Link>
         </Group>
         <ReactRouter6UrlStateProvider>
@@ -82,6 +84,7 @@ function Routes() {
           <StatementApp />
           <MetricsApp />
           <MetricsAzoresOverviewApp />
+          <MetricsAzoresHostApp />
           <IndexAdvisorApp />
         </ReactRouter6UrlStateProvider>
         <ChartThemeSwitch value={theme} />

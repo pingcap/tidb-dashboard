@@ -7,12 +7,12 @@ import {
 import { useMemo } from "react"
 
 import configs from "./sample-data/configs.json"
-import qpsType from "./sample-data/qps-type.json"
+import cpuUsage from "./sample-data/cup-usage.json"
 
 const transformedConfigs = [
-  { category: "cluster_top", displayName: "" },
-  { category: "host_top", displayName: "" },
-  { category: "instance_top", displayName: "" },
+  { category: "performance", displayName: "" },
+  { category: "resource", displayName: "" },
+  { category: "memory", displayName: "" },
 ].map((c) => ({
   ...c,
   charts: configs.metrics
@@ -35,7 +35,7 @@ const transformedConfigs = [
 export function useCtxValue(): AppCtxValue {
   return useMemo(
     () => ({
-      ctxId: "metric-azores-overview",
+      ctxId: "metric-azores-host",
       api: {
         getMetricQueriesConfig(_kind: string) {
           return delay(1000).then(() => transformedConfigs)
@@ -51,7 +51,7 @@ export function useCtxValue(): AppCtxValue {
         }) {
           console.log("getMetric", _params)
           return delay(1000).then(
-            () => qpsType.data as unknown as MetricDataByNameResultItem[],
+            () => cpuUsage.data as unknown as MetricDataByNameResultItem[],
           )
         },
       },

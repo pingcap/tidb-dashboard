@@ -7,7 +7,10 @@
       "panels.cluster_top": "前 5 SQL 性能",
       "time_range.hour_one": "{{count}} 小时",
       "time_range.hour_other": "{{count}} 小时",
-      "time_range.day_other": "{{count}} 天"
+      "time_range.day_other": "{{count}} 天",
+      "panels.performance": "性能",
+      "panels.resource": "资源",
+      "panels.memory": "内存"
     },
     "texts": {}
   }

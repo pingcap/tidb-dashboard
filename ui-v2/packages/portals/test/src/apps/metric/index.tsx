@@ -13,13 +13,13 @@ export function MetricsApp() {
   return (
     <AppProvider ctxValue={ctxValue}>
       <Routes>
-        <Route path="/metrics" element={<NormalMetricsPage />} />
+        <Route path="/metrics/normal" element={<NormalMetricsPage />} />
         <Route
-          path="/metrics-azores-overview"
+          path="/metrics/azores-overview"
           element={<AzoresOverviewMetricsPage />}
         />
         <Route
-          path="/metrics-azores-host"
+          path="/metrics/azores-host"
           element={<AzoresHostMetricsPage />}
         />
       </Routes>

@@ -66,7 +66,7 @@ function Routes() {
   const theme = useComputedColorScheme()
 
   return (
-    <Stack p={16}>
+    <Stack>
       <ReactRouter6UrlStateProvider>
         <MetricsApp />
         <SlowQueryApp />

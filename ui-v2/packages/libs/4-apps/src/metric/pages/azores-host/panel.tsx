@@ -11,9 +11,8 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import dayjs from "dayjs"
 
+import { ChartCard } from "../../components/chart-card"
 import { SinglePanelConfig } from "../../utils/type"
-
-import { ChartCard } from "./chart-card"
 
 const QUICK_RANGES: number[] = [
   5 * 60, // 5 mins
@@ -64,7 +63,6 @@ export function AzoresHostMetricsPanel(props: { config: SinglePanelConfig }) {
       </Group>
 
       <SimpleGrid
-        // px="md"
         type="container"
         cols={{ base: 1, "900px": 2, "1350px": 3, "1800px": 4 }}
         spacing="xl"

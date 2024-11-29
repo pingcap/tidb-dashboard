@@ -1,5 +1,4 @@
 import {
-  // KIBANA_METRICS,
   SeriesChart,
   SeriesData,
 } from "@pingcap-incubator/tidb-dashboard-lib-charts"
@@ -12,7 +11,7 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
   PromResultItem,
-  RelativeTimeRange,
+  TimeRange,
   TransformNullValue,
   calcPromQueryStep,
   toTimeRangeValue,
@@ -20,9 +19,9 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useEffect, useMemo, useRef } from "react"
 
-import { useAppContext } from "../../ctx"
-import { SingleChartConfig } from "../../utils/type"
-import { useMetricDataByMetricName } from "../../utils/use-data"
+import { useAppContext } from "../ctx"
+import { SingleChartConfig } from "../utils/type"
+import { useMetricDataByMetricName } from "../utils/use-data"
 
 export function transformData(
   items: PromResultItem[],
@@ -45,7 +44,7 @@ export function ChartCard({
   timeRange,
 }: {
   config: SingleChartConfig
-  timeRange: RelativeTimeRange
+  timeRange: TimeRange
 }) {
   const ctx = useAppContext()
   const colorScheme = useComputedColorScheme()

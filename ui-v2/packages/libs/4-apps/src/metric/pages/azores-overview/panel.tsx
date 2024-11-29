@@ -11,9 +11,8 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo, useState } from "react"
 
+import { ChartCard } from "../../components/chart-card"
 import { SinglePanelConfig } from "../../utils/type"
-
-import { ChartCard } from "./chart-card"
 
 export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
   const { tk } = useTn("metric")
@@ -63,9 +62,8 @@ export function AzoresOverviewPanel(props: { config: SinglePanelConfig }) {
       </Group>
 
       <SimpleGrid
-        // px="md"
         type="container"
-        cols={{ base: 1, "900px": 2 }}
+        cols={{ base: 1, "900px": 2, "1350px": 3, "1800px": 4 }}
         spacing="xl"
       >
         {props.config.charts.map((c) => (

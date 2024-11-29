@@ -18,7 +18,7 @@ export function Panel() {
   }
 
   return (
-    <SimpleGrid type="container" cols={{ base: 1, "500px": 2 }} spacing="xl">
+    <SimpleGrid type="container" cols={{ base: 1, "900px": 2 }} spacing="xl">
       {panelConfig?.charts.map((c) => <ChartCard key={c.title} config={c} />)}
     </SimpleGrid>
   )

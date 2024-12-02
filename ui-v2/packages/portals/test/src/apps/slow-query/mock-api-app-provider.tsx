@@ -1,7 +1,7 @@
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
+import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
-import { useNavigate } from "react-router-dom"
 
 // import { http } from "../../rapper"
 
@@ -50,11 +50,11 @@ export function useCtxValue(): AppCtxValue {
       actions: {
         openDetail: (id: string) => {
           window.preUrl = [window.location.hash.slice(1)]
-          navigate(`/slow-query/detail?id=${id}`)
+          navigate({ to: `/slow-query/detail?id=${id}` })
         },
         backToList: () => {
           const preUrl = window.preUrl?.pop()
-          navigate(preUrl || "/slow-query/list")
+          navigate({ to: preUrl || "/slow-query/list" })
         },
       },
     }),

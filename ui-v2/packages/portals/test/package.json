@@ -17,15 +17,17 @@
     "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
     "@rap-api/request": "^0.0.2",
     "@tanstack/react-query": "^5.59.16",
+    "@tanstack/react-router": "^1.85.0",
     "@tidbcloud/uikit": "catalog:",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router": "^6.27.0",
-    "react-router-dom": "^6.27.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@rap-api/cli": "^0.0.3",
+    "@tanstack/router-devtools": "^1.85.0",
+    "@tanstack/router-plugin": "^1.84.4",
+    "@types/node": "^22.10.1",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",

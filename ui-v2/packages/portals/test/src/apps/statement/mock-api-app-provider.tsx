@@ -3,8 +3,8 @@ import {
   AppCtxValue,
   StatementModel,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
+import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
-import { useNavigate } from "react-router-dom"
 
 import listData from "./sample-data/list-2.json"
 import plansDetailData from "./sample-data/plans-detail-1.json"
@@ -60,18 +60,18 @@ export function useCtxValue(): AppCtxValue {
       actions: {
         openDetail: (id: string) => {
           window.preUrl = [window.location.hash.slice(1)]
-          navigate(`/statement/detail?id=${id}`)
+          navigate({ to: `/statement/detail?id=${id}` })
         },
         backToList: () => {
           const preUrl = window.preUrl?.pop()
-          navigate(preUrl || "/statement/list")
+          navigate({ to: preUrl || "/statement/list" })
         },
         openSlowQueryDetail: (id: string) => {
           window.preUrl = [
             ...(window.preUrl || []),
             window.location.hash.slice(1),
           ]
-          navigate(`/slow-query/detail?id=${id}`)
+          navigate({ to: `/slow-query/detail?id=${id}` })
         },
       },
     }),

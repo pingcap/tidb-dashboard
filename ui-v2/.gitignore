@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# tanstack router generated file
+routeTree.gen.ts

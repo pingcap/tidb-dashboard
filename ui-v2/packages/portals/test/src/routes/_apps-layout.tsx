@@ -1,6 +1,8 @@
 import { Outlet, createFileRoute } from "@tanstack/react-router"
 import { AppShell, ScrollArea, Stack } from "@tidbcloud/uikit"
 
+import { TanStackRouterUrlStateProvider } from "../providers/url-state-provider"
+
 export const Route = createFileRoute("/_apps-layout")({
   component: RouteComponent,
 })
@@ -19,7 +21,9 @@ function RouteComponent() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Outlet />
+        <TanStackRouterUrlStateProvider>
+          <Outlet />
+        </TanStackRouterUrlStateProvider>
       </AppShell.Main>
     </AppShell>
   )

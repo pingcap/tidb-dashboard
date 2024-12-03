@@ -3,6 +3,7 @@ import {
   AppCtxValue,
   MetricDataByNameResultItem,
   PromResultItem,
+  SinglePanelConfig,
   TransformNullValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
 import { useMemo } from "react"
@@ -13,51 +14,25 @@ import cpuUsage from "./sample-data/cup-usage.json"
 import { queryConfig } from "./sample-data/normal-configs"
 import qpsType from "./sample-data/qps-type.json"
 
-const transformedOverviewConfigs = [
-  { category: "cluster_top", displayName: "" },
-  { category: "host_top", displayName: "" },
-  { category: "instance_top", displayName: "" },
-].map((c) => ({
-  ...c,
-  charts: azoresOverviewConfig.metrics
-    .filter((m) => m.type === c.category)
-    ?.map((m) => ({
-      metricName: m.name,
-      title: m.displayName,
-      label: m.description,
-      // queries: m.metric.expressions.map((e) => ({
-      //   promql: e.promql,
-      //   legendName: e.legendName,
-      //   type: "line" as SeriesType,
-      // })),
-      queries: [],
-      nullValue: TransformNullValue.AS_ZERO,
-      unit: m.metric.unit,
-    })),
-}))
-
-const transformedHostConfigs = [
-  { category: "performance", displayName: "" },
-  { category: "resource", displayName: "" },
-  { category: "memory", displayName: "" },
-].map((c) => ({
-  ...c,
-  charts: azoresHostConfig.metrics
-    .filter((m) => m.type === c.category)
-    ?.map((m) => ({
-      metricName: m.name,
-      title: m.displayName,
-      label: m.description,
-      // queries: m.metric.expressions.map((e) => ({
-      //   promql: e.promql,
-      //   legendName: e.legendName,
-      //   type: "line" as SeriesType,
-      // })),
-      queries: [],
-      nullValue: TransformNullValue.AS_ZERO,
-      unit: m.metric.unit,
-    })),
-}))
+function transformConfigs(
+  configs: typeof azoresOverviewConfig,
+): SinglePanelConfig[] {
+  const categories = [...new Set(configs.metrics.map((m) => m.type))]
+  return categories.map((c) => ({
+    category: c,
+    displayName: "",
+    charts: configs.metrics
+      .filter((m) => m.type === c)
+      ?.map((m) => ({
+        metricName: m.name,
+        title: m.displayName,
+        label: m.description,
+        queries: [],
+        nullValue: TransformNullValue.AS_ZERO,
+        unit: m.metric.unit,
+      })),
+  }))
+}
 
 export function useCtxValue(): AppCtxValue {
   return useMemo(
@@ -67,9 +42,9 @@ export function useCtxValue(): AppCtxValue {
         getMetricQueriesConfig(kind: string) {
           return delay(1000).then(() => {
             if (kind === "azores-overview") {
-              return transformedOverviewConfigs
+              return transformConfigs(azoresOverviewConfig)
             } else if (kind === "azores-host") {
-              return transformedHostConfigs
+              return transformConfigs(azoresHostConfig)
             }
             return queryConfig
           })

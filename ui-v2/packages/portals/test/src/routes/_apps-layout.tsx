@@ -34,14 +34,14 @@ function RouteComponent() {
                     <NavLink active={isActive} label="Normal" />
                   )}
                 </Link>
-                <Link to="/metrics/azores-host">
-                  {({ isActive }) => (
-                    <NavLink active={isActive} label="Azores Host" />
-                  )}
-                </Link>
                 <Link to="/metrics/azores-overview">
                   {({ isActive }) => (
                     <NavLink active={isActive} label="Azores Overview" />
+                  )}
+                </Link>
+                <Link to="/metrics/azores-host">
+                  {({ isActive }) => (
+                    <NavLink active={isActive} label="Azores Host" />
                   )}
                 </Link>
               </Stack>

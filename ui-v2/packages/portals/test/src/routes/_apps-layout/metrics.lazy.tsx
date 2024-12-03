@@ -1,9 +1,9 @@
 import { AppProvider } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
-import { Outlet, createFileRoute } from "@tanstack/react-router"
+import { Outlet, createLazyFileRoute } from "@tanstack/react-router"
 
 import { useCtxValue } from "../../apps/metric/mock-api-app-provider"
 
-export const Route = createFileRoute("/_apps-layout/metrics")({
+export const Route = createLazyFileRoute("/_apps-layout/metrics")({
   component: RouteComponent,
 })
 

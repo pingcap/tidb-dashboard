@@ -10,7 +10,7 @@
       "time_range.day_other": "{{count}} days",
       "panels.performance": "Performance",
       "panels.resource": "Resource",
-      "panels.memory": "Memory"
+      "panels.process": "Process"
     },
     "texts": {}
   }

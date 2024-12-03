@@ -1,9 +1,9 @@
 import { AppProvider } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
-import { Outlet, createFileRoute } from "@tanstack/react-router"
+import { Outlet, createLazyFileRoute } from "@tanstack/react-router"
 
 import { useCtxValue } from "../../apps/slow-query/mock-api-app-provider"
 
-export const Route = createFileRoute("/_apps-layout/slow-query")({
+export const Route = createLazyFileRoute("/_apps-layout/slow-query")({
   component: RouteComponent,
 })
 

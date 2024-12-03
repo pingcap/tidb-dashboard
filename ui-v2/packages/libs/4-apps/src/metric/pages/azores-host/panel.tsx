@@ -33,7 +33,7 @@ export function AzoresHostMetricsPanel(props: { config: SinglePanelConfig }) {
   // used for gogocode to scan and generate en.json in build time
   tk("panels.performance", "Performance")
   tk("panels.resource", "Resource")
-  tk("panels.memory", "Memory")
+  tk("panels.process", "Process")
 
   const { timeRange, setTimeRange } = useTimeRangeUrlState()
 

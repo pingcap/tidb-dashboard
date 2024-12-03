@@ -10,7 +10,7 @@
       "time_range.day_other": "{{count}} 天",
       "panels.performance": "性能",
       "panels.resource": "资源",
-      "panels.memory": "内存"
+      "panels.process": "进程"
     },
     "texts": {}
   }

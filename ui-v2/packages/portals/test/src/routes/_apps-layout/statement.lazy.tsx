@@ -1,9 +1,9 @@
 import { AppProvider } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
-import { Outlet, createFileRoute } from "@tanstack/react-router"
+import { Outlet, createLazyFileRoute } from "@tanstack/react-router"
 
 import { useCtxValue } from "../../apps/statement/mock-api-app-provider"
 
-export const Route = createFileRoute("/_apps-layout/statement")({
+export const Route = createLazyFileRoute("/_apps-layout/statement")({
   component: RouteComponent,
 })
 

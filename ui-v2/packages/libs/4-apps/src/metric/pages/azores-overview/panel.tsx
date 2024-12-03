@@ -1,8 +1,8 @@
 import {
+  Box,
   Card,
   Group,
   SegmentedControl,
-  SimpleGrid,
   Typography,
 } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
@@ -63,15 +63,17 @@ export function AzoresOverviewMetricsPanel(props: {
         </Group>
       </Group>
 
-      <SimpleGrid
-        type="container"
-        cols={{ base: 1, "900px": 2, "1350px": 3, "1800px": 4 }}
-        spacing="xl"
+      <Box
+        style={{
+          display: "grid",
+          gap: "1rem",
+          gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
+        }}
       >
         {props.config.charts.map((c) => (
           <ChartCard key={c.title} config={c} timeRange={timeRange} />
         ))}
-      </SimpleGrid>
+      </Box>
     </Card>
   )
 }

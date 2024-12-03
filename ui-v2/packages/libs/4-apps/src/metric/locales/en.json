@@ -2,15 +2,15 @@
   "comment": "this file can be updated by running `pnpm gen:locales` command",
   "metric": {
     "keys": {
-      "panels.instance_top": "Top 5 Node Utilization",
-      "panels.host_top": "Top 5 Host Performance",
       "panels.cluster_top": "Top 5 SQL Performance",
-      "time_range.hour_one": "{{count}} hr",
-      "time_range.hour_other": "{{count}} hrs",
-      "time_range.day_other": "{{count}} days",
+      "panels.host_top": "Top 5 Host Performance",
+      "panels.instance_top": "Top 5 Node Utilization",
       "panels.performance": "Performance",
+      "panels.process": "Process",
       "panels.resource": "Resource",
-      "panels.process": "Process"
+      "time_range.day_other": "{{count}} days",
+      "time_range.hour_one": "{{count}} hr",
+      "time_range.hour_other": "{{count}} hrs"
     },
     "texts": {}
   }

@@ -12,6 +12,17 @@ interface LocaleData {
   }
 }
 
+function sortLocaleData(localeData: LocaleData) {
+  Object.keys(localeData).forEach((appName) => {
+    localeData[appName].keys = Object.fromEntries(
+      Object.entries(localeData[appName].keys).sort(),
+    )
+    localeData[appName].texts = Object.fromEntries(
+      Object.entries(localeData[appName].texts).sort(),
+    )
+  })
+}
+
 async function generateLocales() {
   // Initialize locale data structure
   const localeData: LocaleData = {}
@@ -82,7 +93,7 @@ async function generateLocales() {
           let key = match[0].value
           const value = match[1].value
           if (!value) {
-            // exist this loop
+            // continue
             return
           }
           if (match.length === 3) {
@@ -110,13 +121,16 @@ async function generateLocales() {
             console.error(
               `same keys but have differe values, key: ${key}, values: ${existedVal}, ${value}`,
             )
-            // exist in advance
+            // break
             return false
           }
           localeData[appName].keys[key] = value
         }
       })
   }
+
+  // Sort
+  sortLocaleData(localeData)
 
   // Ensure output directory exists
   for (const app of Object.keys(localeData)) {
@@ -157,7 +171,6 @@ async function generateLocales() {
       }
 
       const merged = {
-        comment: outputData.comment,
         [app]: {
           keys: {
             ...outputData[app].keys,
@@ -169,7 +182,12 @@ async function generateLocales() {
           },
         },
       }
-      fs.writeFileSync(zhPath, JSON.stringify(merged, null, 2) + "\n")
+      sortLocaleData(merged)
+      const final = {
+        comment: outputData.comment,
+        [app]: merged[app],
+      }
+      fs.writeFileSync(zhPath, JSON.stringify(final, null, 2) + "\n")
     } else {
       fs.writeFileSync(zhPath, JSON.stringify(outputData, null, 2) + "\n")
     }

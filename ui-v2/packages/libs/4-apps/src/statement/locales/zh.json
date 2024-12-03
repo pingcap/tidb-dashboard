@@ -3,8 +3,8 @@
   "statement": {
     "keys": {},
     "texts": {
-      "Find digest,digest_text,schema,table": "查找 digest,digest_text,schema,table",
-      "Clear Filters": "清空筛选条件"
+      "Clear Filters": "清空筛选条件",
+      "Find digest,digest_text,schema,table": "查找 digest,digest_text,schema,table"
     }
   }
 }

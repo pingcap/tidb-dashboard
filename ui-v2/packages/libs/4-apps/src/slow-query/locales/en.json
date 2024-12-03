@@ -3,8 +3,8 @@
   "slow-query": {
     "keys": {},
     "texts": {
-      "Find digest,query,prev_stmt,txn_start_ts": "Find digest,query,prev_stmt,txn_start_ts",
-      "Clear Filters": "Clear Filters"
+      "Clear Filters": "Clear Filters",
+      "Find digest,query,prev_stmt,txn_start_ts": "Find digest,query,prev_stmt,txn_start_ts"
     }
   }
 }

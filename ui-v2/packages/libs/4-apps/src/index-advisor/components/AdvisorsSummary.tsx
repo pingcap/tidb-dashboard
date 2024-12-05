@@ -1,8 +1,5 @@
-import { IconCheckCircle } from "@pingcap-incubator/tidb-dashboard-lib-icons"
-import {
-  Alert,
-  Typography,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Alert, Typography } from "@tidbcloud/uikit"
+import { IconCheckCircle } from "@tidbcloud/uikit/icons"
 
 import { useAdvisorsSummaryData } from "../utils/use-data"
 

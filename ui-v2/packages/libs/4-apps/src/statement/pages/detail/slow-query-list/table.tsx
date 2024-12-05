@@ -1,7 +1,4 @@
-import {
-  MRT_SortingState,
-  ProTable,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { MRT_SortingState, ProTable } from "@tidbcloud/uikit/biz"
 import { useState } from "react"
 
 import { useSlowQueryListData } from "../../../utils/use-data"

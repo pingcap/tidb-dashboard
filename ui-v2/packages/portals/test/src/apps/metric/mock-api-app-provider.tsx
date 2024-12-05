@@ -1,4 +1,3 @@
-import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import {
   AppCtxValue,
   MetricDataByNameResultItem,
@@ -6,6 +5,7 @@ import {
   SinglePanelConfig,
   TransformNullValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
+import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
 import azoresHostConfig from "./sample-data/azores-host-configs.json"

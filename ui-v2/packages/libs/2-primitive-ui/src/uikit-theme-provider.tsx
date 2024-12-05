@@ -2,7 +2,7 @@ import { ColorScheme, useColorScheme } from "@tidbcloud/uikit"
 import { useHotkeys } from "@tidbcloud/uikit/hooks"
 import { ThemeProvider } from "@tidbcloud/uikit/theme"
 
-export const UIKitThemeProvider = ({
+export const UiKitThemeProvider = ({
   children,
 }: React.PropsWithChildren<unknown>) => {
   const { colorScheme, setColorScheme } = useColorScheme("auto", {

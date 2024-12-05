@@ -1,10 +1,4 @@
-import {
-  Alert,
-  Card,
-  Stack,
-  Title,
-  Typography,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Alert, Card, Stack, Title, Typography } from "@tidbcloud/uikit"
 
 import { StatementModel } from "../../../models"
 

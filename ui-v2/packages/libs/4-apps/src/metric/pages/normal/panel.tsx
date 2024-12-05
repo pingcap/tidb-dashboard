@@ -1,5 +1,5 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { SimpleGrid } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { SimpleGrid } from "@tidbcloud/uikit"
 
 import { useMetricsUrlState } from "../../url-state"
 import { useMetricQueriesConfigData } from "../../utils/use-data"

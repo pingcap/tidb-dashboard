@@ -1,8 +1,8 @@
-import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import {
   AppCtxValue,
   StatementModel,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
+import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
 

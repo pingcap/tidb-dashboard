@@ -1,4 +1,4 @@
-import { Stack } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Stack } from "@tidbcloud/uikit"
 
 import { Filters } from "./filters"
 import { Panel } from "./panel"

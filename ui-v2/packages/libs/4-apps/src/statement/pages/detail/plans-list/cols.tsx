@@ -1,6 +1,6 @@
-import { MRT_ColumnDef } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { Checkbox } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { Checkbox } from "@tidbcloud/uikit"
+import { MRT_ColumnDef } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
 import { StatementModel } from "../../../models"

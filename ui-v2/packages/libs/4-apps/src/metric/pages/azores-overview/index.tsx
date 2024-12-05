@@ -1,8 +1,4 @@
-import {
-  Card,
-  Skeleton,
-  Stack,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Card, Skeleton, Stack } from "@tidbcloud/uikit"
 
 import { useMetricQueriesConfigData } from "../../utils/use-data"
 

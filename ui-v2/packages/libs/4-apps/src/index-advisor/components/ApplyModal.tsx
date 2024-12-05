@@ -1,4 +1,3 @@
-import { CodeBlock, Form } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
   Box,
   Modal,
@@ -6,7 +5,8 @@ import {
   Stack,
   Typography,
   notifier,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+} from "@tidbcloud/uikit"
+import { CodeBlock, Form } from "@tidbcloud/uikit/biz"
 
 import { useIndexAdvisorUrlState } from "../url-state/list-url-state"
 import { useAdvisorData, useApplyAdvisor } from "../utils/use-data"

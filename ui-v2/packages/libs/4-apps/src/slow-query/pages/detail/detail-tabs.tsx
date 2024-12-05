@@ -4,8 +4,8 @@ import {
   Tabs,
   Title,
   useComputedColorScheme,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import { createStyles } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+} from "@tidbcloud/uikit"
+import { createStyles } from "@tidbcloud/uikit/utils"
 import { useMemo } from "react"
 import {
   JsonView,

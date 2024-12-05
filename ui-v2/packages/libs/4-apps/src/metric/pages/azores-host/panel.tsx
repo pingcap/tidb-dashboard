@@ -1,14 +1,9 @@
-import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import {
-  Box,
-  Card,
-  Group,
-  Typography,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import {
   useTimeRangeUrlState,
   useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { Box, Card, Group, Typography } from "@tidbcloud/uikit"
+import { TimeRangePicker } from "@tidbcloud/uikit/biz"
 import dayjs from "dayjs"
 
 import { ChartCard } from "../../components/chart-card"

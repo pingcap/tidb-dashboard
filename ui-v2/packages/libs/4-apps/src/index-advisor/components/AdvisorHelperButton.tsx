@@ -1,5 +1,5 @@
-import { IconArrowUpRight } from "@pingcap-incubator/tidb-dashboard-lib-icons"
-import { Button } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Button } from "@tidbcloud/uikit"
+import { IconArrowUpRight } from "@tidbcloud/uikit/icons"
 
 import { useIndexAdvisorUrlState } from "../url-state/list-url-state"
 

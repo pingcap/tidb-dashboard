@@ -1,5 +1,5 @@
-import { ProTable } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { useProTableSortState } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
 import { useListUrlState } from "../../url-state/list-url-state"

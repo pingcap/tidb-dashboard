@@ -1,14 +1,4 @@
 import {
-  CodeBlock,
-  LabelTooltip,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import {
-  IconArrowUpRight,
-  IconChevronLeft,
-  IconChevronRight,
-  IconLinkExternal01,
-} from "@pingcap-incubator/tidb-dashboard-lib-icons"
-import {
   ActionIcon,
   Box,
   Button,
@@ -19,7 +9,14 @@ import {
   Skeleton,
   Stack,
   Typography,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+} from "@tidbcloud/uikit"
+import { CodeBlock, LabelTooltip } from "@tidbcloud/uikit/biz"
+import {
+  IconArrowUpRight,
+  IconChevronLeft,
+  IconChevronRight,
+  IconLinkExternal01,
+} from "@tidbcloud/uikit/icons"
 import { capitalize } from "lodash-es"
 import { ReactNode, useMemo } from "react"
 

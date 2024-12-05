@@ -1,8 +1,4 @@
-import {
-  Card,
-  Stack,
-  Title,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Card, Stack, Title } from "@tidbcloud/uikit"
 
 import { ListTable } from "./table"
 

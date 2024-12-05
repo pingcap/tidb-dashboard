@@ -1,10 +1,6 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { IconArrowLeft } from "@pingcap-incubator/tidb-dashboard-lib-icons"
-import {
-  Box,
-  Button,
-  Stack,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Box, Button, Stack } from "@tidbcloud/uikit"
+import { IconArrowLeft } from "@tidbcloud/uikit/icons"
 
 import { useAppContext } from "../../ctx"
 import { useDetailData } from "../../utils/use-data"

@@ -1,8 +1,5 @@
-import {
-  MRT_ColumnDef,
-  ProTable,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { Box } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Box } from "@tidbcloud/uikit"
+import { MRT_ColumnDef, ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
 // import { SQLWithPopover } from '../../components/SQLWithPopover'

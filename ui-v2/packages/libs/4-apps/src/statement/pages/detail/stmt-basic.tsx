@@ -1,10 +1,5 @@
-import {
-  Box,
-  Card,
-  SimpleGrid,
-  Typography,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { formatTime } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { Box, Card, SimpleGrid, Typography } from "@tidbcloud/uikit"
 
 import { StatementModel } from "../../models"
 

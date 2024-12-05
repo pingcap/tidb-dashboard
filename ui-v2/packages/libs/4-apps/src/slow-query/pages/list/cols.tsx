@@ -1,12 +1,10 @@
-import {
-  MRT_ColumnDef,
-  SQLWithHover,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { Box } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { SQLWithHover } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
   formatNumByUnit,
   formatTime,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { Box } from "@tidbcloud/uikit"
+import { MRT_ColumnDef } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
 import { useAppContext } from "../../ctx"

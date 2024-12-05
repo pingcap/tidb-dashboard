@@ -1,19 +1,19 @@
 import {
-  LabelTooltip,
-  MRT_ColumnDef,
-  MRT_Row,
-  ProTable,
-  ProTableOptions,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { IconDotsHorizontal } from "@pingcap-incubator/tidb-dashboard-lib-icons"
-import {
   ActionIcon,
   Box,
   Group,
   Menu,
   Tooltip,
   Typography,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+} from "@tidbcloud/uikit"
+import {
+  LabelTooltip,
+  MRT_ColumnDef,
+  MRT_Row,
+  ProTable,
+  ProTableOptions,
+} from "@tidbcloud/uikit/biz"
+import { IconDotsHorizontal } from "@tidbcloud/uikit/icons"
 import { capitalize } from "lodash-es"
 import { ReactNode, useCallback, useMemo } from "react"
 

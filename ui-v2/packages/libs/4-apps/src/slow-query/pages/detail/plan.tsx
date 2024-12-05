@@ -1,13 +1,6 @@
-import {
-  CodeBlock,
-  PlanTable,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import {
-  Card,
-  Stack,
-  Tabs,
-  Title,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { PlanTable } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { Card, Stack, Tabs, Title } from "@tidbcloud/uikit"
+import { CodeBlock } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
 export function DetailPlan({ plan }: { plan: string }) {

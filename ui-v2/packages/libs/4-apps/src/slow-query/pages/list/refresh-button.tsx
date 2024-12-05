@@ -1,5 +1,5 @@
-import { IconRefreshCw02 } from "@pingcap-incubator/tidb-dashboard-lib-icons"
-import { ActionIcon } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { ActionIcon } from "@tidbcloud/uikit"
+import { IconRefreshCw02 } from "@tidbcloud/uikit/icons"
 
 import { useListData } from "../../utils/use-data"
 

@@ -3,13 +3,6 @@ import {
   SeriesData,
 } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import {
-  Box,
-  Flex,
-  Loader,
-  Typography,
-  useComputedColorScheme,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import {
   PromResultItem,
   TimeRange,
   TransformNullValue,
@@ -17,6 +10,13 @@ import {
   toTimeRangeValue,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  Box,
+  Flex,
+  Loader,
+  Typography,
+  useComputedColorScheme,
+} from "@tidbcloud/uikit"
 import { useEffect, useMemo, useRef } from "react"
 
 import { useAppContext } from "../ctx"

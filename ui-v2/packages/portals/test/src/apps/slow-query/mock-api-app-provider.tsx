@@ -1,5 +1,5 @@
-import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
+import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
 

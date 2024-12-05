@@ -1,7 +1,7 @@
 import { ChartThemeSwitch } from "@pingcap-incubator/tidb-dashboard-lib-charts"
-import { useComputedColorScheme } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
 import { useHotkeyChangeLang } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Outlet, createRootRoute } from "@tanstack/react-router"
+import { useComputedColorScheme } from "@tidbcloud/uikit"
 
 import { RouterDevtools } from "../router/devtools"
 

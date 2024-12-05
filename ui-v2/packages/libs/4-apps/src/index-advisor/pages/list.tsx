@@ -1,7 +1,4 @@
-import {
-  Group,
-  Stack,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Group, Stack } from "@tidbcloud/uikit"
 
 import { AdvisorsFilters } from "../components/AdvisorsFilters"
 // import { AdvisorsSummary } from './components/AdvisorsSummary'

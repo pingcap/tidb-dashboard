@@ -1,8 +1,4 @@
-import {
-  Group,
-  Stack,
-  Title,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Group, Stack, Title } from "@tidbcloud/uikit"
 
 import { useAppContext } from "../../ctx"
 

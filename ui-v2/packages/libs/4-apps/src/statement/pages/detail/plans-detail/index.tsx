@@ -1,8 +1,5 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import {
-  Stack,
-  Title,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Stack, Title } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
 import { usePlansDetailData } from "../../../utils/use-data"

@@ -1,4 +1,5 @@
-export * from "@tidbcloud/uikit/biz"
+// decided not to export
+// export * from "@tidbcloud/uikit/biz"
 
 export { default as HighlightSQL } from "./highlight-sql"
 export * from "./sql-with-hover"

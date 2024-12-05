@@ -1,4 +1,4 @@
-import { UIKitThemeProvider } from "@pingcap-incubator/tidb-dashboard-lib-apps"
+import { UiKitThemeProvider } from "@pingcap-incubator/tidb-dashboard-lib-apps"
 
 import { ReactQueryProvider } from "./providers/react-query-provider"
 import { RouterProvider } from "./router/provider"
@@ -8,11 +8,11 @@ import "./App.css"
 
 function App() {
   return (
-    <UIKitThemeProvider>
+    <UiKitThemeProvider>
       <ReactQueryProvider>
         <RouterProvider />
       </ReactQueryProvider>
-    </UIKitThemeProvider>
+    </UiKitThemeProvider>
   )
 }
 

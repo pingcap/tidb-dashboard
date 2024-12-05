@@ -1,4 +1,4 @@
-import { ProTable } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { ProTable } from "@tidbcloud/uikit/biz"
 
 import { StatementModel } from "../../../models"
 

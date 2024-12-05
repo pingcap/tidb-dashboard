@@ -1,11 +1,11 @@
-import { IconXClose } from "@pingcap-incubator/tidb-dashboard-lib-icons"
 import {
   Group,
   Select,
   Text,
   TextInput,
   UnstyledButton,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+} from "@tidbcloud/uikit"
+import { IconXClose } from "@tidbcloud/uikit/icons"
 import { useEffect, useState } from "react"
 
 import { useIndexAdvisorUrlState } from "../url-state/list-url-state"

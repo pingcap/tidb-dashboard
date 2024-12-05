@@ -1,5 +1,5 @@
 import { StatusIndicator } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { useMantineTheme } from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { useMantineTheme } from "@tidbcloud/uikit"
 import { lowerCase } from "lodash-es"
 import React from "react"
 

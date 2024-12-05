@@ -1,14 +1,14 @@
 import {
+  RelativeTimeRange,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
   Box,
   Card,
   Group,
   SegmentedControl,
   Typography,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import {
-  RelativeTimeRange,
-  useTn,
-} from "@pingcap-incubator/tidb-dashboard-lib-utils"
+} from "@tidbcloud/uikit"
 import { useMemo, useState } from "react"
 
 import { ChartCard } from "../../components/chart-card"

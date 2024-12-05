@@ -1,16 +1,14 @@
-import {
-  FilterMultiSelect,
-  TimeRangePicker,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { IconXClose } from "@pingcap-incubator/tidb-dashboard-lib-icons"
+import { FilterMultiSelect } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   Group,
   Select,
   Text,
   TextInput,
   UnstyledButton,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
-import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+} from "@tidbcloud/uikit"
+import { TimeRangePicker } from "@tidbcloud/uikit/biz"
+import { IconXClose } from "@tidbcloud/uikit/icons"
 import dayjs from "dayjs"
 import { useEffect, useState } from "react"
 

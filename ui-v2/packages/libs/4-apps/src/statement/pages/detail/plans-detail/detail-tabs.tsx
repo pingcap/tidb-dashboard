@@ -1,9 +1,4 @@
-import {
-  Card,
-  Stack,
-  Tabs,
-  Title,
-} from "@pingcap-incubator/tidb-dashboard-lib-primitive-ui"
+import { Card, Stack, Tabs, Title } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
 import { StatementModel } from "../../../models"

@@ -5,6 +5,7 @@ import {
 
 export const queryConfig: SinglePanelConfig[] = [
   {
+    group: "",
     category: "cluster_status",
     displayName: "Cluster Status",
     charts: [
@@ -52,6 +53,7 @@ export const queryConfig: SinglePanelConfig[] = [
     ],
   },
   {
+    group: "",
     category: "database_status",
     displayName: "Database Status",
     charts: [

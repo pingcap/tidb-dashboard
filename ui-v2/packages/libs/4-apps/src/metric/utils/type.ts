@@ -17,7 +17,11 @@ export interface SingleChartConfig {
   unit: string
 }
 
+// one group has many categories
+// one category has many charts
+// one chart has many queries (aka promqls)
 export interface SinglePanelConfig {
+  group: string
   category: string
   displayName?: string
   charts: SingleChartConfig[]

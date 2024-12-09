@@ -44,6 +44,19 @@ function RouteComponent() {
                     <NavLink active={isActive} label="Azores Host" />
                   )}
                 </Link>
+                <Link to="/metrics/azores-cluster-overview">
+                  {({ isActive }) => (
+                    <NavLink
+                      active={isActive}
+                      label="Azores Cluster Overview"
+                    />
+                  )}
+                </Link>
+                <Link to="/metrics/azores-cluster">
+                  {({ isActive }) => (
+                    <NavLink active={isActive} label="Azores Cluster" />
+                  )}
+                </Link>
               </Stack>
             </NavLink>
             <Link to="/slow-query">

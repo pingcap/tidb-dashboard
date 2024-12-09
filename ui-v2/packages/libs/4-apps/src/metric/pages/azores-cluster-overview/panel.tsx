@@ -14,17 +14,10 @@ import { useMemo, useState } from "react"
 import { ChartCard } from "../../components/chart-card"
 import { SinglePanelConfig } from "../../utils/type"
 
-export function AzoresOverviewMetricsPanel({
-  config,
-}: {
+export function AzoresClusterOverviewMetricsPanel(props: {
   config: SinglePanelConfig
 }) {
-  const { tk } = useTn("metric")
-
-  // used for gogocode to scan and generate en.json in build time
-  tk("panels.instance_top", "Top 5 Node Utilization")
-  tk("panels.host_top", "Top 5 Host Performance")
-  tk("panels.cluster_top", "Top 5 SQL Performance")
+  const { tk, tt } = useTn("metric")
 
   const timeRangeOptions = useMemo(() => {
     return [
@@ -50,9 +43,7 @@ export function AzoresOverviewMetricsPanel({
   return (
     <Card p={24} bg="carbon.0">
       <Group mb={20}>
-        <Typography variant="title-lg">
-          {tk(`panels.${config.category}`)}
-        </Typography>
+        <Typography variant="title-lg">{tt("Metrics")}</Typography>
         <Group ml="auto">
           <SegmentedControl
             size="xs"
@@ -72,7 +63,7 @@ export function AzoresOverviewMetricsPanel({
           gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
         }}
       >
-        {config.charts.map((c) => (
+        {props.config.charts.map((c) => (
           <ChartCard key={c.title} config={c} timeRange={timeRange} />
         ))}
       </Box>

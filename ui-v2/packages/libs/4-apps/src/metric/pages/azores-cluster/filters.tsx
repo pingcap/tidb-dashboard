@@ -1,15 +1,9 @@
-import {
-  AutoRefreshButton,
-  AutoRefreshButtonRef,
-  DEFAULT_AUTO_REFRESH_SECONDS,
-} from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Group, SegmentedControl } from "@tidbcloud/uikit"
 import { TimeRangePicker } from "@tidbcloud/uikit/biz"
 import dayjs from "dayjs"
-import { useRef, useState } from "react"
 
 import { useMetricsUrlState } from "../../url-state"
-import { useMetricQueriesConfigData } from "../../utils/use-data"
 
 const QUICK_RANGES: number[] = [
   5 * 60, // 5 mins
@@ -24,35 +18,27 @@ const QUICK_RANGES: number[] = [
   7 * 24 * 60 * 60, // 7 days
 ]
 
+const GROUPS = ["basic", "advanced", "resource"]
+
 export function Filters() {
-  const { panel, timeRange, setTimeRange, setRefresh, setQueryParams } =
+  const { tk } = useTn("metric")
+  const { panel, timeRange, setTimeRange, setQueryParams } =
     useMetricsUrlState()
-  const { data: panelConfigData } = useMetricQueriesConfigData("normal")
-  const tabs = panelConfigData?.map((p) => ({
-    label: p.displayName,
-    value: p.category,
+  const tabs = GROUPS?.map((p) => ({
+    label: tk(`groups.${p}`),
+    value: p,
   }))
 
-  const [autoRefreshValue, setAutoRefreshValue] = useState<number>(
-    DEFAULT_AUTO_REFRESH_SECONDS,
-  )
-  const autoRefreshRef = useRef<AutoRefreshButtonRef>(null)
-  const [loading, setLoading] = useState(false)
+  // for gogocode to scan and generate en.json in build time
+  tk("groups.basic", "Basic")
+  tk("groups.advanced", "Advanced")
+  tk("groups.resource", "Resource")
 
   function handlePanelChange(newPanel: string) {
-    autoRefreshRef.current?.refresh()
     setQueryParams({
       panel: newPanel || undefined,
       refresh: new Date().valueOf().toString(),
     })
-  }
-
-  function handleRefresh() {
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-    }, 1000)
-    setRefresh()
   }
 
   const panelSwitch = tabs && tabs.length > 0 && (
@@ -80,24 +66,11 @@ export function Filters() {
     />
   )
 
-  const autoRefreshButton = (
-    <AutoRefreshButton
-      ref={autoRefreshRef}
-      autoRefreshValue={autoRefreshValue}
-      onAutoRefreshChange={setAutoRefreshValue}
-      onRefresh={handleRefresh}
-      loading={loading}
-    />
-  )
-
   return (
     <Group>
       {panelSwitch}
 
-      <Group ml="auto">
-        {timeRangePicker}
-        {autoRefreshButton}
-      </Group>
+      <Group ml="auto">{timeRangePicker}</Group>
     </Group>
   )
 }

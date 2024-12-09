@@ -89,6 +89,7 @@ async function generateLocales() {
         if (match.length === 1 || match[0].value === undefined) {
           // ignore this kind of case, likes:
           // tk(`panels.${props.config.category}`)
+          // tk(`panels.${props.config.category}`, props.config.category)
         } else {
           let key = match[0].value
           const value = match[1].value

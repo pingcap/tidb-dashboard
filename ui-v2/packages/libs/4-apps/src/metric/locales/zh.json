@@ -2,16 +2,29 @@
   "comment": "this file can be updated by running `pnpm gen:locales` command",
   "metric": {
     "keys": {
+      "groups.advanced": "高级",
+      "groups.basic": "基础",
+      "groups.resource": "资源",
       "panels.cluster_top": "前 5 SQL 性能",
+      "panels.database_time": "Database Time",
       "panels.host_top": "前 5 主机性能",
       "panels.instance_top": "前 5 节点利用率",
+      "panels.pd": "PD",
       "panels.performance": "性能",
       "panels.process": "进程",
+      "panels.raft_log": "Raft Log",
       "panels.resource": "资源",
+      "panels.throughput": "Throughput",
+      "panels.tidb": "TiDB",
+      "panels.tiflash": "TiFlash",
+      "panels.tikv": "TiKV",
+      "panels.transaction": "Transaction",
       "time_range.day_other": "{{count}} 天",
       "time_range.hour_one": "{{count}} 小时",
       "time_range.hour_other": "{{count}} 小时"
     },
-    "texts": {}
+    "texts": {
+      "Metrics": "Metrics"
+    }
   }
 }

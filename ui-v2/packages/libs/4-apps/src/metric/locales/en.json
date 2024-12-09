@@ -2,16 +2,29 @@
   "comment": "this file can be updated by running `pnpm gen:locales` command",
   "metric": {
     "keys": {
+      "groups.advanced": "Advanced",
+      "groups.basic": "Basic",
+      "groups.resource": "Resource",
       "panels.cluster_top": "Top 5 SQL Performance",
+      "panels.database_time": "Database Time",
       "panels.host_top": "Top 5 Host Performance",
       "panels.instance_top": "Top 5 Node Utilization",
+      "panels.pd": "PD",
       "panels.performance": "Performance",
       "panels.process": "Process",
+      "panels.raft_log": "Raft Log",
       "panels.resource": "Resource",
+      "panels.throughput": "Throughput",
+      "panels.tidb": "TiDB",
+      "panels.tiflash": "TiFlash",
+      "panels.tikv": "TiKV",
+      "panels.transaction": "Transaction",
       "time_range.day_other": "{{count}} days",
       "time_range.hour_one": "{{count}} hr",
       "time_range.hour_other": "{{count}} hrs"
     },
-    "texts": {}
+    "texts": {
+      "Metrics": "Metrics"
+    }
   }
 }

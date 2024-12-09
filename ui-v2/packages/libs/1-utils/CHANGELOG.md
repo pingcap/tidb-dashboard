@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-utils
 
+## 0.3.0
+
+### Minor Changes
+
+- add azores cluster metrics page
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.3.0
+
+### Minor Changes
+
+- add azores cluster metrics page
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes

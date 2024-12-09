@@ -2,143 +2,47 @@
   "metrics": [
     {
       "class": "host",
-      "group": "performance",
-      "type": "performance",
-      "order": 1,
-      "displayName": "TiDB CPU",
-      "name": "tidb_cpu_usage",
-      "description": "CPU usage of TiDB instances, showing the percentage of CPU resources being utilized",
-      "metric": {
-        "name": "tidb_cpu_usage",
-        "unit": "percentunit",
-        "description": "CPU usage of TiDB instances, expressed as a percentage.",
-        "minTidbVersion": "",
-        "maxTidbVersion": "",
-        "isBuiltIn": true,
-        "expressions": [
-          {
-            "name": "tidb_cpu_usage",
-            "promql": "irate(process_cpu_seconds_total{ job=\"tidb\",@LABEL}[1m])",
-            "promMetric": "process_cpu_seconds_total",
-            "labels": ["instance"],
-            "type": "tidb",
-            "legendName": "{type}",
-            "minTidbVersion": "",
-            "maxTidbVersion": ""
-          }
-        ]
-      }
-    },
-    {
-      "class": "host",
-      "group": "performance",
-      "type": "performance",
-      "order": 2,
-      "displayName": "TiDB Memory",
-      "name": "tidb_memory_usage",
-      "description": "Memory usage of TiDB instances, showing the percentage of memory resources being utilized",
-      "metric": {
-        "name": "tidb_memory_usage",
-        "unit": "percentunit",
-        "description": "CPU usage of TiDB instances, expressed as a percentage.",
-        "minTidbVersion": "",
-        "maxTidbVersion": "",
-        "isBuiltIn": true,
-        "expressions": [
-          {
-            "name": "tidb_memory_usage",
-            "promql": "irate(process_memory_bytes{ job=\"tidb\",@LABEL}[1m])",
-            "promMetric": "process_memory_bytes",
-            "labels": ["instance"],
-            "type": "tidb",
-            "legendName": "{type}",
-            "minTidbVersion": "",
-            "maxTidbVersion": ""
-          }
-        ]
-      }
-    },
-    {
-      "class": "host",
-      "group": "performance",
-      "type": "performance",
-      "order": 2,
-      "displayName": "TiKV Memory",
-      "name": "tikv_memory_usage",
-      "description": "Memory usage of TiDB instances, showing the percentage of memory resources being utilized",
-      "metric": {
-        "name": "tidb_memory_usage",
-        "unit": "percentunit",
-        "description": "CPU usage of TiDB instances, expressed as a percentage.",
-        "minTidbVersion": "",
-        "maxTidbVersion": "",
-        "isBuiltIn": true,
-        "expressions": [
-          {
-            "name": "tidb_memory_usage",
-            "promql": "irate(process_memory_bytes{ job=\"tidb\",@LABEL}[1m])",
-            "promMetric": "process_memory_bytes",
-            "labels": ["instance"],
-            "type": "tidb",
-            "legendName": "{type}",
-            "minTidbVersion": "",
-            "maxTidbVersion": ""
-          }
-        ]
-      }
-    },
-    {
-      "class": "host",
-      "group": "performance",
-      "type": "performance",
-      "order": 2,
-      "displayName": "PD Memory",
-      "name": "pd_memory_usage",
-      "description": "Memory usage of TiDB instances, showing the percentage of memory resources being utilized",
-      "metric": {
-        "name": "tidb_memory_usage",
-        "unit": "percentunit",
-        "description": "CPU usage of TiDB instances, expressed as a percentage.",
-        "minTidbVersion": "",
-        "maxTidbVersion": "",
-        "isBuiltIn": true,
-        "expressions": [
-          {
-            "name": "tidb_memory_usage",
-            "promql": "irate(process_memory_bytes{ job=\"tidb\",@LABEL}[1m])",
-            "promMetric": "process_memory_bytes",
-            "labels": ["instance"],
-            "type": "tidb",
-            "legendName": "{type}",
-            "minTidbVersion": "",
-            "maxTidbVersion": ""
-          }
-        ]
-      }
-    },
-    {
-      "class": "host",
-      "group": "resource",
+      "group": "basic",
       "type": "resource",
       "order": 1,
-      "displayName": "CPU Utilization",
-      "name": "tidb_cpu_usage",
-      "description": "CPU usage of TiDB instances, showing the percentage of CPU resources being utilized",
+      "displayName": "Memory",
+      "name": "host_memory",
+      "description": "Total and available memory statistics of the host machine",
       "metric": {
-        "name": "tidb_cpu_usage",
-        "unit": "percentunit",
-        "description": "CPU usage of TiDB instances, expressed as a percentage.",
+        "name": "host_memory",
+        "unit": "bytes",
+        "description": "Overview of system memory usage",
         "minTidbVersion": "",
         "maxTidbVersion": "",
-        "isBuiltIn": true,
+        "isBuiltin": true,
         "expressions": [
           {
-            "name": "tidb_cpu_usage",
-            "promql": "irate(process_cpu_seconds_total{ job=\"tidb\",@LABEL}[1m])",
-            "promMetric": "process_cpu_seconds_total",
-            "labels": ["instance"],
-            "type": "tidb",
-            "legendName": "{type}",
+            "name": "host_memory_total",
+            "promql": "node_memory_MemTotal_bytes{@LABEL}",
+            "promMetric": "node_memory_MemTotal_bytes",
+            "labels": [""],
+            "type": "host",
+            "legend": "total",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "host_memory_used",
+            "promql": "node_memory_MemTotal_bytes{@LABEL} - (node_memory_MemAvailable_bytes{@LABEL} or (node_memory_MemFree_bytes{@LABEL} + node_memory_Buffers_bytes{@LABEL} + node_memory_Cached_bytes{@LABEL}))",
+            "promMetric": "node_memory_MemAvailable_bytes",
+            "labels": [""],
+            "type": "host",
+            "legend": "used",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "host_memory_available",
+            "promql": "node_memory_MemAvailable_bytes{@LABEL} or (node_memory_MemFree_bytes{@LABEL} + node_memory_Buffers_bytes{@LABEL} + node_memory_Cached_bytes{@LABEL})",
+            "promMetric": "node_memory_MemAvailable_bytes",
+            "labels": [""],
+            "type": "host",
+            "legend": "available",
             "minTidbVersion": "",
             "maxTidbVersion": ""
           }
@@ -147,27 +51,483 @@
     },
     {
       "class": "host",
-      "group": "resource",
-      "type": "resource",
-      "order": 2,
-      "displayName": "Memory Utilization",
-      "name": "tidb_memory_usage",
-      "description": "Memory usage of TiDB instances, showing the percentage of memory resources being utilized",
+      "group": "basic",
+      "type": "performance",
+      "order": 1,
+      "displayName": "Linux System Load",
+      "name": "host_linux_system_load",
+      "description": "System load averages for the past 1, 5, and 15 minutes",
       "metric": {
-        "name": "tidb_memory_usage",
-        "unit": "percentunit",
-        "description": "CPU usage of TiDB instances, expressed as a percentage.",
+        "name": "host_linux_system_load",
+        "unit": "short",
+        "description": "System load averages for the past 1, 5, and 15 minutes",
         "minTidbVersion": "",
         "maxTidbVersion": "",
-        "isBuiltIn": true,
+        "isBuiltin": true,
         "expressions": [
           {
-            "name": "tidb_memory_usage",
-            "promql": "irate(process_memory_bytes{ job=\"tidb\",@LABEL}[1m])",
-            "promMetric": "process_memory_bytes",
+            "name": "host_load_1",
+            "promql": "node_load1{@LABEL}",
+            "promMetric": "node_load1",
+            "labels": [""],
+            "type": "host",
+            "legend": "Load 1m",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "host_load_5",
+            "promql": "node_load5{@LABEL}",
+            "promMetric": "node_load5",
+            "labels": [""],
+            "type": "host",
+            "legend": "Load 5m",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "host_load_15",
+            "promql": "node_load15{@LABEL}",
+            "promMetric": "node_load15",
+            "labels": [""],
+            "type": "host",
+            "legend": "Load 15m",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "process",
+      "order": 1,
+      "displayName": "Process Memory",
+      "name": "host_process_memory",
+      "description": "Memory consumption of specific processes running on the host",
+      "metric": {
+        "name": "host_process_memory",
+        "unit": "bytes",
+        "description": "Memory consumption of specific processes",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_process_memory",
+            "promql": "process_resident_memory_bytes{@LABEL}",
+            "promMetric": "process_resident_memory_bytes",
+            "labels": ["job", "instance"],
+            "type": "host",
+            "legend": "{job} {instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 2,
+      "displayName": "CPU Usage",
+      "name": "host_cpu_usage",
+      "description": "Percentage of CPU utilization across all cores of the host machine",
+      "metric": {
+        "name": "host_cpu_usage",
+        "unit": "percentunit",
+        "description": "Overall CPU usage of the host machine, expressed as a percentage.",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_cpu_usage",
+            "promql": "1-(avg by(instance)(irate(node_cpu_seconds_total{mode=\"idle\",@LABEL}[1m])))",
+            "promMetric": "node_cpu_seconds_total",
             "labels": ["instance"],
-            "type": "tidb",
-            "legendName": "{type}",
+            "type": "host",
+            "legend": "cpu_usage_percent",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "process",
+      "order": 2,
+      "displayName": "Process CPU Usage",
+      "name": "host_process_cpu_usage",
+      "description": "CPU utilization of specific processes running on the host",
+      "metric": {
+        "name": "host_process_cpu_usage",
+        "unit": "percentunit",
+        "description": "CPU utilization percentage for specific processes",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_process_cpu_usage",
+            "promql": "rate(process_cpu_seconds_total{@LABEL}[1m])",
+            "promMetric": "process_cpu_seconds_total",
+            "labels": ["job", "instance"],
+            "type": "host",
+            "legend": "{job} {instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "resource",
+      "order": 2,
+      "displayName": "Memory Usage",
+      "name": "host_memory_usage",
+      "description": "Percentage of total memory currently in use by the system",
+      "metric": {
+        "name": "host_memory_usage",
+        "unit": "percentunit",
+        "description": "Total memory usage of the host machine, indicating system-wide RAM utilization",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_memory_usage",
+            "promql": "(node_memory_MemTotal_bytes{@LABEL}-node_memory_MemFree_bytes{@LABEL}-node_memory_Buffers_bytes{@LABEL}-node_memory_Cached_bytes{@LABEL})/node_memory_MemTotal_bytes{@LABEL}",
+            "promMetric": "node_memory_MemTotal_bytes",
+            "labels": [],
+            "type": "host",
+            "legend": "memory_usage_percentage",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 3,
+      "displayName": "IO Usage",
+      "name": "host_io_usage",
+      "description": "Percentage of time the system spent on I/O operations",
+      "metric": {
+        "name": "host_io_usage",
+        "unit": "percentunit",
+        "description": "Percentage of time the storage device is busy processing I/O requests",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_io_usage",
+            "promql": "rate(node_disk_io_time_seconds_total{@LABEL}[30m]) or irate(node_disk_io_time_seconds_total{@LABEL}[1m])",
+            "promMetric": "node_disk_io_time_seconds_total",
+            "labels": ["device"],
+            "type": "host",
+            "legend": "{device}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "resource",
+      "order": 3,
+      "displayName": "Disk Usage",
+      "name": "host_disk_usage",
+      "description": "Percentage of disk space utilized across mounted filesystems",
+      "metric": {
+        "name": "host_disk_usage",
+        "unit": "percentunit",
+        "description": "Percentage of used disk space for each filesystem mount point",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_disk_usage",
+            "promql": "1 - node_filesystem_avail_bytes{ device=~'^/.*',@LABEL} / node_filesystem_size_bytes{device=~'^/.*',@LABEL}",
+            "promMetric": "node_filesystem_avail_bytes",
+            "labels": ["device", "fstype", "mountpoint"],
+            "type": "host",
+            "legend": "{device} {fstype} {mountpoint}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 4,
+      "displayName": "IO Queue Size",
+      "name": "host_io_queue_size",
+      "description": "Number of I/O requests waiting in the device queue",
+      "metric": {
+        "name": "host_io_queue_size",
+        "unit": "short",
+        "description": "Average number of I/O requests waiting in the device queue",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_io_queue_size",
+            "promql": "rate(node_disk_io_time_weighted_seconds_total{@LABEL}[5m])",
+            "promMetric": "node_disk_io_time_weighted_seconds_total",
+            "labels": ["device"],
+            "type": "host",
+            "legend": "{device}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 5,
+      "displayName": "IOPs",
+      "name": "host_iops",
+      "description": "Number of I/O operations (reads and writes) per second",
+      "metric": {
+        "name": "host_iops",
+        "unit": "short",
+        "description": "Number of I/O operations (reads and writes) per second",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_iops",
+            "promql": "sum(rate(node_disk_reads_completed_total{@LABEL}[5m])+rate(node_disk_writes_completed_total{@LABEL}[5m]))by(instance)",
+            "promMetric": "node_disk_reads_completed_total",
+            "labels": ["instance"],
+            "type": "host",
+            "legend": "iops",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 6,
+      "displayName": "IO Latency",
+      "name": "host_io_latency",
+      "description": "Average time taken to complete I/O operations",
+      "metric": {
+        "name": "host_io_latency",
+        "unit": "s",
+        "description": "Average time taken for read and write I/O operations to complete",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_io_write_latency",
+            "promql": "(rate(node_disk_write_time_seconds_total{@LABEL}[5m])/ rate(node_disk_writes_completed_total{@LABEL}[5m]))",
+            "promMetric": "node_disk_write_time_seconds_total",
+            "labels": ["instance"],
+            "type": "host",
+            "legend": "Write Latency: [{device}]",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "host_io_read_latency",
+            "promql": "(rate(node_disk_read_time_seconds_total{@LABEL}[5m])/ rate(node_disk_reads_completed_total{@LABEL}[5m]))",
+            "promMetric": "node_disk_read_time_seconds_total",
+            "labels": ["instance"],
+            "type": "host",
+            "legend": "Read Latency: [{device}]",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 7,
+      "displayName": "IO Throughput",
+      "name": "host_io_throughput",
+      "description": "Rate of data transfer for I/O operations",
+      "metric": {
+        "name": "host_io_throughput",
+        "unit": "bytes",
+        "description": "Rate of data transfer to and from storage devices",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_io_throughput",
+            "promql": "irate(node_disk_read_bytes_total{@LABEL}[5m]) + irate(node_disk_written_bytes_total{@LABEL}[5m])",
+            "promMetric": "node_disk_read_bytes_total",
+            "labels": [""],
+            "type": "host",
+            "legend": "{device}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 8,
+      "displayName": "Network Throughput",
+      "name": "host_network_throughput",
+      "description": "Rate of data transfer over the network interfaces",
+      "metric": {
+        "name": "host_network_throughput",
+        "unit": "bytes",
+        "description": "Network traffic throughput of the host machine, measuring inbound and outbound data transfer",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_network_received",
+            "promql": "sum(increase(node_network_receive_bytes_total{device!=\"lo\",@LABEL}[5m]))by(instance)",
+            "promMetric": "node_network_receive_bytes_total",
+            "labels": [],
+            "type": "host",
+            "legend": "received",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "host_network_sent",
+            "promql": "sum(increase(node_network_transmit_bytes_total{device!=\"lo\",@LABEL}[5m]))by(instance)",
+            "promMetric": "node_network_transmit_bytes_total",
+            "labels": [],
+            "type": "host",
+            "legend": "sent",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 9,
+      "displayName": "Network In/Out Packets",
+      "name": "host_network_in_out_packets",
+      "description": "Number of network packets received and transmitted per second",
+      "metric": {
+        "name": "host_network_in_out_packets",
+        "unit": "pps",
+        "description": "Number of network packets received (inbound) and transmitted (outbound) per second for each network interface",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_network_in_packets",
+            "promql": "rate(node_network_receive_packets_total{device!=\"lo\",@LABEL}[30m]) or irate(node_network_receive_packets_total{device!=\"lo\",@LABEL}[5m])",
+            "promMetric": "node_network_receive_packets_total",
+            "labels": ["device"],
+            "type": "host",
+            "legend": "Inbound: {device}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "host_network_out_packets",
+            "promql": "rate(node_network_transmit_packets_total{device!=\"lo\",@LABEL}[30m]) or irate(node_network_transmit_packets_total{device!=\"lo\",@LABEL}[5m])",
+            "promMetric": "node_network_transmit_packets_total",
+            "labels": ["device"],
+            "type": "host",
+            "legend": "Outbound: {device}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 10,
+      "displayName": "TCP Retransmission Percentage",
+      "name": "host_tcp_retrans_percentage",
+      "description": "Percentage of TCP packets that needed to be retransmitted",
+      "metric": {
+        "name": "host_tcp_retrans_percentage",
+        "unit": "percentunit",
+        "description": "Percentage of TCP packets that had to be retransmitted",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_tcp_retrans_percentage",
+            "promql": "rate(node_netstat_Tcp_RetransSegs{@LABEL}[5m]) / rate(node_netstat_Tcp_InSegs{@LABEL}[5m])",
+            "promMetric": "node_netstat_Tcp_RetransSegs",
+            "labels": [""],
+            "type": "host",
+            "legend": "tcp_retrans_percent",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "host",
+      "group": "basic",
+      "type": "performance",
+      "order": 11,
+      "displayName": "Inode Usage",
+      "name": "host_inode_usage",
+      "description": "Percentage of used inodes in the filesystem",
+      "metric": {
+        "name": "host_inode_usage",
+        "unit": "percent",
+        "description": "Percentage of used inodes for each filesystem",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_inode_usage",
+            "promql": "node_filesystem_files_free{@LABEL} / node_filesystem_files{@LABEL}",
+            "promMetric": "node_filesystem_files_free",
+            "labels": ["fstype", "device", "mountpoint"],
+            "type": "host",
+            "legend": "{fstype} {device} {mountpoint}",
             "minTidbVersion": "",
             "maxTidbVersion": ""
           }

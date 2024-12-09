@@ -14,7 +14,9 @@ import { useMemo, useState } from "react"
 import { ChartCard } from "../../components/chart-card"
 import { SinglePanelConfig } from "../../utils/type"
 
-export function AzoresClusterOverviewMetricsPanel(props: {
+export function AzoresClusterOverviewMetricsPanel({
+  config,
+}: {
   config: SinglePanelConfig
 }) {
   const { tk, tt } = useTn("metric")
@@ -63,7 +65,7 @@ export function AzoresClusterOverviewMetricsPanel(props: {
           gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
         }}
       >
-        {props.config.charts.map((c) => (
+        {config.charts.map((c) => (
           <ChartCard key={c.title} config={c} timeRange={timeRange} />
         ))}
       </Box>

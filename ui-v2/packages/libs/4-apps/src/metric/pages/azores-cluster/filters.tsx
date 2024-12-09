@@ -20,6 +20,16 @@ const QUICK_RANGES: number[] = [
 
 const GROUPS = ["basic", "advanced", "resource"]
 
+// @ts-expect-error @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function useLocales() {
+  const { tk } = useTn("metric")
+  // for gogocode to scan and generate en.json before build
+  tk("groups.basic", "Basic")
+  tk("groups.advanced", "Advanced")
+  tk("groups.resource", "Resource")
+}
+
 export function Filters() {
   const { tk } = useTn("metric")
   const { panel, timeRange, setTimeRange, setQueryParams } =
@@ -28,11 +38,6 @@ export function Filters() {
     label: tk(`groups.${p}`),
     value: p,
   }))
-
-  // for gogocode to scan and generate en.json in build time
-  tk("groups.basic", "Basic")
-  tk("groups.advanced", "Advanced")
-  tk("groups.resource", "Resource")
 
   function handlePanelChange(newPanel: string) {
     setQueryParams({

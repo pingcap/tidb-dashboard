@@ -14,18 +14,22 @@ import { useMemo, useState } from "react"
 import { ChartCard } from "../../components/chart-card"
 import { SinglePanelConfig } from "../../utils/type"
 
+// @ts-expect-error @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function useLocales() {
+  const { tk } = useTn("metric")
+  // used for gogocode to scan and generate en.json before build
+  tk("panels.instance_top", "Top 5 Node Utilization")
+  tk("panels.host_top", "Top 5 Host Performance")
+  tk("panels.cluster_top", "Top 5 SQL Performance")
+}
+
 export function AzoresOverviewMetricsPanel({
   config,
 }: {
   config: SinglePanelConfig
 }) {
   const { tk } = useTn("metric")
-
-  // used for gogocode to scan and generate en.json in build time
-  tk("panels.instance_top", "Top 5 Node Utilization")
-  tk("panels.host_top", "Top 5 Host Performance")
-  tk("panels.cluster_top", "Top 5 SQL Performance")
-
   const timeRangeOptions = useMemo(() => {
     return [
       {

@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.3.2
+
+### Patch Changes
+
+- update wording
+
 ## 0.3.1
 
 ### Patch Changes

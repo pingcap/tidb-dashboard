@@ -1,22 +1,7 @@
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Group, SegmentedControl } from "@tidbcloud/uikit"
-import { TimeRangePicker } from "@tidbcloud/uikit/biz"
-import dayjs from "dayjs"
 
 import { useMetricsUrlState } from "../../url-state"
-
-const QUICK_RANGES: number[] = [
-  5 * 60, // 5 mins
-  15 * 60,
-  30 * 60,
-  60 * 60,
-  6 * 60 * 60,
-  12 * 60 * 60,
-  24 * 60 * 60,
-  2 * 24 * 60 * 60,
-  3 * 24 * 60 * 60, // 3 days
-  7 * 24 * 60 * 60, // 7 days
-]
 
 const GROUPS = ["basic", "resource", "advanced"]
 
@@ -32,8 +17,7 @@ function useLocales() {
 
 export function Filters() {
   const { tk } = useTn("metric")
-  const { panel, timeRange, setTimeRange, setQueryParams } =
-    useMetricsUrlState()
+  const { panel, setQueryParams } = useMetricsUrlState()
   const tabs = GROUPS?.map((p) => ({
     label: tk(`groups.${p}`),
     value: p,
@@ -55,27 +39,5 @@ export function Filters() {
     />
   )
 
-  const timeRangePicker = (
-    <TimeRangePicker
-      value={timeRange}
-      onChange={(v) => {
-        setTimeRange(v)
-      }}
-      quickRanges={QUICK_RANGES}
-      minDateTime={() =>
-        dayjs()
-          .subtract(QUICK_RANGES[QUICK_RANGES.length - 1], "seconds")
-          .toDate()
-      }
-      maxDateTime={() => dayjs().toDate()}
-    />
-  )
-
-  return (
-    <Group>
-      {panelSwitch}
-
-      <Group ml="auto">{timeRangePicker}</Group>
-    </Group>
-  )
+  return <Group>{panelSwitch}</Group>
 }

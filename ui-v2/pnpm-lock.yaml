@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@tidbcloud/uikit':
-      specifier: ^2.0.0-beta.67
-      version: 2.0.0-beta.67
+      specifier: ^2.0.0-beta.79
+      version: 2.0.0-beta.79
 
 importers:
 
@@ -98,7 +98,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.0-beta.79(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -132,7 +132,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.0-beta.79(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -162,7 +162,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.0-beta.79(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -190,7 +190,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.0-beta.79(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -242,7 +242,7 @@ importers:
         version: 5.59.16(react@18.3.1)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.0-beta.79(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
@@ -281,7 +281,7 @@ importers:
         version: 1.85.0(@tanstack/router-generator@1.84.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.0-beta.79(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1367,8 +1367,8 @@ packages:
     resolution: {integrity: sha512-jV5mWJrsh3QXHpb/by6udSqwva0qK50uYHpIXvKsLaxnlbjbLfflfPjFyRWXbMtZsnzCjSUqp5pm5/p+Wpaerg==}
     engines: {node: '>=12'}
 
-  '@tidbcloud/uikit@2.0.0-beta.67':
-    resolution: {integrity: sha512-iqhxeFD4Ll+HTOukKKqqxC/F/QxypHEx9993xVzy0ghYgENmAX/4tococCOYmdXgWGx20iXRNc0rW+X+t7Ctmg==}
+  '@tidbcloud/uikit@2.0.0-beta.79':
+    resolution: {integrity: sha512-iR4qpnbq7QHq+xi1xCTJNn6krM9M5YmENAJvKc5SmVAqzfc9vWvLE/0YItNTRHWhrE/MjKPuTMlfGbdRwBvmnw==}
     peerDependencies:
       react: '>=17 || 18'
       react-dom: '>=17 || 18'
@@ -5126,7 +5126,7 @@ snapshots:
 
   '@tanstack/virtual-file-routes@1.81.9': {}
 
-  '@tidbcloud/uikit@2.0.0-beta.67(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tidbcloud/uikit@2.0.0-beta.79(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@emotion/cache': 11.13.1
       '@emotion/react': 11.13.3(@types/react@18.3.12)(react@18.3.1)

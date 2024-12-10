@@ -45,7 +45,7 @@ export function AzoresClusterOverviewMetricsPanel({
   return (
     <Card p={24} bg="carbon.0">
       <Group mb={20}>
-        <Typography variant="title-lg">{tt("Metrics")}</Typography>
+        <Typography variant="title-lg">{tt("Core Metrics")}</Typography>
         <Group ml="auto">
           <SegmentedControl
             size="xs"

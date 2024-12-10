@@ -18,7 +18,7 @@ const QUICK_RANGES: number[] = [
   7 * 24 * 60 * 60, // 7 days
 ]
 
-const GROUPS = ["basic", "advanced", "resource"]
+const GROUPS = ["basic", "resource", "advanced"]
 
 // @ts-expect-error @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -26,8 +26,8 @@ function useLocales() {
   const { tk } = useTn("metric")
   // for gogocode to scan and generate en.json before build
   tk("groups.basic", "Basic")
-  tk("groups.advanced", "Advanced")
   tk("groups.resource", "Resource")
+  tk("groups.advanced", "Advanced")
 }
 
 export function Filters() {

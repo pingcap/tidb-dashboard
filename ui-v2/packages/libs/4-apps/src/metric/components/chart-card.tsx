@@ -17,7 +17,7 @@ import {
   Typography,
   useComputedColorScheme,
 } from "@tidbcloud/uikit"
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../ctx"
 import { SingleChartConfig } from "../utils/type"
@@ -50,6 +50,8 @@ export function ChartCard({
   const colorScheme = useComputedColorScheme()
   const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
   const chartRef = useRef<HTMLDivElement | null>(null)
+  const isVisible = useRef(false)
+  const [isFetched, setIsFetched] = useState(false)
 
   // a function can always get the latest value
   function getStep() {
@@ -66,6 +68,37 @@ export function ChartCard({
     isLoading,
     refetch,
   } = useMetricDataByMetricName(config.metricName, timeRange, getStep)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible.current = entry.isIntersecting
+        if (entry.isIntersecting && !isFetched) {
+          refetch()
+          setIsFetched(true)
+        }
+      },
+      { threshold: 0 },
+    )
+
+    if (chartRef.current) {
+      observer.observe(chartRef.current)
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [refetch, isFetched])
+
+  useEffect(() => {
+    if (isVisible.current) {
+      refetch()
+      setIsFetched(true)
+    } else {
+      setIsFetched(false)
+    }
+  }, [timeRange])
+
   const seriesData = useMemo(
     () =>
       (metricData ?? [])
@@ -75,10 +108,6 @@ export function ChartCard({
         .flat(),
     [metricData],
   )
-
-  useEffect(() => {
-    refetch()
-  }, [timeRange])
 
   return (
     <Box>

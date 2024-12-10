@@ -23,9 +23,9 @@ function useLocales() {
   tk("panels.tiflash", "TiFlash")
 
   tk("panels.optimizer_behavior", "Optimizer Behavior")
-  tk("panels.sql_tuning", "SQL Tuning / Plan Regression")
+  tk("panels.sql_tuning", "SQL Tuning")
   tk("panels.io_env", "IO & Env")
-  tk("panels.load_analysis", "Workload Heavy / Resource Bound / Spike")
+  tk("panels.load_analysis", "Load Analysis")
   tk("panels.tiflash_related", "TiFlash Related")
   tk("panels.connection", "Connection")
   tk("panels.pd_leader", "PD Leader")

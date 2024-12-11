@@ -141,7 +141,7 @@ func (m *Model) checkSupportPlanBinding() bool {
 	return true
 }
 
-func (m *Model) AfterFind(db *gorm.DB) error {
+func (m *Model) AfterFind(_ *gorm.DB) error {
 	if len(m.AggTableNames) > 0 {
 		m.RelatedSchemas = extractSchemasFromTableNames(m.AggTableNames)
 	}

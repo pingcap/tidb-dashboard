@@ -70,7 +70,7 @@ type InstanceItem struct {
 // @Success 200 {object} InstanceResponse "ok"
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) GetInstance(c *gin.Context) {
+func (s *Service) GetInstance(_ *gin.Context) {
 	// dummy, for generate open api
 }
 
@@ -117,7 +117,7 @@ type SummaryPlanItem struct {
 // @Success 200 {object} SummaryResponse "ok"
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) GetSummary(c *gin.Context) {
+func (s *Service) GetSummary(_ *gin.Context) {
 	// dummy, for generate open api
 }
 

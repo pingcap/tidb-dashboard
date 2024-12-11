@@ -87,7 +87,7 @@ type NgMonitoringConfig struct {
 // @Security JwtAuth
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) ConprofConfig(c *gin.Context) {
+func (s *Service) ConprofConfig(_ *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -98,7 +98,7 @@ func (s *Service) ConprofConfig(c *gin.Context) {
 // @Success 200 {string} string "ok"
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) UpdateConprofConfig(c *gin.Context) {
+func (s *Service) UpdateConprofConfig(_ *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -115,7 +115,7 @@ type Component struct {
 // @Security JwtAuth
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) ConprofComponents(c *gin.Context) {
+func (s *Service) ConprofComponents(_ *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -130,7 +130,7 @@ type EstimateSizeRes struct {
 // @Success 200 {object} EstimateSizeRes
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) EstimateSize(c *gin.Context) {
+func (s *Service) EstimateSize(_ *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -180,7 +180,7 @@ type Target struct {
 // @Success 200 {array} GroupProfiles
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) ConprofGroupProfiles(c *gin.Context) {
+func (s *Service) ConprofGroupProfiles(_ *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -191,7 +191,7 @@ func (s *Service) ConprofGroupProfiles(c *gin.Context) {
 // @Success 200 {object} GroupProfileDetail
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) ConprofGroupProfileDetail(c *gin.Context) {
+func (s *Service) ConprofGroupProfileDetail(_ *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -219,7 +219,7 @@ func (s *Service) GenConprofActionToken(c *gin.Context) {
 // @Produce application/x-gzip
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) ConprofDownload(c *gin.Context) {
+func (s *Service) ConprofDownload(_ *gin.Context) {
 	// dummy, for generate openapi
 }
 
@@ -248,6 +248,6 @@ type ViewSingleProfileReq struct {
 // @Produce html
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
-func (s *Service) ConprofViewProfile(c *gin.Context) {
+func (s *Service) ConprofViewProfile(_ *gin.Context) {
 	// dummy, for generate openapi
 }

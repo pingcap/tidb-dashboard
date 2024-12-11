@@ -40,7 +40,7 @@ func (s *separatorLabelStrategy) NewLabeler() Labeler {
 }
 
 // CrossBorder is temporarily not considering cross-border logic.
-func (e *separatorLabeler) CrossBorder(startKey, endKey string) bool {
+func (e *separatorLabeler) CrossBorder(_, _ string) bool {
 	return false
 }
 

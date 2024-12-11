@@ -5,9 +5,9 @@ package decorator
 import (
 	"testing"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
 func TestDecorator(t *testing.T) {
-	TestingT(t)
+	check.TestingT(t)
 }

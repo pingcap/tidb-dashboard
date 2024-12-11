@@ -137,7 +137,7 @@ func Handler(root http.FileSystem) http.Handler {
 		return httpgzip.FileServer(root, httpgzip.FileServerOptions{IndexHTML: true})
 	}
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = io.WriteString(w, "Dashboard UI is not built. Use `UI=1 make`.\n")
 	})
 }

@@ -5,19 +5,19 @@ package diagnose
 import (
 	"testing"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
 func TestT(t *testing.T) {
-	CustomVerboseFlag = true
-	TestingT(t)
+	check.CustomVerboseFlag = true
+	check.TestingT(t)
 }
 
-var _ = Suite(&testReportSuite{})
+var _ = check.Suite(&testReportSuite{})
 
 type testReportSuite struct{}
 
-func (t *testReportSuite) TestCompareTable(c *C) {
+func (t *testReportSuite) TestCompareTable(c *check.C) {
 	table1 := TableDef{
 		Category:       []string{"header"},
 		Title:          "test",
@@ -89,19 +89,19 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 		t1.Rows = cas.rows1
 		t2.Rows = cas.rows2
 		t, err := compareTable(&t1, &t2, dr)
-		c.Assert(err, IsNil)
-		c.Assert(len(t.Rows), Equals, len(cas.out))
+		c.Assert(err, check.IsNil)
+		c.Assert(len(t.Rows), check.Equals, len(cas.out))
 		for i, row := range t.Rows {
-			c.Assert(row.Values, DeepEquals, cas.out[i].Values)
-			c.Assert(len(row.SubValues), Equals, len(cas.out[i].SubValues))
+			c.Assert(row.Values, check.DeepEquals, cas.out[i].Values)
+			c.Assert(len(row.SubValues), check.Equals, len(cas.out[i].SubValues))
 			for j, subRow := range cas.out[i].SubValues {
-				c.Assert(subRow, DeepEquals, row.SubValues[j])
+				c.Assert(subRow, check.DeepEquals, row.SubValues[j])
 			}
 		}
 	}
 }
 
-func (t *testReportSuite) TestRoundFloatString(c *C) {
+func (t *testReportSuite) TestRoundFloatString(c *check.C) {
 	cases := []struct {
 		in  string
 		out string
@@ -123,6 +123,6 @@ func (t *testReportSuite) TestRoundFloatString(c *C) {
 	}
 	for _, cas := range cases {
 		result := RoundFloatString(cas.in)
-		c.Assert(result, Equals, cas.out)
+		c.Assert(result, check.Equals, cas.out)
 	}
 }

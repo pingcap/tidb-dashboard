@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
@@ -16,17 +16,17 @@ import (
 )
 
 func TestDbstore(t *testing.T) {
-	TestingT(t)
+	check.TestingT(t)
 }
 
-var _ = Suite(&testDbstoreSuite{})
+var _ = check.Suite(&testDbstoreSuite{})
 
 type testDbstoreSuite struct {
 	dir string
 	db  *dbstore.DB
 }
 
-func (t *testDbstoreSuite) SetUpTest(c *C) {
+func (t *testDbstoreSuite) SetUpTest(c *check.C) {
 	t.dir = c.MkDir()
 	gormDB, err := gorm.Open(sqlite.Open(path.Join(t.dir, "test.sqlite.db")))
 	if err != nil {
@@ -35,16 +35,16 @@ func (t *testDbstoreSuite) SetUpTest(c *C) {
 	t.db = &dbstore.DB{DB: gormDB}
 }
 
-func (t *testDbstoreSuite) TestCreateTableAxisModelIfNotExists(c *C) {
+func (t *testDbstoreSuite) TestCreateTableAxisModelIfNotExists(c *check.C) {
 	isExist, err := CreateTableAxisModelIfNotExists(t.db)
-	c.Assert(isExist, Equals, false)
-	c.Assert(err, IsNil)
+	c.Assert(isExist, check.Equals, false)
+	c.Assert(err, check.IsNil)
 	isExist, err = CreateTableAxisModelIfNotExists(t.db)
-	c.Assert(isExist, Equals, true)
-	c.Assert(err, IsNil)
+	c.Assert(isExist, check.Equals, true)
+	c.Assert(err, check.IsNil)
 }
 
-func (t *testDbstoreSuite) TestClearTableAxisModel(c *C) {
+func (t *testDbstoreSuite) TestClearTableAxisModel(c *check.C) {
 	_, err := CreateTableAxisModelIfNotExists(t.db)
 	if err != nil {
 		c.Fatalf("Create table AxisModel error: %v", err)
@@ -63,19 +63,19 @@ func (t *testDbstoreSuite) TestClearTableAxisModel(c *C) {
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, int64(1))
+	c.Assert(count, check.Equals, int64(1))
 
 	err = ClearTableAxisModel(t.db)
-	c.Assert(err, IsNil)
+	c.Assert(err, check.IsNil)
 
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, int64(0))
+	c.Assert(count, check.Equals, int64(0))
 }
 
-func (t *testDbstoreSuite) TestAxisModelFunc(c *C) {
+func (t *testDbstoreSuite) TestAxisModelFunc(c *check.C) {
 	_, err := CreateTableAxisModelIfNotExists(t.db)
 	if err != nil {
 		c.Fatalf("Create table AxisModel error: %v", err)
@@ -91,34 +91,34 @@ func (t *testDbstoreSuite) TestAxisModelFunc(c *C) {
 		c.Fatalf("NewAxisModel error: %v", err)
 	}
 	err = axisModel.Insert(t.db)
-	c.Assert(err, IsNil)
+	c.Assert(err, check.IsNil)
 	axisModels, err := FindAxisModelsOrderByTime(t.db, layerNum)
 	if err != nil {
 		c.Fatalf("FindAxisModelOrderByTime error: %v", err)
 	}
-	c.Assert(len(axisModels), Equals, 1)
+	c.Assert(len(axisModels), check.Equals, 1)
 	axisModelDeepEqual(axisModels[0], axisModel, c)
 	obtainedAxis, err := axisModels[0].UnmarshalAxis()
 	if err != nil {
 		c.Fatalf("UnmarshalAxis error: %v", err)
 	}
-	c.Assert(obtainedAxis, DeepEquals, axis)
+	c.Assert(obtainedAxis, check.DeepEquals, axis)
 
 	err = axisModel.Delete(t.db)
-	c.Assert(err, IsNil)
+	c.Assert(err, check.IsNil)
 
 	var count int64
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, int64(0))
+	c.Assert(count, check.Equals, int64(0))
 
 	err = axisModel.Delete(t.db)
-	c.Assert(err, IsNil)
+	c.Assert(err, check.IsNil)
 }
 
-func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *C) {
+func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *check.C) {
 	_, err := CreateTableAxisModelIfNotExists(t.db)
 	if err != nil {
 		c.Fatalf("Create table AxisModel error: %v", err)
@@ -146,36 +146,36 @@ func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *C) {
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, int64(int(maxLayerNum)*axisModelNumEachLayer))
+	c.Assert(count, check.Equals, int64(int(maxLayerNum)*axisModelNumEachLayer))
 
 	findLayerNum := maxLayerNum - 1
 	axisModels, err := FindAxisModelsOrderByTime(t.db, findLayerNum)
-	c.Assert(err, IsNil)
+	c.Assert(err, check.IsNil)
 	axisModelsDeepEqual(axisModels, axisModelList[findLayerNum], c)
 
 	err = DeleteAxisModelsByLayerNum(t.db, findLayerNum)
-	c.Assert(err, IsNil)
+	c.Assert(err, check.IsNil)
 
 	axisModels, err = FindAxisModelsOrderByTime(t.db, findLayerNum)
-	c.Assert(err, IsNil)
-	c.Assert(axisModels, HasLen, 0)
+	c.Assert(err, check.IsNil)
+	c.Assert(axisModels, check.HasLen, 0)
 
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, int64(int(maxLayerNum-1)*axisModelNumEachLayer))
+	c.Assert(count, check.Equals, int64(int(maxLayerNum-1)*axisModelNumEachLayer))
 }
 
-func axisModelsDeepEqual(obtainedAxisModels []*AxisModel, expectedAxisModels []*AxisModel, c *C) {
-	c.Assert(len(obtainedAxisModels), Equals, len(expectedAxisModels))
+func axisModelsDeepEqual(obtainedAxisModels []*AxisModel, expectedAxisModels []*AxisModel, c *check.C) {
+	c.Assert(len(obtainedAxisModels), check.Equals, len(expectedAxisModels))
 	for i := range obtainedAxisModels {
 		axisModelDeepEqual(obtainedAxisModels[i], expectedAxisModels[i], c)
 	}
 }
 
-func axisModelDeepEqual(obtainedAxisModel *AxisModel, expectedAxisModel *AxisModel, c *C) {
-	c.Assert(obtainedAxisModel.Time.Unix(), Equals, expectedAxisModel.Time.Unix())
+func axisModelDeepEqual(obtainedAxisModel *AxisModel, expectedAxisModel *AxisModel, c *check.C) {
+	c.Assert(obtainedAxisModel.Time.Unix(), check.Equals, expectedAxisModel.Time.Unix())
 	obtainedAxisModel.Time = expectedAxisModel.Time
-	c.Assert(obtainedAxisModel, DeepEquals, expectedAxisModel)
+	c.Assert(obtainedAxisModel, check.DeepEquals, expectedAxisModel)
 }

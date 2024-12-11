@@ -5,19 +5,19 @@ package user
 import (
 	"testing"
 
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
 func TestT(t *testing.T) {
-	CustomVerboseFlag = true
-	TestingT(t)
+	check.CustomVerboseFlag = true
+	check.TestingT(t)
 }
 
-var _ = Suite(&testVerifySQLUserSuite{})
+var _ = check.Suite(&testVerifySQLUserSuite{})
 
 type testVerifySQLUserSuite struct{}
 
-func (t *testVerifySQLUserSuite) Test_parseUserGrants(c *C) {
+func (t *testVerifySQLUserSuite) Test_parseUserGrants(c *check.C) {
 	cases := []struct {
 		desc     string
 		input    []string
@@ -70,11 +70,11 @@ func (t *testVerifySQLUserSuite) Test_parseUserGrants(c *C) {
 
 	for i, v := range cases {
 		actual := parseUserGrants(v.input)
-		c.Assert(actual, DeepEquals, v.expected, Commentf("parse %s (index: %d) failed", v.desc, i))
+		c.Assert(actual, check.DeepEquals, v.expected, check.Commentf("parse %s (index: %d) failed", v.desc, i))
 	}
 }
 
-func (t *testVerifySQLUserSuite) Test_checkDashboardPriv(c *C) {
+func (t *testVerifySQLUserSuite) Test_checkDashboardPriv(c *check.C) {
 	cases := []struct {
 		desc      string
 		grants    []string
@@ -158,11 +158,11 @@ func (t *testVerifySQLUserSuite) Test_checkDashboardPriv(c *C) {
 			grants[grant] = struct{}{}
 		}
 		actual := checkDashboardPriv(grants, v.enableSEM)
-		c.Assert(actual, DeepEquals, v.expected, Commentf("check %s (index: %d) failed", v.desc, i))
+		c.Assert(actual, check.DeepEquals, v.expected, check.Commentf("check %s (index: %d) failed", v.desc, i))
 	}
 }
 
-func (t *testVerifySQLUserSuite) Test_checkWriteablePriv(c *C) {
+func (t *testVerifySQLUserSuite) Test_checkWriteablePriv(c *check.C) {
 	cases := []struct {
 		desc     string
 		grants   []string
@@ -216,6 +216,6 @@ func (t *testVerifySQLUserSuite) Test_checkWriteablePriv(c *C) {
 			grants[grant] = struct{}{}
 		}
 		actual := checkWriteablePriv(grants)
-		c.Assert(actual, DeepEquals, v.expected, Commentf("check %s (index: %d) failed", v.desc, i))
+		c.Assert(actual, check.DeepEquals, v.expected, check.Commentf("check %s (index: %d) failed", v.desc, i))
 	}
 }

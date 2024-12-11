@@ -3,9 +3,9 @@
 package decorator
 
 import (
-	. "github.com/pingcap/check"
+	"github.com/pingcap/check"
 )
 
-var _ = Suite(&testTiDBSuite{})
+var _ = check.Suite(&testTiDBSuite{})
 
 type testTiDBSuite struct{}

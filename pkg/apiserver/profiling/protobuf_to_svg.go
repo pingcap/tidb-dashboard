@@ -27,7 +27,7 @@ func convertProtobufToSVG(content []byte, task TaskModel) ([]byte, error) {
 	return svgContent, nil
 }
 
-func convertProtobufToDot(content []byte, task TaskModel) ([]byte, error) {
+func convertProtobufToDot(content []byte, _ TaskModel) ([]byte, error) {
 	args := []string{
 		"-dot",
 		// prevent printing stdout
@@ -75,7 +75,7 @@ type protobufToDotWriter struct {
 	wc *writeCloser
 }
 
-func (w *protobufToDotWriter) Open(name string) (io.WriteCloser, error) {
+func (w *protobufToDotWriter) Open(_ string) (io.WriteCloser, error) {
 	w.wc = &writeCloser{data: make([]byte, 0)}
 	return w.wc, nil
 }
@@ -98,7 +98,7 @@ type dotFetcher struct {
 	data []byte
 }
 
-func (f *dotFetcher) Fetch(src string, duration, timeout time.Duration) (*profile.Profile, string, error) {
+func (f *dotFetcher) Fetch(_ string, _, _ time.Duration) (*profile.Profile, string, error) {
 	profile, err := profile.ParseData(f.data)
 	return profile, "", err
 }
@@ -122,19 +122,19 @@ func (f *flagSet) Parse(usage func()) []string {
 	return f.Args()
 }
 
-func (f *flagSet) AddExtraUsage(eu string) {}
+func (f *flagSet) AddExtraUsage(_ string) {}
 
 // blankPprofUI is used to eliminate the pprof logs.
 type blankPprofUI struct{}
 
-func (b blankPprofUI) ReadLine(prompt string) (string, error) {
+func (b blankPprofUI) ReadLine(_ string) (string, error) {
 	panic("not support")
 }
 
-func (b blankPprofUI) Print(i ...interface{}) {
+func (b blankPprofUI) Print(_ ...interface{}) {
 }
 
-func (b blankPprofUI) PrintErr(i ...interface{}) {
+func (b blankPprofUI) PrintErr(_ ...interface{}) {
 }
 
 func (b blankPprofUI) IsTerminal() bool {
@@ -145,5 +145,5 @@ func (b blankPprofUI) WantBrowser() bool {
 	return false
 }
 
-func (b blankPprofUI) SetAutoComplete(complete func(string) string) {
+func (b blankPprofUI) SetAutoComplete(_ func(string) string) {
 }

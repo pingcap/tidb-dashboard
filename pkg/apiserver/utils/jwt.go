@@ -46,7 +46,7 @@ func NewJWTStringWithExpire(issuer string, data string, expireIn time.Duration) 
 // ParseJWTString parse the JWT string and return the raw data.
 func ParseJWTString(requiredIssuer string, tokenStr string) (string, error) {
 	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(_ *jwt.Token) (interface{}, error) {
 		return hmacSampleSecret[:], nil
 	})
 	if err != nil {

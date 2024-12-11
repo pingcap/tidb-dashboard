@@ -24,7 +24,7 @@ func ProvideSysSchema(lc fx.Lifecycle) *SysSchema {
 	s := NewSysSchema()
 
 	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
+		OnStop: func(_ context.Context) error {
 			return s.Close()
 		},
 	})

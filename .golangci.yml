@@ -1,8 +1,4 @@
 run:
-  skip-dirs:
-    - swaggerspec
-    - pkg/uiserver
-    - ui
   timeout: 2m
 
 issues:
@@ -25,12 +21,16 @@ issues:
     - text: "G112:"
       linters:
         - gosec
+  exclude-dirs:
+    - swaggerspec
+    - pkg/uiserver
+    - ui
 
 linters:
   enable:
     # Additionally enable some checkers
     - asciicheck
-    - depguard
+    # - depguard
     - dogsled
     - durationcheck
     - errorlint

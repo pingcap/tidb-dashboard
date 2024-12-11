@@ -72,7 +72,7 @@ func (lResp *LazyResponse) doExecutionOnce() {
 	client.SetRedirectPolicy(resty.FlexibleRedirectPolicy(10))
 	client.SetTimeout(defaultTimeout)
 	if lResp.requestSnapshot.debugTag != "" {
-		client.SetPreRequestHook(func(rc *resty.Client, rr *http.Request) error {
+		client.SetPreRequestHook(func(_ *resty.Client, rr *http.Request) error {
 			log.Info("Send request",
 				zap.String("kindTag", lResp.requestSnapshot.kindTag),
 				zap.String("debugTag", lResp.requestSnapshot.debugTag),

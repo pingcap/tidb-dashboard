@@ -95,7 +95,7 @@ func (p *Proxy) SetUpstreams(addresses []string) {
 	if len(addresses) == 0 {
 		log.Debug("All endpoints are removed from the upstream list",
 			zap.String("kindTag", p.config.KindTag))
-		p.upstreams.Range(func(key, value interface{}) bool {
+		p.upstreams.Range(func(key, _ interface{}) bool {
 			p.upstreams.Delete(key)
 			return true
 		})
@@ -119,7 +119,7 @@ func (p *Proxy) SetUpstreams(addresses []string) {
 	for _, addr := range addresses {
 		addrSet[addr] = struct{}{}
 	}
-	p.upstreams.Range(func(key, value interface{}) bool {
+	p.upstreams.Range(func(key, _ interface{}) bool {
 		addr := key.(string)
 		if _, ok := addrSet[addr]; !ok {
 			log.Debug("An endpoint is removed from the upstream list",
@@ -207,7 +207,7 @@ func (p *Proxy) pickOneLastActiveUpstream() *upstream {
 	}
 
 	var picked *upstream
-	p.upstreams.Range(func(key, value interface{}) bool {
+	p.upstreams.Range(func(_, value interface{}) bool {
 		r := value.(*upstream)
 		if r.IsActive() {
 			picked = r
@@ -222,7 +222,7 @@ func (p *Proxy) pickOneLastActiveUpstream() *upstream {
 func (p *Proxy) probeActiveUpstreams() {
 	activeUpstreams := 0
 
-	p.upstreams.Range(func(key, value interface{}) bool {
+	p.upstreams.Range(func(_, value interface{}) bool {
 		r := value.(*upstream)
 		if r.IsActive() {
 			activeUpstreams++

@@ -45,7 +45,7 @@ export function ListTable() {
   return (
     <ProTable
       enableColumnResizing
-      enablePinning
+      enableColumnPinning
       enableSorting
       manualSorting
       sortDescFirst

@@ -1,8 +1,9 @@
-import { Card, Skeleton, Stack } from "@tidbcloud/uikit"
+import { Stack } from "@tidbcloud/uikit"
 
 import { useMetricQueriesConfigData } from "../../utils/use-data"
 
 import { AzoresOverviewMetricsPanel } from "./panel"
+import { LoadingCard } from "../../components/loading-card"
 
 export function AzoresOverviewMetricsPage() {
   const { data: panelConfigData, isLoading } =
@@ -10,9 +11,7 @@ export function AzoresOverviewMetricsPage() {
 
   if (isLoading) {
     return (
-      <Card p={24} bg="carbon.0">
-        <Skeleton visible={true} h={290} />
-      </Card>
+      <LoadingCard />
     )
   }
 

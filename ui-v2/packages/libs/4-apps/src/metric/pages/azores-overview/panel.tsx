@@ -52,8 +52,8 @@ export function AzoresOverviewMetricsPanel({
   })
 
   return (
-    <Card p={24} bg="carbon.0">
-      <Group mb={20}>
+    <Card p={16} bg="carbon.0">
+      <Group mb={16}>
         <Typography variant="title-lg">
           {tk(`panels.${config.category}`)}
         </Typography>

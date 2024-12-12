@@ -11,7 +11,7 @@ import (
 	"github.com/Masterminds/semver"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"

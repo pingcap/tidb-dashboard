@@ -13,10 +13,12 @@ import {
 import {
   Box,
   Flex,
+  Group,
   Loader,
   Typography,
   useComputedColorScheme,
 } from "@tidbcloud/uikit"
+import { IconRefreshCw02 } from "@tidbcloud/uikit/icons"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../ctx"
@@ -38,6 +40,9 @@ export function transformData(
     // lineSeriesStyle: query.lineSeriesStyle,
   }))
 }
+
+// a switch for debug
+const enableDebug = localStorage.getItem("metric-chart.debug") === "true"
 
 export function ChartCard({
   config,
@@ -69,6 +74,7 @@ export function ChartCard({
     refetch,
   } = useMetricDataByMetricName(config.metricName, timeRange, getStep)
 
+  // only fetch data when the chart is visible in the viewport
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -111,9 +117,22 @@ export function ChartCard({
 
   return (
     <Box>
-      <Typography variant="label-lg" mb={16}>
-        {config.title}
-      </Typography>
+      <Group mb={16} gap={8}>
+        <Typography
+          variant="label-lg"
+          // add `data-metric` attribute to identify the metric name for easy debugging
+          data-metric={config.metricName}
+        >
+          {config.title}
+        </Typography>
+        {enableDebug && (
+          <IconRefreshCw02
+            style={{ cursor: "pointer" }}
+            size={12}
+            onClick={() => refetch()}
+          />
+        )}
+      </Group>
 
       <Box h={200} ref={chartRef}>
         {seriesData.length > 0 || !isLoading ? (

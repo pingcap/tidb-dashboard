@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"go.etcd.io/etcd/client/pkg/v3/transport"
+	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"

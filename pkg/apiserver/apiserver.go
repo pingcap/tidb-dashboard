@@ -272,7 +272,7 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	return
 }
 
-var StoppedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+var StoppedHandler = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	_, _ = io.WriteString(w, "Dashboard is not started.\n")
 })

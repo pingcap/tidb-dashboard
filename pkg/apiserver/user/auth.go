@@ -70,11 +70,11 @@ func (a BaseAuthenticator) IsEnabled() (bool, error) {
 	return true, nil
 }
 
-func (a BaseAuthenticator) ProcessSession(u *utils.SessionUser) bool {
+func (a BaseAuthenticator) ProcessSession(_ *utils.SessionUser) bool {
 	return true
 }
 
-func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string) (*SignOutInfo, error) {
+func (a BaseAuthenticator) SignOutInfo(_ *utils.SessionUser, _ string) (*SignOutInfo, error) {
 	return &SignOutInfo{}, nil
 }
 
@@ -188,7 +188,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 
 			return &user
 		},
-		Authorizator: func(data interface{}, c *gin.Context) bool {
+		Authorizator: func(data interface{}, _ *gin.Context) bool {
 			// Ensure identity is valid
 			if data == nil {
 				return false
@@ -211,10 +211,10 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 			rest.Error(c, err)
 			return err.Error()
 		},
-		Unauthorized: func(c *gin.Context, code int, message string) {
+		Unauthorized: func(c *gin.Context, code int, _ string) {
 			c.Status(code)
 		},
-		LoginResponse: func(c *gin.Context, code int, token string, expire time.Time) {
+		LoginResponse: func(c *gin.Context, _ int, token string, expire time.Time) {
 			c.JSON(http.StatusOK, TokenResponse{
 				Token:  token,
 				Expire: expire,

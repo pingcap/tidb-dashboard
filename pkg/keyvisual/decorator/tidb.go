@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -62,7 +62,7 @@ type tidbLabeler struct {
 	Buffer   model.KeyInfoBuffer
 }
 
-func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {}
+func (s *tidbLabelStrategy) ReloadConfig(_ *config.KeyVisualConfig) {}
 
 func (s *tidbLabelStrategy) Background(ctx context.Context) {
 	ticker := time.NewTicker(time.Minute)

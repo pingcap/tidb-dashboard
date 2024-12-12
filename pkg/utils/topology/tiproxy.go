@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/pingcap/log"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/util/distro"
@@ -95,7 +95,7 @@ func FetchTiProxyTopology(ctx context.Context, etcdClient *clientv3.Client) ([]T
 	return nodes, nil
 }
 
-func parseTiProxyInfo(address string, value []byte) (*TiProxyInfo, error) {
+func parseTiProxyInfo(_ string, value []byte) (*TiProxyInfo, error) {
 	ds := struct {
 		GitHash        string `json:"git_hash"`
 		Version        string `json:"version"`

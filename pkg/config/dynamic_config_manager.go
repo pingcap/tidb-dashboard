@@ -11,7 +11,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -86,7 +86,7 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 	return nil
 }
 
-func (m *DynamicConfigManager) Stop(ctx context.Context) error {
+func (m *DynamicConfigManager) Stop(_ context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, ch := range m.pushChannels {

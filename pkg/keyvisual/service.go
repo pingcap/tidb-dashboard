@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
@@ -298,7 +298,7 @@ func (s *Service) provideLocals() (*config.Config, *clientv3.Client, *pd.Client,
 func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
 	wg := &sync.WaitGroup{}
 	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
+		OnStop: func(_ context.Context) error {
 			wg.Wait()
 			return nil
 		},
@@ -321,7 +321,7 @@ func newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.La
 func newStat(
 	lc fx.Lifecycle,
 	wg *sync.WaitGroup,
-	etcdClient *clientv3.Client,
+	_ *clientv3.Client,
 	db *dbstore.DB,
 	in input.StatInput,
 	strategy *matrix.Strategy,

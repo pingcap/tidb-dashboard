@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.4.1
+
+### Patch Changes
+
+- add drill down modal
+
 ## 0.4.0
 
 ### Minor Changes

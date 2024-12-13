@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.4.2
+
+### Patch Changes
+
+- make metric config kind as union type
+
 ## 0.4.1
 
 ### Patch Changes

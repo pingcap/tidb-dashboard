@@ -32,7 +32,8 @@
       "time_range.hour_other": "{{count}} 小时"
     },
     "texts": {
-      "Core Metrics": "核心指标"
+      "Core Metrics": "核心指标",
+      "Drill Down": "下钻"
     }
   }
 }

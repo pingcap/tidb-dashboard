@@ -32,7 +32,8 @@
       "time_range.hour_other": "{{count}} hrs"
     },
     "texts": {
-      "Core Metrics": "Core Metrics"
+      "Core Metrics": "Core Metrics",
+      "Drill Down": "Drill Down"
     }
   }
 }

@@ -1,7 +1,7 @@
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Group, SegmentedControl } from "@tidbcloud/uikit"
 
-import { useMetricsUrlState } from "../../url-state"
+import { useMetricsUrlState } from "../../shared-state/url-state"
 
 const GROUPS = ["basic", "resource", "advanced"]
 

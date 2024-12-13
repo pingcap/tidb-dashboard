@@ -11,6 +11,7 @@ import {
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
+  ActionIcon,
   Box,
   Flex,
   Group,
@@ -18,10 +19,11 @@ import {
   Typography,
   useComputedColorScheme,
 } from "@tidbcloud/uikit"
-import { IconRefreshCw02 } from "@tidbcloud/uikit/icons"
+import { IconChevronDownDouble, IconRefreshCw02 } from "@tidbcloud/uikit/icons"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../ctx"
+import { useChartState } from "../shared-state/memory-state"
 import { SingleChartConfig } from "../utils/type"
 import { useMetricDataByMetricName } from "../utils/use-data"
 
@@ -47,9 +49,15 @@ const enableDebug = localStorage.getItem("metric-chart.debug") === "true"
 export function ChartCard({
   config,
   timeRange,
+  labelValue,
+  enableDrillDown = false,
+  hideTitle = false,
 }: {
   config: SingleChartConfig
   timeRange: TimeRange
+  labelValue?: string
+  enableDrillDown?: boolean
+  hideTitle?: boolean
 }) {
   const ctx = useAppContext()
   const colorScheme = useComputedColorScheme()
@@ -57,6 +65,9 @@ export function ChartCard({
   const chartRef = useRef<HTMLDivElement | null>(null)
   const isVisible = useRef(false)
   const [isFetched, setIsFetched] = useState(false)
+
+  const setSelectedChart = useChartState((state) => state.setSelectedChart)
+  const setTimeRange = useChartState((state) => state.setTimeRange)
 
   // a function can always get the latest value
   function getStep() {
@@ -72,7 +83,12 @@ export function ChartCard({
     data: metricData,
     isLoading,
     refetch,
-  } = useMetricDataByMetricName(config.metricName, timeRange, getStep)
+  } = useMetricDataByMetricName(
+    config.metricName,
+    timeRange,
+    getStep,
+    labelValue,
+  )
 
   // only fetch data when the chart is visible in the viewport
   useEffect(() => {
@@ -84,7 +100,7 @@ export function ChartCard({
           setIsFetched(true)
         }
       },
-      { threshold: 0 },
+      { threshold: 0.1 },
     )
 
     if (chartRef.current) {
@@ -103,7 +119,7 @@ export function ChartCard({
     } else {
       setIsFetched(false)
     }
-  }, [timeRange])
+  }, [timeRange, labelValue])
 
   const seriesData = useMemo(
     () =>
@@ -117,24 +133,36 @@ export function ChartCard({
 
   return (
     <Box>
-      <Group mb={16} gap={8}>
-        <Typography
-          variant="label-lg"
-          // add `data-metric` attribute to identify the metric name for easy debugging
-          data-metric={config.metricName}
-        >
-          {config.title}
-        </Typography>
+      <Group gap={4}>
+        {!hideTitle && (
+          <Typography variant="label-lg">{config.title}</Typography>
+        )}
+        {enableDrillDown && (
+          <ActionIcon
+            variant="transparent"
+            onClick={() => {
+              setTimeRange(timeRange)
+              setSelectedChart(config)
+            }}
+          >
+            <IconChevronDownDouble size={16} />
+          </ActionIcon>
+        )}
         {enableDebug && (
-          <IconRefreshCw02
-            style={{ cursor: "pointer" }}
-            size={12}
-            onClick={() => refetch()}
-          />
+          <ActionIcon variant="transparent" onClick={() => refetch()}>
+            <IconRefreshCw02 size={12} />
+          </ActionIcon>
         )}
       </Group>
 
-      <Box h={200} ref={chartRef}>
+      {!hideTitle || enableDrillDown || (enableDebug && <Box h={16} />)}
+
+      <Box
+        h={200}
+        ref={chartRef}
+        // add `data-metric` attribute to identify the metric name for easy debugging
+        data-metric={config.metricName}
+      >
         {seriesData.length > 0 || !isLoading ? (
           <SeriesChart
             unit={config.unit}

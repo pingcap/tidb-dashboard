@@ -14,6 +14,13 @@ export type MetricDataByNameResultItem = {
 type AppApi = {
   getMetricQueriesConfig(kind: string): Promise<SinglePanelConfig[]>
 
+  getMetricLabelValues(params: {
+    metricName: string
+    labelName: string
+    beginTime: number
+    endTime: number
+  }): Promise<string[]>
+
   getMetricDataByPromQL(params: {
     promQL: string
     beginTime: number
@@ -26,6 +33,7 @@ type AppApi = {
     beginTime: number
     endTime: number
     step: number
+    label?: string
   }): Promise<MetricDataByNameResultItem[]>
 }
 

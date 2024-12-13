@@ -714,7 +714,7 @@ export interface IModels {
     Body: {}
     Res: {
       type?: string
-      instanceList?: unknown[]
+      instanceList?: string[]
     }
   }
 

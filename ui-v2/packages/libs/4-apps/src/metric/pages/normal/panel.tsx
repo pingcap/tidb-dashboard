@@ -1,7 +1,7 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { SimpleGrid } from "@tidbcloud/uikit"
 
-import { useMetricsUrlState } from "../../url-state"
+import { useMetricsUrlState } from "../../shared-state/url-state"
 import { useMetricQueriesConfigData } from "../../utils/use-data"
 
 import { ChartCard } from "./chart-card"

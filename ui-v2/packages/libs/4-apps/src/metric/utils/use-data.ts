@@ -11,8 +11,36 @@ export function useMetricQueriesConfigData(kind: string) {
   const ctx = useAppContext()
 
   return useQuery({
-    queryKey: [ctx.ctxId, "metric", "queries-config", kind],
+    queryKey: [ctx.ctxId, "metric-queries-config", kind],
     queryFn: () => ctx.api.getMetricQueriesConfig(kind),
+  })
+}
+
+export function useMetricLabelValuesData(
+  metricName: string,
+  labelName: string,
+  timeRange: TimeRange,
+) {
+  const ctx = useAppContext()
+
+  return useQuery({
+    queryKey: [
+      ctx.ctxId,
+      "metric-label-values",
+      metricName,
+      labelName,
+      timeRange,
+    ],
+    queryFn: () => {
+      const tr = toTimeRangeValue(timeRange)
+      return ctx.api.getMetricLabelValues({
+        metricName,
+        labelName,
+        beginTime: tr[0],
+        endTime: tr[1],
+      })
+    },
+    enabled: !!metricName,
   })
 }
 
@@ -20,17 +48,18 @@ export function useMetricDataByMetricName(
   metricName: string,
   timeRange: TimeRange,
   stepFn: () => number,
+  labelValue?: string,
 ) {
   const ctx = useAppContext()
 
   return useQuery({
     queryKey: [
       ctx.ctxId,
-      "metric",
       "metric-data-by-metric-name",
       metricName,
       timeRange,
       // step is not the query key, it is expected
+      labelValue,
     ],
     queryFn: () => {
       const step = stepFn()
@@ -40,10 +69,12 @@ export function useMetricDataByMetricName(
         beginTime: tr[0],
         endTime: tr[1],
         step,
+        label: labelValue,
       })
     },
     placeholderData: keepPreviousData,
-    enabled: false, // set enabled:false, so queryFn can only be manually triggered by calling `refetch()`
+    // set `enabled: false`, so queryFn can only be manually triggered by calling `refetch()`
+    enabled: false,
   })
 }
 
@@ -55,13 +86,7 @@ export function useMetricDataByPromQLs(
   const ctx = useAppContext()
 
   return useQuery({
-    queryKey: [
-      ctx.ctxId,
-      "metric",
-      "metric-data-by-promqls",
-      promQLs,
-      timeRange,
-    ],
+    queryKey: [ctx.ctxId, "metric-data-by-promqls", promQLs, timeRange],
     queryFn: () => {
       const step = stepFn()
       const tr = toTimeRangeValue(timeRange)
@@ -77,6 +102,7 @@ export function useMetricDataByPromQLs(
       )
     },
     placeholderData: keepPreviousData,
+    // set `enabled: false`, so queryFn can only be manually triggered by calling `refetch()`
     enabled: false,
   })
 }

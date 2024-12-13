@@ -1,11 +1,12 @@
-import {  Stack } from "@tidbcloud/uikit"
+import { Stack } from "@tidbcloud/uikit"
 
-import { useMetricsUrlState } from "../../url-state"
+import { LoadingCard } from "../../components/loading-card"
+import { useMetricsUrlState } from "../../shared-state/url-state"
 import { useMetricQueriesConfigData } from "../../utils/use-data"
+import { AzoresMetricModal } from "../azores-metric-modal"
 
 import { Filters } from "./filters"
 import { AzoresClusterMetricsPanel } from "./panel"
-import { LoadingCard } from "../../components/loading-card"
 
 export function AzoresClusterMetricsPage() {
   const { panel } = useMetricsUrlState()
@@ -17,9 +18,7 @@ export function AzoresClusterMetricsPage() {
   )
 
   if (isLoading) {
-    return (
-      <LoadingCard />
-    )
+    return <LoadingCard />
   }
 
   return (
@@ -33,6 +32,9 @@ export function AzoresClusterMetricsPage() {
             <AzoresClusterMetricsPanel key={panel.category} config={panel} />
           )
         })}
+
+      {/* notice: don't put `AzoresMetricModal` in the panel component, all panels should share one modal */}
+      <AzoresMetricModal />
     </Stack>
   )
 }

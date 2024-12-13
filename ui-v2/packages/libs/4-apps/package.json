@@ -65,12 +65,14 @@
     "@types/react": "^18.3.12",
     "react": "^18.3.1",
     "rollup": "^4.24.0",
-    "tslib": "^2.8.0"
+    "tslib": "^2.8.0",
+    "zustand": "^5.0.2"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.59.16",
     "@tidbcloud/uikit": "catalog:",
-    "react": "^18.3.1"
+    "react": "^18.3.1",
+    "zustand": "^5.0.2"
   },
   "dependencies": {
     "@pingcap-incubator/tidb-dashboard-lib-biz-ui": "workspace:^",

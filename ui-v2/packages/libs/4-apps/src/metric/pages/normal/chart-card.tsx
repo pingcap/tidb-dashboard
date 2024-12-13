@@ -21,7 +21,7 @@ import {
 import { useEffect, useMemo, useRef } from "react"
 
 import { useAppContext } from "../../ctx"
-import { useMetricsUrlState } from "../../url-state"
+import { useMetricsUrlState } from "../../shared-state/url-state"
 import { SingleChartConfig, SingleQueryConfig } from "../../utils/type"
 import { useMetricDataByPromQLs } from "../../utils/use-data"
 

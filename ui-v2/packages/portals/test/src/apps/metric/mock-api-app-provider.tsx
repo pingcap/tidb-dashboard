@@ -41,13 +41,13 @@ function transformConfigs(
 }
 
 export function useCtxValue(): AppCtxValue {
-  // let _kind = "azores-overview"
+  let _kind = "azores-overview"
   return useMemo(
     () => ({
       ctxId: "metric",
       api: {
         getMetricQueriesConfig(kind: string) {
-          // _kind = kind
+          _kind = kind
           return delay(1000).then(() => {
             if (kind === "azores-overview") {
               return transformConfigs(azoresOverviewConfig)
@@ -76,6 +76,23 @@ export function useCtxValue(): AppCtxValue {
           })
         },
 
+        getMetricLabelValues(params) {
+          console.log("getLabelValues", params)
+          return http(
+            "GET/api/v2/clusters/{clusterId}/metrics/{name}/instance",
+            {
+              clusterId: "tidb-1cb4e027",
+              name: params.metricName,
+            },
+          ).then((res) => res.instanceList ?? [])
+
+          return delay(1000).then(() => [
+            "tidb-1cb4e027/10.2.12.107:10082",
+            "tidb-1cb4e027/10.2.12.107:10083",
+            "tidb-1cb4e027/10.2.12.107:10084",
+          ])
+        },
+
         getMetricDataByPromQL(_params: {
           promQL: string
           beginTime: number
@@ -93,6 +110,7 @@ export function useCtxValue(): AppCtxValue {
           beginTime: number
           endTime: number
           step: number
+          label?: string
         }) {
           console.log("getMetric", _params)
           // if (_kind === "azores-overview") {
@@ -104,6 +122,19 @@ export function useCtxValue(): AppCtxValue {
           // } else if (_kind === "azores-cluster") {
           //   return http('GET/api/v2/clusters/{clusterId}/metrics/{name}/data', { clusterId: 'tidb-1cb4e027', name: _params.metricName, startTime: _params.beginTime + '', endTime: _params.endTime + '', step: _params.step + '' }).then(res => res.data)
           // }
+          if (_kind === "azores-cluster") {
+            return http("GET/api/v2/clusters/{clusterId}/metrics/{name}/data", {
+              clusterId: "tidb-1cb4e027",
+              name: _params.metricName,
+              startTime: _params.beginTime + "",
+              endTime: _params.endTime + "",
+              step: _params.step + "",
+              label: _params.label,
+            }).then(
+              (res) => res.data as unknown as MetricDataByNameResultItem[],
+            )
+          }
+
           return delay(1000).then(
             () => cpuUsage.data as unknown as MetricDataByNameResultItem[],
           )

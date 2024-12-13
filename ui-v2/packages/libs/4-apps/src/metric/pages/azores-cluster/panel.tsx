@@ -7,20 +7,8 @@ import { TimeRangePicker } from "@tidbcloud/uikit/biz"
 import dayjs from "dayjs"
 
 import { ChartCard } from "../../components/chart-card"
+import { QUICK_RANGES } from "../../utils/constants"
 import { SinglePanelConfig } from "../../utils/type"
-
-const QUICK_RANGES: number[] = [
-  5 * 60, // 5 mins
-  15 * 60,
-  30 * 60,
-  60 * 60,
-  6 * 60 * 60,
-  12 * 60 * 60,
-  24 * 60 * 60,
-  2 * 24 * 60 * 60,
-  3 * 24 * 60 * 60, // 3 days
-  7 * 24 * 60 * 60, // 7 days
-]
 
 // @ts-expect-error @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -88,7 +76,12 @@ export function AzoresClusterMetricsPanel({
         }}
       >
         {config.charts.map((c) => (
-          <ChartCard key={c.title} config={c} timeRange={timeRange} />
+          <ChartCard
+            key={c.title}
+            config={c}
+            timeRange={timeRange}
+            enableDrillDown={true}
+          />
         ))}
       </Box>
     </Card>

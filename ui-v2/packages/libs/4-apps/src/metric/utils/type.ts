@@ -1,6 +1,13 @@
 import { SeriesDataType } from "@pingcap-incubator/tidb-dashboard-lib-charts"
 import { TransformNullValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
+export type MetricConfigKind =
+  | "normal"
+  | "azores-overview"
+  | "azores-host"
+  | "azores-cluster-overview"
+  | "azores-cluster"
+
 export interface SingleQueryConfig {
   promql: string
   legendName: string

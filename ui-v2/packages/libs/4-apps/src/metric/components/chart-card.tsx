@@ -155,7 +155,7 @@ export function ChartCard({
         )}
       </Group>
 
-      {!hideTitle || enableDrillDown || (enableDebug && <Box h={16} />)}
+      {(!hideTitle || enableDrillDown || enableDebug) && <Box h={8} />}
 
       <Box
         h={200}

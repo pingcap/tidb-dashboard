@@ -23,6 +23,7 @@ export function Filters() {
   const instanceSelect = (
     <Select
       w={280}
+      comboboxProps={{ shadow: "md" }}
       placeholder="Select Instance"
       data={instancesData || []}
       clearable

@@ -6,8 +6,9 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx"
+import { MetricConfigKind } from "../utils/type"
 
-export function useMetricQueriesConfigData(kind: string) {
+export function useMetricQueriesConfigData(kind: MetricConfigKind) {
   const ctx = useAppContext()
 
   return useQuery({

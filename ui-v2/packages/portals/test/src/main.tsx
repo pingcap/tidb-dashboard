@@ -13,7 +13,7 @@ initI18n()
 axiosClient.interceptors.request.use((config) => {
   // env: ''
   // prod: 'https://tidb-dashboard-lib-api-server.2008-hbl-cf.workers.dev'
-  config.baseURL = import.meta.env.VITE_API_BASE_PATH
+  config.baseURL = import.meta.env.VITE_API_BASE_URL
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config.headers = { "Ti-Env": "dev" } as any
   return config

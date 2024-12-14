@@ -18,6 +18,9 @@ import { useMemo } from "react"
 import { normalQueryConfig } from "./sample-data/normal-configs"
 import qpsType from "./sample-data/qps-type.json"
 
+const testHostId = import.meta.env.VITE_TEST_HOST_ID
+const testClusterId = import.meta.env.VITE_TEST_CLUSTER_ID
+
 function transformConfigs(metrics: V2Metrics["metrics"]): SinglePanelConfig[] {
   const categories = [...new Set((metrics || []).map((m) => m.type || ""))]
   return categories.map((category) => {
@@ -79,7 +82,7 @@ export function useCtxValue(): AppCtxValue {
 
         getMetricLabelValues(params) {
           return metricsServiceGetClusterMetricInstance(
-            "tidb-1cb4e027",
+            testClusterId,
             params.metricName,
           ).then((res) => res.instanceList ?? [])
         },
@@ -113,15 +116,19 @@ export function useCtxValue(): AppCtxValue {
               step: step.toString(),
             }).then((res) => res.data)
           } else if (lastKind === "azores-host") {
-            queryData = await metricsServiceGetHostMetricData("1", metricName, {
-              startTime: beginTime.toString(),
-              endTime: endTime.toString(),
-              step: step.toString(),
-            }).then((res) => res.data)
+            queryData = await metricsServiceGetHostMetricData(
+              testHostId,
+              metricName,
+              {
+                startTime: beginTime.toString(),
+                endTime: endTime.toString(),
+                step: step.toString(),
+              },
+            ).then((res) => res.data)
           } else {
             // lastKind === 'azores-cluster-overview' || lastKind === 'azores-cluster'
             queryData = await metricsServiceGetClusterMetricData(
-              "tidb-1cb4e027",
+              testClusterId,
               metricName,
               {
                 startTime: beginTime.toString(),

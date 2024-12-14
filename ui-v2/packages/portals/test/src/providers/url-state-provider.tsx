@@ -15,7 +15,7 @@ export function TanStackRouterUrlStateProvider(props: {
         navigate({ to: `${loc.pathname}?${v}` })
       },
     }
-  }, [loc.pathname, loc.search, navigate])
+  }, [loc.searchStr, loc.pathname, navigate])
 
   return <UrlStateProvider value={ctxValue}>{props.children}</UrlStateProvider>
 }

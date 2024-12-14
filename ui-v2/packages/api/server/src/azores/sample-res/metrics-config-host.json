@@ -20,7 +20,9 @@
             "name": "host_memory_total",
             "promql": "node_memory_MemTotal_bytes{@LABEL}",
             "promMetric": "node_memory_MemTotal_bytes",
-            "labels": [""],
+            "labels": [
+              ""
+            ],
             "type": "host",
             "legend": "total",
             "minTidbVersion": "",
@@ -30,7 +32,9 @@
             "name": "host_memory_used",
             "promql": "node_memory_MemTotal_bytes{@LABEL} - (node_memory_MemAvailable_bytes{@LABEL} or (node_memory_MemFree_bytes{@LABEL} + node_memory_Buffers_bytes{@LABEL} + node_memory_Cached_bytes{@LABEL}))",
             "promMetric": "node_memory_MemAvailable_bytes",
-            "labels": [""],
+            "labels": [
+              ""
+            ],
             "type": "host",
             "legend": "used",
             "minTidbVersion": "",
@@ -40,7 +44,9 @@
             "name": "host_memory_available",
             "promql": "node_memory_MemAvailable_bytes{@LABEL} or (node_memory_MemFree_bytes{@LABEL} + node_memory_Buffers_bytes{@LABEL} + node_memory_Cached_bytes{@LABEL})",
             "promMetric": "node_memory_MemAvailable_bytes",
-            "labels": [""],
+            "labels": [
+              ""
+            ],
             "type": "host",
             "legend": "available",
             "minTidbVersion": "",
@@ -69,7 +75,9 @@
             "name": "host_load_1",
             "promql": "node_load1{@LABEL}",
             "promMetric": "node_load1",
-            "labels": [""],
+            "labels": [
+              ""
+            ],
             "type": "host",
             "legend": "Load 1m",
             "minTidbVersion": "",
@@ -79,7 +87,9 @@
             "name": "host_load_5",
             "promql": "node_load5{@LABEL}",
             "promMetric": "node_load5",
-            "labels": [""],
+            "labels": [
+              ""
+            ],
             "type": "host",
             "legend": "Load 5m",
             "minTidbVersion": "",
@@ -89,7 +99,9 @@
             "name": "host_load_15",
             "promql": "node_load15{@LABEL}",
             "promMetric": "node_load15",
-            "labels": [""],
+            "labels": [
+              ""
+            ],
             "type": "host",
             "legend": "Load 15m",
             "minTidbVersion": "",
@@ -118,7 +130,10 @@
             "name": "host_process_memory",
             "promql": "process_resident_memory_bytes{@LABEL}",
             "promMetric": "process_resident_memory_bytes",
-            "labels": ["job", "instance"],
+            "labels": [
+              "job",
+              "instance"
+            ],
             "type": "host",
             "legend": "{job} {instance}",
             "minTidbVersion": "",
@@ -147,7 +162,9 @@
             "name": "host_cpu_usage",
             "promql": "1-(avg by(instance)(irate(node_cpu_seconds_total{mode=\"idle\",@LABEL}[1m])))",
             "promMetric": "node_cpu_seconds_total",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "host",
             "legend": "cpu_usage_percent",
             "minTidbVersion": "",
@@ -176,7 +193,10 @@
             "name": "host_process_cpu_usage",
             "promql": "rate(process_cpu_seconds_total{@LABEL}[1m])",
             "promMetric": "process_cpu_seconds_total",
-            "labels": ["job", "instance"],
+            "labels": [
+              "job",
+              "instance"
+            ],
             "type": "host",
             "legend": "{job} {instance}",
             "minTidbVersion": "",
@@ -234,7 +254,9 @@
             "name": "host_io_usage",
             "promql": "rate(node_disk_io_time_seconds_total{@LABEL}[30m]) or irate(node_disk_io_time_seconds_total{@LABEL}[1m])",
             "promMetric": "node_disk_io_time_seconds_total",
-            "labels": ["device"],
+            "labels": [
+              "device"
+            ],
             "type": "host",
             "legend": "{device}",
             "minTidbVersion": "",
@@ -263,7 +285,11 @@
             "name": "host_disk_usage",
             "promql": "1 - node_filesystem_avail_bytes{ device=~'^/.*',@LABEL} / node_filesystem_size_bytes{device=~'^/.*',@LABEL}",
             "promMetric": "node_filesystem_avail_bytes",
-            "labels": ["device", "fstype", "mountpoint"],
+            "labels": [
+              "device",
+              "fstype",
+              "mountpoint"
+            ],
             "type": "host",
             "legend": "{device} {fstype} {mountpoint}",
             "minTidbVersion": "",
@@ -292,7 +318,9 @@
             "name": "host_io_queue_size",
             "promql": "rate(node_disk_io_time_weighted_seconds_total{@LABEL}[5m])",
             "promMetric": "node_disk_io_time_weighted_seconds_total",
-            "labels": ["device"],
+            "labels": [
+              "device"
+            ],
             "type": "host",
             "legend": "{device}",
             "minTidbVersion": "",
@@ -321,7 +349,9 @@
             "name": "host_iops",
             "promql": "sum(rate(node_disk_reads_completed_total{@LABEL}[5m])+rate(node_disk_writes_completed_total{@LABEL}[5m]))by(instance)",
             "promMetric": "node_disk_reads_completed_total",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "host",
             "legend": "iops",
             "minTidbVersion": "",
@@ -350,7 +380,9 @@
             "name": "host_io_write_latency",
             "promql": "(rate(node_disk_write_time_seconds_total{@LABEL}[5m])/ rate(node_disk_writes_completed_total{@LABEL}[5m]))",
             "promMetric": "node_disk_write_time_seconds_total",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "host",
             "legend": "Write Latency: [{device}]",
             "minTidbVersion": "",
@@ -360,7 +392,9 @@
             "name": "host_io_read_latency",
             "promql": "(rate(node_disk_read_time_seconds_total{@LABEL}[5m])/ rate(node_disk_reads_completed_total{@LABEL}[5m]))",
             "promMetric": "node_disk_read_time_seconds_total",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "host",
             "legend": "Read Latency: [{device}]",
             "minTidbVersion": "",
@@ -389,7 +423,9 @@
             "name": "host_io_throughput",
             "promql": "irate(node_disk_read_bytes_total{@LABEL}[5m]) + irate(node_disk_written_bytes_total{@LABEL}[5m])",
             "promMetric": "node_disk_read_bytes_total",
-            "labels": [""],
+            "labels": [
+              ""
+            ],
             "type": "host",
             "legend": "{device}",
             "minTidbVersion": "",
@@ -457,7 +493,9 @@
             "name": "host_network_in_packets",
             "promql": "rate(node_network_receive_packets_total{device!=\"lo\",@LABEL}[30m]) or irate(node_network_receive_packets_total{device!=\"lo\",@LABEL}[5m])",
             "promMetric": "node_network_receive_packets_total",
-            "labels": ["device"],
+            "labels": [
+              "device"
+            ],
             "type": "host",
             "legend": "Inbound: {device}",
             "minTidbVersion": "",
@@ -467,7 +505,9 @@
             "name": "host_network_out_packets",
             "promql": "rate(node_network_transmit_packets_total{device!=\"lo\",@LABEL}[30m]) or irate(node_network_transmit_packets_total{device!=\"lo\",@LABEL}[5m])",
             "promMetric": "node_network_transmit_packets_total",
-            "labels": ["device"],
+            "labels": [
+              "device"
+            ],
             "type": "host",
             "legend": "Outbound: {device}",
             "minTidbVersion": "",
@@ -496,7 +536,9 @@
             "name": "host_tcp_retrans_percentage",
             "promql": "rate(node_netstat_Tcp_RetransSegs{@LABEL}[5m]) / rate(node_netstat_Tcp_InSegs{@LABEL}[5m])",
             "promMetric": "node_netstat_Tcp_RetransSegs",
-            "labels": [""],
+            "labels": [
+              ""
+            ],
             "type": "host",
             "legend": "tcp_retrans_percent",
             "minTidbVersion": "",
@@ -525,7 +567,11 @@
             "name": "host_inode_usage",
             "promql": "node_filesystem_files_free{@LABEL} / node_filesystem_files{@LABEL}",
             "promMetric": "node_filesystem_files_free",
-            "labels": ["fstype", "device", "mountpoint"],
+            "labels": [
+              "fstype",
+              "device",
+              "mountpoint"
+            ],
             "type": "host",
             "legend": "{fstype} {device} {mountpoint}",
             "minTidbVersion": "",

@@ -20,7 +20,9 @@
             "name": "tidb_cpu_usage_percentage",
             "promql": "irate(process_cpu_seconds_total{ job=\"tidb\",@LABEL}[1m])",
             "promMetric": "process_cpu_seconds_total",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "{instance}",
             "minTidbVersion": "",
@@ -78,7 +80,9 @@
             "name": "host_cpu_usage",
             "promql": "1-(avg by(instance)(irate(node_cpu_seconds_total{mode=\"idle\",@LABEL}[1m])))",
             "promMetric": "node_cpu_seconds_total",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "host",
             "legend": "cpu_usage_percent",
             "minTidbVersion": "",
@@ -107,7 +111,9 @@
             "name": "tidb_memory_usage",
             "promql": "process_resident_memory_bytes{job=\"tidb\",@LABEL}",
             "promMetric": "process_resident_memory_bytes",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "{instance}",
             "minTidbVersion": "",
@@ -136,7 +142,9 @@
             "name": "qps",
             "promql": "sum(rate(tidb_executor_statement_total{@LABEL}[1m]))",
             "promMetric": "tidb_executor_statement",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "{instance}",
             "minTidbVersion": "",
@@ -192,9 +200,11 @@
         "expressions": [
           {
             "name": "host_avg_io_usage",
-            "promql": "avg(rate(node_disk_io_time_seconds_total[5m])) by (instance)",
+            "promql": "avg(rate(node_disk_io_time_seconds_total{@LABEL}[5m])) by (instance)",
             "promMetric": "node_disk_io_time_seconds_total",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "host",
             "legend": "io_usage",
             "minTidbVersion": "",
@@ -223,7 +233,9 @@
             "name": "tikv_storage_usage",
             "promql": "sum(tikv_store_size_bytes{type=\"used\",@LABEL})by (instance)",
             "promMetric": "sum(tikv_store_size_bytes{type=\"used\",@LABEL})by (instance)",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tikv",
             "legend": "{instance}",
             "minTidbVersion": "",
@@ -252,7 +264,9 @@
             "name": "avg_query_duration",
             "promql": "sum(rate(tidb_server_handle_query_duration_seconds_sum{ sql_type!=\"internal\",@LABEL}[1m])) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!=\"internal\",@LABEL}[1m]))",
             "promMetric": "tidb_server_handle_query_duration_seconds",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "{instance}",
             "minTidbVersion": "",
@@ -349,7 +363,9 @@
             "name": "avg_transaction_duration",
             "promql": "sum(rate(tidb_session_transaction_duration_seconds_sum{@LABEL}[1m])) / sum(rate(tidb_session_transaction_duration_seconds_count{@LABEL}[1m])) ",
             "promMetric": "tidb_session_transaction_duration_seconds",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "{instance}",
             "minTidbVersion": "",
@@ -376,9 +392,11 @@
         "expressions": [
           {
             "name": "commit_token_wait_duration",
-            "promql": "histogram_quantile(0.99, sum(rate(tidb_tikvclient_batch_executor_token_wait_duration_bucket{}[1m]))by(le))",
+            "promql": "histogram_quantile(0.99, sum(rate(tidb_tikvclient_batch_executor_token_wait_duration_bucket{@LABEL}[1m]))by(le))",
             "promMetric": "tidb_tikvclient_batch_executor_token_wait_duration",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "{instance}",
             "minTidbVersion": "",
@@ -407,7 +425,9 @@
             "name": "connection_count_sum",
             "promql": "sum(tidb_server_connections{@LABEL})",
             "promMetric": "tidb_server_connections",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "{instance}",
             "minTidbVersion": "",

@@ -14,8 +14,8 @@ export const metricsServiceGetClusterMetricInstanceHandlers =
     zValidator("response", metricsServiceGetClusterMetricInstanceResponse),
     async (c: MetricsServiceGetClusterMetricInstanceContext) => {
       return c.json({
-        type: "string",
-        instanceList: ["string"],
+        type: "tidb",
+        instanceList: ["10.2.12.107:10081", "10.2.12.107:10082"],
       })
     },
   )

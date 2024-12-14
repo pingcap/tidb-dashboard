@@ -20,7 +20,9 @@
             "name": "tidb_query_duration",
             "promql": "sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!=\"internal\",@LABEL}[1m])) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!=\"internal\",@LABEL}[1m]))",
             "promMetric": "tidb_server_handle_query_duration_seconds",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "avg",
             "minTidbVersion": "",
@@ -30,7 +32,9 @@
             "name": "p99_tidb_query_duration",
             "promql": "histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!=\"internal\",@LABEL}[1m])) by (le))",
             "promMetric": "tidb_server_handle_query_duration_seconds",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "99",
             "minTidbVersion": "",
@@ -40,9 +44,12 @@
             "name": "tidb_query_duration_by_sql_type",
             "promql": "sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!=\"internal\",@LABEL}[1m])) by (sql_type) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!=\"internal\",@LABEL}[1m])) by (sql_type)",
             "promMetric": "tidb_server_handle_query_duration_seconds",
-            "labels": ["instance", "sql_type"],
+            "labels": [
+              "instance",
+              "sql_type"
+            ],
             "type": "tidb",
-            "legend": "avg-{sql_type}",
+            "legend": "avg-{sqlType}",
             "minTidbVersion": "",
             "maxTidbVersion": ""
           }
@@ -69,7 +76,10 @@
             "name": "qps_by_type",
             "promql": "sum(rate(tidb_executor_statement_total{@LABEL}[1m])) by (type)",
             "promMetric": "tidb_executor_statement_total",
-            "labels": ["instance", "type"],
+            "labels": [
+              "instance",
+              "type"
+            ],
             "type": "tidb",
             "legend": "{type}",
             "minTidbVersion": "",
@@ -79,7 +89,9 @@
             "name": "qps",
             "promql": "sum(rate(tidb_executor_statement_total{@LABEL}[1m]))",
             "promMetric": "tidb_executor_statement",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "Total",
             "minTidbVersion": "",
@@ -89,7 +101,9 @@
             "name": "qps_error",
             "promql": "sum(rate(tidb_server_execute_error_total{@LABEL}[1m])) ",
             "promMetric": "tidb_server_execute_error_total",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tidb",
             "legend": "Failed",
             "minTidbVersion": "",
@@ -118,9 +132,13 @@
             "name": "tps_by_type_and_txn_mode",
             "promql": "sum(rate(tidb_session_transaction_duration_seconds_count{@LABEL}[1m])) by (type, txn_mode)",
             "promMetric": "tidb_session_transaction_duration_seconds",
-            "labels": ["instance", "type", "txn_mode"],
+            "labels": [
+              "instance",
+              "type",
+              "txn_mode"
+            ],
             "type": "tidb",
-            "legend": "{type}-{txn_mode}",
+            "legend": "{type}-{txnMode}",
             "minTidbVersion": "",
             "maxTidbVersion": ""
           }
@@ -147,9 +165,12 @@
             "name": "p99_transaction_duration",
             "promql": "histogram_quantile(0.99, sum(rate(tidb_session_transaction_duration_seconds_bucket{@LABEL}[1m])) by (le, txn_mode))",
             "promMetric": "tidb_session_transaction_duration_seconds",
-            "labels": ["instance", "txn_mode"],
+            "labels": [
+              "instance",
+              "txn_mode"
+            ],
             "type": "tidb",
-            "legend": "99-{txn_mode}",
+            "legend": "99-{txnMode}",
             "minTidbVersion": "",
             "maxTidbVersion": ""
           },
@@ -157,9 +178,12 @@
             "name": "p95_transaction_duration",
             "promql": "histogram_quantile(0.95, sum(rate(tidb_session_transaction_duration_seconds_bucket{@LABEL}[1m])) by (le, txn_mode))",
             "promMetric": "tidb_session_transaction_duration_seconds",
-            "labels": ["instance", "txn_mode"],
+            "labels": [
+              "instance",
+              "txn_mode"
+            ],
             "type": "tidb",
-            "legend": "95-{txn_mode}",
+            "legend": "95-{txnMode}",
             "minTidbVersion": "",
             "maxTidbVersion": ""
           },
@@ -167,9 +191,12 @@
             "name": "p80_transaction_duration",
             "promql": "histogram_quantile(0.80, sum(rate(tidb_session_transaction_duration_seconds_bucket{@LABEL}[1m])) by (le, txn_mode))",
             "promMetric": "tidb_session_transaction_duration_seconds",
-            "labels": ["instance", "txn_mode"],
+            "labels": [
+              "instance",
+              "txn_mode"
+            ],
             "type": "tidb",
-            "legend": "80-{txn_mode}",
+            "legend": "80-{txnMode}",
             "minTidbVersion": "",
             "maxTidbVersion": ""
           }
@@ -186,7 +213,7 @@
       "description": "Rate of storage space consumption increase in TiKV nodes",
       "metric": {
         "name": "tikv_increase_of_storage_usage",
-        "unit": "bytes",
+        "unit": "Bps",
         "description": "Shows the rate of storage usage increase in TiKV instances",
         "minTidbVersion": "",
         "maxTidbVersion": "",
@@ -196,7 +223,9 @@
             "name": "tikv_increase_of_storage_usage",
             "promql": "rate(tikv_store_size_bytes{type=\"used\",@LABEL}[5m])",
             "promMetric": "tikv_store_size_bytes",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tikv",
             "legend": "{instance}",
             "minTidbVersion": "",
@@ -215,7 +244,7 @@
       "description": "Rate of storage space consumption increase in TiFlash nodes",
       "metric": {
         "name": "tiflash_increase_of_storage_usage",
-        "unit": "bytes",
+        "unit": "Bps",
         "description": "Shows the rate of storage usage increase in TiFlash instances",
         "minTidbVersion": "",
         "maxTidbVersion": "",
@@ -223,9 +252,11 @@
         "expressions": [
           {
             "name": "tiflash_increase_of_storage_usage",
-            "promql": "rate(tiflash_system_current_metric_StoreSizeUsed[5m])",
+            "promql": "rate(tiflash_system_current_metric_StoreSizeUsed{@LABEL}[5m])",
             "promMetric": "tiflash_system_current_metric_StoreSizeUsed",
-            "labels": ["instance"],
+            "labels": [
+              "instance"
+            ],
             "type": "tiflash",
             "legend": "{instance}",
             "minTidbVersion": "",

@@ -7,11 +7,15 @@ import {
   metricsServiceGetHostMetricDataResponse,
 } from "../index.zod"
 
+import metricsData from "../sample-res/metrics-data-cpu-usage.json"
+
 const factory = createFactory()
 
 export const metricsServiceGetHostMetricDataHandlers = factory.createHandlers(
   zValidator("param", metricsServiceGetHostMetricDataParams),
   zValidator("query", metricsServiceGetHostMetricDataQueryParams),
   zValidator("response", metricsServiceGetHostMetricDataResponse),
-  async (c: MetricsServiceGetHostMetricDataContext) => {},
+  async (c: MetricsServiceGetHostMetricDataContext) => {
+    return c.json(metricsData)
+  },
 )

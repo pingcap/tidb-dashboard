@@ -7,6 +7,7 @@
 import {
   Hono
 } from 'hono'
+import { cors } from 'hono/cors'
 
 import { apiKeyServiceListApiKeysHandlers } from './handlers/apiKeyServiceListApiKeys';
 import { apiKeyServiceCreateApiKeyHandlers } from './handlers/apiKeyServiceCreateApiKey';
@@ -33,151 +34,153 @@ import { userServiceValidateSessionHandlers } from './handlers/userServiceValida
 
 const app = new Hono()
 
+app.use('/api/v2/*', cors())
+
 /**
  * @summary ListApiKeys
  */
 
-app.get('/api/v2/apiKeys',...apiKeyServiceListApiKeysHandlers)
+app.get('/api/v2/apiKeys', ...apiKeyServiceListApiKeysHandlers)
 
 
 /**
  * @summary CreateApiKey
  */
 
-app.post('/api/v2/apiKeys',...apiKeyServiceCreateApiKeyHandlers)
+app.post('/api/v2/apiKeys', ...apiKeyServiceCreateApiKeyHandlers)
 
 
 /**
  * @summary deleteUser one user by user_id
  */
 
-app.delete('/api/v2/apiKeys/:accessKey',...apiKeyServiceDeleteApiKeyHandlers)
+app.delete('/api/v2/apiKeys/:accessKey', ...apiKeyServiceDeleteApiKeyHandlers)
 
 
 /**
  * @summary Get cluster metric data
  */
 
-app.get('/api/v2/clusters/:clusterId/metrics/:name/data',...metricsServiceGetClusterMetricDataHandlers)
+app.get('/api/v2/clusters/:clusterId/metrics/:name/data', ...metricsServiceGetClusterMetricDataHandlers)
 
 
 /**
  * @summary Get metric instances
  */
 
-app.get('/api/v2/clusters/:clusterId/metrics/:name/instance',...metricsServiceGetClusterMetricInstanceHandlers)
+app.get('/api/v2/clusters/:clusterId/metrics/:name/instance', ...metricsServiceGetClusterMetricInstanceHandlers)
 
 
 /**
  * @summary GetProcessList retrieves the list of running processes in a cluster
  */
 
-app.get('/api/v2/clusters/:clusterId/sessions',...clusterServiceGetProcessListHandlers)
+app.get('/api/v2/clusters/:clusterId/sessions', ...clusterServiceGetProcessListHandlers)
 
 
 /**
  * @summary DeleteProcess terminates a specific process in the cluster
  */
 
-app.delete('/api/v2/clusters/:clusterId/sessions/:sessionId',...clusterServiceDeleteProcessHandlers)
+app.delete('/api/v2/clusters/:clusterId/sessions/:sessionId', ...clusterServiceDeleteProcessHandlers)
 
 
 /**
  * @summary Get host metric data
  */
 
-app.get('/api/v2/hosts/:hostId/metrics/:name/data',...metricsServiceGetHostMetricDataHandlers)
+app.get('/api/v2/hosts/:hostId/metrics/:name/data', ...metricsServiceGetHostMetricDataHandlers)
 
 
 /**
  * @summary login
  */
 
-app.post('/api/v2/login',...userServiceLoginHandlers)
+app.post('/api/v2/login', ...userServiceLoginHandlers)
 
 
 /**
  * @summary Logout
  */
 
-app.post('/api/v2/logout',...userServiceLogoutHandlers)
+app.post('/api/v2/logout', ...userServiceLogoutHandlers)
 
 
 /**
  * @summary Get metrics info
  */
 
-app.get('/api/v2/metrics',...metricsServiceGetMetricsHandlers)
+app.get('/api/v2/metrics', ...metricsServiceGetMetricsHandlers)
 
 
 /**
  * @summary Get top metric data
  */
 
-app.get('/api/v2/overview/metrics/:name/data',...metricsServiceGetTopMetricDataHandlers)
+app.get('/api/v2/overview/metrics/:name/data', ...metricsServiceGetTopMetricDataHandlers)
 
 
 /**
  * @summary Get overview status
  */
 
-app.get('/api/v2/overview/status',...metricsServiceGetOverviewStatusHandlers)
+app.get('/api/v2/overview/status', ...metricsServiceGetOverviewStatusHandlers)
 
 
 /**
  * @summary listRoles
  */
 
-app.get('/api/v2/roles',...roleServiceListRolesHandlers)
+app.get('/api/v2/roles', ...roleServiceListRolesHandlers)
 
 
 /**
  * @summary createRole
  */
 
-app.post('/api/v2/roles',...roleServiceCreateRoleHandlers)
+app.post('/api/v2/roles', ...roleServiceCreateRoleHandlers)
 
 
 /**
  * @summary deleteUser one user by user_id
  */
 
-app.delete('/api/v2/roles/:roleId',...roleServiceDeleteRoleHandlers)
+app.delete('/api/v2/roles/:roleId', ...roleServiceDeleteRoleHandlers)
 
 
 /**
  * @summary ListUsers
  */
 
-app.get('/api/v2/users',...userServiceListUsersHandlers)
+app.get('/api/v2/users', ...userServiceListUsersHandlers)
 
 
 /**
  * @summary createUser
  */
 
-app.post('/api/v2/users',...userServiceCreateUserHandlers)
+app.post('/api/v2/users', ...userServiceCreateUserHandlers)
 
 
 /**
  * @summary delete one user by user_id
  */
 
-app.delete('/api/v2/users/:userId',...userServiceDeleteUserHandlers)
+app.delete('/api/v2/users/:userId', ...userServiceDeleteUserHandlers)
 
 
 /**
  * @summary Update User
  */
 
-app.patch('/api/v2/users/:userId',...userServiceUpdateUserHandlers)
+app.patch('/api/v2/users/:userId', ...userServiceUpdateUserHandlers)
 
 
 /**
  * @summary ValidateSession
  */
 
-app.get('/api/v2/users:validateSession',...userServiceValidateSessionHandlers)
+app.get('/api/v2/users:validateSession', ...userServiceValidateSessionHandlers)
 
 
 export default app

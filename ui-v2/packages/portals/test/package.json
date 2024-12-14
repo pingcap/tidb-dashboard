@@ -7,14 +7,13 @@
     "dev": "vite",
     "build": "vite build && tsc -b",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "rapper": "rapper --type normal --rapperPath \"src/rapper\" --apiUrl \"/api/repository/get?id=18&token=KyWjPzJK7ZrYQh67uJBGdEZ47y0uX5ko\" --rapUrl \"https://rapapi.cn\""
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@pingcap-incubator/tidb-dashboard-lib-api-client": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-apps": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-charts": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
-    "@rap-api/request": "^0.0.2",
     "@tanstack/react-query": "^5.59.16",
     "@tanstack/react-router": "^1.85.0",
     "@tidbcloud/uikit": "catalog:",
@@ -23,7 +22,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
-    "@rap-api/cli": "^0.0.3",
     "@tanstack/router-devtools": "^1.85.0",
     "@tanstack/router-plugin": "^1.84.4",
     "@types/node": "^22.10.1",

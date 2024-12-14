@@ -7,7 +7,7 @@ declare module "axios" {
 }
 
 const DEFAULT_TIMEOUT = 30 * 1000
-const axiosClient = axios.create({
+export const axiosClient = axios.create({
   baseURL: "",
   timeout: DEFAULT_TIMEOUT,
 })

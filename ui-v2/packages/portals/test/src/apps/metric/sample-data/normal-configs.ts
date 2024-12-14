@@ -3,7 +3,7 @@ import {
   TransformNullValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
 
-export const queryConfig: SinglePanelConfig[] = [
+export const normalQueryConfig: SinglePanelConfig[] = [
   {
     group: "",
     category: "cluster_status",

@@ -1,6 +1,13 @@
 import {
+  V2Metrics,
+  metricsServiceGetClusterMetricData,
+  metricsServiceGetClusterMetricInstance,
+  metricsServiceGetHostMetricData,
+  metricsServiceGetMetrics,
+  metricsServiceGetTopMetricData,
+} from "@pingcap-incubator/tidb-dashboard-lib-api-client"
+import {
   AppCtxValue,
-  MetricDataByNameResultItem,
   PromResultItem,
   SinglePanelConfig,
   TransformNullValue,
@@ -8,136 +15,130 @@ import {
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
-import { IModels, http } from "../../rapper"
-
-import azoresClusterConfig from "./sample-data/azores-cluster-configs.json"
-import azoresClusterOverviewConfig from "./sample-data/azores-cluster-overview-configs.json"
-import azoresHostConfig from "./sample-data/azores-host-configs.json"
-import azoresOverviewConfig from "./sample-data/azores-overview-configs.json"
-import cpuUsage from "./sample-data/cup-usage.json"
-import { queryConfig } from "./sample-data/normal-configs"
+import { normalQueryConfig } from "./sample-data/normal-configs"
 import qpsType from "./sample-data/qps-type.json"
 
-function transformConfigs(
-  configs: IModels["GET/api/v2/metrics"]["Res"],
-): SinglePanelConfig[] {
-  const categories = [...new Set(configs.metrics!.map((m) => m.type!))]
-  return categories.map((c) => {
-    const charts = configs.metrics!.filter((m) => m.type === c)
+function transformConfigs(metrics: V2Metrics["metrics"]): SinglePanelConfig[] {
+  const categories = [...new Set((metrics || []).map((m) => m.type || ""))]
+  return categories.map((category) => {
+    const charts = metrics!.filter((m) => m.type === category)
     return {
       group: charts[0].group!,
-      category: c,
-      displayName: "",
-      charts: charts?.map((m) => ({
-        metricName: m.name!,
-        title: m.displayName!,
-        label: m.description!,
-        queries: [],
-        nullValue: TransformNullValue.AS_ZERO,
-        unit: m.metric!.unit!,
-      })),
+      category,
+      displayName: category,
+      charts:
+        charts
+          ?.filter((metric) => metric.type === category && metric.name)
+          ?.map((metric) => ({
+            metricName: metric.name!,
+            title: metric.displayName!,
+            label: metric.description,
+            queries: [],
+            nullValue: TransformNullValue.AS_ZERO,
+            unit: metric.metric?.unit ?? "short",
+          })) ?? [],
     }
   })
 }
 
 export function useCtxValue(): AppCtxValue {
-  let _kind = "azores-overview"
+  let lastKind = "azores-overview"
+
   return useMemo(
     () => ({
       ctxId: "metric",
       api: {
-        getMetricQueriesConfig(kind: string) {
-          _kind = kind
-          return delay(1000).then(() => {
-            if (kind === "azores-overview") {
-              return transformConfigs(azoresOverviewConfig)
-            } else if (kind === "azores-host") {
-              return transformConfigs(azoresHostConfig)
-            } else if (kind === "azores-cluster-overview") {
-              return transformConfigs(azoresClusterOverviewConfig)
-              return http("GET/api/v2/metrics", {
-                class: "cluster",
-                group: "overview",
-              }).then((res) => transformConfigs(res))
-            } else if (kind === "azores-cluster") {
-              const configs = {
-                metrics: azoresClusterConfig.metrics!.filter(
-                  (m) => m.group !== "overview",
-                ),
-              }
-              return transformConfigs(configs)
-              return http("GET/api/v2/metrics", { class: "cluster" })
-                .then((res) => ({
-                  metrics: res.metrics!.filter((m) => m.group !== "overview"),
-                }))
-                .then((res) => transformConfigs(res))
-            }
-            return queryConfig
-          })
+        getMetricQueriesConfig: async (kind) => {
+          lastKind = kind
+          if (kind === "normal") {
+            return normalQueryConfig
+          }
+          let metrics
+          if (kind === "azores-overview") {
+            metrics = await metricsServiceGetMetrics({
+              class: "overview",
+              group: "overview",
+            }).then((res) => res.metrics)
+          } else if (kind === "azores-host") {
+            metrics = await metricsServiceGetMetrics({
+              class: "host",
+            }).then((res) => res.metrics)
+          } else if (kind === "azores-cluster-overview") {
+            metrics = await metricsServiceGetMetrics({
+              class: "cluster",
+              group: "overview",
+            }).then((res) => res.metrics)
+          } else {
+            // kind === 'azores-cluster'
+            metrics = await metricsServiceGetMetrics({
+              class: "cluster",
+            }).then((res) => res.metrics)
+          }
+          return transformConfigs(metrics)
         },
 
         getMetricLabelValues(params) {
-          console.log("getLabelValues", params)
-          return http(
-            "GET/api/v2/clusters/{clusterId}/metrics/{name}/instance",
-            {
-              clusterId: "tidb-1cb4e027",
-              name: params.metricName,
-            },
+          return metricsServiceGetClusterMetricInstance(
+            "tidb-1cb4e027",
+            params.metricName,
           ).then((res) => res.instanceList ?? [])
-
-          return delay(1000).then(() => [
-            "tidb-1cb4e027/10.2.12.107:10082",
-            "tidb-1cb4e027/10.2.12.107:10083",
-            "tidb-1cb4e027/10.2.12.107:10084",
-          ])
         },
 
-        getMetricDataByPromQL(_params: {
-          promQL: string
-          beginTime: number
-          endTime: number
-          step: number
-        }) {
-          console.log("getMetric", _params)
+        getMetricDataByPromQL(params) {
+          console.log("getMetric", params)
           return delay(1000).then(
             () => qpsType.data.result as unknown as PromResultItem[],
           )
         },
 
-        getMetricDataByMetricName(_params: {
-          metricName: string
-          beginTime: number
-          endTime: number
-          step: number
-          label?: string
-        }) {
-          console.log("getMetric", _params)
-          // if (_kind === "azores-overview") {
-          //   return http("GET/api/v2/overview/metrics/{name}/data", { name: _params.metricName, startTime: _params.beginTime + '', endTime: _params.endTime + '', step: _params.step + '' }).then(res => res.data)
-          // } else if (_kind === "azores-host") {
-          //   return http("GET/api/v2/hosts/{hostId}/metrics/{name}/data", { hostId: '1', name: _params.metricName, startTime: _params.beginTime + '', endTime: _params.endTime + '', step: _params.step + '' }).then(res => res.data)
-          // } else if (_kind === "azores-cluster-overview") {
-          //   return http('GET/api/v2/clusters/{clusterId}/metrics/{name}/data', { clusterId: 'tidb-1cb4e027', name: _params.metricName, startTime: _params.beginTime + '', endTime: _params.endTime + '', step: _params.step + '' }).then(res => res.data)
-          // } else if (_kind === "azores-cluster") {
-          //   return http('GET/api/v2/clusters/{clusterId}/metrics/{name}/data', { clusterId: 'tidb-1cb4e027', name: _params.metricName, startTime: _params.beginTime + '', endTime: _params.endTime + '', step: _params.step + '' }).then(res => res.data)
-          // }
-          if (_kind === "azores-cluster") {
-            return http("GET/api/v2/clusters/{clusterId}/metrics/{name}/data", {
-              clusterId: "tidb-1cb4e027",
-              name: _params.metricName,
-              startTime: _params.beginTime + "",
-              endTime: _params.endTime + "",
-              step: _params.step + "",
-              label: _params.label,
-            }).then(
-              (res) => res.data as unknown as MetricDataByNameResultItem[],
-            )
+        getMetricDataByMetricName: async ({
+          metricName,
+          beginTime,
+          endTime,
+          step,
+          label,
+        }) => {
+          console.log("getMetric", {
+            metricName,
+            beginTime,
+            endTime,
+            step,
+            label,
+          })
+          let queryData
+          if (lastKind === "azores-overview") {
+            queryData = await metricsServiceGetTopMetricData(metricName, {
+              startTime: beginTime.toString(),
+              endTime: endTime.toString(),
+              step: step.toString(),
+            }).then((res) => res.data)
+          } else if (lastKind === "azores-host") {
+            queryData = await metricsServiceGetHostMetricData("1", metricName, {
+              startTime: beginTime.toString(),
+              endTime: endTime.toString(),
+              step: step.toString(),
+            }).then((res) => res.data)
+          } else {
+            // lastKind === 'azores-cluster-overview' || lastKind === 'azores-cluster'
+            queryData = await metricsServiceGetClusterMetricData(
+              "tidb-1cb4e027",
+              metricName,
+              {
+                startTime: beginTime.toString(),
+                endTime: endTime.toString(),
+                step: step.toString(),
+                label,
+              },
+            ).then((res) => res.data)
           }
 
-          return delay(1000).then(
-            () => cpuUsage.data as unknown as MetricDataByNameResultItem[],
-          )
+          const ret = queryData?.map((d) => ({
+            expr: d.expr ?? "",
+            legend: d.legend ?? "",
+            result: (d.result as PromResultItem[]) ?? [],
+          }))
+
+          return ret ?? []
         },
       },
       cfg: {

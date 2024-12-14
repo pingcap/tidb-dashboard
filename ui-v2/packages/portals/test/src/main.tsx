@@ -1,23 +1,21 @@
+import { axiosClient } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { initI18n } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 
 import App from "./App.tsx"
-import { http } from "./rapper"
 
 import "./index.css"
 
 initI18n()
 
 // always use mock api, even in production
-http.interceptors.request.use((config) => {
-  // @todo: set in env
-  // config.baseURL = "https://rapapi.cn/api/app/mock/18"
-  // config.baseURL = "http://10.2.13.64:8087"
-  config.baseURL = ""
-  config.headers = {
-    "Ti-Env": "dev",
-  }
+axiosClient.interceptors.request.use((config) => {
+  // env: ''
+  // prod: 'https://tidb-dashboard-lib-api-server.2008-hbl-cf.workers.dev'
+  config.baseURL = import.meta.env.VITE_API_BASE_PATH
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  config.headers = { "Ti-Env": "dev" } as any
   return config
 })
 

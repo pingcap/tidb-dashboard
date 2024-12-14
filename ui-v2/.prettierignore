@@ -7,3 +7,5 @@ pnpm-lock.yaml
 
 # rap-api generated folder
 rapper
+
+packages/api/server/src

@@ -11,7 +11,8 @@
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "dev:portals:test": "pnpm -r --parallel --filter test-tidb-dashboard-ui-lib... dev",
-    "gen:locales": "tsx scripts/gen-locales.ts"
+    "gen:locales": "tsx scripts/gen-locales.ts",
+    "gen:api": "orval"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.9",
@@ -24,6 +25,7 @@
     "glob": "^11.0.0",
     "globals": "^15.9.0",
     "gogocode": "^1.0.55",
+    "orval": "^7.3.0",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",

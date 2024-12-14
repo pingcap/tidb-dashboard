@@ -1,0 +1,1825 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Azores Open API",
+    "version": "2.0.0"
+  },
+  "tags": [
+    {
+      "name": "MetricsService"
+    },
+    {
+      "name": "UserService"
+    },
+    {
+      "name": "RoleService"
+    },
+    {
+      "name": "ApiKeyService"
+    },
+    {
+      "name": "ClusterService"
+    }
+  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/api/v2/apiKeys": {
+      "get": {
+        "summary": "ListApiKeys",
+        "operationId": "ApiKeyService_ListApiKeys",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListApiKeysResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "accessKey",
+            "description": "The access_key of the apikey",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "creator",
+            "description": "The access_key of the apikey",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "The status of the apikey",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["ApiKeyService"]
+      },
+      "post": {
+        "summary": "CreateApiKey",
+        "operationId": "ApiKeyService_CreateApiKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ApiKey"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "apiKey",
+            "description": "\nApikey resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2ApiKey",
+              "required": ["apiKey"]
+            }
+          }
+        ],
+        "tags": ["ApiKeyService"]
+      }
+    },
+    "/api/v2/apiKeys/{accessKey}": {
+      "delete": {
+        "summary": "deleteUser one user by user_id",
+        "operationId": "ApiKeyService_DeleteApiKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accessKey",
+            "description": "The access key of the apiKey",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ApiKeyService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/metrics/{name}/data": {
+      "get": {
+        "summary": "Get cluster metric data",
+        "operationId": "MetricsService_GetClusterMetricData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ClusterMetricData"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "description": "Metric Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "startTime",
+            "description": "Start time in Unix timestamp format",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "endTime",
+            "description": "End time in Unix timestamp format",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "step",
+            "description": "Step time in seconds",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "label",
+            "description": "Line Label for the metric",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "range",
+            "description": "Time Range for the query",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["MetricsService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/metrics/{name}/instance": {
+      "get": {
+        "summary": "Get metric instances",
+        "operationId": "MetricsService_GetClusterMetricInstance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ClusterMetricInstance"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "description": "Metric name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["MetricsService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sessions": {
+      "get": {
+        "summary": "GetProcessList retrieves the list of running processes in a cluster",
+        "operationId": "ClusterService_GetProcessList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ProcessList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID uniquely identifies the target cluster",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sessions/{sessionId}": {
+      "delete": {
+        "summary": "DeleteProcess terminates a specific process in the cluster",
+        "operationId": "ClusterService_DeleteProcess",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID uniquely identifies the target cluster",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "sessionId",
+            "description": "Session ID identifies the process to be terminated",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/hosts/{hostId}/metrics/{name}/data": {
+      "get": {
+        "summary": "Get host metric data",
+        "operationId": "MetricsService_GetHostMetricData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2HostMetricData"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hostId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "description": "Metric Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "startTime",
+            "description": "Start time in Unix timestamp format",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "endTime",
+            "description": "End time in Unix timestamp format",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "step",
+            "description": "Step time in seconds",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "label",
+            "description": "Line Label for the metric",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "range",
+            "description": "Time Range for the query",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["MetricsService"]
+      }
+    },
+    "/api/v2/login": {
+      "post": {
+        "summary": "login",
+        "operationId": "UserService_Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2LoginRequest"
+            }
+          }
+        ],
+        "tags": ["UserService"]
+      }
+    },
+    "/api/v2/logout": {
+      "post": {
+        "summary": "Logout",
+        "operationId": "UserService_Logout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["UserService"]
+      }
+    },
+    "/api/v2/metrics": {
+      "get": {
+        "summary": "Get metrics info",
+        "operationId": "MetricsService_GetMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Metrics"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "class",
+            "description": "Level 1 classification\n\n - unspecified: Unspecified\n - cluster: Cluster metrics\n - host: Host metrics\n - overview: Overview metrics",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": ["unspecified", "cluster", "host", "overview"],
+            "default": "unspecified"
+          },
+          {
+            "name": "group",
+            "description": "Level 2 grouping\n\n - unspecified: Unspecified group\n - overview: Overview group\n - basic: Basic group\n - advance: Advanced group\n - resource: Resource group\n - performance: Performance group\n - process: Process group",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "unspecified",
+              "overview",
+              "basic",
+              "advance",
+              "resource",
+              "performance",
+              "process"
+            ],
+            "default": "unspecified"
+          },
+          {
+            "name": "type",
+            "description": "Level 3 type",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "description": "The metric name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["MetricsService"]
+      }
+    },
+    "/api/v2/overview/metrics/{name}/data": {
+      "get": {
+        "summary": "Get top metric data",
+        "operationId": "MetricsService_GetTopMetricData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TopMetricData"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "description": "Metric name to query",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "startTime",
+            "description": "Start time for the query",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "endTime",
+            "description": "End time for the query",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "step",
+            "description": "Step time for the query",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "description": "Limit for the number of top results",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": ["MetricsService"]
+      }
+    },
+    "/api/v2/overview/status": {
+      "get": {
+        "summary": "Get overview status",
+        "operationId": "MetricsService_GetOverviewStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2OverviewStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskStartTime",
+            "description": "Task start time in Unix timestamp format",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "taskEndTime",
+            "description": "Task end time in Unix timestamp format",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": ["MetricsService"]
+      }
+    },
+    "/api/v2/roles": {
+      "get": {
+        "summary": "listRoles",
+        "operationId": "RoleService_ListRoles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListRolesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "nameLike",
+            "description": "The name of the role",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "emailLike",
+            "description": "The email of the role",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["RoleService"]
+      },
+      "post": {
+        "summary": "createRole",
+        "operationId": "RoleService_CreateRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Role"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role",
+            "description": "\nUser resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2Role"
+            }
+          }
+        ],
+        "tags": ["RoleService"]
+      }
+    },
+    "/api/v2/roles/{roleId}": {
+      "delete": {
+        "summary": "deleteUser one user by user_id",
+        "operationId": "RoleService_DeleteRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "description": "The id of the role",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": ["RoleService"]
+      }
+    },
+    "/api/v2/users": {
+      "get": {
+        "summary": "ListUsers",
+        "operationId": "UserService_ListUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "nameLike",
+            "description": "The name of the user",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "emailLike",
+            "description": "The email of the user",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "roleName",
+            "description": "The role name of the user",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["UserService"]
+      },
+      "post": {
+        "summary": "createUser",
+        "operationId": "UserService_CreateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2User"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user",
+            "description": "\nUser resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2User"
+            }
+          }
+        ],
+        "tags": ["UserService"]
+      }
+    },
+    "/api/v2/users/{userId}": {
+      "delete": {
+        "summary": "delete one user by user_id",
+        "operationId": "UserService_DeleteUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "The user_id of the user",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["UserService"]
+      },
+      "patch": {
+        "summary": "Update User",
+        "operationId": "UserService_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2User"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "The id of the user",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "user",
+            "description": "User resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2User"
+            }
+          }
+        ],
+        "tags": ["UserService"]
+      }
+    },
+    "/api/v2/users:validateSession": {
+      "get": {
+        "summary": "ValidateSession",
+        "operationId": "UserService_ValidateSession",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ValidateSessionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["UserService"]
+      }
+    }
+  },
+  "definitions": {
+    "metricsv2Value": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "number",
+          "format": "double",
+          "title": "Timestamp of the value"
+        },
+        "value": {
+          "type": "string",
+          "title": "The actual value"
+        }
+      },
+      "title": "Value represents a single value in the query result"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "rpcStatus": {
+      "properties": {
+        "error": {
+          "properties": {
+            "code": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "details": {
+              "items": {
+                "$ref": "#/definitions/protobufAny",
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "message": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "v2ApiKey": {
+      "type": "object",
+      "properties": {
+        "accessKey": {
+          "type": "string",
+          "title": "The access_key of apikey"
+        },
+        "secretKey": {
+          "type": "string",
+          "title": "The secret_key of apikey"
+        },
+        "creator": {
+          "type": "string",
+          "title": "The creator of apikey"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["disable", "enable"],
+          "title": "The apikey status"
+        },
+        "createTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The create time of the apikey",
+          "readOnly": true
+        },
+        "updateTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The update time of the role",
+          "readOnly": true
+        }
+      },
+      "title": "ApiKey resource",
+      "required": ["accessKey", "secretKey"]
+    },
+    "v2CategoryMetricDetail": {
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "title": "Level 1 classification"
+        },
+        "group": {
+          "type": "string",
+          "title": "Level 2 grouping"
+        },
+        "type": {
+          "type": "string",
+          "title": "Level 3 type"
+        },
+        "order": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Display order of charts"
+        },
+        "displayName": {
+          "type": "string",
+          "title": "Display name of the metric"
+        },
+        "name": {
+          "type": "string",
+          "title": "Metric Name"
+        },
+        "description": {
+          "type": "string",
+          "title": "Description of the metric"
+        },
+        "metric": {
+          "$ref": "#/definitions/v2MetricWithExpressions",
+          "title": "Metric with its expressions"
+        }
+      },
+      "title": "CategoryMetricDetail represents the details of a metric category"
+    },
+    "v2ClassEnumData": {
+      "type": "string",
+      "enum": ["unspecified", "cluster", "host", "overview"],
+      "default": "unspecified",
+      "description": "- unspecified: Unspecified\n - cluster: Cluster metrics\n - host: Host metrics\n - overview: Overview metrics",
+      "title": "Data of ClassEnum"
+    },
+    "v2ClusterMetricData": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "Response Status (e.g., \"success\", \"error\")"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ExprQueryData"
+          },
+          "title": "Response Data containing the queried metrics"
+        }
+      },
+      "title": "ClusterMetricData represents the response for querying cluster metric data"
+    },
+    "v2ClusterMetricInstance": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Target type (e.g., tikv, tidb, host)"
+        },
+        "instanceList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "List of instances for the specified metric"
+        }
+      },
+      "title": "QueryClusterMetricInstanceResponse represents the response for querying cluster metric instances"
+    },
+    "v2ClusterProcess": {
+      "type": "object",
+      "properties": {
+        "instance": {
+          "type": "string",
+          "title": "TiDB instance identifier running this process"
+        },
+        "id": {
+          "type": "string",
+          "title": "Unique process ID within the cluster"
+        },
+        "user": {
+          "type": "string",
+          "title": "Username that started the process"
+        },
+        "host": {
+          "type": "string",
+          "title": "Client host information"
+        },
+        "db": {
+          "type": "string",
+          "title": "Database being accessed by the process"
+        },
+        "command": {
+          "type": "string",
+          "enum": [
+            "Sleep",
+            "Quit",
+            "Init DB",
+            "Query",
+            "Field List",
+            "Create DB",
+            "Drop DB",
+            "Refresh",
+            "Shutdown",
+            "Statistics",
+            "Processlist",
+            "Connect",
+            "Kill",
+            "Debug",
+            "Ping",
+            "Time",
+            "Delayed Insert",
+            "Change User",
+            "Binlog Dump",
+            "Table Dump",
+            "Connect out",
+            "Register Slave",
+            "Prepare",
+            "Execute",
+            "Long Data",
+            "Close stmt",
+            "Reset stmt",
+            "Set option",
+            "Fetch",
+            "Daemon",
+            "Reset connect"
+          ],
+          "title": "Current command being executed (e.g., \"Query\", \"Sleep\")"
+        },
+        "time": {
+          "type": "string",
+          "format": "int64",
+          "title": "Time in seconds that the process has been running"
+        },
+        "state": {
+          "type": "string",
+          "title": "Current state of the process"
+        },
+        "info": {
+          "type": "string",
+          "title": "SQL statement or other information about the process"
+        },
+        "digest": {
+          "type": "string",
+          "title": "Query digest for identifying similar queries"
+        },
+        "mem": {
+          "type": "string",
+          "title": "Memory usage of the process"
+        },
+        "disk": {
+          "type": "string",
+          "title": "Disk usage of the process"
+        },
+        "txnStart": {
+          "type": "string",
+          "title": "Transaction start timestamp"
+        },
+        "resourceGroup": {
+          "type": "string",
+          "title": "Resource group assigned to the process"
+        },
+        "sessionAlias": {
+          "type": "string",
+          "title": "Session alias"
+        },
+        "rowsAffected": {
+          "type": "string",
+          "format": "int64",
+          "title": "Rows affected"
+        },
+        "tidbCpu": {
+          "type": "string",
+          "format": "int64",
+          "title": "tidb cpu"
+        },
+        "tikvCpu": {
+          "type": "string",
+          "format": "int64",
+          "title": "tikv cpu"
+        }
+      },
+      "title": "ClusterProcess represents a single process in the cluster"
+    },
+    "v2ExprQueryData": {
+      "type": "object",
+      "properties": {
+        "expr": {
+          "type": "string",
+          "title": "The expression used in the query"
+        },
+        "legend": {
+          "type": "string",
+          "title": "The legend associated with the expression"
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2QueryResult"
+          },
+          "title": "The results of the query"
+        }
+      },
+      "title": "ExprQueryData represents the data for an expression query"
+    },
+    "v2ExpressionWithLegend": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Expression name"
+        },
+        "promql": {
+          "type": "string",
+          "title": "PromQL expression"
+        },
+        "promMetric": {
+          "type": "string",
+          "title": "Prometheus metric name"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "List of labels associated with the expression"
+        },
+        "type": {
+          "type": "string",
+          "title": "Type of the expression"
+        },
+        "legend": {
+          "type": "string",
+          "title": "Legend name for the expression"
+        },
+        "minTidbVersion": {
+          "type": "string",
+          "title": "Minimum supported TiDB version"
+        },
+        "maxTidbVersion": {
+          "type": "string",
+          "title": "Maximum supported TiDB version"
+        }
+      },
+      "title": "ExpressionWithLegend represents an expression with its legend"
+    },
+    "v2GroupEnumData": {
+      "type": "string",
+      "enum": [
+        "unspecified",
+        "overview",
+        "basic",
+        "advance",
+        "resource",
+        "performance",
+        "process"
+      ],
+      "default": "unspecified",
+      "description": "- unspecified: Unspecified group\n - overview: Overview group\n - basic: Basic group\n - advance: Advanced group\n - resource: Resource group\n - performance: Performance group\n - process: Process group",
+      "title": "Data of GroupEnum"
+    },
+    "v2HostMetricData": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "Response Status (e.g., \"success\", \"error\")"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ExprQueryData"
+          },
+          "title": "Response Data containing the queried metrics"
+        }
+      },
+      "title": "HostMetricData represents the response for querying cluster metric data"
+    },
+    "v2ListApiKeysResponse": {
+      "type": "object",
+      "properties": {
+        "apikeys": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ApiKey"
+          },
+          "title": "List of users"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Total size"
+        }
+      },
+      "title": "ListApiKeyRequest"
+    },
+    "v2ListRolesResponse": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Role"
+          },
+          "title": "List of users"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Total size"
+        }
+      },
+      "title": "ListRolesResponse"
+    },
+    "v2ListUsersResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2User"
+          },
+          "title": "List of users"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Total size"
+        }
+      },
+      "title": "ListUsersResponse"
+    },
+    "v2LoginRequest": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "title": "The id of the user"
+        },
+        "password": {
+          "type": "string",
+          "title": "The password of the user"
+        }
+      },
+      "title": "Login Request",
+      "required": ["userId"]
+    },
+    "v2MetricWithExpressions": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Metric name"
+        },
+        "unit": {
+          "type": "string",
+          "title": "Unit of the metric"
+        },
+        "description": {
+          "type": "string",
+          "title": "Description of the metric"
+        },
+        "minTidbVersion": {
+          "type": "string",
+          "title": "Minimum supported TiDB version"
+        },
+        "maxTidbVersion": {
+          "type": "string",
+          "title": "Maximum supported TiDB version"
+        },
+        "isBuiltin": {
+          "type": "boolean",
+          "title": "Whether it is a built-in metric"
+        },
+        "expressions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ExpressionWithLegend"
+          },
+          "title": "List of associated expressions"
+        }
+      },
+      "title": "MetricWithExpressions represents a metric with its expressions"
+    },
+    "v2Metrics": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2CategoryMetricDetail"
+          },
+          "title": "List of metrics info"
+        }
+      },
+      "title": "Metrics represents the list of metrics info"
+    },
+    "v2OverviewStatus": {
+      "type": "object",
+      "properties": {
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2StatusCount"
+          },
+          "title": "List of clusters' status"
+        },
+        "hosts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2StatusCount"
+          },
+          "title": "List of hosts' status"
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2StatusCount"
+          },
+          "title": "List of alerts' status"
+        },
+        "alertLevels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2StatusCount"
+          },
+          "title": "List of alert levels' status"
+        },
+        "brTasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2StatusCount"
+          },
+          "title": "List of backup \u0026 restore tasks' status"
+        },
+        "sysTasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2StatusCount"
+          },
+          "title": "List of system tasks' status"
+        },
+        "otherTasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2StatusCount"
+          },
+          "title": "List of other tasks' status"
+        }
+      },
+      "title": "OverviewStatus represents the response for querying overview data"
+    },
+    "v2ProcessList": {
+      "type": "object",
+      "properties": {
+        "clusterProcessList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ClusterProcess"
+          },
+          "title": "List of cluster processes containing detailed information about each process"
+        },
+        "isSupportKill": {
+          "type": "boolean",
+          "title": "Whether kill operation is supported by the cluster\nDepends on TiDB version and cluster configuration"
+        },
+        "totalProcessCount": {
+          "type": "string",
+          "format": "int64",
+          "title": "Total number of processes in the cluster\nIncludes both active and sleeping processes"
+        },
+        "activeProcessCount": {
+          "type": "string",
+          "format": "int64",
+          "title": "Number of active processes in the cluster\nExcludes processes in \"sleep\" state"
+        }
+      },
+      "title": "ProcessList represents the response of process list query"
+    },
+    "v2QueryMetric": {
+      "type": "object",
+      "properties": {
+        "instance": {
+          "type": "string",
+          "title": "Instance of the metric"
+        },
+        "sqlType": {
+          "type": "string",
+          "title": "SQL type of the metric"
+        },
+        "type": {
+          "type": "string",
+          "title": "Type of the metric"
+        },
+        "result": {
+          "type": "string",
+          "title": "Result of the metric"
+        },
+        "txnMode": {
+          "type": "string",
+          "title": "Transaction mode of the metric"
+        },
+        "job": {
+          "type": "string",
+          "title": "Job type of the metric"
+        },
+        "device": {
+          "type": "string",
+          "title": "Device type of the metric"
+        },
+        "fstype": {
+          "type": "string",
+          "title": "FSType of the metric"
+        },
+        "mountpoint": {
+          "type": "string",
+          "title": "MountPoint of the metric"
+        },
+        "module": {
+          "type": "string",
+          "title": "Module of the metric"
+        },
+        "kind": {
+          "type": "string",
+          "title": "Kind of the metric"
+        },
+        "ping": {
+          "type": "string",
+          "title": "Ping of the metric"
+        }
+      },
+      "title": "QueryMetric represents the metric details in the query result"
+    },
+    "v2QueryResult": {
+      "type": "object",
+      "properties": {
+        "metric": {
+          "$ref": "#/definitions/v2QueryMetric",
+          "title": "Metric details"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/metricsv2Value"
+          },
+          "title": "Values associated with the metric"
+        }
+      },
+      "title": "QueryResult represents the result of a query"
+    },
+    "v2Role": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The id of the role"
+        },
+        "roleName": {
+          "type": "string",
+          "title": "The name of the role"
+        },
+        "roleType": {
+          "type": "string",
+          "format": "int64",
+          "title": "The id of the role"
+        },
+        "roleTypeDesc": {
+          "type": "string",
+          "title": "The id of the role"
+        },
+        "detail": {
+          "type": "string",
+          "title": "The note of the role"
+        },
+        "note": {
+          "type": "string",
+          "title": "The note of the role"
+        },
+        "createTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The create time of the role",
+          "readOnly": true
+        },
+        "updateTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The update time of the role",
+          "readOnly": true
+        }
+      },
+      "title": "the role resource"
+    },
+    "v2StatusCount": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "Targets status (e.g., \"healthy\", \"unhealthy\")"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The number of targets with this status"
+        }
+      },
+      "title": "StatusCount represents the status of a target"
+    },
+    "v2TopMetricData": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "Response Status (e.g., \"success\", \"error\")"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ExprQueryData"
+          },
+          "title": "Response Data containing the top queried metrics"
+        }
+      },
+      "title": "TopMetricData represents the response for querying top metric data"
+    },
+    "v2User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "The id of the user"
+        },
+        "userId": {
+          "type": "string",
+          "title": "The user_id of the user"
+        },
+        "name": {
+          "type": "string",
+          "title": "The name of the user"
+        },
+        "email": {
+          "type": "string",
+          "title": "The email of the user"
+        },
+        "note": {
+          "type": "string",
+          "title": "The note of the user"
+        },
+        "password": {
+          "type": "string",
+          "title": "The password of the user"
+        },
+        "userType": {
+          "type": "string",
+          "format": "int64",
+          "title": "The type of the user"
+        },
+        "userTypeDesc": {
+          "type": "string",
+          "title": "The description of the user type"
+        },
+        "phone": {
+          "type": "string",
+          "title": "The phone of the user"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2UserRole",
+            "enum": [
+              "ADMIN",
+              "ALERT_MANAGER",
+              "ALERT_READER",
+              "BACKUP_MANAGER",
+              "BACKUP_READER",
+              "CLUSTER_MANAGER",
+              "CLUSTER_READER",
+              "HOST_MANAGER",
+              "HOST_READER",
+              "USER_MANAGER",
+              "AUDIT_MANAGER",
+              "SYSTEM_MANAGER",
+              "SYSTEM_READER"
+            ]
+          },
+          "title": "The role name"
+        },
+        "createTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The create time of the user",
+          "readOnly": true
+        },
+        "updateTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The update time of the user",
+          "readOnly": true
+        }
+      },
+      "title": "User resource",
+      "required": ["id", "userId", "name"]
+    },
+    "v2UserRole": {
+      "type": "object",
+      "properties": {
+        "roleName": {
+          "type": "string",
+          "title": "The name of the role"
+        },
+        "roleId": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The id of the role"
+        }
+      },
+      "title": "the role of user",
+      "required": ["roleId"]
+    },
+    "v2ValidateSessionResponse": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "title": "The id of the user"
+        }
+      },
+      "title": "The Response of ValidateSession",
+      "required": ["userId"]
+    }
+  }
+}

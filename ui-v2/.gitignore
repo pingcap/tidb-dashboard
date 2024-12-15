@@ -25,3 +25,6 @@ dist-ssr
 
 # tanstack router generated file
 routeTree.gen.ts
+
+# Cloudflare Workers
+.wrangler

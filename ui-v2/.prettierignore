@@ -5,7 +5,5 @@ coverage
 
 pnpm-lock.yaml
 
-# rap-api generated folder
-rapper
-
+# orval generated files
 packages/api/server/src

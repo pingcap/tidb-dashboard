@@ -9,7 +9,6 @@ import "./index.css"
 
 initI18n()
 
-// always use mock api, even in production
 axiosClient.interceptors.request.use((config) => {
   // env: ''
   // prod: 'https://tidb-dashboard-lib-api-server.2008-hbl-cf.workers.dev'
@@ -18,6 +17,15 @@ axiosClient.interceptors.request.use((config) => {
   config.headers = { "Ti-Env": "dev" } as any
   return config
 })
+
+// handle error
+axiosClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.log(error)
+    return Promise.reject(error)
+  },
+)
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

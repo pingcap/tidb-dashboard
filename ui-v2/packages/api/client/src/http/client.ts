@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios"
+import axios, { AxiosRequestConfig } from "axios"
 
 declare module "axios" {
   interface AxiosRequestConfig {
@@ -11,16 +11,6 @@ export const axiosClient = axios.create({
   baseURL: "",
   timeout: DEFAULT_TIMEOUT,
 })
-
-function handleResponseError(error: AxiosError) {
-  // TODO:
-  return Promise.reject(error)
-}
-
-axiosClient.interceptors.response.use(
-  (response) => response,
-  handleResponseError,
-)
 
 /**
  * Add a second `options` argument to

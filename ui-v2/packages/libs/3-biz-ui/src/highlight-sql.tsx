@@ -1,52 +1,61 @@
 import { formatSql } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Box, CodeHighlight } from "@tidbcloud/uikit"
+import { Box, CodeHighlight, InlineCodeHighlight } from "@tidbcloud/uikit"
 import React, { useMemo } from "react"
 
-interface Props {
-  sql: string
-  compact?: boolean
-}
-
-function HighlightSQL({ sql, compact = false }: Props) {
+function InlineHighlightSQL({ sql }: { sql: string }) {
   const formattedSql = useMemo(() => {
-    return formatSql(sql, compact)
-  }, [sql, compact])
+    return formatSql(sql, true)
+  }, [sql])
 
-  const highlighter = (
-    <CodeHighlight
-      withCopyButton={!compact}
+  return (
+    <InlineCodeHighlight
       code={formattedSql}
       styles={{
-        root: {
-          backgroundColor: "transparent",
-        },
-        pre: {
-          padding: 0,
-        },
         code: {
+          width: "100%",
+          backgroundColor: "transparent",
           padding: 0,
-          fontSize: compact ? 13 : 12,
-          ...(compact
-            ? {
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-              }
-            : {}),
+          fontSize: 13,
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+          textOverflow: "ellipsis",
         },
       }}
     />
   )
+}
 
-  if (compact) {
-    return highlighter
-  }
+function HighlightSQL({ sql }: { sql: string }) {
+  const formattedSql = useMemo(() => {
+    return formatSql(sql, false)
+  }, [sql])
 
   return (
     <Box mah="90vh" sx={{ overflow: "auto" }}>
-      {highlighter}
+      <CodeHighlight
+        withCopyButton={true}
+        code={formattedSql}
+        styles={{
+          root: {
+            backgroundColor: "transparent",
+          },
+          pre: {
+            padding: 0,
+          },
+          code: {
+            padding: 0,
+            fontSize: 12,
+          },
+        }}
+      />
     </Box>
   )
 }
 
-export default React.memo(HighlightSQL)
+const _InlineHighlightSQL = React.memo(InlineHighlightSQL)
+const _HighlightSQL = React.memo(HighlightSQL)
+
+export {
+  _InlineHighlightSQL as InlineHighlightSQL,
+  _HighlightSQL as HighlightSQL,
+}

@@ -44,6 +44,7 @@ export function ListTable() {
 
   return (
     <ProTable
+      layoutMode="grid"
       enableColumnResizing
       enableColumnPinning
       enableSorting

@@ -1,7 +1,7 @@
 import { Box, HoverCard, HoverCardProps, Typography } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
-import HighlightSQL from "./highlight-sql"
+import { HighlightSQL, InlineHighlightSQL } from "./highlight-sql"
 
 export function SQLWithHover({
   sql,
@@ -26,7 +26,7 @@ export function SQLWithHover({
     >
       <HoverCard.Target>
         <Box>
-          <HighlightSQL sql={truncSQLShort} compact />
+          <InlineHighlightSQL sql={truncSQLShort} />
         </Box>
       </HoverCard.Target>
       <HoverCard.Dropdown onClick={(e) => e.stopPropagation()}>

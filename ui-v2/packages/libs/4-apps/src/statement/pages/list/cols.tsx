@@ -22,7 +22,7 @@ function SqlCell({ row }: { row: StatementModel }) {
   }
 
   return row.digest_text ? (
-    <Box sx={{ cursor: "pointer" }} onClick={handleClick}>
+    <Box sx={{ cursor: "pointer" }} onClick={handleClick} w="100%">
       <SQLWithHover sql={row.digest_text} />
     </Box>
   ) : (

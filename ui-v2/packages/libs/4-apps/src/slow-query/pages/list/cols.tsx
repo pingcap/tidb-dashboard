@@ -20,7 +20,7 @@ function SqlCell({ row }: { row: SlowqueryModel }) {
   }
 
   return (
-    <Box sx={{ cursor: "pointer" }} onClick={handleClick}>
+    <Box sx={{ cursor: "pointer" }} onClick={handleClick} w="100%">
       <SQLWithHover sql={row.query!} />
     </Box>
   )

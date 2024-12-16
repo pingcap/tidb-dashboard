@@ -5,8 +5,8 @@ export function RefreshProgress({ value }: { value: number }) {
     <RingProgress
       ml={-4}
       mr={-4}
-      size={26}
-      thickness={8}
+      size={22}
+      thickness={4}
       rootColor="carbon.5"
       sections={[{ value, color: "carbon.8" }]}
     />

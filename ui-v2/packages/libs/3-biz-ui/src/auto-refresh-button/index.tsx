@@ -116,6 +116,7 @@ const AutoRefreshButton = forwardRef<
             )
           }
           loading={loading}
+          loaderProps={{ size: 16 }}
           disabled={disabled}
         >
           Refresh
@@ -131,7 +132,7 @@ const AutoRefreshButton = forwardRef<
           <Menu.Target>
             <Tooltip disabled={!!autoRefreshValue} label="Auto Refresh: Off">
               <Button
-                disabled={disabled}
+                disabled={disabled || loading}
                 variant="default"
                 styles={(theme) => ({
                   root: {
@@ -150,8 +151,6 @@ const AutoRefreshButton = forwardRef<
                   label: { fontWeight: 400 },
                 })}
                 px={12}
-                loading={loading}
-                loaderProps={{ size: 0 }}
               >
                 {!!autoRefreshValue && (
                   <Text mr={8}>

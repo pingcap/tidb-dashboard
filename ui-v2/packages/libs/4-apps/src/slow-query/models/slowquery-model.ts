@@ -64,7 +64,7 @@ export interface SlowqueryModel {
   wait_prewrite_binlog_time?: number
   wait_time?: number
   wait_ts?: number
-  warnings?: Array<object>
+  warnings?: string | object[]
   write_keys?: number
   write_size?: number
   write_sql_response_total?: number

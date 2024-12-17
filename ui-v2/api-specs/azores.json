@@ -2594,8 +2594,8 @@
           "title": "Connection ID"
         },
         "success": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Success"
         },
         "timestamp": {
@@ -2658,14 +2658,14 @@
           "format": "double",
           "title": "Execution retry time"
         },
-        "mem_max": {
-          "type": "string",
-          "format": "int64",
+        "memory_max": {
+          "type": "integer",
+          "format": "int32",
           "title": "Max memory"
         },
         "disk_max": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Max disk"
         },
         "txn_start_ts": {
@@ -2689,8 +2689,8 @@
           "title": "Warnings"
         },
         "is_internal": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Is internal"
         },
         "index_names": {
@@ -2706,18 +2706,18 @@
           "title": "Backoff types"
         },
         "prepared": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Prepared statement"
         },
         "plan_from_cache": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Plan from cache"
         },
         "plan_from_binding": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Plan from binding"
         },
         "user": {
@@ -2809,23 +2809,23 @@
           "title": "Coprocessor wait max"
         },
         "write_keys": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Write keys"
         },
         "write_size": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Write size"
         },
         "prewrite_region": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Prewrite region"
         },
         "txn_retry": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Transaction retry"
         },
         "request_count": {
@@ -2885,13 +2885,13 @@
           "title": "Session alias"
         },
         "exec_retry_count": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Execution retry count"
         },
         "preproc_subqueries": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Preprocessing subqueries"
         },
         "kv_total": {
@@ -2929,7 +2929,8 @@
           "title": "Backoff detail"
         },
         "is_explicit_txn": {
-          "type": "boolean",
+          "type": "integer",
+          "format": "int32",
           "title": "Is explicit transaction"
         },
         "plan_digest": {
@@ -2937,7 +2938,8 @@
           "title": "Plan digest"
         },
         "has_more_results": {
-          "type": "boolean",
+          "type": "integer",
+          "format": "int32",
           "title": "Has more results"
         },
         "resource_group": {
@@ -2955,8 +2957,8 @@
           "title": "Request unit write"
         },
         "result_rows": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Result rows"
         }
       },
@@ -3127,8 +3129,8 @@
           "title": "AggDigest"
         },
         "exec_count": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggExecCount"
         },
         "stmt_type": {
@@ -3136,268 +3138,268 @@
           "title": "AggStmtType"
         },
         "sum_errors": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggSumErrors"
         },
         "sum_warnings": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggSumWarnings"
         },
         "sum_latency": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggSumLatency"
         },
         "max_latency": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxLatency"
         },
         "min_latency": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMinLatency"
         },
         "avg_latency": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgLatency"
         },
         "avg_parse_latency": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgParseLatency"
         },
         "max_parse_latency": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxParseLatency"
         },
         "avg_compile_latency": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgCompileLatency"
         },
         "max_compile_latency": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxCompileLatency"
         },
         "sum_cop_task_num": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggSumCopTaskNum"
         },
         "avg_cop_process_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgCopProcessTime"
         },
         "max_cop_process_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxCopProcessTime"
         },
         "avg_cop_wait_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgCopWaitTime"
         },
         "max_cop_wait_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxCopWaitTime"
         },
         "avg_process_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgProcessTime"
         },
         "max_process_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxProcessTime"
         },
         "avg_wait_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgWaitTime"
         },
         "max_wait_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxWaitTime"
         },
         "avg_backoff_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgBackoffTime"
         },
         "max_backoff_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxBackoffTime"
         },
         "avg_total_keys": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgTotalKeys"
         },
         "max_total_keys": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxTotalKeys"
         },
         "avg_processed_keys": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgProcessedKeys"
         },
         "max_processed_keys": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxProcessedKeys"
         },
         "avg_prewrite_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgPrewriteTime"
         },
         "max_prewrite_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxPrewriteTime"
         },
         "avg_commit_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgCommitTime"
         },
         "max_commit_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxCommitTime"
         },
         "avg_get_commit_ts_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgGetCommitTsTime"
         },
         "max_get_commit_ts_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxGetCommitTsTime"
         },
         "avg_commit_backoff_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgCommitBackoffTime"
         },
         "max_commit_backoff_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxCommitBackoffTime"
         },
         "avg_resolve_lock_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgResolveLockTime"
         },
         "max_resolve_lock_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxResolveLockTime"
         },
         "avg_local_latch_wait_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgLocalLatchWaitTime"
         },
         "max_local_latch_wait_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxLocalLatchWaitTime"
         },
         "avg_write_keys": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgWriteKeys"
         },
         "max_write_keys": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxWriteKeys"
         },
         "avg_write_size": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgWriteSize"
         },
         "max_write_size": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxWriteSize"
         },
         "avg_prewrite_regions": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgPrewriteRegions"
         },
         "max_prewrite_regions": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxPrewriteRegions"
         },
         "avg_txn_retry": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgTxnRetry"
         },
         "max_txn_retry": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxTxnRetry"
         },
         "sum_backoff_times": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggSumBackoffTimes"
         },
         "avg_mem": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgMem"
         },
         "max_mem": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxMem"
         },
         "avg_disk": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgDisk"
         },
         "max_disk": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggMaxDisk"
         },
         "avg_affected_rows": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggAvgAffectedRows"
         },
         "first_seen": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggFirstSeen"
         },
         "last_seen": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggLastSeen"
         },
         "sample_user": {
@@ -3425,8 +3427,8 @@
           "title": "AggIndexNames"
         },
         "plan_count": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "AggPlanCount"
         },
         "plan": {
@@ -3446,53 +3448,53 @@
           "title": "AggPlanHint"
         },
         "max_rocksdb_delete_skipped_count": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggMaxRocksdbDeleteSkippedCount"
         },
         "avg_rocksdb_delete_skipped_count": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggAvgRocksdbDeleteSkippedCount"
         },
         "max_rocksdb_key_skipped_count": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggMaxRocksdbKeySkippedCount"
         },
         "avg_rocksdb_key_skipped_count": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggAvgRocksdbKeySkippedCount"
         },
         "max_rocksdb_block_cache_hit_count": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggMaxRocksdbBlockCacheHitCount"
         },
         "avg_rocksdb_block_cache_hit_count": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggAvgRocksdbBlockCacheHitCount"
         },
         "max_rocksdb_block_read_count": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggMaxRocksdbBlockReadCount"
         },
         "avg_rocksdb_block_read_count": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggAvgRocksdbBlockReadCount"
         },
         "max_rocksdb_block_read_byte": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggMaxRocksdbBlockReadByte"
         },
         "avg_rocksdb_block_read_byte": {
-          "type": "string",
-          "format": "uint64",
+          "type": "integer",
+          "format": "int64",
           "title": "AggAvgRocksdbBlockReadByte"
         },
         "related_schemas": {

@@ -75,10 +75,16 @@ export function DetailTabs({ data }: { data: SlowqueryModel }) {
       },
     ]
     if (data.warnings) {
+      let jsonData = {}
+      if (typeof data.warnings === "string") {
+        jsonData = JSON.parse(data.warnings)
+      } else if (typeof data.warnings === "object") {
+        jsonData = data.warnings
+      }
       _tabs.push({
         label: "Warnings",
         value: "warnings",
-        component: <WarningsJsonView data={data.warnings} />,
+        component: <WarningsJsonView data={jsonData} />,
       })
     }
     return _tabs

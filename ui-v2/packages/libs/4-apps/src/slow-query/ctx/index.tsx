@@ -9,9 +9,16 @@ type AppApi = {
   getRuGroups(): Promise<string[]>
 
   getSlowQueries(params: {
-    limit: number
+    beginTime: number
+    endTime: number
+    dbs: string[]
+    ruGroups: string[]
     term: string
+    limit: number
+    orderBy: string
+    desc: boolean
   }): Promise<SlowqueryModel[]>
+
   getSlowQuery(params: { id: string }): Promise<SlowqueryModel>
 }
 

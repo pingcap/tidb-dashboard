@@ -1,3 +1,4 @@
+import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useQuery } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx"
@@ -37,7 +38,16 @@ export function useListData() {
       sortRule,
     ],
     queryFn: () => {
-      return ctx.api.getSlowQueries({ limit, term })
+      const tr = toTimeRangeValue(timeRange)
+      return ctx.api.getSlowQueries({
+        beginTime: tr[0],
+        endTime: tr[1],
+        dbs,
+        ruGroups,
+        limit,
+        term,
+        ...sortRule,
+      })
     },
   })
 

@@ -1,3 +1,4 @@
+import { clusterServiceGetSlowQueryList } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useNavigate } from "@tanstack/react-router"
@@ -14,6 +15,8 @@ declare global {
   }
 }
 
+const testClusterId = import.meta.env.VITE_TEST_CLUSTER_ID
+
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
 
@@ -28,12 +31,23 @@ export function useCtxValue(): AppCtxValue {
           return delay(1000).then(() => ["default", "ru1", "ru2"])
         },
 
-        getSlowQueries(_params: { limit: number; term: string }) {
-          // return http("GET/slow-query/list", params).then((d) => d.items)
+        getSlowQueries(params) {
+          console.log("getSlowQueries", params)
+
+          return clusterServiceGetSlowQueryList(testClusterId, {
+            beginTime: params.beginTime + "",
+            endTime: params.endTime + "",
+            db: params.dbs,
+            text: params.term,
+            orderBy: params.orderBy,
+            isDesc: params.desc,
+            pageSize: params.limit,
+            fields: "query,query_time,memory_max",
+          }).then((res) => res.data ?? [])
+
           return delay(1000).then(() => listData)
         },
         getSlowQuery(_params: { id: string }) {
-          // return http("GET/slow-query/detail", params)
           return delay(1000)
             .then(() => detailData)
             .then((d) => {

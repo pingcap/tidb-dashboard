@@ -27,7 +27,7 @@ export function Detail() {
       {detailData && (
         <Stack>
           <DetailQuery sql={detailData.query || ""} />
-          <DetailPlan plan={detailData.plan || ""} />
+          {detailData.plan && <DetailPlan plan={detailData.plan} />}
           <DetailTabs data={detailData} />
         </Stack>
       )}

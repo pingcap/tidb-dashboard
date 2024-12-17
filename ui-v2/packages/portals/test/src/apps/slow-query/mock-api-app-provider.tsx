@@ -1,10 +1,11 @@
-import { clusterServiceGetSlowQueryList } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
+import {
+  clusterServiceGetSlowQueryDetail,
+  clusterServiceGetSlowQueryList,
+} from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
-
-// import { http } from "../../rapper"
 
 import detailData from "./sample-data/detail-3.json"
 import listData from "./sample-data/list-2.json"
@@ -47,7 +48,18 @@ export function useCtxValue(): AppCtxValue {
 
           return delay(1000).then(() => listData)
         },
-        getSlowQuery(_params: { id: string }) {
+        getSlowQuery(params: { id: string }) {
+          const [digest, connectId, timestamp] = params.id.split(",")
+          return clusterServiceGetSlowQueryDetail(testClusterId, digest, {
+            connectId,
+            timestamp: Number(timestamp),
+          }).then((d) => {
+            if (d.binary_plan_text) {
+              d.plan = d.binary_plan_text
+            }
+            return d
+          })
+
           return delay(1000)
             .then(() => detailData)
             .then((d) => {
@@ -63,7 +75,7 @@ export function useCtxValue(): AppCtxValue {
       },
       actions: {
         openDetail: (id: string) => {
-          window.preUrl = [window.location.hash.slice(1)]
+          window.preUrl = [window.location.pathname + window.location.search]
           navigate({ to: `/slow-query/detail?id=${id}` })
         },
         backToList: () => {

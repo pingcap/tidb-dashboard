@@ -15,7 +15,7 @@ function SqlCell({ row }: { row: SlowqueryModel }) {
 
   function handleClick() {
     const { digest, connection_id, timestamp } = row
-    const id = [timestamp, digest, connection_id].join(",")
+    const id = [digest, connection_id, timestamp].join(",")
     ctx.actions.openDetail(id)
   }
 

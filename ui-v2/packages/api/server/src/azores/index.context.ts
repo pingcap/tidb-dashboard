@@ -6,54 +6,30 @@
  */
 import type { Context, Env } from 'hono';
 
-
-// https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir/49579497#49579497
-type IfEquals<X, Y, A = X, B = never> = (<T>() => T extends X ? 1 : 2) extends <
-T,
->() => T extends Y ? 1 : 2
-? A
-: B;
-
-type WritableKeys<T> = {
-[P in keyof T]-?: IfEquals<
-  { [Q in P]: T[P] },
-  { -readonly [Q in P]: T[P] },
-  P
->;
-}[keyof T];
-
-type UnionToIntersection<U> =
-  (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never;
-type DistributeReadOnlyOverUnions<T> = T extends any ? NonReadonly<T> : never;
-
-type Writable<T> = Pick<T, WritableKeys<T>>;
-type NonReadonly<T> = [T] extends [UnionToIntersection<T>] ? {
-  [P in keyof Writable<T>]: T[P] extends object
-    ? NonReadonly<NonNullable<T[P]>>
-    : T[P];
-} : DistributeReadOnlyOverUnions<T>;
-
-import { ApiKeyServiceListApiKeysParams,
-V2ApiKey,
-MetricsServiceGetClusterMetricDataParams,
+import { MetricsServiceGetClusterMetricDataParams,
+ClusterServiceGetSlowQueryListParams,
+ClusterServiceDownloadSlowQueryListParams,
+ClusterServiceGetSlowQueryDetailParams,
+ClusterServiceGetSqlPlanListParams,
+ClusterServiceGetSqlPlanBindingListParams,
+ClusterServiceUnbindSqlPlanParams,
+ClusterServiceGetTopSqlListParams,
+ClusterServiceGetTopSqlDetailParams,
 MetricsServiceGetHostMetricDataParams,
+LabelServiceListLabelsParams,
+Temapiv2LabelBody,
+Temapiv2LabelBody,
+V2BindLabelRequest,
+V2BindResourceRequest,
 V2LoginRequest,
 MetricsServiceGetMetricsParams,
 MetricsServiceGetTopMetricDataParams,
 MetricsServiceGetOverviewStatusParams,
-RoleServiceListRolesParams,
-V2Role,
 UserServiceListUsersParams,
 V2User,
-V2User } from './index.schemas';
+V2User,
+UserServiceListUserRolesParams } from './index.schemas';
 
-export type ApiKeyServiceListApiKeysContext<E extends Env = any> = Context<E, '/api/v2/apiKeys', { in: { query: ApiKeyServiceListApiKeysParams, }, out: { query: ApiKeyServiceListApiKeysParams, } }>
-export type ApiKeyServiceCreateApiKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys', { in: { json: NonReadonly<V2ApiKey>, }, out: { json: NonReadonly<V2ApiKey>, } }>
-export type ApiKeyServiceDeleteApiKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys/:accessKey', { in: { param: {
- accessKey: string,
- }, }, out: { param: {
- accessKey: string,
- }, } }>
 export type MetricsServiceGetClusterMetricDataContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/metrics/:name/data', { in: { param: {
  clusterId: string,
     name: string,
@@ -80,6 +56,77 @@ export type ClusterServiceDeleteProcessContext<E extends Env = any> = Context<E,
  clusterId: string,
     sessionId: string,
  }, } }>
+export type ClusterServiceGetSlowQueryListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries', { in: { param: {
+ clusterId: string,
+ },query: ClusterServiceGetSlowQueryListParams, }, out: { param: {
+ clusterId: string,
+ },query: ClusterServiceGetSlowQueryListParams, } }>
+export type ClusterServiceGetSlowQueryAvailableAdvancedFiltersContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/advancedFilters', { in: { param: {
+ clusterId: string,
+ }, }, out: { param: {
+ clusterId: string,
+ }, } }>
+export type ClusterServiceDownloadSlowQueryListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/download', { in: { param: {
+ clusterId: string,
+ },query: ClusterServiceDownloadSlowQueryListParams, }, out: { param: {
+ clusterId: string,
+ },query: ClusterServiceDownloadSlowQueryListParams, } }>
+export type ClusterServiceGetSlowQueryAvailableFieldsContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/fields', { in: { param: {
+ clusterId: string,
+ }, }, out: { param: {
+ clusterId: string,
+ }, } }>
+export type ClusterServiceGetSlowQueryDetailContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/:digest', { in: { param: {
+ clusterId: string,
+    digest: string,
+ },query: ClusterServiceGetSlowQueryDetailParams, }, out: { param: {
+ clusterId: string,
+    digest: string,
+ },query: ClusterServiceGetSlowQueryDetailParams, } }>
+export type ClusterServiceGetSqlPlanListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans', { in: { param: {
+ clusterId: string,
+ },query: ClusterServiceGetSqlPlanListParams, }, out: { param: {
+ clusterId: string,
+ },query: ClusterServiceGetSqlPlanListParams, } }>
+export type ClusterServiceBindSqlPlanContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans/:planDigest:bindSqlPlan', { in: { param: {
+ clusterId: string,
+    planDigest: string,
+ }, }, out: { param: {
+ clusterId: string,
+    planDigest: string,
+ }, } }>
+export type ClusterServiceCheckSupportContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans:checkSupport', { in: { param: {
+ clusterId: string,
+ }, }, out: { param: {
+ clusterId: string,
+ }, } }>
+export type ClusterServiceGetSqlPlanBindingListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans:showBinding', { in: { param: {
+ clusterId: string,
+ },query: ClusterServiceGetSqlPlanBindingListParams, }, out: { param: {
+ clusterId: string,
+ },query: ClusterServiceGetSqlPlanBindingListParams, } }>
+export type ClusterServiceUnbindSqlPlanContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans:unbindSqlPlan', { in: { param: {
+ clusterId: string,
+ },query: ClusterServiceUnbindSqlPlanParams, }, out: { param: {
+ clusterId: string,
+ },query: ClusterServiceUnbindSqlPlanParams, } }>
+export type ClusterServiceGetTopSqlListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls', { in: { param: {
+ clusterId: string,
+ },query: ClusterServiceGetTopSqlListParams, }, out: { param: {
+ clusterId: string,
+ },query: ClusterServiceGetTopSqlListParams, } }>
+export type ClusterServiceGetTopSqlAvailableFieldsContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls/fields', { in: { param: {
+ clusterId: string,
+ }, }, out: { param: {
+ clusterId: string,
+ }, } }>
+export type ClusterServiceGetTopSqlDetailContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls/:digest', { in: { param: {
+ clusterId: string,
+    digest: string,
+ },query: ClusterServiceGetTopSqlDetailParams, }, out: { param: {
+ clusterId: string,
+    digest: string,
+ },query: ClusterServiceGetTopSqlDetailParams, } }>
 export type MetricsServiceGetHostMetricDataContext<E extends Env = any> = Context<E, '/api/v2/hosts/:hostId/metrics/:name/data', { in: { param: {
  hostId: string,
     name: string,
@@ -87,6 +134,20 @@ export type MetricsServiceGetHostMetricDataContext<E extends Env = any> = Contex
  hostId: string,
     name: string,
  },query: MetricsServiceGetHostMetricDataParams, } }>
+export type LabelServiceListLabelsContext<E extends Env = any> = Context<E, '/api/v2/labels', { in: { query: LabelServiceListLabelsParams, }, out: { query: LabelServiceListLabelsParams, } }>
+export type LabelServiceCreateLabelContext<E extends Env = any> = Context<E, '/api/v2/labels', { in: { json: Temapiv2LabelBody, }, out: { json: Temapiv2LabelBody, } }>
+export type LabelServiceDeleteLabelContext<E extends Env = any> = Context<E, '/api/v2/labels/:labelId', { in: { param: {
+ labelId: string,
+ }, }, out: { param: {
+ labelId: string,
+ }, } }>
+export type LabelServiceUpdateLabelContext<E extends Env = any> = Context<E, '/api/v2/labels/:labelId', { in: { param: {
+ labelId: string,
+ },json: Temapiv2LabelBody, }, out: { param: {
+ labelId: string,
+ },json: Temapiv2LabelBody, } }>
+export type LabelServiceBindLabelContext<E extends Env = any> = Context<E, '/api/v2/labels:bindLabel', { in: { json: V2BindLabelRequest, }, out: { json: V2BindLabelRequest, } }>
+export type LabelServiceBindResourceContext<E extends Env = any> = Context<E, '/api/v2/labels:bindResource', { in: { json: V2BindResourceRequest, }, out: { json: V2BindResourceRequest, } }>
 export type UserServiceLoginContext<E extends Env = any> = Context<E, '/api/v2/login', { in: { json: V2LoginRequest, }, out: { json: V2LoginRequest, } }>
 export type UserServiceLogoutContext<E extends Env = any> = Context<E, '/api/v2/logout'>
 export type MetricsServiceGetMetricsContext<E extends Env = any> = Context<E, '/api/v2/metrics', { in: { query: MetricsServiceGetMetricsParams, }, out: { query: MetricsServiceGetMetricsParams, } }>
@@ -96,15 +157,8 @@ export type MetricsServiceGetTopMetricDataContext<E extends Env = any> = Context
  name: string,
  },query: MetricsServiceGetTopMetricDataParams, } }>
 export type MetricsServiceGetOverviewStatusContext<E extends Env = any> = Context<E, '/api/v2/overview/status', { in: { query: MetricsServiceGetOverviewStatusParams, }, out: { query: MetricsServiceGetOverviewStatusParams, } }>
-export type RoleServiceListRolesContext<E extends Env = any> = Context<E, '/api/v2/roles', { in: { query: RoleServiceListRolesParams, }, out: { query: RoleServiceListRolesParams, } }>
-export type RoleServiceCreateRoleContext<E extends Env = any> = Context<E, '/api/v2/roles', { in: { json: NonReadonly<V2Role>, }, out: { json: NonReadonly<V2Role>, } }>
-export type RoleServiceDeleteRoleContext<E extends Env = any> = Context<E, '/api/v2/roles/:roleId', { in: { param: {
- roleId: number,
- }, }, out: { param: {
- roleId: number,
- }, } }>
 export type UserServiceListUsersContext<E extends Env = any> = Context<E, '/api/v2/users', { in: { query: UserServiceListUsersParams, }, out: { query: UserServiceListUsersParams, } }>
-export type UserServiceCreateUserContext<E extends Env = any> = Context<E, '/api/v2/users', { in: { json: NonReadonly<V2User>, }, out: { json: NonReadonly<V2User>, } }>
+export type UserServiceCreateUserContext<E extends Env = any> = Context<E, '/api/v2/users', { in: { json: V2User, }, out: { json: V2User, } }>
 export type UserServiceDeleteUserContext<E extends Env = any> = Context<E, '/api/v2/users/:userId', { in: { param: {
  userId: string,
  }, }, out: { param: {
@@ -112,7 +166,8 @@ export type UserServiceDeleteUserContext<E extends Env = any> = Context<E, '/api
  }, } }>
 export type UserServiceUpdateUserContext<E extends Env = any> = Context<E, '/api/v2/users/:userId', { in: { param: {
  userId: string,
- },json: NonReadonly<V2User>, }, out: { param: {
+ },json: V2User, }, out: { param: {
  userId: string,
- },json: NonReadonly<V2User>, } }>
+ },json: V2User, } }>
+export type UserServiceListUserRolesContext<E extends Env = any> = Context<E, '/api/v2/users:userRoles', { in: { query: UserServiceListUserRolesParams, }, out: { query: UserServiceListUserRolesParams, } }>
 export type UserServiceValidateSessionContext<E extends Env = any> = Context<E, '/api/v2/users:validateSession'>

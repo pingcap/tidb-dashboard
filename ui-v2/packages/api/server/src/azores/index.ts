@@ -9,178 +9,289 @@ import {
 } from 'hono'
 import { cors } from 'hono/cors'
 
-import { apiKeyServiceListApiKeysHandlers } from './handlers/apiKeyServiceListApiKeys';
-import { apiKeyServiceCreateApiKeyHandlers } from './handlers/apiKeyServiceCreateApiKey';
-import { apiKeyServiceDeleteApiKeyHandlers } from './handlers/apiKeyServiceDeleteApiKey';
 import { metricsServiceGetClusterMetricDataHandlers } from './handlers/metricsServiceGetClusterMetricData';
 import { metricsServiceGetClusterMetricInstanceHandlers } from './handlers/metricsServiceGetClusterMetricInstance';
 import { clusterServiceGetProcessListHandlers } from './handlers/clusterServiceGetProcessList';
 import { clusterServiceDeleteProcessHandlers } from './handlers/clusterServiceDeleteProcess';
+import { clusterServiceGetSlowQueryListHandlers } from './handlers/clusterServiceGetSlowQueryList';
+import { clusterServiceGetSlowQueryAvailableAdvancedFiltersHandlers } from './handlers/clusterServiceGetSlowQueryAvailableAdvancedFilters';
+import { clusterServiceDownloadSlowQueryListHandlers } from './handlers/clusterServiceDownloadSlowQueryList';
+import { clusterServiceGetSlowQueryAvailableFieldsHandlers } from './handlers/clusterServiceGetSlowQueryAvailableFields';
+import { clusterServiceGetSlowQueryDetailHandlers } from './handlers/clusterServiceGetSlowQueryDetail';
+import { clusterServiceGetSqlPlanListHandlers } from './handlers/clusterServiceGetSqlPlanList';
+import { clusterServiceBindSqlPlanHandlers } from './handlers/clusterServiceBindSqlPlan';
+import { clusterServiceCheckSupportHandlers } from './handlers/clusterServiceCheckSupport';
+import { clusterServiceGetSqlPlanBindingListHandlers } from './handlers/clusterServiceGetSqlPlanBindingList';
+import { clusterServiceUnbindSqlPlanHandlers } from './handlers/clusterServiceUnbindSqlPlan';
+import { clusterServiceGetTopSqlListHandlers } from './handlers/clusterServiceGetTopSqlList';
+import { clusterServiceGetTopSqlAvailableFieldsHandlers } from './handlers/clusterServiceGetTopSqlAvailableFields';
+import { clusterServiceGetTopSqlDetailHandlers } from './handlers/clusterServiceGetTopSqlDetail';
 import { metricsServiceGetHostMetricDataHandlers } from './handlers/metricsServiceGetHostMetricData';
+import { labelServiceListLabelsHandlers } from './handlers/labelServiceListLabels';
+import { labelServiceCreateLabelHandlers } from './handlers/labelServiceCreateLabel';
+import { labelServiceDeleteLabelHandlers } from './handlers/labelServiceDeleteLabel';
+import { labelServiceUpdateLabelHandlers } from './handlers/labelServiceUpdateLabel';
+import { labelServiceBindLabelHandlers } from './handlers/labelServiceBindLabel';
+import { labelServiceBindResourceHandlers } from './handlers/labelServiceBindResource';
 import { userServiceLoginHandlers } from './handlers/userServiceLogin';
 import { userServiceLogoutHandlers } from './handlers/userServiceLogout';
 import { metricsServiceGetMetricsHandlers } from './handlers/metricsServiceGetMetrics';
 import { metricsServiceGetTopMetricDataHandlers } from './handlers/metricsServiceGetTopMetricData';
 import { metricsServiceGetOverviewStatusHandlers } from './handlers/metricsServiceGetOverviewStatus';
-import { roleServiceListRolesHandlers } from './handlers/roleServiceListRoles';
-import { roleServiceCreateRoleHandlers } from './handlers/roleServiceCreateRole';
-import { roleServiceDeleteRoleHandlers } from './handlers/roleServiceDeleteRole';
 import { userServiceListUsersHandlers } from './handlers/userServiceListUsers';
 import { userServiceCreateUserHandlers } from './handlers/userServiceCreateUser';
 import { userServiceDeleteUserHandlers } from './handlers/userServiceDeleteUser';
 import { userServiceUpdateUserHandlers } from './handlers/userServiceUpdateUser';
+import { userServiceListUserRolesHandlers } from './handlers/userServiceListUserRoles';
 import { userServiceValidateSessionHandlers } from './handlers/userServiceValidateSession';
 
 
 const app = new Hono()
 
 app.use('/api/v2/*', cors())
-
-/**
- * @summary ListApiKeys
- */
-
-app.get('/api/v2/apiKeys', ...apiKeyServiceListApiKeysHandlers)
-
-
-/**
- * @summary CreateApiKey
- */
-
-app.post('/api/v2/apiKeys', ...apiKeyServiceCreateApiKeyHandlers)
-
-
-/**
- * @summary deleteUser one user by user_id
- */
-
-app.delete('/api/v2/apiKeys/:accessKey', ...apiKeyServiceDeleteApiKeyHandlers)
-
-
 /**
  * @summary Get cluster metric data
  */
 
-app.get('/api/v2/clusters/:clusterId/metrics/:name/data', ...metricsServiceGetClusterMetricDataHandlers)
+app.get('/api/v2/clusters/:clusterId/metrics/:name/data',...metricsServiceGetClusterMetricDataHandlers)
 
 
 /**
  * @summary Get metric instances
  */
 
-app.get('/api/v2/clusters/:clusterId/metrics/:name/instance', ...metricsServiceGetClusterMetricInstanceHandlers)
+app.get('/api/v2/clusters/:clusterId/metrics/:name/instance',...metricsServiceGetClusterMetricInstanceHandlers)
 
 
 /**
  * @summary GetProcessList retrieves the list of running processes in a cluster
  */
 
-app.get('/api/v2/clusters/:clusterId/sessions', ...clusterServiceGetProcessListHandlers)
+app.get('/api/v2/clusters/:clusterId/sessions',...clusterServiceGetProcessListHandlers)
 
 
 /**
  * @summary DeleteProcess terminates a specific process in the cluster
  */
 
-app.delete('/api/v2/clusters/:clusterId/sessions/:sessionId', ...clusterServiceDeleteProcessHandlers)
+app.delete('/api/v2/clusters/:clusterId/sessions/:sessionId',...clusterServiceDeleteProcessHandlers)
+
+
+/**
+ * @summary GetSlowQueryList retrieves the list of slow queries
+ */
+
+app.get('/api/v2/clusters/:clusterId/slowqueries',...clusterServiceGetSlowQueryListHandlers)
+
+
+/**
+ * @summary GetSlowQueryAvailableAdvancedFilters retrieves the list of available advanced filters
+ */
+
+app.get('/api/v2/clusters/:clusterId/slowqueries/advancedFilters',...clusterServiceGetSlowQueryAvailableAdvancedFiltersHandlers)
+
+
+/**
+ * @summary DownloadSlowQueryList downloads the list of slow queries
+ */
+
+app.get('/api/v2/clusters/:clusterId/slowqueries/download',...clusterServiceDownloadSlowQueryListHandlers)
+
+
+/**
+ * @summary GetSlowQueryAvailableFields retrieves the list of available fields for slow queries
+ */
+
+app.get('/api/v2/clusters/:clusterId/slowqueries/fields',...clusterServiceGetSlowQueryAvailableFieldsHandlers)
+
+
+/**
+ * @summary GetSlowQueryDetail retrieves the details of a specific slow query
+ */
+
+app.get('/api/v2/clusters/:clusterId/slowqueries/:digest',...clusterServiceGetSlowQueryDetailHandlers)
+
+
+/**
+ * @summary GetSqlPlanList retrieves the list of plans
+ */
+
+app.get('/api/v2/clusters/:clusterId/sqlplans',...clusterServiceGetSqlPlanListHandlers)
+
+
+/**
+ * @summary BindSqlPlan binds a plan to a specific sql
+ */
+
+app.post('/api/v2/clusters/:clusterId/sqlplans/:planDigest:bindSqlPlan',...clusterServiceBindSqlPlanHandlers)
+
+
+/**
+ * @summary CheckSupport returns whether sql plan binding is supported
+ */
+
+app.get('/api/v2/clusters/:clusterId/sqlplans:checkSupport',...clusterServiceCheckSupportHandlers)
+
+
+/**
+ * @summary GetSQLBindInfo
+ */
+
+app.get('/api/v2/clusters/:clusterId/sqlplans:showBinding',...clusterServiceGetSqlPlanBindingListHandlers)
+
+
+/**
+ * @summary DropSqlPlan unbinds a plan from a specific sql
+ */
+
+app.post('/api/v2/clusters/:clusterId/sqlplans:unbindSqlPlan',...clusterServiceUnbindSqlPlanHandlers)
+
+
+/**
+ * @summary GetTopSqlList retrieves the list of top sql
+ */
+
+app.get('/api/v2/clusters/:clusterId/topsqls',...clusterServiceGetTopSqlListHandlers)
+
+
+/**
+ * @summary GetTopSqlAvailableFields retrieves the list of available fields for top sqls
+ */
+
+app.get('/api/v2/clusters/:clusterId/topsqls/fields',...clusterServiceGetTopSqlAvailableFieldsHandlers)
+
+
+/**
+ * @summary GetTopSqlDetail retrieves the details of a specific top sql
+ */
+
+app.get('/api/v2/clusters/:clusterId/topsqls/:digest',...clusterServiceGetTopSqlDetailHandlers)
 
 
 /**
  * @summary Get host metric data
  */
 
-app.get('/api/v2/hosts/:hostId/metrics/:name/data', ...metricsServiceGetHostMetricDataHandlers)
+app.get('/api/v2/hosts/:hostId/metrics/:name/data',...metricsServiceGetHostMetricDataHandlers)
+
+
+/**
+ * @summary list labels
+ */
+
+app.get('/api/v2/labels',...labelServiceListLabelsHandlers)
+
+
+/**
+ * @summary create label
+ */
+
+app.post('/api/v2/labels',...labelServiceCreateLabelHandlers)
+
+
+/**
+ * @summary delete label by label id
+ */
+
+app.delete('/api/v2/labels/:labelId',...labelServiceDeleteLabelHandlers)
+
+
+/**
+ * @summary update label basic info by label id
+ */
+
+app.patch('/api/v2/labels/:labelId',...labelServiceUpdateLabelHandlers)
+
+
+/**
+ * @summary modify bind object by label id
+ */
+
+app.post('/api/v2/labels:bindLabel',...labelServiceBindLabelHandlers)
+
+
+/**
+ * @summary modify bind object by resource id
+ */
+
+app.post('/api/v2/labels:bindResource',...labelServiceBindResourceHandlers)
 
 
 /**
  * @summary login
  */
 
-app.post('/api/v2/login', ...userServiceLoginHandlers)
+app.post('/api/v2/login',...userServiceLoginHandlers)
 
 
 /**
  * @summary Logout
  */
 
-app.post('/api/v2/logout', ...userServiceLogoutHandlers)
+app.post('/api/v2/logout',...userServiceLogoutHandlers)
 
 
 /**
  * @summary Get metrics info
  */
 
-app.get('/api/v2/metrics', ...metricsServiceGetMetricsHandlers)
+app.get('/api/v2/metrics',...metricsServiceGetMetricsHandlers)
 
 
 /**
  * @summary Get top metric data
  */
 
-app.get('/api/v2/overview/metrics/:name/data', ...metricsServiceGetTopMetricDataHandlers)
+app.get('/api/v2/overview/metrics/:name/data',...metricsServiceGetTopMetricDataHandlers)
 
 
 /**
  * @summary Get overview status
  */
 
-app.get('/api/v2/overview/status', ...metricsServiceGetOverviewStatusHandlers)
-
-
-/**
- * @summary listRoles
- */
-
-app.get('/api/v2/roles', ...roleServiceListRolesHandlers)
-
-
-/**
- * @summary createRole
- */
-
-app.post('/api/v2/roles', ...roleServiceCreateRoleHandlers)
-
-
-/**
- * @summary deleteUser one user by user_id
- */
-
-app.delete('/api/v2/roles/:roleId', ...roleServiceDeleteRoleHandlers)
+app.get('/api/v2/overview/status',...metricsServiceGetOverviewStatusHandlers)
 
 
 /**
  * @summary ListUsers
  */
 
-app.get('/api/v2/users', ...userServiceListUsersHandlers)
+app.get('/api/v2/users',...userServiceListUsersHandlers)
 
 
 /**
- * @summary createUser
+ * @summary CreateUser
  */
 
-app.post('/api/v2/users', ...userServiceCreateUserHandlers)
+app.post('/api/v2/users',...userServiceCreateUserHandlers)
 
 
 /**
  * @summary delete one user by user_id
  */
 
-app.delete('/api/v2/users/:userId', ...userServiceDeleteUserHandlers)
+app.delete('/api/v2/users/:userId',...userServiceDeleteUserHandlers)
 
 
 /**
  * @summary Update User
  */
 
-app.patch('/api/v2/users/:userId', ...userServiceUpdateUserHandlers)
+app.patch('/api/v2/users/:userId',...userServiceUpdateUserHandlers)
+
+
+/**
+ * @summary ListUserRoles
+ */
+
+app.get('/api/v2/users:userRoles',...userServiceListUserRolesHandlers)
 
 
 /**
  * @summary ValidateSession
  */
 
-app.get('/api/v2/users:validateSession', ...userServiceValidateSessionHandlers)
+app.get('/api/v2/users:validateSession',...userServiceValidateSessionHandlers)
 
 
 export default app

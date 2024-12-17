@@ -9,157 +9,18 @@
       "name": "MetricsService"
     },
     {
-      "name": "UserService"
-    },
-    {
-      "name": "RoleService"
-    },
-    {
-      "name": "ApiKeyService"
-    },
-    {
       "name": "ClusterService"
+    },
+    {
+      "name": "LabelService"
+    },
+    {
+      "name": "UserService"
     }
   ],
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
-    "/api/v2/apiKeys": {
-      "get": {
-        "summary": "ListApiKeys",
-        "operationId": "ApiKeyService_ListApiKeys",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2ListApiKeysResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "pageSize",
-            "description": "Page size",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "description": "Page token",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "skip",
-            "description": "Skip",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "orderBy",
-            "description": "order_by",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "accessKey",
-            "description": "The access_key of the apikey",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "creator",
-            "description": "The access_key of the apikey",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "description": "The status of the apikey",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": ["ApiKeyService"]
-      },
-      "post": {
-        "summary": "CreateApiKey",
-        "operationId": "ApiKeyService_CreateApiKey",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2ApiKey"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "apiKey",
-            "description": "\nApikey resource",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v2ApiKey",
-              "required": ["apiKey"]
-            }
-          }
-        ],
-        "tags": ["ApiKeyService"]
-      }
-    },
-    "/api/v2/apiKeys/{accessKey}": {
-      "delete": {
-        "summary": "deleteUser one user by user_id",
-        "operationId": "ApiKeyService_DeleteApiKey",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "accessKey",
-            "description": "The access key of the apiKey",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": ["ApiKeyService"]
-      }
-    },
     "/api/v2/clusters/{clusterId}/metrics/{name}/data": {
       "get": {
         "summary": "Get cluster metric data",
@@ -340,6 +201,777 @@
         "tags": ["ClusterService"]
       }
     },
+    "/api/v2/clusters/{clusterId}/slowqueries": {
+      "get": {
+        "summary": "GetSlowQueryList retrieves the list of slow queries",
+        "operationId": "ClusterService_GetSlowQueryList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2SlowQueryList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "beginTime",
+            "description": "Begin time in Unix timestamp",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "endTime",
+            "description": "End time in Unix timestamp",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "db",
+            "description": "List of databases",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "text",
+            "description": "Search text",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orderBy",
+            "description": "Order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "isDesc",
+            "description": "Is descending order",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "fields",
+            "description": "Fields to select, e.g., \"Query,Digest\"",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token for pagination",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Number of records to skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "advancedFilter",
+            "description": "Advanced filters, such as \"digest = xxx\"",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/slowqueries/advancedFilters": {
+      "get": {
+        "summary": "GetSlowQueryAvailableAdvancedFilters retrieves the list of available advanced filters",
+        "operationId": "ClusterService_GetSlowQueryAvailableAdvancedFilters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2SlowQueryAvailableAdvancedFilters"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/slowqueries/download": {
+      "get": {
+        "summary": "DownloadSlowQueryList downloads the list of slow queries",
+        "operationId": "ClusterService_DownloadSlowQueryList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2SlowQueryDownloadResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "beginTime",
+            "description": "Begin time in Unix timestamp",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "endTime",
+            "description": "End time in Unix timestamp",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "db",
+            "description": "List of databases",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "text",
+            "description": "Search text",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orderBy",
+            "description": "Order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "isDesc",
+            "description": "Is descending order",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "fields",
+            "description": "Fields to select, e.g., \"Query,Digest\"",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token for pagination",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Number of records to skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "advancedFilter",
+            "description": "Advanced filters, such as \"digest = xxx\"",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/slowqueries/fields": {
+      "get": {
+        "summary": "GetSlowQueryAvailableFields retrieves the list of available fields for slow queries",
+        "operationId": "ClusterService_GetSlowQueryAvailableFields",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2SlowQueryAvailableFields"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/slowqueries/{digest}": {
+      "get": {
+        "summary": "GetSlowQueryDetail retrieves the details of a specific slow query",
+        "operationId": "ClusterService_GetSlowQueryDetail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2SlowQueryDetail"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "digest",
+            "description": "Query digest",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "description": "Timestamp",
+            "in": "query",
+            "required": true,
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "name": "connectId",
+            "description": "Connection ID",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sqlplans": {
+      "get": {
+        "summary": "GetSqlPlanList retrieves the list of plans",
+        "operationId": "ClusterService_GetSqlPlanList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2SqlPlanList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "beginTime",
+            "description": "Begin time",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "endTime",
+            "description": "End time",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "digest",
+            "description": "SQL digest",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "schemaName",
+            "description": "Table name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sqlplans/{planDigest}:bindSqlPlan": {
+      "post": {
+        "summary": "BindSqlPlan binds a plan to a specific sql",
+        "operationId": "ClusterService_BindSqlPlan",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "planDigest",
+            "description": "SQL plan digest",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sqlplans:checkSupport": {
+      "get": {
+        "summary": "CheckSupport returns whether sql plan binding is supported",
+        "operationId": "ClusterService_CheckSupport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2CheckSupportResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sqlplans:showBinding": {
+      "get": {
+        "summary": "GetSQLBindInfo",
+        "operationId": "ClusterService_GetSqlPlanBindingList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2SqlPlanBindingList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "beginTime",
+            "description": "Begin time",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "endTime",
+            "description": "End time",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "digest",
+            "description": "SQL digest",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sqlplans:unbindSqlPlan": {
+      "post": {
+        "summary": "DropSqlPlan unbinds a plan from a specific sql",
+        "operationId": "ClusterService_UnbindSqlPlan",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "digest",
+            "description": "SQL digest",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/topsqls": {
+      "get": {
+        "summary": "GetTopSqlList retrieves the list of top sql",
+        "operationId": "ClusterService_GetTopSqlList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TopSqlList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "beginTime",
+            "description": "Begin time",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "endTime",
+            "description": "End time",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "db",
+            "description": "Database list",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "text",
+            "description": "SQL Text, used for fuzzy query",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orderBy",
+            "description": "Order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "isDesc",
+            "description": "Is descending order",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "fields",
+            "description": "Fields to select, e.g., \"Query,Digest\"",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "advancedFilter",
+            "description": "Advanced filters, such as \"digest = xxx\"",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/topsqls/fields": {
+      "get": {
+        "summary": "GetTopSqlAvailableFields retrieves the list of available fields for top sqls",
+        "operationId": "ClusterService_GetTopSqlAvailableFields",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TopSqlAvailableFields"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/topsqls/{digest}": {
+      "get": {
+        "summary": "GetTopSqlDetail retrieves the details of a specific top sql",
+        "operationId": "ClusterService_GetTopSqlDetail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TopSqlDetail"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "digest",
+            "description": "Query digest",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "beginTime",
+            "description": "Begin time",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "endTime",
+            "description": "End time",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
     "/api/v2/hosts/{hostId}/metrics/{name}/data": {
       "get": {
         "summary": "Get host metric data",
@@ -413,6 +1045,235 @@
           }
         ],
         "tags": ["MetricsService"]
+      }
+    },
+    "/api/v2/labels": {
+      "get": {
+        "summary": "list labels",
+        "operationId": "LabelService_ListLabels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListLabelsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "labelKey",
+            "description": "the label key of the label",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "labelValue",
+            "description": "the label value of the label",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["LabelService"]
+      },
+      "post": {
+        "summary": "create label",
+        "operationId": "LabelService_CreateLabel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/temapiv2Label"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "label",
+            "description": "the label basic resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/temapiv2Label",
+              "required": ["label"]
+            }
+          }
+        ],
+        "tags": ["LabelService"]
+      }
+    },
+    "/api/v2/labels/{labelId}": {
+      "delete": {
+        "summary": "delete label by label id",
+        "operationId": "LabelService_DeleteLabel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labelId",
+            "description": "the label id of the label",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["LabelService"]
+      },
+      "patch": {
+        "summary": "update label basic info by label id",
+        "operationId": "LabelService_UpdateLabel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/temapiv2Label"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labelId",
+            "description": "the label id of the label",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "label",
+            "description": "the label basic resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/temapiv2Label",
+              "required": ["label"]
+            }
+          }
+        ],
+        "tags": ["LabelService"]
+      }
+    },
+    "/api/v2/labels:bindLabel": {
+      "post": {
+        "summary": "modify bind object by label id",
+        "operationId": "LabelService_BindLabel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BindLabelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BindLabelRequest"
+            }
+          }
+        ],
+        "tags": ["LabelService"]
+      }
+    },
+    "/api/v2/labels:bindResource": {
+      "post": {
+        "summary": "modify bind object by resource id",
+        "operationId": "LabelService_BindResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BindResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BindResourceRequest"
+            }
+          }
+        ],
+        "tags": ["LabelService"]
       }
     },
     "/api/v2/login": {
@@ -633,135 +1494,6 @@
         "tags": ["MetricsService"]
       }
     },
-    "/api/v2/roles": {
-      "get": {
-        "summary": "listRoles",
-        "operationId": "RoleService_ListRoles",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2ListRolesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "pageSize",
-            "description": "Page size",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "description": "Page token",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "skip",
-            "description": "Skip",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "orderBy",
-            "description": "order_by",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "nameLike",
-            "description": "The name of the role",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "emailLike",
-            "description": "The email of the role",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": ["RoleService"]
-      },
-      "post": {
-        "summary": "createRole",
-        "operationId": "RoleService_CreateRole",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2Role"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "role",
-            "description": "\nUser resource",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v2Role"
-            }
-          }
-        ],
-        "tags": ["RoleService"]
-      }
-    },
-    "/api/v2/roles/{roleId}": {
-      "delete": {
-        "summary": "deleteUser one user by user_id",
-        "operationId": "RoleService_DeleteRole",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "roleId",
-            "description": "The id of the role",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": ["RoleService"]
-      }
-    },
     "/api/v2/users": {
       "get": {
         "summary": "ListUsers",
@@ -824,19 +1556,12 @@
             "in": "query",
             "required": false,
             "type": "string"
-          },
-          {
-            "name": "roleName",
-            "description": "The role name of the user",
-            "in": "query",
-            "required": false,
-            "type": "string"
           }
         ],
         "tags": ["UserService"]
       },
       "post": {
-        "summary": "createUser",
+        "summary": "CreateUser",
         "operationId": "UserService_CreateUser",
         "responses": {
           "200": {
@@ -935,6 +1660,80 @@
         "tags": ["UserService"]
       }
     },
+    "/api/v2/users:userRoles": {
+      "get": {
+        "summary": "ListUserRoles",
+        "operationId": "UserService_ListUserRoles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListUserRolesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "nameLike",
+            "description": "The name of the user",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "emailLike",
+            "description": "The email of the user",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "roleName",
+            "description": "The role name of the user",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["UserService"]
+      }
+    },
     "/api/v2/users:validateSession": {
       "get": {
         "summary": "ValidateSession",
@@ -978,11 +1777,11 @@
       "properties": {
         "@type": {
           "type": "string",
-          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         }
       },
       "additionalProperties": {},
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
     "rpcStatus": {
       "properties": {
@@ -1011,41 +1810,121 @@
       },
       "type": "object"
     },
-    "v2ApiKey": {
+    "temapiv2Label": {
       "type": "object",
       "properties": {
-        "accessKey": {
+        "labelId": {
           "type": "string",
-          "title": "The access_key of apikey"
+          "title": "the label id of the label"
         },
-        "secretKey": {
+        "labelKey": {
           "type": "string",
-          "title": "The secret_key of apikey"
+          "title": "the label key of the label"
         },
-        "creator": {
+        "labelValue": {
           "type": "string",
-          "title": "The creator of apikey"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["disable", "enable"],
-          "title": "The apikey status"
-        },
-        "createTime": {
-          "type": "string",
-          "format": "date-time",
-          "title": "The create time of the apikey",
-          "readOnly": true
-        },
-        "updateTime": {
-          "type": "string",
-          "format": "date-time",
-          "title": "The update time of the role",
-          "readOnly": true
+          "title": "the label value of the label"
         }
       },
-      "title": "ApiKey resource",
-      "required": ["accessKey", "secretKey"]
+      "title": "Label basic resource",
+      "required": ["labelValue"]
+    },
+    "v2BindLabelRequest": {
+      "type": "object",
+      "properties": {
+        "labelId": {
+          "type": "string",
+          "title": "the label id of the label"
+        },
+        "appendBindObjects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2BindObject"
+          },
+          "title": "the bind objects to be appended"
+        },
+        "removeBindObjects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2BindObject"
+          },
+          "title": "the bind objects to be removed"
+        }
+      },
+      "title": "BindLabel Request",
+      "required": ["labelId"]
+    },
+    "v2BindLabelResponse": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "$ref": "#/definitions/v2LabelWithBindObject",
+          "title": "the label resource with bound objects"
+        }
+      },
+      "title": "BindLabel Response"
+    },
+    "v2BindObject": {
+      "type": "object",
+      "properties": {
+        "resourceType": {
+          "type": "string",
+          "title": "the resource type of the bind object"
+        },
+        "resourceIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "the resources of the resource type"
+        }
+      },
+      "title": "Bind object resource",
+      "required": ["resourceType", "resourceIds"]
+    },
+    "v2BindResourceRequest": {
+      "type": "object",
+      "properties": {
+        "resourceType": {
+          "type": "string",
+          "title": "the resource type of the bind object"
+        },
+        "resourceId": {
+          "type": "string",
+          "title": "the resource id of the resource type"
+        },
+        "appendLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "the label ids to be appended"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "the label ids to be removed"
+        }
+      },
+      "title": "BindResource Request",
+      "required": ["resourceType", "resourceId"]
+    },
+    "v2BindResourceResponse": {
+      "type": "object",
+      "properties": {
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "the label ids bound with the bind object"
+        }
+      },
+      "title": "BindResource Response"
     },
     "v2CategoryMetricDetail": {
       "type": "object",
@@ -1085,6 +1964,16 @@
         }
       },
       "title": "CategoryMetricDetail represents the details of a metric category"
+    },
+    "v2CheckSupportResponse": {
+      "type": "object",
+      "properties": {
+        "isSupport": {
+          "type": "boolean",
+          "title": "Is support sql plan binding"
+        }
+      },
+      "title": "Response of checking whether cluster support sql plan binding"
     },
     "v2ClassEnumData": {
       "type": "string",
@@ -1339,37 +2228,55 @@
       },
       "title": "HostMetricData represents the response for querying cluster metric data"
     },
-    "v2ListApiKeysResponse": {
+    "v2LabelWithBindObject": {
       "type": "object",
       "properties": {
-        "apikeys": {
+        "label": {
+          "$ref": "#/definitions/temapiv2Label",
+          "title": "the label basic info of the label"
+        },
+        "bindObjects": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v2ApiKey"
+            "$ref": "#/definitions/v2BindObject"
           },
-          "title": "List of users"
-        },
-        "nextPageToken": {
-          "type": "string",
-          "title": "Next page token"
-        },
-        "totalSize": {
-          "type": "integer",
-          "format": "int32",
-          "title": "Total size"
+          "title": "the bound objects of the label"
         }
       },
-      "title": "ListApiKeyRequest"
+      "title": "Label resource with bound object"
     },
-    "v2ListRolesResponse": {
+    "v2ListLabelsResponse": {
       "type": "object",
       "properties": {
-        "roles": {
+        "labels": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v2Role"
+            "$ref": "#/definitions/v2LabelWithBindObject"
+          },
+          "title": "list of labels"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListLabels Response"
+    },
+    "v2ListUserRolesResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2UserRole"
           },
           "title": "List of users"
         },
@@ -1383,7 +2290,7 @@
           "title": "Total size"
         }
       },
-      "title": "ListRolesResponse"
+      "title": "ListUserRolesResponse"
     },
     "v2ListUsersResponse": {
       "type": "object",
@@ -1637,49 +2544,520 @@
       },
       "title": "QueryResult represents the result of a query"
     },
-    "v2Role": {
+    "v2SlowQueryAvailableAdvancedFilters": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int32",
-          "title": "The id of the role"
-        },
-        "roleName": {
-          "type": "string",
-          "title": "The name of the role"
-        },
-        "roleType": {
-          "type": "string",
-          "format": "int64",
-          "title": "The id of the role"
-        },
-        "roleTypeDesc": {
-          "type": "string",
-          "title": "The id of the role"
-        },
-        "detail": {
-          "type": "string",
-          "title": "The note of the role"
-        },
-        "note": {
-          "type": "string",
-          "title": "The note of the role"
-        },
-        "createTime": {
-          "type": "string",
-          "format": "date-time",
-          "title": "The create time of the role",
-          "readOnly": true
-        },
-        "updateTime": {
-          "type": "string",
-          "format": "date-time",
-          "title": "The update time of the role",
-          "readOnly": true
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "List of available fields"
         }
       },
-      "title": "the role resource"
+      "title": "Response message for available filters"
+    },
+    "v2SlowQueryAvailableFields": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "List of available fields"
+        }
+      },
+      "title": "Response message for available fields"
+    },
+    "v2SlowQueryDetail": {
+      "type": "object",
+      "properties": {
+        "digest": {
+          "type": "string",
+          "title": "Digest"
+        },
+        "query": {
+          "type": "string",
+          "title": "Query"
+        },
+        "instance": {
+          "type": "string",
+          "title": "Instance"
+        },
+        "db": {
+          "type": "string",
+          "title": "Database"
+        },
+        "connection_id": {
+          "type": "string",
+          "title": "Connection ID"
+        },
+        "success": {
+          "type": "string",
+          "format": "int64",
+          "title": "Success"
+        },
+        "timestamp": {
+          "type": "number",
+          "format": "double",
+          "title": "Finish time"
+        },
+        "query_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Latency"
+        },
+        "parse_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Parse time"
+        },
+        "compile_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Compile time"
+        },
+        "rewrite_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Rewrite time"
+        },
+        "preproc_subqueries_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Preprocessing subqueries time"
+        },
+        "optimize_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Optimize time"
+        },
+        "wait_ts": {
+          "type": "number",
+          "format": "double",
+          "title": "Wait timestamp"
+        },
+        "cop_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Coprocessor time"
+        },
+        "lock_keys_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Lock keys time"
+        },
+        "write_sql_response_total": {
+          "type": "number",
+          "format": "double",
+          "title": "Write SQL response time"
+        },
+        "exec_retry_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Execution retry time"
+        },
+        "mem_max": {
+          "type": "string",
+          "format": "int64",
+          "title": "Max memory"
+        },
+        "disk_max": {
+          "type": "string",
+          "format": "int64",
+          "title": "Max disk"
+        },
+        "txn_start_ts": {
+          "type": "string",
+          "title": "Transaction start timestamp"
+        },
+        "prev_stmt": {
+          "type": "string",
+          "title": "Previous statement"
+        },
+        "plan": {
+          "type": "string",
+          "title": "Execution plan"
+        },
+        "binary_plan": {
+          "type": "string",
+          "title": "Binary execution plan"
+        },
+        "warnings": {
+          "type": "string",
+          "title": "Warnings"
+        },
+        "is_internal": {
+          "type": "string",
+          "format": "int64",
+          "title": "Is internal"
+        },
+        "index_names": {
+          "type": "string",
+          "title": "Index names"
+        },
+        "stats": {
+          "type": "string",
+          "title": "Stats"
+        },
+        "backoff_types": {
+          "type": "string",
+          "title": "Backoff types"
+        },
+        "prepared": {
+          "type": "string",
+          "format": "int64",
+          "title": "Prepared statement"
+        },
+        "plan_from_cache": {
+          "type": "string",
+          "format": "int64",
+          "title": "Plan from cache"
+        },
+        "plan_from_binding": {
+          "type": "string",
+          "format": "int64",
+          "title": "Plan from binding"
+        },
+        "user": {
+          "type": "string",
+          "title": "User"
+        },
+        "host": {
+          "type": "string",
+          "title": "Host"
+        },
+        "process_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Process time"
+        },
+        "wait_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Wait time"
+        },
+        "backoff_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Backoff time"
+        },
+        "get_commit_ts_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Get commit timestamp time"
+        },
+        "local_latch_wait_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Local latch wait time"
+        },
+        "resolve_lock_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Resolve lock time"
+        },
+        "prewrite_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Prewrite time"
+        },
+        "wait_prewrite_binlog_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Wait for prewrite binlog time"
+        },
+        "commit_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Commit time"
+        },
+        "commit_backoff_time": {
+          "type": "number",
+          "format": "double",
+          "title": "Commit backoff time"
+        },
+        "cop_proc_avg": {
+          "type": "number",
+          "format": "double",
+          "title": "Coprocessor process average"
+        },
+        "cop_proc_p90": {
+          "type": "number",
+          "format": "double",
+          "title": "Coprocessor process P90"
+        },
+        "cop_proc_max": {
+          "type": "number",
+          "format": "double",
+          "title": "Coprocessor process max"
+        },
+        "cop_wait_avg": {
+          "type": "number",
+          "format": "double",
+          "title": "Coprocessor wait average"
+        },
+        "cop_wait_p90": {
+          "type": "number",
+          "format": "double",
+          "title": "Coprocessor wait P90"
+        },
+        "cop_wait_max": {
+          "type": "number",
+          "format": "double",
+          "title": "Coprocessor wait max"
+        },
+        "write_keys": {
+          "type": "string",
+          "format": "int64",
+          "title": "Write keys"
+        },
+        "write_size": {
+          "type": "string",
+          "format": "int64",
+          "title": "Write size"
+        },
+        "prewrite_region": {
+          "type": "string",
+          "format": "int64",
+          "title": "Prewrite region"
+        },
+        "txn_retry": {
+          "type": "string",
+          "format": "int64",
+          "title": "Transaction retry"
+        },
+        "request_count": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Request count"
+        },
+        "process_keys": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Process keys"
+        },
+        "total_keys": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Total keys"
+        },
+        "cop_proc_addr": {
+          "type": "string",
+          "title": "Coprocessor address"
+        },
+        "cop_wait_addr": {
+          "type": "string",
+          "title": "Coprocessor wait address"
+        },
+        "rocksdb_delete_skipped_count": {
+          "type": "integer",
+          "format": "int64",
+          "title": "RocksDB delete skipped count"
+        },
+        "rocksdb_key_skipped_count": {
+          "type": "integer",
+          "format": "int64",
+          "title": "RocksDB key skipped count"
+        },
+        "rocksdb_block_cache_hit_count": {
+          "type": "integer",
+          "format": "int64",
+          "title": "RocksDB block cache hit count"
+        },
+        "rocksdb_block_read_count": {
+          "type": "integer",
+          "format": "int64",
+          "title": "RocksDB block read count"
+        },
+        "rocksdb_block_read_byte": {
+          "type": "integer",
+          "format": "int64",
+          "title": "RocksDB block read byte"
+        },
+        "binary_plan_text": {
+          "type": "string",
+          "title": "Binary plan in plain text"
+        },
+        "session_alias": {
+          "type": "string",
+          "title": "Session alias"
+        },
+        "exec_retry_count": {
+          "type": "string",
+          "format": "int64",
+          "title": "Execution retry count"
+        },
+        "preproc_subqueries": {
+          "type": "string",
+          "format": "int64",
+          "title": "Preprocessing subqueries"
+        },
+        "kv_total": {
+          "type": "number",
+          "format": "double",
+          "title": "KV total"
+        },
+        "pd_total": {
+          "type": "number",
+          "format": "double",
+          "title": "PD total"
+        },
+        "backoff_total": {
+          "type": "number",
+          "format": "double",
+          "title": "Backoff total"
+        },
+        "time_queued_by_rc": {
+          "type": "number",
+          "format": "double",
+          "title": "Time queued by RC"
+        },
+        "tidb_cpu_time": {
+          "type": "number",
+          "format": "double",
+          "title": "TiDB CPU time"
+        },
+        "tikv_cpu_time": {
+          "type": "number",
+          "format": "double",
+          "title": "TiKV CPU time"
+        },
+        "backoff_detail": {
+          "type": "string",
+          "title": "Backoff detail"
+        },
+        "is_explicit_txn": {
+          "type": "boolean",
+          "title": "Is explicit transaction"
+        },
+        "plan_digest": {
+          "type": "string",
+          "title": "Plan digest"
+        },
+        "has_more_results": {
+          "type": "boolean",
+          "title": "Has more results"
+        },
+        "resource_group": {
+          "type": "string",
+          "title": "Resource group"
+        },
+        "request_unit_read": {
+          "type": "number",
+          "format": "double",
+          "title": "Request unit read"
+        },
+        "request_unit_write": {
+          "type": "number",
+          "format": "double",
+          "title": "Request unit write"
+        },
+        "result_rows": {
+          "type": "string",
+          "format": "int64",
+          "title": "Result rows"
+        }
+      },
+      "title": "Model message representing a slow query log"
+    },
+    "v2SlowQueryDownloadResponse": {
+      "type": "object",
+      "properties": {
+        "filename": {
+          "type": "string",
+          "title": "File name"
+        },
+        "fileContent": {
+          "type": "string",
+          "title": "File content"
+        }
+      },
+      "title": "SlowQueryDownloadResponse represents the response for downloading slow query list"
+    },
+    "v2SlowQueryList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2SlowQueryDetail"
+          },
+          "title": "List of slow sql models"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "Total size"
+        }
+      },
+      "title": "Response message for querying slow log list"
+    },
+    "v2SqlPlanBindingDetail": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "enabled",
+            "using",
+            "disabled",
+            "deleted",
+            "invalid",
+            "rejected",
+            "pending verify"
+          ],
+          "title": "SQL plan binding status"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["manual", "history", "capture", "evolve"],
+          "title": "SQL plan binding source"
+        },
+        "digest": {
+          "type": "string",
+          "title": "sql digest"
+        },
+        "planDigest": {
+          "type": "string",
+          "title": "plan digest"
+        }
+      },
+      "title": "Detail of sql plan binding"
+    },
+    "v2SqlPlanBindingList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2SqlPlanBindingDetail"
+          },
+          "title": "List of sql plan binding"
+        }
+      },
+      "title": "Response of get sql plan binding"
+    },
+    "v2SqlPlanList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2TopSqlDetail"
+          },
+          "title": "List of sql plan"
+        }
+      },
+      "title": "Response message for getting sql plan"
     },
     "v2StatusCount": {
       "type": "object",
@@ -1714,6 +3092,447 @@
       },
       "title": "TopMetricData represents the response for querying top metric data"
     },
+    "v2TopSqlAvailableFields": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "List of available fields"
+        }
+      },
+      "title": "Response message for getting top sql available fields"
+    },
+    "v2TopSqlDetail": {
+      "type": "object",
+      "properties": {
+        "summary_begin_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggBeginTime"
+        },
+        "summary_end_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggEndTime"
+        },
+        "digest_text": {
+          "type": "string",
+          "title": "AggDigestText"
+        },
+        "digest": {
+          "type": "string",
+          "title": "AggDigest"
+        },
+        "exec_count": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggExecCount"
+        },
+        "stmt_type": {
+          "type": "string",
+          "title": "AggStmtType"
+        },
+        "sum_errors": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggSumErrors"
+        },
+        "sum_warnings": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggSumWarnings"
+        },
+        "sum_latency": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggSumLatency"
+        },
+        "max_latency": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxLatency"
+        },
+        "min_latency": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMinLatency"
+        },
+        "avg_latency": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgLatency"
+        },
+        "avg_parse_latency": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgParseLatency"
+        },
+        "max_parse_latency": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxParseLatency"
+        },
+        "avg_compile_latency": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgCompileLatency"
+        },
+        "max_compile_latency": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxCompileLatency"
+        },
+        "sum_cop_task_num": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggSumCopTaskNum"
+        },
+        "avg_cop_process_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgCopProcessTime"
+        },
+        "max_cop_process_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxCopProcessTime"
+        },
+        "avg_cop_wait_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgCopWaitTime"
+        },
+        "max_cop_wait_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxCopWaitTime"
+        },
+        "avg_process_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgProcessTime"
+        },
+        "max_process_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxProcessTime"
+        },
+        "avg_wait_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgWaitTime"
+        },
+        "max_wait_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxWaitTime"
+        },
+        "avg_backoff_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgBackoffTime"
+        },
+        "max_backoff_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxBackoffTime"
+        },
+        "avg_total_keys": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgTotalKeys"
+        },
+        "max_total_keys": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxTotalKeys"
+        },
+        "avg_processed_keys": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgProcessedKeys"
+        },
+        "max_processed_keys": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxProcessedKeys"
+        },
+        "avg_prewrite_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgPrewriteTime"
+        },
+        "max_prewrite_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxPrewriteTime"
+        },
+        "avg_commit_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgCommitTime"
+        },
+        "max_commit_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxCommitTime"
+        },
+        "avg_get_commit_ts_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgGetCommitTsTime"
+        },
+        "max_get_commit_ts_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxGetCommitTsTime"
+        },
+        "avg_commit_backoff_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgCommitBackoffTime"
+        },
+        "max_commit_backoff_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxCommitBackoffTime"
+        },
+        "avg_resolve_lock_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgResolveLockTime"
+        },
+        "max_resolve_lock_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxResolveLockTime"
+        },
+        "avg_local_latch_wait_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgLocalLatchWaitTime"
+        },
+        "max_local_latch_wait_time": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxLocalLatchWaitTime"
+        },
+        "avg_write_keys": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgWriteKeys"
+        },
+        "max_write_keys": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxWriteKeys"
+        },
+        "avg_write_size": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgWriteSize"
+        },
+        "max_write_size": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxWriteSize"
+        },
+        "avg_prewrite_regions": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgPrewriteRegions"
+        },
+        "max_prewrite_regions": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxPrewriteRegions"
+        },
+        "avg_txn_retry": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgTxnRetry"
+        },
+        "max_txn_retry": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxTxnRetry"
+        },
+        "sum_backoff_times": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggSumBackoffTimes"
+        },
+        "avg_mem": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgMem"
+        },
+        "max_mem": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxMem"
+        },
+        "avg_disk": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgDisk"
+        },
+        "max_disk": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggMaxDisk"
+        },
+        "avg_affected_rows": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggAvgAffectedRows"
+        },
+        "first_seen": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggFirstSeen"
+        },
+        "last_seen": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggLastSeen"
+        },
+        "sample_user": {
+          "type": "string",
+          "title": "AggSampleUser"
+        },
+        "query_sample_text": {
+          "type": "string",
+          "title": "AggQuerySampleText"
+        },
+        "prev_sample_text": {
+          "type": "string",
+          "title": "AggPrevSampleText"
+        },
+        "schema_name": {
+          "type": "string",
+          "title": "AggSchemaName"
+        },
+        "table_names": {
+          "type": "string",
+          "title": "AggTableNames"
+        },
+        "index_names": {
+          "type": "string",
+          "title": "AggIndexNames"
+        },
+        "plan_count": {
+          "type": "string",
+          "format": "int64",
+          "title": "AggPlanCount"
+        },
+        "plan": {
+          "type": "string",
+          "title": "AggPlan (deprecated)"
+        },
+        "binary_plan": {
+          "type": "string",
+          "title": "AggBinaryPlan"
+        },
+        "plan_digest": {
+          "type": "string",
+          "title": "AggPlanDigest"
+        },
+        "plan_hint": {
+          "type": "string",
+          "title": "AggPlanHint"
+        },
+        "max_rocksdb_delete_skipped_count": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggMaxRocksdbDeleteSkippedCount"
+        },
+        "avg_rocksdb_delete_skipped_count": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggAvgRocksdbDeleteSkippedCount"
+        },
+        "max_rocksdb_key_skipped_count": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggMaxRocksdbKeySkippedCount"
+        },
+        "avg_rocksdb_key_skipped_count": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggAvgRocksdbKeySkippedCount"
+        },
+        "max_rocksdb_block_cache_hit_count": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggMaxRocksdbBlockCacheHitCount"
+        },
+        "avg_rocksdb_block_cache_hit_count": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggAvgRocksdbBlockCacheHitCount"
+        },
+        "max_rocksdb_block_read_count": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggMaxRocksdbBlockReadCount"
+        },
+        "avg_rocksdb_block_read_count": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggAvgRocksdbBlockReadCount"
+        },
+        "max_rocksdb_block_read_byte": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggMaxRocksdbBlockReadByte"
+        },
+        "avg_rocksdb_block_read_byte": {
+          "type": "string",
+          "format": "uint64",
+          "title": "AggAvgRocksdbBlockReadByte"
+        },
+        "related_schemas": {
+          "type": "string",
+          "title": "RelatedSchemas"
+        },
+        "plan_can_be_bound": {
+          "type": "boolean",
+          "title": "PlanCanBeBound"
+        },
+        "binary_plan_text": {
+          "type": "string",
+          "title": "BinaryPlanText"
+        }
+      },
+      "title": "Top SQL detail"
+    },
+    "v2TopSqlList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2TopSqlDetail"
+          },
+          "title": "List of top sql"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "Total size"
+        }
+      },
+      "title": "Top SQL list"
+    },
     "v2User": {
       "type": "object",
       "properties": {
@@ -1734,61 +3553,9 @@
           "type": "string",
           "title": "The email of the user"
         },
-        "note": {
-          "type": "string",
-          "title": "The note of the user"
-        },
         "password": {
           "type": "string",
           "title": "The password of the user"
-        },
-        "userType": {
-          "type": "string",
-          "format": "int64",
-          "title": "The type of the user"
-        },
-        "userTypeDesc": {
-          "type": "string",
-          "title": "The description of the user type"
-        },
-        "phone": {
-          "type": "string",
-          "title": "The phone of the user"
-        },
-        "roles": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v2UserRole",
-            "enum": [
-              "ADMIN",
-              "ALERT_MANAGER",
-              "ALERT_READER",
-              "BACKUP_MANAGER",
-              "BACKUP_READER",
-              "CLUSTER_MANAGER",
-              "CLUSTER_READER",
-              "HOST_MANAGER",
-              "HOST_READER",
-              "USER_MANAGER",
-              "AUDIT_MANAGER",
-              "SYSTEM_MANAGER",
-              "SYSTEM_READER"
-            ]
-          },
-          "title": "The role name"
-        },
-        "createTime": {
-          "type": "string",
-          "format": "date-time",
-          "title": "The create time of the user",
-          "readOnly": true
-        },
-        "updateTime": {
-          "type": "string",
-          "format": "date-time",
-          "title": "The update time of the user",
-          "readOnly": true
         }
       },
       "title": "User resource",
@@ -1797,18 +3564,49 @@
     "v2UserRole": {
       "type": "object",
       "properties": {
+        "userId": {
+          "type": "string",
+          "title": "The user_id of the user"
+        },
+        "name": {
+          "type": "string",
+          "title": "The name of the user"
+        },
+        "email": {
+          "type": "string",
+          "title": "The email of the user"
+        },
+        "note": {
+          "type": "string",
+          "title": "The note of the user"
+        },
         "roleName": {
           "type": "string",
-          "title": "The name of the role"
+          "enum": [
+            "ADMIN",
+            "ALERT_MANAGER",
+            "ALERT_READER",
+            "BACKUP_MANAGER",
+            "BACKUP_READER",
+            "CLUSTER_MANAGER",
+            "CLUSTER_READER",
+            "HOST_MANAGER",
+            "HOST_READER",
+            "USER_MANAGER",
+            "AUDIT_MANAGER",
+            "SYSTEM_MANAGER",
+            "SYSTEM_READER"
+          ],
+          "title": "The role name"
         },
         "roleId": {
-          "type": "integer",
-          "format": "int32",
-          "title": "The id of the role"
+          "type": "string",
+          "format": "int64",
+          "title": "The role id of the role"
         }
       },
-      "title": "the role of user",
-      "required": ["roleId"]
+      "title": "User resource",
+      "required": ["userId", "name"]
     },
     "v2ValidateSessionResponse": {
       "type": "object",

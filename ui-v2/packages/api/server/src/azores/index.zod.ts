@@ -6,56 +6,6 @@
  */
 import { z as zod } from 'zod';
 
-export const apiKeyServiceListApiKeysQueryParams = zod.object({
-  "pageSize": zod.number().optional(),
-  "pageToken": zod.string().optional(),
-  "skip": zod.number().optional(),
-  "orderBy": zod.string().optional(),
-  "accessKey": zod.string().optional(),
-  "creator": zod.string().optional(),
-  "status": zod.string().optional()
-})
-
-export const apiKeyServiceListApiKeysResponse = zod.object({
-  "apikeys": zod.array(zod.object({
-  "accessKey": zod.string(),
-  "secretKey": zod.string(),
-  "creator": zod.string().optional(),
-  "status": zod.enum(['disable', 'enable']).optional(),
-  "createTime": zod.string().datetime().optional(),
-  "updateTime": zod.string().datetime().optional()
-})).optional(),
-  "nextPageToken": zod.string().optional(),
-  "totalSize": zod.number().optional()
-})
-
-
-export const apiKeyServiceCreateApiKeyBody = zod.object({
-  "accessKey": zod.string(),
-  "secretKey": zod.string(),
-  "creator": zod.string().optional(),
-  "status": zod.enum(['disable', 'enable']).optional()
-})
-
-export const apiKeyServiceCreateApiKeyResponse = zod.object({
-  "accessKey": zod.string(),
-  "secretKey": zod.string(),
-  "creator": zod.string().optional(),
-  "status": zod.enum(['disable', 'enable']).optional(),
-  "createTime": zod.string().datetime().optional(),
-  "updateTime": zod.string().datetime().optional()
-})
-
-
-export const apiKeyServiceDeleteApiKeyParams = zod.object({
-  "accessKey": zod.string()
-})
-
-export const apiKeyServiceDeleteApiKeyResponse = zod.object({
-
-})
-
-
 export const metricsServiceGetClusterMetricDataParams = zod.object({
   "clusterId": zod.string(),
   "name": zod.string()
@@ -150,6 +100,619 @@ export const clusterServiceDeleteProcessResponse = zod.object({
 })
 
 
+export const clusterServiceGetSlowQueryListParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceGetSlowQueryListQueryParams = zod.object({
+  "beginTime": zod.string(),
+  "endTime": zod.string(),
+  "db": zod.array(zod.string()).optional(),
+  "text": zod.string().optional(),
+  "orderBy": zod.string().optional(),
+  "isDesc": zod.boolean().optional(),
+  "fields": zod.string().optional(),
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "advancedFilter": zod.array(zod.string()).optional()
+})
+
+export const clusterServiceGetSlowQueryListResponse = zod.object({
+  "data": zod.array(zod.object({
+  "digest": zod.string().optional(),
+  "query": zod.string().optional(),
+  "instance": zod.string().optional(),
+  "db": zod.string().optional(),
+  "connection_id": zod.string().optional(),
+  "success": zod.string().optional(),
+  "timestamp": zod.number().optional(),
+  "query_time": zod.number().optional(),
+  "parse_time": zod.number().optional(),
+  "compile_time": zod.number().optional(),
+  "rewrite_time": zod.number().optional(),
+  "preproc_subqueries_time": zod.number().optional(),
+  "optimize_time": zod.number().optional(),
+  "wait_ts": zod.number().optional(),
+  "cop_time": zod.number().optional(),
+  "lock_keys_time": zod.number().optional(),
+  "write_sql_response_total": zod.number().optional(),
+  "exec_retry_time": zod.number().optional(),
+  "mem_max": zod.string().optional(),
+  "disk_max": zod.string().optional(),
+  "txn_start_ts": zod.string().optional(),
+  "prev_stmt": zod.string().optional(),
+  "plan": zod.string().optional(),
+  "binary_plan": zod.string().optional(),
+  "warnings": zod.string().optional(),
+  "is_internal": zod.string().optional(),
+  "index_names": zod.string().optional(),
+  "stats": zod.string().optional(),
+  "backoff_types": zod.string().optional(),
+  "prepared": zod.string().optional(),
+  "plan_from_cache": zod.string().optional(),
+  "plan_from_binding": zod.string().optional(),
+  "user": zod.string().optional(),
+  "host": zod.string().optional(),
+  "process_time": zod.number().optional(),
+  "wait_time": zod.number().optional(),
+  "backoff_time": zod.number().optional(),
+  "get_commit_ts_time": zod.number().optional(),
+  "local_latch_wait_time": zod.number().optional(),
+  "resolve_lock_time": zod.number().optional(),
+  "prewrite_time": zod.number().optional(),
+  "wait_prewrite_binlog_time": zod.number().optional(),
+  "commit_time": zod.number().optional(),
+  "commit_backoff_time": zod.number().optional(),
+  "cop_proc_avg": zod.number().optional(),
+  "cop_proc_p90": zod.number().optional(),
+  "cop_proc_max": zod.number().optional(),
+  "cop_wait_avg": zod.number().optional(),
+  "cop_wait_p90": zod.number().optional(),
+  "cop_wait_max": zod.number().optional(),
+  "write_keys": zod.string().optional(),
+  "write_size": zod.string().optional(),
+  "prewrite_region": zod.string().optional(),
+  "txn_retry": zod.string().optional(),
+  "request_count": zod.number().optional(),
+  "process_keys": zod.number().optional(),
+  "total_keys": zod.number().optional(),
+  "cop_proc_addr": zod.string().optional(),
+  "cop_wait_addr": zod.string().optional(),
+  "rocksdb_delete_skipped_count": zod.number().optional(),
+  "rocksdb_key_skipped_count": zod.number().optional(),
+  "rocksdb_block_cache_hit_count": zod.number().optional(),
+  "rocksdb_block_read_count": zod.number().optional(),
+  "rocksdb_block_read_byte": zod.number().optional(),
+  "binary_plan_text": zod.string().optional(),
+  "session_alias": zod.string().optional(),
+  "exec_retry_count": zod.string().optional(),
+  "preproc_subqueries": zod.string().optional(),
+  "kv_total": zod.number().optional(),
+  "pd_total": zod.number().optional(),
+  "backoff_total": zod.number().optional(),
+  "time_queued_by_rc": zod.number().optional(),
+  "tidb_cpu_time": zod.number().optional(),
+  "tikv_cpu_time": zod.number().optional(),
+  "backoff_detail": zod.string().optional(),
+  "is_explicit_txn": zod.boolean().optional(),
+  "plan_digest": zod.string().optional(),
+  "has_more_results": zod.boolean().optional(),
+  "resource_group": zod.string().optional(),
+  "request_unit_read": zod.number().optional(),
+  "request_unit_write": zod.number().optional(),
+  "result_rows": zod.string().optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.string().optional()
+})
+
+
+export const clusterServiceGetSlowQueryAvailableAdvancedFiltersParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceGetSlowQueryAvailableAdvancedFiltersResponse = zod.object({
+  "filters": zod.array(zod.string()).optional()
+})
+
+
+export const clusterServiceDownloadSlowQueryListParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceDownloadSlowQueryListQueryParams = zod.object({
+  "beginTime": zod.string(),
+  "endTime": zod.string(),
+  "db": zod.array(zod.string()).optional(),
+  "text": zod.string().optional(),
+  "orderBy": zod.string().optional(),
+  "isDesc": zod.boolean().optional(),
+  "fields": zod.string().optional(),
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "advancedFilter": zod.array(zod.string()).optional()
+})
+
+export const clusterServiceDownloadSlowQueryListResponse = zod.object({
+  "filename": zod.string().optional(),
+  "fileContent": zod.string().optional()
+})
+
+
+export const clusterServiceGetSlowQueryAvailableFieldsParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceGetSlowQueryAvailableFieldsResponse = zod.object({
+  "fields": zod.array(zod.string()).optional()
+})
+
+
+export const clusterServiceGetSlowQueryDetailParams = zod.object({
+  "clusterId": zod.string(),
+  "digest": zod.string()
+})
+
+export const clusterServiceGetSlowQueryDetailQueryParams = zod.object({
+  "timestamp": zod.number(),
+  "connectId": zod.string()
+})
+
+export const clusterServiceGetSlowQueryDetailResponse = zod.object({
+  "digest": zod.string().optional(),
+  "query": zod.string().optional(),
+  "instance": zod.string().optional(),
+  "db": zod.string().optional(),
+  "connection_id": zod.string().optional(),
+  "success": zod.string().optional(),
+  "timestamp": zod.number().optional(),
+  "query_time": zod.number().optional(),
+  "parse_time": zod.number().optional(),
+  "compile_time": zod.number().optional(),
+  "rewrite_time": zod.number().optional(),
+  "preproc_subqueries_time": zod.number().optional(),
+  "optimize_time": zod.number().optional(),
+  "wait_ts": zod.number().optional(),
+  "cop_time": zod.number().optional(),
+  "lock_keys_time": zod.number().optional(),
+  "write_sql_response_total": zod.number().optional(),
+  "exec_retry_time": zod.number().optional(),
+  "mem_max": zod.string().optional(),
+  "disk_max": zod.string().optional(),
+  "txn_start_ts": zod.string().optional(),
+  "prev_stmt": zod.string().optional(),
+  "plan": zod.string().optional(),
+  "binary_plan": zod.string().optional(),
+  "warnings": zod.string().optional(),
+  "is_internal": zod.string().optional(),
+  "index_names": zod.string().optional(),
+  "stats": zod.string().optional(),
+  "backoff_types": zod.string().optional(),
+  "prepared": zod.string().optional(),
+  "plan_from_cache": zod.string().optional(),
+  "plan_from_binding": zod.string().optional(),
+  "user": zod.string().optional(),
+  "host": zod.string().optional(),
+  "process_time": zod.number().optional(),
+  "wait_time": zod.number().optional(),
+  "backoff_time": zod.number().optional(),
+  "get_commit_ts_time": zod.number().optional(),
+  "local_latch_wait_time": zod.number().optional(),
+  "resolve_lock_time": zod.number().optional(),
+  "prewrite_time": zod.number().optional(),
+  "wait_prewrite_binlog_time": zod.number().optional(),
+  "commit_time": zod.number().optional(),
+  "commit_backoff_time": zod.number().optional(),
+  "cop_proc_avg": zod.number().optional(),
+  "cop_proc_p90": zod.number().optional(),
+  "cop_proc_max": zod.number().optional(),
+  "cop_wait_avg": zod.number().optional(),
+  "cop_wait_p90": zod.number().optional(),
+  "cop_wait_max": zod.number().optional(),
+  "write_keys": zod.string().optional(),
+  "write_size": zod.string().optional(),
+  "prewrite_region": zod.string().optional(),
+  "txn_retry": zod.string().optional(),
+  "request_count": zod.number().optional(),
+  "process_keys": zod.number().optional(),
+  "total_keys": zod.number().optional(),
+  "cop_proc_addr": zod.string().optional(),
+  "cop_wait_addr": zod.string().optional(),
+  "rocksdb_delete_skipped_count": zod.number().optional(),
+  "rocksdb_key_skipped_count": zod.number().optional(),
+  "rocksdb_block_cache_hit_count": zod.number().optional(),
+  "rocksdb_block_read_count": zod.number().optional(),
+  "rocksdb_block_read_byte": zod.number().optional(),
+  "binary_plan_text": zod.string().optional(),
+  "session_alias": zod.string().optional(),
+  "exec_retry_count": zod.string().optional(),
+  "preproc_subqueries": zod.string().optional(),
+  "kv_total": zod.number().optional(),
+  "pd_total": zod.number().optional(),
+  "backoff_total": zod.number().optional(),
+  "time_queued_by_rc": zod.number().optional(),
+  "tidb_cpu_time": zod.number().optional(),
+  "tikv_cpu_time": zod.number().optional(),
+  "backoff_detail": zod.string().optional(),
+  "is_explicit_txn": zod.boolean().optional(),
+  "plan_digest": zod.string().optional(),
+  "has_more_results": zod.boolean().optional(),
+  "resource_group": zod.string().optional(),
+  "request_unit_read": zod.number().optional(),
+  "request_unit_write": zod.number().optional(),
+  "result_rows": zod.string().optional()
+})
+
+
+export const clusterServiceGetSqlPlanListParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceGetSqlPlanListQueryParams = zod.object({
+  "beginTime": zod.string(),
+  "endTime": zod.string(),
+  "digest": zod.string().optional(),
+  "schemaName": zod.string().optional()
+})
+
+export const clusterServiceGetSqlPlanListResponse = zod.object({
+  "data": zod.array(zod.object({
+  "summary_begin_time": zod.string().optional(),
+  "summary_end_time": zod.string().optional(),
+  "digest_text": zod.string().optional(),
+  "digest": zod.string().optional(),
+  "exec_count": zod.string().optional(),
+  "stmt_type": zod.string().optional(),
+  "sum_errors": zod.string().optional(),
+  "sum_warnings": zod.string().optional(),
+  "sum_latency": zod.string().optional(),
+  "max_latency": zod.string().optional(),
+  "min_latency": zod.string().optional(),
+  "avg_latency": zod.string().optional(),
+  "avg_parse_latency": zod.string().optional(),
+  "max_parse_latency": zod.string().optional(),
+  "avg_compile_latency": zod.string().optional(),
+  "max_compile_latency": zod.string().optional(),
+  "sum_cop_task_num": zod.string().optional(),
+  "avg_cop_process_time": zod.string().optional(),
+  "max_cop_process_time": zod.string().optional(),
+  "avg_cop_wait_time": zod.string().optional(),
+  "max_cop_wait_time": zod.string().optional(),
+  "avg_process_time": zod.string().optional(),
+  "max_process_time": zod.string().optional(),
+  "avg_wait_time": zod.string().optional(),
+  "max_wait_time": zod.string().optional(),
+  "avg_backoff_time": zod.string().optional(),
+  "max_backoff_time": zod.string().optional(),
+  "avg_total_keys": zod.string().optional(),
+  "max_total_keys": zod.string().optional(),
+  "avg_processed_keys": zod.string().optional(),
+  "max_processed_keys": zod.string().optional(),
+  "avg_prewrite_time": zod.string().optional(),
+  "max_prewrite_time": zod.string().optional(),
+  "avg_commit_time": zod.string().optional(),
+  "max_commit_time": zod.string().optional(),
+  "avg_get_commit_ts_time": zod.string().optional(),
+  "max_get_commit_ts_time": zod.string().optional(),
+  "avg_commit_backoff_time": zod.string().optional(),
+  "max_commit_backoff_time": zod.string().optional(),
+  "avg_resolve_lock_time": zod.string().optional(),
+  "max_resolve_lock_time": zod.string().optional(),
+  "avg_local_latch_wait_time": zod.string().optional(),
+  "max_local_latch_wait_time": zod.string().optional(),
+  "avg_write_keys": zod.string().optional(),
+  "max_write_keys": zod.string().optional(),
+  "avg_write_size": zod.string().optional(),
+  "max_write_size": zod.string().optional(),
+  "avg_prewrite_regions": zod.string().optional(),
+  "max_prewrite_regions": zod.string().optional(),
+  "avg_txn_retry": zod.string().optional(),
+  "max_txn_retry": zod.string().optional(),
+  "sum_backoff_times": zod.string().optional(),
+  "avg_mem": zod.string().optional(),
+  "max_mem": zod.string().optional(),
+  "avg_disk": zod.string().optional(),
+  "max_disk": zod.string().optional(),
+  "avg_affected_rows": zod.string().optional(),
+  "first_seen": zod.string().optional(),
+  "last_seen": zod.string().optional(),
+  "sample_user": zod.string().optional(),
+  "query_sample_text": zod.string().optional(),
+  "prev_sample_text": zod.string().optional(),
+  "schema_name": zod.string().optional(),
+  "table_names": zod.string().optional(),
+  "index_names": zod.string().optional(),
+  "plan_count": zod.string().optional(),
+  "plan": zod.string().optional(),
+  "binary_plan": zod.string().optional(),
+  "plan_digest": zod.string().optional(),
+  "plan_hint": zod.string().optional(),
+  "max_rocksdb_delete_skipped_count": zod.string().optional(),
+  "avg_rocksdb_delete_skipped_count": zod.string().optional(),
+  "max_rocksdb_key_skipped_count": zod.string().optional(),
+  "avg_rocksdb_key_skipped_count": zod.string().optional(),
+  "max_rocksdb_block_cache_hit_count": zod.string().optional(),
+  "avg_rocksdb_block_cache_hit_count": zod.string().optional(),
+  "max_rocksdb_block_read_count": zod.string().optional(),
+  "avg_rocksdb_block_read_count": zod.string().optional(),
+  "max_rocksdb_block_read_byte": zod.string().optional(),
+  "avg_rocksdb_block_read_byte": zod.string().optional(),
+  "related_schemas": zod.string().optional(),
+  "plan_can_be_bound": zod.boolean().optional(),
+  "binary_plan_text": zod.string().optional()
+})).optional()
+})
+
+
+export const clusterServiceBindSqlPlanParams = zod.object({
+  "clusterId": zod.string(),
+  "planDigest": zod.string()
+})
+
+export const clusterServiceBindSqlPlanResponse = zod.object({
+
+})
+
+
+export const clusterServiceCheckSupportParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceCheckSupportResponse = zod.object({
+  "isSupport": zod.boolean().optional()
+})
+
+
+export const clusterServiceGetSqlPlanBindingListParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceGetSqlPlanBindingListQueryParams = zod.object({
+  "beginTime": zod.string(),
+  "endTime": zod.string(),
+  "digest": zod.string()
+})
+
+export const clusterServiceGetSqlPlanBindingListResponse = zod.object({
+  "data": zod.array(zod.object({
+  "status": zod.enum(['enabled', 'using', 'disabled', 'deleted', 'invalid', 'rejected', 'pending verify']).optional(),
+  "source": zod.enum(['manual', 'history', 'capture', 'evolve']).optional(),
+  "digest": zod.string().optional(),
+  "planDigest": zod.string().optional()
+})).optional()
+})
+
+
+export const clusterServiceUnbindSqlPlanParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceUnbindSqlPlanQueryParams = zod.object({
+  "digest": zod.string()
+})
+
+export const clusterServiceUnbindSqlPlanResponse = zod.object({
+
+})
+
+
+export const clusterServiceGetTopSqlListParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceGetTopSqlListQueryParams = zod.object({
+  "beginTime": zod.string(),
+  "endTime": zod.string(),
+  "db": zod.array(zod.string()).optional(),
+  "text": zod.string().optional(),
+  "orderBy": zod.string().optional(),
+  "isDesc": zod.boolean().optional(),
+  "fields": zod.string().optional(),
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "advancedFilter": zod.array(zod.string()).optional()
+})
+
+export const clusterServiceGetTopSqlListResponse = zod.object({
+  "data": zod.array(zod.object({
+  "summary_begin_time": zod.string().optional(),
+  "summary_end_time": zod.string().optional(),
+  "digest_text": zod.string().optional(),
+  "digest": zod.string().optional(),
+  "exec_count": zod.string().optional(),
+  "stmt_type": zod.string().optional(),
+  "sum_errors": zod.string().optional(),
+  "sum_warnings": zod.string().optional(),
+  "sum_latency": zod.string().optional(),
+  "max_latency": zod.string().optional(),
+  "min_latency": zod.string().optional(),
+  "avg_latency": zod.string().optional(),
+  "avg_parse_latency": zod.string().optional(),
+  "max_parse_latency": zod.string().optional(),
+  "avg_compile_latency": zod.string().optional(),
+  "max_compile_latency": zod.string().optional(),
+  "sum_cop_task_num": zod.string().optional(),
+  "avg_cop_process_time": zod.string().optional(),
+  "max_cop_process_time": zod.string().optional(),
+  "avg_cop_wait_time": zod.string().optional(),
+  "max_cop_wait_time": zod.string().optional(),
+  "avg_process_time": zod.string().optional(),
+  "max_process_time": zod.string().optional(),
+  "avg_wait_time": zod.string().optional(),
+  "max_wait_time": zod.string().optional(),
+  "avg_backoff_time": zod.string().optional(),
+  "max_backoff_time": zod.string().optional(),
+  "avg_total_keys": zod.string().optional(),
+  "max_total_keys": zod.string().optional(),
+  "avg_processed_keys": zod.string().optional(),
+  "max_processed_keys": zod.string().optional(),
+  "avg_prewrite_time": zod.string().optional(),
+  "max_prewrite_time": zod.string().optional(),
+  "avg_commit_time": zod.string().optional(),
+  "max_commit_time": zod.string().optional(),
+  "avg_get_commit_ts_time": zod.string().optional(),
+  "max_get_commit_ts_time": zod.string().optional(),
+  "avg_commit_backoff_time": zod.string().optional(),
+  "max_commit_backoff_time": zod.string().optional(),
+  "avg_resolve_lock_time": zod.string().optional(),
+  "max_resolve_lock_time": zod.string().optional(),
+  "avg_local_latch_wait_time": zod.string().optional(),
+  "max_local_latch_wait_time": zod.string().optional(),
+  "avg_write_keys": zod.string().optional(),
+  "max_write_keys": zod.string().optional(),
+  "avg_write_size": zod.string().optional(),
+  "max_write_size": zod.string().optional(),
+  "avg_prewrite_regions": zod.string().optional(),
+  "max_prewrite_regions": zod.string().optional(),
+  "avg_txn_retry": zod.string().optional(),
+  "max_txn_retry": zod.string().optional(),
+  "sum_backoff_times": zod.string().optional(),
+  "avg_mem": zod.string().optional(),
+  "max_mem": zod.string().optional(),
+  "avg_disk": zod.string().optional(),
+  "max_disk": zod.string().optional(),
+  "avg_affected_rows": zod.string().optional(),
+  "first_seen": zod.string().optional(),
+  "last_seen": zod.string().optional(),
+  "sample_user": zod.string().optional(),
+  "query_sample_text": zod.string().optional(),
+  "prev_sample_text": zod.string().optional(),
+  "schema_name": zod.string().optional(),
+  "table_names": zod.string().optional(),
+  "index_names": zod.string().optional(),
+  "plan_count": zod.string().optional(),
+  "plan": zod.string().optional(),
+  "binary_plan": zod.string().optional(),
+  "plan_digest": zod.string().optional(),
+  "plan_hint": zod.string().optional(),
+  "max_rocksdb_delete_skipped_count": zod.string().optional(),
+  "avg_rocksdb_delete_skipped_count": zod.string().optional(),
+  "max_rocksdb_key_skipped_count": zod.string().optional(),
+  "avg_rocksdb_key_skipped_count": zod.string().optional(),
+  "max_rocksdb_block_cache_hit_count": zod.string().optional(),
+  "avg_rocksdb_block_cache_hit_count": zod.string().optional(),
+  "max_rocksdb_block_read_count": zod.string().optional(),
+  "avg_rocksdb_block_read_count": zod.string().optional(),
+  "max_rocksdb_block_read_byte": zod.string().optional(),
+  "avg_rocksdb_block_read_byte": zod.string().optional(),
+  "related_schemas": zod.string().optional(),
+  "plan_can_be_bound": zod.boolean().optional(),
+  "binary_plan_text": zod.string().optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.string().optional()
+})
+
+
+export const clusterServiceGetTopSqlAvailableFieldsParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterServiceGetTopSqlAvailableFieldsResponse = zod.object({
+  "fields": zod.array(zod.string()).optional()
+})
+
+
+export const clusterServiceGetTopSqlDetailParams = zod.object({
+  "clusterId": zod.string(),
+  "digest": zod.string()
+})
+
+export const clusterServiceGetTopSqlDetailQueryParams = zod.object({
+  "beginTime": zod.string(),
+  "endTime": zod.string()
+})
+
+export const clusterServiceGetTopSqlDetailResponse = zod.object({
+  "summary_begin_time": zod.string().optional(),
+  "summary_end_time": zod.string().optional(),
+  "digest_text": zod.string().optional(),
+  "digest": zod.string().optional(),
+  "exec_count": zod.string().optional(),
+  "stmt_type": zod.string().optional(),
+  "sum_errors": zod.string().optional(),
+  "sum_warnings": zod.string().optional(),
+  "sum_latency": zod.string().optional(),
+  "max_latency": zod.string().optional(),
+  "min_latency": zod.string().optional(),
+  "avg_latency": zod.string().optional(),
+  "avg_parse_latency": zod.string().optional(),
+  "max_parse_latency": zod.string().optional(),
+  "avg_compile_latency": zod.string().optional(),
+  "max_compile_latency": zod.string().optional(),
+  "sum_cop_task_num": zod.string().optional(),
+  "avg_cop_process_time": zod.string().optional(),
+  "max_cop_process_time": zod.string().optional(),
+  "avg_cop_wait_time": zod.string().optional(),
+  "max_cop_wait_time": zod.string().optional(),
+  "avg_process_time": zod.string().optional(),
+  "max_process_time": zod.string().optional(),
+  "avg_wait_time": zod.string().optional(),
+  "max_wait_time": zod.string().optional(),
+  "avg_backoff_time": zod.string().optional(),
+  "max_backoff_time": zod.string().optional(),
+  "avg_total_keys": zod.string().optional(),
+  "max_total_keys": zod.string().optional(),
+  "avg_processed_keys": zod.string().optional(),
+  "max_processed_keys": zod.string().optional(),
+  "avg_prewrite_time": zod.string().optional(),
+  "max_prewrite_time": zod.string().optional(),
+  "avg_commit_time": zod.string().optional(),
+  "max_commit_time": zod.string().optional(),
+  "avg_get_commit_ts_time": zod.string().optional(),
+  "max_get_commit_ts_time": zod.string().optional(),
+  "avg_commit_backoff_time": zod.string().optional(),
+  "max_commit_backoff_time": zod.string().optional(),
+  "avg_resolve_lock_time": zod.string().optional(),
+  "max_resolve_lock_time": zod.string().optional(),
+  "avg_local_latch_wait_time": zod.string().optional(),
+  "max_local_latch_wait_time": zod.string().optional(),
+  "avg_write_keys": zod.string().optional(),
+  "max_write_keys": zod.string().optional(),
+  "avg_write_size": zod.string().optional(),
+  "max_write_size": zod.string().optional(),
+  "avg_prewrite_regions": zod.string().optional(),
+  "max_prewrite_regions": zod.string().optional(),
+  "avg_txn_retry": zod.string().optional(),
+  "max_txn_retry": zod.string().optional(),
+  "sum_backoff_times": zod.string().optional(),
+  "avg_mem": zod.string().optional(),
+  "max_mem": zod.string().optional(),
+  "avg_disk": zod.string().optional(),
+  "max_disk": zod.string().optional(),
+  "avg_affected_rows": zod.string().optional(),
+  "first_seen": zod.string().optional(),
+  "last_seen": zod.string().optional(),
+  "sample_user": zod.string().optional(),
+  "query_sample_text": zod.string().optional(),
+  "prev_sample_text": zod.string().optional(),
+  "schema_name": zod.string().optional(),
+  "table_names": zod.string().optional(),
+  "index_names": zod.string().optional(),
+  "plan_count": zod.string().optional(),
+  "plan": zod.string().optional(),
+  "binary_plan": zod.string().optional(),
+  "plan_digest": zod.string().optional(),
+  "plan_hint": zod.string().optional(),
+  "max_rocksdb_delete_skipped_count": zod.string().optional(),
+  "avg_rocksdb_delete_skipped_count": zod.string().optional(),
+  "max_rocksdb_key_skipped_count": zod.string().optional(),
+  "avg_rocksdb_key_skipped_count": zod.string().optional(),
+  "max_rocksdb_block_cache_hit_count": zod.string().optional(),
+  "avg_rocksdb_block_cache_hit_count": zod.string().optional(),
+  "max_rocksdb_block_read_count": zod.string().optional(),
+  "avg_rocksdb_block_read_count": zod.string().optional(),
+  "max_rocksdb_block_read_byte": zod.string().optional(),
+  "avg_rocksdb_block_read_byte": zod.string().optional(),
+  "related_schemas": zod.string().optional(),
+  "plan_can_be_bound": zod.boolean().optional(),
+  "binary_plan_text": zod.string().optional()
+})
+
+
 export const metricsServiceGetHostMetricDataParams = zod.object({
   "hostId": zod.string(),
   "name": zod.string()
@@ -189,6 +752,110 @@ export const metricsServiceGetHostMetricDataResponse = zod.object({
 })).optional()
 })).optional()
 })).optional()
+})
+
+
+export const labelServiceListLabelsQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string().optional()
+})
+
+export const labelServiceListLabelsResponse = zod.object({
+  "labels": zod.array(zod.object({
+  "label": zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+}).optional(),
+  "bindObjects": zod.array(zod.object({
+  "resourceType": zod.string(),
+  "resourceIds": zod.array(zod.string())
+})).optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const labelServiceCreateLabelBody = zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})
+
+export const labelServiceCreateLabelResponse = zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})
+
+
+export const labelServiceDeleteLabelParams = zod.object({
+  "labelId": zod.string()
+})
+
+export const labelServiceDeleteLabelResponse = zod.object({
+
+})
+
+
+export const labelServiceUpdateLabelParams = zod.object({
+  "labelId": zod.string()
+})
+
+export const labelServiceUpdateLabelBody = zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})
+
+export const labelServiceUpdateLabelResponse = zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})
+
+
+export const labelServiceBindLabelBody = zod.object({
+  "labelId": zod.string(),
+  "appendBindObjects": zod.array(zod.object({
+  "resourceType": zod.string(),
+  "resourceIds": zod.array(zod.string())
+})).optional(),
+  "removeBindObjects": zod.array(zod.object({
+  "resourceType": zod.string(),
+  "resourceIds": zod.array(zod.string())
+})).optional()
+})
+
+export const labelServiceBindLabelResponse = zod.object({
+  "label": zod.object({
+  "label": zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+}).optional(),
+  "bindObjects": zod.array(zod.object({
+  "resourceType": zod.string(),
+  "resourceIds": zod.array(zod.string())
+})).optional()
+}).optional()
+})
+
+
+export const labelServiceBindResourceBody = zod.object({
+  "resourceType": zod.string(),
+  "resourceId": zod.string(),
+  "appendLabelIds": zod.array(zod.string()).optional(),
+  "removeLabelIds": zod.array(zod.string()).optional()
+})
+
+export const labelServiceBindResourceResponse = zod.object({
+  "labelIds": zod.array(zod.string()).optional()
 })
 
 
@@ -322,7 +989,7 @@ export const metricsServiceGetOverviewStatusResponse = zod.object({
 })
 
 
-export const roleServiceListRolesQueryParams = zod.object({
+export const userServiceListUsersQueryParams = zod.object({
   "pageSize": zod.number().optional(),
   "pageToken": zod.string().optional(),
   "skip": zod.number().optional(),
@@ -331,79 +998,13 @@ export const roleServiceListRolesQueryParams = zod.object({
   "emailLike": zod.string().optional()
 })
 
-export const roleServiceListRolesResponse = zod.object({
-  "roles": zod.array(zod.object({
-  "id": zod.number().optional(),
-  "roleName": zod.string().optional(),
-  "roleType": zod.string().optional(),
-  "roleTypeDesc": zod.string().optional(),
-  "detail": zod.string().optional(),
-  "note": zod.string().optional(),
-  "createTime": zod.string().datetime().optional(),
-  "updateTime": zod.string().datetime().optional()
-})).optional(),
-  "nextPageToken": zod.string().optional(),
-  "totalSize": zod.number().optional()
-})
-
-
-export const roleServiceCreateRoleBody = zod.object({
-  "id": zod.number().optional(),
-  "roleName": zod.string().optional(),
-  "roleType": zod.string().optional(),
-  "roleTypeDesc": zod.string().optional(),
-  "detail": zod.string().optional(),
-  "note": zod.string().optional()
-})
-
-export const roleServiceCreateRoleResponse = zod.object({
-  "id": zod.number().optional(),
-  "roleName": zod.string().optional(),
-  "roleType": zod.string().optional(),
-  "roleTypeDesc": zod.string().optional(),
-  "detail": zod.string().optional(),
-  "note": zod.string().optional(),
-  "createTime": zod.string().datetime().optional(),
-  "updateTime": zod.string().datetime().optional()
-})
-
-
-export const roleServiceDeleteRoleParams = zod.object({
-  "roleId": zod.number()
-})
-
-export const roleServiceDeleteRoleResponse = zod.object({
-
-})
-
-
-export const userServiceListUsersQueryParams = zod.object({
-  "pageSize": zod.number().optional(),
-  "pageToken": zod.string().optional(),
-  "skip": zod.number().optional(),
-  "orderBy": zod.string().optional(),
-  "nameLike": zod.string().optional(),
-  "emailLike": zod.string().optional(),
-  "roleName": zod.string().optional()
-})
-
 export const userServiceListUsersResponse = zod.object({
   "users": zod.array(zod.object({
   "id": zod.string(),
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
-  "note": zod.string().optional(),
-  "password": zod.string().optional(),
-  "userType": zod.string().optional(),
-  "userTypeDesc": zod.string().optional(),
-  "phone": zod.string().optional(),
-  "roles": zod.array(zod.object({
-  "roleName": zod.string().optional(),
-  "roleId": zod.number()
-})).optional(),
-  "createTime": zod.string().datetime().optional(),
-  "updateTime": zod.string().datetime().optional()
+  "password": zod.string().optional()
 })).optional(),
   "nextPageToken": zod.string().optional(),
   "totalSize": zod.number().optional()
@@ -415,15 +1016,7 @@ export const userServiceCreateUserBody = zod.object({
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
-  "note": zod.string().optional(),
-  "password": zod.string().optional(),
-  "userType": zod.string().optional(),
-  "userTypeDesc": zod.string().optional(),
-  "phone": zod.string().optional(),
-  "roles": zod.array(zod.object({
-  "roleName": zod.string().optional(),
-  "roleId": zod.number()
-})).optional()
+  "password": zod.string().optional()
 })
 
 export const userServiceCreateUserResponse = zod.object({
@@ -431,17 +1024,7 @@ export const userServiceCreateUserResponse = zod.object({
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
-  "note": zod.string().optional(),
-  "password": zod.string().optional(),
-  "userType": zod.string().optional(),
-  "userTypeDesc": zod.string().optional(),
-  "phone": zod.string().optional(),
-  "roles": zod.array(zod.object({
-  "roleName": zod.string().optional(),
-  "roleId": zod.number()
-})).optional(),
-  "createTime": zod.string().datetime().optional(),
-  "updateTime": zod.string().datetime().optional()
+  "password": zod.string().optional()
 })
 
 
@@ -463,15 +1046,7 @@ export const userServiceUpdateUserBody = zod.object({
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
-  "note": zod.string().optional(),
-  "password": zod.string().optional(),
-  "userType": zod.string().optional(),
-  "userTypeDesc": zod.string().optional(),
-  "phone": zod.string().optional(),
-  "roles": zod.array(zod.object({
-  "roleName": zod.string().optional(),
-  "roleId": zod.number()
-})).optional()
+  "password": zod.string().optional()
 })
 
 export const userServiceUpdateUserResponse = zod.object({
@@ -479,17 +1054,31 @@ export const userServiceUpdateUserResponse = zod.object({
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
+  "password": zod.string().optional()
+})
+
+
+export const userServiceListUserRolesQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "nameLike": zod.string().optional(),
+  "emailLike": zod.string().optional(),
+  "roleName": zod.string().optional()
+})
+
+export const userServiceListUserRolesResponse = zod.object({
+  "users": zod.array(zod.object({
+  "userId": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().optional(),
   "note": zod.string().optional(),
-  "password": zod.string().optional(),
-  "userType": zod.string().optional(),
-  "userTypeDesc": zod.string().optional(),
-  "phone": zod.string().optional(),
-  "roles": zod.array(zod.object({
-  "roleName": zod.string().optional(),
-  "roleId": zod.number()
+  "roleName": zod.enum(['ADMIN', 'ALERT_MANAGER', 'ALERT_READER', 'BACKUP_MANAGER', 'BACKUP_READER', 'CLUSTER_MANAGER', 'CLUSTER_READER', 'HOST_MANAGER', 'HOST_READER', 'USER_MANAGER', 'AUDIT_MANAGER', 'SYSTEM_MANAGER', 'SYSTEM_READER']).optional(),
+  "roleId": zod.string().optional()
 })).optional(),
-  "createTime": zod.string().datetime().optional(),
-  "updateTime": zod.string().datetime().optional()
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
 })
 
 

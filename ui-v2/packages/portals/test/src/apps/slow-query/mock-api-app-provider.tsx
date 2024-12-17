@@ -7,9 +7,6 @@ import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
 
-import detailData from "./sample-data/detail-3.json"
-import listData from "./sample-data/list-2.json"
-
 declare global {
   interface Window {
     preUrl?: string[]
@@ -45,8 +42,6 @@ export function useCtxValue(): AppCtxValue {
             pageSize: params.limit,
             fields: "query,query_time,memory_max",
           }).then((res) => res.data ?? [])
-
-          return delay(1000).then(() => listData)
         },
         getSlowQuery(params: { id: string }) {
           const [digest, connectId, timestamp] = params.id.split(",")
@@ -59,15 +54,6 @@ export function useCtxValue(): AppCtxValue {
             }
             return d
           })
-
-          return delay(1000)
-            .then(() => detailData)
-            .then((d) => {
-              if (d.binary_plan_text) {
-                d.plan = d.binary_plan_text
-              }
-              return d
-            })
         },
       },
       cfg: {

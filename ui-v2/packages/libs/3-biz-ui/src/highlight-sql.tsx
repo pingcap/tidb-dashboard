@@ -12,6 +12,7 @@ function InlineHighlightSQL({ sql }: { sql: string }) {
       code={formattedSql}
       styles={{
         code: {
+          display: "block",
           width: "100%",
           backgroundColor: "transparent",
           padding: 0,
@@ -45,6 +46,10 @@ function HighlightSQL({ sql }: { sql: string }) {
           code: {
             padding: 0,
             fontSize: 12,
+          },
+          copy: {
+            top: 0,
+            right: 0,
           },
         }}
       />

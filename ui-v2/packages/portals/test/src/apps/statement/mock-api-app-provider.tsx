@@ -59,19 +59,18 @@ export function useCtxValue(): AppCtxValue {
       },
       actions: {
         openDetail: (id: string) => {
-          window.preUrl = [window.location.hash.slice(1)]
+          window.preUrl = [window.location.pathname + window.location.search]
           navigate({ to: `/statement/detail?id=${id}` })
         },
         backToList: () => {
           const preUrl = window.preUrl?.pop()
           navigate({ to: preUrl || "/statement/list" })
         },
-        openSlowQueryDetail: (id: string) => {
-          window.preUrl = [
-            ...(window.preUrl || []),
-            window.location.hash.slice(1),
-          ]
-          navigate({ to: `/slow-query/detail?id=${id}` })
+        openSlowQueryList(id) {
+          const [from, to, digest, _schema, ...plans] = id.split(",")
+          const fullUrl = `/slow-query/list?from=${from}&to=${to}&digest=${digest}&plans=${plans.join(",")}`
+          // open in a new tab
+          window.open(fullUrl, "_blank")
         },
       },
     }),

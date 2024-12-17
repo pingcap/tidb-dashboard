@@ -9,7 +9,7 @@ import { usePlansListData } from "../../utils/use-data"
 
 import { PlansDetail } from "./plans-detail"
 import { PlansList } from "./plans-list"
-import { RelatedSlowQuery } from "./slow-query-list"
+import { RelatedSlowQuery } from "./related-slow-query"
 import { StmtBasic } from "./stmt-basic"
 import { StmtSQL } from "./stmt-sql"
 
@@ -46,16 +46,15 @@ export function Detail() {
           <StmtSQL title="Statement Template" sql={planData.digest_text!} />
           <StmtBasic stmt={planData} plansCount={plansListData.length} />
 
-          {plansListData.length > 1 && <PlansList data={plansListData} />}
+          {plansListData.length > 0 && <PlansList data={plansListData} />}
+
+          <RelatedSlowQuery />
 
           {selectedPlans.length > 0 && (
-            <>
-              <PlansDetail
-                allPlansCount={plansListData.length}
-                selectedPlansCount={selectedPlans.length}
-              />
-              <RelatedSlowQuery />
-            </>
+            <PlansDetail
+              allPlansCount={plansListData.length}
+              selectedPlansCount={selectedPlans.length}
+            />
           )}
         </Stack>
       )}

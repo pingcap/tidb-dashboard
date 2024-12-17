@@ -10,10 +10,10 @@ type StmtBasicProps = {
 
 export function StmtBasic({ stmt, plansCount }: StmtBasicProps) {
   return (
-    <Card shadow="xs" p="xl">
-      <SimpleGrid cols={2} spacing="xl">
+    <Card shadow="xs" p="md">
+      <SimpleGrid cols={2} spacing="xs">
         <Box>
-          <Typography variant="body-lg" color="carbon.7">
+          <Typography variant="body-lg" c="carbon.7">
             Query Template ID
           </Typography>
           <Typography style={{ wordBreak: "break-all" }}>
@@ -21,7 +21,7 @@ export function StmtBasic({ stmt, plansCount }: StmtBasicProps) {
           </Typography>
         </Box>
         <Box>
-          <Typography variant="body-lg" color="carbon.7">
+          <Typography variant="body-lg" c="carbon.7">
             Time Range
           </Typography>
           <Typography>
@@ -30,13 +30,13 @@ export function StmtBasic({ stmt, plansCount }: StmtBasicProps) {
           </Typography>
         </Box>
         <Box>
-          <Typography variant="body-lg" color="carbon.7">
+          <Typography variant="body-lg" c="carbon.7">
             Plans Count
           </Typography>
           <Typography>{plansCount}</Typography>
         </Box>
         <Box>
-          <Typography variant="body-lg" color="carbon.7">
+          <Typography variant="body-lg" c="carbon.7">
             Execution Database
           </Typography>
           <Typography>{stmt.schema_name ?? ""}</Typography>

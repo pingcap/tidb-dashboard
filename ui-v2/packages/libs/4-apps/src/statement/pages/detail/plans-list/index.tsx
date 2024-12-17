@@ -6,7 +6,7 @@ import { PlansListTable } from "./table"
 
 export function PlansList({ data }: { data: StatementModel[] }) {
   return (
-    <Card shadow="xs" p="xl">
+    <Card shadow="xs" p="md">
       <Stack gap="xs">
         <Title order={5}>Execution Plans</Title>
 

@@ -30,7 +30,7 @@ export function DetailPlan({ plan }: { plan: string }) {
   }, [plan])
 
   return (
-    <Card shadow="xs" p="xl">
+    <Card shadow="xs" p="md">
       <Stack gap="xs">
         <Title order={5}>Plan</Title>
 

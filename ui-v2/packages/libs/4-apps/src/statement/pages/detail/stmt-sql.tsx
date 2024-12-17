@@ -7,7 +7,7 @@ export function StmtSQL({ title, sql }: { title: string; sql: string }) {
   const formattedSQL = useMemo(() => formatSql(sql), [sql])
 
   return (
-    <Card shadow="xs" p="xl">
+    <Card shadow="xs" p="md">
       <Stack gap="xs">
         <Title order={5}>{title}</Title>
 

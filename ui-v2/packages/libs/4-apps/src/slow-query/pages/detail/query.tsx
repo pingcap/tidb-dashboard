@@ -7,7 +7,7 @@ export function DetailQuery({ sql }: { sql: string }) {
   const formattedSQL = useMemo(() => formatSql(sql), [sql])
 
   return (
-    <Card shadow="xs" p="xl">
+    <Card shadow="xs" p="md">
       <Stack gap="xs">
         <Title order={5}>Query</Title>
 

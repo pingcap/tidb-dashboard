@@ -85,7 +85,7 @@ export function DetailTabs({ data }: { data: SlowqueryModel }) {
   }, [data])
 
   return (
-    <Card shadow="xs" p="xl">
+    <Card shadow="xs" p="md">
       <Stack gap="xs">
         <Title order={5}>Detail</Title>
         <Tabs defaultValue={tabs[0].value}>

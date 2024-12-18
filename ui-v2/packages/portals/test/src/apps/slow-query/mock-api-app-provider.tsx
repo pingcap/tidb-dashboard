@@ -66,7 +66,7 @@ export function useCtxValue(): AppCtxValue {
         },
         backToList: () => {
           const preUrl = window.preUrl?.pop()
-          navigate({ to: preUrl || "/slow-query/list" })
+          navigate({ to: preUrl || "/slow-query" })
         },
       },
     }),

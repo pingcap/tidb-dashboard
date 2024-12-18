@@ -77,11 +77,11 @@ export function useCtxValue(): AppCtxValue {
         },
         backToList: () => {
           const preUrl = window.preUrl?.pop()
-          navigate({ to: preUrl || "/statement/list" })
+          navigate({ to: preUrl || "/statement" })
         },
         openSlowQueryList(id) {
           const [from, to, digest, _schema, ...plans] = id.split(",")
-          const fullUrl = `/slow-query/list?from=${from}&to=${to}&digest=${digest}&plans=${plans.join(",")}`
+          const fullUrl = `/slow-query?from=${from}&to=${to}&digest=${digest}&plans=${plans.join(",")}`
           // open in a new tab
           window.open(fullUrl, "_blank")
         },

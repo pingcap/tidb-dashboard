@@ -1,6 +1,6 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { Box, Button, Stack } from "@tidbcloud/uikit"
-import { IconArrowLeft } from "@tidbcloud/uikit/icons"
+import { ActionIcon, Group, Stack, Typography } from "@tidbcloud/uikit"
+import { IconChevronLeft } from "@tidbcloud/uikit/icons"
 import { useEffect, useMemo } from "react"
 
 import { useAppContext } from "../../ctx"
@@ -33,11 +33,16 @@ export function Detail() {
 
   return (
     <Stack>
-      <Box>
-        <Button onClick={ctx.actions.backToList}>
-          <IconArrowLeft size={16} strokeWidth={2} /> Back
-        </Button>
-      </Box>
+      <Group wrap="nowrap">
+        <ActionIcon
+          aria-label="Navigate Back"
+          variant="default"
+          onClick={ctx.actions.backToList}
+        >
+          <IconChevronLeft size={20} />
+        </ActionIcon>
+        <Typography variant="title-lg">Statement Detail</Typography>
+      </Group>
 
       {isLoading && <LoadingSkeleton />}
 

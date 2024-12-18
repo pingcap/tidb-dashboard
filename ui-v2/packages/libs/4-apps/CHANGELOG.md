@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.5.1
+
+### Patch Changes
+
+- refine slow-query and statement detail page back button
+
 ## 0.5.0
 
 ### Minor Changes

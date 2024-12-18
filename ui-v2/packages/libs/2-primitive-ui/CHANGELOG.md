@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-primitive-ui
 
+## 0.5.0
+
+### Minor Changes
+
+- refine slow-query and statement apps
+
 ## 0.4.0
 
 ### Minor Changes

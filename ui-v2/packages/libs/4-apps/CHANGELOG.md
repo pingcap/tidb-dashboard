@@ -1,5 +1,20 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.5.0
+
+### Minor Changes
+
+- refine slow-query and statement apps
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-charts@0.5.0
+  - @pingcap-incubator/tidb-dashboard-lib-icons@0.5.0
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.5.0
+  - @pingcap-incubator/tidb-dashboard-lib-primitive-ui@0.5.0
+  - @pingcap-incubator/tidb-dashboard-lib-biz-ui@0.5.0
+
 ## 0.4.2
 
 ### Patch Changes

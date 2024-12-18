@@ -11,21 +11,29 @@ import { cors } from 'hono/cors'
 
 import { metricsServiceGetClusterMetricDataHandlers } from './handlers/metricsServiceGetClusterMetricData';
 import { metricsServiceGetClusterMetricInstanceHandlers } from './handlers/metricsServiceGetClusterMetricInstance';
+import { diagnosisServiceGetResourceGroupListHandlers } from './handlers/diagnosisServiceGetResourceGroupList';
 import { clusterServiceGetProcessListHandlers } from './handlers/clusterServiceGetProcessList';
 import { clusterServiceDeleteProcessHandlers } from './handlers/clusterServiceDeleteProcess';
-import { clusterServiceGetSlowQueryListHandlers } from './handlers/clusterServiceGetSlowQueryList';
-import { clusterServiceGetSlowQueryAvailableAdvancedFiltersHandlers } from './handlers/clusterServiceGetSlowQueryAvailableAdvancedFilters';
-import { clusterServiceDownloadSlowQueryListHandlers } from './handlers/clusterServiceDownloadSlowQueryList';
-import { clusterServiceGetSlowQueryAvailableFieldsHandlers } from './handlers/clusterServiceGetSlowQueryAvailableFields';
-import { clusterServiceGetSlowQueryDetailHandlers } from './handlers/clusterServiceGetSlowQueryDetail';
-import { clusterServiceGetSqlPlanListHandlers } from './handlers/clusterServiceGetSqlPlanList';
-import { clusterServiceBindSqlPlanHandlers } from './handlers/clusterServiceBindSqlPlan';
-import { clusterServiceCheckSupportHandlers } from './handlers/clusterServiceCheckSupport';
-import { clusterServiceGetSqlPlanBindingListHandlers } from './handlers/clusterServiceGetSqlPlanBindingList';
-import { clusterServiceUnbindSqlPlanHandlers } from './handlers/clusterServiceUnbindSqlPlan';
-import { clusterServiceGetTopSqlListHandlers } from './handlers/clusterServiceGetTopSqlList';
-import { clusterServiceGetTopSqlAvailableFieldsHandlers } from './handlers/clusterServiceGetTopSqlAvailableFields';
-import { clusterServiceGetTopSqlDetailHandlers } from './handlers/clusterServiceGetTopSqlDetail';
+import { diagnosisServiceGetSlowQueryListHandlers } from './handlers/diagnosisServiceGetSlowQueryList';
+import { diagnosisServiceGetSlowQueryAvailableAdvancedFiltersHandlers } from './handlers/diagnosisServiceGetSlowQueryAvailableAdvancedFilters';
+import { diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfoHandlers } from './handlers/diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfo';
+import { diagnosisServiceDownloadSlowQueryListHandlers } from './handlers/diagnosisServiceDownloadSlowQueryList';
+import { diagnosisServiceGetSlowQueryAvailableFieldsHandlers } from './handlers/diagnosisServiceGetSlowQueryAvailableFields';
+import { diagnosisServiceGetSlowQueryDetailHandlers } from './handlers/diagnosisServiceGetSlowQueryDetail';
+import { diagnosisServiceAddSqlLimitHandlers } from './handlers/diagnosisServiceAddSqlLimit';
+import { diagnosisServiceCheckSqlLimitSupportHandlers } from './handlers/diagnosisServiceCheckSqlLimitSupport';
+import { diagnosisServiceRemoveSqlLimitHandlers } from './handlers/diagnosisServiceRemoveSqlLimit';
+import { diagnosisServiceGetSqlLimitListHandlers } from './handlers/diagnosisServiceGetSqlLimitList';
+import { diagnosisServiceGetSqlPlanListHandlers } from './handlers/diagnosisServiceGetSqlPlanList';
+import { diagnosisServiceBindSqlPlanHandlers } from './handlers/diagnosisServiceBindSqlPlan';
+import { diagnosisServiceCheckSqlPlanSupportHandlers } from './handlers/diagnosisServiceCheckSqlPlanSupport';
+import { diagnosisServiceGetSqlPlanBindingListHandlers } from './handlers/diagnosisServiceGetSqlPlanBindingList';
+import { diagnosisServiceUnbindSqlPlanHandlers } from './handlers/diagnosisServiceUnbindSqlPlan';
+import { diagnosisServiceGetTopSqlListHandlers } from './handlers/diagnosisServiceGetTopSqlList';
+import { diagnosisServiceGetTopSqlAvailableAdvancedFiltersHandlers } from './handlers/diagnosisServiceGetTopSqlAvailableAdvancedFilters';
+import { diagnosisServiceGetTopSqlAvailableAdvancedFilterInfoHandlers } from './handlers/diagnosisServiceGetTopSqlAvailableAdvancedFilterInfo';
+import { diagnosisServiceGetTopSqlAvailableFieldsHandlers } from './handlers/diagnosisServiceGetTopSqlAvailableFields';
+import { diagnosisServiceGetTopSqlDetailHandlers } from './handlers/diagnosisServiceGetTopSqlDetail';
 import { metricsServiceGetHostMetricDataHandlers } from './handlers/metricsServiceGetHostMetricData';
 import { labelServiceListLabelsHandlers } from './handlers/labelServiceListLabels';
 import { labelServiceCreateLabelHandlers } from './handlers/labelServiceCreateLabel';
@@ -64,6 +72,13 @@ app.get('/api/v2/clusters/:clusterId/metrics/:name/instance',...metricsServiceGe
 
 
 /**
+ * @summary Get resource group list
+ */
+
+app.get('/api/v2/clusters/:clusterId/resourcegroups',...diagnosisServiceGetResourceGroupListHandlers)
+
+
+/**
  * @summary GetProcessList retrieves the list of running processes in a cluster
  */
 
@@ -81,91 +96,140 @@ app.delete('/api/v2/clusters/:clusterId/sessions/:sessionId',...clusterServiceDe
  * @summary GetSlowQueryList retrieves the list of slow queries
  */
 
-app.get('/api/v2/clusters/:clusterId/slowqueries',...clusterServiceGetSlowQueryListHandlers)
+app.get('/api/v2/clusters/:clusterId/slowqueries',...diagnosisServiceGetSlowQueryListHandlers)
 
 
 /**
  * @summary GetSlowQueryAvailableAdvancedFilters retrieves the list of available advanced filters
  */
 
-app.get('/api/v2/clusters/:clusterId/slowqueries/advancedFilters',...clusterServiceGetSlowQueryAvailableAdvancedFiltersHandlers)
+app.get('/api/v2/clusters/:clusterId/slowqueries/advancedFilters',...diagnosisServiceGetSlowQueryAvailableAdvancedFiltersHandlers)
+
+
+/**
+ * @summary GetSlowQueryAvailableAdvancedFilterInfo retrieves the list of available advanced filter info
+ */
+
+app.get('/api/v2/clusters/:clusterId/slowqueries/advancedFilters/:filterName',...diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfoHandlers)
 
 
 /**
  * @summary DownloadSlowQueryList downloads the list of slow queries
  */
 
-app.get('/api/v2/clusters/:clusterId/slowqueries/download',...clusterServiceDownloadSlowQueryListHandlers)
+app.get('/api/v2/clusters/:clusterId/slowqueries/download',...diagnosisServiceDownloadSlowQueryListHandlers)
 
 
 /**
  * @summary GetSlowQueryAvailableFields retrieves the list of available fields for slow queries
  */
 
-app.get('/api/v2/clusters/:clusterId/slowqueries/fields',...clusterServiceGetSlowQueryAvailableFieldsHandlers)
+app.get('/api/v2/clusters/:clusterId/slowqueries/fields',...diagnosisServiceGetSlowQueryAvailableFieldsHandlers)
 
 
 /**
  * @summary GetSlowQueryDetail retrieves the details of a specific slow query
  */
 
-app.get('/api/v2/clusters/:clusterId/slowqueries/:digest',...clusterServiceGetSlowQueryDetailHandlers)
+app.get('/api/v2/clusters/:clusterId/slowqueries/:digest',...diagnosisServiceGetSlowQueryDetailHandlers)
+
+
+/**
+ * @summary Create SQL limit
+ */
+
+app.post('/api/v2/clusters/:clusterId/sqllimits:addSqlLimit',...diagnosisServiceAddSqlLimitHandlers)
+
+
+/**
+ * @summary Check if SQL limit is supported
+ */
+
+app.get('/api/v2/clusters/:clusterId/sqllimits:checkSupport',...diagnosisServiceCheckSqlLimitSupportHandlers)
+
+
+/**
+ * @summary Remove SQL limit
+ */
+
+app.post('/api/v2/clusters/:clusterId/sqllimits:removeSqlLimit',...diagnosisServiceRemoveSqlLimitHandlers)
+
+
+/**
+ * @summary Query SQL limit
+ */
+
+app.get('/api/v2/clusters/:clusterId/sqllimits:showSqlLimit',...diagnosisServiceGetSqlLimitListHandlers)
 
 
 /**
  * @summary GetSqlPlanList retrieves the list of plans
  */
 
-app.get('/api/v2/clusters/:clusterId/sqlplans',...clusterServiceGetSqlPlanListHandlers)
+app.get('/api/v2/clusters/:clusterId/sqlplans',...diagnosisServiceGetSqlPlanListHandlers)
 
 
 /**
  * @summary BindSqlPlan binds a plan to a specific sql
  */
 
-app.post('/api/v2/clusters/:clusterId/sqlplans/:planDigest:bindSqlPlan',...clusterServiceBindSqlPlanHandlers)
+app.post('/api/v2/clusters/:clusterId/sqlplans/:planDigest:bindSqlPlan',...diagnosisServiceBindSqlPlanHandlers)
 
 
 /**
  * @summary CheckSupport returns whether sql plan binding is supported
  */
 
-app.get('/api/v2/clusters/:clusterId/sqlplans:checkSupport',...clusterServiceCheckSupportHandlers)
+app.get('/api/v2/clusters/:clusterId/sqlplans:checkSupport',...diagnosisServiceCheckSqlPlanSupportHandlers)
 
 
 /**
  * @summary GetSQLBindInfo
  */
 
-app.get('/api/v2/clusters/:clusterId/sqlplans:showBinding',...clusterServiceGetSqlPlanBindingListHandlers)
+app.get('/api/v2/clusters/:clusterId/sqlplans:showSqlPlanBinding',...diagnosisServiceGetSqlPlanBindingListHandlers)
 
 
 /**
  * @summary DropSqlPlan unbinds a plan from a specific sql
  */
 
-app.post('/api/v2/clusters/:clusterId/sqlplans:unbindSqlPlan',...clusterServiceUnbindSqlPlanHandlers)
+app.post('/api/v2/clusters/:clusterId/sqlplans:unbindSqlPlan',...diagnosisServiceUnbindSqlPlanHandlers)
 
 
 /**
  * @summary GetTopSqlList retrieves the list of top sql
  */
 
-app.get('/api/v2/clusters/:clusterId/topsqls',...clusterServiceGetTopSqlListHandlers)
+app.get('/api/v2/clusters/:clusterId/topsqls',...diagnosisServiceGetTopSqlListHandlers)
+
+
+/**
+ * @summary GetSlowQueryAvailableAdvancedFilters retrieves the list of available advanced filters
+ */
+
+app.get('/api/v2/clusters/:clusterId/topsqls/advancedFilters',...diagnosisServiceGetTopSqlAvailableAdvancedFiltersHandlers)
+
+
+/**
+ * @summary GetSlowQueryAvailableAdvancedFilterInfo retrieves the list of available advanced filter info
+ */
+
+app.get('/api/v2/clusters/:clusterId/topsqls/advancedFilters/:filterName',...diagnosisServiceGetTopSqlAvailableAdvancedFilterInfoHandlers)
 
 
 /**
  * @summary GetTopSqlAvailableFields retrieves the list of available fields for top sqls
  */
 
-app.get('/api/v2/clusters/:clusterId/topsqls/fields',...clusterServiceGetTopSqlAvailableFieldsHandlers)
+app.get('/api/v2/clusters/:clusterId/topsqls/fields',...diagnosisServiceGetTopSqlAvailableFieldsHandlers)
 
 
 /**
  * @summary GetTopSqlDetail retrieves the details of a specific top sql
  */
 
-app.get('/api/v2/clusters/:clusterId/topsqls/:digest',...clusterServiceGetTopSqlDetailHandlers)
+app.get('/api/v2/clusters/:clusterId/topsqls/:digest',...diagnosisServiceGetTopSqlDetailHandlers)
 
 
 /**

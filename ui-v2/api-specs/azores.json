@@ -12,14 +12,21 @@
       "name": "ClusterService"
     },
     {
+      "name": "DiagnosisService"
+    },
+    {
       "name": "LabelService"
     },
     {
       "name": "UserService"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/api/v2/clusters/{clusterId}/metrics/{name}/data": {
       "get": {
@@ -93,7 +100,9 @@
             "type": "string"
           }
         ],
-        "tags": ["MetricsService"]
+        "tags": [
+          "MetricsService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/metrics/{name}/instance": {
@@ -130,7 +139,41 @@
             "type": "string"
           }
         ],
-        "tags": ["MetricsService"]
+        "tags": [
+          "MetricsService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/resourcegroups": {
+      "get": {
+        "summary": "Get resource group list",
+        "operationId": "DiagnosisService_GetResourceGroupList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ResourceGroupList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/sessions": {
@@ -160,7 +203,9 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "ClusterService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/sessions/{sessionId}": {
@@ -198,13 +243,15 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "ClusterService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/slowqueries": {
       "get": {
         "summary": "GetSlowQueryList retrieves the list of slow queries",
-        "operationId": "ClusterService_GetSlowQueryList",
+        "operationId": "DiagnosisService_GetSlowQueryList",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -317,13 +364,15 @@
             "collectionFormat": "multi"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/slowqueries/advancedFilters": {
       "get": {
         "summary": "GetSlowQueryAvailableAdvancedFilters retrieves the list of available advanced filters",
-        "operationId": "ClusterService_GetSlowQueryAvailableAdvancedFilters",
+        "operationId": "DiagnosisService_GetSlowQueryAvailableAdvancedFilters",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -347,13 +396,54 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/slowqueries/advancedFilters/{filterName}": {
+      "get": {
+        "summary": "GetSlowQueryAvailableAdvancedFilterInfo retrieves the list of available advanced filter info",
+        "operationId": "DiagnosisService_GetSlowQueryAvailableAdvancedFilterInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2SlowQueryAvailableAdvancedFilterInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filterName",
+            "description": "filter name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/slowqueries/download": {
       "get": {
         "summary": "DownloadSlowQueryList downloads the list of slow queries",
-        "operationId": "ClusterService_DownloadSlowQueryList",
+        "operationId": "DiagnosisService_DownloadSlowQueryList",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -466,13 +556,15 @@
             "collectionFormat": "multi"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/slowqueries/fields": {
       "get": {
         "summary": "GetSlowQueryAvailableFields retrieves the list of available fields for slow queries",
-        "operationId": "ClusterService_GetSlowQueryAvailableFields",
+        "operationId": "DiagnosisService_GetSlowQueryAvailableFields",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -496,13 +588,15 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/slowqueries/{digest}": {
       "get": {
         "summary": "GetSlowQueryDetail retrieves the details of a specific slow query",
-        "operationId": "ClusterService_GetSlowQueryDetail",
+        "operationId": "DiagnosisService_GetSlowQueryDetail",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -541,20 +635,175 @@
             "format": "double"
           },
           {
-            "name": "connectId",
+            "name": "connectionId",
             "description": "Connection ID",
             "in": "query",
             "required": true,
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sqllimits:addSqlLimit": {
+      "post": {
+        "summary": "Create SQL limit",
+        "operationId": "DiagnosisService_AddSqlLimit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster Id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DiagnosisServiceAddSqlLimitBody"
+            }
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sqllimits:checkSupport": {
+      "get": {
+        "summary": "Check if SQL limit is supported",
+        "operationId": "DiagnosisService_CheckSqlLimitSupport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2CheckSupportResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sqllimits:removeSqlLimit": {
+      "post": {
+        "summary": "Remove SQL limit",
+        "operationId": "DiagnosisService_RemoveSqlLimit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster Id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DiagnosisServiceRemoveSqlLimitBody"
+            }
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/sqllimits:showSqlLimit": {
+      "get": {
+        "summary": "Query SQL limit",
+        "operationId": "DiagnosisService_GetSqlLimitList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2SqlLimitList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster Id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "watchText",
+            "description": "Watch text",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/sqlplans": {
       "get": {
         "summary": "GetSqlPlanList retrieves the list of plans",
-        "operationId": "ClusterService_GetSqlPlanList",
+        "operationId": "DiagnosisService_GetSqlPlanList",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -608,13 +857,15 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/sqlplans/{planDigest}:bindSqlPlan": {
       "post": {
         "summary": "BindSqlPlan binds a plan to a specific sql",
-        "operationId": "ClusterService_BindSqlPlan",
+        "operationId": "DiagnosisService_BindSqlPlan",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -646,13 +897,15 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/sqlplans:checkSupport": {
       "get": {
         "summary": "CheckSupport returns whether sql plan binding is supported",
-        "operationId": "ClusterService_CheckSupport",
+        "operationId": "DiagnosisService_CheckSqlPlanSupport",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -676,13 +929,15 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
-    "/api/v2/clusters/{clusterId}/sqlplans:showBinding": {
+    "/api/v2/clusters/{clusterId}/sqlplans:showSqlPlanBinding": {
       "get": {
         "summary": "GetSQLBindInfo",
-        "operationId": "ClusterService_GetSqlPlanBindingList",
+        "operationId": "DiagnosisService_GetSqlPlanBindingList",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -729,13 +984,15 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/sqlplans:unbindSqlPlan": {
       "post": {
         "summary": "DropSqlPlan unbinds a plan from a specific sql",
-        "operationId": "ClusterService_UnbindSqlPlan",
+        "operationId": "DiagnosisService_UnbindSqlPlan",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -767,13 +1024,15 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/topsqls": {
       "get": {
         "summary": "GetTopSqlList retrieves the list of top sql",
-        "operationId": "ClusterService_GetTopSqlList",
+        "operationId": "DiagnosisService_GetTopSqlList",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -886,13 +1145,86 @@
             "collectionFormat": "multi"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/topsqls/advancedFilters": {
+      "get": {
+        "summary": "GetSlowQueryAvailableAdvancedFilters retrieves the list of available advanced filters",
+        "operationId": "DiagnosisService_GetTopSqlAvailableAdvancedFilters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TopSqlAvailableAdvancedFilters"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/topsqls/advancedFilters/{filterName}": {
+      "get": {
+        "summary": "GetSlowQueryAvailableAdvancedFilterInfo retrieves the list of available advanced filter info",
+        "operationId": "DiagnosisService_GetTopSqlAvailableAdvancedFilterInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TopSqlAvailableAdvancedFilterInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filterName",
+            "description": "filter name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/topsqls/fields": {
       "get": {
         "summary": "GetTopSqlAvailableFields retrieves the list of available fields for top sqls",
-        "operationId": "ClusterService_GetTopSqlAvailableFields",
+        "operationId": "DiagnosisService_GetTopSqlAvailableFields",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -916,13 +1248,15 @@
             "type": "string"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/clusters/{clusterId}/topsqls/{digest}": {
       "get": {
         "summary": "GetTopSqlDetail retrieves the details of a specific top sql",
-        "operationId": "ClusterService_GetTopSqlDetail",
+        "operationId": "DiagnosisService_GetTopSqlDetail",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -969,7 +1303,9 @@
             "format": "int64"
           }
         ],
-        "tags": ["ClusterService"]
+        "tags": [
+          "DiagnosisService"
+        ]
       }
     },
     "/api/v2/hosts/{hostId}/metrics/{name}/data": {
@@ -1044,7 +1380,9 @@
             "type": "string"
           }
         ],
-        "tags": ["MetricsService"]
+        "tags": [
+          "MetricsService"
+        ]
       }
     },
     "/api/v2/labels": {
@@ -1111,7 +1449,9 @@
             "type": "string"
           }
         ],
-        "tags": ["LabelService"]
+        "tags": [
+          "LabelService"
+        ]
       },
       "post": {
         "summary": "create label",
@@ -1138,11 +1478,15 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/temapiv2Label",
-              "required": ["label"]
+              "required": [
+                "label"
+              ]
             }
           }
         ],
-        "tags": ["LabelService"]
+        "tags": [
+          "LabelService"
+        ]
       }
     },
     "/api/v2/labels/{labelId}": {
@@ -1173,7 +1517,9 @@
             "type": "string"
           }
         ],
-        "tags": ["LabelService"]
+        "tags": [
+          "LabelService"
+        ]
       },
       "patch": {
         "summary": "update label basic info by label id",
@@ -1207,11 +1553,15 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/temapiv2Label",
-              "required": ["label"]
+              "required": [
+                "label"
+              ]
             }
           }
         ],
-        "tags": ["LabelService"]
+        "tags": [
+          "LabelService"
+        ]
       }
     },
     "/api/v2/labels:bindLabel": {
@@ -1242,7 +1592,9 @@
             }
           }
         ],
-        "tags": ["LabelService"]
+        "tags": [
+          "LabelService"
+        ]
       }
     },
     "/api/v2/labels:bindResource": {
@@ -1273,7 +1625,9 @@
             }
           }
         ],
-        "tags": ["LabelService"]
+        "tags": [
+          "LabelService"
+        ]
       }
     },
     "/api/v2/login": {
@@ -1305,7 +1659,9 @@
             }
           }
         ],
-        "tags": ["UserService"]
+        "tags": [
+          "UserService"
+        ]
       }
     },
     "/api/v2/logout": {
@@ -1327,7 +1683,9 @@
             }
           }
         },
-        "tags": ["UserService"]
+        "tags": [
+          "UserService"
+        ]
       }
     },
     "/api/v2/metrics": {
@@ -1355,7 +1713,12 @@
             "in": "query",
             "required": false,
             "type": "string",
-            "enum": ["unspecified", "cluster", "host", "overview"],
+            "enum": [
+              "unspecified",
+              "cluster",
+              "host",
+              "overview"
+            ],
             "default": "unspecified"
           },
           {
@@ -1390,7 +1753,9 @@
             "type": "string"
           }
         ],
-        "tags": ["MetricsService"]
+        "tags": [
+          "MetricsService"
+        ]
       }
     },
     "/api/v2/overview/metrics/{name}/data": {
@@ -1452,7 +1817,9 @@
             "format": "int64"
           }
         ],
-        "tags": ["MetricsService"]
+        "tags": [
+          "MetricsService"
+        ]
       }
     },
     "/api/v2/overview/status": {
@@ -1491,7 +1858,9 @@
             "format": "int64"
           }
         ],
-        "tags": ["MetricsService"]
+        "tags": [
+          "MetricsService"
+        ]
       }
     },
     "/api/v2/users": {
@@ -1558,7 +1927,9 @@
             "type": "string"
           }
         ],
-        "tags": ["UserService"]
+        "tags": [
+          "UserService"
+        ]
       },
       "post": {
         "summary": "CreateUser",
@@ -1588,7 +1959,9 @@
             }
           }
         ],
-        "tags": ["UserService"]
+        "tags": [
+          "UserService"
+        ]
       }
     },
     "/api/v2/users/{userId}": {
@@ -1619,7 +1992,9 @@
             "type": "string"
           }
         ],
-        "tags": ["UserService"]
+        "tags": [
+          "UserService"
+        ]
       },
       "patch": {
         "summary": "Update User",
@@ -1657,7 +2032,9 @@
             }
           }
         ],
-        "tags": ["UserService"]
+        "tags": [
+          "UserService"
+        ]
       }
     },
     "/api/v2/users:userRoles": {
@@ -1731,7 +2108,9 @@
             "type": "string"
           }
         ],
-        "tags": ["UserService"]
+        "tags": [
+          "UserService"
+        ]
       }
     },
     "/api/v2/users:validateSession": {
@@ -1752,11 +2131,49 @@
             }
           }
         },
-        "tags": ["UserService"]
+        "tags": [
+          "UserService"
+        ]
       }
     }
   },
   "definitions": {
+    "DiagnosisServiceAddSqlLimitBody": {
+      "type": "object",
+      "properties": {
+        "resourceGroup": {
+          "type": "string",
+          "title": "Resource group"
+        },
+        "action": {
+          "type": "string",
+          "title": "Action"
+        },
+        "watchText": {
+          "type": "string",
+          "title": "Watch text"
+        }
+      },
+      "title": "Request message for creating SQL limit",
+      "required": [
+        "resourceGroup",
+        "action",
+        "watchText"
+      ]
+    },
+    "DiagnosisServiceRemoveSqlLimitBody": {
+      "type": "object",
+      "properties": {
+        "watchText": {
+          "type": "string",
+          "title": "Watch text"
+        }
+      },
+      "title": "Request message for removing SQL limit",
+      "required": [
+        "watchText"
+      ]
+    },
     "metricsv2Value": {
       "type": "object",
       "properties": {
@@ -1827,7 +2244,9 @@
         }
       },
       "title": "Label basic resource",
-      "required": ["labelValue"]
+      "required": [
+        "labelValue"
+      ]
     },
     "v2BindLabelRequest": {
       "type": "object",
@@ -1854,7 +2273,9 @@
         }
       },
       "title": "BindLabel Request",
-      "required": ["labelId"]
+      "required": [
+        "labelId"
+      ]
     },
     "v2BindLabelResponse": {
       "type": "object",
@@ -1882,7 +2303,10 @@
         }
       },
       "title": "Bind object resource",
-      "required": ["resourceType", "resourceIds"]
+      "required": [
+        "resourceType",
+        "resourceIds"
+      ]
     },
     "v2BindResourceRequest": {
       "type": "object",
@@ -1911,7 +2335,10 @@
         }
       },
       "title": "BindResource Request",
-      "required": ["resourceType", "resourceId"]
+      "required": [
+        "resourceType",
+        "resourceId"
+      ]
     },
     "v2BindResourceResponse": {
       "type": "object",
@@ -1977,7 +2404,12 @@
     },
     "v2ClassEnumData": {
       "type": "string",
-      "enum": ["unspecified", "cluster", "host", "overview"],
+      "enum": [
+        "unspecified",
+        "cluster",
+        "host",
+        "overview"
+      ],
       "default": "unspecified",
       "description": "- unspecified: Unspecified\n - cluster: Cluster metrics\n - host: Host metrics\n - overview: Overview metrics",
       "title": "Data of ClassEnum"
@@ -2328,7 +2760,9 @@
         }
       },
       "title": "Login Request",
-      "required": ["userId"]
+      "required": [
+        "userId"
+      ]
     },
     "v2MetricWithExpressions": {
       "type": "object",
@@ -2543,6 +2977,63 @@
         }
       },
       "title": "QueryResult represents the result of a query"
+    },
+    "v2ResourceGroup": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Resource group name"
+        },
+        "ruPerSec": {
+          "type": "string",
+          "title": "RU per second"
+        },
+        "priority": {
+          "type": "string",
+          "title": "Priority"
+        },
+        "burstable": {
+          "type": "string",
+          "title": "Burstable"
+        }
+      },
+      "title": "Resource group information"
+    },
+    "v2ResourceGroupList": {
+      "type": "object",
+      "properties": {
+        "resourceGroups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ResourceGroup"
+          },
+          "title": "List of resource groups"
+        }
+      },
+      "title": "Response message for GetResourceGroupList"
+    },
+    "v2SlowQueryAvailableAdvancedFilterInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Filter name"
+        },
+        "unit": {
+          "type": "string",
+          "title": "Filter unit"
+        },
+        "valueList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Filter value list"
+        }
+      },
+      "title": "Response message for available filter info"
     },
     "v2SlowQueryAvailableAdvancedFilters": {
       "type": "object",
@@ -2994,12 +3485,64 @@
           "title": "Next page token"
         },
         "totalSize": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Total size"
         }
       },
       "title": "Response message for querying slow log list"
+    },
+    "v2SqlLimit": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "ID"
+        },
+        "resourceGroupName": {
+          "type": "string",
+          "title": "Resource group name"
+        },
+        "startTime": {
+          "type": "string",
+          "title": "Start time"
+        },
+        "endTime": {
+          "type": "string",
+          "title": "End time"
+        },
+        "watch": {
+          "type": "string",
+          "title": "Watch"
+        },
+        "watchText": {
+          "type": "string",
+          "title": "Watch text"
+        },
+        "source": {
+          "type": "string",
+          "title": "Source"
+        },
+        "action": {
+          "type": "string",
+          "title": "Action"
+        }
+      },
+      "title": "SQL limit model"
+    },
+    "v2SqlLimitList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2SqlLimit"
+          },
+          "title": "List of SQL limit"
+        }
+      },
+      "title": "Response message for getting SQL limit"
     },
     "v2SqlPlanBindingDetail": {
       "type": "object",
@@ -3019,7 +3562,12 @@
         },
         "source": {
           "type": "string",
-          "enum": ["manual", "history", "capture", "evolve"],
+          "enum": [
+            "manual",
+            "history",
+            "capture",
+            "evolve"
+          ],
           "title": "SQL plan binding source"
         },
         "digest": {
@@ -3094,6 +3642,40 @@
       },
       "title": "TopMetricData represents the response for querying top metric data"
     },
+    "v2TopSqlAvailableAdvancedFilterInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Filter name"
+        },
+        "unit": {
+          "type": "string",
+          "title": "Filter unit"
+        },
+        "valueList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Filter value list"
+        }
+      },
+      "title": "Response message for available filter info"
+    },
+    "v2TopSqlAvailableAdvancedFilters": {
+      "type": "object",
+      "properties": {
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "List of available fields"
+        }
+      },
+      "title": "Response message for available filters"
+    },
     "v2TopSqlAvailableFields": {
       "type": "object",
       "properties": {
@@ -3111,11 +3693,13 @@
       "type": "object",
       "properties": {
         "summary_begin_time": {
-          "type": "number",
+          "type": "integer",
+          "format": "int32",
           "title": "AggBeginTime"
         },
         "summary_end_time": {
-          "type": "number",
+          "type": "integer",
+          "format": "int32",
           "title": "AggEndTime"
         },
         "digest_text": {
@@ -3526,8 +4110,8 @@
           "title": "Next page token"
         },
         "totalSize": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "Total size"
         }
       },
@@ -3559,7 +4143,11 @@
         }
       },
       "title": "User resource",
-      "required": ["id", "userId", "name"]
+      "required": [
+        "id",
+        "userId",
+        "name"
+      ]
     },
     "v2UserRole": {
       "type": "object",
@@ -3606,7 +4194,10 @@
         }
       },
       "title": "User resource",
-      "required": ["userId", "name"]
+      "required": [
+        "userId",
+        "name"
+      ]
     },
     "v2ValidateSessionResponse": {
       "type": "object",
@@ -3617,7 +4208,9 @@
         }
       },
       "title": "The Response of ValidateSession",
-      "required": ["userId"]
+      "required": [
+        "userId"
+      ]
     }
   }
 }

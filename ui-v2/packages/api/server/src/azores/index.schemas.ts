@@ -207,7 +207,7 @@ label?: string;
 range?: string;
 };
 
-export type ClusterServiceGetTopSqlDetailParams = {
+export type DiagnosisServiceGetTopSqlDetailParams = {
 /**
  * Begin time
  */
@@ -218,7 +218,7 @@ beginTime: string;
 endTime: string;
 };
 
-export type ClusterServiceGetTopSqlListParams = {
+export type DiagnosisServiceGetTopSqlListParams = {
 /**
  * Begin time
  */
@@ -265,16 +265,16 @@ skip?: number;
 advancedFilter?: string[];
 };
 
-export type ClusterServiceUnbindSqlPlan200 = { [key: string]: unknown };
+export type DiagnosisServiceUnbindSqlPlan200 = { [key: string]: unknown };
 
-export type ClusterServiceUnbindSqlPlanParams = {
+export type DiagnosisServiceUnbindSqlPlanParams = {
 /**
  * SQL digest
  */
 digest: string;
 };
 
-export type ClusterServiceGetSqlPlanBindingListParams = {
+export type DiagnosisServiceGetSqlPlanBindingListParams = {
 /**
  * Begin time
  */
@@ -289,9 +289,9 @@ endTime: string;
 digest: string;
 };
 
-export type ClusterServiceBindSqlPlan200 = { [key: string]: unknown };
+export type DiagnosisServiceBindSqlPlan200 = { [key: string]: unknown };
 
-export type ClusterServiceGetSqlPlanListParams = {
+export type DiagnosisServiceGetSqlPlanListParams = {
 /**
  * Begin time
  */
@@ -310,7 +310,18 @@ digest?: string;
 schemaName?: string;
 };
 
-export type ClusterServiceGetSlowQueryDetailParams = {
+export type DiagnosisServiceGetSqlLimitListParams = {
+/**
+ * Watch text
+ */
+watchText: string;
+};
+
+export type DiagnosisServiceRemoveSqlLimit200 = { [key: string]: unknown };
+
+export type DiagnosisServiceAddSqlLimit200 = { [key: string]: unknown };
+
+export type DiagnosisServiceGetSlowQueryDetailParams = {
 /**
  * Timestamp
  */
@@ -318,10 +329,10 @@ timestamp: number;
 /**
  * Connection ID
  */
-connectId: string;
+connectionId: string;
 };
 
-export type ClusterServiceDownloadSlowQueryListParams = {
+export type DiagnosisServiceDownloadSlowQueryListParams = {
 /**
  * Begin time in Unix timestamp
  */
@@ -368,7 +379,7 @@ skip?: number;
 advancedFilter?: string[];
 };
 
-export type ClusterServiceGetSlowQueryListParams = {
+export type DiagnosisServiceGetSlowQueryListParams = {
 /**
  * Begin time in Unix timestamp
  */
@@ -575,11 +586,21 @@ export interface V2TopSqlDetail {
 export interface V2TopSqlList {
   data?: V2TopSqlDetail[];
   nextPageToken?: string;
-  totalSize?: string;
+  totalSize?: number;
 }
 
 export interface V2TopSqlAvailableFields {
   fields?: string[];
+}
+
+export interface V2TopSqlAvailableAdvancedFilters {
+  filters?: string[];
+}
+
+export interface V2TopSqlAvailableAdvancedFilterInfo {
+  name?: string;
+  unit?: string;
+  valueList?: string[];
 }
 
 export interface V2TopMetricData {
@@ -596,17 +617,6 @@ export interface V2SqlPlanList {
   data?: V2TopSqlDetail[];
 }
 
-export interface V2SqlPlanBindingDetail {
-  digest?: string;
-  planDigest?: string;
-  source?: V2SqlPlanBindingDetailSource;
-  status?: V2SqlPlanBindingDetailStatus;
-}
-
-export interface V2SqlPlanBindingList {
-  data?: V2SqlPlanBindingDetail[];
-}
-
 export type V2SqlPlanBindingDetailStatus = typeof V2SqlPlanBindingDetailStatus[keyof typeof V2SqlPlanBindingDetailStatus];
 
 
@@ -621,6 +631,17 @@ export const V2SqlPlanBindingDetailStatus = {
   pending_verify: 'pending verify',
 } as const;
 
+export interface V2SqlPlanBindingDetail {
+  digest?: string;
+  planDigest?: string;
+  source?: V2SqlPlanBindingDetailSource;
+  status?: V2SqlPlanBindingDetailStatus;
+}
+
+export interface V2SqlPlanBindingList {
+  data?: V2SqlPlanBindingDetail[];
+}
+
 export type V2SqlPlanBindingDetailSource = typeof V2SqlPlanBindingDetailSource[keyof typeof V2SqlPlanBindingDetailSource];
 
 
@@ -631,6 +652,21 @@ export const V2SqlPlanBindingDetailSource = {
   capture: 'capture',
   evolve: 'evolve',
 } as const;
+
+export interface V2SqlLimit {
+  action?: string;
+  endTime?: string;
+  id?: string;
+  resourceGroupName?: string;
+  source?: string;
+  startTime?: string;
+  watch?: string;
+  watchText?: string;
+}
+
+export interface V2SqlLimitList {
+  data?: V2SqlLimit[];
+}
 
 export interface V2SlowQueryDownloadResponse {
   fileContent?: string;
@@ -725,7 +761,7 @@ export interface V2SlowQueryDetail {
 export interface V2SlowQueryList {
   data?: V2SlowQueryDetail[];
   nextPageToken?: string;
-  totalSize?: string;
+  totalSize?: number;
 }
 
 export interface V2SlowQueryAvailableFields {
@@ -734,6 +770,23 @@ export interface V2SlowQueryAvailableFields {
 
 export interface V2SlowQueryAvailableAdvancedFilters {
   filters?: string[];
+}
+
+export interface V2SlowQueryAvailableAdvancedFilterInfo {
+  name?: string;
+  unit?: string;
+  valueList?: string[];
+}
+
+export interface V2ResourceGroup {
+  burstable?: string;
+  name?: string;
+  priority?: string;
+  ruPerSec?: string;
+}
+
+export interface V2ResourceGroupList {
+  resourceGroups?: V2ResourceGroup[];
 }
 
 export interface V2QueryMetric {
@@ -775,6 +828,16 @@ export interface V2OverviewStatus {
 
 export interface V2Metrics {
   metrics?: V2CategoryMetricDetail[];
+}
+
+export interface V2MetricWithExpressions {
+  description?: string;
+  expressions?: V2ExpressionWithLegend[];
+  isBuiltin?: boolean;
+  maxTidbVersion?: string;
+  minTidbVersion?: string;
+  name?: string;
+  unit?: string;
 }
 
 export interface V2LoginRequest {
@@ -837,16 +900,6 @@ export interface V2ExpressionWithLegend {
   promMetric?: string;
   promql?: string;
   type?: string;
-}
-
-export interface V2MetricWithExpressions {
-  description?: string;
-  expressions?: V2ExpressionWithLegend[];
-  isBuiltin?: boolean;
-  maxTidbVersion?: string;
-  minTidbVersion?: string;
-  name?: string;
-  unit?: string;
 }
 
 export interface V2ExprQueryData {
@@ -1127,5 +1180,15 @@ export interface RpcStatus {
 export interface Metricsv2Value {
   timestamp?: number;
   value?: string;
+}
+
+export interface DiagnosisServiceRemoveSqlLimitBody {
+  watchText: string;
+}
+
+export interface DiagnosisServiceAddSqlLimitBody {
+  action: string;
+  resourceGroup: string;
+  watchText: string;
 }
 

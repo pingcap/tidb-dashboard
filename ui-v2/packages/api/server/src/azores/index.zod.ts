@@ -59,6 +59,20 @@ export const metricsServiceGetClusterMetricInstanceResponse = zod.object({
 })
 
 
+export const diagnosisServiceGetResourceGroupListParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const diagnosisServiceGetResourceGroupListResponse = zod.object({
+  "resourceGroups": zod.array(zod.object({
+  "name": zod.string().optional(),
+  "ruPerSec": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "burstable": zod.string().optional()
+})).optional()
+})
+
+
 export const clusterServiceGetProcessListParams = zod.object({
   "clusterId": zod.string()
 })
@@ -100,11 +114,11 @@ export const clusterServiceDeleteProcessResponse = zod.object({
 })
 
 
-export const clusterServiceGetSlowQueryListParams = zod.object({
+export const diagnosisServiceGetSlowQueryListParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceGetSlowQueryListQueryParams = zod.object({
+export const diagnosisServiceGetSlowQueryListQueryParams = zod.object({
   "beginTime": zod.string(),
   "endTime": zod.string(),
   "db": zod.array(zod.string()).optional(),
@@ -118,7 +132,7 @@ export const clusterServiceGetSlowQueryListQueryParams = zod.object({
   "advancedFilter": zod.array(zod.string()).optional()
 })
 
-export const clusterServiceGetSlowQueryListResponse = zod.object({
+export const diagnosisServiceGetSlowQueryListResponse = zod.object({
   "data": zod.array(zod.object({
   "digest": zod.string().optional(),
   "query": zod.string().optional(),
@@ -204,24 +218,36 @@ export const clusterServiceGetSlowQueryListResponse = zod.object({
   "result_rows": zod.number().optional()
 })).optional(),
   "nextPageToken": zod.string().optional(),
-  "totalSize": zod.string().optional()
+  "totalSize": zod.number().optional()
 })
 
 
-export const clusterServiceGetSlowQueryAvailableAdvancedFiltersParams = zod.object({
+export const diagnosisServiceGetSlowQueryAvailableAdvancedFiltersParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceGetSlowQueryAvailableAdvancedFiltersResponse = zod.object({
+export const diagnosisServiceGetSlowQueryAvailableAdvancedFiltersResponse = zod.object({
   "filters": zod.array(zod.string()).optional()
 })
 
 
-export const clusterServiceDownloadSlowQueryListParams = zod.object({
+export const diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfoParams = zod.object({
+  "clusterId": zod.string(),
+  "filterName": zod.string()
+})
+
+export const diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfoResponse = zod.object({
+  "name": zod.string().optional(),
+  "unit": zod.string().optional(),
+  "valueList": zod.array(zod.string()).optional()
+})
+
+
+export const diagnosisServiceDownloadSlowQueryListParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceDownloadSlowQueryListQueryParams = zod.object({
+export const diagnosisServiceDownloadSlowQueryListQueryParams = zod.object({
   "beginTime": zod.string(),
   "endTime": zod.string(),
   "db": zod.array(zod.string()).optional(),
@@ -235,32 +261,32 @@ export const clusterServiceDownloadSlowQueryListQueryParams = zod.object({
   "advancedFilter": zod.array(zod.string()).optional()
 })
 
-export const clusterServiceDownloadSlowQueryListResponse = zod.object({
+export const diagnosisServiceDownloadSlowQueryListResponse = zod.object({
   "filename": zod.string().optional(),
   "fileContent": zod.string().optional()
 })
 
 
-export const clusterServiceGetSlowQueryAvailableFieldsParams = zod.object({
+export const diagnosisServiceGetSlowQueryAvailableFieldsParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceGetSlowQueryAvailableFieldsResponse = zod.object({
+export const diagnosisServiceGetSlowQueryAvailableFieldsResponse = zod.object({
   "fields": zod.array(zod.string()).optional()
 })
 
 
-export const clusterServiceGetSlowQueryDetailParams = zod.object({
+export const diagnosisServiceGetSlowQueryDetailParams = zod.object({
   "clusterId": zod.string(),
   "digest": zod.string()
 })
 
-export const clusterServiceGetSlowQueryDetailQueryParams = zod.object({
+export const diagnosisServiceGetSlowQueryDetailQueryParams = zod.object({
   "timestamp": zod.number(),
-  "connectId": zod.string()
+  "connectionId": zod.string()
 })
 
-export const clusterServiceGetSlowQueryDetailResponse = zod.object({
+export const diagnosisServiceGetSlowQueryDetailResponse = zod.object({
   "digest": zod.string().optional(),
   "query": zod.string().optional(),
   "instance": zod.string().optional(),
@@ -346,18 +372,77 @@ export const clusterServiceGetSlowQueryDetailResponse = zod.object({
 })
 
 
-export const clusterServiceGetSqlPlanListParams = zod.object({
+export const diagnosisServiceAddSqlLimitParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceGetSqlPlanListQueryParams = zod.object({
+export const diagnosisServiceAddSqlLimitBody = zod.object({
+  "resourceGroup": zod.string(),
+  "action": zod.string(),
+  "watchText": zod.string()
+})
+
+export const diagnosisServiceAddSqlLimitResponse = zod.object({
+
+})
+
+
+export const diagnosisServiceCheckSqlLimitSupportParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const diagnosisServiceCheckSqlLimitSupportResponse = zod.object({
+  "isSupport": zod.boolean().optional()
+})
+
+
+export const diagnosisServiceRemoveSqlLimitParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const diagnosisServiceRemoveSqlLimitBody = zod.object({
+  "watchText": zod.string()
+})
+
+export const diagnosisServiceRemoveSqlLimitResponse = zod.object({
+
+})
+
+
+export const diagnosisServiceGetSqlLimitListParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const diagnosisServiceGetSqlLimitListQueryParams = zod.object({
+  "watchText": zod.string()
+})
+
+export const diagnosisServiceGetSqlLimitListResponse = zod.object({
+  "data": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "resourceGroupName": zod.string().optional(),
+  "startTime": zod.string().optional(),
+  "endTime": zod.string().optional(),
+  "watch": zod.string().optional(),
+  "watchText": zod.string().optional(),
+  "source": zod.string().optional(),
+  "action": zod.string().optional()
+})).optional()
+})
+
+
+export const diagnosisServiceGetSqlPlanListParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const diagnosisServiceGetSqlPlanListQueryParams = zod.object({
   "beginTime": zod.string(),
   "endTime": zod.string(),
   "digest": zod.string().optional(),
   "schemaName": zod.string().optional()
 })
 
-export const clusterServiceGetSqlPlanListResponse = zod.object({
+export const diagnosisServiceGetSqlPlanListResponse = zod.object({
   "data": zod.array(zod.object({
   "summary_begin_time": zod.number().optional(),
   "summary_end_time": zod.number().optional(),
@@ -446,36 +531,36 @@ export const clusterServiceGetSqlPlanListResponse = zod.object({
 })
 
 
-export const clusterServiceBindSqlPlanParams = zod.object({
+export const diagnosisServiceBindSqlPlanParams = zod.object({
   "clusterId": zod.string(),
   "planDigest": zod.string()
 })
 
-export const clusterServiceBindSqlPlanResponse = zod.object({
+export const diagnosisServiceBindSqlPlanResponse = zod.object({
 
 })
 
 
-export const clusterServiceCheckSupportParams = zod.object({
+export const diagnosisServiceCheckSqlPlanSupportParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceCheckSupportResponse = zod.object({
+export const diagnosisServiceCheckSqlPlanSupportResponse = zod.object({
   "isSupport": zod.boolean().optional()
 })
 
 
-export const clusterServiceGetSqlPlanBindingListParams = zod.object({
+export const diagnosisServiceGetSqlPlanBindingListParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceGetSqlPlanBindingListQueryParams = zod.object({
+export const diagnosisServiceGetSqlPlanBindingListQueryParams = zod.object({
   "beginTime": zod.string(),
   "endTime": zod.string(),
   "digest": zod.string()
 })
 
-export const clusterServiceGetSqlPlanBindingListResponse = zod.object({
+export const diagnosisServiceGetSqlPlanBindingListResponse = zod.object({
   "data": zod.array(zod.object({
   "status": zod.enum(['enabled', 'using', 'disabled', 'deleted', 'invalid', 'rejected', 'pending verify']).optional(),
   "source": zod.enum(['manual', 'history', 'capture', 'evolve']).optional(),
@@ -485,24 +570,24 @@ export const clusterServiceGetSqlPlanBindingListResponse = zod.object({
 })
 
 
-export const clusterServiceUnbindSqlPlanParams = zod.object({
+export const diagnosisServiceUnbindSqlPlanParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceUnbindSqlPlanQueryParams = zod.object({
+export const diagnosisServiceUnbindSqlPlanQueryParams = zod.object({
   "digest": zod.string()
 })
 
-export const clusterServiceUnbindSqlPlanResponse = zod.object({
+export const diagnosisServiceUnbindSqlPlanResponse = zod.object({
 
 })
 
 
-export const clusterServiceGetTopSqlListParams = zod.object({
+export const diagnosisServiceGetTopSqlListParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceGetTopSqlListQueryParams = zod.object({
+export const diagnosisServiceGetTopSqlListQueryParams = zod.object({
   "beginTime": zod.string(),
   "endTime": zod.string(),
   "db": zod.array(zod.string()).optional(),
@@ -516,7 +601,7 @@ export const clusterServiceGetTopSqlListQueryParams = zod.object({
   "advancedFilter": zod.array(zod.string()).optional()
 })
 
-export const clusterServiceGetTopSqlListResponse = zod.object({
+export const diagnosisServiceGetTopSqlListResponse = zod.object({
   "data": zod.array(zod.object({
   "summary_begin_time": zod.number().optional(),
   "summary_end_time": zod.number().optional(),
@@ -603,30 +688,51 @@ export const clusterServiceGetTopSqlListResponse = zod.object({
   "binary_plan_text": zod.string().optional()
 })).optional(),
   "nextPageToken": zod.string().optional(),
-  "totalSize": zod.string().optional()
+  "totalSize": zod.number().optional()
 })
 
 
-export const clusterServiceGetTopSqlAvailableFieldsParams = zod.object({
+export const diagnosisServiceGetTopSqlAvailableAdvancedFiltersParams = zod.object({
   "clusterId": zod.string()
 })
 
-export const clusterServiceGetTopSqlAvailableFieldsResponse = zod.object({
+export const diagnosisServiceGetTopSqlAvailableAdvancedFiltersResponse = zod.object({
+  "filters": zod.array(zod.string()).optional()
+})
+
+
+export const diagnosisServiceGetTopSqlAvailableAdvancedFilterInfoParams = zod.object({
+  "clusterId": zod.string(),
+  "filterName": zod.string()
+})
+
+export const diagnosisServiceGetTopSqlAvailableAdvancedFilterInfoResponse = zod.object({
+  "name": zod.string().optional(),
+  "unit": zod.string().optional(),
+  "valueList": zod.array(zod.string()).optional()
+})
+
+
+export const diagnosisServiceGetTopSqlAvailableFieldsParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const diagnosisServiceGetTopSqlAvailableFieldsResponse = zod.object({
   "fields": zod.array(zod.string()).optional()
 })
 
 
-export const clusterServiceGetTopSqlDetailParams = zod.object({
+export const diagnosisServiceGetTopSqlDetailParams = zod.object({
   "clusterId": zod.string(),
   "digest": zod.string()
 })
 
-export const clusterServiceGetTopSqlDetailQueryParams = zod.object({
+export const diagnosisServiceGetTopSqlDetailQueryParams = zod.object({
   "beginTime": zod.string(),
   "endTime": zod.string()
 })
 
-export const clusterServiceGetTopSqlDetailResponse = zod.object({
+export const diagnosisServiceGetTopSqlDetailResponse = zod.object({
   "summary_begin_time": zod.number().optional(),
   "summary_end_time": zod.number().optional(),
   "digest_text": zod.string().optional(),

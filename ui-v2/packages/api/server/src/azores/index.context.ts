@@ -7,17 +7,19 @@
 import type { Context, Env } from 'hono';
 
 import { MetricsServiceGetClusterMetricDataParams,
-ClusterServiceGetSlowQueryListParams,
-ClusterServiceDownloadSlowQueryListParams,
-ClusterServiceGetSlowQueryDetailParams,
-ClusterServiceGetSqlPlanListParams,
-ClusterServiceGetSqlPlanBindingListParams,
-ClusterServiceUnbindSqlPlanParams,
-ClusterServiceGetTopSqlListParams,
-ClusterServiceGetTopSqlDetailParams,
+DiagnosisServiceGetSlowQueryListParams,
+DiagnosisServiceDownloadSlowQueryListParams,
+DiagnosisServiceGetSlowQueryDetailParams,
+DiagnosisServiceAddSqlLimitBody,
+DiagnosisServiceRemoveSqlLimitBody,
+DiagnosisServiceGetSqlLimitListParams,
+DiagnosisServiceGetSqlPlanListParams,
+DiagnosisServiceGetSqlPlanBindingListParams,
+DiagnosisServiceUnbindSqlPlanParams,
+DiagnosisServiceGetTopSqlListParams,
+DiagnosisServiceGetTopSqlDetailParams,
 MetricsServiceGetHostMetricDataParams,
 LabelServiceListLabelsParams,
-Temapiv2LabelBody,
 Temapiv2LabelBody,
 V2BindLabelRequest,
 V2BindResourceRequest,
@@ -26,7 +28,6 @@ MetricsServiceGetMetricsParams,
 MetricsServiceGetTopMetricDataParams,
 MetricsServiceGetOverviewStatusParams,
 UserServiceListUsersParams,
-V2User,
 V2User,
 UserServiceListUserRolesParams } from './index.schemas';
 
@@ -44,6 +45,11 @@ export type MetricsServiceGetClusterMetricInstanceContext<E extends Env = any> =
  clusterId: string,
     name: string,
  }, } }>
+export type DiagnosisServiceGetResourceGroupListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/resourcegroups', { in: { param: {
+ clusterId: string,
+ }, }, out: { param: {
+ clusterId: string,
+ }, } }>
 export type ClusterServiceGetProcessListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sessions', { in: { param: {
  clusterId: string,
  }, }, out: { param: {
@@ -56,77 +62,116 @@ export type ClusterServiceDeleteProcessContext<E extends Env = any> = Context<E,
  clusterId: string,
     sessionId: string,
  }, } }>
-export type ClusterServiceGetSlowQueryListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries', { in: { param: {
+export type DiagnosisServiceGetSlowQueryListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries', { in: { param: {
  clusterId: string,
- },query: ClusterServiceGetSlowQueryListParams, }, out: { param: {
+ },query: DiagnosisServiceGetSlowQueryListParams, }, out: { param: {
  clusterId: string,
- },query: ClusterServiceGetSlowQueryListParams, } }>
-export type ClusterServiceGetSlowQueryAvailableAdvancedFiltersContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/advancedFilters', { in: { param: {
- clusterId: string,
- }, }, out: { param: {
- clusterId: string,
- }, } }>
-export type ClusterServiceDownloadSlowQueryListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/download', { in: { param: {
- clusterId: string,
- },query: ClusterServiceDownloadSlowQueryListParams, }, out: { param: {
- clusterId: string,
- },query: ClusterServiceDownloadSlowQueryListParams, } }>
-export type ClusterServiceGetSlowQueryAvailableFieldsContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/fields', { in: { param: {
+ },query: DiagnosisServiceGetSlowQueryListParams, } }>
+export type DiagnosisServiceGetSlowQueryAvailableAdvancedFiltersContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/advancedFilters', { in: { param: {
  clusterId: string,
  }, }, out: { param: {
  clusterId: string,
  }, } }>
-export type ClusterServiceGetSlowQueryDetailContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/:digest', { in: { param: {
+export type DiagnosisServiceGetSlowQueryAvailableAdvancedFilterInfoContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/advancedFilters/:filterName', { in: { param: {
+ clusterId: string,
+    filterName: string,
+ }, }, out: { param: {
+ clusterId: string,
+    filterName: string,
+ }, } }>
+export type DiagnosisServiceDownloadSlowQueryListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/download', { in: { param: {
+ clusterId: string,
+ },query: DiagnosisServiceDownloadSlowQueryListParams, }, out: { param: {
+ clusterId: string,
+ },query: DiagnosisServiceDownloadSlowQueryListParams, } }>
+export type DiagnosisServiceGetSlowQueryAvailableFieldsContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/fields', { in: { param: {
+ clusterId: string,
+ }, }, out: { param: {
+ clusterId: string,
+ }, } }>
+export type DiagnosisServiceGetSlowQueryDetailContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/slowqueries/:digest', { in: { param: {
  clusterId: string,
     digest: string,
- },query: ClusterServiceGetSlowQueryDetailParams, }, out: { param: {
+ },query: DiagnosisServiceGetSlowQueryDetailParams, }, out: { param: {
  clusterId: string,
     digest: string,
- },query: ClusterServiceGetSlowQueryDetailParams, } }>
-export type ClusterServiceGetSqlPlanListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans', { in: { param: {
+ },query: DiagnosisServiceGetSlowQueryDetailParams, } }>
+export type DiagnosisServiceAddSqlLimitContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqllimits:addSqlLimit', { in: { param: {
  clusterId: string,
- },query: ClusterServiceGetSqlPlanListParams, }, out: { param: {
+ },json: DiagnosisServiceAddSqlLimitBody, }, out: { param: {
  clusterId: string,
- },query: ClusterServiceGetSqlPlanListParams, } }>
-export type ClusterServiceBindSqlPlanContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans/:planDigest:bindSqlPlan', { in: { param: {
+ },json: DiagnosisServiceAddSqlLimitBody, } }>
+export type DiagnosisServiceCheckSqlLimitSupportContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqllimits:checkSupport', { in: { param: {
+ clusterId: string,
+ }, }, out: { param: {
+ clusterId: string,
+ }, } }>
+export type DiagnosisServiceRemoveSqlLimitContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqllimits:removeSqlLimit', { in: { param: {
+ clusterId: string,
+ },json: DiagnosisServiceRemoveSqlLimitBody, }, out: { param: {
+ clusterId: string,
+ },json: DiagnosisServiceRemoveSqlLimitBody, } }>
+export type DiagnosisServiceGetSqlLimitListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqllimits:showSqlLimit', { in: { param: {
+ clusterId: string,
+ },query: DiagnosisServiceGetSqlLimitListParams, }, out: { param: {
+ clusterId: string,
+ },query: DiagnosisServiceGetSqlLimitListParams, } }>
+export type DiagnosisServiceGetSqlPlanListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans', { in: { param: {
+ clusterId: string,
+ },query: DiagnosisServiceGetSqlPlanListParams, }, out: { param: {
+ clusterId: string,
+ },query: DiagnosisServiceGetSqlPlanListParams, } }>
+export type DiagnosisServiceBindSqlPlanContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans/:planDigest:bindSqlPlan', { in: { param: {
  clusterId: string,
     planDigest: string,
  }, }, out: { param: {
  clusterId: string,
     planDigest: string,
  }, } }>
-export type ClusterServiceCheckSupportContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans:checkSupport', { in: { param: {
+export type DiagnosisServiceCheckSqlPlanSupportContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans:checkSupport', { in: { param: {
  clusterId: string,
  }, }, out: { param: {
  clusterId: string,
  }, } }>
-export type ClusterServiceGetSqlPlanBindingListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans:showBinding', { in: { param: {
+export type DiagnosisServiceGetSqlPlanBindingListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans:showSqlPlanBinding', { in: { param: {
  clusterId: string,
- },query: ClusterServiceGetSqlPlanBindingListParams, }, out: { param: {
+ },query: DiagnosisServiceGetSqlPlanBindingListParams, }, out: { param: {
  clusterId: string,
- },query: ClusterServiceGetSqlPlanBindingListParams, } }>
-export type ClusterServiceUnbindSqlPlanContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans:unbindSqlPlan', { in: { param: {
+ },query: DiagnosisServiceGetSqlPlanBindingListParams, } }>
+export type DiagnosisServiceUnbindSqlPlanContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/sqlplans:unbindSqlPlan', { in: { param: {
  clusterId: string,
- },query: ClusterServiceUnbindSqlPlanParams, }, out: { param: {
+ },query: DiagnosisServiceUnbindSqlPlanParams, }, out: { param: {
  clusterId: string,
- },query: ClusterServiceUnbindSqlPlanParams, } }>
-export type ClusterServiceGetTopSqlListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls', { in: { param: {
+ },query: DiagnosisServiceUnbindSqlPlanParams, } }>
+export type DiagnosisServiceGetTopSqlListContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls', { in: { param: {
  clusterId: string,
- },query: ClusterServiceGetTopSqlListParams, }, out: { param: {
+ },query: DiagnosisServiceGetTopSqlListParams, }, out: { param: {
  clusterId: string,
- },query: ClusterServiceGetTopSqlListParams, } }>
-export type ClusterServiceGetTopSqlAvailableFieldsContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls/fields', { in: { param: {
+ },query: DiagnosisServiceGetTopSqlListParams, } }>
+export type DiagnosisServiceGetTopSqlAvailableAdvancedFiltersContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls/advancedFilters', { in: { param: {
  clusterId: string,
  }, }, out: { param: {
  clusterId: string,
  }, } }>
-export type ClusterServiceGetTopSqlDetailContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls/:digest', { in: { param: {
+export type DiagnosisServiceGetTopSqlAvailableAdvancedFilterInfoContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls/advancedFilters/:filterName', { in: { param: {
+ clusterId: string,
+    filterName: string,
+ }, }, out: { param: {
+ clusterId: string,
+    filterName: string,
+ }, } }>
+export type DiagnosisServiceGetTopSqlAvailableFieldsContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls/fields', { in: { param: {
+ clusterId: string,
+ }, }, out: { param: {
+ clusterId: string,
+ }, } }>
+export type DiagnosisServiceGetTopSqlDetailContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/topsqls/:digest', { in: { param: {
  clusterId: string,
     digest: string,
- },query: ClusterServiceGetTopSqlDetailParams, }, out: { param: {
+ },query: DiagnosisServiceGetTopSqlDetailParams, }, out: { param: {
  clusterId: string,
     digest: string,
- },query: ClusterServiceGetTopSqlDetailParams, } }>
+ },query: DiagnosisServiceGetTopSqlDetailParams, } }>
 export type MetricsServiceGetHostMetricDataContext<E extends Env = any> = Context<E, '/api/v2/hosts/:hostId/metrics/:name/data', { in: { param: {
  hostId: string,
     name: string,

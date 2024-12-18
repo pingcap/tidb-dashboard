@@ -1,7 +1,7 @@
 import {
-  clusterServiceGetSqlPlanList,
-  clusterServiceGetTopSqlDetail,
-  clusterServiceGetTopSqlList,
+  diagnosisServiceGetSqlPlanList,
+  diagnosisServiceGetTopSqlDetail,
+  diagnosisServiceGetTopSqlList,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import {
   AppCtxValue,
@@ -41,7 +41,7 @@ export function useCtxValue(): AppCtxValue {
         },
 
         getStmtList(params) {
-          return clusterServiceGetTopSqlList(testClusterId, {
+          return diagnosisServiceGetTopSqlList(testClusterId, {
             beginTime: params.beginTime + "",
             endTime: params.endTime + "",
             db: params.dbs,
@@ -56,7 +56,7 @@ export function useCtxValue(): AppCtxValue {
         },
         getStmtPlans(params) {
           const [beginTime, endTime, digest, schemaName] = params.id.split(",")
-          return clusterServiceGetSqlPlanList(testClusterId, {
+          return diagnosisServiceGetSqlPlanList(testClusterId, {
             beginTime: beginTime + "",
             endTime: endTime + "",
             digest,
@@ -67,7 +67,7 @@ export function useCtxValue(): AppCtxValue {
         },
         getStmtPlansDetail(params) {
           const [beginTime, endTime, digest, _schemaName] = params.id.split(",")
-          return clusterServiceGetTopSqlDetail(testClusterId, digest, {
+          return diagnosisServiceGetTopSqlDetail(testClusterId, digest, {
             beginTime: beginTime + "",
             endTime: endTime + "",
           }).then((d) => ({

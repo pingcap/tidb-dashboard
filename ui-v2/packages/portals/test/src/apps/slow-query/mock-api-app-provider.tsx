@@ -1,6 +1,6 @@
 import {
-  clusterServiceGetSlowQueryDetail,
-  clusterServiceGetSlowQueryList,
+  diagnosisServiceGetSlowQueryDetail,
+  diagnosisServiceGetSlowQueryList,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
@@ -32,7 +32,7 @@ export function useCtxValue(): AppCtxValue {
         getSlowQueries(params) {
           console.log("getSlowQueries", params)
 
-          return clusterServiceGetSlowQueryList(testClusterId, {
+          return diagnosisServiceGetSlowQueryList(testClusterId, {
             beginTime: params.beginTime + "",
             endTime: params.endTime + "",
             db: params.dbs,
@@ -44,9 +44,9 @@ export function useCtxValue(): AppCtxValue {
           }).then((res) => res.data ?? [])
         },
         getSlowQuery(params: { id: string }) {
-          const [digest, connectId, timestamp] = params.id.split(",")
-          return clusterServiceGetSlowQueryDetail(testClusterId, digest, {
-            connectId,
+          const [digest, connectionId, timestamp] = params.id.split(",")
+          return diagnosisServiceGetSlowQueryDetail(testClusterId, digest, {
+            connectionId,
             timestamp: Number(timestamp),
           }).then((d) => {
             if (d.binary_plan_text) {

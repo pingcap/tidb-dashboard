@@ -3,17 +3,10 @@ import {
   diagnosisServiceGetTopSqlDetail,
   diagnosisServiceGetTopSqlList,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
-import {
-  AppCtxValue,
-  StatementModel,
-} from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
+import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
-
-import listData from "./sample-data/list-2.json"
-import plansDetailData from "./sample-data/plans-detail-1.json"
-import plansListData from "./sample-data/plans-list-1.json"
 
 declare global {
   interface Window {
@@ -51,8 +44,6 @@ export function useCtxValue(): AppCtxValue {
             fields:
               "digest_text,sum_latency,avg_latency,max_latency,min_latency,exec_count,plan_count",
           }).then((res) => res.data ?? [])
-
-          return delay(1000).then(() => listData)
         },
         getStmtPlans(params) {
           const [beginTime, endTime, digest, schemaName] = params.id.split(",")
@@ -62,27 +53,18 @@ export function useCtxValue(): AppCtxValue {
             digest,
             schemaName,
           }).then((res) => res.data ?? [])
-
-          return delay(1000).then(() => plansListData)
         },
         getStmtPlansDetail(params) {
           const [beginTime, endTime, digest, _schemaName] = params.id.split(",")
           return diagnosisServiceGetTopSqlDetail(testClusterId, digest, {
             beginTime: beginTime + "",
             endTime: endTime + "",
-          }).then((d) => ({
-            ...d,
-            plan: d.binary_plan_text,
-          }))
-
-          return delay(1000)
-            .then(() => plansDetailData as StatementModel)
-            .then((d) => {
-              if (d.binary_plan_text) {
-                d.plan = d.binary_plan_text
-              }
-              return d
-            })
+          }).then((d) => {
+            if (d.binary_plan_text) {
+              d.plan = d.binary_plan_text
+            }
+            return d
+          })
         },
       },
       cfg: {

@@ -1,0 +1,38 @@
+{
+  "data": [
+    {
+      "summary_begin_time": 1731395228,
+      "summary_end_time": 1731396928,
+      "digest_text": "select count ( ? ) as `cnt` , max ( `created_at` ) as `latest_created_at` , `unix_timestamp` ( max ( `created_at` ) ) as `latest_timestamp` from `github_events` where `created_at` between `from_unixtime` ( ? ) and ( utc_timestamp - interval ? minute ) and `from_unixtime` ( ? ) \u003e ( utc_timestamp - interval ? hour ) ;",
+      "digest": "85310c3dcab6bcdd1a6c04a6f254ab47b9ce73165d54fb9d1a75931d6fb7f15e",
+      "exec_count": 869,
+      "stmt_type": "Select",
+      "sum_latency": 5144430781,
+      "max_latency": 164537484,
+      "min_latency": 2662266,
+      "avg_latency": 5919943,
+      "avg_mem": 104850,
+      "max_mem": 129833,
+      "schema_name": "gharchive_dev",
+      "plan_digest": "458c98bf3604ae89a16e932e38e3c9cadb7500646f7fa88795dcb5e0fbf4e5be",
+      "plan_hint": "hash_agg(@`sel_1`), use_index(@`sel_1` `gharchive_dev`.`github_events` `index_github_events_on_created_at`), no_order_index(@`sel_1` `gharchive_dev`.`github_events` `index_github_events_on_created_at`), agg_to_cop(@`sel_1`), max_execution_time(15000)"
+    },
+    {
+      "summary_begin_time": 1731395712,
+      "summary_end_time": 1731395894,
+      "digest_text": "select count ( ? ) as `cnt` , max ( `created_at` ) as `latest_created_at` , `unix_timestamp` ( max ( `created_at` ) ) as `latest_timestamp` from `github_events` where `created_at` between `from_unixtime` ( ? ) and ( utc_timestamp - interval ? minute ) and `from_unixtime` ( ? ) \u003e ( utc_timestamp - interval ? hour ) ;",
+      "digest": "85310c3dcab6bcdd1a6c04a6f254ab47b9ce73165d54fb9d1a75931d6fb7f15e",
+      "exec_count": 6,
+      "stmt_type": "Select",
+      "sum_latency": 4054790,
+      "max_latency": 797059,
+      "min_latency": 619447,
+      "avg_latency": 675798,
+      "avg_mem": 26418,
+      "max_mem": 27912,
+      "schema_name": "gharchive_dev",
+      "plan_digest": "8c0a7b1bc1a0894b4dab93844ea1fd5d6a10f5515a4ebd66ca56d3f71bd7b27f",
+      "plan_hint": "stream_agg(@`sel_1`), max_execution_time(15000)"
+    }
+  ]
+}

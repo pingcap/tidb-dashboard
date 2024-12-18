@@ -359,8 +359,8 @@ export const clusterServiceGetSqlPlanListQueryParams = zod.object({
 
 export const clusterServiceGetSqlPlanListResponse = zod.object({
   "data": zod.array(zod.object({
-  "summary_begin_time": zod.string().optional(),
-  "summary_end_time": zod.string().optional(),
+  "summary_begin_time": zod.number().optional(),
+  "summary_end_time": zod.number().optional(),
   "digest_text": zod.string().optional(),
   "digest": zod.string().optional(),
   "exec_count": zod.number().optional(),
@@ -518,8 +518,8 @@ export const clusterServiceGetTopSqlListQueryParams = zod.object({
 
 export const clusterServiceGetTopSqlListResponse = zod.object({
   "data": zod.array(zod.object({
-  "summary_begin_time": zod.string().optional(),
-  "summary_end_time": zod.string().optional(),
+  "summary_begin_time": zod.number().optional(),
+  "summary_end_time": zod.number().optional(),
   "digest_text": zod.string().optional(),
   "digest": zod.string().optional(),
   "exec_count": zod.number().optional(),
@@ -627,8 +627,8 @@ export const clusterServiceGetTopSqlDetailQueryParams = zod.object({
 })
 
 export const clusterServiceGetTopSqlDetailResponse = zod.object({
-  "summary_begin_time": zod.string().optional(),
-  "summary_end_time": zod.string().optional(),
+  "summary_begin_time": zod.number().optional(),
+  "summary_end_time": zod.number().optional(),
   "digest_text": zod.string().optional(),
   "digest": zod.string().optional(),
   "exec_count": zod.number().optional(),

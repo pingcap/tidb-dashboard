@@ -3111,13 +3111,11 @@
       "type": "object",
       "properties": {
         "summary_begin_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "number",
           "title": "AggBeginTime"
         },
         "summary_end_time": {
-          "type": "string",
-          "format": "int64",
+          "type": "number",
           "title": "AggEndTime"
         },
         "digest_text": {

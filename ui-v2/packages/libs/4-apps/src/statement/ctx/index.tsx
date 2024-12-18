@@ -9,7 +9,16 @@ type AppApi = {
   getRuGroups(): Promise<string[]>
   getStmtKinds(): Promise<string[]>
 
-  getStmtList(params: { term: string }): Promise<StatementModel[]>
+  getStmtList(params: {
+    beginTime: number
+    endTime: number
+    dbs: string[]
+    ruGroups: string[]
+    stmtKinds: string[]
+    term: string
+    orderBy: string
+    desc: boolean
+  }): Promise<StatementModel[]>
   getStmtPlans(params: { id: string }): Promise<StatementModel[]>
   getStmtPlansDetail(params: {
     id: string

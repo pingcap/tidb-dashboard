@@ -567,8 +567,8 @@ export interface V2TopSqlDetail {
   sum_errors?: number;
   sum_latency?: number;
   sum_warnings?: number;
-  summary_begin_time?: string;
-  summary_end_time?: string;
+  summary_begin_time?: number;
+  summary_end_time?: number;
   table_names?: string;
 }
 

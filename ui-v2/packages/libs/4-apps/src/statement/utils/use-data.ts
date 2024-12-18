@@ -1,3 +1,4 @@
+import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useQuery } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx"
@@ -30,7 +31,7 @@ export function useStmtKindsData() {
 
 export function useListData() {
   const ctx = useAppContext()
-  const { timeRange, dbs, ruGroups, kinds, term } = useListUrlState()
+  const { timeRange, dbs, ruGroups, kinds, term, sortRule } = useListUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -42,9 +43,19 @@ export function useListData() {
       ruGroups,
       kinds,
       term,
+      // sort in local, so no need to use sortRule as dependencies
     ],
     queryFn: () => {
-      return ctx.api.getStmtList({ term })
+      const tr = toTimeRangeValue(timeRange)
+      return ctx.api.getStmtList({
+        beginTime: tr[0],
+        endTime: tr[1],
+        dbs,
+        ruGroups,
+        stmtKinds: kinds,
+        term,
+        ...sortRule,
+      })
     },
   })
 

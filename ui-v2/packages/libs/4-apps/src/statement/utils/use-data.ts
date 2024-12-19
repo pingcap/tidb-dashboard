@@ -1,5 +1,5 @@
 import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx"
 import { useDetailUrlState } from "../url-state/detail-url-state"
@@ -68,6 +68,7 @@ export function usePlansListData() {
   return useQuery({
     queryKey: [ctx.ctxId, "statement", "plans-list", id],
     queryFn: () => ctx.api.getStmtPlans({ id }),
+    enabled: !!id,
   })
 }
 
@@ -77,6 +78,65 @@ export function usePlansDetailData() {
   return useQuery({
     queryKey: [ctx.ctxId, "statement", "plans-detail", id, plans],
     queryFn: () => ctx.api.getStmtPlansDetail({ id, plans }),
-    enabled: plans.length > 0 && plans[0] !== "empty",
+    enabled: plans.length > 0 && plans[0] !== "empty" && !!id,
+  })
+}
+
+// sql plan bind
+export function usePlanBindSupportData() {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "statement", "plan-bind-support"],
+    queryFn: () => ctx.api.checkPlanBindSupport(),
+  })
+}
+
+export function usePlanBindStatusData(
+  sqlDigest: string,
+  beginTime: number,
+  endTime: number,
+) {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [
+      ctx.ctxId,
+      "statement",
+      "plan-bind-status",
+      sqlDigest,
+      beginTime,
+      endTime,
+    ],
+    queryFn: () => ctx.api.getPlanBindStatus({ sqlDigest, beginTime, endTime }),
+  })
+}
+
+export function useCreatePlanBindData(sqlDigest: string, planDigest: string) {
+  const ctx = useAppContext()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => {
+      return ctx.api.createPlanBind({ planDigest })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [ctx.ctxId, "statement", "plan-bind-status", sqlDigest],
+      })
+    },
+  })
+}
+
+export function useDeletePlanBindData(sqlDigest: string) {
+  const ctx = useAppContext()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => {
+      return ctx.api.deletePlanBind({ sqlDigest })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [ctx.ctxId, "statement", "plan-bind-status", sqlDigest],
+      })
+    },
   })
 }

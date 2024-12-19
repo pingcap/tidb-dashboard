@@ -5,10 +5,12 @@ import { StatementModel } from "../models"
 ////////////////////////////////
 
 type AppApi = {
+  // filters
   getDbs(): Promise<string[]>
   getRuGroups(): Promise<string[]>
   getStmtKinds(): Promise<string[]>
 
+  // list & detail
   getStmtList(params: {
     beginTime: number
     endTime: number
@@ -24,6 +26,16 @@ type AppApi = {
     id: string
     plans: string[]
   }): Promise<StatementModel>
+
+  // sql plan bind
+  checkPlanBindSupport(): Promise<{ is_support: boolean }>
+  getPlanBindStatus(params: {
+    sqlDigest: string
+    beginTime: number
+    endTime: number
+  }): Promise<{ plan_digest: string }>
+  createPlanBind(params: { planDigest: string }): Promise<void>
+  deletePlanBind(params: { sqlDigest: string }): Promise<void>
 }
 
 type AppConfig = {

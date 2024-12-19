@@ -1,7 +1,11 @@
 import {
+  diagnosisServiceBindSqlPlan,
+  diagnosisServiceCheckSqlPlanSupport,
+  diagnosisServiceGetSqlPlanBindingList,
   diagnosisServiceGetSqlPlanList,
   diagnosisServiceGetTopSqlDetail,
   diagnosisServiceGetTopSqlList,
+  diagnosisServiceUnbindSqlPlan,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
 import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
@@ -39,7 +43,7 @@ export function useCtxValue(): AppCtxValue {
             endTime: params.endTime + "",
             db: params.dbs,
             text: params.term,
-            orderBy: params.orderBy,
+            orderBy: "sum_latency",
             isDesc: params.desc,
             fields:
               "digest_text,sum_latency,avg_latency,max_latency,min_latency,exec_count,plan_count",
@@ -65,6 +69,34 @@ export function useCtxValue(): AppCtxValue {
             }
             return d
           })
+        },
+
+        checkPlanBindSupport() {
+          return diagnosisServiceCheckSqlPlanSupport(testClusterId).then(
+            (res) => ({ is_support: res.isSupport! }),
+          )
+        },
+        getPlanBindStatus(params) {
+          return diagnosisServiceGetSqlPlanBindingList(testClusterId, {
+            beginTime: params.beginTime + "",
+            endTime: params.endTime + "",
+            digest: params.sqlDigest,
+          })
+            .then((res) => res.data?.[0]?.planDigest ?? "")
+            .then((d) => ({
+              plan_digest: d,
+            }))
+        },
+        createPlanBind(params) {
+          return diagnosisServiceBindSqlPlan(
+            testClusterId,
+            params.planDigest,
+          ).then(() => {})
+        },
+        deletePlanBind(params) {
+          return diagnosisServiceUnbindSqlPlan(testClusterId, {
+            digest: params.sqlDigest,
+          }).then(() => {})
         },
       },
       cfg: {

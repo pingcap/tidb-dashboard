@@ -28,9 +28,9 @@ export function ListTable() {
       const aVal = a[id as keyof StatementModel] ?? 0
       const bVal = b[id as keyof StatementModel] ?? 0
       if (desc) {
-        return aVal > bVal ? -1 : 1
+        return Number(aVal) > Number(bVal) ? -1 : 1
       } else {
-        return aVal > bVal ? 1 : -1
+        return Number(aVal) > Number(bVal) ? 1 : -1
       }
     })
     return sorted

@@ -1,4 +1,4 @@
-import { Alert, Card, Stack, Title, Typography } from "@tidbcloud/uikit"
+import { Card, Stack, Title } from "@tidbcloud/uikit"
 
 import { StatementModel } from "../../../models"
 
@@ -9,14 +9,6 @@ export function PlansList({ data }: { data: StatementModel[] }) {
     <Card shadow="xs" p="md">
       <Stack gap="xs">
         <Title order={5}>Execution Plans</Title>
-
-        <Alert>
-          <Typography>
-            There are multiple execution plans for this kind of SQL statement.
-            You can choose to view one or multiple of them.
-          </Typography>
-        </Alert>
-
         <PlansListTable data={data} />
       </Stack>
     </Card>

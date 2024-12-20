@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.5.4
+
+### Patch Changes
+
+- add sql limit for slow query
+
 ## 0.5.3
 
 ### Patch Changes

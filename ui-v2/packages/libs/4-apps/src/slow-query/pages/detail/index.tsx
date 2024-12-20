@@ -8,6 +8,7 @@ import { useDetailData } from "../../utils/use-data"
 import { DetailTabs } from "./detail-tabs"
 import { DetailPlan } from "./plan"
 import { DetailQuery } from "./query"
+import { SqlLimit } from "./sql-limit"
 
 export function Detail() {
   const ctx = useAppContext()
@@ -32,7 +33,11 @@ export function Detail() {
       {detailData && (
         <Stack>
           <DetailQuery sql={detailData.query || ""} />
+
+          <SqlLimit sqlDigest={detailData.digest!} />
+
           {detailData.plan && <DetailPlan plan={detailData.plan} />}
+
           <DetailTabs data={detailData} />
         </Stack>
       )}

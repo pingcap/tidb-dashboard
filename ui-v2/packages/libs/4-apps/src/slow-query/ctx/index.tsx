@@ -1,12 +1,12 @@
 import { createContext, useContext } from "react"
 
+import { AppApi as SqlLimitAppApi } from "../../_shared/sql-limit"
 import { SlowqueryModel } from "../models"
 
 ////////////////////////////////
 
-type AppApi = {
+type AppApi = SqlLimitAppApi & {
   getDbs(): Promise<string[]>
-  getRuGroups(): Promise<string[]>
 
   getSlowQueries(params: {
     beginTime: number

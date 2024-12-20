@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.5.3
+
+### Patch Changes
+
+- add sql limit feature
+
 ## 0.5.2
 
 ### Patch Changes

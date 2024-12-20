@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.5.2
+
+### Patch Changes
+
+- add sql plan bind feature
+
 ## 0.5.1
 
 ### Patch Changes

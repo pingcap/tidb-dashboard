@@ -1,10 +1,16 @@
 import {
+  DiagnosisServiceAddSqlLimitBodyAction,
+  diagnosisServiceAddSqlLimit,
   diagnosisServiceBindSqlPlan,
+  diagnosisServiceCheckSqlLimitSupport,
   diagnosisServiceCheckSqlPlanSupport,
+  diagnosisServiceGetResourceGroupList,
+  diagnosisServiceGetSqlLimitList,
   diagnosisServiceGetSqlPlanBindingList,
   diagnosisServiceGetSqlPlanList,
   diagnosisServiceGetTopSqlDetail,
   diagnosisServiceGetTopSqlList,
+  diagnosisServiceRemoveSqlLimit,
   diagnosisServiceUnbindSqlPlan,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
@@ -34,7 +40,9 @@ export function useCtxValue(): AppCtxValue {
           return delay(1000).then(() => ["db1", "db2"])
         },
         getRuGroups() {
-          return delay(1000).then(() => ["default", "ru1", "ru2"])
+          return diagnosisServiceGetResourceGroupList(testClusterId).then(
+            (res) => (res.resourceGroups ?? []).map((r) => r.name || ""),
+          )
         },
 
         getStmtList(params) {
@@ -71,6 +79,7 @@ export function useCtxValue(): AppCtxValue {
           })
         },
 
+        // sql plan bind
         checkPlanBindSupport() {
           return diagnosisServiceCheckSqlPlanSupport(testClusterId).then(
             (res) => ({ is_support: res.isSupport! }),
@@ -97,6 +106,33 @@ export function useCtxValue(): AppCtxValue {
           return diagnosisServiceUnbindSqlPlan(testClusterId, {
             digest: params.sqlDigest,
           }).then(() => {})
+        },
+
+        // sql limit
+        checkSqlLimitSupport() {
+          return diagnosisServiceCheckSqlLimitSupport(testClusterId).then(
+            (res) => ({ is_support: res.isSupport! }),
+          )
+        },
+        getSqlLimitStatus(params) {
+          return diagnosisServiceGetSqlLimitList(testClusterId, {
+            watchText: params.watchText,
+          }).then((res) => ({
+            ru_group: res.data?.[0]?.resourceGroupName ?? "",
+            action: res.data?.[0]?.action ?? "",
+          }))
+        },
+        createSqlLimit(params) {
+          return diagnosisServiceAddSqlLimit(testClusterId, {
+            watchText: params.watchText,
+            resourceGroup: params.ruGroup,
+            action: params.action as DiagnosisServiceAddSqlLimitBodyAction,
+          }).then(() => {})
+        },
+        deleteSqlLimit(params) {
+          return diagnosisServiceRemoveSqlLimit(testClusterId, params).then(
+            () => {},
+          )
         },
       },
       cfg: {

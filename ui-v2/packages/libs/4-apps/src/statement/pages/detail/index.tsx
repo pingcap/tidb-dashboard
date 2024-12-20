@@ -10,6 +10,7 @@ import { usePlansListData } from "../../utils/use-data"
 import { PlansDetail } from "./plans-detail"
 import { PlansList } from "./plans-list"
 import { RelatedSlowQuery } from "./related-slow-query"
+import { SqlLimit } from "./sql-limit"
 import { StmtBasic } from "./stmt-basic"
 import { StmtSQL } from "./stmt-sql"
 
@@ -50,6 +51,8 @@ export function Detail() {
         <Stack>
           <StmtSQL title="Statement Template" sql={planData.digest_text!} />
           <StmtBasic stmt={planData} plansCount={plansListData.length} />
+
+          <SqlLimit sqlDigest={planData.digest!} />
 
           {plansListData.length > 0 && <PlansList data={plansListData} />}
 

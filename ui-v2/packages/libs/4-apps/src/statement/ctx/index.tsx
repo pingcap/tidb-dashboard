@@ -1,13 +1,13 @@
 import { createContext, useContext } from "react"
 
+import { AppApi as SqlLimitAppApi } from "../../_shared/sql-limit"
 import { StatementModel } from "../models"
 
 ////////////////////////////////
 
-type AppApi = {
+type AppApi = SqlLimitAppApi & {
   // filters
   getDbs(): Promise<string[]>
-  getRuGroups(): Promise<string[]>
   getStmtKinds(): Promise<string[]>
 
   // list & detail

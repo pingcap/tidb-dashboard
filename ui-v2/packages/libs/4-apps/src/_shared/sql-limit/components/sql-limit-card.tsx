@@ -3,6 +3,7 @@ import {
   Card,
   Group,
   Select,
+  Skeleton,
   Stack,
   Title,
   Typography,
@@ -17,9 +18,9 @@ import {
   useSqlLimitSupportData,
 } from "../utils/use-data"
 
-export function SqlLimitSetting({ sqlDigest }: { sqlDigest: string }) {
+export function SqlLimitSetting() {
   const { data: ruGroups } = useRuGroupsData()
-  const setLimitMut = useCreateSqlLimitData(sqlDigest)
+  const setLimitMut = useCreateSqlLimitData()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -31,9 +32,9 @@ export function SqlLimitSetting({ sqlDigest }: { sqlDigest: string }) {
     }
     try {
       await setLimitMut.mutateAsync({ ruGroup, action })
-      notifier.success("Set SQL Limit successfully")
+      notifier.success("Set SQL limit successfully")
     } catch (_err) {
-      notifier.error("Set SQL Limit failed")
+      notifier.error("Set SQL limit failed")
     }
   }
 
@@ -69,16 +70,16 @@ export function SqlLimitSetting({ sqlDigest }: { sqlDigest: string }) {
   )
 }
 
-export function SqlLimitStatus({ sqlDigest }: { sqlDigest: string }) {
-  const { data: sqlLimitStatus } = useSqlLimitStatusData(sqlDigest)
-  const deleteSqlLimitMut = useDeleteSqlLimitData(sqlDigest)
+export function SqlLimitStatus() {
+  const { data: sqlLimitStatus } = useSqlLimitStatusData()
+  const deleteSqlLimitMut = useDeleteSqlLimitData()
 
   async function handleDelete() {
     try {
       await deleteSqlLimitMut.mutateAsync()
-      notifier.success("Delete SQL Limit successfully")
+      notifier.success("Delete SQL limit successfully")
     } catch (_err) {
-      notifier.error("Delete SQL Limit failed")
+      notifier.error("Delete SQL limit failed")
     }
   }
 
@@ -99,36 +100,35 @@ export function SqlLimitStatus({ sqlDigest }: { sqlDigest: string }) {
   )
 }
 
-export function SqlLimitBody({ sqlDigest }: { sqlDigest: string }) {
+export function SqlLimitBody() {
   const { data: sqlLimitSupport } = useSqlLimitSupportData()
 
   if (!sqlLimitSupport) {
-    return <div>loading...</div>
+    return <Skeleton height={10} />
   }
 
   if (!sqlLimitSupport.is_support) {
     return (
       <Typography c="gray">
-        SQL Limit is not supported in this version, please upgrade to the latest
-        version
+        SQL limit feature is not supported in this version
       </Typography>
     )
   }
 
   return (
     <Stack>
-      <SqlLimitStatus sqlDigest={sqlDigest} />
-      <SqlLimitSetting sqlDigest={sqlDigest} />
+      <SqlLimitStatus />
+      <SqlLimitSetting />
     </Stack>
   )
 }
 
-export function SqlLimitCard({ sqlDigest }: { sqlDigest: string }) {
+export function SqlLimitCard() {
   return (
     <Card shadow="xs" p="md">
       <Stack gap="xs">
         <Title order={5}>SQL Limit</Title>
-        <SqlLimitBody sqlDigest={sqlDigest} />
+        <SqlLimitBody />
       </Stack>
     </Card>
   )

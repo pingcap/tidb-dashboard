@@ -21,6 +21,8 @@ export type AppCtxValue = {
   // we use ctxId to be a part of queryKey for react-query,
   // to differ same requests from different clusters, so this value can be clusterId, or other unique value
   ctxId: string
+  sqlDigest: string
+
   api: AppApi
 }
 

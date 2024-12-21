@@ -40,9 +40,9 @@ export function useCtxValue(): AppCtxValue {
           return delay(1000).then(() => ["db1", "db2"])
         },
         getRuGroups() {
-          return diagnosisServiceGetResourceGroupList(testClusterId).then(
-            (res) => (res.resourceGroups ?? []).map((r) => r.name || ""),
-          )
+          return diagnosisServiceGetResourceGroupList(testClusterId, {
+            skipGlobalErrorHandling: true,
+          }).then((res) => (res.resourceGroups ?? []).map((r) => r.name || ""))
         },
 
         getStmtList(params) {

@@ -2,8 +2,6 @@ import { Link, Outlet, createFileRoute } from "@tanstack/react-router"
 import { AppShell, NavLink, ScrollArea, Stack } from "@tidbcloud/uikit"
 import { createStyles } from "@tidbcloud/uikit/utils"
 
-import { TanStackRouterUrlStateProvider } from "../providers/url-state-provider"
-
 export const Route = createFileRoute("/_apps-layout")({
   component: RouteComponent,
 })
@@ -75,9 +73,7 @@ function RouteComponent() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <TanStackRouterUrlStateProvider>
-          <Outlet />
-        </TanStackRouterUrlStateProvider>
+        <Outlet />
       </AppShell.Main>
     </AppShell>
   )

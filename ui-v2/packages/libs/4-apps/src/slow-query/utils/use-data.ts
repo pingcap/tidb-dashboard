@@ -63,7 +63,6 @@ export function useDetailData() {
     queryFn: () => {
       return ctx.api.getSlowQuery({ id })
     },
-    enabled: !!id,
   })
   return query
 }

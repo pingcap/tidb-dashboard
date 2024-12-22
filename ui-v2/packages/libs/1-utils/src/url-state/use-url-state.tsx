@@ -2,7 +2,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react"
@@ -42,10 +41,14 @@ export function UrlStateProvider(props: {
 
   const [urlQuery, _setUrlQuery] = useState(val.urlQuery)
 
+  // UrlStateProvider is designed to each page has its own provider instance,
+  // won't share between pages
+  // so we don't need to sync urlQuery from props
+  // -------------------
   // sync urlQuery from props changes
-  useEffect(() => {
-    _setUrlQuery(val.urlQuery)
-  }, [val.urlQuery])
+  // useEffect(() => {
+  //   _setUrlQuery(val.urlQuery)
+  // }, [val.urlQuery])
 
   const ctxValue = useMemo(
     () => ({

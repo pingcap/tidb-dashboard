@@ -68,7 +68,6 @@ export function usePlansListData() {
   return useQuery({
     queryKey: [ctx.ctxId, "statement", "plans-list", id],
     queryFn: () => ctx.api.getStmtPlans({ id }),
-    enabled: !!id,
   })
 }
 
@@ -78,7 +77,7 @@ export function usePlansDetailData() {
   return useQuery({
     queryKey: [ctx.ctxId, "statement", "plans-detail", id, plans],
     queryFn: () => ctx.api.getStmtPlansDetail({ id, plans }),
-    enabled: plans.length > 0 && plans[0] !== "empty" && !!id,
+    enabled: plans.length > 0 && plans[0] !== "empty",
   })
 }
 

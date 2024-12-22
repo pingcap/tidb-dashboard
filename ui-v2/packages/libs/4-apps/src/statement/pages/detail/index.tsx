@@ -20,13 +20,12 @@ export function Detail() {
   const { data: plansListData, isLoading } = usePlansListData()
   const planData = plansListData?.[0]
 
-  const { id, plans, setPlans } = useDetailUrlState()
+  const { plans, setPlans } = useDetailUrlState()
   useEffect(() => {
-    // note: must check id, because id is empty when first render
-    if (id && plans.length === 0 && plansListData) {
+    if (plans.length === 0 && plansListData) {
       setPlans(plansListData.map((plan) => plan.plan_digest!))
     }
-  }, [id, plans, setPlans, plansListData])
+  }, [plans, setPlans, plansListData])
 
   const selectedPlans = useMemo(() => {
     return plans.filter((p) => p !== "empty")

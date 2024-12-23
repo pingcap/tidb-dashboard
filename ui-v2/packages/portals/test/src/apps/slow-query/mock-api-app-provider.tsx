@@ -3,6 +3,8 @@ import {
   diagnosisServiceAddSqlLimit,
   diagnosisServiceCheckSqlLimitSupport,
   diagnosisServiceGetResourceGroupList,
+  diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfo,
+  // diagnosisServiceGetSlowQueryAvailableAdvancedFilters,
   diagnosisServiceGetSlowQueryDetail,
   diagnosisServiceGetSlowQueryList,
   diagnosisServiceGetSqlLimitList,
@@ -19,20 +21,29 @@ declare global {
   }
 }
 
-const testClusterId = import.meta.env.VITE_TEST_CLUSTER_ID
+const clusterId = import.meta.env.VITE_TEST_CLUSTER_ID
 
 export function useCtxValue(): AppCtxValue {
   const navigate = useNavigate()
 
   return useMemo(
     () => ({
-      ctxId: "slow-query",
+      ctxId: `slow-query-${clusterId}`,
       api: {
         getDbs() {
+          // diagnosisServiceGetSlowQueryAvailableAdvancedFilters(clusterId)
+          return diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfo(
+            clusterId,
+            "db",
+            {
+              skipGlobalErrorHandling: true,
+            },
+          ).then((res) => res.valueList ?? [])
+
           return delay(1000).then(() => ["db1", "db2"])
         },
         getRuGroups() {
-          return diagnosisServiceGetResourceGroupList(testClusterId, {
+          return diagnosisServiceGetResourceGroupList(clusterId, {
             skipGlobalErrorHandling: true,
           }).then((res) => (res.resourceGroups ?? []).map((r) => r.name || ""))
         },
@@ -40,7 +51,7 @@ export function useCtxValue(): AppCtxValue {
         getSlowQueries(params) {
           console.log("getSlowQueries", params)
 
-          return diagnosisServiceGetSlowQueryList(testClusterId, {
+          return diagnosisServiceGetSlowQueryList(clusterId, {
             beginTime: params.beginTime + "",
             endTime: params.endTime + "",
             db: params.dbs,
@@ -53,7 +64,7 @@ export function useCtxValue(): AppCtxValue {
         },
         getSlowQuery(params: { id: string }) {
           const [digest, connectionId, timestamp] = params.id.split(",")
-          return diagnosisServiceGetSlowQueryDetail(testClusterId, digest, {
+          return diagnosisServiceGetSlowQueryDetail(clusterId, digest, {
             connectionId,
             timestamp: Number(timestamp),
           }).then((d) => {
@@ -66,12 +77,12 @@ export function useCtxValue(): AppCtxValue {
 
         // sql limit
         checkSqlLimitSupport() {
-          return diagnosisServiceCheckSqlLimitSupport(testClusterId).then(
+          return diagnosisServiceCheckSqlLimitSupport(clusterId).then(
             (res) => ({ is_support: res.isSupport! }),
           )
         },
         getSqlLimitStatus(params) {
-          return diagnosisServiceGetSqlLimitList(testClusterId, {
+          return diagnosisServiceGetSqlLimitList(clusterId, {
             watchText: params.watchText,
           }).then((res) => ({
             ru_group: res.data?.[0]?.resourceGroupName ?? "",
@@ -79,14 +90,14 @@ export function useCtxValue(): AppCtxValue {
           }))
         },
         createSqlLimit(params) {
-          return diagnosisServiceAddSqlLimit(testClusterId, {
+          return diagnosisServiceAddSqlLimit(clusterId, {
             watchText: params.watchText,
             resourceGroup: params.ruGroup,
             action: params.action as DiagnosisServiceAddSqlLimitBodyAction,
           }).then(() => {})
         },
         deleteSqlLimit(params) {
-          return diagnosisServiceRemoveSqlLimit(testClusterId, params).then(
+          return diagnosisServiceRemoveSqlLimit(clusterId, params).then(
             () => {},
           )
         },

@@ -57,8 +57,8 @@ export function FilterMultiSelect({
           },
         }}
       >
-        <Group>
-          {item}
+        <Group wrap="nowrap">
+          <Typography truncate>{item}</Typography>
           <Group ml="auto">
             {value.includes(item) && (
               <IconCheck
@@ -82,7 +82,6 @@ export function FilterMultiSelect({
   function selectResult() {
     if (value.length === 0) {
       return <Typography c="carbon" truncate>{`Select ${kind}...`}</Typography>
-      // return <Input.Placeholder>Select Resource Groups...</Input.Placeholder>
     }
     if (value.length < 2) {
       return (

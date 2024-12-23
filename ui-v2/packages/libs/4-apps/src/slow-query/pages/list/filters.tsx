@@ -28,9 +28,9 @@ const QUICK_RANGES: number[] = [
   6 * 60 * 60,
   12 * 60 * 60,
   24 * 60 * 60,
-  // 2 * 24 * 60 * 60,
-  // 3 * 24 * 60 * 60, // 3 days
-  // 7 * 24 * 60 * 60, // 7 days
+  2 * 24 * 60 * 60,
+  3 * 24 * 60 * 60, // 3 days
+  7 * 24 * 60 * 60, // 7 days
 ]
 
 export function Filters() {
@@ -41,6 +41,7 @@ export function Filters() {
     setDbs,
     ruGroups,
     setRuGroups,
+    sqlDigest,
     limit,
     setLimit,
     term,
@@ -84,6 +85,15 @@ export function Filters() {
       loading={isFetching}
     />
   )
+  const limitSelect = (
+    <Select
+      w={160}
+      value={limit + ""}
+      onChange={(v) => setLimit(v!)}
+      data={SLOW_QUERY_LIMIT}
+      disabled={isFetching}
+    />
+  )
 
   const dbsSelect = dbsData && dbsData.length > 0 && (
     <FilterMultiSelect
@@ -107,23 +117,22 @@ export function Filters() {
     />
   )
 
-  const limitSelect = (
-    <Select
-      w={160}
-      value={limit + ""}
-      onChange={(v) => setLimit(v!)}
-      data={SLOW_QUERY_LIMIT}
-      disabled={isFetching}
+  const sqlDigestInput = sqlDigest && (
+    <TextInput
+      w={200}
+      defaultValue={sqlDigest}
+      placeholder={tt("SQL digest")}
+      disabled={true}
     />
   )
 
   const searchInput = (
     <form onSubmit={handleSearchSubmit}>
       <TextInput
-        w={300}
+        w={200}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={tt("Find digest,query,prev_stmt,txn_start_ts")}
+        placeholder={tt("Find SQL text")}
         rightSection={
           !!text && (
             <IconXClose
@@ -155,9 +164,10 @@ export function Filters() {
   return (
     <Group>
       {timeRangePicker}
+      {limitSelect}
       {dbsSelect}
       {ruGroupsSelect}
-      {limitSelect}
+      {sqlDigestInput}
       {searchInput}
       {resetFiltersBtn}
     </Group>

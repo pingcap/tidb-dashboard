@@ -22,9 +22,9 @@ const QUICK_RANGES: number[] = [
   6 * 60 * 60,
   12 * 60 * 60,
   24 * 60 * 60,
-  // 2 * 24 * 60 * 60,
-  // 3 * 24 * 60 * 60, // 3 days
-  // 7 * 24 * 60 * 60, // 7 days
+  2 * 24 * 60 * 60,
+  3 * 24 * 60 * 60, // 3 days
+  7 * 24 * 60 * 60, // 7 days
 ]
 
 export function Filters() {
@@ -117,10 +117,10 @@ export function Filters() {
   const searchInput = (
     <form onSubmit={handleSearchSubmit}>
       <TextInput
-        w={300}
+        w={200}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={tt("Find digest,digest_text,schema,table")}
+        placeholder={tt("Find SQL text")}
         rightSection={
           !!text && (
             <IconXClose

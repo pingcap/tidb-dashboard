@@ -6,6 +6,84 @@
  */
 import { z as zod } from 'zod';
 
+export const apiKeyServiceListApiKeysQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "accessKey": zod.string().optional(),
+  "creator": zod.string().optional(),
+  "status": zod.string().optional()
+})
+
+export const apiKeyServiceListApiKeysResponse = zod.object({
+  "apikeys": zod.array(zod.object({
+  "accessKey": zod.string(),
+  "secretKey": zod.string().optional(),
+  "creator": zod.string().optional(),
+  "status": zod.enum(['disable', 'enable']).optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const apiKeyServiceCreateApiKeyBody = zod.object({
+
+})
+
+export const apiKeyServiceCreateApiKeyResponse = zod.object({
+  "accessKey": zod.string(),
+  "secretKey": zod.string().optional(),
+  "creator": zod.string().optional(),
+  "status": zod.enum(['disable', 'enable']).optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
+})
+
+
+export const apiKeyServiceDeleteApiKeyParams = zod.object({
+  "accessKey": zod.string()
+})
+
+export const apiKeyServiceDeleteApiKeyResponse = zod.object({
+
+})
+
+
+export const apiKeyServiceUpdateApiKeyParams = zod.object({
+  "accessKey": zod.string()
+})
+
+export const apiKeyServiceUpdateApiKeyBody = zod.object({
+  "accessKey": zod.string(),
+  "secretKey": zod.string().optional(),
+  "creator": zod.string().optional(),
+  "status": zod.enum(['disable', 'enable']).optional()
+})
+
+export const apiKeyServiceUpdateApiKeyResponse = zod.object({
+  "accessKey": zod.string(),
+  "secretKey": zod.string().optional(),
+  "creator": zod.string().optional(),
+  "status": zod.enum(['disable', 'enable']).optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
+})
+
+
+export const apiKeyServiceResetSecretKeyParams = zod.object({
+  "accessKey": zod.string()
+})
+
+export const apiKeyServiceResetSecretKeyResponse = zod.object({
+  "accessKey": zod.string(),
+  "secretKey": zod.string()
+})
+
+
 export const metricsServiceGetClusterMetricDataParams = zod.object({
   "clusterId": zod.string(),
   "name": zod.string()
@@ -378,7 +456,7 @@ export const diagnosisServiceAddSqlLimitParams = zod.object({
 
 export const diagnosisServiceAddSqlLimitBody = zod.object({
   "resourceGroup": zod.string(),
-  "action": zod.string(),
+  "action": zod.enum(['DRYRUN', 'COOLDOWN', 'KILL']),
   "watchText": zod.string()
 })
 
@@ -426,7 +504,7 @@ export const diagnosisServiceGetSqlLimitListResponse = zod.object({
   "watch": zod.string().optional(),
   "watchText": zod.string().optional(),
   "source": zod.string().optional(),
-  "action": zod.string().optional()
+  "action": zod.enum(['DRYRUN', 'COOLDOWN', 'KILL']).optional()
 })).optional()
 })
 
@@ -526,7 +604,13 @@ export const diagnosisServiceGetSqlPlanListResponse = zod.object({
   "avg_rocksdb_block_read_byte": zod.number().optional(),
   "related_schemas": zod.string().optional(),
   "plan_can_be_bound": zod.boolean().optional(),
-  "binary_plan_text": zod.string().optional()
+  "binary_plan_text": zod.string().optional(),
+  "resource_group": zod.string().optional(),
+  "avg_ru": zod.number().optional(),
+  "max_ru": zod.number().optional(),
+  "sum_ru": zod.number().optional(),
+  "avg_time_queued_by_rc": zod.number().optional(),
+  "max_time_queued_by_rc": zod.number().optional()
 })).optional()
 })
 
@@ -598,7 +682,8 @@ export const diagnosisServiceGetTopSqlListQueryParams = zod.object({
   "pageSize": zod.number().optional(),
   "pageToken": zod.string().optional(),
   "skip": zod.number().optional(),
-  "advancedFilter": zod.array(zod.string()).optional()
+  "advancedFilter": zod.array(zod.string()).optional(),
+  "isGroupByTime": zod.boolean().optional()
 })
 
 export const diagnosisServiceGetTopSqlListResponse = zod.object({
@@ -685,7 +770,13 @@ export const diagnosisServiceGetTopSqlListResponse = zod.object({
   "avg_rocksdb_block_read_byte": zod.number().optional(),
   "related_schemas": zod.string().optional(),
   "plan_can_be_bound": zod.boolean().optional(),
-  "binary_plan_text": zod.string().optional()
+  "binary_plan_text": zod.string().optional(),
+  "resource_group": zod.string().optional(),
+  "avg_ru": zod.number().optional(),
+  "max_ru": zod.number().optional(),
+  "sum_ru": zod.number().optional(),
+  "avg_time_queued_by_rc": zod.number().optional(),
+  "max_time_queued_by_rc": zod.number().optional()
 })).optional(),
   "nextPageToken": zod.string().optional(),
   "totalSize": zod.number().optional()
@@ -729,7 +820,8 @@ export const diagnosisServiceGetTopSqlDetailParams = zod.object({
 
 export const diagnosisServiceGetTopSqlDetailQueryParams = zod.object({
   "beginTime": zod.string(),
-  "endTime": zod.string()
+  "endTime": zod.string(),
+  "planDigest": zod.array(zod.string()).optional()
 })
 
 export const diagnosisServiceGetTopSqlDetailResponse = zod.object({
@@ -815,7 +907,13 @@ export const diagnosisServiceGetTopSqlDetailResponse = zod.object({
   "avg_rocksdb_block_read_byte": zod.number().optional(),
   "related_schemas": zod.string().optional(),
   "plan_can_be_bound": zod.boolean().optional(),
-  "binary_plan_text": zod.string().optional()
+  "binary_plan_text": zod.string().optional(),
+  "resource_group": zod.string().optional(),
+  "avg_ru": zod.number().optional(),
+  "max_ru": zod.number().optional(),
+  "sum_ru": zod.number().optional(),
+  "avg_time_queued_by_rc": zod.number().optional(),
+  "max_time_queued_by_rc": zod.number().optional()
 })
 
 
@@ -1095,13 +1193,69 @@ export const metricsServiceGetOverviewStatusResponse = zod.object({
 })
 
 
+export const roleServiceListRolesQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "nameLike": zod.string().optional(),
+  "name": zod.string().optional()
+})
+
+export const roleServiceListRolesResponse = zod.object({
+  "roles": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "roleName": zod.string().optional(),
+  "roleType": zod.string().optional(),
+  "roleTypeDesc": zod.string().optional(),
+  "detail": zod.string().optional(),
+  "note": zod.string().optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const roleServiceCreateRoleBody = zod.object({
+  "id": zod.number().optional(),
+  "roleName": zod.string().optional(),
+  "roleType": zod.string().optional(),
+  "roleTypeDesc": zod.string().optional(),
+  "detail": zod.string().optional(),
+  "note": zod.string().optional()
+})
+
+export const roleServiceCreateRoleResponse = zod.object({
+  "id": zod.number().optional(),
+  "roleName": zod.string().optional(),
+  "roleType": zod.string().optional(),
+  "roleTypeDesc": zod.string().optional(),
+  "detail": zod.string().optional(),
+  "note": zod.string().optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
+})
+
+
+export const roleServiceDeleteRoleParams = zod.object({
+  "roleId": zod.number()
+})
+
+export const roleServiceDeleteRoleResponse = zod.object({
+
+})
+
+
 export const userServiceListUsersQueryParams = zod.object({
   "pageSize": zod.number().optional(),
   "pageToken": zod.string().optional(),
   "skip": zod.number().optional(),
   "orderBy": zod.string().optional(),
   "nameLike": zod.string().optional(),
-  "emailLike": zod.string().optional()
+  "emailLike": zod.string().optional(),
+  "roleName": zod.string().optional()
 })
 
 export const userServiceListUsersResponse = zod.object({
@@ -1110,7 +1264,17 @@ export const userServiceListUsersResponse = zod.object({
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
-  "password": zod.string().optional()
+  "note": zod.string().optional(),
+  "password": zod.string().optional(),
+  "userType": zod.string().optional(),
+  "userTypeDesc": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "roles": zod.array(zod.object({
+  "roleName": zod.string().optional(),
+  "roleId": zod.number()
+})).optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
 })).optional(),
   "nextPageToken": zod.string().optional(),
   "totalSize": zod.number().optional()
@@ -1122,7 +1286,15 @@ export const userServiceCreateUserBody = zod.object({
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
-  "password": zod.string().optional()
+  "note": zod.string().optional(),
+  "password": zod.string().optional(),
+  "userType": zod.string().optional(),
+  "userTypeDesc": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "roles": zod.array(zod.object({
+  "roleName": zod.string().optional(),
+  "roleId": zod.number()
+})).optional()
 })
 
 export const userServiceCreateUserResponse = zod.object({
@@ -1130,7 +1302,49 @@ export const userServiceCreateUserResponse = zod.object({
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
-  "password": zod.string().optional()
+  "note": zod.string().optional(),
+  "password": zod.string().optional(),
+  "userType": zod.string().optional(),
+  "userTypeDesc": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "roles": zod.array(zod.object({
+  "roleName": zod.string().optional(),
+  "roleId": zod.number()
+})).optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
+})
+
+
+export const userServiceGetUserProfileResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().optional(),
+  "note": zod.string().optional(),
+  "phone": zod.string().optional()
+})
+
+
+export const userServiceGetUserParams = zod.object({
+  "userId": zod.string()
+})
+
+export const userServiceGetUserResponse = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().optional(),
+  "note": zod.string().optional(),
+  "password": zod.string().optional(),
+  "userType": zod.string().optional(),
+  "userTypeDesc": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "roles": zod.array(zod.object({
+  "roleName": zod.string().optional(),
+  "roleId": zod.number()
+})).optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
 })
 
 
@@ -1152,7 +1366,15 @@ export const userServiceUpdateUserBody = zod.object({
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
-  "password": zod.string().optional()
+  "note": zod.string().optional(),
+  "password": zod.string().optional(),
+  "userType": zod.string().optional(),
+  "userTypeDesc": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "roles": zod.array(zod.object({
+  "roleName": zod.string().optional(),
+  "roleId": zod.number()
+})).optional()
 })
 
 export const userServiceUpdateUserResponse = zod.object({
@@ -1160,31 +1382,41 @@ export const userServiceUpdateUserResponse = zod.object({
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
-  "password": zod.string().optional()
-})
-
-
-export const userServiceListUserRolesQueryParams = zod.object({
-  "pageSize": zod.number().optional(),
-  "pageToken": zod.string().optional(),
-  "skip": zod.number().optional(),
-  "orderBy": zod.string().optional(),
-  "nameLike": zod.string().optional(),
-  "emailLike": zod.string().optional(),
-  "roleName": zod.string().optional()
-})
-
-export const userServiceListUserRolesResponse = zod.object({
-  "users": zod.array(zod.object({
-  "userId": zod.string(),
-  "name": zod.string(),
-  "email": zod.string().optional(),
   "note": zod.string().optional(),
-  "roleName": zod.enum(['ADMIN', 'ALERT_MANAGER', 'ALERT_READER', 'BACKUP_MANAGER', 'BACKUP_READER', 'CLUSTER_MANAGER', 'CLUSTER_READER', 'HOST_MANAGER', 'HOST_READER', 'USER_MANAGER', 'AUDIT_MANAGER', 'SYSTEM_MANAGER', 'SYSTEM_READER']).optional(),
-  "roleId": zod.string().optional()
+  "password": zod.string().optional(),
+  "userType": zod.string().optional(),
+  "userTypeDesc": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "roles": zod.array(zod.object({
+  "roleName": zod.string().optional(),
+  "roleId": zod.number()
 })).optional(),
-  "nextPageToken": zod.string().optional(),
-  "totalSize": zod.number().optional()
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
+})
+
+
+export const userServiceResetPasswordParams = zod.object({
+  "userId": zod.string()
+})
+
+export const userServiceResetPasswordBody = zod.object({
+  "newPassword": zod.string()
+})
+
+export const userServiceResetPasswordResponse = zod.object({
+
+})
+
+
+export const userServiceChangePasswordBody = zod.object({
+  "userId": zod.string(),
+  "oldPassword": zod.string().optional(),
+  "newPassword": zod.string()
+})
+
+export const userServiceChangePasswordResponse = zod.object({
+
 })
 
 

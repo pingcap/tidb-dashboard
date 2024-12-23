@@ -4,7 +4,13 @@
  * Azores Open API
  * OpenAPI spec version: 2.0.0
  */
-export type UserServiceListUserRolesParams = {
+export type UserServiceChangePassword200 = { [key: string]: unknown };
+
+export type UserServiceResetPassword200 = { [key: string]: unknown };
+
+export type UserServiceDeleteUser200 = { [key: string]: unknown };
+
+export type UserServiceListUsersParams = {
 /**
  * Page size
  */
@@ -35,9 +41,9 @@ emailLike?: string;
 roleName?: string;
 };
 
-export type UserServiceDeleteUser200 = { [key: string]: unknown };
+export type RoleServiceDeleteRole200 = { [key: string]: unknown };
 
-export type UserServiceListUsersParams = {
+export type RoleServiceListRolesParams = {
 /**
  * Page size
  */
@@ -55,13 +61,13 @@ skip?: number;
  */
 orderBy?: string;
 /**
- * The name of the user
+ * The name of the role
  */
 nameLike?: string;
 /**
- * The email of the user
+ * The name of the role
  */
-emailLike?: string;
+name?: string;
 };
 
 export type MetricsServiceGetOverviewStatusParams = {
@@ -216,6 +222,10 @@ beginTime: string;
  * End time
  */
 endTime: string;
+/**
+ * Plan digest list
+ */
+planDigest?: string[];
 };
 
 export type DiagnosisServiceGetTopSqlListParams = {
@@ -263,6 +273,10 @@ skip?: number;
  * Advanced filters, such as "digest = xxx"
  */
 advancedFilter?: string[];
+/**
+ * Is group by time
+ */
+isGroupByTime?: boolean;
 };
 
 export type DiagnosisServiceUnbindSqlPlan200 = { [key: string]: unknown };
@@ -451,6 +465,41 @@ label?: string;
 range?: string;
 };
 
+export type ApiKeyServiceDeleteApiKey200 = { [key: string]: unknown };
+
+export type ApiKeyServiceCreateApiKeyBody = { [key: string]: unknown };
+
+export type ApiKeyServiceListApiKeysParams = {
+/**
+ * Page size
+ */
+pageSize?: number;
+/**
+ * Page token
+ */
+pageToken?: string;
+/**
+ * Skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+/**
+ * The access_key of the apikey
+ */
+accessKey?: string;
+/**
+ * The access_key of the apikey
+ */
+creator?: string;
+/**
+ * The status of the apikey
+ */
+status?: string;
+};
+
 /**
  * the label basic resource
  */
@@ -460,41 +509,32 @@ export interface V2ValidateSessionResponse {
   userId: string;
 }
 
-export type V2UserRoleRoleName = typeof V2UserRoleRoleName[keyof typeof V2UserRoleRoleName];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const V2UserRoleRoleName = {
-  ADMIN: 'ADMIN',
-  ALERT_MANAGER: 'ALERT_MANAGER',
-  ALERT_READER: 'ALERT_READER',
-  BACKUP_MANAGER: 'BACKUP_MANAGER',
-  BACKUP_READER: 'BACKUP_READER',
-  CLUSTER_MANAGER: 'CLUSTER_MANAGER',
-  CLUSTER_READER: 'CLUSTER_READER',
-  HOST_MANAGER: 'HOST_MANAGER',
-  HOST_READER: 'HOST_READER',
-  USER_MANAGER: 'USER_MANAGER',
-  AUDIT_MANAGER: 'AUDIT_MANAGER',
-  SYSTEM_MANAGER: 'SYSTEM_MANAGER',
-  SYSTEM_READER: 'SYSTEM_READER',
-} as const;
-
 export interface V2UserRole {
-  email?: string;
-  name: string;
-  note?: string;
-  roleId?: string;
-  roleName?: V2UserRoleRoleName;
-  userId: string;
+  roleId: number;
+  roleName?: string;
 }
 
-export interface V2User {
+export interface V2UserProfile {
   email?: string;
   id: string;
   name: string;
+  note?: string;
+  phone?: string;
+}
+
+export interface V2User {
+  readonly createTime?: string;
+  email?: string;
+  id: string;
+  name: string;
+  note?: string;
   password?: string;
+  phone?: string;
+  roles?: V2UserRole[];
+  readonly updateTime?: string;
   userId: string;
+  userType?: string;
+  userTypeDesc?: string;
 }
 
 export interface V2TopSqlDetail {
@@ -521,6 +561,8 @@ export interface V2TopSqlDetail {
   avg_rocksdb_block_read_count?: number;
   avg_rocksdb_delete_skipped_count?: number;
   avg_rocksdb_key_skipped_count?: number;
+  avg_ru?: number;
+  avg_time_queued_by_rc?: number;
   avg_total_keys?: number;
   avg_txn_retry?: number;
   avg_wait_time?: number;
@@ -556,6 +598,8 @@ export interface V2TopSqlDetail {
   max_rocksdb_block_read_count?: number;
   max_rocksdb_delete_skipped_count?: number;
   max_rocksdb_key_skipped_count?: number;
+  max_ru?: number;
+  max_time_queued_by_rc?: number;
   max_total_keys?: number;
   max_txn_retry?: number;
   max_wait_time?: number;
@@ -570,6 +614,7 @@ export interface V2TopSqlDetail {
   prev_sample_text?: string;
   query_sample_text?: string;
   related_schemas?: string;
+  resource_group?: string;
   sample_user?: string;
   schema_name?: string;
   stmt_type?: string;
@@ -577,6 +622,7 @@ export interface V2TopSqlDetail {
   sum_cop_task_num?: number;
   sum_errors?: number;
   sum_latency?: number;
+  sum_ru?: number;
   sum_warnings?: number;
   summary_begin_time?: number;
   summary_end_time?: number;
@@ -631,17 +677,6 @@ export const V2SqlPlanBindingDetailStatus = {
   pending_verify: 'pending verify',
 } as const;
 
-export interface V2SqlPlanBindingDetail {
-  digest?: string;
-  planDigest?: string;
-  source?: V2SqlPlanBindingDetailSource;
-  status?: V2SqlPlanBindingDetailStatus;
-}
-
-export interface V2SqlPlanBindingList {
-  data?: V2SqlPlanBindingDetail[];
-}
-
 export type V2SqlPlanBindingDetailSource = typeof V2SqlPlanBindingDetailSource[keyof typeof V2SqlPlanBindingDetailSource];
 
 
@@ -653,8 +688,33 @@ export const V2SqlPlanBindingDetailSource = {
   evolve: 'evolve',
 } as const;
 
+export interface V2SqlPlanBindingDetail {
+  digest?: string;
+  planDigest?: string;
+  source?: V2SqlPlanBindingDetailSource;
+  status?: V2SqlPlanBindingDetailStatus;
+}
+
+export interface V2SqlPlanBindingList {
+  data?: V2SqlPlanBindingDetail[];
+}
+
+export interface V2SqlLimitList {
+  data?: V2SqlLimit[];
+}
+
+export type V2SqlLimitAction = typeof V2SqlLimitAction[keyof typeof V2SqlLimitAction];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2SqlLimitAction = {
+  DRYRUN: 'DRYRUN',
+  COOLDOWN: 'COOLDOWN',
+  KILL: 'KILL',
+} as const;
+
 export interface V2SqlLimit {
-  action?: string;
+  action?: V2SqlLimitAction;
   endTime?: string;
   id?: string;
   resourceGroupName?: string;
@@ -662,10 +722,6 @@ export interface V2SqlLimit {
   startTime?: string;
   watch?: string;
   watchText?: string;
-}
-
-export interface V2SqlLimitList {
-  data?: V2SqlLimit[];
 }
 
 export interface V2SlowQueryDownloadResponse {
@@ -778,6 +834,17 @@ export interface V2SlowQueryAvailableAdvancedFilterInfo {
   valueList?: string[];
 }
 
+export interface V2Role {
+  readonly createTime?: string;
+  detail?: string;
+  id?: number;
+  note?: string;
+  roleName?: string;
+  roleType?: string;
+  roleTypeDesc?: string;
+  readonly updateTime?: string;
+}
+
 export interface V2ResourceGroup {
   burstable?: string;
   name?: string;
@@ -787,6 +854,11 @@ export interface V2ResourceGroup {
 
 export interface V2ResourceGroupList {
   resourceGroups?: V2ResourceGroup[];
+}
+
+export interface V2ResetSecretKeyResponse {
+  accessKey: string;
+  secretKey: string;
 }
 
 export interface V2QueryMetric {
@@ -826,10 +898,6 @@ export interface V2OverviewStatus {
   sysTasks?: V2StatusCount[];
 }
 
-export interface V2Metrics {
-  metrics?: V2CategoryMetricDetail[];
-}
-
 export interface V2MetricWithExpressions {
   description?: string;
   expressions?: V2ExpressionWithLegend[];
@@ -851,21 +919,27 @@ export interface V2ListUsersResponse {
   users?: V2User[];
 }
 
-export interface V2ListUserRolesResponse {
+export interface V2ListRolesResponse {
   nextPageToken?: string;
+  roles?: V2Role[];
   totalSize?: number;
-  users?: V2UserRole[];
-}
-
-export interface V2LabelWithBindObject {
-  bindObjects?: V2BindObject[];
-  label?: Temapiv2Label;
 }
 
 export interface V2ListLabelsResponse {
   labels?: V2LabelWithBindObject[];
   nextPageToken?: string;
   totalSize?: number;
+}
+
+export interface V2ListApiKeysResponse {
+  apikeys?: V2ApiKey[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2HostMetricData {
+  data?: V2ExprQueryData[];
+  status?: string;
 }
 
 /**
@@ -906,11 +980,6 @@ export interface V2ExprQueryData {
   expr?: string;
   legend?: string;
   result?: V2QueryResult[];
-}
-
-export interface V2HostMetricData {
-  data?: V2ExprQueryData[];
-  status?: string;
 }
 
 export type V2ClusterProcessCommand = typeof V2ClusterProcessCommand[keyof typeof V2ClusterProcessCommand];
@@ -1003,6 +1072,12 @@ export interface V2CheckSupportResponse {
   isSupport?: boolean;
 }
 
+export interface V2ChangePasswordRequest {
+  newPassword: string;
+  oldPassword?: string;
+  userId: string;
+}
+
 export interface V2CategoryMetricDetail {
   class?: string;
   description?: string;
@@ -1012,6 +1087,10 @@ export interface V2CategoryMetricDetail {
   name?: string;
   order?: number;
   type?: string;
+}
+
+export interface V2Metrics {
+  metrics?: V2CategoryMetricDetail[];
 }
 
 export interface V2BindResourceResponse {
@@ -1030,6 +1109,11 @@ export interface V2BindObject {
   resourceType: string;
 }
 
+export interface V2LabelWithBindObject {
+  bindObjects?: V2BindObject[];
+  label?: Temapiv2Label;
+}
+
 export interface V2BindLabelResponse {
   label?: V2LabelWithBindObject;
 }
@@ -1038,6 +1122,24 @@ export interface V2BindLabelRequest {
   appendBindObjects?: V2BindObject[];
   labelId: string;
   removeBindObjects?: V2BindObject[];
+}
+
+export type V2ApiKeyStatus = typeof V2ApiKeyStatus[keyof typeof V2ApiKeyStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2ApiKeyStatus = {
+  disable: 'disable',
+  enable: 'enable',
+} as const;
+
+export interface V2ApiKey {
+  accessKey: string;
+  readonly createTime?: string;
+  creator?: string;
+  secretKey?: string;
+  status?: V2ApiKeyStatus;
+  readonly updateTime?: string;
 }
 
 export interface Temapiv2Label {
@@ -1182,12 +1284,26 @@ export interface Metricsv2Value {
   value?: string;
 }
 
+export interface UserServiceResetPasswordBody {
+  newPassword: string;
+}
+
 export interface DiagnosisServiceRemoveSqlLimitBody {
   watchText: string;
 }
 
+export type DiagnosisServiceAddSqlLimitBodyAction = typeof DiagnosisServiceAddSqlLimitBodyAction[keyof typeof DiagnosisServiceAddSqlLimitBodyAction];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const DiagnosisServiceAddSqlLimitBodyAction = {
+  DRYRUN: 'DRYRUN',
+  COOLDOWN: 'COOLDOWN',
+  KILL: 'KILL',
+} as const;
+
 export interface DiagnosisServiceAddSqlLimitBody {
-  action: string;
+  action: DiagnosisServiceAddSqlLimitBodyAction;
   resourceGroup: string;
   watchText: string;
 }

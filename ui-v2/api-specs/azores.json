@@ -9,6 +9,15 @@
       "name": "MetricsService"
     },
     {
+      "name": "UserService"
+    },
+    {
+      "name": "RoleService"
+    },
+    {
+      "name": "ApiKeyService"
+    },
+    {
       "name": "ClusterService"
     },
     {
@@ -16,9 +25,6 @@
     },
     {
       "name": "LabelService"
-    },
-    {
-      "name": "UserService"
     }
   ],
   "consumes": [
@@ -28,6 +34,218 @@
     "application/json"
   ],
   "paths": {
+    "/api/v2/apiKeys": {
+      "get": {
+        "summary": "ListApiKeys",
+        "operationId": "ApiKeyService_ListApiKeys",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListApiKeysResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "accessKey",
+            "description": "The access_key of the apikey",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "creator",
+            "description": "The access_key of the apikey",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "The status of the apikey",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApiKeyService"
+        ]
+      },
+      "post": {
+        "summary": "CreateApiKey",
+        "operationId": "ApiKeyService_CreateApiKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ApiKey"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "tags": [
+          "ApiKeyService"
+        ]
+      }
+    },
+    "/api/v2/apiKeys/{accessKey}": {
+      "delete": {
+        "summary": "Delete one apikey by access key",
+        "operationId": "ApiKeyService_DeleteApiKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accessKey",
+            "description": "The access key of the apiKey",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApiKeyService"
+        ]
+      },
+      "patch": {
+        "summary": "UpdateApiKey",
+        "operationId": "ApiKeyService_UpdateApiKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ApiKey"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accessKey",
+            "description": "The access key of the apiKey",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apiKey",
+            "description": "ApiKey resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2ApiKey"
+            }
+          }
+        ],
+        "tags": [
+          "ApiKeyService"
+        ]
+      }
+    },
+    "/api/v2/apiKeys/{accessKey}:resetSecretKey": {
+      "patch": {
+        "summary": "Reset SecretKey",
+        "operationId": "ApiKeyService_ResetSecretKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ResetSecretKeyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accessKey",
+            "description": "The access key of the apiKey",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApiKeyService"
+        ]
+      }
+    },
     "/api/v2/clusters/{clusterId}/metrics/{name}/data": {
       "get": {
         "summary": "Get cluster metric data",
@@ -1143,6 +1361,13 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          },
+          {
+            "name": "isGroupByTime",
+            "description": "Is group by time",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -1301,6 +1526,17 @@
             "required": true,
             "type": "string",
             "format": "int64"
+          },
+          {
+            "name": "planDigest",
+            "description": "Plan digest list",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
@@ -1477,10 +1713,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/temapiv2Label",
-              "required": [
-                "label"
-              ]
+              "$ref": "#/definitions/temapiv2Label"
             }
           }
         ],
@@ -1552,10 +1785,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/temapiv2Label",
-              "required": [
-                "label"
-              ]
+              "$ref": "#/definitions/temapiv2Label"
             }
           }
         ],
@@ -1863,6 +2093,141 @@
         ]
       }
     },
+    "/api/v2/roles": {
+      "get": {
+        "summary": "listRoles",
+        "operationId": "RoleService_ListRoles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListRolesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "nameLike",
+            "description": "The name of the role",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "description": "The name of the role",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      },
+      "post": {
+        "summary": "createRole",
+        "operationId": "RoleService_CreateRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Role"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role",
+            "description": "\nUser resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2Role"
+            }
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      }
+    },
+    "/api/v2/roles/{roleId}": {
+      "delete": {
+        "summary": "deleteUser one user by user_id",
+        "operationId": "RoleService_DeleteRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "description": "The id of the role",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      }
+    },
     "/api/v2/users": {
       "get": {
         "summary": "ListUsers",
@@ -1925,6 +2290,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "roleName",
+            "description": "The role name of the user",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1932,7 +2304,7 @@
         ]
       },
       "post": {
-        "summary": "CreateUser",
+        "summary": "createUser",
         "operationId": "UserService_CreateUser",
         "responses": {
           "200": {
@@ -1964,7 +2336,60 @@
         ]
       }
     },
+    "/api/v2/users/profile": {
+      "get": {
+        "summary": "get one user profile",
+        "operationId": "UserService_GetUserProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2UserProfile"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
     "/api/v2/users/{userId}": {
+      "get": {
+        "summary": "get one user by user_id",
+        "operationId": "UserService_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2User"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "The user_id of the user",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
       "delete": {
         "summary": "delete one user by user_id",
         "operationId": "UserService_DeleteUser",
@@ -1997,7 +2422,7 @@
         ]
       },
       "patch": {
-        "summary": "Update User",
+        "summary": "update one user by user_id",
         "operationId": "UserService_UpdateUser",
         "responses": {
           "200": {
@@ -2037,15 +2462,16 @@
         ]
       }
     },
-    "/api/v2/users:userRoles": {
-      "get": {
-        "summary": "ListUserRoles",
-        "operationId": "UserService_ListUserRoles",
+    "/api/v2/users/{userId}:resetPassword": {
+      "patch": {
+        "summary": "resetPassword user password for admin user",
+        "operationId": "UserService_ResetPassword",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v2ListUserRolesResponse"
+              "type": "object",
+              "properties": {}
             }
           },
           "default": {
@@ -2057,55 +2483,54 @@
         },
         "parameters": [
           {
-            "name": "pageSize",
-            "description": "Page size",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "name": "userId",
+            "description": "The id of the user",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
           },
           {
-            "name": "pageToken",
-            "description": "Page token",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserServiceResetPasswordBody"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v2/users:changePassword": {
+      "patch": {
+        "summary": "changePassword user password for login user",
+        "operationId": "UserService_ChangePassword",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
           },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
           {
-            "name": "skip",
-            "description": "Skip",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "orderBy",
-            "description": "order_by",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "nameLike",
-            "description": "The name of the user",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "emailLike",
-            "description": "The email of the user",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "roleName",
-            "description": "The role name of the user",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2ChangePasswordRequest"
+            }
           }
         ],
         "tags": [
@@ -2177,6 +2602,19 @@
       "title": "Request message for removing SQL limit",
       "required": [
         "watchText"
+      ]
+    },
+    "UserServiceResetPasswordBody": {
+      "type": "object",
+      "properties": {
+        "newPassword": {
+          "type": "string",
+          "title": "User new password"
+        }
+      },
+      "title": "ResetPasswordRequest Request",
+      "required": [
+        "newPassword"
       ]
     },
     "metricsv2Value": {
@@ -2251,6 +2689,47 @@
       "title": "Label basic resource",
       "required": [
         "labelValue"
+      ]
+    },
+    "v2ApiKey": {
+      "type": "object",
+      "properties": {
+        "accessKey": {
+          "type": "string",
+          "title": "The access_key of apikey"
+        },
+        "secretKey": {
+          "type": "string",
+          "title": "The secret_key of apikey"
+        },
+        "creator": {
+          "type": "string",
+          "title": "The creator of apikey"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "disable",
+            "enable"
+          ],
+          "title": "The apikey status"
+        },
+        "createTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The create time of the apikey",
+          "readOnly": true
+        },
+        "updateTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The update time of the role",
+          "readOnly": true
+        }
+      },
+      "title": "ApiKey resource",
+      "required": [
+        "accessKey"
       ]
     },
     "v2BindLabelRequest": {
@@ -2396,6 +2875,29 @@
         }
       },
       "title": "CategoryMetricDetail represents the details of a metric category"
+    },
+    "v2ChangePasswordRequest": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64",
+          "title": "The id of the user"
+        },
+        "oldPassword": {
+          "type": "string",
+          "title": "User old password"
+        },
+        "newPassword": {
+          "type": "string",
+          "title": "User new password"
+        }
+      },
+      "title": "ChangePasswordRequest Request",
+      "required": [
+        "userId",
+        "newPassword"
+      ]
     },
     "v2CheckSupportResponse": {
       "type": "object",
@@ -2683,6 +3185,29 @@
       },
       "title": "Label resource with bound object"
     },
+    "v2ListApiKeysResponse": {
+      "type": "object",
+      "properties": {
+        "apikeys": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ApiKey"
+          },
+          "title": "List of users"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Total size"
+        }
+      },
+      "title": "ListApiKeyRequest"
+    },
     "v2ListLabelsResponse": {
       "type": "object",
       "properties": {
@@ -2706,14 +3231,14 @@
       },
       "title": "ListLabels Response"
     },
-    "v2ListUserRolesResponse": {
+    "v2ListRolesResponse": {
       "type": "object",
       "properties": {
-        "users": {
+        "roles": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v2UserRole"
+            "$ref": "#/definitions/v2Role"
           },
           "title": "List of users"
         },
@@ -2727,7 +3252,7 @@
           "title": "Total size"
         }
       },
-      "title": "ListUserRolesResponse"
+      "title": "ListRolesResponse"
     },
     "v2ListUsersResponse": {
       "type": "object",
@@ -2983,6 +3508,24 @@
       },
       "title": "QueryResult represents the result of a query"
     },
+    "v2ResetSecretKeyResponse": {
+      "type": "object",
+      "properties": {
+        "accessKey": {
+          "type": "string",
+          "title": "The access key of the apiKey"
+        },
+        "secretKey": {
+          "type": "string",
+          "title": "The secret key of the apiKey"
+        }
+      },
+      "title": "ResetSecretKey Request",
+      "required": [
+        "accessKey",
+        "secretKey"
+      ]
+    },
     "v2ResourceGroup": {
       "type": "object",
       "properties": {
@@ -3018,6 +3561,50 @@
         }
       },
       "title": "Response message for GetResourceGroupList"
+    },
+    "v2Role": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The id of the role"
+        },
+        "roleName": {
+          "type": "string",
+          "title": "The name of the role"
+        },
+        "roleType": {
+          "type": "string",
+          "format": "int64",
+          "title": "The id of the role"
+        },
+        "roleTypeDesc": {
+          "type": "string",
+          "title": "The id of the role"
+        },
+        "detail": {
+          "type": "string",
+          "title": "The note of the role"
+        },
+        "note": {
+          "type": "string",
+          "title": "The note of the role"
+        },
+        "createTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The create time of the role",
+          "readOnly": true
+        },
+        "updateTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The update time of the role",
+          "readOnly": true
+        }
+      },
+      "title": "the role resource"
     },
     "v2SlowQueryAvailableAdvancedFilterInfo": {
       "type": "object",
@@ -3156,12 +3743,12 @@
         },
         "memory_max": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "Max memory"
         },
         "disk_max": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "Max disk"
         },
         "txn_start_ts": {
@@ -3306,37 +3893,37 @@
         },
         "write_keys": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "Write keys"
         },
         "write_size": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "Write size"
         },
         "prewrite_region": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "Prewrite region"
         },
         "txn_retry": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "Transaction retry"
         },
         "request_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "Request count"
         },
         "process_keys": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "Process keys"
         },
         "total_keys": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "Total keys"
         },
         "cop_proc_addr": {
@@ -3349,27 +3936,27 @@
         },
         "rocksdb_delete_skipped_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "RocksDB delete skipped count"
         },
         "rocksdb_key_skipped_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "RocksDB key skipped count"
         },
         "rocksdb_block_cache_hit_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "RocksDB block cache hit count"
         },
         "rocksdb_block_read_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "RocksDB block read count"
         },
         "rocksdb_block_read_byte": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "RocksDB block read byte"
         },
         "binary_plan_text": {
@@ -3382,12 +3969,12 @@
         },
         "exec_retry_count": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "Execution retry count"
         },
         "preproc_subqueries": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "Preprocessing subqueries"
         },
         "kv_total": {
@@ -3454,7 +4041,7 @@
         },
         "result_rows": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "Result rows"
         }
       },
@@ -3704,12 +4291,12 @@
       "properties": {
         "summary_begin_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggBeginTime"
         },
         "summary_end_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggEndTime"
         },
         "digest_text": {
@@ -3722,7 +4309,7 @@
         },
         "exec_count": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggExecCount"
         },
         "stmt_type": {
@@ -3731,267 +4318,267 @@
         },
         "sum_errors": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggSumErrors"
         },
         "sum_warnings": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggSumWarnings"
         },
         "sum_latency": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggSumLatency"
         },
         "max_latency": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxLatency"
         },
         "min_latency": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMinLatency"
         },
         "avg_latency": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgLatency"
         },
         "avg_parse_latency": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgParseLatency"
         },
         "max_parse_latency": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxParseLatency"
         },
         "avg_compile_latency": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgCompileLatency"
         },
         "max_compile_latency": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxCompileLatency"
         },
         "sum_cop_task_num": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggSumCopTaskNum"
         },
         "avg_cop_process_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgCopProcessTime"
         },
         "max_cop_process_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxCopProcessTime"
         },
         "avg_cop_wait_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgCopWaitTime"
         },
         "max_cop_wait_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxCopWaitTime"
         },
         "avg_process_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgProcessTime"
         },
         "max_process_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxProcessTime"
         },
         "avg_wait_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgWaitTime"
         },
         "max_wait_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxWaitTime"
         },
         "avg_backoff_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgBackoffTime"
         },
         "max_backoff_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxBackoffTime"
         },
         "avg_total_keys": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgTotalKeys"
         },
         "max_total_keys": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxTotalKeys"
         },
         "avg_processed_keys": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgProcessedKeys"
         },
         "max_processed_keys": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxProcessedKeys"
         },
         "avg_prewrite_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgPrewriteTime"
         },
         "max_prewrite_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxPrewriteTime"
         },
         "avg_commit_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgCommitTime"
         },
         "max_commit_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxCommitTime"
         },
         "avg_get_commit_ts_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgGetCommitTsTime"
         },
         "max_get_commit_ts_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxGetCommitTsTime"
         },
         "avg_commit_backoff_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgCommitBackoffTime"
         },
         "max_commit_backoff_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxCommitBackoffTime"
         },
         "avg_resolve_lock_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgResolveLockTime"
         },
         "max_resolve_lock_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxResolveLockTime"
         },
         "avg_local_latch_wait_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgLocalLatchWaitTime"
         },
         "max_local_latch_wait_time": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxLocalLatchWaitTime"
         },
         "avg_write_keys": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgWriteKeys"
         },
         "max_write_keys": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxWriteKeys"
         },
         "avg_write_size": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgWriteSize"
         },
         "max_write_size": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxWriteSize"
         },
         "avg_prewrite_regions": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgPrewriteRegions"
         },
         "max_prewrite_regions": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxPrewriteRegions"
         },
         "avg_txn_retry": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgTxnRetry"
         },
         "max_txn_retry": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxTxnRetry"
         },
         "sum_backoff_times": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggSumBackoffTimes"
         },
         "avg_mem": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgMem"
         },
         "max_mem": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxMem"
         },
         "avg_disk": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgDisk"
         },
         "max_disk": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggMaxDisk"
         },
         "avg_affected_rows": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggAvgAffectedRows"
         },
         "first_seen": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggFirstSeen"
         },
         "last_seen": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggLastSeen"
         },
         "sample_user": {
@@ -4020,7 +4607,7 @@
         },
         "plan_count": {
           "type": "number",
-          "format": "int64",
+          "format": "double",
           "title": "AggPlanCount"
         },
         "plan": {
@@ -4041,52 +4628,52 @@
         },
         "max_rocksdb_delete_skipped_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggMaxRocksdbDeleteSkippedCount"
         },
         "avg_rocksdb_delete_skipped_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggAvgRocksdbDeleteSkippedCount"
         },
         "max_rocksdb_key_skipped_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggMaxRocksdbKeySkippedCount"
         },
         "avg_rocksdb_key_skipped_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggAvgRocksdbKeySkippedCount"
         },
         "max_rocksdb_block_cache_hit_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggMaxRocksdbBlockCacheHitCount"
         },
         "avg_rocksdb_block_cache_hit_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggAvgRocksdbBlockCacheHitCount"
         },
         "max_rocksdb_block_read_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggMaxRocksdbBlockReadCount"
         },
         "avg_rocksdb_block_read_count": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggAvgRocksdbBlockReadCount"
         },
         "max_rocksdb_block_read_byte": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggMaxRocksdbBlockReadByte"
         },
         "avg_rocksdb_block_read_byte": {
           "type": "number",
-          "format": "uint64",
+          "format": "double",
           "title": "AggAvgRocksdbBlockReadByte"
         },
         "related_schemas": {
@@ -4176,9 +4763,61 @@
           "type": "string",
           "title": "The email of the user"
         },
+        "note": {
+          "type": "string",
+          "title": "The note of the user"
+        },
         "password": {
           "type": "string",
           "title": "The password of the user"
+        },
+        "userType": {
+          "type": "string",
+          "format": "int64",
+          "title": "The type of the user"
+        },
+        "userTypeDesc": {
+          "type": "string",
+          "title": "The description of the user type"
+        },
+        "phone": {
+          "type": "string",
+          "title": "The phone of the user"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2UserRole",
+            "enum": [
+              "ADMIN",
+              "ALERT_MANAGER",
+              "ALERT_READER",
+              "BACKUP_MANAGER",
+              "BACKUP_READER",
+              "CLUSTER_MANAGER",
+              "CLUSTER_READER",
+              "HOST_MANAGER",
+              "HOST_READER",
+              "USER_MANAGER",
+              "AUDIT_MANAGER",
+              "SYSTEM_MANAGER",
+              "SYSTEM_READER"
+            ]
+          },
+          "title": "The role name"
+        },
+        "createTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The create time of the user",
+          "readOnly": true
+        },
+        "updateTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "The update time of the user",
+          "readOnly": true
         }
       },
       "title": "User resource",
@@ -4188,12 +4827,13 @@
         "name"
       ]
     },
-    "v2UserRole": {
+    "v2UserProfile": {
       "type": "object",
       "properties": {
-        "userId": {
+        "id": {
           "type": "string",
-          "title": "The user_id of the user"
+          "format": "int64",
+          "title": "The id of the user"
         },
         "name": {
           "type": "string",
@@ -4207,35 +4847,33 @@
           "type": "string",
           "title": "The note of the user"
         },
-        "roleName": {
+        "phone": {
           "type": "string",
-          "enum": [
-            "ADMIN",
-            "ALERT_MANAGER",
-            "ALERT_READER",
-            "BACKUP_MANAGER",
-            "BACKUP_READER",
-            "CLUSTER_MANAGER",
-            "CLUSTER_READER",
-            "HOST_MANAGER",
-            "HOST_READER",
-            "USER_MANAGER",
-            "AUDIT_MANAGER",
-            "SYSTEM_MANAGER",
-            "SYSTEM_READER"
-          ],
-          "title": "The role name"
-        },
-        "roleId": {
-          "type": "string",
-          "format": "int64",
-          "title": "The role id of the role"
+          "title": "The phone of the user"
         }
       },
-      "title": "User resource",
+      "title": "GetUserProfileResponse",
       "required": [
-        "userId",
+        "id",
         "name"
+      ]
+    },
+    "v2UserRole": {
+      "type": "object",
+      "properties": {
+        "roleName": {
+          "type": "string",
+          "title": "The name of the role"
+        },
+        "roleId": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The id of the role"
+        }
+      },
+      "title": "the role of user",
+      "required": [
+        "roleId"
       ]
     },
     "v2ValidateSessionResponse": {

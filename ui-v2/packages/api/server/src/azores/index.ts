@@ -9,6 +9,11 @@ import {
 } from 'hono'
 import { cors } from 'hono/cors'
 
+import { apiKeyServiceListApiKeysHandlers } from './handlers/apiKeyServiceListApiKeys';
+import { apiKeyServiceCreateApiKeyHandlers } from './handlers/apiKeyServiceCreateApiKey';
+import { apiKeyServiceDeleteApiKeyHandlers } from './handlers/apiKeyServiceDeleteApiKey';
+import { apiKeyServiceUpdateApiKeyHandlers } from './handlers/apiKeyServiceUpdateApiKey';
+import { apiKeyServiceResetSecretKeyHandlers } from './handlers/apiKeyServiceResetSecretKey';
 import { metricsServiceGetClusterMetricDataHandlers } from './handlers/metricsServiceGetClusterMetricData';
 import { metricsServiceGetClusterMetricInstanceHandlers } from './handlers/metricsServiceGetClusterMetricInstance';
 import { diagnosisServiceGetResourceGroupListHandlers } from './handlers/diagnosisServiceGetResourceGroupList';
@@ -46,17 +51,59 @@ import { userServiceLogoutHandlers } from './handlers/userServiceLogout';
 import { metricsServiceGetMetricsHandlers } from './handlers/metricsServiceGetMetrics';
 import { metricsServiceGetTopMetricDataHandlers } from './handlers/metricsServiceGetTopMetricData';
 import { metricsServiceGetOverviewStatusHandlers } from './handlers/metricsServiceGetOverviewStatus';
+import { roleServiceListRolesHandlers } from './handlers/roleServiceListRoles';
+import { roleServiceCreateRoleHandlers } from './handlers/roleServiceCreateRole';
+import { roleServiceDeleteRoleHandlers } from './handlers/roleServiceDeleteRole';
 import { userServiceListUsersHandlers } from './handlers/userServiceListUsers';
 import { userServiceCreateUserHandlers } from './handlers/userServiceCreateUser';
+import { userServiceGetUserProfileHandlers } from './handlers/userServiceGetUserProfile';
+import { userServiceGetUserHandlers } from './handlers/userServiceGetUser';
 import { userServiceDeleteUserHandlers } from './handlers/userServiceDeleteUser';
 import { userServiceUpdateUserHandlers } from './handlers/userServiceUpdateUser';
-import { userServiceListUserRolesHandlers } from './handlers/userServiceListUserRoles';
+import { userServiceResetPasswordHandlers } from './handlers/userServiceResetPassword';
+import { userServiceChangePasswordHandlers } from './handlers/userServiceChangePassword';
 import { userServiceValidateSessionHandlers } from './handlers/userServiceValidateSession';
 
 
 const app = new Hono()
 
 app.use('/api/v2/*', cors())
+
+/**
+ * @summary ListApiKeys
+ */
+
+app.get('/api/v2/apiKeys',...apiKeyServiceListApiKeysHandlers)
+
+
+/**
+ * @summary CreateApiKey
+ */
+
+app.post('/api/v2/apiKeys',...apiKeyServiceCreateApiKeyHandlers)
+
+
+/**
+ * @summary Delete one apikey by access key
+ */
+
+app.delete('/api/v2/apiKeys/:accessKey',...apiKeyServiceDeleteApiKeyHandlers)
+
+
+/**
+ * @summary UpdateApiKey
+ */
+
+app.patch('/api/v2/apiKeys/:accessKey',...apiKeyServiceUpdateApiKeyHandlers)
+
+
+/**
+ * @summary Reset SecretKey
+ */
+
+app.patch('/api/v2/apiKeys/:accessKey:resetSecretKey',...apiKeyServiceResetSecretKeyHandlers)
+
+
 /**
  * @summary Get cluster metric data
  */
@@ -317,6 +364,27 @@ app.get('/api/v2/overview/status',...metricsServiceGetOverviewStatusHandlers)
 
 
 /**
+ * @summary listRoles
+ */
+
+app.get('/api/v2/roles',...roleServiceListRolesHandlers)
+
+
+/**
+ * @summary createRole
+ */
+
+app.post('/api/v2/roles',...roleServiceCreateRoleHandlers)
+
+
+/**
+ * @summary deleteUser one user by user_id
+ */
+
+app.delete('/api/v2/roles/:roleId',...roleServiceDeleteRoleHandlers)
+
+
+/**
  * @summary ListUsers
  */
 
@@ -324,10 +392,24 @@ app.get('/api/v2/users',...userServiceListUsersHandlers)
 
 
 /**
- * @summary CreateUser
+ * @summary createUser
  */
 
 app.post('/api/v2/users',...userServiceCreateUserHandlers)
+
+
+/**
+ * @summary get one user profile
+ */
+
+app.get('/api/v2/users/profile',...userServiceGetUserProfileHandlers)
+
+
+/**
+ * @summary get one user by user_id
+ */
+
+app.get('/api/v2/users/:userId',...userServiceGetUserHandlers)
 
 
 /**
@@ -338,17 +420,24 @@ app.delete('/api/v2/users/:userId',...userServiceDeleteUserHandlers)
 
 
 /**
- * @summary Update User
+ * @summary update one user by user_id
  */
 
 app.patch('/api/v2/users/:userId',...userServiceUpdateUserHandlers)
 
 
 /**
- * @summary ListUserRoles
+ * @summary resetPassword user password for admin user
  */
 
-app.get('/api/v2/users:userRoles',...userServiceListUserRolesHandlers)
+app.patch('/api/v2/users/:userId:resetPassword',...userServiceResetPasswordHandlers)
+
+
+/**
+ * @summary changePassword user password for login user
+ */
+
+app.patch('/api/v2/users:changePassword',...userServiceChangePasswordHandlers)
 
 
 /**

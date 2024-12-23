@@ -6,7 +6,37 @@
  */
 import type { Context, Env } from 'hono';
 
-import { MetricsServiceGetClusterMetricDataParams,
+
+// https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir/49579497#49579497
+type IfEquals<X, Y, A = X, B = never> = (<T>() => T extends X ? 1 : 2) extends <
+T,
+>() => T extends Y ? 1 : 2
+? A
+: B;
+
+type WritableKeys<T> = {
+[P in keyof T]-?: IfEquals<
+  { [Q in P]: T[P] },
+  { -readonly [Q in P]: T[P] },
+  P
+>;
+}[keyof T];
+
+type UnionToIntersection<U> =
+  (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never;
+type DistributeReadOnlyOverUnions<T> = T extends any ? NonReadonly<T> : never;
+
+type Writable<T> = Pick<T, WritableKeys<T>>;
+type NonReadonly<T> = [T] extends [UnionToIntersection<T>] ? {
+  [P in keyof Writable<T>]: T[P] extends object
+    ? NonReadonly<NonNullable<T[P]>>
+    : T[P];
+} : DistributeReadOnlyOverUnions<T>;
+
+import { ApiKeyServiceListApiKeysParams,
+ApiKeyServiceCreateApiKeyBody,
+V2ApiKey,
+MetricsServiceGetClusterMetricDataParams,
 DiagnosisServiceGetSlowQueryListParams,
 DiagnosisServiceDownloadSlowQueryListParams,
 DiagnosisServiceGetSlowQueryDetailParams,
@@ -27,10 +57,30 @@ V2LoginRequest,
 MetricsServiceGetMetricsParams,
 MetricsServiceGetTopMetricDataParams,
 MetricsServiceGetOverviewStatusParams,
+RoleServiceListRolesParams,
+V2Role,
 UserServiceListUsersParams,
 V2User,
-UserServiceListUserRolesParams } from './index.schemas';
+UserServiceResetPasswordBody,
+V2ChangePasswordRequest } from './index.schemas';
 
+export type ApiKeyServiceListApiKeysContext<E extends Env = any> = Context<E, '/api/v2/apiKeys', { in: { query: ApiKeyServiceListApiKeysParams, }, out: { query: ApiKeyServiceListApiKeysParams, } }>
+export type ApiKeyServiceCreateApiKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys', { in: { json: ApiKeyServiceCreateApiKeyBody, }, out: { json: ApiKeyServiceCreateApiKeyBody, } }>
+export type ApiKeyServiceDeleteApiKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys/:accessKey', { in: { param: {
+ accessKey: string,
+ }, }, out: { param: {
+ accessKey: string,
+ }, } }>
+export type ApiKeyServiceUpdateApiKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys/:accessKey', { in: { param: {
+ accessKey: string,
+ },json: NonReadonly<V2ApiKey>, }, out: { param: {
+ accessKey: string,
+ },json: NonReadonly<V2ApiKey>, } }>
+export type ApiKeyServiceResetSecretKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys/:accessKey:resetSecretKey', { in: { param: {
+ accessKey: string,
+ }, }, out: { param: {
+ accessKey: string,
+ }, } }>
 export type MetricsServiceGetClusterMetricDataContext<E extends Env = any> = Context<E, '/api/v2/clusters/:clusterId/metrics/:name/data', { in: { param: {
  clusterId: string,
     name: string,
@@ -202,8 +252,21 @@ export type MetricsServiceGetTopMetricDataContext<E extends Env = any> = Context
  name: string,
  },query: MetricsServiceGetTopMetricDataParams, } }>
 export type MetricsServiceGetOverviewStatusContext<E extends Env = any> = Context<E, '/api/v2/overview/status', { in: { query: MetricsServiceGetOverviewStatusParams, }, out: { query: MetricsServiceGetOverviewStatusParams, } }>
+export type RoleServiceListRolesContext<E extends Env = any> = Context<E, '/api/v2/roles', { in: { query: RoleServiceListRolesParams, }, out: { query: RoleServiceListRolesParams, } }>
+export type RoleServiceCreateRoleContext<E extends Env = any> = Context<E, '/api/v2/roles', { in: { json: NonReadonly<V2Role>, }, out: { json: NonReadonly<V2Role>, } }>
+export type RoleServiceDeleteRoleContext<E extends Env = any> = Context<E, '/api/v2/roles/:roleId', { in: { param: {
+ roleId: number,
+ }, }, out: { param: {
+ roleId: number,
+ }, } }>
 export type UserServiceListUsersContext<E extends Env = any> = Context<E, '/api/v2/users', { in: { query: UserServiceListUsersParams, }, out: { query: UserServiceListUsersParams, } }>
-export type UserServiceCreateUserContext<E extends Env = any> = Context<E, '/api/v2/users', { in: { json: V2User, }, out: { json: V2User, } }>
+export type UserServiceCreateUserContext<E extends Env = any> = Context<E, '/api/v2/users', { in: { json: NonReadonly<V2User>, }, out: { json: NonReadonly<V2User>, } }>
+export type UserServiceGetUserProfileContext<E extends Env = any> = Context<E, '/api/v2/users/profile'>
+export type UserServiceGetUserContext<E extends Env = any> = Context<E, '/api/v2/users/:userId', { in: { param: {
+ userId: string,
+ }, }, out: { param: {
+ userId: string,
+ }, } }>
 export type UserServiceDeleteUserContext<E extends Env = any> = Context<E, '/api/v2/users/:userId', { in: { param: {
  userId: string,
  }, }, out: { param: {
@@ -211,8 +274,13 @@ export type UserServiceDeleteUserContext<E extends Env = any> = Context<E, '/api
  }, } }>
 export type UserServiceUpdateUserContext<E extends Env = any> = Context<E, '/api/v2/users/:userId', { in: { param: {
  userId: string,
- },json: V2User, }, out: { param: {
+ },json: NonReadonly<V2User>, }, out: { param: {
  userId: string,
- },json: V2User, } }>
-export type UserServiceListUserRolesContext<E extends Env = any> = Context<E, '/api/v2/users:userRoles', { in: { query: UserServiceListUserRolesParams, }, out: { query: UserServiceListUserRolesParams, } }>
+ },json: NonReadonly<V2User>, } }>
+export type UserServiceResetPasswordContext<E extends Env = any> = Context<E, '/api/v2/users/:userId:resetPassword', { in: { param: {
+ userId: string,
+ },json: UserServiceResetPasswordBody, }, out: { param: {
+ userId: string,
+ },json: UserServiceResetPasswordBody, } }>
+export type UserServiceChangePasswordContext<E extends Env = any> = Context<E, '/api/v2/users:changePassword', { in: { json: V2ChangePasswordRequest, }, out: { json: V2ChangePasswordRequest, } }>
 export type UserServiceValidateSessionContext<E extends Env = any> = Context<E, '/api/v2/users:validateSession'>

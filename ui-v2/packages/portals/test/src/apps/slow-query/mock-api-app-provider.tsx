@@ -51,6 +51,10 @@ export function useCtxValue(): AppCtxValue {
         getSlowQueries(params) {
           console.log("getSlowQueries", params)
 
+          let sqlDigestFilter = ""
+          if (params.sqlDigest) {
+            sqlDigestFilter = `digest = ${params.sqlDigest}`
+          }
           return diagnosisServiceGetSlowQueryList(clusterId, {
             beginTime: params.beginTime + "",
             endTime: params.endTime + "",
@@ -60,6 +64,7 @@ export function useCtxValue(): AppCtxValue {
             isDesc: params.desc,
             pageSize: params.limit,
             fields: "query,query_time,memory_max",
+            advancedFilter: sqlDigestFilter ? [sqlDigestFilter] : [],
           }).then((res) => res.data ?? [])
         },
         getSlowQuery(params: { id: string }) {

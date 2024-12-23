@@ -23,7 +23,8 @@ export function useRuGroupsData() {
 
 export function useListData() {
   const ctx = useAppContext()
-  const { timeRange, dbs, ruGroups, limit, term, sortRule } = useListUrlState()
+  const { timeRange, dbs, ruGroups, sqlDigest, limit, term, sortRule } =
+    useListUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -33,6 +34,7 @@ export function useListData() {
       timeRange,
       dbs,
       ruGroups,
+      sqlDigest,
       limit,
       term,
       sortRule,
@@ -44,6 +46,7 @@ export function useListData() {
         endTime: tr[1],
         dbs,
         ruGroups,
+        sqlDigest,
         limit,
         term,
         ...sortRule,

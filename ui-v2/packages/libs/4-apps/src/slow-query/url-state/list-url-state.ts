@@ -11,7 +11,7 @@ import {
 import { useCallback, useMemo } from "react"
 
 type ListUrlState = Partial<
-  Record<"dbs" | "ruGroups" | "limit" | "term", string>
+  Record<"dbs" | "ruGroups" | "sqlDigest" | "limit" | "term", string>
 > &
   SortUrlState &
   PaginationUrlState &
@@ -52,6 +52,15 @@ export function useListUrlState() {
     [setQueryParams],
   )
 
+  // sqlDigest
+  const sqlDigest = queryParams.sqlDigest ?? ""
+  const setSqlDigest = useCallback(
+    (v?: string) => {
+      setQueryParams({ sqlDigest: v, curPage: undefined })
+    },
+    [setQueryParams],
+  )
+
   // limit
   const limit = useMemo(() => {
     const s = queryParams.limit ?? "100"
@@ -84,6 +93,7 @@ export function useListUrlState() {
       to: undefined,
       dbs: undefined,
       ruGroups: undefined,
+      sqlDigest: undefined,
       limit: undefined,
       term: undefined,
       curPage: undefined,
@@ -99,6 +109,9 @@ export function useListUrlState() {
 
     ruGroups,
     setRuGroups,
+
+    sqlDigest,
+    setSqlDigest,
 
     limit,
     setLimit,

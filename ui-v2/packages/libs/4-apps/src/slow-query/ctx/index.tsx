@@ -13,6 +13,7 @@ type AppApi = SqlLimitAppApi & {
     endTime: number
     dbs: string[]
     ruGroups: string[]
+    sqlDigest: string
     term: string
     limit: number
     orderBy: string

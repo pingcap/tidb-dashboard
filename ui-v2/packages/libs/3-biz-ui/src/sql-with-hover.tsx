@@ -29,7 +29,7 @@ export function SQLWithHover({
           <InlineHighlightSQL sql={truncSQLShort} />
         </Box>
       </HoverCard.Target>
-      <HoverCard.Dropdown onClick={(e) => e.stopPropagation()}>
+      <HoverCard.Dropdown onClick={(e) => e.stopPropagation()} p="xs">
         <HighlightSQL sql={truncSQLLong} />
       </HoverCard.Dropdown>
     </HoverCard>

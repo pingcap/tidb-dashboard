@@ -42,6 +42,7 @@ function HighlightSQL({ sql }: { sql: string }) {
           },
           pre: {
             padding: 0,
+            paddingRight: 24,
           },
           code: {
             padding: 0,

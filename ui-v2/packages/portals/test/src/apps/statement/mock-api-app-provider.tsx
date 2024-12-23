@@ -71,6 +71,7 @@ export function useCtxValue(): AppCtxValue {
           return diagnosisServiceGetTopSqlDetail(testClusterId, digest, {
             beginTime: beginTime + "",
             endTime: endTime + "",
+            planDigest: params.plans,
           }).then((d) => {
             if (d.binary_plan_text) {
               d.plan = d.binary_plan_text

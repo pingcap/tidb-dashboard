@@ -76,7 +76,11 @@ export function usePlansDetailData() {
   const { id, plans } = useDetailUrlState()
   return useQuery({
     queryKey: [ctx.ctxId, "statement", "plans-detail", id, plans],
-    queryFn: () => ctx.api.getStmtPlansDetail({ id, plans }),
+    queryFn: () =>
+      ctx.api.getStmtPlansDetail({
+        id,
+        plans: plans.filter((d) => d !== "empty"),
+      }),
     enabled: plans.length > 0 && plans[0] !== "empty",
   })
 }

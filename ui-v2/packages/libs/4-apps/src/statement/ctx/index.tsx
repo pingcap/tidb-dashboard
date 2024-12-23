@@ -33,7 +33,7 @@ type AppApi = SqlLimitAppApi & {
     sqlDigest: string
     beginTime: number
     endTime: number
-  }): Promise<{ plan_digest: string }>
+  }): Promise<string[]>
   createPlanBind(params: { planDigest: string }): Promise<void>
   deletePlanBind(params: { sqlDigest: string }): Promise<void>
 }

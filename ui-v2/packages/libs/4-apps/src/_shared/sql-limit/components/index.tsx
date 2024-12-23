@@ -92,7 +92,7 @@ export function SqlLimitStatus() {
       <Group>
         <Typography>Resource Group: {sqlLimitStatus.ru_group}</Typography>
         <Typography>Action: {sqlLimitStatus.action}</Typography>
-        <Button ml="auto" c="red" variant="outline" onClick={handleDelete}>
+        <Button ml="auto" color="red" variant="outline" onClick={handleDelete}>
           Delete Limit
         </Button>
       </Group>

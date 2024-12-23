@@ -103,11 +103,7 @@ export function useCtxValue(): AppCtxValue {
             beginTime: params.beginTime + "",
             endTime: params.endTime + "",
             digest: params.sqlDigest,
-          })
-            .then((res) => res.data?.[0]?.planDigest ?? "")
-            .then((d) => ({
-              plan_digest: d,
-            }))
+          }).then((res) => (res.data ?? []).map((d) => d.planDigest!))
         },
         createPlanBind(params) {
           return diagnosisServiceBindSqlPlan(clusterId, params.planDigest).then(

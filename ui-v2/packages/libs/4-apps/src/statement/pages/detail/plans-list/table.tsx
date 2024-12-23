@@ -18,7 +18,7 @@ export function PlansListTable({ data }: { data: StatementModel[] }) {
   )
   const columns = useStatementColumns(
     planBindSupport?.is_support ?? false,
-    planBindStatus?.plan_digest ?? "unknown",
+    planBindStatus ?? [],
   )
 
   return (

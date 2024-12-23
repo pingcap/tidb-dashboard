@@ -12,5 +12,12 @@ zValidator('param', diagnosisServiceGetResourceGroupListParams),
 zValidator('response', diagnosisServiceGetResourceGroupListResponse),
 async (c: DiagnosisServiceGetResourceGroupListContext) => {
 
+    return c.json({
+      resourceGroups: [
+        {name: "default"},
+        {name: "ru1"},
+        {name: "ru2"},
+      ]
+    })
   },
 );

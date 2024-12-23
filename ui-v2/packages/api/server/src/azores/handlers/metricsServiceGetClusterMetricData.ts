@@ -5,14 +5,16 @@ import { metricsServiceGetClusterMetricDataParams,
 metricsServiceGetClusterMetricDataQueryParams,
 metricsServiceGetClusterMetricDataResponse } from '../index.zod';
 
-const factory = createFactory();
+import metricsData from "../sample-res/metrics-data-cpu-usage.json"
 
+const factory = createFactory()
 
-export const metricsServiceGetClusterMetricDataHandlers = factory.createHandlers(
-zValidator('param', metricsServiceGetClusterMetricDataParams),
-zValidator('query', metricsServiceGetClusterMetricDataQueryParams),
-zValidator('response', metricsServiceGetClusterMetricDataResponse),
-async (c: MetricsServiceGetClusterMetricDataContext) => {
-
-  },
-);
+export const metricsServiceGetClusterMetricDataHandlers =
+  factory.createHandlers(
+    zValidator("param", metricsServiceGetClusterMetricDataParams),
+    zValidator("query", metricsServiceGetClusterMetricDataQueryParams),
+    zValidator("response", metricsServiceGetClusterMetricDataResponse),
+    async (c: MetricsServiceGetClusterMetricDataContext) => {
+      return c.json(metricsData)
+    },
+  )

@@ -14,5 +14,6 @@ zValidator('json', diagnosisServiceRemoveSqlLimitBody),
 zValidator('response', diagnosisServiceRemoveSqlLimitResponse),
 async (c: DiagnosisServiceRemoveSqlLimitContext) => {
 
+    return c.json({}) 
   },
 );

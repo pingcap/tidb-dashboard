@@ -11,6 +11,6 @@ export const diagnosisServiceBindSqlPlanHandlers = factory.createHandlers(
 zValidator('param', diagnosisServiceBindSqlPlanParams),
 zValidator('response', diagnosisServiceBindSqlPlanResponse),
 async (c: DiagnosisServiceBindSqlPlanContext) => {
-
+    return c.json({})
   },
 );

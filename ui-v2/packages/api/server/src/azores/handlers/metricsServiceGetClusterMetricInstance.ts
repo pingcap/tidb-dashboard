@@ -11,6 +11,9 @@ export const metricsServiceGetClusterMetricInstanceHandlers = factory.createHand
 zValidator('param', metricsServiceGetClusterMetricInstanceParams),
 zValidator('response', metricsServiceGetClusterMetricInstanceResponse),
 async (c: MetricsServiceGetClusterMetricInstanceContext) => {
-
+    return c.json({
+      type: "tidb",
+      instanceList: ["10.2.12.107:10081", "10.2.12.107:10082"],
+    })
   },
 );

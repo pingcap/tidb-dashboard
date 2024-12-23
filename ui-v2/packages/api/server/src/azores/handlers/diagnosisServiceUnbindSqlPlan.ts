@@ -14,5 +14,6 @@ zValidator('query', diagnosisServiceUnbindSqlPlanQueryParams),
 zValidator('response', diagnosisServiceUnbindSqlPlanResponse),
 async (c: DiagnosisServiceUnbindSqlPlanContext) => {
 
+    return c.json({})
   },
 );

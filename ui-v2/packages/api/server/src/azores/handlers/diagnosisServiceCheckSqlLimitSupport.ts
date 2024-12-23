@@ -11,6 +11,6 @@ export const diagnosisServiceCheckSqlLimitSupportHandlers = factory.createHandle
 zValidator('param', diagnosisServiceCheckSqlLimitSupportParams),
 zValidator('response', diagnosisServiceCheckSqlLimitSupportResponse),
 async (c: DiagnosisServiceCheckSqlLimitSupportContext) => {
-
+    return c.json({isSupport: true})
   },
 );

@@ -13,6 +13,6 @@ zValidator('param', diagnosisServiceAddSqlLimitParams),
 zValidator('json', diagnosisServiceAddSqlLimitBody),
 zValidator('response', diagnosisServiceAddSqlLimitResponse),
 async (c: DiagnosisServiceAddSqlLimitContext) => {
-
+    return c.json({})
   },
 );

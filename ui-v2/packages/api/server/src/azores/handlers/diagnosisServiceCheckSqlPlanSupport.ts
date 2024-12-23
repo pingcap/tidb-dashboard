@@ -11,6 +11,6 @@ export const diagnosisServiceCheckSqlPlanSupportHandlers = factory.createHandler
 zValidator('param', diagnosisServiceCheckSqlPlanSupportParams),
 zValidator('response', diagnosisServiceCheckSqlPlanSupportResponse),
 async (c: DiagnosisServiceCheckSqlPlanSupportContext) => {
-
+    return c.json({isSupport: true})
   },
 );

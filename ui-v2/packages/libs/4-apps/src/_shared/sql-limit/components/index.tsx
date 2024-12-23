@@ -9,6 +9,7 @@ import {
   Typography,
   notifier,
 } from "@tidbcloud/uikit"
+import { useState } from "react"
 
 import {
   useCreateSqlLimitData,
@@ -22,16 +23,16 @@ export function SqlLimitSetting() {
   const { data: ruGroups } = useRuGroupsData()
   const setLimitMut = useCreateSqlLimitData()
 
+  const [resourceGroup, setResourceGroup] = useState("")
+  const [action, setAction] = useState("")
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const ruGroup = formData.get("ruGroup") as string
-    const action = formData.get("action") as string
-    if (!ruGroup || !action) {
+    if (!resourceGroup || !action) {
       return
     }
     try {
-      await setLimitMut.mutateAsync({ ruGroup, action })
+      await setLimitMut.mutateAsync({ ruGroup: resourceGroup, action })
       notifier.success("Set SQL limit successfully")
     } catch (_err) {
       notifier.error("Set SQL limit failed")
@@ -55,13 +56,19 @@ export function SqlLimitSetting() {
     <Card>
       <form onSubmit={handleSubmit}>
         <Group>
-          <Select placeholder="Resource Group" data={ruGroups} name="ruGroup" />
+          <Select
+            placeholder="Resource Group"
+            data={ruGroups}
+            value={resourceGroup}
+            onChange={(v) => setResourceGroup(v || "")}
+          />
           <Select
             placeholder="Action"
             data={["DRYRUN", "COOLDOWN", "KILL"]}
-            name="action"
+            value={action}
+            onChange={(v) => setAction(v || "")}
           />
-          <Button ml="auto" type="submit">
+          <Button ml="auto" type="submit" disabled={!resourceGroup || !action}>
             Set Limit
           </Button>
         </Group>

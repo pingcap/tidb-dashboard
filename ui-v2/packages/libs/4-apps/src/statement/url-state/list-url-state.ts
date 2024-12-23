@@ -68,10 +68,13 @@ export function useListUrlState() {
   )
 
   // term
-  const term = queryParams.term ?? ""
+  const term = decodeURIComponent(queryParams.term ?? "")
   const setTerm = useCallback(
     (v?: string) => {
-      setQueryParams({ term: v, curPage: undefined })
+      setQueryParams({
+        term: v ? encodeURIComponent(v) : v,
+        curPage: undefined,
+      })
     },
     [setQueryParams],
   )

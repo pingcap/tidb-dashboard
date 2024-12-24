@@ -63,10 +63,12 @@ export function useCtxValue(): AppCtxValue {
             endTime: params.endTime + "",
             db: params.dbs,
             text: params.term,
-            orderBy: "sum_latency",
+            orderBy: params.orderBy,
             isDesc: params.desc,
             fields:
               "digest_text,sum_latency,avg_latency,max_latency,min_latency,exec_count,plan_count",
+            // use a huge pageSize to get all results at once, so we can do sort in client side
+            pageSize: 100000,
           }).then((res) => res.data ?? [])
         },
         getStmtPlans(params) {

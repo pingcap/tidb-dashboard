@@ -93,11 +93,13 @@ const columns: MRT_ColumnDef<PlanItem>[] = [
   {
     id: "memory",
     header: "memory",
+    size: 100,
     accessorFn: (row) => row.memory,
   },
   {
     id: "disk",
     header: "disk",
+    size: 100,
     accessorFn: (row) => row.disk,
   },
 ]

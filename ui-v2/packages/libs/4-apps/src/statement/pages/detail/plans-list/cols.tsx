@@ -26,7 +26,7 @@ export function useStatementColumns(
         id: "plan_digest",
         header: "Plan ID",
         enableSorting: false,
-        // minSize: 300,
+        minSize: 100,
         accessorFn: (row) => (
           <Tooltip label={row.plan_digest || ""}>
             <Typography truncate>{row.plan_digest || "-"}</Typography>
@@ -36,14 +36,12 @@ export function useStatementColumns(
       {
         id: "sum_latency",
         header: "Total Latency",
-        enableSorting: false,
         enableResizing: false,
         accessorFn: (row) => formatNumByUnit(row.sum_latency!, "ns"),
       },
       {
         id: "avg_latency",
         header: "Mean Latency",
-        enableSorting: false,
         enableResizing: false,
         accessorFn: (row) => formatNumByUnit(row.avg_latency!, "ns"),
       },
@@ -56,7 +54,6 @@ export function useStatementColumns(
       {
         id: "avg_mem",
         header: "Mean Memory",
-        enableSorting: false,
         enableResizing: false,
         accessorFn: (row) => formatNumByUnit(row.avg_mem!, "bytes"),
       },

@@ -76,7 +76,7 @@ export function Filters() {
           .toDate()
       }
       maxDateTime={() => dayjs().toDate()}
-      loading={isFetching}
+      disabled={isFetching}
     />
   )
 

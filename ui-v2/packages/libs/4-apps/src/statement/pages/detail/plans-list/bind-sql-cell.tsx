@@ -85,7 +85,7 @@ export function SqlPlanBindActionCell({
   if (!isSupport) {
     return (
       <Tooltip label="Bind plan is not supported in this version">
-        <Button data-disabled onClick={(event) => event.preventDefault()}>
+        <Button disabled size="xs">
           Bind
         </Button>
       </Tooltip>
@@ -94,7 +94,7 @@ export function SqlPlanBindActionCell({
   if (!canBind) {
     return (
       <Tooltip label="This plan can not be bound">
-        <Button data-disabled onClick={(event) => event.preventDefault()}>
+        <Button disabled size="xs">
           Bind
         </Button>
       </Tooltip>

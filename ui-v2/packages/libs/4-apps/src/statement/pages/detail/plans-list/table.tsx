@@ -23,7 +23,11 @@ export function PlansListTable({ data }: { data: StatementModel[] }) {
 
   return (
     <ProTable
+      layoutMode="grid"
       enableSorting
+      enableColumnResizing
+      enableColumnPinning
+      initialState={{ columnPinning: { right: ["action"] } }}
       state={{
         sorting: [{ id: "exec_count", desc: true }],
         columnVisibility: {

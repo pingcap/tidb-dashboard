@@ -15,7 +15,10 @@ export function ListTable() {
   const cols = useListTableColumns()
   const { data, isLoading } = useListData()
   const { sortRule, setSortRule, pagination, setPagination } = useListUrlState()
-  const { sorting, setSorting } = useProTableSortState(sortRule, setSortRule)
+  const { sortingState, setSortingState } = useProTableSortState(
+    sortRule,
+    setSortRule,
+  )
   const { paginationState, setPaginationState } = useProTablePaginationState(
     pagination,
     setPagination,
@@ -26,10 +29,10 @@ export function ListTable() {
     if (!data) {
       return []
     }
-    if (!sorting[0]) {
+    if (!sortingState[0]) {
       return data
     }
-    const [{ id, desc }] = sorting
+    const [{ id, desc }] = sortingState
     const sorted = [...data]
     sorted.sort((a, b) => {
       const aVal = a[id as keyof StatementModel] ?? 0
@@ -41,7 +44,7 @@ export function ListTable() {
       }
     })
     return sorted
-  }, [data, sorting])
+  }, [data, sortingState])
 
   // do pagination in local for statement list
   const pagedData = useMemo(() => {
@@ -57,11 +60,11 @@ export function ListTable() {
       enableSorting
       manualSorting
       sortDescFirst
-      onSortingChange={setSorting}
+      onSortingChange={setSortingState}
       manualPagination
       onPaginationChange={setPaginationState}
       rowCount={sortedData?.length ?? 0}
-      state={{ isLoading, sorting, pagination: paginationState }}
+      state={{ isLoading, sorting: sortingState, pagination: paginationState }}
       initialState={{ columnPinning: { left: ["digest_text"] } }}
       pagination={{
         position: "right",

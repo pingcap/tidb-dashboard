@@ -14,7 +14,10 @@ export function ListTable() {
   const cols = useListTableColumns()
   const { data, isLoading } = useListData()
   const { sortRule, setSortRule, pagination, setPagination } = useListUrlState()
-  const { sorting, setSorting } = useProTableSortState(sortRule, setSortRule)
+  const { sortingState, setSortingState } = useProTableSortState(
+    sortRule,
+    setSortRule,
+  )
   const { paginationState, setPaginationState } = useProTablePaginationState(
     pagination,
     setPagination,
@@ -35,11 +38,11 @@ export function ListTable() {
       enableSorting
       manualSorting
       sortDescFirst
-      onSortingChange={setSorting}
+      onSortingChange={setSortingState}
       manualPagination
       onPaginationChange={setPaginationState}
       rowCount={data?.length ?? 0}
-      state={{ isLoading, sorting, pagination: paginationState }}
+      state={{ isLoading, sorting: sortingState, pagination: paginationState }}
       initialState={{ columnPinning: { left: ["query"] } }}
       pagination={{
         position: "right",

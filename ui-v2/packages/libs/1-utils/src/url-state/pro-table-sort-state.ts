@@ -9,20 +9,21 @@ export function useProTableSortState(
   sortRule: SortRule,
   setSortRule: (v: SortRule) => void,
 ): {
-  sorting: MRT_SortingState
-  setSorting: onSortChangeFn
+  sortingState: MRT_SortingState
+  setSortingState: onSortChangeFn
 } {
-  const sorting = useMemo(() => {
+  const sortingState = useMemo(() => {
     if (sortRule.orderBy) {
       return [{ id: sortRule.orderBy, desc: sortRule.desc }]
     }
     return []
   }, [sortRule.orderBy, sortRule.desc])
 
-  const setSorting = useCallback<onSortChangeFn>(
+  const setSortingState = useCallback<onSortChangeFn>(
     (updater) => {
-      const newSort = typeof updater === "function" ? updater(sorting) : updater
-      if (newSort === sorting) {
+      const newSort =
+        typeof updater === "function" ? updater(sortingState) : updater
+      if (newSort === sortingState) {
         return
       }
       if (newSort.length > 0) {
@@ -31,8 +32,8 @@ export function useProTableSortState(
         setSortRule({ orderBy: "", desc: true })
       }
     },
-    [setSortRule, sorting],
+    [setSortRule, sortingState],
   )
 
-  return { sorting, setSorting }
+  return { sortingState, setSortingState }
 }

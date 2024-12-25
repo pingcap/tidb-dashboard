@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.7.1
+
+### Patch Changes
+
+- add showDetailBack config for diagnosis apps
+
 ## 0.7.0
 
 ### Minor Changes

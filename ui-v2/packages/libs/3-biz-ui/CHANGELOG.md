@@ -1,5 +1,16 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.7.0
+
+### Minor Changes
+
+- refine pagination and sort url state
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.7.0
+
 ## 0.6.1
 
 ### Patch Changes

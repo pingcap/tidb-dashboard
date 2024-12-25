@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.7.0
+
+### Minor Changes
+
+- refine pagination and sort url state
+
 ## 0.6.0
 
 ### Minor Changes

@@ -1,4 +1,7 @@
-import { useProTableSortState } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  useProTablePaginationState,
+  useProTableSortState,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
@@ -11,8 +14,12 @@ import { useListTableColumns } from "./cols"
 export function ListTable() {
   const cols = useListTableColumns()
   const { data, isLoading } = useListData()
-  const { pagination, setPagination, sortRule, setSortRule } = useListUrlState()
+  const { sortRule, setSortRule, pagination, setPagination } = useListUrlState()
   const { sorting, setSorting } = useProTableSortState(sortRule, setSortRule)
+  const { paginationState, setPaginationState } = useProTablePaginationState(
+    pagination,
+    setPagination,
+  )
 
   // do sorting in local for statement list
   const sortedData = useMemo(() => {
@@ -37,10 +44,10 @@ export function ListTable() {
   }, [data, sorting])
 
   // do pagination in local for statement list
-  const finalData = useMemo(() => {
-    const { curPage, pageSize } = pagination
-    return sortedData.slice((curPage - 1) * pageSize, curPage * pageSize)
-  }, [sortedData, pagination])
+  const pagedData = useMemo(() => {
+    const { pageIndex, pageSize } = paginationState
+    return sortedData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)
+  }, [sortedData, paginationState.pageIndex, paginationState.pageSize])
 
   return (
     <ProTable
@@ -51,16 +58,17 @@ export function ListTable() {
       manualSorting
       sortDescFirst
       onSortingChange={setSorting}
-      state={{ isLoading, sorting }}
+      manualPagination
+      onPaginationChange={setPaginationState}
+      rowCount={sortedData?.length ?? 0}
+      state={{ isLoading, sorting, pagination: paginationState }}
       initialState={{ columnPinning: { left: ["digest_text"] } }}
       pagination={{
-        value: pagination.curPage,
-        total: Math.ceil((data?.length ?? 0) / pagination.pageSize),
-        onChange: (v) => setPagination({ ...pagination, curPage: v }),
-        position: "center",
+        position: "right",
+        showTotal: true,
       }}
       columns={cols}
-      data={finalData}
+      data={pagedData}
     />
   )
 }

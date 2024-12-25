@@ -9,7 +9,7 @@ export type Pagination = {
 
 export type PaginationUrlState = Partial<Record<"curPage" | "pageSize", string>>
 
-export function usePaginationUrlState(defPageSize: number = 10) {
+export function usePaginationUrlState(defPageSize: number = 15) {
   const [queryParams, setQueryParams] = useUrlState<PaginationUrlState>()
 
   const pagination = useMemo<Pagination>(() => {

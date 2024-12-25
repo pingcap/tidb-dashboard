@@ -25,7 +25,7 @@ export const DEFAULT_TIME_RANGE: TimeRange = {
 export function useListUrlState() {
   const [queryParams, setQueryParams] = useUrlState<ListUrlState>()
   const { sortRule, setSortRule } = useSortUrlState("sum_latency", true)
-  const { pagination, setPagination } = usePaginationUrlState(20)
+  const { pagination, setPagination } = usePaginationUrlState()
   const { timeRange, setTimeRange } = useTimeRangeUrlState(
     DEFAULT_TIME_RANGE,
     true,

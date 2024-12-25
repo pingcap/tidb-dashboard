@@ -40,6 +40,11 @@ type AppApi = SqlLimitAppApi & {
 
 type AppConfig = {
   title?: string
+  // whether to show back to list page button in the detail page
+  // if set to false, the back button will be hidden
+  // and you need to handle the back action outside of the app by yourself
+  // default is true
+  showDetailBack?: boolean
 }
 
 type AppActions = {

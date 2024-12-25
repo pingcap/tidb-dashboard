@@ -1,5 +1,5 @@
 import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Tooltip, Typography } from "@tidbcloud/uikit"
+import { Typography } from "@tidbcloud/uikit"
 import { MRT_ColumnDef } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
@@ -28,9 +28,7 @@ export function useStatementColumns(
         enableSorting: false,
         minSize: 100,
         accessorFn: (row) => (
-          <Tooltip label={row.plan_digest || ""}>
-            <Typography truncate>{row.plan_digest || "-"}</Typography>
-          </Tooltip>
+          <Typography truncate>{row.plan_digest || "-"}</Typography>
         ),
       },
       {

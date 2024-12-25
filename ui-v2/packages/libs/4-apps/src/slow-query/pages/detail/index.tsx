@@ -17,16 +17,18 @@ export function Detail() {
 
   return (
     <Stack>
-      <Group wrap="nowrap">
-        <ActionIcon
-          aria-label="Navigate Back"
-          variant="default"
-          onClick={ctx.actions.backToList}
-        >
-          <IconChevronLeft size={20} />
-        </ActionIcon>
-        <Typography variant="title-lg">Slow Query Detail</Typography>
-      </Group>
+      {ctx.cfg.showDetailBack !== false && (
+        <Group wrap="nowrap">
+          <ActionIcon
+            aria-label="Navigate Back"
+            variant="default"
+            onClick={ctx.actions.backToList}
+          >
+            <IconChevronLeft size={20} />
+          </ActionIcon>
+          <Typography variant="title-lg">Slow Query Detail</Typography>
+        </Group>
+      )}
 
       {isLoading && <LoadingSkeleton />}
 

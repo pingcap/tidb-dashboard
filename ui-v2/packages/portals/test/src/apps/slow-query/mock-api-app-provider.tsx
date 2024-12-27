@@ -62,11 +62,11 @@ export function useCtxValue(): AppCtxValue {
         getSlowQueries(params) {
           const advancedFiltersStrArr: string[] = []
           for (const filter of params.advancedFilters) {
-            const filterValue = filter.filterValues
+            const filterValue = filter.values
               .map((v) => encodeURIComponent(v))
               .join(",")
             advancedFiltersStrArr.push(
-              `${filter.filterName} ${filter.filterOperator} ${filterValue}`,
+              `${filter.name} ${filter.operator} ${filterValue}`,
             )
           }
           return diagnosisServiceGetSlowQueryList(clusterId, {

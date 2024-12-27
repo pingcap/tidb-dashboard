@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-icons
 
+## 0.8.0
+
+### Minor Changes
+
+- support advanced filters for diagnosis
+
 ## 0.7.0
 
 ### Minor Changes

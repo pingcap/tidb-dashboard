@@ -1,5 +1,16 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.8.0
+
+### Minor Changes
+
+- support advanced filters for diagnosis
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.8.0
+
 ## 0.7.0
 
 ### Minor Changes

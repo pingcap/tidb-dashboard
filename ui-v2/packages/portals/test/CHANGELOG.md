@@ -1,5 +1,19 @@
 # test-tidb-dashboard-ui-lib
 
+## 0.8.0
+
+### Minor Changes
+
+- support advanced filters for diagnosis
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-api-client@0.8.0
+  - @pingcap-incubator/tidb-dashboard-lib-charts@0.8.0
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.8.0
+  - @pingcap-incubator/tidb-dashboard-lib-apps@0.8.0
+
 ## 0.7.1
 
 ### Patch Changes

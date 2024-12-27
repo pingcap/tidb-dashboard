@@ -86,13 +86,18 @@ export function AdvancedFiltersModal() {
 
   const { data: availableFilters } = useAdvancedFilterNamesData()
 
+  const hasFilters = advancedFilters.length > 0
+
   return (
     <>
-      <ActionIcon variant="transparent" color="gray" onClick={handleOpen}>
+      <ActionIcon
+        variant={"default"}
+        size={40}
+        color={hasFilters ? "peacock" : undefined}
+        onClick={handleOpen}
+      >
         <IconFilterFunnel02 size={16} />
-        {advancedFilters.length > 0 && (
-          <Box pl={2}>{advancedFilters.length}</Box>
-        )}
+        {hasFilters && <Box pl={2}>{advancedFilters.length}</Box>}
       </ActionIcon>
 
       <Modal

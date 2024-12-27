@@ -42,16 +42,16 @@ export function AdvancedFilterSetting({
   showDelete?: boolean
   conditionLabel?: string
 }) {
-  const filterInfo = filtersInfo?.find((f) => f.name === filter.filterName)
+  const filterInfo = filtersInfo?.find((f) => f.name === filter.name)
 
   useEffect(() => {
-    if (filter.filterName) {
-      const fInfo = filtersInfo?.find((f) => f.name === filter.filterName)
+    if (filter.name) {
+      const fInfo = filtersInfo?.find((f) => f.name === filter.name)
       if (!fInfo) {
-        onReqFilterInfo?.(filter.filterName)
+        onReqFilterInfo?.(filter.name)
       }
     }
-  }, [filter.filterName])
+  }, [filter.name])
 
   return (
     <Group>
@@ -62,29 +62,23 @@ export function AdvancedFilterSetting({
         searchable
         placeholder="Filter Name"
         data={availableFilters}
-        value={filter.filterName}
-        onChange={(v) =>
-          onUpdate?.({ ...filter, filterName: v || "", filterValues: [] })
-        }
+        value={filter.name}
+        onChange={(v) => onUpdate?.({ ...filter, name: v || "", values: [] })}
       />
 
       <Box w={100}>
         {filterInfo && filterInfo.values.length > 0 && (
           <Select
             data={["in", "not in"]}
-            value={filter.filterOperator || "in"}
-            onChange={(v) =>
-              onUpdate?.({ ...filter, filterOperator: v || "in" })
-            }
+            value={filter.operator || "in"}
+            onChange={(v) => onUpdate?.({ ...filter, operator: v || "in" })}
           />
         )}
         {filterInfo && filterInfo.values.length === 0 && (
           <Select
             data={["=", "!=", ">", ">=", "<", "<="]}
-            value={filter.filterOperator || "="}
-            onChange={(v) =>
-              onUpdate?.({ ...filter, filterOperator: v || "=" })
-            }
+            value={filter.operator || "="}
+            onChange={(v) => onUpdate?.({ ...filter, operator: v || "=" })}
           />
         )}
       </Box>
@@ -92,16 +86,16 @@ export function AdvancedFilterSetting({
       <Box w={240}>
         {filterInfo && filterInfo.values.length > 0 && (
           <FilterMultiSelect
-            kind={filter.filterName}
+            kind={filter.name}
             hideKind
             fullResultCount={3}
             data={filterInfo.values}
-            value={filter.filterValues}
+            value={filter.values}
             onChange={(v) =>
               onUpdate?.({
                 ...filter,
-                filterValues: v,
-                filterOperator: filter.filterOperator || "in",
+                values: v,
+                operator: filter.operator || "in",
               })
             }
           />
@@ -109,12 +103,12 @@ export function AdvancedFilterSetting({
         {filterInfo && filterInfo.values.length === 0 && (
           <TextInput
             rightSection={filterInfo.unit}
-            value={filter.filterValues[0]}
+            value={filter.values[0]}
             onChange={(e) =>
               onUpdate?.({
                 ...filter,
-                filterValues: [e.target.value],
-                filterOperator: filter.filterOperator || "=",
+                values: [e.target.value],
+                operator: filter.operator || "=",
               })
             }
           />

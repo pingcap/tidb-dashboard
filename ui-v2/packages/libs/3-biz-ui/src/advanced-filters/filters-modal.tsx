@@ -44,11 +44,7 @@ export function AdvancedFiltersModal({
 
   function handleSubmit() {
     const items = settingItems.filter(
-      (i) =>
-        !i.deleted &&
-        !!i.filterName &&
-        !!i.filterOperator &&
-        !!i.filterValues[0],
+      (i) => !i.deleted && !!i.name && !!i.operator && !!i.values[0],
     )
     onUpdateFilters?.(items)
     close()

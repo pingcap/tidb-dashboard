@@ -4,9 +4,9 @@ import { PaginationUrlState } from "./pagination-url-state"
 import { useUrlState } from "./use-url-state"
 
 export type AdvancedFilterItem = {
-  filterName: string
-  filterOperator: string // =, !=, >, >=, <, <=, in, not in
-  filterValues: string[]
+  name: string
+  operator: string // =, !=, >, >=, <, <=, in, not in
+  values: string[]
 }
 
 export type AdvancedFiltersUrlState = Partial<Record<"af", string>>
@@ -24,9 +24,9 @@ export function useAdvancedFiltersUrlState(affectPagination: boolean = false) {
         const [filterName, filterOperator, ...filterValues] = filter.split(",")
         if (filterName && filterOperator) {
           filtersObjArr.push({
-            filterName: decodeURIComponent(filterName),
-            filterOperator: decodeURIComponent(filterOperator),
-            filterValues: filterValues.map((v) => decodeURIComponent(v)),
+            name: decodeURIComponent(filterName),
+            operator: decodeURIComponent(filterOperator),
+            values: filterValues.map((v) => decodeURIComponent(v)),
           })
         }
       })
@@ -39,9 +39,9 @@ export function useAdvancedFiltersUrlState(affectPagination: boolean = false) {
       const afStr = newAdvancedFilters
         .map(
           (f) =>
-            `${encodeURIComponent(f.filterName)},${encodeURIComponent(
-              f.filterOperator,
-            )},${f.filterValues.map((v) => encodeURIComponent(v)).join(",")}`,
+            `${encodeURIComponent(f.name)},${encodeURIComponent(
+              f.operator,
+            )},${f.values.map((v) => encodeURIComponent(v)).join(",")}`,
         )
         .join(";")
       setQueryParams({

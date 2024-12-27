@@ -8,9 +8,9 @@ import {
 
 export function newFilterSettingItem(): AdvancedFilterSettingItem {
   return {
-    filterName: "",
-    filterOperator: "",
-    filterValues: [],
+    name: "",
+    operator: "",
+    values: [],
     createdAt: Date.now(),
     deleted: false,
   }

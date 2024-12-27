@@ -9,8 +9,6 @@ export type AdvancedFilterItem = {
   filterValues: string[]
 }
 
-export type AdvancedFilters = AdvancedFilterItem[]
-
 export type AdvancedFiltersUrlState = Partial<Record<"af", string>>
 
 export function useAdvancedFiltersUrlState(affectPagination: boolean = false) {
@@ -18,8 +16,8 @@ export function useAdvancedFiltersUrlState(affectPagination: boolean = false) {
     AdvancedFiltersUrlState & PaginationUrlState
   >()
 
-  const advancedFilters = useMemo<AdvancedFilters>(() => {
-    const filtersObjArr: AdvancedFilters = []
+  const advancedFilters = useMemo<AdvancedFilterItem[]>(() => {
+    const filtersObjArr: AdvancedFilterItem[] = []
     if (queryParams.af) {
       const filtersArr = queryParams.af.split(";")
       filtersArr.forEach((filter) => {
@@ -37,7 +35,7 @@ export function useAdvancedFiltersUrlState(affectPagination: boolean = false) {
   }, [queryParams.af])
 
   const setAdvancedFilters = useCallback(
-    (newAdvancedFilters: AdvancedFilters) => {
+    (newAdvancedFilters: AdvancedFilterItem[]) => {
       const afStr = newAdvancedFilters
         .map(
           (f) =>

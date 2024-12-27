@@ -1,4 +1,5 @@
-import { AdvancedFilters } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { AdvancedFilterInfo } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { AdvancedFilterItem } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { createContext, useContext } from "react"
 
 import { AppApi as SqlLimitAppApi } from "../../_shared/sql-limit"
@@ -12,9 +13,7 @@ type AppApi = SqlLimitAppApi & {
   getStmtKinds(): Promise<string[]>
   // advanced filters
   getAdvancedFilterNames(): Promise<string[]>
-  getAdvancedFilterInfo(params: {
-    name: string
-  }): Promise<{ unit: string; values: string[] }>
+  getAdvancedFilterInfo(params: { name: string }): Promise<AdvancedFilterInfo>
 
   // list & detail
   getStmtList(params: {
@@ -26,7 +25,7 @@ type AppApi = SqlLimitAppApi & {
     term: string
     orderBy: string
     desc: boolean
-    advancedFilters: AdvancedFilters
+    advancedFilters: AdvancedFilterItem[]
   }): Promise<StatementModel[]>
   getStmtPlans(params: { id: string }): Promise<StatementModel[]>
   getStmtPlansDetail(params: {

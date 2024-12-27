@@ -63,6 +63,7 @@ export function useCtxValue(): AppCtxValue {
             clusterId,
             params.name,
           ).then((res) => ({
+            name: res.name ?? "",
             unit: res.unit ?? "",
             values: res.valueList ?? [],
           }))

@@ -4,14 +4,13 @@ import {
   diagnosisServiceCheckSqlLimitSupport,
   diagnosisServiceGetResourceGroupList,
   diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfo,
-  // diagnosisServiceGetSlowQueryAvailableAdvancedFilters,
+  diagnosisServiceGetSlowQueryAvailableAdvancedFilters,
   diagnosisServiceGetSlowQueryDetail,
   diagnosisServiceGetSlowQueryList,
   diagnosisServiceGetSqlLimitList,
   diagnosisServiceRemoveSqlLimit,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
-import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
 
@@ -31,7 +30,6 @@ export function useCtxValue(): AppCtxValue {
       ctxId: `slow-query-${clusterId}`,
       api: {
         getDbs() {
-          // diagnosisServiceGetSlowQueryAvailableAdvancedFilters(clusterId)
           return diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfo(
             clusterId,
             "db",
@@ -39,21 +37,36 @@ export function useCtxValue(): AppCtxValue {
               skipGlobalErrorHandling: true,
             },
           ).then((res) => res.valueList ?? [])
-
-          return delay(1000).then(() => ["db1", "db2"])
         },
         getRuGroups() {
           return diagnosisServiceGetResourceGroupList(clusterId, {
             skipGlobalErrorHandling: true,
           }).then((res) => (res.resourceGroups ?? []).map((r) => r.name || ""))
         },
+        getAdvancedFilterNames() {
+          return diagnosisServiceGetSlowQueryAvailableAdvancedFilters(
+            clusterId,
+          ).then((res) => res.filters ?? [])
+        },
+        getAdvancedFilterInfo(params) {
+          return diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfo(
+            clusterId,
+            params.name,
+          ).then((res) => ({
+            unit: res.unit ?? "",
+            values: res.valueList ?? [],
+          }))
+        },
 
         getSlowQueries(params) {
-          console.log("getSlowQueries", params)
-
-          let sqlDigestFilter = ""
-          if (params.sqlDigest) {
-            sqlDigestFilter = `digest = ${params.sqlDigest}`
+          const advancedFiltersStrArr: string[] = []
+          for (const filter of params.advancedFilters) {
+            const filterValue = filter.filterValues
+              .map((v) => encodeURIComponent(v))
+              .join(",")
+            advancedFiltersStrArr.push(
+              `${filter.filterName} ${filter.filterOperator} ${filterValue}`,
+            )
           }
           return diagnosisServiceGetSlowQueryList(clusterId, {
             beginTime: params.beginTime + "",
@@ -64,7 +77,7 @@ export function useCtxValue(): AppCtxValue {
             isDesc: params.desc,
             pageSize: params.limit,
             fields: "query,query_time,memory_max",
-            advancedFilter: sqlDigestFilter ? [sqlDigestFilter] : [],
+            advancedFilter: advancedFiltersStrArr,
           }).then((res) => res.data ?? [])
         },
         getSlowQuery(params: { id: string }) {

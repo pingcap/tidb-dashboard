@@ -2,7 +2,7 @@ import { Group, Stack, Title } from "@tidbcloud/uikit"
 
 import { useAppContext } from "../../ctx"
 
-import { Filters } from "./filters"
+import { FiltersWithAdvanced } from "./filters-with-advanced"
 import { RefreshButton } from "./refresh-button"
 import { ListTable } from "./table"
 
@@ -18,7 +18,7 @@ export function List() {
       )}
 
       <Group>
-        <Filters />
+        <FiltersWithAdvanced />
         <Group ml="auto">
           <RefreshButton />
         </Group>

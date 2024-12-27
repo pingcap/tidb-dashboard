@@ -23,8 +23,16 @@ export function useRuGroupsData() {
 
 export function useListData() {
   const ctx = useAppContext()
-  const { timeRange, dbs, ruGroups, sqlDigest, limit, term, sortRule } =
-    useListUrlState()
+  const {
+    timeRange,
+    dbs,
+    ruGroups,
+    sqlDigest,
+    limit,
+    term,
+    sortRule,
+    advancedFilters,
+  } = useListUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -38,6 +46,7 @@ export function useListData() {
       limit,
       term,
       sortRule,
+      advancedFilters,
     ],
     queryFn: () => {
       const tr = toTimeRangeValue(timeRange)
@@ -50,6 +59,7 @@ export function useListData() {
         limit,
         term,
         ...sortRule,
+        advancedFilters,
       })
     },
   })
@@ -68,4 +78,22 @@ export function useDetailData() {
     },
   })
   return query
+}
+
+// advanced filters
+export function useAdvancedFilterNamesData() {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "slow-query", "advanced-filter-names"],
+    queryFn: () => ctx.api.getAdvancedFilterNames(),
+  })
+}
+
+export function useAdvancedFilterInfoData(name: string) {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "slow-query", "advanced-filter-info", name],
+    queryFn: () => ctx.api.getAdvancedFilterInfo({ name }),
+    enabled: !!name,
+  })
 }

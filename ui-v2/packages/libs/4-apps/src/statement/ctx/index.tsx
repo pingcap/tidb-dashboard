@@ -1,4 +1,4 @@
-import { AdvancedFilterItem } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { AdvancedFilters } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { createContext, useContext } from "react"
 
 import { AppApi as SqlLimitAppApi } from "../../_shared/sql-limit"
@@ -26,7 +26,7 @@ type AppApi = SqlLimitAppApi & {
     term: string
     orderBy: string
     desc: boolean
-    advancedFilters: AdvancedFilterItem[]
+    advancedFilters: AdvancedFilters
   }): Promise<StatementModel[]>
   getStmtPlans(params: { id: string }): Promise<StatementModel[]>
   getStmtPlansDetail(params: {

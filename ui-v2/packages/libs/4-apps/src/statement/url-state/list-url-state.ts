@@ -1,8 +1,10 @@
 import {
+  AdvancedFiltersUrlState,
   PaginationUrlState,
   SortUrlState,
   TimeRange,
   TimeRangeUrlState,
+  useAdvancedFiltersUrlState,
   usePaginationUrlState,
   useSortUrlState,
   useTimeRangeUrlState,
@@ -15,7 +17,8 @@ type ListUrlState = Partial<
 > &
   SortUrlState &
   PaginationUrlState &
-  TimeRangeUrlState
+  TimeRangeUrlState &
+  AdvancedFiltersUrlState
 
 export const DEFAULT_TIME_RANGE: TimeRange = {
   type: "relative",
@@ -30,6 +33,8 @@ export function useListUrlState() {
     DEFAULT_TIME_RANGE,
     true,
   )
+  const { advancedFilters, setAdvancedFilters } =
+    useAdvancedFiltersUrlState(true)
 
   // dbs
   const dbs = useMemo<string[]>(() => {
@@ -88,6 +93,7 @@ export function useListUrlState() {
       ruGroups: undefined,
       kinds: undefined,
       term: undefined,
+      af: undefined,
       curPage: undefined,
     })
   }, [setQueryParams])
@@ -107,6 +113,9 @@ export function useListUrlState() {
 
     term,
     setTerm,
+
+    advancedFilters,
+    setAdvancedFilters,
 
     resetFilters,
 

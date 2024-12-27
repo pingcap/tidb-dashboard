@@ -12,6 +12,9 @@ import { useState } from "react"
 
 export type FilterMultiSelectProps = {
   kind: string
+  hideKind?: boolean
+  fullResultCount?: number // @todo: choose a better name
+
   data: string[]
   value: string[]
   onChange: (value: string[]) => void
@@ -22,6 +25,8 @@ export type FilterMultiSelectProps = {
 
 export function FilterMultiSelect({
   kind,
+  hideKind = false,
+  fullResultCount = 2,
   data,
   value,
   onChange,
@@ -34,7 +39,6 @@ export function FilterMultiSelect({
   const combobox = useCombobox({
     onDropdownClose: () => {
       combobox.resetSelectedOption()
-      // combobox.focusTarget()
       setSearch("")
     },
 
@@ -83,12 +87,14 @@ export function FilterMultiSelect({
     if (value.length === 0) {
       return <Typography c="carbon" truncate>{`Select ${kind}...`}</Typography>
     }
-    if (value.length < 2) {
+    if (value.length < fullResultCount) {
       return (
         <Group gap={4} wrap="nowrap">
-          <Typography c="carbon" fw={500} truncate>
-            {kind}
-          </Typography>
+          {!hideKind && (
+            <Typography c="carbon" fw={500} truncate>
+              {kind}
+            </Typography>
+          )}
           <Typography fw={500} truncate>
             {value.join(", ")}
           </Typography>
@@ -97,9 +103,11 @@ export function FilterMultiSelect({
     }
     return (
       <Group gap={4} wrap="nowrap">
-        <Typography c="carbon" fw={500} truncate>
-          {kind}
-        </Typography>
+        {!hideKind && (
+          <Typography c="carbon" fw={500} truncate>
+            {kind}
+          </Typography>
+        )}
         <Typography fw={500} truncate>
           {value.length} selected
         </Typography>
@@ -110,7 +118,6 @@ export function FilterMultiSelect({
   return (
     <Combobox
       store={combobox}
-      withinPortal={false}
       onOptionSubmit={handleOptionSelect}
       shadow="sm"
       styles={{

@@ -31,7 +31,8 @@ export function useStmtKindsData() {
 
 export function useListData() {
   const ctx = useAppContext()
-  const { timeRange, dbs, ruGroups, kinds, term, sortRule } = useListUrlState()
+  const { timeRange, dbs, ruGroups, kinds, term, sortRule, advancedFilters } =
+    useListUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -44,6 +45,7 @@ export function useListData() {
       kinds,
       term,
       // sort in local, so no need to use sortRule as dependencies
+      advancedFilters,
     ],
     queryFn: () => {
       const tr = toTimeRangeValue(timeRange)
@@ -55,6 +57,7 @@ export function useListData() {
         stmtKinds: kinds,
         term,
         ...sortRule,
+        advancedFilters,
       })
     },
   })
@@ -141,5 +144,23 @@ export function useDeletePlanBindData(sqlDigest: string) {
         queryKey: [ctx.ctxId, "statement", "plan-bind-status", sqlDigest],
       })
     },
+  })
+}
+
+// advanced filters
+export function useAdvancedFilterNamesData() {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "statement", "advanced-filter-names"],
+    queryFn: () => ctx.api.getAdvancedFilterNames(),
+  })
+}
+
+export function useAdvancedFilterInfoData(name: string) {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "statement", "advanced-filter-info", name],
+    queryFn: () => ctx.api.getAdvancedFilterInfo({ name }),
+    enabled: !!name,
   })
 }

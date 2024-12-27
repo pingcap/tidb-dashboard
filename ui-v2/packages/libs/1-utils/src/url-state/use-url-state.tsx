@@ -101,6 +101,7 @@ export function useUrlState<T extends UrlState = UrlState>(): [
           searchParams.delete(k)
         }
       })
+      // searchParams.toString() will do encodeURIComponent internally
       setUrlQuery(searchParams.toString())
     },
     [setUrlQuery, urlQuery],

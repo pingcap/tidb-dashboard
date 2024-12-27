@@ -9,7 +9,7 @@ import {
   diagnosisServiceGetSqlPlanBindingList,
   diagnosisServiceGetSqlPlanList,
   diagnosisServiceGetTopSqlAvailableAdvancedFilterInfo,
-  // diagnosisServiceGetTopSqlAvailableAdvancedFilters,
+  diagnosisServiceGetTopSqlAvailableAdvancedFilters,
   diagnosisServiceGetTopSqlDetail,
   diagnosisServiceGetTopSqlList,
   diagnosisServiceRemoveSqlLimit,
@@ -40,7 +40,6 @@ export function useCtxValue(): AppCtxValue {
           return delay(1000).then(() => ["Select", "Update", "Delete"])
         },
         getDbs() {
-          // diagnosisServiceGetTopSqlAvailableAdvancedFilters(clusterId)
           return diagnosisServiceGetTopSqlAvailableAdvancedFilterInfo(
             clusterId,
             "schema_name",
@@ -48,16 +47,38 @@ export function useCtxValue(): AppCtxValue {
               skipGlobalErrorHandling: true,
             },
           ).then((res) => res.valueList ?? [])
-
-          return delay(1000).then(() => ["db1", "db2"])
         },
         getRuGroups() {
           return diagnosisServiceGetResourceGroupList(clusterId, {
             skipGlobalErrorHandling: true,
           }).then((res) => (res.resourceGroups ?? []).map((r) => r.name || ""))
         },
+        getAdvancedFilterNames() {
+          return diagnosisServiceGetTopSqlAvailableAdvancedFilters(
+            clusterId,
+          ).then((res) => res.filters ?? [])
+        },
+        getAdvancedFilterInfo(params) {
+          return diagnosisServiceGetTopSqlAvailableAdvancedFilterInfo(
+            clusterId,
+            params.name,
+          ).then((res) => ({
+            unit: res.unit ?? "",
+            values: res.valueList ?? [],
+          }))
+        },
 
         getStmtList(params) {
+          const advancedFiltersStrArr: string[] = []
+          for (const filter of params.advancedFilters) {
+            const filterValue = filter.filterValues
+              .map((v) => encodeURIComponent(v))
+              .join(",")
+            advancedFiltersStrArr.push(
+              `${filter.filterName} ${filter.filterOperator} ${filterValue}`,
+            )
+          }
+
           return diagnosisServiceGetTopSqlList(clusterId, {
             beginTime: params.beginTime + "",
             endTime: params.endTime + "",
@@ -69,6 +90,7 @@ export function useCtxValue(): AppCtxValue {
               "digest_text,sum_latency,avg_latency,max_latency,min_latency,exec_count,plan_count",
             // use a huge pageSize to get all results at once, so we can do sort in client side
             pageSize: 100000,
+            advancedFilter: advancedFiltersStrArr,
           }).then((res) => res.data ?? [])
         },
         getStmtPlans(params) {

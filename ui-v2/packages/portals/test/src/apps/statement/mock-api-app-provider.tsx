@@ -10,6 +10,7 @@ import {
   diagnosisServiceGetSqlPlanList,
   diagnosisServiceGetTopSqlAvailableAdvancedFilterInfo,
   diagnosisServiceGetTopSqlAvailableAdvancedFilters,
+  diagnosisServiceGetTopSqlAvailableFields,
   diagnosisServiceGetTopSqlDetail,
   diagnosisServiceGetTopSqlList,
   diagnosisServiceRemoveSqlLimit,
@@ -68,6 +69,11 @@ export function useCtxValue(): AppCtxValue {
             values: res.valueList ?? [],
           }))
         },
+        getAvailableFields() {
+          return diagnosisServiceGetTopSqlAvailableFields(clusterId).then(
+            (res) => res.fields ?? [],
+          )
+        },
 
         getStmtList(params) {
           const advancedFiltersStrArr: string[] = []
@@ -87,11 +93,10 @@ export function useCtxValue(): AppCtxValue {
             text: params.term,
             orderBy: params.orderBy,
             isDesc: params.desc,
-            fields:
-              "digest_text,sum_latency,avg_latency,max_latency,min_latency,exec_count,plan_count",
             // use a huge pageSize to get all results at once, so we can do sort in client side
             pageSize: 100000,
             advancedFilter: advancedFiltersStrArr,
+            fields: params.fields.join(","),
           }).then((res) => res.data ?? [])
         },
         getStmtPlans(params) {

@@ -7,14 +7,20 @@ import { useMemo } from "react"
 
 import { StatementModel } from "../../models"
 import { useListUrlState } from "../../url-state/list-url-state"
-import { useListData } from "../../utils/use-data"
+import { useAvailableFieldsData, useListData } from "../../utils/use-data"
 
 import { useListTableColumns } from "./cols"
 
 export function ListTable() {
   const cols = useListTableColumns()
   const { data, isLoading } = useListData()
-  const { sortRule, setSortRule, pagination, setPagination } = useListUrlState()
+  const {
+    sortRule,
+    setSortRule,
+    pagination,
+    setPagination,
+    cols: visibleCols,
+  } = useListUrlState()
   const { sortingState, setSortingState } = useProTableSortState(
     sortRule,
     setSortRule,
@@ -23,6 +29,16 @@ export function ListTable() {
     pagination,
     setPagination,
   )
+  const { data: availableFields } = useAvailableFieldsData()
+  const columnVisibility = useMemo(() => {
+    return (availableFields || []).reduce(
+      (acc, col) => {
+        acc[col] = visibleCols.includes(col)
+        return acc
+      },
+      {} as Record<string, boolean>,
+    )
+  }, [availableFields, visibleCols])
 
   // do sorting in local for statement list
   const sortedData = useMemo(() => {
@@ -64,7 +80,12 @@ export function ListTable() {
       manualPagination
       onPaginationChange={setPaginationState}
       rowCount={sortedData?.length ?? 0}
-      state={{ isLoading, sorting: sortingState, pagination: paginationState }}
+      state={{
+        isLoading,
+        sorting: sortingState,
+        pagination: paginationState,
+        columnVisibility,
+      }}
       initialState={{ columnPinning: { left: ["digest_text"] } }}
       pagination={{
         position: "right",

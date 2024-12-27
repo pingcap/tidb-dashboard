@@ -13,7 +13,7 @@ import {
 import { useCallback, useMemo } from "react"
 
 type ListUrlState = Partial<
-  Record<"dbs" | "ruGroups" | "kinds" | "term", string>
+  Record<"dbs" | "ruGroups" | "kinds" | "term" | "cols", string>
 > &
   SortUrlState &
   PaginationUrlState &
@@ -98,6 +98,20 @@ export function useListUrlState() {
     })
   }, [setQueryParams])
 
+  // cols
+  const cols = useMemo<string[]>(() => {
+    const _cols =
+      queryParams.cols ||
+      "digest_text,sum_latency,avg_latency,exec_count,plan_count"
+    return _cols ? _cols.split(",") : []
+  }, [queryParams.cols])
+  const setCols = useCallback(
+    (v: string[]) => {
+      setQueryParams({ cols: v.join(",") })
+    },
+    [setQueryParams],
+  )
+
   return {
     timeRange,
     setTimeRange,
@@ -123,6 +137,9 @@ export function useListUrlState() {
     setSortRule,
     pagination,
     setPagination,
+
+    cols,
+    setCols,
 
     queryParams,
     setQueryParams,

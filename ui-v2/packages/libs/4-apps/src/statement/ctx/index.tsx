@@ -15,6 +15,8 @@ type AppApi = SqlLimitAppApi & {
   getAdvancedFilterInfo(params: {
     name: string
   }): Promise<AdvancedFilterInfoModel>
+  // available fields
+  getAvailableFields(): Promise<string[]>
 
   // list & detail
   getStmtList(params: {
@@ -27,6 +29,7 @@ type AppApi = SqlLimitAppApi & {
     orderBy: string
     desc: boolean
     advancedFilters: AdvancedFilterItem[]
+    fields: string[]
   }): Promise<StatementModel[]>
   getStmtPlans(params: { id: string }): Promise<StatementModel[]>
   getStmtPlansDetail(params: {

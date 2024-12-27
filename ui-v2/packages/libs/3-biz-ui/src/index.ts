@@ -6,9 +6,12 @@ export * from "./sql-with-hover"
 
 export * from "./plan-table"
 export * from "./info-table"
+
 export * from "./loading-skeleton"
 export * from "./auto-refresh-button"
-export * from "./filter-multi-select"
 export * from "./status-indicator"
+
+export * from "./filter-multi-select"
+export * from "./cols-multi-select"
 
 export * from "./advanced-filters"

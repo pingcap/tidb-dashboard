@@ -31,8 +31,16 @@ export function useStmtKindsData() {
 
 export function useListData() {
   const ctx = useAppContext()
-  const { timeRange, dbs, ruGroups, kinds, term, sortRule, advancedFilters } =
-    useListUrlState()
+  const {
+    timeRange,
+    dbs,
+    ruGroups,
+    kinds,
+    term,
+    sortRule,
+    advancedFilters,
+    cols,
+  } = useListUrlState()
 
   const query = useQuery({
     queryKey: [
@@ -46,6 +54,7 @@ export function useListData() {
       term,
       // sort in local, so no need to use sortRule as dependencies
       advancedFilters,
+      cols,
     ],
     queryFn: () => {
       const tr = toTimeRangeValue(timeRange)
@@ -58,6 +67,7 @@ export function useListData() {
         term,
         ...sortRule,
         advancedFilters,
+        fields: cols.filter((c) => c !== "empty"),
       })
     },
   })
@@ -162,5 +172,14 @@ export function useAdvancedFilterInfoData(name: string) {
     queryKey: [ctx.ctxId, "statement", "advanced-filter-info", name],
     queryFn: () => ctx.api.getAdvancedFilterInfo({ name }),
     enabled: !!name,
+  })
+}
+
+// available fields
+export function useAvailableFieldsData() {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "statement", "available-fields"],
+    queryFn: () => ctx.api.getAvailableFields(),
   })
 }

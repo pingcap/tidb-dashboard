@@ -13,7 +13,7 @@ import {
 import { useCallback, useMemo } from "react"
 
 type ListUrlState = Partial<
-  Record<"dbs" | "ruGroups" | "sqlDigest" | "limit" | "term", string>
+  Record<"dbs" | "ruGroups" | "sqlDigest" | "limit" | "term" | "cols", string>
 > &
   SortUrlState &
   PaginationUrlState &
@@ -109,6 +109,18 @@ export function useListUrlState() {
     })
   }, [setQueryParams])
 
+  // cols
+  const cols = useMemo<string[]>(() => {
+    const _cols = queryParams.cols || "query,timestamp,query_time,memory_max"
+    return _cols ? _cols.split(",") : []
+  }, [queryParams.cols])
+  const setCols = useCallback(
+    (v: string[]) => {
+      setQueryParams({ cols: v.join(",") })
+    },
+    [setQueryParams],
+  )
+
   return {
     timeRange,
     setTimeRange,
@@ -137,6 +149,9 @@ export function useListUrlState() {
     setSortRule,
     pagination,
     setPagination,
+
+    cols,
+    setCols,
 
     queryParams,
     setQueryParams,

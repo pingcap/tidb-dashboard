@@ -6,14 +6,20 @@ import { ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
 import { useListUrlState } from "../../url-state/list-url-state"
-import { useListData } from "../../utils/use-data"
+import { useAvailableFieldsData, useListData } from "../../utils/use-data"
 
 import { useListTableColumns } from "./cols"
 
 export function ListTable() {
   const cols = useListTableColumns()
   const { data, isLoading } = useListData()
-  const { sortRule, setSortRule, pagination, setPagination } = useListUrlState()
+  const {
+    sortRule,
+    setSortRule,
+    pagination,
+    setPagination,
+    cols: visibleCols,
+  } = useListUrlState()
   const { sortingState, setSortingState } = useProTableSortState(
     sortRule,
     setSortRule,
@@ -22,6 +28,17 @@ export function ListTable() {
     pagination,
     setPagination,
   )
+
+  const { data: availableFields } = useAvailableFieldsData()
+  const columnVisibility = useMemo(() => {
+    return (availableFields || []).reduce(
+      (acc, col) => {
+        acc[col] = visibleCols.includes(col)
+        return acc
+      },
+      {} as Record<string, boolean>,
+    )
+  }, [availableFields, visibleCols])
 
   // do sorting in server for slow query list
   // do pagination in local for slow query list
@@ -42,7 +59,12 @@ export function ListTable() {
       manualPagination
       onPaginationChange={setPaginationState}
       rowCount={data?.length ?? 0}
-      state={{ isLoading, sorting: sortingState, pagination: paginationState }}
+      state={{
+        isLoading,
+        sorting: sortingState,
+        pagination: paginationState,
+        columnVisibility,
+      }}
       initialState={{ columnPinning: { left: ["query"] } }}
       pagination={{
         position: "right",

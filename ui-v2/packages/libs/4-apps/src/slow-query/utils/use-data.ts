@@ -32,6 +32,7 @@ export function useListData() {
     term,
     sortRule,
     advancedFilters,
+    cols,
   } = useListUrlState()
 
   const query = useQuery({
@@ -47,6 +48,7 @@ export function useListData() {
       term,
       sortRule,
       advancedFilters,
+      cols,
     ],
     queryFn: () => {
       const tr = toTimeRangeValue(timeRange)
@@ -60,6 +62,7 @@ export function useListData() {
         term,
         ...sortRule,
         advancedFilters,
+        fields: cols.filter((c) => c !== "empty"),
       })
     },
   })
@@ -95,5 +98,14 @@ export function useAdvancedFilterInfoData(name: string) {
     queryKey: [ctx.ctxId, "slow-query", "advanced-filter-info", name],
     queryFn: () => ctx.api.getAdvancedFilterInfo({ name }),
     enabled: !!name,
+  })
+}
+
+// available fields
+export function useAvailableFieldsData() {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "slow-query", "available-fields"],
+    queryFn: () => ctx.api.getAvailableFields(),
   })
 }

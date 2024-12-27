@@ -14,6 +14,8 @@ type AppApi = SqlLimitAppApi & {
   getAdvancedFilterInfo(params: {
     name: string
   }): Promise<AdvancedFilterInfoModel>
+  // available fields
+  getAvailableFields(): Promise<string[]>
 
   // list & detail
   getSlowQueries(params: {
@@ -27,6 +29,7 @@ type AppApi = SqlLimitAppApi & {
     orderBy: string
     desc: boolean
     advancedFilters: AdvancedFilterItem[]
+    fields: string[]
   }): Promise<SlowqueryModel[]>
 
   getSlowQuery(params: { id: string }): Promise<SlowqueryModel>

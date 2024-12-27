@@ -5,6 +5,7 @@ import {
   diagnosisServiceGetResourceGroupList,
   diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfo,
   diagnosisServiceGetSlowQueryAvailableAdvancedFilters,
+  diagnosisServiceGetSlowQueryAvailableFields,
   diagnosisServiceGetSlowQueryDetail,
   diagnosisServiceGetSlowQueryList,
   diagnosisServiceGetSqlLimitList,
@@ -58,6 +59,11 @@ export function useCtxValue(): AppCtxValue {
             values: res.valueList ?? [],
           }))
         },
+        getAvailableFields() {
+          return diagnosisServiceGetSlowQueryAvailableFields(clusterId).then(
+            (res) => res.fields ?? [],
+          )
+        },
 
         getSlowQueries(params) {
           const advancedFiltersStrArr: string[] = []
@@ -77,7 +83,7 @@ export function useCtxValue(): AppCtxValue {
             orderBy: params.orderBy,
             isDesc: params.desc,
             pageSize: params.limit,
-            fields: "query,query_time,memory_max",
+            fields: params.fields.join(","),
             advancedFilter: advancedFiltersStrArr,
           }).then((res) => res.data ?? [])
         },

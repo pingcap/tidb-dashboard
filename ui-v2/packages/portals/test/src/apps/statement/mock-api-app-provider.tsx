@@ -181,11 +181,9 @@ export function useCtxValue(): AppCtxValue {
           navigate({ to: preUrl || "/statement" })
         },
         openSlowQueryList(id) {
-          // const [from, to, digest, _schema, ...plans] = id.split(",")
-          // const fullUrl = `/slow-query?from=${from}&to=${to}&sqlDigest=${digest}&plans=${plans.join(",")}`
+          const [from, to, digest, _schema, ...plans] = id.split(",")
+          const fullUrl = `/slow-query?from=${from}&to=${to}&af=digest,${encodeURIComponent("=")},${digest};plan_digest,${encodeURIComponent("=")},${plans[0] || ""}`
 
-          const [from, to, digest, _schema] = id.split(",")
-          const fullUrl = `/slow-query?from=${from}&to=${to}&sqlDigest=${digest}`
           // open in a new tab
           window.open(fullUrl, "_blank")
         },

@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-utils
 
+## 0.8.1
+
+### Patch Changes
+
+- renaming fields
+
 ## 0.8.0
 
 ### Minor Changes

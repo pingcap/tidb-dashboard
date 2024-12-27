@@ -1,5 +1,14 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.8.1
+
+### Patch Changes
+
+- renaming fields
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.8.1
+  - @pingcap-incubator/tidb-dashboard-lib-biz-ui@0.8.1
+
 ## 0.8.0
 
 ### Minor Changes

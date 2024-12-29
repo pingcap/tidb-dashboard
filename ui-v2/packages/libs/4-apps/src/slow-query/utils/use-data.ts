@@ -5,6 +5,8 @@ import { useAppContext } from "../ctx"
 import { useDetailUrlState } from "../url-state/detail-url-state"
 import { useListUrlState } from "../url-state/list-url-state"
 
+import { MAX_TIME_RANGE_DURATION_SECONDS } from "./constants"
+
 export function useDbsData() {
   const ctx = useAppContext()
   return useQuery({
@@ -52,9 +54,14 @@ export function useListData() {
     ],
     queryFn: () => {
       const tr = toTimeRangeValue(timeRange)
+      const beginTime = tr[0]
+      let endTime = tr[1]
+      if (endTime - beginTime > MAX_TIME_RANGE_DURATION_SECONDS) {
+        endTime = beginTime + MAX_TIME_RANGE_DURATION_SECONDS
+      }
       return ctx.api.getSlowQueries({
-        beginTime: tr[0],
-        endTime: tr[1],
+        beginTime,
+        endTime,
         dbs,
         ruGroups,
         sqlDigest,

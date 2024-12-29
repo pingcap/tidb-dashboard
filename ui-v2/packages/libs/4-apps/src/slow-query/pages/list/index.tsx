@@ -6,6 +6,7 @@ import { useAppContext } from "../../ctx"
 import { FiltersWithAdvanced } from "./filters-with-advanced"
 import { RefreshButton } from "./refresh-button"
 import { ListTable } from "./table"
+import { TimeRangeClipAlert } from "./time-range-clip-alert"
 
 export function List() {
   const ctx = useAppContext()
@@ -25,6 +26,8 @@ export function List() {
           <RefreshButton />
         </Group>
       </Group>
+
+      <TimeRangeClipAlert />
 
       <ListTable />
     </Stack>

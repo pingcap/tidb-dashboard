@@ -7,13 +7,18 @@ import { useMemo } from "react"
 
 import { StatementModel } from "../../models"
 import { useListUrlState } from "../../url-state/list-url-state"
-import { useAvailableFieldsData, useListData } from "../../utils/use-data"
+import { useAvailableFieldsData } from "../../utils/use-data"
 
 import { useListTableColumns } from "./cols"
 
-export function ListTable() {
+export function ListTable({
+  data,
+  isLoading,
+}: {
+  data: StatementModel[]
+  isLoading: boolean
+}) {
   const cols = useListTableColumns()
-  const { data, isLoading } = useListData()
   const {
     sortRule,
     setSortRule,

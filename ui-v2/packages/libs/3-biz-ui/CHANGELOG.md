@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.8.2
+
+### Patch Changes
+
+- add columns select, time range alert
+
 ## 0.8.1
 
 ### Patch Changes

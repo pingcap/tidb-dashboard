@@ -29,38 +29,78 @@ export function useStatementColumns(
         enableSorting: false,
         minSize: 100,
         accessorFn: (row) => (
-          <Typography truncate>{row.plan_digest || "-"}</Typography>
+          <Typography
+            truncate
+            fw={row.plan_digest === "all" ? "bold" : "normal"}
+          >
+            {row.plan_digest || "-"}
+          </Typography>
         ),
       },
       {
         id: "sum_latency",
         header: "Total Latency",
         enableResizing: false,
-        accessorFn: (row) => formatNumByUnit(row.sum_latency!, "ns"),
+        accessorFn: (row) => (
+          <Typography
+            truncate
+            fw={row.plan_digest === "all" ? "bold" : "normal"}
+          >
+            {formatNumByUnit(row.sum_latency!, "ns")}
+          </Typography>
+        ),
       },
       {
         id: "avg_latency",
         header: "Mean Latency",
         enableResizing: false,
-        accessorFn: (row) => formatNumByUnit(row.avg_latency!, "ns"),
+        accessorFn: (row) => (
+          <Typography
+            truncate
+            fw={row.plan_digest === "all" ? "bold" : "normal"}
+          >
+            {formatNumByUnit(row.avg_latency!, "ns")}
+          </Typography>
+        ),
       },
       {
         id: "exec_count",
         header: "Executions Count",
         enableResizing: false,
-        accessorFn: (row) => formatNumByUnit(row.exec_count!, "short"),
+        accessorFn: (row) => (
+          <Typography
+            truncate
+            fw={row.plan_digest === "all" ? "bold" : "normal"}
+          >
+            {formatNumByUnit(row.exec_count!, "short")}
+          </Typography>
+        ),
       },
       {
         id: "avg_mem",
         header: "Mean Memory",
         enableResizing: false,
-        accessorFn: (row) => formatNumByUnit(row.avg_mem!, "bytes"),
+        accessorFn: (row) => (
+          <Typography
+            truncate
+            fw={row.plan_digest === "all" ? "bold" : "normal"}
+          >
+            {formatNumByUnit(row.avg_mem!, "bytes")}
+          </Typography>
+        ),
       },
       {
         id: "action",
         header: "Action",
+        size: 180,
         enableSorting: false,
         enableResizing: false,
+        mantineTableHeadCellProps: {
+          align: "right",
+        },
+        mantineTableBodyCellProps: {
+          align: "right",
+        },
         Cell: ({ row }) => (
           <Group gap="xs">
             <SqlPlanBindActionCell

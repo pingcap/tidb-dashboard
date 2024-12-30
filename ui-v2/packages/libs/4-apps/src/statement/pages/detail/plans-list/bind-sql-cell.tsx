@@ -82,7 +82,7 @@ export function SqlPlanBindActionCell({
     })
   }
 
-  if (!curPlanDigest) {
+  if (!curPlanDigest || curPlanDigest === "all") {
     return null
   }
   if (!isSupport) {

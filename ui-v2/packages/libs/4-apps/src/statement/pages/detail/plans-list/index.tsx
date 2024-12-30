@@ -1,11 +1,12 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Card, Stack, Title } from "@tidbcloud/uikit"
 
+import { StatementModel } from "../../../models"
 import { usePlansListData } from "../../../utils/use-data"
 
 import { PlansListTable } from "./table"
 
-export function PlansList() {
+export function PlansList({ detailData }: { detailData: StatementModel }) {
   const { data: plansListData, isLoading } = usePlansListData()
 
   return (
@@ -15,9 +16,7 @@ export function PlansList() {
 
         {isLoading && <LoadingSkeleton />}
 
-        {plansListData && plansListData.length > 0 && (
-          <PlansListTable data={plansListData || []} />
-        )}
+        <PlansListTable data={plansListData || []} detailData={detailData} />
       </Stack>
     </Card>
   )

@@ -37,7 +37,7 @@ export function Detail() {
           <StmtSQL title="Statement Template" sql={planData.digest_text!} />
           <StmtBasic stmt={planData} />
           <SqlLimit sqlDigest={planData.digest!} />
-          <PlansList />
+          <PlansList detailData={planData} />
           <PlanDetail />
         </Stack>
       )}

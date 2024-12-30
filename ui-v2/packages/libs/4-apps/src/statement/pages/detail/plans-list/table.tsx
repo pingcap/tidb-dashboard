@@ -10,13 +10,18 @@ import {
 
 import { useStatementColumns } from "./cols"
 
-export function PlansListTable({ data }: { data: StatementModel[] }) {
-  const stmt = data[0]
+export function PlansListTable({
+  data,
+  detailData,
+}: {
+  data: StatementModel[]
+  detailData: StatementModel
+}) {
   const { data: planBindSupport } = usePlanBindSupportData()
   const { data: planBindStatus } = usePlanBindStatusData(
-    stmt.digest!,
-    stmt.summary_begin_time!,
-    stmt.summary_end_time!,
+    detailData.digest!,
+    detailData.summary_begin_time!,
+    detailData.summary_end_time!,
   )
   const columns = useStatementColumns(
     planBindSupport?.is_support ?? false,
@@ -46,6 +51,16 @@ export function PlansListTable({ data }: { data: StatementModel[] }) {
     return sorted
   }, [data, sorting])
 
+  // combine sortedData and detailData
+  // make always show detailData in the footer
+  // detailData is the total value of all plans
+  const finalData = useMemo(() => {
+    if (sortedData && sortedData.length > 1) {
+      return [...sortedData, { ...detailData, plan_digest: "all" }]
+    }
+    return sortedData
+  }, [sortedData, detailData])
+
   // select first plan default
   const { plan, setPlan } = useDetailUrlState()
   useEffect(() => {
@@ -74,7 +89,7 @@ export function PlansListTable({ data }: { data: StatementModel[] }) {
         },
       }}
       columns={columns}
-      data={sortedData}
+      data={finalData}
     />
   )
 }

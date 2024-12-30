@@ -1,5 +1,6 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Stack, Title } from "@tidbcloud/uikit"
+import { useMemo } from "react"
 
 import { useDetailUrlState } from "../../../url-state/detail-url-state"
 import { usePlanDetailData } from "../../../utils/use-data"
@@ -10,9 +11,17 @@ import { Plan } from "./plan"
 
 export function PlanDetail() {
   const { plan } = useDetailUrlState()
-  const { data: planDetailData, isLoading } = usePlanDetailData(plan)
+  const realPlan = plan && plan !== "all" ? plan : ""
+  const { data: planDetailData, isLoading } = usePlanDetailData(realPlan)
 
-  const title = plan ? `Execution Detail of ${plan}` : "Execution Detail"
+  const title = useMemo(() => {
+    if (plan === "all") {
+      return "Execution Detail of All Plans"
+    } else if (plan) {
+      return `Execution Detail of ${plan}`
+    }
+    return "Execution Detail"
+  }, [plan])
 
   return (
     <Stack>
@@ -28,7 +37,9 @@ export function PlanDetail() {
               sql={planDetailData.prev_sample_text!}
             />
           )}
-          {planDetailData.plan && <Plan plan={planDetailData.plan!} />}
+          {planDetailData.plan && plan !== "all" && (
+            <Plan plan={planDetailData.plan!} />
+          )}
           <DetailTabs data={planDetailData} />
         </>
       )}

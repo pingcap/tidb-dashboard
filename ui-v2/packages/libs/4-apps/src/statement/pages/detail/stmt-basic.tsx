@@ -3,12 +3,7 @@ import { Box, Card, SimpleGrid, Typography } from "@tidbcloud/uikit"
 
 import { StatementModel } from "../../models"
 
-type StmtBasicProps = {
-  stmt: StatementModel
-  plansCount: number
-}
-
-export function StmtBasic({ stmt, plansCount }: StmtBasicProps) {
+export function StmtBasic({ stmt }: { stmt: StatementModel }) {
   return (
     <Card shadow="xs" p="md">
       <SimpleGrid cols={2} spacing="xs">
@@ -33,7 +28,7 @@ export function StmtBasic({ stmt, plansCount }: StmtBasicProps) {
           <Typography variant="body-lg" c="carbon.7">
             Plans Count
           </Typography>
-          <Typography>{plansCount}</Typography>
+          <Typography>{stmt.plan_count!}</Typography>
         </Box>
         <Box>
           <Typography variant="body-lg" c="carbon.7">

@@ -1,5 +1,5 @@
 import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Typography } from "@tidbcloud/uikit"
+import { Group, Typography } from "@tidbcloud/uikit"
 import { MRT_ColumnDef } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
@@ -7,6 +7,7 @@ import { StatementModel } from "../../../models"
 
 import { SqlPlanBindActionCell } from "./bind-sql-cell"
 import { PlanCheckCell } from "./plan-check-cell"
+import { SlowQueryCell } from "./slow-query-cell"
 
 export function useStatementColumns(
   supportBindPlan: boolean,
@@ -61,13 +62,16 @@ export function useStatementColumns(
         enableSorting: false,
         enableResizing: false,
         Cell: ({ row }) => (
-          <SqlPlanBindActionCell
-            isSupport={supportBindPlan}
-            canBind={row.original.plan_can_be_bound!}
-            sqlDigest={row.original.digest!}
-            bindPlanDigests={bindPlanDigests}
-            curPlanDigest={row.original.plan_digest!}
-          />
+          <Group gap="xs">
+            <SqlPlanBindActionCell
+              isSupport={supportBindPlan}
+              canBind={row.original.plan_can_be_bound!}
+              sqlDigest={row.original.digest!}
+              bindPlanDigests={bindPlanDigests}
+              curPlanDigest={row.original.plan_digest!}
+            />
+            <SlowQueryCell planDigest={row.original.plan_digest!} />
+          </Group>
         ),
         // here accessorFn doesn't work as expected
         // need to use Cell

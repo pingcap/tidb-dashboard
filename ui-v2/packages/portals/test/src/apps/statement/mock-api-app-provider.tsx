@@ -81,9 +81,11 @@ export function useCtxValue(): AppCtxValue {
             const filterValue = filter.values
               .map((v) => encodeURIComponent(v))
               .join(",")
-            advancedFiltersStrArr.push(
-              `${filter.name} ${filter.operator} ${filterValue}`,
-            )
+            if (filterValue !== "") {
+              advancedFiltersStrArr.push(
+                `${filter.name} ${filter.operator} ${filterValue}`,
+              )
+            }
           }
 
           return diagnosisServiceGetTopSqlList(clusterId, {
@@ -113,7 +115,7 @@ export function useCtxValue(): AppCtxValue {
           return diagnosisServiceGetTopSqlDetail(clusterId, digest, {
             beginTime: beginTime + "",
             endTime: endTime + "",
-            planDigest: params.plans,
+            planDigest: params.plans.filter(Boolean),
           }).then((d) => {
             if (d.binary_plan_text) {
               d.plan = d.binary_plan_text
@@ -186,8 +188,8 @@ export function useCtxValue(): AppCtxValue {
           navigate({ to: preUrl || "/statement" })
         },
         openSlowQueryList(id) {
-          const [from, to, digest, _schema, ...plans] = id.split(",")
-          const fullUrl = `/slow-query?from=${from}&to=${to}&af=digest,${encodeURIComponent("=")},${digest};plan_digest,${encodeURIComponent("=")},${plans[0] || ""}`
+          const [from, to, digest, _schema, plan] = id.split(",")
+          const fullUrl = `/slow-query?from=${from}&to=${to}&af=digest,${encodeURIComponent("=")},${digest};plan_digest,${encodeURIComponent("=")},${plan || ""}`
 
           // open in a new tab
           window.open(fullUrl, "_blank")

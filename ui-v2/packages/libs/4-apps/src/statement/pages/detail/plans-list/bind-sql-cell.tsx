@@ -82,6 +82,9 @@ export function SqlPlanBindActionCell({
     })
   }
 
+  if (!curPlanDigest) {
+    return null
+  }
   if (!isSupport) {
     return (
       <Tooltip label="Bind plan is not supported in this version">
@@ -108,7 +111,7 @@ export function SqlPlanBindActionCell({
         </Button>
       )
     }
-    return <div></div>
+    return null
   }
   return (
     <Button variant="transparent" color="peacock" onClick={confirmBindPlan}>

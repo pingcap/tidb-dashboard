@@ -71,9 +71,11 @@ export function useCtxValue(): AppCtxValue {
             const filterValue = filter.values
               .map((v) => encodeURIComponent(v))
               .join(",")
-            advancedFiltersStrArr.push(
-              `${filter.name} ${filter.operator} ${filterValue}`,
-            )
+            if (filterValue !== "") {
+              advancedFiltersStrArr.push(
+                `${filter.name} ${filter.operator} ${filterValue}`,
+              )
+            }
           }
           return diagnosisServiceGetSlowQueryList(clusterId, {
             beginTime: params.beginTime + "",

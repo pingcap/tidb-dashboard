@@ -1,35 +1,19 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { ActionIcon, Group, Stack, Typography } from "@tidbcloud/uikit"
 import { IconChevronLeft } from "@tidbcloud/uikit/icons"
-import { useEffect, useMemo } from "react"
 
 import { useAppContext } from "../../ctx"
-import { useDetailUrlState } from "../../url-state/detail-url-state"
-import { usePlansListData } from "../../utils/use-data"
+import { usePlanDetailData } from "../../utils/use-data"
 
-import { PlansDetail } from "./plans-detail"
+import { PlanDetail } from "./plan-detail"
 import { PlansList } from "./plans-list"
-import { RelatedSlowQuery } from "./related-slow-query"
 import { SqlLimit } from "./sql-limit"
 import { StmtBasic } from "./stmt-basic"
 import { StmtSQL } from "./stmt-sql"
 
 export function Detail() {
   const ctx = useAppContext()
-
-  const { data: plansListData, isLoading } = usePlansListData()
-  const planData = plansListData?.[0]
-
-  const { plans, setPlans } = useDetailUrlState()
-  useEffect(() => {
-    if (plans.length === 0 && plansListData) {
-      setPlans(plansListData.map((plan) => plan.plan_digest!))
-    }
-  }, [plans, setPlans, plansListData])
-
-  const selectedPlans = useMemo(() => {
-    return plans.filter((p) => p !== "empty")
-  }, [plans])
+  const { data: planData, isLoading } = usePlanDetailData("")
 
   return (
     <Stack>
@@ -51,20 +35,10 @@ export function Detail() {
       {planData && (
         <Stack>
           <StmtSQL title="Statement Template" sql={planData.digest_text!} />
-          <StmtBasic stmt={planData} plansCount={plansListData.length} />
-
+          <StmtBasic stmt={planData} />
           <SqlLimit sqlDigest={planData.digest!} />
-
-          {plansListData.length > 0 && <PlansList data={plansListData} />}
-
-          <RelatedSlowQuery />
-
-          {selectedPlans.length > 0 && (
-            <PlansDetail
-              allPlansCount={plansListData.length}
-              selectedPlansCount={selectedPlans.length}
-            />
-          )}
+          <PlansList />
+          <PlanDetail />
         </Stack>
       )}
     </Stack>

@@ -1,7 +1,8 @@
 import { ProTable } from "@tidbcloud/uikit/biz"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { StatementModel } from "../../../models"
+import { useDetailUrlState } from "../../../url-state/detail-url-state"
 import {
   usePlanBindStatusData,
   usePlanBindSupportData,
@@ -44,6 +45,14 @@ export function PlansListTable({ data }: { data: StatementModel[] }) {
     })
     return sorted
   }, [data, sorting])
+
+  // select first plan default
+  const { plan, setPlan } = useDetailUrlState()
+  useEffect(() => {
+    if (!plan && sortedData && sortedData.length > 0) {
+      setPlan(sortedData[0].plan_digest!)
+    }
+  }, [plan, setPlan, sortedData])
 
   return (
     <ProTable

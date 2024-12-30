@@ -40,6 +40,11 @@ function getData(data: StatementModel): InfoModel[] {
       desc: "Total execution time for this kind of statement",
     },
     {
+      name: "Mean Latency",
+      value: formatNumByUnit(data.avg_latency ?? 0, "ns"),
+      desc: "Execution time of single query",
+    },
+    {
       name: "Execution User",
       value: data.sample_user || "-",
       desc: "The user that executes the query (sampled)",

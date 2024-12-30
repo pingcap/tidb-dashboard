@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.8.3
+
+### Patch Changes
+
+- refine plans list
+
 ## 0.8.2
 
 ### Patch Changes

@@ -17,9 +17,10 @@ import {
   diagnosisServiceUnbindSqlPlan,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
-import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
+
+import { STMT_TYPES } from "./stmt-types"
 
 declare global {
   interface Window {
@@ -37,8 +38,7 @@ export function useCtxValue(): AppCtxValue {
       ctxId: `statement-${clusterId}`,
       api: {
         getStmtKinds() {
-          return delay(1000).then(() => [])
-          return delay(1000).then(() => ["Select", "Update", "Delete"])
+          return Promise.resolve(STMT_TYPES)
         },
         getDbs() {
           return diagnosisServiceGetTopSqlAvailableAdvancedFilterInfo(
@@ -60,6 +60,13 @@ export function useCtxValue(): AppCtxValue {
           ).then((res) => res.filters ?? [])
         },
         getAdvancedFilterInfo(params) {
+          if (params.name === "stmt_type") {
+            return Promise.resolve({
+              name: "stmt_type",
+              unit: "",
+              values: STMT_TYPES,
+            })
+          }
           return diagnosisServiceGetTopSqlAvailableAdvancedFilterInfo(
             clusterId,
             params.name,

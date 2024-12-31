@@ -170,7 +170,7 @@ export function FilterMultiSelect({
             },
           }}
         />
-        <Combobox.Options>
+        <Combobox.Options mah={300} style={{ overflowY: "auto" }}>
           {options.length > 0 ? (
             options
           ) : (

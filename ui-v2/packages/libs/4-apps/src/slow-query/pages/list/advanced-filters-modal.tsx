@@ -1,7 +1,7 @@
 import { AdvancedFiltersModal as AFModal } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 
 import { useAppContext } from "../../ctx"
-import { useListUrlState } from "../../url-state/list-url-state"
+import { useListUrlState } from "../../shared-state/list-url-state"
 import { useAdvancedFilterNamesData } from "../../utils/use-data"
 
 export function AdvancedFiltersModal() {

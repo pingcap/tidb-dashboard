@@ -5,7 +5,7 @@ import {
 import { ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
-import { useListUrlState } from "../../url-state/list-url-state"
+import { useListUrlState } from "../../shared-state/list-url-state"
 import { useAvailableFieldsData, useListData } from "../../utils/use-data"
 
 import { useListTableColumns } from "./cols"

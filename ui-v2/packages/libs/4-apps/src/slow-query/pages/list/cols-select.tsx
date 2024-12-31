@@ -1,6 +1,6 @@
 import { ColumnMultiSelect } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 
-import { useListUrlState } from "../../url-state/list-url-state"
+import { useListUrlState } from "../../shared-state/list-url-state"
 import { useAvailableFieldsData } from "../../utils/use-data"
 
 export function ColsSelect() {

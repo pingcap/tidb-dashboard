@@ -141,6 +141,9 @@ export function useCtxValue(): AppCtxValue {
           const preUrl = window.preUrl?.pop()
           navigate({ to: preUrl || "/slow-query" })
         },
+        openStatementDetail(id) {
+          window.open(`/statement/detail?id=${id}`, "_blank")
+        },
       },
     }),
     [navigate],

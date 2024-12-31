@@ -8,6 +8,7 @@ import { useDetailData } from "../../utils/use-data"
 import { DetailTabs } from "./detail-tabs"
 import { DetailPlan } from "./plan"
 import { DetailQuery } from "./query"
+import { RelatedStatement } from "./related-statement-link"
 import { SqlLimit } from "./sql-limit"
 
 export function Detail() {
@@ -35,6 +36,8 @@ export function Detail() {
       {detailData && (
         <Stack>
           <DetailQuery sql={detailData.query || ""} />
+
+          <RelatedStatement dbName={detailData.db!} />
 
           <SqlLimit sqlDigest={detailData.digest!} />
 

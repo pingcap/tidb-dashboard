@@ -9,13 +9,15 @@ import { useMemo } from "react"
 
 import { useAppContext } from "../../ctx"
 import { SlowqueryModel } from "../../models"
+import { useTimeRangeValueState } from "../../shared-state/memory-state"
 
 function SqlCell({ row }: { row: SlowqueryModel }) {
   const ctx = useAppContext()
+  const trv = useTimeRangeValueState((s) => s.trv)
 
   function handleClick() {
     const { digest, connection_id, timestamp } = row
-    const id = [digest, connection_id, timestamp].join(",")
+    const id = [digest, connection_id, timestamp, trv[0], trv[1]].join(",")
     ctx.actions.openDetail(id)
   }
 

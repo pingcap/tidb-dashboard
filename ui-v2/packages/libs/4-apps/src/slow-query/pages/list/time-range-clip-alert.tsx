@@ -1,27 +1,20 @@
-import {
-  formatTime,
-  toTimeRangeValue,
-} from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { formatTime } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Alert } from "@tidbcloud/uikit"
-import { useMemo } from "react"
 
-import { useListUrlState } from "../../url-state/list-url-state"
-import { MAX_TIME_RANGE_DURATION_SECONDS } from "../../utils/constants"
+import { useTimeRangeValueState } from "../../shared-state/memory-state"
 
 export function TimeRangeClipAlert() {
-  const { timeRange } = useListUrlState()
-  const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
-  const beyondTimeLimit = tr[1] - tr[0] > MAX_TIME_RANGE_DURATION_SECONDS
+  const trv = useTimeRangeValueState((s) => s.trv)
+  const beyondMax = useTimeRangeValueState((s) => s.beyondMax)
 
-  if (!beyondTimeLimit) {
+  if (!beyondMax) {
     return null
   }
 
   return (
     <Alert>
       Because of the limitation, the time range is clipped to max 24 hours, from{" "}
-      {formatTime(tr[0] * 1000)} to{" "}
-      {formatTime((tr[0] + MAX_TIME_RANGE_DURATION_SECONDS) * 1000)}
+      {formatTime(trv[0] * 1000)} to {formatTime(trv[1] * 1000)}
     </Alert>
   )
 }

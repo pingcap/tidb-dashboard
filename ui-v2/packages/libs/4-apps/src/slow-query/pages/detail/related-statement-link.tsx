@@ -1,0 +1,31 @@
+import { Anchor, Card, Group } from "@tidbcloud/uikit"
+import { IconLinkExternal01 } from "@tidbcloud/uikit/icons"
+import { useMemo } from "react"
+
+import { useAppContext } from "../../ctx"
+import { useDetailUrlState } from "../../shared-state/detail-url-state"
+
+export function RelatedStatement({ dbName }: { dbName: string }) {
+  const { id } = useDetailUrlState()
+  const ctx = useAppContext()
+  const newId = useMemo(() => {
+    const [sqlDigest, _connectionId, _timestamp, from, to] = id.split(",")
+    return [from, to, sqlDigest, dbName].join(",")
+  }, [id, dbName])
+
+  return (
+    <Card shadow="xs" p="md">
+      <Anchor
+        onClick={() => {
+          ctx.actions.openStatementDetail(newId)
+        }}
+        w="fit-content"
+      >
+        <Group gap={4}>
+          View related statement in statement page (it may be evicted)
+          <IconLinkExternal01 />
+        </Group>
+      </Anchor>
+    </Card>
+  )
+}

@@ -47,6 +47,7 @@ type AppConfig = {
 type AppActions = {
   openDetail(id: string): void
   backToList(): void
+  openStatementDetail(id: string): void
 }
 
 export type AppCtxValue = {

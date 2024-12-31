@@ -1,5 +1,13 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.8.5
+
+### Patch Changes
+
+- show raw json info for slow query and statement detail
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-biz-ui@0.8.3
+
 ## 0.8.4
 
 ### Patch Changes

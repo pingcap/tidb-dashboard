@@ -1,5 +1,5 @@
 import { useComputedColorScheme } from "@tidbcloud/uikit"
-import { createStyles } from "@tidbcloud/uikit/utils"
+import { createStyles } from "@tidbcloud/uikit/emotion"
 import { useMemo } from "react"
 import {
   JsonView,

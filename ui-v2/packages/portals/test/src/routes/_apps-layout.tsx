@@ -1,6 +1,6 @@
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router"
 import { AppShell, NavLink, ScrollArea, Stack } from "@tidbcloud/uikit"
-import { createStyles } from "@tidbcloud/uikit/utils"
+import { createStyles } from "@tidbcloud/uikit/emotion"
 
 export const Route = createFileRoute("/_apps-layout")({
   component: RouteComponent,

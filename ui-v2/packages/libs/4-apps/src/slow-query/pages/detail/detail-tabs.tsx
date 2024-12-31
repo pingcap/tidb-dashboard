@@ -1,19 +1,6 @@
-import {
-  Card,
-  Stack,
-  Tabs,
-  Title,
-  useComputedColorScheme,
-} from "@tidbcloud/uikit"
-import { createStyles } from "@tidbcloud/uikit/utils"
+import { CustomJsonView } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { Card, Stack, Tabs, Title } from "@tidbcloud/uikit"
 import { useMemo } from "react"
-import {
-  JsonView,
-  Props as JsonViewProps,
-  allExpanded,
-  darkStyles,
-  defaultStyles,
-} from "react-json-view-lite"
 
 import { SlowqueryModel } from "../../models"
 
@@ -21,38 +8,6 @@ import { DetailBasic } from "./detail-basic"
 import { DetailCopr } from "./detail-copr"
 import { DetailTime } from "./detail-time"
 import { DetailTxn } from "./detail-txn"
-
-import "react-json-view-lite/dist/index.css"
-
-const useStyles = createStyles(() => ({
-  container: {
-    paddingTop: 8,
-    paddingBottom: 8,
-    background: "transparent",
-    lineHeight: 1.2,
-    whiteSpace: "pre-wrap",
-    wordWrap: "break-word",
-  },
-  basicChildStyle: {
-    margin: 0,
-    padding: 0,
-  },
-}))
-
-function WarningsJsonView({ data }: JsonViewProps) {
-  const colorScheme = useComputedColorScheme()
-  const { classes } = useStyles()
-  const style = useMemo(() => {
-    const _style = colorScheme === "dark" ? darkStyles : defaultStyles
-    return {
-      ..._style,
-      container: classes.container,
-      basicChildStyle: classes.basicChildStyle,
-    }
-  }, [colorScheme])
-
-  return <JsonView data={data} shouldExpandNode={allExpanded} style={style} />
-}
 
 export function DetailTabs({ data }: { data: SlowqueryModel }) {
   const tabs = useMemo(() => {
@@ -84,9 +39,16 @@ export function DetailTabs({ data }: { data: SlowqueryModel }) {
       _tabs.push({
         label: "Warnings",
         value: "warnings",
-        component: <WarningsJsonView data={jsonData} />,
+        component: <CustomJsonView data={jsonData} />,
       })
     }
+    // all
+    _tabs.push({
+      label: "All (Raw JSON)",
+      value: "all",
+      component: <CustomJsonView data={data} />,
+    })
+
     return _tabs
   }, [data])
 

@@ -1,3 +1,4 @@
+import { CustomJsonView } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Card, Stack, Tabs, Title } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
@@ -26,6 +27,11 @@ export function DetailTabs({ data }: { data: StatementModel }) {
         label: "Transaction",
         value: "txn",
         component: <DetailTxn data={data} />,
+      },
+      {
+        label: "All (Raw JSON)",
+        value: "all",
+        component: <CustomJsonView data={data} />,
       },
     ]
     return _tabs

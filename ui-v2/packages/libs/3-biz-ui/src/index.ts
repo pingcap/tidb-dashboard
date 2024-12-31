@@ -15,3 +15,5 @@ export * from "./filter-multi-select"
 export * from "./cols-multi-select"
 
 export * from "./advanced-filters"
+
+export * from "./custom-json-view"

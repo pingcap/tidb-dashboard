@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.9.0
+
+### Minor Changes
+
+- upgrade uikit
+
 ## 0.8.0
 
 ### Minor Changes

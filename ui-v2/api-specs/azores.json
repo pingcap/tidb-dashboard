@@ -18,13 +18,34 @@
       "name": "ApiKeyService"
     },
     {
+      "name": "ClusterBRService"
+    },
+    {
       "name": "ClusterService"
+    },
+    {
+      "name": "CredentialService"
     },
     {
       "name": "DiagnosisService"
     },
     {
+      "name": "GlobalBRService"
+    },
+    {
+      "name": "HostService"
+    },
+    {
       "name": "LabelService"
+    },
+    {
+      "name": "LicenseService"
+    },
+    {
+      "name": "LocationService"
+    },
+    {
+      "name": "TiupsService"
     }
   ],
   "consumes": [
@@ -132,8 +153,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {}
+              "$ref": "#/definitions/v2CreateApiKeyRequest"
             }
           }
         ],
@@ -243,6 +263,785 @@
         ],
         "tags": [
           "ApiKeyService"
+        ]
+      }
+    },
+    "/api/v2/backup/policies": {
+      "get": {
+        "summary": "ListBackupPolicies lists Backup policies",
+        "operationId": "GlobalBRService_ListBackupPolicies",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListBackupPoliciesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      },
+      "post": {
+        "summary": "CreateBackupPolicy creates a Backup policy",
+        "operationId": "GlobalBRService_CreateBackupPolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BackupPolicy"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BackupPolicy"
+            }
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      }
+    },
+    "/api/v2/backup/policies/precheck": {
+      "post": {
+        "summary": "PreCheckBackupPolicy pre-checks a Backup policy",
+        "operationId": "GlobalBRService_PreCheckBackupPolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2PreCheckBackupPolicyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BackupPolicy"
+            }
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      }
+    },
+    "/api/v2/backup/policies/{policyId}": {
+      "get": {
+        "summary": "GetBackupPolicy gets a Backup policy",
+        "operationId": "GlobalBRService_GetBackupPolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BackupPolicy"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "policyId",
+            "description": "The policy ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      },
+      "delete": {
+        "summary": "DeleteBackupPolicy deletes a Backup policy",
+        "operationId": "GlobalBRService_DeleteBackupPolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "policyId",
+            "description": "The policy ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      },
+      "put": {
+        "summary": "UpdateBackupPolicy updates a Backup policy",
+        "operationId": "GlobalBRService_UpdateBackupPolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BackupPolicy"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "policyId",
+            "description": "The policy ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GlobalBRServiceUpdateBackupPolicyBody"
+            }
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      }
+    },
+    "/api/v2/backup/summary": {
+      "get": {
+        "summary": "GetBRSummary retrieves the summary of BR",
+        "operationId": "GlobalBRService_GetBRSummary",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BRSummary"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "top",
+            "description": "Number of top clusters",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      }
+    },
+    "/api/v2/backup/tasks": {
+      "get": {
+        "summary": "ListBRTasks retrieves the tasks of BR",
+        "operationId": "GlobalBRService_ListBRTasks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListBRTasksResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "brTaskId",
+            "description": "The br task ID",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "clusterId",
+            "description": "The cluster ID",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "clusterName",
+            "description": "The cluster name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "description": "Type of the br task\n\n - all: All\n - full_backup: Full backup\n - log_backup: Log backup\n - restore_by_file: Restore by file\n - restore_by_time: Restore by time\n - all_backup: All backup\n - all_restore: All restore",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "all",
+              "full_backup",
+              "log_backup",
+              "restore_by_file",
+              "restore_by_time",
+              "all_backup",
+              "all_restore"
+            ],
+            "default": "all"
+          },
+          {
+            "name": "status",
+            "description": "Status of the br task\n\n - all: All\n - running: Running\n - finished: Finished\n - abnormal: Abnormal\n - stopped: Stopped",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "all",
+              "running",
+              "finished",
+              "abnormal",
+              "stopped"
+            ],
+            "default": "all"
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      }
+    },
+    "/api/v2/backup/tasks/{taskId}": {
+      "delete": {
+        "summary": "DeleteBRTask deletes a BR task",
+        "operationId": "GlobalBRService_DeleteBRTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "description": "The br task ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "deleteBackupFile",
+            "description": "delete_backup_file for whether delete the backup files or not",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      }
+    },
+    "/api/v2/backup/tasks/{taskId}/start": {
+      "post": {
+        "summary": "StartBRTask starts a BR task",
+        "operationId": "GlobalBRService_StartBRTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "description": "The br task ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      }
+    },
+    "/api/v2/backup/tasks/{taskId}/stop": {
+      "post": {
+        "summary": "StopBRTask stops a BR task",
+        "operationId": "GlobalBRService_StopBRTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "description": "The br task ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GlobalBRService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/backup": {
+      "post": {
+        "summary": "CreateBackupTask backups a cluster",
+        "operationId": "ClusterBRService_CreateBackupTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ClusterBRTask"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ClusterBRServiceCreateBackupTaskBody"
+            }
+          }
+        ],
+        "tags": [
+          "ClusterBRService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/backup/policy": {
+      "get": {
+        "summary": "GetClusterBackupPolicy gets the backup info of a specific cluster",
+        "operationId": "ClusterBRService_GetClusterBackupPolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ClusterBackupPolicy"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClusterBRService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/backup/records": {
+      "get": {
+        "summary": "ListBackupRecords lists the valid full backup records of a specific cluster",
+        "operationId": "ClusterBRService_ListClusterBackupRecords",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListClusterBackupRecordsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "The cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClusterBRService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/backup/restore": {
+      "post": {
+        "summary": "CreateRestoreTask restores a cluster",
+        "operationId": "ClusterBRService_CreateRestoreTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ClusterBRTask"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID represents the cluster to be restored",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ClusterBRServiceCreateRestoreTaskBody"
+            }
+          }
+        ],
+        "tags": [
+          "ClusterBRService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/backup/tasks": {
+      "get": {
+        "summary": "ListClusterBRTasks lists the backup tasks of a specific cluster",
+        "operationId": "ClusterBRService_ListClusterBRTasks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListClusterBRTasksResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "The cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "brTaskId",
+            "description": "The br task ID",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "clusterName",
+            "description": "The cluster name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "description": "Type of the br task\n\n - full_backup: Full backup\n - log_backup: Log backup\n - restore_by_file: Restore by file\n - restore_by_time: Restore by time\n - all_backup: All backup\n - all_restore: All restore",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "full_backup",
+              "log_backup",
+              "restore_by_file",
+              "restore_by_time",
+              "all_backup",
+              "all_restore"
+            ],
+            "default": "full_backup"
+          },
+          {
+            "name": "status",
+            "description": "Status of the br task\n\n - running: Running\n - finished: Finished\n - abnormal: Abnormal\n - stopped: Stopped",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "running",
+              "finished",
+              "abnormal",
+              "stopped"
+            ],
+            "default": "running"
+          }
+        ],
+        "tags": [
+          "ClusterBRService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/backup:detect": {
+      "post": {
+        "summary": "DetectCluster detects the if the cluster exist",
+        "operationId": "ClusterBRService_DetectCluster",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2DetectClusterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClusterBRService"
         ]
       }
     },
@@ -1209,7 +2008,7 @@
     },
     "/api/v2/clusters/{clusterId}/sqlplans:unbindSqlPlan": {
       "post": {
-        "summary": "DropSqlPlan unbinds a plan from a specific sql",
+        "summary": "UnbindSqlPlan unbinds a plan from a specific sql",
         "operationId": "DiagnosisService_UnbindSqlPlan",
         "responses": {
           "200": {
@@ -1377,7 +2176,7 @@
     },
     "/api/v2/clusters/{clusterId}/topsqls/advancedFilters": {
       "get": {
-        "summary": "GetSlowQueryAvailableAdvancedFilters retrieves the list of available advanced filters",
+        "summary": "GetTopSqlAvailableAdvancedFilters retrieves the list of available advanced filters",
         "operationId": "DiagnosisService_GetTopSqlAvailableAdvancedFilters",
         "responses": {
           "200": {
@@ -1409,7 +2208,7 @@
     },
     "/api/v2/clusters/{clusterId}/topsqls/advancedFilters/{filterName}": {
       "get": {
-        "summary": "GetSlowQueryAvailableAdvancedFilterInfo retrieves the list of available advanced filter info",
+        "summary": "GetTopSqlAvailableAdvancedFilterInfo retrieves the list of available advanced filter info",
         "operationId": "DiagnosisService_GetTopSqlAvailableAdvancedFilterInfo",
         "responses": {
           "200": {
@@ -1439,6 +2238,76 @@
             "in": "path",
             "required": true,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
+      }
+    },
+    "/api/v2/clusters/{clusterId}/topsqls/configs": {
+      "get": {
+        "summary": "GetTopSqlConfigs retrieves the list of top sql configs",
+        "operationId": "DiagnosisService_GetTopSqlConfigs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TopSqlConfigs"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DiagnosisService"
+        ]
+      },
+      "patch": {
+        "summary": "UpdateTopSqlConfigs updates the list of top sql configs",
+        "operationId": "DiagnosisService_UpdateTopSqlConfigs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TopSqlConfigs"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clusterId",
+            "description": "Cluster ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DiagnosisServiceUpdateTopSqlConfigsBody"
+            }
           }
         ],
         "tags": [
@@ -1544,6 +2413,678 @@
         ]
       }
     },
+    "/api/v2/credentials": {
+      "get": {
+        "summary": "List credentials",
+        "operationId": "CredentialService_ListCredentials",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListCredentialsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "credentialType",
+            "description": "the credential type of the credential\n\n - CREDENTIAL_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: credential type host\n - TIDB: credential type tidb",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "CREDENTIAL_TYPE_UNSPECIFIED",
+              "HOST",
+              "TIDB"
+            ],
+            "default": "CREDENTIAL_TYPE_UNSPECIFIED"
+          },
+          {
+            "name": "credentialId",
+            "description": "the credential id of the credential",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CredentialService"
+        ]
+      },
+      "post": {
+        "summary": "Create credential",
+        "operationId": "CredentialService_CreateCredential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Credential"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "credential",
+            "description": "\nthe credential resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2Credential"
+            }
+          }
+        ],
+        "tags": [
+          "CredentialService"
+        ]
+      }
+    },
+    "/api/v2/credentials/{credentialId}": {
+      "get": {
+        "summary": "Get credential",
+        "operationId": "CredentialService_GetCredential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Credential"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "credentialId",
+            "description": "the credential id of the credential",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CredentialService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete credential by credential id",
+        "operationId": "CredentialService_DeleteCredential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "credentialId",
+            "description": "the credential id of the credential",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CredentialService"
+        ]
+      },
+      "patch": {
+        "summary": "Update credential by credential id",
+        "operationId": "CredentialService_UpdateCredential",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Credential"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "credentialId",
+            "description": "the credential id of the credential",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CredentialServiceUpdateCredentialBody"
+            }
+          }
+        ],
+        "tags": [
+          "CredentialService"
+        ]
+      }
+    },
+    "/api/v2/credentials:downloadRsaKey": {
+      "post": {
+        "summary": "Download credential public key and private key",
+        "operationId": "CredentialService_DownloadRSAKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2DownloadRSAKeyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2DownloadRSAKeyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CredentialService"
+        ]
+      }
+    },
+    "/api/v2/credentials:generateRsaKey": {
+      "post": {
+        "summary": "Generate credential public key and private key",
+        "operationId": "CredentialService_GenerateRSAKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2GenerateRSAKeyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2GenerateRSAKeyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CredentialService"
+        ]
+      }
+    },
+    "/api/v2/credentials:validateConnection": {
+      "post": {
+        "summary": "Validate credential is accessible",
+        "operationId": "CredentialService_ValidateConnection",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ValidateConnectionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2ValidateConnectionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CredentialService"
+        ]
+      }
+    },
+    "/api/v2/hosts": {
+      "get": {
+        "summary": "ListHosts",
+        "operationId": "HostService_ListHosts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListHostsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "searchValue",
+            "description": "The name of the user",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "locationIds",
+            "description": "location_ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "labelIds",
+            "description": "label_ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      },
+      "post": {
+        "summary": "CreateHosts",
+        "operationId": "HostService_CreateHosts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2HostCreateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "host",
+            "description": "\nhost resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2CreateHost"
+            }
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts/import/tasks": {
+      "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "description": "Upload a csv form data to host.",
+        "operationId": "HostService_Import",
+        "parameters": [
+          {
+            "description": "Upload a csv form data to host.",
+            "format": "binary",
+            "in": "formData",
+            "name": "hostData",
+            "required": true,
+            "type": "file"
+          },
+          {
+            "description": "The Credential_Id of the Import",
+            "in": "formData",
+            "name": "credentialId",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ImportTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "summary": "import host",
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts/import/tasks/{taskId}": {
+      "get": {
+        "summary": "Import one host",
+        "operationId": "HostService_ImportTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ImportTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "description": "task_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts/import/tasks/{taskId}:confirm": {
+      "post": {
+        "summary": "HostConfirm one host",
+        "operationId": "HostService_HostConfirm",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ConfirmResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "description": "task_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HostServiceHostConfirmBody"
+            }
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts/{hostId}": {
+      "get": {
+        "summary": "Get",
+        "operationId": "HostService_GetHost",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Host"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hostId",
+            "description": "The host_id of the host",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      },
+      "delete": {
+        "summary": "delete one host by host_id",
+        "operationId": "HostService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hostId",
+            "description": "The host_id of the host",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      },
+      "patch": {
+        "summary": "update one host by host_id",
+        "operationId": "HostService_UpdateHost",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Host"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hostId",
+            "description": "The host_id of the Host",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2HostServiceUpdateHostBody"
+            }
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts/{hostId}/disks": {
+      "get": {
+        "summary": "GetDisks",
+        "operationId": "HostService_GetDisks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2HostDiskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hostId",
+            "description": "The host_id of the host",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
     "/api/v2/hosts/{hostId}/metrics/{name}/data": {
       "get": {
         "summary": "Get host metric data",
@@ -1621,15 +3162,850 @@
         ]
       }
     },
+    "/api/v2/hosts/{hostId}/report/{reportId}": {
+      "get": {
+        "summary": "Report",
+        "operationId": "HostService_Report",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ReportResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hostId",
+            "description": "The host_id of the host",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "reportId",
+            "description": "The report_id of the host",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts/{hostId}/tidbProcesses": {
+      "get": {
+        "summary": "GetInstances",
+        "operationId": "HostService_GetTiDBProcesses",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2HostTiDBProcessesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hostId",
+            "description": "The host_id of the host",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts/{hostId}:fix": {
+      "post": {
+        "summary": "Fix",
+        "operationId": "HostService_Fix",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2HostFixResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hostId",
+            "description": "The host_id of the host",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts/{hostId}:systemCheck": {
+      "post": {
+        "summary": "Check",
+        "operationId": "HostService_Check",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2HostCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hostId",
+            "description": "The host_id of the host",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts:batchDelete": {
+      "post": {
+        "summary": "delete one host by host_id",
+        "operationId": "HostService_BatchDelete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BatchDeleteRequest"
+            }
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts:hostTemplate": {
+      "get": {
+        "summary": "HostConfirm one host",
+        "operationId": "HostService_DownloadHostTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2DownloadHostTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
     "/api/v2/labels": {
       "get": {
-        "summary": "list labels",
+        "summary": "List labels",
         "operationId": "LabelService_ListLabels",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v2ListLabelsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      },
+      "post": {
+        "summary": "Create label",
+        "operationId": "LabelService_CreateLabel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/labelv2Label"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "label",
+            "description": "the label with basic resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/labelv2Label"
+            }
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      }
+    },
+    "/api/v2/labels/{labelId}": {
+      "get": {
+        "summary": "Get label",
+        "operationId": "LabelService_GetLabel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/labelv2Label"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labelId",
+            "description": "the label id of the label",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete label by label id",
+        "operationId": "LabelService_DeleteLabel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labelId",
+            "description": "the label id of the label",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      },
+      "patch": {
+        "summary": "Update label basic info by label id",
+        "operationId": "LabelService_UpdateLabel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/labelv2Label"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labelId",
+            "description": "the label id of the label",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LabelServiceUpdateLabelBody"
+            }
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      }
+    },
+    "/api/v2/labels/{labelId}:getWithBindings": {
+      "get": {
+        "summary": "Get label with bindings",
+        "operationId": "LabelService_GetLabelWithBindings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2GetLabelWithBindingsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labelId",
+            "description": "the label id of the label",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      }
+    },
+    "/api/v2/labels:batchCreate": {
+      "post": {
+        "summary": "Batch create labels",
+        "operationId": "LabelService_BatchCreateLabels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BatchCreateLabelsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BatchCreateLabelsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      }
+    },
+    "/api/v2/labels:bindLabel": {
+      "post": {
+        "summary": "Modify bind object by label id",
+        "operationId": "LabelService_BindLabel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BindLabelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BindLabelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      }
+    },
+    "/api/v2/labels:bindResource": {
+      "post": {
+        "summary": "Modify bind object by resource id",
+        "operationId": "LabelService_BindResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BindResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BindResourceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      }
+    },
+    "/api/v2/labels:listByResourceType": {
+      "get": {
+        "summary": "List labels by resource type",
+        "operationId": "LabelService_ListLabelsByResourceType",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListLabelsByResourceTypeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "labelKey",
+            "description": "the label key which the label values belong to",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "keyword",
+            "description": "the keyword which label values similar to",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceType",
+            "description": "the resource type of the label has bound with\n\n - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: resource type host\n - TIUP: resource type tiup\n - CLUSTER: resource type cluster",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED",
+              "HOST",
+              "TIUP",
+              "CLUSTER"
+            ],
+            "default": "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED"
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      }
+    },
+    "/api/v2/labels:listKeys": {
+      "get": {
+        "summary": "List label keys",
+        "operationId": "LabelService_ListLabelKeys",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListLabelKeysResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "keyword",
+            "description": "the keyword which label key similar to",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceType",
+            "description": "the resource type of the label has bound with\n\n - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: resource type host\n - TIUP: resource type tiup\n - CLUSTER: resource type cluster",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED",
+              "HOST",
+              "TIUP",
+              "CLUSTER"
+            ],
+            "default": "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED"
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      }
+    },
+    "/api/v2/labels:listWithBindings": {
+      "get": {
+        "summary": "List labels with bindings",
+        "operationId": "LabelService_ListLabelsWithBindings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListLabelsWithBindingsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "labelKeys",
+            "description": "the label which the label key in",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "labelValueLike",
+            "description": "the label which the label value like",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LabelService"
+        ]
+      }
+    },
+    "/api/v2/license": {
+      "get": {
+        "summary": "GetLicense returns the license details",
+        "operationId": "LicenseService_GetLicense",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/licensev2License"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v2/license/devicecode": {
+      "get": {
+        "summary": "GetDeviceCode returns the device code to help activate the license",
+        "operationId": "LicenseService_GetDeviceCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2DeviceCode"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v2/license:activate": {
+      "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "description": "Upload a license using form data to activate.",
+        "operationId": "LicenseService_ActivateLicense",
+        "parameters": [
+          {
+            "description": "The content of the license file\n\nThe license file to upload to activate the license",
+            "format": "binary",
+            "in": "formData",
+            "name": "license",
+            "required": true,
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/licensev2License"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "summary": "Activate a license",
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v2/license:trial": {
+      "post": {
+        "summary": "ActivateFreeLicense activate the embedded free license",
+        "operationId": "LicenseService_ActivateFreeLicense",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/licensev2License"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v2/locations": {
+      "get": {
+        "summary": "list location",
+        "operationId": "LocationService_ListLocations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListLocationsResponse"
             }
           },
           "default": {
@@ -1671,32 +4047,44 @@
             "type": "string"
           },
           {
-            "name": "labelKey",
-            "description": "the label key of the label",
+            "name": "locationKey",
+            "description": "location key  (e.g., \"zone\", \"dc\")",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "zone",
+              "dc",
+              "rack"
+            ]
+          },
+          {
+            "name": "locationValue",
+            "description": "the Location value of the Location",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
-            "name": "labelValue",
-            "description": "the label value of the label",
+            "name": "parentId",
+            "description": "the Location parent_Id of the Location",
             "in": "query",
             "required": false,
             "type": "string"
           }
         ],
         "tags": [
-          "LabelService"
+          "LocationService"
         ]
       },
       "post": {
-        "summary": "create label",
-        "operationId": "LabelService_CreateLabel",
+        "summary": "create CreateLocationRequest",
+        "operationId": "LocationService_CreateLocations",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/temapiv2Label"
+              "$ref": "#/definitions/v2Locations"
             }
           },
           "default": {
@@ -1708,24 +4096,54 @@
         },
         "parameters": [
           {
-            "name": "label",
-            "description": "the label basic resource",
+            "name": "location",
+            "description": "the Location basic resource",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/temapiv2Label"
+              "$ref": "#/definitions/v2Locations"
             }
           }
         ],
         "tags": [
-          "LabelService"
+          "LocationService"
         ]
       }
     },
-    "/api/v2/labels/{labelId}": {
+    "/api/v2/locations/{locationId}": {
+      "get": {
+        "summary": "get Location",
+        "operationId": "LocationService_GetLocations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Locations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "description": "the Location id of the Location",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LocationService"
+        ]
+      },
       "delete": {
-        "summary": "delete label by label id",
-        "operationId": "LabelService_DeleteLabel",
+        "summary": "delete Location by Location id",
+        "operationId": "LocationService_DeleteLocation",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1743,25 +4161,25 @@
         },
         "parameters": [
           {
-            "name": "labelId",
-            "description": "the label id of the label",
+            "name": "locationId",
+            "description": "the Location id of the Location",
             "in": "path",
             "required": true,
             "type": "string"
           }
         ],
         "tags": [
-          "LabelService"
+          "LocationService"
         ]
       },
       "patch": {
-        "summary": "update label basic info by label id",
-        "operationId": "LabelService_UpdateLabel",
+        "summary": "update Location basic info by Location id",
+        "operationId": "LocationService_UpdateLocations",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/temapiv2Label"
+              "$ref": "#/definitions/v2Locations"
             }
           },
           "default": {
@@ -1773,90 +4191,23 @@
         },
         "parameters": [
           {
-            "name": "labelId",
-            "description": "the label id of the label",
+            "name": "locationId",
+            "description": "the Location id of the Location",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "label",
-            "description": "the label basic resource",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/temapiv2Label"
-            }
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels:bindLabel": {
-      "post": {
-        "summary": "modify bind object by label id",
-        "operationId": "LabelService_BindLabel",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2BindLabelResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v2BindLabelRequest"
+              "$ref": "#/definitions/LocationServiceUpdateLocationsBody"
             }
           }
         ],
         "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels:bindResource": {
-      "post": {
-        "summary": "modify bind object by resource id",
-        "operationId": "LabelService_BindResource",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2BindResourceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v2BindResourceRequest"
-            }
-          }
-        ],
-        "tags": [
-          "LabelService"
+          "LocationService"
         ]
       }
     },
@@ -2228,6 +4579,255 @@
         ]
       }
     },
+    "/api/v2/tiups": {
+      "get": {
+        "summary": "list Tiups",
+        "operationId": "TiupsService_ListTiups",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListTiupsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "searchValue",
+            "description": "the Tiups key of the Tiups",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "labelIds",
+            "description": "the Tiups label_ids of the labelIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "hostIds",
+            "description": "the Tiups host_ids of the labelIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "TiupsService"
+        ]
+      },
+      "post": {
+        "summary": "create Tiups",
+        "operationId": "TiupsService_CreateTiups",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Tiups"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tiups",
+            "description": "the Tiups basic resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/tiupv2CreateTiups"
+            }
+          }
+        ],
+        "tags": [
+          "TiupsService"
+        ]
+      }
+    },
+    "/api/v2/tiups/{tiupId}": {
+      "get": {
+        "summary": "get Tiups",
+        "operationId": "TiupsService_GetTiups",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Tiups"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tiupId",
+            "description": "the Tiups id of the Tiups",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TiupsService"
+        ]
+      },
+      "delete": {
+        "summary": "delete Tiups by Tiups id",
+        "operationId": "TiupsService_DeleteTiups",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tiupId",
+            "description": "the Tiups id of the Tiups",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TiupsService"
+        ]
+      },
+      "patch": {
+        "summary": "update Tiups basic info by Tiups id",
+        "operationId": "TiupsService_UpdateTiups",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Tiups"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tiupId",
+            "description": "the tiup_id id of the Tiups",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2TiupsServiceUpdateTiupsBody"
+            }
+          }
+        ],
+        "tags": [
+          "TiupsService"
+        ]
+      }
+    },
+    "/api/v2/tiups/{tiupId}/clusters": {
+      "get": {
+        "summary": "Get TiupsCluster",
+        "operationId": "TiupsService_GetTiupsCluster",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TiupsClustersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tiupId",
+            "description": "the Tiups id of the Tiups",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TiupsService"
+        ]
+      }
+    },
     "/api/v2/users": {
       "get": {
         "summary": "ListUsers",
@@ -2560,9 +5160,166 @@
           "UserService"
         ]
       }
+    },
+    "/documentation/errorDetail": {
+      "get": {
+        "summary": "GetTemErrorDetail",
+        "operationId": "ApiKeyService_GetTemErrorDetail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ErrorDetail"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ApiKeyService"
+        ]
+      }
     }
   },
   "definitions": {
+    "ClusterBRServiceCreateBackupTaskBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Name of the task"
+        },
+        "destination": {
+          "type": "string",
+          "title": "Destination of the task or source for restore"
+        },
+        "accessKeyId": {
+          "type": "string",
+          "title": "Access key ID for the task"
+        },
+        "secretAccessKey": {
+          "type": "string",
+          "title": "Secret access key for the task"
+        },
+        "rateLimit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Rate limit for the task"
+        },
+        "concurrency": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Concurrency for the task"
+        },
+        "logFile": {
+          "type": "string",
+          "title": "Log file for the task"
+        },
+        "retention": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Retention for the task"
+        }
+      },
+      "title": "CreateBackupTaskRequest represents the request to create a backup task",
+      "required": [
+        "destination"
+      ]
+    },
+    "ClusterBRServiceCreateRestoreTaskBody": {
+      "type": "object",
+      "properties": {
+        "targetClusterId": {
+          "type": "string",
+          "title": "Target cluster ID, only for restore"
+        },
+        "type": {
+          "$ref": "#/definitions/v2ClusterBRTypeEnumData",
+          "title": "Type of the task, only restore by file and restore by time allowed"
+        },
+        "backupTaskId": {
+          "type": "string",
+          "title": "Backup task ID"
+        },
+        "restoreTime": {
+          "type": "string",
+          "title": "Restore time for the task"
+        },
+        "destination": {
+          "type": "string",
+          "title": "Destination of the task or source for restore"
+        },
+        "accessKeyId": {
+          "type": "string",
+          "title": "Access key ID for the task"
+        },
+        "secretAccessKey": {
+          "type": "string",
+          "title": "Secret access key for the task"
+        },
+        "rateLimit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Rate limit for the task"
+        },
+        "concurrency": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Concurrency for the task"
+        },
+        "logFile": {
+          "type": "string",
+          "title": "Log file for the task"
+        }
+      },
+      "title": "CreateRestoreTaskRequest represents the request to create a br task",
+      "required": [
+        "targetClusterId"
+      ]
+    },
+    "CredentialServiceUpdateCredentialBody": {
+      "type": "object",
+      "properties": {
+        "credentialName": {
+          "type": "string",
+          "title": "the credential name of the credential"
+        },
+        "userName": {
+          "type": "string",
+          "title": "the user name of the credential"
+        },
+        "credentialType": {
+          "$ref": "#/definitions/v2CredentialType",
+          "title": "the credential type of the credential"
+        },
+        "validateType": {
+          "$ref": "#/definitions/v2CredentialValidateType",
+          "title": "the validate type of the credential"
+        },
+        "hostCredential": {
+          "$ref": "#/definitions/v2HostCredentialObject",
+          "title": "the host credential object"
+        },
+        "tidbCredential": {
+          "$ref": "#/definitions/v2TiDBCredentialObject",
+          "title": "the tidb cluster credential object"
+        },
+        "forceUpdate": {
+          "type": "boolean",
+          "title": "auto ssh-copy or set password when change validate type host credential"
+        }
+      },
+      "title": "UpdateCredential Request",
+      "required": [
+        "userName",
+        "credentialType",
+        "validateType"
+      ]
+    },
     "DiagnosisServiceAddSqlLimitBody": {
       "type": "object",
       "properties": {
@@ -2604,6 +5361,150 @@
         "watchText"
       ]
     },
+    "DiagnosisServiceUpdateTopSqlConfigsBody": {
+      "type": "object",
+      "properties": {
+        "enable": {
+          "type": "boolean",
+          "title": "tidb_enable_stmt_summary"
+        },
+        "refreshInterval": {
+          "type": "integer",
+          "format": "int32",
+          "title": "tidb_stmt_summary_refresh_interval"
+        },
+        "historySize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "tidb_stmt_summary_history_size"
+        },
+        "maxSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "tidb_stmt_summary_max_stmt_count"
+        },
+        "internalQuery": {
+          "type": "boolean",
+          "title": "tidb_stmt_summary_internal_query"
+        }
+      },
+      "title": "Request message for updating top sql configs",
+      "required": [
+        "enable"
+      ]
+    },
+    "GlobalBRServiceUpdateBackupPolicyBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The policy name"
+        },
+        "logBackup": {
+          "type": "boolean",
+          "title": "LogBackup means whether to backup log"
+        },
+        "destination": {
+          "type": "string",
+          "title": "Destination of the backup"
+        },
+        "accessKeyId": {
+          "type": "string",
+          "title": "AccessKeyID"
+        },
+        "secretAccessKey": {
+          "type": "string",
+          "title": "SecretAccessKey"
+        },
+        "rateLimit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "RateLimit"
+        },
+        "concurrency": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Concurrency"
+        },
+        "logFile": {
+          "type": "string",
+          "title": "LogFile"
+        },
+        "cycle": {
+          "$ref": "#/definitions/v2CycleEnumData",
+          "title": "Cycle of backup"
+        },
+        "frequency": {
+          "type": "string",
+          "title": "Frequency: week:0~6 for Sunday To Saturday, month:1~31 for Date.example:1,2,3,4,5,6,7"
+        },
+        "time": {
+          "type": "string",
+          "title": "Time"
+        },
+        "retention": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Retention"
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Cluster"
+          },
+          "title": "Clusters"
+        },
+        "clusterIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "ClusterIDs"
+        }
+      },
+      "title": "BackupPolicy represents a backup policy",
+      "required": [
+        "name",
+        "logBackup",
+        "destination",
+        "cycle",
+        "frequency",
+        "time",
+        "retention"
+      ]
+    },
+    "HostServiceHostConfirmBody": {
+      "type": "object",
+      "title": "ConfirmRequest"
+    },
+    "LabelServiceUpdateLabelBody": {
+      "type": "object",
+      "properties": {
+        "labelKey": {
+          "type": "string",
+          "title": "the label key of the label"
+        },
+        "labelValue": {
+          "type": "string",
+          "title": "the label value of the label"
+        }
+      },
+      "title": "UpdateLabel Request",
+      "required": [
+        "labelValue"
+      ]
+    },
+    "LocationServiceUpdateLocationsBody": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "$ref": "#/definitions/v2Locations",
+          "title": "the Location basic resource"
+        }
+      },
+      "title": "UpdateLocation Request"
+    },
     "UserServiceResetPasswordBody": {
       "type": "object",
       "properties": {
@@ -2616,6 +5517,197 @@
       "required": [
         "newPassword"
       ]
+    },
+    "hostv2Report": {
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "string",
+          "title": "The report_id of the Report"
+        },
+        "hostId": {
+          "type": "string",
+          "title": "The host_id of the Report"
+        },
+        "checkId": {
+          "type": "string",
+          "title": "The checkId of the Report"
+        },
+        "checkName": {
+          "type": "string",
+          "title": "The checkName of the Report"
+        },
+        "checkOut": {
+          "type": "string",
+          "title": "The checkOut of the Report"
+        },
+        "checkDesc": {
+          "type": "string",
+          "title": "The checkDesc of the Report"
+        },
+        "checkResult": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "failed",
+            "warned"
+          ],
+          "title": "check optional (e.g., \"passed\", \"failed\")"
+        },
+        "optional": {
+          "type": "boolean",
+          "enum": [
+            "true",
+            "false"
+          ],
+          "title": "check optional (e.g., \"true\", \"false\")"
+        },
+        "fixable": {
+          "type": "boolean",
+          "enum": [
+            "true",
+            "false"
+          ],
+          "title": "check fixable (e.g., \"true\", \"false\")"
+        },
+        "checkBody": {
+          "type": "string",
+          "title": "The checkBody of the Report"
+        }
+      },
+      "title": "Report",
+      "required": [
+        "reportId"
+      ]
+    },
+    "hostv2UpdateHost": {
+      "type": "object",
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "title": "The host_id of the Host"
+        },
+        "sshPort": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The SSHPort of the Host"
+        },
+        "credentialId": {
+          "type": "string",
+          "title": "The Credential_Id of the Host"
+        },
+        "locationId": {
+          "type": "string",
+          "title": "The locationId of the Host"
+        },
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "The labelIds of the Host"
+        },
+        "comment": {
+          "type": "string",
+          "title": "The comment of the Host"
+        }
+      },
+      "title": "UpdateHost"
+    },
+    "labelv2Label": {
+      "type": "object",
+      "properties": {
+        "labelId": {
+          "type": "string",
+          "title": "the label id of the label"
+        },
+        "labelKey": {
+          "type": "string",
+          "title": "the label key of the label"
+        },
+        "labelValue": {
+          "type": "string",
+          "title": "the label value of the label"
+        }
+      },
+      "title": "Label basic resource",
+      "required": [
+        "labelValue"
+      ]
+    },
+    "licensev2License": {
+      "type": "object",
+      "properties": {
+        "licenseId": {
+          "type": "string",
+          "title": "License ID"
+        },
+        "version": {
+          "type": "string",
+          "title": "Version represents the supported version of TEM"
+        },
+        "licenseType": {
+          "$ref": "#/definitions/v2LicenseTypeEnumData",
+          "title": "LicenseTypeEnum represents the type of license: free, ultimate"
+        },
+        "allow": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Array of supported features in url prefix"
+        },
+        "deny": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Array of unsupported features in url prefix"
+        },
+        "activateAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Activation date of license"
+        },
+        "expirationAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Expiration date of license"
+        },
+        "signature": {
+          "type": "string",
+          "format": "byte",
+          "title": "Signature of license"
+        },
+        "hosts": {
+          "type": "string",
+          "format": "int64",
+          "title": "Number of hosts"
+        },
+        "vcpu": {
+          "type": "string",
+          "format": "int64",
+          "title": "Number of vcpu"
+        },
+        "alerts": {
+          "type": "string",
+          "format": "int64",
+          "title": "Number of alters"
+        },
+        "customerCode": {
+          "type": "string",
+          "title": "Customer code to restrict the range of features"
+        },
+        "deviceCode": {
+          "type": "string",
+          "title": "Device code which is bound to the license"
+        },
+        "status": {
+          "$ref": "#/definitions/v2LicenseStatusEnumData",
+          "title": "License status"
+        }
+      },
+      "title": "License"
     },
     "metricsv2Value": {
       "type": "object",
@@ -2653,7 +5745,7 @@
             },
             "details": {
               "items": {
-                "$ref": "#/definitions/protobufAny",
+                "$ref": "#/definitions/v2ErrorDetail",
                 "type": "object"
               },
               "type": "array"
@@ -2670,25 +5762,82 @@
       },
       "type": "object"
     },
-    "temapiv2Label": {
+    "tiupv2CreateTiups": {
       "type": "object",
       "properties": {
-        "labelId": {
+        "hostId": {
           "type": "string",
-          "title": "the label id of the label"
+          "title": "host_id"
         },
-        "labelKey": {
+        "tiupHome": {
           "type": "string",
-          "title": "the label key of the label"
+          "title": "The SSHPort of the Host"
         },
-        "labelValue": {
+        "description": {
           "type": "string",
-          "title": "the label value of the label"
+          "title": "The Credential_Id of the Host"
+        },
+        "name": {
+          "type": "string",
+          "title": "The locationId of the Host"
+        },
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "The labelIds of the Host"
         }
       },
-      "title": "Label basic resource",
+      "title": "CreateTiups"
+    },
+    "tiupv2UpdateTiups": {
+      "type": "object",
+      "properties": {
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "The labelIds of the Host"
+        },
+        "description": {
+          "type": "string",
+          "title": "The Credential_Id of the Host"
+        },
+        "name": {
+          "type": "string",
+          "title": "The locationId of the Host"
+        }
+      },
+      "title": "UpdateTiups"
+    },
+    "v2ActivateLicenseRequest": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string",
+          "title": "The File name of the license"
+        },
+        "content": {
+          "type": "string",
+          "format": "binary",
+          "description": "The license file to upload to activate the license",
+          "title": "The content of the license file"
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "The header of the license file"
+        }
+      },
+      "title": "ActivateLicenseRequest is the request message for ActivateLicense",
       "required": [
-        "labelValue"
+        "fileName",
+        "content",
+        "headers"
       ]
     },
     "v2ApiKey": {
@@ -2714,6 +5863,10 @@
           ],
           "title": "The apikey status"
         },
+        "description": {
+          "type": "string",
+          "title": "The description of apikey"
+        },
         "createTime": {
           "type": "string",
           "format": "date-time",
@@ -2732,6 +5885,293 @@
         "accessKey"
       ]
     },
+    "v2BRSummary": {
+      "type": "object",
+      "properties": {
+        "topClustersWithBrSize": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ClusterWithBRSize"
+          },
+          "title": "List of top BR size clusters"
+        },
+        "topClustersWithBrAlert": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ClusterWithBRAlert"
+          },
+          "title": "List of top BR alert clusters"
+        },
+        "topClustersWithoutBrPolicy": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ClusterWithoutBRPolicy"
+          },
+          "title": "List of top size clusters without BR policy"
+        }
+      },
+      "title": "GetBRSummaryResp represents the response to get br summary"
+    },
+    "v2BRTask": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "title": "The br task ID"
+        },
+        "type": {
+          "$ref": "#/definitions/v2TypeEnumData",
+          "title": "Type of the br task"
+        },
+        "triggerType": {
+          "$ref": "#/definitions/v2TriggerTypeEnumData",
+          "title": "Trigger type of the br task"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name of the br task"
+        },
+        "status": {
+          "$ref": "#/definitions/v2StatusEnumData",
+          "title": "Status of the br task"
+        },
+        "restoredTs": {
+          "type": "string",
+          "title": "Restored ts"
+        },
+        "startTime": {
+          "type": "string",
+          "title": "Start time"
+        },
+        "endTime": {
+          "type": "string",
+          "title": "End time"
+        },
+        "clusterId": {
+          "type": "string",
+          "title": "The cluster ID"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "The cluster name"
+        },
+        "destination": {
+          "type": "string",
+          "title": "Destination of the br task"
+        },
+        "size": {
+          "type": "string",
+          "title": "Size of the br task, 10TB/100GB"
+        },
+        "sizeByte": {
+          "type": "string",
+          "format": "int64",
+          "title": "Size of the br task in byte"
+        },
+        "errorMessage": {
+          "type": "string",
+          "title": "Error message"
+        },
+        "policyId": {
+          "type": "string",
+          "title": "Policy ID of the br task"
+        },
+        "policyName": {
+          "type": "string",
+          "title": "Policy name of the br task"
+        },
+        "log": {
+          "type": "string",
+          "title": "Log"
+        },
+        "accessKeyId": {
+          "type": "string",
+          "title": "AccessKeyID"
+        },
+        "secretAccessKey": {
+          "type": "string",
+          "title": "SecretAccessKey"
+        },
+        "rateLimit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "RateLimit"
+        },
+        "concurrency": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Concurrency"
+        },
+        "logFile": {
+          "type": "string",
+          "title": "LogFile"
+        },
+        "expireTime": {
+          "type": "string",
+          "title": "ExpireTime"
+        }
+      },
+      "title": "BRTask represents a br task"
+    },
+    "v2BackupCycleEnumData": {
+      "type": "string",
+      "enum": [
+        "week",
+        "month"
+      ],
+      "default": "week",
+      "description": "- week: \nWeek\n - month: \nMonth",
+      "title": "Data of CycleEnum"
+    },
+    "v2BackupPolicy": {
+      "type": "object",
+      "properties": {
+        "policyId": {
+          "type": "string",
+          "title": "The policy ID"
+        },
+        "name": {
+          "type": "string",
+          "title": "The policy name"
+        },
+        "logBackup": {
+          "type": "boolean",
+          "title": "LogBackup means whether to backup log"
+        },
+        "destination": {
+          "type": "string",
+          "title": "Destination of the backup"
+        },
+        "accessKeyId": {
+          "type": "string",
+          "title": "AccessKeyID"
+        },
+        "secretAccessKey": {
+          "type": "string",
+          "title": "SecretAccessKey"
+        },
+        "rateLimit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "RateLimit"
+        },
+        "concurrency": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Concurrency"
+        },
+        "logFile": {
+          "type": "string",
+          "title": "LogFile"
+        },
+        "cycle": {
+          "$ref": "#/definitions/v2CycleEnumData",
+          "title": "Cycle of backup"
+        },
+        "frequency": {
+          "type": "string",
+          "title": "Frequency: week:0~6 for Sunday To Saturday, month:1~31 for Date.example:1,2,3,4,5,6,7"
+        },
+        "time": {
+          "type": "string",
+          "title": "Time"
+        },
+        "retention": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Retention"
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Cluster"
+          },
+          "title": "Clusters"
+        },
+        "clusterIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "ClusterIDs"
+        }
+      },
+      "title": "BackupPolicy represents a backup policy",
+      "required": [
+        "name",
+        "logBackup",
+        "destination",
+        "cycle",
+        "frequency",
+        "time",
+        "retention"
+      ]
+    },
+    "v2BasicClusterInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The cluster ID"
+        },
+        "name": {
+          "type": "string",
+          "title": "The cluster name"
+        }
+      },
+      "title": "BasicCluster represents a cluster basic info"
+    },
+    "v2BatchCreateLabelsRequest": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/labelv2Label"
+          },
+          "title": "the labels with basic resource"
+        }
+      },
+      "title": "Batch Create Labels Request",
+      "required": [
+        "labels"
+      ]
+    },
+    "v2BatchCreateLabelsResponse": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/labelv2Label"
+          },
+          "title": "the labels"
+        }
+      },
+      "title": "Create Labels Response"
+    },
+    "v2BatchDeleteRequest": {
+      "type": "object",
+      "properties": {
+        "hostId": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "The host_id of the host"
+        }
+      },
+      "title": "Delete BatchDeleteRequest",
+      "required": [
+        "hostId"
+      ]
+    },
     "v2BindLabelRequest": {
       "type": "object",
       "properties": {
@@ -2739,21 +6179,13 @@
           "type": "string",
           "title": "the label id of the label"
         },
-        "appendBindObjects": {
+        "bindObjects": {
           "type": "array",
           "items": {
             "type": "object",
             "$ref": "#/definitions/v2BindObject"
           },
-          "title": "the bind objects to be appended"
-        },
-        "removeBindObjects": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v2BindObject"
-          },
-          "title": "the bind objects to be removed"
+          "title": "the bind objects to be bound"
         }
       },
       "title": "BindLabel Request",
@@ -2775,13 +6207,14 @@
       "type": "object",
       "properties": {
         "resourceType": {
-          "type": "string",
+          "$ref": "#/definitions/v2LabelBindResourceType",
           "title": "the resource type of the bind object"
         },
-        "resourceIds": {
+        "resources": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "$ref": "#/definitions/v2ResourceObject"
           },
           "title": "the resources of the resource type"
         }
@@ -2789,33 +6222,26 @@
       "title": "Bind object resource",
       "required": [
         "resourceType",
-        "resourceIds"
+        "resources"
       ]
     },
     "v2BindResourceRequest": {
       "type": "object",
       "properties": {
         "resourceType": {
-          "type": "string",
+          "$ref": "#/definitions/v2LabelBindResourceType",
           "title": "the resource type of the bind object"
         },
         "resourceId": {
           "type": "string",
           "title": "the resource id of the resource type"
         },
-        "appendLabelIds": {
+        "labelIds": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "title": "the label ids to be appended"
-        },
-        "removeLabelIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "the label ids to be removed"
+          "title": "the label ids to be bound"
         }
       },
       "title": "BindResource Request",
@@ -2827,12 +6253,13 @@
     "v2BindResourceResponse": {
       "type": "object",
       "properties": {
-        "labelIds": {
+        "labels": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "$ref": "#/definitions/labelv2Label"
           },
-          "title": "the label ids bound with the bind object"
+          "title": "the labels bound with the bind object"
         }
       },
       "title": "BindResource Response"
@@ -2920,6 +6347,256 @@
       "default": "unspecified",
       "description": "- unspecified: Unspecified\n - cluster: Cluster metrics\n - host: Host metrics\n - overview: Overview metrics",
       "title": "Data of ClassEnum"
+    },
+    "v2Cluster": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The cluster ID"
+        },
+        "name": {
+          "type": "string",
+          "title": "The cluster name"
+        }
+      },
+      "title": "Cluster represents a cluster basic info"
+    },
+    "v2ClusterBRStatusEnumData": {
+      "type": "string",
+      "enum": [
+        "running",
+        "finished",
+        "abnormal",
+        "stopped"
+      ],
+      "default": "running",
+      "description": "- running: Running\n - finished: Finished\n - abnormal: Abnormal\n - stopped: Stopped",
+      "title": "Data of StatusEnum"
+    },
+    "v2ClusterBRTask": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "title": "The br task ID"
+        },
+        "type": {
+          "$ref": "#/definitions/v2ClusterBRTypeEnumData",
+          "title": "Type of the br task"
+        },
+        "triggerType": {
+          "$ref": "#/definitions/v2ClusterBRTriggerTypeEnumData",
+          "title": "Trigger type of the br task"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name of the br task"
+        },
+        "status": {
+          "$ref": "#/definitions/v2ClusterBRStatusEnumData",
+          "title": "Status of the br task"
+        },
+        "restoredTs": {
+          "type": "string",
+          "title": "Restored ts"
+        },
+        "startTime": {
+          "type": "string",
+          "title": "Start time"
+        },
+        "endTime": {
+          "type": "string",
+          "title": "End time"
+        },
+        "clusterId": {
+          "type": "string",
+          "title": "The cluster ID"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "The cluster name"
+        },
+        "destination": {
+          "type": "string",
+          "title": "Destination of the br task"
+        },
+        "size": {
+          "type": "string",
+          "title": "Size of the br task, 10TB/100GB"
+        },
+        "sizeByte": {
+          "type": "string",
+          "format": "int64",
+          "title": "Size of the br task in byte"
+        },
+        "errorMessage": {
+          "type": "string",
+          "title": "Error message"
+        },
+        "policyId": {
+          "type": "string",
+          "title": "Policy ID of the br task"
+        },
+        "policyName": {
+          "type": "string",
+          "title": "Policy name of the br task"
+        },
+        "log": {
+          "type": "string",
+          "title": "Log"
+        },
+        "accessKeyId": {
+          "type": "string",
+          "title": "AccessKeyID"
+        },
+        "secretAccessKey": {
+          "type": "string",
+          "title": "SecretAccessKey"
+        },
+        "rateLimit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "RateLimit"
+        },
+        "concurrency": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Concurrency"
+        },
+        "logFile": {
+          "type": "string",
+          "title": "LogFile"
+        },
+        "expireTime": {
+          "type": "string",
+          "title": "ExpireTime"
+        }
+      },
+      "title": "ClusterBRTask represents a br task"
+    },
+    "v2ClusterBRTriggerTypeEnumData": {
+      "type": "string",
+      "enum": [
+        "automatic",
+        "manual"
+      ],
+      "default": "automatic",
+      "description": "- automatic: automatic\n - manual: manual",
+      "title": "Data of TriggerTypeEnum"
+    },
+    "v2ClusterBRTypeEnumData": {
+      "type": "string",
+      "enum": [
+        "full_backup",
+        "log_backup",
+        "restore_by_file",
+        "restore_by_time",
+        "all_backup",
+        "all_restore"
+      ],
+      "default": "full_backup",
+      "description": "- full_backup: Full backup\n - log_backup: Log backup\n - restore_by_file: Restore by file\n - restore_by_time: Restore by time\n - all_backup: All backup\n - all_restore: All restore",
+      "title": "Data of TypeEnum"
+    },
+    "v2ClusterBackupPolicy": {
+      "type": "object",
+      "properties": {
+        "policyId": {
+          "type": "string",
+          "title": "The policy ID"
+        },
+        "name": {
+          "type": "string",
+          "title": "The policy name"
+        },
+        "logBackup": {
+          "type": "boolean",
+          "title": "LogBackup means whether to backup log"
+        },
+        "destination": {
+          "type": "string",
+          "title": "Destination of the backup"
+        },
+        "accessKeyId": {
+          "type": "string",
+          "title": "AccessKeyID"
+        },
+        "secretAccessKey": {
+          "type": "string",
+          "title": "SecretAccessKey"
+        },
+        "rateLimit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "RateLimit"
+        },
+        "concurrency": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Concurrency"
+        },
+        "logFile": {
+          "type": "string",
+          "title": "LogFile"
+        },
+        "cycle": {
+          "$ref": "#/definitions/v2BackupCycleEnumData",
+          "title": "Cycle of backup"
+        },
+        "frequency": {
+          "type": "string",
+          "title": "Frequency: week:0~6 for Sunday To Saturday, month:1~31 for Date.example:1,2,3,4,5,6,7"
+        },
+        "time": {
+          "type": "string",
+          "title": "Time"
+        },
+        "retention": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Retention"
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2BasicClusterInfo"
+          },
+          "title": "Clusters"
+        },
+        "lastBackupTime": {
+          "type": "string",
+          "title": "LastBackupTime"
+        },
+        "size": {
+          "type": "string",
+          "title": "Size"
+        },
+        "sizeByte": {
+          "type": "string",
+          "format": "int64",
+          "title": "SizeByte"
+        },
+        "lastLogBackupTime": {
+          "type": "string",
+          "title": "LastLogBackupTime"
+        },
+        "logBackupDelay": {
+          "type": "string",
+          "title": "LogBackupDelay"
+        }
+      },
+      "title": "ClusterBackupPolicy represents a backup policy and backup status",
+      "required": [
+        "name",
+        "logBackup",
+        "destination",
+        "cycle",
+        "frequency",
+        "time",
+        "retention"
+      ]
     },
     "v2ClusterMetricData": {
       "type": "object",
@@ -3071,6 +6748,329 @@
       },
       "title": "ClusterProcess represents a single process in the cluster"
     },
+    "v2ClusterWithBRAlert": {
+      "type": "object",
+      "properties": {
+        "clusterId": {
+          "type": "string",
+          "title": "Cluster ID"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "Cluster Name"
+        },
+        "alertCount": {
+          "type": "string",
+          "format": "int64",
+          "title": "Alert count"
+        }
+      },
+      "title": "ClusterWithBRAlert represents a cluster with BR alert"
+    },
+    "v2ClusterWithBRSize": {
+      "type": "object",
+      "properties": {
+        "clusterId": {
+          "type": "string",
+          "title": "Cluster ID"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "Cluster Name"
+        },
+        "totalSizeByte": {
+          "type": "string",
+          "format": "int64",
+          "title": "total size in byte"
+        },
+        "totalSize": {
+          "type": "string",
+          "title": "Total size with unit, e.g. 10TB, other form of TotalSizeByte"
+        }
+      },
+      "title": "ClusterWithBRSize represents a cluster with BR size"
+    },
+    "v2ClusterWithoutBRPolicy": {
+      "type": "object",
+      "properties": {
+        "clusterId": {
+          "type": "string",
+          "title": "Cluster ID"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "Cluster Name"
+        },
+        "lastBackupTime": {
+          "type": "string",
+          "title": "Last backup time"
+        },
+        "sizeByte": {
+          "type": "string",
+          "format": "int64",
+          "title": "Backup size in byte"
+        }
+      },
+      "title": "ClusterWithoutBRPolicy represents a cluster without BR policy"
+    },
+    "v2Clusters": {
+      "type": "object",
+      "properties": {
+        "clusterId": {
+          "type": "string",
+          "title": "the label id of the label"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "the label key of the label"
+        }
+      },
+      "title": "Clusters"
+    },
+    "v2ConfirmResponse": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "title": "task_id"
+        }
+      },
+      "title": "ConfirmResponse",
+      "required": [
+        "taskId"
+      ]
+    },
+    "v2CreateApiKeyRequest": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "title": "The description of the apiKey"
+        }
+      },
+      "title": "CreateApiKey Request",
+      "required": [
+        "description"
+      ]
+    },
+    "v2CreateHost": {
+      "type": "object",
+      "properties": {
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "ips"
+        },
+        "sshPort": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The SSHPort of the Host"
+        },
+        "credentialId": {
+          "type": "string",
+          "title": "The credential_id of the Host"
+        },
+        "locationId": {
+          "type": "string",
+          "title": "The locationId of the Host"
+        },
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "The labelIds of the Host"
+        },
+        "comment": {
+          "type": "string",
+          "title": "The comment of the Host"
+        }
+      },
+      "title": "CreateHost"
+    },
+    "v2Credential": {
+      "type": "object",
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "title": "the credential id of the credential"
+        },
+        "credentialName": {
+          "type": "string",
+          "title": "the credential name of the credential"
+        },
+        "userName": {
+          "type": "string",
+          "title": "the user name of the credential"
+        },
+        "credentialType": {
+          "$ref": "#/definitions/v2CredentialType",
+          "title": "the credential type of the credential"
+        },
+        "validateType": {
+          "$ref": "#/definitions/v2CredentialValidateType",
+          "title": "the validate type of the credential"
+        },
+        "hostCredential": {
+          "$ref": "#/definitions/v2HostCredentialObject",
+          "title": "the host credential object"
+        },
+        "tidbCredential": {
+          "$ref": "#/definitions/v2TiDBCredentialObject",
+          "title": "the tidb cluster credential object"
+        }
+      },
+      "title": "Credential basic resource",
+      "required": [
+        "userName",
+        "credentialType",
+        "validateType"
+      ]
+    },
+    "v2CredentialType": {
+      "type": "string",
+      "enum": [
+        "CREDENTIAL_TYPE_UNSPECIFIED",
+        "HOST",
+        "TIDB"
+      ],
+      "default": "CREDENTIAL_TYPE_UNSPECIFIED",
+      "description": "- CREDENTIAL_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: credential type host\n - TIDB: credential type tidb",
+      "title": "define credential type"
+    },
+    "v2CredentialValidateType": {
+      "type": "string",
+      "enum": [
+        "CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED",
+        "PASSWORD",
+        "RSAKEY"
+      ],
+      "default": "CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED",
+      "description": "- CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED: validate type unspecified\n - PASSWORD: validate by password\n - RSAKEY: validate by rsa key",
+      "title": "define validate type of credential"
+    },
+    "v2CycleEnumData": {
+      "type": "string",
+      "enum": [
+        "week",
+        "month"
+      ],
+      "default": "week",
+      "description": "- week: \nWeek\n - month: \nMonth",
+      "title": "Data of CycleEnum"
+    },
+    "v2DetectClusterResponse": {
+      "type": "object",
+      "properties": {
+        "exist": {
+          "type": "boolean",
+          "title": "Whether the cluster exist"
+        }
+      },
+      "title": "DetectClusterResponse represents the response to detect the if the cluster exist"
+    },
+    "v2DeviceCode": {
+      "type": "object",
+      "properties": {
+        "deviceCode": {
+          "type": "string",
+          "title": "Device code, separated by comma"
+        }
+      },
+      "title": "DeviceCode"
+    },
+    "v2Disk": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "title": "host resource\nThe Name of the Host Disk"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The Size of the Host Disk"
+        },
+        "usedSpace": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The Used of the Host Disk"
+        },
+        "availableSpace": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The Avail of the Host Disk"
+        },
+        "mountingDir": {
+          "type": "string",
+          "title": "The Mounted of the Host Disk"
+        },
+        "diskType": {
+          "type": "string",
+          "enum": [
+            "HDD",
+            "SSD"
+          ],
+          "title": "disk type (e.g., \"HDD\", \"SSD\")"
+        }
+      },
+      "title": "Disk"
+    },
+    "v2DownloadHostTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "title": "data"
+        }
+      },
+      "title": "DownloadHostTemplateResponse"
+    },
+    "v2DownloadRSAKeyRequest": {
+      "type": "object",
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "title": "the credential id of the credential"
+        }
+      },
+      "title": "DownLoadRSAKey Request",
+      "required": [
+        "credentialId"
+      ]
+    },
+    "v2DownloadRSAKeyResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "title": "the data of file"
+        }
+      },
+      "title": "DownLoadRSAKey Response"
+    },
+    "v2ErrorDetail": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "The  error detail type"
+        },
+        "locale": {
+          "type": "string",
+          "title": "the languages used in i18n"
+        },
+        "message": {
+          "type": "string",
+          "title": "The  i18n message of the error"
+        }
+      },
+      "title": "ErrorDetail"
+    },
     "v2ExprQueryData": {
       "type": "object",
       "properties": {
@@ -3134,6 +7134,34 @@
       },
       "title": "ExpressionWithLegend represents an expression with its legend"
     },
+    "v2GenerateRSAKeyRequest": {
+      "type": "object",
+      "title": "GenerateRSAKey Request"
+    },
+    "v2GenerateRSAKeyResponse": {
+      "type": "object",
+      "properties": {
+        "publicKey": {
+          "type": "string",
+          "title": "the public key of the rsa key"
+        },
+        "privateKey": {
+          "type": "string",
+          "title": "the private key of the rsa key"
+        }
+      },
+      "title": "GenerateRSAKey response"
+    },
+    "v2GetLabelWithBindingsResponse": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "$ref": "#/definitions/v2LabelWithBindObject",
+          "title": "label info"
+        }
+      },
+      "title": "GetLabelWithBindings Response"
+    },
     "v2GroupEnumData": {
       "type": "string",
       "enum": [
@@ -3148,6 +7176,342 @@
       "default": "unspecified",
       "description": "- unspecified: Unspecified group\n - overview: Overview group\n - basic: Basic group\n - advance: Advanced group\n - resource: Resource group\n - performance: Performance group\n - process: Process group",
       "title": "Data of GroupEnum"
+    },
+    "v2Host": {
+      "type": "object",
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "title": "The host_id of the Host"
+        },
+        "ip": {
+          "type": "string",
+          "title": "The ip of the Host"
+        },
+        "hostName": {
+          "type": "string",
+          "title": "The host_name of the Host"
+        },
+        "sshPort": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The ssh_port of the Host"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "initializing",
+            "deleting",
+            "deleted",
+            "used",
+            "idle"
+          ],
+          "title": "host Status (e.g., \"initializing\", \"used\")"
+        },
+        "connectionStatus": {
+          "type": "string",
+          "enum": [
+            "online",
+            "offline"
+          ],
+          "title": "host connection Status (e.g., \"online\", \"offline\")"
+        },
+        "checkStatus": {
+          "type": "string",
+          "enum": [
+            "checking",
+            "failed",
+            "warning",
+            "succeeded"
+          ],
+          "title": "host check (e.g., \"checking\", \"failed\")"
+        },
+        "credentialId": {
+          "type": "string",
+          "title": "The credential_id of the Host"
+        },
+        "reportId": {
+          "type": "string",
+          "title": "The report_id of the Host"
+        },
+        "osName": {
+          "type": "string",
+          "title": "os_name"
+        },
+        "osVendor": {
+          "type": "string",
+          "title": "os_vendor"
+        },
+        "osVersion": {
+          "type": "string",
+          "title": "os_version"
+        },
+        "osRelease": {
+          "type": "string",
+          "title": "os_release"
+        },
+        "osArchitecture": {
+          "type": "string",
+          "title": "os_architecture"
+        },
+        "cpuVendor": {
+          "type": "string",
+          "title": "cpu_vendor"
+        },
+        "cpuModel": {
+          "type": "string",
+          "title": "cpu_model"
+        },
+        "cpuSpeed": {
+          "type": "integer",
+          "format": "int32",
+          "title": "cpu_speed"
+        },
+        "cpuCache": {
+          "type": "integer",
+          "format": "int32",
+          "title": "cpu_cache"
+        },
+        "cpus": {
+          "type": "integer",
+          "format": "int32",
+          "title": "cpus"
+        },
+        "cpuThreads": {
+          "type": "integer",
+          "format": "int32",
+          "title": "cpu_threads"
+        },
+        "cpuGovernor": {
+          "type": "string",
+          "title": "cpu_governor"
+        },
+        "cpuArch": {
+          "type": "string",
+          "title": "cpu_arch"
+        },
+        "memoryType": {
+          "type": "string",
+          "title": "memory_type"
+        },
+        "memorySpeed": {
+          "type": "integer",
+          "format": "int32",
+          "title": "memory_speed"
+        },
+        "memorySize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "memory_size"
+        },
+        "memorySwap": {
+          "type": "integer",
+          "format": "int32",
+          "title": "memory_swap"
+        },
+        "cpuNumaNodes": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The CpuNumaNodes of the Host"
+        },
+        "storageTotalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The Storage of the Host"
+        },
+        "storageAvailable": {
+          "type": "integer",
+          "format": "int32",
+          "title": "storage_available"
+        },
+        "storageUsed": {
+          "type": "integer",
+          "format": "int32",
+          "title": "storage_used"
+        },
+        "diskType": {
+          "type": "string",
+          "title": "The DiskType of the Host"
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Clusters"
+          },
+          "title": "The Clusters of the Host"
+        },
+        "nodeExporterPort": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Other info\nThe node_exporter_port of the Host"
+        },
+        "tiupIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "The tiup_ids of the Host"
+        },
+        "hostType": {
+          "type": "string",
+          "enum": [
+            "VM",
+            "PM"
+          ],
+          "title": "host Type (e.g., \"VM\", \"PM\")"
+        },
+        "comment": {
+          "type": "string",
+          "title": "The HostComment_Id of the Host"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Labels"
+          },
+          "title": "The Label of the Host"
+        },
+        "createdTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "created_time"
+        },
+        "updatedTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "updated_time"
+        },
+        "credential": {
+          "$ref": "#/definitions/v2Credential",
+          "title": "credential"
+        },
+        "locationMappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2LocationMappings"
+          },
+          "title": "The Status of the Host\nlocation_mappings"
+        },
+        "memoryUnit": {
+          "type": "string",
+          "title": "memory_unit"
+        },
+        "storageUnit": {
+          "type": "string",
+          "title": "storage_unit"
+        },
+        "locationId": {
+          "type": "string",
+          "title": "location_id"
+        },
+        "cpuCores": {
+          "type": "integer",
+          "format": "int32",
+          "title": "cpu_cores"
+        }
+      },
+      "title": "Hosts resource",
+      "required": [
+        "hostId"
+      ]
+    },
+    "v2HostCheckResponse": {
+      "type": "object",
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "title": "task_id"
+        },
+        "taskId": {
+          "type": "string",
+          "title": "task_id"
+        },
+        "reportId": {
+          "type": "string",
+          "title": "importId"
+        }
+      },
+      "title": "HostCheckResponse",
+      "required": [
+        "hostId",
+        "taskId",
+        "reportId"
+      ]
+    },
+    "v2HostCreateResponse": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "title": "task_id"
+        }
+      },
+      "title": "HostCreate Response"
+    },
+    "v2HostCredentialObject": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "title": "the password of the user"
+        },
+        "publicKey": {
+          "type": "string",
+          "title": "the public key of the user"
+        },
+        "privateKey": {
+          "type": "string",
+          "title": "the private key of the user"
+        },
+        "hostIps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "the list of host ips bound with current credential"
+        }
+      },
+      "title": "Host credential object"
+    },
+    "v2HostDiskResponse": {
+      "type": "object",
+      "properties": {
+        "disk": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Disk"
+          },
+          "title": "Disk"
+        }
+      },
+      "title": "Disk Response"
+    },
+    "v2HostFixResponse": {
+      "type": "object",
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "title": "task_id"
+        },
+        "taskId": {
+          "type": "string",
+          "title": "task_id"
+        },
+        "reportId": {
+          "type": "string",
+          "title": "importId"
+        }
+      },
+      "title": "HostFixResponse",
+      "required": [
+        "hostId",
+        "taskId",
+        "reportId"
+      ]
     },
     "v2HostMetricData": {
       "type": "object",
@@ -3167,11 +7531,183 @@
       },
       "title": "HostMetricData represents the response for querying cluster metric data"
     },
+    "v2HostServiceUpdateHostBody": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "$ref": "#/definitions/hostv2UpdateHost",
+          "title": "host resource"
+        }
+      },
+      "title": "Create Request"
+    },
+    "v2HostTask": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "title": "importId"
+        },
+        "hostId": {
+          "type": "string",
+          "title": "host_id"
+        },
+        "reportId": {
+          "type": "string",
+          "title": "report_id"
+        },
+        "ip": {
+          "type": "string",
+          "title": "ip"
+        },
+        "userName": {
+          "type": "string",
+          "title": "user_name"
+        },
+        "sshPort": {
+          "type": "integer",
+          "format": "int32",
+          "title": "ssh_port"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "init",
+            "existed",
+            "succeeded",
+            "failed"
+          ],
+          "title": "create task state (e.g., \"init\", \"existed\")"
+        },
+        "labels": {
+          "type": "string",
+          "title": "labels"
+        },
+        "locationId": {
+          "type": "string",
+          "title": "location_id"
+        },
+        "credentialId": {
+          "type": "string",
+          "title": "credential_id"
+        },
+        "hostName": {
+          "type": "string",
+          "title": "host_name"
+        },
+        "labelsList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Labels"
+          },
+          "title": "labels"
+        },
+        "locationMappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2LocationMappings"
+          },
+          "title": "location_mappings"
+        },
+        "credential": {
+          "$ref": "#/definitions/v2Credential",
+          "title": "Credential"
+        }
+      },
+      "title": "HostTask",
+      "required": [
+        "taskId",
+        "hostId",
+        "ip",
+        "sshPort"
+      ]
+    },
+    "v2HostTiDBProcessesResponse": {
+      "type": "object",
+      "properties": {
+        "tiDBProcesses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2TiDBProcesses"
+          },
+          "title": "tiDBProcesses"
+        }
+      },
+      "title": "HostTiDBProcessesResponse Response"
+    },
+    "v2ImportRequest": {
+      "type": "object",
+      "properties": {
+        "hostData": {
+          "type": "string",
+          "format": "binary",
+          "description": "Upload a csv form data to host.",
+          "title": "host_data"
+        },
+        "fileName": {
+          "type": "string",
+          "title": "file_name"
+        },
+        "credentialId": {
+          "type": "string",
+          "title": "The credential_id of the Import"
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "The header of the license file"
+        }
+      },
+      "title": "Import Request",
+      "required": [
+        "hostData",
+        "headers"
+      ]
+    },
+    "v2ImportTaskResponse": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2HostTask"
+          },
+          "title": "List of users"
+        },
+        "taskId": {
+          "type": "string",
+          "title": "importId"
+        }
+      },
+      "title": "ImportTaskResponse",
+      "required": [
+        "task",
+        "taskId"
+      ]
+    },
+    "v2LabelBindResourceType": {
+      "type": "string",
+      "enum": [
+        "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED",
+        "HOST",
+        "TIUP",
+        "CLUSTER"
+      ],
+      "default": "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED",
+      "description": "- LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: resource type host\n - TIUP: resource type tiup\n - CLUSTER: resource type cluster",
+      "title": "define label bind resource type"
+    },
     "v2LabelWithBindObject": {
       "type": "object",
       "properties": {
-        "label": {
-          "$ref": "#/definitions/temapiv2Label",
+        "labelInfo": {
+          "$ref": "#/definitions/labelv2Label",
           "title": "the label basic info of the label"
         },
         "bindObjects": {
@@ -3184,6 +7720,50 @@
         }
       },
       "title": "Label resource with bound object"
+    },
+    "v2Labels": {
+      "type": "object",
+      "properties": {
+        "labelId": {
+          "type": "string",
+          "title": "the label id of the label"
+        },
+        "labelKey": {
+          "type": "string",
+          "title": "the label key of the label"
+        },
+        "labelValue": {
+          "type": "string",
+          "title": "the label value of the label"
+        }
+      },
+      "title": "Labels",
+      "required": [
+        "labelValue"
+      ]
+    },
+    "v2LicenseStatusEnumData": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "expiring",
+        "invalid",
+        "revoked"
+      ],
+      "default": "active",
+      "description": "- active: active\n - expired: inactive\n - expiring: expired\n - invalid: invalid\n - revoked: revoked",
+      "title": "Data of LicenseStatusEnum"
+    },
+    "v2LicenseTypeEnumData": {
+      "type": "string",
+      "enum": [
+        "free",
+        "ultimate"
+      ],
+      "default": "free",
+      "description": "- free: free\n - ultimate: ultimate",
+      "title": "Data of TriggerTypeEnum"
     },
     "v2ListApiKeysResponse": {
       "type": "object",
@@ -3208,7 +7788,218 @@
       },
       "title": "ListApiKeyRequest"
     },
+    "v2ListBRTasksResponse": {
+      "type": "object",
+      "properties": {
+        "brTasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2BRTask"
+          },
+          "title": "List of br tasks"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Total size"
+        }
+      },
+      "title": "ListBRTasksResponse represents the response to list br tasks"
+    },
+    "v2ListBackupPoliciesResponse": {
+      "type": "object",
+      "properties": {
+        "backupPolicies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2BackupPolicy"
+          },
+          "title": "List of br policies"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Total size"
+        }
+      },
+      "title": "ListBRPoliciesResponse represents the response to get br policies"
+    },
+    "v2ListClusterBRTasksResponse": {
+      "type": "object",
+      "properties": {
+        "brTasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ClusterBRTask"
+          },
+          "title": "List of br tasks"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Total size"
+        }
+      },
+      "title": "ListClusterBRTasksResponse represents the response to list br tasks for a specific cluster"
+    },
+    "v2ListClusterBackupRecordsResponse": {
+      "type": "object",
+      "properties": {
+        "backupRecords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2ClusterBRTask"
+          },
+          "title": "List of valid full backup records"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Total size"
+        }
+      },
+      "title": "ListClusterBackupRecordsResponse represents the response to list valid full backup records for a specific cluster"
+    },
+    "v2ListCredentialsResponse": {
+      "type": "object",
+      "properties": {
+        "credentials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Credential"
+          },
+          "title": "list of credentials"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListCredentials Response"
+    },
+    "v2ListHostsResponse": {
+      "type": "object",
+      "properties": {
+        "hosts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Host"
+          },
+          "title": "List of users"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Total size"
+        }
+      },
+      "title": "ListResponse",
+      "required": [
+        "hosts",
+        "nextPageToken",
+        "totalSize"
+      ]
+    },
+    "v2ListLabelKeysResponse": {
+      "type": "object",
+      "properties": {
+        "labelKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of label keys"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListLabelKeys Response"
+    },
+    "v2ListLabelsByResourceTypeResponse": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/labelv2Label"
+          },
+          "title": "list of labels"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListLabelsByResourceType Response"
+    },
     "v2ListLabelsResponse": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/labelv2Label"
+          },
+          "title": "list of labels"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListLabels Response"
+    },
+    "v2ListLabelsWithBindingsResponse": {
       "type": "object",
       "properties": {
         "labels": {
@@ -3229,7 +8020,30 @@
           "title": "total size"
         }
       },
-      "title": "ListLabels Response"
+      "title": "ListLabelsWithBindings Response"
+    },
+    "v2ListLocationsResponse": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Locations"
+          },
+          "title": "list of Locations"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListLocations Response"
     },
     "v2ListRolesResponse": {
       "type": "object",
@@ -3254,6 +8068,29 @@
       },
       "title": "ListRolesResponse"
     },
+    "v2ListTiupsResponse": {
+      "type": "object",
+      "properties": {
+        "tiups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Tiups"
+          },
+          "title": "list of tiups"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListTiups Response"
+    },
     "v2ListUsersResponse": {
       "type": "object",
       "properties": {
@@ -3276,6 +8113,59 @@
         }
       },
       "title": "ListUsersResponse"
+    },
+    "v2LocationMappings": {
+      "type": "object",
+      "properties": {
+        "locationId": {
+          "type": "string",
+          "title": "the Location id of the Location"
+        },
+        "parentId": {
+          "type": "string",
+          "title": "the Location key of the Location"
+        },
+        "locationKey": {
+          "type": "string",
+          "title": "the Location value of the Location"
+        },
+        "locationValue": {
+          "type": "string",
+          "title": "the Location value of the Location"
+        }
+      },
+      "title": "LocationMappings",
+      "required": [
+        "locationKey",
+        "locationValue"
+      ]
+    },
+    "v2Locations": {
+      "type": "object",
+      "properties": {
+        "locationId": {
+          "type": "string",
+          "title": "the Location id of the Location"
+        },
+        "parentId": {
+          "type": "string",
+          "title": "the Location key of the Location"
+        },
+        "locationKey": {
+          "type": "string",
+          "enum": [
+            "zone",
+            "dc",
+            "rack"
+          ],
+          "title": "location key  (e.g., \"zone\", \"dc\")"
+        },
+        "locationValue": {
+          "type": "string",
+          "title": "the Location value of the Location"
+        }
+      },
+      "title": "Location basic resource"
     },
     "v2LoginRequest": {
       "type": "object",
@@ -3408,6 +8298,20 @@
       },
       "title": "OverviewStatus represents the response for querying overview data"
     },
+    "v2PreCheckBackupPolicyResponse": {
+      "type": "object",
+      "properties": {
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2Cluster"
+          },
+          "title": "Clusters that already have backup policies"
+        }
+      },
+      "title": "PreCheckBackupPolicyResponse represents the conflict clusters which already have backup policies"
+    },
     "v2ProcessList": {
       "type": "object",
       "properties": {
@@ -3508,6 +8412,37 @@
       },
       "title": "QueryResult represents the result of a query"
     },
+    "v2ReportResponse": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "title": "task_id"
+        },
+        "taskState": {
+          "type": "string",
+          "enum": [
+            "init",
+            "running",
+            "success",
+            "fail"
+          ],
+          "title": "check task state (e.g., \"init\", \"running\")"
+        },
+        "reports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/hostv2Report"
+          },
+          "title": "List of reports"
+        }
+      },
+      "title": "ReportResponse",
+      "required": [
+        "taskId"
+      ]
+    },
     "v2ResetSecretKeyResponse": {
       "type": "object",
       "properties": {
@@ -3561,6 +8496,23 @@
         }
       },
       "title": "Response message for GetResourceGroupList"
+    },
+    "v2ResourceObject": {
+      "type": "object",
+      "properties": {
+        "resourceId": {
+          "type": "string",
+          "title": "the resource id of the resource object"
+        },
+        "resourceName": {
+          "type": "string",
+          "title": "the resource name of the resource object"
+        }
+      },
+      "title": "Resource object",
+      "required": [
+        "resourceName"
+      ]
     },
     "v2Role": {
       "type": "object",
@@ -3623,6 +8575,10 @@
             "type": "string"
           },
           "title": "Filter value list"
+        },
+        "type": {
+          "type": "string",
+          "title": "Type"
         }
       },
       "title": "Response message for available filter info"
@@ -4221,6 +9177,295 @@
       },
       "title": "StatusCount represents the status of a target"
     },
+    "v2StatusEnumData": {
+      "type": "string",
+      "enum": [
+        "all",
+        "running",
+        "finished",
+        "abnormal",
+        "stopped"
+      ],
+      "default": "all",
+      "description": "- all: All\n - running: Running\n - finished: Finished\n - abnormal: Abnormal\n - stopped: Stopped",
+      "title": "Data of StatusEnum"
+    },
+    "v2TiDBCredentialObject": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "title": "the password of the user"
+        },
+        "description": {
+          "type": "string",
+          "title": "the description of the credential"
+        },
+        "clusterId": {
+          "type": "string",
+          "title": "the cluster id of cluster bound with current credential"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "the cluster name of cluster bound with current credential"
+        }
+      },
+      "title": "TiDB cluster credential object",
+      "required": [
+        "password"
+      ]
+    },
+    "v2TiDBProcesses": {
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "title": "host Processes\nThe Uid of the Host Processes"
+        },
+        "pid": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The Pid of the Host Processes"
+        },
+        "ppid": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The Ppid of the Host Processes"
+        },
+        "startTime": {
+          "type": "string",
+          "title": "The stime of the Host Processes"
+        },
+        "runningTime": {
+          "type": "string",
+          "title": "The time of the Host Processes"
+        },
+        "cmd": {
+          "type": "string",
+          "title": "The cmd of the Host Processes"
+        }
+      },
+      "title": "TiDBProcesses"
+    },
+    "v2TiupCredential": {
+      "type": "object",
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "title": "the credentialId value of the Credential"
+        },
+        "credentialName": {
+          "type": "string",
+          "title": "the credentialName value of the Credential"
+        },
+        "credentialType": {
+          "type": "string",
+          "title": "the credentialType value of the Credential"
+        },
+        "userName": {
+          "type": "string",
+          "title": "the userName value of the Credential"
+        }
+      },
+      "title": "TiupCredential"
+    },
+    "v2TiupHost": {
+      "type": "object",
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "title": "The Host_Id of the Host"
+        },
+        "ip": {
+          "type": "string",
+          "title": "The IP of the Host"
+        },
+        "hostName": {
+          "type": "string",
+          "title": "The HostName of the Host"
+        },
+        "sshPort": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The SSHPort of the Host"
+        },
+        "credentialId": {
+          "type": "string",
+          "title": "The Credential_Id of the Host"
+        },
+        "osName": {
+          "type": "string",
+          "title": "os_name"
+        },
+        "osVersion": {
+          "type": "string",
+          "title": "os_version"
+        },
+        "osRelease": {
+          "type": "string",
+          "title": "os_release"
+        },
+        "osArchitecture": {
+          "type": "string",
+          "title": "os_architecture"
+        },
+        "hostType": {
+          "type": "string",
+          "enum": [
+            "VM",
+            "PM"
+          ],
+          "title": "host Type (e.g., \"VM\", \"PM\")"
+        },
+        "locationId": {
+          "type": "string",
+          "title": "location_id"
+        },
+        "createdTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "created_time"
+        },
+        "updatedTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "updated_time"
+        },
+        "credential": {
+          "$ref": "#/definitions/v2TiupCredential",
+          "title": "credential"
+        }
+      },
+      "title": "Host resource",
+      "required": [
+        "hostId"
+      ]
+    },
+    "v2TiupLabels": {
+      "type": "object",
+      "properties": {
+        "labelId": {
+          "type": "string",
+          "title": "the label id of the label"
+        },
+        "labelKey": {
+          "type": "string",
+          "title": "the label key of the label"
+        },
+        "labelValue": {
+          "type": "string",
+          "title": "the label value of the label"
+        }
+      },
+      "title": "TiupLabels",
+      "required": [
+        "labelValue"
+      ]
+    },
+    "v2Tiups": {
+      "type": "object",
+      "properties": {
+        "tiupId": {
+          "type": "string",
+          "title": "tiup_id"
+        },
+        "name": {
+          "type": "string",
+          "title": "name"
+        },
+        "tiupHome": {
+          "type": "string",
+          "title": "tiup_home"
+        },
+        "version": {
+          "type": "string",
+          "title": "version"
+        },
+        "credentialId": {
+          "type": "string",
+          "title": "credential_id"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2TiupLabels"
+          },
+          "title": "The labels of the Host"
+        },
+        "description": {
+          "type": "string",
+          "title": "description"
+        },
+        "hostId": {
+          "type": "string",
+          "title": "host_id"
+        },
+        "host": {
+          "$ref": "#/definitions/v2TiupHost",
+          "title": "host"
+        }
+      },
+      "title": "Tiups basic resource"
+    },
+    "v2TiupsClusters": {
+      "type": "object",
+      "properties": {
+        "clusterId": {
+          "type": "string",
+          "title": "cluster_id"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "cluster_id"
+        },
+        "user": {
+          "type": "string",
+          "title": "user"
+        },
+        "version": {
+          "type": "string",
+          "title": "version"
+        },
+        "metaPath": {
+          "type": "string",
+          "title": "patch"
+        },
+        "privateKeyPath": {
+          "type": "string",
+          "title": "private_key"
+        },
+        "managed": {
+          "type": "boolean",
+          "title": "managed"
+        }
+      },
+      "title": "TiupsClusters"
+    },
+    "v2TiupsClustersResponse": {
+      "type": "object",
+      "properties": {
+        "tiupsClusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2TiupsClusters"
+          },
+          "title": "list of tiups"
+        }
+      },
+      "title": "ListTiups Response"
+    },
+    "v2TiupsServiceUpdateTiupsBody": {
+      "type": "object",
+      "properties": {
+        "tiups": {
+          "$ref": "#/definitions/tiupv2UpdateTiups",
+          "title": "the tiups resource"
+        }
+      },
+      "title": "UpdateTiupsRequest Request"
+    },
     "v2TopMetricData": {
       "type": "object",
       "properties": {
@@ -4256,6 +9501,10 @@
             "type": "string"
           },
           "title": "Filter value list"
+        },
+        "type": {
+          "type": "string",
+          "title": "Type"
         }
       },
       "title": "Response message for available filter info"
@@ -4285,6 +9534,35 @@
         }
       },
       "title": "Response message for getting top sql available fields"
+    },
+    "v2TopSqlConfigs": {
+      "type": "object",
+      "properties": {
+        "enable": {
+          "type": "boolean",
+          "title": "tidb_enable_stmt_summary"
+        },
+        "refreshInterval": {
+          "type": "integer",
+          "format": "int32",
+          "title": "tidb_stmt_summary_refresh_interval"
+        },
+        "historySize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "tidb_stmt_summary_history_size"
+        },
+        "maxSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "tidb_stmt_summary_max_stmt_count"
+        },
+        "internalQuery": {
+          "type": "boolean",
+          "title": "tidb_stmt_summary_internal_query"
+        }
+      },
+      "title": "Response message for getting top sql configs"
     },
     "v2TopSqlDetail": {
       "type": "object",
@@ -4743,6 +10021,31 @@
       },
       "title": "Top SQL list"
     },
+    "v2TriggerTypeEnumData": {
+      "type": "string",
+      "enum": [
+        "automatic",
+        "manual"
+      ],
+      "default": "automatic",
+      "description": "- automatic: automatic\n - manual: manual",
+      "title": "Data of TriggerTypeEnum"
+    },
+    "v2TypeEnumData": {
+      "type": "string",
+      "enum": [
+        "all",
+        "full_backup",
+        "log_backup",
+        "restore_by_file",
+        "restore_by_time",
+        "all_backup",
+        "all_restore"
+      ],
+      "default": "all",
+      "description": "- all: All\n - full_backup: Full backup\n - log_backup: Log backup\n - restore_by_file: Restore by file\n - restore_by_time: Restore by time\n - all_backup: All backup\n - all_restore: All restore",
+      "title": "Data of TypeEnum"
+    },
     "v2User": {
       "type": "object",
       "properties": {
@@ -4875,6 +10178,36 @@
       "required": [
         "roleId"
       ]
+    },
+    "v2ValidateConnectionRequest": {
+      "type": "object",
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "title": "the credential id of the credential"
+        }
+      },
+      "title": "ValidateConnection Request",
+      "required": [
+        "credentialId"
+      ]
+    },
+    "v2ValidateConnectionResponse": {
+      "type": "object",
+      "properties": {
+        "connectionResult": {
+          "type": "string",
+          "title": "the connection result of the validate"
+        },
+        "inaccessibleHosts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "the hosts which not accessible"
+        }
+      },
+      "title": "ValidateConnection Response"
     },
     "v2ValidateSessionResponse": {
       "type": "object",

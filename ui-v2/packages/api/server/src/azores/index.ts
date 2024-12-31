@@ -14,6 +14,23 @@ import { apiKeyServiceCreateApiKeyHandlers } from './handlers/apiKeyServiceCreat
 import { apiKeyServiceDeleteApiKeyHandlers } from './handlers/apiKeyServiceDeleteApiKey';
 import { apiKeyServiceUpdateApiKeyHandlers } from './handlers/apiKeyServiceUpdateApiKey';
 import { apiKeyServiceResetSecretKeyHandlers } from './handlers/apiKeyServiceResetSecretKey';
+import { globalBRServiceListBackupPoliciesHandlers } from './handlers/globalBRServiceListBackupPolicies';
+import { globalBRServiceCreateBackupPolicyHandlers } from './handlers/globalBRServiceCreateBackupPolicy';
+import { globalBRServicePreCheckBackupPolicyHandlers } from './handlers/globalBRServicePreCheckBackupPolicy';
+import { globalBRServiceGetBackupPolicyHandlers } from './handlers/globalBRServiceGetBackupPolicy';
+import { globalBRServiceDeleteBackupPolicyHandlers } from './handlers/globalBRServiceDeleteBackupPolicy';
+import { globalBRServiceUpdateBackupPolicyHandlers } from './handlers/globalBRServiceUpdateBackupPolicy';
+import { globalBRServiceGetBRSummaryHandlers } from './handlers/globalBRServiceGetBRSummary';
+import { globalBRServiceListBRTasksHandlers } from './handlers/globalBRServiceListBRTasks';
+import { globalBRServiceDeleteBRTaskHandlers } from './handlers/globalBRServiceDeleteBRTask';
+import { globalBRServiceStartBRTaskHandlers } from './handlers/globalBRServiceStartBRTask';
+import { globalBRServiceStopBRTaskHandlers } from './handlers/globalBRServiceStopBRTask';
+import { clusterBRServiceCreateBackupTaskHandlers } from './handlers/clusterBRServiceCreateBackupTask';
+import { clusterBRServiceGetClusterBackupPolicyHandlers } from './handlers/clusterBRServiceGetClusterBackupPolicy';
+import { clusterBRServiceListClusterBackupRecordsHandlers } from './handlers/clusterBRServiceListClusterBackupRecords';
+import { clusterBRServiceCreateRestoreTaskHandlers } from './handlers/clusterBRServiceCreateRestoreTask';
+import { clusterBRServiceListClusterBRTasksHandlers } from './handlers/clusterBRServiceListClusterBRTasks';
+import { clusterBRServiceDetectClusterHandlers } from './handlers/clusterBRServiceDetectCluster';
 import { metricsServiceGetClusterMetricDataHandlers } from './handlers/metricsServiceGetClusterMetricData';
 import { metricsServiceGetClusterMetricInstanceHandlers } from './handlers/metricsServiceGetClusterMetricInstance';
 import { diagnosisServiceGetResourceGroupListHandlers } from './handlers/diagnosisServiceGetResourceGroupList';
@@ -37,15 +54,55 @@ import { diagnosisServiceUnbindSqlPlanHandlers } from './handlers/diagnosisServi
 import { diagnosisServiceGetTopSqlListHandlers } from './handlers/diagnosisServiceGetTopSqlList';
 import { diagnosisServiceGetTopSqlAvailableAdvancedFiltersHandlers } from './handlers/diagnosisServiceGetTopSqlAvailableAdvancedFilters';
 import { diagnosisServiceGetTopSqlAvailableAdvancedFilterInfoHandlers } from './handlers/diagnosisServiceGetTopSqlAvailableAdvancedFilterInfo';
+import { diagnosisServiceGetTopSqlConfigsHandlers } from './handlers/diagnosisServiceGetTopSqlConfigs';
+import { diagnosisServiceUpdateTopSqlConfigsHandlers } from './handlers/diagnosisServiceUpdateTopSqlConfigs';
 import { diagnosisServiceGetTopSqlAvailableFieldsHandlers } from './handlers/diagnosisServiceGetTopSqlAvailableFields';
 import { diagnosisServiceGetTopSqlDetailHandlers } from './handlers/diagnosisServiceGetTopSqlDetail';
+import { credentialServiceListCredentialsHandlers } from './handlers/credentialServiceListCredentials';
+import { credentialServiceCreateCredentialHandlers } from './handlers/credentialServiceCreateCredential';
+import { credentialServiceGetCredentialHandlers } from './handlers/credentialServiceGetCredential';
+import { credentialServiceDeleteCredentialHandlers } from './handlers/credentialServiceDeleteCredential';
+import { credentialServiceUpdateCredentialHandlers } from './handlers/credentialServiceUpdateCredential';
+import { credentialServiceDownloadRSAKeyHandlers } from './handlers/credentialServiceDownloadRSAKey';
+import { credentialServiceGenerateRSAKeyHandlers } from './handlers/credentialServiceGenerateRSAKey';
+import { credentialServiceValidateConnectionHandlers } from './handlers/credentialServiceValidateConnection';
+import { hostServiceListHostsHandlers } from './handlers/hostServiceListHosts';
+import { hostServiceCreateHostsHandlers } from './handlers/hostServiceCreateHosts';
+import { hostServiceImportHandlers } from './handlers/hostServiceImport';
+import { hostServiceImportTaskHandlers } from './handlers/hostServiceImportTask';
+import { hostServiceHostConfirmHandlers } from './handlers/hostServiceHostConfirm';
+import { hostServiceGetHostHandlers } from './handlers/hostServiceGetHost';
+import { hostServiceDeleteHandlers } from './handlers/hostServiceDelete';
+import { hostServiceUpdateHostHandlers } from './handlers/hostServiceUpdateHost';
+import { hostServiceGetDisksHandlers } from './handlers/hostServiceGetDisks';
 import { metricsServiceGetHostMetricDataHandlers } from './handlers/metricsServiceGetHostMetricData';
+import { hostServiceReportHandlers } from './handlers/hostServiceReport';
+import { hostServiceGetTiDBProcessesHandlers } from './handlers/hostServiceGetTiDBProcesses';
+import { hostServiceFixHandlers } from './handlers/hostServiceFix';
+import { hostServiceCheckHandlers } from './handlers/hostServiceCheck';
+import { hostServiceBatchDeleteHandlers } from './handlers/hostServiceBatchDelete';
+import { hostServiceDownloadHostTemplateHandlers } from './handlers/hostServiceDownloadHostTemplate';
 import { labelServiceListLabelsHandlers } from './handlers/labelServiceListLabels';
 import { labelServiceCreateLabelHandlers } from './handlers/labelServiceCreateLabel';
+import { labelServiceGetLabelHandlers } from './handlers/labelServiceGetLabel';
 import { labelServiceDeleteLabelHandlers } from './handlers/labelServiceDeleteLabel';
 import { labelServiceUpdateLabelHandlers } from './handlers/labelServiceUpdateLabel';
+import { labelServiceGetLabelWithBindingsHandlers } from './handlers/labelServiceGetLabelWithBindings';
+import { labelServiceBatchCreateLabelsHandlers } from './handlers/labelServiceBatchCreateLabels';
 import { labelServiceBindLabelHandlers } from './handlers/labelServiceBindLabel';
 import { labelServiceBindResourceHandlers } from './handlers/labelServiceBindResource';
+import { labelServiceListLabelsByResourceTypeHandlers } from './handlers/labelServiceListLabelsByResourceType';
+import { labelServiceListLabelKeysHandlers } from './handlers/labelServiceListLabelKeys';
+import { labelServiceListLabelsWithBindingsHandlers } from './handlers/labelServiceListLabelsWithBindings';
+import { licenseServiceGetLicenseHandlers } from './handlers/licenseServiceGetLicense';
+import { licenseServiceGetDeviceCodeHandlers } from './handlers/licenseServiceGetDeviceCode';
+import { licenseServiceActivateLicenseHandlers } from './handlers/licenseServiceActivateLicense';
+import { licenseServiceActivateFreeLicenseHandlers } from './handlers/licenseServiceActivateFreeLicense';
+import { locationServiceListLocationsHandlers } from './handlers/locationServiceListLocations';
+import { locationServiceCreateLocationsHandlers } from './handlers/locationServiceCreateLocations';
+import { locationServiceGetLocationsHandlers } from './handlers/locationServiceGetLocations';
+import { locationServiceDeleteLocationHandlers } from './handlers/locationServiceDeleteLocation';
+import { locationServiceUpdateLocationsHandlers } from './handlers/locationServiceUpdateLocations';
 import { userServiceLoginHandlers } from './handlers/userServiceLogin';
 import { userServiceLogoutHandlers } from './handlers/userServiceLogout';
 import { metricsServiceGetMetricsHandlers } from './handlers/metricsServiceGetMetrics';
@@ -54,6 +111,12 @@ import { metricsServiceGetOverviewStatusHandlers } from './handlers/metricsServi
 import { roleServiceListRolesHandlers } from './handlers/roleServiceListRoles';
 import { roleServiceCreateRoleHandlers } from './handlers/roleServiceCreateRole';
 import { roleServiceDeleteRoleHandlers } from './handlers/roleServiceDeleteRole';
+import { tiupsServiceListTiupsHandlers } from './handlers/tiupsServiceListTiups';
+import { tiupsServiceCreateTiupsHandlers } from './handlers/tiupsServiceCreateTiups';
+import { tiupsServiceGetTiupsHandlers } from './handlers/tiupsServiceGetTiups';
+import { tiupsServiceDeleteTiupsHandlers } from './handlers/tiupsServiceDeleteTiups';
+import { tiupsServiceUpdateTiupsHandlers } from './handlers/tiupsServiceUpdateTiups';
+import { tiupsServiceGetTiupsClusterHandlers } from './handlers/tiupsServiceGetTiupsCluster';
 import { userServiceListUsersHandlers } from './handlers/userServiceListUsers';
 import { userServiceCreateUserHandlers } from './handlers/userServiceCreateUser';
 import { userServiceGetUserProfileHandlers } from './handlers/userServiceGetUserProfile';
@@ -63,6 +126,7 @@ import { userServiceUpdateUserHandlers } from './handlers/userServiceUpdateUser'
 import { userServiceResetPasswordHandlers } from './handlers/userServiceResetPassword';
 import { userServiceChangePasswordHandlers } from './handlers/userServiceChangePassword';
 import { userServiceValidateSessionHandlers } from './handlers/userServiceValidateSession';
+import { apiKeyServiceGetTemErrorDetailHandlers } from './handlers/apiKeyServiceGetTemErrorDetail';
 
 
 const app = new Hono()
@@ -102,6 +166,125 @@ app.patch('/api/v2/apiKeys/:accessKey',...apiKeyServiceUpdateApiKeyHandlers)
  */
 
 app.patch('/api/v2/apiKeys/:accessKey:resetSecretKey',...apiKeyServiceResetSecretKeyHandlers)
+
+
+/**
+ * @summary ListBackupPolicies lists Backup policies
+ */
+
+app.get('/api/v2/backup/policies',...globalBRServiceListBackupPoliciesHandlers)
+
+
+/**
+ * @summary CreateBackupPolicy creates a Backup policy
+ */
+
+app.post('/api/v2/backup/policies',...globalBRServiceCreateBackupPolicyHandlers)
+
+
+/**
+ * @summary PreCheckBackupPolicy pre-checks a Backup policy
+ */
+
+app.post('/api/v2/backup/policies/precheck',...globalBRServicePreCheckBackupPolicyHandlers)
+
+
+/**
+ * @summary GetBackupPolicy gets a Backup policy
+ */
+
+app.get('/api/v2/backup/policies/:policyId',...globalBRServiceGetBackupPolicyHandlers)
+
+
+/**
+ * @summary DeleteBackupPolicy deletes a Backup policy
+ */
+
+app.delete('/api/v2/backup/policies/:policyId',...globalBRServiceDeleteBackupPolicyHandlers)
+
+
+/**
+ * @summary UpdateBackupPolicy updates a Backup policy
+ */
+
+app.put('/api/v2/backup/policies/:policyId',...globalBRServiceUpdateBackupPolicyHandlers)
+
+
+/**
+ * @summary GetBRSummary retrieves the summary of BR
+ */
+
+app.get('/api/v2/backup/summary',...globalBRServiceGetBRSummaryHandlers)
+
+
+/**
+ * @summary ListBRTasks retrieves the tasks of BR
+ */
+
+app.get('/api/v2/backup/tasks',...globalBRServiceListBRTasksHandlers)
+
+
+/**
+ * @summary DeleteBRTask deletes a BR task
+ */
+
+app.delete('/api/v2/backup/tasks/:taskId',...globalBRServiceDeleteBRTaskHandlers)
+
+
+/**
+ * @summary StartBRTask starts a BR task
+ */
+
+app.post('/api/v2/backup/tasks/:taskId/start',...globalBRServiceStartBRTaskHandlers)
+
+
+/**
+ * @summary StopBRTask stops a BR task
+ */
+
+app.post('/api/v2/backup/tasks/:taskId/stop',...globalBRServiceStopBRTaskHandlers)
+
+
+/**
+ * @summary CreateBackupTask backups a cluster
+ */
+
+app.post('/api/v2/clusters/:clusterId/backup',...clusterBRServiceCreateBackupTaskHandlers)
+
+
+/**
+ * @summary GetClusterBackupPolicy gets the backup info of a specific cluster
+ */
+
+app.get('/api/v2/clusters/:clusterId/backup/policy',...clusterBRServiceGetClusterBackupPolicyHandlers)
+
+
+/**
+ * @summary ListBackupRecords lists the valid full backup records of a specific cluster
+ */
+
+app.get('/api/v2/clusters/:clusterId/backup/records',...clusterBRServiceListClusterBackupRecordsHandlers)
+
+
+/**
+ * @summary CreateRestoreTask restores a cluster
+ */
+
+app.post('/api/v2/clusters/:clusterId/backup/restore',...clusterBRServiceCreateRestoreTaskHandlers)
+
+
+/**
+ * @summary ListClusterBRTasks lists the backup tasks of a specific cluster
+ */
+
+app.get('/api/v2/clusters/:clusterId/backup/tasks',...clusterBRServiceListClusterBRTasksHandlers)
+
+
+/**
+ * @summary DetectCluster detects the if the cluster exist
+ */
+
+app.post('/api/v2/clusters/:clusterId/backup:detect',...clusterBRServiceDetectClusterHandlers)
 
 
 /**
@@ -238,7 +421,7 @@ app.get('/api/v2/clusters/:clusterId/sqlplans:showSqlPlanBinding',...diagnosisSe
 
 
 /**
- * @summary DropSqlPlan unbinds a plan from a specific sql
+ * @summary UnbindSqlPlan unbinds a plan from a specific sql
  */
 
 app.post('/api/v2/clusters/:clusterId/sqlplans:unbindSqlPlan',...diagnosisServiceUnbindSqlPlanHandlers)
@@ -252,17 +435,31 @@ app.get('/api/v2/clusters/:clusterId/topsqls',...diagnosisServiceGetTopSqlListHa
 
 
 /**
- * @summary GetSlowQueryAvailableAdvancedFilters retrieves the list of available advanced filters
+ * @summary GetTopSqlAvailableAdvancedFilters retrieves the list of available advanced filters
  */
 
 app.get('/api/v2/clusters/:clusterId/topsqls/advancedFilters',...diagnosisServiceGetTopSqlAvailableAdvancedFiltersHandlers)
 
 
 /**
- * @summary GetSlowQueryAvailableAdvancedFilterInfo retrieves the list of available advanced filter info
+ * @summary GetTopSqlAvailableAdvancedFilterInfo retrieves the list of available advanced filter info
  */
 
 app.get('/api/v2/clusters/:clusterId/topsqls/advancedFilters/:filterName',...diagnosisServiceGetTopSqlAvailableAdvancedFilterInfoHandlers)
+
+
+/**
+ * @summary GetTopSqlConfigs retrieves the list of top sql configs
+ */
+
+app.get('/api/v2/clusters/:clusterId/topsqls/configs',...diagnosisServiceGetTopSqlConfigsHandlers)
+
+
+/**
+ * @summary UpdateTopSqlConfigs updates the list of top sql configs
+ */
+
+app.patch('/api/v2/clusters/:clusterId/topsqls/configs',...diagnosisServiceUpdateTopSqlConfigsHandlers)
 
 
 /**
@@ -280,6 +477,126 @@ app.get('/api/v2/clusters/:clusterId/topsqls/:digest',...diagnosisServiceGetTopS
 
 
 /**
+ * @summary List credentials
+ */
+
+app.get('/api/v2/credentials',...credentialServiceListCredentialsHandlers)
+
+
+/**
+ * @summary Create credential
+ */
+
+app.post('/api/v2/credentials',...credentialServiceCreateCredentialHandlers)
+
+
+/**
+ * @summary Get credential
+ */
+
+app.get('/api/v2/credentials/:credentialId',...credentialServiceGetCredentialHandlers)
+
+
+/**
+ * @summary Delete credential by credential id
+ */
+
+app.delete('/api/v2/credentials/:credentialId',...credentialServiceDeleteCredentialHandlers)
+
+
+/**
+ * @summary Update credential by credential id
+ */
+
+app.patch('/api/v2/credentials/:credentialId',...credentialServiceUpdateCredentialHandlers)
+
+
+/**
+ * @summary Download credential public key and private key
+ */
+
+app.post('/api/v2/credentials:downloadRsaKey',...credentialServiceDownloadRSAKeyHandlers)
+
+
+/**
+ * @summary Generate credential public key and private key
+ */
+
+app.post('/api/v2/credentials:generateRsaKey',...credentialServiceGenerateRSAKeyHandlers)
+
+
+/**
+ * @summary Validate credential is accessible
+ */
+
+app.post('/api/v2/credentials:validateConnection',...credentialServiceValidateConnectionHandlers)
+
+
+/**
+ * @summary ListHosts
+ */
+
+app.get('/api/v2/hosts',...hostServiceListHostsHandlers)
+
+
+/**
+ * @summary CreateHosts
+ */
+
+app.post('/api/v2/hosts',...hostServiceCreateHostsHandlers)
+
+
+/**
+ * Upload a csv form data to host.
+ * @summary import host
+ */
+
+app.post('/api/v2/hosts/import/tasks',...hostServiceImportHandlers)
+
+
+/**
+ * @summary Import one host
+ */
+
+app.get('/api/v2/hosts/import/tasks/:taskId',...hostServiceImportTaskHandlers)
+
+
+/**
+ * @summary HostConfirm one host
+ */
+
+app.post('/api/v2/hosts/import/tasks/:taskId:confirm',...hostServiceHostConfirmHandlers)
+
+
+/**
+ * @summary Get
+ */
+
+app.get('/api/v2/hosts/:hostId',...hostServiceGetHostHandlers)
+
+
+/**
+ * @summary delete one host by host_id
+ */
+
+app.delete('/api/v2/hosts/:hostId',...hostServiceDeleteHandlers)
+
+
+/**
+ * @summary update one host by host_id
+ */
+
+app.patch('/api/v2/hosts/:hostId',...hostServiceUpdateHostHandlers)
+
+
+/**
+ * @summary GetDisks
+ */
+
+app.get('/api/v2/hosts/:hostId/disks',...hostServiceGetDisksHandlers)
+
+
+/**
  * @summary Get host metric data
  */
 
@@ -287,45 +604,193 @@ app.get('/api/v2/hosts/:hostId/metrics/:name/data',...metricsServiceGetHostMetri
 
 
 /**
- * @summary list labels
+ * @summary Report
+ */
+
+app.get('/api/v2/hosts/:hostId/report/:reportId',...hostServiceReportHandlers)
+
+
+/**
+ * @summary GetInstances
+ */
+
+app.get('/api/v2/hosts/:hostId/tidbProcesses',...hostServiceGetTiDBProcessesHandlers)
+
+
+/**
+ * @summary Fix
+ */
+
+app.post('/api/v2/hosts/:hostId:fix',...hostServiceFixHandlers)
+
+
+/**
+ * @summary Check
+ */
+
+app.post('/api/v2/hosts/:hostId:systemCheck',...hostServiceCheckHandlers)
+
+
+/**
+ * @summary delete one host by host_id
+ */
+
+app.post('/api/v2/hosts:batchDelete',...hostServiceBatchDeleteHandlers)
+
+
+/**
+ * @summary HostConfirm one host
+ */
+
+app.get('/api/v2/hosts:hostTemplate',...hostServiceDownloadHostTemplateHandlers)
+
+
+/**
+ * @summary List labels
  */
 
 app.get('/api/v2/labels',...labelServiceListLabelsHandlers)
 
 
 /**
- * @summary create label
+ * @summary Create label
  */
 
 app.post('/api/v2/labels',...labelServiceCreateLabelHandlers)
 
 
 /**
- * @summary delete label by label id
+ * @summary Get label
+ */
+
+app.get('/api/v2/labels/:labelId',...labelServiceGetLabelHandlers)
+
+
+/**
+ * @summary Delete label by label id
  */
 
 app.delete('/api/v2/labels/:labelId',...labelServiceDeleteLabelHandlers)
 
 
 /**
- * @summary update label basic info by label id
+ * @summary Update label basic info by label id
  */
 
 app.patch('/api/v2/labels/:labelId',...labelServiceUpdateLabelHandlers)
 
 
 /**
- * @summary modify bind object by label id
+ * @summary Get label with bindings
+ */
+
+app.get('/api/v2/labels/:labelId:getWithBindings',...labelServiceGetLabelWithBindingsHandlers)
+
+
+/**
+ * @summary Batch create labels
+ */
+
+app.post('/api/v2/labels:batchCreate',...labelServiceBatchCreateLabelsHandlers)
+
+
+/**
+ * @summary Modify bind object by label id
  */
 
 app.post('/api/v2/labels:bindLabel',...labelServiceBindLabelHandlers)
 
 
 /**
- * @summary modify bind object by resource id
+ * @summary Modify bind object by resource id
  */
 
 app.post('/api/v2/labels:bindResource',...labelServiceBindResourceHandlers)
+
+
+/**
+ * @summary List labels by resource type
+ */
+
+app.get('/api/v2/labels:listByResourceType',...labelServiceListLabelsByResourceTypeHandlers)
+
+
+/**
+ * @summary List label keys
+ */
+
+app.get('/api/v2/labels:listKeys',...labelServiceListLabelKeysHandlers)
+
+
+/**
+ * @summary List labels with bindings
+ */
+
+app.get('/api/v2/labels:listWithBindings',...labelServiceListLabelsWithBindingsHandlers)
+
+
+/**
+ * @summary GetLicense returns the license details
+ */
+
+app.get('/api/v2/license',...licenseServiceGetLicenseHandlers)
+
+
+/**
+ * @summary GetDeviceCode returns the device code to help activate the license
+ */
+
+app.get('/api/v2/license/devicecode',...licenseServiceGetDeviceCodeHandlers)
+
+
+/**
+ * Upload a license using form data to activate.
+ * @summary Activate a license
+ */
+
+app.post('/api/v2/license:activate',...licenseServiceActivateLicenseHandlers)
+
+
+/**
+ * @summary ActivateFreeLicense activate the embedded free license
+ */
+
+app.post('/api/v2/license:trial',...licenseServiceActivateFreeLicenseHandlers)
+
+
+/**
+ * @summary list location
+ */
+
+app.get('/api/v2/locations',...locationServiceListLocationsHandlers)
+
+
+/**
+ * @summary create CreateLocationRequest
+ */
+
+app.post('/api/v2/locations',...locationServiceCreateLocationsHandlers)
+
+
+/**
+ * @summary get Location
+ */
+
+app.get('/api/v2/locations/:locationId',...locationServiceGetLocationsHandlers)
+
+
+/**
+ * @summary delete Location by Location id
+ */
+
+app.delete('/api/v2/locations/:locationId',...locationServiceDeleteLocationHandlers)
+
+
+/**
+ * @summary update Location basic info by Location id
+ */
+
+app.patch('/api/v2/locations/:locationId',...locationServiceUpdateLocationsHandlers)
 
 
 /**
@@ -382,6 +847,48 @@ app.post('/api/v2/roles',...roleServiceCreateRoleHandlers)
  */
 
 app.delete('/api/v2/roles/:roleId',...roleServiceDeleteRoleHandlers)
+
+
+/**
+ * @summary list Tiups
+ */
+
+app.get('/api/v2/tiups',...tiupsServiceListTiupsHandlers)
+
+
+/**
+ * @summary create Tiups
+ */
+
+app.post('/api/v2/tiups',...tiupsServiceCreateTiupsHandlers)
+
+
+/**
+ * @summary get Tiups
+ */
+
+app.get('/api/v2/tiups/:tiupId',...tiupsServiceGetTiupsHandlers)
+
+
+/**
+ * @summary delete Tiups by Tiups id
+ */
+
+app.delete('/api/v2/tiups/:tiupId',...tiupsServiceDeleteTiupsHandlers)
+
+
+/**
+ * @summary update Tiups basic info by Tiups id
+ */
+
+app.patch('/api/v2/tiups/:tiupId',...tiupsServiceUpdateTiupsHandlers)
+
+
+/**
+ * @summary Get TiupsCluster
+ */
+
+app.get('/api/v2/tiups/:tiupId/clusters',...tiupsServiceGetTiupsClusterHandlers)
 
 
 /**
@@ -445,6 +952,13 @@ app.patch('/api/v2/users:changePassword',...userServiceChangePasswordHandlers)
  */
 
 app.get('/api/v2/users:validateSession',...userServiceValidateSessionHandlers)
+
+
+/**
+ * @summary GetTemErrorDetail
+ */
+
+app.get('/documentation/errorDetail',...apiKeyServiceGetTemErrorDetailHandlers)
 
 
 export default app

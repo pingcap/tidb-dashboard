@@ -41,6 +41,39 @@ emailLike?: string;
 roleName?: string;
 };
 
+export type TiupsServiceDeleteTiups200 = { [key: string]: unknown };
+
+export type TiupsServiceListTiupsParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * Skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+/**
+ * the Tiups key of the Tiups
+ */
+searchValue?: string;
+/**
+ * the Tiups label_ids of the labelIds
+ */
+labelIds?: string[];
+/**
+ * the Tiups host_ids of the labelIds
+ */
+hostIds?: string[];
+};
+
 export type RoleServiceDeleteRole200 = { [key: string]: unknown };
 
 export type RoleServiceListRolesParams = {
@@ -161,9 +194,19 @@ export type UserServiceLogout200 = { [key: string]: unknown };
 
 export type UserServiceLogin200 = { [key: string]: unknown };
 
-export type LabelServiceDeleteLabel200 = { [key: string]: unknown };
+export type LocationServiceDeleteLocation200 = { [key: string]: unknown };
 
-export type LabelServiceListLabelsParams = {
+export type LocationServiceListLocationsLocationKey = typeof LocationServiceListLocationsLocationKey[keyof typeof LocationServiceListLocationsLocationKey];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const LocationServiceListLocationsLocationKey = {
+  zone: 'zone',
+  dc: 'dc',
+  rack: 'rack',
+} as const;
+
+export type LocationServiceListLocationsParams = {
 /**
  * page size
  */
@@ -181,14 +224,157 @@ skip?: number;
  */
 orderBy?: string;
 /**
- * the label key of the label
+ * location key  (e.g., "zone", "dc")
+ */
+locationKey?: LocationServiceListLocationsLocationKey;
+/**
+ * the Location value of the Location
+ */
+locationValue?: string;
+/**
+ * the Location parent_Id of the Location
+ */
+parentId?: string;
+};
+
+export type LicenseServiceActivateLicenseBody = {
+  /** The content of the license file
+
+The license file to upload to activate the license */
+  license: Blob;
+};
+
+export type LabelServiceListLabelsWithBindingsParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+/**
+ * the label which the label key in
+ */
+labelKeys?: string[];
+/**
+ * the label which the label value like
+ */
+labelValueLike?: string;
+};
+
+export type LabelServiceListLabelKeysResourceType = typeof LabelServiceListLabelKeysResourceType[keyof typeof LabelServiceListLabelKeysResourceType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const LabelServiceListLabelKeysResourceType = {
+  LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: 'LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED',
+  HOST: 'HOST',
+  TIUP: 'TIUP',
+  CLUSTER: 'CLUSTER',
+} as const;
+
+export type LabelServiceListLabelKeysParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * skip
+ */
+skip?: number;
+/**
+ * the keyword which label key similar to
+ */
+keyword?: string;
+/**
+ * the resource type of the label has bound with
+
+ - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified
+ - HOST: resource type host
+ - TIUP: resource type tiup
+ - CLUSTER: resource type cluster
+ */
+resourceType?: LabelServiceListLabelKeysResourceType;
+};
+
+export type LabelServiceListLabelsByResourceTypeResourceType = typeof LabelServiceListLabelsByResourceTypeResourceType[keyof typeof LabelServiceListLabelsByResourceTypeResourceType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const LabelServiceListLabelsByResourceTypeResourceType = {
+  LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: 'LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED',
+  HOST: 'HOST',
+  TIUP: 'TIUP',
+  CLUSTER: 'CLUSTER',
+} as const;
+
+export type LabelServiceListLabelsByResourceTypeParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * skip
+ */
+skip?: number;
+/**
+ * the label key which the label values belong to
  */
 labelKey?: string;
 /**
- * the label value of the label
+ * the keyword which label values similar to
  */
-labelValue?: string;
+keyword?: string;
+/**
+ * the resource type of the label has bound with
+
+ - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified
+ - HOST: resource type host
+ - TIUP: resource type tiup
+ - CLUSTER: resource type cluster
+ */
+resourceType?: LabelServiceListLabelsByResourceTypeResourceType;
 };
+
+export type LabelServiceDeleteLabel200 = { [key: string]: unknown };
+
+export type LabelServiceListLabelsParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+};
+
+export type HostServiceBatchDelete200 = { [key: string]: unknown };
 
 export type MetricsServiceGetHostMetricDataParams = {
 /**
@@ -211,6 +397,89 @@ label?: string;
  * Time Range for the query
  */
 range?: string;
+};
+
+export type HostServiceDelete200 = { [key: string]: unknown };
+
+export type HostServiceImportBody = {
+  /** The Credential_Id of the Import */
+  credentialId: string;
+  /** Upload a csv form data to host. */
+  hostData: Blob;
+};
+
+export type HostServiceListHostsParams = {
+/**
+ * Page size
+ */
+pageSize?: number;
+/**
+ * Page token
+ */
+pageToken?: string;
+/**
+ * Skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+/**
+ * The name of the user
+ */
+searchValue?: string;
+/**
+ * location_ids
+ */
+locationIds?: string[];
+/**
+ * label_ids
+ */
+labelIds?: string[];
+};
+
+export type CredentialServiceDeleteCredential200 = { [key: string]: unknown };
+
+export type CredentialServiceListCredentialsCredentialType = typeof CredentialServiceListCredentialsCredentialType[keyof typeof CredentialServiceListCredentialsCredentialType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CredentialServiceListCredentialsCredentialType = {
+  CREDENTIAL_TYPE_UNSPECIFIED: 'CREDENTIAL_TYPE_UNSPECIFIED',
+  HOST: 'HOST',
+  TIDB: 'TIDB',
+} as const;
+
+export type CredentialServiceListCredentialsParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * Skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+/**
+ * the credential type of the credential
+
+ - CREDENTIAL_TYPE_UNSPECIFIED: resource type unspecified
+ - HOST: credential type host
+ - TIDB: credential type tidb
+ */
+credentialType?: CredentialServiceListCredentialsCredentialType;
+/**
+ * the credential id of the credential
+ */
+credentialId?: string;
 };
 
 export type DiagnosisServiceGetTopSqlDetailParams = {
@@ -465,9 +734,217 @@ label?: string;
 range?: string;
 };
 
-export type ApiKeyServiceDeleteApiKey200 = { [key: string]: unknown };
+export type ClusterBRServiceListClusterBRTasksStatus = typeof ClusterBRServiceListClusterBRTasksStatus[keyof typeof ClusterBRServiceListClusterBRTasksStatus];
 
-export type ApiKeyServiceCreateApiKeyBody = { [key: string]: unknown };
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ClusterBRServiceListClusterBRTasksStatus = {
+  running: 'running',
+  finished: 'finished',
+  abnormal: 'abnormal',
+  stopped: 'stopped',
+} as const;
+
+export type ClusterBRServiceListClusterBRTasksType = typeof ClusterBRServiceListClusterBRTasksType[keyof typeof ClusterBRServiceListClusterBRTasksType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ClusterBRServiceListClusterBRTasksType = {
+  full_backup: 'full_backup',
+  log_backup: 'log_backup',
+  restore_by_file: 'restore_by_file',
+  restore_by_time: 'restore_by_time',
+  all_backup: 'all_backup',
+  all_restore: 'all_restore',
+} as const;
+
+export type ClusterBRServiceListClusterBRTasksParams = {
+/**
+ * Page size
+ */
+pageSize?: number;
+/**
+ * Page token
+ */
+pageToken?: string;
+/**
+ * Skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+/**
+ * The br task ID
+ */
+brTaskId?: string;
+/**
+ * The cluster name
+ */
+clusterName?: string;
+/**
+ * Type of the br task
+
+ - full_backup: Full backup
+ - log_backup: Log backup
+ - restore_by_file: Restore by file
+ - restore_by_time: Restore by time
+ - all_backup: All backup
+ - all_restore: All restore
+ */
+type?: ClusterBRServiceListClusterBRTasksType;
+/**
+ * Status of the br task
+
+ - running: Running
+ - finished: Finished
+ - abnormal: Abnormal
+ - stopped: Stopped
+ */
+status?: ClusterBRServiceListClusterBRTasksStatus;
+};
+
+export type ClusterBRServiceListClusterBackupRecordsParams = {
+/**
+ * Page size
+ */
+pageSize?: number;
+/**
+ * Page token
+ */
+pageToken?: string;
+/**
+ * Skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+};
+
+export type GlobalBRServiceStopBRTask200 = { [key: string]: unknown };
+
+export type GlobalBRServiceStartBRTask200 = { [key: string]: unknown };
+
+export type GlobalBRServiceDeleteBRTask200 = { [key: string]: unknown };
+
+export type GlobalBRServiceDeleteBRTaskParams = {
+/**
+ * delete_backup_file for whether delete the backup files or not
+ */
+deleteBackupFile?: boolean;
+};
+
+export type GlobalBRServiceListBRTasksStatus = typeof GlobalBRServiceListBRTasksStatus[keyof typeof GlobalBRServiceListBRTasksStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GlobalBRServiceListBRTasksStatus = {
+  all: 'all',
+  running: 'running',
+  finished: 'finished',
+  abnormal: 'abnormal',
+  stopped: 'stopped',
+} as const;
+
+export type GlobalBRServiceListBRTasksType = typeof GlobalBRServiceListBRTasksType[keyof typeof GlobalBRServiceListBRTasksType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GlobalBRServiceListBRTasksType = {
+  all: 'all',
+  full_backup: 'full_backup',
+  log_backup: 'log_backup',
+  restore_by_file: 'restore_by_file',
+  restore_by_time: 'restore_by_time',
+  all_backup: 'all_backup',
+  all_restore: 'all_restore',
+} as const;
+
+export type GlobalBRServiceListBRTasksParams = {
+/**
+ * Page size
+ */
+pageSize?: number;
+/**
+ * Page token
+ */
+pageToken?: string;
+/**
+ * Skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+/**
+ * The br task ID
+ */
+brTaskId?: string;
+/**
+ * The cluster ID
+ */
+clusterId?: string;
+/**
+ * The cluster name
+ */
+clusterName?: string;
+/**
+ * Type of the br task
+
+ - all: All
+ - full_backup: Full backup
+ - log_backup: Log backup
+ - restore_by_file: Restore by file
+ - restore_by_time: Restore by time
+ - all_backup: All backup
+ - all_restore: All restore
+ */
+type?: GlobalBRServiceListBRTasksType;
+/**
+ * Status of the br task
+
+ - all: All
+ - running: Running
+ - finished: Finished
+ - abnormal: Abnormal
+ - stopped: Stopped
+ */
+status?: GlobalBRServiceListBRTasksStatus;
+};
+
+export type GlobalBRServiceGetBRSummaryParams = {
+/**
+ * Number of top clusters
+ */
+top?: number;
+};
+
+export type GlobalBRServiceDeleteBackupPolicy200 = { [key: string]: unknown };
+
+export type GlobalBRServiceListBackupPoliciesParams = {
+/**
+ * Page size
+ */
+pageSize?: number;
+/**
+ * Page token
+ */
+pageToken?: string;
+/**
+ * Skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+};
+
+export type ApiKeyServiceDeleteApiKey200 = { [key: string]: unknown };
 
 export type ApiKeyServiceListApiKeysParams = {
 /**
@@ -500,13 +977,19 @@ creator?: string;
 status?: string;
 };
 
-/**
- * the label basic resource
- */
-export type Temapiv2LabelBody = Temapiv2Label;
+export type V2BackupPolicyBody = V2BackupPolicy;
 
 export interface V2ValidateSessionResponse {
   userId: string;
+}
+
+export interface V2ValidateConnectionResponse {
+  connectionResult?: string;
+  inaccessibleHosts?: string[];
+}
+
+export interface V2ValidateConnectionRequest {
+  credentialId: string;
 }
 
 export interface V2UserRole {
@@ -536,6 +1019,42 @@ export interface V2User {
   userType?: string;
   userTypeDesc?: string;
 }
+
+/**
+ * - all: All
+ - full_backup: Full backup
+ - log_backup: Log backup
+ - restore_by_file: Restore by file
+ - restore_by_time: Restore by time
+ - all_backup: All backup
+ - all_restore: All restore
+ */
+export type V2TypeEnumData = typeof V2TypeEnumData[keyof typeof V2TypeEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2TypeEnumData = {
+  all: 'all',
+  full_backup: 'full_backup',
+  log_backup: 'log_backup',
+  restore_by_file: 'restore_by_file',
+  restore_by_time: 'restore_by_time',
+  all_backup: 'all_backup',
+  all_restore: 'all_restore',
+} as const;
+
+/**
+ * - automatic: automatic
+ - manual: manual
+ */
+export type V2TriggerTypeEnumData = typeof V2TriggerTypeEnumData[keyof typeof V2TriggerTypeEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2TriggerTypeEnumData = {
+  automatic: 'automatic',
+  manual: 'manual',
+} as const;
 
 export interface V2TopSqlDetail {
   avg_affected_rows?: number;
@@ -635,6 +1154,14 @@ export interface V2TopSqlList {
   totalSize?: number;
 }
 
+export interface V2TopSqlConfigs {
+  enable?: boolean;
+  historySize?: number;
+  internalQuery?: boolean;
+  maxSize?: number;
+  refreshInterval?: number;
+}
+
 export interface V2TopSqlAvailableFields {
   fields?: string[];
 }
@@ -645,6 +1172,7 @@ export interface V2TopSqlAvailableAdvancedFilters {
 
 export interface V2TopSqlAvailableAdvancedFilterInfo {
   name?: string;
+  type?: string;
   unit?: string;
   valueList?: string[];
 }
@@ -654,6 +1182,110 @@ export interface V2TopMetricData {
   status?: string;
 }
 
+export interface V2TiupsServiceUpdateTiupsBody {
+  tiups?: Tiupv2UpdateTiups;
+}
+
+export interface V2TiupsClusters {
+  clusterId?: string;
+  clusterName?: string;
+  managed?: boolean;
+  metaPath?: string;
+  privateKeyPath?: string;
+  user?: string;
+  version?: string;
+}
+
+export interface V2TiupsClustersResponse {
+  tiupsClusters?: V2TiupsClusters[];
+}
+
+export interface V2TiupLabels {
+  labelId?: string;
+  labelKey?: string;
+  labelValue: string;
+}
+
+export interface V2Tiups {
+  credentialId?: string;
+  description?: string;
+  host?: V2TiupHost;
+  hostId?: string;
+  labels?: V2TiupLabels[];
+  name?: string;
+  tiupHome?: string;
+  tiupId?: string;
+  version?: string;
+}
+
+export type V2TiupHostHostType = typeof V2TiupHostHostType[keyof typeof V2TiupHostHostType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2TiupHostHostType = {
+  VM: 'VM',
+  PM: 'PM',
+} as const;
+
+export interface V2TiupCredential {
+  credentialId?: string;
+  credentialName?: string;
+  credentialType?: string;
+  userName?: string;
+}
+
+export interface V2TiupHost {
+  createdTime?: string;
+  credential?: V2TiupCredential;
+  credentialId?: string;
+  hostId: string;
+  hostName?: string;
+  hostType?: V2TiupHostHostType;
+  ip?: string;
+  locationId?: string;
+  osArchitecture?: string;
+  osName?: string;
+  osRelease?: string;
+  osVersion?: string;
+  sshPort?: number;
+  updatedTime?: string;
+}
+
+export interface V2TiDBProcesses {
+  cmd?: string;
+  pid?: number;
+  ppid?: number;
+  runningTime?: string;
+  startTime?: string;
+  uid?: string;
+}
+
+export interface V2TiDBCredentialObject {
+  clusterId?: string;
+  clusterName?: string;
+  description?: string;
+  password: string;
+}
+
+/**
+ * - all: All
+ - running: Running
+ - finished: Finished
+ - abnormal: Abnormal
+ - stopped: Stopped
+ */
+export type V2StatusEnumData = typeof V2StatusEnumData[keyof typeof V2StatusEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2StatusEnumData = {
+  all: 'all',
+  running: 'running',
+  finished: 'finished',
+  abnormal: 'abnormal',
+  stopped: 'stopped',
+} as const;
+
 export interface V2StatusCount {
   count?: number;
   status?: string;
@@ -661,6 +1293,10 @@ export interface V2StatusCount {
 
 export interface V2SqlPlanList {
   data?: V2TopSqlDetail[];
+}
+
+export interface V2SqlPlanBindingList {
+  data?: V2SqlPlanBindingDetail[];
 }
 
 export type V2SqlPlanBindingDetailStatus = typeof V2SqlPlanBindingDetailStatus[keyof typeof V2SqlPlanBindingDetailStatus];
@@ -695,14 +1331,6 @@ export interface V2SqlPlanBindingDetail {
   status?: V2SqlPlanBindingDetailStatus;
 }
 
-export interface V2SqlPlanBindingList {
-  data?: V2SqlPlanBindingDetail[];
-}
-
-export interface V2SqlLimitList {
-  data?: V2SqlLimit[];
-}
-
 export type V2SqlLimitAction = typeof V2SqlLimitAction[keyof typeof V2SqlLimitAction];
 
 
@@ -722,6 +1350,10 @@ export interface V2SqlLimit {
   startTime?: string;
   watch?: string;
   watchText?: string;
+}
+
+export interface V2SqlLimitList {
+  data?: V2SqlLimit[];
 }
 
 export interface V2SlowQueryDownloadResponse {
@@ -830,6 +1462,7 @@ export interface V2SlowQueryAvailableAdvancedFilters {
 
 export interface V2SlowQueryAvailableAdvancedFilterInfo {
   name?: string;
+  type?: string;
   unit?: string;
   valueList?: string[];
 }
@@ -843,6 +1476,11 @@ export interface V2Role {
   roleType?: string;
   roleTypeDesc?: string;
   readonly updateTime?: string;
+}
+
+export interface V2ResourceObject {
+  resourceId?: string;
+  resourceName: string;
 }
 
 export interface V2ResourceGroup {
@@ -859,6 +1497,23 @@ export interface V2ResourceGroupList {
 export interface V2ResetSecretKeyResponse {
   accessKey: string;
   secretKey: string;
+}
+
+export type V2ReportResponseTaskState = typeof V2ReportResponseTaskState[keyof typeof V2ReportResponseTaskState];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2ReportResponseTaskState = {
+  init: 'init',
+  running: 'running',
+  success: 'success',
+  fail: 'fail',
+} as const;
+
+export interface V2ReportResponse {
+  reports?: Hostv2Report[];
+  taskId: string;
+  taskState?: V2ReportResponseTaskState;
 }
 
 export interface V2QueryMetric {
@@ -888,6 +1543,10 @@ export interface V2ProcessList {
   totalProcessCount?: string;
 }
 
+export interface V2PreCheckBackupPolicyResponse {
+  clusters?: V2Cluster[];
+}
+
 export interface V2OverviewStatus {
   alertLevels?: V2StatusCount[];
   alerts?: V2StatusCount[];
@@ -896,6 +1555,10 @@ export interface V2OverviewStatus {
   hosts?: V2StatusCount[];
   otherTasks?: V2StatusCount[];
   sysTasks?: V2StatusCount[];
+}
+
+export interface V2Metrics {
+  metrics?: V2CategoryMetricDetail[];
 }
 
 export interface V2MetricWithExpressions {
@@ -913,10 +1576,40 @@ export interface V2LoginRequest {
   userId: string;
 }
 
+export type V2LocationsLocationKey = typeof V2LocationsLocationKey[keyof typeof V2LocationsLocationKey];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2LocationsLocationKey = {
+  zone: 'zone',
+  dc: 'dc',
+  rack: 'rack',
+} as const;
+
+export interface V2Locations {
+  locationId?: string;
+  locationKey?: V2LocationsLocationKey;
+  locationValue?: string;
+  parentId?: string;
+}
+
+export interface V2LocationMappings {
+  locationId?: string;
+  locationKey: string;
+  locationValue: string;
+  parentId?: string;
+}
+
 export interface V2ListUsersResponse {
   nextPageToken?: string;
   totalSize?: number;
   users?: V2User[];
+}
+
+export interface V2ListTiupsResponse {
+  nextPageToken?: string;
+  tiups?: V2Tiups[];
+  totalSize?: number;
 }
 
 export interface V2ListRolesResponse {
@@ -925,8 +1618,68 @@ export interface V2ListRolesResponse {
   totalSize?: number;
 }
 
-export interface V2ListLabelsResponse {
+export interface V2ListLocationsResponse {
+  locations?: V2Locations[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2ListLabelsWithBindingsResponse {
   labels?: V2LabelWithBindObject[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2ListLabelsResponse {
+  labels?: Labelv2Label[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2ListLabelsByResourceTypeResponse {
+  labels?: Labelv2Label[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2ListLabelKeysResponse {
+  labelKeys?: string[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2ListHostsResponse {
+  hosts: V2Host[];
+  nextPageToken: string;
+  totalSize: number;
+}
+
+export interface V2ListCredentialsResponse {
+  credentials?: V2Credential[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2ListClusterBackupRecordsResponse {
+  backupRecords?: V2ClusterBRTask[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2ListClusterBRTasksResponse {
+  brTasks?: V2ClusterBRTask[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2ListBackupPoliciesResponse {
+  backupPolicies?: V2BackupPolicy[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface V2ListBRTasksResponse {
+  brTasks?: V2BRTask[];
   nextPageToken?: string;
   totalSize?: number;
 }
@@ -937,9 +1690,236 @@ export interface V2ListApiKeysResponse {
   totalSize?: number;
 }
 
+/**
+ * - free: free
+ - ultimate: ultimate
+ */
+export type V2LicenseTypeEnumData = typeof V2LicenseTypeEnumData[keyof typeof V2LicenseTypeEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2LicenseTypeEnumData = {
+  free: 'free',
+  ultimate: 'ultimate',
+} as const;
+
+/**
+ * - active: active
+ - expired: inactive
+ - expiring: expired
+ - invalid: invalid
+ - revoked: revoked
+ */
+export type V2LicenseStatusEnumData = typeof V2LicenseStatusEnumData[keyof typeof V2LicenseStatusEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2LicenseStatusEnumData = {
+  active: 'active',
+  expired: 'expired',
+  expiring: 'expiring',
+  invalid: 'invalid',
+  revoked: 'revoked',
+} as const;
+
+export interface V2Labels {
+  labelId?: string;
+  labelKey?: string;
+  labelValue: string;
+}
+
+export interface V2LabelWithBindObject {
+  bindObjects?: V2BindObject[];
+  labelInfo?: Labelv2Label;
+}
+
+/**
+ * - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified
+ - HOST: resource type host
+ - TIUP: resource type tiup
+ - CLUSTER: resource type cluster
+ */
+export type V2LabelBindResourceType = typeof V2LabelBindResourceType[keyof typeof V2LabelBindResourceType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2LabelBindResourceType = {
+  LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: 'LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED',
+  HOST: 'HOST',
+  TIUP: 'TIUP',
+  CLUSTER: 'CLUSTER',
+} as const;
+
+export type V2ImportRequestHeaders = {[key: string]: string};
+
+export interface V2ImportRequest {
+  credentialId?: string;
+  fileName?: string;
+  headers: V2ImportRequestHeaders;
+  /** Upload a csv form data to host. */
+  hostData: Blob;
+}
+
+export interface V2HostTiDBProcessesResponse {
+  tiDBProcesses?: V2TiDBProcesses[];
+}
+
+export type V2HostTaskStatus = typeof V2HostTaskStatus[keyof typeof V2HostTaskStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2HostTaskStatus = {
+  init: 'init',
+  existed: 'existed',
+  succeeded: 'succeeded',
+  failed: 'failed',
+} as const;
+
+export interface V2HostTask {
+  credential?: V2Credential;
+  credentialId?: string;
+  hostId: string;
+  hostName?: string;
+  ip: string;
+  labels?: string;
+  labelsList?: V2Labels[];
+  locationId?: string;
+  locationMappings?: V2LocationMappings[];
+  reportId?: string;
+  sshPort: number;
+  status?: V2HostTaskStatus;
+  taskId: string;
+  userName?: string;
+}
+
+export interface V2ImportTaskResponse {
+  task: V2HostTask[];
+  taskId: string;
+}
+
+export interface V2HostServiceUpdateHostBody {
+  host?: Hostv2UpdateHost;
+}
+
 export interface V2HostMetricData {
   data?: V2ExprQueryData[];
   status?: string;
+}
+
+export interface V2HostFixResponse {
+  hostId: string;
+  reportId: string;
+  taskId: string;
+}
+
+export interface V2HostDiskResponse {
+  disk?: V2Disk[];
+}
+
+export interface V2HostCredentialObject {
+  hostIps?: string[];
+  password?: string;
+  privateKey?: string;
+  publicKey?: string;
+}
+
+export interface V2HostCreateResponse {
+  taskId?: string;
+}
+
+export interface V2HostCheckResponse {
+  hostId: string;
+  reportId: string;
+  taskId: string;
+}
+
+export type V2HostStatus = typeof V2HostStatus[keyof typeof V2HostStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2HostStatus = {
+  initializing: 'initializing',
+  deleting: 'deleting',
+  deleted: 'deleted',
+  used: 'used',
+  idle: 'idle',
+} as const;
+
+export type V2HostHostType = typeof V2HostHostType[keyof typeof V2HostHostType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2HostHostType = {
+  VM: 'VM',
+  PM: 'PM',
+} as const;
+
+export type V2HostConnectionStatus = typeof V2HostConnectionStatus[keyof typeof V2HostConnectionStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2HostConnectionStatus = {
+  online: 'online',
+  offline: 'offline',
+} as const;
+
+export type V2HostCheckStatus = typeof V2HostCheckStatus[keyof typeof V2HostCheckStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2HostCheckStatus = {
+  checking: 'checking',
+  failed: 'failed',
+  warning: 'warning',
+  succeeded: 'succeeded',
+} as const;
+
+export interface V2Host {
+  checkStatus?: V2HostCheckStatus;
+  clusters?: V2Clusters[];
+  comment?: string;
+  connectionStatus?: V2HostConnectionStatus;
+  cpuArch?: string;
+  cpuCache?: number;
+  cpuCores?: number;
+  cpuGovernor?: string;
+  cpuModel?: string;
+  cpuNumaNodes?: number;
+  cpus?: number;
+  cpuSpeed?: number;
+  cpuThreads?: number;
+  cpuVendor?: string;
+  createdTime?: string;
+  credential?: V2Credential;
+  credentialId?: string;
+  diskType?: string;
+  hostId: string;
+  hostName?: string;
+  hostType?: V2HostHostType;
+  ip?: string;
+  labels?: V2Labels[];
+  locationId?: string;
+  locationMappings?: V2LocationMappings[];
+  memorySize?: number;
+  memorySpeed?: number;
+  memorySwap?: number;
+  memoryType?: string;
+  memoryUnit?: string;
+  nodeExporterPort?: number;
+  osArchitecture?: string;
+  osName?: string;
+  osRelease?: string;
+  osVendor?: string;
+  osVersion?: string;
+  reportId?: string;
+  sshPort?: number;
+  status?: V2HostStatus;
+  storageAvailable?: number;
+  storageTotalSize?: number;
+  storageUnit?: string;
+  storageUsed?: number;
+  tiupIds?: string[];
+  updatedTime?: string;
 }
 
 /**
@@ -965,6 +1945,17 @@ export const V2GroupEnumData = {
   process: 'process',
 } as const;
 
+export interface V2GetLabelWithBindingsResponse {
+  label?: V2LabelWithBindObject;
+}
+
+export interface V2GenerateRSAKeyResponse {
+  privateKey?: string;
+  publicKey?: string;
+}
+
+export interface V2GenerateRSAKeyRequest { [key: string]: unknown }
+
 export interface V2ExpressionWithLegend {
   labels?: string[];
   legend?: string;
@@ -980,6 +1971,147 @@ export interface V2ExprQueryData {
   expr?: string;
   legend?: string;
   result?: V2QueryResult[];
+}
+
+export interface V2ErrorDetail {
+  locale?: string;
+  message?: string;
+  type?: string;
+}
+
+export interface V2DownloadRSAKeyResponse {
+  data?: string;
+}
+
+export interface V2DownloadRSAKeyRequest {
+  credentialId: string;
+}
+
+export interface V2DownloadHostTemplateResponse {
+  data?: string;
+}
+
+export type V2DiskDiskType = typeof V2DiskDiskType[keyof typeof V2DiskDiskType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2DiskDiskType = {
+  HDD: 'HDD',
+  SSD: 'SSD',
+} as const;
+
+export interface V2Disk {
+  availableSpace?: number;
+  diskType?: V2DiskDiskType;
+  mountingDir?: string;
+  path?: string;
+  totalSize?: number;
+  usedSpace?: number;
+}
+
+export interface V2DeviceCode {
+  deviceCode?: string;
+}
+
+export interface V2DetectClusterResponse {
+  exist?: boolean;
+}
+
+/**
+ * - week: 
+Week
+ - month: 
+Month
+ */
+export type V2CycleEnumData = typeof V2CycleEnumData[keyof typeof V2CycleEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2CycleEnumData = {
+  week: 'week',
+  month: 'month',
+} as const;
+
+/**
+ * - CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED: validate type unspecified
+ - PASSWORD: validate by password
+ - RSAKEY: validate by rsa key
+ */
+export type V2CredentialValidateType = typeof V2CredentialValidateType[keyof typeof V2CredentialValidateType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2CredentialValidateType = {
+  CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED: 'CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED',
+  PASSWORD: 'PASSWORD',
+  RSAKEY: 'RSAKEY',
+} as const;
+
+/**
+ * - CREDENTIAL_TYPE_UNSPECIFIED: resource type unspecified
+ - HOST: credential type host
+ - TIDB: credential type tidb
+ */
+export type V2CredentialType = typeof V2CredentialType[keyof typeof V2CredentialType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2CredentialType = {
+  CREDENTIAL_TYPE_UNSPECIFIED: 'CREDENTIAL_TYPE_UNSPECIFIED',
+  HOST: 'HOST',
+  TIDB: 'TIDB',
+} as const;
+
+export interface V2Credential {
+  credentialId?: string;
+  credentialName?: string;
+  credentialType: V2CredentialType;
+  hostCredential?: V2HostCredentialObject;
+  tidbCredential?: V2TiDBCredentialObject;
+  userName: string;
+  validateType: V2CredentialValidateType;
+}
+
+export interface V2CreateHost {
+  comment?: string;
+  credentialId?: string;
+  ips?: string[];
+  labelIds?: string[];
+  locationId?: string;
+  sshPort?: number;
+}
+
+export interface V2CreateApiKeyRequest {
+  description: string;
+}
+
+export interface V2ConfirmResponse {
+  taskId: string;
+}
+
+export interface V2Clusters {
+  clusterId?: string;
+  clusterName?: string;
+}
+
+export interface V2ClusterWithoutBRPolicy {
+  clusterId?: string;
+  clusterName?: string;
+  lastBackupTime?: string;
+  sizeByte?: string;
+}
+
+export interface V2ClusterWithBRSize {
+  clusterId?: string;
+  clusterName?: string;
+  totalSize?: string;
+  totalSizeByte?: string;
+}
+
+export interface V2ClusterWithBRAlert {
+  alertCount?: string;
+  clusterId?: string;
+  clusterName?: string;
 }
 
 export type V2ClusterProcessCommand = typeof V2ClusterProcessCommand[keyof typeof V2ClusterProcessCommand];
@@ -1051,6 +2183,110 @@ export interface V2ClusterMetricData {
   status?: string;
 }
 
+export interface V2ClusterBackupPolicy {
+  accessKeyId?: string;
+  clusters?: V2BasicClusterInfo[];
+  concurrency?: number;
+  cycle: V2BackupCycleEnumData;
+  destination: string;
+  frequency: string;
+  lastBackupTime?: string;
+  lastLogBackupTime?: string;
+  logBackup: boolean;
+  logBackupDelay?: string;
+  logFile?: string;
+  name: string;
+  policyId?: string;
+  rateLimit?: number;
+  retention: number;
+  secretAccessKey?: string;
+  size?: string;
+  sizeByte?: string;
+  time: string;
+}
+
+/**
+ * - full_backup: Full backup
+ - log_backup: Log backup
+ - restore_by_file: Restore by file
+ - restore_by_time: Restore by time
+ - all_backup: All backup
+ - all_restore: All restore
+ */
+export type V2ClusterBRTypeEnumData = typeof V2ClusterBRTypeEnumData[keyof typeof V2ClusterBRTypeEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2ClusterBRTypeEnumData = {
+  full_backup: 'full_backup',
+  log_backup: 'log_backup',
+  restore_by_file: 'restore_by_file',
+  restore_by_time: 'restore_by_time',
+  all_backup: 'all_backup',
+  all_restore: 'all_restore',
+} as const;
+
+/**
+ * - automatic: automatic
+ - manual: manual
+ */
+export type V2ClusterBRTriggerTypeEnumData = typeof V2ClusterBRTriggerTypeEnumData[keyof typeof V2ClusterBRTriggerTypeEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2ClusterBRTriggerTypeEnumData = {
+  automatic: 'automatic',
+  manual: 'manual',
+} as const;
+
+/**
+ * - running: Running
+ - finished: Finished
+ - abnormal: Abnormal
+ - stopped: Stopped
+ */
+export type V2ClusterBRStatusEnumData = typeof V2ClusterBRStatusEnumData[keyof typeof V2ClusterBRStatusEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2ClusterBRStatusEnumData = {
+  running: 'running',
+  finished: 'finished',
+  abnormal: 'abnormal',
+  stopped: 'stopped',
+} as const;
+
+export interface V2ClusterBRTask {
+  accessKeyId?: string;
+  clusterId?: string;
+  clusterName?: string;
+  concurrency?: number;
+  destination?: string;
+  endTime?: string;
+  errorMessage?: string;
+  expireTime?: string;
+  log?: string;
+  logFile?: string;
+  name?: string;
+  policyId?: string;
+  policyName?: string;
+  rateLimit?: number;
+  restoredTs?: string;
+  secretAccessKey?: string;
+  size?: string;
+  sizeByte?: string;
+  startTime?: string;
+  status?: V2ClusterBRStatusEnumData;
+  taskId?: string;
+  triggerType?: V2ClusterBRTriggerTypeEnumData;
+  type?: V2ClusterBRTypeEnumData;
+}
+
+export interface V2Cluster {
+  id?: string;
+  name?: string;
+}
+
 /**
  * - unspecified: Unspecified
  - cluster: Cluster metrics
@@ -1089,29 +2325,19 @@ export interface V2CategoryMetricDetail {
   type?: string;
 }
 
-export interface V2Metrics {
-  metrics?: V2CategoryMetricDetail[];
-}
-
 export interface V2BindResourceResponse {
-  labelIds?: string[];
+  labels?: Labelv2Label[];
 }
 
 export interface V2BindResourceRequest {
-  appendLabelIds?: string[];
-  removeLabelIds?: string[];
+  labelIds?: string[];
   resourceId: string;
-  resourceType: string;
+  resourceType: V2LabelBindResourceType;
 }
 
 export interface V2BindObject {
-  resourceIds: string[];
-  resourceType: string;
-}
-
-export interface V2LabelWithBindObject {
-  bindObjects?: V2BindObject[];
-  label?: Temapiv2Label;
+  resources: V2ResourceObject[];
+  resourceType: V2LabelBindResourceType;
 }
 
 export interface V2BindLabelResponse {
@@ -1119,9 +2345,82 @@ export interface V2BindLabelResponse {
 }
 
 export interface V2BindLabelRequest {
-  appendBindObjects?: V2BindObject[];
+  bindObjects?: V2BindObject[];
   labelId: string;
-  removeBindObjects?: V2BindObject[];
+}
+
+export interface V2BatchDeleteRequest {
+  hostId: string[];
+}
+
+export interface V2BasicClusterInfo {
+  id?: string;
+  name?: string;
+}
+
+export interface V2BackupPolicy {
+  accessKeyId?: string;
+  clusterIds?: string[];
+  clusters?: V2Cluster[];
+  concurrency?: number;
+  cycle: V2CycleEnumData;
+  destination: string;
+  frequency: string;
+  logBackup: boolean;
+  logFile?: string;
+  name: string;
+  policyId?: string;
+  rateLimit?: number;
+  retention: number;
+  secretAccessKey?: string;
+  time: string;
+}
+
+/**
+ * - week: 
+Week
+ - month: 
+Month
+ */
+export type V2BackupCycleEnumData = typeof V2BackupCycleEnumData[keyof typeof V2BackupCycleEnumData];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2BackupCycleEnumData = {
+  week: 'week',
+  month: 'month',
+} as const;
+
+export interface V2BRTask {
+  accessKeyId?: string;
+  clusterId?: string;
+  clusterName?: string;
+  concurrency?: number;
+  destination?: string;
+  endTime?: string;
+  errorMessage?: string;
+  expireTime?: string;
+  log?: string;
+  logFile?: string;
+  name?: string;
+  policyId?: string;
+  policyName?: string;
+  rateLimit?: number;
+  restoredTs?: string;
+  secretAccessKey?: string;
+  size?: string;
+  sizeByte?: string;
+  startTime?: string;
+  status?: V2StatusEnumData;
+  taskId?: string;
+  triggerType?: V2TriggerTypeEnumData;
+  type?: V2TypeEnumData;
+}
+
+export interface V2BRSummary {
+  topClustersWithBrAlert?: V2ClusterWithBRAlert[];
+  topClustersWithBrSize?: V2ClusterWithBRSize[];
+  topClustersWithoutBrPolicy?: V2ClusterWithoutBRPolicy[];
 }
 
 export type V2ApiKeyStatus = typeof V2ApiKeyStatus[keyof typeof V2ApiKeyStatus];
@@ -1137,15 +2436,44 @@ export interface V2ApiKey {
   accessKey: string;
   readonly createTime?: string;
   creator?: string;
+  description?: string;
   secretKey?: string;
   status?: V2ApiKeyStatus;
   readonly updateTime?: string;
 }
 
-export interface Temapiv2Label {
-  labelId?: string;
-  labelKey?: string;
-  labelValue: string;
+export type V2ActivateLicenseRequestHeaders = {[key: string]: string};
+
+export interface V2ActivateLicenseRequest {
+  /** The license file to upload to activate the license */
+  content: Blob;
+  fileName: string;
+  headers: V2ActivateLicenseRequestHeaders;
+}
+
+export interface Tiupv2UpdateTiups {
+  description?: string;
+  labelIds?: string[];
+  name?: string;
+}
+
+export interface Tiupv2CreateTiups {
+  description?: string;
+  hostId?: string;
+  labelIds?: string[];
+  name?: string;
+  tiupHome?: string;
+}
+
+export type RpcStatusError = {
+  code?: number;
+  details?: V2ErrorDetail[];
+  message?: string;
+  status?: string;
+};
+
+export interface RpcStatus {
+  error?: RpcStatusError;
 }
 
 /**
@@ -1268,24 +2596,112 @@ used with implementation specific semantics. */
   [key: string]: unknown;
 }
 
-export type RpcStatusError = {
-  code?: number;
-  details?: ProtobufAny[];
-  message?: string;
-  status?: string;
-};
-
-export interface RpcStatus {
-  error?: RpcStatusError;
-}
-
 export interface Metricsv2Value {
   timestamp?: number;
   value?: string;
 }
 
+export interface Licensev2License {
+  activateAt?: string;
+  alerts?: string;
+  allow?: string[];
+  customerCode?: string;
+  deny?: string[];
+  deviceCode?: string;
+  expirationAt?: string;
+  hosts?: string;
+  licenseId?: string;
+  licenseType?: V2LicenseTypeEnumData;
+  signature?: string;
+  status?: V2LicenseStatusEnumData;
+  vcpu?: string;
+  version?: string;
+}
+
+export interface Labelv2Label {
+  labelId?: string;
+  labelKey?: string;
+  labelValue: string;
+}
+
+export interface V2BatchCreateLabelsResponse {
+  labels?: Labelv2Label[];
+}
+
+export interface V2BatchCreateLabelsRequest {
+  labels: Labelv2Label[];
+}
+
+export interface Hostv2UpdateHost {
+  comment?: string;
+  credentialId?: string;
+  hostId?: string;
+  labelIds?: string[];
+  locationId?: string;
+  sshPort?: number;
+}
+
+export type Hostv2ReportCheckResult = typeof Hostv2ReportCheckResult[keyof typeof Hostv2ReportCheckResult];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const Hostv2ReportCheckResult = {
+  passed: 'passed',
+  failed: 'failed',
+  warned: 'warned',
+} as const;
+
+export interface Hostv2Report {
+  checkBody?: string;
+  checkDesc?: string;
+  checkId?: string;
+  checkName?: string;
+  checkOut?: string;
+  checkResult?: Hostv2ReportCheckResult;
+  fixable?: boolean;
+  hostId?: string;
+  optional?: boolean;
+  reportId: string;
+}
+
 export interface UserServiceResetPasswordBody {
   newPassword: string;
+}
+
+export interface LocationServiceUpdateLocationsBody {
+  location?: V2Locations;
+}
+
+export interface LabelServiceUpdateLabelBody {
+  labelKey?: string;
+  labelValue: string;
+}
+
+export interface HostServiceHostConfirmBody { [key: string]: unknown }
+
+export interface GlobalBRServiceUpdateBackupPolicyBody {
+  accessKeyId?: string;
+  clusterIds?: string[];
+  clusters?: V2Cluster[];
+  concurrency?: number;
+  cycle: V2CycleEnumData;
+  destination: string;
+  frequency: string;
+  logBackup: boolean;
+  logFile?: string;
+  name: string;
+  rateLimit?: number;
+  retention: number;
+  secretAccessKey?: string;
+  time: string;
+}
+
+export interface DiagnosisServiceUpdateTopSqlConfigsBody {
+  enable: boolean;
+  historySize?: number;
+  internalQuery?: boolean;
+  maxSize?: number;
+  refreshInterval?: number;
 }
 
 export interface DiagnosisServiceRemoveSqlLimitBody {
@@ -1306,5 +2722,39 @@ export interface DiagnosisServiceAddSqlLimitBody {
   action: DiagnosisServiceAddSqlLimitBodyAction;
   resourceGroup: string;
   watchText: string;
+}
+
+export interface CredentialServiceUpdateCredentialBody {
+  credentialName?: string;
+  credentialType: V2CredentialType;
+  forceUpdate?: boolean;
+  hostCredential?: V2HostCredentialObject;
+  tidbCredential?: V2TiDBCredentialObject;
+  userName: string;
+  validateType: V2CredentialValidateType;
+}
+
+export interface ClusterBRServiceCreateRestoreTaskBody {
+  accessKeyId?: string;
+  backupTaskId?: string;
+  concurrency?: number;
+  destination?: string;
+  logFile?: string;
+  rateLimit?: number;
+  restoreTime?: string;
+  secretAccessKey?: string;
+  targetClusterId: string;
+  type?: V2ClusterBRTypeEnumData;
+}
+
+export interface ClusterBRServiceCreateBackupTaskBody {
+  accessKeyId?: string;
+  concurrency?: number;
+  destination: string;
+  logFile?: string;
+  name?: string;
+  rateLimit?: number;
+  retention?: number;
+  secretAccessKey?: string;
 }
 

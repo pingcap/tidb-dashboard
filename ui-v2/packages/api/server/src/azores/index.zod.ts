@@ -22,6 +22,7 @@ export const apiKeyServiceListApiKeysResponse = zod.object({
   "secretKey": zod.string().optional(),
   "creator": zod.string().optional(),
   "status": zod.enum(['disable', 'enable']).optional(),
+  "description": zod.string().optional(),
   "createTime": zod.string().datetime().optional(),
   "updateTime": zod.string().datetime().optional()
 })).optional(),
@@ -31,7 +32,7 @@ export const apiKeyServiceListApiKeysResponse = zod.object({
 
 
 export const apiKeyServiceCreateApiKeyBody = zod.object({
-
+  "description": zod.string()
 })
 
 export const apiKeyServiceCreateApiKeyResponse = zod.object({
@@ -39,6 +40,7 @@ export const apiKeyServiceCreateApiKeyResponse = zod.object({
   "secretKey": zod.string().optional(),
   "creator": zod.string().optional(),
   "status": zod.enum(['disable', 'enable']).optional(),
+  "description": zod.string().optional(),
   "createTime": zod.string().datetime().optional(),
   "updateTime": zod.string().datetime().optional()
 })
@@ -61,7 +63,8 @@ export const apiKeyServiceUpdateApiKeyBody = zod.object({
   "accessKey": zod.string(),
   "secretKey": zod.string().optional(),
   "creator": zod.string().optional(),
-  "status": zod.enum(['disable', 'enable']).optional()
+  "status": zod.enum(['disable', 'enable']).optional(),
+  "description": zod.string().optional()
 })
 
 export const apiKeyServiceUpdateApiKeyResponse = zod.object({
@@ -69,6 +72,7 @@ export const apiKeyServiceUpdateApiKeyResponse = zod.object({
   "secretKey": zod.string().optional(),
   "creator": zod.string().optional(),
   "status": zod.enum(['disable', 'enable']).optional(),
+  "description": zod.string().optional(),
   "createTime": zod.string().datetime().optional(),
   "updateTime": zod.string().datetime().optional()
 })
@@ -81,6 +85,504 @@ export const apiKeyServiceResetSecretKeyParams = zod.object({
 export const apiKeyServiceResetSecretKeyResponse = zod.object({
   "accessKey": zod.string(),
   "secretKey": zod.string()
+})
+
+
+export const globalBRServiceListBackupPoliciesQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional()
+})
+
+export const globalBRServiceListBackupPoliciesResponse = zod.object({
+  "backupPolicies": zod.array(zod.object({
+  "policyId": zod.string().optional(),
+  "name": zod.string(),
+  "logBackup": zod.boolean(),
+  "destination": zod.string(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "cycle": zod.enum(['week', 'month']).optional(),
+  "frequency": zod.string(),
+  "time": zod.string(),
+  "retention": zod.number(),
+  "clusters": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+})).optional(),
+  "clusterIds": zod.array(zod.string()).optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const globalBRServiceCreateBackupPolicyBody = zod.object({
+  "policyId": zod.string().optional(),
+  "name": zod.string(),
+  "logBackup": zod.boolean(),
+  "destination": zod.string(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "cycle": zod.enum(['week', 'month']).optional(),
+  "frequency": zod.string(),
+  "time": zod.string(),
+  "retention": zod.number(),
+  "clusters": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+})).optional(),
+  "clusterIds": zod.array(zod.string()).optional()
+})
+
+export const globalBRServiceCreateBackupPolicyResponse = zod.object({
+  "policyId": zod.string().optional(),
+  "name": zod.string(),
+  "logBackup": zod.boolean(),
+  "destination": zod.string(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "cycle": zod.enum(['week', 'month']).optional(),
+  "frequency": zod.string(),
+  "time": zod.string(),
+  "retention": zod.number(),
+  "clusters": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+})).optional(),
+  "clusterIds": zod.array(zod.string()).optional()
+})
+
+
+export const globalBRServicePreCheckBackupPolicyBody = zod.object({
+  "policyId": zod.string().optional(),
+  "name": zod.string(),
+  "logBackup": zod.boolean(),
+  "destination": zod.string(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "cycle": zod.enum(['week', 'month']).optional(),
+  "frequency": zod.string(),
+  "time": zod.string(),
+  "retention": zod.number(),
+  "clusters": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+})).optional(),
+  "clusterIds": zod.array(zod.string()).optional()
+})
+
+export const globalBRServicePreCheckBackupPolicyResponse = zod.object({
+  "clusters": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+})).optional()
+})
+
+
+export const globalBRServiceGetBackupPolicyParams = zod.object({
+  "policyId": zod.string()
+})
+
+export const globalBRServiceGetBackupPolicyResponse = zod.object({
+  "policyId": zod.string().optional(),
+  "name": zod.string(),
+  "logBackup": zod.boolean(),
+  "destination": zod.string(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "cycle": zod.enum(['week', 'month']).optional(),
+  "frequency": zod.string(),
+  "time": zod.string(),
+  "retention": zod.number(),
+  "clusters": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+})).optional(),
+  "clusterIds": zod.array(zod.string()).optional()
+})
+
+
+export const globalBRServiceDeleteBackupPolicyParams = zod.object({
+  "policyId": zod.string()
+})
+
+export const globalBRServiceDeleteBackupPolicyResponse = zod.object({
+
+})
+
+
+export const globalBRServiceUpdateBackupPolicyParams = zod.object({
+  "policyId": zod.string()
+})
+
+export const globalBRServiceUpdateBackupPolicyBody = zod.object({
+  "name": zod.string(),
+  "logBackup": zod.boolean(),
+  "destination": zod.string(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "cycle": zod.enum(['week', 'month']).optional(),
+  "frequency": zod.string(),
+  "time": zod.string(),
+  "retention": zod.number(),
+  "clusters": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+})).optional(),
+  "clusterIds": zod.array(zod.string()).optional()
+})
+
+export const globalBRServiceUpdateBackupPolicyResponse = zod.object({
+  "policyId": zod.string().optional(),
+  "name": zod.string(),
+  "logBackup": zod.boolean(),
+  "destination": zod.string(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "cycle": zod.enum(['week', 'month']).optional(),
+  "frequency": zod.string(),
+  "time": zod.string(),
+  "retention": zod.number(),
+  "clusters": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+})).optional(),
+  "clusterIds": zod.array(zod.string()).optional()
+})
+
+
+export const globalBRServiceGetBRSummaryQueryParams = zod.object({
+  "top": zod.number().optional()
+})
+
+export const globalBRServiceGetBRSummaryResponse = zod.object({
+  "topClustersWithBrSize": zod.array(zod.object({
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "totalSizeByte": zod.string().optional(),
+  "totalSize": zod.string().optional()
+})).optional(),
+  "topClustersWithBrAlert": zod.array(zod.object({
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "alertCount": zod.string().optional()
+})).optional(),
+  "topClustersWithoutBrPolicy": zod.array(zod.object({
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "lastBackupTime": zod.string().optional(),
+  "sizeByte": zod.string().optional()
+})).optional()
+})
+
+
+export const globalBRServiceListBRTasksQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "brTaskId": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "type": zod.enum(['all', 'full_backup', 'log_backup', 'restore_by_file', 'restore_by_time', 'all_backup', 'all_restore']).optional(),
+  "status": zod.enum(['all', 'running', 'finished', 'abnormal', 'stopped']).optional()
+})
+
+export const globalBRServiceListBRTasksResponse = zod.object({
+  "brTasks": zod.array(zod.object({
+  "taskId": zod.string().optional(),
+  "type": zod.enum(['all', 'full_backup', 'log_backup', 'restore_by_file', 'restore_by_time', 'all_backup', 'all_restore']).optional(),
+  "triggerType": zod.enum(['automatic', 'manual']).optional(),
+  "name": zod.string().optional(),
+  "status": zod.enum(['all', 'running', 'finished', 'abnormal', 'stopped']).optional(),
+  "restoredTs": zod.string().optional(),
+  "startTime": zod.string().optional(),
+  "endTime": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "destination": zod.string().optional(),
+  "size": zod.string().optional(),
+  "sizeByte": zod.string().optional(),
+  "errorMessage": zod.string().optional(),
+  "policyId": zod.string().optional(),
+  "policyName": zod.string().optional(),
+  "log": zod.string().optional(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "expireTime": zod.string().optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const globalBRServiceDeleteBRTaskParams = zod.object({
+  "taskId": zod.string()
+})
+
+export const globalBRServiceDeleteBRTaskQueryParams = zod.object({
+  "deleteBackupFile": zod.boolean().optional()
+})
+
+export const globalBRServiceDeleteBRTaskResponse = zod.object({
+
+})
+
+
+export const globalBRServiceStartBRTaskParams = zod.object({
+  "taskId": zod.string()
+})
+
+export const globalBRServiceStartBRTaskResponse = zod.object({
+
+})
+
+
+export const globalBRServiceStopBRTaskParams = zod.object({
+  "taskId": zod.string()
+})
+
+export const globalBRServiceStopBRTaskResponse = zod.object({
+
+})
+
+
+export const clusterBRServiceCreateBackupTaskParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterBRServiceCreateBackupTaskBody = zod.object({
+  "name": zod.string().optional(),
+  "destination": zod.string(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "retention": zod.number().optional()
+})
+
+export const clusterBRServiceCreateBackupTaskResponse = zod.object({
+  "taskId": zod.string().optional(),
+  "type": zod.enum(['full_backup', 'log_backup', 'restore_by_file', 'restore_by_time', 'all_backup', 'all_restore']).optional(),
+  "triggerType": zod.enum(['automatic', 'manual']).optional(),
+  "name": zod.string().optional(),
+  "status": zod.enum(['running', 'finished', 'abnormal', 'stopped']).optional(),
+  "restoredTs": zod.string().optional(),
+  "startTime": zod.string().optional(),
+  "endTime": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "destination": zod.string().optional(),
+  "size": zod.string().optional(),
+  "sizeByte": zod.string().optional(),
+  "errorMessage": zod.string().optional(),
+  "policyId": zod.string().optional(),
+  "policyName": zod.string().optional(),
+  "log": zod.string().optional(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "expireTime": zod.string().optional()
+})
+
+
+export const clusterBRServiceGetClusterBackupPolicyParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterBRServiceGetClusterBackupPolicyResponse = zod.object({
+  "policyId": zod.string().optional(),
+  "name": zod.string(),
+  "logBackup": zod.boolean(),
+  "destination": zod.string(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "cycle": zod.enum(['week', 'month']).optional(),
+  "frequency": zod.string(),
+  "time": zod.string(),
+  "retention": zod.number(),
+  "clusters": zod.array(zod.object({
+  "id": zod.string().optional(),
+  "name": zod.string().optional()
+})).optional(),
+  "lastBackupTime": zod.string().optional(),
+  "size": zod.string().optional(),
+  "sizeByte": zod.string().optional(),
+  "lastLogBackupTime": zod.string().optional(),
+  "logBackupDelay": zod.string().optional()
+})
+
+
+export const clusterBRServiceListClusterBackupRecordsParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterBRServiceListClusterBackupRecordsQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional()
+})
+
+export const clusterBRServiceListClusterBackupRecordsResponse = zod.object({
+  "backupRecords": zod.array(zod.object({
+  "taskId": zod.string().optional(),
+  "type": zod.enum(['full_backup', 'log_backup', 'restore_by_file', 'restore_by_time', 'all_backup', 'all_restore']).optional(),
+  "triggerType": zod.enum(['automatic', 'manual']).optional(),
+  "name": zod.string().optional(),
+  "status": zod.enum(['running', 'finished', 'abnormal', 'stopped']).optional(),
+  "restoredTs": zod.string().optional(),
+  "startTime": zod.string().optional(),
+  "endTime": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "destination": zod.string().optional(),
+  "size": zod.string().optional(),
+  "sizeByte": zod.string().optional(),
+  "errorMessage": zod.string().optional(),
+  "policyId": zod.string().optional(),
+  "policyName": zod.string().optional(),
+  "log": zod.string().optional(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "expireTime": zod.string().optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const clusterBRServiceCreateRestoreTaskParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterBRServiceCreateRestoreTaskBody = zod.object({
+  "targetClusterId": zod.string(),
+  "type": zod.enum(['full_backup', 'log_backup', 'restore_by_file', 'restore_by_time', 'all_backup', 'all_restore']).optional(),
+  "backupTaskId": zod.string().optional(),
+  "restoreTime": zod.string().optional(),
+  "destination": zod.string().optional(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional()
+})
+
+export const clusterBRServiceCreateRestoreTaskResponse = zod.object({
+  "taskId": zod.string().optional(),
+  "type": zod.enum(['full_backup', 'log_backup', 'restore_by_file', 'restore_by_time', 'all_backup', 'all_restore']).optional(),
+  "triggerType": zod.enum(['automatic', 'manual']).optional(),
+  "name": zod.string().optional(),
+  "status": zod.enum(['running', 'finished', 'abnormal', 'stopped']).optional(),
+  "restoredTs": zod.string().optional(),
+  "startTime": zod.string().optional(),
+  "endTime": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "destination": zod.string().optional(),
+  "size": zod.string().optional(),
+  "sizeByte": zod.string().optional(),
+  "errorMessage": zod.string().optional(),
+  "policyId": zod.string().optional(),
+  "policyName": zod.string().optional(),
+  "log": zod.string().optional(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "expireTime": zod.string().optional()
+})
+
+
+export const clusterBRServiceListClusterBRTasksParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterBRServiceListClusterBRTasksQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "brTaskId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "type": zod.enum(['full_backup', 'log_backup', 'restore_by_file', 'restore_by_time', 'all_backup', 'all_restore']).optional(),
+  "status": zod.enum(['running', 'finished', 'abnormal', 'stopped']).optional()
+})
+
+export const clusterBRServiceListClusterBRTasksResponse = zod.object({
+  "brTasks": zod.array(zod.object({
+  "taskId": zod.string().optional(),
+  "type": zod.enum(['full_backup', 'log_backup', 'restore_by_file', 'restore_by_time', 'all_backup', 'all_restore']).optional(),
+  "triggerType": zod.enum(['automatic', 'manual']).optional(),
+  "name": zod.string().optional(),
+  "status": zod.enum(['running', 'finished', 'abnormal', 'stopped']).optional(),
+  "restoredTs": zod.string().optional(),
+  "startTime": zod.string().optional(),
+  "endTime": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "destination": zod.string().optional(),
+  "size": zod.string().optional(),
+  "sizeByte": zod.string().optional(),
+  "errorMessage": zod.string().optional(),
+  "policyId": zod.string().optional(),
+  "policyName": zod.string().optional(),
+  "log": zod.string().optional(),
+  "accessKeyId": zod.string().optional(),
+  "secretAccessKey": zod.string().optional(),
+  "rateLimit": zod.number().optional(),
+  "concurrency": zod.number().optional(),
+  "logFile": zod.string().optional(),
+  "expireTime": zod.string().optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const clusterBRServiceDetectClusterParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const clusterBRServiceDetectClusterResponse = zod.object({
+  "exist": zod.boolean().optional()
 })
 
 
@@ -317,7 +819,8 @@ export const diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfoParams = zod
 export const diagnosisServiceGetSlowQueryAvailableAdvancedFilterInfoResponse = zod.object({
   "name": zod.string().optional(),
   "unit": zod.string().optional(),
-  "valueList": zod.array(zod.string()).optional()
+  "valueList": zod.array(zod.string()).optional(),
+  "type": zod.string().optional()
 })
 
 
@@ -800,7 +1303,42 @@ export const diagnosisServiceGetTopSqlAvailableAdvancedFilterInfoParams = zod.ob
 export const diagnosisServiceGetTopSqlAvailableAdvancedFilterInfoResponse = zod.object({
   "name": zod.string().optional(),
   "unit": zod.string().optional(),
-  "valueList": zod.array(zod.string()).optional()
+  "valueList": zod.array(zod.string()).optional(),
+  "type": zod.string().optional()
+})
+
+
+export const diagnosisServiceGetTopSqlConfigsParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const diagnosisServiceGetTopSqlConfigsResponse = zod.object({
+  "enable": zod.boolean().optional(),
+  "refreshInterval": zod.number().optional(),
+  "historySize": zod.number().optional(),
+  "maxSize": zod.number().optional(),
+  "internalQuery": zod.boolean().optional()
+})
+
+
+export const diagnosisServiceUpdateTopSqlConfigsParams = zod.object({
+  "clusterId": zod.string()
+})
+
+export const diagnosisServiceUpdateTopSqlConfigsBody = zod.object({
+  "enable": zod.boolean(),
+  "refreshInterval": zod.number().optional(),
+  "historySize": zod.number().optional(),
+  "maxSize": zod.number().optional(),
+  "internalQuery": zod.boolean().optional()
+})
+
+export const diagnosisServiceUpdateTopSqlConfigsResponse = zod.object({
+  "enable": zod.boolean().optional(),
+  "refreshInterval": zod.number().optional(),
+  "historySize": zod.number().optional(),
+  "maxSize": zod.number().optional(),
+  "internalQuery": zod.boolean().optional()
 })
 
 
@@ -917,6 +1455,611 @@ export const diagnosisServiceGetTopSqlDetailResponse = zod.object({
 })
 
 
+export const credentialServiceListCredentialsQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "credentialId": zod.string().optional()
+})
+
+export const credentialServiceListCredentialsResponse = zod.object({
+  "credentials": zod.array(zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const credentialServiceCreateCredentialBody = zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+})
+
+export const credentialServiceCreateCredentialResponse = zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+})
+
+
+export const credentialServiceGetCredentialParams = zod.object({
+  "credentialId": zod.string()
+})
+
+export const credentialServiceGetCredentialResponse = zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+})
+
+
+export const credentialServiceDeleteCredentialParams = zod.object({
+  "credentialId": zod.string()
+})
+
+export const credentialServiceDeleteCredentialResponse = zod.object({
+
+})
+
+
+export const credentialServiceUpdateCredentialParams = zod.object({
+  "credentialId": zod.string()
+})
+
+export const credentialServiceUpdateCredentialBody = zod.object({
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional(),
+  "forceUpdate": zod.boolean().optional()
+})
+
+export const credentialServiceUpdateCredentialResponse = zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+})
+
+
+export const credentialServiceDownloadRSAKeyBody = zod.object({
+  "credentialId": zod.string()
+})
+
+export const credentialServiceDownloadRSAKeyResponse = zod.object({
+  "data": zod.string().optional()
+})
+
+
+export const credentialServiceGenerateRSAKeyBody = zod.object({
+
+})
+
+export const credentialServiceGenerateRSAKeyResponse = zod.object({
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional()
+})
+
+
+export const credentialServiceValidateConnectionBody = zod.object({
+  "credentialId": zod.string()
+})
+
+export const credentialServiceValidateConnectionResponse = zod.object({
+  "connectionResult": zod.string().optional(),
+  "inaccessibleHosts": zod.array(zod.string()).optional()
+})
+
+
+export const hostServiceListHostsQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "searchValue": zod.string().optional(),
+  "locationIds": zod.array(zod.string()).optional(),
+  "labelIds": zod.array(zod.string()).optional()
+})
+
+export const hostServiceListHostsResponse = zod.object({
+  "hosts": zod.array(zod.object({
+  "hostId": zod.string(),
+  "ip": zod.string().optional(),
+  "hostName": zod.string().optional(),
+  "sshPort": zod.number().optional(),
+  "status": zod.enum(['initializing', 'deleting', 'deleted', 'used', 'idle']).optional(),
+  "connectionStatus": zod.enum(['online', 'offline']).optional(),
+  "checkStatus": zod.enum(['checking', 'failed', 'warning', 'succeeded']).optional(),
+  "credentialId": zod.string().optional(),
+  "reportId": zod.string().optional(),
+  "osName": zod.string().optional(),
+  "osVendor": zod.string().optional(),
+  "osVersion": zod.string().optional(),
+  "osRelease": zod.string().optional(),
+  "osArchitecture": zod.string().optional(),
+  "cpuVendor": zod.string().optional(),
+  "cpuModel": zod.string().optional(),
+  "cpuSpeed": zod.number().optional(),
+  "cpuCache": zod.number().optional(),
+  "cpus": zod.number().optional(),
+  "cpuThreads": zod.number().optional(),
+  "cpuGovernor": zod.string().optional(),
+  "cpuArch": zod.string().optional(),
+  "memoryType": zod.string().optional(),
+  "memorySpeed": zod.number().optional(),
+  "memorySize": zod.number().optional(),
+  "memorySwap": zod.number().optional(),
+  "cpuNumaNodes": zod.number().optional(),
+  "storageTotalSize": zod.number().optional(),
+  "storageAvailable": zod.number().optional(),
+  "storageUsed": zod.number().optional(),
+  "diskType": zod.string().optional(),
+  "clusters": zod.array(zod.object({
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+})).optional(),
+  "nodeExporterPort": zod.number().optional(),
+  "tiupIds": zod.array(zod.string()).optional(),
+  "hostType": zod.enum(['VM', 'PM']).optional(),
+  "comment": zod.string().optional(),
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "createdTime": zod.string().datetime().optional(),
+  "updatedTime": zod.string().datetime().optional(),
+  "credential": zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+}).optional(),
+  "locationMappings": zod.array(zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.string(),
+  "locationValue": zod.string()
+})).optional(),
+  "memoryUnit": zod.string().optional(),
+  "storageUnit": zod.string().optional(),
+  "locationId": zod.string().optional(),
+  "cpuCores": zod.number().optional()
+})),
+  "nextPageToken": zod.string(),
+  "totalSize": zod.number()
+})
+
+
+export const hostServiceCreateHostsBody = zod.object({
+  "ips": zod.array(zod.string()).optional(),
+  "sshPort": zod.number().optional(),
+  "credentialId": zod.string().optional(),
+  "locationId": zod.string().optional(),
+  "labelIds": zod.array(zod.string()).optional(),
+  "comment": zod.string().optional()
+})
+
+export const hostServiceCreateHostsResponse = zod.object({
+  "taskId": zod.string().optional()
+})
+
+
+export const hostServiceImportResponse = zod.object({
+  "task": zod.array(zod.object({
+  "taskId": zod.string(),
+  "hostId": zod.string(),
+  "reportId": zod.string().optional(),
+  "ip": zod.string(),
+  "userName": zod.string().optional(),
+  "sshPort": zod.number(),
+  "status": zod.enum(['init', 'existed', 'succeeded', 'failed']).optional(),
+  "labels": zod.string().optional(),
+  "locationId": zod.string().optional(),
+  "credentialId": zod.string().optional(),
+  "hostName": zod.string().optional(),
+  "labelsList": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "locationMappings": zod.array(zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.string(),
+  "locationValue": zod.string()
+})).optional(),
+  "credential": zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+}).optional()
+})),
+  "taskId": zod.string()
+})
+
+
+export const hostServiceImportTaskParams = zod.object({
+  "taskId": zod.string()
+})
+
+export const hostServiceImportTaskResponse = zod.object({
+  "task": zod.array(zod.object({
+  "taskId": zod.string(),
+  "hostId": zod.string(),
+  "reportId": zod.string().optional(),
+  "ip": zod.string(),
+  "userName": zod.string().optional(),
+  "sshPort": zod.number(),
+  "status": zod.enum(['init', 'existed', 'succeeded', 'failed']).optional(),
+  "labels": zod.string().optional(),
+  "locationId": zod.string().optional(),
+  "credentialId": zod.string().optional(),
+  "hostName": zod.string().optional(),
+  "labelsList": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "locationMappings": zod.array(zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.string(),
+  "locationValue": zod.string()
+})).optional(),
+  "credential": zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+}).optional()
+})),
+  "taskId": zod.string()
+})
+
+
+export const hostServiceHostConfirmParams = zod.object({
+  "taskId": zod.string()
+})
+
+export const hostServiceHostConfirmBody = zod.object({
+
+})
+
+export const hostServiceHostConfirmResponse = zod.object({
+  "taskId": zod.string()
+})
+
+
+export const hostServiceGetHostParams = zod.object({
+  "hostId": zod.string()
+})
+
+export const hostServiceGetHostResponse = zod.object({
+  "hostId": zod.string(),
+  "ip": zod.string().optional(),
+  "hostName": zod.string().optional(),
+  "sshPort": zod.number().optional(),
+  "status": zod.enum(['initializing', 'deleting', 'deleted', 'used', 'idle']).optional(),
+  "connectionStatus": zod.enum(['online', 'offline']).optional(),
+  "checkStatus": zod.enum(['checking', 'failed', 'warning', 'succeeded']).optional(),
+  "credentialId": zod.string().optional(),
+  "reportId": zod.string().optional(),
+  "osName": zod.string().optional(),
+  "osVendor": zod.string().optional(),
+  "osVersion": zod.string().optional(),
+  "osRelease": zod.string().optional(),
+  "osArchitecture": zod.string().optional(),
+  "cpuVendor": zod.string().optional(),
+  "cpuModel": zod.string().optional(),
+  "cpuSpeed": zod.number().optional(),
+  "cpuCache": zod.number().optional(),
+  "cpus": zod.number().optional(),
+  "cpuThreads": zod.number().optional(),
+  "cpuGovernor": zod.string().optional(),
+  "cpuArch": zod.string().optional(),
+  "memoryType": zod.string().optional(),
+  "memorySpeed": zod.number().optional(),
+  "memorySize": zod.number().optional(),
+  "memorySwap": zod.number().optional(),
+  "cpuNumaNodes": zod.number().optional(),
+  "storageTotalSize": zod.number().optional(),
+  "storageAvailable": zod.number().optional(),
+  "storageUsed": zod.number().optional(),
+  "diskType": zod.string().optional(),
+  "clusters": zod.array(zod.object({
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+})).optional(),
+  "nodeExporterPort": zod.number().optional(),
+  "tiupIds": zod.array(zod.string()).optional(),
+  "hostType": zod.enum(['VM', 'PM']).optional(),
+  "comment": zod.string().optional(),
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "createdTime": zod.string().datetime().optional(),
+  "updatedTime": zod.string().datetime().optional(),
+  "credential": zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+}).optional(),
+  "locationMappings": zod.array(zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.string(),
+  "locationValue": zod.string()
+})).optional(),
+  "memoryUnit": zod.string().optional(),
+  "storageUnit": zod.string().optional(),
+  "locationId": zod.string().optional(),
+  "cpuCores": zod.number().optional()
+})
+
+
+export const hostServiceDeleteParams = zod.object({
+  "hostId": zod.string()
+})
+
+export const hostServiceDeleteResponse = zod.object({
+
+})
+
+
+export const hostServiceUpdateHostParams = zod.object({
+  "hostId": zod.string()
+})
+
+export const hostServiceUpdateHostBody = zod.object({
+  "host": zod.object({
+  "hostId": zod.string().optional(),
+  "sshPort": zod.number().optional(),
+  "credentialId": zod.string().optional(),
+  "locationId": zod.string().optional(),
+  "labelIds": zod.array(zod.string()).optional(),
+  "comment": zod.string().optional()
+}).optional()
+})
+
+export const hostServiceUpdateHostResponse = zod.object({
+  "hostId": zod.string(),
+  "ip": zod.string().optional(),
+  "hostName": zod.string().optional(),
+  "sshPort": zod.number().optional(),
+  "status": zod.enum(['initializing', 'deleting', 'deleted', 'used', 'idle']).optional(),
+  "connectionStatus": zod.enum(['online', 'offline']).optional(),
+  "checkStatus": zod.enum(['checking', 'failed', 'warning', 'succeeded']).optional(),
+  "credentialId": zod.string().optional(),
+  "reportId": zod.string().optional(),
+  "osName": zod.string().optional(),
+  "osVendor": zod.string().optional(),
+  "osVersion": zod.string().optional(),
+  "osRelease": zod.string().optional(),
+  "osArchitecture": zod.string().optional(),
+  "cpuVendor": zod.string().optional(),
+  "cpuModel": zod.string().optional(),
+  "cpuSpeed": zod.number().optional(),
+  "cpuCache": zod.number().optional(),
+  "cpus": zod.number().optional(),
+  "cpuThreads": zod.number().optional(),
+  "cpuGovernor": zod.string().optional(),
+  "cpuArch": zod.string().optional(),
+  "memoryType": zod.string().optional(),
+  "memorySpeed": zod.number().optional(),
+  "memorySize": zod.number().optional(),
+  "memorySwap": zod.number().optional(),
+  "cpuNumaNodes": zod.number().optional(),
+  "storageTotalSize": zod.number().optional(),
+  "storageAvailable": zod.number().optional(),
+  "storageUsed": zod.number().optional(),
+  "diskType": zod.string().optional(),
+  "clusters": zod.array(zod.object({
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+})).optional(),
+  "nodeExporterPort": zod.number().optional(),
+  "tiupIds": zod.array(zod.string()).optional(),
+  "hostType": zod.enum(['VM', 'PM']).optional(),
+  "comment": zod.string().optional(),
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "createdTime": zod.string().datetime().optional(),
+  "updatedTime": zod.string().datetime().optional(),
+  "credential": zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "userName": zod.string(),
+  "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
+  "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "hostCredential": zod.object({
+  "password": zod.string().optional(),
+  "publicKey": zod.string().optional(),
+  "privateKey": zod.string().optional(),
+  "hostIps": zod.array(zod.string()).optional()
+}).optional(),
+  "tidbCredential": zod.object({
+  "password": zod.string(),
+  "description": zod.string().optional(),
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional()
+}).optional()
+}).optional(),
+  "locationMappings": zod.array(zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.string(),
+  "locationValue": zod.string()
+})).optional(),
+  "memoryUnit": zod.string().optional(),
+  "storageUnit": zod.string().optional(),
+  "locationId": zod.string().optional(),
+  "cpuCores": zod.number().optional()
+})
+
+
+export const hostServiceGetDisksParams = zod.object({
+  "hostId": zod.string()
+})
+
+export const hostServiceGetDisksResponse = zod.object({
+  "disk": zod.array(zod.object({
+  "path": zod.string().optional(),
+  "totalSize": zod.number().optional(),
+  "usedSpace": zod.number().optional(),
+  "availableSpace": zod.number().optional(),
+  "mountingDir": zod.string().optional(),
+  "diskType": zod.enum(['HDD', 'SSD']).optional()
+})).optional()
+})
+
+
 export const metricsServiceGetHostMetricDataParams = zod.object({
   "hostId": zod.string(),
   "name": zod.string()
@@ -959,26 +2102,93 @@ export const metricsServiceGetHostMetricDataResponse = zod.object({
 })
 
 
+export const hostServiceReportParams = zod.object({
+  "hostId": zod.string(),
+  "reportId": zod.string()
+})
+
+export const hostServiceReportResponse = zod.object({
+  "taskId": zod.string(),
+  "taskState": zod.enum(['init', 'running', 'success', 'fail']).optional(),
+  "reports": zod.array(zod.object({
+  "reportId": zod.string(),
+  "hostId": zod.string().optional(),
+  "checkId": zod.string().optional(),
+  "checkName": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "checkDesc": zod.string().optional(),
+  "checkResult": zod.enum(['passed', 'failed', 'warned']).optional(),
+  "optional": zod.boolean().enum(['true', 'false']).optional(),
+  "fixable": zod.boolean().enum(['true', 'false']).optional(),
+  "checkBody": zod.string().optional()
+})).optional()
+})
+
+
+export const hostServiceGetTiDBProcessesParams = zod.object({
+  "hostId": zod.string()
+})
+
+export const hostServiceGetTiDBProcessesResponse = zod.object({
+  "tiDBProcesses": zod.array(zod.object({
+  "uid": zod.string().optional(),
+  "pid": zod.number().optional(),
+  "ppid": zod.number().optional(),
+  "startTime": zod.string().optional(),
+  "runningTime": zod.string().optional(),
+  "cmd": zod.string().optional()
+})).optional()
+})
+
+
+export const hostServiceFixParams = zod.object({
+  "hostId": zod.string()
+})
+
+export const hostServiceFixResponse = zod.object({
+  "hostId": zod.string(),
+  "taskId": zod.string(),
+  "reportId": zod.string()
+})
+
+
+export const hostServiceCheckParams = zod.object({
+  "hostId": zod.string()
+})
+
+export const hostServiceCheckResponse = zod.object({
+  "hostId": zod.string(),
+  "taskId": zod.string(),
+  "reportId": zod.string()
+})
+
+
+export const hostServiceBatchDeleteBody = zod.object({
+  "hostId": zod.array(zod.string())
+})
+
+export const hostServiceBatchDeleteResponse = zod.object({
+
+})
+
+
+export const hostServiceDownloadHostTemplateResponse = zod.object({
+  "data": zod.string().optional()
+})
+
+
 export const labelServiceListLabelsQueryParams = zod.object({
   "pageSize": zod.number().optional(),
   "pageToken": zod.string().optional(),
   "skip": zod.number().optional(),
-  "orderBy": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string().optional()
+  "orderBy": zod.string().optional()
 })
 
 export const labelServiceListLabelsResponse = zod.object({
   "labels": zod.array(zod.object({
-  "label": zod.object({
   "labelId": zod.string().optional(),
   "labelKey": zod.string().optional(),
   "labelValue": zod.string()
-}).optional(),
-  "bindObjects": zod.array(zod.object({
-  "resourceType": zod.string(),
-  "resourceIds": zod.array(zod.string())
-})).optional()
 })).optional(),
   "nextPageToken": zod.string().optional(),
   "totalSize": zod.number().optional()
@@ -992,6 +2202,17 @@ export const labelServiceCreateLabelBody = zod.object({
 })
 
 export const labelServiceCreateLabelResponse = zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})
+
+
+export const labelServiceGetLabelParams = zod.object({
+  "labelId": zod.string()
+})
+
+export const labelServiceGetLabelResponse = zod.object({
   "labelId": zod.string().optional(),
   "labelKey": zod.string().optional(),
   "labelValue": zod.string()
@@ -1012,7 +2233,6 @@ export const labelServiceUpdateLabelParams = zod.object({
 })
 
 export const labelServiceUpdateLabelBody = zod.object({
-  "labelId": zod.string().optional(),
   "labelKey": zod.string().optional(),
   "labelValue": zod.string()
 })
@@ -1024,42 +2244,288 @@ export const labelServiceUpdateLabelResponse = zod.object({
 })
 
 
-export const labelServiceBindLabelBody = zod.object({
-  "labelId": zod.string(),
-  "appendBindObjects": zod.array(zod.object({
-  "resourceType": zod.string(),
-  "resourceIds": zod.array(zod.string())
-})).optional(),
-  "removeBindObjects": zod.array(zod.object({
-  "resourceType": zod.string(),
-  "resourceIds": zod.array(zod.string())
-})).optional()
+export const labelServiceGetLabelWithBindingsParams = zod.object({
+  "labelId": zod.string()
 })
 
-export const labelServiceBindLabelResponse = zod.object({
+export const labelServiceGetLabelWithBindingsResponse = zod.object({
   "label": zod.object({
-  "label": zod.object({
+  "labelInfo": zod.object({
   "labelId": zod.string().optional(),
   "labelKey": zod.string().optional(),
   "labelValue": zod.string()
 }).optional(),
   "bindObjects": zod.array(zod.object({
-  "resourceType": zod.string(),
-  "resourceIds": zod.array(zod.string())
+  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
+  "resources": zod.array(zod.object({
+  "resourceId": zod.string().optional(),
+  "resourceName": zod.string()
+}))
+})).optional()
+}).optional()
+})
+
+
+export const labelServiceBatchCreateLabelsBody = zod.object({
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+}))
+})
+
+export const labelServiceBatchCreateLabelsResponse = zod.object({
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional()
+})
+
+
+export const labelServiceBindLabelBody = zod.object({
+  "labelId": zod.string(),
+  "bindObjects": zod.array(zod.object({
+  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
+  "resources": zod.array(zod.object({
+  "resourceId": zod.string().optional(),
+  "resourceName": zod.string()
+}))
+})).optional()
+})
+
+export const labelServiceBindLabelResponse = zod.object({
+  "label": zod.object({
+  "labelInfo": zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+}).optional(),
+  "bindObjects": zod.array(zod.object({
+  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
+  "resources": zod.array(zod.object({
+  "resourceId": zod.string().optional(),
+  "resourceName": zod.string()
+}))
 })).optional()
 }).optional()
 })
 
 
 export const labelServiceBindResourceBody = zod.object({
-  "resourceType": zod.string(),
+  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
   "resourceId": zod.string(),
-  "appendLabelIds": zod.array(zod.string()).optional(),
-  "removeLabelIds": zod.array(zod.string()).optional()
+  "labelIds": zod.array(zod.string()).optional()
 })
 
 export const labelServiceBindResourceResponse = zod.object({
-  "labelIds": zod.array(zod.string()).optional()
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional()
+})
+
+
+export const labelServiceListLabelsByResourceTypeQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "labelKey": zod.string().optional(),
+  "keyword": zod.string().optional(),
+  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional()
+})
+
+export const labelServiceListLabelsByResourceTypeResponse = zod.object({
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const labelServiceListLabelKeysQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "keyword": zod.string().optional(),
+  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional()
+})
+
+export const labelServiceListLabelKeysResponse = zod.object({
+  "labelKeys": zod.array(zod.string()).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const labelServiceListLabelsWithBindingsQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "labelKeys": zod.array(zod.string()).optional(),
+  "labelValueLike": zod.string().optional()
+})
+
+export const labelServiceListLabelsWithBindingsResponse = zod.object({
+  "labels": zod.array(zod.object({
+  "labelInfo": zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+}).optional(),
+  "bindObjects": zod.array(zod.object({
+  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
+  "resources": zod.array(zod.object({
+  "resourceId": zod.string().optional(),
+  "resourceName": zod.string()
+}))
+})).optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const licenseServiceGetLicenseResponse = zod.object({
+  "licenseId": zod.string().optional(),
+  "version": zod.string().optional(),
+  "licenseType": zod.enum(['free', 'ultimate']).optional(),
+  "allow": zod.array(zod.string()).optional(),
+  "deny": zod.array(zod.string()).optional(),
+  "activateAt": zod.string().datetime().optional(),
+  "expirationAt": zod.string().datetime().optional(),
+  "signature": zod.string().optional(),
+  "hosts": zod.string().optional(),
+  "vcpu": zod.string().optional(),
+  "alerts": zod.string().optional(),
+  "customerCode": zod.string().optional(),
+  "deviceCode": zod.string().optional(),
+  "status": zod.enum(['active', 'expired', 'expiring', 'invalid', 'revoked']).optional()
+})
+
+
+export const licenseServiceGetDeviceCodeResponse = zod.object({
+  "deviceCode": zod.string().optional()
+})
+
+
+export const licenseServiceActivateLicenseResponse = zod.object({
+  "licenseId": zod.string().optional(),
+  "version": zod.string().optional(),
+  "licenseType": zod.enum(['free', 'ultimate']).optional(),
+  "allow": zod.array(zod.string()).optional(),
+  "deny": zod.array(zod.string()).optional(),
+  "activateAt": zod.string().datetime().optional(),
+  "expirationAt": zod.string().datetime().optional(),
+  "signature": zod.string().optional(),
+  "hosts": zod.string().optional(),
+  "vcpu": zod.string().optional(),
+  "alerts": zod.string().optional(),
+  "customerCode": zod.string().optional(),
+  "deviceCode": zod.string().optional(),
+  "status": zod.enum(['active', 'expired', 'expiring', 'invalid', 'revoked']).optional()
+})
+
+
+export const licenseServiceActivateFreeLicenseResponse = zod.object({
+  "licenseId": zod.string().optional(),
+  "version": zod.string().optional(),
+  "licenseType": zod.enum(['free', 'ultimate']).optional(),
+  "allow": zod.array(zod.string()).optional(),
+  "deny": zod.array(zod.string()).optional(),
+  "activateAt": zod.string().datetime().optional(),
+  "expirationAt": zod.string().datetime().optional(),
+  "signature": zod.string().optional(),
+  "hosts": zod.string().optional(),
+  "vcpu": zod.string().optional(),
+  "alerts": zod.string().optional(),
+  "customerCode": zod.string().optional(),
+  "deviceCode": zod.string().optional(),
+  "status": zod.enum(['active', 'expired', 'expiring', 'invalid', 'revoked']).optional()
+})
+
+
+export const locationServiceListLocationsQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "locationKey": zod.enum(['zone', 'dc', 'rack']).optional(),
+  "locationValue": zod.string().optional(),
+  "parentId": zod.string().optional()
+})
+
+export const locationServiceListLocationsResponse = zod.object({
+  "locations": zod.array(zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.enum(['zone', 'dc', 'rack']).optional(),
+  "locationValue": zod.string().optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const locationServiceCreateLocationsBody = zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.enum(['zone', 'dc', 'rack']).optional(),
+  "locationValue": zod.string().optional()
+})
+
+export const locationServiceCreateLocationsResponse = zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.enum(['zone', 'dc', 'rack']).optional(),
+  "locationValue": zod.string().optional()
+})
+
+
+export const locationServiceGetLocationsParams = zod.object({
+  "locationId": zod.string()
+})
+
+export const locationServiceGetLocationsResponse = zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.enum(['zone', 'dc', 'rack']).optional(),
+  "locationValue": zod.string().optional()
+})
+
+
+export const locationServiceDeleteLocationParams = zod.object({
+  "locationId": zod.string()
+})
+
+export const locationServiceDeleteLocationResponse = zod.object({
+
+})
+
+
+export const locationServiceUpdateLocationsParams = zod.object({
+  "locationId": zod.string()
+})
+
+export const locationServiceUpdateLocationsBody = zod.object({
+  "location": zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.enum(['zone', 'dc', 'rack']).optional(),
+  "locationValue": zod.string().optional()
+}).optional()
+})
+
+export const locationServiceUpdateLocationsResponse = zod.object({
+  "locationId": zod.string().optional(),
+  "parentId": zod.string().optional(),
+  "locationKey": zod.enum(['zone', 'dc', 'rack']).optional(),
+  "locationValue": zod.string().optional()
 })
 
 
@@ -1248,6 +2714,218 @@ export const roleServiceDeleteRoleResponse = zod.object({
 })
 
 
+export const tiupsServiceListTiupsQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "searchValue": zod.string().optional(),
+  "labelIds": zod.array(zod.string()).optional(),
+  "hostIds": zod.array(zod.string()).optional()
+})
+
+export const tiupsServiceListTiupsResponse = zod.object({
+  "tiups": zod.array(zod.object({
+  "tiupId": zod.string().optional(),
+  "name": zod.string().optional(),
+  "tiupHome": zod.string().optional(),
+  "version": zod.string().optional(),
+  "credentialId": zod.string().optional(),
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "description": zod.string().optional(),
+  "hostId": zod.string().optional(),
+  "host": zod.object({
+  "hostId": zod.string(),
+  "ip": zod.string().optional(),
+  "hostName": zod.string().optional(),
+  "sshPort": zod.number().optional(),
+  "credentialId": zod.string().optional(),
+  "osName": zod.string().optional(),
+  "osVersion": zod.string().optional(),
+  "osRelease": zod.string().optional(),
+  "osArchitecture": zod.string().optional(),
+  "hostType": zod.enum(['VM', 'PM']).optional(),
+  "locationId": zod.string().optional(),
+  "createdTime": zod.string().datetime().optional(),
+  "updatedTime": zod.string().datetime().optional(),
+  "credential": zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "credentialType": zod.string().optional(),
+  "userName": zod.string().optional()
+}).optional()
+}).optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const tiupsServiceCreateTiupsBody = zod.object({
+  "hostId": zod.string().optional(),
+  "tiupHome": zod.string().optional(),
+  "description": zod.string().optional(),
+  "name": zod.string().optional(),
+  "labelIds": zod.array(zod.string()).optional()
+})
+
+export const tiupsServiceCreateTiupsResponse = zod.object({
+  "tiupId": zod.string().optional(),
+  "name": zod.string().optional(),
+  "tiupHome": zod.string().optional(),
+  "version": zod.string().optional(),
+  "credentialId": zod.string().optional(),
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "description": zod.string().optional(),
+  "hostId": zod.string().optional(),
+  "host": zod.object({
+  "hostId": zod.string(),
+  "ip": zod.string().optional(),
+  "hostName": zod.string().optional(),
+  "sshPort": zod.number().optional(),
+  "credentialId": zod.string().optional(),
+  "osName": zod.string().optional(),
+  "osVersion": zod.string().optional(),
+  "osRelease": zod.string().optional(),
+  "osArchitecture": zod.string().optional(),
+  "hostType": zod.enum(['VM', 'PM']).optional(),
+  "locationId": zod.string().optional(),
+  "createdTime": zod.string().datetime().optional(),
+  "updatedTime": zod.string().datetime().optional(),
+  "credential": zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "credentialType": zod.string().optional(),
+  "userName": zod.string().optional()
+}).optional()
+}).optional()
+})
+
+
+export const tiupsServiceGetTiupsParams = zod.object({
+  "tiupId": zod.string()
+})
+
+export const tiupsServiceGetTiupsResponse = zod.object({
+  "tiupId": zod.string().optional(),
+  "name": zod.string().optional(),
+  "tiupHome": zod.string().optional(),
+  "version": zod.string().optional(),
+  "credentialId": zod.string().optional(),
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "description": zod.string().optional(),
+  "hostId": zod.string().optional(),
+  "host": zod.object({
+  "hostId": zod.string(),
+  "ip": zod.string().optional(),
+  "hostName": zod.string().optional(),
+  "sshPort": zod.number().optional(),
+  "credentialId": zod.string().optional(),
+  "osName": zod.string().optional(),
+  "osVersion": zod.string().optional(),
+  "osRelease": zod.string().optional(),
+  "osArchitecture": zod.string().optional(),
+  "hostType": zod.enum(['VM', 'PM']).optional(),
+  "locationId": zod.string().optional(),
+  "createdTime": zod.string().datetime().optional(),
+  "updatedTime": zod.string().datetime().optional(),
+  "credential": zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "credentialType": zod.string().optional(),
+  "userName": zod.string().optional()
+}).optional()
+}).optional()
+})
+
+
+export const tiupsServiceDeleteTiupsParams = zod.object({
+  "tiupId": zod.string()
+})
+
+export const tiupsServiceDeleteTiupsResponse = zod.object({
+
+})
+
+
+export const tiupsServiceUpdateTiupsParams = zod.object({
+  "tiupId": zod.string()
+})
+
+export const tiupsServiceUpdateTiupsBody = zod.object({
+  "tiups": zod.object({
+  "labelIds": zod.array(zod.string()).optional(),
+  "description": zod.string().optional(),
+  "name": zod.string().optional()
+}).optional()
+})
+
+export const tiupsServiceUpdateTiupsResponse = zod.object({
+  "tiupId": zod.string().optional(),
+  "name": zod.string().optional(),
+  "tiupHome": zod.string().optional(),
+  "version": zod.string().optional(),
+  "credentialId": zod.string().optional(),
+  "labels": zod.array(zod.object({
+  "labelId": zod.string().optional(),
+  "labelKey": zod.string().optional(),
+  "labelValue": zod.string()
+})).optional(),
+  "description": zod.string().optional(),
+  "hostId": zod.string().optional(),
+  "host": zod.object({
+  "hostId": zod.string(),
+  "ip": zod.string().optional(),
+  "hostName": zod.string().optional(),
+  "sshPort": zod.number().optional(),
+  "credentialId": zod.string().optional(),
+  "osName": zod.string().optional(),
+  "osVersion": zod.string().optional(),
+  "osRelease": zod.string().optional(),
+  "osArchitecture": zod.string().optional(),
+  "hostType": zod.enum(['VM', 'PM']).optional(),
+  "locationId": zod.string().optional(),
+  "createdTime": zod.string().datetime().optional(),
+  "updatedTime": zod.string().datetime().optional(),
+  "credential": zod.object({
+  "credentialId": zod.string().optional(),
+  "credentialName": zod.string().optional(),
+  "credentialType": zod.string().optional(),
+  "userName": zod.string().optional()
+}).optional()
+}).optional()
+})
+
+
+export const tiupsServiceGetTiupsClusterParams = zod.object({
+  "tiupId": zod.string()
+})
+
+export const tiupsServiceGetTiupsClusterResponse = zod.object({
+  "tiupsClusters": zod.array(zod.object({
+  "clusterId": zod.string().optional(),
+  "clusterName": zod.string().optional(),
+  "user": zod.string().optional(),
+  "version": zod.string().optional(),
+  "metaPath": zod.string().optional(),
+  "privateKeyPath": zod.string().optional(),
+  "managed": zod.boolean().optional()
+})).optional()
+})
+
+
 export const userServiceListUsersQueryParams = zod.object({
   "pageSize": zod.number().optional(),
   "pageToken": zod.string().optional(),
@@ -1422,5 +3100,12 @@ export const userServiceChangePasswordResponse = zod.object({
 
 export const userServiceValidateSessionResponse = zod.object({
   "userId": zod.string()
+})
+
+
+export const apiKeyServiceGetTemErrorDetailResponse = zod.object({
+  "type": zod.string().optional(),
+  "locale": zod.string().optional(),
+  "message": zod.string().optional()
 })
 

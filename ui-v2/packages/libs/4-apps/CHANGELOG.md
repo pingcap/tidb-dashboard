@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.8.4
+
+### Patch Changes
+
+- support open statement detail page from slow query detail page
+
 ## 0.8.3
 
 ### Patch Changes

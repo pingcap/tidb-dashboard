@@ -63,6 +63,7 @@ export function useCtxValue(): AppCtxValue {
           if (params.name === "stmt_type") {
             return Promise.resolve({
               name: "stmt_type",
+              type: "string",
               unit: "",
               values: STMT_TYPES,
             })
@@ -72,6 +73,7 @@ export function useCtxValue(): AppCtxValue {
             params.name,
           ).then((res) => ({
             name: res.name ?? "",
+            type: res.type ?? "string",
             unit: res.unit ?? "",
             values: res.valueList ?? [],
           }))

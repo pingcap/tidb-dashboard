@@ -3,6 +3,7 @@ import {
   ActionIcon,
   Box,
   Group,
+  NumberInput,
   Select,
   TextInput,
   Typography,
@@ -21,6 +22,7 @@ export type AdvancedFilterSettingItem = AdvancedFilterItem & {
 // AdvancedFilterInfo represent the info from backend
 export type AdvancedFilterInfo = {
   name: string
+  type: string // string | number | bool
   unit: string
   values: string[]
 }
@@ -100,19 +102,38 @@ export function AdvancedFilterSetting({
             }
           />
         )}
-        {filterInfo && filterInfo.values.length === 0 && (
-          <TextInput
-            rightSection={filterInfo.unit}
-            value={filter.values[0]}
-            onChange={(e) =>
-              onUpdate?.({
-                ...filter,
-                values: [e.target.value],
-                operator: filter.operator || "=",
-              })
-            }
-          />
-        )}
+        {filterInfo &&
+          filterInfo.values.length === 0 &&
+          filterInfo.type === "string" && (
+            <TextInput
+              value={filter.values[0]}
+              onChange={(e) =>
+                onUpdate?.({
+                  ...filter,
+                  values: [e.target.value],
+                  operator: filter.operator || "=",
+                })
+              }
+            />
+          )}
+        {filterInfo &&
+          filterInfo.values.length === 0 &&
+          filterInfo.type !== "string" && (
+            <NumberInput
+              rightSection={filterInfo.unit}
+              value={filter.values[0]}
+              allowNegative={false}
+              allowDecimal={filterInfo.type.startsWith("float")}
+              hideControls
+              onChange={(v) =>
+                onUpdate?.({
+                  ...filter,
+                  values: [v + ""],
+                  operator: filter.operator || "=",
+                })
+              }
+            />
+          )}
       </Box>
 
       <Group ml="auto" w={28}>

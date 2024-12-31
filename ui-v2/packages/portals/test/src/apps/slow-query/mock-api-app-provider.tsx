@@ -55,6 +55,7 @@ export function useCtxValue(): AppCtxValue {
             params.name,
           ).then((res) => ({
             name: res.name ?? "",
+            type: res.type ?? "string",
             unit: res.unit ?? "",
             values: res.valueList ?? [],
           }))

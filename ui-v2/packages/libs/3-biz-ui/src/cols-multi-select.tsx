@@ -9,10 +9,10 @@ import {
   useMantineTheme,
 } from "@tidbcloud/uikit"
 import { IconSettings04 } from "@tidbcloud/uikit/icons"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 export type ColumnMultiSelectProps = {
-  data: string[]
+  data: { label: string; val: string }[]
   value: string[]
   onChange: (value: string[]) => void
   onReset?: () => void
@@ -38,16 +38,26 @@ export function ColumnMultiSelect({
     },
   })
 
-  const selectedData = data.filter((item) => value.includes(item))
+  const selectedData = data.filter((item) => value.includes(item.val))
 
-  const filteredData = data
-    .filter((item) => item.toLowerCase().includes(search.toLowerCase().trim()))
-    .filter((item) => !showSelected || value.includes(item))
+  // @todo: refine by useTransition
+  const filteredData = useMemo(() => {
+    const d = data.filter((item) => !showSelected || value.includes(item.val))
+    const term = search.toLowerCase().trim()
+    if (term) {
+      return d.filter(
+        (item) =>
+          item.val.toLowerCase().includes(term) ||
+          item.label.toLowerCase().includes(term),
+      )
+    }
+    return d
+  }, [search, showSelected, data, value])
 
   const options = filteredData.map((item) => (
     <Combobox.Option
-      value={item}
-      key={item}
+      value={item.val}
+      key={item.val}
       styles={{
         option: {
           "&:hover": {
@@ -57,8 +67,8 @@ export function ColumnMultiSelect({
       }}
     >
       <Group wrap="nowrap" gap="xs">
-        <Checkbox checked={value.includes(item)} />
-        <Typography truncate>{item}</Typography>
+        <Checkbox checked={value.includes(item.val)} />
+        <Typography truncate>{item.label}</Typography>
       </Group>
     </Combobox.Option>
   ))

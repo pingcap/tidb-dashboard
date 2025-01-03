@@ -11,6 +11,9 @@ export function formatNumByUnit(
   unit: string,
   precision: number = 1,
 ) {
+  if (isNaN(value)) {
+    return "-"
+  }
   const formatFn = getValueFormat(unit)
   if (!formatFn) {
     return value + ""

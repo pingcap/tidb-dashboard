@@ -2,7 +2,7 @@ import { Group, Stack, Title } from "@tidbcloud/uikit"
 
 import { useAppContext } from "../../ctx"
 
-// import { ColsSelect } from "./cols-select"
+import { ColsSelect } from "./cols-select"
 import { FiltersWithAdvanced } from "./filters-with-advanced"
 import { RefreshButton } from "./refresh-button"
 import { ListTable } from "./table"
@@ -22,7 +22,7 @@ export function List() {
       <Group>
         <FiltersWithAdvanced />
         <Group ml="auto">
-          {/* <ColsSelect /> */}
+          <ColsSelect />
           <RefreshButton />
         </Group>
       </Group>

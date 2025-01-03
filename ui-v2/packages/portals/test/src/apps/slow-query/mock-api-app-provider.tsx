@@ -87,6 +87,7 @@ export function useCtxValue(): AppCtxValue {
             isDesc: params.desc,
             pageSize: params.limit,
             fields: params.fields.join(","),
+            // fields: "*",
             advancedFilter: advancedFiltersStrArr,
           }).then((res) => res.data ?? [])
         },

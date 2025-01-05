@@ -1,4 +1,7 @@
-import { AdvancedFilterItem } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  AdvancedFilterItem,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   ActionIcon,
   Box,
@@ -44,6 +47,8 @@ export function AdvancedFilterSetting({
   showDelete?: boolean
   conditionLabel?: string
 }) {
+  const { tt } = useTn("advanced-filters")
+
   const filterInfo = filtersInfo?.find((f) => f.name === filter.name)
 
   useEffect(() => {
@@ -62,7 +67,7 @@ export function AdvancedFilterSetting({
       <Select
         w={240}
         searchable
-        placeholder="Filter Name"
+        placeholder={tt("Filter Name")}
         data={availableFilters}
         value={filter.name}
         onChange={(v) => onUpdate?.({ ...filter, name: v || "", values: [] })}

@@ -1,4 +1,8 @@
 import {
+  addLangsLocales,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
   ActionIcon,
   Checkbox,
   Combobox,
@@ -10,6 +14,21 @@ import {
 } from "@tidbcloud/uikit"
 import { IconSettings04 } from "@tidbcloud/uikit/icons"
 import { useMemo, useState } from "react"
+
+addLangsLocales({
+  zh: {
+    "cols-multi-select": {
+      texts: {
+        "Search columns...": "搜索列...",
+        "Nothing found": "未找到",
+        "{{count}} selected": "{{count}} 已选",
+        "Show Selected": "显示已选",
+        "Show All": "显示全部",
+        Reset: "重置",
+      },
+    },
+  },
+})
 
 export type ColumnMultiSelectProps = {
   data: { label: string; val: string }[]
@@ -24,6 +43,8 @@ export function ColumnMultiSelect({
   onChange,
   onReset,
 }: ColumnMultiSelectProps) {
+  const { tt } = useTn("cols-multi-select")
+
   const theme = useMantineTheme()
   const [showSelected, setShowSelected] = useState(false)
   const [search, setSearch] = useState("")
@@ -110,7 +131,7 @@ export function ColumnMultiSelect({
         <Combobox.Search
           value={search}
           onChange={(event) => setSearch(event.currentTarget.value)}
-          placeholder={`Search columns...`}
+          placeholder={tt("Search columns...")}
           styles={{
             input: {
               border: "none",
@@ -121,13 +142,15 @@ export function ColumnMultiSelect({
           {options.length > 0 ? (
             options
           ) : (
-            <Combobox.Empty>Nothing found</Combobox.Empty>
+            <Combobox.Empty>{tt("Nothing found")}</Combobox.Empty>
           )}
         </Combobox.Options>
         <Combobox.Footer>
           <Group>
             <Typography fz="xs" c="dimmed">
-              {selectedData.length} selected
+              {tt("{{count}} selected", {
+                count: selectedData.length,
+              })}
             </Typography>
             <Group ml="auto" justify="flex-end">
               <UnstyledButton
@@ -135,10 +158,10 @@ export function ColumnMultiSelect({
                 c="peacock"
                 onClick={() => setShowSelected(!showSelected)}
               >
-                {showSelected ? "Show All" : "Show Selected"}
+                {showSelected ? tt("Show All") : tt("Show Selected")}
               </UnstyledButton>
               <UnstyledButton fz="xs" c="peacock" onClick={onReset}>
-                Reset
+                {tt("Reset")}
               </UnstyledButton>
             </Group>
           </Group>

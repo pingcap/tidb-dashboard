@@ -1,4 +1,7 @@
-import { AdvancedFilterItem } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  AdvancedFilterItem,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { ActionIcon, Box, Modal } from "@tidbcloud/uikit"
 import { useDisclosure } from "@tidbcloud/uikit/hooks"
 import { IconFilterFunnel02 } from "@tidbcloud/uikit/icons"
@@ -18,6 +21,8 @@ export function AdvancedFiltersModal({
   onUpdateFilters?: (items: AdvancedFilterItem[]) => void
   reqFilterInfo?: (filterName: string) => Promise<AdvancedFilterInfo>
 }) {
+  const { tt } = useTn("advanced-filters")
+
   const hasFilters = advancedFilters.length > 0
 
   const [opened, { open, close }] = useDisclosure(false)
@@ -72,7 +77,7 @@ export function AdvancedFiltersModal({
 
       <Modal
         size="auto"
-        title="Advanced Filters"
+        title={tt("Advanced Filters")}
         opened={opened}
         onClose={close}
       >

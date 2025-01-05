@@ -1,3 +1,4 @@
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Button, Group, Stack } from "@tidbcloud/uikit"
 
 import {
@@ -33,6 +34,8 @@ export function AdvancedFiltersSetting({
   onSubmit?: () => void
   onClose?: () => void
 }) {
+  const { tt } = useTn("advanced-filters")
+
   const activeItems = filters.filter((i) => !i.deleted)
 
   function handleAddItem() {
@@ -59,19 +62,19 @@ export function AdvancedFiltersSetting({
           onReqFilterInfo={reqFilterInfo}
           onUpdate={handleUpdateItem}
           // showDelete={activeItems.length > 1}
-          conditionLabel={i === 0 ? "WHEN" : "AND"}
+          conditionLabel={i === 0 ? tt("WHEN") : tt("AND")}
         />
       ))}
 
       <Group>
         <Button variant="outline" onClick={handleAddItem}>
-          Add Filter
+          {tt("Add Filter")}
         </Button>
         <Group ml="auto">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {tt("Cancel")}
           </Button>
-          <Button onClick={onSubmit}>Save</Button>
+          <Button onClick={onSubmit}>{tt("Save")}</Button>
         </Group>
       </Group>
     </Stack>

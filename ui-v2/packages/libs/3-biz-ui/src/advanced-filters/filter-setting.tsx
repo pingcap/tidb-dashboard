@@ -36,7 +36,7 @@ export function AdvancedFilterSetting({
   showDelete = true,
   conditionLabel = "AND",
 }: {
-  availableFilters: string[]
+  availableFilters: Array<string | { label: string; value: string }>
   filtersInfo?: AdvancedFilterInfo[]
   onReqFilterInfo?: (filterName: string) => void
   filter: AdvancedFilterSettingItem

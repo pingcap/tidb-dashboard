@@ -67,7 +67,7 @@ export function ColumnMultiSelect({
       }}
     >
       <Group wrap="nowrap" gap="xs">
-        <Checkbox checked={value.includes(item.val)} />
+        <Checkbox defaultChecked={value.includes(item.val)} />
         <Typography truncate>{item.label}</Typography>
       </Group>
     </Combobox.Option>

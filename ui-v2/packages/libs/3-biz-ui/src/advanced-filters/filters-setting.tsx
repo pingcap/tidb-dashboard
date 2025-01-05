@@ -25,7 +25,7 @@ export function AdvancedFiltersSetting({
   onSubmit,
   onClose,
 }: {
-  availableFilters: string[]
+  availableFilters: Array<string | { label: string; value: string }>
   filtersInfo?: AdvancedFilterInfo[]
   reqFilterInfo?: (filterName: string) => void
   filters: AdvancedFilterSettingItem[]

@@ -32,7 +32,7 @@ function HighlightSQL({ sql }: { sql: string }) {
   }, [sql])
 
   return (
-    <Box mah="90vh" sx={{ overflow: "auto" }}>
+    <Box mah="90vh" maw="60vw" sx={{ overflow: "auto" }}>
       <CodeHighlight
         withCopyButton={true}
         code={formattedSql}
@@ -47,6 +47,7 @@ function HighlightSQL({ sql }: { sql: string }) {
           code: {
             padding: 0,
             fontSize: 12,
+            whiteSpace: "pre-wrap",
           },
           copy: {
             top: 0,

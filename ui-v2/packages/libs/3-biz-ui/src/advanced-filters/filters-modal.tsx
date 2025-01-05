@@ -13,7 +13,7 @@ export function AdvancedFiltersModal({
   onUpdateFilters,
   reqFilterInfo,
 }: {
-  availableFilters: string[]
+  availableFilters: Array<string | { label: string; value: string }>
   advancedFilters: AdvancedFilterItem[]
   onUpdateFilters?: (items: AdvancedFilterItem[]) => void
   reqFilterInfo?: (filterName: string) => Promise<AdvancedFilterInfo>

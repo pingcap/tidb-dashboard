@@ -2,3 +2,6 @@
 
 export * from "./ctx"
 export * from "./components"
+
+// i18n
+import "./locales"

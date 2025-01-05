@@ -1,3 +1,4 @@
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Anchor, Card, Group } from "@tidbcloud/uikit"
 import { IconLinkExternal01 } from "@tidbcloud/uikit/icons"
 import { useMemo } from "react"
@@ -12,6 +13,7 @@ export function RelatedStatement({ dbName }: { dbName: string }) {
     const [sqlDigest, _connectionId, _timestamp, from, to] = id.split(",")
     return [from, to, sqlDigest, dbName].join(",")
   }, [id, dbName])
+  const { tt } = useTn("slow-query")
 
   return (
     <Card shadow="xs" p="md">
@@ -22,7 +24,9 @@ export function RelatedStatement({ dbName }: { dbName: string }) {
         w="fit-content"
       >
         <Group gap={4}>
-          View related statement in statement page (it may be evicted)
+          {tt(
+            "View related statement in statement page (but it may be evicted already)",
+          )}
           <IconLinkExternal01 />
         </Group>
       </Anchor>

@@ -84,9 +84,22 @@
       "fields.write_sql_response_total": "Send Response Time"
     },
     "texts": {
+      "All (Raw JSON)": "All (Raw JSON)",
+      "Basic": "Basic",
       "Clear Filters": "Clear Filters",
+      "Coprocessor": "Coprocessor",
+      "Detail": "Detail",
       "Find SQL text": "Find SQL text",
-      "SQL digest": "SQL digest"
+      "Plan": "Plan",
+      "Query": "Query",
+      "SQL digest": "SQL digest",
+      "Slow Query Detail": "Slow Query Detail",
+      "Table": "Table",
+      "Text": "Text",
+      "Time": "Time",
+      "Transaction": "Transaction",
+      "View related statement in statement page (but it may be evicted already)": "View related statement in statement page (but it may be evicted already)",
+      "Warnings": "Warnings"
     }
   }
 }

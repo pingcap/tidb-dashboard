@@ -30,25 +30,27 @@ async function generateLocales() {
   // Scan all TypeScript/JavaScript files in the apps folder
   const files = await glob("packages/libs/4-apps/src/**/*.{ts,tsx,js,jsx}")
 
-  for (const file of files) {
-    const code = fs.readFileSync(file, "utf-8")
+  for (const filePath of files) {
+    const code = fs.readFileSync(filePath, "utf-8")
     const ast = $(code)
-
-    // get appName from file path
-    const appName = file.split("/")[4]
 
     // check app name
     // app name in the `useTn` call should be the same as the file path
     let hasTn = false
+    let appFolder = ""
     ast
       .find("const { $$$0 } = useTn($_$0)")
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .each((item: any) => {
-        const _app = item.match[0][0].value
-        if (_app !== appName) {
-          console.error(file)
-          console.error(`app name mismatch: ${_app}, expected ${appName}`)
+        const appName = item.match[0][0].value
+        const appFolderPos = filePath.indexOf(`/${appName}/`)
+        if (appFolderPos === -1) {
+          console.error(filePath)
+          console.error(`app name mismatch: ${appName}`)
           return
+        } else {
+          appFolder = filePath.slice(0, appFolderPos) + "/" + appName
+          // console.log(appFolder)
         }
         hasTn = true
       })
@@ -57,8 +59,8 @@ async function generateLocales() {
     }
 
     // init app data
-    if (!localeData[appName]) {
-      localeData[appName] = {
+    if (!localeData[appFolder]) {
+      localeData[appFolder] = {
         keys: {},
         texts: {},
       }
@@ -72,7 +74,7 @@ async function generateLocales() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .each((tnItem: any) => {
         const text = tnItem.match[0][0].value
-        localeData[appName].texts[text] = text
+        localeData[appFolder].texts[text] = text
       })
 
     // Handle `tk` calls, likes:
@@ -117,15 +119,15 @@ async function generateLocales() {
           }
 
           // check whether value is existed
-          const existedVal = localeData[appName].keys[key]
+          const existedVal = localeData[appFolder].keys[key]
           if (existedVal !== undefined && existedVal !== value) {
             console.error(
-              `same keys but have differe values, key: ${key}, values: ${existedVal}, ${value}`,
+              `same keys but have different values, key: ${key}, values: ${existedVal}, ${value}`,
             )
             // break
             return false
           }
-          localeData[appName].keys[key] = value
+          localeData[appFolder].keys[key] = value
         }
       })
   }
@@ -134,14 +136,15 @@ async function generateLocales() {
   sortLocaleData(localeData)
 
   // Ensure output directory exists
-  for (const app of Object.keys(localeData)) {
-    const outputDir = `packages/libs/4-apps/src/${app}/locales`
+  for (const appFolder of Object.keys(localeData)) {
+    const outputDir = `${appFolder}/locales`
     fs.mkdirSync(outputDir, { recursive: true })
 
     const outputData = {
       comment: "this file can be updated by running `pnpm gen:locales` command",
     }
-    outputData[app] = localeData[app]
+    const appName = appFolder.split("/").pop() || ""
+    outputData[appName] = localeData[appFolder]
 
     // Write en.json
     fs.writeFileSync(
@@ -157,28 +160,28 @@ async function generateLocales() {
 
       // Clean up keys by removing entries that don't exist in outputData
       const cleanedKeys = {}
-      for (const key in existingZh[app]?.keys) {
-        if (key in outputData[app].keys) {
-          cleanedKeys[key] = existingZh[app].keys[key]
+      for (const key in existingZh[appName]?.keys) {
+        if (key in outputData[appName].keys) {
+          cleanedKeys[key] = existingZh[appName].keys[key]
         }
       }
 
       // Clean up texts by removing entries that don't exist in outputData
       const cleanedTexts = {}
-      for (const key in existingZh[app]?.texts) {
-        if (key in outputData[app].texts) {
-          cleanedTexts[key] = existingZh[app].texts[key]
+      for (const key in existingZh[appName]?.texts) {
+        if (key in outputData[appName].texts) {
+          cleanedTexts[key] = existingZh[appName].texts[key]
         }
       }
 
       const merged = {
-        [app]: {
+        [appName]: {
           keys: {
-            ...outputData[app].keys,
+            ...outputData[appName].keys,
             ...cleanedKeys,
           },
           texts: {
-            ...outputData[app].texts,
+            ...outputData[appName].texts,
             ...cleanedTexts,
           },
         },
@@ -186,7 +189,7 @@ async function generateLocales() {
       sortLocaleData(merged)
       const final = {
         comment: outputData.comment,
-        [app]: merged[app],
+        [appName]: merged[appName],
       }
       fs.writeFileSync(zhPath, JSON.stringify(final, null, 2) + "\n")
     } else {

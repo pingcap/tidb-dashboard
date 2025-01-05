@@ -4,7 +4,7 @@
     "keys": {},
     "texts": {
       "Clear Filters": "Clear Filters",
-      "Find digest,digest_text,schema,table": "Find digest,digest_text,schema,table"
+      "Find SQL text": "Find SQL text"
     }
   }
 }

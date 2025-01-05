@@ -1,3 +1,4 @@
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   Button,
   Card,
@@ -26,6 +27,8 @@ export function SqlLimitSetting() {
   const [resourceGroup, setResourceGroup] = useState("")
   const [action, setAction] = useState("")
 
+  const { tt } = useTn("sql-limit")
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!resourceGroup || !action) {
@@ -33,9 +36,9 @@ export function SqlLimitSetting() {
     }
     try {
       await setLimitMut.mutateAsync({ ruGroup: resourceGroup, action })
-      notifier.success("Set SQL limit successfully")
+      notifier.success(tt("Set SQL limit successfully"))
     } catch (_err) {
-      notifier.error("Set SQL limit failed")
+      notifier.error(tt("Set SQL limit failed"))
     }
   }
 
@@ -46,8 +49,9 @@ export function SqlLimitSetting() {
   if (ruGroups.length === 0) {
     return (
       <Typography>
-        There is no resource groups, please create a resource group manually
-        first
+        {tt(
+          "There is no resource groups, please create a resource group manually first",
+        )}
       </Typography>
     )
   }
@@ -57,19 +61,19 @@ export function SqlLimitSetting() {
       <form onSubmit={handleSubmit}>
         <Group>
           <Select
-            placeholder="Resource Group"
+            placeholder={tt("Resource Group")}
             data={ruGroups}
             value={resourceGroup}
             onChange={(v) => setResourceGroup(v || "")}
           />
           <Select
-            placeholder="Action"
+            placeholder={tt("Action")}
             data={["DRYRUN", "COOLDOWN", "KILL"]}
             value={action}
             onChange={(v) => setAction(v || "")}
           />
           <Button ml="auto" type="submit" disabled={!resourceGroup || !action}>
-            Set Limit
+            {tt("Set Limit")}
           </Button>
         </Group>
       </form>
@@ -80,13 +84,14 @@ export function SqlLimitSetting() {
 export function SqlLimitStatus() {
   const { data: sqlLimitStatus } = useSqlLimitStatusData()
   const deleteSqlLimitMut = useDeleteSqlLimitData()
+  const { tt } = useTn("sql-limit")
 
   async function handleDelete() {
     try {
       await deleteSqlLimitMut.mutateAsync()
-      notifier.success("Delete SQL limit successfully")
+      notifier.success(tt("Delete SQL limit successfully"))
     } catch (_err) {
-      notifier.error("Delete SQL limit failed")
+      notifier.error(tt("Delete SQL limit failed"))
     }
   }
 
@@ -97,10 +102,14 @@ export function SqlLimitStatus() {
   return (
     <Card>
       <Group>
-        <Typography>Resource Group: {sqlLimitStatus.ru_group}</Typography>
-        <Typography>Action: {sqlLimitStatus.action}</Typography>
+        <Typography>
+          {tt("Resource Group")}: {sqlLimitStatus.ru_group}
+        </Typography>
+        <Typography>
+          {tt("Action")}: {sqlLimitStatus.action}
+        </Typography>
         <Button ml="auto" color="red" variant="outline" onClick={handleDelete}>
-          Delete Limit
+          {tt("Delete Limit")}
         </Button>
       </Group>
     </Card>
@@ -109,6 +118,7 @@ export function SqlLimitStatus() {
 
 export function SqlLimitBody() {
   const { data: sqlLimitSupport } = useSqlLimitSupportData()
+  const { tt } = useTn("sql-limit")
 
   if (!sqlLimitSupport) {
     return <Skeleton height={10} />
@@ -117,7 +127,7 @@ export function SqlLimitBody() {
   if (!sqlLimitSupport.is_support) {
     return (
       <Typography c="gray">
-        SQL limit feature is not supported in this version
+        {tt("SQL limit feature is not supported in this version")}
       </Typography>
     )
   }
@@ -131,10 +141,11 @@ export function SqlLimitBody() {
 }
 
 export function SqlLimitCard() {
+  const { tt } = useTn("sql-limit")
   return (
     <Card shadow="xs" p="md">
       <Stack gap="xs">
-        <Title order={5}>SQL Limit</Title>
+        <Title order={5}>{tt("SQL Limit")}</Title>
         <SqlLimitBody />
       </Stack>
     </Card>

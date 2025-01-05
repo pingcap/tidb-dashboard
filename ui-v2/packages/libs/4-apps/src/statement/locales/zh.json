@@ -4,7 +4,7 @@
     "keys": {},
     "texts": {
       "Clear Filters": "清空筛选条件",
-      "Find digest,digest_text,schema,table": "查找 digest,digest_text,schema,table"
+      "Find SQL text": "查找 SQL"
     }
   }
 }

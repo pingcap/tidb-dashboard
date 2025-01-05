@@ -1,4 +1,5 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { ActionIcon, Group, Stack, Typography } from "@tidbcloud/uikit"
 import { IconChevronLeft } from "@tidbcloud/uikit/icons"
 
@@ -15,6 +16,7 @@ export function Detail() {
   const ctx = useAppContext()
 
   const { data: detailData, isLoading } = useDetailData()
+  const { tt } = useTn("slow-query")
 
   return (
     <Stack>
@@ -27,7 +29,7 @@ export function Detail() {
           >
             <IconChevronLeft size={20} />
           </ActionIcon>
-          <Typography variant="title-lg">Slow Query Detail</Typography>
+          <Typography variant="title-lg">{tt("Slow Query Detail")}</Typography>
         </Group>
       )}
 

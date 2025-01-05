@@ -84,9 +84,22 @@
       "fields.write_sql_response_total": "发送结果耗时"
     },
     "texts": {
+      "All (Raw JSON)": "全部 (原始 JSON)",
+      "Basic": "基础信息",
       "Clear Filters": "清空筛选条件",
+      "Coprocessor": "Coprocessor",
+      "Detail": "详情",
       "Find SQL text": "查找 SQL",
-      "SQL digest": "SQL digest"
+      "Plan": "执行计划",
+      "Query": "SQL 查询",
+      "SQL digest": "SQL digest",
+      "Slow Query Detail": "慢查询详情",
+      "Table": "表格",
+      "Text": "文本",
+      "Time": "执行时间",
+      "Transaction": "事务",
+      "View related statement in statement page (but it may be evicted already)": "在 SQL 语句页面查看相关的 SQL 语句（但有可能已经被淘汰）",
+      "Warnings": "警告"
     }
   }
 }

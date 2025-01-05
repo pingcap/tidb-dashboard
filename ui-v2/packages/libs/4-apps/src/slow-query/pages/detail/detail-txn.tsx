@@ -2,38 +2,45 @@ import {
   InfoModel,
   InfoTable,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  formatNumByUnit,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
 import { SlowqueryModel } from "../../models"
 
-function getData(data: SlowqueryModel): InfoModel[] {
+function getData(
+  data: SlowqueryModel,
+  tk: (key: string) => string,
+): InfoModel[] {
   return [
     {
-      name: "Start Timestamp",
+      name: tk("fields.txn_start_ts"),
       value: data.txn_start_ts!,
-      desc: "Transaction start timestamp, a.k.a. Transaction ID",
+      desc: tk("fields.txn_start_ts.desc"),
     },
     {
-      name: "Write Keys",
+      name: tk("fields.write_keys"),
       value: formatNumByUnit(data.write_keys || 0, "short"),
     },
     {
-      name: "Write Size",
+      name: tk("fields.write_size"),
       value: formatNumByUnit(data.write_size || 0, "bytes"),
     },
     {
-      name: "Prewrite Regions",
+      name: tk("fields.prewrite_region"),
       value: formatNumByUnit(data.prewrite_region || 0, "short"),
     },
     {
-      name: "Transaction Retries",
+      name: tk("fields.txn_retry"),
       value: formatNumByUnit(data.txn_retry || 0, "short"),
     },
   ]
 }
 
 export function DetailTxn({ data }: { data: SlowqueryModel }) {
-  const infoData = useMemo(() => getData(data), [data])
+  const { tk } = useTn("slow-query")
+  const infoData = useMemo(() => getData(data, tk), [data, tk])
   return <InfoTable data={infoData} />
 }

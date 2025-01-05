@@ -2,64 +2,71 @@ import {
   InfoModel,
   InfoTable,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  formatNumByUnit,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
 import { SlowqueryModel } from "../../models"
 
-function getData(data: SlowqueryModel): InfoModel[] {
+function getData(
+  data: SlowqueryModel,
+  tk: (key: string) => string,
+): InfoModel[] {
   return [
     {
-      name: "Request Count",
+      name: tk("fields.request_count"),
       value: formatNumByUnit(data.request_count || 0, "short"),
     },
     {
-      name: "Process Keys",
+      name: tk("fields.process_keys"),
       value: formatNumByUnit(data.process_keys || 0, "short"),
     },
     {
-      name: "Total Keys",
+      name: tk("fields.total_keys"),
       value: formatNumByUnit(data.total_keys || 0, "short"),
     },
     {
-      name: "Copr Address (Process)",
+      name: tk("fields.cop_proc_addr"),
       value: data.cop_proc_addr || "-",
-      desc: "The address of the TiKV that takes most time process the Coprocessor request",
+      desc: tk("fields.cop_proc_addr.desc"),
     },
     {
-      name: "Copr Address (Wait)",
+      name: tk("fields.cop_wait_addr"),
       value: data.cop_wait_addr || "-",
-      desc: "The address of the TiKV that takes most time wait the Coprocessor request",
+      desc: tk("fields.cop_wait_addr.desc"),
     },
     {
-      name: "RocksDB Block Cache Hits",
+      name: tk("fields.rocksdb_block_cache_hit_count"),
       value: formatNumByUnit(data.rocksdb_block_cache_hit_count || 0, "short"),
-      desc: "Total number of hits from the block cache (RocksDB block_cache_hit_count)",
+      desc: tk("fields.rocksdb_block_cache_hit_count.desc"),
     },
     {
-      name: "RocksDB Read Size",
+      name: tk("fields.rocksdb_block_read_byte"),
       value: formatNumByUnit(data.rocksdb_block_read_byte || 0, "bytes"),
-      desc: "Total number of bytes RocksDB read from file (RocksDB block_read_byte)",
+      desc: tk("fields.rocksdb_block_read_byte.desc"),
     },
     {
-      name: "RocksDB Block Reads",
+      name: tk("fields.rocksdb_block_read_count"),
       value: formatNumByUnit(data.rocksdb_block_read_count || 0, "short"),
-      desc: "Total number of blocks RocksDB read from file (RocksDB block_read_count)",
+      desc: tk("fields.rocksdb_block_read_count.desc"),
     },
     {
-      name: "RocksDB Skipped Deletions",
+      name: tk("fields.rocksdb_delete_skipped_count"),
       value: formatNumByUnit(data.rocksdb_delete_skipped_count || 0, "short"),
-      desc: "Total number of deleted (a.k.a. tombstone) key versions that are skipped during iteration (RocksDB delete_skipped_count)",
+      desc: tk("fields.rocksdb_delete_skipped_count.desc"),
     },
     {
-      name: "RocksDB Skipped Keys",
+      name: tk("fields.rocksdb_key_skipped_count"),
       value: formatNumByUnit(data.rocksdb_key_skipped_count || 0, "short"),
-      desc: "Total number of keys skipped during iteration (RocksDB key_skipped_count)",
+      desc: tk("fields.rocksdb_key_skipped_count.desc"),
     },
   ]
 }
 
 export function DetailCopr({ data }: { data: SlowqueryModel }) {
-  const infoData = useMemo(() => getData(data), [data])
+  const { tk } = useTn("slow-query")
+  const infoData = useMemo(() => getData(data, tk), [data, tk])
   return <InfoTable data={infoData} />
 }

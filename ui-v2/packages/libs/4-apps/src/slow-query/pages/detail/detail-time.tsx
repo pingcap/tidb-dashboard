@@ -2,142 +2,150 @@ import {
   InfoModel,
   InfoTable,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  formatNumByUnit,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
 import { SlowqueryModel } from "../../models"
 
-function getData(data: SlowqueryModel): InfoModel[] {
+function getData(
+  data: SlowqueryModel,
+  tk: (key: string) => string,
+): InfoModel[] {
   return [
     {
-      name: "Query Time",
+      name: tk("fields.query_time_2"),
       value: formatNumByUnit(data.query_time! * 10e8, "ns"),
       level: 0,
-      desc: "The elapsed wall time when execution the query",
+      desc: tk("fields.query_time_2.desc"),
     },
     {
-      name: "Parse Time",
+      name: tk("fields.parse_time"),
       value: formatNumByUnit(data.parse_time! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed when parsing the query",
+      desc: tk("fields.parse_time.desc"),
     },
     {
-      name: "Generate Plan Time",
+      name: tk("fields.compile_time"),
       value: formatNumByUnit(data.compile_time! * 10e8, "ns"),
       level: 1,
       desc: "",
     },
     {
-      name: "Rewrite Plan Time",
+      name: tk("fields.rewrite_time"),
       value: formatNumByUnit(data.rewrite_time! * 10e8, "ns"),
       level: 2,
       desc: "",
     },
     {
-      name: "Preprocess Sub-Query Time",
+      name: tk("fields.preproc_subqueries_time"),
       value: formatNumByUnit(data.preproc_subqueries_time! * 10e8, "ns"),
       level: 3,
-      desc: "Time consumed when pre-processing the subquery during the rewrite plan phase",
+      desc: tk("fields.preproc_subqueries_time.desc"),
     },
     {
-      name: "Optimize Plan Time",
+      name: tk("fields.optimize_time"),
       value: formatNumByUnit(data.optimize_time! * 10e8, "ns"),
       level: 2,
+      desc: tk("fields.optimize_time.desc"),
     },
     {
-      name: "Coprocessor Executor Time",
+      name: tk("fields.cop_time"),
       value: formatNumByUnit(data.cop_time! * 10e8, "ns"),
       level: 1,
-      desc: "The elapsed wall time when TiDB Coprocessor executor waiting all Coprocessor requests to finish (note: when there are JOIN in SQL statement, multiple TiDB Coprocessor executors may be running in parallel, which may cause this time not being a wall time)",
+      desc: tk("fields.cop_time.desc"),
     },
     {
-      name: "Coprocessor Wait Time",
+      name: tk("fields.wait_time"),
       value: formatNumByUnit(data.wait_time! * 10e8, "ns"),
       level: 2,
-      desc: "The total time of Coprocessor request is prepared and wait to execute in TiKV, which may happen when retrieving a snapshot though Raft concensus protocol (note: TiKV waits requests in parallel so that this is not a wall time)",
+      desc: tk("fields.wait_time.desc"),
     },
     {
-      name: "Coprocessor Process Time",
+      name: tk("fields.process_time"),
       value: formatNumByUnit(data.process_time! * 10e8, "ns"),
       level: 2,
-      desc: "The total time of Coprocessor request being executed in TiKV (note: TiKV executes requests in parallel so that this is not a wall time)",
+      desc: tk("fields.process_time.desc"),
     },
     {
-      name: "Local Latch Wait Time",
+      name: tk("fields.local_latch_wait_time"),
       value: formatNumByUnit(data.local_latch_wait_time! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed when TiDB waits for the lock in the current TiDB instance before 2PC commit phase when transaction commits",
+      desc: tk("fields.local_latch_wait_time.desc"),
     },
     {
-      name: "Lock Keys Time",
+      name: tk("fields.lock_keys_time"),
       value: formatNumByUnit(data.lock_keys_time! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed when locking keys in pessimistic transaction",
+      desc: tk("fields.lock_keys_time.desc"),
     },
     {
-      name: "Resolve Lock Time",
+      name: tk("fields.resolve_lock_time"),
       value: formatNumByUnit(data.resolve_lock_time! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed when TiDB resolves locks from other transactions in 2PC prewrite phase when transaction commits",
+      desc: tk("fields.resolve_lock_time.desc"),
     },
     {
-      name: "Get Start Ts Time",
+      name: tk("fields.wait_ts"),
       value: formatNumByUnit(data.wait_ts! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed when getting a start timestamp when transaction begins",
+      desc: tk("fields.wait_ts.desc"),
     },
     {
-      name: "Get Commit Ts Time",
+      name: tk("fields.get_commit_ts_time"),
       value: formatNumByUnit(data.get_commit_ts_time! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed when getting a commit timestamp for 2PC commit phase when transaction commits",
+      desc: tk("fields.get_commit_ts_time.desc"),
     },
     {
-      name: "Prewrite Time",
+      name: tk("fields.prewrite_time"),
       value: formatNumByUnit(data.prewrite_time! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed in 2PC prewrite phase when transaction commits",
+      desc: tk("fields.prewrite_time.desc"),
     },
     {
-      name: "Commit Time",
+      name: tk("fields.commit_time"),
       value: formatNumByUnit(data.commit_time! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed in 2PC commit phase when transaction commits",
+      desc: tk("fields.commit_time.desc"),
     },
     {
-      name: "Execution Backoff Time",
+      name: tk("fields.backoff_time"),
       value: formatNumByUnit(data.backoff_time! * 10e8, "ns"),
       level: 1,
-      desc: "The total backoff waiting time before retry when a query encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)",
+      desc: tk("fields.backoff_time.desc"),
     },
     {
-      name: "Commit Backoff Time",
+      name: tk("fields.commit_backoff_time"),
       value: formatNumByUnit(data.commit_backoff_time! * 10e8, "ns"),
       level: 1,
-      desc: "The total backoff waiting time when 2PC commit encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)",
+      desc: tk("fields.commit_backoff_time.desc"),
     },
     {
-      name: "Retried execution Time",
+      name: tk("fields.exec_retry_time"),
       value: formatNumByUnit(data.exec_retry_time! * 10e8, "ns"),
       level: 1,
-      desc: "Wall time consumed when SQL statement is retried and executed again, except for the last exection",
+      desc: tk("fields.exec_retry_time.desc"),
     },
     {
-      name: "Send response Time",
+      name: tk("fields.write_sql_response_total"),
       value: formatNumByUnit(data.write_sql_response_total! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed when sending response to the SQL client",
+      desc: tk("fields.write_sql_response_total.desc"),
     },
     {
-      name: "Wait Binlog Prewrite Time",
+      name: tk("fields.wait_prewrite_binlog_time"),
       value: formatNumByUnit(data.wait_prewrite_binlog_time! * 10e8, "ns"),
       level: 1,
-      desc: "Time consumed when waiting Binlog prewrite to finish",
+      desc: tk("fields.wait_prewrite_binlog_time.desc"),
     },
   ]
 }
 
 export function DetailTime({ data }: { data: SlowqueryModel }) {
-  const infoData = useMemo(() => getData(data), [data])
+  const { tk } = useTn("slow-query")
+  const infoData = useMemo(() => getData(data, tk), [data, tk])
   return <InfoTable data={infoData} />
 }

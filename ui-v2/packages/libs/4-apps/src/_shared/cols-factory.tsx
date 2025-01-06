@@ -40,7 +40,7 @@ export class TableColsFactory<T extends MRT_RowData> {
 
   number(filedName: keyof T, unit: string): ColConfig<T> {
     return this.defCol(filedName).patchConfig({
-      accessorFn: (row) => formatNumByUnit(row[filedName]!, unit),
+      accessorFn: (row) => formatNumByUnit(row[filedName]!, unit) || "-",
     })
   }
 
@@ -54,7 +54,9 @@ export class TableColsFactory<T extends MRT_RowData> {
     return this.defCol(filedName).patchConfig({
       enableSorting: false,
       enableResizing: true,
-      accessorFn: (row) => <Typography truncate>{row[filedName]}</Typography>,
+      accessorFn: (row) => (
+        <Typography truncate>{row[filedName] || "-"}</Typography>
+      ),
     })
   }
 
@@ -63,8 +65,8 @@ export class TableColsFactory<T extends MRT_RowData> {
       enableSorting: false,
       enableResizing: true,
       accessorFn: (row) => (
-        <Tooltip label={row[filedName]}>
-          <Typography truncate>{row[filedName]}</Typography>
+        <Tooltip label={row[filedName] || ""}>
+          <Typography truncate>{row[filedName] || "-"}</Typography>
         </Tooltip>
       ),
     })

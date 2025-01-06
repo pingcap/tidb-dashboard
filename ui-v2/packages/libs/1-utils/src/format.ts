@@ -12,7 +12,7 @@ export function formatNumByUnit(
   precision: number = 1,
 ) {
   if (isNaN(value)) {
-    return "-"
+    return ""
   }
   const formatFn = getValueFormat(unit)
   if (!formatFn) {

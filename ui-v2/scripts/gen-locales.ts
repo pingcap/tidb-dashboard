@@ -50,7 +50,6 @@ async function generateLocales() {
           return
         } else {
           appFolder = filePath.slice(0, appFolderPos) + "/" + appName
-          // console.log(appFolder)
         }
         hasTn = true
       })

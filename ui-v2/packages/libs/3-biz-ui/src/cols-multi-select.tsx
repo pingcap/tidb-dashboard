@@ -63,10 +63,10 @@ export function ColumnMultiSelect({
 
   // @todo: refine by useTransition
   const filteredData = useMemo(() => {
-    const d = data.filter((item) => !showSelected || value.includes(item.val))
+    let d = data.filter((item) => !showSelected || value.includes(item.val))
     const term = search.toLowerCase().trim()
     if (term) {
-      return d.filter(
+      d = d.filter(
         (item) =>
           item.val.toLowerCase().includes(term) ||
           item.label.toLowerCase().includes(term),
@@ -88,7 +88,7 @@ export function ColumnMultiSelect({
       }}
     >
       <Group wrap="nowrap" gap="xs">
-        <Checkbox defaultChecked={value.includes(item.val)} />
+        <Checkbox checked={value.includes(item.val)} />
         <Typography truncate>{item.label}</Typography>
       </Group>
     </Combobox.Option>

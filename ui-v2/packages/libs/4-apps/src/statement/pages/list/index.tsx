@@ -3,11 +3,11 @@ import { Group, Stack, Title } from "@tidbcloud/uikit"
 import { useAppContext } from "../../ctx"
 import { useListData } from "../../utils/use-data"
 
+import { ColsSelect } from "./cols-select"
 import { FiltersWithAdvanced } from "./filters-with-advanced"
 import { RefreshButton } from "./refresh-button"
 import { ListTable } from "./table"
 import { TimeRangeFixAlert } from "./time-range-fix-alert"
-// import { ColsSelect } from "./cols-select"
 
 export function List() {
   const ctx = useAppContext()
@@ -24,7 +24,7 @@ export function List() {
       <Group>
         <FiltersWithAdvanced />
         <Group ml="auto">
-          {/* <ColsSelect /> */}
+          <ColsSelect />
           <RefreshButton />
         </Group>
       </Group>

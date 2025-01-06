@@ -3,11 +3,10 @@ import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Box } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
+import { TableColsFactory } from "../../../_shared/cols-factory"
 import { useAppContext } from "../../ctx"
 import { SlowqueryModel } from "../../models"
 import { useTimeRangeValueState } from "../../shared-state/memory-state"
-
-import { TableColsFactory } from "./cols-factory"
 
 function SqlCell({ row }: { row: SlowqueryModel }) {
   const ctx = useAppContext()

@@ -63,7 +63,9 @@ function useLocales() {
   tk("fields.compile_latency", "Compile")
   tk("fields.compile_latency.desc", "Time consumed when optimizing the query")
   tk("fields.wait_time", "Coprocessor Wait Time")
+  tk("fields.wait_time.desc", " ") // @todo
   tk("fields.process_time", "Coprocessor Execution Time")
+  tk("fields.process_time.desc", " ") // @todo
   tk("fields.total_process_time", "Total Execution Time")
   tk("fields.total_wait_time", "Total Wait Time")
   tk("fields.backoff_time", "Backoff Retry Time")
@@ -72,8 +74,11 @@ function useLocales() {
     "The waiting time before retry when a query encounters errors that require a retry",
   )
   tk("fields.get_commit_ts_time", "Get Commit Ts Time")
+  tk("fields.get_commit_ts_time.desc", " ") // @todo
   tk("fields.local_latch_wait_time", "Local Latch Wait Time")
+  tk("fields.local_latch_wait_time.desc", " ") // @todo
   tk("fields.resolve_lock_time", "Resolve Lock Time")
+  tk("fields.resolve_lock_time.desc", " ") // @todo
   tk("fields.prewrite_time", "Prewrite Time")
   tk("fields.commit_time", "Commit Time")
   tk("fields.commit_backoff_time", "Commit Backoff Retry Time")
@@ -84,6 +89,7 @@ function useLocales() {
     "The execution time of a query (due to the parallel execution, it may be significantly smaller than the above time)",
   )
   tk("fields.sum_cop_task_num", "Total Coprocessor Tasks")
+  tk("fields.sum_cop_task_num.desc", " ") // @todo
   tk("fields.avg_processed_keys", "Mean Visible Versions Per Query")
   tk("fields.max_processed_keys", "Max Visible Versions Per Query")
   tk("fields.avg_total_keys", "Mean Meet Versions Per Query")
@@ -94,6 +100,7 @@ function useLocales() {
   tk("fields.max_total_keys", "Max Meet Versions Per Query")
   tk("fields.avg_affected_rows", "Mean Affected Rows")
   tk("fields.sum_backoff_times", "Total Backoff Count")
+  tk("fields.sum_backoff_times.desc", " ") // @todo
   tk("fields.avg_write_keys", "Mean Written Keys")
   tk("fields.max_write_keys", "Max Written Keys")
   tk("fields.avg_write_size", "Mean Written Data Size")
@@ -108,6 +115,7 @@ function useLocales() {
   tk("fields.schema_name.desc", "The database used to execute the query")
   tk("fields.query_sample_text", "Query Sample")
   tk("fields.prev_sample_text", "Previous Query Sample")
+  tk("fields.prev_sample_text.desc", " ") // @todo
   tk("fields.plan", "Execution Plan")
   tk(
     "fields.avg_rocksdb_delete_skipped_count",
@@ -175,8 +183,41 @@ function useLocales() {
     "fields.max_time_queued_by_rc.desc",
     "The maximum time that the query waits in the resource control's queue (not a wall time)",
   )
+  tk("fields.rc_wait_time", "RC Wait Time")
   tk(
     "fields.rc_wait_time.desc",
     "The total wait time spent in the resource queue (note: {{distro.tikv}} executes requests in parallel so that this is not a wall time)",
   )
+
+  // additional fields
+  // @todo: refine translation
+  tk("fields.max_latency", "Max Latency")
+  tk("fields.min_latency", "Min Latency")
+  tk("fields.avg_parse_latency", "Mean Parse Latency")
+  tk("fields.max_parse_latency", "Max Parse Latency")
+  tk("fields.avg_compile_latency", "Mean Compile Latency")
+  tk("fields.max_compile_latency", "Max Compile Latency")
+  tk("fields.max_cop_process_time", "Max Coprocess Time")
+  tk("fields.max_cop_wait_time", "Max Coprocess Wait Time")
+  tk("fields.avg_process_time", "Mean Process Time")
+  tk("fields.max_process_time", "Max Process Time")
+  tk("fields.avg_wait_time", "Mean Wait Time")
+  tk("fields.max_wait_time", "Max Wait Time")
+  tk("fields.avg_backoff_time", "Mean Backoff Time")
+  tk("fields.max_backoff_time", "Max Backoff Time")
+  tk("fields.avg_prewrite_time", "Mean Prewrite Time")
+  tk("fields.max_prewrite_time", "Max Prewrite Time")
+  tk("fields.avg_commit_time", "Mean Commit Time")
+  tk("fields.max_commit_time", "Max Commit Time")
+  tk("fields.avg_get_commit_ts_time", "Mean Get Commit Ts Time")
+  tk("fields.max_get_commit_ts_time", "Max Get Commit Ts Time")
+  tk("fields.avg_commit_backoff_time", "Mean Commit Backoff Time")
+  tk("fields.max_commit_backoff_time", "Max Commit Backoff Time")
+  tk("fields.avg_resolve_lock_time", "Mean Resolve Lock Time")
+  tk("fields.max_resolve_lock_time", "Max Resolve Lock Time")
+  tk("fields.avg_local_latch_wait_time", "Mean Local Latch Wait Time")
+  tk("fields.max_local_latch_wait_time", "Max Local Latch Wait Time")
+  tk("fields.stmt_type", "Statement Type")
+  tk("fields.plan_hint", "Plan Hint")
+  tk("fields.binary_plan", "Binary Plan")
 }

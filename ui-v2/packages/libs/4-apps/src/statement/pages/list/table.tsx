@@ -7,7 +7,6 @@ import { useMemo } from "react"
 
 import { StatementModel } from "../../models"
 import { useListUrlState } from "../../url-state/list-url-state"
-import { useAvailableFieldsData } from "../../utils/use-data"
 
 import { useListTableColumns } from "./cols"
 
@@ -18,7 +17,7 @@ export function ListTable({
   data: StatementModel[]
   isLoading: boolean
 }) {
-  const cols = useListTableColumns()
+  const tableColumns = useListTableColumns()
   const {
     sortRule,
     setSortRule,
@@ -34,16 +33,18 @@ export function ListTable({
     pagination,
     setPagination,
   )
-  const { data: availableFields } = useAvailableFieldsData()
   const columnVisibility = useMemo(() => {
-    return (availableFields || []).reduce(
-      (acc, col) => {
-        acc[col] = visibleCols.includes(col)
-        return acc
-      },
-      {} as Record<string, boolean>,
-    )
-  }, [availableFields, visibleCols])
+    return tableColumns
+      .map((c) => c.id)
+      .filter((f) => f !== undefined)
+      .reduce(
+        (acc, col) => {
+          acc[col] = visibleCols.includes(col)
+          return acc
+        },
+        {} as Record<string, boolean>,
+      )
+  }, [tableColumns, visibleCols])
 
   // do sorting in local for statement list
   const sortedData = useMemo(() => {
@@ -96,7 +97,7 @@ export function ListTable({
         position: "right",
         showTotal: true,
       }}
-      columns={cols}
+      columns={tableColumns}
       data={pagedData}
     />
   )

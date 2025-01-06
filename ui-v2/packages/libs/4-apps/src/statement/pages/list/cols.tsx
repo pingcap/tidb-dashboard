@@ -2,11 +2,11 @@ import {
   EvictedSQL,
   SQLWithHover,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Box } from "@tidbcloud/uikit"
-import { MRT_ColumnDef } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
+import { TableColsFactory } from "../../../_shared/cols-factory"
 import { useAppContext } from "../../ctx"
 import { StatementModel } from "../../models"
 
@@ -31,41 +31,104 @@ function SqlCell({ row }: { row: StatementModel }) {
 }
 
 export function useListTableColumns() {
-  const columns = useMemo<MRT_ColumnDef<StatementModel>[]>(() => {
-    return [
-      {
-        id: "digest_text",
-        header: "Statement Template",
-        minSize: 300,
-        enableSorting: false,
+  const { tk } = useTn("statement")
+  const columns = useMemo(() => {
+    const tcf = new TableColsFactory<StatementModel>(tk)
+    return tcf.columns([
+      tcf.text("digest_text").patchConfig({
+        minSize: 100,
         accessorFn: (row) => <SqlCell row={row} />,
-      },
-      {
-        id: "sum_latency",
-        header: "Total Latency",
-        enableResizing: false,
-        accessorFn: (row) => formatNumByUnit(row.sum_latency!, "ns"),
-      },
-      {
-        id: "avg_latency",
-        header: "Mean Latency",
-        enableResizing: false,
-        accessorFn: (row) => formatNumByUnit(row.avg_latency!, "ns"),
-      },
-      {
-        id: "exec_count",
-        header: "Executions Count",
-        enableResizing: false,
-        accessorFn: (row) => formatNumByUnit(row.exec_count!, "short"),
-      },
-      {
-        id: "plan_count",
-        header: "Plans Count",
-        enableResizing: false,
-        accessorFn: (row) => row.plan_count ?? 0,
-      },
-    ]
-  }, [])
+      }),
+      tcf.text("digest"),
+
+      tcf.number("sum_latency", "ns"),
+      tcf.number("avg_latency", "ns"),
+      tcf.number("max_latency", "ns"),
+      tcf.number("min_latency", "ns"),
+      tcf.number("exec_count", "short"),
+
+      tcf.number("plan_count", "short"),
+      tcf.number("plan_cache_hits", "short"),
+
+      tcf.number("avg_mem", "bytes"),
+      tcf.number("max_mem", "bytes"),
+      tcf.number("avg_disk", "bytes"),
+      tcf.number("max_disk", "bytes"),
+
+      tcf.number("sum_errors", "short"),
+      tcf.number("sum_warnings", "short"),
+
+      tcf.number("avg_parse_latency", "ns"),
+      tcf.number("max_parse_latency", "ns"),
+      tcf.number("avg_compile_latency", "ns"),
+      tcf.number("max_compile_latency", "ns"),
+      tcf.number("sum_cop_task_num", "short"),
+
+      tcf.number("avg_cop_process_time", "ns"),
+      tcf.number("max_cop_process_time", "ns"),
+      tcf.number("avg_cop_wait_time", "ns"),
+      tcf.number("max_cop_wait_time", "ns"),
+      tcf.number("avg_process_time", "ns"),
+      tcf.number("max_process_time", "ns"),
+      tcf.number("avg_wait_time", "ns"),
+      tcf.number("max_wait_time", "ns"),
+      tcf.number("avg_backoff_time", "ns"),
+      tcf.number("max_backoff_time", "ns"),
+      tcf.number("avg_write_keys", "short"),
+      tcf.number("max_write_keys", "short"),
+      tcf.number("avg_processed_keys", "short"),
+      tcf.number("max_processed_keys", "short"),
+      tcf.number("avg_total_keys", "short"),
+      tcf.number("max_total_keys", "short"),
+      tcf.number("avg_prewrite_time", "ns"),
+      tcf.number("max_prewrite_time", "ns"),
+      tcf.number("avg_commit_time", "ns"),
+      tcf.number("max_commit_time", "ns"),
+      tcf.number("avg_get_commit_ts_time", "ns"),
+      tcf.number("max_get_commit_ts_time", "ns"),
+      tcf.number("avg_commit_backoff_time", "ns"),
+      tcf.number("max_commit_backoff_time", "ns"),
+      tcf.number("avg_resolve_lock_time", "ns"),
+      tcf.number("max_resolve_lock_time", "ns"),
+      tcf.number("avg_local_latch_wait_time", "ns"),
+      tcf.number("max_local_latch_wait_time", "ns"),
+      tcf.number("avg_write_size", "bytes"),
+      tcf.number("max_write_size", "bytes"),
+      tcf.number("avg_prewrite_regions", "short"),
+      tcf.number("max_prewrite_regions", "short"),
+      tcf.number("avg_txn_retry", "short"),
+      tcf.number("max_txn_retry", "short"),
+
+      tcf.number("sum_backoff_times", "short"),
+      tcf.number("avg_affected_rows", "short"),
+
+      tcf.timestamp("first_seen"),
+      tcf.timestamp("last_seen"),
+      tcf.text("sample_user"),
+      tcf.text("schema_name"),
+      tcf.text("table_names"),
+      tcf.text("index_names"),
+      tcf.text("plan_digest"),
+      tcf.text("related_schemas"),
+
+      tcf.number("avg_rocksdb_delete_skipped_count", "short"),
+      tcf.number("max_rocksdb_delete_skipped_count", "short"),
+      tcf.number("avg_rocksdb_key_skipped_count", "short"),
+      tcf.number("max_rocksdb_key_skipped_count", "short"),
+      tcf.number("avg_rocksdb_block_cache_hit_count", "short"),
+      tcf.number("max_rocksdb_block_cache_hit_count", "short"),
+      tcf.number("avg_rocksdb_block_read_count", "short"),
+      tcf.number("max_rocksdb_block_read_count", "short"),
+      tcf.number("avg_rocksdb_block_read_byte", "bytes"),
+      tcf.number("max_rocksdb_block_read_byte", "bytes"),
+
+      tcf.text("resource_group"),
+      tcf.number("avg_ru", "short"),
+      tcf.number("max_ru", "short"),
+      tcf.number("avg_time_queued_by_rc", "ns"),
+      tcf.number("max_time_queued_by_rc", "ns"),
+    ])
+  }, [tk])
 
   return columns
 }

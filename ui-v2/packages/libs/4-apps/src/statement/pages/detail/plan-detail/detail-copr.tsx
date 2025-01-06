@@ -2,95 +2,101 @@ import {
   InfoModel,
   InfoTable,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  formatNumByUnit,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
 import { StatementModel } from "../../../models"
 
-function getData(data: StatementModel): InfoModel[] {
+function getData(
+  data: StatementModel,
+  tk: (key: string) => string,
+): InfoModel[] {
   return [
     {
-      name: "Total Coprocessor Tasks",
+      name: tk("fields.sum_cop_task_num"),
       value: formatNumByUnit(data.sum_cop_task_num ?? 0, "short"),
     },
     {
-      name: "Mean Visible Versions Per Query",
+      name: tk("fields.avg_processed_keys"),
       value: formatNumByUnit(data.avg_processed_keys ?? 0, "short"),
     },
     {
-      name: "Max Visible Versions Per Query",
+      name: tk("fields.max_processed_keys"),
       value: formatNumByUnit(data.max_processed_keys ?? 0, "short"),
     },
     {
-      name: "Mean Meet Versions Per Query",
+      name: tk("fields.avg_total_keys"),
       value: formatNumByUnit(data.avg_total_keys ?? 0, "short"),
-      desc: "Meet versions contains overwritten or deleted versions",
+      desc: tk("fields.avg_total_keys.desc"),
     },
     {
-      name: "Max Meet Versions Per Query",
+      name: tk("fields.max_total_keys"),
       value: formatNumByUnit(data.max_total_keys ?? 0, "short"),
     },
     {
-      name: "Mean RocksDB Block Cache Hits",
+      name: tk("fields.avg_rocksdb_block_cache_hit_count"),
       value: formatNumByUnit(
         data.avg_rocksdb_block_cache_hit_count ?? 0,
         "short",
       ),
-      desc: "Total number of hits from the block cache (RocksDB block_cache_hit_count)",
+      desc: tk("fields.avg_rocksdb_block_cache_hit_count.desc"),
     },
     {
-      name: "Max RocksDB Block Cache Hits",
+      name: tk("fields.max_rocksdb_block_cache_hit_count"),
       value: formatNumByUnit(
         data.max_rocksdb_block_cache_hit_count ?? 0,
         "short",
       ),
     },
     {
-      name: "Mean RocksDB FS Read Size",
+      name: tk("fields.avg_rocksdb_block_read_byte"),
       value: formatNumByUnit(data.avg_rocksdb_block_read_byte ?? 0, "short"),
-      desc: "Total number of bytes RocksDB read from file (RocksDB block_read_byte)",
+      desc: tk("fields.avg_rocksdb_block_read_byte.desc"),
     },
     {
-      name: "Max RocksDB FS Read Size",
+      name: tk("fields.max_rocksdb_block_read_byte"),
       value: formatNumByUnit(data.max_rocksdb_block_read_byte ?? 0, "short"),
     },
     {
-      name: "Mean RocksDB Block Reads",
+      name: tk("fields.avg_rocksdb_block_read_count"),
       value: formatNumByUnit(data.avg_rocksdb_block_read_count ?? 0, "short"),
-      desc: "Total number of blocks RocksDB read from file (RocksDB block_read_count)",
+      desc: tk("fields.avg_rocksdb_block_read_count.desc"),
     },
     {
-      name: "Max RocksDB Block Reads",
+      name: tk("fields.max_rocksdb_block_read_count"),
       value: formatNumByUnit(data.max_rocksdb_block_read_count ?? 0, "short"),
     },
     {
-      name: "Mean RocksDB Skipped Deletions",
+      name: tk("fields.avg_rocksdb_delete_skipped_count"),
       value: formatNumByUnit(
         data.avg_rocksdb_delete_skipped_count ?? 0,
         "short",
       ),
-      desc: "Total number of deleted (a.k.a. tombstone) key versions that are skipped during iteration (RocksDB delete_skipped_count)",
+      desc: tk("fields.avg_rocksdb_delete_skipped_count.desc"),
     },
     {
-      name: "Max RocksDB Skipped Deletions",
+      name: tk("fields.max_rocksdb_delete_skipped_count"),
       value: formatNumByUnit(
         data.max_rocksdb_delete_skipped_count ?? 0,
         "short",
       ),
     },
     {
-      name: "Mean RocksDB Skipped Keys",
+      name: tk("fields.avg_rocksdb_key_skipped_count"),
       value: formatNumByUnit(data.avg_rocksdb_key_skipped_count ?? 0, "short"),
-      desc: "Total number of keys skipped during iteration (RocksDB key_skipped_count)",
     },
     {
-      name: "Max RocksDB Skipped Keys",
+      name: tk("fields.max_rocksdb_key_skipped_count"),
       value: formatNumByUnit(data.max_rocksdb_key_skipped_count ?? 0, "short"),
     },
   ]
 }
 
 export function DetailCopr({ data }: { data: StatementModel }) {
-  const infoData = useMemo(() => getData(data), [data])
+  const { tk } = useTn("statement")
+  const infoData = useMemo(() => getData(data, tk), [data, tk])
   return <InfoTable data={infoData} />
 }

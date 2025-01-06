@@ -88,7 +88,7 @@ export function ColumnMultiSelect({
       }}
     >
       <Group wrap="nowrap" gap="xs">
-        <Checkbox checked={value.includes(item.val)} />
+        <Checkbox checked={value.includes(item.val)} onChange={() => {}} />
         <Typography truncate>{item.label}</Typography>
       </Group>
     </Combobox.Option>

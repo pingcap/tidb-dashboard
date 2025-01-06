@@ -1,4 +1,5 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Stack, Title } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
@@ -10,17 +11,18 @@ import { DetailTabs } from "./detail-tabs"
 import { Plan } from "./plan"
 
 export function PlanDetail() {
+  const { tt } = useTn("statement")
   const { plan } = useDetailUrlState()
   const realPlan = plan && plan !== "all" ? plan : ""
   const { data: planDetailData, isLoading } = usePlanDetailData(realPlan)
 
   const title = useMemo(() => {
     if (plan === "all") {
-      return "Execution Detail of All Plans"
+      return tt("Execution Detail of All Plans")
     } else if (plan) {
-      return `Execution Detail of ${plan}`
+      return tt("Execution Detail of {{plan}}", { plan })
     }
-    return "Execution Detail"
+    return tt("Execution Detail")
   }, [plan])
 
   return (
@@ -33,7 +35,7 @@ export function PlanDetail() {
         <>
           {planDetailData.prev_sample_text && (
             <StmtSQL
-              title="Previous Query Sample"
+              title={tt("Previous Query Sample")}
               sql={planDetailData.prev_sample_text!}
             />
           )}

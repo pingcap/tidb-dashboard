@@ -1,3 +1,4 @@
+import { Trans, useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   Button,
   Code,
@@ -12,6 +13,19 @@ import {
   useDeletePlanBindData,
 } from "../../../utils/use-data"
 
+// @ts-expect-error @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function useLocales() {
+  const { tt } = useTn("statement")
+  // used for gogocode to scan and generate en.json before build
+  tt(
+    "Are you sure to bind SQL <code>{{sqlDigest}}</code> with the plan <code>{{planDigest}}</code>?",
+  )
+  tt(
+    "Are you sure to unbind SQL <code>{{sqlDigest}}</code> with <strong>all bound plans</strong>?",
+  )
+}
+
 export function SqlPlanBindActionCell({
   isSupport,
   canBind,
@@ -25,6 +39,7 @@ export function SqlPlanBindActionCell({
   bindPlanDigests: string[]
   curPlanDigest: string
 }) {
+  const { tt } = useTn("statement")
   const createBindPlanMut = useCreatePlanBindData(sqlDigest, curPlanDigest)
   const deleteBindPlanMut = useDeletePlanBindData(sqlDigest)
 
@@ -32,11 +47,16 @@ export function SqlPlanBindActionCell({
     try {
       await createBindPlanMut.mutateAsync()
       notifier.success(
-        `Bind plan ${curPlanDigest.slice(0, 8)}... successfully!`,
+        tt("Bind plan {{planDigest}} successfully!", {
+          planDigest: curPlanDigest.slice(0, 8) + "...",
+        }),
       )
     } catch (e) {
       notifier.error(
-        `Bind plan ${curPlanDigest.slice(0, 8)}... failed, reason: ${e instanceof Error ? e.message : String(e)}`,
+        tt("Bind plan {{planDigest}} failed, reason: {{reason}}", {
+          planDigest: curPlanDigest.slice(0, 8) + "...",
+          reason: e instanceof Error ? e.message : String(e),
+        }),
       )
     }
   }
@@ -44,40 +64,56 @@ export function SqlPlanBindActionCell({
   async function unbindPlan() {
     try {
       await deleteBindPlanMut.mutateAsync()
-      notifier.success(`Unbind plans successfully!`)
+      notifier.success(tt("Unbind plans successfully!"))
     } catch (e) {
       notifier.error(
-        `Unbind plans failed, reason: ${e instanceof Error ? e.message : String(e)}`,
+        tt("Unbind plans failed, reason: {{reason}}", {
+          reason: e instanceof Error ? e.message : String(e),
+        }),
       )
     }
   }
 
   function confirmBindPlan() {
     openConfirmModal({
-      title: "Bind Plan",
+      title: tt("Bind Plan"),
       children: (
         <Typography>
-          Are you sure to bind SQL <Code>{sqlDigest.slice(0, 8) + "..."}</Code>{" "}
-          with plan <Code>{curPlanDigest.slice(0, 8) + "..."}</Code> ?
+          <Trans
+            ns="dashboard-lib"
+            i18nKey={
+              "statement.texts.Are you sure to bind SQL <code>{{sqlDigest}}</code> with the plan <code>{{planDigest}}</code>?"
+            }
+            values={{
+              sqlDigest: sqlDigest.slice(0, 8) + "...",
+              planDigest: curPlanDigest.slice(0, 8) + "...",
+            }}
+            components={{ code: <Code /> }}
+          />
         </Typography>
       ),
-      labels: { confirm: "Bind", cancel: "Cancel" },
+      labels: { confirm: tt("Bind"), cancel: tt("Cancel") },
       onConfirm: bindPlan,
     })
   }
 
   function confirmUnbindPlan() {
     openConfirmModal({
-      title: "Unbind Plans",
+      title: tt("Unbind Plans"),
       children: (
         <Typography>
-          Are you sure to unbind SQL{" "}
-          <Code>{sqlDigest.slice(0, 8) + "..."}</Code> with{" "}
-          <strong>all bound plans</strong> ?
+          <Trans
+            ns="dashboard-lib"
+            i18nKey={
+              "statement.texts.Are you sure to unbind SQL <code>{{sqlDigest}}</code> with <strong>all bound plans</strong>?"
+            }
+            values={{ sqlDigest: sqlDigest.slice(0, 8) + "..." }}
+            components={{ code: <Code />, strong: <strong /> }}
+          />
         </Typography>
       ),
       confirmProps: { color: "red", variant: "outline" },
-      labels: { confirm: "Unbind", cancel: "Cancel" },
+      labels: { confirm: tt("Unbind"), cancel: tt("Cancel") },
       onConfirm: unbindPlan,
     })
   }
@@ -87,18 +123,18 @@ export function SqlPlanBindActionCell({
   }
   if (!isSupport) {
     return (
-      <Tooltip label="Bind plan is not supported in this version">
+      <Tooltip label={tt("Bind plan is not supported in this version")}>
         <Button disabled size="xs">
-          Bind
+          {tt("Bind")}
         </Button>
       </Tooltip>
     )
   }
   if (!canBind) {
     return (
-      <Tooltip label="This plan can not be bound">
+      <Tooltip label={tt("This plan can not be bound")}>
         <Button disabled size="xs">
-          Bind
+          {tt("Bind")}
         </Button>
       </Tooltip>
     )
@@ -107,7 +143,7 @@ export function SqlPlanBindActionCell({
     if (bindPlanDigests.includes(curPlanDigest)) {
       return (
         <Button variant="transparent" color="red" onClick={confirmUnbindPlan}>
-          Unbind
+          {tt("Unbind")}
         </Button>
       )
     }
@@ -115,7 +151,7 @@ export function SqlPlanBindActionCell({
   }
   return (
     <Button variant="transparent" color="peacock" onClick={confirmBindPlan}>
-      Bind
+      {tt("Bind")}
     </Button>
   )
 }

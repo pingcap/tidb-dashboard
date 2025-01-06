@@ -1,4 +1,7 @@
-import { formatNumByUnit } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  formatNumByUnit,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Group, Typography } from "@tidbcloud/uikit"
 import { MRT_ColumnDef } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
@@ -13,6 +16,7 @@ export function useStatementColumns(
   supportBindPlan: boolean,
   bindPlanDigests: string[],
 ) {
+  const { tk } = useTn("statement")
   const columns = useMemo<MRT_ColumnDef<StatementModel>[]>(() => {
     return [
       {
@@ -25,7 +29,7 @@ export function useStatementColumns(
       },
       {
         id: "plan_digest",
-        header: "Plan ID",
+        header: tk("fields.plan_digest"),
         enableSorting: false,
         minSize: 100,
         accessorFn: (row) => (
@@ -39,7 +43,7 @@ export function useStatementColumns(
       },
       {
         id: "sum_latency",
-        header: "Total Latency",
+        header: tk("fields.sum_latency"),
         enableResizing: false,
         accessorFn: (row) => (
           <Typography
@@ -52,7 +56,7 @@ export function useStatementColumns(
       },
       {
         id: "avg_latency",
-        header: "Mean Latency",
+        header: tk("fields.avg_latency"),
         enableResizing: false,
         accessorFn: (row) => (
           <Typography
@@ -65,7 +69,7 @@ export function useStatementColumns(
       },
       {
         id: "exec_count",
-        header: "Executions Count",
+        header: tk("fields.exec_count"),
         enableResizing: false,
         accessorFn: (row) => (
           <Typography
@@ -78,7 +82,7 @@ export function useStatementColumns(
       },
       {
         id: "avg_mem",
-        header: "Mean Memory",
+        header: tk("fields.avg_mem"),
         enableResizing: false,
         accessorFn: (row) => (
           <Typography
@@ -91,7 +95,7 @@ export function useStatementColumns(
       },
       {
         id: "action",
-        header: "Action",
+        header: "",
         size: 180,
         enableSorting: false,
         enableResizing: false,
@@ -124,7 +128,7 @@ export function useStatementColumns(
         // />
       },
     ]
-  }, [supportBindPlan, bindPlanDigests])
+  }, [supportBindPlan, bindPlanDigests, tk])
 
   return columns
 }

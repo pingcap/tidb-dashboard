@@ -4,6 +4,8 @@ import LanguageDetector from "i18next-browser-languagedetector"
 import { useCallback, useMemo } from "react"
 import { initReactI18next, useTranslation } from "react-i18next"
 
+export { Trans } from "react-i18next"
+
 const DEF_DISTRO = {
   pd: "PD",
   tidb: "TiDB",

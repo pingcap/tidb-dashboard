@@ -1,18 +1,21 @@
 import { PlanTable } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Card, Stack, Tabs, Title } from "@tidbcloud/uikit"
 import { CodeBlock } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
 export function Plan({ plan }: { plan: string }) {
+  const { tt } = useTn("statement")
+
   const tabs = useMemo(() => {
     return [
       {
-        label: "Table",
+        label: tt("Table"),
         value: "table",
         component: <PlanTable plan={plan} />,
       },
       {
-        label: "Text",
+        label: tt("Text"),
         value: "text",
         component: (
           <CodeBlock
@@ -32,7 +35,7 @@ export function Plan({ plan }: { plan: string }) {
   return (
     <Card shadow="xs" p="md">
       <Stack gap="xs">
-        <Title order={5}>Execution Plan</Title>
+        <Title order={5}>{tt("Execution Plan")}</Title>
 
         <Tabs defaultValue={tabs[0].value}>
           <Tabs.List mb="md">

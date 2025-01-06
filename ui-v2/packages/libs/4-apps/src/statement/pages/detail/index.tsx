@@ -1,4 +1,5 @@
 import { LoadingSkeleton } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { ActionIcon, Group, Stack, Typography } from "@tidbcloud/uikit"
 import { IconChevronLeft } from "@tidbcloud/uikit/icons"
 
@@ -12,6 +13,7 @@ import { StmtBasic } from "./stmt-basic"
 import { StmtSQL } from "./stmt-sql"
 
 export function Detail() {
+  const { tt } = useTn("statement")
   const ctx = useAppContext()
   const { data: planData, isLoading } = usePlanDetailData("")
 
@@ -26,7 +28,7 @@ export function Detail() {
           >
             <IconChevronLeft size={20} />
           </ActionIcon>
-          <Typography variant="title-lg">Statement Detail</Typography>
+          <Typography variant="title-lg">{tt("Statement Detail")}</Typography>
         </Group>
       )}
 
@@ -34,7 +36,10 @@ export function Detail() {
 
       {planData && (
         <Stack>
-          <StmtSQL title="Statement Template" sql={planData.digest_text!} />
+          <StmtSQL
+            title={tt("Statement Template")}
+            sql={planData.digest_text!}
+          />
           <StmtBasic stmt={planData} />
           <SqlLimit sqlDigest={planData.digest!} />
           <PlansList detailData={planData} />

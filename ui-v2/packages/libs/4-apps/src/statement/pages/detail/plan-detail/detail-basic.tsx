@@ -5,82 +5,87 @@ import {
 import {
   formatNumByUnit,
   formatTime,
+  useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
 import { StatementModel } from "../../../models"
 
-function getData(data: StatementModel): InfoModel[] {
+function getData(
+  data: StatementModel,
+  tk: (key: string) => string,
+): InfoModel[] {
   return [
     {
-      name: "Table Names",
+      name: tk("fields.table_names"),
       value: data.table_names || "-",
     },
     {
-      name: "Index Names",
+      name: tk("fields.index_names"),
       value: data.index_names || "-",
-      desc: "The name of the used index",
+      desc: tk("fields.index_names.desc"),
     },
     {
-      name: "First Seen",
+      name: tk("fields.first_seen"),
       value: data.first_seen ? formatTime(data.first_seen * 1000) : "-",
     },
     {
-      name: "Last Seen",
+      name: tk("fields.last_seen"),
       value: data.last_seen ? formatTime(data.last_seen * 1000) : "-",
     },
     {
-      name: "Executions Count",
+      name: tk("fields.exec_count"),
       value: formatNumByUnit(data.exec_count ?? 0, "short"),
-      desc: "Total execution count for this kind of statement",
+      desc: tk("fields.exec_count.desc"),
     },
     {
-      name: "Total Latency",
+      name: tk("fields.sum_latency"),
       value: formatNumByUnit(data.sum_latency ?? 0, "ns"),
-      desc: "Total execution time for this kind of statement",
+      desc: tk("fields.sum_latency.desc"),
     },
     {
-      name: "Mean Latency",
+      name: tk("fields.avg_latency"),
       value: formatNumByUnit(data.avg_latency ?? 0, "ns"),
-      desc: "Execution time of single query",
+      desc: tk("fields.avg_latency.desc"),
     },
     {
-      name: "Execution User",
+      name: tk("fields.sample_user"),
       value: data.sample_user || "-",
-      desc: "The user that executes the query (sampled)",
+      desc: tk("fields.sample_user.desc"),
     },
     {
-      name: "Total Errors",
+      name: tk("fields.sum_errors"),
       value: formatNumByUnit(data.sum_errors ?? 0, "short"),
     },
     {
-      name: "Total Warnings",
+      name: tk("fields.sum_warnings"),
       value: formatNumByUnit(data.sum_warnings ?? 0, "short"),
     },
     {
-      name: "Mean Memory",
+      name: tk("fields.avg_mem"),
       value: formatNumByUnit(data.avg_mem ?? 0, "bytes"),
-      desc: "Memory usage of single query",
+      desc: tk("fields.avg_mem.desc"),
     },
     {
-      name: "Max Memory",
+      name: tk("fields.max_mem"),
       value: formatNumByUnit(data.max_mem ?? 0, "bytes"),
-      desc: "Maximum memory usage of single query",
+      desc: tk("fields.max_mem.desc"),
     },
     {
-      name: "Mean Disk",
+      name: tk("fields.avg_disk"),
       value: formatNumByUnit(data.avg_disk ?? 0, "bytes"),
-      desc: "Disk usage of single query",
+      desc: tk("fields.avg_disk.desc"),
     },
     {
-      name: "Max Disk",
+      name: tk("fields.max_disk"),
       value: formatNumByUnit(data.max_disk ?? 0, "bytes"),
-      desc: "Maximum disk usage of single query",
+      desc: tk("fields.max_disk.desc"),
     },
   ]
 }
 
 export function DetailBasic({ data }: { data: StatementModel }) {
-  const infoData = useMemo(() => getData(data), [data])
+  const { tk } = useTn("statement")
+  const infoData = useMemo(() => getData(data, tk), [data, tk])
   return <InfoTable data={infoData} />
 }

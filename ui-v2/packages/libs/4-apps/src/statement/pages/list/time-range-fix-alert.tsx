@@ -1,10 +1,12 @@
-import { formatTime } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { formatTime, useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Alert } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
 import { StatementModel } from "../../models"
 
 export function TimeRangeFixAlert({ data }: { data: StatementModel[] }) {
+  const { tt } = useTn("statement")
+
   const maxTime = useMemo(
     () =>
       data.reduce(
@@ -25,8 +27,13 @@ export function TimeRangeFixAlert({ data }: { data: StatementModel[] }) {
   if (minTime !== maxTime) {
     return (
       <Alert>
-        Based on the setting, the real data time range is from{" "}
-        {formatTime(minTime * 1000)} to {formatTime(maxTime * 1000)}
+        {tt(
+          "Due to time window and expiration configurations, currently displaying data in time range is {{begin}} ~ {{end}}",
+          {
+            begin: formatTime(minTime * 1000),
+            end: formatTime(maxTime * 1000),
+          },
+        )}
       </Alert>
     )
   }

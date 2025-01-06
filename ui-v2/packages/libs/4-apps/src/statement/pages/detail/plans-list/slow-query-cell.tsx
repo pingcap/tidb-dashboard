@@ -1,9 +1,11 @@
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Anchor } from "@tidbcloud/uikit"
 
 import { useAppContext } from "../../../ctx"
 import { useDetailUrlState } from "../../../url-state/detail-url-state"
 
 export function SlowQueryCell({ planDigest }: { planDigest: string }) {
+  const { tt } = useTn("statement")
   const ctx = useAppContext()
   const { id } = useDetailUrlState()
   const newId = `${id},${planDigest}`
@@ -14,7 +16,7 @@ export function SlowQueryCell({ planDigest }: { planDigest: string }) {
         ctx.actions.openSlowQueryList(newId)
       }}
     >
-      Slow Queries
+      {tt("Slow Queries")}
     </Anchor>
   )
 }

@@ -2,7 +2,7 @@ import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
 // @ts-expect-error @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function useLocalesForFields() {
+function useLocales() {
   const { tk } = useTn("slow-query")
   // used for gogocode to scan and generate en.json before build
   tk("fields.instance", "{{distro.tidb}} Instance")

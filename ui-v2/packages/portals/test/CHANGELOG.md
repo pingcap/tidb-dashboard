@@ -1,5 +1,19 @@
 # test-tidb-dashboard-ui-lib
 
+## 0.10.0
+
+### Minor Changes
+
+- i18n for slow query and statement app
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-api-client@0.10.0
+  - @pingcap-incubator/tidb-dashboard-lib-charts@0.10.0
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.10.0
+  - @pingcap-incubator/tidb-dashboard-lib-apps@0.10.0
+
 ## 0.9.1
 
 ### Patch Changes

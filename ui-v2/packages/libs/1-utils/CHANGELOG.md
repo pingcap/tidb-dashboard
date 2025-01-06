@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-utils
 
+## 0.10.0
+
+### Minor Changes
+
+- i18n for slow query and statement app
+
 ## 0.9.0
 
 ### Minor Changes

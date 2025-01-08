@@ -33,7 +33,8 @@
     },
     "texts": {
       "Core Metrics": "Core Metrics",
-      "Drill Down": "Drill Down"
+      "Drill Down": "Drill Down",
+      "The data may have a delay of up to {{n}} minutes": "The data may have a delay of up to {{n}} minutes"
     }
   }
 }

@@ -72,7 +72,7 @@ export function SeriesChart({
       <Axis
         id="bottom"
         position={Position.Bottom}
-        ticks={7}
+        ticks={6}
         showOverlappingTicks
         tickFormat={tooltipHeaderFormatter}
         labelFormat={xAxisFormatter}

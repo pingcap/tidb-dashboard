@@ -7,8 +7,10 @@ import {
   Card,
   Group,
   SegmentedControl,
+  Tooltip,
   Typography,
 } from "@tidbcloud/uikit"
+import { IconInfoCircle } from "@tidbcloud/uikit/icons"
 import { useMemo, useState } from "react"
 
 import { ChartCard } from "../../components/chart-card"
@@ -29,7 +31,7 @@ export function AzoresOverviewMetricsPanel({
 }: {
   config: SinglePanelConfig
 }) {
-  const { tk } = useTn("metric")
+  const { tk, tt } = useTn("metric")
   const timeRangeOptions = useMemo(() => {
     return [
       {
@@ -53,10 +55,17 @@ export function AzoresOverviewMetricsPanel({
 
   return (
     <Card p={24} bg="carbon.0">
-      <Group mb={16}>
+      <Group mb={16} gap="xs">
         <Typography variant="title-lg">
           {tk(`panels.${config.category}`)}
         </Typography>
+        <Tooltip
+          label={tt("The data may have a delay of up to {{n}} minutes", {
+            n: 1,
+          })}
+        >
+          <IconInfoCircle />
+        </Tooltip>
         <Group ml="auto">
           <SegmentedControl
             size="xs"

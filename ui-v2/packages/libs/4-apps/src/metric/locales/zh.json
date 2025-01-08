@@ -33,7 +33,8 @@
     },
     "texts": {
       "Core Metrics": "核心指标",
-      "Drill Down": "下钻"
+      "Drill Down": "下钻",
+      "The data may have a delay of up to {{n}} minutes": "数据可能会有 {{n}} 分钟的延迟"
     }
   }
 }

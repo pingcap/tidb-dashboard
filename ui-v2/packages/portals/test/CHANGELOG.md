@@ -1,5 +1,19 @@
 # test-tidb-dashboard-ui-lib
 
+## 0.11.0
+
+### Minor Changes
+
+- fix time-range-picker, refine cols-multi-select
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-api-client@0.11.0
+  - @pingcap-incubator/tidb-dashboard-lib-charts@0.11.0
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.11.0
+  - @pingcap-incubator/tidb-dashboard-lib-apps@0.11.0
+
 ## 0.10.0
 
 ### Minor Changes

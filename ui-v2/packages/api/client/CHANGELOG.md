@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-api-client
 
+## 0.11.0
+
+### Minor Changes
+
+- fix time-range-picker, refine cols-multi-select
+
 ## 0.10.0
 
 ### Minor Changes

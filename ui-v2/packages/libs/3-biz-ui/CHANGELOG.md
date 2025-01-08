@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.11.1
+
+### Patch Changes
+
+- fix cols-multi-select style
+
 ## 0.11.0
 
 ### Minor Changes

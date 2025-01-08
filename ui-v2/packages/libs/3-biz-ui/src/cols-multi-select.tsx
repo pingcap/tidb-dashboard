@@ -21,7 +21,6 @@ addLangsLocales({
       texts: {
         "Search columns...": "搜索列...",
         "Nothing found": "未找到",
-        "{{count}} selected": "{{count}} 已选",
         "Show Selected": "显示已选",
         "Show All": "显示全部",
         "Select All": "全选",
@@ -157,8 +156,9 @@ export function ColumnMultiSelect({
         <Combobox.Footer>
           <Group>
             <Typography fz="xs" c="dimmed">
-              {tt("{{count}} selected", {
-                count: selectedData.length,
+              {tt("{{selected}}/{{all}}", {
+                selected: selectedData.length,
+                all: data.length,
               })}
             </Typography>
             <Group ml="auto" justify="flex-end" gap="xs">

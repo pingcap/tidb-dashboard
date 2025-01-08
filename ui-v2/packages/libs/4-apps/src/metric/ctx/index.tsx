@@ -44,6 +44,7 @@ type AppConfig = {
 
 type AppActions = {
   openDiagnosis(id: string): void
+  openHostMonitoring(id: string): void
 }
 
 export type AppCtxValue = {

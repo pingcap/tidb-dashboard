@@ -34,7 +34,8 @@
     "texts": {
       "Core Metrics": "核心指标",
       "Diagnosis": "诊断",
-      "Drill Down": "下钻",
+      "Drill Down Analysis": "下钻分析",
+      "Host Monitoring": "主机监控",
       "The data may have a delay of up to {{n}} minutes": "数据可能会有 {{n}} 分钟的延迟"
     }
   }

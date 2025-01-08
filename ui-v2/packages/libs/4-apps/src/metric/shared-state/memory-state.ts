@@ -12,8 +12,8 @@ interface ChartState {
   timeRange: TimeRange
   setTimeRange: (newTimeRange: TimeRange) => void
 
-  selectedLabelValue: string | undefined
-  setSelectedLabelValue: (newValue: string | undefined) => void
+  selectedInstance: string | undefined
+  setSelectedInstance: (newValue: string | undefined) => void
 
   reset: () => void
 }
@@ -25,13 +25,13 @@ export const useChartState = create<ChartState>((set) => ({
   timeRange: DEF_TIME_RANGE,
   setTimeRange: (newTimeRange) => set({ timeRange: newTimeRange }),
 
-  selectedLabelValue: undefined,
-  setSelectedLabelValue: (newValue) => set({ selectedLabelValue: newValue }),
+  selectedInstance: undefined,
+  setSelectedInstance: (newValue) => set({ selectedInstance: newValue }),
 
   reset: () =>
     set({
       selectedChart: undefined,
       timeRange: DEF_TIME_RANGE,
-      selectedLabelValue: undefined,
+      selectedInstance: undefined,
     }),
 }))

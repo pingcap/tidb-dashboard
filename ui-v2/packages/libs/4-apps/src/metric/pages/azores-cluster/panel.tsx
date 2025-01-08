@@ -1,7 +1,8 @@
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Box, Card, Group, Typography } from "@tidbcloud/uikit"
 
-import { ChartCard } from "../../components/chart-card"
+import { ChartBody } from "../../components/chart-body"
+import { ChartHeader } from "../../components/chart-header"
 import { useMetricsUrlState } from "../../shared-state/url-state"
 import { SinglePanelConfig } from "../../utils/type"
 
@@ -36,7 +37,7 @@ export function AzoresClusterMetricsPanel({
   config: SinglePanelConfig
 }) {
   const { tk } = useTn("metric")
-  const { timeRange, refresh } = useMetricsUrlState()
+  const { timeRange } = useMetricsUrlState()
 
   return (
     <Card p={16} bg="carbon.0">
@@ -53,14 +54,16 @@ export function AzoresClusterMetricsPanel({
           gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
         }}
       >
-        {config.charts.map((c) => (
-          <ChartCard
-            key={c.title}
-            config={c}
-            timeRange={timeRange}
-            enableDrillDown={true}
-            forceRefresh={refresh}
-          />
+        {config.charts.map((c, idx) => (
+          <Box key={c.title + idx}>
+            <ChartHeader
+              title={c.title}
+              enableDrillDown={true}
+              config={c}
+              timeRange={timeRange}
+            />
+            <ChartBody config={c} timeRange={timeRange} />
+          </Box>
         ))}
       </Box>
     </Card>

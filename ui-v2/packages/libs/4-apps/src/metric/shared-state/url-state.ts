@@ -21,9 +21,13 @@ export function useMetricsUrlState() {
   )
 
   const refresh = queryParams.refresh ?? ""
-  const setRefresh = useCallback(() => {
-    setQueryParams({ refresh: new Date().valueOf().toString() })
-  }, [setQueryParams])
+  const setRefresh = useCallback(
+    (v?: string) => {
+      const now = new Date().valueOf().toString()
+      setQueryParams({ refresh: `${v || ""}${now}` })
+    },
+    [setQueryParams],
+  )
 
   return {
     panel,

@@ -34,7 +34,8 @@
     "texts": {
       "Core Metrics": "Core Metrics",
       "Diagnosis": "Diagnosis",
-      "Drill Down": "Drill Down",
+      "Drill Down Analysis": "Drill Down Analysis",
+      "Host Monitoring": "Host Monitoring",
       "The data may have a delay of up to {{n}} minutes": "The data may have a delay of up to {{n}} minutes"
     }
   }

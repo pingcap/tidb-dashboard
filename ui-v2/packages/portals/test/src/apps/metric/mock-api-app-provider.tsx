@@ -157,6 +157,9 @@ export function useCtxValue(): AppCtxValue {
           const [from, to] = id.split(",")
           window.open(`/statement?from=${from}&to=${to}`, "_blank")
         },
+        openHostMonitoring(id) {
+          window.open(`/metrics/azores-host?host_id=${id}`, "_blank")
+        },
       },
     }),
     [],

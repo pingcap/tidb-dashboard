@@ -13,7 +13,8 @@ import {
 import { IconInfoCircle } from "@tidbcloud/uikit/icons"
 import { useMemo, useState } from "react"
 
-import { ChartCard } from "../../components/chart-card"
+import { ChartBody } from "../../components/chart-body"
+import { ChartHeader } from "../../components/chart-header"
 import { SinglePanelConfig } from "../../utils/type"
 
 // @ts-expect-error @typescript-eslint/no-unused-vars
@@ -85,8 +86,11 @@ export function AzoresOverviewMetricsPanel({
           gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
         }}
       >
-        {config.charts.map((c) => (
-          <ChartCard key={c.title} config={c} timeRange={timeRange} />
+        {config.charts.map((c, idx) => (
+          <Box key={c.title + idx}>
+            <ChartHeader title={c.title} config={c} />
+            <ChartBody config={c} timeRange={timeRange} />
+          </Box>
         ))}
       </Box>
     </Card>

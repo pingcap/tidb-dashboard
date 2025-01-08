@@ -6,7 +6,8 @@ import {
 import { Box, Card, Group, Typography } from "@tidbcloud/uikit"
 import { dayjs } from "@tidbcloud/uikit/utils"
 
-import { ChartCard } from "../../components/chart-card"
+import { ChartBody } from "../../components/chart-body"
+import { ChartHeader } from "../../components/chart-header"
 import { QUICK_RANGES } from "../../utils/constants"
 import { SinglePanelConfig } from "../../utils/type"
 
@@ -61,8 +62,11 @@ export function AzoresHostMetricsPanel({
           gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
         }}
       >
-        {config.charts.map((c) => (
-          <ChartCard key={c.title} config={c} timeRange={timeRange} />
+        {config.charts.map((c, idx) => (
+          <Box key={c.title + idx}>
+            <ChartHeader title={c.title} config={c} />
+            <ChartBody config={c} timeRange={timeRange} />
+          </Box>
         ))}
       </Box>
     </Card>

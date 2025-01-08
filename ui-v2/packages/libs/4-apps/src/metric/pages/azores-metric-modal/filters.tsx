@@ -10,8 +10,8 @@ export function Filters() {
   const timeRange = useChartState((state) => state.timeRange)
   const setTimeRange = useChartState((state) => state.setTimeRange)
   const selectedChart = useChartState((state) => state.selectedChart)
-  const setSelectedLabelValue = useChartState(
-    (state) => state.setSelectedLabelValue,
+  const setSelectedInstance = useChartState(
+    (state) => state.setSelectedInstance,
   )
 
   const { data: instancesData } = useMetricLabelValuesData(
@@ -28,7 +28,7 @@ export function Filters() {
       data={instancesData || []}
       clearable
       onChange={(v) => {
-        setSelectedLabelValue(v ? `instance="${v}"` : undefined)
+        setSelectedInstance(v ? v : undefined)
       }}
     />
   )

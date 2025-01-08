@@ -10,20 +10,11 @@ import {
   toTimeRangeValue,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import {
-  ActionIcon,
-  Box,
-  Flex,
-  Group,
-  Loader,
-  Typography,
-  useComputedColorScheme,
-} from "@tidbcloud/uikit"
-import { IconChevronDownDouble, IconRefreshCw02 } from "@tidbcloud/uikit/icons"
+import { Box, Flex, Loader, useComputedColorScheme } from "@tidbcloud/uikit"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../ctx"
-import { useChartState } from "../shared-state/memory-state"
+import { useMetricsUrlState } from "../shared-state/url-state"
 import { SingleChartConfig } from "../utils/type"
 import { useMetricDataByMetricName } from "../utils/use-data"
 
@@ -43,33 +34,22 @@ export function transformData(
   }))
 }
 
-// a switch for debug
-const enableDebug = localStorage.getItem("metric-chart.debug") === "true"
-
-export function ChartCard({
+export function ChartBody({
   config,
   timeRange,
   labelValue,
-  enableDrillDown = false,
-  hideTitle = false,
-  forceRefresh = "",
 }: {
   config: SingleChartConfig
   timeRange: TimeRange
   labelValue?: string
-  enableDrillDown?: boolean
-  hideTitle?: boolean
-  forceRefresh?: string
 }) {
   const ctx = useAppContext()
+  const { refresh } = useMetricsUrlState()
   const colorScheme = useComputedColorScheme()
   const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
   const chartRef = useRef<HTMLDivElement | null>(null)
   const isVisible = useRef(false)
   const [isFetched, setIsFetched] = useState(false)
-
-  const setSelectedChart = useChartState((state) => state.setSelectedChart)
-  const setTimeRange = useChartState((state) => state.setTimeRange)
 
   // a function can always get the latest value
   function getStep() {
@@ -121,7 +101,28 @@ export function ChartCard({
     } else {
       setIsFetched(false)
     }
-  }, [timeRange, labelValue, forceRefresh])
+  }, [timeRange, labelValue])
+
+  useEffect(() => {
+    // when click refresh button in the chart self, set refresh value to `_${metricName}{Date.now()}`
+    if (refresh.startsWith("_")) {
+      if (!refresh.startsWith(`_${config.metricName}`)) {
+        return
+      }
+      if (isVisible.current) {
+        refetch()
+      }
+      return
+    }
+
+    // when click auto-refresh-button outside the chart, set refresh value to Date.now()
+    if (isVisible.current) {
+      refetch()
+      setIsFetched(true)
+    } else {
+      setIsFetched(false)
+    }
+  }, [refresh])
 
   const seriesData = useMemo(
     () =>
@@ -134,50 +135,24 @@ export function ChartCard({
   )
 
   return (
-    <Box>
-      <Group gap={4}>
-        {!hideTitle && (
-          <Typography variant="label-lg">{config.title}</Typography>
-        )}
-        {enableDrillDown && (
-          <ActionIcon
-            variant="transparent"
-            onClick={() => {
-              setTimeRange(timeRange)
-              setSelectedChart(config)
-            }}
-          >
-            <IconChevronDownDouble size={16} />
-          </ActionIcon>
-        )}
-        {enableDebug && (
-          <ActionIcon variant="transparent" onClick={() => refetch()}>
-            <IconRefreshCw02 size={12} />
-          </ActionIcon>
-        )}
-      </Group>
-
-      {(!hideTitle || enableDrillDown || enableDebug) && <Box h={8} />}
-
-      <Box
-        h={200}
-        ref={chartRef}
-        // add `data-metric` attribute to identify the metric name for easy debugging
-        data-metric={config.metricName}
-      >
-        {seriesData.length > 0 || !isLoading ? (
-          <SeriesChart
-            unit={config.unit}
-            data={seriesData}
-            timeRange={tr}
-            theme={colorScheme}
-          />
-        ) : (
-          <Flex h={200} align="center" justify="center">
-            <Loader size="xs" />
-          </Flex>
-        )}
-      </Box>
+    <Box
+      h={200}
+      ref={chartRef}
+      // add `data-metric` attribute to identify the metric name for easy debugging
+      data-metric={config.metricName}
+    >
+      {seriesData.length > 0 || !isLoading ? (
+        <SeriesChart
+          unit={config.unit}
+          data={seriesData}
+          timeRange={tr}
+          theme={colorScheme}
+        />
+      ) : (
+        <Flex h={200} align="center" justify="center">
+          <Loader size="xs" />
+        </Flex>
+      )}
     </Box>
   )
 }

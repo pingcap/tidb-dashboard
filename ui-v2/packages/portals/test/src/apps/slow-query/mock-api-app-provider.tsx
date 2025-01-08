@@ -78,6 +78,9 @@ export function useCtxValue(): AppCtxValue {
               )
             }
           }
+          const fieldsStr = params.fields.includes("all")
+            ? "*"
+            : params.fields.join(",")
           return diagnosisServiceGetSlowQueryList(clusterId, {
             beginTime: params.beginTime + "",
             endTime: params.endTime + "",
@@ -86,8 +89,7 @@ export function useCtxValue(): AppCtxValue {
             orderBy: params.orderBy,
             isDesc: params.desc,
             pageSize: params.limit,
-            fields: params.fields.join(","),
-            // fields: "*",
+            fields: fieldsStr,
             advancedFilter: advancedFiltersStrArr,
           }).then((res) => res.data ?? [])
         },

@@ -96,7 +96,9 @@ export function useCtxValue(): AppCtxValue {
               )
             }
           }
-
+          const fieldsStr = params.fields.includes("all")
+            ? "*"
+            : params.fields.join(",")
           return diagnosisServiceGetTopSqlList(clusterId, {
             beginTime: params.beginTime + "",
             endTime: params.endTime + "",
@@ -107,7 +109,7 @@ export function useCtxValue(): AppCtxValue {
             // use a huge pageSize to get all results at once, so we can do sort in client side
             pageSize: 100000,
             advancedFilter: advancedFiltersStrArr,
-            fields: params.fields.join(","),
+            fields: fieldsStr,
           }).then((res) => res.data ?? [])
         },
         getStmtPlans(params) {

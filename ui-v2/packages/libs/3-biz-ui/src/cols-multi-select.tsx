@@ -24,6 +24,7 @@ addLangsLocales({
         "{{count}} selected": "{{count}} 已选",
         "Show Selected": "显示已选",
         "Show All": "显示全部",
+        "Select All": "全选",
         Reset: "重置",
       },
     },
@@ -59,11 +60,15 @@ export function ColumnMultiSelect({
     },
   })
 
-  const selectedData = data.filter((item) => value.includes(item.val))
+  const selectedData = data.filter(
+    (item) => value.includes(item.val) || value.includes("all"),
+  )
 
-  // @todo: refine by useTransition
   const filteredData = useMemo(() => {
-    let d = data.filter((item) => !showSelected || value.includes(item.val))
+    let d = data.filter(
+      (item) =>
+        !showSelected || value.includes(item.val) || value.includes("all"),
+    )
     const term = search.toLowerCase().trim()
     if (term) {
       d = d.filter(
@@ -88,16 +93,20 @@ export function ColumnMultiSelect({
       }}
     >
       <Group wrap="nowrap" gap="xs">
-        <Checkbox checked={value.includes(item.val)} onChange={() => {}} />
+        <Checkbox
+          checked={value.includes(item.val) || value.includes("all")}
+          onChange={() => {}}
+        />
         <Typography truncate>{item.label}</Typography>
       </Group>
     </Combobox.Option>
   ))
 
   function handleOptionSelect(val: string) {
-    const newValue = value.includes(val)
-      ? value.filter((v) => v !== val)
-      : [...value, val]
+    const selected = selectedData.map((item) => item.val)
+    const newValue = selected.includes(val)
+      ? selected.filter((v) => v !== val)
+      : [...selected, val]
     onChange(newValue)
   }
 
@@ -152,13 +161,20 @@ export function ColumnMultiSelect({
                 count: selectedData.length,
               })}
             </Typography>
-            <Group ml="auto" justify="flex-end">
+            <Group ml="auto" justify="flex-end" gap="xs">
               <UnstyledButton
                 fz="xs"
                 c="peacock"
                 onClick={() => setShowSelected(!showSelected)}
               >
                 {showSelected ? tt("Show All") : tt("Show Selected")}
+              </UnstyledButton>
+              <UnstyledButton
+                fz="xs"
+                c="peacock"
+                onClick={() => onChange(["all"])}
+              >
+                {tt("Select All")}
               </UnstyledButton>
               <UnstyledButton fz="xs" c="peacock" onClick={onReset}>
                 {tt("Reset")}

@@ -39,7 +39,7 @@ export function ListTable({
       .filter((f) => f !== undefined)
       .reduce(
         (acc, col) => {
-          acc[col] = visibleCols.includes(col)
+          acc[col] = visibleCols.includes(col) || visibleCols.includes("all")
           return acc
         },
         {} as Record<string, boolean>,

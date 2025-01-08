@@ -52,12 +52,14 @@ export function ChartCard({
   labelValue,
   enableDrillDown = false,
   hideTitle = false,
+  forceRefresh = "",
 }: {
   config: SingleChartConfig
   timeRange: TimeRange
   labelValue?: string
   enableDrillDown?: boolean
   hideTitle?: boolean
+  forceRefresh?: string
 }) {
   const ctx = useAppContext()
   const colorScheme = useComputedColorScheme()
@@ -119,7 +121,7 @@ export function ChartCard({
     } else {
       setIsFetched(false)
     }
-  }, [timeRange, labelValue])
+  }, [timeRange, labelValue, forceRefresh])
 
   const seriesData = useMemo(
     () =>

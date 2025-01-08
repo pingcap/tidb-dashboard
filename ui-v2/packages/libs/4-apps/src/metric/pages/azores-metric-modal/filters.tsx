@@ -43,9 +43,10 @@ export function Filters() {
       minDateTime={() =>
         dayjs()
           .subtract(QUICK_RANGES[QUICK_RANGES.length - 1], "seconds")
+          .startOf("d")
           .toDate()
       }
-      maxDateTime={() => dayjs().toDate()}
+      maxDateTime={() => dayjs().endOf("d").toDate()}
     />
   )
 

@@ -4,11 +4,15 @@ import {
   DEFAULT_AUTO_REFRESH_SECONDS,
   TimeRangePicker,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Group, SegmentedControl } from "@tidbcloud/uikit"
+import {
+  toURLTimeRange,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { Anchor, Group, SegmentedControl } from "@tidbcloud/uikit"
 import { dayjs } from "@tidbcloud/uikit/utils"
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 
+import { useAppContext } from "../../ctx"
 import { useMetricsUrlState } from "../../shared-state/url-state"
 import { QUICK_RANGES } from "../../utils/constants"
 
@@ -24,8 +28,10 @@ function useLocales() {
   tk("groups.advanced", "Advanced")
 }
 
+// @todo: maybe it should be named Toolbar instead of Filters
 export function Filters() {
-  const { tk } = useTn("metric")
+  const { tk, tt } = useTn("metric")
+  const ctx = useAppContext()
   const { panel, setQueryParams, timeRange, setTimeRange, setRefresh } =
     useMetricsUrlState()
   const tabs = GROUPS?.map((p) => ({
@@ -38,6 +44,11 @@ export function Filters() {
   )
   const autoRefreshRef = useRef<AutoRefreshButtonRef>(null)
   const [loading, setLoading] = useState(false)
+
+  const diagnosisLinkId = useMemo(() => {
+    const { from, to } = toURLTimeRange(timeRange)
+    return `${from},${to}`
+  }, [timeRange])
 
   function handlePanelChange(newPanel: string) {
     autoRefreshRef.current?.refresh()
@@ -62,6 +73,16 @@ export function Filters() {
       value={panel || tabs[0].value}
       onChange={handlePanelChange}
     />
+  )
+
+  const diagnosisLink = (
+    <Anchor
+      onClick={() => {
+        ctx.actions.openDiagnosis(diagnosisLinkId)
+      }}
+    >
+      {tt("Diagnosis")}
+    </Anchor>
   )
 
   const timeRangePicker = (
@@ -96,6 +117,7 @@ export function Filters() {
       {panelSwitch}
 
       <Group ml="auto">
+        {diagnosisLink}
         {timeRangePicker}
         {autoRefreshButton}
       </Group>

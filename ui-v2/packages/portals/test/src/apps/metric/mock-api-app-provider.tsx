@@ -152,6 +152,12 @@ export function useCtxValue(): AppCtxValue {
         title: "",
         scrapeInterval: 15,
       },
+      actions: {
+        openDiagnosis(id) {
+          const [from, to] = id.split(",")
+          window.open(`/statement?from=${from}&to=${to}`, "_blank")
+        },
+      },
     }),
     [],
   )

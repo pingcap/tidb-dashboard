@@ -9,7 +9,7 @@
       "Delete SQL limit successfully": "Delete SQL limit successfully",
       "Resource Group": "Resource Group",
       "SQL Limit": "SQL Limit",
-      "SQL limit feature is not supported in this version": "SQL limit feature is not supported in this version",
+      "SQL limit feature is only available in and above {{distro.tidb}} 7.5.0": "SQL limit feature is only available in and above {{distro.tidb}} 7.5.0",
       "Set Limit": "Set Limit",
       "Set SQL limit failed": "Set SQL limit failed",
       "Set SQL limit successfully": "Set SQL limit successfully",

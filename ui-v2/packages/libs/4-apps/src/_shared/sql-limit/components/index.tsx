@@ -127,7 +127,9 @@ export function SqlLimitBody() {
   if (!sqlLimitSupport.is_support) {
     return (
       <Typography c="gray">
-        {tt("SQL limit feature is not supported in this version")}
+        {tt(
+          "SQL limit feature is only available in and above {{distro.tidb}} 7.5.0",
+        )}
       </Typography>
     )
   }

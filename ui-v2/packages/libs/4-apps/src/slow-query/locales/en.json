@@ -140,6 +140,7 @@
       "Clear Filters": "Clear Filters",
       "Coprocessor": "Coprocessor",
       "Detail": "Detail",
+      "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}": "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}",
       "Find SQL text": "Find SQL text",
       "Plan": "Plan",
       "Query": "Query",

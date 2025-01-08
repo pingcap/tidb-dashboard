@@ -123,7 +123,11 @@ export function SqlPlanBindActionCell({
   }
   if (!isSupport) {
     return (
-      <Tooltip label={tt("Bind plan is not supported in this version")}>
+      <Tooltip
+        label={tt(
+          "Bind plan feature is only available in and above {{distro.tidb}} 6.5.0",
+        )}
+      >
         <Button disabled size="xs">
           {tt("Bind")}
         </Button>

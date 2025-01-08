@@ -1,9 +1,10 @@
-import { formatTime } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { formatTime, useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Alert } from "@tidbcloud/uikit"
 
 import { useTimeRangeValueState } from "../../shared-state/memory-state"
 
 export function TimeRangeClipAlert() {
+  const { tt } = useTn("slow-query")
   const trv = useTimeRangeValueState((s) => s.trv)
   const beyondMax = useTimeRangeValueState((s) => s.beyondMax)
 
@@ -13,8 +14,13 @@ export function TimeRangeClipAlert() {
 
   return (
     <Alert>
-      Because of the limitation, the time range is clipped to max 24 hours, from{" "}
-      {formatTime(trv[0] * 1000)} to {formatTime(trv[1] * 1000)}
+      {tt(
+        "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}",
+        {
+          begin: formatTime(trv[0] * 1000),
+          end: formatTime(trv[1] * 1000),
+        },
+      )}
     </Alert>
   )
 }

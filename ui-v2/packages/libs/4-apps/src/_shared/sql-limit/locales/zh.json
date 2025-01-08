@@ -9,7 +9,7 @@
       "Delete SQL limit successfully": "取消 SQL 限流成功",
       "Resource Group": "资源组",
       "SQL Limit": "SQL 限流",
-      "SQL limit feature is not supported in this version": "此版本不支持 SQL 限流功能",
+      "SQL limit feature is only available in and above {{distro.tidb}} 7.5.0": "SQL 限流功能仅在 {{distro.tidb}} 7.5.0 及以上版本可用",
       "Set Limit": "设置限流",
       "Set SQL limit failed": "设置 SQL 限流失败",
       "Set SQL limit successfully": "设置 SQL 限流成功",

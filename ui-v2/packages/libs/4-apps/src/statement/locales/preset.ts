@@ -23,17 +23,17 @@ function useLocales() {
     "fields.sum_latency.desc",
     "Total execution time for this kind of statement",
   )
-  tk("fields.exec_count", "# Exec")
+  tk("fields.exec_count", "Execution Count")
   tk(
     "fields.exec_count.desc",
     "Total execution count for this kind of statement",
   )
-  tk("fields.plan_count", "# Plans")
+  tk("fields.plan_count", "Plans Count")
   tk(
     "fields.plan_count.desc",
     "Number of distinct execution plans of this statement in current time range",
   )
-  tk("fields.plan_cache_hits", "# Plan Cache Hits")
+  tk("fields.plan_cache_hits", "Plan Cache Hits Count")
   tk(
     "fields.plan_cache_hits.desc",
     "Number of times the execution plan cache is hit",

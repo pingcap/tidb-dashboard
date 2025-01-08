@@ -152,7 +152,7 @@
       "Are you sure to unbind SQL <code>{{sqlDigest}}</code> with <strong>all bound plans</strong>?": "确定将 SQL <code>{{sqlDigest}}</code> 与 <strong>所有绑定计划</strong> 解绑吗？",
       "Basic": "基本信息",
       "Bind Plan": "绑定计划",
-      "Bind plan is not supported in this version": "此版本不支持绑定计划功能",
+      "Bind plan feature is only available in and above {{distro.tidb}} 6.5.0": "SQL 执行计划绑定功能仅在 {{distro.tidb}} 6.5.0 及以上版本可用",
       "Bind plan {{planDigest}} failed, reason: {{reason}}": "绑定计划 {{planDigest}} 失败，原因：{{reason}}",
       "Bind plan {{planDigest}} successfully!": "绑定计划 {{planDigest}} 成功！",
       "Bind": "绑定",

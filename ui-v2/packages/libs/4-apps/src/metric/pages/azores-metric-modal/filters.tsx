@@ -1,6 +1,6 @@
+import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Box, Group, Select } from "@tidbcloud/uikit"
-import { TimeRangePicker } from "@tidbcloud/uikit/biz"
-import dayjs from "dayjs"
+import { dayjs } from "@tidbcloud/uikit/utils"
 
 import { useChartState } from "../../shared-state/memory-state"
 import { QUICK_RANGES } from "../../utils/constants"

@@ -2,10 +2,10 @@ import {
   AutoRefreshButton,
   AutoRefreshButtonRef,
   DEFAULT_AUTO_REFRESH_SECONDS,
+  TimeRangePicker,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Group, SegmentedControl } from "@tidbcloud/uikit"
-import { TimeRangePicker } from "@tidbcloud/uikit/biz"
-import dayjs from "dayjs"
+import { dayjs } from "@tidbcloud/uikit/utils"
 import { useRef, useState } from "react"
 
 import { useMetricsUrlState } from "../../shared-state/url-state"

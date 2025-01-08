@@ -41,7 +41,7 @@
   "dependencies": {
     "@baurine/grafana-value-formats": "^1.0.5",
     "@baurine/sql-formatter-plus": "^1.5.3",
-    "dayjs": "^1.11.13",
+    "pretty-ms": "^9.2.0",
     "string-template": "^1.0.0"
   }
 }

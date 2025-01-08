@@ -1,8 +1,8 @@
+import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Group, Text, TextInput, UnstyledButton } from "@tidbcloud/uikit"
-import { TimeRangePicker } from "@tidbcloud/uikit/biz"
 import { IconXClose } from "@tidbcloud/uikit/icons"
-import dayjs from "dayjs"
+import { dayjs } from "@tidbcloud/uikit/utils"
 import { useEffect, useState } from "react"
 
 import { useListUrlState } from "../../url-state/list-url-state"

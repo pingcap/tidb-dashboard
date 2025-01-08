@@ -80,7 +80,6 @@
     "@pingcap-incubator/tidb-dashboard-lib-icons": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-primitive-ui": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
-    "dayjs": "^1.11.13",
     "lodash-es": "^4.17.21"
   }
 }

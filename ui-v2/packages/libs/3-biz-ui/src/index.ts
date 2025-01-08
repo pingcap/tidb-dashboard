@@ -17,3 +17,5 @@ export * from "./cols-multi-select"
 export * from "./advanced-filters"
 
 export * from "./custom-json-view"
+
+export * from "./time-range-picker"

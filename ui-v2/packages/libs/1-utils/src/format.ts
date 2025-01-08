@@ -1,9 +1,21 @@
 import { getValueFormat } from "@baurine/grafana-value-formats"
 import { format } from "@baurine/sql-formatter-plus"
-import dayjs from "dayjs"
+import { dayjs } from "@tidbcloud/uikit/utils"
+import prettyMs from "pretty-ms"
 
-export function formatTime(ms: number, format: string = "YYYY-MM-DD HH:mm:ss") {
-  return dayjs(ms).format(format)
+export function formatTime(
+  value: number | Date, // number is unix timestamp, unit is milliseconds
+  format: string = "YYYY-MM-DD HH:mm:ss",
+) {
+  return dayjs(value).format(format)
+}
+
+export function formatDuration(seconds: number, short = false) {
+  if (short) {
+    return prettyMs(seconds * 1000, { compact: true })
+  } else {
+    return prettyMs(seconds * 1000, { verbose: true })
+  }
 }
 
 export function formatNumByUnit(

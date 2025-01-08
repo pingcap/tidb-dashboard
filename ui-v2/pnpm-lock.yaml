@@ -160,9 +160,9 @@ importers:
       '@baurine/sql-formatter-plus':
         specifier: ^1.5.3
         version: 1.5.3
-      dayjs:
-        specifier: ^1.11.13
-        version: 1.11.13
+      pretty-ms:
+        specifier: ^9.2.0
+        version: 9.2.0
       string-template:
         specifier: ^1.0.0
         version: 1.0.0
@@ -264,9 +264,6 @@ importers:
       '@pingcap-incubator/tidb-dashboard-lib-utils':
         specifier: workspace:^
         version: link:../1-utils
-      dayjs:
-        specifier: ^1.11.13
-        version: 1.11.13
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -3858,8 +3855,8 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  pretty-ms@9.1.0:
-    resolution: {integrity: sha512-o1piW0n3tgKIKCwk2vpM/vOV13zjJzvP37Ioze54YlTHE06m4tjEbzg9WsKkvTuyYln2DHjo5pY4qrZGI0otpw==}
+  pretty-ms@9.2.0:
+    resolution: {integrity: sha512-4yf0QO/sllf/1zbZWYnvWw3NxCQwLXKzIj0G849LSufP15BXKM0rbD2Z3wVnkMfjdn/CB0Dpp444gYAACdsplg==}
     engines: {node: '>=18'}
 
   printable-characters@1.0.42:
@@ -6440,7 +6437,7 @@ snapshots:
       html-react-parser: 5.1.18(@types/react@18.3.12)(react@18.3.1)
       lodash-es: 4.17.21
       mantine-react-table: 2.0.0-beta.7(@mantine/core@7.15.2(@mantine/hooks@7.15.2(react@18.3.1))(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@mantine/dates@7.15.2(@mantine/core@7.15.2(@mantine/hooks@7.15.2(react@18.3.1))(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@mantine/hooks@7.15.2(react@18.3.1))(dayjs@1.11.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@mantine/hooks@7.15.2(react@18.3.1))(@tabler/icons-react@3.26.0(react@18.3.1))(clsx@2.1.1)(dayjs@1.11.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      pretty-ms: 9.1.0
+      pretty-ms: 9.2.0
       rc-tree: 5.10.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -8654,7 +8651,7 @@ snapshots:
 
   prettier@3.3.3: {}
 
-  pretty-ms@9.1.0:
+  pretty-ms@9.2.0:
     dependencies:
       parse-ms: 4.0.0
 

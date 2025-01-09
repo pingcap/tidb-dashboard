@@ -126,7 +126,7 @@ export function AdvancedFilterSetting({
           filterInfo.type !== "string" && (
             <NumberInput
               rightSection={filterInfo.unit}
-              value={filter.values[0]}
+              value={Number(filter.values[0])}
               allowNegative={false}
               allowDecimal={filterInfo.type.startsWith("float")}
               hideControls

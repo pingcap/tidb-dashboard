@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.11.2
+
+### Patch Changes
+
+- fix NumberInput cannot input 0 bug
+
 ## 0.11.1
 
 ### Patch Changes

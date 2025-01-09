@@ -12,31 +12,31 @@ export type UserServiceDeleteUser200 = { [key: string]: unknown };
 
 export type UserServiceListUsersParams = {
 /**
- * Page size
+ * The number of users to retrieve per page.
  */
 pageSize?: number;
 /**
- * Page token
+ * Pagination token for retrieving the next page of users.
  */
 pageToken?: string;
 /**
- * Skip
+ * The number of users to skip for pagination purposes.
  */
 skip?: number;
 /**
- * order_by
+ * The sorting criteria for the user list.
  */
 orderBy?: string;
 /**
- * The name of the user
+ * Filter users by username using a "like" operation.
  */
 nameLike?: string;
 /**
- * The email of the user
+ * Filter users by email using a "like" operation.
  */
 emailLike?: string;
 /**
- * The role name of the user
+ * Filter users by role name.
  */
 roleName?: string;
 };
@@ -65,13 +65,143 @@ orderBy?: string;
  */
 searchValue?: string;
 /**
- * the Tiups label_ids of the labelIds
+ * the Tiups tag_ids of the tagIds
  */
-labelIds?: string[];
+tagIds?: string[];
 /**
- * the Tiups host_ids of the labelIds
+ * the Tiups host_ids of the tagIds
  */
 hostIds?: string[];
+};
+
+export type TagServiceListTagsWithBindingsParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
+/**
+ * the tag which the tag key in
+ */
+tagKeys?: string[];
+/**
+ * the tag which the tag value like
+ */
+tagValueLike?: string;
+};
+
+export type TagServiceListTagKeysResourceType = typeof TagServiceListTagKeysResourceType[keyof typeof TagServiceListTagKeysResourceType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const TagServiceListTagKeysResourceType = {
+  TAG_BIND_RESOURCE_TYPE_UNSPECIFIED: 'TAG_BIND_RESOURCE_TYPE_UNSPECIFIED',
+  HOST: 'HOST',
+  TIUP: 'TIUP',
+  CLUSTER: 'CLUSTER',
+} as const;
+
+export type TagServiceListTagKeysParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * skip
+ */
+skip?: number;
+/**
+ * the keyword which tag key similar to
+ */
+keyword?: string;
+/**
+ * the resource type of the tag has bound with
+
+ - TAG_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified
+ - HOST: resource type host
+ - TIUP: resource type tiup
+ - CLUSTER: resource type cluster
+ */
+resourceType?: TagServiceListTagKeysResourceType;
+};
+
+export type TagServiceListTagsByResourceTypeResourceType = typeof TagServiceListTagsByResourceTypeResourceType[keyof typeof TagServiceListTagsByResourceTypeResourceType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const TagServiceListTagsByResourceTypeResourceType = {
+  TAG_BIND_RESOURCE_TYPE_UNSPECIFIED: 'TAG_BIND_RESOURCE_TYPE_UNSPECIFIED',
+  HOST: 'HOST',
+  TIUP: 'TIUP',
+  CLUSTER: 'CLUSTER',
+} as const;
+
+export type TagServiceListTagsByResourceTypeParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * skip
+ */
+skip?: number;
+/**
+ * the tag key which the tag values belong to
+ */
+tagKey?: string;
+/**
+ * the keyword which tag values similar to
+ */
+keyword?: string;
+/**
+ * the resource type of the tag has bound with
+
+ - TAG_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified
+ - HOST: resource type host
+ - TIUP: resource type tiup
+ - CLUSTER: resource type cluster
+ */
+resourceType?: TagServiceListTagsByResourceTypeResourceType;
+};
+
+export type TagServiceDeleteTag200 = { [key: string]: unknown };
+
+export type TagServiceListTagsParams = {
+/**
+ * page size
+ */
+pageSize?: number;
+/**
+ * page token
+ */
+pageToken?: string;
+/**
+ * skip
+ */
+skip?: number;
+/**
+ * order_by
+ */
+orderBy?: string;
 };
 
 export type RoleServiceDeleteRole200 = { [key: string]: unknown };
@@ -94,13 +224,13 @@ skip?: number;
  */
 orderBy?: string;
 /**
- * The name of the role
+ * role_name_like
  */
-nameLike?: string;
+roleNameLike?: string;
 /**
  * The name of the role
  */
-name?: string;
+roleName?: string;
 };
 
 export type MetricsServiceGetOverviewStatusParams = {
@@ -244,17 +374,17 @@ The license file to upload to activate the license */
   license: Blob;
 };
 
-export type LabelServiceListLabelsWithBindingsParams = {
+export type HostServiceDownloadListHostsParams = {
 /**
- * page size
+ * Page size
  */
 pageSize?: number;
 /**
- * page token
+ * Page token
  */
 pageToken?: string;
 /**
- * skip
+ * Skip
  */
 skip?: number;
 /**
@@ -262,116 +392,17 @@ skip?: number;
  */
 orderBy?: string;
 /**
- * the label which the label key in
+ * The name of the user
  */
-labelKeys?: string[];
+searchValue?: string;
 /**
- * the label which the label value like
+ * location_ids
  */
-labelValueLike?: string;
-};
-
-export type LabelServiceListLabelKeysResourceType = typeof LabelServiceListLabelKeysResourceType[keyof typeof LabelServiceListLabelKeysResourceType];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const LabelServiceListLabelKeysResourceType = {
-  LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: 'LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED',
-  HOST: 'HOST',
-  TIUP: 'TIUP',
-  CLUSTER: 'CLUSTER',
-} as const;
-
-export type LabelServiceListLabelKeysParams = {
+locationIds?: string[];
 /**
- * page size
+ * tag_ids
  */
-pageSize?: number;
-/**
- * page token
- */
-pageToken?: string;
-/**
- * skip
- */
-skip?: number;
-/**
- * the keyword which label key similar to
- */
-keyword?: string;
-/**
- * the resource type of the label has bound with
-
- - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified
- - HOST: resource type host
- - TIUP: resource type tiup
- - CLUSTER: resource type cluster
- */
-resourceType?: LabelServiceListLabelKeysResourceType;
-};
-
-export type LabelServiceListLabelsByResourceTypeResourceType = typeof LabelServiceListLabelsByResourceTypeResourceType[keyof typeof LabelServiceListLabelsByResourceTypeResourceType];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const LabelServiceListLabelsByResourceTypeResourceType = {
-  LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: 'LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED',
-  HOST: 'HOST',
-  TIUP: 'TIUP',
-  CLUSTER: 'CLUSTER',
-} as const;
-
-export type LabelServiceListLabelsByResourceTypeParams = {
-/**
- * page size
- */
-pageSize?: number;
-/**
- * page token
- */
-pageToken?: string;
-/**
- * skip
- */
-skip?: number;
-/**
- * the label key which the label values belong to
- */
-labelKey?: string;
-/**
- * the keyword which label values similar to
- */
-keyword?: string;
-/**
- * the resource type of the label has bound with
-
- - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified
- - HOST: resource type host
- - TIUP: resource type tiup
- - CLUSTER: resource type cluster
- */
-resourceType?: LabelServiceListLabelsByResourceTypeResourceType;
-};
-
-export type LabelServiceDeleteLabel200 = { [key: string]: unknown };
-
-export type LabelServiceListLabelsParams = {
-/**
- * page size
- */
-pageSize?: number;
-/**
- * page token
- */
-pageToken?: string;
-/**
- * skip
- */
-skip?: number;
-/**
- * order_by
- */
-orderBy?: string;
+tagIds?: string[];
 };
 
 export type HostServiceBatchDelete200 = { [key: string]: unknown };
@@ -434,9 +465,9 @@ searchValue?: string;
  */
 locationIds?: string[];
 /**
- * label_ids
+ * tag_ids
  */
-labelIds?: string[];
+tagIds?: string[];
 };
 
 export type CredentialServiceDeleteCredential200 = { [key: string]: unknown };
@@ -997,26 +1028,47 @@ export interface V2UserRole {
   roleName?: string;
 }
 
+/**
+ * UserProfile represents the profile information of the authenticated user.
+ */
 export interface V2UserProfile {
-  email?: string;
-  id: string;
+  /** The email address of the user. */
+  email: string;
+  /** The  name of the user. */
   name: string;
+  /** The note of the user. */
   note?: string;
+  /** The phone of the user. */
   phone?: string;
+  /** The unique identifier of the user. */
+  userId: string;
 }
 
+/**
+ * User represents a user resource containing detailed information about a user.
+ */
 export interface V2User {
+  /** The timestamp when the user was created. */
   readonly createTime?: string;
+  /** The email address of the user. */
   email?: string;
-  id: string;
+  /** The full name of the user. */
   name: string;
+  /** Additional notes about the user. */
   note?: string;
+  /** The user's password (optional). */
   password?: string;
+  /** The user's phone number. */
   phone?: string;
+  /** The roles assigned to the user. */
   roles?: V2UserRole[];
+  /** The timestamp when the user was last updated. */
   readonly updateTime?: string;
+  /** The unique user ID of the user. */
   userId: string;
-  userType?: string;
+  /** The type of the user (e.g., admin, regular user). */
+  userType?: number;
+  /** A description of the user's type. */
   userTypeDesc?: string;
 }
 
@@ -1081,6 +1133,8 @@ export interface V2TopSqlDetail {
   avg_rocksdb_delete_skipped_count?: number;
   avg_rocksdb_key_skipped_count?: number;
   avg_ru?: number;
+  avg_tidb_cpu_time?: number;
+  avg_tikv_cpu_time?: number;
   avg_time_queued_by_rc?: number;
   avg_total_keys?: number;
   avg_txn_retry?: number;
@@ -1182,6 +1236,10 @@ export interface V2TopMetricData {
   status?: string;
 }
 
+export interface V2TopMetricConfig {
+  cacheFlushIntervalInMinutes?: number;
+}
+
 export interface V2TiupsServiceUpdateTiupsBody {
   tiups?: Tiupv2UpdateTiups;
 }
@@ -1200,10 +1258,10 @@ export interface V2TiupsClustersResponse {
   tiupsClusters?: V2TiupsClusters[];
 }
 
-export interface V2TiupLabels {
-  labelId?: string;
-  labelKey?: string;
-  labelValue: string;
+export interface V2TiupTags {
+  tagId?: string;
+  tagKey?: string;
+  tagValue: string;
 }
 
 export interface V2Tiups {
@@ -1211,8 +1269,8 @@ export interface V2Tiups {
   description?: string;
   host?: V2TiupHost;
   hostId?: string;
-  labels?: V2TiupLabels[];
   name?: string;
+  tags?: V2TiupTags[];
   tiupHome?: string;
   tiupId?: string;
   version?: string;
@@ -1263,9 +1321,36 @@ export interface V2TiDBProcesses {
 export interface V2TiDBCredentialObject {
   clusterId?: string;
   clusterName?: string;
-  description?: string;
   password: string;
 }
+
+export interface V2Tags {
+  tagId?: string;
+  tagKey?: string;
+  tagValue: string;
+}
+
+export interface V2TagWithBindObject {
+  bindObjects?: V2BindObject[];
+  tagInfo?: Tagv2Tag;
+}
+
+/**
+ * - TAG_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified
+ - HOST: resource type host
+ - TIUP: resource type tiup
+ - CLUSTER: resource type cluster
+ */
+export type V2TagBindResourceType = typeof V2TagBindResourceType[keyof typeof V2TagBindResourceType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const V2TagBindResourceType = {
+  TAG_BIND_RESOURCE_TYPE_UNSPECIFIED: 'TAG_BIND_RESOURCE_TYPE_UNSPECIFIED',
+  HOST: 'HOST',
+  TIUP: 'TIUP',
+  CLUSTER: 'CLUSTER',
+} as const;
 
 /**
  * - all: All
@@ -1293,10 +1378,6 @@ export interface V2StatusCount {
 
 export interface V2SqlPlanList {
   data?: V2TopSqlDetail[];
-}
-
-export interface V2SqlPlanBindingList {
-  data?: V2SqlPlanBindingDetail[];
 }
 
 export type V2SqlPlanBindingDetailStatus = typeof V2SqlPlanBindingDetailStatus[keyof typeof V2SqlPlanBindingDetailStatus];
@@ -1329,6 +1410,10 @@ export interface V2SqlPlanBindingDetail {
   planDigest?: string;
   source?: V2SqlPlanBindingDetailSource;
   status?: V2SqlPlanBindingDetailStatus;
+}
+
+export interface V2SqlPlanBindingList {
+  data?: V2SqlPlanBindingDetail[];
 }
 
 export type V2SqlLimitAction = typeof V2SqlLimitAction[keyof typeof V2SqlLimitAction];
@@ -1426,6 +1511,7 @@ export interface V2SlowQueryDetail {
   rocksdb_block_read_count?: number;
   rocksdb_delete_skipped_count?: number;
   rocksdb_key_skipped_count?: number;
+  ru?: number;
   session_alias?: string;
   stats?: string;
   success?: number;
@@ -1473,7 +1559,7 @@ export interface V2Role {
   id?: number;
   note?: string;
   roleName?: string;
-  roleType?: string;
+  roleType?: number;
   roleTypeDesc?: string;
   readonly updateTime?: string;
 }
@@ -1600,15 +1686,45 @@ export interface V2LocationMappings {
   parentId?: string;
 }
 
+/**
+ * ListUsersResponse defines the response containing a list of users and pagination information.
+ */
 export interface V2ListUsersResponse {
+  /** Token for the next page of results. */
   nextPageToken?: string;
+  /** The total number of users that match the filter criteria. */
   totalSize?: number;
+  /** The list of users retrieved. */
   users?: V2User[];
 }
 
 export interface V2ListTiupsResponse {
   nextPageToken?: string;
   tiups?: V2Tiups[];
+  totalSize?: number;
+}
+
+export interface V2ListTagsWithBindingsResponse {
+  nextPageToken?: string;
+  tags?: V2TagWithBindObject[];
+  totalSize?: number;
+}
+
+export interface V2ListTagsResponse {
+  nextPageToken?: string;
+  tags?: Tagv2Tag[];
+  totalSize?: number;
+}
+
+export interface V2ListTagsByResourceTypeResponse {
+  nextPageToken?: string;
+  tags?: Tagv2Tag[];
+  totalSize?: number;
+}
+
+export interface V2ListTagKeysResponse {
+  nextPageToken?: string;
+  tagKeys?: string[];
   totalSize?: number;
 }
 
@@ -1620,30 +1736,6 @@ export interface V2ListRolesResponse {
 
 export interface V2ListLocationsResponse {
   locations?: V2Locations[];
-  nextPageToken?: string;
-  totalSize?: number;
-}
-
-export interface V2ListLabelsWithBindingsResponse {
-  labels?: V2LabelWithBindObject[];
-  nextPageToken?: string;
-  totalSize?: number;
-}
-
-export interface V2ListLabelsResponse {
-  labels?: Labelv2Label[];
-  nextPageToken?: string;
-  totalSize?: number;
-}
-
-export interface V2ListLabelsByResourceTypeResponse {
-  labels?: Labelv2Label[];
-  nextPageToken?: string;
-  totalSize?: number;
-}
-
-export interface V2ListLabelKeysResponse {
-  labelKeys?: string[];
   nextPageToken?: string;
   totalSize?: number;
 }
@@ -1722,34 +1814,6 @@ export const V2LicenseStatusEnumData = {
   revoked: 'revoked',
 } as const;
 
-export interface V2Labels {
-  labelId?: string;
-  labelKey?: string;
-  labelValue: string;
-}
-
-export interface V2LabelWithBindObject {
-  bindObjects?: V2BindObject[];
-  labelInfo?: Labelv2Label;
-}
-
-/**
- * - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified
- - HOST: resource type host
- - TIUP: resource type tiup
- - CLUSTER: resource type cluster
- */
-export type V2LabelBindResourceType = typeof V2LabelBindResourceType[keyof typeof V2LabelBindResourceType];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const V2LabelBindResourceType = {
-  LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: 'LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED',
-  HOST: 'HOST',
-  TIUP: 'TIUP',
-  CLUSTER: 'CLUSTER',
-} as const;
-
 export type V2ImportRequestHeaders = {[key: string]: string};
 
 export interface V2ImportRequest {
@@ -1781,13 +1845,13 @@ export interface V2HostTask {
   hostId: string;
   hostName?: string;
   ip: string;
-  labels?: string;
-  labelsList?: V2Labels[];
   locationId?: string;
   locationMappings?: V2LocationMappings[];
   reportId?: string;
   sshPort: number;
   status?: V2HostTaskStatus;
+  tags?: string;
+  tagsList?: V2Tags[];
   taskId: string;
   userName?: string;
 }
@@ -1799,11 +1863,6 @@ export interface V2ImportTaskResponse {
 
 export interface V2HostServiceUpdateHostBody {
   host?: Hostv2UpdateHost;
-}
-
-export interface V2HostMetricData {
-  data?: V2ExprQueryData[];
-  status?: string;
 }
 
 export interface V2HostFixResponse {
@@ -1897,7 +1956,6 @@ export interface V2Host {
   hostName?: string;
   hostType?: V2HostHostType;
   ip?: string;
-  labels?: V2Labels[];
   locationId?: string;
   locationMappings?: V2LocationMappings[];
   memorySize?: number;
@@ -1918,6 +1976,7 @@ export interface V2Host {
   storageTotalSize?: number;
   storageUnit?: string;
   storageUsed?: number;
+  tags?: V2Tags[];
   tiupIds?: string[];
   updatedTime?: string;
 }
@@ -1945,8 +2004,8 @@ export const V2GroupEnumData = {
   process: 'process',
 } as const;
 
-export interface V2GetLabelWithBindingsResponse {
-  label?: V2LabelWithBindObject;
+export interface V2GetTagWithBindingsResponse {
+  tag?: V2TagWithBindObject;
 }
 
 export interface V2GenerateRSAKeyResponse {
@@ -1973,6 +2032,11 @@ export interface V2ExprQueryData {
   result?: V2QueryResult[];
 }
 
+export interface V2HostMetricData {
+  data?: V2ExprQueryData[];
+  status?: string;
+}
+
 export interface V2ErrorDetail {
   locale?: string;
   message?: string;
@@ -1985,6 +2049,10 @@ export interface V2DownloadRSAKeyResponse {
 
 export interface V2DownloadRSAKeyRequest {
   credentialId: string;
+}
+
+export interface V2DownloadListHostResponse {
+  data?: string;
 }
 
 export interface V2DownloadHostTemplateResponse {
@@ -2066,6 +2134,7 @@ export interface V2Credential {
   credentialId?: string;
   credentialName?: string;
   credentialType: V2CredentialType;
+  description?: string;
   hostCredential?: V2HostCredentialObject;
   tidbCredential?: V2TiDBCredentialObject;
   userName: string;
@@ -2076,9 +2145,9 @@ export interface V2CreateHost {
   comment?: string;
   credentialId?: string;
   ips?: string[];
-  labelIds?: string[];
   locationId?: string;
   sshPort?: number;
+  tagIds?: string[];
 }
 
 export interface V2CreateApiKeyRequest {
@@ -2325,32 +2394,40 @@ export interface V2CategoryMetricDetail {
   type?: string;
 }
 
+export interface V2BindTagResponse {
+  tag?: V2TagWithBindObject;
+}
+
 export interface V2BindResourceResponse {
-  labels?: Labelv2Label[];
+  tags?: Tagv2Tag[];
 }
 
 export interface V2BindResourceRequest {
-  labelIds?: string[];
   resourceId: string;
-  resourceType: V2LabelBindResourceType;
+  resourceType: V2TagBindResourceType;
+  tagIds?: string[];
 }
 
 export interface V2BindObject {
   resources: V2ResourceObject[];
-  resourceType: V2LabelBindResourceType;
+  resourceType: V2TagBindResourceType;
 }
 
-export interface V2BindLabelResponse {
-  label?: V2LabelWithBindObject;
-}
-
-export interface V2BindLabelRequest {
+export interface V2BindTagRequest {
   bindObjects?: V2BindObject[];
-  labelId: string;
+  tagId: string;
 }
 
 export interface V2BatchDeleteRequest {
   hostId: string[];
+}
+
+export interface V2BatchCreateTagsResponse {
+  tags?: Tagv2Tag[];
+}
+
+export interface V2BatchCreateTagsRequest {
+  tags: Tagv2Tag[];
 }
 
 export interface V2BasicClusterInfo {
@@ -2453,16 +2530,22 @@ export interface V2ActivateLicenseRequest {
 
 export interface Tiupv2UpdateTiups {
   description?: string;
-  labelIds?: string[];
   name?: string;
+  tagIds?: string[];
 }
 
 export interface Tiupv2CreateTiups {
   description?: string;
   hostId?: string;
-  labelIds?: string[];
   name?: string;
+  tagIds?: string[];
   tiupHome?: string;
+}
+
+export interface Tagv2Tag {
+  tagId?: string;
+  tagKey?: string;
+  tagValue: string;
 }
 
 export type RpcStatusError = {
@@ -2618,27 +2701,13 @@ export interface Licensev2License {
   version?: string;
 }
 
-export interface Labelv2Label {
-  labelId?: string;
-  labelKey?: string;
-  labelValue: string;
-}
-
-export interface V2BatchCreateLabelsResponse {
-  labels?: Labelv2Label[];
-}
-
-export interface V2BatchCreateLabelsRequest {
-  labels: Labelv2Label[];
-}
-
 export interface Hostv2UpdateHost {
   comment?: string;
   credentialId?: string;
   hostId?: string;
-  labelIds?: string[];
   locationId?: string;
   sshPort?: number;
+  tagIds?: string[];
 }
 
 export type Hostv2ReportCheckResult = typeof Hostv2ReportCheckResult[keyof typeof Hostv2ReportCheckResult];
@@ -2664,17 +2733,37 @@ export interface Hostv2Report {
   reportId: string;
 }
 
+export interface UserServiceUpdateUserBody {
+  /** The email address of the user. */
+  email?: string;
+  /** Additional notes about the user. */
+  note?: string;
+  /** The user's phone number. */
+  phone?: string;
+  /** The roles assigned to the user. */
+  roles?: V2UserRole[];
+  /** The type of the user (e.g., admin, regular user). */
+  userType?: number;
+}
+
 export interface UserServiceResetPasswordBody {
   newPassword: string;
 }
 
-export interface LocationServiceUpdateLocationsBody {
-  location?: V2Locations;
+export interface TagServiceUpdateTagBody {
+  tagKey?: string;
+  tagValue: string;
 }
 
-export interface LabelServiceUpdateLabelBody {
-  labelKey?: string;
-  labelValue: string;
+export interface RoleServiceUpdateRoleBody {
+  detail?: string;
+  note?: string;
+  roleName: string;
+  roleType?: number;
+}
+
+export interface LocationServiceUpdateLocationsBody {
+  location?: V2Locations;
 }
 
 export interface HostServiceHostConfirmBody { [key: string]: unknown }
@@ -2727,6 +2816,7 @@ export interface DiagnosisServiceAddSqlLimitBody {
 export interface CredentialServiceUpdateCredentialBody {
   credentialName?: string;
   credentialType: V2CredentialType;
+  description?: string;
   forceUpdate?: boolean;
   hostCredential?: V2HostCredentialObject;
   tidbCredential?: V2TiDBCredentialObject;
@@ -2756,5 +2846,21 @@ export interface ClusterBRServiceCreateBackupTaskBody {
   rateLimit?: number;
   retention?: number;
   secretAccessKey?: string;
+}
+
+export type ApiKeyServiceUpdateApiKeyBodyStatus = typeof ApiKeyServiceUpdateApiKeyBodyStatus[keyof typeof ApiKeyServiceUpdateApiKeyBodyStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ApiKeyServiceUpdateApiKeyBodyStatus = {
+  disable: 'disable',
+  enable: 'enable',
+} as const;
+
+export interface ApiKeyServiceUpdateApiKeyBody {
+  creator?: string;
+  description?: string;
+  secretKey?: string;
+  status?: ApiKeyServiceUpdateApiKeyBodyStatus;
 }
 

@@ -36,13 +36,13 @@
       "name": "HostService"
     },
     {
-      "name": "LabelService"
-    },
-    {
       "name": "LicenseService"
     },
     {
       "name": "LocationService"
+    },
+    {
+      "name": "TagService"
     },
     {
       "name": "TiupsService"
@@ -57,7 +57,7 @@
   "paths": {
     "/api/v2/apiKeys": {
       "get": {
-        "summary": "ListApiKeys",
+        "summary": "ListApiKeys retrieves a list of API keys.",
         "operationId": "ApiKeyService_ListApiKeys",
         "responses": {
           "200": {
@@ -131,7 +131,7 @@
         ]
       },
       "post": {
-        "summary": "CreateApiKey",
+        "summary": "CreateApiKey creates a new API key.",
         "operationId": "ApiKeyService_CreateApiKey",
         "responses": {
           "200": {
@@ -163,8 +163,38 @@
       }
     },
     "/api/v2/apiKeys/{accessKey}": {
+      "get": {
+        "summary": "GetApiKeyRequest get an API key by its access key.",
+        "operationId": "ApiKeyService_GetApiKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ApiKey"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accessKey",
+            "description": "The access key of the apiKey",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApiKeyService"
+        ]
+      },
       "delete": {
-        "summary": "Delete one apikey by access key",
+        "summary": "DeleteApiKey deletes an API key by its access key.",
         "operationId": "ApiKeyService_DeleteApiKey",
         "responses": {
           "200": {
@@ -195,7 +225,7 @@
         ]
       },
       "patch": {
-        "summary": "UpdateApiKey",
+        "summary": "UpdateApiKey updates an API key by its access key.",
         "operationId": "ApiKeyService_UpdateApiKey",
         "responses": {
           "200": {
@@ -214,18 +244,17 @@
         "parameters": [
           {
             "name": "accessKey",
-            "description": "The access key of the apiKey",
+            "description": "The access_key of apikey",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "apiKey",
-            "description": "ApiKey resource",
+            "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v2ApiKey"
+              "$ref": "#/definitions/ApiKeyServiceUpdateApiKeyBody"
             }
           }
         ],
@@ -236,7 +265,7 @@
     },
     "/api/v2/apiKeys/{accessKey}:resetSecretKey": {
       "patch": {
-        "summary": "Reset SecretKey",
+        "summary": "ResetSecretKey resets the secret key for an existing API key.",
         "operationId": "ApiKeyService_ResetSecretKey",
         "responses": {
           "200": {
@@ -2788,8 +2817,8 @@
             "collectionFormat": "multi"
           },
           {
-            "name": "labelIds",
-            "description": "label_ids",
+            "name": "tagIds",
+            "description": "tag_ids",
             "in": "query",
             "required": false,
             "type": "array",
@@ -3331,9 +3360,93 @@
         ]
       }
     },
-    "/api/v2/hosts:hostTemplate": {
+    "/api/v2/hosts:download": {
       "get": {
         "summary": "HostConfirm one host",
+        "operationId": "HostService_DownloadListHosts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2DownloadListHostResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "Skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "searchValue",
+            "description": "The name of the user",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "locationIds",
+            "description": "location_ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "tagIds",
+            "description": "tag_ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "HostService"
+        ]
+      }
+    },
+    "/api/v2/hosts:downloadHostTemplate": {
+      "get": {
+        "summary": "DownloadHostTemplate one host",
         "operationId": "HostService_DownloadHostTemplate",
         "responses": {
           "200": {
@@ -3351,543 +3464,6 @@
         },
         "tags": [
           "HostService"
-        ]
-      }
-    },
-    "/api/v2/labels": {
-      "get": {
-        "summary": "List labels",
-        "operationId": "LabelService_ListLabels",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2ListLabelsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "pageSize",
-            "description": "page size",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "description": "page token",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "skip",
-            "description": "skip",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "orderBy",
-            "description": "order_by",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      },
-      "post": {
-        "summary": "Create label",
-        "operationId": "LabelService_CreateLabel",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/labelv2Label"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "label",
-            "description": "the label with basic resource",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/labelv2Label"
-            }
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels/{labelId}": {
-      "get": {
-        "summary": "Get label",
-        "operationId": "LabelService_GetLabel",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/labelv2Label"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "labelId",
-            "description": "the label id of the label",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      },
-      "delete": {
-        "summary": "Delete label by label id",
-        "operationId": "LabelService_DeleteLabel",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "labelId",
-            "description": "the label id of the label",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      },
-      "patch": {
-        "summary": "Update label basic info by label id",
-        "operationId": "LabelService_UpdateLabel",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/labelv2Label"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "labelId",
-            "description": "the label id of the label",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/LabelServiceUpdateLabelBody"
-            }
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels/{labelId}:getWithBindings": {
-      "get": {
-        "summary": "Get label with bindings",
-        "operationId": "LabelService_GetLabelWithBindings",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2GetLabelWithBindingsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "labelId",
-            "description": "the label id of the label",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels:batchCreate": {
-      "post": {
-        "summary": "Batch create labels",
-        "operationId": "LabelService_BatchCreateLabels",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2BatchCreateLabelsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v2BatchCreateLabelsRequest"
-            }
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels:bindLabel": {
-      "post": {
-        "summary": "Modify bind object by label id",
-        "operationId": "LabelService_BindLabel",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2BindLabelResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v2BindLabelRequest"
-            }
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels:bindResource": {
-      "post": {
-        "summary": "Modify bind object by resource id",
-        "operationId": "LabelService_BindResource",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2BindResourceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v2BindResourceRequest"
-            }
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels:listByResourceType": {
-      "get": {
-        "summary": "List labels by resource type",
-        "operationId": "LabelService_ListLabelsByResourceType",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2ListLabelsByResourceTypeResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "pageSize",
-            "description": "page size",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "description": "page token",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "skip",
-            "description": "skip",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "labelKey",
-            "description": "the label key which the label values belong to",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "keyword",
-            "description": "the keyword which label values similar to",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "resourceType",
-            "description": "the resource type of the label has bound with\n\n - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: resource type host\n - TIUP: resource type tiup\n - CLUSTER: resource type cluster",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED",
-              "HOST",
-              "TIUP",
-              "CLUSTER"
-            ],
-            "default": "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED"
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels:listKeys": {
-      "get": {
-        "summary": "List label keys",
-        "operationId": "LabelService_ListLabelKeys",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2ListLabelKeysResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "pageSize",
-            "description": "page size",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "description": "page token",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "skip",
-            "description": "skip",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "keyword",
-            "description": "the keyword which label key similar to",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "resourceType",
-            "description": "the resource type of the label has bound with\n\n - LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: resource type host\n - TIUP: resource type tiup\n - CLUSTER: resource type cluster",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED",
-              "HOST",
-              "TIUP",
-              "CLUSTER"
-            ],
-            "default": "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED"
-          }
-        ],
-        "tags": [
-          "LabelService"
-        ]
-      }
-    },
-    "/api/v2/labels:listWithBindings": {
-      "get": {
-        "summary": "List labels with bindings",
-        "operationId": "LabelService_ListLabelsWithBindings",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v2ListLabelsWithBindingsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "pageSize",
-            "description": "page size",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "description": "page token",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "skip",
-            "description": "skip",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "orderBy",
-            "description": "order_by",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "labelKeys",
-            "description": "the label which the label key in",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "name": "labelValueLike",
-            "description": "the label which the label value like",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LabelService"
         ]
       }
     },
@@ -4213,7 +3789,7 @@
     },
     "/api/v2/login": {
       "post": {
-        "summary": "login",
+        "summary": "Login allows a user to log in and start a session.",
         "operationId": "UserService_Login",
         "responses": {
           "200": {
@@ -4247,7 +3823,7 @@
     },
     "/api/v2/logout": {
       "post": {
-        "summary": "Logout",
+        "summary": "Logout allows a user to log out and end their session.",
         "operationId": "UserService_Logout",
         "responses": {
           "200": {
@@ -4334,6 +3910,29 @@
             "type": "string"
           }
         ],
+        "tags": [
+          "MetricsService"
+        ]
+      }
+    },
+    "/api/v2/overview/metrics/config": {
+      "get": {
+        "summary": "Get top metric config",
+        "operationId": "MetricsService_GetTopMetricConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2TopMetricConfig"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
         "tags": [
           "MetricsService"
         ]
@@ -4446,7 +4045,7 @@
     },
     "/api/v2/roles": {
       "get": {
-        "summary": "listRoles",
+        "summary": "ListRoles retrieves a list of roles.",
         "operationId": "RoleService_ListRoles",
         "responses": {
           "200": {
@@ -4494,14 +4093,14 @@
             "type": "string"
           },
           {
-            "name": "nameLike",
-            "description": "The name of the role",
+            "name": "roleNameLike",
+            "description": "role_name_like",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
-            "name": "name",
+            "name": "roleName",
             "description": "The name of the role",
             "in": "query",
             "required": false,
@@ -4513,7 +4112,7 @@
         ]
       },
       "post": {
-        "summary": "createRole",
+        "summary": "CreateRole creates a new role.",
         "operationId": "RoleService_CreateRole",
         "responses": {
           "200": {
@@ -4547,7 +4146,7 @@
     },
     "/api/v2/roles/{roleId}": {
       "delete": {
-        "summary": "deleteUser one user by user_id",
+        "summary": "DeleteRole deletes a role by role ID.",
         "operationId": "RoleService_DeleteRole",
         "responses": {
           "200": {
@@ -4576,6 +4175,582 @@
         ],
         "tags": [
           "RoleService"
+        ]
+      },
+      "patch": {
+        "summary": "UpdateRole updates a role by role ID.",
+        "operationId": "RoleService_UpdateRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2Role"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "description": "The id of the role",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RoleServiceUpdateRoleBody"
+            }
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      }
+    },
+    "/api/v2/tags": {
+      "get": {
+        "summary": "List tags",
+        "operationId": "TagService_ListTags",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListTagsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      },
+      "post": {
+        "summary": "Create tag",
+        "operationId": "TagService_CreateTag",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/tagv2Tag"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tag",
+            "description": "the tag with basic resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/tagv2Tag"
+            }
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      }
+    },
+    "/api/v2/tags/{tagId}": {
+      "get": {
+        "summary": "Get tag",
+        "operationId": "TagService_GetTag",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/tagv2Tag"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tagId",
+            "description": "the tag id of the tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete tag by tag id",
+        "operationId": "TagService_DeleteTag",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tagId",
+            "description": "the tag id of the tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      },
+      "patch": {
+        "summary": "Update tag basic info by tag id",
+        "operationId": "TagService_UpdateTag",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/tagv2Tag"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tagId",
+            "description": "the tag id of the tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TagServiceUpdateTagBody"
+            }
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      }
+    },
+    "/api/v2/tags/{tagId}:getWithBindings": {
+      "get": {
+        "summary": "Get tag with bindings",
+        "operationId": "TagService_GetTagWithBindings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2GetTagWithBindingsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tagId",
+            "description": "the tag id of the tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      }
+    },
+    "/api/v2/tags:batchCreate": {
+      "post": {
+        "summary": "Batch create tags",
+        "operationId": "TagService_BatchCreateTags",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BatchCreateTagsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BatchCreateTagsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      }
+    },
+    "/api/v2/tags:bindResource": {
+      "post": {
+        "summary": "Modify bind object by resource id",
+        "operationId": "TagService_BindResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BindResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BindResourceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      }
+    },
+    "/api/v2/tags:bindTag": {
+      "post": {
+        "summary": "Modify bind object by tag id",
+        "operationId": "TagService_BindTag",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2BindTagResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v2BindTagRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      }
+    },
+    "/api/v2/tags:listByResourceType": {
+      "get": {
+        "summary": "List tags by resource type",
+        "operationId": "TagService_ListTagsByResourceType",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListTagsByResourceTypeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "tagKey",
+            "description": "the tag key which the tag values belong to",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "keyword",
+            "description": "the keyword which tag values similar to",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceType",
+            "description": "the resource type of the tag has bound with\n\n - TAG_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: resource type host\n - TIUP: resource type tiup\n - CLUSTER: resource type cluster",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "TAG_BIND_RESOURCE_TYPE_UNSPECIFIED",
+              "HOST",
+              "TIUP",
+              "CLUSTER"
+            ],
+            "default": "TAG_BIND_RESOURCE_TYPE_UNSPECIFIED"
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      }
+    },
+    "/api/v2/tags:listKeys": {
+      "get": {
+        "summary": "List tag keys",
+        "operationId": "TagService_ListTagKeys",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListTagKeysResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "keyword",
+            "description": "the keyword which tag key similar to",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceType",
+            "description": "the resource type of the tag has bound with\n\n - TAG_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: resource type host\n - TIUP: resource type tiup\n - CLUSTER: resource type cluster",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "TAG_BIND_RESOURCE_TYPE_UNSPECIFIED",
+              "HOST",
+              "TIUP",
+              "CLUSTER"
+            ],
+            "default": "TAG_BIND_RESOURCE_TYPE_UNSPECIFIED"
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      }
+    },
+    "/api/v2/tags:listWithBindings": {
+      "get": {
+        "summary": "List tags with bindings",
+        "operationId": "TagService_ListTagsWithBindings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v2ListTagsWithBindingsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "page token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "description": "skip",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "orderBy",
+            "description": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tagKeys",
+            "description": "the tag which the tag key in",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "tagValueLike",
+            "description": "the tag which the tag value like",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TagService"
         ]
       }
     },
@@ -4636,8 +4811,8 @@
             "type": "string"
           },
           {
-            "name": "labelIds",
-            "description": "the Tiups label_ids of the labelIds",
+            "name": "tagIds",
+            "description": "the Tiups tag_ids of the tagIds",
             "in": "query",
             "required": false,
             "type": "array",
@@ -4648,7 +4823,7 @@
           },
           {
             "name": "hostIds",
-            "description": "the Tiups host_ids of the labelIds",
+            "description": "the Tiups host_ids of the tagIds",
             "in": "query",
             "required": false,
             "type": "array",
@@ -4830,7 +5005,7 @@
     },
     "/api/v2/users": {
       "get": {
-        "summary": "ListUsers",
+        "summary": "ListUsers retrieves a list of users.",
         "operationId": "UserService_ListUsers",
         "responses": {
           "200": {
@@ -4849,7 +5024,7 @@
         "parameters": [
           {
             "name": "pageSize",
-            "description": "Page size",
+            "description": "The number of users to retrieve per page.",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -4857,14 +5032,14 @@
           },
           {
             "name": "pageToken",
-            "description": "Page token",
+            "description": "Pagination token for retrieving the next page of users.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "skip",
-            "description": "Skip",
+            "description": "The number of users to skip for pagination purposes.",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -4872,28 +5047,28 @@
           },
           {
             "name": "orderBy",
-            "description": "order_by",
+            "description": "The sorting criteria for the user list.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "nameLike",
-            "description": "The name of the user",
+            "description": "Filter users by username using a \"like\" operation.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "emailLike",
-            "description": "The email of the user",
+            "description": "Filter users by email using a \"like\" operation.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "roleName",
-            "description": "The role name of the user",
+            "description": "Filter users by role name.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -4904,7 +5079,7 @@
         ]
       },
       "post": {
-        "summary": "createUser",
+        "summary": "CreateUser creates a new user.",
         "operationId": "UserService_CreateUser",
         "responses": {
           "200": {
@@ -4938,7 +5113,7 @@
     },
     "/api/v2/users/profile": {
       "get": {
-        "summary": "get one user profile",
+        "summary": "GetUserProfile retrieves the profile information of the authenticated user.",
         "operationId": "UserService_GetUserProfile",
         "responses": {
           "200": {
@@ -4961,7 +5136,7 @@
     },
     "/api/v2/users/{userId}": {
       "get": {
-        "summary": "get one user by user_id",
+        "summary": "GetUser retrieves a user by user ID.",
         "operationId": "UserService_GetUser",
         "responses": {
           "200": {
@@ -4991,7 +5166,7 @@
         ]
       },
       "delete": {
-        "summary": "delete one user by user_id",
+        "summary": "DeleteUser deletes a user by user ID.",
         "operationId": "UserService_DeleteUser",
         "responses": {
           "200": {
@@ -5011,7 +5186,7 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "The user_id of the user",
+            "description": "The id of the user",
             "in": "path",
             "required": true,
             "type": "string"
@@ -5022,7 +5197,7 @@
         ]
       },
       "patch": {
-        "summary": "update one user by user_id",
+        "summary": "UpdateUser updates a user's information by user ID.",
         "operationId": "UserService_UpdateUser",
         "responses": {
           "200": {
@@ -5041,19 +5216,17 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "The id of the user",
+            "description": "The unique user ID of the user.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "int64"
+            "type": "string"
           },
           {
-            "name": "user",
-            "description": "User resource",
+            "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v2User"
+              "$ref": "#/definitions/UserServiceUpdateUserBody"
             }
           }
         ],
@@ -5064,7 +5237,7 @@
     },
     "/api/v2/users/{userId}:resetPassword": {
       "patch": {
-        "summary": "resetPassword user password for admin user",
+        "summary": "ResetPassword allows an admin user to reset the password of another user.",
         "operationId": "UserService_ResetPassword",
         "responses": {
           "200": {
@@ -5087,8 +5260,7 @@
             "description": "The id of the user",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "int64"
+            "type": "string"
           },
           {
             "name": "body",
@@ -5106,7 +5278,7 @@
     },
     "/api/v2/users:changePassword": {
       "patch": {
-        "summary": "changePassword user password for login user",
+        "summary": "ChangePassword allows the authenticated user to change their password.",
         "operationId": "UserService_ChangePassword",
         "responses": {
           "200": {
@@ -5140,7 +5312,7 @@
     },
     "/api/v2/users:validateSession": {
       "get": {
-        "summary": "ValidateSession",
+        "summary": "ValidateSession verifies the validity of the current session.",
         "operationId": "UserService_ValidateSession",
         "responses": {
           "200": {
@@ -5186,6 +5358,32 @@
     }
   },
   "definitions": {
+    "ApiKeyServiceUpdateApiKeyBody": {
+      "type": "object",
+      "properties": {
+        "secretKey": {
+          "type": "string",
+          "title": "The secret_key of apikey"
+        },
+        "creator": {
+          "type": "string",
+          "title": "The creator of apikey"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "disable",
+            "enable"
+          ],
+          "title": "The apikey status"
+        },
+        "description": {
+          "type": "string",
+          "title": "The description of apikey"
+        }
+      },
+      "title": "UpdateApikeyRequest Request"
+    },
     "ClusterBRServiceCreateBackupTaskBody": {
       "type": "object",
       "properties": {
@@ -5284,10 +5482,6 @@
     "CredentialServiceUpdateCredentialBody": {
       "type": "object",
       "properties": {
-        "credentialName": {
-          "type": "string",
-          "title": "the credential name of the credential"
-        },
         "userName": {
           "type": "string",
           "title": "the user name of the credential"
@@ -5299,6 +5493,14 @@
         "validateType": {
           "$ref": "#/definitions/v2CredentialValidateType",
           "title": "the validate type of the credential"
+        },
+        "credentialName": {
+          "type": "string",
+          "title": "the credential name of the credential"
+        },
+        "description": {
+          "type": "string",
+          "title": "the description of the credential"
         },
         "hostCredential": {
           "$ref": "#/definitions/v2HostCredentialObject",
@@ -5478,23 +5680,6 @@
       "type": "object",
       "title": "ConfirmRequest"
     },
-    "LabelServiceUpdateLabelBody": {
-      "type": "object",
-      "properties": {
-        "labelKey": {
-          "type": "string",
-          "title": "the label key of the label"
-        },
-        "labelValue": {
-          "type": "string",
-          "title": "the label value of the label"
-        }
-      },
-      "title": "UpdateLabel Request",
-      "required": [
-        "labelValue"
-      ]
-    },
     "LocationServiceUpdateLocationsBody": {
       "type": "object",
       "properties": {
@@ -5504,6 +5689,49 @@
         }
       },
       "title": "UpdateLocation Request"
+    },
+    "RoleServiceUpdateRoleBody": {
+      "type": "object",
+      "properties": {
+        "roleName": {
+          "type": "string",
+          "title": "The name of the role"
+        },
+        "roleType": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The id of the role"
+        },
+        "detail": {
+          "type": "string",
+          "title": "The detail of the role"
+        },
+        "note": {
+          "type": "string",
+          "title": "The note of the role"
+        }
+      },
+      "title": "Update Role Request",
+      "required": [
+        "roleName"
+      ]
+    },
+    "TagServiceUpdateTagBody": {
+      "type": "object",
+      "properties": {
+        "tagKey": {
+          "type": "string",
+          "title": "the tag key of the tag"
+        },
+        "tagValue": {
+          "type": "string",
+          "title": "the tag value of the tag"
+        }
+      },
+      "title": "UpdateTag Request",
+      "required": [
+        "tagValue"
+      ]
     },
     "UserServiceResetPasswordBody": {
       "type": "object",
@@ -5517,6 +5745,37 @@
       "required": [
         "newPassword"
       ]
+    },
+    "UserServiceUpdateUserBody": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The email address of the user."
+        },
+        "note": {
+          "type": "string",
+          "description": "Additional notes about the user."
+        },
+        "userType": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The type of the user (e.g., admin, regular user)."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The user's phone number."
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2UserRole"
+          },
+          "description": "The roles assigned to the user."
+        }
+      },
+      "title": "UpdateUser Request"
     },
     "hostv2Report": {
       "type": "object",
@@ -5600,12 +5859,12 @@
           "type": "string",
           "title": "The locationId of the Host"
         },
-        "labelIds": {
+        "tagIds": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "title": "The labelIds of the Host"
+          "title": "The tagIds of the Host"
         },
         "comment": {
           "type": "string",
@@ -5613,27 +5872,6 @@
         }
       },
       "title": "UpdateHost"
-    },
-    "labelv2Label": {
-      "type": "object",
-      "properties": {
-        "labelId": {
-          "type": "string",
-          "title": "the label id of the label"
-        },
-        "labelKey": {
-          "type": "string",
-          "title": "the label key of the label"
-        },
-        "labelValue": {
-          "type": "string",
-          "title": "the label value of the label"
-        }
-      },
-      "title": "Label basic resource",
-      "required": [
-        "labelValue"
-      ]
     },
     "licensev2License": {
       "type": "object",
@@ -5762,6 +6000,27 @@
       },
       "type": "object"
     },
+    "tagv2Tag": {
+      "type": "object",
+      "properties": {
+        "tagId": {
+          "type": "string",
+          "title": "the tag id of the tag"
+        },
+        "tagKey": {
+          "type": "string",
+          "title": "the tag key of the tag"
+        },
+        "tagValue": {
+          "type": "string",
+          "title": "the tag value of the tag"
+        }
+      },
+      "title": "Tag basic resource",
+      "required": [
+        "tagValue"
+      ]
+    },
     "tiupv2CreateTiups": {
       "type": "object",
       "properties": {
@@ -5781,12 +6040,12 @@
           "type": "string",
           "title": "The locationId of the Host"
         },
-        "labelIds": {
+        "tagIds": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "title": "The labelIds of the Host"
+          "title": "The tagIds of the Host"
         }
       },
       "title": "CreateTiups"
@@ -5794,12 +6053,12 @@
     "tiupv2UpdateTiups": {
       "type": "object",
       "properties": {
-        "labelIds": {
+        "tagIds": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "title": "The labelIds of the Host"
+          "title": "The tagIds of the Host"
         },
         "description": {
           "type": "string",
@@ -6125,36 +6384,36 @@
       },
       "title": "BasicCluster represents a cluster basic info"
     },
-    "v2BatchCreateLabelsRequest": {
+    "v2BatchCreateTagsRequest": {
       "type": "object",
       "properties": {
-        "labels": {
+        "tags": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/labelv2Label"
+            "$ref": "#/definitions/tagv2Tag"
           },
-          "title": "the labels with basic resource"
+          "title": "the tags with basic resource"
         }
       },
-      "title": "Batch Create Labels Request",
+      "title": "Batch Create Tags Request",
       "required": [
-        "labels"
+        "tags"
       ]
     },
-    "v2BatchCreateLabelsResponse": {
+    "v2BatchCreateTagsResponse": {
       "type": "object",
       "properties": {
-        "labels": {
+        "tags": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/labelv2Label"
+            "$ref": "#/definitions/tagv2Tag"
           },
-          "title": "the labels"
+          "title": "the tags"
         }
       },
-      "title": "Create Labels Response"
+      "title": "Create Tags Response"
     },
     "v2BatchDeleteRequest": {
       "type": "object",
@@ -6172,42 +6431,11 @@
         "hostId"
       ]
     },
-    "v2BindLabelRequest": {
-      "type": "object",
-      "properties": {
-        "labelId": {
-          "type": "string",
-          "title": "the label id of the label"
-        },
-        "bindObjects": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v2BindObject"
-          },
-          "title": "the bind objects to be bound"
-        }
-      },
-      "title": "BindLabel Request",
-      "required": [
-        "labelId"
-      ]
-    },
-    "v2BindLabelResponse": {
-      "type": "object",
-      "properties": {
-        "label": {
-          "$ref": "#/definitions/v2LabelWithBindObject",
-          "title": "the label resource with bound objects"
-        }
-      },
-      "title": "BindLabel Response"
-    },
     "v2BindObject": {
       "type": "object",
       "properties": {
         "resourceType": {
-          "$ref": "#/definitions/v2LabelBindResourceType",
+          "$ref": "#/definitions/v2TagBindResourceType",
           "title": "the resource type of the bind object"
         },
         "resources": {
@@ -6229,19 +6457,19 @@
       "type": "object",
       "properties": {
         "resourceType": {
-          "$ref": "#/definitions/v2LabelBindResourceType",
+          "$ref": "#/definitions/v2TagBindResourceType",
           "title": "the resource type of the bind object"
         },
         "resourceId": {
           "type": "string",
           "title": "the resource id of the resource type"
         },
-        "labelIds": {
+        "tagIds": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "title": "the label ids to be bound"
+          "title": "the tag ids to be bound"
         }
       },
       "title": "BindResource Request",
@@ -6253,16 +6481,47 @@
     "v2BindResourceResponse": {
       "type": "object",
       "properties": {
-        "labels": {
+        "tags": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/labelv2Label"
+            "$ref": "#/definitions/tagv2Tag"
           },
-          "title": "the labels bound with the bind object"
+          "title": "the tags bound with the bind object"
         }
       },
       "title": "BindResource Response"
+    },
+    "v2BindTagRequest": {
+      "type": "object",
+      "properties": {
+        "tagId": {
+          "type": "string",
+          "title": "the tag id of the tag"
+        },
+        "bindObjects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2BindObject"
+          },
+          "title": "the bind objects to be bound"
+        }
+      },
+      "title": "BindTag Request",
+      "required": [
+        "tagId"
+      ]
+    },
+    "v2BindTagResponse": {
+      "type": "object",
+      "properties": {
+        "tag": {
+          "$ref": "#/definitions/v2TagWithBindObject",
+          "title": "the tag resource with bound objects"
+        }
+      },
+      "title": "BindTag Response"
     },
     "v2CategoryMetricDetail": {
       "type": "object",
@@ -6308,7 +6567,6 @@
       "properties": {
         "userId": {
           "type": "string",
-          "format": "int64",
           "title": "The id of the user"
         },
         "oldPassword": {
@@ -6818,11 +7076,11 @@
       "properties": {
         "clusterId": {
           "type": "string",
-          "title": "the label id of the label"
+          "title": "the tag id of the tag"
         },
         "clusterName": {
           "type": "string",
-          "title": "the label key of the label"
+          "title": "the tag key of the tag"
         }
       },
       "title": "Clusters"
@@ -6876,12 +7134,12 @@
           "type": "string",
           "title": "The locationId of the Host"
         },
-        "labelIds": {
+        "tagIds": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "title": "The labelIds of the Host"
+          "title": "The tagIds of the Host"
         },
         "comment": {
           "type": "string",
@@ -6897,10 +7155,6 @@
           "type": "string",
           "title": "the credential id of the credential"
         },
-        "credentialName": {
-          "type": "string",
-          "title": "the credential name of the credential"
-        },
         "userName": {
           "type": "string",
           "title": "the user name of the credential"
@@ -6912,6 +7166,14 @@
         "validateType": {
           "$ref": "#/definitions/v2CredentialValidateType",
           "title": "the validate type of the credential"
+        },
+        "credentialName": {
+          "type": "string",
+          "title": "the credential name of the credential"
+        },
+        "description": {
+          "type": "string",
+          "title": "the description of the credential"
         },
         "hostCredential": {
           "$ref": "#/definitions/v2HostCredentialObject",
@@ -7028,6 +7290,17 @@
         }
       },
       "title": "DownloadHostTemplateResponse"
+    },
+    "v2DownloadListHostResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "title": "data"
+        }
+      },
+      "title": "DownloadListHostResponse"
     },
     "v2DownloadRSAKeyRequest": {
       "type": "object",
@@ -7152,15 +7425,15 @@
       },
       "title": "GenerateRSAKey response"
     },
-    "v2GetLabelWithBindingsResponse": {
+    "v2GetTagWithBindingsResponse": {
       "type": "object",
       "properties": {
-        "label": {
-          "$ref": "#/definitions/v2LabelWithBindObject",
-          "title": "label info"
+        "tag": {
+          "$ref": "#/definitions/v2TagWithBindObject",
+          "title": "tag info"
         }
       },
-      "title": "GetLabelWithBindings Response"
+      "title": "GetTagWithBindings Response"
     },
     "v2GroupEnumData": {
       "type": "string",
@@ -7365,13 +7638,13 @@
           "type": "string",
           "title": "The HostComment_Id of the Host"
         },
-        "labels": {
+        "tags": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v2Labels"
+            "$ref": "#/definitions/v2Tags"
           },
-          "title": "The Label of the Host"
+          "title": "The Tag of the Host"
         },
         "createdTime": {
           "type": "string",
@@ -7579,9 +7852,9 @@
           ],
           "title": "create task state (e.g., \"init\", \"existed\")"
         },
-        "labels": {
+        "tags": {
           "type": "string",
-          "title": "labels"
+          "title": "tags"
         },
         "locationId": {
           "type": "string",
@@ -7595,13 +7868,13 @@
           "type": "string",
           "title": "host_name"
         },
-        "labelsList": {
+        "tagsList": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v2Labels"
+            "$ref": "#/definitions/v2Tags"
           },
-          "title": "labels"
+          "title": "tags"
         },
         "locationMappings": {
           "type": "array",
@@ -7689,57 +7962,6 @@
       "required": [
         "task",
         "taskId"
-      ]
-    },
-    "v2LabelBindResourceType": {
-      "type": "string",
-      "enum": [
-        "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED",
-        "HOST",
-        "TIUP",
-        "CLUSTER"
-      ],
-      "default": "LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED",
-      "description": "- LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: resource type host\n - TIUP: resource type tiup\n - CLUSTER: resource type cluster",
-      "title": "define label bind resource type"
-    },
-    "v2LabelWithBindObject": {
-      "type": "object",
-      "properties": {
-        "labelInfo": {
-          "$ref": "#/definitions/labelv2Label",
-          "title": "the label basic info of the label"
-        },
-        "bindObjects": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v2BindObject"
-          },
-          "title": "the bound objects of the label"
-        }
-      },
-      "title": "Label resource with bound object"
-    },
-    "v2Labels": {
-      "type": "object",
-      "properties": {
-        "labelId": {
-          "type": "string",
-          "title": "the label id of the label"
-        },
-        "labelKey": {
-          "type": "string",
-          "title": "the label key of the label"
-        },
-        "labelValue": {
-          "type": "string",
-          "title": "the label value of the label"
-        }
-      },
-      "title": "Labels",
-      "required": [
-        "labelValue"
       ]
     },
     "v2LicenseStatusEnumData": {
@@ -7931,97 +8153,6 @@
         "totalSize"
       ]
     },
-    "v2ListLabelKeysResponse": {
-      "type": "object",
-      "properties": {
-        "labelKeys": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "list of label keys"
-        },
-        "nextPageToken": {
-          "type": "string",
-          "title": "next page token"
-        },
-        "totalSize": {
-          "type": "integer",
-          "format": "int32",
-          "title": "total size"
-        }
-      },
-      "title": "ListLabelKeys Response"
-    },
-    "v2ListLabelsByResourceTypeResponse": {
-      "type": "object",
-      "properties": {
-        "labels": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/labelv2Label"
-          },
-          "title": "list of labels"
-        },
-        "nextPageToken": {
-          "type": "string",
-          "title": "next page token"
-        },
-        "totalSize": {
-          "type": "integer",
-          "format": "int32",
-          "title": "total size"
-        }
-      },
-      "title": "ListLabelsByResourceType Response"
-    },
-    "v2ListLabelsResponse": {
-      "type": "object",
-      "properties": {
-        "labels": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/labelv2Label"
-          },
-          "title": "list of labels"
-        },
-        "nextPageToken": {
-          "type": "string",
-          "title": "next page token"
-        },
-        "totalSize": {
-          "type": "integer",
-          "format": "int32",
-          "title": "total size"
-        }
-      },
-      "title": "ListLabels Response"
-    },
-    "v2ListLabelsWithBindingsResponse": {
-      "type": "object",
-      "properties": {
-        "labels": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v2LabelWithBindObject"
-          },
-          "title": "list of labels"
-        },
-        "nextPageToken": {
-          "type": "string",
-          "title": "next page token"
-        },
-        "totalSize": {
-          "type": "integer",
-          "format": "int32",
-          "title": "total size"
-        }
-      },
-      "title": "ListLabelsWithBindings Response"
-    },
     "v2ListLocationsResponse": {
       "type": "object",
       "properties": {
@@ -8068,6 +8199,97 @@
       },
       "title": "ListRolesResponse"
     },
+    "v2ListTagKeysResponse": {
+      "type": "object",
+      "properties": {
+        "tagKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of tag keys"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListTagKeys Response"
+    },
+    "v2ListTagsByResourceTypeResponse": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/tagv2Tag"
+          },
+          "title": "list of tags"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListTagsByResourceType Response"
+    },
+    "v2ListTagsResponse": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/tagv2Tag"
+          },
+          "title": "list of tags"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListTags Response"
+    },
+    "v2ListTagsWithBindingsResponse": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2TagWithBindObject"
+          },
+          "title": "list of tags"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "next page token"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "total size"
+        }
+      },
+      "title": "ListTagsWithBindings Response"
+    },
     "v2ListTiupsResponse": {
       "type": "object",
       "properties": {
@@ -8100,19 +8322,19 @@
             "type": "object",
             "$ref": "#/definitions/v2User"
           },
-          "title": "List of users"
+          "description": "The list of users retrieved."
         },
         "nextPageToken": {
           "type": "string",
-          "title": "Next page token"
+          "description": "Token for the next page of results."
         },
         "totalSize": {
           "type": "integer",
           "format": "int32",
-          "title": "Total size"
+          "description": "The total number of users that match the filter criteria."
         }
       },
-      "title": "ListUsersResponse"
+      "description": "ListUsersResponse defines the response containing a list of users and pagination information."
     },
     "v2LocationMappings": {
       "type": "object",
@@ -8527,8 +8749,8 @@
           "title": "The name of the role"
         },
         "roleType": {
-          "type": "string",
-          "format": "int64",
+          "type": "number",
+          "format": "double",
           "title": "The id of the role"
         },
         "roleTypeDesc": {
@@ -8999,6 +9221,11 @@
           "type": "number",
           "format": "double",
           "title": "Result rows"
+        },
+        "ru": {
+          "type": "number",
+          "format": "double",
+          "title": "Resource unit"
         }
       },
       "title": "Model message representing a slow query log"
@@ -9190,16 +9417,63 @@
       "description": "- all: All\n - running: Running\n - finished: Finished\n - abnormal: Abnormal\n - stopped: Stopped",
       "title": "Data of StatusEnum"
     },
+    "v2TagBindResourceType": {
+      "type": "string",
+      "enum": [
+        "TAG_BIND_RESOURCE_TYPE_UNSPECIFIED",
+        "HOST",
+        "TIUP",
+        "CLUSTER"
+      ],
+      "default": "TAG_BIND_RESOURCE_TYPE_UNSPECIFIED",
+      "description": "- TAG_BIND_RESOURCE_TYPE_UNSPECIFIED: resource type unspecified\n - HOST: resource type host\n - TIUP: resource type tiup\n - CLUSTER: resource type cluster",
+      "title": "define tag bind resource type"
+    },
+    "v2TagWithBindObject": {
+      "type": "object",
+      "properties": {
+        "tagInfo": {
+          "$ref": "#/definitions/tagv2Tag",
+          "title": "the tag basic info of the tag"
+        },
+        "bindObjects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v2BindObject"
+          },
+          "title": "the bound objects of the tag"
+        }
+      },
+      "title": "Tag resource with bound object"
+    },
+    "v2Tags": {
+      "type": "object",
+      "properties": {
+        "tagId": {
+          "type": "string",
+          "title": "the tag id of the tag"
+        },
+        "tagKey": {
+          "type": "string",
+          "title": "the tag key of the tag"
+        },
+        "tagValue": {
+          "type": "string",
+          "title": "the tag value of the tag"
+        }
+      },
+      "title": "Tags",
+      "required": [
+        "tagValue"
+      ]
+    },
     "v2TiDBCredentialObject": {
       "type": "object",
       "properties": {
         "password": {
           "type": "string",
           "title": "the password of the user"
-        },
-        "description": {
-          "type": "string",
-          "title": "the description of the credential"
         },
         "clusterId": {
           "type": "string",
@@ -9341,25 +9615,25 @@
         "hostId"
       ]
     },
-    "v2TiupLabels": {
+    "v2TiupTags": {
       "type": "object",
       "properties": {
-        "labelId": {
+        "tagId": {
           "type": "string",
-          "title": "the label id of the label"
+          "title": "the tag id of the tag"
         },
-        "labelKey": {
+        "tagKey": {
           "type": "string",
-          "title": "the label key of the label"
+          "title": "the tag key of the tag"
         },
-        "labelValue": {
+        "tagValue": {
           "type": "string",
-          "title": "the label value of the label"
+          "title": "the tag value of the tag"
         }
       },
-      "title": "TiupLabels",
+      "title": "TiupTags",
       "required": [
-        "labelValue"
+        "tagValue"
       ]
     },
     "v2Tiups": {
@@ -9385,13 +9659,13 @@
           "type": "string",
           "title": "credential_id"
         },
-        "labels": {
+        "tags": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v2TiupLabels"
+            "$ref": "#/definitions/v2TiupTags"
           },
-          "title": "The labels of the Host"
+          "title": "The tags of the Host"
         },
         "description": {
           "type": "string",
@@ -9465,6 +9739,17 @@
         }
       },
       "title": "UpdateTiupsRequest Request"
+    },
+    "v2TopMetricConfig": {
+      "type": "object",
+      "properties": {
+        "cacheFlushIntervalInMinutes": {
+          "type": "integer",
+          "format": "int32",
+          "title": "overview cache flush interval in minute, 0 means no cache"
+        }
+      },
+      "title": "TopMetricConfig represents the response for querying top metric config"
     },
     "v2TopMetricData": {
       "type": "object",
@@ -9994,6 +10279,16 @@
           "type": "number",
           "format": "double",
           "title": "MaxTimeQueuedBNyRc"
+        },
+        "avg_tidb_cpu_time": {
+          "type": "number",
+          "format": "double",
+          "title": "TiDB CPU time"
+        },
+        "avg_tikv_cpu_time": {
+          "type": "number",
+          "format": "double",
+          "title": "TiKV CPU time"
         }
       },
       "title": "Top SQL detail"
@@ -10049,43 +10344,38 @@
     "v2User": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "format": "int64",
-          "title": "The id of the user"
-        },
         "userId": {
           "type": "string",
-          "title": "The user_id of the user"
+          "description": "The unique user ID of the user."
         },
         "name": {
           "type": "string",
-          "title": "The name of the user"
+          "description": "The full name of the user."
         },
         "email": {
           "type": "string",
-          "title": "The email of the user"
+          "description": "The email address of the user."
         },
         "note": {
           "type": "string",
-          "title": "The note of the user"
+          "description": "Additional notes about the user."
         },
         "password": {
           "type": "string",
-          "title": "The password of the user"
+          "description": "The user's password (optional)."
         },
         "userType": {
-          "type": "string",
-          "format": "int64",
-          "title": "The type of the user"
+          "type": "integer",
+          "format": "int32",
+          "description": "The type of the user (e.g., admin, regular user)."
         },
         "userTypeDesc": {
           "type": "string",
-          "title": "The description of the user type"
+          "description": "A description of the user's type."
         },
         "phone": {
           "type": "string",
-          "title": "The phone of the user"
+          "description": "The user's phone number."
         },
         "roles": {
           "type": "array",
@@ -10108,24 +10398,24 @@
               "SYSTEM_READER"
             ]
           },
+          "description": "The roles assigned to the user.",
           "title": "The role name"
         },
         "createTime": {
           "type": "string",
           "format": "date-time",
-          "title": "The create time of the user",
+          "description": "The timestamp when the user was created.",
           "readOnly": true
         },
         "updateTime": {
           "type": "string",
           "format": "date-time",
-          "title": "The update time of the user",
+          "description": "The timestamp when the user was last updated.",
           "readOnly": true
         }
       },
-      "title": "User resource",
+      "description": "User represents a user resource containing detailed information about a user.",
       "required": [
-        "id",
         "userId",
         "name"
       ]
@@ -10133,32 +10423,32 @@
     "v2UserProfile": {
       "type": "object",
       "properties": {
-        "id": {
+        "userId": {
           "type": "string",
-          "format": "int64",
-          "title": "The id of the user"
+          "description": "The unique identifier of the user."
         },
         "name": {
           "type": "string",
-          "title": "The name of the user"
+          "description": "The  name of the user."
         },
         "email": {
           "type": "string",
-          "title": "The email of the user"
+          "description": "The email address of the user."
         },
         "note": {
           "type": "string",
-          "title": "The note of the user"
+          "description": "The note of the user."
         },
         "phone": {
           "type": "string",
-          "title": "The phone of the user"
+          "description": "The phone of the user."
         }
       },
-      "title": "GetUserProfileResponse",
+      "description": "UserProfile represents the profile information of the authenticated user.",
       "required": [
-        "id",
-        "name"
+        "userId",
+        "name",
+        "email"
       ]
     },
     "v2UserRole": {

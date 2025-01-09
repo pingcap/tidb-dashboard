@@ -35,8 +35,9 @@ type NonReadonly<T> = [T] extends [UnionToIntersection<T>] ? {
 
 import { ApiKeyServiceListApiKeysParams,
 V2CreateApiKeyRequest,
-V2ApiKey,
+ApiKeyServiceUpdateApiKeyBody,
 GlobalBRServiceListBackupPoliciesParams,
+V2BackupPolicyBody,
 V2BackupPolicyBody,
 GlobalBRServiceUpdateBackupPolicyBody,
 GlobalBRServiceGetBRSummaryParams,
@@ -72,15 +73,7 @@ HostServiceHostConfirmBody,
 V2HostServiceUpdateHostBody,
 MetricsServiceGetHostMetricDataParams,
 V2BatchDeleteRequest,
-LabelServiceListLabelsParams,
-Labelv2Label,
-LabelServiceUpdateLabelBody,
-V2BatchCreateLabelsRequest,
-V2BindLabelRequest,
-V2BindResourceRequest,
-LabelServiceListLabelsByResourceTypeParams,
-LabelServiceListLabelKeysParams,
-LabelServiceListLabelsWithBindingsParams,
+HostServiceDownloadListHostsParams,
 LicenseServiceActivateLicenseBody,
 LocationServiceListLocationsParams,
 V2Locations,
@@ -91,16 +84,32 @@ MetricsServiceGetTopMetricDataParams,
 MetricsServiceGetOverviewStatusParams,
 RoleServiceListRolesParams,
 V2Role,
+RoleServiceUpdateRoleBody,
+TagServiceListTagsParams,
+Tagv2Tag,
+TagServiceUpdateTagBody,
+V2BatchCreateTagsRequest,
+V2BindResourceRequest,
+V2BindTagRequest,
+TagServiceListTagsByResourceTypeParams,
+TagServiceListTagKeysParams,
+TagServiceListTagsWithBindingsParams,
 TiupsServiceListTiupsParams,
 Tiupv2CreateTiups,
 V2TiupsServiceUpdateTiupsBody,
 UserServiceListUsersParams,
 V2User,
+UserServiceUpdateUserBody,
 UserServiceResetPasswordBody,
 V2ChangePasswordRequest } from './index.schemas';
 
 export type ApiKeyServiceListApiKeysContext<E extends Env = any> = Context<E, '/api/v2/apiKeys', { in: { query: ApiKeyServiceListApiKeysParams, }, out: { query: ApiKeyServiceListApiKeysParams, } }>
 export type ApiKeyServiceCreateApiKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys', { in: { json: V2CreateApiKeyRequest, }, out: { json: V2CreateApiKeyRequest, } }>
+export type ApiKeyServiceGetApiKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys/:accessKey', { in: { param: {
+ accessKey: string,
+ }, }, out: { param: {
+ accessKey: string,
+ }, } }>
 export type ApiKeyServiceDeleteApiKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys/:accessKey', { in: { param: {
  accessKey: string,
  }, }, out: { param: {
@@ -108,9 +117,9 @@ export type ApiKeyServiceDeleteApiKeyContext<E extends Env = any> = Context<E, '
  }, } }>
 export type ApiKeyServiceUpdateApiKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys/:accessKey', { in: { param: {
  accessKey: string,
- },json: NonReadonly<V2ApiKey>, }, out: { param: {
+ },json: ApiKeyServiceUpdateApiKeyBody, }, out: { param: {
  accessKey: string,
- },json: NonReadonly<V2ApiKey>, } }>
+ },json: ApiKeyServiceUpdateApiKeyBody, } }>
 export type ApiKeyServiceResetSecretKeyContext<E extends Env = any> = Context<E, '/api/v2/apiKeys/:accessKey:resetSecretKey', { in: { param: {
  accessKey: string,
  }, }, out: { param: {
@@ -415,35 +424,8 @@ export type HostServiceCheckContext<E extends Env = any> = Context<E, '/api/v2/h
  hostId: string,
  }, } }>
 export type HostServiceBatchDeleteContext<E extends Env = any> = Context<E, '/api/v2/hosts:batchDelete', { in: { json: V2BatchDeleteRequest, }, out: { json: V2BatchDeleteRequest, } }>
-export type HostServiceDownloadHostTemplateContext<E extends Env = any> = Context<E, '/api/v2/hosts:hostTemplate'>
-export type LabelServiceListLabelsContext<E extends Env = any> = Context<E, '/api/v2/labels', { in: { query: LabelServiceListLabelsParams, }, out: { query: LabelServiceListLabelsParams, } }>
-export type LabelServiceCreateLabelContext<E extends Env = any> = Context<E, '/api/v2/labels', { in: { json: Labelv2Label, }, out: { json: Labelv2Label, } }>
-export type LabelServiceGetLabelContext<E extends Env = any> = Context<E, '/api/v2/labels/:labelId', { in: { param: {
- labelId: string,
- }, }, out: { param: {
- labelId: string,
- }, } }>
-export type LabelServiceDeleteLabelContext<E extends Env = any> = Context<E, '/api/v2/labels/:labelId', { in: { param: {
- labelId: string,
- }, }, out: { param: {
- labelId: string,
- }, } }>
-export type LabelServiceUpdateLabelContext<E extends Env = any> = Context<E, '/api/v2/labels/:labelId', { in: { param: {
- labelId: string,
- },json: LabelServiceUpdateLabelBody, }, out: { param: {
- labelId: string,
- },json: LabelServiceUpdateLabelBody, } }>
-export type LabelServiceGetLabelWithBindingsContext<E extends Env = any> = Context<E, '/api/v2/labels/:labelId:getWithBindings', { in: { param: {
- labelId: string,
- }, }, out: { param: {
- labelId: string,
- }, } }>
-export type LabelServiceBatchCreateLabelsContext<E extends Env = any> = Context<E, '/api/v2/labels:batchCreate', { in: { json: V2BatchCreateLabelsRequest, }, out: { json: V2BatchCreateLabelsRequest, } }>
-export type LabelServiceBindLabelContext<E extends Env = any> = Context<E, '/api/v2/labels:bindLabel', { in: { json: V2BindLabelRequest, }, out: { json: V2BindLabelRequest, } }>
-export type LabelServiceBindResourceContext<E extends Env = any> = Context<E, '/api/v2/labels:bindResource', { in: { json: V2BindResourceRequest, }, out: { json: V2BindResourceRequest, } }>
-export type LabelServiceListLabelsByResourceTypeContext<E extends Env = any> = Context<E, '/api/v2/labels:listByResourceType', { in: { query: LabelServiceListLabelsByResourceTypeParams, }, out: { query: LabelServiceListLabelsByResourceTypeParams, } }>
-export type LabelServiceListLabelKeysContext<E extends Env = any> = Context<E, '/api/v2/labels:listKeys', { in: { query: LabelServiceListLabelKeysParams, }, out: { query: LabelServiceListLabelKeysParams, } }>
-export type LabelServiceListLabelsWithBindingsContext<E extends Env = any> = Context<E, '/api/v2/labels:listWithBindings', { in: { query: LabelServiceListLabelsWithBindingsParams, }, out: { query: LabelServiceListLabelsWithBindingsParams, } }>
+export type HostServiceDownloadListHostsContext<E extends Env = any> = Context<E, '/api/v2/hosts:download', { in: { query: HostServiceDownloadListHostsParams, }, out: { query: HostServiceDownloadListHostsParams, } }>
+export type HostServiceDownloadHostTemplateContext<E extends Env = any> = Context<E, '/api/v2/hosts:downloadHostTemplate'>
 export type LicenseServiceGetLicenseContext<E extends Env = any> = Context<E, '/api/v2/license'>
 export type LicenseServiceGetDeviceCodeContext<E extends Env = any> = Context<E, '/api/v2/license/devicecode'>
 export type LicenseServiceActivateLicenseContext<E extends Env = any> = Context<E, '/api/v2/license:activate', { in: { json: LicenseServiceActivateLicenseBody, }, out: { json: LicenseServiceActivateLicenseBody, } }>
@@ -468,6 +450,7 @@ export type LocationServiceUpdateLocationsContext<E extends Env = any> = Context
 export type UserServiceLoginContext<E extends Env = any> = Context<E, '/api/v2/login', { in: { json: V2LoginRequest, }, out: { json: V2LoginRequest, } }>
 export type UserServiceLogoutContext<E extends Env = any> = Context<E, '/api/v2/logout'>
 export type MetricsServiceGetMetricsContext<E extends Env = any> = Context<E, '/api/v2/metrics', { in: { query: MetricsServiceGetMetricsParams, }, out: { query: MetricsServiceGetMetricsParams, } }>
+export type MetricsServiceGetTopMetricConfigContext<E extends Env = any> = Context<E, '/api/v2/overview/metrics/config'>
 export type MetricsServiceGetTopMetricDataContext<E extends Env = any> = Context<E, '/api/v2/overview/metrics/:name/data', { in: { param: {
  name: string,
  },query: MetricsServiceGetTopMetricDataParams, }, out: { param: {
@@ -481,6 +464,39 @@ export type RoleServiceDeleteRoleContext<E extends Env = any> = Context<E, '/api
  }, }, out: { param: {
  roleId: number,
  }, } }>
+export type RoleServiceUpdateRoleContext<E extends Env = any> = Context<E, '/api/v2/roles/:roleId', { in: { param: {
+ roleId: number,
+ },json: RoleServiceUpdateRoleBody, }, out: { param: {
+ roleId: number,
+ },json: RoleServiceUpdateRoleBody, } }>
+export type TagServiceListTagsContext<E extends Env = any> = Context<E, '/api/v2/tags', { in: { query: TagServiceListTagsParams, }, out: { query: TagServiceListTagsParams, } }>
+export type TagServiceCreateTagContext<E extends Env = any> = Context<E, '/api/v2/tags', { in: { json: Tagv2Tag, }, out: { json: Tagv2Tag, } }>
+export type TagServiceGetTagContext<E extends Env = any> = Context<E, '/api/v2/tags/:tagId', { in: { param: {
+ tagId: string,
+ }, }, out: { param: {
+ tagId: string,
+ }, } }>
+export type TagServiceDeleteTagContext<E extends Env = any> = Context<E, '/api/v2/tags/:tagId', { in: { param: {
+ tagId: string,
+ }, }, out: { param: {
+ tagId: string,
+ }, } }>
+export type TagServiceUpdateTagContext<E extends Env = any> = Context<E, '/api/v2/tags/:tagId', { in: { param: {
+ tagId: string,
+ },json: TagServiceUpdateTagBody, }, out: { param: {
+ tagId: string,
+ },json: TagServiceUpdateTagBody, } }>
+export type TagServiceGetTagWithBindingsContext<E extends Env = any> = Context<E, '/api/v2/tags/:tagId:getWithBindings', { in: { param: {
+ tagId: string,
+ }, }, out: { param: {
+ tagId: string,
+ }, } }>
+export type TagServiceBatchCreateTagsContext<E extends Env = any> = Context<E, '/api/v2/tags:batchCreate', { in: { json: V2BatchCreateTagsRequest, }, out: { json: V2BatchCreateTagsRequest, } }>
+export type TagServiceBindResourceContext<E extends Env = any> = Context<E, '/api/v2/tags:bindResource', { in: { json: V2BindResourceRequest, }, out: { json: V2BindResourceRequest, } }>
+export type TagServiceBindTagContext<E extends Env = any> = Context<E, '/api/v2/tags:bindTag', { in: { json: V2BindTagRequest, }, out: { json: V2BindTagRequest, } }>
+export type TagServiceListTagsByResourceTypeContext<E extends Env = any> = Context<E, '/api/v2/tags:listByResourceType', { in: { query: TagServiceListTagsByResourceTypeParams, }, out: { query: TagServiceListTagsByResourceTypeParams, } }>
+export type TagServiceListTagKeysContext<E extends Env = any> = Context<E, '/api/v2/tags:listKeys', { in: { query: TagServiceListTagKeysParams, }, out: { query: TagServiceListTagKeysParams, } }>
+export type TagServiceListTagsWithBindingsContext<E extends Env = any> = Context<E, '/api/v2/tags:listWithBindings', { in: { query: TagServiceListTagsWithBindingsParams, }, out: { query: TagServiceListTagsWithBindingsParams, } }>
 export type TiupsServiceListTiupsContext<E extends Env = any> = Context<E, '/api/v2/tiups', { in: { query: TiupsServiceListTiupsParams, }, out: { query: TiupsServiceListTiupsParams, } }>
 export type TiupsServiceCreateTiupsContext<E extends Env = any> = Context<E, '/api/v2/tiups', { in: { json: Tiupv2CreateTiups, }, out: { json: Tiupv2CreateTiups, } }>
 export type TiupsServiceGetTiupsContext<E extends Env = any> = Context<E, '/api/v2/tiups/:tiupId', { in: { param: {
@@ -518,9 +534,9 @@ export type UserServiceDeleteUserContext<E extends Env = any> = Context<E, '/api
  }, } }>
 export type UserServiceUpdateUserContext<E extends Env = any> = Context<E, '/api/v2/users/:userId', { in: { param: {
  userId: string,
- },json: NonReadonly<V2User>, }, out: { param: {
+ },json: UserServiceUpdateUserBody, }, out: { param: {
  userId: string,
- },json: NonReadonly<V2User>, } }>
+ },json: UserServiceUpdateUserBody, } }>
 export type UserServiceResetPasswordContext<E extends Env = any> = Context<E, '/api/v2/users/:userId:resetPassword', { in: { param: {
  userId: string,
  },json: UserServiceResetPasswordBody, }, out: { param: {

@@ -46,6 +46,21 @@ export const apiKeyServiceCreateApiKeyResponse = zod.object({
 })
 
 
+export const apiKeyServiceGetApiKeyParams = zod.object({
+  "accessKey": zod.string()
+})
+
+export const apiKeyServiceGetApiKeyResponse = zod.object({
+  "accessKey": zod.string(),
+  "secretKey": zod.string().optional(),
+  "creator": zod.string().optional(),
+  "status": zod.enum(['disable', 'enable']).optional(),
+  "description": zod.string().optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
+})
+
+
 export const apiKeyServiceDeleteApiKeyParams = zod.object({
   "accessKey": zod.string()
 })
@@ -60,7 +75,6 @@ export const apiKeyServiceUpdateApiKeyParams = zod.object({
 })
 
 export const apiKeyServiceUpdateApiKeyBody = zod.object({
-  "accessKey": zod.string(),
   "secretKey": zod.string().optional(),
   "creator": zod.string().optional(),
   "status": zod.enum(['disable', 'enable']).optional(),
@@ -795,7 +809,8 @@ export const diagnosisServiceGetSlowQueryListResponse = zod.object({
   "resource_group": zod.string().optional(),
   "request_unit_read": zod.number().optional(),
   "request_unit_write": zod.number().optional(),
-  "result_rows": zod.number().optional()
+  "result_rows": zod.number().optional(),
+  "ru": zod.number().optional()
 })).optional(),
   "nextPageToken": zod.string().optional(),
   "totalSize": zod.number().optional()
@@ -949,7 +964,8 @@ export const diagnosisServiceGetSlowQueryDetailResponse = zod.object({
   "resource_group": zod.string().optional(),
   "request_unit_read": zod.number().optional(),
   "request_unit_write": zod.number().optional(),
-  "result_rows": zod.number().optional()
+  "result_rows": zod.number().optional(),
+  "ru": zod.number().optional()
 })
 
 
@@ -1113,7 +1129,9 @@ export const diagnosisServiceGetSqlPlanListResponse = zod.object({
   "max_ru": zod.number().optional(),
   "sum_ru": zod.number().optional(),
   "avg_time_queued_by_rc": zod.number().optional(),
-  "max_time_queued_by_rc": zod.number().optional()
+  "max_time_queued_by_rc": zod.number().optional(),
+  "avg_tidb_cpu_time": zod.number().optional(),
+  "avg_tikv_cpu_time": zod.number().optional()
 })).optional()
 })
 
@@ -1279,7 +1297,9 @@ export const diagnosisServiceGetTopSqlListResponse = zod.object({
   "max_ru": zod.number().optional(),
   "sum_ru": zod.number().optional(),
   "avg_time_queued_by_rc": zod.number().optional(),
-  "max_time_queued_by_rc": zod.number().optional()
+  "max_time_queued_by_rc": zod.number().optional(),
+  "avg_tidb_cpu_time": zod.number().optional(),
+  "avg_tikv_cpu_time": zod.number().optional()
 })).optional(),
   "nextPageToken": zod.string().optional(),
   "totalSize": zod.number().optional()
@@ -1451,7 +1471,9 @@ export const diagnosisServiceGetTopSqlDetailResponse = zod.object({
   "max_ru": zod.number().optional(),
   "sum_ru": zod.number().optional(),
   "avg_time_queued_by_rc": zod.number().optional(),
-  "max_time_queued_by_rc": zod.number().optional()
+  "max_time_queued_by_rc": zod.number().optional(),
+  "avg_tidb_cpu_time": zod.number().optional(),
+  "avg_tikv_cpu_time": zod.number().optional()
 })
 
 
@@ -1467,10 +1489,11 @@ export const credentialServiceListCredentialsQueryParams = zod.object({
 export const credentialServiceListCredentialsResponse = zod.object({
   "credentials": zod.array(zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1479,7 +1502,6 @@ export const credentialServiceListCredentialsResponse = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -1491,10 +1513,11 @@ export const credentialServiceListCredentialsResponse = zod.object({
 
 export const credentialServiceCreateCredentialBody = zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1503,7 +1526,6 @@ export const credentialServiceCreateCredentialBody = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -1511,10 +1533,11 @@ export const credentialServiceCreateCredentialBody = zod.object({
 
 export const credentialServiceCreateCredentialResponse = zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1523,7 +1546,6 @@ export const credentialServiceCreateCredentialResponse = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -1536,10 +1558,11 @@ export const credentialServiceGetCredentialParams = zod.object({
 
 export const credentialServiceGetCredentialResponse = zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1548,7 +1571,6 @@ export const credentialServiceGetCredentialResponse = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -1569,10 +1591,11 @@ export const credentialServiceUpdateCredentialParams = zod.object({
 })
 
 export const credentialServiceUpdateCredentialBody = zod.object({
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1581,7 +1604,6 @@ export const credentialServiceUpdateCredentialBody = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional(),
@@ -1590,10 +1612,11 @@ export const credentialServiceUpdateCredentialBody = zod.object({
 
 export const credentialServiceUpdateCredentialResponse = zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1602,7 +1625,6 @@ export const credentialServiceUpdateCredentialResponse = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -1645,7 +1667,7 @@ export const hostServiceListHostsQueryParams = zod.object({
   "orderBy": zod.string().optional(),
   "searchValue": zod.string().optional(),
   "locationIds": zod.array(zod.string()).optional(),
-  "labelIds": zod.array(zod.string()).optional()
+  "tagIds": zod.array(zod.string()).optional()
 })
 
 export const hostServiceListHostsResponse = zod.object({
@@ -1689,19 +1711,20 @@ export const hostServiceListHostsResponse = zod.object({
   "tiupIds": zod.array(zod.string()).optional(),
   "hostType": zod.enum(['VM', 'PM']).optional(),
   "comment": zod.string().optional(),
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
 })).optional(),
   "createdTime": zod.string().datetime().optional(),
   "updatedTime": zod.string().datetime().optional(),
   "credential": zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1710,7 +1733,6 @@ export const hostServiceListHostsResponse = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -1736,7 +1758,7 @@ export const hostServiceCreateHostsBody = zod.object({
   "sshPort": zod.number().optional(),
   "credentialId": zod.string().optional(),
   "locationId": zod.string().optional(),
-  "labelIds": zod.array(zod.string()).optional(),
+  "tagIds": zod.array(zod.string()).optional(),
   "comment": zod.string().optional()
 })
 
@@ -1754,14 +1776,14 @@ export const hostServiceImportResponse = zod.object({
   "userName": zod.string().optional(),
   "sshPort": zod.number(),
   "status": zod.enum(['init', 'existed', 'succeeded', 'failed']).optional(),
-  "labels": zod.string().optional(),
+  "tags": zod.string().optional(),
   "locationId": zod.string().optional(),
   "credentialId": zod.string().optional(),
   "hostName": zod.string().optional(),
-  "labelsList": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
+  "tagsList": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
 })).optional(),
   "locationMappings": zod.array(zod.object({
   "locationId": zod.string().optional(),
@@ -1771,10 +1793,11 @@ export const hostServiceImportResponse = zod.object({
 })).optional(),
   "credential": zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1783,7 +1806,6 @@ export const hostServiceImportResponse = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -1806,14 +1828,14 @@ export const hostServiceImportTaskResponse = zod.object({
   "userName": zod.string().optional(),
   "sshPort": zod.number(),
   "status": zod.enum(['init', 'existed', 'succeeded', 'failed']).optional(),
-  "labels": zod.string().optional(),
+  "tags": zod.string().optional(),
   "locationId": zod.string().optional(),
   "credentialId": zod.string().optional(),
   "hostName": zod.string().optional(),
-  "labelsList": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
+  "tagsList": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
 })).optional(),
   "locationMappings": zod.array(zod.object({
   "locationId": zod.string().optional(),
@@ -1823,10 +1845,11 @@ export const hostServiceImportTaskResponse = zod.object({
 })).optional(),
   "credential": zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1835,7 +1858,6 @@ export const hostServiceImportTaskResponse = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -1902,19 +1924,20 @@ export const hostServiceGetHostResponse = zod.object({
   "tiupIds": zod.array(zod.string()).optional(),
   "hostType": zod.enum(['VM', 'PM']).optional(),
   "comment": zod.string().optional(),
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
 })).optional(),
   "createdTime": zod.string().datetime().optional(),
   "updatedTime": zod.string().datetime().optional(),
   "credential": zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -1923,7 +1946,6 @@ export const hostServiceGetHostResponse = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -1960,7 +1982,7 @@ export const hostServiceUpdateHostBody = zod.object({
   "sshPort": zod.number().optional(),
   "credentialId": zod.string().optional(),
   "locationId": zod.string().optional(),
-  "labelIds": zod.array(zod.string()).optional(),
+  "tagIds": zod.array(zod.string()).optional(),
   "comment": zod.string().optional()
 }).optional()
 })
@@ -2005,19 +2027,20 @@ export const hostServiceUpdateHostResponse = zod.object({
   "tiupIds": zod.array(zod.string()).optional(),
   "hostType": zod.enum(['VM', 'PM']).optional(),
   "comment": zod.string().optional(),
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
 })).optional(),
   "createdTime": zod.string().datetime().optional(),
   "updatedTime": zod.string().datetime().optional(),
   "credential": zod.object({
   "credentialId": zod.string().optional(),
-  "credentialName": zod.string().optional(),
   "userName": zod.string(),
   "credentialType": zod.enum(['CREDENTIAL_TYPE_UNSPECIFIED', 'HOST', 'TIDB']).optional(),
   "validateType": zod.enum(['CREDENTIAL_VALIDATE_TYPE_UNSPECIFIED', 'PASSWORD', 'RSAKEY']).optional(),
+  "credentialName": zod.string().optional(),
+  "description": zod.string().optional(),
   "hostCredential": zod.object({
   "password": zod.string().optional(),
   "publicKey": zod.string().optional(),
@@ -2026,7 +2049,6 @@ export const hostServiceUpdateHostResponse = zod.object({
 }).optional(),
   "tidbCredential": zod.object({
   "password": zod.string(),
-  "description": zod.string().optional(),
   "clusterId": zod.string().optional(),
   "clusterName": zod.string().optional()
 }).optional()
@@ -2172,222 +2194,23 @@ export const hostServiceBatchDeleteResponse = zod.object({
 })
 
 
-export const hostServiceDownloadHostTemplateResponse = zod.object({
-  "data": zod.string().optional()
-})
-
-
-export const labelServiceListLabelsQueryParams = zod.object({
-  "pageSize": zod.number().optional(),
-  "pageToken": zod.string().optional(),
-  "skip": zod.number().optional(),
-  "orderBy": zod.string().optional()
-})
-
-export const labelServiceListLabelsResponse = zod.object({
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-})).optional(),
-  "nextPageToken": zod.string().optional(),
-  "totalSize": zod.number().optional()
-})
-
-
-export const labelServiceCreateLabelBody = zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-})
-
-export const labelServiceCreateLabelResponse = zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-})
-
-
-export const labelServiceGetLabelParams = zod.object({
-  "labelId": zod.string()
-})
-
-export const labelServiceGetLabelResponse = zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-})
-
-
-export const labelServiceDeleteLabelParams = zod.object({
-  "labelId": zod.string()
-})
-
-export const labelServiceDeleteLabelResponse = zod.object({
-
-})
-
-
-export const labelServiceUpdateLabelParams = zod.object({
-  "labelId": zod.string()
-})
-
-export const labelServiceUpdateLabelBody = zod.object({
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-})
-
-export const labelServiceUpdateLabelResponse = zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-})
-
-
-export const labelServiceGetLabelWithBindingsParams = zod.object({
-  "labelId": zod.string()
-})
-
-export const labelServiceGetLabelWithBindingsResponse = zod.object({
-  "label": zod.object({
-  "labelInfo": zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-}).optional(),
-  "bindObjects": zod.array(zod.object({
-  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
-  "resources": zod.array(zod.object({
-  "resourceId": zod.string().optional(),
-  "resourceName": zod.string()
-}))
-})).optional()
-}).optional()
-})
-
-
-export const labelServiceBatchCreateLabelsBody = zod.object({
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-}))
-})
-
-export const labelServiceBatchCreateLabelsResponse = zod.object({
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-})).optional()
-})
-
-
-export const labelServiceBindLabelBody = zod.object({
-  "labelId": zod.string(),
-  "bindObjects": zod.array(zod.object({
-  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
-  "resources": zod.array(zod.object({
-  "resourceId": zod.string().optional(),
-  "resourceName": zod.string()
-}))
-})).optional()
-})
-
-export const labelServiceBindLabelResponse = zod.object({
-  "label": zod.object({
-  "labelInfo": zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-}).optional(),
-  "bindObjects": zod.array(zod.object({
-  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
-  "resources": zod.array(zod.object({
-  "resourceId": zod.string().optional(),
-  "resourceName": zod.string()
-}))
-})).optional()
-}).optional()
-})
-
-
-export const labelServiceBindResourceBody = zod.object({
-  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
-  "resourceId": zod.string(),
-  "labelIds": zod.array(zod.string()).optional()
-})
-
-export const labelServiceBindResourceResponse = zod.object({
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-})).optional()
-})
-
-
-export const labelServiceListLabelsByResourceTypeQueryParams = zod.object({
-  "pageSize": zod.number().optional(),
-  "pageToken": zod.string().optional(),
-  "skip": zod.number().optional(),
-  "labelKey": zod.string().optional(),
-  "keyword": zod.string().optional(),
-  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional()
-})
-
-export const labelServiceListLabelsByResourceTypeResponse = zod.object({
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-})).optional(),
-  "nextPageToken": zod.string().optional(),
-  "totalSize": zod.number().optional()
-})
-
-
-export const labelServiceListLabelKeysQueryParams = zod.object({
-  "pageSize": zod.number().optional(),
-  "pageToken": zod.string().optional(),
-  "skip": zod.number().optional(),
-  "keyword": zod.string().optional(),
-  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional()
-})
-
-export const labelServiceListLabelKeysResponse = zod.object({
-  "labelKeys": zod.array(zod.string()).optional(),
-  "nextPageToken": zod.string().optional(),
-  "totalSize": zod.number().optional()
-})
-
-
-export const labelServiceListLabelsWithBindingsQueryParams = zod.object({
+export const hostServiceDownloadListHostsQueryParams = zod.object({
   "pageSize": zod.number().optional(),
   "pageToken": zod.string().optional(),
   "skip": zod.number().optional(),
   "orderBy": zod.string().optional(),
-  "labelKeys": zod.array(zod.string()).optional(),
-  "labelValueLike": zod.string().optional()
+  "searchValue": zod.string().optional(),
+  "locationIds": zod.array(zod.string()).optional(),
+  "tagIds": zod.array(zod.string()).optional()
 })
 
-export const labelServiceListLabelsWithBindingsResponse = zod.object({
-  "labels": zod.array(zod.object({
-  "labelInfo": zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
-}).optional(),
-  "bindObjects": zod.array(zod.object({
-  "resourceType": zod.enum(['LABEL_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
-  "resources": zod.array(zod.object({
-  "resourceId": zod.string().optional(),
-  "resourceName": zod.string()
-}))
-})).optional()
-})).optional(),
-  "nextPageToken": zod.string().optional(),
-  "totalSize": zod.number().optional()
+export const hostServiceDownloadListHostsResponse = zod.object({
+  "data": zod.string().optional()
+})
+
+
+export const hostServiceDownloadHostTemplateResponse = zod.object({
+  "data": zod.string().optional()
 })
 
 
@@ -2582,6 +2405,11 @@ export const metricsServiceGetMetricsResponse = zod.object({
 })
 
 
+export const metricsServiceGetTopMetricConfigResponse = zod.object({
+  "cacheFlushIntervalInMinutes": zod.number().optional()
+})
+
+
 export const metricsServiceGetTopMetricDataParams = zod.object({
   "name": zod.string()
 })
@@ -2664,15 +2492,15 @@ export const roleServiceListRolesQueryParams = zod.object({
   "pageToken": zod.string().optional(),
   "skip": zod.number().optional(),
   "orderBy": zod.string().optional(),
-  "nameLike": zod.string().optional(),
-  "name": zod.string().optional()
+  "roleNameLike": zod.string().optional(),
+  "roleName": zod.string().optional()
 })
 
 export const roleServiceListRolesResponse = zod.object({
   "roles": zod.array(zod.object({
   "id": zod.number().optional(),
   "roleName": zod.string().optional(),
-  "roleType": zod.string().optional(),
+  "roleType": zod.number().optional(),
   "roleTypeDesc": zod.string().optional(),
   "detail": zod.string().optional(),
   "note": zod.string().optional(),
@@ -2687,7 +2515,7 @@ export const roleServiceListRolesResponse = zod.object({
 export const roleServiceCreateRoleBody = zod.object({
   "id": zod.number().optional(),
   "roleName": zod.string().optional(),
-  "roleType": zod.string().optional(),
+  "roleType": zod.number().optional(),
   "roleTypeDesc": zod.string().optional(),
   "detail": zod.string().optional(),
   "note": zod.string().optional()
@@ -2696,7 +2524,7 @@ export const roleServiceCreateRoleBody = zod.object({
 export const roleServiceCreateRoleResponse = zod.object({
   "id": zod.number().optional(),
   "roleName": zod.string().optional(),
-  "roleType": zod.string().optional(),
+  "roleType": zod.number().optional(),
   "roleTypeDesc": zod.string().optional(),
   "detail": zod.string().optional(),
   "note": zod.string().optional(),
@@ -2714,13 +2542,250 @@ export const roleServiceDeleteRoleResponse = zod.object({
 })
 
 
+export const roleServiceUpdateRoleParams = zod.object({
+  "roleId": zod.number()
+})
+
+export const roleServiceUpdateRoleBody = zod.object({
+  "roleName": zod.string(),
+  "roleType": zod.number().optional(),
+  "detail": zod.string().optional(),
+  "note": zod.string().optional()
+})
+
+export const roleServiceUpdateRoleResponse = zod.object({
+  "id": zod.number().optional(),
+  "roleName": zod.string().optional(),
+  "roleType": zod.number().optional(),
+  "roleTypeDesc": zod.string().optional(),
+  "detail": zod.string().optional(),
+  "note": zod.string().optional(),
+  "createTime": zod.string().datetime().optional(),
+  "updateTime": zod.string().datetime().optional()
+})
+
+
+export const tagServiceListTagsQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional()
+})
+
+export const tagServiceListTagsResponse = zod.object({
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const tagServiceCreateTagBody = zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+})
+
+export const tagServiceCreateTagResponse = zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+})
+
+
+export const tagServiceGetTagParams = zod.object({
+  "tagId": zod.string()
+})
+
+export const tagServiceGetTagResponse = zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+})
+
+
+export const tagServiceDeleteTagParams = zod.object({
+  "tagId": zod.string()
+})
+
+export const tagServiceDeleteTagResponse = zod.object({
+
+})
+
+
+export const tagServiceUpdateTagParams = zod.object({
+  "tagId": zod.string()
+})
+
+export const tagServiceUpdateTagBody = zod.object({
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+})
+
+export const tagServiceUpdateTagResponse = zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+})
+
+
+export const tagServiceGetTagWithBindingsParams = zod.object({
+  "tagId": zod.string()
+})
+
+export const tagServiceGetTagWithBindingsResponse = zod.object({
+  "tag": zod.object({
+  "tagInfo": zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+}).optional(),
+  "bindObjects": zod.array(zod.object({
+  "resourceType": zod.enum(['TAG_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
+  "resources": zod.array(zod.object({
+  "resourceId": zod.string().optional(),
+  "resourceName": zod.string()
+}))
+})).optional()
+}).optional()
+})
+
+
+export const tagServiceBatchCreateTagsBody = zod.object({
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+}))
+})
+
+export const tagServiceBatchCreateTagsResponse = zod.object({
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+})).optional()
+})
+
+
+export const tagServiceBindResourceBody = zod.object({
+  "resourceType": zod.enum(['TAG_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
+  "resourceId": zod.string(),
+  "tagIds": zod.array(zod.string()).optional()
+})
+
+export const tagServiceBindResourceResponse = zod.object({
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+})).optional()
+})
+
+
+export const tagServiceBindTagBody = zod.object({
+  "tagId": zod.string(),
+  "bindObjects": zod.array(zod.object({
+  "resourceType": zod.enum(['TAG_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
+  "resources": zod.array(zod.object({
+  "resourceId": zod.string().optional(),
+  "resourceName": zod.string()
+}))
+})).optional()
+})
+
+export const tagServiceBindTagResponse = zod.object({
+  "tag": zod.object({
+  "tagInfo": zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+}).optional(),
+  "bindObjects": zod.array(zod.object({
+  "resourceType": zod.enum(['TAG_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
+  "resources": zod.array(zod.object({
+  "resourceId": zod.string().optional(),
+  "resourceName": zod.string()
+}))
+})).optional()
+}).optional()
+})
+
+
+export const tagServiceListTagsByResourceTypeQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "tagKey": zod.string().optional(),
+  "keyword": zod.string().optional(),
+  "resourceType": zod.enum(['TAG_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional()
+})
+
+export const tagServiceListTagsByResourceTypeResponse = zod.object({
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const tagServiceListTagKeysQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "keyword": zod.string().optional(),
+  "resourceType": zod.enum(['TAG_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional()
+})
+
+export const tagServiceListTagKeysResponse = zod.object({
+  "tagKeys": zod.array(zod.string()).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
+export const tagServiceListTagsWithBindingsQueryParams = zod.object({
+  "pageSize": zod.number().optional(),
+  "pageToken": zod.string().optional(),
+  "skip": zod.number().optional(),
+  "orderBy": zod.string().optional(),
+  "tagKeys": zod.array(zod.string()).optional(),
+  "tagValueLike": zod.string().optional()
+})
+
+export const tagServiceListTagsWithBindingsResponse = zod.object({
+  "tags": zod.array(zod.object({
+  "tagInfo": zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
+}).optional(),
+  "bindObjects": zod.array(zod.object({
+  "resourceType": zod.enum(['TAG_BIND_RESOURCE_TYPE_UNSPECIFIED', 'HOST', 'TIUP', 'CLUSTER']).optional(),
+  "resources": zod.array(zod.object({
+  "resourceId": zod.string().optional(),
+  "resourceName": zod.string()
+}))
+})).optional()
+})).optional(),
+  "nextPageToken": zod.string().optional(),
+  "totalSize": zod.number().optional()
+})
+
+
 export const tiupsServiceListTiupsQueryParams = zod.object({
   "pageSize": zod.number().optional(),
   "pageToken": zod.string().optional(),
   "skip": zod.number().optional(),
   "orderBy": zod.string().optional(),
   "searchValue": zod.string().optional(),
-  "labelIds": zod.array(zod.string()).optional(),
+  "tagIds": zod.array(zod.string()).optional(),
   "hostIds": zod.array(zod.string()).optional()
 })
 
@@ -2731,10 +2796,10 @@ export const tiupsServiceListTiupsResponse = zod.object({
   "tiupHome": zod.string().optional(),
   "version": zod.string().optional(),
   "credentialId": zod.string().optional(),
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
 })).optional(),
   "description": zod.string().optional(),
   "hostId": zod.string().optional(),
@@ -2770,7 +2835,7 @@ export const tiupsServiceCreateTiupsBody = zod.object({
   "tiupHome": zod.string().optional(),
   "description": zod.string().optional(),
   "name": zod.string().optional(),
-  "labelIds": zod.array(zod.string()).optional()
+  "tagIds": zod.array(zod.string()).optional()
 })
 
 export const tiupsServiceCreateTiupsResponse = zod.object({
@@ -2779,10 +2844,10 @@ export const tiupsServiceCreateTiupsResponse = zod.object({
   "tiupHome": zod.string().optional(),
   "version": zod.string().optional(),
   "credentialId": zod.string().optional(),
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
 })).optional(),
   "description": zod.string().optional(),
   "hostId": zod.string().optional(),
@@ -2820,10 +2885,10 @@ export const tiupsServiceGetTiupsResponse = zod.object({
   "tiupHome": zod.string().optional(),
   "version": zod.string().optional(),
   "credentialId": zod.string().optional(),
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
 })).optional(),
   "description": zod.string().optional(),
   "hostId": zod.string().optional(),
@@ -2866,7 +2931,7 @@ export const tiupsServiceUpdateTiupsParams = zod.object({
 
 export const tiupsServiceUpdateTiupsBody = zod.object({
   "tiups": zod.object({
-  "labelIds": zod.array(zod.string()).optional(),
+  "tagIds": zod.array(zod.string()).optional(),
   "description": zod.string().optional(),
   "name": zod.string().optional()
 }).optional()
@@ -2878,10 +2943,10 @@ export const tiupsServiceUpdateTiupsResponse = zod.object({
   "tiupHome": zod.string().optional(),
   "version": zod.string().optional(),
   "credentialId": zod.string().optional(),
-  "labels": zod.array(zod.object({
-  "labelId": zod.string().optional(),
-  "labelKey": zod.string().optional(),
-  "labelValue": zod.string()
+  "tags": zod.array(zod.object({
+  "tagId": zod.string().optional(),
+  "tagKey": zod.string().optional(),
+  "tagValue": zod.string()
 })).optional(),
   "description": zod.string().optional(),
   "hostId": zod.string().optional(),
@@ -2938,13 +3003,12 @@ export const userServiceListUsersQueryParams = zod.object({
 
 export const userServiceListUsersResponse = zod.object({
   "users": zod.array(zod.object({
-  "id": zod.string(),
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
   "note": zod.string().optional(),
   "password": zod.string().optional(),
-  "userType": zod.string().optional(),
+  "userType": zod.number().optional(),
   "userTypeDesc": zod.string().optional(),
   "phone": zod.string().optional(),
   "roles": zod.array(zod.object({
@@ -2960,13 +3024,12 @@ export const userServiceListUsersResponse = zod.object({
 
 
 export const userServiceCreateUserBody = zod.object({
-  "id": zod.string(),
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
   "note": zod.string().optional(),
   "password": zod.string().optional(),
-  "userType": zod.string().optional(),
+  "userType": zod.number().optional(),
   "userTypeDesc": zod.string().optional(),
   "phone": zod.string().optional(),
   "roles": zod.array(zod.object({
@@ -2976,13 +3039,12 @@ export const userServiceCreateUserBody = zod.object({
 })
 
 export const userServiceCreateUserResponse = zod.object({
-  "id": zod.string(),
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
   "note": zod.string().optional(),
   "password": zod.string().optional(),
-  "userType": zod.string().optional(),
+  "userType": zod.number().optional(),
   "userTypeDesc": zod.string().optional(),
   "phone": zod.string().optional(),
   "roles": zod.array(zod.object({
@@ -2995,9 +3057,9 @@ export const userServiceCreateUserResponse = zod.object({
 
 
 export const userServiceGetUserProfileResponse = zod.object({
-  "id": zod.string(),
+  "userId": zod.string(),
   "name": zod.string(),
-  "email": zod.string().optional(),
+  "email": zod.string(),
   "note": zod.string().optional(),
   "phone": zod.string().optional()
 })
@@ -3008,13 +3070,12 @@ export const userServiceGetUserParams = zod.object({
 })
 
 export const userServiceGetUserResponse = zod.object({
-  "id": zod.string(),
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
   "note": zod.string().optional(),
   "password": zod.string().optional(),
-  "userType": zod.string().optional(),
+  "userType": zod.number().optional(),
   "userTypeDesc": zod.string().optional(),
   "phone": zod.string().optional(),
   "roles": zod.array(zod.object({
@@ -3040,14 +3101,9 @@ export const userServiceUpdateUserParams = zod.object({
 })
 
 export const userServiceUpdateUserBody = zod.object({
-  "id": zod.string(),
-  "userId": zod.string(),
-  "name": zod.string(),
   "email": zod.string().optional(),
   "note": zod.string().optional(),
-  "password": zod.string().optional(),
-  "userType": zod.string().optional(),
-  "userTypeDesc": zod.string().optional(),
+  "userType": zod.number().optional(),
   "phone": zod.string().optional(),
   "roles": zod.array(zod.object({
   "roleName": zod.string().optional(),
@@ -3056,13 +3112,12 @@ export const userServiceUpdateUserBody = zod.object({
 })
 
 export const userServiceUpdateUserResponse = zod.object({
-  "id": zod.string(),
   "userId": zod.string(),
   "name": zod.string(),
   "email": zod.string().optional(),
   "note": zod.string().optional(),
   "password": zod.string().optional(),
-  "userType": zod.string().optional(),
+  "userType": zod.number().optional(),
   "userTypeDesc": zod.string().optional(),
   "phone": zod.string().optional(),
   "roles": zod.array(zod.object({

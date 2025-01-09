@@ -11,6 +11,7 @@ import { cors } from 'hono/cors'
 
 import { apiKeyServiceListApiKeysHandlers } from './handlers/apiKeyServiceListApiKeys';
 import { apiKeyServiceCreateApiKeyHandlers } from './handlers/apiKeyServiceCreateApiKey';
+import { apiKeyServiceGetApiKeyHandlers } from './handlers/apiKeyServiceGetApiKey';
 import { apiKeyServiceDeleteApiKeyHandlers } from './handlers/apiKeyServiceDeleteApiKey';
 import { apiKeyServiceUpdateApiKeyHandlers } from './handlers/apiKeyServiceUpdateApiKey';
 import { apiKeyServiceResetSecretKeyHandlers } from './handlers/apiKeyServiceResetSecretKey';
@@ -81,19 +82,8 @@ import { hostServiceGetTiDBProcessesHandlers } from './handlers/hostServiceGetTi
 import { hostServiceFixHandlers } from './handlers/hostServiceFix';
 import { hostServiceCheckHandlers } from './handlers/hostServiceCheck';
 import { hostServiceBatchDeleteHandlers } from './handlers/hostServiceBatchDelete';
+import { hostServiceDownloadListHostsHandlers } from './handlers/hostServiceDownloadListHosts';
 import { hostServiceDownloadHostTemplateHandlers } from './handlers/hostServiceDownloadHostTemplate';
-import { labelServiceListLabelsHandlers } from './handlers/labelServiceListLabels';
-import { labelServiceCreateLabelHandlers } from './handlers/labelServiceCreateLabel';
-import { labelServiceGetLabelHandlers } from './handlers/labelServiceGetLabel';
-import { labelServiceDeleteLabelHandlers } from './handlers/labelServiceDeleteLabel';
-import { labelServiceUpdateLabelHandlers } from './handlers/labelServiceUpdateLabel';
-import { labelServiceGetLabelWithBindingsHandlers } from './handlers/labelServiceGetLabelWithBindings';
-import { labelServiceBatchCreateLabelsHandlers } from './handlers/labelServiceBatchCreateLabels';
-import { labelServiceBindLabelHandlers } from './handlers/labelServiceBindLabel';
-import { labelServiceBindResourceHandlers } from './handlers/labelServiceBindResource';
-import { labelServiceListLabelsByResourceTypeHandlers } from './handlers/labelServiceListLabelsByResourceType';
-import { labelServiceListLabelKeysHandlers } from './handlers/labelServiceListLabelKeys';
-import { labelServiceListLabelsWithBindingsHandlers } from './handlers/labelServiceListLabelsWithBindings';
 import { licenseServiceGetLicenseHandlers } from './handlers/licenseServiceGetLicense';
 import { licenseServiceGetDeviceCodeHandlers } from './handlers/licenseServiceGetDeviceCode';
 import { licenseServiceActivateLicenseHandlers } from './handlers/licenseServiceActivateLicense';
@@ -106,11 +96,25 @@ import { locationServiceUpdateLocationsHandlers } from './handlers/locationServi
 import { userServiceLoginHandlers } from './handlers/userServiceLogin';
 import { userServiceLogoutHandlers } from './handlers/userServiceLogout';
 import { metricsServiceGetMetricsHandlers } from './handlers/metricsServiceGetMetrics';
+import { metricsServiceGetTopMetricConfigHandlers } from './handlers/metricsServiceGetTopMetricConfig';
 import { metricsServiceGetTopMetricDataHandlers } from './handlers/metricsServiceGetTopMetricData';
 import { metricsServiceGetOverviewStatusHandlers } from './handlers/metricsServiceGetOverviewStatus';
 import { roleServiceListRolesHandlers } from './handlers/roleServiceListRoles';
 import { roleServiceCreateRoleHandlers } from './handlers/roleServiceCreateRole';
 import { roleServiceDeleteRoleHandlers } from './handlers/roleServiceDeleteRole';
+import { roleServiceUpdateRoleHandlers } from './handlers/roleServiceUpdateRole';
+import { tagServiceListTagsHandlers } from './handlers/tagServiceListTags';
+import { tagServiceCreateTagHandlers } from './handlers/tagServiceCreateTag';
+import { tagServiceGetTagHandlers } from './handlers/tagServiceGetTag';
+import { tagServiceDeleteTagHandlers } from './handlers/tagServiceDeleteTag';
+import { tagServiceUpdateTagHandlers } from './handlers/tagServiceUpdateTag';
+import { tagServiceGetTagWithBindingsHandlers } from './handlers/tagServiceGetTagWithBindings';
+import { tagServiceBatchCreateTagsHandlers } from './handlers/tagServiceBatchCreateTags';
+import { tagServiceBindResourceHandlers } from './handlers/tagServiceBindResource';
+import { tagServiceBindTagHandlers } from './handlers/tagServiceBindTag';
+import { tagServiceListTagsByResourceTypeHandlers } from './handlers/tagServiceListTagsByResourceType';
+import { tagServiceListTagKeysHandlers } from './handlers/tagServiceListTagKeys';
+import { tagServiceListTagsWithBindingsHandlers } from './handlers/tagServiceListTagsWithBindings';
 import { tiupsServiceListTiupsHandlers } from './handlers/tiupsServiceListTiups';
 import { tiupsServiceCreateTiupsHandlers } from './handlers/tiupsServiceCreateTiups';
 import { tiupsServiceGetTiupsHandlers } from './handlers/tiupsServiceGetTiups';
@@ -134,35 +138,42 @@ const app = new Hono()
 app.use('/api/v2/*', cors())
 
 /**
- * @summary ListApiKeys
+ * @summary ListApiKeys retrieves a list of API keys.
  */
 
 app.get('/api/v2/apiKeys',...apiKeyServiceListApiKeysHandlers)
 
 
 /**
- * @summary CreateApiKey
+ * @summary CreateApiKey creates a new API key.
  */
 
 app.post('/api/v2/apiKeys',...apiKeyServiceCreateApiKeyHandlers)
 
 
 /**
- * @summary Delete one apikey by access key
+ * @summary GetApiKeyRequest get an API key by its access key.
+ */
+
+app.get('/api/v2/apiKeys/:accessKey',...apiKeyServiceGetApiKeyHandlers)
+
+
+/**
+ * @summary DeleteApiKey deletes an API key by its access key.
  */
 
 app.delete('/api/v2/apiKeys/:accessKey',...apiKeyServiceDeleteApiKeyHandlers)
 
 
 /**
- * @summary UpdateApiKey
+ * @summary UpdateApiKey updates an API key by its access key.
  */
 
 app.patch('/api/v2/apiKeys/:accessKey',...apiKeyServiceUpdateApiKeyHandlers)
 
 
 /**
- * @summary Reset SecretKey
+ * @summary ResetSecretKey resets the secret key for an existing API key.
  */
 
 app.patch('/api/v2/apiKeys/:accessKey:resetSecretKey',...apiKeyServiceResetSecretKeyHandlers)
@@ -642,91 +653,14 @@ app.post('/api/v2/hosts:batchDelete',...hostServiceBatchDeleteHandlers)
  * @summary HostConfirm one host
  */
 
-app.get('/api/v2/hosts:hostTemplate',...hostServiceDownloadHostTemplateHandlers)
+app.get('/api/v2/hosts:download',...hostServiceDownloadListHostsHandlers)
 
 
 /**
- * @summary List labels
+ * @summary DownloadHostTemplate one host
  */
 
-app.get('/api/v2/labels',...labelServiceListLabelsHandlers)
-
-
-/**
- * @summary Create label
- */
-
-app.post('/api/v2/labels',...labelServiceCreateLabelHandlers)
-
-
-/**
- * @summary Get label
- */
-
-app.get('/api/v2/labels/:labelId',...labelServiceGetLabelHandlers)
-
-
-/**
- * @summary Delete label by label id
- */
-
-app.delete('/api/v2/labels/:labelId',...labelServiceDeleteLabelHandlers)
-
-
-/**
- * @summary Update label basic info by label id
- */
-
-app.patch('/api/v2/labels/:labelId',...labelServiceUpdateLabelHandlers)
-
-
-/**
- * @summary Get label with bindings
- */
-
-app.get('/api/v2/labels/:labelId:getWithBindings',...labelServiceGetLabelWithBindingsHandlers)
-
-
-/**
- * @summary Batch create labels
- */
-
-app.post('/api/v2/labels:batchCreate',...labelServiceBatchCreateLabelsHandlers)
-
-
-/**
- * @summary Modify bind object by label id
- */
-
-app.post('/api/v2/labels:bindLabel',...labelServiceBindLabelHandlers)
-
-
-/**
- * @summary Modify bind object by resource id
- */
-
-app.post('/api/v2/labels:bindResource',...labelServiceBindResourceHandlers)
-
-
-/**
- * @summary List labels by resource type
- */
-
-app.get('/api/v2/labels:listByResourceType',...labelServiceListLabelsByResourceTypeHandlers)
-
-
-/**
- * @summary List label keys
- */
-
-app.get('/api/v2/labels:listKeys',...labelServiceListLabelKeysHandlers)
-
-
-/**
- * @summary List labels with bindings
- */
-
-app.get('/api/v2/labels:listWithBindings',...labelServiceListLabelsWithBindingsHandlers)
+app.get('/api/v2/hosts:downloadHostTemplate',...hostServiceDownloadHostTemplateHandlers)
 
 
 /**
@@ -794,14 +728,14 @@ app.patch('/api/v2/locations/:locationId',...locationServiceUpdateLocationsHandl
 
 
 /**
- * @summary login
+ * @summary Login allows a user to log in and start a session.
  */
 
 app.post('/api/v2/login',...userServiceLoginHandlers)
 
 
 /**
- * @summary Logout
+ * @summary Logout allows a user to log out and end their session.
  */
 
 app.post('/api/v2/logout',...userServiceLogoutHandlers)
@@ -812,6 +746,13 @@ app.post('/api/v2/logout',...userServiceLogoutHandlers)
  */
 
 app.get('/api/v2/metrics',...metricsServiceGetMetricsHandlers)
+
+
+/**
+ * @summary Get top metric config
+ */
+
+app.get('/api/v2/overview/metrics/config',...metricsServiceGetTopMetricConfigHandlers)
 
 
 /**
@@ -829,24 +770,115 @@ app.get('/api/v2/overview/status',...metricsServiceGetOverviewStatusHandlers)
 
 
 /**
- * @summary listRoles
+ * @summary ListRoles retrieves a list of roles.
  */
 
 app.get('/api/v2/roles',...roleServiceListRolesHandlers)
 
 
 /**
- * @summary createRole
+ * @summary CreateRole creates a new role.
  */
 
 app.post('/api/v2/roles',...roleServiceCreateRoleHandlers)
 
 
 /**
- * @summary deleteUser one user by user_id
+ * @summary DeleteRole deletes a role by role ID.
  */
 
 app.delete('/api/v2/roles/:roleId',...roleServiceDeleteRoleHandlers)
+
+
+/**
+ * @summary UpdateRole updates a role by role ID.
+ */
+
+app.patch('/api/v2/roles/:roleId',...roleServiceUpdateRoleHandlers)
+
+
+/**
+ * @summary List tags
+ */
+
+app.get('/api/v2/tags',...tagServiceListTagsHandlers)
+
+
+/**
+ * @summary Create tag
+ */
+
+app.post('/api/v2/tags',...tagServiceCreateTagHandlers)
+
+
+/**
+ * @summary Get tag
+ */
+
+app.get('/api/v2/tags/:tagId',...tagServiceGetTagHandlers)
+
+
+/**
+ * @summary Delete tag by tag id
+ */
+
+app.delete('/api/v2/tags/:tagId',...tagServiceDeleteTagHandlers)
+
+
+/**
+ * @summary Update tag basic info by tag id
+ */
+
+app.patch('/api/v2/tags/:tagId',...tagServiceUpdateTagHandlers)
+
+
+/**
+ * @summary Get tag with bindings
+ */
+
+app.get('/api/v2/tags/:tagId:getWithBindings',...tagServiceGetTagWithBindingsHandlers)
+
+
+/**
+ * @summary Batch create tags
+ */
+
+app.post('/api/v2/tags:batchCreate',...tagServiceBatchCreateTagsHandlers)
+
+
+/**
+ * @summary Modify bind object by resource id
+ */
+
+app.post('/api/v2/tags:bindResource',...tagServiceBindResourceHandlers)
+
+
+/**
+ * @summary Modify bind object by tag id
+ */
+
+app.post('/api/v2/tags:bindTag',...tagServiceBindTagHandlers)
+
+
+/**
+ * @summary List tags by resource type
+ */
+
+app.get('/api/v2/tags:listByResourceType',...tagServiceListTagsByResourceTypeHandlers)
+
+
+/**
+ * @summary List tag keys
+ */
+
+app.get('/api/v2/tags:listKeys',...tagServiceListTagKeysHandlers)
+
+
+/**
+ * @summary List tags with bindings
+ */
+
+app.get('/api/v2/tags:listWithBindings',...tagServiceListTagsWithBindingsHandlers)
 
 
 /**
@@ -892,63 +924,63 @@ app.get('/api/v2/tiups/:tiupId/clusters',...tiupsServiceGetTiupsClusterHandlers)
 
 
 /**
- * @summary ListUsers
+ * @summary ListUsers retrieves a list of users.
  */
 
 app.get('/api/v2/users',...userServiceListUsersHandlers)
 
 
 /**
- * @summary createUser
+ * @summary CreateUser creates a new user.
  */
 
 app.post('/api/v2/users',...userServiceCreateUserHandlers)
 
 
 /**
- * @summary get one user profile
+ * @summary GetUserProfile retrieves the profile information of the authenticated user.
  */
 
 app.get('/api/v2/users/profile',...userServiceGetUserProfileHandlers)
 
 
 /**
- * @summary get one user by user_id
+ * @summary GetUser retrieves a user by user ID.
  */
 
 app.get('/api/v2/users/:userId',...userServiceGetUserHandlers)
 
 
 /**
- * @summary delete one user by user_id
+ * @summary DeleteUser deletes a user by user ID.
  */
 
 app.delete('/api/v2/users/:userId',...userServiceDeleteUserHandlers)
 
 
 /**
- * @summary update one user by user_id
+ * @summary UpdateUser updates a user's information by user ID.
  */
 
 app.patch('/api/v2/users/:userId',...userServiceUpdateUserHandlers)
 
 
 /**
- * @summary resetPassword user password for admin user
+ * @summary ResetPassword allows an admin user to reset the password of another user.
  */
 
 app.patch('/api/v2/users/:userId:resetPassword',...userServiceResetPasswordHandlers)
 
 
 /**
- * @summary changePassword user password for login user
+ * @summary ChangePassword allows the authenticated user to change their password.
  */
 
 app.patch('/api/v2/users:changePassword',...userServiceChangePasswordHandlers)
 
 
 /**
- * @summary ValidateSession
+ * @summary ValidateSession verifies the validity of the current session.
  */
 
 app.get('/api/v2/users:validateSession',...userServiceValidateSessionHandlers)

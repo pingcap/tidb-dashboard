@@ -17,6 +17,15 @@ export function useMetricQueriesConfigData(kind: MetricConfigKind) {
   })
 }
 
+export function useMetricConfigData() {
+  const ctx = useAppContext()
+
+  return useQuery({
+    queryKey: [ctx.ctxId, "metric-config"],
+    queryFn: () => ctx.api.getMetricConfig(),
+  })
+}
+
 export function useMetricLabelValuesData(
   metricName: string,
   labelName: string,

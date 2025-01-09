@@ -14,6 +14,8 @@ export type MetricDataByNameResultItem = {
 type AppApi = {
   getMetricQueriesConfig(kind: MetricConfigKind): Promise<SinglePanelConfig[]>
 
+  getMetricConfig(): Promise<{ delaySec: number }>
+
   getMetricLabelValues(params: {
     metricName: string
     labelName: string

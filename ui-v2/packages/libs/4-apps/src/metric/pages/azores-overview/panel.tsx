@@ -16,6 +16,7 @@ import { useMemo, useState } from "react"
 import { ChartBody } from "../../components/chart-body"
 import { ChartHeader } from "../../components/chart-header"
 import { SinglePanelConfig } from "../../utils/type"
+import { useMetricConfigData } from "../../utils/use-data"
 
 // @ts-expect-error @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -53,6 +54,7 @@ export function AzoresOverviewMetricsPanel({
     type: "relative",
     value: parseInt(timeRangeOptions[0].value),
   })
+  const { data: metricConfigData } = useMetricConfigData()
 
   return (
     <Card p={24} bg="carbon.0">
@@ -61,9 +63,10 @@ export function AzoresOverviewMetricsPanel({
           {tk(`panels.${config.category}`)}
         </Typography>
         <Tooltip
-          label={tt("The data may have a delay of up to {{n}} minutes", {
-            n: 1,
+          label={tt("The rank may have a delay of up to {{n}} minutes", {
+            n: Math.ceil((metricConfigData?.delaySec || 0) / 60),
           })}
+          disabled={!metricConfigData?.delaySec}
         >
           <IconInfoCircle />
         </Tooltip>

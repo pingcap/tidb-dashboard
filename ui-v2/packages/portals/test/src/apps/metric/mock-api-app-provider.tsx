@@ -4,6 +4,7 @@ import {
   metricsServiceGetClusterMetricInstance,
   metricsServiceGetHostMetricData,
   metricsServiceGetMetrics,
+  metricsServiceGetTopMetricConfig,
   metricsServiceGetTopMetricData,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import {
@@ -78,6 +79,12 @@ export function useCtxValue(): AppCtxValue {
             }).then((res) => res.metrics)
           }
           return transformConfigs(metrics)
+        },
+
+        getMetricConfig() {
+          return metricsServiceGetTopMetricConfig().then((res) => ({
+            delaySec: (res.cacheFlushIntervalInMinutes || 0) * 60,
+          }))
         },
 
         getMetricLabelValues(params) {

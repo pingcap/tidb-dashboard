@@ -141,6 +141,8 @@
       "fields.sum_ru.desc": "The total number of request units (RU) consumed by the statement",
       "fields.sum_warnings": "Total Warnings",
       "fields.table_names": "Table Names",
+      "fields.tidb_cpu_time": "{{distro.tidb}} CPU Time",
+      "fields.tikv_cpu_time": "{{distro.tikv}} CPU Time",
       "fields.total_process_time": "Total Execution Time",
       "fields.total_wait_time": "Total Wait Time",
       "fields.wait_time": "Coprocessor Wait Time",

@@ -111,6 +111,8 @@
       "fields.stats": "Used Statistics",
       "fields.success": "Is Success?",
       "fields.success.desc": "Whether query is executed successfully",
+      "fields.tidb_cpu_time": "{{distro.tidb}} CPU Time",
+      "fields.tikv_cpu_time": "{{distro.tikv}} CPU Time",
       "fields.time_queued_by_rc": "Total Time Queued by RC",
       "fields.time_queued_by_rc.desc": "The total wait time spent in the resource queue (note: {{distro.tikv}} executes requests in parallel so that this is not a wall time)",
       "fields.timestamp": "Finish Time",

@@ -141,6 +141,8 @@
       "fields.sum_ru.desc": "该 Statement 的 RU 累积值",
       "fields.sum_warnings": "累计 Warning 个数",
       "fields.table_names": "表名",
+      "fields.tidb_cpu_time": "{{distro.tidb}} CPU 时间",
+      "fields.tikv_cpu_time": "{{distro.tikv}} CPU 时间",
       "fields.total_process_time": "所有执行耗时",
       "fields.total_wait_time": "所有等待耗时",
       "fields.wait_time": "Coprocessor 等待耗时",

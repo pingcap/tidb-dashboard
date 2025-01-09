@@ -220,4 +220,7 @@ function useLocales() {
   tk("fields.stmt_type", "Statement Type")
   tk("fields.plan_hint", "Plan Hint")
   tk("fields.binary_plan", "Binary Plan")
+
+  tk("fields.tidb_cpu_time", "{{distro.tidb}} CPU Time")
+  tk("fields.tikv_cpu_time", "{{distro.tikv}} CPU Time")
 }

@@ -111,6 +111,8 @@
       "fields.stats": "使用的统计信息",
       "fields.success": "是否执行成功",
       "fields.success.desc": "SQL 查询是否执行成功",
+      "fields.tidb_cpu_time": "{{distro.tidb}} CPU 时间",
+      "fields.tikv_cpu_time": "{{distro.tikv}} CPU 时间",
       "fields.time_queued_by_rc": "RC 等待累积耗时",
       "fields.time_queued_by_rc.desc": "SQL 语句在资源组队列中等待的累积时间（注：{{distro.tikv}} 会并行等待任务，因此该时间不是自然流逝时间）",
       "fields.timestamp": "结束运行时间",

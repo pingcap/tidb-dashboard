@@ -222,4 +222,7 @@ function useLocales() {
   tk("fields.result_rows", "Result Rows")
   tk("fields.warnings", "Warnings")
   tk("fields.plan_digest", "Plan Digest")
+
+  tk("fields.tidb_cpu_time", "{{distro.tidb}} CPU Time")
+  tk("fields.tikv_cpu_time", "{{distro.tikv}} CPU Time")
 }

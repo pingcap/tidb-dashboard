@@ -36,10 +36,11 @@ export function AdvancedFiltersModal({
     if (advancedFilters.length === 0) {
       setSettingItems([newFilterSettingItem()])
     } else {
+      const now = Date.now() // milliseconds
       setSettingItems(
         advancedFilters.map((f, i) => ({
           ...f,
-          createdAt: Date.now() + i,
+          createdAt: now - i * 100,
           deleted: false,
         })),
       )

@@ -6,7 +6,10 @@ import { useMemo } from "react"
 import { TableColsFactory } from "../../../_shared/cols-factory"
 import { useAppContext } from "../../ctx"
 import { SlowqueryModel } from "../../models"
-import { useTimeRangeValueState } from "../../shared-state/memory-state"
+import {
+  useSelectedSlowQueryState,
+  useTimeRangeValueState,
+} from "../../shared-state/memory-state"
 
 const REMEMBER_KEY = "slow-query.press_ctrl_to_open_in_new_tab.tip.remember"
 
@@ -21,13 +24,20 @@ function useLocales() {
 }
 
 function SqlCell({ row }: { row: SlowqueryModel }) {
-  const ctx = useAppContext()
-  const trv = useTimeRangeValueState((s) => s.trv)
   const { tt } = useTn("slow-query")
+  const ctx = useAppContext()
+
+  const trv = useTimeRangeValueState((s) => s.trv)
+  const setSelectedSlowQuery = useSelectedSlowQueryState(
+    (s) => s.setSelectedSlowQuery,
+  )
 
   function handleClick(ev: React.MouseEvent) {
     const { digest, connection_id, timestamp } = row
-    const id = [digest, connection_id, timestamp, trv[0], trv[1]].join(",")
+    const slowQueryId = [digest, connection_id, timestamp].join(",")
+    setSelectedSlowQuery(slowQueryId)
+
+    const detailId = [slowQueryId, trv[0], trv[1]].join(",")
 
     const newTab = ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey
     // if the user don't press the ctrl/cmd/shift/alt and don't know this operation before
@@ -60,7 +70,7 @@ function SqlCell({ row }: { row: SlowqueryModel }) {
       }
     }
 
-    ctx.actions.openDetail(id, newTab)
+    ctx.actions.openDetail(detailId, newTab)
   }
 
   return (

@@ -9,6 +9,7 @@ import { useMemo } from "react"
 import { TableColsFactory } from "../../../_shared/cols-factory"
 import { useAppContext } from "../../ctx"
 import { StatementModel } from "../../models"
+import { useSelectedStatementState } from "../../url-state/memory-state"
 
 const REMEMBER_KEY = "statement.press_ctrl_to_open_in_new_tab.tip.remember"
 
@@ -23,14 +24,16 @@ function useLocales() {
 }
 
 function SqlCell({ row }: { row: StatementModel }) {
-  const ctx = useAppContext()
   const { tt } = useTn("statement")
+  const ctx = useAppContext()
+  const setSelectedStatement = useSelectedStatementState(
+    (s) => s.setSelectedStatement,
+  )
 
   function handleClick(ev: React.MouseEvent) {
     const { digest, schema_name, summary_begin_time, summary_end_time } = row
-    const id = [summary_begin_time, summary_end_time, digest, schema_name].join(
-      ",",
-    )
+    const statementId = [digest, schema_name].join(",")
+    setSelectedStatement(statementId)
 
     const newTab = ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey
     // if the user don't press the ctrl/cmd/shift/alt and don't know this operation before
@@ -63,6 +66,9 @@ function SqlCell({ row }: { row: StatementModel }) {
       }
     }
 
+    const id = [summary_begin_time, summary_end_time, digest, schema_name].join(
+      ",",
+    )
     ctx.actions.openDetail(id, newTab)
   }
 

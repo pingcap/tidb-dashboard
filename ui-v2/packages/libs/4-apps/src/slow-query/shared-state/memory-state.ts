@@ -15,3 +15,17 @@ export const useTimeRangeValueState = create<TimeRangeValueState>((set) => ({
   beyondMax: false,
   setTRV: (newTRV, beyondMax) => set({ trv: newTRV, beyondMax }),
 }))
+
+//-------------------------------------------------------------
+
+interface SelectedSlowQueryState {
+  slowQueryId: string
+  setSelectedSlowQuery: (slowQueryId: string) => void
+}
+
+export const useSelectedSlowQueryState = create<SelectedSlowQueryState>(
+  (set) => ({
+    slowQueryId: "",
+    setSelectedSlowQuery: (slowQueryId: string) => set({ slowQueryId }),
+  }),
+)

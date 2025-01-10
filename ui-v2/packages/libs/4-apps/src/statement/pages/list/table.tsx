@@ -7,6 +7,7 @@ import { useMemo } from "react"
 
 import { StatementModel } from "../../models"
 import { useListUrlState } from "../../url-state/list-url-state"
+import { useSelectedStatementState } from "../../url-state/memory-state"
 
 import { useListTableColumns } from "./cols"
 
@@ -45,6 +46,8 @@ export function ListTable({
         {} as Record<string, boolean>,
       )
   }, [tableColumns, visibleCols])
+
+  const selectedStatementId = useSelectedStatementState((s) => s.statementId)
 
   // do sorting in local for statement list
   const sortedData = useMemo(() => {
@@ -85,6 +88,10 @@ export function ListTable({
       onSortingChange={setSortingState}
       manualPagination
       onPaginationChange={setPaginationState}
+      pagination={{
+        position: "right",
+        showTotal: true,
+      }}
       rowCount={sortedData?.length ?? 0}
       state={{
         isLoading,
@@ -93,9 +100,18 @@ export function ListTable({
         columnVisibility,
       }}
       initialState={{ columnPinning: { left: ["digest_text"] } }}
-      pagination={{
-        position: "right",
-        showTotal: true,
+      mantineTableBodyRowProps={({ row }) => {
+        const { digest, schema_name } = row.original
+        const id = `${digest},${schema_name}`
+        return selectedStatementId === id
+          ? {
+              style(theme) {
+                return {
+                  backgroundColor: theme.colors.carbon[2],
+                }
+              },
+            }
+          : {}
       }}
       columns={tableColumns}
       data={pagedData}

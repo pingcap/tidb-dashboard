@@ -6,6 +6,7 @@ import { ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
 import { useListUrlState } from "../../shared-state/list-url-state"
+import { useSelectedSlowQueryState } from "../../shared-state/memory-state"
 import { useListData } from "../../utils/use-data"
 
 import { useListTableColumns } from "./cols"
@@ -28,6 +29,7 @@ export function ListTable() {
     pagination,
     setPagination,
   )
+  const selectedSlowQueryId = useSelectedSlowQueryState((s) => s.slowQueryId)
 
   const columnVisibility = useMemo(() => {
     return tableColumns
@@ -60,6 +62,10 @@ export function ListTable() {
       onSortingChange={setSortingState}
       manualPagination
       onPaginationChange={setPaginationState}
+      pagination={{
+        position: "right",
+        showTotal: true,
+      }}
       rowCount={data?.length ?? 0}
       state={{
         isLoading,
@@ -68,9 +74,18 @@ export function ListTable() {
         columnVisibility,
       }}
       initialState={{ columnPinning: { left: ["query"] } }}
-      pagination={{
-        position: "right",
-        showTotal: true,
+      mantineTableBodyRowProps={({ row }) => {
+        const { digest, connection_id, timestamp } = row.original
+        const id = `${digest},${connection_id},${timestamp}`
+        return selectedSlowQueryId === id
+          ? {
+              style(theme) {
+                return {
+                  backgroundColor: theme.colors.carbon[2],
+                }
+              },
+            }
+          : {}
       }}
       columns={tableColumns}
       data={pagedData ?? []}

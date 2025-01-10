@@ -6,8 +6,8 @@ import { ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
 import { StatementModel } from "../../models"
-import { useListUrlState } from "../../url-state/list-url-state"
-import { useSelectedStatementState } from "../../url-state/memory-state"
+import { useListUrlState } from "../../shared-state/list-url-state"
+import { useSelectedStatementState } from "../../shared-state/memory-state"
 
 import { useListTableColumns } from "./cols"
 

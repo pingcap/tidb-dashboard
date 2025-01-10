@@ -5,7 +5,7 @@ import { IconXClose } from "@tidbcloud/uikit/icons"
 import { dayjs } from "@tidbcloud/uikit/utils"
 import { useEffect, useState } from "react"
 
-import { useListUrlState } from "../../url-state/list-url-state"
+import { useListUrlState } from "../../shared-state/list-url-state"
 import { QUICK_RANGES } from "../../utils/constants"
 import { useListData } from "../../utils/use-data"
 

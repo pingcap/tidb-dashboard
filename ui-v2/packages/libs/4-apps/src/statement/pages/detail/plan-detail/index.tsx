@@ -3,7 +3,7 @@ import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Stack, Title } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
-import { useDetailUrlState } from "../../../url-state/detail-url-state"
+import { useDetailUrlState } from "../../../shared-state/detail-url-state"
 import { usePlanDetailData } from "../../../utils/use-data"
 import { StmtSQL } from "../stmt-sql"
 

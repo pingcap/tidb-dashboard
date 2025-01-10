@@ -1,6 +1,6 @@
 import { Radio } from "@tidbcloud/uikit"
 
-import { useDetailUrlState } from "../../../url-state/detail-url-state"
+import { useDetailUrlState } from "../../../shared-state/detail-url-state"
 
 export function PlanCheckCell({ planDigest }: { planDigest: string }) {
   const { plan, setPlan } = useDetailUrlState()

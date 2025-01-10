@@ -1,7 +1,7 @@
 import { ColumnMultiSelect } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { useMemo } from "react"
 
-import { useListUrlState } from "../../url-state/list-url-state"
+import { useListUrlState } from "../../shared-state/list-url-state"
 import { useAvailableFieldsData } from "../../utils/use-data"
 
 import { useListTableColumns } from "./cols"

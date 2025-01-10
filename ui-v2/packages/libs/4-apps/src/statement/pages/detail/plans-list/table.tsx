@@ -2,7 +2,7 @@ import { ProTable } from "@tidbcloud/uikit/biz"
 import { useEffect, useMemo, useState } from "react"
 
 import { StatementModel } from "../../../models"
-import { useDetailUrlState } from "../../../url-state/detail-url-state"
+import { useDetailUrlState } from "../../../shared-state/detail-url-state"
 import {
   usePlanBindStatusData,
   usePlanBindSupportData,

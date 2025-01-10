@@ -3,7 +3,7 @@ import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
 import { useAppContext } from "../../ctx"
-import { useListUrlState } from "../../url-state/list-url-state"
+import { useListUrlState } from "../../shared-state/list-url-state"
 import { useAdvancedFilterNamesData } from "../../utils/use-data"
 
 export function AdvancedFiltersModal() {

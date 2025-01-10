@@ -9,7 +9,7 @@ import { useMemo } from "react"
 import { TableColsFactory } from "../../../_shared/cols-factory"
 import { useAppContext } from "../../ctx"
 import { StatementModel } from "../../models"
-import { useSelectedStatementState } from "../../url-state/memory-state"
+import { useSelectedStatementState } from "../../shared-state/memory-state"
 
 const REMEMBER_KEY = "statement.press_ctrl_to_open_in_new_tab.tip.remember"
 

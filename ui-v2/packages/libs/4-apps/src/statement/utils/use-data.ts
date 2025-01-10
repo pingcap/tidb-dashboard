@@ -2,8 +2,8 @@ import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx"
-import { useDetailUrlState } from "../url-state/detail-url-state"
-import { useListUrlState } from "../url-state/list-url-state"
+import { useDetailUrlState } from "../shared-state/detail-url-state"
+import { useListUrlState } from "../shared-state/list-url-state"
 
 export function useDbsData() {
   const ctx = useAppContext()

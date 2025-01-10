@@ -1,5 +1,15 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.11.4
+
+### Patch Changes
+
+- 1. add refresh button for monitoring single chart
+  2. add tip for open detail page in new tab for slow-query and statement
+  3. highlight selected slow-query and statement row in list table for slow-query and statement
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-biz-ui@0.11.3
+
 ## 0.11.3
 
 ### Patch Changes

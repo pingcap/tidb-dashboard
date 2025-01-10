@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.11.3
+
+### Patch Changes
+
+- refine advanced fitlers
+
 ## 0.11.2
 
 ### Patch Changes

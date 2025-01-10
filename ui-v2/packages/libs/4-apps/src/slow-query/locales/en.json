@@ -144,16 +144,20 @@
       "Detail": "Detail",
       "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}": "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}",
       "Find SQL text": "Find SQL text",
+      "I got it": "I got it",
       "Plan": "Plan",
       "Query": "Query",
       "SQL digest": "SQL digest",
       "Slow Query Detail": "Slow Query Detail",
       "Table": "Table",
+      "Tell me again next time": "Tell me again next time",
       "Text": "Text",
       "Time": "Time",
+      "Tips": "Tips",
       "Transaction": "Transaction",
       "View related statement in statement page (but it may be evicted already)": "View related statement in statement page (but it may be evicted already)",
-      "Warnings": "Warnings"
+      "Warnings": "Warnings",
+      "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.": "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window."
     }
   }
 }

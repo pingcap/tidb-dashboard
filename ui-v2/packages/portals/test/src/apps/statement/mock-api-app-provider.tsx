@@ -190,9 +190,13 @@ export function useCtxValue(): AppCtxValue {
         title: "",
       },
       actions: {
-        openDetail: (id: string) => {
+        openDetail: (id: string, newTab) => {
           window.preUrl = [window.location.pathname + window.location.search]
-          navigate({ to: `/statement/detail?id=${id}` })
+          if (newTab) {
+            window.open(`/statement/detail?id=${id}`, "_blank")
+          } else {
+            navigate({ to: `/statement/detail?id=${id}` })
+          }
         },
         backToList: () => {
           const preUrl = window.preUrl?.pop()

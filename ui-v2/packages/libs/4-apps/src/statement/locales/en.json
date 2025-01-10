@@ -170,6 +170,7 @@
       "Execution Plan": "Execution Plan",
       "Execution Plans": "Execution Plans",
       "Find SQL text": "Find SQL text",
+      "I got it": "I got it",
       "Plans Count": "Plans Count",
       "Previous Query Sample": "Previous Query Sample",
       "Query Template ID": "Query Template ID",
@@ -177,15 +178,18 @@
       "Statement Detail": "Statement Detail",
       "Statement Template": "Statement Template",
       "Table": "Table",
+      "Tell me again next time": "Tell me again next time",
       "Text": "Text",
       "This plan can not be bound": "This plan can not be bound",
       "Time Range": "Time Range",
       "Time": "Time",
+      "Tips": "Tips",
       "Transaction": "Transaction",
       "Unbind Plans": "Unbind Plans",
       "Unbind plans failed, reason: {{reason}}": "Unbind plans failed, reason: {{reason}}",
       "Unbind plans successfully!": "Unbind plans successfully!",
-      "Unbind": "Unbind"
+      "Unbind": "Unbind",
+      "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.": "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window."
     }
   }
 }

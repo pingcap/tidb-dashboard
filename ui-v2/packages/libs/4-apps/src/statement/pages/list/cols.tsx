@@ -2,23 +2,68 @@ import {
   EvictedSQL,
   SQLWithHover,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Box } from "@tidbcloud/uikit"
+import { Trans, useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { Box, Kbd, Typography, openConfirmModal } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
 import { TableColsFactory } from "../../../_shared/cols-factory"
 import { useAppContext } from "../../ctx"
 import { StatementModel } from "../../models"
 
+const REMEMBER_KEY = "statement.press_ctrl_to_open_in_new_tab.tip.remember"
+
+// @ts-expect-error @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function useLocales() {
+  const { tt } = useTn("statement")
+  // used for gogocode to scan and generate en.json before build
+  tt(
+    "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.",
+  )
+}
+
 function SqlCell({ row }: { row: StatementModel }) {
   const ctx = useAppContext()
+  const { tt } = useTn("statement")
 
-  function handleClick() {
+  function handleClick(ev: React.MouseEvent) {
     const { digest, schema_name, summary_begin_time, summary_end_time } = row
     const id = [summary_begin_time, summary_end_time, digest, schema_name].join(
       ",",
     )
-    ctx.actions.openDetail(id)
+
+    const newTab = ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey
+    // if the user don't press the ctrl/cmd/shift/alt and don't know this operation before
+    // we should show a confirm dialog to tell the user this tip
+    // after he know it, we won't show it again
+    if (!newTab) {
+      const remember = localStorage.getItem(REMEMBER_KEY)
+      if (remember !== "true") {
+        openConfirmModal({
+          title: tt("Tips"),
+          children: (
+            <Typography>
+              <Trans
+                ns="dashboard-lib"
+                i18nKey={
+                  "statement.texts.When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window."
+                }
+                components={{ kbd: <Kbd /> }}
+              />
+            </Typography>
+          ),
+          labels: {
+            confirm: tt("I got it"),
+            cancel: tt("Tell me again next time"),
+          },
+          onConfirm: () => {
+            localStorage.setItem(REMEMBER_KEY, "true")
+          },
+        })
+      }
+    }
+
+    ctx.actions.openDetail(id, newTab)
   }
 
   return row.digest_text ? (

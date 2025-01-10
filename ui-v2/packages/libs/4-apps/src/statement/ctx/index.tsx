@@ -58,7 +58,7 @@ type AppConfig = {
 }
 
 type AppActions = {
-  openDetail(id: string): void
+  openDetail(id: string, newTab: boolean): void
   backToList(): void
   openSlowQueryList(id: string): void
 }

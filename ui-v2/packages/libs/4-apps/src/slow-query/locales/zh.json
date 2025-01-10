@@ -144,16 +144,20 @@
       "Detail": "详情",
       "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}": "由于限制，目前仅支持查询最大 24 小时的数据，实际时间范围是 {{begin}} ~ {{end}}",
       "Find SQL text": "查找 SQL",
+      "I got it": "我知道了",
       "Plan": "执行计划",
       "Query": "SQL 查询",
       "SQL digest": "SQL digest",
       "Slow Query Detail": "慢查询详情",
       "Table": "表格",
+      "Tell me again next time": "下次还告诉我",
       "Text": "文本",
       "Time": "执行时间",
+      "Tips": "提示",
       "Transaction": "事务",
       "View related statement in statement page (but it may be evicted already)": "在 SQL 语句页面查看相关的 SQL 语句（但有可能已经被淘汰）",
-      "Warnings": "警告"
+      "Warnings": "警告",
+      "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.": "在打开详情页时，你可以按住 <kbd>Ctrl</kbd> 或 <kbd>⌘</kbd> 在新标签页打开，或按住 <kbd>Shift</kbd> 在新窗口中打开。"
     }
   }
 }

@@ -137,9 +137,13 @@ export function useCtxValue(): AppCtxValue {
         title: "",
       },
       actions: {
-        openDetail: (id: string) => {
+        openDetail: (id: string, newTab: boolean) => {
           window.preUrl = [window.location.pathname + window.location.search]
-          navigate({ to: `/slow-query/detail?id=${id}` })
+          if (newTab) {
+            window.open(`/slow-query/detail?id=${id}`, "_blank")
+          } else {
+            navigate({ to: `/slow-query/detail?id=${id}` })
+          }
         },
         backToList: () => {
           const preUrl = window.preUrl?.pop()

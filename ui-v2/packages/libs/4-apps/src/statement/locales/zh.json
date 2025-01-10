@@ -170,6 +170,7 @@
       "Execution Plan": "执行计划",
       "Execution Plans": "执行计划列表",
       "Find SQL text": "查找 SQL",
+      "I got it": "我知道了",
       "Plans Count": "计划数",
       "Previous Query Sample": "前一条 SQL 查询样例",
       "Query Template ID": "SQL 模板 ID",
@@ -177,15 +178,18 @@
       "Statement Detail": "SQL 语句详情",
       "Statement Template": "SQL 模板",
       "Table": "表格",
+      "Tell me again next time": "下次还告诉我",
       "Text": "文本",
       "This plan can not be bound": "该计划无法绑定",
       "Time Range": "时间范围",
       "Time": "执行时间",
+      "Tips": "提示",
       "Transaction": "事务",
       "Unbind Plans": "解绑计划",
       "Unbind plans failed, reason: {{reason}}": "解绑计划失败，原因：{{reason}}",
       "Unbind plans successfully!": "解绑计划成功！",
-      "Unbind": "解绑"
+      "Unbind": "解绑",
+      "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.": "在打开详情页时，你可以按住 <kbd>Ctrl</kbd> 或 <kbd>⌘</kbd> 在新标签页打开，或按住 <kbd>Shift</kbd> 在新窗口中打开。"
     }
   }
 }

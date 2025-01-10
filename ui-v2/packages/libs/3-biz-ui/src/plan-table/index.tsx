@@ -45,7 +45,13 @@ const columns: MRT_ColumnDef<PlanItem>[] = [
     header: "access object",
     size: 120,
     accessorFn: (row) => (
-      <Tooltip withinPortal multiline maw={400} label={row.accessObject}>
+      <Tooltip
+        withinPortal
+        multiline
+        maw={400}
+        label={row.accessObject}
+        style={{ wordBreak: "break-all" }}
+      >
         <Typography maw={200} truncate>
           {row.accessObject}
         </Typography>
@@ -56,7 +62,13 @@ const columns: MRT_ColumnDef<PlanItem>[] = [
     id: "executionInfo",
     header: "execution info",
     accessorFn: (row) => (
-      <Tooltip withinPortal multiline maw={400} label={row.executionInfo}>
+      <Tooltip
+        withinPortal
+        multiline
+        maw={400}
+        label={row.executionInfo}
+        style={{ wordBreak: "break-all" }}
+      >
         <Typography maw={200} truncate>
           {row.executionInfo}
         </Typography>
@@ -82,7 +94,13 @@ const columns: MRT_ColumnDef<PlanItem>[] = [
           "...(too long to show, copy or download to analyze)"
       }
       return (
-        <Tooltip withinPortal multiline maw={400} label={truncatedTooltipStr}>
+        <Tooltip
+          withinPortal
+          multiline
+          maw={400}
+          label={truncatedTooltipStr}
+          style={{ wordBreak: "break-all" }}
+        >
           <Typography maw={200} truncate>
             {truncatedStr}
           </Typography>
@@ -112,11 +130,13 @@ export function PlanTable({ plan }: { plan: string }) {
     <ProTable
       data={planItems}
       columns={columns}
+      enableColumnPinning
       initialState={{
         columnVisibility: {
           estCost: planType === "v2",
           accessObject: planType === "v2",
         },
+        columnPinning: { left: ["id"] },
       }}
     />
   )

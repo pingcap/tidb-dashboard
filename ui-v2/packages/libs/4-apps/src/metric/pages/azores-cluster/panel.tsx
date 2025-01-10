@@ -16,6 +16,7 @@ function useLocales() {
   tk("panels.transaction", "Transaction")
   tk("panels.raft_log", "Raft Log")
 
+  tk("panels.host", "Host")
   tk("panels.tidb", "TiDB")
   tk("panels.tikv", "TiKV")
   tk("panels.pd", "PD")

@@ -9,6 +9,7 @@
       "panels.cluster_top": "Top 5 SQL Performance",
       "panels.connection": "Connection",
       "panels.database_time": "Database Time",
+      "panels.host": "Host",
       "panels.host_top": "Top 5 Host Performance",
       "panels.instance_top": "Top 5 Node Utilization",
       "panels.io_env": "IO & Env",

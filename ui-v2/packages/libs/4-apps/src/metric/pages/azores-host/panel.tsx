@@ -1,14 +1,11 @@
-import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
   useTimeRangeUrlState,
   useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Box, Card, Group, Typography } from "@tidbcloud/uikit"
-import { dayjs } from "@tidbcloud/uikit/utils"
 
 import { ChartBody } from "../../components/chart-body"
 import { ChartHeader } from "../../components/chart-header"
-import { QUICK_RANGES } from "../../utils/constants"
 import { SinglePanelConfig } from "../../utils/type"
 
 // @ts-expect-error @typescript-eslint/no-unused-vars
@@ -27,24 +24,7 @@ export function AzoresHostMetricsPanel({
   config: SinglePanelConfig
 }) {
   const { tk } = useTn("metric")
-  const { timeRange, setTimeRange } = useTimeRangeUrlState()
-
-  const timeRangePicker = (
-    <TimeRangePicker
-      value={timeRange}
-      onChange={(v) => {
-        setTimeRange(v)
-      }}
-      quickRanges={QUICK_RANGES}
-      minDateTime={() =>
-        dayjs()
-          .subtract(QUICK_RANGES[QUICK_RANGES.length - 1], "seconds")
-          .startOf("d")
-          .toDate()
-      }
-      maxDateTime={() => dayjs().endOf("d").toDate()}
-    />
-  )
+  const { timeRange } = useTimeRangeUrlState()
 
   return (
     <Card p={16} bg="carbon.0">
@@ -52,7 +32,6 @@ export function AzoresHostMetricsPanel({
         <Typography variant="title-lg">
           {tk(`panels.${config.category}`)}
         </Typography>
-        <Group ml="auto">{timeRangePicker}</Group>
       </Group>
 
       <Box

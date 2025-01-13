@@ -1,5 +1,16 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.12.0
+
+### Minor Changes
+
+- fix related slow queries link for statement detail page
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-biz-ui@0.12.0
+
 ## 0.11.4
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.12.0
+
+### Minor Changes
+
+- refine plan table and fix highlight-sql components
+
 ## 0.11.3
 
 ### Patch Changes

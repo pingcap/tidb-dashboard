@@ -1,5 +1,5 @@
 import { formatSql } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Box, CodeHighlight, InlineCodeHighlight } from "@tidbcloud/uikit"
+import { Box, Prism } from "@tidbcloud/uikit"
 import React, { useMemo } from "react"
 
 function InlineHighlightSQL({ sql }: { sql: string }) {
@@ -8,21 +8,32 @@ function InlineHighlightSQL({ sql }: { sql: string }) {
   }, [sql])
 
   return (
-    <InlineCodeHighlight
-      code={formattedSql}
+    <Prism
+      noCopy
+      language="sql"
       styles={{
+        scrollArea: {
+          "& > div > div": {
+            display: "block !important",
+          },
+        },
         code: {
-          display: "block",
-          width: "100%",
-          backgroundColor: "transparent",
+          backgroundColor: "transparent !important",
           padding: 0,
           fontSize: 13,
+        },
+        line: {
+          padding: 0,
+        },
+        lineContent: {
           overflow: "hidden",
           whiteSpace: "nowrap",
           textOverflow: "ellipsis",
         },
       }}
-    />
+    >
+      {formattedSql}
+    </Prism>
   )
 }
 
@@ -33,28 +44,27 @@ function HighlightSQL({ sql }: { sql: string }) {
 
   return (
     <Box mah="90vh" maw="60vw" sx={{ overflow: "auto" }}>
-      <CodeHighlight
-        withCopyButton={true}
-        code={formattedSql}
+      <Prism
+        language="sql"
         styles={{
-          root: {
-            backgroundColor: "transparent",
-          },
-          pre: {
-            padding: 0,
-            paddingRight: 24,
-          },
-          code: {
-            padding: 0,
-            fontSize: 12,
-            whiteSpace: "pre-wrap",
-          },
           copy: {
             top: 0,
             right: 0,
           },
+          code: {
+            backgroundColor: "transparent !important",
+            padding: 0,
+            paddingRight: 24,
+            paddingTop: 3,
+            fontSize: 12,
+          },
+          line: {
+            padding: 0,
+          },
         }}
-      />
+      >
+        {formattedSql}
+      </Prism>
     </Box>
   )
 }

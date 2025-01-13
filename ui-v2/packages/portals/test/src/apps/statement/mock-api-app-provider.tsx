@@ -130,6 +130,7 @@ export function useCtxValue(): AppCtxValue {
           }).then((d) => {
             if (d.binary_plan_text) {
               d.plan = d.binary_plan_text
+              delete d.binary_plan_text
             }
             return d
           })

@@ -8,7 +8,7 @@ export function SlowQueryCell({ planDigest }: { planDigest: string }) {
   const { tt } = useTn("statement")
   const ctx = useAppContext()
   const { id } = useDetailUrlState()
-  const newId = `${id},${planDigest}`
+  const newId = `${id},${planDigest === "all" ? "" : planDigest}`
 
   return (
     <Anchor

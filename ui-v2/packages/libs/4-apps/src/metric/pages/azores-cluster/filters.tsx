@@ -8,13 +8,15 @@ import {
   toURLTimeRange,
   useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Anchor, Group, SegmentedControl } from "@tidbcloud/uikit"
+import { Anchor, Box, Group, SegmentedControl } from "@tidbcloud/uikit"
 import { dayjs } from "@tidbcloud/uikit/utils"
 import { useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../../ctx"
 import { useMetricsUrlState } from "../../shared-state/url-state"
 import { QUICK_RANGES } from "../../utils/constants"
+
+import { ChartsSelect } from "./charts-select"
 
 const GROUPS = ["basic", "resource", "advanced"]
 
@@ -85,6 +87,8 @@ export function Filters() {
     </Anchor>
   )
 
+  const chartsSelect = <ChartsSelect />
+
   const timeRangePicker = (
     <TimeRangePicker
       value={timeRange}
@@ -116,11 +120,12 @@ export function Filters() {
     <Group>
       {panelSwitch}
 
-      <Group ml="auto">
-        {diagnosisLink}
-        {timeRangePicker}
-        {autoRefreshButton}
-      </Group>
+      <Box sx={{ flexGrow: 1 }} />
+
+      {diagnosisLink}
+      {chartsSelect}
+      {timeRangePicker}
+      {autoRefreshButton}
     </Group>
   )
 }

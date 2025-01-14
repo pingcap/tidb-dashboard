@@ -6,6 +6,7 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx"
+import { useMetricsUrlState } from "../shared-state/url-state"
 import { MetricConfigKind } from "../utils/type"
 
 export function useMetricQueriesConfigData(kind: MetricConfigKind) {
@@ -115,4 +116,21 @@ export function useMetricDataByPromQLs(
     // set `enabled: false`, so queryFn can only be manually triggered by calling `refetch()`
     enabled: false,
   })
+}
+
+//---------------------------
+
+export function useCurPanelConfigsData() {
+  const { panel } = useMetricsUrlState()
+  const { data: panelConfigData, isLoading } =
+    useMetricQueriesConfigData("azores-cluster")
+
+  const filteredPanelConfigData = panelConfigData?.filter(
+    (p) => p.group === (panel || "basic"),
+  )
+
+  return {
+    panelConfigData: filteredPanelConfigData,
+    isLoading,
+  }
 }

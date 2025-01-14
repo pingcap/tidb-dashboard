@@ -35,3 +35,25 @@ export const useChartState = create<ChartState>((set) => ({
       selectedInstance: undefined,
     }),
 }))
+
+//---------------------------------
+
+const LOCAL_STORAGE_KEY = "metrics.hide.charts"
+
+interface ChartsSelectState {
+  hiddenCharts: string[]
+  setHiddenCharts: (newHiddenCharts: string[]) => void
+  reset: () => void
+}
+
+export const useChartsSelectState = create<ChartsSelectState>((set) => ({
+  hiddenCharts: localStorage.getItem(LOCAL_STORAGE_KEY)?.split(",") || [],
+  setHiddenCharts: (newHiddenCharts) => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, newHiddenCharts.join(","))
+    set({ hiddenCharts: newHiddenCharts })
+  },
+  reset: () => {
+    localStorage.removeItem(LOCAL_STORAGE_KEY)
+    set({ hiddenCharts: [] })
+  },
+}))

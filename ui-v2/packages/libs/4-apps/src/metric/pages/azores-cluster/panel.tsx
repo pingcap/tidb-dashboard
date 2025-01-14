@@ -3,6 +3,7 @@ import { Box, Card, Typography } from "@tidbcloud/uikit"
 
 import { ChartBody } from "../../components/chart-body"
 import { ChartHeader } from "../../components/chart-header"
+import { useChartsSelectState } from "../../shared-state/memory-state"
 import { useMetricsUrlState } from "../../shared-state/url-state"
 import { SinglePanelConfig } from "../../utils/type"
 
@@ -39,6 +40,15 @@ export function AzoresClusterMetricsPanel({
 }) {
   const { tk } = useTn("metric")
   const { timeRange } = useMetricsUrlState()
+  const hiddenCharts = useChartsSelectState((s) => s.hiddenCharts)
+
+  const visibleCharts = config.charts.filter((c) => {
+    return !hiddenCharts.includes(c.metricName)
+  })
+
+  if (visibleCharts.length === 0) {
+    return null
+  }
 
   return (
     <Box>
@@ -53,7 +63,7 @@ export function AzoresClusterMetricsPanel({
           gridTemplateColumns: "repeat(auto-fit, minmax(600px, 1fr))",
         }}
       >
-        {config.charts.map((c, idx) => (
+        {visibleCharts.map((c, idx) => (
           <Card key={c.title + idx} p={16} pb={10} bg="carbon.0" shadow="none">
             <ChartHeader
               title={c.title}

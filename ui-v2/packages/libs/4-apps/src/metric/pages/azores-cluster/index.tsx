@@ -1,21 +1,14 @@
 import { Stack } from "@tidbcloud/uikit"
 
 import { LoadingCard } from "../../components/loading-card"
-import { useMetricsUrlState } from "../../shared-state/url-state"
-import { useMetricQueriesConfigData } from "../../utils/use-data"
+import { useCurPanelConfigsData } from "../../utils/use-data"
 import { AzoresMetricModal } from "../azores-metric-modal"
 
 import { Filters } from "./filters"
 import { AzoresClusterMetricsPanel } from "./panel"
 
 export function AzoresClusterMetricsPage() {
-  const { panel } = useMetricsUrlState()
-  const { data: panelConfigData, isLoading } =
-    useMetricQueriesConfigData("azores-cluster")
-
-  const filteredPanelConfigData = panelConfigData?.filter(
-    (p) => p.group === (panel || "basic"),
-  )
+  const { panelConfigData, isLoading } = useCurPanelConfigsData()
 
   if (isLoading) {
     return <LoadingCard />
@@ -25,7 +18,7 @@ export function AzoresClusterMetricsPage() {
     <Stack>
       <Filters />
 
-      {filteredPanelConfigData
+      {panelConfigData
         ?.filter((p) => p.charts.length > 0)
         .map((panel) => {
           return (

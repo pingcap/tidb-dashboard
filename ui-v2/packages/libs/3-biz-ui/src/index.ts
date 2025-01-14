@@ -11,8 +11,10 @@ export * from "./loading-skeleton"
 export * from "./auto-refresh-button"
 export * from "./status-indicator"
 
+// @todo: combine to a single component
 export * from "./filter-multi-select"
 export * from "./cols-multi-select"
+export * from "./charts-multi-select"
 
 export * from "./advanced-filters"
 

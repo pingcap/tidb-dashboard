@@ -3,7 +3,7 @@ import {
   useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
-  ActionIcon,
+  Button,
   Checkbox,
   Combobox,
   Group,
@@ -12,41 +12,50 @@ import {
   useCombobox,
   useMantineTheme,
 } from "@tidbcloud/uikit"
-import { IconSettings04 } from "@tidbcloud/uikit/icons"
+import { IconChevronDown } from "@tidbcloud/uikit/icons"
 import { useMemo, useState } from "react"
 
 addLangsLocales({
   zh: {
-    "cols-multi-select": {
+    "charts-multi-select": {
       texts: {
-        "Search columns...": "搜索列...",
+        Search: "搜索",
         "Nothing found": "未找到",
-        "Show Selected": "显示已选",
+        "Show Hidden": "显示未选",
         "Show All": "显示全部",
         "Select All": "全选",
+        "All charts selected": "所有图表已选",
+        "{{selected}}/{{all}} charts selected": "{{selected}}/{{all}} 图表已选",
         Reset: "重置",
       },
     },
   },
 })
 
-export type ColumnMultiSelectProps = {
-  data: { label: string; val: string }[]
+export type ChartsSelectData = {
+  group: string
+  label: string
+  val: string
+}[]
+
+export type ChartMultiSelectProps = {
+  data: ChartsSelectData
   value: string[]
   onChange: (value: string[]) => void
   onReset?: () => void
 }
 
-export function ColumnMultiSelect({
+// @todo: change onChange to onSelect/onUnSelect to simplify the logic
+export function ChartMultiSelect({
   data,
   value,
   onChange,
   onReset,
-}: ColumnMultiSelectProps) {
-  const { tt } = useTn("cols-multi-select")
+}: ChartMultiSelectProps) {
+  const { tt } = useTn("charts-multi-select")
 
   const theme = useMantineTheme()
-  const [showSelected, setShowSelected] = useState(false)
+  const [showHidden, setShowHidden] = useState(false)
   const [search, setSearch] = useState("")
 
   const combobox = useCombobox({
@@ -66,7 +75,7 @@ export function ColumnMultiSelect({
   const filteredData = useMemo(() => {
     let d = data.filter(
       (item) =>
-        !showSelected || value.includes(item.val) || value.includes("all"),
+        !showHidden || (!value.includes(item.val) && !value.includes("all")),
     )
     const term = search.toLowerCase().trim()
     if (term) {
@@ -77,28 +86,38 @@ export function ColumnMultiSelect({
       )
     }
     return d
-  }, [search, showSelected, data, value])
+  }, [search, showHidden, data, value])
 
-  const options = filteredData.map((item) => (
-    <Combobox.Option
-      value={item.val}
-      key={item.val}
-      styles={{
-        option: {
-          "&:hover": {
-            backgroundColor: theme.colors.carbon[3],
-          },
-        },
-      }}
-    >
-      <Group wrap="nowrap" gap="xs">
-        <Checkbox
-          checked={value.includes(item.val) || value.includes("all")}
-          onChange={() => {}}
-        />
-        <Typography truncate>{item.label}</Typography>
-      </Group>
-    </Combobox.Option>
+  const uniqueGroups = Array.from(
+    new Set(filteredData.map((item) => item.group)),
+  )
+
+  const options = uniqueGroups.map((group, idx) => (
+    <Combobox.Group label={group} key={group + "_" + idx}>
+      {filteredData
+        .filter((item) => item.group === group)
+        .map((item, i) => (
+          <Combobox.Option
+            value={item.val}
+            key={item.val + "_" + i}
+            styles={{
+              option: {
+                "&:hover": {
+                  backgroundColor: theme.colors.carbon[3],
+                },
+              },
+            }}
+          >
+            <Group wrap="nowrap" gap="xs">
+              <Checkbox
+                checked={value.includes(item.val) || value.includes("all")}
+                onChange={() => {}}
+              />
+              <Typography truncate>{item.label}</Typography>
+            </Group>
+          </Combobox.Option>
+        ))}
+    </Combobox.Group>
   ))
 
   function handleOptionSelect(val: string) {
@@ -130,16 +149,25 @@ export function ColumnMultiSelect({
       }}
     >
       <Combobox.Target>
-        <ActionIcon onClick={() => combobox.toggleDropdown()}>
-          <IconSettings04 size={16} />
-        </ActionIcon>
+        <Button
+          variant="outline"
+          rightSection={<IconChevronDown size={16} />}
+          onClick={() => combobox.openDropdown()}
+        >
+          {data.length === selectedData.length
+            ? tt("All charts selected")
+            : tt("{{selected}}/{{all}} charts selected", {
+                selected: selectedData.length,
+                all: data.length,
+              })}
+        </Button>
       </Combobox.Target>
 
       <Combobox.Dropdown>
         <Combobox.Search
           value={search}
           onChange={(event) => setSearch(event.currentTarget.value)}
-          placeholder={tt("Search columns...")}
+          placeholder={tt("Search")}
           styles={{
             input: {
               border: "none",
@@ -155,26 +183,13 @@ export function ColumnMultiSelect({
         </Combobox.Options>
         <Combobox.Footer>
           <Group>
-            <Typography fz="xs" c="dimmed">
-              {tt("{{selected}}/{{all}}", {
-                selected: selectedData.length,
-                all: data.length,
-              })}
-            </Typography>
             <Group ml="auto" justify="flex-end" gap="xs">
               <UnstyledButton
                 fz="xs"
                 c="peacock.7"
-                onClick={() => setShowSelected(!showSelected)}
+                onClick={() => setShowHidden(!showHidden)}
               >
-                {showSelected ? tt("Show All") : tt("Show Selected")}
-              </UnstyledButton>
-              <UnstyledButton
-                fz="xs"
-                c="peacock.7"
-                onClick={() => onChange(["all"])}
-              >
-                {tt("Select All")}
+                {showHidden ? tt("Show All") : tt("Show Hidden")}
               </UnstyledButton>
               <UnstyledButton fz="xs" c="peacock.7" onClick={onReset}>
                 {tt("Reset")}

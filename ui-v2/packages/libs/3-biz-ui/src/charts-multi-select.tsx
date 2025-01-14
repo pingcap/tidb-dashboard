@@ -7,7 +7,6 @@ import {
   Checkbox,
   Combobox,
   Group,
-  Typography,
   UnstyledButton,
   useCombobox,
   useMantineTheme,
@@ -33,7 +32,7 @@ addLangsLocales({
 })
 
 export type ChartsSelectData = {
-  group: string
+  category: string
   label: string
   val: string
 }[]
@@ -41,7 +40,9 @@ export type ChartsSelectData = {
 export type ChartMultiSelectProps = {
   data: ChartsSelectData
   value: string[]
-  onChange: (value: string[]) => void
+
+  onSelect?: (val: string) => void
+  onUnSelect?: (val: string) => void
   onReset?: () => void
 }
 
@@ -49,7 +50,9 @@ export type ChartMultiSelectProps = {
 export function ChartMultiSelect({
   data,
   value,
-  onChange,
+
+  onSelect,
+  onUnSelect,
   onReset,
 }: ChartMultiSelectProps) {
   const { tt } = useTn("charts-multi-select")
@@ -88,14 +91,14 @@ export function ChartMultiSelect({
     return d
   }, [search, showHidden, data, value])
 
-  const uniqueGroups = Array.from(
-    new Set(filteredData.map((item) => item.group)),
+  const categories = Array.from(
+    new Set(filteredData.map((item) => item.category)),
   )
 
-  const options = uniqueGroups.map((group, idx) => (
-    <Combobox.Group label={group} key={group + "_" + idx}>
+  const options = categories.map((c, idx) => (
+    <Combobox.Group label={c} key={c + "_" + idx}>
       {filteredData
-        .filter((item) => item.group === group)
+        .filter((item) => item.category === c)
         .map((item, i) => (
           <Combobox.Option
             value={item.val}
@@ -108,30 +111,29 @@ export function ChartMultiSelect({
               },
             }}
           >
-            <Group wrap="nowrap" gap="xs">
-              <Checkbox
-                checked={value.includes(item.val) || value.includes("all")}
-                onChange={() => {}}
-              />
-              <Typography truncate>{item.label}</Typography>
-            </Group>
+            <Checkbox
+              checked={value.includes(item.val) || value.includes("all")}
+              onChange={(e) =>
+                handleCheckChange(e.currentTarget.checked, item.val)
+              }
+              label={item.label}
+            />
           </Combobox.Option>
         ))}
     </Combobox.Group>
   ))
 
-  function handleOptionSelect(val: string) {
-    const selected = selectedData.map((item) => item.val)
-    const newValue = selected.includes(val)
-      ? selected.filter((v) => v !== val)
-      : [...selected, val]
-    onChange(newValue)
+  function handleCheckChange(checked: boolean, v: string) {
+    if (checked) {
+      onSelect?.(v)
+    } else {
+      onUnSelect?.(v)
+    }
   }
 
   return (
     <Combobox
       store={combobox}
-      onOptionSubmit={handleOptionSelect}
       shadow="sm"
       width={260}
       position="bottom-end"

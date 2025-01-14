@@ -11,9 +11,6 @@ import { useCurPanelConfigsData } from "../utils/use-data"
 export function ChartsSelect() {
   const { tk } = useTn("metric")
 
-  const hiddenCharts = useChartsSelectState((s) => s.hiddenCharts)
-  const setHiddenCharts = useChartsSelectState((s) => s.setHiddenCharts)
-
   const { panelConfigData } = useCurPanelConfigsData()
   const chartsSelectData = useMemo(() => {
     const d: ChartsSelectData = []
@@ -21,7 +18,7 @@ export function ChartsSelect() {
       const category = tk(`panels.${panel.category}`, panel.category)
       for (const chart of panel.charts) {
         d.push({
-          group: category,
+          category,
           label: chart.title,
           val: chart.metricName,
         })
@@ -30,43 +27,34 @@ export function ChartsSelect() {
     return d
   }, [panelConfigData])
 
+  const hiddenCharts = useChartsSelectState((s) => s.hiddenCharts)
+  const setHiddenCharts = useChartsSelectState((s) => s.setHiddenCharts)
+
   const chartsSelectValue = useMemo(() => {
-    const hidden = hiddenCharts
-    const value: string[] = []
-    for (const chart of chartsSelectData) {
-      if (!hidden.includes(chart.val)) {
-        value.push(chart.val)
-      }
-    }
-    return value
+    return chartsSelectData
+      .map((item) => item.val)
+      .filter((v) => !hiddenCharts.includes(v))
   }, [chartsSelectData, hiddenCharts])
 
-  // @todo: refine algorithm
-  function handleChange(v: string[]) {
-    const hidden = [...hiddenCharts]
-    for (const chart of chartsSelectData) {
-      if (!v.includes(chart.val)) {
-        if (!hidden.includes(chart.val)) {
-          hidden.push(chart.val)
-        }
-      } else {
-        if (hidden.includes(chart.val)) {
-          hidden.splice(hidden.indexOf(chart.val), 1)
-        }
-      }
-    }
-    setHiddenCharts(hidden)
+  function onReset() {
+    const allData = chartsSelectData.map((item) => item.val)
+    setHiddenCharts(hiddenCharts.filter((v) => !allData.includes(v)))
   }
 
-  function onReset() {
-    handleChange(chartsSelectData.map((item) => item.val))
+  function onSelect(val: string) {
+    setHiddenCharts(hiddenCharts.filter((v) => v !== val))
+  }
+
+  function onUnSelect(val: string) {
+    setHiddenCharts([...hiddenCharts, val])
   }
 
   return (
     <ChartMultiSelect
       data={chartsSelectData}
       value={chartsSelectValue}
-      onChange={handleChange}
+      onSelect={onSelect}
+      onUnSelect={onUnSelect}
       onReset={onReset}
     />
   )

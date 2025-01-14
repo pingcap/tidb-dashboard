@@ -2,7 +2,10 @@ import { TimeRange } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { ActionIcon, Box, Group, Typography } from "@tidbcloud/uikit"
 import { IconLayersThree02, IconRefreshCw02 } from "@tidbcloud/uikit/icons"
 
-import { useChartState } from "../shared-state/memory-state"
+import {
+  useChartState,
+  useChartsSelectState,
+} from "../shared-state/memory-state"
 import { useMetricsUrlState } from "../shared-state/url-state"
 import { SingleChartConfig } from "../utils/type"
 
@@ -27,6 +30,13 @@ export function ChartHeader({
   const setSelectedChart = useChartState((state) => state.setSelectedChart)
   const setTimeRange = useChartState((state) => state.setTimeRange)
 
+  const hiddenCharts = useChartsSelectState((s) => s.hiddenCharts)
+  const setHiddenCharts = useChartsSelectState((s) => s.setHiddenCharts)
+
+  function handleHide() {
+    setHiddenCharts([...hiddenCharts, config.metricName])
+  }
+
   return (
     <Group gap={2} mb={8}>
       <Typography variant="label-lg">{title}</Typography>
@@ -49,7 +59,7 @@ export function ChartHeader({
           <IconLayersThree02 size={16} />
         </ActionIcon>
       )}
-      {showMoreActions && <ChartActionsMenu />}
+      {showMoreActions && <ChartActionsMenu onHide={handleHide} />}
       {children}
     </Group>
   )

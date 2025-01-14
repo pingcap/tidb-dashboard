@@ -5,8 +5,8 @@ import {
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
-import { useChartsSelectState } from "../../shared-state/memory-state"
-import { useCurPanelConfigsData } from "../../utils/use-data"
+import { useChartsSelectState } from "../shared-state/memory-state"
+import { useCurPanelConfigsData } from "../utils/use-data"
 
 export function ChartsSelect() {
   const { tk } = useTn("metric")

@@ -2,7 +2,7 @@ import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { ActionIcon, Menu } from "@tidbcloud/uikit"
 import { IconDotsHorizontal } from "@tidbcloud/uikit/icons"
 
-export function ChartActionsMenu() {
+export function ChartActionsMenu({ onHide }: { onHide: () => void }) {
   const { tt } = useTn("metric")
 
   return (
@@ -14,7 +14,7 @@ export function ChartActionsMenu() {
       </Menu.Target>
 
       <Menu.Dropdown>
-        <Menu.Item>{tt("Hide")}</Menu.Item>
+        <Menu.Item onClick={onHide}>{tt("Hide")}</Menu.Item>
       </Menu.Dropdown>
     </Menu>
   )

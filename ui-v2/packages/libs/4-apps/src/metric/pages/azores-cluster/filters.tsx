@@ -12,11 +12,10 @@ import { Anchor, Box, Group, SegmentedControl } from "@tidbcloud/uikit"
 import { dayjs } from "@tidbcloud/uikit/utils"
 import { useMemo, useRef, useState } from "react"
 
+import { ChartsSelect } from "../../components/charts-select"
 import { useAppContext } from "../../ctx"
 import { useMetricsUrlState } from "../../shared-state/url-state"
 import { QUICK_RANGES } from "../../utils/constants"
-
-import { ChartsSelect } from "./charts-select"
 
 const GROUPS = ["basic", "resource", "advanced"]
 

@@ -23,17 +23,27 @@ const testHostId = import.meta.env.VITE_TEST_HOST_ID
 const testClusterId = import.meta.env.VITE_TEST_CLUSTER_ID
 
 function transformConfigs(metrics: V2Metrics["metrics"]): SinglePanelConfig[] {
-  const categories = [...new Set((metrics || []).map((m) => m.type || ""))]
-  return categories.map((category) => {
-    const charts = metrics!.filter((m) => m.type === category)
-    return {
-      group: charts[0].group!,
-      category,
-      displayName: category,
-      charts:
-        charts
-          ?.filter((metric) => metric.type === category && metric.name)
-          ?.map((metric) => ({
+  const configs: SinglePanelConfig[] = []
+
+  const groups = [...new Set((metrics || []).map((m) => m.group || ""))]
+  groups.forEach((group) => {
+    const categories = [
+      ...new Set(
+        (metrics?.filter((m) => m.group === group) || []).map(
+          (m) => m.type || "",
+        ),
+      ),
+    ]
+    categories.forEach((category) => {
+      const charts = metrics?.filter(
+        (m) => m.type === category && m.group === group && m.name,
+      )
+      configs.push({
+        group,
+        category,
+        displayName: category,
+        charts:
+          charts?.map((metric) => ({
             metricName: metric.name!,
             title: metric.displayName!,
             label: metric.description,
@@ -41,8 +51,11 @@ function transformConfigs(metrics: V2Metrics["metrics"]): SinglePanelConfig[] {
             nullValue: TransformNullValue.AS_ZERO,
             unit: metric.metric?.unit ?? "short",
           })) ?? [],
-    }
+      })
+    })
   })
+
+  return configs
 }
 
 export function useCtxValue(): AppCtxValue {
@@ -94,8 +107,7 @@ export function useCtxValue(): AppCtxValue {
           ).then((res) => res.instanceList ?? [])
         },
 
-        getMetricDataByPromQL(params) {
-          console.log("getMetric", params)
+        getMetricDataByPromQL() {
           return delay(1000).then(
             () => qpsType.data.result as unknown as PromResultItem[],
           )
@@ -108,13 +120,6 @@ export function useCtxValue(): AppCtxValue {
           step,
           label,
         }) => {
-          console.log("getMetric", {
-            metricName,
-            beginTime,
-            endTime,
-            step,
-            label,
-          })
           let queryData
           if (lastKind === "azores-overview") {
             queryData = await metricsServiceGetTopMetricData(metricName, {

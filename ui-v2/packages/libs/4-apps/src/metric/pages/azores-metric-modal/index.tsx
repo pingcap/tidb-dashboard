@@ -2,7 +2,7 @@ import {
   toURLTimeRange,
   useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Anchor, Box, Modal, Stack } from "@tidbcloud/uikit"
+import { Anchor, Box, Card, Modal, Stack } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
 import { ChartBody } from "../../components/chart-body"
@@ -44,7 +44,7 @@ export function AzoresMetricModal() {
 
         <Box miw={800}>
           <Stack>
-            <Box>
+            <Card p={16} pb={10} bg="carbon.0" shadow="none">
               <ChartHeader title="All Instances" config={selectedChart}>
                 <Anchor
                   onClick={() => ctx.actions.openDiagnosis(diagnosisLinkId)}
@@ -53,10 +53,10 @@ export function AzoresMetricModal() {
                 </Anchor>
               </ChartHeader>
               <ChartBody config={selectedChart} timeRange={timeRange} />
-            </Box>
+            </Card>
 
             {selectedInstance && (
-              <Box>
+              <Card p={16} pb={10} bg="carbon.0" shadow="none">
                 <ChartHeader title={selectedInstance} config={selectedChart}>
                   <Anchor
                     onClick={() =>
@@ -71,7 +71,7 @@ export function AzoresMetricModal() {
                   timeRange={timeRange}
                   labelValue={`instance="${selectedInstance}"`}
                 />
-              </Box>
+              </Card>
             )}
           </Stack>
         </Box>

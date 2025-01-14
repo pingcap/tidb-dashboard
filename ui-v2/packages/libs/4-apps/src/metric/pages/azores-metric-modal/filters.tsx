@@ -54,7 +54,9 @@ export function Filters() {
     <Group>
       {instanceSelect}
 
-      <Box ml="auto">{timeRangePicker}</Box>
+      <Box sx={{ flexGrow: 1 }} />
+
+      {timeRangePicker}
     </Group>
   )
 }

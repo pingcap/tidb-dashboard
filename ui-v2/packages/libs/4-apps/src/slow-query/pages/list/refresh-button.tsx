@@ -8,8 +8,6 @@ export function RefreshButton() {
 
   return (
     <ActionIcon
-      variant="transparent"
-      color="gray"
       onClick={() => {
         reloadList()
       }}

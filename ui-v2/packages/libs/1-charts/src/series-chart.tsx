@@ -4,6 +4,7 @@ import {
   Chart,
   DARK_THEME,
   LIGHT_THEME,
+  LegendValue,
   LineSeries,
   Position,
   ScaleType,
@@ -65,7 +66,8 @@ export function SeriesChart({
         baseTheme={theme === "light" ? LIGHT_THEME : DARK_THEME}
         showLegend
         legendPosition={Position.Right}
-        legendSize={140}
+        legendSize={200}
+        legendValues={[LegendValue.Average]}
         {...charSetting}
       />
 

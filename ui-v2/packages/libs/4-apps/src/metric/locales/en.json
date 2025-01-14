@@ -34,9 +34,9 @@
     },
     "texts": {
       "Core Metrics": "Core Metrics",
-      "Diagnosis": "Diagnosis",
       "Drill Down Analysis": "Drill Down Analysis",
       "Host Monitoring": "Host Monitoring",
+      "SQL Diagnosis": "SQL Diagnosis",
       "The rank may have a delay of up to {{n}} minutes": "The rank may have a delay of up to {{n}} minutes"
     }
   }

@@ -1,5 +1,5 @@
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Box, Card, Group, Typography } from "@tidbcloud/uikit"
+import { Box, Card, Typography } from "@tidbcloud/uikit"
 
 import { ChartBody } from "../../components/chart-body"
 import { ChartHeader } from "../../components/chart-header"
@@ -41,32 +41,31 @@ export function AzoresClusterMetricsPanel({
   const { timeRange } = useMetricsUrlState()
 
   return (
-    <Card p={16} bg="carbon.0">
-      <Group mb={16}>
-        <Typography variant="title-lg">
-          {tk(`panels.${config.category}`, config.category)}
-        </Typography>
-      </Group>
+    <Box>
+      <Typography fw={300} fz={24} mb={8}>
+        {tk(`panels.${config.category}`, config.category)}
+      </Typography>
 
       <Box
         style={{
           display: "grid",
           gap: "1rem",
-          gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(600px, 1fr))",
         }}
       >
         {config.charts.map((c, idx) => (
-          <Box key={c.title + idx}>
+          <Card key={c.title + idx} p={16} pb={10} bg="carbon.0" shadow="none">
             <ChartHeader
               title={c.title}
               enableDrillDown={true}
+              showMoreActions={true}
               config={c}
               timeRange={timeRange}
             />
             <ChartBody config={c} timeRange={timeRange} />
-          </Box>
+          </Card>
         ))}
       </Box>
-    </Card>
+    </Box>
   )
 }

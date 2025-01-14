@@ -34,9 +34,9 @@
     },
     "texts": {
       "Core Metrics": "核心指标",
-      "Diagnosis": "诊断",
       "Drill Down Analysis": "下钻分析",
       "Host Monitoring": "主机监控",
+      "SQL Diagnosis": "SQL 诊断",
       "The rank may have a delay of up to {{n}} minutes": "排名可能会有 {{n}} 分钟的延迟"
     }
   }

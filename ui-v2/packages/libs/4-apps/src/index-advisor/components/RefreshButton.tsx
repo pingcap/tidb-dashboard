@@ -9,8 +9,6 @@ export function RefreshButton() {
   return (
     <Box ml="auto">
       <ActionIcon
-        variant="transparent"
-        color="gray"
         onClick={() => {
           reloadAdvisors()
         }}

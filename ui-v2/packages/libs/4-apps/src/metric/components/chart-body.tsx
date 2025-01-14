@@ -136,7 +136,7 @@ export function ChartBody({
 
   return (
     <Box
-      h={200}
+      h={160}
       ref={chartRef}
       // add `data-metric` attribute to identify the metric name for easy debugging
       data-metric={config.metricName}
@@ -149,7 +149,7 @@ export function ChartBody({
           theme={colorScheme}
         />
       ) : (
-        <Flex h={200} align="center" justify="center">
+        <Flex h="100%" align="center" justify="center">
           <Loader size="xs" />
         </Flex>
       )}

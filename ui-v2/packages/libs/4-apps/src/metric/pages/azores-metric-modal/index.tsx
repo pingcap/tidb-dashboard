@@ -49,7 +49,7 @@ export function AzoresMetricModal() {
                 <Anchor
                   onClick={() => ctx.actions.openDiagnosis(diagnosisLinkId)}
                 >
-                  {tt("Diagnosis")}
+                  {tt("SQL Diagnosis")}
                 </Anchor>
               </ChartHeader>
               <ChartBody config={selectedChart} timeRange={timeRange} />

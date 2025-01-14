@@ -81,7 +81,7 @@ export function Filters() {
         ctx.actions.openDiagnosis(diagnosisLinkId)
       }}
     >
-      {tt("Diagnosis")}
+      {tt("SQL Diagnosis")}
     </Anchor>
   )
 

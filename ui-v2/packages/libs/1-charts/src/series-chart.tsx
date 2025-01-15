@@ -24,10 +24,7 @@ function formatNumByUnit(value: number, unit: string) {
   if (!formatFn) {
     return value + ""
   }
-  if (unit === "short") {
-    return formatFn(value, 0, 1)
-  }
-  return formatFn(value, 1)
+  return formatFn(value, 2)
 }
 
 function niceTimeFormat(seconds: number) {

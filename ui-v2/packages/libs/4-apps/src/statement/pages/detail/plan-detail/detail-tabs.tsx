@@ -41,7 +41,7 @@ export function DetailTabs({ data }: { data: StatementModel }) {
       },
     ]
     return _tabs
-  }, [data])
+  }, [data, tt])
 
   return (
     <Card shadow="xs" p="md">

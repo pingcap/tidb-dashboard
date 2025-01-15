@@ -23,7 +23,7 @@ export function PlanDetail() {
       return tt("Execution Detail of {{plan}}", { plan })
     }
     return tt("Execution Detail")
-  }, [plan])
+  }, [plan, tt])
 
   return (
     <Stack>
@@ -33,10 +33,10 @@ export function PlanDetail() {
 
       {planDetailData && (
         <>
-          {planDetailData.prev_sample_text && (
+          {planDetailData.query_sample_text && (
             <StmtSQL
-              title={tt("Previous Query Sample")}
-              sql={planDetailData.prev_sample_text!}
+              title={tt("Query Sample")}
+              sql={planDetailData.query_sample_text!}
             />
           )}
           {planDetailData.plan && plan !== "all" && (

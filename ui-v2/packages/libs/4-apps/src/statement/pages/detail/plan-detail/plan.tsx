@@ -30,7 +30,7 @@ export function Plan({ plan }: { plan: string }) {
         ),
       },
     ]
-  }, [plan])
+  }, [plan, tt])
 
   return (
     <Card shadow="xs" p="md">

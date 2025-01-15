@@ -2,10 +2,11 @@ import { Stack } from "@tidbcloud/uikit"
 
 import { LoadingCard } from "../../components/loading-card"
 import { useCurPanelConfigsData } from "../../utils/use-data"
-import { AzoresMetricModal } from "../azores-metric-modal"
+import { AzoresMetricDetailDrawer } from "../azores-metric-detail/drawer"
 
 import { Filters } from "./filters"
 import { AzoresClusterMetricsPanel } from "./panel"
+// import { AzoresMetricDetailModal } from "../azores-metric-detail/modal"
 
 export function AzoresClusterMetricsPage() {
   const { panelConfigData, isLoading } = useCurPanelConfigsData()
@@ -27,7 +28,8 @@ export function AzoresClusterMetricsPage() {
         })}
 
       {/* notice: don't put `AzoresMetricModal` in the panel component, all panels should share one modal */}
-      <AzoresMetricModal />
+      {/* <AzoresMetricDetailModal /> */}
+      <AzoresMetricDetailDrawer />
     </Stack>
   )
 }

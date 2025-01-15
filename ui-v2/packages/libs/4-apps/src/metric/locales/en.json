@@ -33,11 +33,13 @@
       "time_range.hour_other": "{{count}} hrs"
     },
     "texts": {
+      "All Instances": "All Instances",
       "Core Metrics": "Core Metrics",
       "Drill Down Analysis": "Drill Down Analysis",
       "Hide": "Hide",
       "Host Monitoring": "Host Monitoring",
       "SQL Diagnosis": "SQL Diagnosis",
+      "Select Instance": "Select Instance",
       "The rank may have a delay of up to {{n}} minutes": "The rank may have a delay of up to {{n}} minutes"
     }
   }

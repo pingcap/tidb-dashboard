@@ -1,4 +1,5 @@
 import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Box, Group, Select } from "@tidbcloud/uikit"
 import { dayjs } from "@tidbcloud/uikit/utils"
 
@@ -7,6 +8,7 @@ import { QUICK_RANGES } from "../../utils/constants"
 import { useMetricLabelValuesData } from "../../utils/use-data"
 
 export function Filters() {
+  const { tt } = useTn("metric")
   const timeRange = useChartState((state) => state.timeRange)
   const setTimeRange = useChartState((state) => state.setTimeRange)
   const selectedChart = useChartState((state) => state.selectedChart)
@@ -24,7 +26,7 @@ export function Filters() {
     <Select
       w={280}
       comboboxProps={{ shadow: "md" }}
-      placeholder="Select Instance"
+      placeholder={tt("Select Instance")}
       data={instancesData || []}
       clearable
       onChange={(v) => {

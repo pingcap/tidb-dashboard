@@ -38,7 +38,6 @@ V2CreateApiKeyRequest,
 ApiKeyServiceUpdateApiKeyBody,
 GlobalBRServiceListBackupPoliciesParams,
 V2BackupPolicyBody,
-V2BackupPolicyBody,
 GlobalBRServiceUpdateBackupPolicyBody,
 GlobalBRServiceGetBRSummaryParams,
 GlobalBRServiceListBRTasksParams,
@@ -63,7 +62,6 @@ DiagnosisServiceGetTopSqlDetailParams,
 CredentialServiceListCredentialsParams,
 V2Credential,
 CredentialServiceUpdateCredentialBody,
-V2DownloadRSAKeyRequest,
 V2GenerateRSAKeyRequest,
 V2ValidateConnectionRequest,
 HostServiceListHostsParams,
@@ -358,7 +356,11 @@ export type CredentialServiceUpdateCredentialContext<E extends Env = any> = Cont
  },json: CredentialServiceUpdateCredentialBody, }, out: { param: {
  credentialId: string,
  },json: CredentialServiceUpdateCredentialBody, } }>
-export type CredentialServiceDownloadRSAKeyContext<E extends Env = any> = Context<E, '/api/v2/credentials:downloadRsaKey', { in: { json: V2DownloadRSAKeyRequest, }, out: { json: V2DownloadRSAKeyRequest, } }>
+export type CredentialServiceDownloadRSAKeyContext<E extends Env = any> = Context<E, '/api/v2/credentials/:credentialId:downloadRsaKey', { in: { param: {
+ credentialId: string,
+ }, }, out: { param: {
+ credentialId: string,
+ }, } }>
 export type CredentialServiceGenerateRSAKeyContext<E extends Env = any> = Context<E, '/api/v2/credentials:generateRsaKey', { in: { json: V2GenerateRSAKeyRequest, }, out: { json: V2GenerateRSAKeyRequest, } }>
 export type CredentialServiceValidateConnectionContext<E extends Env = any> = Context<E, '/api/v2/credentials:validateConnection', { in: { json: V2ValidateConnectionRequest, }, out: { json: V2ValidateConnectionRequest, } }>
 export type HostServiceListHostsContext<E extends Env = any> = Context<E, '/api/v2/hosts', { in: { query: HostServiceListHostsParams, }, out: { query: HostServiceListHostsParams, } }>

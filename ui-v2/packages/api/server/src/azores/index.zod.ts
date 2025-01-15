@@ -998,7 +998,8 @@ export const diagnosisServiceRemoveSqlLimitParams = zod.object({
 })
 
 export const diagnosisServiceRemoveSqlLimitBody = zod.object({
-  "watchText": zod.string()
+  "watchText": zod.string(),
+  "id": zod.string()
 })
 
 export const diagnosisServiceRemoveSqlLimitResponse = zod.object({
@@ -1631,7 +1632,7 @@ export const credentialServiceUpdateCredentialResponse = zod.object({
 })
 
 
-export const credentialServiceDownloadRSAKeyBody = zod.object({
+export const credentialServiceDownloadRSAKeyParams = zod.object({
   "credentialId": zod.string()
 })
 
@@ -2369,7 +2370,7 @@ export const userServiceLogoutResponse = zod.object({
 
 export const metricsServiceGetMetricsQueryParams = zod.object({
   "class": zod.enum(['unspecified', 'cluster', 'host', 'overview']).optional(),
-  "group": zod.enum(['unspecified', 'overview', 'basic', 'advance', 'resource', 'performance', 'process']).optional(),
+  "group": zod.enum(['unspecified', 'overview', 'basic', 'advanced', 'resource', 'performance', 'process']).optional(),
   "type": zod.string().optional(),
   "name": zod.string().optional()
 })

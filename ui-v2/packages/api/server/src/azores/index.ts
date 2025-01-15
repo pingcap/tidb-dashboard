@@ -526,7 +526,7 @@ app.patch('/api/v2/credentials/:credentialId',...credentialServiceUpdateCredenti
  * @summary Download credential public key and private key
  */
 
-app.post('/api/v2/credentials:downloadRsaKey',...credentialServiceDownloadRSAKeyHandlers)
+app.get('/api/v2/credentials/:credentialId:downloadRsaKey',...credentialServiceDownloadRSAKeyHandlers)
 
 
 /**

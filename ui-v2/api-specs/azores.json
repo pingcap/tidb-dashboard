@@ -2650,8 +2650,8 @@
         ]
       }
     },
-    "/api/v2/credentials:downloadRsaKey": {
-      "post": {
+    "/api/v2/credentials/{credentialId}:downloadRsaKey": {
+      "get": {
         "summary": "Download credential public key and private key",
         "operationId": "CredentialService_DownloadRSAKey",
         "responses": {
@@ -2670,12 +2670,11 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
+            "name": "credentialId",
+            "description": "the credential id of the credential",
+            "in": "path",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/v2DownloadRSAKeyRequest"
-            }
+            "type": "string"
           }
         ],
         "tags": [
@@ -3880,7 +3879,7 @@
           },
           {
             "name": "group",
-            "description": "Level 2 grouping\n\n - unspecified: Unspecified group\n - overview: Overview group\n - basic: Basic group\n - advance: Advanced group\n - resource: Resource group\n - performance: Performance group\n - process: Process group",
+            "description": "Level 2 grouping\n\n - unspecified: Unspecified group\n - overview: Overview group\n - basic: Basic group\n - advanced: Advanced group\n - resource: Resource group\n - performance: Performance group\n - process: Process group",
             "in": "query",
             "required": false,
             "type": "string",
@@ -3888,7 +3887,7 @@
               "unspecified",
               "overview",
               "basic",
-              "advance",
+              "advanced",
               "resource",
               "performance",
               "process"
@@ -5556,11 +5555,16 @@
         "watchText": {
           "type": "string",
           "title": "Watch text"
+        },
+        "id": {
+          "type": "string",
+          "title": "SQl limit id"
         }
       },
       "title": "Request message for removing SQL limit",
       "required": [
-        "watchText"
+        "watchText",
+        "id"
       ]
     },
     "DiagnosisServiceUpdateTopSqlConfigsBody": {
@@ -6143,6 +6147,20 @@
       "required": [
         "accessKey"
       ]
+    },
+    "v2AssociatedClusters": {
+      "type": "object",
+      "properties": {
+        "clusterId": {
+          "type": "string",
+          "title": "the tag id of the tag"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "the tag key of the tag"
+        }
+      },
+      "title": "AssociatedClusters"
     },
     "v2BRSummary": {
       "type": "object",
@@ -7071,20 +7089,6 @@
       },
       "title": "ClusterWithoutBRPolicy represents a cluster without BR policy"
     },
-    "v2Clusters": {
-      "type": "object",
-      "properties": {
-        "clusterId": {
-          "type": "string",
-          "title": "the tag id of the tag"
-        },
-        "clusterName": {
-          "type": "string",
-          "title": "the tag key of the tag"
-        }
-      },
-      "title": "Clusters"
-    },
     "v2ConfirmResponse": {
       "type": "object",
       "properties": {
@@ -7302,19 +7306,6 @@
       },
       "title": "DownloadListHostResponse"
     },
-    "v2DownloadRSAKeyRequest": {
-      "type": "object",
-      "properties": {
-        "credentialId": {
-          "type": "string",
-          "title": "the credential id of the credential"
-        }
-      },
-      "title": "DownLoadRSAKey Request",
-      "required": [
-        "credentialId"
-      ]
-    },
     "v2DownloadRSAKeyResponse": {
       "type": "object",
       "properties": {
@@ -7441,13 +7432,13 @@
         "unspecified",
         "overview",
         "basic",
-        "advance",
+        "advanced",
         "resource",
         "performance",
         "process"
       ],
       "default": "unspecified",
-      "description": "- unspecified: Unspecified group\n - overview: Overview group\n - basic: Basic group\n - advance: Advanced group\n - resource: Resource group\n - performance: Performance group\n - process: Process group",
+      "description": "- unspecified: Unspecified group\n - overview: Overview group\n - basic: Basic group\n - advanced: Advanced group\n - resource: Resource group\n - performance: Performance group\n - process: Process group",
       "title": "Data of GroupEnum"
     },
     "v2Host": {
@@ -7610,7 +7601,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v2Clusters"
+            "$ref": "#/definitions/v2AssociatedClusters"
           },
           "title": "The Clusters of the Host"
         },

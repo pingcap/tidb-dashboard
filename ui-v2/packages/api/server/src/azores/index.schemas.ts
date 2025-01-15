@@ -271,7 +271,7 @@ export const MetricsServiceGetMetricsGroup = {
   unspecified: 'unspecified',
   overview: 'overview',
   basic: 'basic',
-  advance: 'advance',
+  advanced: 'advanced',
   resource: 'resource',
   performance: 'performance',
   process: 'process',
@@ -304,7 +304,7 @@ class?: MetricsServiceGetMetricsClass;
  - unspecified: Unspecified group
  - overview: Overview group
  - basic: Basic group
- - advance: Advanced group
+ - advanced: Advanced group
  - resource: Resource group
  - performance: Performance group
  - process: Process group
@@ -1380,6 +1380,10 @@ export interface V2SqlPlanList {
   data?: V2TopSqlDetail[];
 }
 
+export interface V2SqlPlanBindingList {
+  data?: V2SqlPlanBindingDetail[];
+}
+
 export type V2SqlPlanBindingDetailStatus = typeof V2SqlPlanBindingDetailStatus[keyof typeof V2SqlPlanBindingDetailStatus];
 
 
@@ -1410,10 +1414,6 @@ export interface V2SqlPlanBindingDetail {
   planDigest?: string;
   source?: V2SqlPlanBindingDetailSource;
   status?: V2SqlPlanBindingDetailStatus;
-}
-
-export interface V2SqlPlanBindingList {
-  data?: V2SqlPlanBindingDetail[];
 }
 
 export type V2SqlLimitAction = typeof V2SqlLimitAction[keyof typeof V2SqlLimitAction];
@@ -1935,7 +1935,7 @@ export const V2HostCheckStatus = {
 
 export interface V2Host {
   checkStatus?: V2HostCheckStatus;
-  clusters?: V2Clusters[];
+  clusters?: V2AssociatedClusters[];
   comment?: string;
   connectionStatus?: V2HostConnectionStatus;
   cpuArch?: string;
@@ -1985,7 +1985,7 @@ export interface V2Host {
  * - unspecified: Unspecified group
  - overview: Overview group
  - basic: Basic group
- - advance: Advanced group
+ - advanced: Advanced group
  - resource: Resource group
  - performance: Performance group
  - process: Process group
@@ -1998,7 +1998,7 @@ export const V2GroupEnumData = {
   unspecified: 'unspecified',
   overview: 'overview',
   basic: 'basic',
-  advance: 'advance',
+  advanced: 'advanced',
   resource: 'resource',
   performance: 'performance',
   process: 'process',
@@ -2045,10 +2045,6 @@ export interface V2ErrorDetail {
 
 export interface V2DownloadRSAKeyResponse {
   data?: string;
-}
-
-export interface V2DownloadRSAKeyRequest {
-  credentialId: string;
 }
 
 export interface V2DownloadListHostResponse {
@@ -2156,11 +2152,6 @@ export interface V2CreateApiKeyRequest {
 
 export interface V2ConfirmResponse {
   taskId: string;
-}
-
-export interface V2Clusters {
-  clusterId?: string;
-  clusterName?: string;
 }
 
 export interface V2ClusterWithoutBRPolicy {
@@ -2500,6 +2491,11 @@ export interface V2BRSummary {
   topClustersWithoutBrPolicy?: V2ClusterWithoutBRPolicy[];
 }
 
+export interface V2AssociatedClusters {
+  clusterId?: string;
+  clusterName?: string;
+}
+
 export type V2ApiKeyStatus = typeof V2ApiKeyStatus[keyof typeof V2ApiKeyStatus];
 
 
@@ -2794,6 +2790,7 @@ export interface DiagnosisServiceUpdateTopSqlConfigsBody {
 }
 
 export interface DiagnosisServiceRemoveSqlLimitBody {
+  id: string;
   watchText: string;
 }
 

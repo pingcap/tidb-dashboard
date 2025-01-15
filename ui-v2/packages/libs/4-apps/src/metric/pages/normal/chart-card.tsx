@@ -93,6 +93,7 @@ export function ChartCard({ config }: { config: SingleChartConfig }) {
             data={seriesData}
             timeRange={tr}
             theme={colorScheme}
+            charSetting={{ xDomain: undefined }}
           />
         ) : (
           <Flex h={200} align="center" justify="center">

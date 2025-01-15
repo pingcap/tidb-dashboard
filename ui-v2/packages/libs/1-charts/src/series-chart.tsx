@@ -9,6 +9,7 @@ import {
   LineSeries,
   Position,
   ScaleType,
+  SeriesIdentifier,
   Settings,
   SettingsProps,
   timeFormatter,
@@ -95,6 +96,15 @@ export function SeriesChart({
     [onBrush],
   )
 
+  // @todo: it seems doesn't work, try it later
+  const specIds = useMemo(() => data.map((d) => d.id), [data])
+  const handleLegendSort = useCallback(
+    (a: SeriesIdentifier, b: SeriesIdentifier) => {
+      return specIds.indexOf(a.specId) - specIds.indexOf(b.specId)
+    },
+    [specIds],
+  )
+
   return (
     <Chart>
       <Settings
@@ -103,6 +113,7 @@ export function SeriesChart({
         legendPosition={Position.Right}
         legendSize={200}
         legendValues={[LegendValue.Average]}
+        legendSort={handleLegendSort}
         xDomain={{ min: timeRange[0] * 1000, max: timeRange[1] * 1000 }}
         onBrushEnd={onBrush && handleBrushEnd}
         {...charSetting}

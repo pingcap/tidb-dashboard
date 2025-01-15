@@ -1,6 +1,12 @@
 import { createContext, useContext } from "react"
 
 ////////////////////////////////
+export type SqlLimitStatusItem = {
+  id: string
+  ru_group: string
+  action: string
+  start_time: string
+}
 
 export type AppApi = {
   // sql limit
@@ -8,13 +14,13 @@ export type AppApi = {
   checkSqlLimitSupport(): Promise<{ is_support: boolean }>
   getSqlLimitStatus(params: {
     watchText: string
-  }): Promise<{ ru_group: string; action: string }>
+  }): Promise<SqlLimitStatusItem[]>
   createSqlLimit(params: {
     watchText: string
     ruGroup: string
     action: string
   }): Promise<void>
-  deleteSqlLimit(params: { watchText: string }): Promise<void>
+  deleteSqlLimit(params: { watchText: string; id: string }): Promise<void>
 }
 
 export type AppCtxValue = {

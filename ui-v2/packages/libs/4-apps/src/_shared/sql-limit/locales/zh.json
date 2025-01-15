@@ -4,15 +4,21 @@
     "keys": {},
     "texts": {
       "Action": "操作",
-      "Delete Limit": "取消限流",
-      "Delete SQL limit failed": "取消 SQL 限流失败",
-      "Delete SQL limit successfully": "取消 SQL 限流成功",
+      "Add or Update": "添加或更新",
+      "Are you sure to delete this limit (Resource Group - {{ruGroup}}, Action - {{action}})?": "你确定要删除此限流 (资源组 - {{ruGroup}}, 操作 - {{action}}) 吗？",
+      "Cancel": "取消",
+      "Delete Limit": "删除限流",
+      "Delete SQL limit failed": "删除 SQL 限流失败",
+      "Delete SQL limit successfully": "删除 SQL 限流成功",
+      "Delete": "删除",
       "Resource Group": "资源组",
+      "SQL Limit Setting": "SQL 限流设置",
       "SQL Limit": "SQL 限流",
       "SQL limit feature is only available in and above {{distro.tidb}} 7.5.0": "SQL 限流功能仅在 {{distro.tidb}} 7.5.0 及以上版本可用",
       "Set Limit": "设置限流",
       "Set SQL limit failed": "设置 SQL 限流失败",
       "Set SQL limit successfully": "设置 SQL 限流成功",
+      "Start Time": "开始时间",
       "There is no resource groups, please create a resource group manually first": "暂无资源组，请先手动创建资源组"
     }
   }

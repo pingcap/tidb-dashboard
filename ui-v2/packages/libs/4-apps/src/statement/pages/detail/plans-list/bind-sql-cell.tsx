@@ -146,7 +146,7 @@ export function SqlPlanBindActionCell({
   if (bindPlanDigests.length > 0) {
     if (bindPlanDigests.includes(curPlanDigest)) {
       return (
-        <Button variant="transparent" color="red" onClick={confirmUnbindPlan}>
+        <Button variant="transparent" c="red.7" onClick={confirmUnbindPlan}>
           {tt("Unbind")}
         </Button>
       )
@@ -154,7 +154,7 @@ export function SqlPlanBindActionCell({
     return null
   }
   return (
-    <Button variant="transparent" color="peacock" onClick={confirmBindPlan}>
+    <Button variant="transparent" c="peacock.7" onClick={confirmBindPlan}>
       {tt("Bind")}
     </Button>
   )

@@ -169,10 +169,14 @@ export function useCtxValue(): AppCtxValue {
         getSqlLimitStatus(params) {
           return diagnosisServiceGetSqlLimitList(clusterId, {
             watchText: params.watchText,
-          }).then((res) => ({
-            ru_group: res.data?.[0]?.resourceGroupName ?? "",
-            action: res.data?.[0]?.action ?? "",
-          }))
+          }).then((res) =>
+            (res.data || []).map((d) => ({
+              id: d.id ?? "",
+              ru_group: d.resourceGroupName ?? "",
+              action: d.action ?? "",
+              start_time: d.startTime ?? "",
+            })),
+          )
         },
         createSqlLimit(params) {
           return diagnosisServiceAddSqlLimit(clusterId, {

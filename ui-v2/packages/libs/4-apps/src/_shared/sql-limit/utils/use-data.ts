@@ -45,8 +45,8 @@ export function useDeleteSqlLimitData() {
   const ctx = useAppContext()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => {
-      return ctx.api.deleteSqlLimit({ watchText: ctx.sqlDigest })
+    mutationFn: (id: string) => {
+      return ctx.api.deleteSqlLimit({ watchText: ctx.sqlDigest, id })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.15.0
+
+### Minor Changes
+
+- update sql-limit ux
+
 ## 0.14.0
 
 ### Minor Changes

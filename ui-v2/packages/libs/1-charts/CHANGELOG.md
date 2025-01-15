@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.13.0
+
+### Minor Changes
+
+- suport brush to change time range
+
 ## 0.12.0
 
 ### Minor Changes

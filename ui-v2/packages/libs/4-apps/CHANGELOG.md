@@ -1,5 +1,16 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.14.0
+
+### Minor Changes
+
+- add drill down drawer for metrics
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-charts@0.13.0
+
 ## 0.13.0
 
 ### Minor Changes

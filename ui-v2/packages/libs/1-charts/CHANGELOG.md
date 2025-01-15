@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.13.1
+
+### Patch Changes
+
+- increase data format decimal
+
 ## 0.13.0
 
 ### Minor Changes

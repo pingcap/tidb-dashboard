@@ -9,7 +9,7 @@ import { useDetailUrlState } from "../../shared-state/detail-url-state"
 export function RelatedStatement({ dbName }: { dbName: string }) {
   const { id } = useDetailUrlState()
   const ctx = useAppContext()
-  const newId = useMemo(() => {
+  const statementId = useMemo(() => {
     const [sqlDigest, _connectionId, _timestamp, from, to] = id.split(",")
     return [from, to, sqlDigest, dbName].join(",")
   }, [id, dbName])
@@ -19,7 +19,7 @@ export function RelatedStatement({ dbName }: { dbName: string }) {
     <Card shadow="xs" p="md">
       <Anchor
         onClick={() => {
-          ctx.actions.openStatementDetail(newId)
+          ctx.actions.openStatement(statementId)
         }}
         w="fit-content"
       >

@@ -154,8 +154,10 @@ export function useCtxValue(): AppCtxValue {
           const preUrl = window.preUrl?.pop()
           navigate({ to: preUrl || "/slow-query" })
         },
-        openStatementDetail(id) {
-          window.open(`/statement/detail?id=${id}`, "_blank")
+        openStatement(id) {
+          const [from, to, sqlDigest, dbName] = id.split(",")
+          const fullUrl = `/statement?from=${from}&to=${to}&af=digest,${encodeURIComponent("=")},${sqlDigest};schema_name,in,${dbName}`
+          window.open(fullUrl, "_blank")
         },
       },
     }),

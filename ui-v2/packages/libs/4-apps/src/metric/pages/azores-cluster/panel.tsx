@@ -1,4 +1,7 @@
-import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  TimeRangeValue,
+  useTn,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Box, Card, Typography } from "@tidbcloud/uikit"
 
 import { ChartBody } from "../../components/chart-body"
@@ -39,12 +42,16 @@ export function AzoresClusterMetricsPanel({
   config: SinglePanelConfig
 }) {
   const { tk } = useTn("metric")
-  const { timeRange } = useMetricsUrlState()
+  const { timeRange, setTimeRange } = useMetricsUrlState()
   const hiddenCharts = useChartsSelectState((s) => s.hiddenCharts)
 
   const visibleCharts = config.charts.filter((c) => {
     return !hiddenCharts.includes(c.metricName)
   })
+
+  function handleTimeRangeChange(v: TimeRangeValue) {
+    setTimeRange({ type: "absolute", value: v })
+  }
 
   if (visibleCharts.length === 0) {
     return null
@@ -72,7 +79,11 @@ export function AzoresClusterMetricsPanel({
               config={c}
               timeRange={timeRange}
             />
-            <ChartBody config={c} timeRange={timeRange} />
+            <ChartBody
+              config={c}
+              timeRange={timeRange}
+              onTimeRangeChange={handleTimeRangeChange}
+            />
           </Card>
         ))}
       </Box>

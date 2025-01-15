@@ -1,4 +1,5 @@
 import {
+  TimeRangeValue,
   useTimeRangeUrlState,
   useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
@@ -24,7 +25,11 @@ export function AzoresHostMetricsPanel({
   config: SinglePanelConfig
 }) {
   const { tk } = useTn("metric")
-  const { timeRange } = useTimeRangeUrlState()
+  const { timeRange, setTimeRange } = useTimeRangeUrlState()
+
+  function handleTimeRangeChange(v: TimeRangeValue) {
+    setTimeRange({ type: "absolute", value: v })
+  }
 
   return (
     <Card p={16} bg="carbon.0">
@@ -44,7 +49,11 @@ export function AzoresHostMetricsPanel({
         {config.charts.map((c, idx) => (
           <Box key={c.title + idx}>
             <ChartHeader title={c.title} config={c} />
-            <ChartBody config={c} timeRange={timeRange} />
+            <ChartBody
+              config={c}
+              timeRange={timeRange}
+              onTimeRangeChange={handleTimeRangeChange}
+            />
           </Box>
         ))}
       </Box>

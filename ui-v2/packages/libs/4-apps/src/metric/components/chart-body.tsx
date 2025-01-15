@@ -5,6 +5,7 @@ import {
 import {
   PromResultItem,
   TimeRange,
+  TimeRangeValue,
   TransformNullValue,
   calcPromQueryStep,
   toTimeRangeValue,
@@ -37,10 +38,12 @@ export function transformData(
 export function ChartBody({
   config,
   timeRange,
+  onTimeRangeChange,
   labelValue,
 }: {
   config: SingleChartConfig
   timeRange: TimeRange
+  onTimeRangeChange?: (timeRange: TimeRangeValue) => void
   labelValue?: string
 }) {
   const ctx = useAppContext()
@@ -147,6 +150,7 @@ export function ChartBody({
           data={seriesData}
           timeRange={tr}
           theme={colorScheme}
+          onBrush={onTimeRangeChange}
         />
       ) : (
         <Flex h="100%" align="center" justify="center">

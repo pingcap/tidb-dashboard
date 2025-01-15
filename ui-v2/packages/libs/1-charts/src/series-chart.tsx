@@ -1,6 +1,7 @@
 import { getValueFormat } from "@baurine/grafana-value-formats"
 import {
   Axis,
+  BrushEvent,
   Chart,
   DARK_THEME,
   LIGHT_THEME,
@@ -12,7 +13,7 @@ import {
   SettingsProps,
   timeFormatter,
 } from "@elastic/charts"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 
 import { renderSeriesData } from "./series-render"
 import { SeriesData } from "./type"
@@ -38,14 +39,32 @@ function niceTimeFormat(seconds: number) {
   return "HH:mm:ss"
 }
 
+// align the time range according to the minimal interval and minimal range size.
+export function alignRange(
+  range: TimeRangeValue,
+  minIntervalSec = 30,
+  minRangeSec = 60,
+): TimeRangeValue {
+  let [min, max] = range
+  if (max - min < minRangeSec) {
+    min = max - minRangeSec
+  }
+  min = Math.floor(min / minIntervalSec) * minIntervalSec
+  max = Math.ceil(max / minIntervalSec) * minIntervalSec
+  return [min, max]
+}
+
 const tooltipHeaderFormatter = timeFormatter("YYYY-MM-DD HH:mm:ss")
+
+type TimeRangeValue = [number, number]
 
 type SeriesChartProps = {
   theme?: "light" | "dark"
   data: SeriesData[]
   unit: string
-  timeRange: [number, number]
+  timeRange: TimeRangeValue
   charSetting?: SettingsProps
+  onBrush?: (range: TimeRangeValue) => void
 }
 
 export function SeriesChart({
@@ -54,10 +73,26 @@ export function SeriesChart({
   unit,
   timeRange,
   charSetting,
+  onBrush,
 }: SeriesChartProps) {
   const xAxisFormatter = useMemo(
     () => timeFormatter(niceTimeFormat(timeRange[1] - timeRange[0])),
     [timeRange],
+  )
+
+  // note: this doesn't work with StrictMode in debug mode (it's fine in production)
+  const handleBrushEnd = useCallback(
+    (ev: BrushEvent) => {
+      if (!ev.x) {
+        return
+      }
+      const timeRange: TimeRangeValue = [
+        Math.floor((ev.x[0] as number) / 1000),
+        Math.floor((ev.x[1] as number) / 1000),
+      ]
+      onBrush?.(alignRange(timeRange))
+    },
+    [onBrush],
   )
 
   return (
@@ -68,6 +103,8 @@ export function SeriesChart({
         legendPosition={Position.Right}
         legendSize={200}
         legendValues={[LegendValue.Average]}
+        xDomain={{ min: timeRange[0] * 1000, max: timeRange[1] * 1000 }}
+        onBrushEnd={onBrush && handleBrushEnd}
         {...charSetting}
       />
 

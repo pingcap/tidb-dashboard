@@ -8,6 +8,7 @@ import { usePlanDetailData } from "../../utils/use-data"
 
 import { PlanDetail } from "./plan-detail"
 import { PlansList } from "./plans-list"
+import { SqlHistory } from "./sql-history"
 import { SqlLimit } from "./sql-limit"
 import { StmtBasic } from "./stmt-basic"
 import { StmtSQL } from "./stmt-sql"
@@ -41,7 +42,10 @@ export function Detail() {
             sql={planData.digest_text!}
           />
           <StmtBasic stmt={planData} />
+
+          <SqlHistory sqlDigest={planData.digest!} />
           <SqlLimit sqlDigest={planData.digest!} />
+
           <PlansList detailData={planData} />
           <PlanDetail />
         </Stack>

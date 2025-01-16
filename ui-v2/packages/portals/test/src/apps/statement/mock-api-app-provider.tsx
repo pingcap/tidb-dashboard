@@ -190,6 +190,35 @@ export function useCtxValue(): AppCtxValue {
             () => {},
           )
         },
+
+        // sql history
+        getHistoryMetricNames() {
+          return Promise.resolve([
+            { name: "sum_latency", unit: "ns" },
+            { name: "avg_latency", unit: "ns" },
+            { name: "max_latency", unit: "ns" },
+            { name: "min_latency", unit: "ns" },
+            { name: "exec_count", unit: "short" },
+            { name: "plan_count", unit: "short" },
+          ])
+        },
+        getHistoryMetricData(params) {
+          return diagnosisServiceGetTopSqlList(clusterId, {
+            beginTime: params.beginTime + "",
+            endTime: params.endTime + "",
+            orderBy: "summary_begin_time",
+            isDesc: false,
+            pageSize: 1000,
+            fields: ["summary_begin_time", params.metricName].join(","),
+            advancedFilter: [`digest = ${params.sqlDigest}`],
+            isGroupByTime: true,
+          }).then((res) =>
+            (res.data ?? []).map((d) => [
+              d.summary_begin_time! * 1000,
+              d[params.metricName as keyof typeof d]! as number,
+            ]),
+          )
+        },
       },
       cfg: {
         title: "",

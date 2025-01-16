@@ -15,6 +15,13 @@ function useLocales() {
   // used for gogocode to scan and generate en.json before build
   tk("metric.query_time", "Latency")
   tk("metric.memory_max", "Max Memory")
+
+  tk("metric.sum_latency", "Total Latency")
+  tk("metric.avg_latency", "Average Latency")
+  tk("metric.max_latency", "Max Latency")
+  tk("metric.min_latency", "Min Latency")
+  tk("metric.exec_count", "Execution Count")
+  tk("metric.plan_count", "Plans Count")
 }
 
 const QUICK_RANGES: number[] = [

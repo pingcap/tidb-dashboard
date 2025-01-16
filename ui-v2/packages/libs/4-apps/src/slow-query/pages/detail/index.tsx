@@ -10,6 +10,7 @@ import { DetailTabs } from "./detail-tabs"
 import { DetailPlan } from "./plan"
 import { DetailQuery } from "./query"
 import { RelatedStatement } from "./related-statement-link"
+import { SqlHistory } from "./sql-history"
 import { SqlLimit } from "./sql-limit"
 
 export function Detail() {
@@ -41,6 +42,7 @@ export function Detail() {
 
           <RelatedStatement dbName={detailData.db!} />
 
+          <SqlHistory sqlDigest={detailData.digest!} />
           <SqlLimit sqlDigest={detailData.digest!} />
 
           {detailData.plan && <DetailPlan plan={detailData.plan} />}

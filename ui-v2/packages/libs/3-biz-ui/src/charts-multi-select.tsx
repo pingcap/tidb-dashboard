@@ -46,7 +46,6 @@ export type ChartMultiSelectProps = {
   onReset?: () => void
 }
 
-// @todo: change onChange to onSelect/onUnSelect to simplify the logic
 export function ChartMultiSelect({
   data,
   value,

@@ -9,11 +9,13 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import {
   AppCtxValue,
-  PromResultItem,
   SinglePanelConfig,
-  TransformNullValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
-import { delay } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  PromResultItem,
+  TransformNullValue,
+  delay,
+} from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMemo } from "react"
 
 import { normalQueryConfig } from "./sample-data/normal-configs"

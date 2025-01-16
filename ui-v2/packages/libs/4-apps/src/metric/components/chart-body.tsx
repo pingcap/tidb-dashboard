@@ -75,6 +75,7 @@ export function ChartBody({
     labelValue,
   )
 
+  // @todo: https://mantine.dev/hooks/use-intersection/ use this hook to simplify
   // only fetch data when the chart is visible in the viewport
   useEffect(() => {
     const observer = new IntersectionObserver(

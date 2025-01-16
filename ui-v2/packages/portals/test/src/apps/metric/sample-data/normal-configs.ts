@@ -1,7 +1,5 @@
-import {
-  SinglePanelConfig,
-  TransformNullValue,
-} from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
+import { SinglePanelConfig } from "@pingcap-incubator/tidb-dashboard-lib-apps/metric"
+import { TransformNullValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
 export const normalQueryConfig: SinglePanelConfig[] = [
   {

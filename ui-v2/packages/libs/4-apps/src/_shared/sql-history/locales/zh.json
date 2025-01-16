@@ -1,0 +1,12 @@
+{
+  "comment": "this file can be updated by running `pnpm gen:locales` command",
+  "sql-history": {
+    "keys": {
+      "metric.memory_max": "最大内存",
+      "metric.query_time": "总执行时间"
+    },
+    "texts": {
+      "SQL History": "SQL 历史"
+    }
+  }
+}

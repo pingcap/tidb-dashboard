@@ -1,39 +1,41 @@
 import { AdvancedFilterItem } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { createContext, useContext } from "react"
 
+import { AppApi as SqlHistoryAppApi } from "../../_shared/sql-history"
 import { AppApi as SqlLimitAppApi } from "../../_shared/sql-limit"
 import { AdvancedFilterInfoModel, SlowqueryModel } from "../models"
 
 ////////////////////////////////
 
-type AppApi = SqlLimitAppApi & {
-  // filters
-  getDbs(): Promise<string[]>
-  // advanced filters
-  getAdvancedFilterNames(): Promise<string[]>
-  getAdvancedFilterInfo(params: {
-    name: string
-  }): Promise<AdvancedFilterInfoModel>
-  // available fields
-  getAvailableFields(): Promise<string[]>
+type AppApi = SqlLimitAppApi &
+  SqlHistoryAppApi & {
+    // filters
+    getDbs(): Promise<string[]>
+    // advanced filters
+    getAdvancedFilterNames(): Promise<string[]>
+    getAdvancedFilterInfo(params: {
+      name: string
+    }): Promise<AdvancedFilterInfoModel>
+    // available fields
+    getAvailableFields(): Promise<string[]>
 
-  // list & detail
-  getSlowQueries(params: {
-    beginTime: number
-    endTime: number
-    dbs: string[]
-    ruGroups: string[]
-    sqlDigest: string
-    term: string
-    limit: number
-    orderBy: string
-    desc: boolean
-    advancedFilters: AdvancedFilterItem[]
-    fields: string[]
-  }): Promise<SlowqueryModel[]>
+    // list & detail
+    getSlowQueries(params: {
+      beginTime: number
+      endTime: number
+      dbs: string[]
+      ruGroups: string[]
+      sqlDigest: string
+      term: string
+      limit: number
+      orderBy: string
+      desc: boolean
+      advancedFilters: AdvancedFilterItem[]
+      fields: string[]
+    }): Promise<SlowqueryModel[]>
 
-  getSlowQuery(params: { id: string }): Promise<SlowqueryModel>
-}
+    getSlowQuery(params: { id: string }): Promise<SlowqueryModel>
+  }
 
 type AppConfig = {
   title?: string

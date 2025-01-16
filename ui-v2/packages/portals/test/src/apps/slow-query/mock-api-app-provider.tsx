@@ -137,6 +137,30 @@ export function useCtxValue(): AppCtxValue {
             () => {},
           )
         },
+
+        // sql history
+        getHistoryMetricNames() {
+          return Promise.resolve([
+            { name: "query_time", unit: "s" },
+            { name: "memory_max", unit: "bytes" },
+          ])
+        },
+        getHistoryMetricData(params) {
+          return diagnosisServiceGetSlowQueryList(clusterId, {
+            beginTime: params.beginTime + "",
+            endTime: params.endTime + "",
+            orderBy: "timestamp",
+            isDesc: false,
+            pageSize: 1000,
+            fields: ["timestamp", params.metricName].join(","),
+            advancedFilter: [`digest = ${params.sqlDigest}`],
+          }).then((res) =>
+            (res.data ?? []).map((d) => [
+              d.timestamp! * 1000,
+              d[params.metricName as keyof typeof d]! as number,
+            ]),
+          )
+        },
       },
       cfg: {
         title: "",

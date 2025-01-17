@@ -143,6 +143,7 @@ export function useCtxValue(): AppCtxValue {
           return Promise.resolve([
             { name: "query_time", unit: "s" },
             { name: "memory_max", unit: "bytes" },
+            { name: "disk_max", unit: "bytes" },
           ])
         },
         getHistoryMetricData(params) {

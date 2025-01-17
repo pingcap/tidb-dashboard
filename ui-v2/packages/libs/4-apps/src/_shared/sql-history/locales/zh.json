@@ -2,8 +2,11 @@
   "comment": "this file can be updated by running `pnpm gen:locales` command",
   "sql-history": {
     "keys": {
+      "metric.avg_disk": "平均磁盘空间",
       "metric.avg_latency": "平均耗时",
+      "metric.disk_max": "最大磁盘空间",
       "metric.exec_count": "执行次数",
+      "metric.max_disk": "最大磁盘空间",
       "metric.max_latency": "最大耗时",
       "metric.memory_max": "最大内存",
       "metric.min_latency": "最小耗时",

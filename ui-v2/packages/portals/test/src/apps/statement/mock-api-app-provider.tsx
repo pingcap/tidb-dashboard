@@ -220,6 +220,8 @@ export function useCtxValue(): AppCtxValue {
             { name: "avg_latency", unit: "ns" },
             { name: "max_latency", unit: "ns" },
             { name: "min_latency", unit: "ns" },
+            { name: "avg_disk", unit: "bytes" },
+            { name: "max_disk", unit: "bytes" },
             { name: "exec_count", unit: "short" },
             { name: "plan_count", unit: "short" },
           ])

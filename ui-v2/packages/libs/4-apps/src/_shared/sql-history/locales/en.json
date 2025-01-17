@@ -2,8 +2,11 @@
   "comment": "this file can be updated by running `pnpm gen:locales` command",
   "sql-history": {
     "keys": {
+      "metric.avg_disk": "Average Disk",
       "metric.avg_latency": "Average Latency",
+      "metric.disk_max": "Max Disk",
       "metric.exec_count": "Execution Count",
+      "metric.max_disk": "Max Disk",
       "metric.max_latency": "Max Latency",
       "metric.memory_max": "Max Memory",
       "metric.min_latency": "Min Latency",

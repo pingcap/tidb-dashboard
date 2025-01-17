@@ -6,6 +6,7 @@ import { useSqlHistoryState } from "../shared-state/memory-state"
 
 import { SqlHistoryChart } from "./chart"
 import { Filters } from "./filters"
+import { TimeRangeClipAlert } from "./time-range-clip-alert"
 
 export function SqlHistoryCard() {
   const { tt } = useTn("sql-history")
@@ -25,6 +26,7 @@ export function SqlHistoryCard() {
           <Title order={5}>{tt("SQL History")}</Title>
           <Filters />
         </Group>
+        <TimeRangeClipAlert />
         <SqlHistoryChart />
       </Stack>
     </Card>

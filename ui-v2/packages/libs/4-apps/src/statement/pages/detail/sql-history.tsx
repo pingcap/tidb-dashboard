@@ -21,8 +21,10 @@ export function SqlHistory({ sqlDigest }: { sqlDigest: string }) {
   const ctxValue = useMemo(
     () => ({
       ...ctx,
-      sqlDigest,
-      initialTimeRange,
+      cfg: {
+        sqlDigest,
+        initialTimeRange,
+      },
     }),
     [ctx, sqlDigest, initialTimeRange],
   )

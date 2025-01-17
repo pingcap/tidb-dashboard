@@ -2,7 +2,10 @@ import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useQuery } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx"
-import { useSqlHistoryState } from "../shared-state/memory-state"
+import {
+  useSqlHistoryState,
+  useTimeRangeValueState,
+} from "../shared-state/memory-state"
 
 export function useSqlHistoryMetricNamesData() {
   const ctx = useAppContext()
@@ -17,22 +20,33 @@ export function useSqlHistoryMetricData() {
   const metric = useSqlHistoryState((state) => state.metric)
   const timeRange = useSqlHistoryState((state) => state.timeRange)
 
+  const setTRV = useTimeRangeValueState((s) => s.setTRV)
+
   return useQuery({
     queryKey: [
       ctx.ctxId,
       "sql-history",
       "metric-data",
-      ctx.sqlDigest,
+      ctx.cfg.sqlDigest,
       metric,
       timeRange,
     ],
     queryFn: () => {
       const tr = toTimeRangeValue(timeRange!)
+      const beginTime = tr[0]
+      let endTime = tr[1]
+      if (ctx.cfg.timeRangeMaxDuration) {
+        const beyondMax = endTime - beginTime > ctx.cfg.timeRangeMaxDuration
+        if (beyondMax) {
+          endTime = beginTime + ctx.cfg.timeRangeMaxDuration
+        }
+        setTRV([beginTime, endTime], beyondMax)
+      }
       return ctx.api.getHistoryMetricData({
-        sqlDigest: ctx.sqlDigest,
+        sqlDigest: ctx.cfg.sqlDigest,
         metricName: metric!.name,
-        beginTime: tr[0],
-        endTime: tr[1],
+        beginTime,
+        endTime,
       })
     },
     enabled: !!metric && !!timeRange,

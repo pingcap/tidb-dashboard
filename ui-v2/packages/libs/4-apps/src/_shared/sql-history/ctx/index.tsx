@@ -18,13 +18,17 @@ export type AppApi = {
   }): Promise<[number, number][]>
 }
 
+export type AppConfig = {
+  sqlDigest: string
+  initialTimeRange: TimeRange
+  timeRangeMaxDuration?: number // unit: seconds
+}
+
 export type AppCtxValue = {
   // we use ctxId to be a part of queryKey for react-query,
   // to differ same requests from different clusters, so this value can be clusterId, or other unique value
   ctxId: string
-  sqlDigest: string
-  initialTimeRange: TimeRange
-
+  cfg: AppConfig
   api: AppApi
 }
 

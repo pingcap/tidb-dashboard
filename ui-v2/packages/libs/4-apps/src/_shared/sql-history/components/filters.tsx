@@ -77,13 +77,13 @@ function TimeRangeSelect() {
   const setTimeRange = useSqlHistoryState((state) => state.setTimeRange)
   useEffect(() => {
     if (!timeRange) {
-      setTimeRange(ctx.initialTimeRange)
+      setTimeRange(ctx.cfg.initialTimeRange)
     }
   }, [timeRange])
 
   return (
     <TimeRangePicker
-      value={timeRange || ctx.initialTimeRange}
+      value={timeRange || ctx.cfg.initialTimeRange}
       onChange={setTimeRange}
       quickRanges={QUICK_RANGES}
       minDateTime={() =>

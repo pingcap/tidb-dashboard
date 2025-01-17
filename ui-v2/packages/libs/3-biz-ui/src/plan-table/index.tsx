@@ -20,24 +20,28 @@ const columns: MRT_ColumnDef<PlanItem>[] = [
     id: "estRows",
     header: "estRows",
     size: 120,
+    enableResizing: false,
     accessorFn: (row) => row.estRows,
   },
   {
     id: "estCost",
     header: "estCost",
     size: 120,
+    enableResizing: false,
     accessorFn: (row) => row.estCost,
   },
   {
     id: "actRows",
     header: "actRows",
     size: 120,
+    enableResizing: false,
     accessorFn: (row) => row.actRows,
   },
   {
     id: "task",
     header: "task",
     size: 100,
+    enableResizing: false,
     accessorFn: (row) => row.task,
   },
   {
@@ -61,6 +65,7 @@ const columns: MRT_ColumnDef<PlanItem>[] = [
   {
     id: "executionInfo",
     header: "execution info",
+    enableResizing: false,
     accessorFn: (row) => (
       <Tooltip
         withinPortal
@@ -78,6 +83,7 @@ const columns: MRT_ColumnDef<PlanItem>[] = [
   {
     id: "operatorInfo",
     header: "operator info",
+    enableResizing: false,
     accessorFn: (row) => {
       // truncate the string if it's too long
       // operation info may be super super long
@@ -112,12 +118,14 @@ const columns: MRT_ColumnDef<PlanItem>[] = [
     id: "memory",
     header: "memory",
     size: 100,
+    enableResizing: false,
     accessorFn: (row) => row.memory,
   },
   {
     id: "disk",
     header: "disk",
     size: 100,
+    enableResizing: false,
     accessorFn: (row) => row.disk,
   },
 ]
@@ -130,6 +138,8 @@ export function PlanTable({ plan }: { plan: string }) {
     <ProTable
       data={planItems}
       columns={columns}
+      layoutMode="grid"
+      enableColumnResizing
       enableColumnPinning
       initialState={{
         columnVisibility: {

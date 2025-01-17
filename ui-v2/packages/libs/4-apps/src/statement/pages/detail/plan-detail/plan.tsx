@@ -10,11 +10,6 @@ export function Plan({ plan }: { plan: string }) {
   const tabs = useMemo(() => {
     return [
       {
-        label: tt("Table"),
-        value: "table",
-        component: <PlanTable plan={plan} />,
-      },
-      {
         label: tt("Text"),
         value: "text",
         component: (
@@ -28,6 +23,11 @@ export function Plan({ plan }: { plan: string }) {
             {plan}
           </CodeBlock>
         ),
+      },
+      {
+        label: tt("Table"),
+        value: "table",
+        component: <PlanTable plan={plan} />,
       },
     ]
   }, [plan, tt])

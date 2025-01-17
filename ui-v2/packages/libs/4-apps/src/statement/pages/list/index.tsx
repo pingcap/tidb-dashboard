@@ -1,9 +1,10 @@
 import { Box, Group, Stack, Title } from "@tidbcloud/uikit"
 
 import { useAppContext } from "../../ctx"
-import { useListData } from "../../utils/use-data"
+import { useListData, useStmtConfigData } from "../../utils/use-data"
 
 import { ColsSelect } from "./cols-select"
+import { DisabledStatusCard } from "./disabled-status"
 import { FiltersWithAdvanced } from "./filters-with-advanced"
 import { RefreshButton } from "./refresh-button"
 import { StatementSettingButton } from "./stmt-setting-button"
@@ -13,6 +14,7 @@ import { TimeRangeFixAlert } from "./time-range-fix-alert"
 export function List() {
   const ctx = useAppContext()
   const { data, isLoading } = useListData()
+  const { data: config } = useStmtConfigData()
 
   return (
     <Stack>
@@ -32,9 +34,13 @@ export function List() {
         <StatementSettingButton />
       </Group>
 
-      <TimeRangeFixAlert data={data || []} />
-
-      <ListTable data={data || []} isLoading={isLoading} />
+      {config && !config.enable && <DisabledStatusCard />}
+      {config && config.enable && (
+        <>
+          <TimeRangeFixAlert data={data || []} />
+          <ListTable data={data || []} isLoading={isLoading} />
+        </>
+      )}
     </Stack>
   )
 }

@@ -11,3 +11,15 @@ export const useSelectedStatementState = create<SelectedStatementState>(
     setSelectedStatement: (statementId: string) => set({ statementId }),
   }),
 )
+
+//------------------------------------------------------------------
+
+interface SettingDrawerState {
+  visible: boolean
+  setVisible: (visible: boolean) => void
+}
+
+export const useSettingDrawerState = create<SettingDrawerState>((set) => ({
+  visible: false,
+  setVisible: (visible: boolean) => set({ visible }),
+}))

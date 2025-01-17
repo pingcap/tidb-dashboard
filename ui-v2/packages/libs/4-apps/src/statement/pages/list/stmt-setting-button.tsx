@@ -1,11 +1,12 @@
 import { ActionIcon } from "@tidbcloud/uikit"
 import { IconSettings01 } from "@tidbcloud/uikit/icons"
-import { useState } from "react"
 
+import { useSettingDrawerState } from "../../shared-state/memory-state"
 import { StatementSettingDrawer } from "../setting"
 
 export function StatementSettingButton() {
-  const [visible, setVisible] = useState(false)
+  const visible = useSettingDrawerState((s) => s.visible)
+  const setVisible = useSettingDrawerState((s) => s.setVisible)
 
   return (
     <>

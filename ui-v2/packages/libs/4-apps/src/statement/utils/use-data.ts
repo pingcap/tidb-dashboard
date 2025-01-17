@@ -2,8 +2,32 @@ import { toTimeRangeValue } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx"
+import { StatementConfigModel } from "../models"
 import { useDetailUrlState } from "../shared-state/detail-url-state"
 import { useListUrlState } from "../shared-state/list-url-state"
+
+export function useStmtConfigData() {
+  const ctx = useAppContext()
+  return useQuery({
+    queryKey: [ctx.ctxId, "statement", "config"],
+    queryFn: () => ctx.api.getStmtConfig(),
+  })
+}
+
+export function useUpdateStmtConfigData() {
+  const ctx = useAppContext()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (params: StatementConfigModel) =>
+      ctx.api.updateStmtConfig(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [ctx.ctxId, "statement", "config"],
+      })
+    },
+  })
+}
 
 export function useDbsData() {
   const ctx = useAppContext()

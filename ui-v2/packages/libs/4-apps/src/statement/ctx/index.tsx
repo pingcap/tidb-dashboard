@@ -3,12 +3,20 @@ import { createContext, useContext } from "react"
 
 import { AppApi as SqlHistoryAppApi } from "../../_shared/sql-history"
 import { AppApi as SqlLimitAppApi } from "../../_shared/sql-limit"
-import { AdvancedFilterInfoModel, StatementModel } from "../models"
+import {
+  AdvancedFilterInfoModel,
+  StatementConfigModel,
+  StatementModel,
+} from "../models"
 
 ////////////////////////////////
 
 type AppApi = SqlLimitAppApi &
   SqlHistoryAppApi & {
+    // config
+    getStmtConfig(): Promise<StatementConfigModel>
+    updateStmtConfig(params: StatementConfigModel): Promise<void>
+
     // filters
     getDbs(): Promise<string[]>
     getStmtKinds(): Promise<string[]>

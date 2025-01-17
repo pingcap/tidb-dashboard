@@ -11,10 +11,12 @@ import {
   diagnosisServiceGetTopSqlAvailableAdvancedFilterInfo,
   diagnosisServiceGetTopSqlAvailableAdvancedFilters,
   diagnosisServiceGetTopSqlAvailableFields,
+  diagnosisServiceGetTopSqlConfigs,
   diagnosisServiceGetTopSqlDetail,
   diagnosisServiceGetTopSqlList,
   diagnosisServiceRemoveSqlLimit,
   diagnosisServiceUnbindSqlPlan,
+  diagnosisServiceUpdateTopSqlConfigs,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/statement"
 import { useNavigate } from "@tanstack/react-router"
@@ -82,6 +84,26 @@ export function useCtxValue(): AppCtxValue {
           return diagnosisServiceGetTopSqlAvailableFields(clusterId).then(
             (res) => res.fields ?? [],
           )
+        },
+
+        // config
+        getStmtConfig() {
+          return diagnosisServiceGetTopSqlConfigs(clusterId).then((res) => ({
+            enable: res.enable!,
+            max_size: res.maxSize!,
+            refresh_interval: res.refreshInterval!,
+            history_size: res.historySize!,
+            internal_query: res.internalQuery!,
+          }))
+        },
+        updateStmtConfig(params) {
+          return diagnosisServiceUpdateTopSqlConfigs(clusterId, {
+            enable: params.enable,
+            refreshInterval: params.refresh_interval,
+            historySize: params.history_size,
+            maxSize: params.max_size,
+            internalQuery: params.internal_query,
+          }).then(() => {})
         },
 
         getStmtList(params) {

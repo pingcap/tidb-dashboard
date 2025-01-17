@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.13.2
+
+### Patch Changes
+
+- enable plan-table columns resize
+
 ## 0.13.1
 
 ### Patch Changes

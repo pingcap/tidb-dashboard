@@ -1,5 +1,16 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.16.0
+
+### Minor Changes
+
+- add sql-history feature
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-biz-ui@0.13.2
+
 ## 0.15.1
 
 ### Patch Changes

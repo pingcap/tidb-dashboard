@@ -156,7 +156,7 @@
       "Are you sure want to disable this feature? Current statement history will be cleared.": "Are you sure want to disable this feature? Current statement history will be cleared.",
       "Basic": "Basic",
       "Bind Plan": "Bind Plan",
-      "Bind plan feature is only available in and above {{distro.tidb}} 6.5.0": "Bind plan feature is only available in and above {{distro.tidb}} 6.5.0",
+      "Bind plan feature is only available in and above {{distro.tidb}} 6.6.0": "Bind plan feature is only available in and above {{distro.tidb}} 6.6.0",
       "Bind plan {{planDigest}} failed, reason: {{reason}}": "Bind plan {{planDigest}} failed, reason: {{reason}}",
       "Bind plan {{planDigest}} successfully!": "Bind plan {{planDigest}} successfully!",
       "Bind": "Bind",

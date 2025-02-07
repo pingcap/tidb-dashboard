@@ -156,7 +156,7 @@
       "Are you sure want to disable this feature? Current statement history will be cleared.": "确认要关闭该功能吗？关闭后现有历史记录也将被清空！",
       "Basic": "基本信息",
       "Bind Plan": "绑定计划",
-      "Bind plan feature is only available in and above {{distro.tidb}} 6.5.0": "SQL 执行计划绑定功能仅在 {{distro.tidb}} 6.5.0 及以上版本可用",
+      "Bind plan feature is only available in and above {{distro.tidb}} 6.6.0": "SQL 执行计划绑定功能仅在 {{distro.tidb}} 6.6.0 及以上版本可用",
       "Bind plan {{planDigest}} failed, reason: {{reason}}": "绑定计划 {{planDigest}} 失败，原因：{{reason}}",
       "Bind plan {{planDigest}} successfully!": "绑定计划 {{planDigest}} 成功！",
       "Bind": "绑定",

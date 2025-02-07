@@ -67,7 +67,7 @@ export function AzoresClusterMetricsPanel({
         style={{
           display: "grid",
           gap: "1rem",
-          gridTemplateColumns: "repeat(auto-fit, minmax(600px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
         }}
       >
         {visibleCharts.map((c, idx) => (

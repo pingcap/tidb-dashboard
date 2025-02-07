@@ -125,7 +125,7 @@ export function SqlPlanBindActionCell({
     return (
       <Tooltip
         label={tt(
-          "Bind plan feature is only available in and above {{distro.tidb}} 6.5.0",
+          "Bind plan feature is only available in and above {{distro.tidb}} 6.6.0",
         )}
       >
         <Button disabled size="xs">

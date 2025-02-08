@@ -32,7 +32,7 @@ export function Detail() {
           </ActionIcon>
           <Typography variant="title-lg">{tt("Slow Query Detail")}</Typography>
           <Group ml="auto">
-            {detailData && <RelatedStatementButton dbName={detailData.db!} />}
+            <RelatedStatementButton />
           </Group>
         </Group>
       )}
@@ -56,3 +56,5 @@ export function Detail() {
     </Stack>
   )
 }
+
+export { RelatedStatementButton }

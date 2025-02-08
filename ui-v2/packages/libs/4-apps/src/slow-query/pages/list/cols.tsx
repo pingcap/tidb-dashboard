@@ -87,7 +87,7 @@ export function useListTableColumns() {
     return tcf.columns([
       // basic
       tcf.text("query").patchConfig({
-        minSize: 100,
+        minSize: 600,
         accessorFn: (row) => <SqlCell row={row} />,
       }),
       tcf.text("digest"),

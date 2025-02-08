@@ -87,7 +87,7 @@ export function useListTableColumns() {
     const tcf = new TableColsFactory<StatementModel>(tk)
     return tcf.columns([
       tcf.text("digest_text").patchConfig({
-        minSize: 100,
+        minSize: 600,
         accessorFn: (row) => <SqlCell row={row} />,
       }),
       tcf.text("digest"),

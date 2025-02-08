@@ -9,7 +9,7 @@ import { useDetailData } from "../../utils/use-data"
 import { DetailTabs } from "./detail-tabs"
 import { DetailPlan } from "./plan"
 import { DetailQuery } from "./query"
-import { RelatedStatement } from "./related-statement-link"
+import { RelatedStatementButton } from "./related-statement-button"
 import { SqlHistory } from "./sql-history"
 import { SqlLimit } from "./sql-limit"
 
@@ -31,6 +31,9 @@ export function Detail() {
             <IconChevronLeft size={20} />
           </ActionIcon>
           <Typography variant="title-lg">{tt("Slow Query Detail")}</Typography>
+          <Group ml="auto">
+            {detailData && <RelatedStatementButton dbName={detailData.db!} />}
+          </Group>
         </Group>
       )}
 
@@ -40,7 +43,7 @@ export function Detail() {
         <Stack>
           <DetailQuery sql={detailData.query || ""} />
 
-          <RelatedStatement dbName={detailData.db!} />
+          {/* <RelatedStatementLink dbName={detailData.db!} /> */}
 
           <SqlHistory sqlDigest={detailData.digest!} />
           <SqlLimit sqlDigest={detailData.digest!} />

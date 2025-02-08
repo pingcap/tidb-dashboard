@@ -6,7 +6,7 @@ import { useMemo } from "react"
 import { useAppContext } from "../../ctx"
 import { useDetailUrlState } from "../../shared-state/detail-url-state"
 
-export function RelatedStatement({ dbName }: { dbName: string }) {
+export function RelatedStatementLink({ dbName }: { dbName: string }) {
   const { id } = useDetailUrlState()
   const ctx = useAppContext()
   const statementId = useMemo(() => {

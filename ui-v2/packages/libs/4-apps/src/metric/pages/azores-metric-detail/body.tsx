@@ -1,4 +1,5 @@
 import {
+  TimeRangeValue,
   toURLTimeRange,
   useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
@@ -16,6 +17,7 @@ export function AzoresMetricDetailBody() {
   const ctx = useAppContext()
   const selectedChart = useChartState((state) => state.selectedChart)
   const timeRange = useChartState((state) => state.timeRange)
+  const setTimeRange = useChartState((state) => state.setTimeRange)
   const selectedInstance = useChartState((state) => state.selectedInstance)
   const { tt } = useTn("metric")
 
@@ -23,6 +25,10 @@ export function AzoresMetricDetailBody() {
     const { from, to } = toURLTimeRange(timeRange)
     return `${from},${to}`
   }, [timeRange])
+
+  function handleTimeRangeChange(v: TimeRangeValue) {
+    setTimeRange({ type: "absolute", value: v })
+  }
 
   if (!selectedChart) {
     return null
@@ -42,7 +48,11 @@ export function AzoresMetricDetailBody() {
                 {tt("SQL Diagnosis")}
               </Anchor>
             </ChartHeader>
-            <ChartBody config={selectedChart} timeRange={timeRange} />
+            <ChartBody
+              config={selectedChart}
+              timeRange={timeRange}
+              onTimeRangeChange={handleTimeRangeChange}
+            />
           </Card>
 
           {selectedInstance && (
@@ -59,6 +69,7 @@ export function AzoresMetricDetailBody() {
               <ChartBody
                 config={selectedChart}
                 timeRange={timeRange}
+                onTimeRangeChange={handleTimeRangeChange}
                 labelValue={`instance="${selectedInstance}"`}
               />
             </Card>

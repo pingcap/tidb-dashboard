@@ -1,5 +1,5 @@
+import { ActionDrawer } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Drawer } from "@tidbcloud/uikit"
 
 import { useChartState } from "../../shared-state/memory-state"
 
@@ -16,16 +16,17 @@ export function AzoresMetricDetailDrawer() {
   }
 
   return (
-    <Drawer
+    <ActionDrawer
       position="right"
       withinPortal
-      overlayProps={{ backgroundOpacity: 0.3 }}
       size="auto"
       title={`${selectedChart.title} ${tt("Drill Down Analysis")}`}
       opened={true}
       onClose={reset}
     >
-      <AzoresMetricDetailBody />
-    </Drawer>
+      <ActionDrawer.Body>
+        <AzoresMetricDetailBody />
+      </ActionDrawer.Body>
+    </ActionDrawer>
   )
 }

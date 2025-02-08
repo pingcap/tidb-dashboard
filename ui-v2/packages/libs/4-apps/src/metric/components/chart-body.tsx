@@ -49,7 +49,11 @@ export function ChartBody({
   const ctx = useAppContext()
   const { refresh } = useMetricsUrlState()
   const colorScheme = useComputedColorScheme()
-  const tr = useMemo(() => toTimeRangeValue(timeRange), [timeRange])
+
+  // can't memory, need to update every time when rendering
+  // else chart x-axis time-range will not be updated
+  const tr = toTimeRangeValue(timeRange)
+
   const chartRef = useRef<HTMLDivElement | null>(null)
   const isVisible = useRef(false)
   const [isFetched, setIsFetched] = useState(false)

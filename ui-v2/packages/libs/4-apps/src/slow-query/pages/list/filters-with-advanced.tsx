@@ -1,13 +1,11 @@
 import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { Button, Group, Select, TextInput } from "@tidbcloud/uikit"
 import {
-  Group,
-  Select,
-  Text,
-  TextInput,
-  UnstyledButton,
-} from "@tidbcloud/uikit"
-import { IconXClose } from "@tidbcloud/uikit/icons"
+  IconCornerDownLeft,
+  IconSearchSm,
+  IconXClose,
+} from "@tidbcloud/uikit/icons"
 import { dayjs } from "@tidbcloud/uikit/utils"
 import { useEffect, useState } from "react"
 
@@ -86,16 +84,18 @@ export function FiltersWithAdvanced() {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={tt("Find SQL text")}
+        leftSection={<IconSearchSm />}
         rightSection={
-          !!text && (
+          text ? (
             <IconXClose
               style={{ cursor: "pointer" }}
-              size={14}
               onClick={() => {
                 setText("")
                 setTerm(undefined)
               }}
             />
+          ) : (
+            <IconCornerDownLeft />
           )
         }
         disabled={isFetching}
@@ -106,14 +106,9 @@ export function FiltersWithAdvanced() {
   const advancedFiltersModal = <AdvancedFiltersModal />
 
   const resetFiltersBtn = (
-    <UnstyledButton
-      onClick={reset}
-      sx={(theme) => ({ color: theme.colors.carbon[7] })}
-    >
-      <Text size="sm" fw="bold">
-        {tt("Clear Filters")}
-      </Text>
-    </UnstyledButton>
+    <Button variant="subtle" onClick={reset}>
+      {tt("Clear Filters")}
+    </Button>
   )
 
   return (

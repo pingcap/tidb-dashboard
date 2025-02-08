@@ -3,7 +3,7 @@ import {
   TimeRangePicker,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Group, Text, TextInput, UnstyledButton } from "@tidbcloud/uikit"
+import { Button, Group, TextInput } from "@tidbcloud/uikit"
 import { IconXClose } from "@tidbcloud/uikit/icons"
 import { dayjs } from "@tidbcloud/uikit/utils"
 import { useEffect, useState } from "react"
@@ -130,14 +130,9 @@ export function Filters() {
   )
 
   const resetFiltersBtn = (
-    <UnstyledButton
-      onClick={reset}
-      sx={(theme) => ({ color: theme.colors.carbon[7] })}
-    >
-      <Text size="sm" fw="bold">
-        {tt("Clear Filters")}
-      </Text>
-    </UnstyledButton>
+    <Button variant="subtle" onClick={reset}>
+      {tt("Clear Filters")}
+    </Button>
   )
 
   return (

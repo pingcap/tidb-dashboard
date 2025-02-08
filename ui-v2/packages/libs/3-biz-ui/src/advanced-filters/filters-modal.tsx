@@ -4,7 +4,7 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { ActionIcon, Box, Modal } from "@tidbcloud/uikit"
 import { useDisclosure } from "@tidbcloud/uikit/hooks"
-import { IconFilterFunnel02 } from "@tidbcloud/uikit/icons"
+import { IconFilterFunnel02, IconPlus } from "@tidbcloud/uikit/icons"
 import { useState } from "react"
 
 import { AdvancedFilterInfo, AdvancedFilterSettingItem } from "./filter-setting"
@@ -68,12 +68,13 @@ export function AdvancedFiltersModal({
     <>
       <ActionIcon
         variant={"default"}
+        w={48}
         size={40}
         color={hasFilters ? "peacock" : undefined}
         onClick={handleOpen}
       >
         <IconFilterFunnel02 size={16} />
-        {hasFilters && <Box pl={2}>{advancedFilters.length}</Box>}
+        {hasFilters ? <Box pl={2}>{advancedFilters.length}</Box> : <IconPlus />}
       </ActionIcon>
 
       <Modal

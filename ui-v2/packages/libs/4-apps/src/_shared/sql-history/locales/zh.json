@@ -1,19 +1,7 @@
 {
   "comment": "this file can be updated by running `pnpm gen:locales` command",
   "sql-history": {
-    "keys": {
-      "metric.avg_disk": "平均磁盘空间",
-      "metric.avg_latency": "平均耗时",
-      "metric.disk_max": "最大磁盘空间",
-      "metric.exec_count": "执行次数",
-      "metric.max_disk": "最大磁盘空间",
-      "metric.max_latency": "最大耗时",
-      "metric.memory_max": "最大内存",
-      "metric.min_latency": "最小耗时",
-      "metric.plan_count": "计划数",
-      "metric.query_time": "总执行时间",
-      "metric.sum_latency": "累计耗时"
-    },
+    "keys": {},
     "texts": {
       "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}": "由于限制，目前仅支持查询最大 24 小时的数据，实际时间范围是 {{begin}} ~ {{end}}",
       "SQL History": "SQL 历史"

@@ -224,6 +224,17 @@ export function useCtxValue(): AppCtxValue {
             { name: "max_disk", unit: "bytes" },
             { name: "exec_count", unit: "short" },
             { name: "plan_count", unit: "short" },
+            { name: "avg_parse_latency", unit: "ns" },
+            { name: "avg_compile_latency", unit: "ns" },
+            { name: "avg_wait_time", unit: "ns" },
+            { name: "avg_process_time", unit: "ns" },
+            { name: "avg_backoff_time", unit: "ns" },
+            { name: "avg_get_commit_ts_time", unit: "ns" },
+            { name: "avg_local_latch_wait_time", unit: "ns" },
+            { name: "avg_resolve_lock_time", unit: "ns" },
+            { name: "avg_prewrite_time", unit: "ns" },
+            { name: "avg_commit_time", unit: "ns" },
+            { name: "avg_commit_backoff_time", unit: "ns" },
           ])
         },
         getHistoryMetricData(params) {

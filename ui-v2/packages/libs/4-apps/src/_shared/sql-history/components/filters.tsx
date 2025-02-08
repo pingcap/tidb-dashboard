@@ -1,5 +1,5 @@
 import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { useTn as useTnx } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Group, Select } from "@tidbcloud/uikit"
 import { dayjs } from "@tidbcloud/uikit/utils"
 import { useEffect, useMemo } from "react"
@@ -7,25 +7,6 @@ import { useEffect, useMemo } from "react"
 import { useAppContext } from "../ctx"
 import { useSqlHistoryState } from "../shared-state/memory-state"
 import { useSqlHistoryMetricNamesData } from "../utils/use-data"
-
-// @ts-expect-error @typescript-eslint/no-unused-vars
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function useLocales() {
-  const { tk } = useTn("sql-history")
-  // used for gogocode to scan and generate en.json before build
-  tk("metric.query_time", "Latency")
-  tk("metric.memory_max", "Max Memory")
-  tk("metric.disk_max", "Max Disk")
-
-  tk("metric.sum_latency", "Total Latency")
-  tk("metric.avg_latency", "Average Latency")
-  tk("metric.max_latency", "Max Latency")
-  tk("metric.min_latency", "Min Latency")
-  tk("metric.avg_disk", "Average Disk")
-  tk("metric.max_disk", "Max Disk")
-  tk("metric.exec_count", "Execution Count")
-  tk("metric.plan_count", "Plans Count")
-}
 
 const QUICK_RANGES: number[] = [
   5 * 60, // 5 mins
@@ -41,7 +22,9 @@ const QUICK_RANGES: number[] = [
 ]
 
 function MetricSelect() {
-  const { tk } = useTn("sql-history")
+  const ctx = useAppContext()
+  // rename useTn to useTnx to avoid run `pnpm gen:locales` fail
+  const { tk } = useTnx(ctx.cfg.parentAppName)
   const { data: metrics } = useSqlHistoryMetricNamesData()
   const metric = useSqlHistoryState((state) => state.metric)
   const setMetric = useSqlHistoryState((state) => state.setMetric)
@@ -54,7 +37,7 @@ function MetricSelect() {
   const selectData = useMemo(
     () =>
       metrics?.map((m) => ({
-        label: tk(`metric.${m.name}`, m.name),
+        label: tk(`fields.${m.name}`, m.name),
         value: m.name,
       })),
     [metrics, tk],

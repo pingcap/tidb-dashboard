@@ -22,6 +22,7 @@ export function SqlHistory({ sqlDigest }: { sqlDigest: string }) {
     () => ({
       ...ctx,
       cfg: {
+        parentAppName: "statement",
         sqlDigest,
         initialTimeRange,
       },

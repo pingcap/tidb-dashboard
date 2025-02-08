@@ -1,19 +1,7 @@
 {
   "comment": "this file can be updated by running `pnpm gen:locales` command",
   "sql-history": {
-    "keys": {
-      "metric.avg_disk": "Average Disk",
-      "metric.avg_latency": "Average Latency",
-      "metric.disk_max": "Max Disk",
-      "metric.exec_count": "Execution Count",
-      "metric.max_disk": "Max Disk",
-      "metric.max_latency": "Max Latency",
-      "metric.memory_max": "Max Memory",
-      "metric.min_latency": "Min Latency",
-      "metric.plan_count": "Plans Count",
-      "metric.query_time": "Latency",
-      "metric.sum_latency": "Total Latency"
-    },
+    "keys": {},
     "texts": {
       "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}": "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}",
       "SQL History": "SQL History"

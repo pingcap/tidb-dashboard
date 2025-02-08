@@ -19,6 +19,7 @@ export type AppApi = {
 }
 
 export type AppConfig = {
+  parentAppName: string // 'slow-query' | 'statement'
   sqlDigest: string
   initialTimeRange: TimeRange
   timeRangeMaxDuration?: number // unit: seconds

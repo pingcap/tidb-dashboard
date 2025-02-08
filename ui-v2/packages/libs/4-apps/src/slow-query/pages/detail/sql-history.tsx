@@ -18,6 +18,7 @@ export function SqlHistory({ sqlDigest }: { sqlDigest: string }) {
     () => ({
       ...ctx,
       cfg: {
+        parentAppName: "slow-query",
         sqlDigest,
         initialTimeRange,
         timeRangeMaxDuration: 24 * 60 * 60,

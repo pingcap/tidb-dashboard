@@ -27,7 +27,7 @@ export const DEFAULT_TIME_RANGE: TimeRange = {
 
 export function useListUrlState() {
   const [queryParams, setQueryParams] = useUrlState<ListUrlState>()
-  const { sortRule, setSortRule } = useSortUrlState("timestamp", true)
+  const { sortRule, setSortRule } = useSortUrlState("query_time", true)
   const { pagination, setPagination } = usePaginationUrlState()
   const { timeRange, setTimeRange } = useTimeRangeUrlState(DEFAULT_TIME_RANGE)
   const { advancedFilters, setAdvancedFilters } =

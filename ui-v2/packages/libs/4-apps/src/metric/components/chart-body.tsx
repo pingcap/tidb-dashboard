@@ -8,7 +8,6 @@ import {
   TimeRangeValue,
   TransformNullValue,
   calcPromQueryStep,
-  toTimeRangeValue,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Box, Flex, Loader, useComputedColorScheme } from "@tidbcloud/uikit"
@@ -16,6 +15,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../ctx"
 import { useMetricsUrlState } from "../shared-state/url-state"
+import { fixTimeRange } from "../utils/common"
 import { SingleChartConfig } from "../utils/type"
 import { useMetricDataByMetricName } from "../utils/use-data"
 
@@ -52,7 +52,7 @@ export function ChartBody({
 
   // can't memory, need to update every time when rendering
   // else chart x-axis time-range will not be updated
-  const tr = toTimeRangeValue(timeRange)
+  const tr = fixTimeRange(timeRange)
 
   const chartRef = useRef<HTMLDivElement | null>(null)
   const isVisible = useRef(false)
@@ -61,9 +61,10 @@ export function ChartBody({
   // a function can always get the latest value
   function getStep() {
     if (!chartRef.current) return 0
+
     return calcPromQueryStep(
       tr,
-      chartRef.current.offsetWidth - 140,
+      chartRef.current.offsetWidth - 200,
       ctx.cfg.scrapeInterval,
     )
   }

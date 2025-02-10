@@ -1,13 +1,14 @@
 import {
   TimeRange,
   resolvePromQLTemplate,
-  toTimeRangeValue,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
 import { useAppContext } from "../ctx"
 import { useMetricsUrlState } from "../shared-state/url-state"
 import { MetricConfigKind } from "../utils/type"
+
+import { fixTimeRange } from "./common"
 
 export function useMetricQueriesConfigData(kind: MetricConfigKind) {
   const ctx = useAppContext()
@@ -43,7 +44,7 @@ export function useMetricLabelValuesData(
       timeRange,
     ],
     queryFn: () => {
-      const tr = toTimeRangeValue(timeRange)
+      const tr = fixTimeRange(timeRange)
       return ctx.api.getMetricLabelValues({
         metricName,
         labelName,
@@ -74,7 +75,7 @@ export function useMetricDataByMetricName(
     ],
     queryFn: () => {
       const step = stepFn()
-      const tr = toTimeRangeValue(timeRange)
+      const tr = fixTimeRange(timeRange)
       return ctx.api.getMetricDataByMetricName({
         metricName,
         beginTime: tr[0],
@@ -100,7 +101,7 @@ export function useMetricDataByPromQLs(
     queryKey: [ctx.ctxId, "metric-data-by-promqls", promQLs, timeRange],
     queryFn: () => {
       const step = stepFn()
-      const tr = toTimeRangeValue(timeRange)
+      const tr = fixTimeRange(timeRange)
       return Promise.all(
         promQLs.map((pq) =>
           ctx.api.getMetricDataByPromQL({

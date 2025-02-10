@@ -60,7 +60,7 @@ export function transformPromResultItem(
 
 ////////////////////////////////
 
-export const DEF_SCRAPE_INTERVAL = 30
+export const DEF_SCRAPE_INTERVAL = 15
 
 export function resolvePromQLTemplate(
   promql: string,
@@ -76,8 +76,8 @@ export function resolvePromQLTemplate(
 export function calcPromQueryStep(
   tr: [number, number],
   width: number,
-  minBinWidth: number = 5,
   scrapeInterval: number = DEF_SCRAPE_INTERVAL,
+  minBinWidth: number = 4,
 ) {
   if (width <= 0) {
     return scrapeInterval

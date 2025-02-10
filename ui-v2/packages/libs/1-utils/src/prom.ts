@@ -60,7 +60,7 @@ export function transformPromResultItem(
 
 ////////////////////////////////
 
-export const DEF_SCRAPE_INTERVAL = 15
+export const DEF_SCRAPE_INTERVAL = 30
 
 export function resolvePromQLTemplate(
   promql: string,

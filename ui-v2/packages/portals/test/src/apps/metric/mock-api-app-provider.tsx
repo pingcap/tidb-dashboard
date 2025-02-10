@@ -164,7 +164,7 @@ export function useCtxValue(): AppCtxValue {
       },
       cfg: {
         title: "",
-        scrapeInterval: 15,
+        scrapeInterval: 30,
       },
       actions: {
         openDiagnosis(id) {

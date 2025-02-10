@@ -75,14 +75,16 @@ export function useMetricDataByMetricName(
     ],
     queryFn: () => {
       const step = stepFn()
-      const tr = fixTimeRange(timeRange)
-      return ctx.api.getMetricDataByMetricName({
-        metricName,
-        beginTime: tr[0],
-        endTime: tr[1],
-        step,
-        label: labelValue,
-      })
+      const tr = fixTimeRange(timeRange, step)
+      return ctx.api
+        .getMetricDataByMetricName({
+          metricName,
+          beginTime: tr[0],
+          endTime: tr[1],
+          step,
+          label: labelValue,
+        })
+        .then((d) => ({ metrics: d, tr }))
     },
     placeholderData: keepPreviousData,
     // set `enabled: false`, so queryFn can only be manually triggered by calling `refetch()`
@@ -90,6 +92,7 @@ export function useMetricDataByMetricName(
   })
 }
 
+// @todo: return tr
 export function useMetricDataByPromQLs(
   promQLs: string[],
   timeRange: TimeRange,
@@ -101,7 +104,7 @@ export function useMetricDataByPromQLs(
     queryKey: [ctx.ctxId, "metric-data-by-promqls", promQLs, timeRange],
     queryFn: () => {
       const step = stepFn()
-      const tr = fixTimeRange(timeRange)
+      const tr = fixTimeRange(timeRange, step)
       return Promise.all(
         promQLs.map((pq) =>
           ctx.api.getMetricDataByPromQL({

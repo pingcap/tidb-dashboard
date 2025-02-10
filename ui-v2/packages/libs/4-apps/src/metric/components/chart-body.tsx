@@ -8,6 +8,7 @@ import {
   TimeRangeValue,
   TransformNullValue,
   calcPromQueryStep,
+  toTimeRangeValue,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Box, Flex, Loader, useComputedColorScheme } from "@tidbcloud/uikit"
@@ -15,7 +16,6 @@ import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../ctx"
 import { useMetricsUrlState } from "../shared-state/url-state"
-import { fixTimeRange } from "../utils/common"
 import { SingleChartConfig } from "../utils/type"
 import { useMetricDataByMetricName } from "../utils/use-data"
 
@@ -50,10 +50,6 @@ export function ChartBody({
   const { refresh } = useMetricsUrlState()
   const colorScheme = useComputedColorScheme()
 
-  // can't memory, need to update every time when rendering
-  // else chart x-axis time-range will not be updated
-  const tr = fixTimeRange(timeRange)
-
   const chartRef = useRef<HTMLDivElement | null>(null)
   const isVisible = useRef(false)
   const [isFetched, setIsFetched] = useState(false)
@@ -63,7 +59,7 @@ export function ChartBody({
     if (!chartRef.current) return 0
 
     return calcPromQueryStep(
-      tr,
+      toTimeRangeValue(timeRange),
       chartRef.current.offsetWidth - 200,
       ctx.cfg.scrapeInterval,
     )
@@ -135,7 +131,7 @@ export function ChartBody({
 
   const seriesData = useMemo(
     () =>
-      (metricData ?? [])
+      (metricData?.metrics ?? [])
         .map((d, idx) =>
           transformData(d.result, idx, d.legend, config.nullValue),
         )
@@ -154,7 +150,7 @@ export function ChartBody({
         <SeriesChart
           unit={config.unit}
           data={seriesData}
-          timeRange={tr}
+          timeRange={metricData?.tr ?? toTimeRangeValue(timeRange)}
           theme={colorScheme}
           onBrush={onTimeRangeChange}
         />

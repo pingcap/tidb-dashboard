@@ -1,5 +1,14 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.17.3
+
+### Patch Changes
+
+- refine chart same as grafana
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.11.2
+  - @pingcap-incubator/tidb-dashboard-lib-biz-ui@0.14.2
+
 ## 0.17.2
 
 ### Patch Changes

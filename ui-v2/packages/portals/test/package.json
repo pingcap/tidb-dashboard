@@ -1,7 +1,7 @@
 {
   "name": "test-tidb-dashboard-ui-lib",
   "private": true,
-  "version": "0.11.14",
+  "version": "0.11.15",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-utils
 
+## 0.11.1
+
+### Patch Changes
+
+- refine chart step
+
 ## 0.11.0
 
 ### Minor Changes

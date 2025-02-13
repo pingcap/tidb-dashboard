@@ -1,11 +1,11 @@
-import { Group, Skeleton } from "@tidbcloud/uikit"
+import { Skeleton, Stack } from "@tidbcloud/uikit"
 
 export function LoadingSkeleton() {
   return (
-    <Group gap="xs">
+    <Stack gap="xs">
       <Skeleton height={10} />
       <Skeleton height={10} />
       <Skeleton height={10} width="70%" />
-    </Group>
+    </Stack>
   )
 }

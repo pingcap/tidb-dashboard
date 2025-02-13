@@ -15,25 +15,32 @@ import { SinglePanelConfig } from "../../utils/type"
 function useLocales() {
   const { tk } = useTn("metric")
   // used for gogocode to scan and generate en.json before build
+  // basic
   tk("panels.database_time", "Database Time")
-  tk("panels.throughput", "Throughput")
+  tk("panels.connections", "Connections")
+  tk("panels.sql_load_profile", "SQL Load Profile")
+  tk("panels.top_down_duration", "Top-down Duration")
   tk("panels.transaction", "Transaction")
+  tk("panels.tidb_components_resource", "TiDB Componets Resource")
+  tk("panels.hosts_resource", "Hosts Resource")
+
+  // advanced
+  tk("panels.load_analysis", "Load Analysis")
+  tk("panels.sql_tuning", "SQL Tuning")
+  tk("panels.optimizer_behavior", "Optimizer Behavior")
+  tk("panels.pd_leader", "PD Leader")
+  tk("panels.io_env", "IO & Env")
+  tk("panels.analyze_statistics", "Analyze Statistics")
+  tk("panels.tiflash_related", "TiFlash Related")
   tk("panels.raft_log", "Raft Log")
 
+  // deprecated
+  tk("panels.throughput", "Throughput")
   tk("panels.host", "Host")
   tk("panels.tidb", "TiDB")
   tk("panels.tikv", "TiKV")
   tk("panels.pd", "PD")
   tk("panels.tiflash", "TiFlash")
-
-  tk("panels.optimizer_behavior", "Optimizer Behavior")
-  tk("panels.sql_tuning", "SQL Tuning")
-  tk("panels.io_env", "IO & Env")
-  tk("panels.load_analysis", "Load Analysis")
-  tk("panels.tiflash_related", "TiFlash Related")
-  tk("panels.connection", "Connection")
-  tk("panels.pd_leader", "PD Leader")
-  tk("panels.analyze_statistics", "Analyze Statistics")
 }
 
 export function AzoresClusterMetricsPanel({

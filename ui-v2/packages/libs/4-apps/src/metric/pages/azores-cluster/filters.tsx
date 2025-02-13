@@ -17,7 +17,7 @@ import { useAppContext } from "../../ctx"
 import { useMetricsUrlState } from "../../shared-state/url-state"
 import { QUICK_RANGES } from "../../utils/constants"
 
-const GROUPS = ["basic", "resource", "advanced"]
+const GROUPS = ["basic", "advanced"]
 
 // @ts-expect-error @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -25,7 +25,6 @@ function useLocales() {
   const { tk } = useTn("metric")
   // for gogocode to scan and generate en.json before build
   tk("groups.basic", "Basic")
-  tk("groups.resource", "Resource")
   tk("groups.advanced", "Advanced")
 }
 

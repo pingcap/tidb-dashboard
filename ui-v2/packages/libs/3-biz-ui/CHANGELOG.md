@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.14.3
+
+### Patch Changes
+
+- adjust monitoring panel names
+
 ## 0.14.2
 
 ### Patch Changes

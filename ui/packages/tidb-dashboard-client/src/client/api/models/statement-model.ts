@@ -547,6 +547,54 @@ export interface StatementModel {
      * @type {number}
      * @memberof StatementModel
      */
+    'sum_unpacked_bytes_received_tiflash_cross_zone'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_received_tiflash_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_received_tikv_cross_zone'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_received_tikv_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_sent_tiflash_cross_zone'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_sent_tiflash_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_sent_tikv_cross_zone'?: number;
+    /**
+     * Network Fields
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_sent_tikv_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
     'sum_warnings'?: number;
     /**
      * 

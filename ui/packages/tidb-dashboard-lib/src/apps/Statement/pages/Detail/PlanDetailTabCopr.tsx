@@ -72,5 +72,69 @@ export const tabCoprItems = (data: StatementModel) => [
   {
     key: 'max_rocksdb_key_skipped_count',
     value: <ValueWithTooltip.Short value={data.max_rocksdb_key_skipped_count} />
+  },
+  {
+    key: 'sum_unpacked_bytes_sent_tikv_total',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.sum_unpacked_bytes_sent_tikv_total}
+      />
+    )
+  },
+  {
+    key: 'sum_unpacked_bytes_received_tikv_total',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.sum_unpacked_bytes_received_tikv_total}
+      />
+    )
+  },
+  {
+    key: 'sum_unpacked_bytes_sent_tikv_cross_zone',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.sum_unpacked_bytes_sent_tikv_cross_zone}
+      />
+    )
+  },
+  {
+    key: 'sum_unpacked_bytes_received_tikv_cross_zone',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.sum_unpacked_bytes_received_tikv_cross_zone}
+      />
+    )
+  },
+  {
+    key: 'sum_unpacked_bytes_sent_tiflash_total',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.sum_unpacked_bytes_sent_tiflash_total}
+      />
+    )
+  },
+  {
+    key: 'sum_unpacked_bytes_received_tiflash_total',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.sum_unpacked_bytes_received_tiflash_total}
+      />
+    )
+  },
+  {
+    key: 'sum_unpacked_bytes_sent_tiflash_cross_zone',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.sum_unpacked_bytes_sent_tiflash_cross_zone}
+      />
+    )
+  },
+  {
+    key: 'sum_unpacked_bytes_received_tiflash_cross_zone',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.sum_unpacked_bytes_received_tiflash_cross_zone}
+      />
+    )
   }
 ]

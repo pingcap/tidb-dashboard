@@ -202,3 +202,20 @@ statement:
     max_time_queued_by_rc: Max RC Wait Time in Queue
     max_time_queued_by_rc_tooltip: The maximum time that the query waits in the resource control's queue (not a wall time)
     rc_wait_time_tooltip: 'The total wait time spent in the resource queue (note: {{distro.tikv}} executes requests in parallel so that this is not a wall time)'
+
+    sum_unpacked_bytes_sent_tikv_total: Total Bytes Sent to TiKV
+    sum_unpacked_bytes_sent_tikv_total_tooltip: The total number of bytes sent to TiKV
+    sum_unpacked_bytes_received_tikv_total: Total Bytes Received from TiKV
+    sum_unpacked_bytes_received_tikv_total_tooltip: The total number of bytes received from TiKV
+    sum_unpacked_bytes_sent_tikv_cross_zone: Total Cross-Zone Bytes Sent to TiKV
+    sum_unpacked_bytes_sent_tikv_cross_zone_tooltip: The total number of bytes sent to TiKV across zones
+    sum_unpacked_bytes_received_tikv_cross_zone: Total Cross-Zone Bytes Received from TiKV
+    sum_unpacked_bytes_received_tikv_cross_zone_tooltip: The total number of bytes received from TiKV across zones
+    sum_unpacked_bytes_sent_tiflash_total: Total Bytes Sent to TiFlash
+    sum_unpacked_bytes_sent_tiflash_total_tooltip: The total number of bytes sent to TiFlash
+    sum_unpacked_bytes_received_tiflash_total: Total Bytes Received from TiFlash
+    sum_unpacked_bytes_received_tiflash_total_tooltip: The total number of bytes received from TiFlash
+    sum_unpacked_bytes_sent_tiflash_cross_zone: Total Cross-Zone Bytes Sent to TiFlash
+    sum_unpacked_bytes_sent_tiflash_cross_zone_tooltip: The total number of bytes sent to TiFlash across zones
+    sum_unpacked_bytes_received_tiflash_cross_zone: Total Cross-Zone Bytes Received from TiFlash
+    sum_unpacked_bytes_received_tiflash_cross_zone_tooltip: The total number of bytes received from TiFlash across zones

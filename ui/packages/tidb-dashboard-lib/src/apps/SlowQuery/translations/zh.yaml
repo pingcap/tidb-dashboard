@@ -127,6 +127,24 @@ slow_query:
     time_queued_by_rc: RC 等待累积耗时
     time_queued_by_rc_tooltip: SQL 语句在资源组队列中等待的累积时间（注：{{distro.tikv}} 会并行等待任务，因此该时间不是自然流逝时间）
 
+    # Network fields
+    unpacked_bytes_sent_tikv_total: 发送至 TiKV 的字节数
+    unpacked_bytes_sent_tikv_total_tooltip: 发送至 TiKV 的字节数
+    unpacked_bytes_received_tikv_total: 从 TiKV 接收的字节数
+    unpacked_bytes_received_tikv_total_tooltip: 从 TiKV 接收的字节数
+    unpacked_bytes_sent_tikv_cross_zone: 跨可用区发送至 TiKV 的字节数
+    unpacked_bytes_sent_tikv_cross_zone_tooltip: 跨可用区发送至 TiKV 的字节数
+    unpacked_bytes_received_tikv_cross_zone: 跨可用区从 TiKV 接收的字节数
+    unpacked_bytes_received_tikv_cross_zone_tooltip: 跨可用区从 TiKV 接收的字节数
+    unpacked_bytes_sent_tiflash_total: 发送至 TiFlash 的字节数
+    unpacked_bytes_sent_tiflash_total_tooltip: 发送至 TiFlash 的字节数
+    unpacked_bytes_received_tiflash_total: 从 TiFlash 接收的字节数
+    unpacked_bytes_received_tiflash_total_tooltip: 从 TiFlash 接收的字节数
+    unpacked_bytes_sent_tiflash_cross_zone: 跨可用区发送至 TiFlash 的字节数
+    unpacked_bytes_sent_tiflash_cross_zone_tooltip: 跨可用区发送至 TiFlash 的字节数
+    unpacked_bytes_received_tiflash_cross_zone: 跨可用区从 TiFlash 接收的字节数
+    unpacked_bytes_received_tiflash_cross_zone_tooltip: 跨可用区从 TiFlash 接收的字节数
+
   common:
     status:
       success: 成功

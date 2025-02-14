@@ -125,6 +125,16 @@ export function slowQueryColumns(
     // resource control
     tcf.bar.single('ru', 'none', rows),
     tcf.textWithTooltip('resource_group', rows),
-    tcf.bar.single('time_queued_by_rc', 's', rows)
+    tcf.bar.single('time_queued_by_rc', 's', rows),
+
+    // Network fields
+    tcf.bar.single('unpacked_bytes_sent_tikv_total', 'bytes', rows),
+    tcf.bar.single('unpacked_bytes_received_tikv_total', 'bytes', rows),
+    tcf.bar.single('unpacked_bytes_sent_tikv_cross_zone', 'bytes', rows),
+    tcf.bar.single('unpacked_bytes_received_tikv_cross_zone', 'bytes', rows),
+    tcf.bar.single('unpacked_bytes_sent_tiflash_total', 'bytes', rows),
+    tcf.bar.single('unpacked_bytes_received_tiflash_total', 'bytes', rows),
+    tcf.bar.single('unpacked_bytes_sent_tiflash_cross_zone', 'bytes', rows),
+    tcf.bar.single('unpacked_bytes_received_tiflash_cross_zone', 'bytes', rows)
   ])
 }

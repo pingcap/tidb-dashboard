@@ -51,7 +51,6 @@ func (s *Service) queryStatements(
 	if err != nil {
 		return nil, err
 	}
-
 	query := db.
 		Select(selectStmt).
 		Table(statementsTable).

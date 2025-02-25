@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.17.5
+
+### Patch Changes
+
+- add troubleshooting links and prom addr for charts
+
 ## 0.17.4
 
 ### Patch Changes

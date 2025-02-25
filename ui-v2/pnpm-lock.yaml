@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@tidbcloud/uikit':
-      specifier: ^2.0.0-beta.125
-      version: 2.0.0-beta.125
+      specifier: ^2.1.2
+      version: 2.1.6
 
 importers:
 
@@ -138,7 +138,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.125(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -172,7 +172,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.125(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -202,7 +202,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.125(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -233,7 +233,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.125(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -279,7 +279,7 @@ importers:
         version: 5.59.16(react@18.3.1)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.125(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
@@ -321,7 +321,7 @@ importers:
         version: 1.85.0(@tanstack/router-generator@1.84.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.0.0-beta.125(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1491,6 +1491,12 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
+  '@number-flow/react@0.5.5':
+    resolution: {integrity: sha512-Zdju5n0osxrb+7jbcpUJ9L2VJ2+9ptwjz5+A+2wq9Q32hs3PW/noPJjHtLTrtGINM9mEw76DcDg0ac/dx6j1aA==}
+    peerDependencies:
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
+
   '@orval/angular@7.3.0':
     resolution: {integrity: sha512-SL13jfqhuHbC9XKLGVup3XXoEKvdzGjWOA+NuiRSx79CAo7XiYGsXs9KZpAQVPw2uMrOEwHeBicMW/4yJfQfdw==}
 
@@ -1885,11 +1891,12 @@ packages:
     resolution: {integrity: sha512-jV5mWJrsh3QXHpb/by6udSqwva0qK50uYHpIXvKsLaxnlbjbLfflfPjFyRWXbMtZsnzCjSUqp5pm5/p+Wpaerg==}
     engines: {node: '>=12'}
 
-  '@tidbcloud/uikit@2.0.0-beta.125':
-    resolution: {integrity: sha512-l3s6wXtmQNWY+s+Kw9Wl2X1LNnvi1mosEkL4NbCb4FEWqav+hUdbC6/l9HKxKQqwpx0OF9ZgCj3IjEOdVGMCkw==}
+  '@tidbcloud/uikit@2.1.6':
+    resolution: {integrity: sha512-Cb5gScoiwoGvpaK8G43XJYKLVE3oiGfjKxTBoXYhQBht9A9wNkjJNpn2ky+cphWoIxUiEVUvTKD20YTG8+gi5g==}
     peerDependencies:
       react: ^18.x || ^19.x
       react-dom: ^18.x || ^19.x
+      react-hook-form: ^7.x
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -2710,6 +2717,9 @@ packages:
     peerDependenciesMeta:
       jiti:
         optional: true
+
+  esm-env@1.2.2:
+    resolution: {integrity: sha512-Epxrv+Nr/CaL4ZcFGPJIYLWFom+YeV1DqMLHJoEd9SYRxNbaFruBwfEX/kkHUJf55j2+TUbmDcmuilbP1TmXHA==}
 
   espree@10.2.0:
     resolution: {integrity: sha512-upbkBJbckcCNBDBDXEbuhjbP68n+scUd3k/U2EkyM9nw+I/jPiL4cLF/Al06CF96wRltFda16sxDFrxsI1v0/g==}
@@ -3596,6 +3606,9 @@ packages:
   npm-run-path@5.3.0:
     resolution: {integrity: sha512-ppwTtiJZq0O/ai0z7yfudtBpWIoxM8yE6nHi1X47eFR2EWORqfbu6CnPlNsjeN683eT0qG6H/Pyf9fCcvjnnnQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  number-flow@0.5.3:
+    resolution: {integrity: sha512-iLKyssImNWQmJ41rza9K7P5lHRZTyishi/9FarWPLQHYY2Ydtl6eiXINEjZ1fa8dHeY0O7+YOD+Py3ZsJddYkg==}
 
   oas-kit-common@1.0.8:
     resolution: {integrity: sha512-pJTS2+T0oGIwgjGpw7sIRU8RQMcUoKCDWFLdBqKB2BNmGpbBMH2sdqAaOXUg8OzonZHU0L7vfJu1mJFEiYDWOQ==}
@@ -5906,6 +5919,13 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
+  '@number-flow/react@0.5.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      esm-env: 1.2.2
+      number-flow: 0.5.3
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
   '@orval/angular@7.3.0(openapi-types@12.1.3)':
     dependencies:
       '@orval/core': 7.3.0(openapi-types@12.1.3)
@@ -6415,7 +6435,7 @@ snapshots:
 
   '@tanstack/virtual-file-routes@1.81.9': {}
 
-  '@tidbcloud/uikit@2.0.0-beta.125(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tidbcloud/uikit@2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@18.3.12)(react@18.3.1)
@@ -6432,6 +6452,7 @@ snapshots:
       '@mantine/hooks': 7.15.2(react@18.3.1)
       '@mantine/modals': 7.15.2(@mantine/core@7.15.2(@mantine/hooks@7.15.2(react@18.3.1))(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@mantine/hooks@7.15.2(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mantine/notifications': 7.15.2(@mantine/core@7.15.2(@mantine/hooks@7.15.2(react@18.3.1))(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@mantine/hooks@7.15.2(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@number-flow/react': 0.5.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tabler/icons-react': 3.26.0(react@18.3.1)
       ahooks: 3.8.1(react@18.3.1)
       clsx: 2.1.1
@@ -7537,6 +7558,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  esm-env@1.2.2: {}
+
   espree@10.2.0:
     dependencies:
       acorn: 8.13.0
@@ -8374,6 +8397,10 @@ snapshots:
   npm-run-path@5.3.0:
     dependencies:
       path-key: 4.0.0
+
+  number-flow@0.5.3:
+    dependencies:
+      esm-env: 1.2.2
 
   oas-kit-common@1.0.8:
     dependencies:

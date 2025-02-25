@@ -8,12 +8,16 @@
       "panels.cluster_top": "Top 5 SQL Performance",
       "panels.connections": "Connections",
       "panels.database_time": "Database Time",
+      "panels.high_disk_io_usage": "High Disk I/O Usage",
       "panels.host": "Host",
       "panels.host_top": "Top 5 Host Performance",
       "panels.hosts_resource": "Hosts Resource",
+      "panels.hotspot": "Hotspot",
+      "panels.increase_of_rw_latency": "Increased Read and Write Latency",
       "panels.instance_top": "Top 5 Node Utilization",
       "panels.io_env": "IO & Env",
       "panels.load_analysis": "Load Analysis",
+      "panels.lock_conflicts": "Lock Conflicts",
       "panels.optimizer_behavior": "Optimizer Behavior",
       "panels.pd": "PD",
       "panels.pd_leader": "PD Leader",
@@ -26,11 +30,13 @@
       "panels.throughput": "Throughput",
       "panels.tidb": "TiDB",
       "panels.tidb_components_resource": "TiDB Componets Resource",
+      "panels.tidb_oom": "TiDB OOM",
       "panels.tiflash": "TiFlash",
       "panels.tiflash_related": "TiFlash Related",
       "panels.tikv": "TiKV",
       "panels.top_down_duration": "Top-down Duration",
       "panels.transaction": "Transaction",
+      "panels.write_conflicts": "Write Conflicts",
       "time_range.day_other": "{{count}} days",
       "time_range.hour_one": "{{count}} hr",
       "time_range.hour_other": "{{count}} hrs"
@@ -43,7 +49,13 @@
       "Host Monitoring": "Host Monitoring",
       "SQL Diagnosis": "SQL Diagnosis",
       "Select Instance": "Select Instance",
-      "The rank may have a delay of up to {{n}} minutes": "The rank may have a delay of up to {{n}} minutes"
+      "The rank may have a delay of up to {{n}} minutes": "The rank may have a delay of up to {{n}} minutes",
+      "Troubleshoot High Disk I/O Usage in TiDB": "Troubleshoot High Disk I/O Usage in TiDB",
+      "Troubleshoot Hotspot Issues": "Troubleshoot Hotspot Issues",
+      "Troubleshoot Increased Read and Write Latency": "Troubleshoot Increased Read and Write Latency",
+      "Troubleshoot Lock Conflicts": "Troubleshoot Lock Conflicts",
+      "Troubleshoot TiDB OOM Issues": "Troubleshoot TiDB OOM Issues",
+      "Troubleshoot Write Conflicts in Optimistic Transactions": "Troubleshoot Write Conflicts in Optimistic Transactions"
     }
   }
 }

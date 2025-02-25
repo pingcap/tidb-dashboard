@@ -53,7 +53,7 @@
       "The rank may have a delay of up to {{n}} minutes": "排名可能会有 {{n}} 分钟的延迟",
       "Troubleshoot High Disk I/O Usage in TiDB": "TiDB 磁盘 I/O 过高的处理办法",
       "Troubleshoot Hotspot Issues": "TiDB 热点问题处理",
-      "Troubleshoot Increased Read and Write Latency": "读写延迟增加",
+      "Troubleshoot Increased Read and Write Latency": "读写延迟增加问题排查",
       "Troubleshoot Lock Conflicts": "TiDB 锁冲突问题处理",
       "Troubleshoot TiDB OOM Issues": "TiDB OOM 故障排查",
       "Troubleshoot Write Conflicts in Optimistic Transactions": "乐观事务模型下写写冲突问题排查"

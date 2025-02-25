@@ -15,10 +15,13 @@ interface ChartState {
   selectedInstance: string | undefined
   setSelectedInstance: (newValue: string | undefined) => void
 
+  metricPromAddrs: { [key: string]: string }
+  setMetricPromAddrs: (metricName: string, promAddr: string) => void
+
   reset: () => void
 }
 
-export const useChartState = create<ChartState>((set) => ({
+export const useChartState = create<ChartState>((set, get) => ({
   selectedChart: undefined,
   setSelectedChart: (newChart) => set({ selectedChart: newChart }),
 
@@ -28,11 +31,18 @@ export const useChartState = create<ChartState>((set) => ({
   selectedInstance: undefined,
   setSelectedInstance: (newValue) => set({ selectedInstance: newValue }),
 
+  metricPromAddrs: {},
+  setMetricPromAddrs: (metricName: string, promAddr: string) =>
+    set({
+      metricPromAddrs: { ...get().metricPromAddrs, [metricName]: promAddr },
+    }),
+
   reset: () =>
     set({
       selectedChart: undefined,
       timeRange: DEF_TIME_RANGE,
       selectedInstance: undefined,
+      metricPromAddrs: {},
     }),
 }))
 

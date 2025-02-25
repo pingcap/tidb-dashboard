@@ -39,8 +39,10 @@ export function ChartHeader({
 }) {
   const { tt } = useTn("metric")
   const { setRefresh } = useMetricsUrlState()
-  const setSelectedChart = useChartState((state) => state.setSelectedChart)
-  const setTimeRange = useChartState((state) => state.setTimeRange)
+  const setSelectedChart = useChartState((s) => s.setSelectedChart)
+  const setTimeRange = useChartState((s) => s.setTimeRange)
+  const metricPromAddrs = useChartState((s) => s.metricPromAddrs)
+  const curPromAddr = metricPromAddrs[config.metricName]
 
   const hiddenCharts = useChartsSelectState((s) => s.hiddenCharts)
   const setHiddenCharts = useChartsSelectState((s) => s.setHiddenCharts)
@@ -53,14 +55,14 @@ export function ChartHeader({
     <Group gap={2} mb={8}>
       <Typography variant="label-lg">{title}</Typography>
       <Box sx={{ flexGrow: 1 }} />
-      {config.promAddr && (
+      {curPromAddr && (
         <HoverCard position="top" shadow="md" withArrow>
           <HoverCard.Target>
             <IconInfoCircle size={16} />
           </HoverCard.Target>
           <HoverCard.Dropdown>
             <Typography>
-              {tt("Prometheus Address")}: <Code>{config.promAddr}</Code>
+              {tt("Prometheus Address")}: <Code>{curPromAddr}</Code>
             </Typography>
           </HoverCard.Dropdown>
         </HoverCard>

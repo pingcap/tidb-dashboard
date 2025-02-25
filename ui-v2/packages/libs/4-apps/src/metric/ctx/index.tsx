@@ -9,6 +9,7 @@ export type MetricDataByNameResultItem = {
   expr: string
   legend: string
   result: PromResultItem[]
+  promAddr?: string
 }
 
 type AppApi = {

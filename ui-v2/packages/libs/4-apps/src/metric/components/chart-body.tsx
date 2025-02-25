@@ -15,6 +15,7 @@ import { Box, Flex, Loader, useComputedColorScheme } from "@tidbcloud/uikit"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../ctx"
+import { useChartState } from "../shared-state/memory-state"
 import { useMetricsUrlState } from "../shared-state/url-state"
 import { SingleChartConfig } from "../utils/type"
 import { useMetricDataByMetricName } from "../utils/use-data"
@@ -46,6 +47,8 @@ export function ChartBody({
   onTimeRangeChange?: (timeRange: TimeRangeValue) => void
   labelValue?: string
 }) {
+  const setMetricPromAddrs = useChartState((s) => s.setMetricPromAddrs)
+
   const ctx = useAppContext()
   const { refresh } = useMetricsUrlState()
   const colorScheme = useComputedColorScheme()
@@ -138,6 +141,12 @@ export function ChartBody({
         .flat(),
     [metricData],
   )
+
+  useEffect(() => {
+    if (metricData?.promAddr) {
+      setMetricPromAddrs(config.metricName, metricData.promAddr)
+    }
+  }, [metricData?.promAddr, config.metricName])
 
   return (
     <Box

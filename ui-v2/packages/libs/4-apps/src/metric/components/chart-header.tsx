@@ -1,6 +1,17 @@
-import { TimeRange } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { ActionIcon, Box, Group, Typography } from "@tidbcloud/uikit"
-import { IconLayersThree02, IconRefreshCw02 } from "@tidbcloud/uikit/icons"
+import { TimeRange, useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import {
+  ActionIcon,
+  Box,
+  Code,
+  Group,
+  HoverCard,
+  Typography,
+} from "@tidbcloud/uikit"
+import {
+  IconInfoCircle,
+  IconLayersThree02,
+  IconRefreshCw02,
+} from "@tidbcloud/uikit/icons"
 
 import {
   useChartState,
@@ -26,6 +37,7 @@ export function ChartHeader({
   timeRange?: TimeRange
   children?: React.ReactNode
 }) {
+  const { tt } = useTn("metric")
   const { setRefresh } = useMetricsUrlState()
   const setSelectedChart = useChartState((state) => state.setSelectedChart)
   const setTimeRange = useChartState((state) => state.setTimeRange)
@@ -41,6 +53,18 @@ export function ChartHeader({
     <Group gap={2} mb={8}>
       <Typography variant="label-lg">{title}</Typography>
       <Box sx={{ flexGrow: 1 }} />
+      {config.promAddr && (
+        <HoverCard position="top" shadow="md" withArrow>
+          <HoverCard.Target>
+            <IconInfoCircle size={16} />
+          </HoverCard.Target>
+          <HoverCard.Dropdown>
+            <Typography>
+              {tt("Prometheus Address")}: <Code>{config.promAddr}</Code>
+            </Typography>
+          </HoverCard.Dropdown>
+        </HoverCard>
+      )}
       <ActionIcon
         variant="transparent"
         onClick={() => setRefresh("_" + config.metricName + "_")}

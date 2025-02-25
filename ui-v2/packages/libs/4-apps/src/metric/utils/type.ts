@@ -22,6 +22,7 @@ export interface SingleChartConfig {
   queries: SingleQueryConfig[]
   nullValue?: TransformNullValue
   unit: string
+  promAddr?: string
 }
 
 // one group has many categories

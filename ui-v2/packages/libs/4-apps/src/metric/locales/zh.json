@@ -47,6 +47,7 @@
       "Drill Down Analysis": "下钻分析",
       "Hide": "隐藏",
       "Host Monitoring": "主机监控",
+      "Prometheus Address": "Prometheus 地址",
       "SQL Diagnosis": "SQL 诊断",
       "Select Instance": "选择实例",
       "The rank may have a delay of up to {{n}} minutes": "排名可能会有 {{n}} 分钟的延迟",

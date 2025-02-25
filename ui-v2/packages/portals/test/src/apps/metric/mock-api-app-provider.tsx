@@ -52,6 +52,7 @@ function transformConfigs(metrics: V2Metrics["metrics"]): SinglePanelConfig[] {
             queries: [],
             nullValue: TransformNullValue.AS_ZERO,
             unit: metric.metric?.unit ?? "short",
+            promAddr: `http://10.0.0.64:10240`, // @todo: remove hardcode
           })) ?? [],
       })
     })

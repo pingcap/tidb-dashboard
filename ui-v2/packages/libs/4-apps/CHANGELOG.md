@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.17.6
+
+### Patch Changes
+
+- show prometheus address for monitoring chart
+
 ## 0.17.5
 
 ### Patch Changes

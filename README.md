@@ -88,4 +88,4 @@ Copyright 2020 PingCAP, Inc.
 [pd]: https://github.com/pingcap/pd
 [asktug.com]: https://asktug.com/
 
-<!-- VERSION_PLACEHOLDER: v6.5.12 -->
+<!-- VERSION_PLACEHOLDER: v6.5.13 -->

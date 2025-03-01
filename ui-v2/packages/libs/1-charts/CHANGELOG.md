@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.14.0
+
+### Minor Changes
+
+- upgrade uikit, refine table empty status, refine chart empty legend name case
+
 ## 0.13.1
 
 ### Patch Changes

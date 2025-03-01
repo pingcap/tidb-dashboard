@@ -1,5 +1,16 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.15.0
+
+### Minor Changes
+
+- upgrade uikit, refine table empty status, refine chart empty legend name case
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.12.0
+
 ## 0.14.3
 
 ### Patch Changes

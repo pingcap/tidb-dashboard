@@ -48,7 +48,19 @@ export function transformPromResultItem(
   nameTemplate: string,
   nullValue?: TransformNullValue,
 ): PromSeriesItem {
-  const name = interpolate(nameTemplate, item.metric)
+  let name = interpolate(nameTemplate, item.metric)
+  if (name === "") {
+    name = Object.entries(item.metric)
+      .filter(([, v]) => v !== "")
+      .map(([k, v]) => `${k}=${v}`)
+      .join(",")
+    if (name !== "") {
+      name = "{" + name + "}"
+    }
+  }
+  if (name === "") {
+    name = "value"
+  }
   return {
     name,
     data: item.values.map((v) => {

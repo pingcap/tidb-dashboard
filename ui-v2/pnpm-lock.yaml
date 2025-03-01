@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@tidbcloud/uikit':
-      specifier: ^2.1.2
-      version: 2.1.6
+      specifier: ^2.1.7
+      version: 2.1.7
 
 importers:
 
@@ -138,7 +138,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.7(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -172,7 +172,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.7(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -202,7 +202,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.7(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -233,7 +233,7 @@ importers:
         version: 12.1.1(rollup@4.24.0)(tslib@2.8.0)(typescript@5.6.3)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.7(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -279,7 +279,7 @@ importers:
         version: 5.59.16(react@18.3.1)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.7(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
@@ -321,7 +321,7 @@ importers:
         version: 1.85.0(@tanstack/router-generator@1.84.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tidbcloud/uikit':
         specifier: 'catalog:'
-        version: 2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
+        version: 2.1.7(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1891,8 +1891,8 @@ packages:
     resolution: {integrity: sha512-jV5mWJrsh3QXHpb/by6udSqwva0qK50uYHpIXvKsLaxnlbjbLfflfPjFyRWXbMtZsnzCjSUqp5pm5/p+Wpaerg==}
     engines: {node: '>=12'}
 
-  '@tidbcloud/uikit@2.1.6':
-    resolution: {integrity: sha512-Cb5gScoiwoGvpaK8G43XJYKLVE3oiGfjKxTBoXYhQBht9A9wNkjJNpn2ky+cphWoIxUiEVUvTKD20YTG8+gi5g==}
+  '@tidbcloud/uikit@2.1.7':
+    resolution: {integrity: sha512-C4c736KtdKjmJEZTHQj0bVcbd7f2GZAJ/6yHKhT0e/kml0E20UDjspdREB7iTMd5UnW63cAWBlAzcJaXxSmK+A==}
     peerDependencies:
       react: ^18.x || ^19.x
       react-dom: ^18.x || ^19.x
@@ -6435,7 +6435,7 @@ snapshots:
 
   '@tanstack/virtual-file-routes@1.81.9': {}
 
-  '@tidbcloud/uikit@2.1.6(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)':
+  '@tidbcloud/uikit@2.1.7(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.53.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@18.3.12)(react@18.3.1)

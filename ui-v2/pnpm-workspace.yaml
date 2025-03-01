@@ -3,4 +3,4 @@ packages:
   - "packages/**"
 
 catalog:
-  "@tidbcloud/uikit": "^2.1.2"
+  "@tidbcloud/uikit": "^2.1.7"

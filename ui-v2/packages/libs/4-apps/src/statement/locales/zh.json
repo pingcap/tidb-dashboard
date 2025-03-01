@@ -182,6 +182,7 @@
       "I got it": "我知道了",
       "Max Number of Statements": "最大收集 SQL 语句个数",
       "Max number of statement to collect. After exceeding, old statement information will be dropped. You may enlarge this setting when memory is sufficient and you discovered that data displayed in UI is incomplete.": "收集的 SQL 语句个数上限，当实际执行的 SQL 语句种类超过设定个数后最早执行的 SQL 语句信息将被丢弃。若您发现界面上呈现的 SQL 语句信息不完整，建议在内存允许的情况下调大本参数。",
+      "No Data": "无结果",
       "Open Setting": "打开设置",
       "Plans Count": "计划数",
       "Query Sample": "SQL 查询样例",

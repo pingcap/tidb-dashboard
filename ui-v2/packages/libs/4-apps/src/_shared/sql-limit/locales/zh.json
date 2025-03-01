@@ -11,6 +11,7 @@
       "Delete SQL limit failed": "删除 SQL 限流失败",
       "Delete SQL limit successfully": "删除 SQL 限流成功",
       "Delete": "删除",
+      "No Data": "无结果",
       "Resource Group": "资源组",
       "SQL Limit Setting": "SQL 限流设置",
       "SQL Limit": "SQL 限流",

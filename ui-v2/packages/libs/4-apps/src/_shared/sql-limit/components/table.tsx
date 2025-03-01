@@ -76,6 +76,7 @@ export function SqlLimitTable() {
       initialState={{
         columnPinning: { right: ["operation"] },
       }}
+      emptyMessage={tt("No Data")}
     />
   )
 }

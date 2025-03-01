@@ -182,6 +182,7 @@
       "I got it": "I got it",
       "Max Number of Statements": "Max Number of Statements",
       "Max number of statement to collect. After exceeding, old statement information will be dropped. You may enlarge this setting when memory is sufficient and you discovered that data displayed in UI is incomplete.": "Max number of statement to collect. After exceeding, old statement information will be dropped. You may enlarge this setting when memory is sufficient and you discovered that data displayed in UI is incomplete.",
+      "No Data": "No Data",
       "Open Setting": "Open Setting",
       "Plans Count": "Plans Count",
       "Query Sample": "Query Sample",

@@ -29,7 +29,7 @@
       "panels.sql_tuning": "SQL Tuning",
       "panels.throughput": "Throughput",
       "panels.tidb": "TiDB",
-      "panels.tidb_components_resource": "TiDB Components Resource",
+      "panels.tidb_components_resource": "TiDB Componets Resource",
       "panels.tidb_oom": "TiDB OOM",
       "panels.tiflash": "TiFlash",
       "panels.tiflash_related": "TiFlash Related",

@@ -1,6 +1,7 @@
 import {
   useProTablePaginationState,
   useProTableSortState,
+  useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
@@ -77,6 +78,8 @@ export function ListTable({
     return sortedData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)
   }, [sortedData, paginationState.pageIndex, paginationState.pageSize])
 
+  const { tt } = useTn("statement")
+
   return (
     <ProTable
       layoutMode="grid"
@@ -107,7 +110,9 @@ export function ListTable({
           ? {
               style(theme) {
                 return {
-                  backgroundColor: theme.colors.carbon[2],
+                  borderWidth: 1,
+                  borderStyle: "solid",
+                  borderColor: theme.colors.carbon[7],
                 }
               },
             }
@@ -115,6 +120,7 @@ export function ListTable({
       }}
       columns={tableColumns}
       data={pagedData}
+      emptyMessage={tt("No Data")}
     />
   )
 }

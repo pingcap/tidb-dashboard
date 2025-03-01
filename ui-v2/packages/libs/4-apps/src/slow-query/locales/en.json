@@ -145,6 +145,7 @@
       "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}": "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}",
       "Find SQL text": "Find SQL text",
       "I got it": "I got it",
+      "No Data": "No Data",
       "Plan": "Plan",
       "Query": "Query",
       "SQL digest": "SQL digest",

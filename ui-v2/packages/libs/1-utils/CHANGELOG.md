@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-utils
 
+## 0.12.1
+
+### Patch Changes
+
+- support now-to-future type relative time range
+
 ## 0.12.0
 
 ### Minor Changes

@@ -5,7 +5,8 @@ import { dayjs } from "@tidbcloud/uikit/utils"
 export type TimeRangeValue = [from: number, to: number]
 
 export interface RelativeTimeRange {
-  type: "relative"
+  // to be compatible, keep "relative", and "before-now" has same meaning with "relative"
+  type: "relative" | "before-to-now" | "now-to-future"
   value: number // unit: seconds
 }
 
@@ -26,6 +27,9 @@ export const toTimeRangeValue = (
     return timeRange.value.map((t) => t + offset) as TimeRangeValue
   } else {
     const now = dayjs().unix()
+    if (timeRange.type === "now-to-future") {
+      return [now + offset, now + timeRange.value + offset]
+    }
     return [now - timeRange.value + offset, now + offset]
   }
 }
@@ -42,15 +46,19 @@ export function fromTimeRangeValue(v: TimeRangeValue): AbsoluteTimeRange {
 export type URLTimeRange = { from: string; to: string }
 
 export const toURLTimeRange = (timeRange: TimeRange): URLTimeRange => {
-  if (timeRange.type === "relative") {
-    return { from: `${timeRange.value}`, to: "now" }
+  if (timeRange.type === "absolute") {
+    return { from: timeRange.value[0] + "", to: timeRange.value[1] + "" }
   }
-
-  const timeRangeValue = toTimeRangeValue(timeRange)
-  return { from: `${timeRangeValue[0]}`, to: `${timeRangeValue[1]}` }
+  if (timeRange.type === "now-to-future") {
+    return { from: "now", to: timeRange.value + "" }
+  }
+  return { from: `${timeRange.value}`, to: "now" }
 }
 
 export const urlToTimeRange = (urlTimeRange: URLTimeRange): TimeRange => {
+  if (urlTimeRange.from === "now") {
+    return { type: "now-to-future", value: Number(urlTimeRange.to) }
+  }
   if (urlTimeRange.to === "now") {
     return { type: "relative", value: Number(urlTimeRange.from) }
   }

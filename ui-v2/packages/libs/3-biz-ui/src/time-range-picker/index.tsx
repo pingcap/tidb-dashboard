@@ -1,4 +1,5 @@
 import {
+  RelativeTimeRange,
   TimeRange,
   formatDuration,
   formatTime,
@@ -20,15 +21,15 @@ import { useMemo, useState } from "react"
 import CustomTimeRangePicker from "./custom"
 
 const DEFAULT_QUICK_RANGES = [
-  3 * 24 * 60 * 60,
-  2 * 24 * 60 * 60,
-  24 * 60 * 60,
-  12 * 60 * 60,
-  3 * 60 * 60,
-  60 * 60,
-  30 * 60,
-  15 * 60,
   5 * 60,
+  15 * 60,
+  30 * 60,
+  60 * 60,
+  3 * 60 * 60,
+  12 * 60 * 60,
+  24 * 60 * 60,
+  2 * 24 * 60 * 60,
+  3 * 24 * 60 * 60,
 ]
 
 export interface TimeRangePickerProps extends ButtonProps {
@@ -44,6 +45,7 @@ export interface TimeRangePickerProps extends ButtonProps {
   // quick range selection items, Last x mins, Last x hours...
   // unit: seconds.
   quickRanges?: number[]
+  quickRangesType?: RelativeTimeRange["type"]
   disableAbsoluteRanges?: boolean
 }
 
@@ -55,23 +57,24 @@ export const TimeRangePicker = ({
   disableAbsoluteRanges = false,
   onChange,
   quickRanges = DEFAULT_QUICK_RANGES,
+  quickRangesType = "relative",
   loading,
   sx,
 }: React.PropsWithChildren<TimeRangePickerProps>) => {
   const [opened, setOpened] = useState(false)
   const [customMode, setCustomMode] = useState(false)
-  const isRelativeRange = value?.type === "relative" || !value
+  const isRelativeRange = value.type !== "absolute"
+  const relativeTimePrefix = value.type === "now-to-future" ? "Next" : "Past"
 
-  // past 1 day in default if undefined is the initialized value
-  const timeRangeValue = toTimeRangeValue(
-    value ?? { type: "relative", value: 24 * 60 * 60 },
-  )
+  const timeRangeValue = toTimeRangeValue(value)
   const duration = timeRangeValue[1] - timeRangeValue[0]
   const selectedRelativeItem = useMemo(() => {
-    if (!value || value.type === "absolute") {
+    if (value.type === "absolute") {
       return
     }
-    return quickRanges.find((it) => it === value.value)
+    return quickRanges.find(
+      (it) => it === value.value && value.type === quickRangesType,
+    )
   }, [quickRanges, value])
 
   const formattedAbsDateTime = useMemo(() => {
@@ -146,7 +149,7 @@ export const TimeRangePicker = ({
                 }}
               >
                 {isRelativeRange
-                  ? `Past ${formatDuration(duration)}`
+                  ? `${relativeTimePrefix} ${formatDuration(duration)}`
                   : formattedAbsDateTime}
               </Text>
             </Group>
@@ -195,10 +198,12 @@ export const TimeRangePicker = ({
                         : "",
                   })}
                   onClick={() =>
-                    onChange?.({ type: "relative", value: seconds })
+                    onChange?.({ type: quickRangesType, value: seconds })
                   }
                 >
-                  <Text>Past {formatDuration(seconds)}</Text>
+                  <Text>
+                    {relativeTimePrefix} {formatDuration(seconds)}
+                  </Text>
                 </Menu.Item>
               ))}
             </>

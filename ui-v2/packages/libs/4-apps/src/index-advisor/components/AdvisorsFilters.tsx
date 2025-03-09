@@ -1,11 +1,12 @@
 import {
+  CloseButton,
   Group,
   Select,
   Text,
   TextInput,
   UnstyledButton,
 } from "@tidbcloud/uikit"
-import { IconXClose } from "@tidbcloud/uikit/icons"
+import { IconCornerDownLeft } from "@tidbcloud/uikit/icons"
 import { useEffect, useState } from "react"
 
 import { useIndexAdvisorUrlState } from "../url-state/list-url-state"
@@ -54,15 +55,17 @@ export function AdvisorsFilters() {
         onChange={(e) => setText(e.target.value)}
         placeholder="Find databases, tables"
         rightSection={
-          !!text && (
-            <IconXClose
-              style={{ cursor: "pointer" }}
-              size={14}
+          text ? (
+            <CloseButton
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()} // to prevent the input lose focus
               onClick={() => {
                 setText("")
                 setSearch(undefined)
               }}
             />
+          ) : (
+            <IconCornerDownLeft />
           )
         }
         disabled={isFetching}

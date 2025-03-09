@@ -1,11 +1,7 @@
 import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Button, Group, TextInput } from "@tidbcloud/uikit"
-import {
-  IconCornerDownLeft,
-  IconSearchSm,
-  IconXClose,
-} from "@tidbcloud/uikit/icons"
+import { Button, CloseButton, Group, TextInput } from "@tidbcloud/uikit"
+import { IconCornerDownLeft, IconSearchSm } from "@tidbcloud/uikit/icons"
 import { dayjs } from "@tidbcloud/uikit/utils"
 import { useEffect, useState } from "react"
 
@@ -65,8 +61,9 @@ export function FiltersWithAdvanced() {
         leftSection={<IconSearchSm />}
         rightSection={
           text ? (
-            <IconXClose
-              style={{ cursor: "pointer" }}
+            <CloseButton
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()} // to prevent the input lose focus
               onClick={() => {
                 setText("")
                 setTerm(undefined)

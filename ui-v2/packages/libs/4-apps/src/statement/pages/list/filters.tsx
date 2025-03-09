@@ -3,8 +3,8 @@ import {
   TimeRangePicker,
 } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Button, Group, TextInput } from "@tidbcloud/uikit"
-import { IconXClose } from "@tidbcloud/uikit/icons"
+import { Button, CloseButton, Group, TextInput } from "@tidbcloud/uikit"
+import { IconCornerDownLeft } from "@tidbcloud/uikit/icons"
 import { dayjs } from "@tidbcloud/uikit/utils"
 import { useEffect, useState } from "react"
 
@@ -113,15 +113,17 @@ export function Filters() {
         onChange={(e) => setText(e.target.value)}
         placeholder={tt("Find SQL text")}
         rightSection={
-          !!text && (
-            <IconXClose
-              style={{ cursor: "pointer" }}
-              size={14}
+          text ? (
+            <CloseButton
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()} // to prevent the input lose focus
               onClick={() => {
                 setText("")
                 setTerm(undefined)
               }}
             />
+          ) : (
+            <IconCornerDownLeft />
           )
         }
         disabled={isFetching}

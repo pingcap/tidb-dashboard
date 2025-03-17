@@ -1,5 +1,12 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.18.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-charts@0.14.1
+
 ## 0.18.1
 
 ### Patch Changes

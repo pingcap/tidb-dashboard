@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.14.1
+
+### Patch Changes
+
+- upgrade @elastic/charts to latest version
+
 ## 0.14.0
 
 ### Minor Changes

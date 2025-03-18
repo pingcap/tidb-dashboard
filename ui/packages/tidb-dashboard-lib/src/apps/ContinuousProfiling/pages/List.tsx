@@ -39,6 +39,7 @@ export default function Page() {
   const ctx = useContext(ConProfilingContext)
   const showSetting = ctx?.cfg.showSetting ?? true
   const durationHour = ctx?.cfg.listDuration ?? 2
+  const maxDays = ctx?.cfg.maxDays
 
   const { timeRange, setTimeRange } = useURLTimeRange()
   const endTime = timeRange.type === 'recent' ? '' : `${timeRange.value[1]}`
@@ -231,6 +232,12 @@ export default function Page() {
                 label={t('conprof.list.toolbar.range_end')}
               >
                 <DatePicker
+                  disabledDate={(current) => {
+                    if (maxDays === undefined) {
+                      return false
+                    }
+                    return current < dayjs().subtract(maxDays, 'd').startOf('d') || current > dayjs().endOf('d')
+                  }}
                   showTime
                   onOpenChange={(open) =>
                     open && telemetry.openTimeRangePicker()

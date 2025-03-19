@@ -236,7 +236,10 @@ export default function Page() {
                     if (maxDays === undefined) {
                       return false
                     }
-                    return current < dayjs().subtract(maxDays, 'd').startOf('d') || current > dayjs().endOf('d')
+                    return (
+                      current < dayjs().subtract(maxDays, 'd').startOf('d') ||
+                      current > dayjs().endOf('d')
+                    )
                   }}
                   showTime
                   onOpenChange={(open) =>

@@ -5320,7 +5320,7 @@
                     "type": "integer"
                 },
                 "unpacked_bytes_sent_tikv_total": {
-                    "description": "Network Fields",
+                    "description": "Network fields",
                     "type": "integer"
                 },
                 "user": {

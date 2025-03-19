@@ -429,7 +429,7 @@ export interface SlowqueryModel {
      */
     'unpacked_bytes_sent_tikv_cross_zone'?: number;
     /**
-     * Network Fields
+     * Network fields
      * @type {number}
      * @memberof SlowqueryModel
      */

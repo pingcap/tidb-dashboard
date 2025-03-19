@@ -67,6 +67,7 @@ export interface IConProfilingConfig extends IContextConfig {
   enableDotGraph?: boolean // default value is true
   enablePreviewGoroutine?: boolean // default value is true
   listDuration?: number // unit hour, 1 means 1 hour, 2 means 2 hours, default value is 2 hours
+  maxDays?: number // default value is unlimited
 }
 
 export interface IConProfilingContext {

@@ -5,6 +5,22 @@
 - Node >= 20.18.0
 - [use corepack](https://www.totaltypescript.com/how-to-use-corepack): `corepack enable && corepack enable npm`
 
+## Development
+
+```bash
+pnpm i
+# pnpm gen:api
+# pnpm gen:locales
+pnpm dev:portals:test
+```
+
+## Build
+
+```bash
+pnpm i
+pnpm build
+```
+
 ## Release
 
 ```bash

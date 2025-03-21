@@ -307,12 +307,6 @@ importers:
       '@pingcap-incubator/tidb-dashboard-lib-apps':
         specifier: workspace:^
         version: link:../../libs/4-apps
-      '@pingcap-incubator/tidb-dashboard-lib-charts':
-        specifier: workspace:^
-        version: link:../../libs/1-charts
-      '@pingcap-incubator/tidb-dashboard-lib-utils':
-        specifier: workspace:^
-        version: link:../../libs/1-utils
       '@tanstack/react-query':
         specifier: ^5.59.16
         version: 5.59.16(react@18.3.1)

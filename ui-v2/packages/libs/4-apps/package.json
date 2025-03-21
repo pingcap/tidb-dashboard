@@ -21,6 +21,21 @@
     },
     "./index-advisor": {
       "import": "./dist/index-advisor/index.js"
+    },
+    "./utils": {
+      "import": "./dist/_re-exports/utils.js"
+    },
+    "./charts": {
+      "import": "./dist/_re-exports/charts.js"
+    },
+    "./charts-css": {
+      "import": "./dist/_re-exports/charts-css.js"
+    },
+    "./primitive-ui": {
+      "import": "./dist/_re-exports/primitive-ui.js"
+    },
+    "./biz-ui": {
+      "import": "./dist/_re-exports/biz-ui.js"
     }
   },
   "typesVersions": {
@@ -39,6 +54,21 @@
       ],
       "index-advisor": [
         "./dist/index-advisor/index.d.ts"
+      ],
+      "utils": [
+        "./dist/_re-exports/utils.d.ts"
+      ],
+      "charts": [
+        "./dist/_re-exports/charts.d.ts"
+      ],
+      "charts-css": [
+        "./dist/_re-exports/charts-css.d.ts"
+      ],
+      "primitive-ui": [
+        "./dist/_re-exports/primitive-ui.d.ts"
+      ],
+      "biz-ui": [
+        "./dist/_re-exports/biz-ui.d.ts"
       ]
     }
   },

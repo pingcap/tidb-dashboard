@@ -12,8 +12,6 @@
   "dependencies": {
     "@pingcap-incubator/tidb-dashboard-lib-api-client": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-apps": "workspace:^",
-    "@pingcap-incubator/tidb-dashboard-lib-charts": "workspace:^",
-    "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
     "@tanstack/react-query": "^5.59.16",
     "@tanstack/react-router": "^1.85.0",
     "@tidbcloud/uikit": "catalog:",

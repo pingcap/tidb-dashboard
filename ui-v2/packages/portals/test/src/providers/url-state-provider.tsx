@@ -1,4 +1,4 @@
-import { UrlStateProvider } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { UrlStateProvider } from "@pingcap-incubator/tidb-dashboard-lib-apps/utils"
 import { useLocation, useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
 

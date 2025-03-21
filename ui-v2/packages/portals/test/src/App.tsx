@@ -1,10 +1,10 @@
-import { UiKitThemeProvider } from "@pingcap-incubator/tidb-dashboard-lib-apps"
+import { UiKitThemeProvider } from "@pingcap-incubator/tidb-dashboard-lib-apps/primitive-ui"
 
 import { ReactQueryProvider } from "./providers/react-query-provider"
 import { RouterProvider } from "./router/provider"
 
 import "@tidbcloud/uikit/style.css"
-import "@pingcap-incubator/tidb-dashboard-lib-charts/dist/style.css"
+import "@pingcap-incubator/tidb-dashboard-lib-apps/charts-css"
 import "./App.css"
 
 function App() {

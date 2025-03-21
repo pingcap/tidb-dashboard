@@ -1,5 +1,5 @@
 import { axiosClient } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
-import { initI18n } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { initI18n } from "@pingcap-incubator/tidb-dashboard-lib-apps/utils"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 

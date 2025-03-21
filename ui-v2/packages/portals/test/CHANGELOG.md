@@ -1,5 +1,17 @@
 # test-tidb-dashboard-ui-lib
 
+## 0.12.0
+
+### Minor Changes
+
+- refactor: re-exports lib-uitls/lib-charts/lib-primitive-ui/lib-biz-ui from lib-apps
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-api-client@0.12.0
+  - @pingcap-incubator/tidb-dashboard-lib-apps@0.19.0
+
 ## 0.11.22
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-api-client
 
+## 0.12.0
+
+### Minor Changes
+
+- refactor: re-exports lib-uitls/lib-charts/lib-primitive-ui/lib-biz-ui from lib-apps
+
 ## 0.11.0
 
 ### Minor Changes

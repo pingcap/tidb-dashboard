@@ -1,6 +1,6 @@
 {
   "name": "@pingcap-incubator/tidb-dashboard-lib-charts",
-  "version": "0.14.1",
+  "version": "0.15.0",
   "description": "",
   "type": "module",
   "main": "dist/index.js",

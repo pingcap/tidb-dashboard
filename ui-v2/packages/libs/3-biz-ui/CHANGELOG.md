@@ -1,5 +1,16 @@
 # @pingcap-incubator/tidb-dashboard-lib-biz-ui
 
+## 0.16.0
+
+### Minor Changes
+
+- refactor: re-exports lib-uitls/lib-charts/lib-primitive-ui/lib-biz-ui from lib-apps
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-utils@0.13.0
+
 ## 0.15.1
 
 ### Patch Changes

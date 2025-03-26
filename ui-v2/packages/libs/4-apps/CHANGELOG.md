@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.19.1
+
+### Patch Changes
+
+- temporary disable sql-statement setting entry
+
 ## 0.19.0
 
 ### Minor Changes

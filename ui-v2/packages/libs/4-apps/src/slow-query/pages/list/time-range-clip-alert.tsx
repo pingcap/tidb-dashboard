@@ -13,7 +13,7 @@ export function TimeRangeClipAlert() {
   }
 
   return (
-    <Alert>
+    <Alert p={8}>
       {tt(
         "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}",
         {

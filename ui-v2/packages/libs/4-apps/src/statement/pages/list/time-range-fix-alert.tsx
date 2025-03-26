@@ -26,7 +26,7 @@ export function TimeRangeFixAlert({ data }: { data: StatementModel[] }) {
 
   if (minTime !== maxTime) {
     return (
-      <Alert>
+      <Alert p={8}>
         {tt(
           "Due to time window and expiration configurations, currently displaying data in time range is {{begin}} ~ {{end}}",
           {

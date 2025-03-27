@@ -46,7 +46,7 @@ export function useAdvancedFiltersUrlState(affectPagination: boolean = false) {
         .join(";")
       setQueryParams({
         af: afStr,
-        ...(affectPagination ? { curPage: undefined } : {}),
+        ...(affectPagination ? { pageIndex: undefined } : {}),
       })
     },
     [setQueryParams, affectPagination],

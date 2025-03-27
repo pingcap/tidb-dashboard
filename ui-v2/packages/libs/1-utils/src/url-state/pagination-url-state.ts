@@ -3,31 +3,35 @@ import { useCallback, useMemo } from "react"
 import { useUrlState } from "./use-url-state"
 
 export type Pagination = {
-  curPage: number
+  pageIndex: number
   pageSize: number
 }
 
-export type PaginationUrlState = Partial<Record<"curPage" | "pageSize", string>>
+export type PaginationUrlState = Partial<
+  Record<"pageIndex" | "pageSize", string>
+>
 
 export function usePaginationUrlState(defPageSize: number = 15) {
   const [queryParams, setQueryParams] = useUrlState<PaginationUrlState>()
 
   const pagination = useMemo<Pagination>(() => {
     return {
-      curPage: Number(queryParams.curPage) || 1,
+      pageIndex: Number(queryParams.pageIndex) || 0,
       pageSize: Number(queryParams.pageSize) || defPageSize,
     }
-  }, [queryParams.curPage, queryParams.pageSize, defPageSize])
+  }, [queryParams.pageIndex, queryParams.pageSize, defPageSize])
 
   const setPagination = useCallback(
     (newPagination: Pagination) => {
       setQueryParams({
-        curPage:
-          newPagination.curPage === 1 ? undefined : newPagination.curPage + "",
+        pageIndex:
+          newPagination.pageIndex === 0
+            ? undefined
+            : newPagination.pageIndex.toString(),
         pageSize:
           newPagination.pageSize === defPageSize
             ? undefined
-            : newPagination.pageSize + "",
+            : newPagination.pageSize.toString(),
       })
     },
     [setQueryParams],

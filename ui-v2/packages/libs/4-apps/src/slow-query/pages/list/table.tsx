@@ -48,9 +48,9 @@ export function ListTable() {
   // do sorting in server for slow query list
   // do pagination in local for slow query list
   const pagedData = useMemo(() => {
-    const { curPage, pageSize } = pagination
-    return data?.slice((curPage - 1) * pageSize, curPage * pageSize)
-  }, [data, pagination?.curPage, pagination?.pageSize])
+    const { pageIndex, pageSize } = pagination
+    return data?.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)
+  }, [data, pagination?.pageIndex, pagination?.pageSize])
 
   const { tt } = useTn("slow-query")
 

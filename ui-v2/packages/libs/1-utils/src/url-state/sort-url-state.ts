@@ -29,7 +29,7 @@ export function useSortUrlState(
       setQueryParams({
         orderBy: newSortRule.orderBy || undefined,
         desc: newSortRule.desc ? undefined : "false",
-        ...(affectPagination ? { curPage: undefined } : {}),
+        ...(affectPagination ? { pageIndex: undefined } : {}),
       })
     },
     [setQueryParams, affectPagination],

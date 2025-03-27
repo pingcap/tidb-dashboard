@@ -40,7 +40,7 @@ export function useListUrlState() {
   }, [queryParams.dbs])
   const setDbs = useCallback(
     (v: string[]) => {
-      setQueryParams({ dbs: v.join(","), curPage: undefined })
+      setQueryParams({ dbs: v.join(","), pageIndex: undefined })
     },
     [setQueryParams],
   )
@@ -52,7 +52,7 @@ export function useListUrlState() {
   }, [queryParams.ruGroups])
   const setRuGroups = useCallback(
     (v: string[]) => {
-      setQueryParams({ ruGroups: v.join(","), curPage: undefined })
+      setQueryParams({ ruGroups: v.join(","), pageIndex: undefined })
     },
     [setQueryParams],
   )
@@ -61,7 +61,7 @@ export function useListUrlState() {
   const sqlDigest = queryParams.sqlDigest ?? ""
   const setSqlDigest = useCallback(
     (v?: string) => {
-      setQueryParams({ sqlDigest: v, curPage: undefined })
+      setQueryParams({ sqlDigest: v, pageIndex: undefined })
     },
     [setQueryParams],
   )
@@ -77,7 +77,7 @@ export function useListUrlState() {
   }, [queryParams.limit])
   const setLimit = useCallback(
     (v: string) => {
-      setQueryParams({ limit: v, curPage: undefined })
+      setQueryParams({ limit: v, pageIndex: undefined })
     },
     [setQueryParams],
   )
@@ -88,7 +88,7 @@ export function useListUrlState() {
     (v?: string) => {
       setQueryParams({
         term: v ? encodeURIComponent(v) : v,
-        curPage: undefined,
+        pageIndex: undefined,
       })
     },
     [setQueryParams],
@@ -105,7 +105,7 @@ export function useListUrlState() {
       af: undefined,
       limit: undefined,
       term: undefined,
-      curPage: undefined,
+      pageIndex: undefined,
     })
   }, [setQueryParams])
 

@@ -43,7 +43,7 @@ export function useListUrlState() {
   }, [queryParams.dbs])
   const setDbs = useCallback(
     (v: string[]) => {
-      setQueryParams({ dbs: v.join(","), curPage: undefined })
+      setQueryParams({ dbs: v.join(","), pageIndex: undefined })
     },
     [setQueryParams],
   )
@@ -55,7 +55,7 @@ export function useListUrlState() {
   }, [queryParams.ruGroups])
   const setRuGroups = useCallback(
     (v: string[]) => {
-      setQueryParams({ ruGroups: v.join(","), curPage: undefined })
+      setQueryParams({ ruGroups: v.join(","), pageIndex: undefined })
     },
     [setQueryParams],
   )
@@ -67,7 +67,7 @@ export function useListUrlState() {
   }, [queryParams.kinds])
   const setKinds = useCallback(
     (newKinds: string[]) => {
-      setQueryParams({ kinds: newKinds.join(","), curPage: undefined })
+      setQueryParams({ kinds: newKinds.join(","), pageIndex: undefined })
     },
     [setQueryParams],
   )
@@ -78,7 +78,7 @@ export function useListUrlState() {
     (v?: string) => {
       setQueryParams({
         term: v ? encodeURIComponent(v) : v,
-        curPage: undefined,
+        pageIndex: undefined,
       })
     },
     [setQueryParams],
@@ -94,7 +94,7 @@ export function useListUrlState() {
       kinds: undefined,
       term: undefined,
       af: undefined,
-      curPage: undefined,
+      pageIndex: undefined,
     })
   }, [setQueryParams])
 

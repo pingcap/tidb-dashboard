@@ -31,7 +31,7 @@ export function useTimeRangeUrlState(
     (newTimeRange: TimeRange) => {
       setQueryParams({
         ...toURLTimeRange(newTimeRange),
-        ...(affectPagination ? { curPage: undefined } : {}),
+        ...(affectPagination ? { pageIndex: undefined } : {}),
       })
     },
     [setQueryParams, affectPagination],

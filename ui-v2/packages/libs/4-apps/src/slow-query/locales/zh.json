@@ -160,7 +160,9 @@
       "View related statement in statement page, but it may be evicted already, so the result maybe empty": "在 SQL 语句页面查看相关的 SQL 语句，但该 SQL 语句有可能已经被淘汰，所以结果可能为空",
       "View related statement": "查看相关的 SQL 语句",
       "Warnings": "警告",
-      "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.": "在打开详情页时，你可以按住 <kbd>Ctrl</kbd> 或 <kbd>⌘</kbd> 在新标签页打开，或按住 <kbd>Shift</kbd> 在新窗口中打开。"
+      "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.": "在打开详情页时，你可以按住 <kbd>Ctrl</kbd> 或 <kbd>⌘</kbd> 在新标签页打开，或按住 <kbd>Shift</kbd> 在新窗口中打开。",
+      "page": "页",
+      "total": "总计"
     }
   }
 }

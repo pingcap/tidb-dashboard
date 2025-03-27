@@ -36,6 +36,7 @@ export function useListData() {
     sortRule,
     advancedFilters,
     cols,
+    pagination,
   } = useListUrlState()
   const setTRV = useTimeRangeValueState((s) => s.setTRV)
 
@@ -48,11 +49,12 @@ export function useListData() {
       dbs,
       ruGroups,
       sqlDigest,
-      limit,
       term,
-      sortRule,
       advancedFilters,
       cols,
+      limit,
+      sortRule,
+      pagination,
     ],
     queryFn: () => {
       const tr = toTimeRangeValue(timeRange)
@@ -74,6 +76,7 @@ export function useListData() {
         ...sortRule,
         advancedFilters,
         fields: cols.filter((c) => c !== "empty"),
+        ...pagination,
       })
     },
   })

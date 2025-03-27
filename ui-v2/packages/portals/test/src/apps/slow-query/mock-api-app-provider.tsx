@@ -88,10 +88,14 @@ export function useCtxValue(): AppCtxValue {
             text: params.term,
             orderBy: params.orderBy,
             isDesc: params.desc,
-            pageSize: params.limit,
             fields: fieldsStr,
             advancedFilter: advancedFiltersStrArr,
-          }).then((res) => res.data ?? [])
+            pageSize: params.pageSize,
+            skip: params.pageSize * params.pageIndex,
+          }).then((res) => ({
+            total: res.totalSize ?? 0,
+            items: res.data ?? [],
+          }))
         },
         getSlowQuery(params: { id: string }) {
           const [digest, connectionId, timestamp] = params.id.split(",")

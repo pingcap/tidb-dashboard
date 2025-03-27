@@ -160,7 +160,9 @@
       "View related statement in statement page, but it may be evicted already, so the result maybe empty": "View related statement in statement page, but it may be evicted already, so the result maybe empty",
       "View related statement": "View related statement",
       "Warnings": "Warnings",
-      "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.": "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window."
+      "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.": "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.",
+      "page": "page",
+      "total": "total"
     }
   }
 }

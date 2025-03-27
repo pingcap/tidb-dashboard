@@ -12,6 +12,23 @@ import { useListData } from "../../utils/use-data"
 
 import { useListTableColumns } from "./cols"
 
+// @todo: make it resuable, resolve locales issue
+const usePaginationConfigs = () => {
+  const { tt } = useTn("slow-query")
+
+  return {
+    showTotal: true,
+    showRowsPerPage: true,
+    rowsPerPageOptions: [10, 15, 20, 30].map((value) => ({
+      value: String(value),
+      label: `${value} / ${tt("page")}`,
+    })),
+    localization: {
+      total: `${tt("total")}: `,
+    },
+  }
+}
+
 export function ListTable() {
   const tableColumns = useListTableColumns()
   const { data, isLoading } = useListData()
@@ -45,14 +62,9 @@ export function ListTable() {
       )
   }, [tableColumns, visibleCols])
 
-  // do sorting in server for slow query list
-  // do pagination in local for slow query list
-  const pagedData = useMemo(() => {
-    const { pageIndex, pageSize } = pagination
-    return data?.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)
-  }, [data, pagination?.pageIndex, pagination?.pageSize])
-
   const { tt } = useTn("slow-query")
+
+  const paginationConfig = usePaginationConfigs()
 
   return (
     <ProTable
@@ -65,11 +77,8 @@ export function ListTable() {
       onSortingChange={setSortingState}
       manualPagination
       onPaginationChange={setPaginationState}
-      pagination={{
-        position: "right",
-        showTotal: true,
-      }}
-      rowCount={data?.length ?? 0}
+      pagination={paginationConfig}
+      rowCount={data?.total ?? 0}
       state={{
         isLoading,
         sorting: sortingState,
@@ -93,7 +102,7 @@ export function ListTable() {
           : {}
       }}
       columns={tableColumns}
-      data={pagedData ?? []}
+      data={data?.items ?? []}
       emptyMessage={tt("No Data")}
     />
   )

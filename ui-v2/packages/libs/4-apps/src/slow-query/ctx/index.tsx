@@ -32,7 +32,9 @@ type AppApi = SqlLimitAppApi &
       desc: boolean
       advancedFilters: AdvancedFilterItem[]
       fields: string[]
-    }): Promise<SlowqueryModel[]>
+      pageIndex: number
+      pageSize: number
+    }): Promise<{ total: number; items: SlowqueryModel[] }>
 
     getSlowQuery(params: { id: string }): Promise<SlowqueryModel>
   }

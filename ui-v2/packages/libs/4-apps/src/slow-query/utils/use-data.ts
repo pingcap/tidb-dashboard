@@ -73,9 +73,9 @@ export function useListData() {
         sqlDigest,
         limit,
         term,
-        ...sortRule,
         advancedFilters,
         fields: cols.filter((c) => c !== "empty"),
+        ...sortRule,
         ...pagination,
       })
     },

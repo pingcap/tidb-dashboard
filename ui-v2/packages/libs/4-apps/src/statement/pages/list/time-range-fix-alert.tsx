@@ -2,14 +2,15 @@ import { formatTime, useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Alert } from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
-import { StatementModel } from "../../models"
+import { useListData } from "../../utils/use-data"
 
-export function TimeRangeFixAlert({ data }: { data: StatementModel[] }) {
+export function TimeRangeFixAlert() {
+  const { data } = useListData()
   const { tt } = useTn("statement")
 
   const maxTime = useMemo(
     () =>
-      data.reduce(
+      (data?.items || []).reduce(
         (max, d) => (d.summary_end_time! > max ? d.summary_end_time! : max),
         0,
       ),
@@ -17,7 +18,7 @@ export function TimeRangeFixAlert({ data }: { data: StatementModel[] }) {
   )
   const minTime = useMemo(
     () =>
-      data.reduce(
+      (data?.items || []).reduce(
         (min, d) => (d.summary_begin_time! < min ? d.summary_begin_time! : min),
         maxTime,
       ),

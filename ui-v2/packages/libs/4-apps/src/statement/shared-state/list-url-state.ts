@@ -5,11 +5,12 @@ import {
   TimeRangeUrlState,
   useAdvancedFiltersUrlState,
   usePaginationUrlState,
+  useResetFiltersState,
   useSortUrlState,
   useTimeRangeUrlState,
   useUrlState,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 
 type ListUrlState = Partial<
   Record<"dbs" | "ruGroups" | "kinds" | "term" | "cols", string>
@@ -87,6 +88,10 @@ export function useListUrlState() {
       pageIndex: undefined,
     })
   }, [setQueryParams])
+  const resetVal = useResetFiltersState((s) => s.resetVal)
+  useEffect(() => {
+    resetFilters()
+  }, [resetVal])
 
   // cols
   const cols = useMemo<string[]>(() => {
@@ -120,8 +125,6 @@ export function useListUrlState() {
 
     advancedFilters,
     setAdvancedFilters,
-
-    resetFilters,
 
     sortRule,
     setSortRule,

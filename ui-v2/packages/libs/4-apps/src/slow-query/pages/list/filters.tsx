@@ -50,6 +50,7 @@ function RuGroupsSelect() {
   const { ruGroups, setRuGroups } = useListUrlState()
   const { data: ruGroupsData } = useRuGroupsData()
 
+  // ignore `default` resource group
   return (
     ruGroupsData &&
     ruGroupsData.length > 1 && (

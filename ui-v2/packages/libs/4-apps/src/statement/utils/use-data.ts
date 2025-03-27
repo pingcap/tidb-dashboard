@@ -61,9 +61,10 @@ export function useListData() {
     ruGroups,
     kinds,
     term,
-    sortRule,
     advancedFilters,
     cols,
+    sortRule,
+    pagination,
   } = useListUrlState()
 
   const query = useQuery({
@@ -76,9 +77,10 @@ export function useListData() {
       ruGroups,
       kinds,
       term,
-      // sort in local, so no need to use sortRule as dependencies
       advancedFilters,
       cols,
+      sortRule,
+      pagination,
     ],
     queryFn: () => {
       const tr = toTimeRangeValue(timeRange)
@@ -89,9 +91,10 @@ export function useListData() {
         ruGroups,
         stmtKinds: kinds,
         term,
-        ...sortRule,
         advancedFilters,
         fields: cols.filter((c) => c !== "empty"),
+        ...sortRule,
+        ...pagination,
       })
     },
   })

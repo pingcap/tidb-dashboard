@@ -30,8 +30,8 @@ const usePaginationConfigs = () => {
 }
 
 export function ListTable() {
-  const tableColumns = useListTableColumns()
   const { data, isLoading } = useListData()
+  const tableColumns = useListTableColumns()
   const {
     sortRule,
     setSortRule,

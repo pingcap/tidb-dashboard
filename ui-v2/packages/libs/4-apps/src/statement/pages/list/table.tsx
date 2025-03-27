@@ -6,19 +6,31 @@ import {
 import { ProTable } from "@tidbcloud/uikit/biz"
 import { useMemo } from "react"
 
-import { StatementModel } from "../../models"
 import { useListUrlState } from "../../shared-state/list-url-state"
 import { useSelectedStatementState } from "../../shared-state/memory-state"
+import { useListData } from "../../utils/use-data"
 
 import { useListTableColumns } from "./cols"
 
-export function ListTable({
-  data,
-  isLoading,
-}: {
-  data: StatementModel[]
-  isLoading: boolean
-}) {
+// @todo: make it resuable, resolve locales issue
+const usePaginationConfigs = () => {
+  const { tt } = useTn("statement")
+
+  return {
+    showTotal: true,
+    showRowsPerPage: true,
+    rowsPerPageOptions: [10, 15, 20, 30].map((value) => ({
+      value: String(value),
+      label: `${value} / ${tt("page")}`,
+    })),
+    localization: {
+      total: `${tt("total")}: `,
+    },
+  }
+}
+
+export function ListTable() {
+  const { data, isLoading } = useListData()
   const tableColumns = useListTableColumns()
   const {
     sortRule,
@@ -50,35 +62,9 @@ export function ListTable({
 
   const selectedStatementId = useSelectedStatementState((s) => s.statementId)
 
-  // do sorting in local for statement list
-  const sortedData = useMemo(() => {
-    if (!data) {
-      return []
-    }
-    if (!sortingState[0]) {
-      return data
-    }
-    const [{ id, desc }] = sortingState
-    const sorted = [...data]
-    sorted.sort((a, b) => {
-      const aVal = a[id as keyof StatementModel] ?? 0
-      const bVal = b[id as keyof StatementModel] ?? 0
-      if (desc) {
-        return Number(aVal) > Number(bVal) ? -1 : 1
-      } else {
-        return Number(aVal) > Number(bVal) ? 1 : -1
-      }
-    })
-    return sorted
-  }, [data, sortingState])
-
-  // do pagination in local for statement list
-  const pagedData = useMemo(() => {
-    const { pageIndex, pageSize } = paginationState
-    return sortedData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)
-  }, [sortedData, paginationState.pageIndex, paginationState.pageSize])
-
   const { tt } = useTn("statement")
+
+  const paginationConfig = usePaginationConfigs()
 
   return (
     <ProTable
@@ -91,11 +77,8 @@ export function ListTable({
       onSortingChange={setSortingState}
       manualPagination
       onPaginationChange={setPaginationState}
-      pagination={{
-        position: "right",
-        showTotal: true,
-      }}
-      rowCount={sortedData?.length ?? 0}
+      pagination={paginationConfig}
+      rowCount={data?.total ?? 0}
       state={{
         isLoading,
         sorting: sortingState,
@@ -119,7 +102,7 @@ export function ListTable({
           : {}
       }}
       columns={tableColumns}
-      data={pagedData}
+      data={data?.items ?? []}
       emptyMessage={tt("No Data")}
     />
   )

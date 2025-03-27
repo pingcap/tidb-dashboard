@@ -36,11 +36,13 @@ type AppApi = SqlLimitAppApi &
       ruGroups: string[]
       stmtKinds: string[]
       term: string
-      orderBy: string
-      desc: boolean
       advancedFilters: AdvancedFilterItem[]
       fields: string[]
-    }): Promise<StatementModel[]>
+      orderBy: string
+      desc: boolean
+      pageSize: number
+      pageIndex: number
+    }): Promise<{ total: number; items: StatementModel[] }>
     getStmtPlans(params: { id: string }): Promise<StatementModel[]>
     getStmtPlansDetail(params: {
       id: string

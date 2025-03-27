@@ -30,7 +30,6 @@ export function useListUrlState() {
   const { timeRange, setTimeRange } = useTimeRangeUrlState()
   const { term, setTerm } = useSearchUrlState()
   const { advancedFilters, setAdvancedFilters } = useAdvancedFiltersUrlState()
-  const resetVal = useResetFiltersState((s) => s.resetVal)
 
   // dbs
   const dbs = useMemo<string[]>(() => {
@@ -94,7 +93,7 @@ export function useListUrlState() {
   )
 
   // reset filters, not include sort
-  useEffect(() => {
+  const resetFilters = useCallback(() => {
     setQueryParams({
       from: undefined,
       to: undefined,
@@ -106,7 +105,11 @@ export function useListUrlState() {
       term: undefined,
       pageIndex: undefined,
     })
-  }, [resetVal]) // note: don't add `setQueryParams` to deps
+  }, [setQueryParams])
+  const resetVal = useResetFiltersState((s) => s.resetVal)
+  useEffect(() => {
+    resetFilters()
+  }, [resetVal])
 
   return {
     timeRange,

@@ -128,11 +128,14 @@ export function useCtxValue(): AppCtxValue {
             text: params.term,
             orderBy: params.orderBy,
             isDesc: params.desc,
-            // use a huge pageSize to get all results at once, so we can do sort in client side
-            pageSize: 100000,
             advancedFilter: advancedFiltersStrArr,
             fields: fieldsStr,
-          }).then((res) => res.data ?? [])
+            pageSize: params.pageSize,
+            skip: params.pageSize * params.pageIndex,
+          }).then((res) => ({
+            total: res.totalSize ?? 0,
+            items: res.data ?? [],
+          }))
         },
         getStmtPlans(params) {
           const [beginTime, endTime, digest, schemaName] = params.id.split(",")

@@ -28,10 +28,10 @@ type AppApi = SqlLimitAppApi &
       sqlDigest: string
       term: string
       limit: number
-      orderBy: string
-      desc: boolean
       advancedFilters: AdvancedFilterItem[]
       fields: string[]
+      orderBy: string
+      desc: boolean
       pageIndex: number
       pageSize: number
     }): Promise<{ total: number; items: SlowqueryModel[] }>

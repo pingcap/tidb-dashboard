@@ -88,8 +88,8 @@ export function useCtxValue(): AppCtxValue {
             text: params.term,
             orderBy: params.orderBy,
             isDesc: params.desc,
-            fields: fieldsStr,
             advancedFilter: advancedFiltersStrArr,
+            fields: fieldsStr,
             pageSize: params.pageSize,
             skip: params.pageSize * params.pageIndex,
           }).then((res) => ({

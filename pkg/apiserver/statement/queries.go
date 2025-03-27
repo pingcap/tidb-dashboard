@@ -1,4 +1,4 @@
-// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2025 PingCAP, Inc. Licensed under Apache-2.0.
 
 package statement
 
@@ -51,7 +51,6 @@ func (s *Service) queryStatements(
 	if err != nil {
 		return nil, err
 	}
-
 	query := db.
 		Select(selectStmt).
 		Table(statementsTable).

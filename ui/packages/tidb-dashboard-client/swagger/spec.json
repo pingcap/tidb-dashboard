@@ -5298,6 +5298,31 @@
                     "description": "TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.",
                     "type": "string"
                 },
+                "unpacked_bytes_received_tiflash_cross_zone": {
+                    "type": "integer"
+                },
+                "unpacked_bytes_received_tiflash_total": {
+                    "type": "integer"
+                },
+                "unpacked_bytes_received_tikv_cross_zone": {
+                    "type": "integer"
+                },
+                "unpacked_bytes_received_tikv_total": {
+                    "type": "integer"
+                },
+                "unpacked_bytes_sent_tiflash_cross_zone": {
+                    "type": "integer"
+                },
+                "unpacked_bytes_sent_tiflash_total": {
+                    "type": "integer"
+                },
+                "unpacked_bytes_sent_tikv_cross_zone": {
+                    "type": "integer"
+                },
+                "unpacked_bytes_sent_tikv_total": {
+                    "description": "Network fields",
+                    "type": "integer"
+                },
                 "user": {
                     "description": "Connection",
                     "type": "string"
@@ -5722,6 +5747,31 @@
                 },
                 "sum_ru": {
                     "type": "number"
+                },
+                "sum_unpacked_bytes_received_tiflash_cross_zone": {
+                    "type": "integer"
+                },
+                "sum_unpacked_bytes_received_tiflash_total": {
+                    "type": "integer"
+                },
+                "sum_unpacked_bytes_received_tikv_cross_zone": {
+                    "type": "integer"
+                },
+                "sum_unpacked_bytes_received_tikv_total": {
+                    "type": "integer"
+                },
+                "sum_unpacked_bytes_sent_tiflash_cross_zone": {
+                    "type": "integer"
+                },
+                "sum_unpacked_bytes_sent_tiflash_total": {
+                    "type": "integer"
+                },
+                "sum_unpacked_bytes_sent_tikv_cross_zone": {
+                    "type": "integer"
+                },
+                "sum_unpacked_bytes_sent_tikv_total": {
+                    "description": "Network Fields",
+                    "type": "integer"
                 },
                 "sum_warnings": {
                     "type": "integer"

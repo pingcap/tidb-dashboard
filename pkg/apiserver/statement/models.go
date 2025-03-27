@@ -1,4 +1,4 @@
-// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2025 PingCAP, Inc. Licensed under Apache-2.0.
 
 package statement
 
@@ -110,6 +110,16 @@ type Model struct {
 	AggSumRU         float64 `json:"sum_ru" agg:"CAST(SUM(exec_count * (avg_request_unit_write + avg_request_unit_read)) AS DECIMAL(64, 2))" related:"avg_request_unit_write,avg_request_unit_read"`
 	AvgQueuedTime    float64 `json:"avg_time_queued_by_rc" agg:"CAST(AVG(AVG_QUEUED_RC_TIME) AS DECIMAL(64, 2))" related:"AVG_QUEUED_RC_TIME"`
 	MaxQueuedTime    float64 `json:"max_time_queued_by_rc" agg:"Max(MAX_QUEUED_RC_TIME)" related:"MAX_QUEUED_RC_TIME"`
+
+	// Network Fields
+	SumUnpackedBytesSentTiKVTotal            uint `json:"sum_unpacked_bytes_sent_tikv_total" agg:"SUM(sum_unpacked_bytes_sent_tikv_total)"`
+	SumUnpackedBytesReceivedTiKVTotal        uint `json:"sum_unpacked_bytes_received_tikv_total" agg:"SUM(sum_unpacked_bytes_received_tikv_total)"`
+	SumUnpackedBytesSentTiKVCrossZone        uint `json:"sum_unpacked_bytes_sent_tikv_cross_zone" agg:"SUM(sum_unpacked_bytes_sent_tikv_cross_zone)"`
+	SumUnpackedBytesReceivedTiKVCrossZone    uint `json:"sum_unpacked_bytes_received_tikv_cross_zone" agg:"SUM(sum_unpacked_bytes_received_tikv_cross_zone)"`
+	SumUnpackedBytesSentTiFlashTotal         uint `json:"sum_unpacked_bytes_sent_tiflash_total" agg:"SUM(sum_unpacked_bytes_sent_tiflash_total)"`
+	SumUnpackedBytesReceivedTiFlashTotal     uint `json:"sum_unpacked_bytes_received_tiflash_total" agg:"SUM(sum_unpacked_bytes_received_tiflash_total)"`
+	SumUnpackedBytesSentTiFlashCrossZone     uint `json:"sum_unpacked_bytes_sent_tiflash_cross_zone" agg:"SUM(sum_unpacked_bytes_sent_tiflash_cross_zone)"`
+	SumUnpackedBytesReceivedTiFlashCrossZone uint `json:"sum_unpacked_bytes_received_tiflash_cross_zone" agg:"SUM(sum_unpacked_bytes_received_tiflash_cross_zone)"`
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"
@@ -195,7 +205,6 @@ func filterFieldsByColumns(fields []Field, columns []string) []Field {
 			filteredFields = append(filteredFields, f)
 		}
 	}
-
 	return filteredFields
 }
 

@@ -43,5 +43,69 @@ export const tabCoprItems = (data: SlowqueryModel) => [
   {
     key: 'rocksdb_key_skipped_count',
     value: <ValueWithTooltip.Short value={data.rocksdb_key_skipped_count} />
+  },
+  {
+    key: 'unpacked_bytes_sent_tikv_total',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.unpacked_bytes_sent_tikv_total}
+      />
+    )
+  },
+  {
+    key: 'unpacked_bytes_received_tikv_total',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.unpacked_bytes_received_tikv_total}
+      />
+    )
+  },
+  {
+    key: 'unpacked_bytes_sent_tikv_cross_zone',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.unpacked_bytes_sent_tikv_cross_zone}
+      />
+    )
+  },
+  {
+    key: 'unpacked_bytes_received_tikv_cross_zone',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.unpacked_bytes_received_tikv_cross_zone}
+      />
+    )
+  },
+  {
+    key: 'unpacked_bytes_sent_tiflash_total',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.unpacked_bytes_sent_tiflash_total}
+      />
+    )
+  },
+  {
+    key: 'unpacked_bytes_received_tiflash_total',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.unpacked_bytes_received_tiflash_total}
+      />
+    )
+  },
+  {
+    key: 'unpacked_bytes_sent_tiflash_cross_zone',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.unpacked_bytes_sent_tiflash_cross_zone}
+      />
+    )
+  },
+  {
+    key: 'unpacked_bytes_received_tiflash_cross_zone',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.unpacked_bytes_received_tiflash_cross_zone}
+      />
+    )
   }
 ]

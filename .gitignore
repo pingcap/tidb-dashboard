@@ -58,3 +58,6 @@ fabric.properties
 
 # ui
 .pnpm-debug.log
+
+ui-v2
+ui-v2-test

@@ -2573,6 +2573,54 @@ export interface SlowqueryModel {
      */
     'txn_start_ts'?: string;
     /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'unpacked_bytes_received_tiflash_cross_zone'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'unpacked_bytes_received_tiflash_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'unpacked_bytes_received_tikv_cross_zone'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'unpacked_bytes_received_tikv_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'unpacked_bytes_sent_tiflash_cross_zone'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'unpacked_bytes_sent_tiflash_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'unpacked_bytes_sent_tikv_cross_zone'?: number;
+    /**
+     * Network fields
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'unpacked_bytes_sent_tikv_total'?: number;
+    /**
      * Connection
      * @type {string}
      * @memberof SlowqueryModel
@@ -3360,6 +3408,54 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'sum_ru'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_received_tiflash_cross_zone'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_received_tiflash_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_received_tikv_cross_zone'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_received_tikv_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_sent_tiflash_cross_zone'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_sent_tiflash_total'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_sent_tikv_cross_zone'?: number;
+    /**
+     * Network Fields
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_unpacked_bytes_sent_tikv_total'?: number;
     /**
      * 
      * @type {number}

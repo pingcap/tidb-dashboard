@@ -1,4 +1,4 @@
-// Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2025 PingCAP, Inc. Licensed under Apache-2.0.
 
 package slowquery
 
@@ -104,6 +104,16 @@ type Model struct {
 	RU            float64 `gorm:"column:RU" json:"ru" proj:"(Request_unit_write + Request_unit_read)" related:"Request_unit_write,Request_unit_read"`
 	QueuedTime    float64 `gorm:"column:Time_queued_by_rc" json:"time_queued_by_rc"`
 	ResourceGroup string  `gorm:"column:Resource_group" json:"resource_group"`
+
+	// Network fields
+	UnpackedBytesSentTiKVTotal            uint `gorm:"column:Unpacked_bytes_sent_tikv_total" json:"unpacked_bytes_sent_tikv_total"`
+	UnpackedBytesReceivedTiKVTotal        uint `gorm:"column:Unpacked_bytes_received_tikv_total" json:"unpacked_bytes_received_tikv_total"`
+	UnpackedBytesSentTiKVCrossZone        uint `gorm:"column:Unpacked_bytes_sent_tikv_cross_zone" json:"unpacked_bytes_sent_tikv_cross_zone"`
+	UnpackedBytesReceivedTiKVCrossZone    uint `gorm:"column:Unpacked_bytes_received_tikv_cross_zone" json:"unpacked_bytes_received_tikv_cross_zone"`
+	UnpackedBytesSentTiFlashTotal         uint `gorm:"column:Unpacked_bytes_sent_tiflash_total" json:"unpacked_bytes_sent_tiflash_total"`
+	UnpackedBytesReceivedTiFlashTotal     uint `gorm:"column:Unpacked_bytes_received_tiflash_total" json:"unpacked_bytes_received_tiflash_total"`
+	UnpackedBytesSentTiFlashCrossZone     uint `gorm:"column:Unpacked_bytes_sent_tiflash_cross_zone" json:"unpacked_bytes_sent_tiflash_cross_zone"`
+	UnpackedBytesReceivedTiFlashCrossZone uint `gorm:"column:Unpacked_bytes_received_tiflash_cross_zone" json:"unpacked_bytes_received_tiflash_cross_zone"`
 }
 
 type Field struct {

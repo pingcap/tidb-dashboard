@@ -64,7 +64,7 @@ statement:
         exporting: 正在导出
       result_count: '{{ n }} 条结果。'
       actual_range: 基于设置的时间窗及过期时间，当前显示数据的时间范围：
-      slow_load_info: 数据加载耗时较长，已禁用即时更新。修改查询条件后，您可以手工点击”查询“按钮来发起查询。
+      slow_load_info: 数据加载耗时较长，已禁用即时更新。修改查询条件后，您可以手工点击"查询"按钮来发起查询。
   settings:
     title: 设置
     disabled_result:
@@ -210,3 +210,20 @@ statement:
     max_time_queued_by_rc_tooltip: SQL 语句在资源组控制队列中最大等待的时间 (Resource Control)（注：{{distro.tikv}} 会并行处理任务，因此该时间不是自然流逝时间）
     rc_wait_time: RC 资源控制等待累积耗时
     rc_wait_time_tooltip: SQL 语句在资源组队列中等待的累积时间（注：{{distro.tikv}} 会并行等待任务，因此该时间不是自然流逝时间）
+
+    sum_unpacked_bytes_sent_tikv_total: 发给 TiKV 的总字节数
+    sum_unpacked_bytes_sent_tikv_total_tooltip: SQL 语句发送给 TiKV 的总字节数
+    sum_unpacked_bytes_received_tikv_total: 从 TiKV 接收的总字节数
+    sum_unpacked_bytes_received_tikv_total_tooltip: 从 TiKV 接收的总字节数
+    sum_unpacked_bytes_sent_tikv_cross_zone: 跨可用区发给 TiKV 的总字节数
+    sum_unpacked_bytes_sent_tikv_cross_zone_tooltip: 跨可用区发送给 TiKV 的总字节数
+    sum_unpacked_bytes_received_tikv_cross_zone: 跨可用区从 TiKV 接收的总字节数
+    sum_unpacked_bytes_received_tikv_cross_zone_tooltip: 跨可用区从 TiKV 接收的总字节数
+    sum_unpacked_bytes_sent_tiflash_total: 发给 TiFlash 的总字节数
+    sum_unpacked_bytes_sent_tiflash_total_tooltip: SQL 语句发送给 TiFlash 的总字节数
+    sum_unpacked_bytes_received_tiflash_total: 从 TiFlash 接收的总字节数
+    sum_unpacked_bytes_received_tiflash_total_tooltip: 从 TiFlash 接收的总字节数
+    sum_unpacked_bytes_sent_tiflash_cross_zone: 跨可用区发给 TiFlash 的总字节数
+    sum_unpacked_bytes_sent_tiflash_cross_zone_tooltip: 跨可用区发送给 TiFlash 的总字节数
+    sum_unpacked_bytes_received_tiflash_cross_zone: 跨可用区从 TiFlash 接收的总字节数
+    sum_unpacked_bytes_received_tiflash_cross_zone_tooltip: 跨可用区从 TiFlash 接收的总字节数

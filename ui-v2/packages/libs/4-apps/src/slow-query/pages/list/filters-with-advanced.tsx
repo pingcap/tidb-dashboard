@@ -2,10 +2,10 @@ import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Group } from "@tidbcloud/uikit"
 
 import {
-  UrlStateResetButton,
-  UrlStateTextInput,
+  MemoryStateResetButton,
+  UrlStateSearchInput,
   UrlStateTimeRangePicker,
-} from "../../../_shared/url-state-filters"
+} from "../../../_shared/state-filters"
 
 import { AdvancedFiltersModal } from "./advanced-filters-modal"
 
@@ -15,9 +15,9 @@ export function FiltersWithAdvanced() {
   return (
     <Group>
       <UrlStateTimeRangePicker />
-      <UrlStateTextInput placeholder={tt("Find SQL text")} />
+      <UrlStateSearchInput placeholder={tt("Find SQL text")} />
       <AdvancedFiltersModal />
-      <UrlStateResetButton text={tt("Clear Filters")} />
+      <MemoryStateResetButton text={tt("Clear Filters")} />
     </Group>
   )
 }

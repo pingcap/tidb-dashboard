@@ -1,11 +1,13 @@
 import {
   AdvancedFiltersUrlState,
   PaginationUrlState,
+  SearchUrlState,
   SortUrlState,
   TimeRangeUrlState,
   useAdvancedFiltersUrlState,
   usePaginationUrlState,
-  useResetUrlState,
+  useResetFiltersState,
+  useSearchUrlState,
   useSortUrlState,
   useTimeRangeUrlState,
   useUrlState,
@@ -13,11 +15,12 @@ import {
 import { useCallback, useEffect, useMemo } from "react"
 
 type ListUrlState = Partial<
-  Record<"dbs" | "ruGroups" | "sqlDigest" | "limit" | "term" | "cols", string>
+  Record<"dbs" | "ruGroups" | "sqlDigest" | "limit" | "cols", string>
 > &
   SortUrlState &
   PaginationUrlState &
   TimeRangeUrlState &
+  SearchUrlState &
   AdvancedFiltersUrlState
 
 export function useListUrlState() {
@@ -25,8 +28,9 @@ export function useListUrlState() {
   const { sortRule, setSortRule } = useSortUrlState("query_time")
   const { pagination, setPagination } = usePaginationUrlState()
   const { timeRange, setTimeRange } = useTimeRangeUrlState()
+  const { term, setTerm } = useSearchUrlState()
   const { advancedFilters, setAdvancedFilters } = useAdvancedFiltersUrlState()
-  const { resetVal } = useResetUrlState()
+  const resetVal = useResetFiltersState((s) => s.resetVal)
 
   // dbs
   const dbs = useMemo<string[]>(() => {
@@ -73,18 +77,6 @@ export function useListUrlState() {
   const setLimit = useCallback(
     (v: string) => {
       setQueryParams({ limit: v, pageIndex: undefined })
-    },
-    [setQueryParams],
-  )
-
-  // term
-  const term = decodeURIComponent(queryParams.term ?? "")
-  const setTerm = useCallback(
-    (v?: string) => {
-      setQueryParams({
-        term: v ? encodeURIComponent(v) : v,
-        pageIndex: undefined,
-      })
     },
     [setQueryParams],
   )

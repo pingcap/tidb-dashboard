@@ -3,10 +3,10 @@ import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Group, Select, TextInput } from "@tidbcloud/uikit"
 
 import {
-  UrlStateResetButton,
-  UrlStateTextInput,
+  MemoryStateResetButton,
+  UrlStateSearchInput,
   UrlStateTimeRangePicker,
-} from "../../../_shared/url-state-filters"
+} from "../../../_shared/state-filters"
 import { useListUrlState } from "../../shared-state/list-url-state"
 import { useDbsData, useRuGroupsData } from "../../utils/use-data"
 
@@ -90,8 +90,8 @@ export function Filters() {
       <DBsSelect />
       <RuGroupsSelect />
       <SqlDigestInput />
-      <UrlStateTextInput placeholder={tt("Find SQL text")} />
-      <UrlStateResetButton text={tt("Clear Filters")} />
+      <UrlStateSearchInput placeholder={tt("Find SQL text")} />
+      <MemoryStateResetButton text={tt("Clear Filters")} />
     </Group>
   )
 }

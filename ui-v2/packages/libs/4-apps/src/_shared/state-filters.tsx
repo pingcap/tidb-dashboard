@@ -1,6 +1,6 @@
 import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import {
-  useResetUrlState,
+  useResetFiltersState,
   useSearchUrlState,
   useTimeRangeUrlState,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
@@ -46,14 +46,14 @@ export function UrlStateTimeRangePicker() {
 }
 
 //////////////////////////////////////////////
-// UrlStateTextInput
-export function UrlStateTextInput({
+// UrlStateSearchInput
+export function UrlStateSearchInput({
   placeholder = "",
 }: {
   placeholder: string
 }) {
   const { term, setTerm } = useSearchUrlState()
-  const { resetVal } = useResetUrlState()
+  const resetVal = useResetFiltersState((s) => s.resetVal)
   const [text, setText] = useState(term)
 
   // reset text when clicking `reset filters` button
@@ -94,11 +94,11 @@ export function UrlStateTextInput({
 }
 
 //////////////////////////////////////////////
-// UrlStateResetButton
-export function UrlStateResetButton({ text }: { text: string }) {
-  const { setReset } = useResetUrlState()
+// MemoryStateResetButton
+export function MemoryStateResetButton({ text }: { text: string }) {
+  const reset = useResetFiltersState((s) => s.reset)
   return (
-    <Button variant="subtle" onClick={setReset}>
+    <Button variant="subtle" onClick={reset}>
       {text}
     </Button>
   )

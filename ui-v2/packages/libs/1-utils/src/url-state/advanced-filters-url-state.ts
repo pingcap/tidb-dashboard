@@ -11,7 +11,7 @@ export type AdvancedFilterItem = {
 
 export type AdvancedFiltersUrlState = Partial<Record<"af", string>>
 
-export function useAdvancedFiltersUrlState(affectPagination: boolean = false) {
+export function useAdvancedFiltersUrlState() {
   const [queryParams, setQueryParams] = useUrlState<
     AdvancedFiltersUrlState & PaginationUrlState
   >()
@@ -46,10 +46,10 @@ export function useAdvancedFiltersUrlState(affectPagination: boolean = false) {
         .join(";")
       setQueryParams({
         af: afStr,
-        ...(affectPagination ? { pageIndex: undefined } : {}),
+        pageIndex: undefined,
       })
     },
-    [setQueryParams, affectPagination],
+    [setQueryParams],
   )
 
   return {

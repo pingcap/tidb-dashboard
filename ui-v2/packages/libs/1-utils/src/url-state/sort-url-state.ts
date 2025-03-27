@@ -10,10 +10,7 @@ export type SortRule = {
 
 export type SortUrlState = Partial<Record<"orderBy" | "desc", string>>
 
-export function useSortUrlState(
-  defOrderBy: string = "",
-  affectPagination: boolean = false,
-) {
+export function useSortUrlState(defOrderBy: string = "") {
   const [queryParams, setQueryParams] = useUrlState<
     SortUrlState & PaginationUrlState
   >()
@@ -29,10 +26,10 @@ export function useSortUrlState(
       setQueryParams({
         orderBy: newSortRule.orderBy || undefined,
         desc: newSortRule.desc ? undefined : "false",
-        ...(affectPagination ? { pageIndex: undefined } : {}),
+        pageIndex: undefined,
       })
     },
-    [setQueryParams, affectPagination],
+    [setQueryParams],
   )
 
   return { sortRule, setSortRule }

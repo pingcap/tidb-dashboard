@@ -2,7 +2,6 @@ import {
   AdvancedFiltersUrlState,
   PaginationUrlState,
   SortUrlState,
-  TimeRange,
   TimeRangeUrlState,
   useAdvancedFiltersUrlState,
   usePaginationUrlState,
@@ -20,21 +19,12 @@ type ListUrlState = Partial<
   TimeRangeUrlState &
   AdvancedFiltersUrlState
 
-export const DEFAULT_TIME_RANGE: TimeRange = {
-  type: "relative",
-  value: 30 * 60,
-}
-
 export function useListUrlState() {
   const [queryParams, setQueryParams] = useUrlState<ListUrlState>()
-  const { sortRule, setSortRule } = useSortUrlState("sum_latency", true)
+  const { sortRule, setSortRule } = useSortUrlState("sum_latency")
   const { pagination, setPagination } = usePaginationUrlState()
-  const { timeRange, setTimeRange } = useTimeRangeUrlState(
-    DEFAULT_TIME_RANGE,
-    true,
-  )
-  const { advancedFilters, setAdvancedFilters } =
-    useAdvancedFiltersUrlState(true)
+  const { timeRange, setTimeRange } = useTimeRangeUrlState()
+  const { advancedFilters, setAdvancedFilters } = useAdvancedFiltersUrlState()
 
   // dbs
   const dbs = useMemo<string[]>(() => {

@@ -12,10 +12,7 @@ const DEF_TIME_RANGE: TimeRange = {
   value: 30 * 60,
 }
 
-export function useTimeRangeUrlState(
-  defTimeRange?: TimeRange,
-  affectPagination?: boolean,
-) {
+export function useTimeRangeUrlState(defTimeRange?: TimeRange) {
   const [queryParams, setQueryParams] = useUrlState<
     TimeRangeUrlState & PaginationUrlState
   >()
@@ -31,10 +28,10 @@ export function useTimeRangeUrlState(
     (newTimeRange: TimeRange) => {
       setQueryParams({
         ...toURLTimeRange(newTimeRange),
-        ...(affectPagination ? { pageIndex: undefined } : {}),
+        pageIndex: undefined,
       })
     },
-    [setQueryParams, affectPagination],
+    [setQueryParams],
   )
 
   return { timeRange, setTimeRange }

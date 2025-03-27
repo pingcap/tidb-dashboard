@@ -2,15 +2,15 @@ import {
   AdvancedFiltersUrlState,
   PaginationUrlState,
   SortUrlState,
-  TimeRange,
   TimeRangeUrlState,
   useAdvancedFiltersUrlState,
   usePaginationUrlState,
+  useResetUrlState,
   useSortUrlState,
   useTimeRangeUrlState,
   useUrlState,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 
 type ListUrlState = Partial<
   Record<"dbs" | "ruGroups" | "sqlDigest" | "limit" | "term" | "cols", string>
@@ -20,18 +20,13 @@ type ListUrlState = Partial<
   TimeRangeUrlState &
   AdvancedFiltersUrlState
 
-export const DEFAULT_TIME_RANGE: TimeRange = {
-  type: "relative",
-  value: 30 * 60,
-}
-
 export function useListUrlState() {
   const [queryParams, setQueryParams] = useUrlState<ListUrlState>()
-  const { sortRule, setSortRule } = useSortUrlState("query_time", true)
+  const { sortRule, setSortRule } = useSortUrlState("query_time")
   const { pagination, setPagination } = usePaginationUrlState()
-  const { timeRange, setTimeRange } = useTimeRangeUrlState(DEFAULT_TIME_RANGE)
-  const { advancedFilters, setAdvancedFilters } =
-    useAdvancedFiltersUrlState(true)
+  const { timeRange, setTimeRange } = useTimeRangeUrlState()
+  const { advancedFilters, setAdvancedFilters } = useAdvancedFiltersUrlState()
+  const { resetVal } = useResetUrlState()
 
   // dbs
   const dbs = useMemo<string[]>(() => {
@@ -94,21 +89,6 @@ export function useListUrlState() {
     [setQueryParams],
   )
 
-  // reset filters, not include sort
-  const resetFilters = useCallback(() => {
-    setQueryParams({
-      from: undefined,
-      to: undefined,
-      dbs: undefined,
-      ruGroups: undefined,
-      sqlDigest: undefined,
-      af: undefined,
-      limit: undefined,
-      term: undefined,
-      pageIndex: undefined,
-    })
-  }, [setQueryParams])
-
   // cols
   const cols = useMemo<string[]>(() => {
     const _cols = queryParams.cols || "query,timestamp,query_time,memory_max"
@@ -120,6 +100,21 @@ export function useListUrlState() {
     },
     [setQueryParams],
   )
+
+  // reset filters, not include sort
+  useEffect(() => {
+    setQueryParams({
+      from: undefined,
+      to: undefined,
+      dbs: undefined,
+      ruGroups: undefined,
+      sqlDigest: undefined,
+      af: undefined,
+      limit: undefined,
+      term: undefined,
+      pageIndex: undefined,
+    })
+  }, [resetVal]) // note: don't add `setQueryParams` to deps
 
   return {
     timeRange,
@@ -142,8 +137,6 @@ export function useListUrlState() {
 
     advancedFilters,
     setAdvancedFilters,
-
-    resetFilters,
 
     sortRule,
     setSortRule,

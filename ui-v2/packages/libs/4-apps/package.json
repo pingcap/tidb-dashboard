@@ -19,9 +19,6 @@
     "./metric": {
       "import": "./dist/metric/index.js"
     },
-    "./index-advisor": {
-      "import": "./dist/index-advisor/index.js"
-    },
     "./utils": {
       "import": "./dist/_re-exports/utils.js"
     },
@@ -51,9 +48,6 @@
       ],
       "metric": [
         "./dist/metric/index.d.ts"
-      ],
-      "index-advisor": [
-        "./dist/index-advisor/index.d.ts"
       ],
       "utils": [
         "./dist/_re-exports/utils.d.ts"

@@ -11,7 +11,13 @@ import {
   toTimeRangeValue,
   transformPromResultItem,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Box, Flex, Loader, useComputedColorScheme } from "@tidbcloud/uikit"
+import {
+  Alert,
+  Box,
+  Flex,
+  Loader,
+  useComputedColorScheme,
+} from "@tidbcloud/uikit"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useAppContext } from "../ctx"
@@ -72,6 +78,7 @@ export function ChartBody({
     data: metricData,
     isLoading,
     refetch,
+    error,
   } = useMetricDataByMetricName(
     config.metricName,
     timeRange,
@@ -155,7 +162,13 @@ export function ChartBody({
       // add `data-metric` attribute to identify the metric name for easy debugging
       data-metric={config.metricName}
     >
-      {seriesData.length > 0 || !isLoading ? (
+      {error ? (
+        <Alert color="red">{error.message}</Alert>
+      ) : isLoading ? (
+        <Flex h="100%" align="center" justify="center">
+          <Loader size="xs" />
+        </Flex>
+      ) : (
         <SeriesChart
           unit={config.unit}
           data={seriesData}
@@ -163,10 +176,6 @@ export function ChartBody({
           theme={colorScheme}
           onBrush={onTimeRangeChange}
         />
-      ) : (
-        <Flex h="100%" align="center" justify="center">
-          <Loader size="xs" />
-        </Flex>
       )}
     </Box>
   )

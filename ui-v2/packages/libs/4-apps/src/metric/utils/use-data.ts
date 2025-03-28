@@ -89,6 +89,7 @@ export function useMetricDataByMetricName(
     placeholderData: keepPreviousData,
     // set `enabled: false`, so queryFn can only be manually triggered by calling `refetch()`
     enabled: false,
+    retry: 1,
   })
 }
 

@@ -38,20 +38,5 @@
   "panels.write_conflicts": "Write Conflicts",
   "time_range.day_other": "{{count}} days",
   "time_range.hour_one": "{{count}} hr",
-  "time_range.hour_other": "{{count}} hrs",
-  "All Instances": "All Instances",
-  "Core Metrics": "Core Metrics",
-  "Drill Down Analysis": "Drill Down Analysis",
-  "Hide": "Hide",
-  "Host Monitoring": "Host Monitoring",
-  "Prometheus Address": "Prometheus Address",
-  "SQL Diagnosis": "SQL Diagnosis",
-  "Select Instance": "Select Instance",
-  "The rank may have a delay of up to {{n}} minutes": "The rank may have a delay of up to {{n}} minutes",
-  "Troubleshoot High Disk I/O Usage in TiDB": "Troubleshoot High Disk I/O Usage in TiDB",
-  "Troubleshoot Hotspot Issues": "Troubleshoot Hotspot Issues",
-  "Troubleshoot Increased Read and Write Latency": "Troubleshoot Increased Read and Write Latency",
-  "Troubleshoot Lock Conflicts": "Troubleshoot Lock Conflicts",
-  "Troubleshoot TiDB OOM Issues": "Troubleshoot TiDB OOM Issues",
-  "Troubleshoot Write Conflicts in Optimistic Transactions": "Troubleshoot Write Conflicts in Optimistic Transactions"
+  "time_range.hour_other": "{{count}} hrs"
 }

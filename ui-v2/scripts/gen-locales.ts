@@ -141,12 +141,12 @@ async function generateLocales() {
     fs.mkdirSync(outputDir, { recursive: true })
 
     const appName = appFolder.split("/").pop() || ""
-    const outputData = {
+    let outputData = {
       __namespace__: appName,
       __comment__:
         "this file can be updated by running `pnpm gen:locales` command",
       ...localeData[appFolder].keys,
-      ...localeData[appFolder].texts,
+      // ...localeData[appFolder].texts, // texts doesn't need to write in the en.json, to save space
     }
 
     // Write en.json
@@ -155,6 +155,11 @@ async function generateLocales() {
       JSON.stringify(outputData, null, 2) + "\n",
     )
 
+    // Write zh.json
+    outputData = {
+      ...outputData,
+      ...localeData[appFolder].texts,
+    }
     // Update zh.json
     // Check if zh.json exists and merge with existing translations
     const zhPath = path.join(outputDir, "zh.json")

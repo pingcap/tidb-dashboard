@@ -1,22 +1,4 @@
 {
   "__namespace__": "sql-limit",
-  "__comment__": "this file can be updated by running `pnpm gen:locales` command",
-  "Action": "Action",
-  "Add or Update": "Add or Update",
-  "Are you sure to delete this limit (Resource Group - {{ruGroup}}, Action - {{action}})?": "Are you sure to delete this limit (Resource Group - {{ruGroup}}, Action - {{action}})?",
-  "Cancel": "Cancel",
-  "Delete Limit": "Delete Limit",
-  "Delete SQL limit failed": "Delete SQL limit failed",
-  "Delete SQL limit successfully": "Delete SQL limit successfully",
-  "Delete": "Delete",
-  "No Data": "No Data",
-  "Resource Group": "Resource Group",
-  "SQL Limit Setting": "SQL Limit Setting",
-  "SQL Limit": "SQL Limit",
-  "SQL limit feature is only available in and above {{distro.tidb}} 7.5.0": "SQL limit feature is only available in and above {{distro.tidb}} 7.5.0",
-  "Set Limit": "Set Limit",
-  "Set SQL limit failed": "Set SQL limit failed",
-  "Set SQL limit successfully": "Set SQL limit successfully",
-  "Start Time": "Start Time",
-  "There is no resource groups, please create a resource group manually first": "There is no resource groups, please create a resource group manually first"
+  "__comment__": "this file can be updated by running `pnpm gen:locales` command"
 }

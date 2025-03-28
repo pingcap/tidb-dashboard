@@ -1,6 +1,4 @@
 {
   "__namespace__": "sql-history",
-  "__comment__": "this file can be updated by running `pnpm gen:locales` command",
-  "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}": "Due to the limitation, currently only support to query max 24 hours data, so the actual time range is {{begin}} to {{end}}",
-  "SQL History": "SQL History"
+  "__comment__": "this file can be updated by running `pnpm gen:locales` command"
 }

@@ -17,16 +17,13 @@ import { useMemo, useState } from "react"
 
 addLangsLocales({
   zh: {
-    "cols-multi-select": {
-      texts: {
-        "Search columns...": "搜索列...",
-        "Nothing found": "未找到",
-        "Show Selected": "显示已选",
-        "Show All": "显示全部",
-        "Select All": "全选",
-        Reset: "重置",
-      },
-    },
+    __namespace__: "cols-multi-select",
+    "Search columns...": "搜索列...",
+    "Nothing found": "未找到",
+    "Show Selected": "显示已选",
+    "Show All": "显示全部",
+    "Select All": "全选",
+    Reset: "重置",
   },
 })
 

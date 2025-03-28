@@ -35,11 +35,14 @@ export function changeLang(lang: string) {
   i18next.changeLanguage(lang)
 }
 
-const NAMESPACE = "dashboard-lib"
-
 function addResourceBundles(langsLocales: Resource) {
-  Object.keys(langsLocales).forEach((key) => {
-    i18next.addResourceBundle(key, NAMESPACE, langsLocales[key], true, false)
+  Object.keys(langsLocales).forEach((lang) => {
+    const locales = langsLocales[lang]
+    const ns = locales["__namespace__"] as string
+    if (!ns) {
+      throw new Error(`__namespace__ not found in locales`)
+    }
+    i18next.addResourceBundle(lang, ns, locales, true, false)
   })
 }
 
@@ -53,7 +56,7 @@ export function addLangsLocales(langsLocales: Resource) {
   }
 }
 
-export function useTn(keyPrefix: string = "") {
+export function useTn(ns: string) {
   const { t, i18n } = useTranslation()
 
   // translate by key
@@ -65,10 +68,9 @@ export function useTn(keyPrefix: string = "") {
   // tk("time_range.hour", "", {count: n})
   const tk = useCallback(
     (i18nKey: string, defVal?: string, options?: TOptions) => {
-      const fullKey = keyPrefix ? `${keyPrefix}.keys.${i18nKey}` : i18nKey
-      return t(fullKey, defVal ?? fullKey, { ns: NAMESPACE, ...options })
+      return t(i18nKey, defVal ?? i18nKey, { ns, ...options })
     },
-    [t, keyPrefix],
+    [t, ns],
   )
 
   // translate by text
@@ -79,10 +81,9 @@ export function useTn(keyPrefix: string = "") {
   // tt("hello {{name}}", { name: "world" })
   const tt = useCallback(
     (text: string, options?: TOptions) => {
-      const fullKey = keyPrefix ? `${keyPrefix}.texts.${text}` : text
-      return t(fullKey, text, { ns: NAMESPACE, ...options })
+      return t(text, text, { ns, ...options })
     },
-    [t, keyPrefix],
+    [t, ns],
   )
 
   const ret = useMemo(() => {

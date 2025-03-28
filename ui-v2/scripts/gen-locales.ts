@@ -6,8 +6,7 @@ import $ from "gogocode"
 
 interface LocaleData {
   [app: string]: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    keys: Record<string, any>
+    keys: Record<string, string>
     texts: Record<string, string>
   }
 }
@@ -42,6 +41,8 @@ async function generateLocales() {
       .find("const { $$$0 } = useTn($_$0)")
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .each((item: any) => {
+        // $$$0 --> item.match['$$$0']
+        // $_$0 --> item.match[0][0].value
         const appName = item.match[0][0].value
         const appFolderPos = filePath.indexOf(`/${appName}/`)
         if (appFolderPos === -1) {
@@ -69,7 +70,7 @@ async function generateLocales() {
     // tt('Clear Filters')
     // tt("hello {{name}}", { name: "world" })
     ast
-      .find("tt($_$)")
+      .find("tt($_$)") // same as `find("tt($_$0)")`, only match the first argument
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .each((tnItem: any) => {
         const text = tnItem.match[0][0].value
@@ -83,7 +84,7 @@ async function generateLocales() {
     // tk("time_range.hour", "{{count}} hrs", { count: 24 })
     // tk("time_range.hour", "", {count: n})
     ast
-      .find("tk($$$0)")
+      .find("tk($$$0)") // match all arguments
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .each((tkItem: any) => {
         const match = tkItem.match["$$$0"]
@@ -139,11 +140,14 @@ async function generateLocales() {
     const outputDir = `${appFolder}/locales`
     fs.mkdirSync(outputDir, { recursive: true })
 
-    const outputData = {
-      comment: "this file can be updated by running `pnpm gen:locales` command",
-    }
     const appName = appFolder.split("/").pop() || ""
-    outputData[appName] = localeData[appFolder]
+    const outputData = {
+      __namespace__: appName,
+      __comment__:
+        "this file can be updated by running `pnpm gen:locales` command",
+      ...localeData[appFolder].keys,
+      ...localeData[appFolder].texts,
+    }
 
     // Write en.json
     fs.writeFileSync(
@@ -155,45 +159,16 @@ async function generateLocales() {
     // Check if zh.json exists and merge with existing translations
     const zhPath = path.join(outputDir, "zh.json")
     if (fs.existsSync(zhPath)) {
-      const existingZh = JSON.parse(fs.readFileSync(zhPath, "utf-8"))
+      const existedZh = JSON.parse(fs.readFileSync(zhPath, "utf-8"))
 
-      // Clean up keys by removing entries that don't exist in outputData
-      const cleanedKeys = {}
-      for (const key in existingZh[appName]?.keys) {
-        if (key in outputData[appName].keys) {
-          cleanedKeys[key] = existingZh[appName].keys[key]
+      // traverse all keys in outputData, if a key exist in the existedZh, update outputData by the value in existedZh
+      for (const key in outputData) {
+        if (key in existedZh) {
+          outputData[key] = existedZh[key]
         }
       }
-
-      // Clean up texts by removing entries that don't exist in outputData
-      const cleanedTexts = {}
-      for (const key in existingZh[appName]?.texts) {
-        if (key in outputData[appName].texts) {
-          cleanedTexts[key] = existingZh[appName].texts[key]
-        }
-      }
-
-      const merged = {
-        [appName]: {
-          keys: {
-            ...outputData[appName].keys,
-            ...cleanedKeys,
-          },
-          texts: {
-            ...outputData[appName].texts,
-            ...cleanedTexts,
-          },
-        },
-      }
-      sortLocaleData(merged)
-      const final = {
-        comment: outputData.comment,
-        [appName]: merged[appName],
-      }
-      fs.writeFileSync(zhPath, JSON.stringify(final, null, 2) + "\n")
-    } else {
-      fs.writeFileSync(zhPath, JSON.stringify(outputData, null, 2) + "\n")
     }
+    fs.writeFileSync(zhPath, JSON.stringify(outputData, null, 2) + "\n")
 
     // write index.ts
     const indexPath = path.join(outputDir, "index.ts")

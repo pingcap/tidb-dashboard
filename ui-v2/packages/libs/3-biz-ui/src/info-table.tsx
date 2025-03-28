@@ -7,13 +7,10 @@ import { MRT_ColumnDef, ProTable } from "@tidbcloud/uikit/biz"
 
 addLangsLocales({
   zh: {
-    "info-table": {
-      texts: {
-        Name: "名称",
-        Value: "值",
-        Description: "描述",
-      },
-    },
+    __namespace__: "info-table",
+    Name: "名称",
+    Value: "值",
+    Description: "描述",
   },
 })
 

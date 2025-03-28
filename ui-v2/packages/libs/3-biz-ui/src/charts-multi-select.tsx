@@ -16,18 +16,15 @@ import { useMemo, useState } from "react"
 
 addLangsLocales({
   zh: {
-    "charts-multi-select": {
-      texts: {
-        Search: "搜索",
-        "Nothing found": "未找到",
-        "Show Hidden": "显示未选",
-        "Show All": "显示全部",
-        "Select All": "全选",
-        "All charts selected": "所有图表已选",
-        "{{selected}}/{{all}} charts selected": "{{selected}}/{{all}} 图表已选",
-        Reset: "重置",
-      },
-    },
+    __namespace__: "charts-multi-select",
+    Search: "搜索",
+    "Nothing found": "未找到",
+    "Show Hidden": "显示未选",
+    "Show All": "显示全部",
+    "Select All": "全选",
+    "All charts selected": "所有图表已选",
+    "{{selected}}/{{all}} charts selected": "{{selected}}/{{all}} 图表已选",
+    Reset: "重置",
   },
 })
 

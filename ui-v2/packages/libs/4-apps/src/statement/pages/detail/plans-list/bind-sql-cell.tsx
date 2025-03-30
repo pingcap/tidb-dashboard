@@ -80,9 +80,9 @@ export function SqlPlanBindActionCell({
       children: (
         <Typography>
           <Trans
-            ns="dashboard-lib"
+            ns="statement"
             i18nKey={
-              "statement.texts.Are you sure to bind SQL <code>{{sqlDigest}}</code> with the plan <code>{{planDigest}}</code>?"
+              "Are you sure to bind SQL <code>{{sqlDigest}}</code> with the plan <code>{{planDigest}}</code>?"
             }
             values={{
               sqlDigest: sqlDigest.slice(0, 8) + "...",
@@ -103,9 +103,9 @@ export function SqlPlanBindActionCell({
       children: (
         <Typography>
           <Trans
-            ns="dashboard-lib"
+            ns="statement"
             i18nKey={
-              "statement.texts.Are you sure to unbind SQL <code>{{sqlDigest}}</code> with <strong>all bound plans</strong>?"
+              "Are you sure to unbind SQL <code>{{sqlDigest}}</code> with <strong>all bound plans</strong>?"
             }
             values={{ sqlDigest: sqlDigest.slice(0, 8) + "..." }}
             components={{ code: <Code />, strong: <strong /> }}

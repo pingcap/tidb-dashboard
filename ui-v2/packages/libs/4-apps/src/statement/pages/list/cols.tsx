@@ -47,9 +47,9 @@ function SqlCell({ row }: { row: StatementModel }) {
           children: (
             <Typography>
               <Trans
-                ns="dashboard-lib"
+                ns="statement"
                 i18nKey={
-                  "statement.texts.When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window."
+                  "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window."
                 }
                 components={{ kbd: <Kbd /> }}
               />

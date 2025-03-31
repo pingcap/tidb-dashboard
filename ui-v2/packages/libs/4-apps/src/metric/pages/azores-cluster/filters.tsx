@@ -10,6 +10,7 @@ import {
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Anchor, Box, Group, SegmentedControl } from "@tidbcloud/uikit"
 import { dayjs } from "@tidbcloud/uikit/utils"
+import { capitalize } from "lodash-es"
 import { useMemo, useRef, useState } from "react"
 
 import { ChartsSelect } from "../../components/charts-select"
@@ -35,7 +36,7 @@ export function Filters() {
   const { panel, setQueryParams, timeRange, setTimeRange, setRefresh } =
     useMetricsUrlState()
   const tabs = GROUPS?.map((p) => ({
-    label: tk(`groups.${p}`),
+    label: tk(`groups.${p}`, capitalize(p)),
     value: p,
   }))
 

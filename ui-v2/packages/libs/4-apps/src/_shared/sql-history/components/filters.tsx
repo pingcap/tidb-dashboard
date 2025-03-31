@@ -1,5 +1,5 @@
 import { TimeRangePicker } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
-import { useTn as useTnx } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import { Group, Select } from "@tidbcloud/uikit"
 import { dayjs } from "@tidbcloud/uikit/utils"
 import { useEffect, useMemo } from "react"
@@ -23,8 +23,7 @@ const QUICK_RANGES: number[] = [
 
 function MetricSelect() {
   const ctx = useAppContext()
-  // rename useTn to useTnx to avoid run `pnpm gen:locales` fail
-  const { tk } = useTnx(ctx.cfg.parentAppName)
+  const { t } = useTn("sql-history")
   const { data: metrics } = useSqlHistoryMetricNamesData()
   const metric = useSqlHistoryState((state) => state.metric)
   const setMetric = useSqlHistoryState((state) => state.setMetric)
@@ -37,10 +36,10 @@ function MetricSelect() {
   const selectData = useMemo(
     () =>
       metrics?.map((m) => ({
-        label: tk(`fields.${m.name}`, m.name),
+        label: t(`fields.${m.name}`, m.name, { ns: ctx.cfg.parentAppName }),
         value: m.name,
       })),
-    [metrics, tk],
+    [metrics, t],
   )
 
   function handleMetricChange(v: string | null) {

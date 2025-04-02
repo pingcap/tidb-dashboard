@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-utils
 
+## 0.14.0
+
+### Minor Changes
+
+- refactor i18n and fitlers state
+
 ## 0.13.0
 
 ### Minor Changes

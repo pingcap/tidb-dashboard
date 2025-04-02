@@ -3,6 +3,7 @@ import {
   TimeRangeValue,
   formatDuration,
   formatTime,
+  useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   Alert,
@@ -39,6 +40,8 @@ const CustomTimeRangePicker = ({
   onCancel,
   onReturnClick,
 }: CustomTimeRangePickerProps) => {
+  const { tt } = useTn("time-range-picker")
+
   const [start, setStart] = useState(() => new Date(value[0] * 1000))
   const [end, setEnd] = useState(() => new Date(value[1] * 1000))
   const startTime = dayjs(start).format("HH:mm:ss")
@@ -110,11 +113,11 @@ const CustomTimeRangePicker = ({
     <Box p={16} w={280} m={-4}>
       <Group onClick={onReturnClick} sx={{ cursor: "pointer" }}>
         <IconChevronLeft size={16} />
-        <Typography variant="body-lg">Back</Typography>
+        <Typography variant="body-lg">{tt("Back")}</Typography>
       </Group>
 
       <Group gap={0} pt={8} justify="space-between">
-        <Typography variant="label-sm">Start</Typography>
+        <Typography variant="label-sm">{tt("Start")}</Typography>
         <Group gap={8}>
           <Input
             w={116}
@@ -133,7 +136,7 @@ const CustomTimeRangePicker = ({
       </Group>
 
       <Group gap={0} pt={8} justify="space-between">
-        <Typography variant="label-sm">End</Typography>
+        <Typography variant="label-sm">{tt("End")}</Typography>
         <Group gap={8}>
           <Input
             w={116}
@@ -164,24 +167,30 @@ const CustomTimeRangePicker = ({
       {(startAfterEnd || beyondMin || beyondMax || beyondDuration) && (
         <Alert icon={<IconAlertCircle size={16} />} color="red" pt={8}>
           {startAfterEnd && (
-            <Text c="red">Please select an end time after the start time.</Text>
+            <Text c="red">
+              {tt("Please select an end time after the start time.")}
+            </Text>
           )}
           {beyondMin && (
             <Text c="red">
-              Please select a start time after{" "}
-              <>{formatTime(minDateTime!, "MMM D, YYYY HH:mm:ss")}</>
+              {tt("Please select a start time after {{time}}.", {
+                time: formatTime(minDateTime!, "MMM D, YYYY HH:mm:ss"),
+              })}
             </Text>
           )}
           {beyondMax && (
             <Text c="red">
-              Please select an end time before{" "}
-              <>{formatTime(maxDateTime!, "MMM D, YYYY HH:mm:ss")}</>
+              {tt("Please select an end time before {{time}}.", {
+                time: formatTime(maxDateTime!, "MMM D, YYYY HH:mm:ss"),
+              })}
             </Text>
           )}
           {beyondDuration && (
             <Text c="red">
-              The selection exceeds the {formatDuration(maxDuration!)} limit,
-              please select a shorter time range.
+              {tt(
+                "The selection exceeds the {{duration}} limit, please select a shorter time range.",
+                { duration: formatDuration(maxDuration!) },
+              )}
             </Text>
           )}
         </Alert>
@@ -196,14 +205,14 @@ const CustomTimeRangePicker = ({
         wrap="wrap"
       >
         <Button size="xs" variant="default" onClick={onCancel}>
-          Cancel
+          {tt("Cancel")}
         </Button>
         <Button
           size="xs"
           onClick={apply}
           disabled={startAfterEnd || beyondMin || beyondMax || beyondDuration}
         >
-          Apply
+          {tt("Apply")}
         </Button>
       </Flex>
     </Box>

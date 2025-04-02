@@ -1,9 +1,11 @@
 import {
   RelativeTimeRange,
   TimeRange,
+  addLangsLocales,
   formatDuration,
   formatTime,
   toTimeRangeValue,
+  useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   Box,
@@ -19,6 +21,28 @@ import { IconChevronRight } from "@tidbcloud/uikit/icons"
 import { useMemo, useState } from "react"
 
 import CustomTimeRangePicker from "./custom"
+
+addLangsLocales({
+  zh: {
+    __namespace__: "time-range-picker",
+    Next: "未来",
+    Past: "过去",
+    Custom: "自定义",
+    Back: "返回",
+    Start: "开始",
+    End: "结束",
+    Cancel: "取消",
+    Apply: "应用",
+    "Please select an end time after the start time.":
+      "请确保结束时间在开始时间之后。",
+    "Please select a start time after {{time}}.":
+      "请选择 {{time}} 之后的开始时间。",
+    "Please select an end time before {{time}}.":
+      "请选择 {{time}} 之前的结束时间。",
+    "The selection exceeds the {{duration}} limit, please select a shorter time range.":
+      "选择超出了 {{duration}} 的限制，请选择更短的时间范围。",
+  },
+})
 
 const DEFAULT_QUICK_RANGES = [
   5 * 60,
@@ -61,10 +85,12 @@ export const TimeRangePicker = ({
   loading,
   sx,
 }: React.PropsWithChildren<TimeRangePickerProps>) => {
+  const { tt } = useTn("time-range-picker")
   const [opened, setOpened] = useState(false)
   const [customMode, setCustomMode] = useState(false)
   const isRelativeRange = value.type !== "absolute"
-  const relativeTimePrefix = value.type === "now-to-future" ? "Next" : "Past"
+  const relativeTimePrefix =
+    value.type === "now-to-future" ? tt("Next") : tt("Past")
 
   const timeRangeValue = toTimeRangeValue(value)
   const duration = timeRangeValue[1] - timeRangeValue[0]
@@ -180,7 +206,7 @@ export const TimeRangePicker = ({
                   closeMenuOnClick={false}
                   onClick={() => setCustomMode(true)}
                 >
-                  <Typography variant="body-lg">Custom</Typography>
+                  <Typography variant="body-lg">{tt("Custom")}</Typography>
                 </Menu.Item>
 
                 <Menu.Divider />

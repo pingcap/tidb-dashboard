@@ -6,6 +6,7 @@ import { IconChevronLeft } from "@tidbcloud/uikit/icons"
 import { useAppContext } from "../../ctx"
 import { useDetailData } from "../../utils/use-data"
 
+import { AskAiButton } from "./ask-ai"
 import { DetailTabs } from "./detail-tabs"
 import { DetailPlan } from "./plan"
 import { DetailQuery } from "./query"
@@ -33,6 +34,7 @@ export function Detail() {
           <Typography variant="title-lg">{tt("Slow Query Detail")}</Typography>
           <Group ml="auto">
             <RelatedStatementButton />
+            {ctx.cfg.showAiHelper === true && <AskAiButton />}
           </Group>
         </Group>
       )}

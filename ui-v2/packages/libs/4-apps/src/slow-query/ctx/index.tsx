@@ -37,6 +37,9 @@ type AppApi = SqlLimitAppApi &
     }): Promise<{ total: number; items: SlowqueryModel[] }>
 
     getSlowQuery(params: { id: string }): Promise<SlowqueryModel>
+
+    // ai optimize
+    optimizeByAi(params: { id: string }): Promise<string>
   }
 
 type AppConfig = {
@@ -46,6 +49,10 @@ type AppConfig = {
   // and you need to handle the back action outside of the app by yourself
   // default is true
   showDetailBack?: boolean
+  // whether to show ai helper button in the detail page
+  // if set to false, the ai helper button will be hidden
+  // default is false
+  showAiHelper?: boolean
 }
 
 type AppActions = {

@@ -12,6 +12,7 @@ import {
   diagnosisServiceRemoveSqlLimit,
 } from "@pingcap-incubator/tidb-dashboard-lib-api-client"
 import { AppCtxValue } from "@pingcap-incubator/tidb-dashboard-lib-apps/slow-query"
+import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
 
@@ -186,9 +187,15 @@ export function useCtxValue(): AppCtxValue {
             ]),
           )
         },
+
+        // ai optimizer
+        optimizeByAi() {
+          return delay(5 * 1000).then(() => "`test code`")
+        },
       },
       cfg: {
         title: "",
+        showAiHelper: true,
       },
       actions: {
         openDetail: (id: string, newTab: boolean) => {

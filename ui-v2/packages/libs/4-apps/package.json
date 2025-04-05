@@ -1,6 +1,6 @@
 {
   "name": "@pingcap-incubator/tidb-dashboard-lib-apps",
-  "version": "0.19.5",
+  "version": "0.19.6",
   "description": "",
   "type": "module",
   "main": "dist/index.js",

@@ -1,5 +1,13 @@
 # test-tidb-dashboard-ui-lib
 
+## 0.12.4
+
+### Patch Changes
+
+- export AskAiButton
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-apps@0.19.4
+
 ## 0.12.3
 
 ### Patch Changes

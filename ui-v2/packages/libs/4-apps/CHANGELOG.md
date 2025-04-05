@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.19.4
+
+### Patch Changes
+
+- export AskAiButton
+
 ## 0.19.3
 
 ### Patch Changes

@@ -104,7 +104,10 @@
     "@pingcap-incubator/tidb-dashboard-lib-icons": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-primitive-ui": "workspace:^",
     "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
+    "highlight.js": "^11.11.1",
     "lodash-es": "^4.17.21",
+    "marked": "^15.0.7",
+    "marked-highlight": "^2.2.1",
     "react-markdown": "^10.1.0"
   }
 }

@@ -16,6 +16,8 @@ import { delay } from "@pingcap-incubator/tidb-dashboard-lib-apps/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
 
+import aiResData from "./ai-response.json"
+
 declare global {
   interface Window {
     preUrl?: string[]
@@ -190,7 +192,7 @@ export function useCtxValue(): AppCtxValue {
 
         // ai optimizer
         optimizeByAi() {
-          return delay(5 * 1000).then(() => "`test code`")
+          return delay(5 * 1000).then(() => aiResData["markdown-content"])
         },
       },
       cfg: {

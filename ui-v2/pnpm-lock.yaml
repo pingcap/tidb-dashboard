@@ -267,9 +267,18 @@ importers:
       '@pingcap-incubator/tidb-dashboard-lib-utils':
         specifier: workspace:^
         version: link:../1-utils
+      highlight.js:
+        specifier: ^11.11.1
+        version: 11.11.1
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
+      marked:
+        specifier: ^15.0.7
+        version: 15.0.7
+      marked-highlight:
+        specifier: ^2.2.1
+        version: 2.2.1(marked@15.0.7)
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@18.3.12)(react@18.3.1)
@@ -3092,8 +3101,8 @@ packages:
   hast-util-whitespace@3.0.0:
     resolution: {integrity: sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==}
 
-  highlight.js@11.10.0:
-    resolution: {integrity: sha512-SYVnVFswQER+zu1laSya563s+F8VDGt7o35d4utbamowvUNLLMovFqwCLSocpZTz3MgaSRA1IbqRWZv97dtErQ==}
+  highlight.js@11.11.1:
+    resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
     engines: {node: '>=12.0.0'}
 
   hoist-non-react-statics@3.3.2:
@@ -3569,6 +3578,16 @@ packages:
       dayjs: '>=1.11'
       react: '>=18.0'
       react-dom: '>=18.0'
+
+  marked-highlight@2.2.1:
+    resolution: {integrity: sha512-SiCIeEiQbs9TxGwle9/OwbOejHCZsohQRaNTY2u8euEXYt2rYUFoiImUirThU3Gd/o6Q1gHGtH9qloHlbJpNIA==}
+    peerDependencies:
+      marked: '>=4 <16'
+
+  marked@15.0.7:
+    resolution: {integrity: sha512-dgLIeKGLx5FwziAnsk4ONoGwHwGPJzselimvlVskE9XLN4Orv9u2VA3GWw/lYUqjfA0rUT/6fqKwfZJapP9BEg==}
+    engines: {node: '>= 18'}
+    hasBin: true
 
   mdast-util-from-markdown@2.0.2:
     resolution: {integrity: sha512-uZhTV/8NBuw0WHkPTrCqDOl0zVe1BIng5ZtHoDk49ME1qqcjYmmLmOf0gELgcRMxN4w2iuIeVso5/6QymSrgmA==}
@@ -6071,7 +6090,7 @@ snapshots:
       '@mantine/core': 7.15.2(@mantine/hooks@7.15.2(react@18.3.1))(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mantine/hooks': 7.15.2(react@18.3.1)
       clsx: 2.1.1
-      highlight.js: 11.10.0
+      highlight.js: 11.11.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
@@ -8199,7 +8218,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
 
-  highlight.js@11.10.0: {}
+  highlight.js@11.11.1: {}
 
   hoist-non-react-statics@3.3.2:
     dependencies:
@@ -8625,6 +8644,12 @@ snapshots:
       dayjs: 1.11.13
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+
+  marked-highlight@2.2.1(marked@15.0.7):
+    dependencies:
+      marked: 15.0.7
+
+  marked@15.0.7: {}
 
   mdast-util-from-markdown@2.0.2:
     dependencies:

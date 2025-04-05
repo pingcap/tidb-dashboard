@@ -59,4 +59,4 @@ export function Detail() {
   )
 }
 
-export { RelatedStatementButton }
+export { RelatedStatementButton, AskAiButton }

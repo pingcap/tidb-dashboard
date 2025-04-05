@@ -61,7 +61,7 @@ function AiDrawer({
     <ActionDrawer
       opened={opened}
       onClose={onClose}
-      title="Slow Query Optimizer By AI"
+      title="Ask AI to Optimize Slow Query"
       size={720}
     >
       <ActionDrawer.Body>
@@ -69,10 +69,10 @@ function AiDrawer({
           <Stack gap={2}>
             <Typography variant="body-lg">
               The optimizer will base on the slow query text, execution plan,
-              table schema and index, to detect the bottleneck, and give optimze
-              and rewrite advice.
+              table schema and index, to detect the bottleneck, and give
+              optimize and rewrite advices.
             </Typography>
-            <Typography c="gray">
+            <Typography c="carbon.7">
               *note: the answer may not be correct, you need to check it by
               yourself.
             </Typography>

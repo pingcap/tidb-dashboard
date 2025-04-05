@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.19.3
+
+### Patch Changes
+
+- ask ai to optimize for slow query
+
 ## 0.19.2
 
 ### Patch Changes

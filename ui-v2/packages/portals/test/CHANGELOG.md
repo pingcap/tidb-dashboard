@@ -1,5 +1,13 @@
 # test-tidb-dashboard-ui-lib
 
+## 0.12.3
+
+### Patch Changes
+
+- ask ai to optimize for slow query
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-apps@0.19.3
+
 ## 0.12.2
 
 ### Patch Changes

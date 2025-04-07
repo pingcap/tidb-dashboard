@@ -14,20 +14,6 @@ import {
 import { IconChevronDown } from "@tidbcloud/uikit/icons"
 import { useMemo, useState } from "react"
 
-addLangsLocales({
-  zh: {
-    __namespace__: "charts-multi-select",
-    Search: "搜索",
-    "Nothing found": "未找到",
-    "Show Hidden": "显示未选",
-    "Show All": "显示全部",
-    "Select All": "全选",
-    "All charts selected": "所有图表已选",
-    "{{selected}}/{{all}} charts selected": "{{selected}}/{{all}} 图表已选",
-    Reset: "重置",
-  },
-})
-
 export type ChartsSelectData = {
   category: string
   label: string
@@ -199,3 +185,45 @@ export function ChartMultiSelect({
     </Combobox>
   )
 }
+
+//------------------------
+// i18n
+// auto updated by running `pnpm gen:locales`
+
+const I18nNamespace = "charts-multi-select"
+type I18nLocaleKeys =
+  | "All charts selected"
+  | "Nothing found"
+  | "Reset"
+  | "Search"
+  | "Show All"
+  | "Show Hidden"
+  | "{{selected}}/{{all}} charts selected"
+type I18nLocale = {
+  [K in I18nLocaleKeys]?: string
+}
+const en: I18nLocale = {}
+const zh: I18nLocale = {
+  "All charts selected": "所有图表已选",
+  "Nothing found": "未找到",
+  Reset: "重置",
+  Search: "搜索",
+  "Show All": "显示全部",
+  "Show Hidden": "显示未选",
+  "{{selected}}/{{all}} charts selected": "{{selected}}/{{all}} 图表已选",
+}
+
+function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {
+  for (const [ln, locale] of Object.entries(locales)) {
+    addLangsLocales({
+      [ln]: {
+        __namespace__: I18nNamespace,
+        ...locale,
+      },
+    })
+  }
+}
+
+updateI18nLocales({ en, zh })
+
+ChartMultiSelect.updateI18nLocales = updateI18nLocales

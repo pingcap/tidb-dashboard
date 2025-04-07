@@ -5,15 +5,6 @@ import {
 import { Tooltip, Typography } from "@tidbcloud/uikit"
 import { MRT_ColumnDef, ProTable } from "@tidbcloud/uikit/biz"
 
-addLangsLocales({
-  zh: {
-    __namespace__: "info-table",
-    Name: "名称",
-    Value: "值",
-    Description: "描述",
-  },
-})
-
 export type InfoModel = {
   name: string
   level?: number
@@ -62,3 +53,35 @@ export function InfoTable({ data }: { data: InfoModel[] }) {
   ]
   return <ProTable columns={columns} data={data} />
 }
+
+//------------------------
+// i18n
+// auto updated by running `pnpm gen:locales`
+
+const I18nNamespace = "info-table"
+
+type I18nLocaleKeys = "Description" | "Name" | "Value"
+type I18nLocale = {
+  [K in I18nLocaleKeys]?: string
+}
+const en: I18nLocale = {}
+const zh: I18nLocale = {
+  Description: "描述",
+  Name: "名称",
+  Value: "值",
+}
+
+function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {
+  for (const [ln, locale] of Object.entries(locales)) {
+    addLangsLocales({
+      [ln]: {
+        __namespace__: I18nNamespace,
+        ...locale,
+      },
+    })
+  }
+}
+
+updateI18nLocales({ en, zh })
+
+InfoTable.updateI18nLocales = updateI18nLocales

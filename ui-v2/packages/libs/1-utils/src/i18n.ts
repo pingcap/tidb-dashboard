@@ -42,7 +42,7 @@ function addResourceBundles(langsLocales: Resource) {
     if (!ns) {
       throw new Error(`__namespace__ not found in locales`)
     }
-    i18next.addResourceBundle(lang, ns, locales, true, false)
+    i18next.addResourceBundle(lang, ns, locales, true, true)
   })
 }
 

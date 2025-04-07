@@ -22,16 +22,131 @@ function sortLocaleData(localeData: LocaleData) {
   })
 }
 
+function handleAppFiles(appFolder: string, localeData: LocaleData) {
+  const outputDir = `${appFolder}/locales`
+  fs.mkdirSync(outputDir, { recursive: true })
+
+  const appName = appFolder.split("/").pop() || ""
+  let outputData = {
+    __namespace__: appName,
+    __comment__:
+      "this file can be updated by running `pnpm gen:locales` command",
+    ...localeData[appFolder].keys,
+    // ...localeData[appFolder].texts, // texts doesn't need to write in the en.json, to save space
+  }
+
+  // Write en.json
+  fs.writeFileSync(
+    path.join(outputDir, "en.json"),
+    JSON.stringify(outputData, null, 2) + "\n",
+  )
+
+  // Write zh.json
+  outputData = {
+    ...outputData,
+    ...localeData[appFolder].texts,
+  }
+  // Update zh.json
+  // Check if zh.json exists and merge with existing translations
+  const zhPath = path.join(outputDir, "zh.json")
+  if (fs.existsSync(zhPath)) {
+    const existedZh = JSON.parse(fs.readFileSync(zhPath, "utf-8"))
+
+    // replace outputData with existedZh
+    for (const key in existedZh) {
+      outputData[key] = existedZh[key]
+    }
+  }
+  fs.writeFileSync(zhPath, JSON.stringify(outputData, null, 2) + "\n")
+
+  // write index.ts
+  const indexPath = path.join(outputDir, "index.ts")
+  fs.writeFileSync(
+    indexPath,
+    `import { addLangsLocales } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+
+import en from "./en.json"
+import zh from "./zh.json"
+
+addLangsLocales({ en, zh })
+`,
+  )
+}
+
+const bizUiNsPathMap: Map<string, string> = new Map()
+function handleBizUIFiles(appName: string, localeData: LocaleData) {
+  const filePath = bizUiNsPathMap.get(appName)
+  if (!filePath) {
+    return
+  }
+
+  const code = fs.readFileSync(filePath, "utf-8")
+  const ast = $(code)
+
+  const allKeys = Object.keys(localeData[appName].keys).concat(
+    Object.keys(localeData[appName].texts),
+  )
+  ast.replace(
+    `type I18nLocaleKeys = $_$`,
+    `type I18nLocaleKeys = ${allKeys.map((k) => `\n  | "${k}"`).join("")}`,
+  )
+
+  // update en
+  const keyPartKeys = Object.keys(localeData[appName].keys)
+  ast.replace(
+    `const en: I18nLocale = { $$$0 }`,
+    `const en: I18nLocale = { ${keyPartKeys.map((k) => `"${k}": "${localeData[appName].keys[k]}"`).join(", ")} }`,
+  )
+
+  // get existed zh
+  const existedZh = ast.find(`const zh: I18nLocale = { $$$0 }`).match["$$$0"]
+  const existedZhLocales = existedZh.reduce(
+    (acc, kv) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const _kv = kv as any
+      acc[_kv.key.name] = _kv.value.value
+      return acc
+    },
+    {} as Record<string, string>,
+  )
+  const zhLocales = {
+    ...localeData[appName].keys,
+    ...localeData[appName].texts,
+  }
+  // merge
+  Object.keys(existedZhLocales).forEach((k) => {
+    zhLocales[k] = existedZhLocales[k]
+  })
+  // update zh
+  ast.replace(
+    `const zh: I18nLocale = { $$$0 }`,
+    `const zh: I18nLocale = { ${allKeys.map((k) => `\n  "${k}": "${zhLocales[k]}",`).join("")} }`,
+  )
+
+  fs.writeFileSync(filePath, ast.generate())
+}
+
 async function generateLocales() {
   // Initialize locale data structure
   const localeData: LocaleData = {}
 
   // Scan all TypeScript/JavaScript files in the apps folder
-  const files = await glob("packages/libs/4-apps/src/**/*.{ts,tsx,js,jsx}")
+  const files = await glob([
+    "packages/libs/3-biz-ui/src/**/*.{ts,tsx,js,jsx}",
+    "packages/libs/4-apps/src/**/*.{ts,tsx,js,jsx}",
+  ])
 
+  // Parse and extract locale data
   for (const filePath of files) {
     const code = fs.readFileSync(filePath, "utf-8")
     const ast = $(code)
+
+    // get biz-ui locales path
+    const ns = ast.find("const I18nNamespace = $_$0")
+    if (ns.length >= 1) {
+      const nsVal = ns.match[0][0].value
+      bizUiNsPathMap.set(nsVal, filePath)
+    }
 
     // check app name
     // app name in the `useTn` call should be the same as the file path
@@ -44,13 +159,17 @@ async function generateLocales() {
         // $$$0 --> item.match['$$$0']
         // $_$0 --> item.match[0][0].value
         const appName = item.match[0][0].value
-        const appFolderPos = filePath.indexOf(`/${appName}/`)
+        const appFolderPos = filePath.indexOf(`/${appName}`)
         if (appFolderPos === -1) {
           console.error(filePath)
           console.error(`app name mismatch: ${appName}`)
           return
         } else {
-          appFolder = filePath.slice(0, appFolderPos) + "/" + appName
+          if (filePath.indexOf("/3-biz-ui/") !== -1) {
+            appFolder = appName
+          } else {
+            appFolder = filePath.slice(0, appFolderPos) + "/" + appName
+          }
         }
         hasTn = true
       })
@@ -135,58 +254,13 @@ async function generateLocales() {
   // Sort
   sortLocaleData(localeData)
 
-  // Ensure output directory exists
+  // Output
   for (const appFolder of Object.keys(localeData)) {
-    const outputDir = `${appFolder}/locales`
-    fs.mkdirSync(outputDir, { recursive: true })
-
-    const appName = appFolder.split("/").pop() || ""
-    let outputData = {
-      __namespace__: appName,
-      __comment__:
-        "this file can be updated by running `pnpm gen:locales` command",
-      ...localeData[appFolder].keys,
-      // ...localeData[appFolder].texts, // texts doesn't need to write in the en.json, to save space
+    if (appFolder.indexOf("/4-apps/") !== -1) {
+      handleAppFiles(appFolder, localeData)
+    } else {
+      handleBizUIFiles(appFolder, localeData)
     }
-
-    // Write en.json
-    fs.writeFileSync(
-      path.join(outputDir, "en.json"),
-      JSON.stringify(outputData, null, 2) + "\n",
-    )
-
-    // Write zh.json
-    outputData = {
-      ...outputData,
-      ...localeData[appFolder].texts,
-    }
-    // Update zh.json
-    // Check if zh.json exists and merge with existing translations
-    const zhPath = path.join(outputDir, "zh.json")
-    if (fs.existsSync(zhPath)) {
-      const existedZh = JSON.parse(fs.readFileSync(zhPath, "utf-8"))
-
-      // traverse all keys in outputData, if a key exist in the existedZh, update outputData by the value in existedZh
-      for (const key in outputData) {
-        if (key in existedZh) {
-          outputData[key] = existedZh[key]
-        }
-      }
-    }
-    fs.writeFileSync(zhPath, JSON.stringify(outputData, null, 2) + "\n")
-
-    // write index.ts
-    const indexPath = path.join(outputDir, "index.ts")
-    fs.writeFileSync(
-      indexPath,
-      `import { addLangsLocales } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-
-import en from "./en.json"
-import zh from "./zh.json"
-
-addLangsLocales({ en, zh })
-`,
-    )
   }
 }
 

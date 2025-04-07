@@ -9,6 +9,7 @@ import { useState } from "react"
 
 import { AdvancedFilterInfo, AdvancedFilterSettingItem } from "./filter-setting"
 import { AdvancedFiltersSetting, newFilterSettingItem } from "./filters-setting"
+import { updateI18nLocales } from "./locales"
 
 export function AdvancedFiltersModal({
   availableFilters,
@@ -96,3 +97,5 @@ export function AdvancedFiltersModal({
     </>
   )
 }
+
+AdvancedFiltersModal.updateI18nLocales = updateI18nLocales

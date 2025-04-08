@@ -226,4 +226,5 @@ function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {
 
 updateI18nLocales({ en, zh })
 
+ChartMultiSelect.i18nNamespace = I18nNamespace
 ChartMultiSelect.updateI18nLocales = updateI18nLocales

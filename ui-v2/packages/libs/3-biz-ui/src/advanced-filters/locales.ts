@@ -1,6 +1,6 @@
 import { addLangsLocales } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
-const I18nNamespace = "advanced-filters"
+export const I18nNamespace = "advanced-filters"
 type I18nLocaleKeys =
   | "AND"
   | "Add Filter"

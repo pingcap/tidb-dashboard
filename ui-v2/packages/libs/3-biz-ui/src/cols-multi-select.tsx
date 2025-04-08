@@ -212,4 +212,5 @@ function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {
 
 updateI18nLocales({ en, zh })
 
+ColumnMultiSelect.i18nNamespace = I18nNamespace
 ColumnMultiSelect.updateI18nLocales = updateI18nLocales

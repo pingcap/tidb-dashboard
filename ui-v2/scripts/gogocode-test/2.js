@@ -4,7 +4,7 @@ import $ from "gogocode"
 import { inspect } from "util"
 
 const source = `
-const I18nNamespace = "advanced-filters"
+export const I18nNamespace = "advanced-filters"
 type I18nLocaleKeys =
   | "Advanced Filters"
   | "Add Filter"
@@ -29,6 +29,9 @@ const zh: I18nLocale = {
 `
 
 const ast = $(source)
+
+const namespace = ast.find(`const I18nNamespace = $_$`).match[0][0].value
+console.log(namespace)
 
 const res = ast.find(`const zh: I18nLocale = { $$$0 }`)
 const kvs = res.match["$$$0"]

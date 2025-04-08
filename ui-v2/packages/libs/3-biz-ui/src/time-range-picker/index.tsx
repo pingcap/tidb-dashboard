@@ -290,4 +290,5 @@ function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {
 
 updateI18nLocales({ en, zh })
 
+TimeRangePicker.i18nNamespace = I18nNamespace
 TimeRangePicker.updateI18nLocales = updateI18nLocales

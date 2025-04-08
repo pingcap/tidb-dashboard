@@ -84,4 +84,5 @@ function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {
 
 updateI18nLocales({ en, zh })
 
+InfoTable.i18nNamespace = I18nNamespace
 InfoTable.updateI18nLocales = updateI18nLocales

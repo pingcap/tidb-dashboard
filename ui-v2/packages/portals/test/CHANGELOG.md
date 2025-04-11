@@ -1,5 +1,12 @@
 # test-tidb-dashboard-ui-lib
 
+## 0.12.7
+
+### Patch Changes
+
+- Updated dependencies
+  - @pingcap-incubator/tidb-dashboard-lib-apps@0.19.7
+
 ## 0.12.2
 
 ### Patch Changes

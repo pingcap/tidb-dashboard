@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.19.7
+
+### Patch Changes
+
+- fix get prom addr when metric data is empty
+
 ## 0.19.2
 
 ### Patch Changes

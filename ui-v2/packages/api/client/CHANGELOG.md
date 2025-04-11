@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-api-client
 
+## 0.13.0
+
+### Minor Changes
+
+- bump version
+
 ## 0.12.0
 
 ### Minor Changes

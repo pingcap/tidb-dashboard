@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-icons
 
+## 0.14.0
+
+### Minor Changes
+
+- bump version
+
 ## 0.13.0
 
 ### Minor Changes

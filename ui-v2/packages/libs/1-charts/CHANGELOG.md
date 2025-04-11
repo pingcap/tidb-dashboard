@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.16.0
+
+### Minor Changes
+
+- bump version
+
 ## 0.15.0
 
 ### Minor Changes

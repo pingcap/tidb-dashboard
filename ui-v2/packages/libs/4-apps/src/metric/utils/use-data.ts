@@ -84,7 +84,7 @@ export function useMetricDataByMetricName(
           step,
           label: labelValue,
         })
-        .then((d) => ({ metrics: d, tr, promAddr: d[0].promAddr }))
+        .then((d) => ({ metrics: d, tr, promAddr: d[0]?.promAddr }))
     },
     placeholderData: keepPreviousData,
     // set `enabled: false`, so queryFn can only be manually triggered by calling `refetch()`

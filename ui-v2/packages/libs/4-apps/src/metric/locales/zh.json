@@ -53,5 +53,6 @@
   "Troubleshoot Increased Read and Write Latency": "读写延迟增加问题排查",
   "Troubleshoot Lock Conflicts": "TiDB 锁冲突问题处理",
   "Troubleshoot TiDB OOM Issues": "TiDB OOM 故障排查",
-  "Troubleshoot Write Conflicts in Optimistic Transactions": "乐观事务模型下写写冲突问题排查"
+  "Troubleshoot Write Conflicts in Optimistic Transactions": "乐观事务模型下写写冲突问题排查",
+  "Troubleshooting guide": "故障排查指南"
 }

@@ -2,16 +2,8 @@ import {
   TimeRangeValue,
   useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import {
-  Anchor,
-  Box,
-  Card,
-  Group,
-  HoverCard,
-  Stack,
-  Typography,
-} from "@tidbcloud/uikit"
-import { IconInfoCircle } from "@tidbcloud/uikit/icons"
+import { Anchor, Box, Card, Group, Stack, Typography } from "@tidbcloud/uikit"
+import { IconLinkExternal01 } from "@tidbcloud/uikit/icons"
 
 import { ChartBody } from "../../components/chart-body"
 import { ChartHeader } from "../../components/chart-header"
@@ -117,7 +109,7 @@ export function AzoresClusterMetricsPanel({
 }: {
   config: SinglePanelConfig
 }) {
-  const { tk } = useTn("metric")
+  const { tk, tt } = useTn("metric")
   const { timeRange, setTimeRange } = useMetricsUrlState()
   const hiddenCharts = useChartsSelectState((s) => s.hiddenCharts)
 
@@ -137,29 +129,32 @@ export function AzoresClusterMetricsPanel({
 
   return (
     <Box>
-      <Group gap={8}>
-        <Typography fw={300} fz={24} mb={8}>
+      <Stack gap={0}>
+        <Typography fw={300} fz={24}>
           {tk(`panels.${config.category}`, config.category)}
         </Typography>
         {manuals && (
-          <HoverCard position="top" shadow="md" withArrow>
-            <HoverCard.Target>
-              <Box>
-                <IconInfoCircle size={16} strokeWidth={1.5} />
-              </Box>
-            </HoverCard.Target>
-            <HoverCard.Dropdown>
-              <Stack gap={8}>
-                {manuals.map((m) => (
-                  <Anchor key={m.label} href={m.link} target="_blank">
-                    {m.label}
-                  </Anchor>
-                ))}
-              </Stack>
-            </HoverCard.Dropdown>
-          </HoverCard>
+          <Group mb={4} gap={4}>
+            <Typography>
+              {tt("Troubleshooting guide")}
+              {":"}
+            </Typography>
+            {manuals.map((m, idx) => (
+              <Group key={m.label} gap={2}>
+                {idx > 0 && " , "}
+                <Anchor
+                  href={m.link}
+                  target="_blank"
+                  sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                >
+                  {m.label}
+                  <IconLinkExternal01 />
+                </Anchor>
+              </Group>
+            ))}
+          </Group>
         )}
-      </Group>
+      </Stack>
 
       <Box
         style={{

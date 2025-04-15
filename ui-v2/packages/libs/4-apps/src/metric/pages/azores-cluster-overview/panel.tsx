@@ -68,7 +68,7 @@ export function AzoresClusterOverviewMetricsPanel({
       >
         {config.charts.map((c, idx) => (
           <Box key={c.title + idx}>
-            <ChartHeader title={c.title} config={c} />
+            <ChartHeader title={c.title} config={c} showMoreActions={true} />
             <ChartBody config={c} timeRange={timeRange} />
           </Box>
         ))}

@@ -1,17 +1,6 @@
-import { TimeRange, useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import {
-  ActionIcon,
-  Box,
-  Code,
-  Group,
-  HoverCard,
-  Typography,
-} from "@tidbcloud/uikit"
-import {
-  IconInfoCircle,
-  IconLayersThree02,
-  IconRefreshCw02,
-} from "@tidbcloud/uikit/icons"
+import { TimeRange } from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { ActionIcon, Box, Group, Typography } from "@tidbcloud/uikit"
+import { IconLayersThree02, IconRefreshCw02 } from "@tidbcloud/uikit/icons"
 
 import {
   useChartState,
@@ -26,6 +15,7 @@ export function ChartHeader({
   title,
   enableDrillDown = false,
   showMoreActions = false,
+  showHide = false,
   config,
   timeRange,
   children,
@@ -33,11 +23,11 @@ export function ChartHeader({
   title?: string
   enableDrillDown?: boolean
   showMoreActions?: boolean
+  showHide?: boolean
   config: SingleChartConfig
   timeRange?: TimeRange
   children?: React.ReactNode
 }) {
-  const { tt } = useTn("metric")
   const { setRefresh } = useMetricsUrlState()
   const setSelectedChart = useChartState((s) => s.setSelectedChart)
   const setTimeRange = useChartState((s) => s.setTimeRange)
@@ -55,24 +45,14 @@ export function ChartHeader({
     <Group gap={2} mb={8}>
       <Typography variant="label-lg">{title}</Typography>
       <Box sx={{ flexGrow: 1 }} />
-      {curPromAddr && (
-        <HoverCard position="top" shadow="md" withArrow>
-          <HoverCard.Target>
-            <IconInfoCircle size={16} />
-          </HoverCard.Target>
-          <HoverCard.Dropdown>
-            <Typography>
-              {tt("Prometheus Address")}: <Code>{curPromAddr}</Code>
-            </Typography>
-          </HoverCard.Dropdown>
-        </HoverCard>
+      {!showMoreActions && (
+        <ActionIcon
+          variant="transparent"
+          onClick={() => setRefresh("_" + config.metricName + "_")}
+        >
+          <IconRefreshCw02 size={14} />
+        </ActionIcon>
       )}
-      <ActionIcon
-        variant="transparent"
-        onClick={() => setRefresh("_" + config.metricName + "_")}
-      >
-        <IconRefreshCw02 size={14} />
-      </ActionIcon>
       {enableDrillDown && (
         <ActionIcon
           mx={-4}
@@ -85,7 +65,14 @@ export function ChartHeader({
           <IconLayersThree02 size={16} />
         </ActionIcon>
       )}
-      {showMoreActions && <ChartActionsMenu onHide={handleHide} />}
+      {showMoreActions && (
+        <ChartActionsMenu
+          onHide={handleHide}
+          onRefresh={() => setRefresh("_" + config.metricName + "_")}
+          promAddr={curPromAddr}
+          showHide={showHide}
+        />
+      )}
       {children}
     </Group>
   )

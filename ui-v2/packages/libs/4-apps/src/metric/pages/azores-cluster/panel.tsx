@@ -169,6 +169,7 @@ export function AzoresClusterMetricsPanel({
               title={c.title}
               enableDrillDown={true}
               showMoreActions={true}
+              showHide={true}
               config={c}
               timeRange={timeRange}
             />

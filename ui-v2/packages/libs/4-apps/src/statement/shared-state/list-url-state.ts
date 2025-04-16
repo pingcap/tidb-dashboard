@@ -90,7 +90,9 @@ export function useListUrlState() {
   }, [setQueryParams])
   const resetVal = useResetFiltersState((s) => s.resetVal)
   useEffect(() => {
-    resetFilters()
+    if (resetVal > 0) {
+      resetFilters()
+    }
   }, [resetVal])
 
   // cols

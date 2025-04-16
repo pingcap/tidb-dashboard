@@ -83,6 +83,7 @@ export function useUrlState<T extends UrlState = UrlState>(): [
   const { urlQuery, setUrlQuery } = useUrlStateContext()
 
   const queryParams = useMemo(() => {
+    console.log("1 ---- urlQuery:", urlQuery)
     const searchParams = new URLSearchParams(urlQuery)
     const paramsObj: Record<string, string> = {}
     searchParams.forEach((v, k) => {
@@ -93,6 +94,8 @@ export function useUrlState<T extends UrlState = UrlState>(): [
 
   const setQueryParams = useCallback(
     (s: UrlStateObj<T>) => {
+      console.log("2 ---- urlQuery:", urlQuery)
+      console.log("3 ---- s:", s)
       const searchParams = new URLSearchParams(urlQuery)
       Object.keys(s).forEach((k) => {
         if (s[k]) {

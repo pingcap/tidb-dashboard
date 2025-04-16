@@ -53,12 +53,16 @@ export function UrlStateSearchInput({
   placeholder: string
 }) {
   const { term, setTerm } = useSearchUrlState()
+  console.log("term:", term)
+
   const resetVal = useResetFiltersState((s) => s.resetVal)
   const [text, setText] = useState(term)
 
   // reset text when clicking `reset filters` button
   useEffect(() => {
-    setText("")
+    if (resetVal > 0) {
+      setText("")
+    }
   }, [resetVal])
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {

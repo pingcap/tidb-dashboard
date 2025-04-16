@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-apps
 
+## 0.20.2
+
+### Patch Changes
+
+- fix diagnosis url state
+
 ## 0.20.1
 
 ### Patch Changes

@@ -7,6 +7,7 @@ import {
   Card,
   Group,
   SegmentedControl,
+  Stack,
   Typography,
 } from "@tidbcloud/uikit"
 import { useMemo, useState } from "react"
@@ -44,8 +45,8 @@ export function AzoresClusterOverviewMetricsPanel({
   })
 
   return (
-    <Card p={24} bg="carbon.0">
-      <Group mb={16}>
+    <Stack gap={8}>
+      <Group>
         <Typography variant="title-lg">{tt("Core Metrics")}</Typography>
         <Group ml="auto">
           <SegmentedControl
@@ -67,12 +68,12 @@ export function AzoresClusterOverviewMetricsPanel({
         }}
       >
         {config.charts.map((c, idx) => (
-          <Box key={c.title + idx}>
+          <Card key={c.title + idx} p={16} pb={10} bg="carbon.0" shadow="none">
             <ChartHeader title={c.title} config={c} showMoreActions={true} />
             <ChartBody config={c} timeRange={timeRange} />
-          </Box>
+          </Card>
         ))}
       </Box>
-    </Card>
+    </Stack>
   )
 }

@@ -3,7 +3,7 @@ import {
   useTimeRangeUrlState,
   useTn,
 } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Box, Card, Group, Typography } from "@tidbcloud/uikit"
+import { Box, Card, Group, Stack, Typography } from "@tidbcloud/uikit"
 
 import { ChartBody } from "../../components/chart-body"
 import { ChartHeader } from "../../components/chart-header"
@@ -32,8 +32,8 @@ export function AzoresHostMetricsPanel({
   }
 
   return (
-    <Card p={16} bg="carbon.0">
-      <Group mb={16}>
+    <Stack gap={8}>
+      <Group>
         <Typography variant="title-lg">
           {tk(`panels.${config.category}`)}
         </Typography>
@@ -47,16 +47,16 @@ export function AzoresHostMetricsPanel({
         }}
       >
         {config.charts.map((c, idx) => (
-          <Box key={c.title + idx}>
+          <Card key={c.title + idx} p={16} pb={10} bg="carbon.0" shadow="none">
             <ChartHeader title={c.title} config={c} />
             <ChartBody
               config={c}
               timeRange={timeRange}
               onTimeRangeChange={handleTimeRangeChange}
             />
-          </Box>
+          </Card>
         ))}
       </Box>
-    </Card>
+    </Stack>
   )
 }

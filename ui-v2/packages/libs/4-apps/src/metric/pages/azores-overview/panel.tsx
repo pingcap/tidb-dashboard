@@ -7,6 +7,7 @@ import {
   Card,
   Group,
   SegmentedControl,
+  Stack,
   Tooltip,
   Typography,
 } from "@tidbcloud/uikit"
@@ -57,8 +58,8 @@ export function AzoresOverviewMetricsPanel({
   const { data: metricConfigData } = useMetricConfigData()
 
   return (
-    <Card p={24} bg="carbon.0">
-      <Group mb={16} gap="xs">
+    <Stack gap={8}>
+      <Group gap="xs">
         <Typography variant="title-lg">
           {tk(`panels.${config.category}`)}
         </Typography>
@@ -90,12 +91,12 @@ export function AzoresOverviewMetricsPanel({
         }}
       >
         {config.charts.map((c, idx) => (
-          <Box key={c.title + idx}>
+          <Card key={c.title + idx} p={16} pb={10} bg="carbon.0" shadow="none">
             <ChartHeader title={c.title} config={c} />
             <ChartBody config={c} timeRange={timeRange} />
-          </Box>
+          </Card>
         ))}
       </Box>
-    </Card>
+    </Stack>
   )
 }

@@ -40,13 +40,16 @@ export function ChartActionsMenu({
           </>
         )}
         <Menu.Item
-          leftSection={<IconRefreshCw02 size={16} />}
+          leftSection={<IconRefreshCw02 size={16} strokeWidth={2} />}
           onClick={onRefresh}
         >
           {tt("Refresh")}
         </Menu.Item>
         {showHide && (
-          <Menu.Item leftSection={<IconEyeOff size={16} />} onClick={onHide}>
+          <Menu.Item
+            leftSection={<IconEyeOff size={16} strokeWidth={2} />}
+            onClick={onHide}
+          >
             {tt("Hide")}
           </Menu.Item>
         )}

@@ -63,14 +63,15 @@ export function AzoresOverviewMetricsPanel({
         <Typography variant="title-lg">
           {tk(`panels.${config.category}`)}
         </Typography>
-        <Tooltip
-          label={tt("The rank may have a delay of up to {{n}} minutes", {
-            n: Math.ceil((metricConfigData?.delaySec || 0) / 60),
-          })}
-          disabled={!metricConfigData?.delaySec}
-        >
-          <IconInfoCircle />
-        </Tooltip>
+        {!!metricConfigData?.delaySec && (
+          <Tooltip
+            label={tt("The rank may have a delay of up to {{n}} minutes", {
+              n: Math.ceil((metricConfigData?.delaySec || 0) / 60),
+            })}
+          >
+            <IconInfoCircle />
+          </Tooltip>
+        )}
         <Group ml="auto">
           <SegmentedControl
             size="xs"

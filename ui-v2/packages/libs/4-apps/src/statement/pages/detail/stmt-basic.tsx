@@ -35,7 +35,7 @@ export function StmtBasic({ stmt }: { stmt: StatementModel }) {
           <Typography variant="body-lg" c="carbon.7">
             {tt("Execution Database")}
           </Typography>
-          <Typography>{stmt.schema_name ?? ""}</Typography>
+          <Typography>{stmt.schema_name || "-"}</Typography>
         </Box>
       </SimpleGrid>
     </Card>

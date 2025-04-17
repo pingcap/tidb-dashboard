@@ -11,32 +11,30 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test-build-docker-image:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+        remote_dockerfile: # download from: https://github.com/PingCAP-QE/artifacts/tree/main/dockerfiles/cd/builders/tidb-dashboard
+          - Dockerfile # builder is rocky linux 8
+          - centos7/Dockerfile # builder is centos 7
       fail-fast: true
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      - # Add support for more platforms with QEMU (optional)
-        # https://github.com/docker/setup-qemu-action
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: actions/checkout@v4
+
       - name: Read VERSION file
         id: getversion
         run: echo "::set-output name=version::$(git describe --tags --dirty --always)"
+
+      - name: Download Dockerfile
+        run: |
+          wget "https://github.com/PingCAP-QE/artifacts/raw/refs/heads/main/dockerfiles/cd/builders/tidb-dashboard/${{ matrix.remote_dockerfile }}" -O Dockerfile
       - name: Build
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
-          file: ./dockerfiles/centos7.Dockerfile
-          context: .
-          # Currently github action runner only supports linux/amd64, it take a lot of time to build multi-arch image.
-          # So we only build amd64 image for now.
-          platforms: linux/amd64
           push: false
+          context: .
+          file: Dockerfile
+          platforms: ${{ matrix.platform }}
           tags: pingcap/tidb-dashboard:${{ steps.getversion.outputs.version }}
-          no-cache: false
-          pull: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max

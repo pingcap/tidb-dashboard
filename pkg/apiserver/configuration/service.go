@@ -236,7 +236,7 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 	for i := 0; i < waitItems; i++ {
 		item := <-ch
 		if item.Err != nil {
-			errors = append(errors, rest.NewErrorResponse(err))
+			errors = append(errors, rest.NewErrorResponse(item.Err))
 			continue
 		}
 		successItems = append(successItems, item)

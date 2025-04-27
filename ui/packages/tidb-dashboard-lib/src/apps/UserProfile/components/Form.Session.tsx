@@ -10,8 +10,10 @@ import {
 import {
   Alert,
   Button,
+  DatePicker,
   Divider,
   Form,
+  Input,
   message,
   Modal,
   Select,
@@ -27,6 +29,7 @@ import ReactMarkdown from 'react-markdown'
 import Checkbox from 'antd/lib/checkbox/Checkbox'
 import { store } from '@lib/utils/store'
 import { UserProfileContext } from '../context'
+import dayjs from 'dayjs'
 
 const SHARE_SESSION_EXPIRY_HOURS = [
   0.25,
@@ -39,7 +42,8 @@ const SHARE_SESSION_EXPIRY_HOURS = [
   24,
   24 * 3,
   24 * 7,
-  24 * 30
+  24 * 30,
+  24 * 365
 ]
 
 function RevokeSessionButton() {
@@ -105,10 +109,24 @@ function ShareSessionButton() {
 
   const handleFinish = useCallback(
     async (values) => {
+      const expire = values['expire']
+      const expireCustom = values['expireCustom']
+
+      let expireInSec = 0
+      if (expire === 0) {
+        // expireCustom has value because it is required
+        expireInSec =
+          dayjs.unix(expireCustom.unix()).endOf('day').unix() - dayjs().unix()
+      } else if (expire === -1) {
+        expireInSec = 100 * 365 * 24 * 60 * 60 // 100 years
+      } else {
+        expireInSec = expire * 60 * 60
+      }
+
       try {
         setIsPosting(true)
         const r = await ctx!.ds.userShareSession({
-          expire_in_sec: values.expire * 60 * 60,
+          expire_in_sec: expireInSec,
           revoke_write_priv: !!values.read_only
         })
         setCode(r.data.code)
@@ -192,18 +210,52 @@ function ShareSessionButton() {
           onFinish={handleFinish}
         >
           <Form.Item
-            name="expire"
             label={t('user_profile.share_session.form.expire')}
-            rules={[{ required: true }]}
+            required
           >
-            <Select style={{ width: 120 }}>
-              {SHARE_SESSION_EXPIRY_HOURS.map((val) => (
-                <Select.Option key={val} value={val}>
-                  {getValueFormat('m')(val * 60, 0)}
-                </Select.Option>
-              ))}
-            </Select>
+            <Input.Group compact>
+              <Form.Item name="expire" rules={[{ required: true }]} noStyle>
+                <Select style={{ width: 120 }}>
+                  {SHARE_SESSION_EXPIRY_HOURS.map((val) => (
+                    <Select.Option key={val} value={val}>
+                      {getValueFormat('m')(val * 60, 0)}
+                    </Select.Option>
+                  ))}
+                  <Select.Option value={0}>
+                    {t('user_profile.share_session.form.custom_expiration')}
+                  </Select.Option>
+                  <Select.Option value={-1}>
+                    {t('user_profile.share_session.form.no_expiration')}
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+              <Form.Item
+                noStyle
+                shouldUpdate={(prev, cur) => prev.expire !== cur.expire}
+              >
+                {({ getFieldValue }) => {
+                  return (
+                    getFieldValue('expire') === 0 && (
+                      <Form.Item
+                        noStyle
+                        name="expireCustom"
+                        rules={[{ required: true }]}
+                      >
+                        <DatePicker
+                          disabledDate={(date) =>
+                            dayjs()
+                              .endOf('day')
+                              .isAfter(dayjs.unix(date.unix()))
+                          }
+                        />
+                      </Form.Item>
+                    )
+                  )
+                }}
+              </Form.Item>
+            </Input.Group>
           </Form.Item>
+
           <Form.Item
             name="read_only"
             label={t('user_profile.share_session.form.read_only')}

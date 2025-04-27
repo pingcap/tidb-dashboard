@@ -1,0 +1,7 @@
+.charts-light-theme {
+  @import '../node_modules/@elastic/charts/dist/theme_only_light';
+
+}
+.charts-dark-theme {
+  @import '../node_modules/@elastic/charts/dist/theme_only_dark';
+}

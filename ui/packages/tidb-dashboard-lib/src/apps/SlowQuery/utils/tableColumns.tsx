@@ -90,17 +90,16 @@ export function slowQueryColumns(
     // cop
     tcf.bar.multiple({ sources: derivedFields.cop_proc_avg }, 's', rows),
     tcf.bar.multiple({ sources: derivedFields.cop_wait_avg }, 's', rows),
-    // transaction
-    tcf.bar.single('write_keys', 'short', rows),
-    tcf.bar.single('write_size', 'bytes', rows),
-    tcf.bar.single('prewrite_region', 'short', rows),
-    tcf.bar.single('txn_retry', 'short', rows),
-    // cop?
     tcf.bar.single('request_count', 'short', rows),
     tcf.bar.single('process_keys', 'short', rows),
     tcf.bar.single('total_keys', 'short', rows),
     tcf.textWithTooltip('cop_proc_addr', rows),
     tcf.textWithTooltip('cop_wait_addr', rows),
+    // transaction
+    tcf.bar.single('write_keys', 'short', rows),
+    tcf.bar.single('write_size', 'bytes', rows),
+    tcf.bar.single('prewrite_region', 'short', rows),
+    tcf.bar.single('txn_retry', 'short', rows),
     // rocksdb
     tcf.bar.single('rocksdb_delete_skipped_count', 'short', rows).patchConfig({
       minWidth: 220,

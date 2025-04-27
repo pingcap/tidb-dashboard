@@ -1,0 +1,784 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Cluster APIs for TiDB Cloud",
+    "version": "alpha"
+  },
+  "tags": [
+    {
+      "name": "ClusterService"
+    }
+  ],
+  "schemes": ["https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/api/v1/serverless/orgs/{org_id}/projects/{project_id}/clusters/{cluster_id}/advise_indexes": {
+      "post": {
+        "summary": "Advise indexes on the specified cluster.",
+        "operationId": "AdviseIndexes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serverlessClusterAdviseIndexesResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "description": "The ID of the org.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "project_id",
+            "description": "The ID of the project.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "cluster_id",
+            "description": "The ID of the cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/serverlessClusterAdviseIndexesReqPayload"
+            }
+          },
+          {
+            "name": "with_cloud_admin",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v1/serverless/orgs/{org_id}/projects/{project_id}/clusters/{cluster_id}/apply_advice": {
+      "post": {
+        "summary": "Apply an index advisor record.",
+        "operationId": "ApplyAdvice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serverlessApplyIndexAdviceResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "description": "The ID of the org.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "project_id",
+            "description": "The ID of the project.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "cluster_id",
+            "description": "The ID of the cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/serverlessApplyIndexAdviceReqPayload"
+            }
+          },
+          {
+            "name": "with_cloud_admin",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v1/serverless/orgs/{org_id}/projects/{project_id}/clusters/{cluster_id}/close_advice": {
+      "post": {
+        "summary": "Close an index advisor record.",
+        "operationId": "CloseAdvice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serverlessCloseIndexAdviceResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "description": "The ID of the org.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "project_id",
+            "description": "The ID of the project.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "cluster_id",
+            "description": "The ID of the cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/serverlessCloseIndexAdviceReqPayload"
+            }
+          },
+          {
+            "name": "with_cloud_admin",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v1/serverless/orgs/{org_id}/projects/{project_id}/clusters/{cluster_id}/databases": {
+      "get": {
+        "summary": "List databases of a cluster.",
+        "operationId": "ListDatabases",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serverlessClusterListDatabasesResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "description": "The ID of the org.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "project_id",
+            "description": "The ID of the project.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "cluster_id",
+            "description": "The ID of the cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": ["ClusterService"]
+      },
+      "post": {
+        "summary": "Create a database of a cluster.",
+        "operationId": "CreateDatabase",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serverlessClusterCreateDatabaseResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "description": "The ID of the org.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "project_id",
+            "description": "The ID of the project.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "cluster_id",
+            "description": "The ID of the cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/serverlessClusterCreateDatabaseReqPayload"
+            }
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v1/serverless/orgs/{org_id}/projects/{project_id}/clusters/{cluster_id}/index_advices": {
+      "get": {
+        "summary": "List index advisor results of a cluster.",
+        "operationId": "ListIndexAdvices",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serverlessListIndexAdvicesResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "description": "The ID of the org.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "project_id",
+            "description": "The ID of the project.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "cluster_id",
+            "description": "The ID of the cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "page_token",
+            "description": "The number of pages.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64",
+            "default": 1
+          },
+          {
+            "name": "page_size",
+            "description": "The size of a page.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64",
+            "default": 10
+          },
+          {
+            "name": "state_filter",
+            "description": "The state to filter result.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "name_filter",
+            "description": "The name of database or table to filter result.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "order_by",
+            "description": "The column used to order result.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "desc",
+            "description": "If ordered result should be in descending order.",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": "false"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v1/serverless/orgs/{org_id}/projects/{project_id}/clusters/{cluster_id}/index_advices/{advice_id}": {
+      "get": {
+        "summary": "Get detail of a index advice.",
+        "operationId": "GetIndexAdvice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serverlessGetIndexAdviceResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "description": "The ID of the org.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "project_id",
+            "description": "The ID of the project.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "cluster_id",
+            "description": "The ID of the cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "advice_id",
+            "description": "The ID of the advice.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    },
+    "/api/v1/serverless/orgs/{org_id}/projects/{project_id}/clusters/{cluster_id}/index_advices_summary": {
+      "get": {
+        "summary": "Get summary of open index advices.",
+        "operationId": "GetIndexAdviceSummary",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serverlessGetIndexAdviceSummaryResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "description": "The ID of the org.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "project_id",
+            "description": "The ID of the project.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "cluster_id",
+            "description": "The ID of the cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": ["ClusterService"]
+      }
+    }
+  },
+  "definitions": {
+    "baseBaseResp": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "such as: request_id, trace_id"
+        },
+        "err_code": {
+          "type": "string",
+          "format": "int64"
+        },
+        "err_msg": {
+          "type": "string"
+        }
+      }
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "serverlessApplyIndexAdviceReqPayload": {
+      "type": "object",
+      "properties": {
+        "advice_id": {
+          "type": "string",
+          "format": "uint64",
+          "example": 1,
+          "description": "The ID of the advice record."
+        }
+      },
+      "required": ["advice_id"]
+    },
+    "serverlessApplyIndexAdviceResp": {
+      "type": "object",
+      "properties": {
+        "base_resp": {
+          "$ref": "#/definitions/baseBaseResp"
+        }
+      },
+      "required": ["base_resp"]
+    },
+    "serverlessCloseIndexAdviceReqPayload": {
+      "type": "object",
+      "properties": {
+        "advice_id": {
+          "type": "string",
+          "format": "uint64",
+          "example": 1,
+          "description": "The ID of the advice record."
+        }
+      },
+      "required": ["advice_id"]
+    },
+    "serverlessCloseIndexAdviceResp": {
+      "type": "object",
+      "properties": {
+        "base_resp": {
+          "$ref": "#/definitions/baseBaseResp"
+        }
+      },
+      "required": ["base_resp"]
+    },
+    "serverlessClusterAdviseIndexesReqPayload": {
+      "type": "object",
+      "properties": {
+        "database_name": {
+          "type": "string",
+          "example": "helloworld",
+          "description": "The name of the database."
+        },
+        "queries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Queries"
+        }
+      },
+      "required": ["database_name", "queries"]
+    },
+    "serverlessClusterAdviseIndexesResp": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "The items of databases in the cluster."
+        },
+        "base_resp": {
+          "$ref": "#/definitions/baseBaseResp"
+        }
+      },
+      "required": ["text", "base_resp"]
+    },
+    "serverlessClusterCreateDatabaseReqPayload": {
+      "type": "object",
+      "properties": {
+        "database_name": {
+          "type": "string",
+          "example": "helloworld",
+          "description": "The name of the database."
+        }
+      },
+      "required": ["database_name"]
+    },
+    "serverlessClusterCreateDatabaseResp": {
+      "type": "object",
+      "properties": {
+        "base_resp": {
+          "$ref": "#/definitions/baseBaseResp"
+        }
+      },
+      "required": ["base_resp"]
+    },
+    "serverlessClusterListDatabasesResp": {
+      "type": "object",
+      "properties": {
+        "databases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The items of databases in the cluster."
+        },
+        "base_resp": {
+          "$ref": "#/definitions/baseBaseResp"
+        }
+      },
+      "required": ["databases", "base_resp"]
+    },
+    "serverlessGetIndexAdviceResp": {
+      "type": "object",
+      "properties": {
+        "advice": {
+          "$ref": "#/definitions/serverlessIndexAdvice"
+        },
+        "base_resp": {
+          "$ref": "#/definitions/baseBaseResp"
+        }
+      }
+    },
+    "serverlessGetIndexAdviceSummaryResp": {
+      "type": "object",
+      "properties": {
+        "open_count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "improvement": {
+          "type": "number",
+          "format": "double"
+        },
+        "cost_saving_monthly": {
+          "type": "number",
+          "format": "double"
+        },
+        "base_resp": {
+          "$ref": "#/definitions/baseBaseResp"
+        }
+      }
+    },
+    "serverlessIndexAdvice": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "database": {
+          "type": "string"
+        },
+        "table": {
+          "type": "string"
+        },
+        "last_recommend_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "type": "string"
+        },
+        "index_statement": {
+          "type": "string"
+        },
+        "improvement": {
+          "type": "number",
+          "format": "double"
+        },
+        "index_size": {
+          "type": "number",
+          "format": "double"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "top_impacted_queries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/serverlessIndexAdviceImpact"
+          }
+        },
+        "state_reason": {
+          "type": "string"
+        },
+        "cost_saving_monthly": {
+          "type": "number",
+          "format": "double"
+        },
+        "cost_saving_per_query": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "serverlessIndexAdviceImpact": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "improvement": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "serverlessListIndexAdvicesResp": {
+      "type": "object",
+      "properties": {
+        "advices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/serverlessIndexAdvice"
+          },
+          "description": "The items of index advisor results."
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64",
+          "description": "total items count considering filter"
+        },
+        "base_resp": {
+          "$ref": "#/definitions/baseBaseResp"
+        }
+      },
+      "required": ["advices", "base_resp"]
+    }
+  },
+  "securityDefinitions": {
+    "bearer": {
+      "type": "apiKey",
+      "description": "Authentication token, prefixed by Bearer: 'Bearer token'",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

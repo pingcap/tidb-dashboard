@@ -7,7 +7,7 @@
 ## Requirements
 
 - Node >= 18.16.0
-- pnpm >= 8.6.12
+- [use corepack](https://www.totaltypescript.com/how-to-use-corepack): `corepack enable && corepack enable npm`
 
 ## Run
 

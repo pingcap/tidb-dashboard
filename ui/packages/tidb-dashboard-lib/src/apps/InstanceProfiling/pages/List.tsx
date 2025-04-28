@@ -31,6 +31,7 @@ import { upperFirst } from 'lodash'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { isDistro } from '@lib/utils/distro'
 import { InstanceProfilingContext } from '../context'
+import { useIsWriteable } from '@lib/utils'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
@@ -38,6 +39,8 @@ const profilingTypeOptions = ['CPU', 'Heap', 'Goroutine', 'Mutex']
 
 export default function Page() {
   const ctx = useContext(InstanceProfilingContext)
+
+  const isWriteable = useIsWriteable()
 
   const {
     data: historyTable,
@@ -275,7 +278,7 @@ export default function Page() {
                   type="primary"
                   htmlType="submit"
                   loading={submitting}
-                  disabled={conprofEnable}
+                  disabled={conprofEnable || !isWriteable}
                 >
                   {t('instance_profiling.list.control_form.submit')}
                 </Button>

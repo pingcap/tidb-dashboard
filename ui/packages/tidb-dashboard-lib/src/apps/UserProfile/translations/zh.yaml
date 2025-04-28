@@ -65,6 +65,8 @@ user_profile:
       - 分享的会话可以被管理员提前撤消。
     form:
       expire: 有效时间
+      no_expiration: 无过期
+      custom_expiration: 自定义
       read_only: 以只读权限分享
       submit: 生成授权码
     close: 关闭

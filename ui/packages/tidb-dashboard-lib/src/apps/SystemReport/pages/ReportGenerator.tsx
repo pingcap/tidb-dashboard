@@ -9,6 +9,7 @@ import { Card, Pre, DatePicker } from '@lib/components'
 
 import ReportHistory from '../components/ReportHistory'
 import { ISystemReportDataSource, SystemReportContext } from '../context'
+import { useIsWriteable } from '@lib/utils'
 
 const useFinishHandler = (
   navigate,
@@ -47,6 +48,8 @@ export default function ReportGenerator() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const handleFinish = useFinishHandler(navigate, ctx!.ds.diagnoseReportsPost)
+
+  const isWriteable = useIsWriteable()
 
   const [form] = Form.useForm()
   const [isGenerateRelationPosting, setGenerateRelationPosting] =
@@ -191,7 +194,7 @@ export default function ReportGenerator() {
             }}
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" disabled={!isWriteable}>
               {t('system_report.generate.submit')}
             </Button>
           </Form.Item>
@@ -199,6 +202,7 @@ export default function ReportGenerator() {
             <Button
               onClick={handleMetricsRelation}
               loading={isGenerateRelationPosting}
+              disabled={!isWriteable}
             >
               {t('system_report.generate.metrics_relation')}
             </Button>

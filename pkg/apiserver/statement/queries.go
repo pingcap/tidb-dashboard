@@ -92,6 +92,15 @@ func (s *Service) queryStatements(
 	}
 
 	err = query.Find(&result).Error
+	if err == nil {
+		// truncate each row's digest_text, keep the start 1000 characters to avoid too long text
+		// if user want to see the full digest_text, they can access the detail api
+		for i := range result {
+			if len(result[i].AggDigestText) > 1000 {
+				result[i].AggDigestText = result[i].AggDigestText[:1000] + "..."
+			}
+		}
+	}
 	return
 }
 

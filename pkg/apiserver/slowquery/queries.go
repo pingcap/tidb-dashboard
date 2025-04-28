@@ -111,6 +111,13 @@ func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.
 	if err != nil {
 		return nil, err
 	}
+	// truncate each row's query, keep the start 1000 characters to avoid too long text
+	// if user want to see the full query, they can access the detail api
+	for i := range results {
+		if len(results[i].Query) > 1000 {
+			results[i].Query = results[i].Query[:1000] + "..."
+		}
+	}
 	return results, nil
 }
 

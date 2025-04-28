@@ -46,7 +46,7 @@ func (s *Service) ShareHandler(c *gin.Context) {
 
 	// after allow user customize the expiration
 	// we should remove the following check
-	// 
+	//
 	// if expiry > MaxSessionShareExpiry || expiry < 0 {
 	// 	rest.Error(c, rest.ErrBadRequest.New("Invalid share expiry"))
 	// 	return

@@ -24,7 +24,7 @@ var (
 
 // after allow user customize the expiration and support no expiration
 // we should remove the following check
-// 
+//
 // const (
 // 	// Max permitted lifetime of a shared session.
 // 	MaxSessionShareExpiry = time.Hour * 24 * 30
@@ -88,7 +88,7 @@ func (s *Service) SharingCodeFromSession(session *utils.SessionUser, expireIn ti
 
 	// after allow user customize the expiration and support no expiration
 	// we should remove the following check
-	// 
+	//
 	// if expireIn > MaxSessionShareExpiry {
 	// 	return nil
 	// }

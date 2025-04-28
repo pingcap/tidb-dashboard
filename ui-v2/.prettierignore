@@ -1,0 +1,10 @@
+# Ignore artifacts:
+dist
+build
+coverage
+
+pnpm-lock.yaml
+
+# orval generated files
+packages/api/server/src
+azores.json

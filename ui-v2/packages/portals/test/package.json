@@ -1,0 +1,31 @@
+{
+  "name": "test-tidb-dashboard-ui-lib",
+  "private": true,
+  "version": "0.13.2",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && tsc -b",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@pingcap-incubator/tidb-dashboard-lib-api-client": "workspace:^",
+    "@pingcap-incubator/tidb-dashboard-lib-apps": "workspace:^",
+    "@tanstack/react-query": "^5.59.16",
+    "@tanstack/react-router": "^1.85.0",
+    "@tidbcloud/uikit": "catalog:",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@tanstack/router-devtools": "^1.85.0",
+    "@tanstack/router-plugin": "^1.84.4",
+    "@types/node": "^22.10.1",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "vite": "^5.4.9"
+  }
+}

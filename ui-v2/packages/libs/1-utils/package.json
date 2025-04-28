@@ -1,0 +1,49 @@
+{
+  "name": "@pingcap-incubator/tidb-dashboard-lib-utils",
+  "version": "0.15.0",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "tsc:watch": "tsc --watch",
+    "rollup:watch": "rollup -c --watch",
+    "dev": "concurrently --kill-others \"pnpm tsc:watch\" \"pnpm rollup:watch\"",
+    "build": "tsc && rollup -c"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@tidbcloud/uikit": "catalog:",
+    "@types/react": "^18.3.12",
+    "i18next": "^23.16.2",
+    "i18next-browser-languagedetector": "^8.0.0",
+    "react": "^18.3.1",
+    "react-i18next": "^15.1.0",
+    "rollup": "^4.24.0",
+    "tslib": "^2.8.0",
+    "zustand": "^5.0.2"
+  },
+  "peerDependencies": {
+    "@tidbcloud/uikit": "catalog:",
+    "i18next": "^23.16.2",
+    "i18next-browser-languagedetector": "^8.0.0",
+    "react": "^18.3.1",
+    "react-i18next": "^15.1.0",
+    "zustand": "^5.0.2"
+  },
+  "dependencies": {
+    "@baurine/grafana-value-formats": "^1.0.5",
+    "@baurine/sql-formatter-plus": "^1.5.3",
+    "pretty-ms": "^9.2.0",
+    "string-template": "^1.0.0"
+  }
+}

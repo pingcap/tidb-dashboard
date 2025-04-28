@@ -1,0 +1,109 @@
+{
+  "name": "@pingcap-incubator/tidb-dashboard-lib-apps",
+  "version": "0.20.2",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./slow-query": {
+      "import": "./dist/slow-query/index.js"
+    },
+    "./statement": {
+      "import": "./dist/statement/index.js"
+    },
+    "./metric": {
+      "import": "./dist/metric/index.js"
+    },
+    "./utils": {
+      "import": "./dist/_re-exports/utils.js"
+    },
+    "./charts": {
+      "import": "./dist/_re-exports/charts.js"
+    },
+    "./charts-css": {
+      "import": "./dist/_re-exports/charts-css.js"
+    },
+    "./primitive-ui": {
+      "import": "./dist/_re-exports/primitive-ui.js"
+    },
+    "./biz-ui": {
+      "import": "./dist/_re-exports/biz-ui.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./dist/index.d.ts"
+      ],
+      "slow-query": [
+        "./dist/slow-query/index.d.ts"
+      ],
+      "statement": [
+        "./dist/statement/index.d.ts"
+      ],
+      "metric": [
+        "./dist/metric/index.d.ts"
+      ],
+      "utils": [
+        "./dist/_re-exports/utils.d.ts"
+      ],
+      "charts": [
+        "./dist/_re-exports/charts.d.ts"
+      ],
+      "charts-css": [
+        "./dist/_re-exports/charts-css.d.ts"
+      ],
+      "primitive-ui": [
+        "./dist/_re-exports/primitive-ui.d.ts"
+      ],
+      "biz-ui": [
+        "./dist/_re-exports/biz-ui.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "tsc:watch": "tsc --watch",
+    "rollup:watch": "rollup -c --watch",
+    "dev": "concurrently --kill-others \"pnpm tsc:watch\" \"pnpm rollup:watch\"",
+    "build": "tsc && rollup -c"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@tanstack/react-query": "^5.59.16",
+    "@tidbcloud/uikit": "catalog:",
+    "@types/lodash-es": "^4.17.12",
+    "@types/react": "^18.3.12",
+    "react": "^18.3.1",
+    "rollup": "^4.24.0",
+    "tslib": "^2.8.0",
+    "zustand": "^5.0.2"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.59.16",
+    "@tidbcloud/uikit": "catalog:",
+    "react": "^18.3.1",
+    "zustand": "^5.0.2"
+  },
+  "dependencies": {
+    "@pingcap-incubator/tidb-dashboard-lib-biz-ui": "workspace:^",
+    "@pingcap-incubator/tidb-dashboard-lib-charts": "workspace:^",
+    "@pingcap-incubator/tidb-dashboard-lib-icons": "workspace:^",
+    "@pingcap-incubator/tidb-dashboard-lib-primitive-ui": "workspace:^",
+    "@pingcap-incubator/tidb-dashboard-lib-utils": "workspace:^",
+    "lodash-es": "^4.17.21"
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "metrics": [
+    {
+      "class": "cluster",
+      "group": "overview",
+      "type": "",
+      "order": 1,
+      "displayName": "Duration",
+      "name": "duration",
+      "description": "Overall query execution duration across the cluster",
+      "metric": {
+        "name": "duration",
+        "unit": "s",
+        "description": "Shows average and percentile query durations",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "tidb_query_duration",
+            "promql": "sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!=\"internal\",@LABEL}[1m])) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!=\"internal\",@LABEL}[1m]))",
+            "promMetric": "tidb_server_handle_query_duration_seconds",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "avg",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "p99_tidb_query_duration",
+            "promql": "histogram_quantile(0.99, sum(rate(tidb_server_handle_query_duration_seconds_bucket{sql_type!=\"internal\",@LABEL}[1m])) by (le))",
+            "promMetric": "tidb_server_handle_query_duration_seconds",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "99",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "tidb_query_duration_by_sql_type",
+            "promql": "sum(rate(tidb_server_handle_query_duration_seconds_sum{sql_type!=\"internal\",@LABEL}[1m])) by (sql_type) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!=\"internal\",@LABEL}[1m])) by (sql_type)",
+            "promMetric": "tidb_server_handle_query_duration_seconds",
+            "labels": [
+              "instance",
+              "sql_type"
+            ],
+            "type": "tidb",
+            "legend": "avg-{sqlType}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "cluster",
+      "group": "overview",
+      "type": "",
+      "order": 2,
+      "displayName": "QPS",
+      "name": "qps",
+      "description": "Total Queries Per Second across all TiDB instances",
+      "metric": {
+        "name": "qps",
+        "unit": "short",
+        "description": "Shows total QPS, QPS by type, and failed query rates",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "qps_by_type",
+            "promql": "sum(rate(tidb_executor_statement_total{@LABEL}[1m])) by (type)",
+            "promMetric": "tidb_executor_statement_total",
+            "labels": [
+              "instance",
+              "type"
+            ],
+            "type": "tidb",
+            "legend": "{type}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "qps",
+            "promql": "sum(rate(tidb_executor_statement_total{@LABEL}[1m]))",
+            "promMetric": "tidb_executor_statement",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "Total",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "qps_error",
+            "promql": "sum(rate(tidb_server_execute_error_total{@LABEL}[1m])) ",
+            "promMetric": "tidb_server_execute_error_total",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "Failed",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "cluster",
+      "group": "overview",
+      "type": "",
+      "order": 3,
+      "displayName": "Transaction OPS",
+      "name": "transaction_ops_by_type_and_txn_mode",
+      "description": "Transaction operations per second categorized by type and transaction mode",
+      "metric": {
+        "name": "transaction_ops_by_type_and_txn_mode",
+        "unit": "short",
+        "description": "Shows transaction rates categorized by type and transaction mode",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "tps_by_type_and_txn_mode",
+            "promql": "sum(rate(tidb_session_transaction_duration_seconds_count{@LABEL}[1m])) by (type, txn_mode)",
+            "promMetric": "tidb_session_transaction_duration_seconds",
+            "labels": [
+              "instance",
+              "type",
+              "txn_mode"
+            ],
+            "type": "tidb",
+            "legend": "{type}-{txnMode}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "cluster",
+      "group": "overview",
+      "type": "",
+      "order": 4,
+      "displayName": "Transaction Duration",
+      "name": "transaction_duration",
+      "description": "Time taken to execute transactions, indicating transaction processing efficiency",
+      "metric": {
+        "name": "transaction_duration",
+        "unit": "s",
+        "description": "Shows transaction duration percentiles by transaction mode",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "p99_transaction_duration",
+            "promql": "histogram_quantile(0.99, sum(rate(tidb_session_transaction_duration_seconds_bucket{@LABEL}[1m])) by (le, txn_mode))",
+            "promMetric": "tidb_session_transaction_duration_seconds",
+            "labels": [
+              "instance",
+              "txn_mode"
+            ],
+            "type": "tidb",
+            "legend": "99-{txnMode}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "p95_transaction_duration",
+            "promql": "histogram_quantile(0.95, sum(rate(tidb_session_transaction_duration_seconds_bucket{@LABEL}[1m])) by (le, txn_mode))",
+            "promMetric": "tidb_session_transaction_duration_seconds",
+            "labels": [
+              "instance",
+              "txn_mode"
+            ],
+            "type": "tidb",
+            "legend": "95-{txnMode}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "p80_transaction_duration",
+            "promql": "histogram_quantile(0.80, sum(rate(tidb_session_transaction_duration_seconds_bucket{@LABEL}[1m])) by (le, txn_mode))",
+            "promMetric": "tidb_session_transaction_duration_seconds",
+            "labels": [
+              "instance",
+              "txn_mode"
+            ],
+            "type": "tidb",
+            "legend": "80-{txnMode}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "cluster",
+      "group": "overview",
+      "type": "",
+      "order": 5,
+      "displayName": "TiKV Increase of Storage Usage",
+      "name": "tikv_increase_of_storage_usage",
+      "description": "Rate of storage space consumption increase in TiKV nodes",
+      "metric": {
+        "name": "tikv_increase_of_storage_usage",
+        "unit": "Bps",
+        "description": "Shows the rate of storage usage increase in TiKV instances",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "tikv_increase_of_storage_usage",
+            "promql": "rate(tikv_store_size_bytes{type=\"used\",@LABEL}[5m])",
+            "promMetric": "tikv_store_size_bytes",
+            "labels": [
+              "instance"
+            ],
+            "type": "tikv",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "cluster",
+      "group": "overview",
+      "type": "",
+      "order": 6,
+      "displayName": "TiFlash Increase of Storage Usage",
+      "name": "tiflash_increase_of_storage_usage",
+      "description": "Rate of storage space consumption increase in TiFlash nodes",
+      "metric": {
+        "name": "tiflash_increase_of_storage_usage",
+        "unit": "Bps",
+        "description": "Shows the rate of storage usage increase in TiFlash instances",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "tiflash_increase_of_storage_usage",
+            "promql": "rate(tiflash_system_current_metric_StoreSizeUsed{@LABEL}[5m])",
+            "promMetric": "tiflash_system_current_metric_StoreSizeUsed",
+            "labels": [
+              "instance"
+            ],
+            "type": "tiflash",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    }
+  ]
+}

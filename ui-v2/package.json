@@ -1,0 +1,47 @@
+{
+  "name": "tidb-dashboard-ui-v2",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "fmt-check": "prettier --check .",
+    "fmt-fix": "prettier --write .",
+    "lint": "eslint .",
+    "prepare": "cd .. && husky ui-v2/.husky",
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "dev:portals:test": "pnpm -r --parallel --filter test-tidb-dashboard-ui-lib... dev",
+    "gen:locales": "tsx scripts/gen-locales.ts",
+    "gen:api": "orval"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.9",
+    "@eslint/js": "^9.11.1",
+    "concurrently": "^9.0.1",
+    "eslint": "^9.11.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.12",
+    "glob": "^11.0.0",
+    "globals": "^15.9.0",
+    "gogocode": "^1.0.55",
+    "orval": "^7.3.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.7.0"
+  },
+  "lint-staged": {
+    "*.+(ts|tsx|js)": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.+(json|css|md|html)": "prettier --write"
+  },
+  "engines": {
+    "node": ">=20.18.0 <21.0.0"
+  },
+  "packageManager": "pnpm@9.12.2"
+}

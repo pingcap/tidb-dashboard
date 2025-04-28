@@ -1,0 +1,440 @@
+{
+  "metrics": [
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "instance_top",
+      "order": 1,
+      "displayName": "TiDB CPU",
+      "name": "overview_tidb_cpu_usage_percentage",
+      "description": "CPU usage of TiDB instances, showing the percentage of CPU resources being utilized",
+      "metric": {
+        "name": "overview_tidb_cpu_usage_percentage",
+        "unit": "percentunit",
+        "description": "CPU usage of TiDB instances, showing the percentage of CPU resources being utilized",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "tidb_cpu_usage_percentage",
+            "promql": "irate(process_cpu_seconds_total{ job=\"tidb\",@LABEL}[1m])",
+            "promMetric": "process_cpu_seconds_total",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "cluster_top",
+      "order": 1,
+      "displayName": "Transaction OPS",
+      "name": "overview_transaction_ops",
+      "description": "Number of transactions processed per second across the cluster",
+      "metric": {
+        "name": "overview_transaction_ops",
+        "unit": "short",
+        "description": "Number of transactions processed per second across the cluster",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "tps",
+            "promql": "sum(rate(tidb_session_transaction_duration_seconds_count{@LABEL}[1m]))",
+            "promMetric": "tidb_session_transaction_duration_seconds",
+            "labels": [],
+            "type": "tidb",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "host_top",
+      "order": 1,
+      "displayName": "CPU Usage",
+      "name": "overview_host_cpu_usage",
+      "description": "Overall CPU usage of the host machine, showing system-wide CPU utilization",
+      "metric": {
+        "name": "overview_host_cpu_usage",
+        "unit": "percentunit",
+        "description": "Overall CPU usage of the host machine, showing system-wide CPU utilization",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_cpu_usage",
+            "promql": "1-(avg by(instance)(irate(node_cpu_seconds_total{mode=\"idle\",@LABEL}[1m])))",
+            "promMetric": "node_cpu_seconds_total",
+            "labels": [
+              "instance"
+            ],
+            "type": "host",
+            "legend": "cpu_usage_percent",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "instance_top",
+      "order": 2,
+      "displayName": "TiDB Memory",
+      "name": "overview_tidb_memory_usage",
+      "description": "Memory usage of TiDB instances, indicating the amount of RAM being consumed",
+      "metric": {
+        "name": "overview_tidb_memory_usage",
+        "unit": "bytes",
+        "description": "Memory usage of TiDB instances, indicating the amount of RAM being consumed",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "tidb_memory_usage",
+            "promql": "process_resident_memory_bytes{job=\"tidb\",@LABEL}",
+            "promMetric": "process_resident_memory_bytes",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "cluster_top",
+      "order": 2,
+      "displayName": "QPS",
+      "name": "overview_qps",
+      "description": "Queries per second processed by the cluster",
+      "metric": {
+        "name": "overview_qps",
+        "unit": "short",
+        "description": "Queries per second processed by the cluster",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "qps",
+            "promql": "sum(rate(tidb_executor_statement_total{@LABEL}[1m]))",
+            "promMetric": "tidb_executor_statement",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "host_top",
+      "order": 2,
+      "displayName": "Memory Usage",
+      "name": "overview_host_memory_usage",
+      "description": "Total memory usage of the host machine, indicating system-wide RAM utilization",
+      "metric": {
+        "name": "overview_host_memory_usage",
+        "unit": "percentunit",
+        "description": "Total memory usage of the host machine, indicating system-wide RAM utilization",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_memory_usage",
+            "promql": "(node_memory_MemTotal_bytes{@LABEL}-node_memory_MemFree_bytes{@LABEL}-node_memory_Buffers_bytes{@LABEL}-node_memory_Cached_bytes{@LABEL})/node_memory_MemTotal_bytes{@LABEL}",
+            "promMetric": "node_memory_MemTotal_bytes",
+            "labels": [],
+            "type": "host",
+            "legend": "memory_usage_percent",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "host_top",
+      "order": 3,
+      "displayName": "IO Usage",
+      "name": "overview_host_avg_io_usage",
+      "description": "Disk avg I/O usage of the host machine, monitoring disk I/O performance",
+      "metric": {
+        "name": "overview_host_avg_io_usage",
+        "unit": "percentunit",
+        "description": "Disk avg I/O usage of the host machine, monitoring disk I/O performance",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_avg_io_usage",
+            "promql": "avg(rate(node_disk_io_time_seconds_total{@LABEL}[5m])) by (instance)",
+            "promMetric": "node_disk_io_time_seconds_total",
+            "labels": [
+              "instance"
+            ],
+            "type": "host",
+            "legend": "io_usage",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "instance_top",
+      "order": 3,
+      "displayName": "TiKV Storage",
+      "name": "overview_tikv_storage_usage",
+      "description": "Storage space usage of TiKV instances, showing disk space consumption",
+      "metric": {
+        "name": "overview_tikv_storage_usage",
+        "unit": "bytes",
+        "description": "Storage space usage of TiKV instances, showing disk space consumption",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "tikv_storage_usage",
+            "promql": "sum(tikv_store_size_bytes{type=\"used\",@LABEL})by (instance)",
+            "promMetric": "sum(tikv_store_size_bytes{type=\"used\",@LABEL})by (instance)",
+            "labels": [
+              "instance"
+            ],
+            "type": "tikv",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "cluster_top",
+      "order": 3,
+      "displayName": "Duration",
+      "name": "overview_query_duration",
+      "description": "Average time taken to execute queries in the cluster",
+      "metric": {
+        "name": "overview_query_duration",
+        "unit": "s",
+        "description": "Average time taken to execute queries in the cluster, measured in seconds",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "avg_query_duration",
+            "promql": "sum(rate(tidb_server_handle_query_duration_seconds_sum{ sql_type!=\"internal\",@LABEL}[1m])) / sum(rate(tidb_server_handle_query_duration_seconds_count{sql_type!=\"internal\",@LABEL}[1m]))",
+            "promMetric": "tidb_server_handle_query_duration_seconds",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "host_top",
+      "order": 4,
+      "displayName": "Network Throughput",
+      "name": "overview_host_network_throughput",
+      "description": "Network traffic throughput of the host machine, measuring inbound and outbound data transfer",
+      "metric": {
+        "name": "overview_host_network_throughput",
+        "unit": "bytes",
+        "description": "Network traffic throughput of the host machine, measuring inbound and outbound data transfer",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "host_network_received",
+            "promql": "sum(increase(node_network_receive_bytes_total{device!=\"lo\",@LABEL}[5m]))by(instance)",
+            "promMetric": "node_network_receive_bytes_total",
+            "labels": [],
+            "type": "host",
+            "legend": "received",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          },
+          {
+            "name": "host_network_sent",
+            "promql": "sum(increase(node_network_transmit_bytes_total{device!=\"lo\",@LABEL}[5m]))by(instance)",
+            "promMetric": "node_network_transmit_bytes_total",
+            "labels": [],
+            "type": "host",
+            "legend": "sent",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "instance_top",
+      "order": 4,
+      "displayName": "TiFlash Storage",
+      "name": "overview_tiflash_storage_usage",
+      "description": "Storage space usage of TiFlash instances, monitoring disk space utilization",
+      "metric": {
+        "name": "overview_tiflash_storage_usage",
+        "unit": "bytes",
+        "description": "Storage space usage of TiFlash instances, monitoring disk space utilization",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "tiflash_storage_usage",
+            "promql": "sum(tiflash_system_current_metric_StoreSizeUsed{@LABEL}) by (instance)",
+            "promMetric": "tiflash_system_current_metric_StoreSizeUsed",
+            "labels": [],
+            "type": "tiflash",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "cluster_top",
+      "order": 4,
+      "displayName": "Transaction Duration",
+      "name": "overview_transaction_duration",
+      "description": "Average time taken to complete transactions in the cluster",
+      "metric": {
+        "name": "overview_transaction_duration",
+        "unit": "s",
+        "description": "Average time taken to complete transactions in the cluster, measured in seconds",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "avg_transaction_duration",
+            "promql": "sum(rate(tidb_session_transaction_duration_seconds_sum{@LABEL}[1m])) / sum(rate(tidb_session_transaction_duration_seconds_count{@LABEL}[1m])) ",
+            "promMetric": "tidb_session_transaction_duration_seconds",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "cluster_top",
+      "order": 5,
+      "displayName": "Commit Token Wait Duration",
+      "name": "overview_commit_token_wait_duration",
+      "description": "Time spent waiting for commit tokens, indicating potential transaction bottlenecks",
+      "metric": {
+        "name": "overview_commit_token_wait_duration",
+        "unit": "ns",
+        "description": "Time spent waiting for commit tokens in the cluster",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "commit_token_wait_duration",
+            "promql": "histogram_quantile(0.99, sum(rate(tidb_tikvclient_batch_executor_token_wait_duration_bucket{@LABEL}[1m]))by(le))",
+            "promMetric": "tidb_tikvclient_batch_executor_token_wait_duration",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    },
+    {
+      "class": "overview",
+      "group": "overview",
+      "type": "cluster_top",
+      "order": 6,
+      "displayName": "Connection Count",
+      "name": "overview_connection_count",
+      "description": "Total number of active connections to the cluster",
+      "metric": {
+        "name": "overview_connection_count",
+        "unit": "short",
+        "description": "Total number of active connections to the cluster",
+        "minTidbVersion": "",
+        "maxTidbVersion": "",
+        "isBuiltin": true,
+        "expressions": [
+          {
+            "name": "connection_count_sum",
+            "promql": "sum(tidb_server_connections{@LABEL})",
+            "promMetric": "tidb_server_connections",
+            "labels": [
+              "instance"
+            ],
+            "type": "tidb",
+            "legend": "{instance}",
+            "minTidbVersion": "",
+            "maxTidbVersion": ""
+          }
+        ]
+      }
+    }
+  ]
+}

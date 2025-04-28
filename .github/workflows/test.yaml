@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - master
-      - release
+      - release-*
 
 jobs:
   backend_ut:
@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: actions/setup-go@v3
         with:
           go-version: "1.21"
@@ -50,7 +50,7 @@ jobs:
     name: Backend - Integration - TiDB@${{ matrix.tidb_version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: actions/setup-go@v3
         with:
           go-version: "1.21"
@@ -102,14 +102,14 @@ jobs:
   #   name: E2E - TiDB@${{ matrix.tidb_version }}${{ !matrix.without_ngm && '+ngm' || '' }}
   #   steps:
   #     - name: Checkout code
-  #       uses: actions/checkout@v3
+  #       uses: actions/checkout@v4
   #     # https://pnpm.io/continuous-integration#github-actions
   #     - name: Setup PNPM
   #       uses: pnpm/action-setup@v2.2.2
   #       with:
   #         version: 7
   #     - name: Setup Node.js
-  #       uses: actions/setup-node@v2
+  #       uses: actions/setup-node@v4
   #       with:
   #         node-version: "16"
   #         cache: "pnpm"

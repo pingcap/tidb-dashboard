@@ -114,9 +114,18 @@ function DetailPage() {
                         expanded={detailExpand.query}
                         onClick={toggleQuery}
                       />
+                      {
+                        // avoid page hang when sql is too long
+                        data.query!.length < 10000 && (
+                          <CopyLink
+                            displayVariant="formatted_sql"
+                            data={formatSql(data.query!)}
+                          />
+                        )
+                      }
                       <CopyLink
-                        displayVariant="formatted_sql"
-                        data={formatSql(data.query!)}
+                        displayVariant="original_sql"
+                        data={data.query!}
                       />
                       <CopyLink
                         displayVariant="original_sql"
@@ -147,10 +156,15 @@ function DetailPage() {
                               expanded={detailExpand.prev_query}
                               onClick={togglePrevQuery}
                             />
-                            <CopyLink
-                              displayVariant="formatted_sql"
-                              data={formatSql(data.prev_stmt!)}
-                            />
+                            {
+                              // avoid page hang when sql is too long
+                              data.prev_stmt!.length < 10000 && (
+                                <CopyLink
+                                  displayVariant="formatted_sql"
+                                  data={formatSql(data.prev_stmt!)}
+                                />
+                              )
+                            }
                             <CopyLink
                               displayVariant="original_sql"
                               data={data.prev_stmt!}

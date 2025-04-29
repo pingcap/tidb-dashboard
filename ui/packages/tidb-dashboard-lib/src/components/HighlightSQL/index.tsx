@@ -18,6 +18,7 @@ interface Props {
   compact?: boolean
   theme?: 'dark' | 'light'
   format?: boolean
+  maxLen?: number
 }
 
 function simpleSqlMinify(str) {
@@ -30,14 +31,24 @@ function simpleSqlMinify(str) {
     .replace(/\*\/\s{1,}/g, '*/')
 }
 
-function HighlightSQL({ sql, compact, theme = 'light', format = true }: Props) {
+function HighlightSQL({
+  sql,
+  compact,
+  theme = 'light',
+  format = true,
+  maxLen = 5000
+}: Props) {
   const formattedSql = useMemo(() => {
-    let f = format ? formatSql(sql) : sql
+    const truncatedSql =
+      sql.length > maxLen
+        ? `${sql.slice(0, maxLen)}...(remain: ${sql.length - maxLen})`
+        : sql
+    let f = format ? formatSql(truncatedSql) : truncatedSql
     if (compact) {
       f = simpleSqlMinify(f)
     }
     return f
-  }, [sql, compact, format])
+  }, [sql, compact, format, maxLen])
 
   return (
     <SyntaxHighlighter
@@ -58,6 +69,6 @@ function HighlightSQL({ sql, compact, theme = 'light', format = true }: Props) {
 
 export default moize(HighlightSQL, {
   isShallowEqual: true,
-  maxArgs: 2,
+  maxArgs: 5,
   maxSize: 1000
 })

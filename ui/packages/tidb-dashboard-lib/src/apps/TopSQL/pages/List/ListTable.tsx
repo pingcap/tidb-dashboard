@@ -144,11 +144,11 @@ export function ListTable({
             </Tooltip>
           ) : (
             <Tooltip
-              title={<HighlightSQL sql={text} theme="dark" />}
+              title={<HighlightSQL sql={text} theme="dark" maxLen={1000} />}
               placement="right"
             >
               <TextWrap>
-                <HighlightSQL sql={text} compact />
+                <HighlightSQL sql={text} compact maxLen={1000} />
               </TextWrap>
             </Tooltip>
           )

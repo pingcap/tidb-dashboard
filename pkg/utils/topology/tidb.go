@@ -19,27 +19,29 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/netutil"
 )
 
-const tidbTopologyKeyPrefix = "/topology/tidb/"
+const (
+	tidbTopologyKeyPrefix = "/topology/tidb/"
+	keyspaceNameKeyPrefix = "/keyspaces/tidb"
+)
 
-func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDBInfo, error) {
+func getAliveNodesAndInfos(ctx context.Context, etcdClient *clientv3.Client, keyPrefix string) (map[string]struct{}, map[string]*TiDBInfo, error) {
 	ctx2, cancel := context.WithTimeout(ctx, defaultFetchTimeout)
 	defer cancel()
 
-	resp, err := etcdClient.Get(ctx2, tidbTopologyKeyPrefix, clientv3.WithPrefix())
+	resp, err := etcdClient.Get(ctx2, keyPrefix, clientv3.WithPrefix())
 	if err != nil {
-		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", tidbTopologyKeyPrefix, distro.R().PD)
+		return nil, nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", keyPrefix, distro.R().PD)
 	}
 
 	nodesAlive := make(map[string]struct{}, len(resp.Kvs))
 	nodesInfo := make(map[string]*TiDBInfo, len(resp.Kvs))
-
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
-		if !strings.HasPrefix(key, tidbTopologyKeyPrefix) {
+		if !strings.HasPrefix(key, keyPrefix) {
 			continue
 		}
 		// remainingKey looks like `ip:port/info` or `ip:port/ttl`.
-		remainingKey := key[len(tidbTopologyKeyPrefix):]
+		remainingKey := key[len(keyPrefix):]
 		keyParts := strings.Split(remainingKey, "/")
 		if len(keyParts) != 2 {
 			log.Warn("Ignored invalid topology key", zap.String("component", distro.R().TiDB), zap.String("key", key))
@@ -75,8 +77,96 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 		}
 	}
 
-	nodes := make([]TiDBInfo, 0)
+	return nodesAlive, nodesInfo, nil
+}
 
+func getAliveNodesAndInfoWithPrefix(ctx context.Context, etcdClient *clientv3.Client) (map[string]struct{}, map[string]*TiDBInfo, error) {
+	log.Warn("xxx ------------------- next-gen 00")
+	childCtx, cancel := context.WithTimeout(ctx, defaultFetchTimeout)
+	defer cancel()
+
+	resp, err := etcdClient.Get(childCtx, keyspaceNameKeyPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return nil, nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", keyspaceNameKeyPrefix, distro.R().PD)
+	}
+
+	idMap := make(map[string]struct{})
+	log.Warn("xxx ------------------- next-gen 01", zap.String("key", keyspaceNameKeyPrefix), zap.Int("kv count", len(resp.Kvs)))
+	for _, kv := range resp.Kvs {
+		// layout: /keyspaces/tidb/<id>/topology/tidb/...
+		rest := strings.TrimPrefix(string(kv.Key), keyspaceNameKeyPrefix)
+		// rest: <id>/topology/tidb/...
+		parts := strings.SplitN(rest, "/", 3)
+		log.Warn("xxx ------------------- next-gen 01", zap.String("key", keyspaceNameKeyPrefix),
+			zap.String("2", parts[2]), zap.Int("parts count", len(parts)), zap.Strings("parts", parts))
+		if len(parts) >= 2 && strings.HasPrefix(parts[2], "topology/tidb/") {
+			log.Warn("xxx ------------------- next-gen 01, topology")
+			id := parts[1]
+			idMap[id] = struct{}{}
+		}
+	}
+
+	retryTimes := 3
+	nodesAlive := make(map[string]struct{})
+	nodesInfo := make(map[string]*TiDBInfo)
+	for id := range idMap {
+		keyPrefix := fmt.Sprintf("%s/%s/topology/tidb/", keyspaceNameKeyPrefix, id)
+
+		var (
+			nodesAlive0 map[string]struct{}
+			nodesInfo0  map[string]*TiDBInfo
+			err         error
+		)
+		for i := 1; i <= retryTimes; i++ {
+			nodesAlive0, nodesInfo0, err = getAliveNodesAndInfos(childCtx, etcdClient, keyPrefix)
+			if err != nil {
+				log.Warn("Failed to get TiDB topology nodes", zap.String("keyPrefix", keyPrefix), zap.Int("retry", i), zap.Error(err))
+				if i == retryTimes {
+					return nil, nil, err
+				}
+				continue
+			}
+			break
+		}
+
+		log.Warn("xxx ------------------- next-gen 11", zap.String("key", keyPrefix), zap.Int("nodes", len(nodesAlive)))
+		str := "xxx ------------------- keyspace " + id + " topology tidb nodes alive: "
+		for addr := range nodesAlive0 {
+			nodesAlive[addr] = struct{}{}
+			str += addr + " "
+		}
+		str += " topology tidb nodes info: "
+		for addr, info := range nodesInfo0 {
+			if _, exists := nodesInfo[addr]; exists {
+				// If the same address appears, we keep the first one.
+				continue
+			}
+			nodesInfo[addr] = info
+			str += fmt.Sprintf("%s:%d ", info.IP, info.Port)
+		}
+		log.Warn(str)
+	}
+
+	return nodesAlive, nodesInfo, nil
+}
+
+func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDBInfo, error) {
+	nodesAlive, nodesInfo, err := getAliveNodesAndInfos(ctx, etcdClient, tidbTopologyKeyPrefix)
+	if err != nil {
+		log.Warn("xxx ------------------- get alive nodes failed")
+		return nil, err
+	}
+	if len(nodesAlive) == 0 {
+		log.Warn("xxx ------------------- next-gen...")
+		nodesAlive, nodesInfo, err = getAliveNodesAndInfoWithPrefix(ctx, etcdClient)
+		if err != nil {
+			log.Warn("xxx ------------------- next-gen, get alive nodes failed")
+			return nil, err
+		}
+		log.Warn("xxx ------------------- next-gen, successful")
+	}
+
+	nodes := make([]TiDBInfo, 0)
 	for addr, info := range nodesInfo {
 		if _, ok := nodesAlive[addr]; ok {
 			info.Status = ComponentStatusUp

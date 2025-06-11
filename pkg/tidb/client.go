@@ -22,6 +22,7 @@ import (
 	mysqlDriver "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/util/distro"
@@ -163,6 +164,7 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 
 	if err := db.Exec(fmt.Sprintf("SET SESSION max_execution_time = '%d'", defaultTiDBSQLExecutionTimeoutMs)).Error; err != nil {
 		log.Error("Failed to set max_execution_time", zap.Error(err))
+		defer utils.CloseTiDBConnection(db) //nolint:errcheck
 		return nil, ErrTiDBClientRequestFailed.Wrap(err, "failed to set max_execution_time")
 	}
 

@@ -16,7 +16,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 )
 
@@ -50,7 +49,6 @@ type ServiceParams struct {
 	ConfigManager *config.DynamicConfigManager
 	LocalStore    *dbstore.DB
 
-	HTTPClient *httpc.Client
 	EtcdClient *clientv3.Client
 	PDClient   *pd.Client
 }

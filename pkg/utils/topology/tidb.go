@@ -81,7 +81,6 @@ func getAliveNodesAndInfos(ctx context.Context, etcdClient *clientv3.Client, key
 }
 
 func getAliveNodesAndInfoWithPrefix(ctx context.Context, etcdClient *clientv3.Client) (map[string]struct{}, map[string]*TiDBInfo, error) {
-	log.Warn("xxx ------------------- next-gen 00")
 	childCtx, cancel := context.WithTimeout(ctx, defaultFetchTimeout)
 	defer cancel()
 
@@ -91,16 +90,12 @@ func getAliveNodesAndInfoWithPrefix(ctx context.Context, etcdClient *clientv3.Cl
 	}
 
 	idMap := make(map[string]struct{})
-	log.Warn("xxx ------------------- next-gen 01", zap.String("key", keyspaceNameKeyPrefix), zap.Int("kv count", len(resp.Kvs)))
 	for _, kv := range resp.Kvs {
 		// layout: /keyspaces/tidb/<id>/topology/tidb/...
 		rest := strings.TrimPrefix(string(kv.Key), keyspaceNameKeyPrefix)
 		// rest: <id>/topology/tidb/...
 		parts := strings.SplitN(rest, "/", 3)
-		log.Warn("xxx ------------------- next-gen 01", zap.String("key", keyspaceNameKeyPrefix),
-			zap.String("2", parts[2]), zap.Int("parts count", len(parts)), zap.Strings("parts", parts))
 		if len(parts) >= 2 && strings.HasPrefix(parts[2], "topology/tidb/") {
-			log.Warn("xxx ------------------- next-gen 01, topology")
 			id := parts[1]
 			idMap[id] = struct{}{}
 		}
@@ -129,22 +124,16 @@ func getAliveNodesAndInfoWithPrefix(ctx context.Context, etcdClient *clientv3.Cl
 			break
 		}
 
-		log.Warn("xxx ------------------- next-gen 11", zap.String("key", keyPrefix), zap.Int("nodes", len(nodesAlive)))
-		str := "xxx ------------------- keyspace " + id + " topology tidb nodes alive: "
 		for addr := range nodesAlive0 {
 			nodesAlive[addr] = struct{}{}
-			str += addr + " "
 		}
-		str += " topology tidb nodes info: "
 		for addr, info := range nodesInfo0 {
 			if _, exists := nodesInfo[addr]; exists {
 				// If the same address appears, we keep the first one.
 				continue
 			}
 			nodesInfo[addr] = info
-			str += fmt.Sprintf("%s:%d ", info.IP, info.Port)
 		}
-		log.Warn(str)
 	}
 
 	return nodesAlive, nodesInfo, nil
@@ -153,17 +142,13 @@ func getAliveNodesAndInfoWithPrefix(ctx context.Context, etcdClient *clientv3.Cl
 func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDBInfo, error) {
 	nodesAlive, nodesInfo, err := getAliveNodesAndInfos(ctx, etcdClient, tidbTopologyKeyPrefix)
 	if err != nil {
-		log.Warn("xxx ------------------- get alive nodes failed")
 		return nil, err
 	}
 	if len(nodesAlive) == 0 {
-		log.Warn("xxx ------------------- next-gen...")
 		nodesAlive, nodesInfo, err = getAliveNodesAndInfoWithPrefix(ctx, etcdClient)
 		if err != nil {
-			log.Warn("xxx ------------------- next-gen, get alive nodes failed")
 			return nil, err
 		}
-		log.Warn("xxx ------------------- next-gen, successful")
 	}
 
 	nodes := make([]TiDBInfo, 0)

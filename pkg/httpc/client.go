@@ -88,7 +88,8 @@ func (c *Client) SendRequest(
 	if err != nil {
 		return nil, err
 	}
-	return res.Body()
+	defer res.Response.Body.Close()
+	return io.ReadAll(res.Response.Body)
 }
 
 func (c *Client) Send(

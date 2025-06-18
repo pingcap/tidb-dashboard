@@ -111,15 +111,29 @@ func (p *proxy) serve(in net.Conn) {
 		_ = in.Close()
 		return
 	}
+	deadline := time.Now().Add(10 * time.Minute)
+	if err := in.SetDeadline(deadline); err != nil {
+		log.Warn("input set deadline failed", zap.Error(err))
+		_ = in.Close()
+		return
+	}
+	if err := out.SetReadDeadline(deadline); err != nil {
+		log.Warn("output set deadline failed", zap.Error(err))
+		_ = in.Close()
+		return
+	}
+	done := make(chan struct{})
 	// bidirectional copy
 	go func() {
+		defer func() {
+			done <- struct{}{}
+		}()
 		// nolint
 		io.Copy(in, out)
-		_ = in.Close()
-		_ = out.Close()
 	}()
 	// nolint
 	io.Copy(out, in)
+	<-done
 	_ = out.Close()
 	_ = in.Close()
 }

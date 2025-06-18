@@ -163,6 +163,11 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 
 	if err := db.Exec(fmt.Sprintf("SET SESSION max_execution_time = '%d'", defaultTiDBSQLExecutionTimeoutMs)).Error; err != nil {
 		log.Error("Failed to set max_execution_time", zap.Error(err))
+		if d, err := db.DB(); err == nil && db != nil {
+			if cerr := d.Close(); cerr != nil {
+				log.Error("Failed to close database after setting max_execution_time", zap.Error(cerr))
+			}
+		}
 		return nil, ErrTiDBClientRequestFailed.Wrap(err, "failed to set max_execution_time")
 	}
 

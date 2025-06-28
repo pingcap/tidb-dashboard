@@ -127,7 +127,7 @@ func (n *NgmProxy) getNgmAddrFromCache() (string, error) {
 func (n *NgmProxy) resolveNgmAddress() (string, error) {
 	addr, err := topology.FetchNgMonitoringTopology(n.lifecycleCtx, n.etcdClient)
 	if err == nil && addr != "" {
-		return fmt.Sprintf("http://%s", addr), nil
+		return fmt.Sprintf("https://%s", addr), nil
 	}
 	return "", ErrNgmNotStart.Wrap(err, "NgMonitoring component is not started")
 }

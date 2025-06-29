@@ -36,7 +36,9 @@ type Config struct {
 	DisableCustomPromAddr bool
 	FeatureVersion        string // assign the target TiDB version when running TiDB Dashboard as standalone mode
 
-	NgmTimeout int // in seconds
+	NgmTimeout   int  // in seconds
+	NgmUseTLS    bool `json:"ngm_use_tls"`
+	NgmTLSConfig *tls.Config
 }
 
 func Default() *Config {

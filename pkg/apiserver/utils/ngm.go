@@ -4,7 +4,6 @@ package utils
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -84,7 +83,7 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 
 		ngmURL, _ := url.Parse(ngmAddr)
 		proxy := httputil.NewSingleHostReverseProxy(ngmURL)
-		transport := &http.Transport{
+		proxy.Transport = &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			DialContext: defaultTransportDialContext(&net.Dialer{
 				Timeout:   n.timeout,
@@ -95,19 +94,8 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 			IdleConnTimeout:       90 * time.Second,
 			TLSHandshakeTimeout:   10 * time.Second,
 			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig:       n.config.ClusterTLSConfig,
 		}
-
-		if ngmURL.Scheme == "https" {
-			if n.config != nil && n.config.NgmTLSConfig != nil {
-				transport.TLSClientConfig = n.config.NgmTLSConfig
-			} else {
-				transport.TLSClientConfig = &tls.Config{
-					InsecureSkipVerify: true,
-				}
-			}
-		}
-
-		proxy.Transport = transport
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
 }
@@ -142,11 +130,7 @@ func (n *NgmProxy) getNgmAddrFromCache() (string, error) {
 func (n *NgmProxy) resolveNgmAddress() (string, error) {
 	addr, err := topology.FetchNgMonitoringTopology(n.lifecycleCtx, n.etcdClient)
 	if err == nil && addr != "" {
-		scheme := "http"
-		if n.config != nil && n.config.NgmUseTLS {
-			scheme = "https"
-		}
-		return fmt.Sprintf("%s://%s", scheme, addr), nil
+		return fmt.Sprintf("%s://%s", n.config.GetClusterHTTPScheme(), addr), nil
 	}
 	return "", ErrNgmNotStart.Wrap(err, "NgMonitoring component is not started")
 }

@@ -84,10 +84,6 @@ func NewCLIConfig() *DashboardCLIConfig {
 	tidbKeyPath := flag.String("tidb-key", "", "(TLS for MySQL client) path of file that contains X509 key in PEM format")
 	tidbAllowedNames := flag.String("tidb-allowed-names", "", "comma-delimited list of acceptable peer certificate SAN identities")
 
-	ngmCaPath := flag.String("ngm-ca", "", "path to ng-monitoring CA cert")
-	ngmCertPath := flag.String("ngm-cert", "", "path to ng-monitoring client cert")
-	ngmKeyPath := flag.String("ngm-key", "", "path to ng-monitoring client key")
-
 	// debug for keyvisual，hide help information
 	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
 	flag.Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
@@ -137,15 +133,6 @@ func NewCLIConfig() *DashboardCLIConfig {
 		if startTime == 0 || endTime == 0 || startTime >= endTime {
 			log.Fatal("keyviz-file-start must be smaller than keyviz-file-end, and none of them are 0")
 		}
-	}
-
-	if len(*ngmCaPath) != 0 && len(*ngmCertPath) != 0 && len(*ngmKeyPath) != 0 {
-		tlsConfig, err := buildNgmTLSConfig(*ngmCaPath, *ngmCertPath, *ngmKeyPath)
-		if err != nil {
-			log.Fatal("Failed to load ngm TLS config", zap.Error(err))
-		}
-		cfg.CoreConfig.NgmTLSConfig = tlsConfig
-		cfg.CoreConfig.NgmUseTLS = true
 	}
 
 	return cfg
@@ -314,26 +301,4 @@ func main() {
 	}
 	wg.Wait()
 	log.Info("Stop dashboard server")
-}
-
-func buildNgmTLSConfig(caPath, certPath, keyPath string) (*tls.Config, error) {
-	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
-	if err != nil {
-		return nil, fmt.Errorf("load X509 key pair failed: %w", err)
-	}
-	caCertPool := x509.NewCertPool()
-	caData, err := os.ReadFile(caPath)
-	if err != nil {
-		return nil, fmt.Errorf("read CA cert file failed: %w", err)
-	}
-	if !caCertPool.AppendCertsFromPEM(caData) {
-		return nil, fmt.Errorf("append CA cert failed")
-	}
-
-	return &tls.Config{
-		Certificates:       []tls.Certificate{cert},
-		RootCAs:            caCertPool,
-		InsecureSkipVerify: false,
-		MinVersion:         tls.VersionTLS12,
-	}, nil
 }

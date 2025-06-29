@@ -331,9 +331,8 @@ func buildNgmTLSConfig(caPath, certPath, keyPath string) (*tls.Config, error) {
 	}
 
 	return &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      caCertPool,
-		// 这里不跳过证书验证
+		Certificates:       []tls.Certificate{cert},
+		RootCAs:            caCertPool,
 		InsecureSkipVerify: false,
 		MinVersion:         tls.VersionTLS12,
 	}, nil

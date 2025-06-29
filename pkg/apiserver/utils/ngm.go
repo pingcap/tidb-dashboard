@@ -98,8 +98,12 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 		}
 
 		if ngmURL.Scheme == "https" {
-			transport.TLSClientConfig = &tls.Config{
-				InsecureSkipVerify: true,
+			if n.config != nil && n.config.NgmTLSConfig != nil {
+				transport.TLSClientConfig = n.config.NgmTLSConfig
+			} else {
+				transport.TLSClientConfig = &tls.Config{
+					InsecureSkipVerify: true,
+				}
 			}
 		}
 

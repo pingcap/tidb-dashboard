@@ -121,10 +121,15 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       expanded={detailExpand.query}
                       onClick={toggleQuery}
                     />
-                    <CopyLink
-                      displayVariant="formatted_sql"
-                      data={formatSql(data.query_sample_text)}
-                    />
+                    {
+                      // avoid page hang when sql is too long
+                      data.query_sample_text!.length < 10000 && (
+                        <CopyLink
+                          displayVariant="formatted_sql"
+                          data={formatSql(data.query_sample_text!)}
+                        />
+                      )
+                    }
                     <CopyLink
                       displayVariant="original_sql"
                       data={data.query_sample_text}
@@ -152,10 +157,15 @@ function PlanDetail({ query }: IPlanDetailProps) {
                         expanded={detailExpand.prev_query}
                         onClick={togglePrevQuery}
                       />
-                      <CopyLink
-                        displayVariant="formatted_sql"
-                        data={formatSql(data.prev_sample_text)}
-                      />
+                      {
+                        // avoid page hang when sql is too long
+                        data.prev_sample_text!.length < 10000 && (
+                          <CopyLink
+                            displayVariant="formatted_sql"
+                            data={formatSql(data.prev_sample_text!)}
+                          />
+                        )
+                      }
                       <CopyLink
                         displayVariant="original_sql"
                         data={data.prev_sample_text}

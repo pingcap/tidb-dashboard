@@ -66,6 +66,8 @@ user_profile:
       - The shared session can be revoked in advance by administrator.
     form:
       expire: Expire in
+      no_expiration: No expiration
+      custom_expiration: Custom
       read_only: Share as read-only privilege
       submit: Generate Authorization Code
     close: Close

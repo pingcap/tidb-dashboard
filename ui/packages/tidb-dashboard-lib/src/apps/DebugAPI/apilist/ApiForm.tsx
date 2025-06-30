@@ -13,6 +13,7 @@ import {
 import { ApiFormWidgetConfig, createFormWidget } from './widgets'
 import { distro } from '@lib/utils/distro'
 import { DebugAPIContext } from '../context'
+import { useIsWriteable } from '@lib/utils'
 
 export interface Topology {
   tidb: TopologyTiDBInfo[]
@@ -30,6 +31,8 @@ export default function ApiForm({
   topology: Topology
 }) {
   const ctx = useContext(DebugAPIContext)
+
+  const isWriteable = useIsWriteable()
 
   const { t } = useTranslation()
   const { id, path_params, query_params, component } = endpoint
@@ -127,6 +130,7 @@ export default function ApiForm({
             loading={loading}
             icon={<DownloadOutlined />}
             htmlType="submit"
+            disabled={!isWriteable}
           >
             {t('debug_api.form.download')}
           </Button>

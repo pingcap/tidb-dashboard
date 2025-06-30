@@ -8,6 +8,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Card } from '@lib/components'
 import { DatePicker } from '@lib/components'
 import DiagnosisTable from '../components/DiagnosisTable'
+import { useIsWriteable } from '@lib/utils'
 
 const DURATION_MINS = [5, 10, 30, 60, 24 * 60]
 const DEF_DURATION_MINS = 10
@@ -18,6 +19,8 @@ function minsAgo(mins: number): Dayjs {
 
 export default function DiagnoseGenerator() {
   const { t } = useTranslation()
+
+  const isWriteable = useIsWriteable()
 
   const [duration, setDuration] = useState(DEF_DURATION_MINS)
   const [startTime, setStartTime] = useState<Dayjs>(() => minsAgo(duration))
@@ -118,7 +121,7 @@ export default function DiagnoseGenerator() {
           </Form.Item>
           {timeChanged && (
             <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" disabled={!isWriteable}>
                 {t('diagnose.generate.submit')}
               </Button>
             </Form.Item>

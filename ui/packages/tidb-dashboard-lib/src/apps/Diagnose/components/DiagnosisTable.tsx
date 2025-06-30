@@ -16,6 +16,7 @@ import { useClientRequest, RequestFactory } from '@lib/utils/useClientRequest'
 
 import { diagnosisColumns } from '../utils/tableColumns'
 import { DiagnoseContext } from '../context'
+import { useIsWriteable } from '@lib/utils'
 
 // FIXME: use better naming
 // stableTimeRange: used to start diagnosing when triggering by clicking "Start" outside this component
@@ -54,6 +55,8 @@ export default function DiagnosisTable({
   kind
 }: IDiagnosisTableProps) {
   const ctx = useContext(DiagnoseContext)
+
+  const isWriteable = useIsWriteable()
 
   const { t } = useTranslation()
 
@@ -178,7 +181,9 @@ export default function DiagnosisTable({
     }
     if (timeChanged || error) {
       return (
-        <Button onClick={handleStart}>{t('diagnose.generate.submit')}</Button>
+        <Button onClick={handleStart} disabled={!isWriteable}>
+          {t('diagnose.generate.submit')}
+        </Button>
       )
     }
     return null

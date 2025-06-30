@@ -136,10 +136,15 @@ function DetailPage() {
                         expanded={sqlExpanded}
                         onClick={toggleSqlExpanded}
                       />
-                      <CopyLink
-                        displayVariant="formatted_sql"
-                        data={formatSql(plans[0].digest_text!)}
-                      />
+                      {
+                        // avoid page hang when sql is too long
+                        plans[0].digest_text!.length < 10000 && (
+                          <CopyLink
+                            displayVariant="formatted_sql"
+                            data={formatSql(plans[0].digest_text!)}
+                          />
+                        )
+                      }
                       <CopyLink
                         displayVariant="original_sql"
                         data={plans[0].digest_text!}

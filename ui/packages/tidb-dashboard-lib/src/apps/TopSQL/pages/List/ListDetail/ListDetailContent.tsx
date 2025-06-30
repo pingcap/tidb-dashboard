@@ -42,10 +42,15 @@ export function ListDetailContent({
             <Space size="middle">
               <TextWithInfo.TransKey transKey="topsql.detail_content.fields.sql_text" />
               <Expand.Link expanded={sqlExpanded} onClick={toggleSqlExpanded} />
-              <CopyLink
-                displayVariant="formatted_sql"
-                data={formatSql(sqlRecord.sql_text)}
-              />
+              {
+                // avoid page hang when sql is too long
+                sqlRecord.sql_text!.length < 10000 && (
+                  <CopyLink
+                    displayVariant="formatted_sql"
+                    data={formatSql(sqlRecord.sql_text!)}
+                  />
+                )
+              }
               <CopyLink
                 displayVariant="original_sql"
                 data={sqlRecord.sql_text}

@@ -50,7 +50,9 @@ function Detail() {
       name: t('deadlock.fields.current_sql'),
       key: 'current_sql',
       minWidth: 350,
-      onRender: (it) => <HighlightSQL sql={it.current_sql} compact />
+      onRender: (it) => (
+        <HighlightSQL sql={it.current_sql} compact maxLen={1000} />
+      )
     },
     {
       name: t('deadlock.fields.key'),

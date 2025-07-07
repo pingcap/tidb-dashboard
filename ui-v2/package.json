@@ -11,7 +11,7 @@
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "dev:portals:test": "pnpm -r --parallel --filter test-tidb-dashboard-ui-lib... dev",
-    "gen:locales": "tsx scripts/gen-locales.ts",
+    "gen:locales": "tsx scripts/gen-locales-v2.ts",
     "gen:api": "orval"
   },
   "devDependencies": {

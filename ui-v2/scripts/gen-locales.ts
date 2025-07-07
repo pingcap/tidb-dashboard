@@ -54,7 +54,9 @@ function handleAppFiles(appFolder: string, localeData: LocaleData) {
 
     // replace outputData with existedZh
     for (const key in existedZh) {
-      outputData[key] = existedZh[key]
+      if (outputData[key]) {
+        outputData[key] = existedZh[key]
+      }
     }
   }
   fs.writeFileSync(zhPath, JSON.stringify(outputData, null, 2) + "\n")
@@ -115,7 +117,9 @@ function handleBizUIFiles(appName: string, localeData: LocaleData) {
   }
   // merge
   Object.keys(existedZhLocales).forEach((k) => {
-    zhLocales[k] = existedZhLocales[k]
+    if (zhLocales[k]) {
+      zhLocales[k] = existedZhLocales[k]
+    }
   })
   // update zh
   ast.replace(
@@ -131,10 +135,7 @@ async function generateLocales() {
   const localeData: LocaleData = {}
 
   // Scan all TypeScript/JavaScript files in the apps folder
-  const files = await glob([
-    "packages/libs/3-biz-ui/src/**/*.{ts,tsx,js,jsx}",
-    "packages/libs/4-apps/src/**/*.{ts,tsx,js,jsx}",
-  ])
+  const files = await glob(SRC_PATHS)
 
   // Parse and extract locale data
   for (const filePath of files) {
@@ -265,3 +266,10 @@ async function generateLocales() {
 }
 
 generateLocales().catch(console.error)
+
+//-------------------
+// options
+const SRC_PATHS = [
+  "packages/libs/3-biz-ui/src/**/*.{ts,tsx,js,jsx}",
+  "packages/libs/4-apps/src/**/*.{ts,tsx,js,jsx}",
+]

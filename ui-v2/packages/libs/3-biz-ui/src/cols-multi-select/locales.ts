@@ -1,4 +1,3 @@
-// prettier-ignore
 //------------------------
 // i18n
 // auto updated by running `pnpm gen:locales`
@@ -20,12 +19,12 @@ type I18nLocale = {
 const en: I18nLocale = {}
 const zh: I18nLocale = {
   "Nothing found": "未找到",
-  Reset: "重置",
+  "Reset": "重置",
   "Search columns...": "搜索列...",
   "Select All": "全选",
   "Show All": "显示全部",
   "Show Selected": "显示已选",
-  "{{selected}}/{{all}}": "{{selected}}/{{all}}",
+  "{{selected}}/{{all}}": "{{selected}}/{{all}}"
 }
 
 export function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {

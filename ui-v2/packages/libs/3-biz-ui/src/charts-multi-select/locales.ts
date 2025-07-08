@@ -1,4 +1,3 @@
-// prettier-ignore
 //------------------------
 // i18n
 // auto updated by running `pnpm gen:locales`
@@ -21,11 +20,11 @@ const en: I18nLocale = {}
 const zh: I18nLocale = {
   "All charts selected": "所有图表已选",
   "Nothing found": "未找到",
-  Reset: "重置",
-  Search: "搜索",
+  "Reset": "重置",
+  "Search": "搜索",
   "Show All": "显示全部",
   "Show Hidden": "显示未选",
-  "{{selected}}/{{all}} charts selected": "{{selected}}/{{all}} 图表已选",
+  "{{selected}}/{{all}} charts selected": "{{selected}}/{{all}} 图表已选"
 }
 
 export function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {

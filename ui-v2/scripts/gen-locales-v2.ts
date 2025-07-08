@@ -291,7 +291,11 @@ function extractLocales(localeData: LocaleData, ns: string, filePath: string) {
           finalNs = options.ns
         }
       }
-      localeData[finalNs].texts[text] = text
+      if (localeData[finalNs]) {
+        localeData[finalNs].texts[text] = text
+      } else {
+        console.error(`ns is not correct, ns: ${finalNs}`)
+      }
     })
 
   // Handle `<Trans/> component

@@ -6,10 +6,15 @@ import $ from "gogocode"
 
 //-------------------
 // options
-const SRC_PATHS = [
-  "packages/libs/3-biz-ui/src/**/*.{ts,tsx,js,jsx}",
-  "packages/libs/4-apps/src/**/*.{ts,tsx,js,jsx}",
-]
+const OPTIONS = {
+  scanPaths: [
+    "packages/libs/3-biz-ui/src/**/*.{ts,tsx,js,jsx}",
+    "packages/libs/4-apps/src/**/*.{ts,tsx,js,jsx}",
+  ],
+  nsLocaleFolder: {
+    shared: "packages/libs/4-apps/src/_shared",
+  },
+}
 
 //-------------------
 // types
@@ -33,6 +38,19 @@ interface LocaleData {
 async function generateLocales() {
   const nsData: NamespaceData = {}
   const localeData: LocaleData = {}
+
+  // init nsData by OPTIONS
+  for (const ns of Object.keys(OPTIONS.nsLocaleFolder || {})) {
+    nsData[ns] = {
+      type: "app",
+      path: OPTIONS.nsLocaleFolder[ns],
+      files: [],
+    }
+    localeData[ns] = {
+      keys: {},
+      texts: {},
+    }
+  }
 
   // extract namespaces
   await extractNs(nsData)
@@ -61,7 +79,7 @@ async function generateLocales() {
 
 async function extractNs(nsData: NamespaceData) {
   // Scan all TypeScript/JavaScript files in the apps folder
-  const files = await glob(SRC_PATHS)
+  const files = await glob(OPTIONS.scanPaths)
 
   // traverse files to get all component namespaces
   for (const filePath of files) {
@@ -101,20 +119,22 @@ async function extractNs(nsData: NamespaceData) {
     const appNs = ast.find("const { $$$0 } = useTn($_$0)")
     if (appNs.length >= 1) {
       const nsVal = appNs.match[0][0].value
+
+      if (nsData[nsVal]) {
+        nsData[nsVal].files.push(filePath)
+        continue
+      }
+
       const nsFolderPos = filePath.indexOf(`/${nsVal}`)
       if (nsFolderPos === -1) {
         console.error(filePath)
         console.error(`namespace mismatch: ${nsVal}`)
         continue
       }
-      if (nsData[nsVal]) {
-        nsData[nsVal].files.push(filePath)
-      } else {
-        nsData[nsVal] = {
-          type: "app",
-          path: filePath.slice(0, nsFolderPos) + "/" + nsVal,
-          files: [filePath],
-        }
+      nsData[nsVal] = {
+        type: "app",
+        path: filePath.slice(0, nsFolderPos) + "/" + nsVal,
+        files: [filePath],
       }
     }
 
@@ -144,21 +164,23 @@ async function extractNs(nsData: NamespaceData) {
           )
           return
         }
+        if (nsData[nsVal]) {
+          if (!nsData[nsVal].files.includes(filePath)) {
+            nsData[nsVal].files.push(filePath)
+          }
+          return
+        }
+
         const nsFolderPos = filePath.indexOf(`/${nsVal}`)
         if (nsFolderPos === -1) {
           console.error(filePath)
           console.error(`namespace mismatch: ${nsVal}`)
           return
         }
-        if (!nsData[nsVal]) {
-          nsData[nsVal] = {
-            type: "app",
-            path: filePath.slice(0, nsFolderPos) + "/" + nsVal,
-            files: [filePath],
-          }
-        }
-        if (!nsData[nsVal].files.includes(filePath)) {
-          nsData[nsVal].files.push(filePath)
+        nsData[nsVal] = {
+          type: "app",
+          path: filePath.slice(0, nsFolderPos) + "/" + nsVal,
+          files: [filePath],
         }
       })
   }
@@ -177,23 +199,13 @@ function extractLocales(localeData: LocaleData, ns: string, filePath: string) {
   const code = fs.readFileSync(filePath, "utf-8")
   const ast = $(code)
 
-  // Handle `tt` calls, likes:
-  // tt('Clear Filters')
-  // tt("hello {{name}}", { name: "world" })
-  ast
-    .find("tt($_$)") // same as `find("tt($_$0)")`, only match the first argument
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .each((tnItem: any) => {
-      const text = tnItem.match[0][0].value
-      localeData[ns].texts[text] = text
-    })
-
   // Handle `tk` calls, likes:
   // tk(`panels.${props.config.category}`)
   // tk("panels.instance_top", "Top 5 Node Utilization")
   // tk("time_range.hour", "{{count}} hr", { count: 1 })
   // tk("time_range.hour", "{{count}} hrs", { count: 24 })
   // tk("time_range.hour", "", {count: n})
+  // tk("time_range.hour", "", {ns: 'shared'})
   ast
     .find("tk($$$0)") // match all arguments
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -210,6 +222,7 @@ function extractLocales(localeData: LocaleData, ns: string, filePath: string) {
           // continue
           return
         }
+        let finalNs = ns
         if (match.length === 3) {
           // handle plural case
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -227,10 +240,13 @@ function extractLocales(localeData: LocaleData, ns: string, filePath: string) {
           } else if (options.count > 1) {
             key = `${key}_other`
           }
+          if (options.ns) {
+            finalNs = options.ns
+          }
         }
 
         // check whether value is existed
-        const existedVal = localeData[ns].keys[key]
+        const existedVal = localeData[finalNs].keys[key]
         if (existedVal !== undefined && existedVal !== value) {
           console.error(
             `same keys but have different values, key: ${key}, values: ${existedVal}, ${value}`,
@@ -238,8 +254,44 @@ function extractLocales(localeData: LocaleData, ns: string, filePath: string) {
           // break
           return false
         }
-        localeData[ns].keys[key] = value
+        localeData[finalNs].keys[key] = value
       }
+    })
+
+  // Handle `tt` calls, likes:
+  // tt('Clear Filters')
+  // tt("hello {{name}}", { name: "world" })
+  // ast
+  //   .find("tt($_$)") // same as `find("tt($_$0)")`, only match the first argument
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   .each((tnItem: any) => {
+  //     const text = tnItem.match[0][0].value
+  //     localeData[ns].texts[text] = text
+  //   })
+
+  // Handle `tt` calls, likes:
+  // tt('Clear Filters')
+  // tt("hello {{name}}", { name: "world" })
+  // tt("hello {{name}}", { name: "world", ns: "shared" })
+  ast
+    .find("tt($$$0)") // same as `find("tt($_$0)")`, only match the first argument
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .each((tnItem: any) => {
+      const match = tnItem.match["$$$0"]
+      const text = match[0].value
+      let finalNs = ns
+      if (match.length === 2) {
+        // handle use another ns case
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const options: any = {}
+        for (const option of match[1].properties) {
+          options[option.key.name] = option.value.value
+        }
+        if (options.ns) {
+          finalNs = options.ns
+        }
+      }
+      localeData[finalNs].texts[text] = text
     })
 
   // Handle `<Trans/> component
@@ -261,7 +313,7 @@ function extractLocales(localeData: LocaleData, ns: string, filePath: string) {
         // ignore, continue
         return
       }
-      localeData[ns].texts[i18nKeyVal] = i18nKeyVal
+      localeData[nsVal].texts[i18nKeyVal] = i18nKeyVal
     })
 }
 
@@ -277,6 +329,11 @@ function sortLocaleData(localeData: LocaleData) {
 }
 
 function outputAppLocales(localeData: LocaleData, ns: string, folder: string) {
+  if (!folder) {
+    console.error(`folder is not correct, just ignore it, ns: ${ns}`)
+    return
+  }
+
   const outputDir = `${folder}/locales`
   fs.mkdirSync(outputDir, { recursive: true })
 

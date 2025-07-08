@@ -13,19 +13,6 @@ import {
   useDeletePlanBindData,
 } from "../../../utils/use-data"
 
-// @ts-expect-error @typescript-eslint/no-unused-vars
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function useLocales() {
-  const { tt } = useTn("statement")
-  // used for gogocode to scan and generate en.json before build
-  tt(
-    "Are you sure to bind SQL <code>{{sqlDigest}}</code> with the plan <code>{{planDigest}}</code>?",
-  )
-  tt(
-    "Are you sure to unbind SQL <code>{{sqlDigest}}</code> with <strong>all bound plans</strong>?",
-  )
-}
-
 export function SqlPlanBindActionCell({
   isSupport,
   canBind,

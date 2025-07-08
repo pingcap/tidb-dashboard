@@ -13,16 +13,6 @@ import {
 
 const REMEMBER_KEY = "slow-query.press_ctrl_to_open_in_new_tab.tip.remember"
 
-// @ts-expect-error @typescript-eslint/no-unused-vars
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function useLocales() {
-  const { tt } = useTn("slow-query")
-  // used for gogocode to scan and generate en.json before build
-  tt(
-    "When opening the detail page, you can press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> to view it in a new tab, or <kbd>Shift</kbd> to view it in a new window.",
-  )
-}
-
 function SqlCell({ row }: { row: SlowqueryModel }) {
   const { tt } = useTn("slow-query")
   const ctx = useAppContext()

@@ -68,12 +68,17 @@ async function extractNs(nsData: NamespaceData) {
     const code = fs.readFileSync(filePath, "utf-8")
     const ast = $(code)
 
+    if (!ast.find) {
+      console.error(`no find method, file: ${filePath}`)
+      continue
+    }
+
     const componentNs = ast.find("const I18nNamespace = $_$0")
     if (componentNs.length >= 1) {
       const nsVal = componentNs.match[0][0].value
       if (nsData[nsVal]) {
         console.error("component namespace existed: " + nsVal)
-        return
+        continue
       }
       nsData[nsVal] = {
         type: "component",
@@ -88,6 +93,11 @@ async function extractNs(nsData: NamespaceData) {
     const code = fs.readFileSync(filePath, "utf-8")
     const ast = $(code)
 
+    if (!ast.find) {
+      console.error(`no find method, file: ${filePath}`)
+      continue
+    }
+
     const appNs = ast.find("const { $$$0 } = useTn($_$0)")
     if (appNs.length >= 1) {
       const nsVal = appNs.match[0][0].value
@@ -95,19 +105,62 @@ async function extractNs(nsData: NamespaceData) {
       if (nsFolderPos === -1) {
         console.error(filePath)
         console.error(`namespace mismatch: ${nsVal}`)
-        return
+        continue
+      }
+      if (nsData[nsVal]) {
+        nsData[nsVal].files.push(filePath)
       } else {
-        if (nsData[nsVal]) {
-          nsData[nsVal].files.push(filePath)
-        } else {
+        nsData[nsVal] = {
+          type: "app",
+          path: filePath.slice(0, nsFolderPos) + "/" + nsVal,
+          files: [filePath],
+        }
+      }
+    }
+
+    // handle <Trans/>, have multiple different <Trans/> in one file
+    ast
+      .find("<Trans $$$0 />")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .each((transItem: any) => {
+        // console.log(filePath)
+        const match = transItem.match["$$$0"]
+        const nsItem = match.find((item) => item.name.name === "ns")
+        const nsVal = nsItem?.value.value || nsItem?.value.expression.value
+        // console.log(nsVal)
+        if (!nsVal) {
+          // ignore, continue
+          console.error(`ns is not correct, just ignore it, file: ${filePath}`)
+          return
+        }
+        const i18nKeyItem = match.find((item) => item.name.name === "i18nKey")
+        const i18nKeyVal =
+          i18nKeyItem?.value.value || i18nKeyItem?.value.expression.value
+        // console.log(i18nKeyVal)
+        if (!i18nKeyVal) {
+          // ignore, continue
+          console.error(
+            `i18nKey is not correct, just ignore it, file: ${filePath}`,
+          )
+          return
+        }
+        const nsFolderPos = filePath.indexOf(`/${nsVal}`)
+        if (nsFolderPos === -1) {
+          console.error(filePath)
+          console.error(`namespace mismatch: ${nsVal}`)
+          return
+        }
+        if (!nsData[nsVal]) {
           nsData[nsVal] = {
             type: "app",
             path: filePath.slice(0, nsFolderPos) + "/" + nsVal,
             files: [filePath],
           }
         }
-      }
-    }
+        if (!nsData[nsVal].files.includes(filePath)) {
+          nsData[nsVal].files.push(filePath)
+        }
+      })
   }
   // console.log(nsData)
 }
@@ -187,6 +240,28 @@ function extractLocales(localeData: LocaleData, ns: string, filePath: string) {
         }
         localeData[ns].keys[key] = value
       }
+    })
+
+  // Handle `<Trans/> component
+  ast
+    .find("<Trans $$$0 />")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .each((transItem: any) => {
+      const match = transItem.match["$$$0"]
+      const nsItem = match.find((item) => item.name.name === "ns")
+      const nsVal = nsItem?.value.value || nsItem?.value.expression.value
+      if (!nsVal) {
+        // ignore, continue
+        return
+      }
+      const i18nKeyItem = match.find((item) => item.name.name === "i18nKey")
+      const i18nKeyVal =
+        i18nKeyItem?.value.value || i18nKeyItem?.value.expression.value
+      if (!i18nKeyVal) {
+        // ignore, continue
+        return
+      }
+      localeData[ns].texts[i18nKeyVal] = i18nKeyVal
     })
 }
 

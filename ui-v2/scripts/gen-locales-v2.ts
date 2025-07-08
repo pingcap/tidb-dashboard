@@ -7,7 +7,7 @@ import $ from "gogocode"
 //-------------------
 // options
 const OPTIONS = {
-  scanPaths: [
+  files: [
     "packages/libs/3-biz-ui/src/**/*.{ts,tsx,js,jsx}",
     "packages/libs/4-apps/src/**/*.{ts,tsx,js,jsx}",
   ],
@@ -79,7 +79,7 @@ async function generateLocales() {
 
 async function extractNs(nsData: NamespaceData) {
   // Scan all TypeScript/JavaScript files in the apps folder
-  const files = await glob(OPTIONS.scanPaths)
+  const files = await glob(OPTIONS.files)
 
   // traverse files to get all component namespaces
   for (const filePath of files) {

@@ -402,14 +402,14 @@ function outputComponentLocales(
   )
   ast.replace(
     `type I18nLocaleKeys = $_$`,
-    `type I18nLocaleKeys = ${allKeys.map((k) => `\n  | "${k}"`).join("")}`,
+    `type I18nLocaleKeys =${allKeys.map((k) => `\n  | "${k}"`).join("")}`,
   )
 
   // update en
   const keyPartKeys = Object.keys(localeData[ns].keys)
   ast.replace(
     `const en: I18nLocale = { $$$0 }`,
-    `const en: I18nLocale = { ${keyPartKeys.map((k) => `"${k}": "${localeData[ns].keys[k]}"`).join(", ")} }`,
+    `const en: I18nLocale = {${keyPartKeys.map((k) => `"${k}": "${localeData[ns].keys[k]}"`).join(",")}}`,
   )
 
   // get existed zh
@@ -436,7 +436,7 @@ function outputComponentLocales(
   // update zh
   ast.replace(
     `const zh: I18nLocale = { $$$0 }`,
-    `const zh: I18nLocale = { ${allKeys.map((k) => `\n  "${k}": "${zhLocales[k]}",`).join("")} }`,
+    `const zh: I18nLocale = {${allKeys.map((k) => `\n  "${k}": "${zhLocales[k]}"`).join(",")}\n}`,
   )
 
   fs.writeFileSync(filePath, ast.generate())

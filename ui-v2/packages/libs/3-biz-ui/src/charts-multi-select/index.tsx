@@ -1,7 +1,4 @@
-import {
-  addLangsLocales,
-  useTn,
-} from "@pingcap-incubator/tidb-dashboard-lib-utils"
+import { useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 import {
   Button,
   Checkbox,
@@ -13,6 +10,8 @@ import {
 } from "@tidbcloud/uikit"
 import { IconChevronDown } from "@tidbcloud/uikit/icons"
 import { useMemo, useState } from "react"
+
+import { I18nNamespace, updateI18nLocales } from "./locales"
 
 export type ChartsSelectData = {
   category: string
@@ -185,46 +184,6 @@ export function ChartMultiSelect({
     </Combobox>
   )
 }
-
-//------------------------
-// i18n
-// auto updated by running `pnpm gen:locales`
-
-const I18nNamespace = "charts-multi-select"
-type I18nLocaleKeys =
-  | "All charts selected"
-  | "Nothing found"
-  | "Reset"
-  | "Search"
-  | "Show All"
-  | "Show Hidden"
-  | "{{selected}}/{{all}} charts selected"
-type I18nLocale = {
-  [K in I18nLocaleKeys]?: string
-}
-const en: I18nLocale = {}
-const zh: I18nLocale = {
-  "All charts selected": "所有图表已选",
-  "Nothing found": "未找到",
-  Reset: "重置",
-  Search: "搜索",
-  "Show All": "显示全部",
-  "Show Hidden": "显示未选",
-  "{{selected}}/{{all}} charts selected": "{{selected}}/{{all}} 图表已选",
-}
-
-function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {
-  for (const [ln, locale] of Object.entries(locales)) {
-    addLangsLocales({
-      [ln]: {
-        __namespace__: I18nNamespace,
-        ...locale,
-      },
-    })
-  }
-}
-
-updateI18nLocales({ en, zh })
 
 ChartMultiSelect.i18nNamespace = I18nNamespace
 ChartMultiSelect.updateI18nLocales = updateI18nLocales

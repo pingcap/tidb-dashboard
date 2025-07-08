@@ -1,27 +1,21 @@
 // prettier-ignore
+//------------------------
+// i18n
+// auto updated by running `pnpm gen:locales`
+
 import { addLangsLocales } from "@pingcap-incubator/tidb-dashboard-lib-utils"
 
-export const I18nNamespace = "advanced-filters"
-type I18nLocaleKeys =
-  | "AND"
-  | "Add Filter"
-  | "Advanced Filters"
-  | "Cancel"
-  | "Filter Name"
-  | "Save"
-  | "WHEN"
+export const I18nNamespace = "info-table"
+
+type I18nLocaleKeys = "Description" | "Name" | "Value"
 type I18nLocale = {
   [K in I18nLocaleKeys]?: string
 }
 const en: I18nLocale = {}
 const zh: I18nLocale = {
-  AND: "且",
-  "Add Filter": "添加筛选条件",
-  "Advanced Filters": "高级筛选",
-  Cancel: "取消",
-  "Filter Name": "筛选条件名称",
-  Save: "保存",
-  WHEN: "当",
+  Description: "描述",
+  Name: "名称",
+  Value: "值",
 }
 
 export function updateI18nLocales(locales: { [ln: string]: I18nLocale }) {

@@ -3,6 +3,7 @@
 package statement
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -90,8 +91,9 @@ func (s *Service) queryStatements(
 			)
 		}
 	}
-
-	err = query.Find(&result).Error
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	err = query.WithContext(ctx).Find(&result).Error
 	return
 }
 

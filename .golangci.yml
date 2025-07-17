@@ -25,6 +25,16 @@ issues:
     - text: "G112:"
       linters:
         - gosec
+<<<<<<< HEAD
+=======
+    - text: "G115"
+      linters:
+        - gosec
+  exclude-dirs:
+    - swaggerspec
+    - pkg/uiserver
+    - ui
+>>>>>>> 920fad0d9 (update net, crypto, image version, update go version to 1.23 (#1801))
 
 linters:
   enable:

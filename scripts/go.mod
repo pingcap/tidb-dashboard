@@ -11,7 +11,7 @@ require (
 	github.com/swaggo/swag v1.7.9
 	github.com/vektra/mockery/v2 v2.40.3
 	go.uber.org/zap v1.21.0
-	golang.org/x/mod v0.14.0
+	golang.org/x/mod v0.17.0
 )
 
 require (

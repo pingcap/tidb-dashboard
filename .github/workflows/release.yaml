@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # https://pnpm.io/continuous-integration#github-actions
       - name: Setup PNPM
         uses: pnpm/action-setup@v2
         with:
           version: 8
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: "18"
           cache: "pnpm"

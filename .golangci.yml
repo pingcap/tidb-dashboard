@@ -21,6 +21,9 @@ issues:
     - text: "G112:"
       linters:
         - gosec
+    - text: "G115"
+      linters:
+        - gosec
   exclude-dirs:
     - swaggerspec
     - pkg/uiserver

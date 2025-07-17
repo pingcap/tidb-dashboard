@@ -31,6 +31,6 @@ func profileAndWritePprof(_ context.Context, fts *fetchers, target *model.Reques
 	case model.NodeKindTiProxy:
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tiproxy, profilingType: profilingType})
 	default:
-		return "", "", ErrUnsupportedProfilingTarget.New(target.String())
+		return "", "", ErrUnsupportedProfilingTarget.New(target.String()) // nolint: vet
 	}
 }

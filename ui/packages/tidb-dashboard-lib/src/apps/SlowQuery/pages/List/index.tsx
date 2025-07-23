@@ -8,7 +8,6 @@ import {
   message,
   Menu,
   Dropdown,
-  Alert,
   Tooltip,
   Result,
   Tag,
@@ -47,8 +46,7 @@ import {
   LIMITS,
   DEF_SLOW_QUERY_COLUMN_KEYS,
   SLOW_QUERY_VISIBLE_COLUMN_KEYS,
-  SLOW_QUERY_SHOW_FULL_SQL,
-  SLOW_DATA_LOAD_THRESHOLD
+  SLOW_QUERY_SHOW_FULL_SQL
 } from '../../utils/helpers'
 import { SlowQueryContext } from '../../context'
 import { useSlowQueryListUrlState } from '../../utils/list-url-state'
@@ -82,7 +80,7 @@ function useDbsData() {
         .getDatabaseList(0, 0, { handleError: 'custom' })
         .then((res) => res.data)
     },
-    enabled: ctx?.cfg.showDBFilter
+    enabled: ctx?.cfg.showDBFilter && !!timeRangeValue[0]
   })
   return query
 }
@@ -129,8 +127,6 @@ function useSlowqueryListData(visibleColumnKeys: IColumnKeys) {
     [visibleColumnKeys]
   )
 
-  const [loadSlowly, setLoadSlowly] = useState(false)
-
   const query = useQuery({
     queryKey: [
       'slow_query',
@@ -145,7 +141,6 @@ function useSlowqueryListData(visibleColumnKeys: IColumnKeys) {
       term
     ],
     queryFn: () => {
-      const requestBeginAt = performance.now()
       return ctx?.ds
         .slowQueryListGet(
           timeRangeValue[0],
@@ -162,16 +157,10 @@ function useSlowqueryListData(visibleColumnKeys: IColumnKeys) {
           { handleError: 'custom' }
         )
         .then((res) => res.data)
-        .finally(() => {
-          const elapsed = performance.now() - requestBeginAt
-          const isLoadSlow = elapsed >= SLOW_DATA_LOAD_THRESHOLD
-          setLoadSlowly(isLoadSlow)
-        })
     },
-    enabled: !loadSlowly,
     retry: false
   })
-  return { query, loadSlowly }
+  return { query }
 }
 
 function List() {
@@ -234,8 +223,7 @@ function List() {
       refetch: refetchSlowQueryData,
       isFetching: fetchingSlowQueryData,
       error: slowQueryError
-    },
-    loadSlowly
+    }
   } = useSlowqueryListData(visibleColumnKeys)
 
   const availableColumnsInTable = useMemo(
@@ -548,15 +536,6 @@ function List() {
       ) : (
         <div style={{ height: '100%', position: 'relative' }}>
           <ScrollablePane>
-            {loadSlowly && (ctx?.cfg.instantQuery ?? true) && (
-              <Card noMarginBottom noMarginTop>
-                <Alert
-                  message={t('slow_query.overview.slow_load_info')}
-                  type="info"
-                  showIcon
-                />
-              </Card>
-            )}
             {(slowQueryData?.length ?? 0) > 0 && (
               <Card noMarginBottom noMarginTop>
                 <div className="ant-form-item-extra">

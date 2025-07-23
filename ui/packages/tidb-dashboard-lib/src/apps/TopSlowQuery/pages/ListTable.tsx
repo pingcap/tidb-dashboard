@@ -42,7 +42,8 @@ function useTopSlowQueryData() {
         internal,
         stmtKinds
       })
-    }
+    },
+    enabled: !!tw[0]
   })
   return query
 }

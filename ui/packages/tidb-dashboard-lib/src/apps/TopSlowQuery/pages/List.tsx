@@ -244,7 +244,8 @@ function useChartData() {
         start: tw[0],
         end: tw[1]
       })
-    }
+    },
+    enabled: !!tw[0]
   })
   return query
 }
@@ -301,7 +302,8 @@ function useDatabaseList() {
     ],
     queryFn: () => {
       return ctx.api.getDatabaseList({ start: tw[0], end: tw[1] })
-    }
+    },
+    enabled: !!tw[0]
   })
   return query
 }

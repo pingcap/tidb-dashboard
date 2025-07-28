@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/gtank/cryptopasta"
 )
 
@@ -21,6 +21,7 @@ type Claims struct {
 func newClaims(issuer string, data string, expireIn time.Duration) *Claims {
 	return &Claims{
 		Data: data,
+		//nolint:staticcheck
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(expireIn).Unix(),
 			Issuer:    issuer,

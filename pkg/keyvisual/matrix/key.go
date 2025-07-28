@@ -29,7 +29,7 @@ func (km *KeyMap) SaveKeys(keys []string) {
 }
 
 func equal(keyA, keyB string) bool {
-	pA := (*reflect.StringHeader)(unsafe.Pointer(&keyA)) // #nosec
-	pB := (*reflect.StringHeader)(unsafe.Pointer(&keyB)) // #nosec
+	pA := (*reflect.StringHeader)(unsafe.Pointer(&keyA)) //nolint:staticcheck
+	pB := (*reflect.StringHeader)(unsafe.Pointer(&keyB)) //nolint:staticcheck
 	return pA.Data == pB.Data && pA.Len == pB.Len
 }

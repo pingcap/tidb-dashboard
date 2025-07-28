@@ -139,6 +139,7 @@ func (fw *FileWriter) GetDownloadToken(downloadFileName string, expireIn time.Du
 	claims := downloadTokenClaims{
 		TempFileName:     fw.filePath,
 		DownloadFileName: downloadFileName,
+		//nolint:staticcheck
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(expireIn).Unix(),
 		},

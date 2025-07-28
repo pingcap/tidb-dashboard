@@ -56,8 +56,8 @@ require (
 	google.golang.org/protobuf v1.30.0
 	gorm.io/datatypes v1.1.0
 	gorm.io/driver/mysql v1.4.5
-	gorm.io/driver/sqlite v1.4.3
-	gorm.io/gorm v1.24.3
+	gorm.io/driver/sqlite v1.5.7
+	gorm.io/gorm v1.25.7-0.20240204074919-46816ad31dde
 	moul.io/zapgorm2 v1.1.0
 )
 
@@ -93,7 +93,7 @@ require (
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/mattn/go-sqlite3 v1.14.15 // indirect
+	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect

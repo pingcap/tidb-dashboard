@@ -185,7 +185,7 @@ jobs:
   #         CYPRESS_ALLOW_SCREENSHOT: true
   #         WITHOUT_NGM: ${{ matrix.without_ngm }}
   #     - name: Upload coverage to Codecov
-  #       uses: codecov/codecov-action@v2
+  #       uses: codecov/codecov-action@v5
   #       with:
   #         files: ./ui/packages/tidb-dashboard-for-op/.nyc_output/out.json
   #         fail_ci_if_error: false

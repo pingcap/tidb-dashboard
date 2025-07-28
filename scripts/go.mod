@@ -1,10 +1,6 @@
 module scripts
 
-<<<<<<< HEAD
-go 1.18
-=======
 go 1.23.0
->>>>>>> 920fad0d9 (update net, crypto, image version, update go version to 1.23 (#1801))
 
 require (
 	github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe
@@ -15,7 +11,7 @@ require (
 	github.com/swaggo/swag v1.7.9
 	github.com/vektra/mockery/v2 v2.14.1
 	go.uber.org/zap v1.19.0
-	golang.org/x/mod v0.8.0
+	golang.org/x/mod v0.17.0
 )
 
 require (
@@ -55,23 +51,14 @@ require (
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-<<<<<<< HEAD
 	go.uber.org/multierr v1.7.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
-	golang.org/x/tools v0.6.0 // indirect
-=======
-	go.uber.org/multierr v1.8.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
->>>>>>> 920fad0d9 (update net, crypto, image version, update go version to 1.23 (#1801))
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

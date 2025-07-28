@@ -19,7 +19,7 @@ require (
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/goccy/go-graphviz v0.0.9
-	github.com/golang-jwt/jwt v3.2.1+incompatible
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/golang/snappy v0.0.4
 	github.com/google/pprof v0.0.0-20211122183932-1daafda22083
 	github.com/google/uuid v1.3.1
@@ -49,15 +49,9 @@ require (
 	go.etcd.io/etcd/client/v3 v3.5.15
 	go.uber.org/atomic v1.9.0
 	go.uber.org/fx v1.12.0
-<<<<<<< HEAD
 	go.uber.org/goleak v1.1.11
 	go.uber.org/zap v1.21.0
-	golang.org/x/oauth2 v0.11.0
-=======
-	go.uber.org/goleak v1.1.10
-	go.uber.org/zap v1.19.0
 	golang.org/x/oauth2 v0.27.0
->>>>>>> da7969ecb (Update oauth2 version due to security reason (#1811))
 	golang.org/x/sync v0.12.0
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.33.0
@@ -91,6 +85,7 @@ require (
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang-jwt/jwt v3.2.1+incompatible // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/ianlancetaylor/demangle v0.0.0-20210905161508-09a460cdf81d // indirect

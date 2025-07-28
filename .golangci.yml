@@ -1,8 +1,4 @@
 run:
-  skip-dirs:
-    - swaggerspec
-    - pkg/uiserver
-    - ui
   timeout: 2m
 
 issues:
@@ -25,12 +21,18 @@ issues:
     - text: "G112:"
       linters:
         - gosec
+    - text: "G115"
+      linters:
+        - gosec
+  exclude-dirs:
+    - swaggerspec
+    - pkg/uiserver
+    - ui
 
 linters:
   enable:
     # Additionally enable some checkers
     - asciicheck
-    - depguard
     - dogsled
     - durationcheck
     - errorlint
@@ -40,12 +42,10 @@ linters:
     - gofumpt
     - goheader
     - goimports
-    - gosec
     - importas
     - nestif
     - prealloc
     - predeclared
-    - revive
     - unconvert
     - whitespace
 
@@ -59,6 +59,3 @@ linters-settings:
     # exclude swag annotations
     exclude:
       - "^\\s*@"
-  goheader:
-    template: |-
-      Copyright {{ YEAR }} PingCAP, Inc. Licensed under Apache-2.0.

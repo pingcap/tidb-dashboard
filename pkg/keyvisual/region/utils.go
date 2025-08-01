@@ -12,8 +12,8 @@ func String(b []byte) (s string) {
 	if len(b) == 0 {
 		return ""
 	}
-	pbytes := (*reflect.SliceHeader)(unsafe.Pointer(&b))   //nolint:staticcheck
-	pstring := (*reflect.StringHeader)(unsafe.Pointer(&s)) //nolint:staticcheck
+	pbytes := (*reflect.SliceHeader)(unsafe.Pointer(&b))   // #nosec
+	pstring := (*reflect.StringHeader)(unsafe.Pointer(&s)) // #nosec
 	pstring.Data = pbytes.Data
 	pstring.Len = pbytes.Len
 	return
@@ -24,8 +24,8 @@ func Bytes(s string) (b []byte) {
 	if len(s) == 0 {
 		return
 	}
-	pbytes := (*reflect.SliceHeader)(unsafe.Pointer(&b))   //nolint:staticcheck
-	pstring := (*reflect.StringHeader)(unsafe.Pointer(&s)) //nolint:staticcheck
+	pbytes := (*reflect.SliceHeader)(unsafe.Pointer(&b))   // #nosec
+	pstring := (*reflect.StringHeader)(unsafe.Pointer(&s)) // #nosec
 	pbytes.Data = pstring.Data
 	pbytes.Len = pstring.Len
 	pbytes.Cap = pstring.Len

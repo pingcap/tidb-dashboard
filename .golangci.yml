@@ -21,9 +21,6 @@ issues:
     - text: "G112:"
       linters:
         - gosec
-    - text: "G115"
-      linters:
-        - gosec
   exclude-dirs:
     - swaggerspec
     - pkg/uiserver
@@ -62,3 +59,6 @@ linters-settings:
     # exclude swag annotations
     exclude:
       - "^\\s*@"
+  goheader:
+    template: |-
+      Copyright {{ YEAR }} PingCAP, Inc. Licensed under Apache-2.0.

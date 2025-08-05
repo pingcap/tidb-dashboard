@@ -56,6 +56,7 @@ import { InstanceType } from './ListDetail/ListDetailTable'
 import { isDistro } from '@lib/utils/distro'
 import { TopSQLContext } from '../../context'
 import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
+import { useQueryParams } from '@lib/hooks/useQueryParams'
 
 const { Option } = Select
 const CHART_BAR_WIDTH = 8
@@ -89,6 +90,11 @@ export function TopSQLList() {
     'topsql.instance',
     null
   )
+  const { queryParams, setQueryParams } = useQueryParams<{
+    instance: string
+  }>({
+    instance: ''
+  })
   const { timeRange, setTimeRange } = useURLTimeRange()
   const [limit, setLimit] = useState(5)
   const [groupBy, setGroupBy] = useState(AggLevel.Query)
@@ -142,13 +148,24 @@ export function TopSQLList() {
   )
 
   const fetchInstancesAndSelectInstance = useMemoizedFn(async () => {
-    const [firstInstance] = await fetchInstances(timeRange)
+    const instances = await fetchInstances(timeRange)
+    const instanceFromURL = queryParams.instance
+
+    if (instanceFromURL) {
+      const instance = instances.find(
+        (instance) => instance.instance === instanceFromURL
+      )
+      if (instance) {
+        setInstance(instance)
+        return
+      }
+    }
 
     // Select the first instance if there not instance selected
     if (!!instance) {
       return
     }
-    setInstance(firstInstance)
+    setInstance(instances[0])
   })
 
   useMount(() => {
@@ -211,6 +228,9 @@ export function TopSQLList() {
                 value={instance}
                 onChange={(inst) => {
                   setInstance(inst)
+                  if (!!inst?.instance) {
+                    setQueryParams({ instance: inst.instance })
+                  }
                   if (inst) {
                     telemetry.finishSelectInstance(inst?.instance_type!)
                   }

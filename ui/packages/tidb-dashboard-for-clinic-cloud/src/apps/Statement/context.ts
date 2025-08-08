@@ -135,6 +135,7 @@ class DataSource implements IStatementDataSource {
     plans?: Array<string>,
     resourceGroup?: Array<string>,
     text?: string,
+    showInternal?: boolean,
     options?: ReqConfig
   ) {
     return client.getInstance().slowQueryListGet(

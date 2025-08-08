@@ -22,6 +22,8 @@ task('tsc:build', shell.task('tsc'))
 
 if (process.env.WATCH_API === '1') {
   task('dev', series('swagger:gen', parallel('swagger:watch', 'tsc:watch')))
+} else if (process.env.SKIP_GEN_API === '1') {
+  task('dev', series('tsc:build'))
 } else {
   // WATCH_API = 0
   task('dev', series('swagger:gen', 'tsc:build'))

@@ -19,7 +19,8 @@ type ListUrlState = Partial<
     | 'fields'
     | 'full_sql'
     | 'order'
-    | 'row',
+    | 'row'
+    | 'show_internal',
     string
   >
 >
@@ -133,6 +134,23 @@ export function useSlowQueryListUrlState() {
     [setQueryParams]
   )
 
+  // show internal
+  const showInternal = useMemo(() => {
+    const showInternalStr = String(
+      queryParams.show_internal ?? ''
+    ).toLowerCase()
+    if (showInternalStr === '1' || showInternalStr === 'true') {
+      return true
+    }
+    return false
+  }, [queryParams.show_internal])
+  const setShowInternal = useCallback(
+    (show: boolean) => {
+      setQueryParams({ show_internal: show })
+    },
+    [setQueryParams]
+  )
+
   return {
     queryParams,
     setQueryParams,
@@ -160,6 +178,9 @@ export function useSlowQueryListUrlState() {
     resetOrder,
 
     rowIdx,
-    setRowIdx
+    setRowIdx,
+
+    showInternal,
+    setShowInternal
   }
 }

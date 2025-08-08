@@ -182,6 +182,7 @@ slow_query:
       columnTitle: 资源组名
     select_columns:
       show_full_sql: 显示完整 SQL 文本
+    show_internal: 显示内部查询
     refresh: 刷新
     digest:
       placeholder: Digest

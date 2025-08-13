@@ -180,6 +180,7 @@ slow_query:
       columnTitle: Resource Group Name
     select_columns:
       show_full_sql: Show Full Query Text
+    show_internal: Show Internal
     refresh: Refresh
     digest:
       placeholder: Digest

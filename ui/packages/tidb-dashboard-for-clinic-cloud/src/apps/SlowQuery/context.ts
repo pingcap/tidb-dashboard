@@ -55,24 +55,61 @@ class DataSource implements ISlowQueryDataSource {
     plans?: Array<string>,
     resourceGroup?: Array<string>,
     text?: string,
+    showInternal?: boolean,
     options?: ReqConfig
   ) {
-    return client.getInstance().slowQueryListGet(
-      {
-        beginTime,
-        db,
-        desc,
-        digest,
-        endTime,
-        fields,
-        limit,
-        orderBy,
-        plans,
-        resourceGroup,
-        text
-      },
-      options
-    )
+    const localVarQueryParameter = {} as any
+    if (beginTime !== undefined) {
+      localVarQueryParameter['begin_time'] = beginTime
+    }
+    if (db) {
+      localVarQueryParameter['db'] = db
+    }
+    if (desc !== undefined) {
+      localVarQueryParameter['desc'] = desc
+    }
+    if (digest !== undefined) {
+      localVarQueryParameter['digest'] = digest
+    }
+    if (endTime !== undefined) {
+      localVarQueryParameter['end_time'] = endTime
+    }
+    if (fields !== undefined) {
+      localVarQueryParameter['fields'] = fields
+    }
+    if (limit !== undefined) {
+      localVarQueryParameter['limit'] = limit
+    }
+    if (orderBy !== undefined) {
+      localVarQueryParameter['orderBy'] = orderBy
+    }
+    if (plans) {
+      localVarQueryParameter['plans'] = plans
+    }
+    if (resourceGroup) {
+      localVarQueryParameter['resource_group'] = resourceGroup
+    }
+    if (text !== undefined) {
+      localVarQueryParameter['text'] = text
+    }
+    if (showInternal !== undefined) {
+      localVarQueryParameter['show_internal'] = showInternal
+    }
+    const searchParams = new URLSearchParams()
+    for (const field in localVarQueryParameter) {
+      const value = localVarQueryParameter[field]
+      if (Array.isArray(value)) {
+        searchParams.delete(field)
+        for (const item of value) {
+          searchParams.append(field, item)
+        }
+      } else {
+        searchParams.set(field, value)
+      }
+    }
+    const searchString = searchParams.toString()
+
+    return client.getAxiosInstance().get(`/slow_query/list?${searchString}`)
   }
 
   slowQueryDetailGet(
@@ -171,6 +208,7 @@ export const ctx: (cfg: Partial<ISlowQueryConfig>) => ISlowQueryContext = (
       showDigestFilter: false,
       showResourceGroupFilter: true,
       showDownloadSlowQueryDBFile: true,
+      showInternalFilter: true,
       ...cfg
     }
   }

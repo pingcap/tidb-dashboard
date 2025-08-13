@@ -12,7 +12,8 @@ import {
   Result,
   Tag,
   Button,
-  Form
+  Form,
+  Switch
 } from 'antd'
 import { useMemoizedFn } from 'ahooks'
 import { Link, useNavigate } from 'react-router-dom'
@@ -117,7 +118,7 @@ function useAvailableColumnsData() {
 function useSlowqueryListData(visibleColumnKeys: IColumnKeys) {
   const ctx = useContext(SlowQueryContext)
 
-  const { timeRange, dbs, order, digest, limit, ruGroups, term } =
+  const { timeRange, dbs, order, digest, limit, ruGroups, term, showInternal } =
     useSlowQueryListUrlState()
 
   const timeRangeValue = toTimeRangeValue(timeRange)
@@ -138,7 +139,8 @@ function useSlowqueryListData(visibleColumnKeys: IColumnKeys) {
       visibleColumnKeys,
       limit,
       ruGroups,
-      term
+      term,
+      showInternal
     ],
     queryFn: () => {
       return ctx?.ds
@@ -154,6 +156,7 @@ function useSlowqueryListData(visibleColumnKeys: IColumnKeys) {
           [],
           ruGroups,
           term,
+          showInternal,
           { handleError: 'custom' }
         )
         .then((res) => res.data)
@@ -191,7 +194,10 @@ function List() {
     resetOrder,
 
     rowIdx,
-    setRowIdx
+    setRowIdx,
+
+    showInternal,
+    setShowInternal
   } = useSlowQueryListUrlState()
 
   const [defDbs, _] = useState(dbs)
@@ -482,55 +488,61 @@ function List() {
           </Space>
 
           <Space>
-            {availableColumnsInTable.length > 0 && (
-              <ColumnsSelector
-                columns={availableColumnsInTable}
-                visibleColumnKeys={visibleColumnKeys}
-                defaultVisibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
-                onChange={updateVisibleColumnKeys}
-                foot={
-                  <Checkbox
-                    checked={showFullSQL}
-                    onChange={(e) => setShowFullSQL(e.target.checked)}
-                    data-e2e="slow_query_show_full_sql"
-                  >
-                    {t('slow_query.toolbar.select_columns.show_full_sql')}
-                  </Checkbox>
-                }
-              />
+            {ctx!.cfg.showInternalFilter && (
+              <Space>
+                <Switch checked={showInternal} onChange={setShowInternal} />
+                {t('slow_query.toolbar.show_internal')}
+              </Space>
             )}
-
-            {ctx!.cfg.enableExport && (
-              <Dropdown overlay={dropdownMenu} placement="bottomRight">
-                <div
-                  style={{ cursor: 'pointer' }}
-                  data-e2e="slow_query_export_menu"
-                >
-                  <MenuOutlined />
-                </div>
-              </Dropdown>
-            )}
-
-            {!isDistro() && (ctx!.cfg.showHelp ?? true) && (
-              <Tooltip
-                mouseEnterDelay={0}
-                mouseLeaveDelay={0}
-                title={t('slow_query.toolbar.help')}
-                placement="bottom"
-              >
-                <QuestionCircleOutlined
-                  onClick={() => {
-                    window.open(t('slow_query.toolbar.help_url'), '_blank')
-                  }}
+            <Space>
+              {availableColumnsInTable.length > 0 && (
+                <ColumnsSelector
+                  columns={availableColumnsInTable}
+                  visibleColumnKeys={visibleColumnKeys}
+                  defaultVisibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
+                  onChange={updateVisibleColumnKeys}
+                  foot={
+                    <Checkbox
+                      checked={showFullSQL}
+                      onChange={(e) => setShowFullSQL(e.target.checked)}
+                      data-e2e="slow_query_show_full_sql"
+                    >
+                      {t('slow_query.toolbar.select_columns.show_full_sql')}
+                    </Checkbox>
+                  }
                 />
-              </Tooltip>
-            )}
+              )}
+
+              {ctx!.cfg.enableExport && (
+                <Dropdown overlay={dropdownMenu} placement="bottomRight">
+                  <div
+                    style={{ cursor: 'pointer' }}
+                    data-e2e="slow_query_export_menu"
+                  >
+                    <MenuOutlined />
+                  </div>
+                </Dropdown>
+              )}
+
+              {!isDistro() && (ctx!.cfg.showHelp ?? true) && (
+                <Tooltip
+                  mouseEnterDelay={0}
+                  mouseLeaveDelay={0}
+                  title={t('slow_query.toolbar.help')}
+                  placement="bottom"
+                >
+                  <QuestionCircleOutlined
+                    onClick={() => {
+                      window.open(t('slow_query.toolbar.help_url'), '_blank')
+                    }}
+                  />
+                </Tooltip>
+              )}
+            </Space>
           </Space>
         </Toolbar>
       </Card>
-
       <div style={{ height: 16 }} />
-
       {slowQueryData?.length === 0 ? (
         <Result title={t('slow_query.overview.empty_result')} />
       ) : (

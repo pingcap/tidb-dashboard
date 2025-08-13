@@ -68,7 +68,7 @@
     "visual-plan": "^0.0.7"
   },
   "devDependencies": {
-    "@baurine/esbuild-plugin-postcss3": "^0.3.3",
+    "@baurine/esbuild-plugin-postcss3": "^0.4.3",
     "@openapitools/openapi-generator-cli": "^2.4.26",
     "@types/d3": "^5.7.2",
     "@types/d3-graphviz": "^2.6.7",

@@ -1,4 +1,3 @@
-import { getValueFormat } from "@baurine/grafana-value-formats"
 import {
   Axis,
   BrushEvent,
@@ -18,14 +17,7 @@ import { useCallback, useMemo } from "react"
 
 import { renderSeriesData } from "./series-render"
 import { SeriesData } from "./type"
-
-function formatNumByUnit(value: number, unit: string) {
-  const formatFn = getValueFormat(unit)
-  if (!formatFn) {
-    return value + ""
-  }
-  return formatFn(value, 2)
-}
+import { formatNumByUnit } from "./utils"
 
 function niceTimeFormat(seconds: number) {
   // if (max time - min time > 5 days)
@@ -128,7 +120,7 @@ export function SeriesChart({
         id="left"
         position={Position.Left}
         ticks={5}
-        tickFormat={(v) => formatNumByUnit(v, unit)}
+        tickFormat={(v) => formatNumByUnit(v, unit, 2)}
       />
 
       {data.map(renderSeriesData)}

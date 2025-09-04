@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.17.0
+
+### Minor Changes
+
+- add pie-chart
+
 ## 0.16.0
 
 ### Minor Changes

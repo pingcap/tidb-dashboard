@@ -29,7 +29,8 @@ export type DerivedBar = DerivedField<{
 
 export type DerivedCol = DerivedField<string>
 
-export function formatVal(val: number, unit: string, decimals: number = 1) {
+export function formatVal(_val: number, unit: string, decimals: number = 1) {
+  const val = _val || 0
   const formatFn = getValueFormat(unit)
   return unit === 'short' ? formatFn(val, 0, decimals) : formatFn(val, decimals)
 }

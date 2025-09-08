@@ -45,6 +45,7 @@ export interface ISlowQueryOptions {
   groups: string[]
   searchText: string
   limit: number
+  showInternal: boolean
 
   // below is for showing slow queries in the statement detail page
   digest: string
@@ -57,6 +58,7 @@ export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
   schemas: [],
   searchText: '',
   limit: 100,
+  showInternal: false,
 
   digest: '',
   plans: [],
@@ -263,6 +265,7 @@ export default function useSlowQueryTableController({
           queryOptions.plans,
           queryOptions.groups,
           queryOptions.searchText,
+          queryOptions.showInternal,
           {
             handleError: 'custom'
           }

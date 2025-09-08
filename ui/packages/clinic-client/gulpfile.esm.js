@@ -12,7 +12,11 @@ task('tsc:build', shell.task('tsc'))
 
 ///////////////////////////
 
-task('dev', series('swagger:gen', 'tsc:build'))
+if (process.env.SKIP_GEN_API === '1') {
+  task('dev', series('tsc:build'))
+} else {
+  task('dev', series('swagger:gen', 'tsc:build'))
+}
 
 // in netlify or vercel, we only build frontend, we don't need to generate api, else it will fail because we don't have go and java
 if (process.env.SKIP_GEN_API === '1') {

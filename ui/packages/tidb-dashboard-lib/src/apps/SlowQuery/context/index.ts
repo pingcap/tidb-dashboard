@@ -30,6 +30,7 @@ export interface ISlowQueryDataSource {
     plans?: Array<string>,
     resourceGroup?: Array<string>,
     text?: string,
+    showInternal?: boolean,
     options?: ReqConfig
   ): AxiosPromise<Array<SlowqueryModel>>
 
@@ -93,6 +94,9 @@ export interface ISlowQueryConfig extends IContextConfig {
   clusterName?: string
   showTopSlowQueryLink?: boolean
   showDownloadSlowQueryDBFile?: boolean
+
+  // show internal slow queries
+  showInternalFilter?: boolean
 }
 
 export interface ISlowQueryContext {

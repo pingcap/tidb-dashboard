@@ -236,17 +236,22 @@ export class TableColumnFactory {
       onRender: (rec: U) =>
         showFullSQL ? (
           <TextWrap multiline>
-            <HighlightSQL sql={rec[fieldName]!} maxLen={1000} />
+            <HighlightSQL sql={rec[fieldName] || ''} maxLen={1000} />
           </TextWrap>
         ) : (
           <Tooltip
             title={
-              <HighlightSQL sql={rec[fieldName]!} theme="dark" maxLen={1000} />
+              <HighlightSQL
+                sql={rec[fieldName] || ''}
+                theme="dark"
+                maxLen={1000}
+              />
             }
             placement="right"
+            overlayInnerStyle={{ maxHeight: '700px', overflowY: 'auto' }}
           >
             <TextWrap>
-              <HighlightSQL sql={rec[fieldName]!} compact maxLen={1000} />
+              <HighlightSQL sql={rec[fieldName] || ''} compact maxLen={1000} />
             </TextWrap>
           </Tooltip>
         )

@@ -78,7 +78,6 @@
     "gulp-shell": "^0.8.0",
     "http-proxy-middleware": "^2.0.6",
     "live-server": "^1.2.1",
-    "mysql2": "^2.3.3",
     "neat-csv": "5.1.0",
     "typescript": "^4.7.3"
   }

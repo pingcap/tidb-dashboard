@@ -21,6 +21,8 @@ type PieChartProps = {
   data: PieChartData[]
   unit?: string
   charSetting?: SettingsProps
+  colors?: string[]
+  valueFormatter?: (value: number) => string
 }
 
 export function PieChart({
@@ -29,8 +31,14 @@ export function PieChart({
   data,
   unit,
   charSetting,
+  colors,
+  valueFormatter,
 }: PieChartProps) {
   const _id = useId()
+
+  function formatValue(value: number) {
+    return formatNumByUnit(value, unit || "", 1)
+  }
 
   return (
     <Chart>
@@ -44,10 +52,15 @@ export function PieChart({
         data={data}
         id={id || _id}
         valueAccessor={(d) => d.value}
-        valueFormatter={(v) => formatNumByUnit(v, unit || "", 1)}
+        valueFormatter={valueFormatter || formatValue}
         layers={[
           {
             groupByRollup: (d: PieChartData) => d.name,
+            shape: colors
+              ? {
+                  fillColor: (_k, i) => colors?.[i % colors.length] || "",
+                }
+              : undefined,
           },
         ]}
       />

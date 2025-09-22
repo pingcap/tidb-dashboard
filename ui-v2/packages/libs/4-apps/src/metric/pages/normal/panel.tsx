@@ -53,6 +53,19 @@ function PieChartCard() {
           ]}
           theme={colorScheme}
           unit="short"
+          // valueFormatter={v => v + " C"}
+          colors={[
+            "#50A4E0",
+            "#F69E00",
+            "#009688",
+            "#FF5252",
+            "#00ACC1",
+            "#FF9800",
+            "#66BB6A",
+            "#BA68C8",
+            "#3D5AFE",
+            "#FF4081",
+          ]}
         />
       </Box>
     </Card>

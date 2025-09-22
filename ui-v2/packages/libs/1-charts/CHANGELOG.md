@@ -1,5 +1,11 @@
 # @pingcap-incubator/tidb-dashboard-lib-charts
 
+## 0.18.0
+
+### Minor Changes
+
+- support customize colors for PieChart
+
 ## 0.17.0
 
 ### Minor Changes

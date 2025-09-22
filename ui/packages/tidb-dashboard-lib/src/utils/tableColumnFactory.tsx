@@ -16,6 +16,7 @@ import {
   HighlightSQL,
   IColumnKeys
 } from '@lib/components'
+import { formatNumByUnit } from './format'
 
 export type DerivedField<T> = {
   displayTransKey?: string // it is same as avg field name default
@@ -30,8 +31,7 @@ export type DerivedBar = DerivedField<{
 export type DerivedCol = DerivedField<string>
 
 export function formatVal(val: number, unit: string, decimals: number = 1) {
-  const formatFn = getValueFormat(unit)
-  return unit === 'short' ? formatFn(val, 0, decimals) : formatFn(val, decimals)
+  return formatNumByUnit(val, unit, decimals)
 }
 
 export function TranslatedColumnName(

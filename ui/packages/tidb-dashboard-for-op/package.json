@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@baurine/esbuild-plugin-babel": "^0.3.0",
-    "@baurine/esbuild-plugin-postcss3": "^0.3.3",
+    "@baurine/esbuild-plugin-postcss3": "^0.4.3",
     "@cypress/code-coverage": "^3.9.12",
     "@cypress/skip-test": "^2.6.1",
     "@types/node": "^16.9.1",

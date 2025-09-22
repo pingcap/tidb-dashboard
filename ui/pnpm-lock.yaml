@@ -156,8 +156,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0(@babel/core@7.22.10)
       '@baurine/esbuild-plugin-postcss3':
-        specifier: ^0.3.3
-        version: 0.3.3(less@4.1.3)(postcss@8.4.14)(sass@1.53.0)(stylus@0.58.1)
+        specifier: ^0.4.3
+        version: 0.4.3(less@4.1.3)(postcss@8.4.14)(sass@1.53.0)
       '@cypress/code-coverage':
         specifier: ^3.9.12
         version: 3.10.0(@babel/core@7.22.10)(@babel/preset-env@7.18.9)(babel-loader@8.3.0)(cypress@8.5.0)(webpack@5.88.2)
@@ -410,8 +410,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0(@babel/core@7.22.10)
       '@baurine/esbuild-plugin-postcss3':
-        specifier: ^0.3.3
-        version: 0.3.3(less@4.1.3)(postcss@8.4.14)(sass@1.53.0)(stylus@0.58.1)
+        specifier: ^0.4.3
+        version: 0.4.3(less@4.1.3)(postcss@8.4.14)(sass@1.53.0)
       '@cypress/code-coverage':
         specifier: ^3.9.12
         version: 3.10.0(@babel/core@7.22.10)(@babel/preset-env@7.18.9)(babel-loader@8.3.0)(cypress@8.5.0)(webpack@5.88.2)
@@ -660,8 +660,8 @@ importers:
         version: 0.0.7(@types/react@17.0.47)(d3@5.16.0)(react-dom@17.0.2)(react@17.0.2)
     devDependencies:
       '@baurine/esbuild-plugin-postcss3':
-        specifier: ^0.3.3
-        version: 0.3.3(less@4.1.3)(postcss@8.4.14)(sass@1.53.0)(stylus@0.58.1)
+        specifier: ^0.4.3
+        version: 0.4.3(less@4.1.3)(postcss@8.4.14)(sass@1.53.0)
       '@openapitools/openapi-generator-cli':
         specifier: ^2.4.26
         version: 2.5.1
@@ -3313,13 +3313,12 @@ packages:
       '@babel/core': 7.22.10
     dev: true
 
-  /@baurine/esbuild-plugin-postcss3@0.3.3(less@4.1.3)(postcss@8.4.14)(sass@1.53.0)(stylus@0.58.1):
-    resolution: {integrity: sha512-0GiZRUW0LMtBaOaX+ICcpdhzkixPR6RzCnwOrL2GtWYQh1aPUegwEnHwAs+GHb4g1LezC0h2I3NCgs0TTjbQEw==}
+  /@baurine/esbuild-plugin-postcss3@0.4.3(less@4.1.3)(postcss@8.4.14)(sass@1.53.0):
+    resolution: {integrity: sha512-QDs9Qza5HUBUtoF1TnuLKWk7A6fmk+SKaSgRO2ZV+k7K9zPW5wJW0AI7Q0uznys+wx4adIcsdUpqKjZFdeyqHg==}
     peerDependencies:
       less: ^4.x
       postcss: 8.x
       sass: ^1.x
-      stylus: ^0.x
     dependencies:
       autoprefixer: 10.4.7(postcss@8.4.14)
       bulma: 0.9.4
@@ -3329,7 +3328,6 @@ packages:
       postcss-modules: 4.3.1(postcss@8.4.14)
       resolve: 1.22.1
       sass: 1.53.0
-      stylus: 0.58.1
       tmp: 0.2.1
     dev: true
 
@@ -6056,12 +6054,6 @@ packages:
     engines: {node: '>= 4.0.0'}
     dev: true
 
-  /atob@2.1.2:
-    resolution: {integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==}
-    engines: {node: '>= 4.5.0'}
-    hasBin: true
-    dev: true
-
   /autoprefixer@10.4.7(postcss@8.4.14):
     resolution: {integrity: sha512-ypHju4Y2Oav95SipEcCcI5J7CGPuvz8oat7sUtYj3ClK44bldfvtvcxK6IEK++7rqB7YchDGzweZIBG+SD0ZAA==}
     engines: {node: ^10 || ^12 || >=14}
@@ -7225,14 +7217,6 @@ packages:
       source-map: registry.npmmirror.com/source-map@0.6.1
     dev: false
 
-  /css@3.0.0:
-    resolution: {integrity: sha512-DG9pFfwOrzc+hawpmqX/dHYHJG+Bsdb0klhyi1sDneOgGOXy9wQIC8hzyVp1e4NRYDBdxcylvywPkkXCHAzTyQ==}
-    dependencies:
-      inherits: 2.0.4
-      source-map: 0.6.1
-      source-map-resolve: 0.6.0
-    dev: true
-
   /cssesc@3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
     engines: {node: '>=4'}
@@ -7772,8 +7756,8 @@ packages:
       ms: registry.npmmirror.com/ms@2.1.2
       supports-color: 8.1.1
 
-  /debug@4.4.3:
-    resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
+  /debug@4.4.1:
+    resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
@@ -7797,11 +7781,6 @@ packages:
     dependencies:
       character-entities: 2.0.2
     dev: false
-
-  /decode-uri-component@0.2.0:
-    resolution: {integrity: sha512-hjf+xovcEn31w/EUYdTXQh/8smFL/dzYjohQGEIgjyNavaJfBY2p5F527Bo1VPATxv0VYTUC2bOcXvqFwk78Og==}
-    engines: {node: '>=0.10'}
-    dev: true
 
   /deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
@@ -9483,7 +9462,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       at-least-node: 1.0.0
-      graceful-fs: registry.npmmirror.com/graceful-fs@4.2.10
+      graceful-fs: 4.2.10
       jsonfile: 6.1.0
       universalify: 2.0.0
     dev: true
@@ -11738,7 +11717,7 @@ packages:
       is-plain-object: 2.0.4
       object.map: 1.0.1
       rechoir: 0.6.2
-      resolve: registry.npmmirror.com/resolve@1.22.1
+      resolve: 1.22.1
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -12058,7 +12037,7 @@ packages:
     dependencies:
       findup-sync: 2.0.0
       micromatch: 3.1.10
-      resolve: registry.npmmirror.com/resolve@1.22.1
+      resolve: 1.22.1
       stack-trace: 0.0.10
     transitivePeerDependencies:
       - supports-color
@@ -13460,7 +13439,7 @@ packages:
     resolution: {integrity: sha512-whdkPIooSu/bASggZ96BWVvZTRMOFxnyUG5PnTSGKoJE2gd5mbVNmR2Nj20QFzxYYgAXpoqC+AiXzl+UMRh7zQ==}
     engines: {node: '>=8'}
     dependencies:
-      graceful-fs: registry.npmmirror.com/graceful-fs@4.2.10
+      graceful-fs: 4.2.10
       hasha: 5.2.2
       lodash.flattendeep: 4.4.0
       release-zalgo: 1.0.0
@@ -15103,7 +15082,7 @@ packages:
     resolution: {integrity: sha512-1JU/8q+VgFZyxwrJ+SVIOsh+KywWGpds3NTqikiKpDMZWScmAYyKIgqkO+ARvNWJfXeXR1zxz7aHF4u4CyH6vQ==}
     engines: {node: '>=0.10'}
     dependencies:
-      graceful-fs: registry.npmmirror.com/graceful-fs@4.2.10
+      graceful-fs: 4.2.10
       micromatch: 3.1.10
       readable-stream: 2.3.7
     transitivePeerDependencies:
@@ -15135,7 +15114,7 @@ packages:
     resolution: {integrity: sha512-HFM8rkZ+i3zrV+4LQjwQ0W+ez98pApMGM3HUrN04j3CqzPOzl9nmP15Y8YXNm8QHGv/eacOVEjqhmWpkRV0NAw==}
     engines: {node: '>= 0.10'}
     dependencies:
-      resolve: registry.npmmirror.com/resolve@1.22.1
+      resolve: 1.22.1
     dev: true
 
   /redux@4.2.0:
@@ -15555,7 +15534,9 @@ packages:
 
   /sax@1.2.4:
     resolution: {integrity: sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==}
+    requiresBuild: true
     dev: true
+    optional: true
 
   /saxes@5.0.1:
     resolution: {integrity: sha512-5LBh1Tls8c9xgGjw3QrMwETmTMVk0oFgvrFSvWx62llR2hcEInrKNZ2GZCCuuy2lvWrdl5jhbpeqc5hRYKFOcw==}
@@ -15689,7 +15670,7 @@ packages:
     resolution: {integrity: sha512-uaW0WwXKpL9blXE2o0bRhoL2EGXIrZxQ2ZQ4mgcfoBxdFmQold+qWsD2jLrfZ0trjKL6vOw0j//eAwcALFjKSw==}
     engines: {node: '>= 18'}
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.1
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
@@ -15899,14 +15880,6 @@ packages:
   /source-map-js@1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
-    dev: true
-
-  /source-map-resolve@0.6.0:
-    resolution: {integrity: sha512-KXBr9d/fO/bWo97NXsPIAW1bFSBOuCnjbNTBMO7N59hsv5i9yzRDfcYwwt0l04+VqnKC+EwzvJZIP/qkuMgR/w==}
-    deprecated: See https://github.com/lydell/source-map-resolve#deprecated
-    dependencies:
-      atob: 2.1.2
-      decode-uri-component: 0.2.0
     dev: true
 
   /source-map-support@0.5.21:
@@ -16280,19 +16253,6 @@ packages:
   /stylis@4.1.1:
     resolution: {integrity: sha512-lVrM/bNdhVX2OgBFNa2YJ9Lxj7kPzylieHd3TNjuGE0Re9JB7joL5VUKOVH1kdNNJTgGPpT8hmwIAPLaSyEVFQ==}
     dev: false
-
-  /stylus@0.58.1:
-    resolution: {integrity: sha512-AYiCHm5ogczdCPMfe9aeQa4NklB2gcf4D/IhzYPddJjTgPc+k4D/EVE0yfQbZD43MHP3lPy+8NZ9fcFxkrgs/w==}
-    hasBin: true
-    dependencies:
-      css: 3.0.0
-      debug: 4.3.4(supports-color@8.1.1)
-      glob: 7.2.3
-      sax: 1.2.4
-      source-map: 0.7.4
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
 
   /sudo-prompt@9.2.1:
     resolution: {integrity: sha512-Mu7R0g4ig9TUuGSxJavny5Rv0egCEtpZRNMrZaYS1vxkiIxGiGUwoezU3LazIQ+KE04hTrTfNPgxU5gzi7F5Pw==}
@@ -18556,14 +18516,6 @@ packages:
     version: 0.12.2
     dev: false
 
-  registry.npmmirror.com/is-core-module@2.9.0:
-    resolution: {integrity: sha512-+5FPy5PnwmO3lvfMb0AsoPaBG+5KHUI0wYFXOtYPnVVVspTFUuMZNfNaNVRt3FZadstu2c8x23vykRW/NBoU6A==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/is-core-module/-/is-core-module-2.9.0.tgz}
-    name: is-core-module
-    version: 2.9.0
-    dependencies:
-      has: registry.npmmirror.com/has@1.0.3
-    dev: true
-
   registry.npmmirror.com/is-extglob@2.1.1:
     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/is-extglob/-/is-extglob-2.1.1.tgz}
     name: is-extglob
@@ -18782,12 +18734,6 @@ packages:
     version: 3.1.1
     engines: {node: '>=8'}
 
-  registry.npmmirror.com/path-parse@1.0.7:
-    resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/path-parse/-/path-parse-1.0.7.tgz}
-    name: path-parse
-    version: 1.0.7
-    dev: true
-
   registry.npmmirror.com/promise@7.3.1:
     resolution: {integrity: sha512-nolQXZ/4L+bP/UGlkfaIujX9BKxGwmQ9OT4mOt5yvy8iK1h3wqTEJCijzGANTCCl9nWjY41juyAn2K3Q1hLLTg==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/promise/-/promise-7.3.1.tgz}
     name: promise
@@ -18874,17 +18820,6 @@ packages:
     name: resolve-from
     version: 4.0.0
     engines: {node: '>=4'}
-    dev: true
-
-  registry.npmmirror.com/resolve@1.22.1:
-    resolution: {integrity: sha512-nBpuuYuY5jFsli/JIs1oldw6fOQCBioohqWZg/2hiaOybXOft4lonv85uDOKXdf8rhyK159cxU5cDcK/NKk8zw==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/resolve/-/resolve-1.22.1.tgz}
-    name: resolve
-    version: 1.22.1
-    hasBin: true
-    dependencies:
-      is-core-module: registry.npmmirror.com/is-core-module@2.9.0
-      path-parse: registry.npmmirror.com/path-parse@1.0.7
-      supports-preserve-symlinks-flag: registry.npmmirror.com/supports-preserve-symlinks-flag@1.0.0
     dev: true
 
   registry.npmmirror.com/rimraf@3.0.2:
@@ -19097,13 +19032,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       has-flag: registry.npmmirror.com/has-flag@4.0.0
-
-  registry.npmmirror.com/supports-preserve-symlinks-flag@1.0.0:
-    resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz}
-    name: supports-preserve-symlinks-flag
-    version: 1.0.0
-    engines: {node: '>= 0.4'}
-    dev: true
 
   registry.npmmirror.com/through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/through/-/through-2.3.8.tgz}

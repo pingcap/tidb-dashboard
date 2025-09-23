@@ -28,7 +28,7 @@
     "classnames": "^2.3.1",
     "compare-versions": "^5.0.1",
     "eventemitter2": "^6.4.5",
-    "i18next": "^23.7.0",
+    "i18next": "^23.2.9",
     "jsencrypt": "^3.3.2",
     "nprogress": "^0.2.0",
     "rc-animate": "^3.1.0",

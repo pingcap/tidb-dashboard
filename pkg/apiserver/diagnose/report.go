@@ -2039,13 +2039,13 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, err
 }
 
 func GetClusterInfoTable(_, _ string, db *gorm.DB) (TableDef, error) {
-	sql := "select * from information_schema.cluster_info order by type,start_time desc"
+	sql := "SELECT `TYPE`,`INSTANCE`,`STATUS_ADDRESS`,`VERSION`,`GIT_HASH`,`START_TIME`,`UPTIME`,`SERVER_ID` FROM information_schema.cluster_info ORDER BY `TYPE`,`START_TIME` DESC"
 	table := TableDef{
 		Category:    []string{CategoryHeader},
 		Title:       "cluster_info",
 		Comment:     "",
 		joinColumns: []int{0, 1, 2, 3, 4},
-		Column:      []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME"},
+		Column:      []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME", "SERVER_ID"},
 	}
 	rows, err := getSQLRoundRows(db, sql, nil, "")
 	if err != nil {

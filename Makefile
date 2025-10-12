@@ -48,10 +48,6 @@ default: server
 clean:
 	rm -rf ./coverage
 
-.PHONY: install_tools
-install_tools:
-	scripts/install_go_tools.sh
-
 .PHONY: lint
 lint:
 	scripts/lint.sh

@@ -72,11 +72,11 @@ type channelItem struct {
 	Err                  error
 	SourceDisplayAddress string
 	SourceKind           ItemKind
-	Values               map[string]interface{}
+	Values               map[string]any
 }
 
-func processNestedConfigAPIResponse(data []byte) (map[string]interface{}, error) {
-	nestedConfig := make(map[string]interface{})
+func processNestedConfigAPIResponse(data []byte) (map[string]any, error) {
+	nestedConfig := make(map[string]any)
 	if err := json.Unmarshal(data, &nestedConfig); err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (s *Service) getConfigItemsFromPDToChannel(ch chan<- channelItem) {
 	}
 }
 
-func (s *Service) getConfigItemsFromPD() (map[string]interface{}, error) {
+func (s *Service) getConfigItemsFromPD() (map[string]any, error) {
 	data, err := s.params.PDClient.SendGetRequest("/config")
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (s *Service) getConfigItemsFromTiDBToChannel(tidb *topology.TiDBInfo, ch ch
 	}
 }
 
-func (s *Service) getConfigItemsFromTiDB(host string, statusPort int) (map[string]interface{}, error) {
+func (s *Service) getConfigItemsFromTiDB(host string, statusPort int) (map[string]any, error) {
 	data, err := s.params.TiDBClient.WithStatusAPIAddress(host, statusPort).SendGetRequest("/config")
 	if err != nil {
 		return nil, err
@@ -146,7 +146,7 @@ func (s *Service) getConfigItemsFromTiKVToChannel(tikv *topology.StoreInfo, ch c
 	}
 }
 
-func (s *Service) getConfigItemsFromTiKV(host string, statusPort int) (map[string]interface{}, error) {
+func (s *Service) getConfigItemsFromTiKV(host string, statusPort int) (map[string]any, error) {
 	data, err := s.params.TiKVClient.SendGetRequest(host, statusPort, "/config")
 	if err != nil {
 		return nil, err
@@ -172,12 +172,12 @@ func (s *Service) getGlobalVariablesFromTiDBToChannel(db *gorm.DB, ch chan<- cha
 	}
 }
 
-func (s *Service) getGlobalVariablesFromTiDB(db *gorm.DB) (map[string]interface{}, error) {
+func (s *Service) getGlobalVariablesFromTiDB(db *gorm.DB) (map[string]any, error) {
 	var rows []ShowVariableItem
 	if err := db.Raw("SHOW GLOBAL VARIABLES").Find(&rows).Error; err != nil {
 		return nil, err
 	}
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 	for _, r := range rows {
 		result[r.Name] = r.Value
 	}
@@ -185,10 +185,10 @@ func (s *Service) getGlobalVariablesFromTiDB(db *gorm.DB) (map[string]interface{
 }
 
 type Item struct {
-	ID           string      `json:"id"`
-	IsEditable   bool        `json:"is_editable"`
-	IsMultiValue bool        `json:"is_multi_value"` // TODO: Support per-instance config
-	Value        interface{} `json:"value"`          // When multi value present, this contains one of the value
+	ID           string `json:"id"`
+	IsEditable   bool   `json:"is_editable"`
+	IsMultiValue bool   `json:"is_multi_value"` // TODO: Support per-instance config
+	Value        any    `json:"value"`          // When multi value present, this contains one of the value
 }
 
 type AllConfigItems struct {
@@ -244,7 +244,7 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 	close(ch)
 
 	// The first occurred value of each config item
-	valuesMap := make(map[ItemKind]map[string]interface{})
+	valuesMap := make(map[ItemKind]map[string]any)
 	// Number of config item key occurred to detect missing config items
 	occurTimesMap := make(map[ItemKind]map[string]int)
 	// Whether each config item has different values
@@ -259,7 +259,7 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 			expectedOccurTimes[item.SourceKind]++
 		}
 		if _, ok := valuesMap[item.SourceKind]; !ok {
-			valuesMap[item.SourceKind] = make(map[string]interface{})
+			valuesMap[item.SourceKind] = make(map[string]any)
 			occurTimesMap[item.SourceKind] = make(map[string]int)
 			identicalMap[item.SourceKind] = make(map[string]bool)
 		}
@@ -310,11 +310,11 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 	}, nil
 }
 
-func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue interface{}) ([]rest.ErrorResponse, error) {
+func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue any) ([]rest.ErrorResponse, error) {
 	if !isConfigItemEditable(kind, id) {
 		return nil, ErrNotEditable.New("Configuration `%s` is not editable", id)
 	}
-	body := make(map[string]interface{})
+	body := make(map[string]any)
 	body[id] = newValue
 	bodyJSON, err := json.Marshal(&body)
 	if err != nil {

@@ -27,7 +27,7 @@ func queryStmtTypes(db *gorm.DB) (result []string, err error) {
 		Order("stmt_type ASC").
 		Pluck("DISTINCT stmt_type", &result).
 		Error
-	return
+	return result, err
 }
 
 // sample params:
@@ -79,8 +79,8 @@ func (s *Service) queryStatements(
 
 	if len(text) > 0 {
 		lowerText := strings.ToLower(text)
-		arr := strings.Fields(lowerText)
-		for _, v := range arr {
+		arr := strings.FieldsSeq(lowerText)
+		for v := range arr {
 			query = query.Where(
 				`LOWER(digest_text) REGEXP ?
 				 OR LOWER(digest) REGEXP ?
@@ -102,7 +102,7 @@ func (s *Service) queryStatements(
 			}
 		}
 	}
-	return
+	return result, err
 }
 
 func (s *Service) queryPlans(
@@ -152,7 +152,7 @@ func (s *Service) queryPlans(
 
 	err = query.Find(&result).Error
 
-	return
+	return result, err
 }
 
 func (s *Service) queryPlanDetail(
@@ -163,12 +163,12 @@ func (s *Service) queryPlanDetail(
 ) (result Model, err error) {
 	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
-		return
+		return result, err
 	}
 
 	selectStmt, err := s.genSelectStmt(tableColumns, []string{"*"})
 	if err != nil {
-		return
+		return result, err
 	}
 
 	query := db.
@@ -190,7 +190,7 @@ func (s *Service) queryPlanDetail(
 	}
 
 	err = query.Scan(&result).Error
-	return
+	return result, err
 }
 
 func (s *Service) queryPlanBinding(db *gorm.DB, sqlDigest string, beginTime, endTime int) (bindings []Binding, err error) {

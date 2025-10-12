@@ -28,11 +28,9 @@ func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, etcdClient *clientv3
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				s.Background(ctx)
-			}()
+			})
 			return nil
 		},
 	})
@@ -128,7 +126,7 @@ func (e *tidbLabeler) label(key string) (label LabelKey) {
 	isMeta, tableID := keyInfo.MetaOrTable()
 	if isMeta {
 		label.Labels = append(label.Labels, "meta")
-		return
+		return label
 	}
 
 	var detail *tableDetail
@@ -152,7 +150,7 @@ func (e *tidbLabeler) label(key string) (label LabelKey) {
 			label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
 		}
 	}
-	return
+	return label
 }
 
 var globalStart = LabelKey{

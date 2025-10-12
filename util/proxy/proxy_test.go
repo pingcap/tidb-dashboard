@@ -177,7 +177,7 @@ func TestPickLastActiveUpstream(t *testing.T) {
 	require.Equal(t, "foo", resp.String())
 
 	time.Sleep(probeWait)
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		// Let's try multiple times! We should always get "foo".
 		require.True(t, p.HasActiveUpstream())
 		resp, err = sendGetToProxy(p)
@@ -263,7 +263,7 @@ func TestNonActiveUpstreamDown(t *testing.T) {
 	require.Equal(t, fmt.Sprintf("foo#%d", servers.LastID()), resp.String())
 
 	// Close other non active servers
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		if i != servers.LastID() {
 			servers.Servers[i].Close()
 		}

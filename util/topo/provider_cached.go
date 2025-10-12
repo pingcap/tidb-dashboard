@@ -33,7 +33,7 @@ func NewCachedTopology(p TopologyProvider, ttl time.Duration) TopologyProvider {
 	return ct
 }
 
-func (c *CachedTopology) getOrFillCache(key string, backSource func() (interface{}, error)) (interface{}, error) {
+func (c *CachedTopology) getOrFillCache(key string, backSource func() (any, error)) (any, error) {
 	if data, err := c.cache.Get(key); err == nil {
 		return data, nil
 	}
@@ -49,7 +49,7 @@ func (c *CachedTopology) getOrFillCache(key string, backSource func() (interface
 }
 
 func (c *CachedTopology) GetPD(ctx context.Context) ([]PDInfo, error) {
-	v, err := c.getOrFillCache("pd", func() (interface{}, error) {
+	v, err := c.getOrFillCache("pd", func() (any, error) {
 		return c.p.GetPD(ctx)
 	})
 	if err != nil {
@@ -59,7 +59,7 @@ func (c *CachedTopology) GetPD(ctx context.Context) ([]PDInfo, error) {
 }
 
 func (c *CachedTopology) GetTiDB(ctx context.Context) ([]TiDBInfo, error) {
-	v, err := c.getOrFillCache("tidb", func() (interface{}, error) {
+	v, err := c.getOrFillCache("tidb", func() (any, error) {
 		return c.p.GetTiDB(ctx)
 	})
 	if err != nil {
@@ -69,7 +69,7 @@ func (c *CachedTopology) GetTiDB(ctx context.Context) ([]TiDBInfo, error) {
 }
 
 func (c *CachedTopology) GetTiKV(ctx context.Context) ([]TiKVStoreInfo, error) {
-	v, err := c.getOrFillCache("tikv", func() (interface{}, error) {
+	v, err := c.getOrFillCache("tikv", func() (any, error) {
 		return c.p.GetTiKV(ctx)
 	})
 	if err != nil {
@@ -79,7 +79,7 @@ func (c *CachedTopology) GetTiKV(ctx context.Context) ([]TiKVStoreInfo, error) {
 }
 
 func (c *CachedTopology) GetTiFlash(ctx context.Context) ([]TiFlashStoreInfo, error) {
-	v, err := c.getOrFillCache("tiflash", func() (interface{}, error) {
+	v, err := c.getOrFillCache("tiflash", func() (any, error) {
 		return c.p.GetTiFlash(ctx)
 	})
 	if err != nil {
@@ -89,7 +89,7 @@ func (c *CachedTopology) GetTiFlash(ctx context.Context) ([]TiFlashStoreInfo, er
 }
 
 func (c *CachedTopology) GetPrometheus(ctx context.Context) (*PrometheusInfo, error) {
-	v, err := c.getOrFillCache("prometheus", func() (interface{}, error) {
+	v, err := c.getOrFillCache("prometheus", func() (any, error) {
 		return c.p.GetPrometheus(ctx)
 	})
 	if err != nil {
@@ -99,7 +99,7 @@ func (c *CachedTopology) GetPrometheus(ctx context.Context) (*PrometheusInfo, er
 }
 
 func (c *CachedTopology) GetGrafana(ctx context.Context) (*GrafanaInfo, error) {
-	v, err := c.getOrFillCache("grafana", func() (interface{}, error) {
+	v, err := c.getOrFillCache("grafana", func() (any, error) {
 		return c.p.GetGrafana(ctx)
 	})
 	if err != nil {
@@ -109,7 +109,7 @@ func (c *CachedTopology) GetGrafana(ctx context.Context) (*GrafanaInfo, error) {
 }
 
 func (c *CachedTopology) GetAlertManager(ctx context.Context) (*AlertManagerInfo, error) {
-	v, err := c.getOrFillCache("alert_manager", func() (interface{}, error) {
+	v, err := c.getOrFillCache("alert_manager", func() (any, error) {
 		return c.p.GetAlertManager(ctx)
 	})
 	if err != nil {

@@ -75,7 +75,7 @@ func (p *proxy) port() int {
 
 func (p *proxy) updateRemotes(remotes map[string]struct{}) {
 	if len(remotes) == 0 {
-		p.remotes.Range(func(key, _ interface{}) bool {
+		p.remotes.Range(func(key, _ any) bool {
 			p.remotes.Delete(key)
 			return true
 		})
@@ -93,7 +93,7 @@ func (p *proxy) updateRemotes(remotes map[string]struct{}) {
 		}
 	}
 	// remove old remote
-	p.remotes.Range(func(key, _ interface{}) bool {
+	p.remotes.Range(func(key, _ any) bool {
 		addr := key.(string)
 		if _, ok := remotes[addr]; !ok {
 			log.Debug("proxy discards remote", zap.String("remote", addr))
@@ -157,14 +157,14 @@ func (p *proxy) pickActiveConn() (out net.Conn) {
 		log.Warn("remote become inactive", zap.String("remote", picked.addr))
 	}
 	p.noAliveRemote.Store(out == nil)
-	return
+	return out
 }
 
 // pick returns an active remote if there is any.
 func (p *proxy) pick() *remote {
 	var picked *remote
 	if p.current.Load() == "" {
-		p.remotes.Range(func(key, value interface{}) bool {
+		p.remotes.Range(func(key, value any) bool {
 			id := key.(string)
 			r := value.(*remote)
 			if r.isActive() {
@@ -196,7 +196,7 @@ func (p *proxy) doCheck(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-time.After(p.checkInterval):
-			p.remotes.Range(func(_, value interface{}) bool {
+			p.remotes.Range(func(_, value any) bool {
 				rmt := value.(*remote)
 				if rmt.isActive() {
 					return true
@@ -217,7 +217,7 @@ func (p *proxy) doCheck(ctx context.Context) {
 
 func (p *proxy) run(ctx context.Context) {
 	endpoints := make([]string, 0)
-	p.remotes.Range(func(_, value interface{}) bool {
+	p.remotes.Range(func(_, value any) bool {
 		r := value.(*remote)
 		endpoints = append(endpoints, r.addr)
 		return true

@@ -422,7 +422,7 @@ func NewPDServerFixture() (mockTransport *httpmock.MockTransport) {
   "enable-placement-rules": "false"
 }
 `))
-	return
+	return mockTransport
 }
 
 // NewAPIClientFixture returns a PD client whose default Base URL is pointing to a mock PD server.

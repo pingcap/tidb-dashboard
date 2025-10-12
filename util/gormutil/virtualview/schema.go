@@ -62,7 +62,7 @@ func decodeField(ft reflect.StructField) (props viewFieldProps, err error) {
 		props.dependOnColumnNamesL = depFields
 	}
 
-	return
+	return props, err
 }
 
 type identVisitor struct {
@@ -136,7 +136,7 @@ type viewSchema struct {
 	fieldByColumnNameL map[string]*viewFieldProps
 }
 
-func parseViewModelSchema(model interface{}) (viewSchema, error) {
+func parseViewModelSchema(model any) (viewSchema, error) {
 	v := reflect.Indirect(reflect.ValueOf(model))
 	vt := v.Type()
 

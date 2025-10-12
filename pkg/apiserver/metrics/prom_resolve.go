@@ -136,7 +136,7 @@ func (s *Service) getPromAddressFromCache() (string, error) {
 		return addr, nil
 	}
 
-	resolveResult, err, _ := s.promRequestGroup.Do("any_key", func() (interface{}, error) {
+	resolveResult, err, _ := s.promRequestGroup.Do("any_key", func() (any, error) {
 		return fn()
 	})
 	if err != nil {
@@ -156,7 +156,7 @@ func (s *Service) setCustomPromAddress(addr string) (string, error) {
 		}
 	}
 
-	body := make(map[string]interface{})
+	body := make(map[string]any)
 	body["metric-storage"] = addr
 	bodyJSON, err := json.Marshal(&body)
 	if err != nil {

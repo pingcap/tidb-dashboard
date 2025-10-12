@@ -250,10 +250,8 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 	resultChan := make(chan getResult, len(tikvInfo))
 	var wg sync.WaitGroup
 
-	for i := 0; i < concurrency; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range concurrency {
+		wg.Go(func() {
 			for kvStore := range taskChan {
 				data, err := s.params.TiKVClient.
 					WithTimeout(tikvNetworkIoCollectionNodeTimeout).
@@ -269,7 +267,7 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 				}
 				resultChan <- getResult{value: v, found: found}
 			}
-		}()
+		})
 	}
 
 	for _, kvStore := range tikvInfo {
@@ -343,7 +341,7 @@ func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
 		return
 	}
 
-	body := map[string]interface{}{
+	body := map[string]any{
 		tikvNetworkIoCollectionKey: cfg.Enable,
 	}
 	bodyJSON, err := json.Marshal(&body)
@@ -362,10 +360,8 @@ func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
 	resultChan := make(chan postResult, len(tikvInfo))
 	var wg sync.WaitGroup
 
-	for i := 0; i < concurrency; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range concurrency {
+		wg.Go(func() {
 			for kvStore := range taskChan {
 				target := net.JoinHostPort(kvStore.IP, strconv.Itoa(int(kvStore.Port)))
 				_, err := s.params.TiKVClient.
@@ -378,7 +374,7 @@ func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
 					)
 				resultChan <- postResult{target: target, err: err}
 			}
-		}()
+		})
 	}
 
 	for _, kvStore := range tikvInfo {
@@ -423,10 +419,7 @@ func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
 }
 
 func getTiKVNetworkIoCollectionConcurrency(tikvCount int) int {
-	concurrency := tikvCount / 10
-	if concurrency < 1 {
-		concurrency = 1
-	}
+	concurrency := max(tikvCount/10, 1)
 	if concurrency > tikvNetworkIoCollectionMaxConcurrency {
 		concurrency = tikvNetworkIoCollectionMaxConcurrency
 	}
@@ -434,13 +427,13 @@ func getTiKVNetworkIoCollectionConcurrency(tikvCount int) int {
 }
 
 func parseNestedBoolByDotPath(data []byte, dotPath string) (value bool, found bool, err error) {
-	var m map[string]interface{}
+	var m map[string]any
 	if err := json.Unmarshal(data, &m); err != nil {
 		return false, false, err
 	}
-	cur := interface{}(m)
+	cur := any(m)
 	for _, p := range splitDotPath(dotPath) {
-		obj, ok := cur.(map[string]interface{})
+		obj, ok := cur.(map[string]any)
 		if !ok {
 			return false, false, nil
 		}

@@ -29,10 +29,7 @@ func NewScheduler(service *Service) *Scheduler {
 func (s *Scheduler) AsyncStart(taskGroupModel *TaskGroupModel, tasksModel []*TaskModel) bool {
 	log.Debug("Scheduler start task group", zap.Uint("task_group_id", taskGroupModel.ID))
 
-	previewsLinesPerTask := TaskGroupMaxPreviewLines / len(tasksModel)
-	if previewsLinesPerTask > TaskMaxPreviewLines {
-		previewsLinesPerTask = TaskMaxPreviewLines
-	}
+	previewsLinesPerTask := min(TaskGroupMaxPreviewLines/len(tasksModel), TaskMaxPreviewLines)
 
 	taskGroup := &TaskGroup{
 		service:                s.service,

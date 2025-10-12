@@ -71,7 +71,7 @@ func (r *SearchLogRequest) ConvertToPB(target diagnosticspb.SearchLogRequest_Tar
 	}
 }
 
-func (r *SearchLogRequest) Scan(src interface{}) error {
+func (r *SearchLogRequest) Scan(src any) error {
 	return json.Unmarshal([]byte(src.(string)), r)
 }
 

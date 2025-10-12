@@ -221,7 +221,7 @@ func (p *ResolvedRequestPayload) SendRequestAndPipe(
 	}
 	resp := req.Send()
 	_, respNoBody, err = resp.PipeBody(w)
-	return
+	return respNoBody, err
 }
 
 func (p *ResolvedRequestPayload) verifyEndpoint(ctx context.Context, etcdClient *clientv3.Client, pdClient *pd.Client) error {

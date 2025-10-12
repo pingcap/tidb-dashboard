@@ -90,7 +90,7 @@ func (s *testUserSuite) TestLoginWithEmpty() {
 }
 
 func (s *testUserSuite) TestLoginWithNotExistUser() {
-	param := make(map[string]interface{})
+	param := make(map[string]any)
 	param["type"] = 0
 	param["username"] = "not_exist"
 	pwd, _ := user.Encrypt("aaa", s.authService.RsaPublicKey)
@@ -107,7 +107,7 @@ func (s *testUserSuite) TestLoginWithNotExistUser() {
 }
 
 func (s *testUserSuite) TestLoginWithWrongPassword() {
-	param := make(map[string]interface{})
+	param := make(map[string]any)
 	param["type"] = 0
 	param["username"] = "dashboardAdmin"
 	pwd, _ := user.Encrypt("123456789", s.authService.RsaPublicKey)
@@ -124,7 +124,7 @@ func (s *testUserSuite) TestLoginWithWrongPassword() {
 }
 
 func (s *testUserSuite) TestLoginWithInsufficientPrivs() {
-	param := make(map[string]interface{})
+	param := make(map[string]any)
 	param["type"] = 0
 	param["username"] = "dashboardAdmin-2"
 	pwd, _ := user.Encrypt("12345678", s.authService.RsaPublicKey)
@@ -142,7 +142,7 @@ func (s *testUserSuite) TestLoginWithInsufficientPrivs() {
 
 func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 	if s.supportNonRootLogin() {
-		param := make(map[string]interface{})
+		param := make(map[string]any)
 		param["type"] = 0
 		param["username"] = "dashboardAdmin"
 		pwd, _ := user.Encrypt("12345678", s.authService.RsaPublicKey)
@@ -178,7 +178,7 @@ func (s *testUserSuite) TestLoginWithSufficientPrivs() {
 }
 
 func (s *testUserSuite) TestLoginWithWrongPasswordForRoot() {
-	param := make(map[string]interface{})
+	param := make(map[string]any)
 	param["type"] = 0
 	param["username"] = "root"
 	pwd, _ := user.Encrypt("aaa", s.authService.RsaPublicKey)
@@ -195,7 +195,7 @@ func (s *testUserSuite) TestLoginWithWrongPasswordForRoot() {
 }
 
 func (s *testUserSuite) TestLoginWithCorrectPasswordForRoot() {
-	param := make(map[string]interface{})
+	param := make(map[string]any)
 	param["type"] = 0
 	param["username"] = "root"
 	pwd, _ := user.Encrypt("", s.authService.RsaPublicKey)

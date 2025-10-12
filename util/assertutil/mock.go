@@ -8,14 +8,14 @@ import "fmt"
 
 type mockTestingT struct {
 	errorFmt string
-	args     []interface{}
+	args     []any
 }
 
 func (m *mockTestingT) errorString() string {
 	return fmt.Sprintf(m.errorFmt, m.args...)
 }
 
-func (m *mockTestingT) Errorf(format string, args ...interface{}) {
+func (m *mockTestingT) Errorf(format string, args ...any) {
 	m.errorFmt = format
 	m.args = args
 }

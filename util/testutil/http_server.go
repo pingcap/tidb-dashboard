@@ -47,7 +47,7 @@ func NewMultiServer(n int, responsePattern string) *MultiServerHelper {
 	lastActiveID := atomic.NewInt32(-1)
 	lastResponse := atomic.NewString("")
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		func(i int) {
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				resp := fmt.Sprintf(responsePattern, i)

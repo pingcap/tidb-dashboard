@@ -210,7 +210,7 @@ func (lReq *LazyRequest) SetFormDataFromValues(data url.Values) *LazyRequest {
 //
 //	client.LR().
 //		SetBody([]byte("This is my raw request, sent as-is"))
-func (lReq *LazyRequest) SetBody(body interface{}) *LazyRequest {
+func (lReq *LazyRequest) SetBody(body any) *LazyRequest {
 	lReq.opsR = append(lReq.opsR, func(r *resty.Request) {
 		r.SetBody(body)
 	})

@@ -40,7 +40,7 @@ type (
 	TaskProfilingTypeList []TaskProfilingType
 )
 
-func (r *TaskProfilingTypeList) Scan(src interface{}) error {
+func (r *TaskProfilingTypeList) Scan(src any) error {
 	return json.Unmarshal([]byte(src.(string)), r)
 }
 

@@ -68,21 +68,21 @@ func (w *CSVWriter) ensureCacheValid(objType reflect.Type) {
 	w.cacheFieldIsExported = w.cacheFieldIsExported[:0]
 	w.cacheFieldIsTime = w.cacheFieldIsTime[:0]
 	fieldsCount := objType.NumField()
-	for i := 0; i < fieldsCount; i++ {
+	for i := range fieldsCount {
 		f := objType.Field(i)
 		w.cacheFieldIsExported = append(w.cacheFieldIsExported, reflectutil.IsFieldExported(f))
 		w.cacheFieldIsTime = append(w.cacheFieldIsTime, isFieldTaggedAsTime(f))
 	}
 }
 
-func (w *CSVWriter) WriteAsHeader(s interface{}) error {
+func (w *CSVWriter) WriteAsHeader(s any) error {
 	objValue := reflect.Indirect(reflect.ValueOf(s))
 	objType := objValue.Type()
 	fieldsCount := objType.NumField()
 	w.ensureCacheValid(objType)
 
 	w.rowBuf = w.rowBuf[:0]
-	for i := 0; i < fieldsCount; i++ {
+	for i := range fieldsCount {
 		if !w.cacheFieldIsExported[i] {
 			continue
 		}
@@ -92,14 +92,14 @@ func (w *CSVWriter) WriteAsHeader(s interface{}) error {
 	return w.cw.Write(w.rowBuf)
 }
 
-func (w *CSVWriter) WriteAsRow(s interface{}) error {
+func (w *CSVWriter) WriteAsRow(s any) error {
 	objValue := reflect.Indirect(reflect.ValueOf(s))
 	objType := objValue.Type()
 	fieldsCount := objType.NumField()
 	w.ensureCacheValid(objType)
 
 	w.rowBuf = w.rowBuf[:0]
-	for i := 0; i < fieldsCount; i++ {
+	for i := range fieldsCount {
 		if !w.cacheFieldIsExported[i] {
 			continue
 		}

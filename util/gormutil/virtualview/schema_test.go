@@ -98,7 +98,7 @@ type SampleModel struct {
 }
 
 func TestDecodeField(t *testing.T) {
-	ft := reflect.TypeOf(SampleModel{})
+	ft := reflect.TypeFor[SampleModel]()
 	f, err := decodeField(ft.Field(0))
 	require.NoError(t, err)
 	require.Equal(t, "digest", f.jsonNameL)

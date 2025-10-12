@@ -131,10 +131,10 @@ func (b blankPprofUI) ReadLine(_ string) (string, error) {
 	panic("not support")
 }
 
-func (b blankPprofUI) Print(_ ...interface{}) {
+func (b blankPprofUI) Print(_ ...any) {
 }
 
-func (b blankPprofUI) PrintErr(_ ...interface{}) {
+func (b blankPprofUI) PrintErr(_ ...any) {
 }
 
 func (b blankPprofUI) IsTerminal() bool {

@@ -168,11 +168,11 @@ func TestReadBodyAsJSON(t *testing.T) {
 
 	// Unmarshal into map
 	client := New(Config{})
-	var respMap map[string]interface{}
+	var respMap map[string]any
 	rawResp, err := client.LR().Get(ts.URL).ReadBodyAsJSON(&respMap)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rawResp.StatusCode)
-	expectedMap := map[string]interface{}{
+	expectedMap := map[string]any{
 		"foo": "bar",
 	}
 	require.Equal(t, expectedMap, respMap)
@@ -199,7 +199,7 @@ func TestReadBodyAsJSON_UnmarshalFailure(t *testing.T) {
 
 	client := New(Config{})
 
-	var respMap map[string]interface{}
+	var respMap map[string]any
 	require.Equal(t, int32(0), requestTimes.Load())
 	req := client.LR().Get(ts.URL)
 	rawResp, err := req.ReadBodyAsJSON(&respMap)
@@ -605,7 +605,7 @@ func TestFailureStatusCode(t *testing.T) {
 	require.Nil(t, rawResp)
 
 	// ReadBodyAsJSON should fail
-	var respMap map[string]interface{}
+	var respMap map[string]any
 	resp = client.LR().Get(ts.URL)
 	rawResp, err = resp.ReadBodyAsJSON(respMap)
 	require.Equal(t, int32(3), requestTimes.Load())
@@ -717,7 +717,7 @@ func TestBadServer(t *testing.T) {
 	// ReadBodyASJSON should fail
 	require.Equal(t, int32(2), requestTimes.Load())
 	resp = client.LR().Get(url)
-	var respMap map[string]interface{}
+	var respMap map[string]any
 	rawResp, err = resp.ReadBodyAsJSON(respMap)
 	require.Equal(t, int32(3), requestTimes.Load())
 	require.True(t, errorx.IsOfType(err, ErrRequestFailed))

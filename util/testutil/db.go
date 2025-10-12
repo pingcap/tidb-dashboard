@@ -105,7 +105,7 @@ func (db *TestDB) Gorm() *gorm.DB {
 	return db.inner
 }
 
-func (db *TestDB) MustExec(sql string, values ...interface{}) {
+func (db *TestDB) MustExec(sql string, values ...any) {
 	err := db.inner.Exec(sql, values...).Error
 	db.require.NoError(err)
 }
@@ -114,7 +114,7 @@ type ExplainRow struct {
 	ID string `gorm:"column:id"`
 }
 
-func (db *TestDB) MustExplain(sql string, values ...interface{}) []ExplainRow {
+func (db *TestDB) MustExplain(sql string, values ...any) []ExplainRow {
 	var rows []ExplainRow
 	err := db.Gorm().Raw("EXPLAIN "+sql, values...).Scan(&rows).Error
 	db.require.NoError(err)

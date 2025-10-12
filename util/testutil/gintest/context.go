@@ -19,7 +19,7 @@ func CtxGet(queryParams url.Values) (c *gin.Context, r *httptest.ResponseRecorde
 		u = "/?" + queryParams.Encode()
 	}
 	c.Request, _ = http.NewRequest(http.MethodGet, u, nil)
-	return
+	return c, r
 }
 
 func CtxPost(queryParams url.Values, postBody string) (c *gin.Context, r *httptest.ResponseRecorder) {
@@ -30,5 +30,5 @@ func CtxPost(queryParams url.Values, postBody string) (c *gin.Context, r *httpte
 		u = "/?" + queryParams.Encode()
 	}
 	c.Request, _ = http.NewRequest(http.MethodPost, u, bytes.NewBuffer([]byte(postBody)))
-	return
+	return c, r
 }

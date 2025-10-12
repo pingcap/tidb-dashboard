@@ -228,7 +228,7 @@ func newClients(lc fx.Lifecycle, config *config.Config) (
 			return nil
 		},
 	})
-	return
+	return dbClient, kvClient, csClient, pdClient, ticdcClient, tiproxyClient, tsoClient, schedulingClient
 }
 
 func (s *Service) cleanAfterError() {
@@ -279,7 +279,7 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 
 	endpoint = apiHandlerEngine.Group("/dashboard/api")
 
-	return
+	return apiHandlerEngine, endpoint
 }
 
 var StoppedHandler = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

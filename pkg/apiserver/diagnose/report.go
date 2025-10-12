@@ -113,7 +113,7 @@ func checkBeforeReport(db *gorm.DB) (errRows []TableRowDef) {
 					"select * from information_schema.cluster_config where type='pd' and `key` ='pd-server.metric-storage'; , \n" + command,
 			},
 		})
-		return
+		return errRows
 	}
 	return nil
 }
@@ -195,10 +195,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 
 func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc, sqliteDB *dbstore.DB, reportID string, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	// get the local CPU count for concurrence
-	conc := runtime.NumCPU()
-	if conc > 20 {
-		conc = 20
-	}
+	conc := min(runtime.NumCPU(), 20)
 	if conc > len(funcs) {
 		conc = len(funcs)
 	}
@@ -285,7 +282,7 @@ type task struct {
 // change the get-Table-func to task.
 func func2task(funcs []getTableFunc) chan *task {
 	taskChan := make(chan *task, len(funcs))
-	for i := 0; i < len(funcs); i++ {
+	for i := range funcs {
 		taskChan <- &task{funcs[i], i}
 	}
 	close(taskChan)

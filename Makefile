@@ -48,10 +48,6 @@ default: server
 clean:
 	rm -rf ./coverage
 
-.PHONY: install_tools
-install_tools:
-	scripts/install_go_tools.sh
-
 .PHONY: lint
 lint:
 	scripts/lint.sh
@@ -110,7 +106,7 @@ e2e_test_specify:
 dev: lint default
 
 .PHONY: ui_deps
-ui_deps: install_tools
+ui_deps:
 	cd ui &&\
 	pnpm i ${PNPM_INSTALL_TAGS}
 
@@ -129,7 +125,7 @@ go_generate:
 ifeq ($(UI),1)
 BUILD_TAGS += ui_server
 endif
-server: install_tools go_generate
+server: go_generate
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif

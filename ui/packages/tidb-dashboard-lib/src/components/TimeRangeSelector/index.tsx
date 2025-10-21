@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { Dropdown, Button } from 'antd'
-import DatePicker from '../DatePicker'
+import { Dropdown, Button, DatePicker } from 'antd'
 import { ClockCircleOutlined, DownOutlined } from '@ant-design/icons'
 import {
   getValueFormat,
@@ -18,8 +17,13 @@ import { useChange } from '@lib/utils/useChange'
 import { useMemoizedFn } from 'ahooks'
 import { WithZoomOut } from './WithZoomOut'
 import { tz } from '@lib/utils'
+import { PickerComponentClass } from 'antd/lib/date-picker/generatePicker/interface'
 
-const { RangePicker } = DatePicker
+const { RangePicker: RangePickerAntd } = DatePicker
+const RangePicker: PickerComponentClass<
+  RangePickerProps<Dayjs>,
+  unknown
+> = RangePickerAntd as any
 
 // These presets are aligned with Grafana
 const DEFAULT_RECENT_SECONDS = [

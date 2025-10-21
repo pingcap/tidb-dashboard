@@ -20,6 +20,8 @@
 >
 > You can run `pnpm dev:op`, `pnpm dev:clinic-op`, `pnpm dev:clinic-cloud` only to start a specific dashboard variant, while `pnpm dev` starts all of them.
 >
+> Copy `.env.development` to `.env.local` in the variant folder to override the environment variables, and add `TARGET_VARIANT_DASHBOARD_PATH` to the `.env.local` file. e.g. `cp .env.development .env.local` in `packages/tidb-dashboard-for-clinic-cloud` to override the environment variables for clinic-cloud.
+>
 > Before starting `pnpm dev:clinic-op` and `pnpm dev:clinic-cloud`, you need to start clinic ui.
 
 ### Build

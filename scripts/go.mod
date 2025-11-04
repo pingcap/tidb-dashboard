@@ -11,7 +11,7 @@ require (
 	github.com/swaggo/swag v1.7.9
 	github.com/vektra/mockery/v2 v2.40.3
 	go.uber.org/zap v1.21.0
-	golang.org/x/mod v0.29.0
+	golang.org/x/mod v0.25.0
 )
 
 require (
@@ -55,12 +55,12 @@ require (
 	github.com/urfave/cli/v2 v2.3.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/net v0.46.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/term v0.36.0 // indirect
-	golang.org/x/text v0.30.0 // indirect
-	golang.org/x/tools v0.38.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/tools v0.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

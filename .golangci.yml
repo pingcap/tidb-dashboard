@@ -24,6 +24,16 @@ linters:
         - ^\s*@
     goheader:
       template: Copyright {{ YEAR }} PingCAP, Inc. Licensed under Apache-2.0.
+    revive:
+      rules:
+        - name: var-naming
+          severity: warning
+          disabled: false
+          exclude: [""]
+          arguments:
+            - [ "utils" ] # AllowList
+            - [ "VM" ] # DenyList
+            - - skip-package-name-checks: true
   exclusions:
     generated: lax
     presets:

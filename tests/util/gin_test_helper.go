@@ -1,6 +1,6 @@
 // Copyright 2025 PingCAP, Inc. Licensed under Apache-2.0.
 
-package util //revive:disable-line:var-naming
+package util
 
 import (
 	"net/http"

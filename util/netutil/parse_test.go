@@ -59,10 +59,10 @@ func TestParseHostAndPortFromAddressURL(t *testing.T) {
 	require.Equal(t, "192.168.31.1", host)
 	require.Equal(t, uint(1234), port)
 
-	/*	host, port, err = ParseHostAndPortFromAddressURL("abc://[::ffff:1.2.3.4]:10023")
-		require.NoError(t, err)
-		require.Equal(t, "::ffff:1.2.3.4", host)
-		require.Equal(t, uint(10023), port) */
+	host, port, err = ParseHostAndPortFromAddressURL("abc://[::ffff:1.2.3.4]:10023")
+	require.NoError(t, err)
+	require.Equal(t, "::ffff:1.2.3.4", host)
+	require.Equal(t, uint(10023), port)
 
 	host, port, err = ParseHostAndPortFromAddressURL("foo://[2001:0db8::1428:57ab]:80")
 	require.NoError(t, err)

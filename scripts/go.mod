@@ -1,6 +1,6 @@
 module scripts
 
-go 1.25.0
+go 1.25.3
 
 require (
 	github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe

@@ -72,7 +72,7 @@ func TestParseHostAndPortFromAddressURL(t *testing.T) {
 	- Now, the parsing logic should strictly enforce that only IPv6
 	hostnames can be resolved when in square brackets. IPv4, IPv4-mapped
 	addresses and other input will be rejected. */
-	host, port, err = ParseHostAndPortFromAddressURL("abc://[::ffff:1.2.3.4]:10023")
+	_, _, err = ParseHostAndPortFromAddressURL("abc://[::ffff:1.2.3.4]:10023")
 	require.Error(t, err)
 
 	host, port, err = ParseHostAndPortFromAddressURL("foo://[2001:0db8::1428:57ab]:80")

@@ -75,6 +75,10 @@ export const derivedFields = {
   avg_txn_retry: genDerivedBarSources('avg_txn_retry', 'max_txn_retry'),
   avg_mem: genDerivedBarSources('avg_mem', 'max_mem'),
   avg_disk: genDerivedBarSources('avg_disk', 'max_disk'),
+  avg_mem_arbitration: genDerivedBarSources(
+    'avg_mem_arbitration',
+    'max_mem_arbitration'
+  ),
   sum_errors: ['sum_errors', 'sum_warnings'],
   related_schemas: ['table_names'],
   avg_rocksdb_delete_skipped_count: genDerivedBarSources(
@@ -192,6 +196,7 @@ export function statementColumns(
     }),
     tcf.bar.single('plan_cache_hits', 'short', rows),
     avgMaxColumn(tcf, 'avg_mem', 'bytes', rows),
+    avgMaxColumn(tcf, 'avg_mem_arbitration', 's', rows),
     avgMaxColumn(tcf, 'avg_disk', 'bytes', rows),
     errorsWarningsColumn(tcf, rows),
     avgMaxColumn(tcf, 'parse_latency', 'ns', rows),

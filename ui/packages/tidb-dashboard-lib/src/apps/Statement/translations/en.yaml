@@ -116,6 +116,10 @@ statement:
     avg_mem_tooltip: Memory usage of single query
     max_mem: Max Memory
     max_mem_tooltip: Maximum memory usage of single query
+    max_mem_arbitration: Max mem arbitration
+    max_mem_arbitration_tooltip: Maximum wait time of memory arbitration of single query
+    avg_mem_arbitration: Mean mem arbitration
+    avg_mem_arbitration_tooltip: Average wait time of memory arbitration of single query
     avg_disk: Mean Disk
     avg_disk_tooltip: Disk usage of single query
     max_disk: Max Disk

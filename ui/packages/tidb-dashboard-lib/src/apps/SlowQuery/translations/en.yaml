@@ -21,6 +21,8 @@ slow_query:
     query_time_tooltip: Execution time of the query
     memory_max: Max Memory
     memory_max_tooltip: Maximum memory usage of the query
+    mem_arbitration: Memory arbitration
+    mem_arbitration_tooltip: Total wait time of memory arbitration of the query
     disk_max: Max Disk
     disk_max_tooltip: Maximum disk usage of the query
     digest: Query Template ID

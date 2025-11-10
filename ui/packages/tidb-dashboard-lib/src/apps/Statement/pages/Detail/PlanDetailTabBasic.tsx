@@ -59,6 +59,14 @@ export const tabBasicItems = (data: StatementModel) => [
     value: getValueFormat('bytes')(data.max_mem || 0, 1)
   },
   {
+    key: 'avg_mem_arbitration',
+    value: getValueFormat('s')(data.avg_mem_arbitration || 0, 1)
+  },
+  {
+    key: 'max_mem_arbitration',
+    value: getValueFormat('s')(data.max_mem_arbitration || 0, 1)
+  },
+  {
     key: 'avg_disk',
     value: getValueFormat('bytes')(data.avg_disk || 0, 1)
   },

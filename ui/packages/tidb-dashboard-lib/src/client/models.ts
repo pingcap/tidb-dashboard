@@ -2385,6 +2385,12 @@ export interface SlowqueryModel {
      * @type {number}
      * @memberof SlowqueryModel
      */
+    'mem_arbitration'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
     'memory_max'?: number;
     /**
      * 
@@ -2963,6 +2969,12 @@ export interface StatementModel {
      * @type {number}
      * @memberof StatementModel
      */
+    'avg_mem_arbitration'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
     'avg_parse_latency'?: number;
     /**
      * 
@@ -3186,6 +3198,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'max_mem'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'max_mem_arbitration'?: number;
     /**
      * 
      * @type {number}

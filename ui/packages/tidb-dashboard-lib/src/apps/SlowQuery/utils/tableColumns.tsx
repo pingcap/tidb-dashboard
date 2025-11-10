@@ -52,6 +52,7 @@ export function slowQueryColumns(
     tcf.bar.single('compile_time', 's', rows),
     tcf.bar.single('process_time', 's', rows),
     tcf.bar.single('memory_max', 'bytes', rows),
+    tcf.bar.single('mem_arbitration', 's', rows),
     tcf.bar.single('disk_max', 'bytes', rows),
 
     tcf.textWithTooltip('txn_start_ts', rows),

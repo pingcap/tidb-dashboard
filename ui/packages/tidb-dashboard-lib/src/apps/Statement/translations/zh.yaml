@@ -114,6 +114,10 @@ statement:
     avg_mem_tooltip: 单条 SQL 查询的消耗内存大小
     max_mem: 最大内存
     max_mem_tooltip: 最大单条 SQL 查询消耗内存大小
+    max_mem_arbitration: 最大等待内存资源的耗时
+    max_mem_arbitration_tooltip: 最大单条 SQL 查询等待内存资源的耗时
+    avg_mem_arbitration: 平均等待内存资源的耗时
+    avg_mem_arbitration_tooltip: 单条 SQL 查询平均等待内存资源的耗时
     avg_disk: 平均磁盘空间
     avg_disk_tooltip: 单条 SQL 查询占用的磁盘空间大小
     max_disk: 最大磁盘空间

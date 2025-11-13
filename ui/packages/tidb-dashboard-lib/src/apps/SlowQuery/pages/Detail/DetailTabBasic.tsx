@@ -23,6 +23,10 @@ export const tabBasicItems = (data: SlowqueryModel) => [
     value: getValueFormat('bytes')(data.memory_max || 0, 1)
   },
   {
+    key: 'mem_arbitration',
+    value: getValueFormat('s')(data.mem_arbitration || 0, 1)
+  },
+  {
     key: 'disk_max',
     value: getValueFormat('bytes')(data.disk_max || 0, 1)
   },

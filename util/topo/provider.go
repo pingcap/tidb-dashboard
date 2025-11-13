@@ -17,5 +17,5 @@ type TopologyProvider interface {
 	GetAlertManager(ctx context.Context) (*AlertManagerInfo, error)
 }
 
-//go:generate mockery --name TopologyProvider --inpackage
+//go:generate go tool github.com/vektra/mockery/v2 --name TopologyProvider --inpackage
 var _ TopologyProvider = (*MockTopologyProvider)(nil)

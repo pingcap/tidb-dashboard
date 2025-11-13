@@ -169,7 +169,7 @@ func (s *Service) setCustomPromAddress(addr string) (string, error) {
 	}
 
 	// Invalidate cache immediately.
-	s.promAddressCache.Value.Store(&promAddressCacheEntity{
+	s.promAddressCache.Store(&promAddressCacheEntity{
 		address: addr,
 		cacheAt: time.Time{},
 	})

@@ -1,48 +1,13 @@
-run:
-  timeout: 2m
-
-issues:
-  include:
-    # Bring back all gosec checks
-    - EXC0006
-    - EXC0007
-    - EXC0008
-    - EXC0009
-    - EXC0010
-  exclude-rules:
-    # TODO: Current code base does not work well for these linters. We should bring back one by one.
-    - path: ^pkg/|^cmd/
-      linters:
-        - nestif
-        - exhaustive
-        - wastedassign
-        - errorlint
-    # https://github.com/open-telemetry/opentelemetry-collector/issues/5699
-    - text: "G112:"
-      linters:
-        - gosec
-    - text: "G115"
-      linters:
-        - gosec
-  exclude-dirs:
-    - swaggerspec
-    - pkg/uiserver
-    - ui
-
+version: "2"
 linters:
   enable:
-    # Additionally enable some checkers
     - asciicheck
-    # - depguard
     - dogsled
     - durationcheck
     - errorlint
     - exhaustive
-    - exportloopref
     - godot
-    - gofumpt
     - goheader
-    - goimports
     - gosec
     - importas
     - nestif
@@ -51,17 +16,57 @@ linters:
     - revive
     - unconvert
     - whitespace
-
-linters-settings:
-  goimports:
-    local-prefixes: github.com/pingcap/tidb-dashboard
-  exhaustive:
-    # only cover the case when default is not given
-    default-signifies-exhaustive: true
-  godot:
-    # exclude swag annotations
-    exclude:
-      - "^\\s*@"
-  goheader:
-    template: |-
-      Copyright {{ YEAR }} PingCAP, Inc. Licensed under Apache-2.0.
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
+    godot:
+      exclude:
+        - ^\s*@
+    goheader:
+      template: Copyright {{ YEAR }} PingCAP, Inc. Licensed under Apache-2.0.
+    revive:
+      rules:
+        - name: var-naming # Warns about 'utils' package name
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - std-error-handling
+    rules:
+      - linters:
+          - errorlint
+          - exhaustive
+          - nestif
+          - wastedassign
+        path: ^pkg/|^cmd/
+      - linters:
+          - gosec
+        text: 'G112:'
+      - linters:
+          - gosec
+        text: G115
+    paths:
+      - swaggerspec
+      - pkg/uiserver
+      - ui
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/pingcap/tidb-dashboard
+  exclusions:
+    generated: lax
+    paths:
+      - swaggerspec
+      - pkg/uiserver
+      - ui
+      - third_party$
+      - builtin$
+      - examples$

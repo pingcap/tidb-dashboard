@@ -13,7 +13,6 @@ class DataSource implements IConProfilingDataSource {
   private headers: {} = {}
 
   constructor(cfg: Partial<IConProfilingConfig>) {
-    console.log('cfg', cfg)
     this.headers =
       cfg.deployType === 'nextgen-host'
         ? {

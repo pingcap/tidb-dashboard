@@ -115,7 +115,7 @@ func (c *Client) Send(
 		return nil, e
 	}
 
-	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		defer resp.Body.Close()
 		data, _ := io.ReadAll(resp.Body)
 		e := errType.New("Request failed with status code %d from %s API: %s", resp.StatusCode, errOriginComponent, string(data))

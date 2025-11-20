@@ -573,10 +573,7 @@ func convertFloatToString(f float64) string {
 	}
 	tmp := f
 	n := 2
-	for {
-		if tmp > 0.01 {
-			break
-		}
+	for tmp <= 0.01 {
 		tmp = tmp * 10
 		n++
 		if n > 15 {

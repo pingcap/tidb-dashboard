@@ -577,7 +577,18 @@ const useInstances = (timeRange: TimeRange) => {
 
       const [start, end] = toTimeRangeValue(_timeRange)
       const resp = await ctx!.ds.topsqlInstancesGet(String(end), String(start))
-      const data = sortBy(resp.data.data || [], ['instance_type', 'instance'])
+      // Deduplicate by instance and instance_type combination
+      const instanceMap = new Map<string, TopsqlInstanceItem>()
+      ;(resp.data.data || []).forEach((item) => {
+        const key = `${item.instance}_${item.instance_type}`
+        if (item.instance && item.instance_type && !instanceMap.has(key)) {
+          instanceMap.set(key, item)
+        }
+      })
+      const data = sortBy(Array.from(instanceMap.values()), [
+        'instance_type',
+        'instance'
+      ])
 
       setInstances(data)
       return data

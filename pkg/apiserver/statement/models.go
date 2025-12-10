@@ -68,6 +68,8 @@ type Model struct {
 	AggSumBackoffTimes       int     `json:"sum_backoff_times" agg:"SUM(sum_backoff_times)"`
 	AggAvgMem                int     `json:"avg_mem" agg:"CAST(SUM(exec_count * avg_mem) / SUM(exec_count) AS SIGNED)"`
 	AggMaxMem                int     `json:"max_mem" agg:"MAX(max_mem)"`
+	AggAvgMemArbitration     float64 `json:"avg_mem_arbitration" agg:"SUM(exec_count * avg_mem_arbitration) / SUM(exec_count)"`
+	AggMaxMemArbitration     float64 `json:"max_mem_arbitration" agg:"MAX(max_mem_arbitration)"`
 	AggAvgDisk               int     `json:"avg_disk" agg:"CAST(SUM(exec_count * avg_disk) / SUM(exec_count) AS SIGNED)"`
 	AggMaxDisk               int     `json:"max_disk" agg:"MAX(max_disk)"`
 	AggAvgAffectedRows       int     `json:"avg_affected_rows" agg:"CAST(SUM(exec_count * avg_affected_rows) / SUM(exec_count) AS SIGNED)"`

@@ -5193,6 +5193,9 @@
                 "lock_keys_time": {
                     "type": "number"
                 },
+                "mem_arbitration": {
+                    "type": "number"
+                },
                 "memory_max": {
                     "type": "integer"
                 },
@@ -5512,6 +5515,9 @@
                 "avg_mem": {
                     "type": "integer"
                 },
+                "avg_mem_arbitration": {
+                    "type": "number"
+                },
                 "avg_parse_latency": {
                     "type": "integer"
                 },
@@ -5630,6 +5636,9 @@
                 },
                 "max_mem": {
                     "type": "integer"
+                },
+                "max_mem_arbitration": {
+                    "type": "number"
                 },
                 "max_parse_latency": {
                     "type": "integer"

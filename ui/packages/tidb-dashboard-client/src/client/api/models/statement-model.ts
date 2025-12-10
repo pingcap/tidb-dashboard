@@ -97,6 +97,12 @@ export interface StatementModel {
      * @type {number}
      * @memberof StatementModel
      */
+    'avg_mem_arbitration'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
     'avg_parse_latency'?: number;
     /**
      * 
@@ -320,6 +326,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'max_mem'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'max_mem_arbitration'?: number;
     /**
      * 
      * @type {number}

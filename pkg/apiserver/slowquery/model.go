@@ -34,8 +34,10 @@ type Model struct {
 	WriteRespTime         float64 `gorm:"column:Write_sql_response_total" json:"write_sql_response_total"`
 	ExecRetryTime         float64 `gorm:"column:Exec_retry_time" json:"exec_retry_time"`
 
-	MemoryMax int `gorm:"column:Mem_max" json:"memory_max"`
-	DiskMax   int `gorm:"column:Disk_max" json:"disk_max"`
+	MemoryMax      int     `gorm:"column:Mem_max" json:"memory_max"`
+	DiskMax        int     `gorm:"column:Disk_max" json:"disk_max"`
+	MemArbitration float64 `gorm:"column:Mem_arbitration" json:"mem_arbitration"`
+
 	// TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
 	TxnStartTS string `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 

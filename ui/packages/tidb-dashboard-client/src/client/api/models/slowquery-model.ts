@@ -199,6 +199,12 @@ export interface SlowqueryModel {
      * @type {number}
      * @memberof SlowqueryModel
      */
+    'mem_arbitration'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
     'memory_max'?: number;
     /**
      * 

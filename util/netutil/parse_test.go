@@ -59,21 +59,10 @@ func TestParseHostAndPortFromAddressURL(t *testing.T) {
 	require.Equal(t, "192.168.31.1", host)
 	require.Equal(t, uint(1234), port)
 
-	host, port, err = ParseHostAndPortFromAddressURL("abc://[::ffff:1]:10023")
+	host, port, err = ParseHostAndPortFromAddressURL("abc://[::ffff:1.2.3.4]:10023")
 	require.NoError(t, err)
-	require.Equal(t, "::ffff:1", host)
+	require.Equal(t, "::ffff:1.2.3.4", host)
 	require.Equal(t, uint(10023), port)
-
-	/* [release-branch.go1.25] net/url: enforce stricter parsing of bracketed IPv6 hostnames
-	- Previously, url.Parse did not enforce validation of hostnames within
-	square brackets.
-	- RFC 3986 stipulates that only IPv6 hostnames can be embedded within
-	square brackets in a URL.
-	- Now, the parsing logic should strictly enforce that only IPv6
-	hostnames can be resolved when in square brackets. IPv4, IPv4-mapped
-	addresses and other input will be rejected. */
-	_, _, err = ParseHostAndPortFromAddressURL("abc://[::ffff:1.2.3.4]:10023")
-	require.Error(t, err)
 
 	host, port, err = ParseHostAndPortFromAddressURL("foo://[2001:0db8::1428:57ab]:80")
 	require.NoError(t, err)

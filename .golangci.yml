@@ -16,19 +16,6 @@ linters:
     - revive
     - unconvert
     - whitespace
-<<<<<<< HEAD
-
-linters-settings:
-  goimports:
-    local-prefixes: github.com/pingcap/tidb-dashboard
-  exhaustive:
-    # only cover the case when default is not given
-    default-signifies-exhaustive: true
-  godot:
-    # exclude swag annotations
-    exclude:
-      - "^\\s*@"
-=======
   settings:
     exhaustive:
       default-signifies-exhaustive: true
@@ -89,4 +76,3 @@ formatters:
       - third_party$
       - builtin$
       - examples$
->>>>>>> 855b2ffdf (Update go version to 1.25 (#1839))

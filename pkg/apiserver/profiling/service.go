@@ -190,9 +190,10 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 		errorTasks := 0
 		finishedTasks := 0
 		for _, task := range tasks {
-			if task.State == TaskStateError {
+			switch task.State {
+			case TaskStateError:
 				errorTasks++
-			} else if task.State == TaskStateFinish {
+			case TaskStateFinish:
 				finishedTasks++
 			}
 		}

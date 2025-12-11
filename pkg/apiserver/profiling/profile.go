@@ -35,6 +35,6 @@ func profileAndWritePprof(_ context.Context, fts *fetchers, target *model.Reques
 	case model.NodeKindScheduling:
 		return fetchPprof(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.scheduling, profilingType: profilingType})
 	default:
-		return "", "", ErrUnsupportedProfilingTarget.New(target.String()) // nolint: vet
+		return "", "", ErrUnsupportedProfilingTarget.New("%s", target.String()) // nolint: vet
 	}
 }

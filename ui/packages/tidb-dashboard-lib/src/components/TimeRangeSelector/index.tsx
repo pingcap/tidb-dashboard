@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react'
-import { Dropdown, Button, DatePicker } from 'antd'
+import React, { useState, useMemo, useEffect } from 'react'
+import { Dropdown, Button } from 'antd'
 import { ClockCircleOutlined, DownOutlined } from '@ant-design/icons'
 import {
   getValueFormat,
@@ -18,6 +18,8 @@ import { useMemoizedFn } from 'ahooks'
 import { WithZoomOut } from './WithZoomOut'
 import { tz } from '@lib/utils'
 import { PickerComponentClass } from 'antd/lib/date-picker/generatePicker/interface'
+import DatePicker from '@lib/components/DatePicker'
+import TimePicker from '@lib/components/TimePicker'
 
 const { RangePicker: RangePickerAntd } = DatePicker
 const RangePicker: PickerComponentClass<
@@ -142,6 +144,7 @@ export interface ITimeRangeSelectorProps {
   onCalendarChange?: RangePickerProps<dayjs.Dayjs>['onCalendarChange']
   onOpenChange?: RangePickerProps<dayjs.Dayjs>['onOpenChange']
   customAbsoluteRangePicker?: boolean
+  selectableHours?: number
 }
 
 const trySubstract = (value1, value2) => {
@@ -218,10 +221,12 @@ function TimeRangeSelector({
   disabledTime,
   onCalendarChange,
   onOpenChange,
-  customAbsoluteRangePicker = false
+  customAbsoluteRangePicker = false,
+  selectableHours
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
+  const [rangeError, setRangeError] = useState<string | null>(null)
 
   useChange(() => {
     if (!value) {
@@ -236,6 +241,183 @@ function TimeRangeSelector({
     return value.value.map((sec) => dayjs(sec * 1000)) as [Dayjs, Dayjs]
   }, [value])
 
+  // Combined state for From and To date/time pickers
+  const [fromDateTime, setFromDateTime] = useState<Dayjs | null>(null)
+  const [toDateTime, setToDateTime] = useState<Dayjs | null>(null)
+
+  // Initialize from/to values when value changes
+  useEffect(() => {
+    if (value?.type === 'absolute' && rangePickerValue) {
+      const [from, to] = rangePickerValue
+      setFromDateTime(from)
+      setToDateTime(to)
+    } else {
+      setFromDateTime(null)
+      setToDateTime(null)
+    }
+  }, [value, rangePickerValue])
+
+  // Trigger onCalendarChange whenever fromDateTime or toDateTime changes
+  useEffect(() => {
+    if (onCalendarChange) {
+      const rangeValue: [Dayjs | null, Dayjs | null] | null =
+        fromDateTime !== null || toDateTime !== null
+          ? [fromDateTime, toDateTime]
+          : null
+      onCalendarChange(
+        rangeValue,
+        [
+          fromDateTime?.format('YYYY-MM-DD HH:mm:ss') || '',
+          toDateTime?.format('YYYY-MM-DD HH:mm:ss') || ''
+        ],
+        {} as any
+      )
+    }
+  }, [fromDateTime, toDateTime, onCalendarChange])
+
+  // Validate time range: check from > to and selectableHours
+  useEffect(() => {
+    if (fromDateTime && toDateTime) {
+      // First check: from cannot be greater than to
+      if (fromDateTime.isAfter(toDateTime)) {
+        setRangeError('From time cannot be greater than To time.')
+        return
+      }
+
+      // Second check: time range cannot exceed selectableHours
+      if (selectableHours) {
+        const diffInHours = toDateTime.diff(fromDateTime, 'hour')
+        if (diffInHours > selectableHours) {
+          setRangeError(
+            `Time range cannot exceed ${selectableHours} hours. Current range: ${diffInHours.toFixed(
+              2
+            )} hours.`
+          )
+          return
+        }
+      }
+
+      // No errors
+      setRangeError(null)
+    } else {
+      setRangeError(null)
+    }
+  }, [fromDateTime, toDateTime, selectableHours])
+
+  // Handle fromDate change: update fromDateTime with new date, keeping time
+  const handleFromDateChange = useMemoizedFn((date: Dayjs | null) => {
+    if (date && fromDateTime) {
+      // Keep the time part from fromDateTime, but apply it to the new date
+      const newFromDateTime = date
+        .hour(fromDateTime.hour())
+        .minute(fromDateTime.minute())
+        .second(fromDateTime.second())
+        .millisecond(fromDateTime.millisecond())
+      setFromDateTime(newFromDateTime)
+
+      // If toDateTime exists, check if we need to adjust
+      if (toDateTime && newFromDateTime.isAfter(toDateTime)) {
+        // Set toDateTime to be slightly after fromDateTime
+        setToDateTime(newFromDateTime.add(1, 'second'))
+      }
+    } else if (date) {
+      // If date is set but no fromDateTime, set default time (00:00:00)
+      setFromDateTime(date.startOf('day'))
+    } else {
+      // If date is cleared, clear fromDateTime
+      setFromDateTime(null)
+    }
+  })
+
+  // Handle fromTime change: update fromDateTime with new time, keeping date
+  const handleFromTimeChange = useMemoizedFn((time: Dayjs | null) => {
+    if (time && fromDateTime) {
+      // Keep the date part from fromDateTime, but apply new time
+      const newFromDateTime = fromDateTime
+        .hour(time.hour())
+        .minute(time.minute())
+        .second(time.second())
+        .millisecond(time.millisecond())
+      setFromDateTime(newFromDateTime)
+
+      // If toDateTime exists, check if we need to adjust
+      if (toDateTime && newFromDateTime.isAfter(toDateTime)) {
+        // Set toDateTime to be slightly after fromDateTime
+        setToDateTime(newFromDateTime.add(1, 'second'))
+      }
+    } else if (time) {
+      // If time is set but no fromDateTime, use today's date
+      const today = dayjs().startOf('day')
+      setFromDateTime(
+        today
+          .hour(time.hour())
+          .minute(time.minute())
+          .second(time.second())
+          .millisecond(time.millisecond())
+      )
+    } else {
+      // If time is cleared, clear fromDateTime
+      setFromDateTime(null)
+    }
+  })
+
+  // Handle toDate change: update toDateTime with new date, keeping time
+  const handleToDateChange = useMemoizedFn((date: Dayjs | null) => {
+    if (date && toDateTime) {
+      // Keep the time part from toDateTime, but apply it to the new date
+      const newToDateTime = date
+        .hour(toDateTime.hour())
+        .minute(toDateTime.minute())
+        .second(toDateTime.second())
+        .millisecond(toDateTime.millisecond())
+      setToDateTime(newToDateTime)
+
+      // If fromDateTime exists, check if we need to adjust
+      if (fromDateTime && fromDateTime.isAfter(newToDateTime)) {
+        // Set fromDateTime to be slightly before toDateTime
+        setFromDateTime(newToDateTime.subtract(1, 'second'))
+      }
+    } else if (date) {
+      // If date is set but no toDateTime, set default time (23:59:59)
+      setToDateTime(date.startOf('day'))
+    } else {
+      // If date is cleared, clear toDateTime
+      setToDateTime(null)
+    }
+  })
+
+  // Handle toTime change: update toDateTime with new time, keeping date
+  const handleToTimeChange = useMemoizedFn((time: Dayjs | null) => {
+    if (time && toDateTime) {
+      // Keep the date part from toDateTime, but apply new time
+      const newToDateTime = toDateTime
+        .hour(time.hour())
+        .minute(time.minute())
+        .second(time.second())
+        .millisecond(time.millisecond())
+      setToDateTime(newToDateTime)
+
+      // If fromDateTime exists, check if we need to adjust
+      if (fromDateTime && fromDateTime.isAfter(newToDateTime)) {
+        // Set fromDateTime to be slightly before toDateTime
+        setFromDateTime(newToDateTime.subtract(1, 'second'))
+      }
+    } else if (time) {
+      // If time is set but no toDateTime, use today's date
+      const today = dayjs().startOf('day')
+      setToDateTime(
+        today
+          .hour(time.hour())
+          .minute(time.minute())
+          .second(time.second())
+          .millisecond(time.millisecond())
+      )
+    } else {
+      // If time is cleared, clear toDateTime
+      setToDateTime(null)
+    }
+  })
+
   const handleRecentChange = useMemoizedFn((seconds: number) => {
     onChange?.({
       type: 'recent',
@@ -244,16 +426,202 @@ function TimeRangeSelector({
     setDropdownVisible(false)
   })
 
-  const handleRangePickerChange = useMemoizedFn((values) => {
-    if (values === null) {
-      onChange?.(DEFAULT_TIME_RANGE)
-    } else {
+  const handleOk = useMemoizedFn(() => {
+    if (fromDateTime && toDateTime) {
+      // Validate: from cannot be greater than to
+      if (fromDateTime.isAfter(toDateTime)) {
+        // If from > to, prevent the change
+        return
+      }
+
+      // Validate: time range cannot exceed selectableHours
+      if (selectableHours) {
+        const diffInHours = toDateTime.diff(fromDateTime, 'hour', true)
+        if (diffInHours > selectableHours) {
+          // Prevent submission if range exceeds selectableHours
+          return
+        }
+      }
+
       onChange?.({
         type: 'absolute',
-        value: values.map((v) => v.unix())
+        value: [fromDateTime.unix(), toDateTime.unix()]
       })
+      setDropdownVisible(false)
+      onOpenChange?.(false)
     }
-    setDropdownVisible(false)
+  })
+
+  // Custom disabledDate for From: cannot select dates after toDateTime
+  const getDisabledDateForFrom = useMemoizedFn((current: Dayjs) => {
+    // Apply original disabledDate if provided
+    if (disabledDate && disabledDate(current)) {
+      return true
+    }
+    // Cannot select dates after toDateTime
+    if (toDateTime) {
+      return current.isAfter(toDateTime, 'day')
+    }
+    return false
+  })
+
+  // Custom disabledDate for To: cannot select dates before fromDateTime
+  const getDisabledDateForTo = useMemoizedFn((current: Dayjs) => {
+    // Apply original disabledDate if provided
+    if (disabledDate && disabledDate(current)) {
+      return true
+    }
+    // Cannot select dates before fromDateTime
+    if (fromDateTime) {
+      return current.isBefore(fromDateTime, 'day')
+    }
+    return false
+  })
+
+  // Adapter function to convert RangePicker's disabledTime to TimePicker's format
+  const getDisabledTimeForPicker = useMemoizedFn((type: 'start' | 'end') => {
+    return () => {
+      const date = type === 'start' ? fromDateTime! : toDateTime!
+      const result: {
+        disabledHours?: () => number[]
+        disabledMinutes?: (selectedHour: number) => number[]
+        disabledSeconds?: (
+          selectedHour: number,
+          selectedMinute: number
+        ) => number[]
+      } = {}
+
+      // Apply original disabledTime if provided
+      if (disabledTime) {
+        const originalResult = disabledTime(date, type)
+        if (originalResult) {
+          Object.assign(result, originalResult)
+        }
+      }
+
+      // Add validation: when dates are the same, restrict time selection
+      // Only apply this restriction when the current date matches fromDateTime/toDateTime
+      if (
+        type === 'start' &&
+        fromDateTime &&
+        toDateTime &&
+        fromDateTime.isSame(toDateTime, 'day') &&
+        date.isSame(fromDateTime, 'day')
+      ) {
+        // From time cannot be after toTime (only when selecting time for the same date)
+        const toHour = toDateTime.hour()
+        const toMinute = toDateTime.minute()
+        const toSecond = toDateTime.second()
+
+        const originalDisabledHours = result.disabledHours
+        result.disabledHours = () => {
+          const hours = originalDisabledHours ? originalDisabledHours() : []
+          // Disable hours after toHour
+          for (let h = toHour + 1; h < 24; h++) {
+            if (!hours.includes(h)) {
+              hours.push(h)
+            }
+          }
+          return hours.sort((a, b) => a - b)
+        }
+
+        const originalDisabledMinutes = result.disabledMinutes
+        result.disabledMinutes = (selectedHour: number) => {
+          const minutes = originalDisabledMinutes
+            ? originalDisabledMinutes(selectedHour)
+            : []
+          // If same hour, disable minutes after toMinute
+          if (selectedHour === toHour) {
+            for (let m = toMinute + 1; m < 60; m++) {
+              if (!minutes.includes(m)) {
+                minutes.push(m)
+              }
+            }
+          }
+          return minutes.sort((a, b) => a - b)
+        }
+
+        const originalDisabledSeconds = result.disabledSeconds
+        result.disabledSeconds = (
+          selectedHour: number,
+          selectedMinute: number
+        ) => {
+          const seconds = originalDisabledSeconds
+            ? originalDisabledSeconds(selectedHour, selectedMinute)
+            : []
+          // If same hour and minute, disable seconds after toSecond
+          if (selectedHour === toHour && selectedMinute === toMinute) {
+            for (let s = toSecond + 1; s < 60; s++) {
+              if (!seconds.includes(s)) {
+                seconds.push(s)
+              }
+            }
+          }
+          return seconds.sort((a, b) => a - b)
+        }
+      } else if (
+        type === 'end' &&
+        fromDateTime &&
+        toDateTime &&
+        fromDateTime.isSame(toDateTime, 'day') &&
+        date.isSame(toDateTime, 'day')
+      ) {
+        // To time cannot be before fromTime (only when selecting time for the same date)
+        const fromHour = fromDateTime.hour()
+        const fromMinute = fromDateTime.minute()
+        const fromSecond = fromDateTime.second()
+
+        const originalDisabledHours = result.disabledHours
+        result.disabledHours = () => {
+          const hours = originalDisabledHours ? originalDisabledHours() : []
+          // Disable hours before fromHour
+          for (let h = 0; h < fromHour; h++) {
+            if (!hours.includes(h)) {
+              hours.push(h)
+            }
+          }
+          return hours.sort((a, b) => a - b)
+        }
+
+        const originalDisabledMinutes = result.disabledMinutes
+        result.disabledMinutes = (selectedHour: number) => {
+          const minutes = originalDisabledMinutes
+            ? originalDisabledMinutes(selectedHour)
+            : []
+          // If same hour, disable minutes before fromMinute
+          if (selectedHour === fromHour) {
+            for (let m = 0; m < fromMinute; m++) {
+              if (!minutes.includes(m)) {
+                minutes.push(m)
+              }
+            }
+          }
+          return minutes.sort((a, b) => a - b)
+        }
+
+        const originalDisabledSeconds = result.disabledSeconds
+        result.disabledSeconds = (
+          selectedHour: number,
+          selectedMinute: number
+        ) => {
+          const seconds = originalDisabledSeconds
+            ? originalDisabledSeconds(selectedHour, selectedMinute)
+            : []
+          // If same hour and minute, disable seconds before fromSecond
+          if (selectedHour === fromHour && selectedMinute === fromMinute) {
+            for (let s = 0; s < fromSecond; s++) {
+              if (!seconds.includes(s)) {
+                seconds.push(s)
+              }
+            }
+          }
+          return seconds.sort((a, b) => a - b)
+        }
+      }
+
+      // Always return an object, even if empty
+      return result
+    }
   })
 
   const dropdownContent = (
@@ -287,25 +655,81 @@ function TimeRangeSelector({
           ))}
         </div>
       </div>
-      <div className={styles.custom_time_ranges}>
-        <span>
-          {t(
-            'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
-          )}
-        </span>
-        <div style={{ marginTop: 8 }}>
-          <RangePicker
-            showTime
-            format="YYYY-MM-DD HH:mm:ss"
-            value={rangePickerValue}
-            onChange={handleRangePickerChange}
-            disabledDate={disabledDate}
-            disabledTime={disabledTime}
-            onCalendarChange={onCalendarChange}
-            onOpenChange={onOpenChange}
-          />
+      {customAbsoluteRangePicker && (
+        <div className={styles.custom_time_ranges}>
+          <span>
+            {t(
+              'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
+            )}
+          </span>
+          <div style={{ marginTop: 8 }}>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ marginBottom: 8, fontWeight: 500 }}>From:</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <DatePicker
+                  value={fromDateTime}
+                  onChange={handleFromDateChange}
+                  format="YYYY-MM-DD"
+                  disabledDate={getDisabledDateForFrom}
+                  style={{ flex: 1 }}
+                />
+                <TimePicker
+                  picker="time"
+                  value={fromDateTime}
+                  onChange={handleFromTimeChange}
+                  format="HH:mm:ss"
+                  disabledTime={getDisabledTimeForPicker('start')}
+                  style={{ flex: 1 }}
+                />
+              </div>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ marginBottom: 8, fontWeight: 500 }}>To:</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <DatePicker
+                  value={toDateTime}
+                  onChange={handleToDateChange}
+                  format="YYYY-MM-DD"
+                  disabledDate={getDisabledDateForTo}
+                  style={{ flex: 1 }}
+                />
+                <TimePicker
+                  picker="time"
+                  value={toDateTime}
+                  onChange={handleToTimeChange}
+                  format="HH:mm:ss"
+                  disabledTime={getDisabledTimeForPicker('end')}
+                  style={{ flex: 1 }}
+                />
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                marginTop: 12
+              }}
+            >
+              <Button type="primary" onClick={handleOk} disabled={!!rangeError}>
+                Ok
+              </Button>
+              {rangeError && (
+                <div
+                  style={{
+                    color: '#ff4d4f',
+                    fontSize: '12px',
+                    marginTop: 8,
+                    textAlign: 'right'
+                  }}
+                >
+                  {rangeError}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 

@@ -251,6 +251,7 @@ export function TopSQLList() {
                 customAbsoluteRangePicker={
                   ctx?.cfg.timeRangeSelector?.customAbsoluteRangePicker
                 }
+                timeRangeLimit={ctx?.cfg.timeRangeSelector?.timeRangeLimit}
                 onChange={(v) => {
                   setTimeRange(v)
                   telemetry.selectTimeRange(v)

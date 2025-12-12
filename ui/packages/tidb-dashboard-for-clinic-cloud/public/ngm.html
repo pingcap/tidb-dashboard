@@ -170,6 +170,7 @@
         12 * 60 * 60,
         24 * 60 * 60
       ]
+      const topSQLTimeRangeLimit = 15 * 24 * 60 * 60
       const longerTimeRangeOrgs = [
         '1372813089209214865',
         '1372813089209213994',
@@ -237,7 +238,8 @@
 
             timeRangeSelector: {
               recentSeconds: topSQLTimeRange,
-              customAbsoluteRangePicker: true
+              customAbsoluteRangePicker: true,
+              timeRangeLimit: topSQLTimeRangeLimit
             },
             autoRefresh: false,
             showSearchInStatements: false

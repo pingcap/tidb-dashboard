@@ -22,8 +22,6 @@ linters:
     godot:
       exclude:
         - ^\s*@
-    goheader:
-      template: Copyright {{ YEAR }} PingCAP, Inc. Licensed under Apache-2.0.
     revive:
       rules:
         - name: var-naming

@@ -9,6 +9,8 @@ interface LimitTimeRangeProps {
   onChange: (val: TimeRange) => void
   onZoomOutClick: (start: number, end: number) => void
   disabled?: boolean
+  // time range limit in seconds
+  timeRangeLimit?: number
 }
 
 // array of 24 numbers, start from 0
@@ -37,12 +39,21 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
   customAbsoluteRangePicker,
   onChange,
   onZoomOutClick,
-  disabled
+  disabled,
+  timeRangeLimit
 }) => {
   // get the selectable time range value from rencent_seconds
   const selectableHours = useMemo(() => {
     return recent_seconds![recent_seconds!.length - 1] / 3600
   }, [recent_seconds])
+
+  // Use timeRangeLimit if provided, otherwise use selectableHours
+  const timeRangeHours = useMemo(() => {
+    if (timeRangeLimit !== undefined) {
+      return timeRangeLimit / 3600 // Convert seconds to hours
+    }
+    return selectableHours
+  }, [timeRangeLimit, selectableHours])
 
   const disabledDate = (current) => {
     const today = dayjs()
@@ -52,11 +63,11 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
 
     const curDate = dayjs(current)
 
-    // Can not select days before 2 days ago
+    // Can not select days before the earliest allowed date
     const tooEarly =
-      todayStartWithHour.subtract(selectableHours, 'hour') >
+      todayStartWithHour.subtract(timeRangeHours, 'hour') >
         curDate.startOf('hour') &&
-      todayStartWithDay.subtract(selectableHours / 24, 'day') >
+      todayStartWithDay.subtract(timeRangeHours / 24, 'day') >
         curDate.startOf('day')
 
     // Can not select days after today
@@ -68,36 +79,37 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
   }
 
   // control avaliable time on Minute level
-  const disabledTime = (current) => {
+  const disabledTime = (current, type) => {
     // current hour
     const today = dayjs()
     const hour = today.hour()
     const minute = today.minute()
 
-    const curHour = dayjs(current).hour()
-    // is current day
+    // Only apply time restrictions for today
+    // For historical dates, allow all times
     if (current && current.isSame(today, 'day')) {
+      const curHour = dayjs(current).hour()
       return {
         disabledHours: () => hoursRange.slice(hour + 1),
         disabledMinutes: () =>
-          // if current hour, disable minutes before current minute
+          // if current hour, disable minutes after current minute
           curHour === hour ? minutesRange.slice(minute + 1) : []
       }
     }
 
-    // is 2 day ago
-    if (
-      current &&
-      current.isSame(today.subtract(selectableHours / 24, 'day'), 'day')
-    ) {
+    // For the earliest selectable date, restrict times before current time
+    const earliestDate = today.subtract(timeRangeHours / 24, 'day')
+    if (current && current.isSame(earliestDate, 'day')) {
+      const curHour = dayjs(current).hour()
       return {
         disabledHours: () => hoursRange.slice(0, hour),
         disabledMinutes: () =>
-          // if current hour, disable minutes after current minute
+          // if current hour, disable minutes before current minute
           curHour === hour ? minutesRange.slice(0, minute) : []
       }
     }
 
+    // For all other historical dates, allow all times
     return { disabledHours: () => [] }
   }
 
@@ -112,6 +124,7 @@ export const LimitTimeRange: React.FC<LimitTimeRangeProps> = ({
           disabledTime={disabledTime}
           customAbsoluteRangePicker={true}
           disabled={disabled}
+          selectableHours={selectableHours}
         />
       ) : (
         <TimeRangeSelector.WithZoomOut

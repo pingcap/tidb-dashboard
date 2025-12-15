@@ -44,6 +44,7 @@ export interface ITopSQLConfig {
   timeRangeSelector?: {
     recentSeconds: number[]
     customAbsoluteRangePicker: boolean
+    timeRangeLimit?: number
   }
   autoRefresh?: boolean
 

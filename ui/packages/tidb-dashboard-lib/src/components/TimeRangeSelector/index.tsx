@@ -655,81 +655,79 @@ function TimeRangeSelector({
           ))}
         </div>
       </div>
-      {customAbsoluteRangePicker && (
-        <div className={styles.custom_time_ranges}>
-          <span>
-            {t(
-              'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
-            )}
-          </span>
-          <div style={{ marginTop: 8 }}>
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ marginBottom: 8, fontWeight: 500 }}>From:</div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <DatePicker
-                  value={fromDateTime}
-                  onChange={handleFromDateChange}
-                  format="YYYY-MM-DD"
-                  disabledDate={getDisabledDateForFrom}
-                  style={{ flex: 1 }}
-                />
-                <TimePicker
-                  picker="time"
-                  value={fromDateTime}
-                  onChange={handleFromTimeChange}
-                  format="HH:mm:ss"
-                  disabledTime={getDisabledTimeForPicker('start')}
-                  style={{ flex: 1 }}
-                />
-              </div>
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ marginBottom: 8, fontWeight: 500 }}>To:</div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <DatePicker
-                  value={toDateTime}
-                  onChange={handleToDateChange}
-                  format="YYYY-MM-DD"
-                  disabledDate={getDisabledDateForTo}
-                  style={{ flex: 1 }}
-                />
-                <TimePicker
-                  picker="time"
-                  value={toDateTime}
-                  onChange={handleToTimeChange}
-                  format="HH:mm:ss"
-                  disabledTime={getDisabledTimeForPicker('end')}
-                  style={{ flex: 1 }}
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-end',
-                marginTop: 12
-              }}
-            >
-              <Button type="primary" onClick={handleOk} disabled={!!rangeError}>
-                Ok
-              </Button>
-              {rangeError && (
-                <div
-                  style={{
-                    color: '#ff4d4f',
-                    fontSize: '12px',
-                    marginTop: 8,
-                    textAlign: 'right'
-                  }}
-                >
-                  {rangeError}
-                </div>
-              )}
+      <div className={styles.custom_time_ranges}>
+        <span>
+          {t(
+            'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
+          )}
+        </span>
+        <div style={{ marginTop: 8 }}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ marginBottom: 8, fontWeight: 500 }}>From:</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <DatePicker
+                value={fromDateTime}
+                onChange={handleFromDateChange}
+                format="YYYY-MM-DD"
+                disabledDate={getDisabledDateForFrom}
+                style={{ flex: 1 }}
+              />
+              <TimePicker
+                picker="time"
+                value={fromDateTime}
+                onChange={handleFromTimeChange}
+                format="HH:mm:ss"
+                disabledTime={getDisabledTimeForPicker('start')}
+                style={{ flex: 1 }}
+              />
             </div>
           </div>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ marginBottom: 8, fontWeight: 500 }}>To:</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <DatePicker
+                value={toDateTime}
+                onChange={handleToDateChange}
+                format="YYYY-MM-DD"
+                disabledDate={getDisabledDateForTo}
+                style={{ flex: 1 }}
+              />
+              <TimePicker
+                picker="time"
+                value={toDateTime}
+                onChange={handleToTimeChange}
+                format="HH:mm:ss"
+                disabledTime={getDisabledTimeForPicker('end')}
+                style={{ flex: 1 }}
+              />
+            </div>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              marginTop: 12
+            }}
+          >
+            <Button type="primary" onClick={handleOk} disabled={!!rangeError}>
+              Ok
+            </Button>
+            {rangeError && (
+              <div
+                style={{
+                  color: '#ff4d4f',
+                  fontSize: '12px',
+                  marginTop: 8,
+                  textAlign: 'right'
+                }}
+              >
+                {rangeError}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 

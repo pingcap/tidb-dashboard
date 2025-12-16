@@ -57,7 +57,7 @@
     "react-router-dom": "6",
     "react-split": "^2.0.14",
     "react-spring": "^9.4.4",
-    "react-syntax-highlighter": "^15.4.3",
+    "react-syntax-highlighter": "^16.0.0",
     "react-use": "^15.3.3",
     "sql-formatter": "^4.0.2",
     "string-template": "^1.0.0",

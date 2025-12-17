@@ -21,8 +21,12 @@ type Claims struct {
 func newClaims(issuer string, data string, expireIn time.Duration) *Claims {
 	return &Claims{
 		Data: data,
+<<<<<<< HEAD
 		//nolint:staticcheck
 		StandardClaims: jwt.StandardClaims{
+=======
+		StandardClaims: jwt.StandardClaims{ //nolint:staticcheck // StandardClaims is deprecated, but we use it here temporarily
+>>>>>>> 121f017c2 (Replace jwt lib and update crypto lib (#1852))
 			ExpiresAt: time.Now().Add(expireIn).Unix(),
 			Issuer:    issuer,
 		},

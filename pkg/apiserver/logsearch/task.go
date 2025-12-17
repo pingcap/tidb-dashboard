@@ -170,7 +170,7 @@ func (t *Task) SyncRun() {
 		secureOpt = grpc.WithTransportCredentials(creds)
 	}
 
-	conn, err := grpc.Dial(net.JoinHostPort(t.model.Target.IP, strconv.Itoa(t.model.Target.Port)),
+	conn, err := grpc.Dial(net.JoinHostPort(t.model.Target.IP, strconv.Itoa(t.model.Target.Port)), //nolint:staticcheck // Dial is deprecated, but we use it here temporarily
 		secureOpt,
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
 	)

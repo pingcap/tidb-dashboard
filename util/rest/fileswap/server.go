@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/minio/sio"
@@ -139,7 +139,7 @@ func (fw *FileWriter) GetDownloadToken(downloadFileName string, expireIn time.Du
 	claims := downloadTokenClaims{
 		TempFileName:     fw.filePath,
 		DownloadFileName: downloadFileName,
-		StandardClaims: jwt.StandardClaims{
+		StandardClaims: jwt.StandardClaims{ //nolint:staticcheck // StandardClaims is deprecated, but we use it here temporarily
 			ExpiresAt: time.Now().Add(expireIn).Unix(),
 		},
 	}

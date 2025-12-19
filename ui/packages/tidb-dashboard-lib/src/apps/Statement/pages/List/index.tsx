@@ -234,6 +234,7 @@ export default function StatementsOverview() {
                 recent_seconds={ctx.cfg.timeRangeSelector.recentSeconds}
                 customAbsoluteRangePicker={true}
                 onZoomOutClick={() => {}}
+                timeRangeLimit={ctx?.cfg.timeRangeSelector?.timeRangeLimit}
               />
             ) : (
               <TimeRangeSelector

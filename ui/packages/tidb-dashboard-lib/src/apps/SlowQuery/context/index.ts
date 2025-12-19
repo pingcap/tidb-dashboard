@@ -87,6 +87,7 @@ export interface ISlowQueryConfig extends IContextConfig {
   timeRangeSelector?: {
     recentSeconds: number[]
     customAbsoluteRangePicker: boolean
+    timeRangeLimit?: number
   }
 
   // for clinic

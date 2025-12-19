@@ -392,6 +392,7 @@ function List() {
                 recent_seconds={ctx.cfg.timeRangeSelector.recentSeconds}
                 customAbsoluteRangePicker={true}
                 onZoomOutClick={() => {}}
+                timeRangeLimit={ctx?.cfg.timeRangeSelector?.timeRangeLimit}
               />
             ) : (
               <TimeRangeSelector value={timeRange} onChange={setTimeRange} />

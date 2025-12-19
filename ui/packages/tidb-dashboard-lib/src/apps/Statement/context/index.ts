@@ -112,6 +112,7 @@ export interface IStatementConfig extends IContextConfig {
   timeRangeSelector?: {
     recentSeconds: number[]
     customAbsoluteRangePicker: boolean
+    timeRangeLimit?: number
   }
 }
 

@@ -139,12 +139,7 @@ func (fw *FileWriter) GetDownloadToken(downloadFileName string, expireIn time.Du
 	claims := downloadTokenClaims{
 		TempFileName:     fw.filePath,
 		DownloadFileName: downloadFileName,
-<<<<<<< HEAD
-		//nolint:staticcheck
-		StandardClaims: jwt.StandardClaims{
-=======
 		StandardClaims: jwt.StandardClaims{ //nolint:staticcheck // StandardClaims is deprecated, but we use it here temporarily
->>>>>>> 121f017c2 (Replace jwt lib and update crypto lib (#1852))
 			ExpiresAt: time.Now().Add(expireIn).Unix(),
 		},
 	}

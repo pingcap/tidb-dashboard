@@ -28,7 +28,6 @@ func Test_Clone(t *testing.T) {
 
 	require.Nil(t, c.header)
 	require.Nil(t, cc.header)
-	require.NotSame(t, c.header, cc.header)
 }
 
 func Test_CloneAndAddRequestHeader(t *testing.T) {

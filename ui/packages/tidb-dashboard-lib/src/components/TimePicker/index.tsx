@@ -1,8 +1,15 @@
 import { Dayjs } from 'dayjs'
-import dayjsGenerateConfig from 'rc-picker/es/generate/dayjs'
-import generatePicker from 'antd/es/date-picker/generatePicker'
-import 'antd/es/date-picker/style/index'
+import * as React from 'react'
+import DatePicker from '../DatePicker'
+import { PickerTimeProps } from 'antd/es/date-picker/generatePicker'
 
-const TimePicker = generatePicker<Dayjs>(dayjsGenerateConfig)
+export interface TimePickerProps
+  extends Omit<PickerTimeProps<Dayjs>, 'picker'> {}
+
+const TimePicker = React.forwardRef<any, TimePickerProps>((props, ref) => {
+  return <DatePicker {...props} picker="time" mode={undefined} ref={ref} />
+})
+
+TimePicker.displayName = 'TimePicker'
 
 export default TimePicker

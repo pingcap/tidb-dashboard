@@ -1,4 +1,4 @@
-// Copyright 2025 PingCAP, Inc. Licensed under Apache-2.0.
+// Copyright 2026 PingCAP, Inc. Licensed under Apache-2.0.
 
 // conprof is short for continuous profiling
 package conprof

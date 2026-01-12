@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { Dropdown, Button } from 'antd'
+import { Dropdown, Button, TimePicker } from 'antd'
 import { ClockCircleOutlined, DownOutlined } from '@ant-design/icons'
 import {
   getValueFormat,
@@ -19,7 +19,7 @@ import { WithZoomOut } from './WithZoomOut'
 import { tz } from '@lib/utils'
 import { PickerComponentClass } from 'antd/lib/date-picker/generatePicker/interface'
 import DatePicker from '@lib/components/DatePicker'
-import TimePicker from '@lib/components/TimePicker'
+// import TimePicker from '@lib/components/TimePicker'
 
 const { RangePicker: RangePickerAntd } = DatePicker
 const RangePicker: PickerComponentClass<
@@ -275,7 +275,7 @@ function TimeRangeSelector({
     }
   }, [fromDateTime, toDateTime, onCalendarChange])
 
-  // Validate time range: check from > to and selectableHours
+  // Validate time range: check from > to, selectableHours, disabledDate, and disabledTime
   useEffect(() => {
     if (fromDateTime && toDateTime) {
       // First check: from cannot be greater than to
@@ -297,12 +297,74 @@ function TimeRangeSelector({
         }
       }
 
+      // Third check: validate disabledDate for fromDateTime
+      if (disabledDate && disabledDate(fromDateTime)) {
+        setRangeError('Selected start date is not allowed.')
+        return
+      }
+
+      // Fourth check: validate disabledDate for toDateTime
+      if (disabledDate && disabledDate(toDateTime)) {
+        setRangeError('Selected end date is not allowed.')
+        return
+      }
+
+      // Fifth check: validate disabledTime for fromDateTime
+      if (disabledTime) {
+        const disabledTimeResult = disabledTime(fromDateTime, 'start')
+        if (disabledTimeResult) {
+          const fromHour = fromDateTime.hour()
+          const fromMinute = fromDateTime.minute()
+          const fromSecond = fromDateTime.second()
+
+          const disabledHours = disabledTimeResult.disabledHours?.() || []
+          const disabledMinutes =
+            disabledTimeResult.disabledMinutes?.(fromHour) || []
+          const disabledSeconds =
+            disabledTimeResult.disabledSeconds?.(fromHour, fromMinute) || []
+
+          if (
+            disabledHours.includes(fromHour) ||
+            disabledMinutes.includes(fromMinute) ||
+            disabledSeconds.includes(fromSecond)
+          ) {
+            setRangeError('Selected start time is not allowed.')
+            return
+          }
+        }
+      }
+
+      // Sixth check: validate disabledTime for toDateTime
+      if (disabledTime) {
+        const disabledTimeResult = disabledTime(toDateTime, 'end')
+        if (disabledTimeResult) {
+          const toHour = toDateTime.hour()
+          const toMinute = toDateTime.minute()
+          const toSecond = toDateTime.second()
+
+          const disabledHours = disabledTimeResult.disabledHours?.() || []
+          const disabledMinutes =
+            disabledTimeResult.disabledMinutes?.(toHour) || []
+          const disabledSeconds =
+            disabledTimeResult.disabledSeconds?.(toHour, toMinute) || []
+
+          if (
+            disabledHours.includes(toHour) ||
+            disabledMinutes.includes(toMinute) ||
+            disabledSeconds.includes(toSecond)
+          ) {
+            setRangeError('Selected end time is not allowed.')
+            return
+          }
+        }
+      }
+
       // No errors
       setRangeError(null)
     } else {
       setRangeError(null)
     }
-  }, [fromDateTime, toDateTime, selectableHours])
+  }, [fromDateTime, toDateTime, selectableHours, disabledDate, disabledTime])
 
   // Handle fromDate change: update fromDateTime with new date, keeping time
   const handleFromDateChange = useMemoizedFn((date: Dayjs | null) => {
@@ -331,6 +393,7 @@ function TimeRangeSelector({
 
   // Handle fromTime change: update fromDateTime with new time, keeping date
   const handleFromTimeChange = useMemoizedFn((time: Dayjs | null) => {
+    console.log(time)
     if (time && fromDateTime) {
       // Keep the date part from fromDateTime, but apply new time
       const newFromDateTime = fromDateTime
@@ -443,6 +506,64 @@ function TimeRangeSelector({
         }
       }
 
+      // Validate: disabledDate for fromDateTime
+      if (disabledDate && disabledDate(fromDateTime)) {
+        return
+      }
+
+      // Validate: disabledDate for toDateTime
+      if (disabledDate && disabledDate(toDateTime)) {
+        return
+      }
+
+      // Validate: disabledTime for fromDateTime
+      if (disabledTime) {
+        const disabledTimeResult = disabledTime(fromDateTime, 'start')
+        if (disabledTimeResult) {
+          const fromHour = fromDateTime.hour()
+          const fromMinute = fromDateTime.minute()
+          const fromSecond = fromDateTime.second()
+
+          const disabledHours = disabledTimeResult.disabledHours?.() || []
+          const disabledMinutes =
+            disabledTimeResult.disabledMinutes?.(fromHour) || []
+          const disabledSeconds =
+            disabledTimeResult.disabledSeconds?.(fromHour, fromMinute) || []
+
+          if (
+            disabledHours.includes(fromHour) ||
+            disabledMinutes.includes(fromMinute) ||
+            disabledSeconds.includes(fromSecond)
+          ) {
+            return
+          }
+        }
+      }
+
+      // Validate: disabledTime for toDateTime
+      if (disabledTime) {
+        const disabledTimeResult = disabledTime(toDateTime, 'end')
+        if (disabledTimeResult) {
+          const toHour = toDateTime.hour()
+          const toMinute = toDateTime.minute()
+          const toSecond = toDateTime.second()
+
+          const disabledHours = disabledTimeResult.disabledHours?.() || []
+          const disabledMinutes =
+            disabledTimeResult.disabledMinutes?.(toHour) || []
+          const disabledSeconds =
+            disabledTimeResult.disabledSeconds?.(toHour, toMinute) || []
+
+          if (
+            disabledHours.includes(toHour) ||
+            disabledMinutes.includes(toMinute) ||
+            disabledSeconds.includes(toSecond)
+          ) {
+            return
+          }
+        }
+      }
+
       onChange?.({
         type: 'absolute',
         value: [fromDateTime.unix(), toDateTime.unix()]
@@ -452,36 +573,28 @@ function TimeRangeSelector({
     }
   })
 
-  // Custom disabledDate for From: cannot select dates after toDateTime
+  // Pass through external disabledDate to DatePicker (no additional restrictions)
   const getDisabledDateForFrom = useMemoizedFn((current: Dayjs) => {
-    // Apply original disabledDate if provided
-    if (disabledDate && disabledDate(current)) {
-      return true
-    }
-    // Cannot select dates after toDateTime
-    if (toDateTime) {
-      return current.isAfter(toDateTime, 'day')
+    // Only apply external disabledDate if provided
+    if (disabledDate) {
+      return disabledDate(current)
     }
     return false
   })
 
-  // Custom disabledDate for To: cannot select dates before fromDateTime
+  // Pass through external disabledDate to DatePicker (no additional restrictions)
   const getDisabledDateForTo = useMemoizedFn((current: Dayjs) => {
-    // Apply original disabledDate if provided
-    if (disabledDate && disabledDate(current)) {
-      return true
-    }
-    // Cannot select dates before fromDateTime
-    if (fromDateTime) {
-      return current.isBefore(fromDateTime, 'day')
+    // Only apply external disabledDate if provided
+    if (disabledDate) {
+      return disabledDate(current)
     }
     return false
   })
 
-  // Adapter function to convert RangePicker's disabledTime to TimePicker's format
+  // Pass through external disabledTime to TimePicker (no additional restrictions)
   const getDisabledTimeForPicker = useMemoizedFn((type: 'start' | 'end') => {
     return () => {
-      const date = type === 'start' ? fromDateTime! : toDateTime!
+      const date = type === 'start' ? fromDateTime : toDateTime
       const result: {
         disabledHours?: () => number[]
         disabledMinutes?: (selectedHour: number) => number[]
@@ -491,131 +604,11 @@ function TimeRangeSelector({
         ) => number[]
       } = {}
 
-      // Apply original disabledTime if provided
-      if (disabledTime) {
+      // Apply external disabledTime if provided and date exists
+      if (disabledTime && date) {
         const originalResult = disabledTime(date, type)
         if (originalResult) {
           Object.assign(result, originalResult)
-        }
-      }
-
-      // Add validation: when dates are the same, restrict time selection
-      // Only apply this restriction when the current date matches fromDateTime/toDateTime
-      if (
-        type === 'start' &&
-        fromDateTime &&
-        toDateTime &&
-        fromDateTime.isSame(toDateTime, 'day') &&
-        date.isSame(fromDateTime, 'day')
-      ) {
-        // From time cannot be after toTime (only when selecting time for the same date)
-        const toHour = toDateTime.hour()
-        const toMinute = toDateTime.minute()
-        const toSecond = toDateTime.second()
-
-        const originalDisabledHours = result.disabledHours
-        result.disabledHours = () => {
-          const hours = originalDisabledHours ? originalDisabledHours() : []
-          // Disable hours after toHour
-          for (let h = toHour + 1; h < 24; h++) {
-            if (!hours.includes(h)) {
-              hours.push(h)
-            }
-          }
-          return hours.sort((a, b) => a - b)
-        }
-
-        const originalDisabledMinutes = result.disabledMinutes
-        result.disabledMinutes = (selectedHour: number) => {
-          const minutes = originalDisabledMinutes
-            ? originalDisabledMinutes(selectedHour)
-            : []
-          // If same hour, disable minutes after toMinute
-          if (selectedHour === toHour) {
-            for (let m = toMinute + 1; m < 60; m++) {
-              if (!minutes.includes(m)) {
-                minutes.push(m)
-              }
-            }
-          }
-          return minutes.sort((a, b) => a - b)
-        }
-
-        const originalDisabledSeconds = result.disabledSeconds
-        result.disabledSeconds = (
-          selectedHour: number,
-          selectedMinute: number
-        ) => {
-          const seconds = originalDisabledSeconds
-            ? originalDisabledSeconds(selectedHour, selectedMinute)
-            : []
-          // If same hour and minute, disable seconds after toSecond
-          if (selectedHour === toHour && selectedMinute === toMinute) {
-            for (let s = toSecond + 1; s < 60; s++) {
-              if (!seconds.includes(s)) {
-                seconds.push(s)
-              }
-            }
-          }
-          return seconds.sort((a, b) => a - b)
-        }
-      } else if (
-        type === 'end' &&
-        fromDateTime &&
-        toDateTime &&
-        fromDateTime.isSame(toDateTime, 'day') &&
-        date.isSame(toDateTime, 'day')
-      ) {
-        // To time cannot be before fromTime (only when selecting time for the same date)
-        const fromHour = fromDateTime.hour()
-        const fromMinute = fromDateTime.minute()
-        const fromSecond = fromDateTime.second()
-
-        const originalDisabledHours = result.disabledHours
-        result.disabledHours = () => {
-          const hours = originalDisabledHours ? originalDisabledHours() : []
-          // Disable hours before fromHour
-          for (let h = 0; h < fromHour; h++) {
-            if (!hours.includes(h)) {
-              hours.push(h)
-            }
-          }
-          return hours.sort((a, b) => a - b)
-        }
-
-        const originalDisabledMinutes = result.disabledMinutes
-        result.disabledMinutes = (selectedHour: number) => {
-          const minutes = originalDisabledMinutes
-            ? originalDisabledMinutes(selectedHour)
-            : []
-          // If same hour, disable minutes before fromMinute
-          if (selectedHour === fromHour) {
-            for (let m = 0; m < fromMinute; m++) {
-              if (!minutes.includes(m)) {
-                minutes.push(m)
-              }
-            }
-          }
-          return minutes.sort((a, b) => a - b)
-        }
-
-        const originalDisabledSeconds = result.disabledSeconds
-        result.disabledSeconds = (
-          selectedHour: number,
-          selectedMinute: number
-        ) => {
-          const seconds = originalDisabledSeconds
-            ? originalDisabledSeconds(selectedHour, selectedMinute)
-            : []
-          // If same hour and minute, disable seconds before fromSecond
-          if (selectedHour === fromHour && selectedMinute === fromMinute) {
-            for (let s = 0; s < fromSecond; s++) {
-              if (!seconds.includes(s)) {
-                seconds.push(s)
-              }
-            }
-          }
-          return seconds.sort((a, b) => a - b)
         }
       }
 
@@ -673,9 +666,8 @@ function TimeRangeSelector({
                 style={{ flex: 1 }}
               />
               <TimePicker
-                picker="time"
-                value={fromDateTime}
-                onChange={handleFromTimeChange}
+                value={fromDateTime as any}
+                onChange={handleFromTimeChange as any}
                 format="HH:mm:ss"
                 disabledTime={getDisabledTimeForPicker('start')}
                 style={{ flex: 1 }}
@@ -693,9 +685,8 @@ function TimeRangeSelector({
                 style={{ flex: 1 }}
               />
               <TimePicker
-                picker="time"
-                value={toDateTime}
-                onChange={handleToTimeChange}
+                value={toDateTime as any}
+                onChange={handleToTimeChange as any}
                 format="HH:mm:ss"
                 disabledTime={getDisabledTimeForPicker('end')}
                 style={{ flex: 1 }}

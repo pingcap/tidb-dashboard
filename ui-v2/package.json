@@ -41,7 +41,7 @@
     "*.+(json|css|md|html)": "prettier --write"
   },
   "engines": {
-    "node": ">=20.18.0 <21.0.0"
+    "node": ">=22.0.0"
   },
   "packageManager": "pnpm@9.12.2"
 }

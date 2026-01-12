@@ -393,6 +393,7 @@ function TimeRangeSelector({
 
   // Handle fromTime change: update fromDateTime with new time, keeping date
   const handleFromTimeChange = useMemoizedFn((time: Dayjs | null) => {
+    console.log(time)
     if (time && fromDateTime) {
       // Keep the date part from fromDateTime, but apply new time
       const newFromDateTime = fromDateTime

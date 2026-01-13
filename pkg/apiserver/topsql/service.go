@@ -81,6 +81,7 @@ type GetSummaryRequest struct {
 	End          string `json:"end"`
 	Top          string `json:"top"`
 	GroupBy      string `json:"group_by"`
+	OrderBy      string `json:"order_by"`
 	Window       string `json:"window"`
 }
 
@@ -98,6 +99,8 @@ type SummaryItem struct {
 	DurationPerExecMs float64           `json:"duration_per_exec_ms"`
 	ScanRecordsPerSec float64           `json:"scan_records_per_sec"`
 	ScanIndexesPerSec float64           `json:"scan_indexes_per_sec"`
+	NetworkBytes      uint64            `json:"network_bytes"`
+	LogicalIoBytes    uint64            `json:"logical_io_bytes"`
 	Plans             []SummaryPlanItem `json:"plans"`
 }
 
@@ -117,6 +120,8 @@ type SummaryPlanItem struct {
 	DurationPerExecMs float64  `json:"duration_per_exec_ms"`
 	ScanRecordsPerSec float64  `json:"scan_records_per_sec"`
 	ScanIndexesPerSec float64  `json:"scan_indexes_per_sec"`
+	NetworkBytes      []uint64 `json:"network_bytes"`
+	LogicalIoBytes    []uint64 `json:"logical_io_bytes"`
 }
 
 // @Summary Get summaries

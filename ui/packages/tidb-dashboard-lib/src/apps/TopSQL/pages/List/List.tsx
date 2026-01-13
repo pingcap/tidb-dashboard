@@ -69,9 +69,24 @@ export enum AggLevel {
   Schema = 'db'
 }
 
+export enum OrderBy {
+  CpuTime = 'cpu',
+  NetworkBytes = 'network',
+  LogicalIoBytes = 'logical_io'
+}
+
 const formatLabel = (item: AggLevel): string => {
   if (item === AggLevel.Schema) return 'DB' // Special case for 'db'
   return item.charAt(0).toUpperCase() + item.slice(1) // Capitalize first letter
+}
+
+const formatOrderByLabel = (item: OrderBy): string => {
+  const labels: Record<OrderBy, string> = {
+    [OrderBy.CpuTime]: 'CPU Time',
+    [OrderBy.NetworkBytes]: 'Network Bytes',
+    [OrderBy.LogicalIoBytes]: 'Logical IO Bytes'
+  }
+  return labels[item] || item
 }
 
 const GROUP = [AggLevel.Query, AggLevel.Table, AggLevel.Schema]
@@ -98,6 +113,7 @@ export function TopSQLList() {
   const { timeRange, setTimeRange } = useURLTimeRange()
   const [limit, setLimit] = useState(5)
   const [groupBy, setGroupBy] = useState(AggLevel.Query)
+  const [orderBy, setOrderBy] = useState(OrderBy.CpuTime)
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const computeTimeWindowSize = useMemoizedFn(
@@ -238,6 +254,13 @@ export function TopSQLList() {
                   if (inst?.instance_type !== 'tikv') {
                     setGroupBy(AggLevel.Query)
                   }
+                  // Reset orderBy if current selection is not supported by new instance type
+                  if (
+                    inst?.instance_type !== 'tikv' &&
+                    orderBy === OrderBy.LogicalIoBytes
+                  ) {
+                    setOrderBy(OrderBy.CpuTime)
+                  }
                 }}
                 instances={instances}
                 disabled={isLoading || isInstancesLoading}
@@ -287,6 +310,38 @@ export function TopSQLList() {
                       By {formatLabel(item)}
                     </Option>
                   ))}
+                </Select>
+              )}
+              {ctx?.cfg.showOrderBy && instance && (
+                <Select
+                  style={{ width: 150 }}
+                  value={orderBy}
+                  onChange={setOrderBy}
+                  data-e2e="order_by_select"
+                >
+                  <Option
+                    value={OrderBy.CpuTime}
+                    key={OrderBy.CpuTime}
+                    data-e2e="order_by_option_cpu_time"
+                  >
+                    Order By {formatOrderByLabel(OrderBy.CpuTime)}
+                  </Option>
+                  <Option
+                    value={OrderBy.NetworkBytes}
+                    key={OrderBy.NetworkBytes}
+                    data-e2e="order_by_option_network_bytes"
+                  >
+                    Order By {formatOrderByLabel(OrderBy.NetworkBytes)}
+                  </Option>
+                  {instance.instance_type === 'tikv' && (
+                    <Option
+                      value={OrderBy.LogicalIoBytes}
+                      key={OrderBy.LogicalIoBytes}
+                      data-e2e="order_by_option_logical_io_bytes"
+                    >
+                      Order By {formatOrderByLabel(OrderBy.LogicalIoBytes)}
+                    </Option>
+                  )}
                 </Select>
               )}
 
@@ -393,6 +448,7 @@ export function TopSQLList() {
                 instanceType={instance?.instance_type as InstanceType}
                 data={topSQLData}
                 groupBy={groupBy}
+                orderBy={orderBy}
                 timeRange={timeRange}
               />
             )}

@@ -40,6 +40,18 @@ export interface TopsqlSummaryPlanItem {
     'exec_count_per_sec'?: number;
     /**
      * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryPlanItem
+     */
+    'logical_io_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryPlanItem
+     */
+    'network_bytes'?: Array<number>;
+    /**
+     * 
      * @type {string}
      * @memberof TopsqlSummaryPlanItem
      */

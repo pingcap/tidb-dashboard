@@ -3525,6 +3525,11 @@
                     },
                     {
                         "type": "string",
+                        "name": "order_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "start",
                         "in": "query"
                     },
@@ -6121,6 +6126,12 @@
                 "is_other": {
                     "type": "boolean"
                 },
+                "logical_io_bytes": {
+                    "type": "integer"
+                },
+                "network_bytes": {
+                    "type": "integer"
+                },
                 "plans": {
                     "type": "array",
                     "items": {
@@ -6155,6 +6166,18 @@
                 },
                 "exec_count_per_sec": {
                     "type": "number"
+                },
+                "logical_io_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "network_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "plan_digest": {
                     "type": "string"

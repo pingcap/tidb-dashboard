@@ -4146,6 +4146,18 @@ export interface TopsqlSummaryItem {
     'is_other'?: boolean;
     /**
      * 
+     * @type {number}
+     * @memberof TopsqlSummaryItem
+     */
+    'logical_io_bytes'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryItem
+     */
+    'network_bytes'?: number;
+    /**
+     * 
      * @type {Array<TopsqlSummaryPlanItem>}
      * @memberof TopsqlSummaryItem
      */
@@ -4203,6 +4215,18 @@ export interface TopsqlSummaryPlanItem {
      * @memberof TopsqlSummaryPlanItem
      */
     'exec_count_per_sec'?: number;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryPlanItem
+     */
+    'logical_io_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryPlanItem
+     */
+    'network_bytes'?: Array<number>;
     /**
      * 
      * @type {string}

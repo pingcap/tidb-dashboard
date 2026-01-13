@@ -47,6 +47,18 @@ export interface TopsqlSummaryItem {
     'is_other'?: boolean;
     /**
      * 
+     * @type {number}
+     * @memberof TopsqlSummaryItem
+     */
+    'logical_io_bytes'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryItem
+     */
+    'network_bytes'?: number;
+    /**
+     * 
      * @type {Array<TopsqlSummaryPlanItem>}
      * @memberof TopsqlSummaryItem
      */

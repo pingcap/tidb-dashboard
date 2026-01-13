@@ -56,6 +56,7 @@ export interface ITopSQLConfig {
   showSearchInStatements?: boolean
   showLimit?: boolean
   showGroupBy?: boolean
+  showOrderBy?: boolean
 }
 
 export interface ITopSQLContext {

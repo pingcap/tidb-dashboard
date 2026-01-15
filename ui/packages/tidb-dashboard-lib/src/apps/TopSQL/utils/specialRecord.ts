@@ -2,6 +2,7 @@
 
 import type { PlanRecord } from '../pages/List/ListDetail/ListDetailTable'
 import type { SQLRecord } from '../pages/List/ListTable'
+import { OrderBy } from '../pages/List/List'
 
 const OVERALL_IDENTIFIER = '__OVERALL_IDENTIFIER__'
 
@@ -9,10 +10,15 @@ export const isOverallRecord = (r: PlanRecord) => {
   return r.plan_digest === OVERALL_IDENTIFIER
 }
 
-export const createOverallRecord = (record: SQLRecord): PlanRecord => {
+export const createOverallRecord = (
+  record: SQLRecord,
+  orderBy: OrderBy
+): PlanRecord => {
   return {
     plan_digest: OVERALL_IDENTIFIER,
-    cpuTime: record.cpu_time_ms || 0,
+    cpuTime: record.cpuTime || 0,
+    networkBytes: record.networkBytes || 0,
+    logicalIoBytes: record.logicalIoBytes || 0,
     exec_count_per_sec: record.exec_count_per_sec,
     scan_records_per_sec: record.scan_records_per_sec,
     scan_indexes_per_sec: record.scan_indexes_per_sec,

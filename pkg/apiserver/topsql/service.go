@@ -105,10 +105,14 @@ type SummaryItem struct {
 }
 
 type SummaryByItem struct {
-	Text         string   `json:"text"`
-	TimestampSec []uint64 `json:"timestamp_sec"`
-	CPUTimeMs    []uint64 `json:"cpu_time_ms,omitempty"`
-	CPUTimeMsSum uint64   `json:"cpu_time_ms_sum"`
+	Text              string   `json:"text"`
+	TimestampSec      []uint64 `json:"timestamp_sec"`
+	CPUTimeMs         []uint64 `json:"cpu_time_ms,omitempty"`
+	CPUTimeMsSum      uint64   `json:"cpu_time_ms_sum"`
+	NetworkBytes      []uint64 `json:"network_bytes,omitempty"`
+	NetworkBytesSum   uint64   `json:"network_bytes_sum"`
+	LogicalIoBytes    []uint64 `json:"logical_io_bytes,omitempty"`
+	LogicalIoBytesSum uint64   `json:"logical_io_bytes_sum"`
 }
 
 type SummaryPlanItem struct {

@@ -6100,6 +6100,24 @@
                 "cpu_time_ms_sum": {
                     "type": "integer"
                 },
+                "logical_io_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "logical_io_bytes_sum": {
+                    "type": "integer"
+                },
+                "network_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "network_bytes_sum": {
+                    "type": "integer"
+                },
                 "text": {
                     "type": "string"
                 },

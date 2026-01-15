@@ -91,17 +91,62 @@ export function ListTable({
       const tv = toTimeRangeValue(timeRange)
       openLink(`/statement?from=${tv[0]}&to=${tv[1]}`, ev, navigate)
     }
+    // Get column title and value based on orderBy
+    const getColumnTitle = () => {
+      switch (orderBy) {
+        case OrderBy.NetworkBytes:
+          return t('topsql.table.fields.network_bytes') || 'Network Bytes'
+        case OrderBy.LogicalIoBytes:
+          return t('topsql.table.fields.logical_io_bytes') || 'Logical IO Bytes'
+        case OrderBy.CpuTime:
+        default:
+          return t('topsql.table.fields.cpu_time')
+      }
+    }
+
+    const getColumnValue = (rec: SQLRecord): number => {
+      switch (orderBy) {
+        case OrderBy.NetworkBytes:
+          return rec.networkBytes || 0
+        case OrderBy.LogicalIoBytes:
+          return rec.logicalIoBytes || 0
+        case OrderBy.CpuTime:
+        default:
+          return rec.cpuTime || 0
+      }
+    }
+
+    const getValueFormatter = () => {
+      switch (orderBy) {
+        case OrderBy.NetworkBytes:
+        case OrderBy.LogicalIoBytes:
+          return (v: number) => getValueFormat('bytes')(v, 2)
+        case OrderBy.CpuTime:
+        default:
+          return (v: number) => getValueFormat('ms')(v, 2)
+      }
+    }
+
+    const formatter = getValueFormatter()
     let cols = [
       {
-        name: t('topsql.table.fields.cpu_time'),
-        key: 'cpuTime',
+        name: getColumnTitle(),
+        key:
+          orderBy === OrderBy.NetworkBytes
+            ? 'networkBytes'
+            : orderBy === OrderBy.LogicalIoBytes
+            ? 'logicalIoBytes'
+            : 'cpuTime',
         minWidth: 150,
         maxWidth: 250,
-        onRender: (rec: SQLRecord) => (
-          <Bar textWidth={80} value={rec.cpuTime!} capacity={capacity}>
-            {getValueFormat('ms')(rec.cpuTime, 2)}
-          </Bar>
-        )
+        onRender: (rec: SQLRecord) => {
+          const value = getColumnValue(rec)
+          return (
+            <Bar textWidth={80} value={value} capacity={capacity}>
+              {formatter(value)}
+            </Bar>
+          )
+        }
       },
       {
         name:
@@ -109,9 +154,13 @@ export function ListTable({
             ? t('topsql.table.fields.table')
             : groupBy === AggLevel.Schema
             ? t('topsql.table.fields.db')
+            : groupBy === AggLevel.Region
+            ? 'RegionID'
             : t('topsql.table.fields.sql'),
         key:
-          groupBy === AggLevel.Table || groupBy === AggLevel.Schema
+          groupBy === AggLevel.Table ||
+          groupBy === AggLevel.Schema ||
+          groupBy === AggLevel.Region
             ? 'text'
             : 'sql_text',
         minWidth: 250,
@@ -184,6 +233,7 @@ export function ListTable({
     t,
     topN,
     groupBy,
+    orderBy,
     navigate,
     timeRange,
     ctx?.cfg.showSearchInStatements
@@ -249,11 +299,13 @@ export function ListTable({
       <AppearAnimate motionName="contentAnimation">
         {selectedRecord &&
           groupBy !== AggLevel.Table &&
-          groupBy !== AggLevel.Schema && (
+          groupBy !== AggLevel.Schema &&
+          groupBy !== AggLevel.Region && (
             <ListDetail
               instanceType={instanceType}
               record={selectedRecord}
               capacity={capacity}
+              orderBy={orderBy}
             />
           )}
       </AppearAnimate>

@@ -25,6 +25,7 @@ class DataSource implements ITopSQLDataSource {
     groupBy?: string,
     instance?: string,
     instanceType?: string,
+    orderBy?: string,
     start?: string,
     top?: string,
     window?: string,
@@ -36,6 +37,7 @@ class DataSource implements ITopSQLDataSource {
         groupBy,
         instance,
         instanceType,
+        orderBy,
         start,
         top,
         window

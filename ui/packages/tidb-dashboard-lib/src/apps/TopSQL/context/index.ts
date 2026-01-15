@@ -29,6 +29,7 @@ export interface ITopSQLDataSource {
     groupBy?: string,
     instance?: string,
     instanceType?: string,
+    orderBy?: string,
     start?: string,
     top?: string,
     window?: string,
@@ -56,7 +57,9 @@ export interface ITopSQLConfig {
   showSearchInStatements?: boolean
   showLimit?: boolean
   showGroupBy?: boolean
+  showGroupByRegion?: boolean
   showOrderBy?: boolean
+  limitMinInterval?: boolean
 }
 
 export interface ITopSQLContext {

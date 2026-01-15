@@ -55,8 +55,6 @@ export const ctx: ITopSQLContext = {
     checkNgm: true,
     showSetting: true,
     showLimit: true,
-    showGroupBy: true,
-    showOrderBy: true,
-    limitMinInterval: true
+    showGroupBy: true
   } as ITopSQLConfig
 }

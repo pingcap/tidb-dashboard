@@ -58,6 +58,7 @@ export const ctx: (cfg: Partial<ITopSQLConfig>) => ITopSQLContext = (cfg) => ({
     showGroupBy: true,
     showGroupByRegion: true,
     showOrderBy: true,
+    limitMinInterval: true,
     ...cfg
   }
 })

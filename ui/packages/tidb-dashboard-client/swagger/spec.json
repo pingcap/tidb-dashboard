@@ -3525,6 +3525,11 @@
                     },
                     {
                         "type": "string",
+                        "name": "order_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "start",
                         "in": "query"
                     },
@@ -6095,6 +6100,24 @@
                 "cpu_time_ms_sum": {
                     "type": "integer"
                 },
+                "logical_io_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "logical_io_bytes_sum": {
+                    "type": "integer"
+                },
+                "network_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "network_bytes_sum": {
+                    "type": "integer"
+                },
                 "text": {
                     "type": "string"
                 },
@@ -6120,6 +6143,12 @@
                 },
                 "is_other": {
                     "type": "boolean"
+                },
+                "logical_io_bytes": {
+                    "type": "integer"
+                },
+                "network_bytes": {
+                    "type": "integer"
                 },
                 "plans": {
                     "type": "array",
@@ -6155,6 +6184,18 @@
                 },
                 "exec_count_per_sec": {
                     "type": "number"
+                },
+                "logical_io_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "network_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "plan_digest": {
                     "type": "string"

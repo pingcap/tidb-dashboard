@@ -1,6 +1,7 @@
 import {
   ITopSQLDataSource,
   ITopSQLContext,
+  ITopSQLConfig,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
@@ -24,6 +25,7 @@ class DataSource implements ITopSQLDataSource {
     groupBy?: string,
     instance?: string,
     instanceType?: string,
+    orderBy?: string,
     start?: string,
     top?: string,
     window?: string,
@@ -35,6 +37,7 @@ class DataSource implements ITopSQLDataSource {
         groupBy,
         instance,
         instanceType,
+        orderBy,
         start,
         top,
         window
@@ -53,5 +56,5 @@ export const ctx: ITopSQLContext = {
     showSetting: true,
     showLimit: true,
     showGroupBy: true
-  }
+  } as ITopSQLConfig
 }

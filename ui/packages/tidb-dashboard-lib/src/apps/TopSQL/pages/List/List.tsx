@@ -66,7 +66,14 @@ const LIMITS = [5, 20, 100]
 export enum AggLevel {
   Query = 'query',
   Table = 'table',
-  Schema = 'db'
+  Schema = 'db',
+  Region = 'region'
+}
+
+export enum OrderBy {
+  CpuTime = 'cpu',
+  NetworkBytes = 'network',
+  LogicalIoBytes = 'logical_io'
 }
 
 const formatLabel = (item: AggLevel): string => {
@@ -74,7 +81,16 @@ const formatLabel = (item: AggLevel): string => {
   return item.charAt(0).toUpperCase() + item.slice(1) // Capitalize first letter
 }
 
-const GROUP = [AggLevel.Query, AggLevel.Table, AggLevel.Schema]
+const formatOrderByLabel = (item: OrderBy): string => {
+  const labels: Record<OrderBy, string> = {
+    [OrderBy.CpuTime]: 'CPU',
+    [OrderBy.NetworkBytes]: 'Network',
+    [OrderBy.LogicalIoBytes]: 'Logical IO'
+  }
+  return labels[item] || item
+}
+
+const GROUP = [AggLevel.Query, AggLevel.Table, AggLevel.Schema, AggLevel.Region]
 
 const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
   return _toTimeRangeValue(v, v?.type === 'recent' ? RECENT_RANGE_OFFSET : 0)
@@ -98,6 +114,7 @@ export function TopSQLList() {
   const { timeRange, setTimeRange } = useURLTimeRange()
   const [limit, setLimit] = useState(5)
   const [groupBy, setGroupBy] = useState(AggLevel.Query)
+  const [orderBy, setOrderBy] = useState(OrderBy.CpuTime)
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const computeTimeWindowSize = useMemoizedFn(
@@ -106,15 +123,25 @@ export function TopSQLList() {
       const windowSize = Math.ceil(
         (CHART_BAR_WIDTH * (max - min)) / screenWidth
       )
-      setTimeWindowSize(windowSize)
-      return windowSize
+      const finalWindowSize = ctx?.cfg.limitMinInterval
+        ? Math.max(windowSize, 60)
+        : windowSize
+      setTimeWindowSize(finalWindowSize)
+      return finalWindowSize
     }
   )
   const {
     topSQLData,
     isLoading: isDataLoading,
     updateTopSQLData
-  } = useTopSQLData(instance, timeRange, limit, groupBy, computeTimeWindowSize)
+  } = useTopSQLData(
+    instance,
+    timeRange,
+    limit,
+    groupBy,
+    orderBy,
+    computeTimeWindowSize
+  )
   const isLoading = isConfigLoading || isDataLoading
   const {
     instances,
@@ -238,6 +265,13 @@ export function TopSQLList() {
                   if (inst?.instance_type !== 'tikv') {
                     setGroupBy(AggLevel.Query)
                   }
+                  // Reset orderBy if current selection is not supported by new instance type
+                  if (
+                    inst?.instance_type !== 'tikv' &&
+                    orderBy === OrderBy.LogicalIoBytes
+                  ) {
+                    setOrderBy(OrderBy.CpuTime)
+                  }
                 }}
                 instances={instances}
                 disabled={isLoading || isInstancesLoading}
@@ -282,11 +316,50 @@ export function TopSQLList() {
                   onChange={setGroupBy}
                   data-e2e="group_select"
                 >
-                  {GROUP.map((item) => (
+                  {GROUP.filter((item) => {
+                    // Only show Region option when showGroupByRegion is true
+                    // (instance?.instance_type === 'tikv' is already checked in outer condition)
+                    if (item === AggLevel.Region) {
+                      return ctx?.cfg.showGroupByRegion === true
+                    }
+                    return true
+                  }).map((item) => (
                     <Option value={item} key={item} data-e2e="group_option">
                       By {formatLabel(item)}
                     </Option>
                   ))}
+                </Select>
+              )}
+              {ctx?.cfg.showOrderBy && instance && (
+                <Select
+                  style={{ width: 150 }}
+                  value={orderBy}
+                  onChange={setOrderBy}
+                  data-e2e="order_by_select"
+                >
+                  <Option
+                    value={OrderBy.CpuTime}
+                    key={OrderBy.CpuTime}
+                    data-e2e="order_by_option_cpu_time"
+                  >
+                    Order By {formatOrderByLabel(OrderBy.CpuTime)}
+                  </Option>
+                  <Option
+                    value={OrderBy.NetworkBytes}
+                    key={OrderBy.NetworkBytes}
+                    data-e2e="order_by_option_network_bytes"
+                  >
+                    Order By {formatOrderByLabel(OrderBy.NetworkBytes)}
+                  </Option>
+                  {instance.instance_type === 'tikv' && (
+                    <Option
+                      value={OrderBy.LogicalIoBytes}
+                      key={OrderBy.LogicalIoBytes}
+                      data-e2e="order_by_option_logical_io_bytes"
+                    >
+                      Order By {formatOrderByLabel(OrderBy.LogicalIoBytes)}
+                    </Option>
+                  )}
                 </Select>
               )}
 
@@ -378,6 +451,7 @@ export function TopSQLList() {
                 onBrushEnd={handleBrushEnd}
                 data={topSQLData}
                 groupBy={groupBy}
+                orderBy={orderBy}
                 timeRangeTimestamp={toTimeRangeValue(timeRange)}
                 timeWindowSize={timeWindowSize}
                 ref={chartRef}
@@ -393,6 +467,7 @@ export function TopSQLList() {
                 instanceType={instance?.instance_type as InstanceType}
                 data={topSQLData}
                 groupBy={groupBy}
+                orderBy={orderBy}
                 timeRange={timeRange}
               />
             )}
@@ -429,6 +504,7 @@ const useTopSQLData = (
   timeRange: TimeRange,
   limit: number,
   groupBy: string,
+  orderBy: OrderBy,
   computeTimeWindowSize: (ts: TimeRangeValue) => number
 ) => {
   const ctx = useContext(TopSQLContext)
@@ -457,6 +533,7 @@ const useTopSQLData = (
           _instance.instance_type === 'tidb' ? AggLevel.Query : groupBy,
           _instance.instance,
           _instance.instance_type,
+          orderBy,
           String(start),
           String(limit),
           `${timeWindowSize}s`
@@ -475,11 +552,39 @@ const useTopSQLData = (
         data.forEach((d) => {
           d.sql_text = formatSql(d.sql_text)
           d.plans?.forEach((item) => {
-            // Filter empty cpu time data
-            item.timestamp_sec = item.timestamp_sec?.filter(
-              (_, index) => !!item.cpu_time_ms?.[index]
+            // Filter data based on orderBy dimension
+            let filterFn: (index: number) => boolean
+            switch (orderBy) {
+              case OrderBy.NetworkBytes:
+                filterFn = (index: number) => !!item.network_bytes?.[index]
+                break
+              case OrderBy.LogicalIoBytes:
+                filterFn = (index: number) => !!item.logical_io_bytes?.[index]
+                break
+              case OrderBy.CpuTime:
+              default:
+                filterFn = (index: number) => !!item.cpu_time_ms?.[index]
+                break
+            }
+            item.timestamp_sec = item.timestamp_sec?.filter((_, index) =>
+              filterFn(index)
             )
-            item.cpu_time_ms = item.cpu_time_ms?.filter((c) => !!c)
+            // Filter the corresponding data arrays
+            if (item.cpu_time_ms) {
+              item.cpu_time_ms = item.cpu_time_ms.filter((_, index) =>
+                filterFn(index)
+              )
+            }
+            if (item.network_bytes) {
+              item.network_bytes = item.network_bytes.filter((_, index) =>
+                filterFn(index)
+              )
+            }
+            if (item.logical_io_bytes) {
+              item.logical_io_bytes = item.logical_io_bytes.filter((_, index) =>
+                filterFn(index)
+              )
+            }
 
             item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000)
           })
@@ -487,17 +592,50 @@ const useTopSQLData = (
         setTopSQLData(data)
       }
 
-      if (groupBy === AggLevel.Table || groupBy === AggLevel.Schema) {
+      if (
+        groupBy === AggLevel.Table ||
+        groupBy === AggLevel.Schema ||
+        groupBy === AggLevel.Region
+      ) {
         let data: TopsqlSummaryByItem[] = dataResp.data_by ?? []
         // Sort data by table
         // If this table occurs continuously on the timeline, we can easily see the sequential overhead
         // data.sort((a, b) => a.table_?.localeCompare(b.table!) || 0)
         data.forEach((d) => {
-          // Filter empty cpu time data
-          d.timestamp_sec = d.timestamp_sec?.filter(
-            (_, index) => !!d.cpu_time_ms?.[index]
+          // Filter data based on orderBy dimension
+          // Note: TopsqlSummaryByItem may have network_bytes and logical_io_bytes arrays
+          // but they're not in the type definition, so we use type assertion
+          const byItem = d as any
+          let filterFn: (index: number) => boolean
+          switch (orderBy) {
+            case OrderBy.NetworkBytes:
+              filterFn = (index: number) => !!byItem.network_bytes?.[index]
+              break
+            case OrderBy.LogicalIoBytes:
+              filterFn = (index: number) => !!byItem.logical_io_bytes?.[index]
+              break
+            case OrderBy.CpuTime:
+            default:
+              filterFn = (index: number) => !!d.cpu_time_ms?.[index]
+              break
+          }
+          d.timestamp_sec = d.timestamp_sec?.filter((_, index) =>
+            filterFn(index)
           )
-          d.cpu_time_ms = d.cpu_time_ms?.filter((c) => !!c)
+          // Filter the corresponding data arrays
+          if (d.cpu_time_ms) {
+            d.cpu_time_ms = d.cpu_time_ms.filter((_, index) => filterFn(index))
+          }
+          if (byItem.network_bytes) {
+            byItem.network_bytes = byItem.network_bytes.filter((_, index) =>
+              filterFn(index)
+            )
+          }
+          if (byItem.logical_io_bytes) {
+            byItem.logical_io_bytes = byItem.logical_io_bytes.filter(
+              (_, index) => filterFn(index)
+            )
+          }
 
           d.timestamp_sec = d.timestamp_sec?.map((t) => t * 1000)
         })
@@ -508,7 +646,7 @@ const useTopSQLData = (
 
   useEffect(() => {
     updateTopSQLData(instance, timeRange, limit)
-  }, [instance, timeRange, limit, groupBy, updateTopSQLData])
+  }, [instance, timeRange, limit, groupBy, orderBy, updateTopSQLData])
 
   return { topSQLData, isLoading, updateTopSQLData }
 }

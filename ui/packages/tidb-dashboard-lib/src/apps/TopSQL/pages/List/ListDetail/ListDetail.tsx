@@ -5,17 +5,20 @@ import { Head } from '@lib/components'
 
 import { InstanceType, ListDetailTable } from './ListDetailTable'
 import type { SQLRecord } from '../ListTable'
+import { OrderBy } from '../List'
 
 interface ListDetailProps {
   record: SQLRecord
   capacity: number
   instanceType: InstanceType
+  orderBy: OrderBy
 }
 
 export function ListDetail({
   record,
   capacity,
-  instanceType
+  instanceType,
+  orderBy
 }: ListDetailProps) {
   const { t } = useTranslation()
 
@@ -26,6 +29,7 @@ export function ListDetail({
         instanceType={instanceType}
         record={record}
         capacity={capacity}
+        orderBy={orderBy}
       />
     </>
   )

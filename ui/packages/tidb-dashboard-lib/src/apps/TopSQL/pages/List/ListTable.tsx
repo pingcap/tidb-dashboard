@@ -34,11 +34,12 @@ import { telemetry } from '../../utils/telemetry'
 import openLink from '@lib/utils/openLink'
 import { useNavigate } from 'react-router-dom'
 import { TopSQLContext } from '../../context'
-import { AggLevel } from './List'
+import { AggLevel, OrderBy } from './List'
 
 interface ListTableProps {
   data: any[]
   groupBy: string
+  orderBy: OrderBy
   topN: number
   instanceType: InstanceType
   timeRange: TimeRange
@@ -51,6 +52,8 @@ const emptyFn = () => {}
 export type SQLRecord = TopsqlSummaryItem &
   TopsqlSummaryByItem & {
     cpuTime: number
+    networkBytes?: number
+    logicalIoBytes?: number
   }
 
 function isConvertNumber(value: string): boolean {
@@ -61,6 +64,7 @@ function isConvertNumber(value: string): boolean {
 export function ListTable({
   data,
   groupBy,
+  orderBy,
   topN,
   instanceType,
   timeRange,
@@ -68,7 +72,7 @@ export function ListTable({
   onRowOver
 }: ListTableProps) {
   const { t } = useTranslation()
-  const { data: tableRecords, capacity } = useTableData(data)
+  const { data: tableRecords, capacity } = useTableData(data, orderBy)
   const navigate = useNavigate()
   const ctx = useContext(TopSQLContext)
 
@@ -87,17 +91,62 @@ export function ListTable({
       const tv = toTimeRangeValue(timeRange)
       openLink(`/statement?from=${tv[0]}&to=${tv[1]}`, ev, navigate)
     }
+    // Get column title and value based on orderBy
+    const getColumnTitle = () => {
+      switch (orderBy) {
+        case OrderBy.NetworkBytes:
+          return t('topsql.table.fields.network_bytes') || 'Network Bytes'
+        case OrderBy.LogicalIoBytes:
+          return t('topsql.table.fields.logical_io_bytes') || 'Logical IO Bytes'
+        case OrderBy.CpuTime:
+        default:
+          return t('topsql.table.fields.cpu_time')
+      }
+    }
+
+    const getColumnValue = (rec: SQLRecord): number => {
+      switch (orderBy) {
+        case OrderBy.NetworkBytes:
+          return rec.networkBytes || 0
+        case OrderBy.LogicalIoBytes:
+          return rec.logicalIoBytes || 0
+        case OrderBy.CpuTime:
+        default:
+          return rec.cpuTime || 0
+      }
+    }
+
+    const getValueFormatter = () => {
+      switch (orderBy) {
+        case OrderBy.NetworkBytes:
+        case OrderBy.LogicalIoBytes:
+          return (v: number) => getValueFormat('bytes')(v, 2)
+        case OrderBy.CpuTime:
+        default:
+          return (v: number) => getValueFormat('ms')(v, 2)
+      }
+    }
+
+    const formatter = getValueFormatter()
     let cols = [
       {
-        name: t('topsql.table.fields.cpu_time'),
-        key: 'cpuTime',
+        name: getColumnTitle(),
+        key:
+          orderBy === OrderBy.NetworkBytes
+            ? 'networkBytes'
+            : orderBy === OrderBy.LogicalIoBytes
+            ? 'logicalIoBytes'
+            : 'cpuTime',
         minWidth: 150,
         maxWidth: 250,
-        onRender: (rec: SQLRecord) => (
-          <Bar textWidth={80} value={rec.cpuTime!} capacity={capacity}>
-            {getValueFormat('ms')(rec.cpuTime, 2)}
-          </Bar>
-        )
+        onRender: (rec: SQLRecord) => {
+          const value = getColumnValue(rec)
+          return (
+            <Bar textWidth={80} value={value} capacity={capacity}>
+              {formatter(value)}
+            </Bar>
+          )
+        }
       },
       {
         name:
@@ -105,9 +154,13 @@ export function ListTable({
             ? t('topsql.table.fields.table')
             : groupBy === AggLevel.Schema
             ? t('topsql.table.fields.db')
+            : groupBy === AggLevel.Region
+            ? 'RegionID'
             : t('topsql.table.fields.sql'),
         key:
-          groupBy === AggLevel.Table || groupBy === AggLevel.Schema
+          groupBy === AggLevel.Table ||
+          groupBy === AggLevel.Schema ||
+          groupBy === AggLevel.Region
             ? 'text'
             : 'sql_text',
         minWidth: 250,
@@ -180,6 +233,7 @@ export function ListTable({
     t,
     topN,
     groupBy,
+    orderBy,
     navigate,
     timeRange,
     ctx?.cfg.showSearchInStatements
@@ -245,11 +299,13 @@ export function ListTable({
       <AppearAnimate motionName="contentAnimation">
         {selectedRecord &&
           groupBy !== AggLevel.Table &&
-          groupBy !== AggLevel.Schema && (
+          groupBy !== AggLevel.Schema &&
+          groupBy !== AggLevel.Region && (
             <ListDetail
               instanceType={instanceType}
               record={selectedRecord}
               capacity={capacity}
+              orderBy={orderBy}
             />
           )}
       </AppearAnimate>
@@ -257,7 +313,7 @@ export function ListTable({
   ) : null
 }
 
-function useTableData(records: any[]) {
+function useTableData(records: any[], orderBy: OrderBy) {
   const tableData: { data: SQLRecord[]; capacity: number } = useMemo(() => {
     if (!records) {
       return { data: [], capacity: 0 }
@@ -266,30 +322,87 @@ function useTableData(records: any[]) {
     const d = records
       .map((r) => {
         let cpuTime = 0
-        r.plans?.forEach((plan) => {
-          plan.timestamp_sec?.forEach((t, i) => {
-            cpuTime += plan.cpu_time_ms![i]
+        let networkBytes = 0
+        let logicalIoBytes = 0
+
+        r.plans?.forEach((plan: any) => {
+          plan.timestamp_sec?.forEach((t: number, i: number) => {
+            cpuTime += plan.cpu_time_ms?.[i] || 0
+            // network_bytes and logical_io_bytes might be arrays similar to cpu_time_ms
+            networkBytes += plan.network_bytes?.[i] || 0
+            logicalIoBytes += plan.logical_io_bytes?.[i] || 0
           })
         })
 
+        // For SummaryByItem (groupBy table or schema)
         if (r.cpu_time_ms_sum && (r.text?.length ?? 0) > 0) {
           cpuTime = r.cpu_time_ms_sum
+          // If network_bytes_sum or logical_io_bytes_sum exist, use them
+          networkBytes = r.network_bytes_sum || networkBytes
+          logicalIoBytes = r.logical_io_bytes_sum || logicalIoBytes
         }
 
-        if (capacity < cpuTime) {
-          capacity = cpuTime
+        // Calculate capacity based on the selected orderBy dimension
+        let sortValue = 0
+        switch (orderBy) {
+          case OrderBy.CpuTime:
+            sortValue = cpuTime
+            break
+          case OrderBy.NetworkBytes:
+            sortValue = networkBytes
+            break
+          case OrderBy.LogicalIoBytes:
+            sortValue = logicalIoBytes
+            break
+        }
+
+        if (capacity < sortValue) {
+          capacity = sortValue
         }
 
         return {
           ...r,
           cpuTime,
+          networkBytes,
+          logicalIoBytes,
           plans: r.plans || []
         }
       })
-      .filter((r) => !!r.cpuTime)
-      .sort((a, b) => b.cpuTime - a.cpuTime)
+      .filter((r) => {
+        // Filter based on the selected orderBy dimension
+        switch (orderBy) {
+          case OrderBy.CpuTime:
+            return !!r.cpuTime
+          case OrderBy.NetworkBytes:
+            return !!r.networkBytes
+          case OrderBy.LogicalIoBytes:
+            return !!r.logicalIoBytes
+          default:
+            return !!r.cpuTime
+        }
+      })
+      .sort((a, b) => {
+        // Sort based on the selected orderBy dimension
+        let aValue = 0
+        let bValue = 0
+        switch (orderBy) {
+          case OrderBy.CpuTime:
+            aValue = a.cpuTime
+            bValue = b.cpuTime
+            break
+          case OrderBy.NetworkBytes:
+            aValue = a.networkBytes || 0
+            bValue = b.networkBytes || 0
+            break
+          case OrderBy.LogicalIoBytes:
+            aValue = a.logicalIoBytes || 0
+            bValue = b.logicalIoBytes || 0
+            break
+        }
+        return bValue - aValue
+      })
       .sort((a, b) => (b.is_other ? -1 : 0))
     return { data: d, capacity }
-  }, [records])
+  }, [records, orderBy])
   return tableData
 }

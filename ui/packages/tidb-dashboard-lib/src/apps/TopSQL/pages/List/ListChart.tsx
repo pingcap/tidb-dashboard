@@ -7,44 +7,83 @@ import {
   Settings,
   BrushEndListener
 } from '@elastic/charts'
-import { orderBy, toPairs } from 'lodash'
+import { orderBy as lodashOrderBy, toPairs } from 'lodash'
 import React, { useMemo, useState, forwardRef } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlSummaryItem, TopsqlSummaryByItem } from '@lib/client'
 import { useTranslation } from 'react-i18next'
 import { useChange } from '@lib/utils/useChange'
 import { DEFAULT_CHART_SETTINGS, timeTickFormatter } from '@lib/utils/charts'
-import { AggLevel } from './List'
+import { AggLevel, OrderBy } from './List'
 
 export interface ListChartProps {
   data: any[]
   timeWindowSize: number
   groupBy: string
+  orderBy: OrderBy
   timeRangeTimestamp: [number, number]
   onBrushEnd: BrushEndListener
 }
 
 const isQueryAggLevel = (groupBy: string) => {
   // default is query
-  return !(groupBy === AggLevel.Table || groupBy === AggLevel.Schema)
+  return !(
+    groupBy === AggLevel.Table ||
+    groupBy === AggLevel.Schema ||
+    groupBy === AggLevel.Region
+  )
+}
+
+const getAxisTitle = (orderBy: OrderBy, t: any): string => {
+  switch (orderBy) {
+    case OrderBy.NetworkBytes:
+      return t('topsql.chart.network_bytes') || 'Network Bytes'
+    case OrderBy.LogicalIoBytes:
+      return t('topsql.chart.logical_io_bytes') || 'Logical IO Bytes'
+    case OrderBy.CpuTime:
+    default:
+      return t('topsql.chart.cpu_time')
+  }
+}
+
+const getAxisTickFormatter = (orderBy: OrderBy) => {
+  switch (orderBy) {
+    case OrderBy.NetworkBytes:
+      return (v: number, decimals: number) =>
+        getValueFormat('bytes')(v, decimals)
+    case OrderBy.LogicalIoBytes:
+      return (v: number, decimals: number) =>
+        getValueFormat('bytes')(v, decimals)
+    case OrderBy.CpuTime:
+    default:
+      return (v: number, decimals: number) => getValueFormat('ms')(v, decimals)
+  }
 }
 
 export const ListChart = forwardRef<Chart, ListChartProps>(
-  ({ onBrushEnd, data, groupBy, timeWindowSize, timeRangeTimestamp }, ref) => {
+  (
+    { onBrushEnd, data, groupBy, orderBy, timeWindowSize, timeRangeTimestamp },
+    ref
+  ) => {
     const { t } = useTranslation()
     // And we need update all the data at the same time and let the chart refresh only once for a better experience.
     const [bundle, setBundle] = useState({
       data,
       groupBy,
+      orderBy,
       timeWindowSize,
       timeRangeTimestamp
     })
-    const { chartData } = useChartData(bundle.data, bundle.groupBy)
+    const { chartData } = useChartData(
+      bundle.data,
+      bundle.groupBy,
+      bundle.orderBy
+    )
     const { digestMap } = useDigestMap(bundle.data, bundle.groupBy)
 
     useChange(() => {
-      setBundle({ data, groupBy, timeWindowSize, timeRangeTimestamp })
-    }, [data])
+      setBundle({ data, groupBy, orderBy, timeWindowSize, timeRangeTimestamp })
+    }, [data, groupBy, orderBy])
 
     return (
       <Chart ref={ref}>
@@ -68,10 +107,10 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
         />
         <Axis
           id="left"
-          title={t('topsql.chart.cpu_time')}
+          title={getAxisTitle(bundle.orderBy, t)}
           position={Position.Left}
           showOverlappingTicks
-          tickFormat={(v) => getValueFormat('ms')(v, 1)}
+          tickFormat={(v) => getAxisTickFormatter(bundle.orderBy)(v, 1)}
           ticks={5}
         />
         {Object.keys(chartData).map((originText) => {
@@ -146,7 +185,7 @@ function useDigestMap(seriesDataO: any[] = [], groupBy: string) {
   return { digestMap }
 }
 
-function useChartData(seriesDataO: any[], groupBy: string) {
+function useChartData(seriesDataO: any[], groupBy: string, orderBy: OrderBy) {
   let chartData: Record<string, Array<[number, number]>> = {}
   chartData = useMemo(() => {
     if (isQueryAggLevel(groupBy)) {
@@ -157,6 +196,20 @@ function useChartData(seriesDataO: any[], groupBy: string) {
       // Group by SQL digest + timestamp and sum their values
       const valuesByDigestAndTs: Record<string, Record<number, number>> = {}
       const sumValueByDigest: Record<string, number> = {}
+
+      // Get the value getter function based on orderBy
+      const getValue = (values: any, i: number): number => {
+        switch (orderBy) {
+          case OrderBy.NetworkBytes:
+            return values.network_bytes?.[i] || 0
+          case OrderBy.LogicalIoBytes:
+            return values.logical_io_bytes?.[i] || 0
+          case OrderBy.CpuTime:
+          default:
+            return values.cpu_time_ms?.[i] || 0
+        }
+      }
+
       seriesData.forEach((series) => {
         const seriesDigest = series.sql_digest!
 
@@ -167,12 +220,13 @@ function useChartData(seriesDataO: any[], groupBy: string) {
         let sum = 0
         series.plans?.forEach((values) => {
           values.timestamp_sec?.forEach((t, i) => {
+            const value = getValue(values, i)
             if (!map[t]) {
-              map[t] = values.cpu_time_ms![i]
+              map[t] = value
             } else {
-              map[t] += values.cpu_time_ms![i]
+              map[t] += value
             }
-            sum += values.cpu_time_ms![i]
+            sum += value
           })
         })
 
@@ -183,7 +237,11 @@ function useChartData(seriesDataO: any[], groupBy: string) {
       })
 
       // Order by digest
-      const orderedDigests = orderBy(toPairs(sumValueByDigest), ['1'], ['desc'])
+      const orderedDigests = lodashOrderBy(
+        toPairs(sumValueByDigest),
+        ['1'],
+        ['desc']
+      )
         .filter((v) => v[1] > 0)
         .map((v) => v[0])
 
@@ -207,18 +265,35 @@ function useChartData(seriesDataO: any[], groupBy: string) {
       }
       let seriesData = seriesDataO as TopsqlSummaryByItem[]
       const datumBy: Record<string, Array<[number, number]>> = {}
+
+      // Get the value getter function based on orderBy
+      const getValue = (series: any, i: number): number => {
+        switch (orderBy) {
+          case OrderBy.NetworkBytes:
+            return series.network_bytes?.[i] || 0
+          case OrderBy.LogicalIoBytes:
+            return series.logical_io_bytes?.[i] || 0
+          case OrderBy.CpuTime:
+          default:
+            return series.cpu_time_ms?.[i] || 0
+        }
+      }
+
       seriesData.forEach((series) => {
         const key = series.text!
         if (!datumBy[key]) {
           datumBy[key] = []
         }
-        series.cpu_time_ms?.forEach((v, i) => {
-          datumBy[key].push([series.timestamp_sec![i], v])
+        series.timestamp_sec?.forEach((t, i) => {
+          const value = getValue(series, i)
+          if (value > 0) {
+            datumBy[key].push([t, value])
+          }
         })
       })
       return datumBy
     }
-  }, [seriesDataO, groupBy])
+  }, [seriesDataO, groupBy, orderBy])
 
   return {
     chartData

@@ -3985,6 +3985,30 @@ export interface TopsqlSummaryByItem {
     'cpu_time_ms_sum'?: number;
     /**
      * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryByItem
+     */
+    'logical_io_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryByItem
+     */
+    'logical_io_bytes_sum'?: number;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryByItem
+     */
+    'network_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryByItem
+     */
+    'network_bytes_sum'?: number;
+    /**
+     * 
      * @type {string}
      * @memberof TopsqlSummaryByItem
      */
@@ -4030,6 +4054,18 @@ export interface TopsqlSummaryItem {
      * @memberof TopsqlSummaryItem
      */
     'is_other'?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryItem
+     */
+    'logical_io_bytes'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryItem
+     */
+    'network_bytes'?: number;
     /**
      * 
      * @type {Array<TopsqlSummaryPlanItem>}
@@ -4089,6 +4125,18 @@ export interface TopsqlSummaryPlanItem {
      * @memberof TopsqlSummaryPlanItem
      */
     'exec_count_per_sec'?: number;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryPlanItem
+     */
+    'logical_io_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryPlanItem
+     */
+    'network_bytes'?: Array<number>;
     /**
      * 
      * @type {string}

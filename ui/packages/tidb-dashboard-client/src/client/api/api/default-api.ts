@@ -3750,13 +3750,14 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} [groupBy] 
          * @param {string} [instance] 
          * @param {string} [instanceType] 
+         * @param {string} [orderBy] 
          * @param {string} [start] 
          * @param {string} [top] 
          * @param {string} [window] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlSummaryGet: async (end?: string, groupBy?: string, instance?: string, instanceType?: string, start?: string, top?: string, window?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        topsqlSummaryGet: async (end?: string, groupBy?: string, instance?: string, instanceType?: string, orderBy?: string, start?: string, top?: string, window?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/topsql/summary`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3786,6 +3787,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (instanceType !== undefined) {
                 localVarQueryParameter['instance_type'] = instanceType;
+            }
+
+            if (orderBy !== undefined) {
+                localVarQueryParameter['order_by'] = orderBy;
             }
 
             if (start !== undefined) {
@@ -5300,14 +5305,15 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {string} [groupBy] 
          * @param {string} [instance] 
          * @param {string} [instanceType] 
+         * @param {string} [orderBy] 
          * @param {string} [start] 
          * @param {string} [top] 
          * @param {string} [window] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async topsqlSummaryGet(end?: string, groupBy?: string, instance?: string, instanceType?: string, start?: string, top?: string, window?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlSummaryResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlSummaryGet(end, groupBy, instance, instanceType, start, top, window, options);
+        async topsqlSummaryGet(end?: string, groupBy?: string, instance?: string, instanceType?: string, orderBy?: string, start?: string, top?: string, window?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlSummaryResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlSummaryGet(end, groupBy, instance, instanceType, orderBy, start, top, window, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6392,14 +6398,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {string} [groupBy] 
          * @param {string} [instance] 
          * @param {string} [instanceType] 
+         * @param {string} [orderBy] 
          * @param {string} [start] 
          * @param {string} [top] 
          * @param {string} [window] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlSummaryGet(end?: string, groupBy?: string, instance?: string, instanceType?: string, start?: string, top?: string, window?: string, options?: any): AxiosPromise<TopsqlSummaryResponse> {
-            return localVarFp.topsqlSummaryGet(end, groupBy, instance, instanceType, start, top, window, options).then((request) => request(axios, basePath));
+        topsqlSummaryGet(end?: string, groupBy?: string, instance?: string, instanceType?: string, orderBy?: string, start?: string, top?: string, window?: string, options?: any): AxiosPromise<TopsqlSummaryResponse> {
+            return localVarFp.topsqlSummaryGet(end, groupBy, instance, instanceType, orderBy, start, top, window, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7646,6 +7653,13 @@ export interface DefaultApiTopsqlSummaryGetRequest {
      * @type {string}
      * @memberof DefaultApiTopsqlSummaryGet
      */
+    readonly orderBy?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlSummaryGet
+     */
     readonly start?: string
 
     /**
@@ -8885,7 +8899,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public topsqlSummaryGet(requestParameters: DefaultApiTopsqlSummaryGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).topsqlSummaryGet(requestParameters.end, requestParameters.groupBy, requestParameters.instance, requestParameters.instanceType, requestParameters.start, requestParameters.top, requestParameters.window, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).topsqlSummaryGet(requestParameters.end, requestParameters.groupBy, requestParameters.instance, requestParameters.instanceType, requestParameters.orderBy, requestParameters.start, requestParameters.top, requestParameters.window, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

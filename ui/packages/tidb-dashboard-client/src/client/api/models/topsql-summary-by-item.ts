@@ -34,6 +34,30 @@ export interface TopsqlSummaryByItem {
     'cpu_time_ms_sum'?: number;
     /**
      * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryByItem
+     */
+    'logical_io_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryByItem
+     */
+    'logical_io_bytes_sum'?: number;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryByItem
+     */
+    'network_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryByItem
+     */
+    'network_bytes_sum'?: number;
+    /**
+     * 
      * @type {string}
      * @memberof TopsqlSummaryByItem
      */

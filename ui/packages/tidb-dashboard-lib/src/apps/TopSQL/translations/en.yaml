@@ -26,6 +26,8 @@ topsql:
   refresh: Refresh
   chart:
     cpu_time: CPU Time
+    network_bytes: Network Bytes
+    logical_io_bytes: Logical IO Bytes
   table:
     description: The following table shows which top {{topN}} queries are contributing the most to load in the current time range. Click one to see details.
     description_no_recent_data: There is no data currently. You need to wait for about 1 minute for new data being collected.
@@ -33,6 +35,8 @@ topsql:
     others_tooltip: All of other non Top {{topN}} Items
     fields:
       cpu_time: Total CPU Time
+      network_bytes: Total Network Bytes
+      logical_io_bytes: Total Logical IO Bytes
       sql: SQL Statement
       table: Table Name
       db: Database Name
@@ -46,6 +50,8 @@ topsql:
     no_plan_tooltip: This statement is not a query or the statement plan was being generated
     fields:
       cpu_time: Total CPU Time
+      network_bytes: Total Network Bytes
+      logical_io_bytes: Total Logical IO Bytes
       plan: Plan
       exec_count_per_sec: Call/sec
       scan_records_per_sec: Scan Rows/sec

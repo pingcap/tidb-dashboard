@@ -81,6 +81,7 @@ type GetSummaryRequest struct {
 	End          string `json:"end"`
 	Top          string `json:"top"`
 	GroupBy      string `json:"group_by"`
+	OrderBy      string `json:"order_by"`
 	Window       string `json:"window"`
 }
 
@@ -98,14 +99,20 @@ type SummaryItem struct {
 	DurationPerExecMs float64           `json:"duration_per_exec_ms"`
 	ScanRecordsPerSec float64           `json:"scan_records_per_sec"`
 	ScanIndexesPerSec float64           `json:"scan_indexes_per_sec"`
+	NetworkBytes      uint64            `json:"network_bytes"`
+	LogicalIoBytes    uint64            `json:"logical_io_bytes"`
 	Plans             []SummaryPlanItem `json:"plans"`
 }
 
 type SummaryByItem struct {
-	Text         string   `json:"text"`
-	TimestampSec []uint64 `json:"timestamp_sec"`
-	CPUTimeMs    []uint64 `json:"cpu_time_ms,omitempty"`
-	CPUTimeMsSum uint64   `json:"cpu_time_ms_sum"`
+	Text              string   `json:"text"`
+	TimestampSec      []uint64 `json:"timestamp_sec"`
+	CPUTimeMs         []uint64 `json:"cpu_time_ms,omitempty"`
+	CPUTimeMsSum      uint64   `json:"cpu_time_ms_sum"`
+	NetworkBytes      []uint64 `json:"network_bytes,omitempty"`
+	NetworkBytesSum   uint64   `json:"network_bytes_sum"`
+	LogicalIoBytes    []uint64 `json:"logical_io_bytes,omitempty"`
+	LogicalIoBytesSum uint64   `json:"logical_io_bytes_sum"`
 }
 
 type SummaryPlanItem struct {
@@ -117,6 +124,8 @@ type SummaryPlanItem struct {
 	DurationPerExecMs float64  `json:"duration_per_exec_ms"`
 	ScanRecordsPerSec float64  `json:"scan_records_per_sec"`
 	ScanIndexesPerSec float64  `json:"scan_indexes_per_sec"`
+	NetworkBytes      []uint64 `json:"network_bytes"`
+	LogicalIoBytes    []uint64 `json:"logical_io_bytes"`
 }
 
 // @Summary Get summaries

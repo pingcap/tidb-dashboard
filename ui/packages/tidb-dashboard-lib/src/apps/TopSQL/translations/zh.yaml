@@ -26,6 +26,8 @@ topsql:
   refresh: 刷新
   chart:
     cpu_time: CPU 耗时
+    network_bytes: 网络字节数
+    logical_io_bytes: 逻辑 IO 字节数
   table:
     description: 以下表格展示了当前时间范围内消耗负载最多的 {{topN}} 类 SQL 查询，点击后可进一步显示详情。
     description_no_recent_data: 当前暂无数据，您需要等待约 1 分钟完成新数据采集。
@@ -33,6 +35,8 @@ topsql:
     others_tooltip: 所有其他非 Top {{topN}} 的条目
     fields:
       cpu_time: 累计 CPU 耗时
+      network_bytes: 累计网络字节数
+      logical_io_bytes: 累计逻辑 IO 字节数
       sql: SQL 语句
       table: 表名
       db: 数据库名
@@ -46,6 +50,8 @@ topsql:
     no_plan_tooltip: 该语句不是查询语句，或当时执行计划正在生成中
     fields:
       cpu_time: 累计 CPU 耗时
+      network_bytes: 累计网络字节数
+      logical_io_bytes: 累计逻辑 IO 字节数
       plan: 执行计划
       exec_count_per_sec: Call/sec
       scan_records_per_sec: Scan Rows/sec

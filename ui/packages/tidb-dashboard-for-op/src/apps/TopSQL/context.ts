@@ -29,6 +29,7 @@ class DataSource implements ITopSQLDataSource {
     start?: string,
     top?: string,
     window?: string,
+    dataSource?: string,
     options?: ReqConfig
   ) {
     return client.getInstance().topsqlSummaryGet(
@@ -40,7 +41,8 @@ class DataSource implements ITopSQLDataSource {
         orderBy,
         start,
         top,
-        window
+        window,
+        dataSource
       },
       options
     )

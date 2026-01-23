@@ -123,9 +123,10 @@ export function TopSQLList() {
       const windowSize = Math.ceil(
         (CHART_BAR_WIDTH * (max - min)) / screenWidth
       )
-      const finalWindowSize = ctx?.cfg.limitMinInterval
-        ? Math.max(windowSize, 60)
-        : windowSize
+      const finalWindowSize =
+        ctx?.cfg.minWindowInterval !== undefined
+          ? Math.max(windowSize, ctx.cfg.minWindowInterval)
+          : windowSize
       setTimeWindowSize(finalWindowSize)
       return finalWindowSize
     }
@@ -530,13 +531,18 @@ const useTopSQLData = (
         setIsLoading(true)
         const resp = await ctx!.ds.topsqlSummaryGet(
           String(end),
-          _instance.instance_type === 'tidb' ? AggLevel.Query : groupBy,
+          ctx?.cfg.showGroupBy === true
+            ? _instance.instance_type === 'tidb'
+              ? AggLevel.Query
+              : groupBy
+            : undefined,
           _instance.instance,
           _instance.instance_type,
-          orderBy,
+          ctx?.cfg.showOrderBy === true ? orderBy : undefined,
           String(start),
           String(limit),
-          `${timeWindowSize}s`
+          `${timeWindowSize}s`,
+          ctx?.cfg.dataSource
         )
         dataResp = resp.data
       } finally {

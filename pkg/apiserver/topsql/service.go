@@ -102,6 +102,7 @@ type GetSummaryRequest struct {
 	GroupBy      string `json:"group_by"`
 	OrderBy      string `json:"order_by"`
 	Window       string `json:"window"`
+	DataSource   string `json:"data_source"`
 }
 
 type SummaryResponse struct {

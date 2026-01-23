@@ -58,6 +58,7 @@ export interface ITopSQLDataSource {
     start?: string,
     top?: string,
     window?: string,
+    dataSource?: string,
     options?: ReqConfig
   ): AxiosPromise<TopsqlSummaryResponse>
 }
@@ -83,7 +84,8 @@ export interface ITopSQLConfig {
   showGroupBy?: boolean
   showGroupByRegion?: boolean
   showOrderBy?: boolean
-  limitMinInterval?: boolean
+  minWindowInterval?: number
+  dataSource?: string
 }
 
 export interface ITopSQLContext {

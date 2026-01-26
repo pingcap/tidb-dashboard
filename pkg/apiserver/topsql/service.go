@@ -50,8 +50,9 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type GetInstancesRequest struct {
-	Start string `json:"start"`
-	End   string `json:"end"`
+	Start      string `json:"start"`
+	End        string `json:"end"`
+	DataSource string `json:"data_source"`
 }
 
 type InstanceResponse struct {

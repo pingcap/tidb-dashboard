@@ -16,8 +16,17 @@ class DataSource implements ITopSQLDataSource {
     return client.getInstance().topsqlConfigPost({ request }, options)
   }
 
-  topsqlInstancesGet(end?: string, start?: string, options?: ReqConfig) {
-    return client.getInstance().topsqlInstancesGet({ start, end }, options)
+  topsqlInstancesGet(
+    end?: string,
+    start?: string,
+    dataSource?: string,
+    options?: ReqConfig
+  ) {
+    const requestParameters: any = { start, end }
+    if (dataSource !== undefined) {
+      requestParameters.dataSource = dataSource
+    }
+    return client.getInstance().topsqlInstancesGet(requestParameters, options)
   }
 
   topsqlSummaryGet(

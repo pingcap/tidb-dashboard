@@ -3666,12 +3666,13 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary Get availiable instances
+         * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [start] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlInstancesGet: async (end?: string, start?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        topsqlInstancesGet: async (dataSource?: string, end?: string, start?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/topsql/instances`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3686,6 +3687,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             // authentication JwtAuth required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (dataSource !== undefined) {
+                localVarQueryParameter['data_source'] = dataSource;
+            }
 
             if (end !== undefined) {
                 localVarQueryParameter['end'] = end;
@@ -5208,13 +5213,14 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get availiable instances
+         * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [start] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async topsqlInstancesGet(end?: string, start?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlInstanceResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlInstancesGet(end, start, options);
+        async topsqlInstancesGet(dataSource?: string, end?: string, start?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlInstanceResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlInstancesGet(dataSource, end, start, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6283,13 +6289,14 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary Get availiable instances
+         * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [start] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlInstancesGet(end?: string, start?: string, options?: any): AxiosPromise<TopsqlInstanceResponse> {
-            return localVarFp.topsqlInstancesGet(end, start, options).then((request) => request(axios, basePath));
+        topsqlInstancesGet(dataSource?: string, end?: string, start?: string, options?: any): AxiosPromise<TopsqlInstanceResponse> {
+            return localVarFp.topsqlInstancesGet(dataSource, end, start, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7490,6 +7497,13 @@ export interface DefaultApiTopsqlConfigPostRequest {
  * @interface DefaultApiTopsqlInstancesGetRequest
  */
 export interface DefaultApiTopsqlInstancesGetRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlInstancesGet
+     */
+    readonly dataSource?: string
+
     /**
      * 
      * @type {string}
@@ -8760,7 +8774,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public topsqlInstancesGet(requestParameters: DefaultApiTopsqlInstancesGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).topsqlInstancesGet(requestParameters.end, requestParameters.start, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).topsqlInstancesGet(requestParameters.dataSource, requestParameters.end, requestParameters.start, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

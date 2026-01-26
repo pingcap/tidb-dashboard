@@ -21,6 +21,7 @@ export interface ITopSQLDataSource {
   topsqlInstancesGet(
     end?: string,
     start?: string,
+    dataSource?: string,
     options?: ReqConfig
   ): AxiosPromise<TopsqlInstanceResponse>
 

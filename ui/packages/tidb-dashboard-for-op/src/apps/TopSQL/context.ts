@@ -59,7 +59,6 @@ class DataSource implements ITopSQLDataSource {
         } as any
       )
   }
-
   topsqlInstancesGet(
     end?: string,
     start?: string,

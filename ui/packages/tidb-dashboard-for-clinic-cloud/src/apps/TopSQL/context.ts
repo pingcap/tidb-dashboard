@@ -41,7 +41,6 @@ class DataSource implements ITopSQLDataSource {
       } as TopsqlTikvNetworkIoCollectionUpdateResponse
     } as any)
   }
-
   topsqlInstancesGet(
     end?: string,
     start?: string,

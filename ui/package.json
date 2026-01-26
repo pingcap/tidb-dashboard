@@ -28,6 +28,22 @@
     "lint-staged": "^11.1.2",
     "prettier": "^2.4.0"
   },
+  "pnpm": {
+    "overrides": {
+      "@babel/helpers": "7.26.10",
+      "@babel/runtime": "7.26.10",
+      "@babel/traverse": "7.23.2",
+      "braces@3.0.2": "3.0.3",
+      "cross-spawn@6.0.5": "6.0.6",
+      "cross-spawn@7.0.3": "7.0.5",
+      "decode-uri-component@0.2.0": "0.2.1",
+      "luxon": "1.28.1",
+      "@nestjs/common>axios": "0.30.2",
+      "ua-parser-js": "0.7.33",
+      "ws@6.2.2": "7.5.10",
+      "ws@7.5.9": "7.5.10"
+    }
+  },
   "lint-staged": {
     "*.+(ts|tsx|js)": [
       "eslint --fix",

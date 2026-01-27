@@ -318,6 +318,9 @@ function useTableData(records: any[], orderBy: OrderBy) {
     if (!records) {
       return { data: [], capacity: 0 }
     }
+    const sum = (arr?: Array<number>): number =>
+      (arr ?? []).reduce((acc, v) => acc + (v || 0), 0)
+
     let capacity = 0
     const d = records
       .map((r) => {
@@ -334,12 +337,13 @@ function useTableData(records: any[], orderBy: OrderBy) {
           })
         })
 
-        // For SummaryByItem (groupBy table or schema)
-        if (r.cpu_time_ms_sum && (r.text?.length ?? 0) > 0) {
-          cpuTime = r.cpu_time_ms_sum
-          // If network_bytes_sum or logical_io_bytes_sum exist, use them
-          networkBytes = r.network_bytes_sum || networkBytes
-          logicalIoBytes = r.logical_io_bytes_sum || logicalIoBytes
+        // For SummaryByItem (groupBy table / schema / region)
+        // Note: backend may omit unrelated fields depending on orderBy, so avoid using
+        // cpu_time_ms_sum as the "is summary-by" guard.
+        if ((r.text?.length ?? 0) > 0) {
+          cpuTime = r.cpu_time_ms_sum ?? sum(r.cpu_time_ms)
+          networkBytes = r.network_bytes_sum ?? sum(r.network_bytes)
+          logicalIoBytes = r.logical_io_bytes_sum ?? sum(r.logical_io_bytes)
         }
 
         // Calculate capacity based on the selected orderBy dimension

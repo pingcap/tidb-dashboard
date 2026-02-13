@@ -80,6 +80,7 @@ export function slowQueryColumns(
     tcf.textWithTooltip('user', rows),
     tcf.textWithTooltip('host', rows),
     // time
+    tcf.bar.single('wait_ts', 's', rows),
     tcf.bar.single('wait_time', 's', rows),
     tcf.bar.single('backoff_time', 's', rows),
     tcf.bar.single('get_commit_ts_time', 's', rows),

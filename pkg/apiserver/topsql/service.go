@@ -7,7 +7,11 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
@@ -201,7 +205,12 @@ func (s *Service) UpdateConfig(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-const tikvNetworkIoCollectionKey = "resource-metering.enable-network-io-collection"
+const (
+	tikvNetworkIoCollectionKey = "resource-metering.enable-network-io-collection"
+
+	tikvNetworkIoCollectionNodeTimeout    = 3 * time.Second
+	tikvNetworkIoCollectionMaxConcurrency = 10
+)
 
 type TikvNetworkIoCollectionConfig struct {
 	Enable       bool `json:"enable"`
@@ -230,43 +239,68 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 		return
 	}
 
-	var (
-		successes  = 0
-		failures   = 0
-		firstSet   = false
-		firstValue = false
-		isMulti    = false
-		allTrue    = true
-	)
+	type getResult struct {
+		value bool
+		found bool
+		err   error
+	}
+
+	concurrency := getTiKVNetworkIoCollectionConcurrency(len(tikvInfo))
+	taskChan := make(chan topology.StoreInfo, len(tikvInfo))
+	resultChan := make(chan getResult, len(tikvInfo))
+	var wg sync.WaitGroup
+
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for kvStore := range taskChan {
+				data, err := s.params.TiKVClient.
+					WithTimeout(tikvNetworkIoCollectionNodeTimeout).
+					SendGetRequest(kvStore.IP, int(kvStore.StatusPort), "/config")
+				if err != nil {
+					resultChan <- getResult{err: err}
+					continue
+				}
+				v, found, err := parseNestedBoolByDotPath(data, tikvNetworkIoCollectionKey)
+				if err != nil {
+					resultChan <- getResult{err: err}
+					continue
+				}
+				resultChan <- getResult{value: v, found: found}
+			}
+		}()
+	}
 
 	for _, kvStore := range tikvInfo {
-		data, err := s.params.TiKVClient.SendGetRequest(kvStore.IP, int(kvStore.StatusPort), "/config")
-		if err != nil {
+		taskChan <- kvStore
+	}
+	close(taskChan)
+	wg.Wait()
+	close(resultChan)
+
+	successes := 0
+	failures := 0
+	trueCount := 0
+	falseCount := 0
+	hasMissing := false
+	for result := range resultChan {
+		if result.err != nil {
 			failures++
-			isMulti = true
 			continue
-		}
-		v, found, err := parseNestedBoolByDotPath(data, tikvNetworkIoCollectionKey)
-		if err != nil {
-			failures++
-			isMulti = true
-			continue
-		}
-		// Treat missing as false (i.e. not enabled / not supported / not present)
-		if !found {
-			v = false
-			isMulti = true
 		}
 
 		successes++
-		if !v {
-			allTrue = false
+		// Keep existing semantics: missing key is treated as "false".
+		if !result.found {
+			hasMissing = true
+			falseCount++
+			continue
 		}
-		if !firstSet {
-			firstSet = true
-			firstValue = v
-		} else if v != firstValue {
-			isMulti = true
+		if result.value {
+			trueCount++
+		} else {
+			falseCount++
 		}
 	}
 
@@ -274,11 +308,12 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 		rest.Error(c, errorx.IllegalState.New("Failed to fetch config from any TiKV node"))
 		return
 	}
-	if failures > 0 {
-		// Be conservative: if some nodes are unreachable, don't claim "enabled on all nodes".
-		allTrue = false
-		isMulti = true
-	}
+
+	// Keep existing semantics:
+	// 1. Any failed request means "not enabled on all nodes".
+	// 2. Missing config key is treated as false and marks multi-value.
+	allTrue := failures == 0 && !hasMissing && falseCount == 0
+	isMulti := failures > 0 || hasMissing || (trueCount > 0 && falseCount > 0)
 
 	c.JSON(http.StatusOK, &TikvNetworkIoCollectionConfig{
 		Enable:       allTrue,
@@ -317,32 +352,85 @@ func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
 		return
 	}
 
-	failures := make([]error, 0)
+	type postResult struct {
+		target string
+		err    error
+	}
+
+	concurrency := getTiKVNetworkIoCollectionConcurrency(len(tikvInfo))
+	taskChan := make(chan topology.StoreInfo, len(tikvInfo))
+	resultChan := make(chan postResult, len(tikvInfo))
+	var wg sync.WaitGroup
+
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for kvStore := range taskChan {
+				target := net.JoinHostPort(kvStore.IP, strconv.Itoa(int(kvStore.Port)))
+				_, err := s.params.TiKVClient.
+					WithTimeout(tikvNetworkIoCollectionNodeTimeout).
+					SendPostRequest(
+						kvStore.IP,
+						int(kvStore.StatusPort),
+						"/config",
+						bytes.NewBuffer(bodyJSON),
+					)
+				resultChan <- postResult{target: target, err: err}
+			}
+		}()
+	}
+
 	for _, kvStore := range tikvInfo {
-		_, err := s.params.TiKVClient.SendPostRequest(
-			kvStore.IP,
-			int(kvStore.StatusPort),
-			"/config",
-			bytes.NewBuffer(bodyJSON),
-		)
-		if err != nil {
-			failures = append(
-				failures,
-				errorx.Decorate(err, "Failed to edit config for TiKV instance `%s`", net.JoinHostPort(kvStore.IP, strconv.Itoa(int(kvStore.Port)))),
-			)
+		taskChan <- kvStore
+	}
+	close(taskChan)
+	wg.Wait()
+	close(resultChan)
+
+	failures := make([]error, 0)
+	failedStores := make([]string, 0)
+	for result := range resultChan {
+		if result.err == nil {
+			continue
 		}
+		failedStores = append(failedStores, result.target)
+		failures = append(
+			failures,
+			errorx.Decorate(result.err, "Failed to edit config for TiKV instance `%s`", result.target),
+		)
 	}
 
 	if len(failures) == len(tikvInfo) && len(failures) > 0 {
-		rest.Error(c, failures[0])
+		sort.Strings(failedStores)
+		rest.Error(c, errorx.Decorate(
+			failures[0],
+			"Failed to edit config for all TiKV instances: %s",
+			strings.Join(failedStores, ", "),
+		))
 		return
 	}
+
+	sort.Slice(failures, func(i, j int) bool {
+		return failures[i].Error() < failures[j].Error()
+	})
 
 	warnings := make([]rest.ErrorResponse, 0)
 	for _, err := range failures {
 		warnings = append(warnings, rest.NewErrorResponse(err))
 	}
 	c.JSON(http.StatusOK, &UpdateTikvNetworkIoCollectionResponse{Warnings: warnings})
+}
+
+func getTiKVNetworkIoCollectionConcurrency(tikvCount int) int {
+	concurrency := tikvCount / 10
+	if concurrency < 1 {
+		concurrency = 1
+	}
+	if concurrency > tikvNetworkIoCollectionMaxConcurrency {
+		concurrency = tikvNetworkIoCollectionMaxConcurrency
+	}
+	return concurrency
 }
 
 func parseNestedBoolByDotPath(data []byte, dotPath string) (value bool, found bool, err error) {

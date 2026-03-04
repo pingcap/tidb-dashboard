@@ -7,6 +7,15 @@ import {
 
 import client, { TopsqlEditableConfig } from '~/client'
 
+type TikvNetworkIoCollectionConfig = {
+  enable: boolean
+  is_multi_value?: boolean
+}
+
+type TikvNetworkIoCollectionUpdateResponse = {
+  warnings: any[]
+}
+
 class DataSource implements ITopSQLDataSource {
   topsqlConfigGet(options?: ReqConfig) {
     return client.getInstance().topsqlConfigGet(options)
@@ -14,6 +23,28 @@ class DataSource implements ITopSQLDataSource {
 
   topsqlConfigPost(request: TopsqlEditableConfig, options?: ReqConfig) {
     return client.getInstance().topsqlConfigPost({ request }, options)
+  }
+
+  topsqlTikvNetworkIoCollectionGet(options?: ReqConfig) {
+    return client
+      .getAxiosInstance()
+      .get<TikvNetworkIoCollectionConfig>(
+        '/topsql/tikv_network_io_collection',
+        options as any
+      )
+  }
+
+  topsqlTikvNetworkIoCollectionPost(
+    request: TikvNetworkIoCollectionConfig,
+    options?: ReqConfig
+  ) {
+    return client
+      .getAxiosInstance()
+      .post<TikvNetworkIoCollectionUpdateResponse>(
+        '/topsql/tikv_network_io_collection',
+        request,
+        options as any
+      )
   }
 
   topsqlInstancesGet(

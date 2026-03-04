@@ -90,6 +90,8 @@ export * from './topsql-summary-by-item';
 export * from './topsql-summary-item';
 export * from './topsql-summary-plan-item';
 export * from './topsql-summary-response';
+export * from './topsql-tikv-network-io-collection-config';
+export * from './topsql-update-tikv-network-io-collection-response';
 export * from './user-authenticate-form';
 export * from './user-get-login-info-response';
 export * from './user-sign-out-info';

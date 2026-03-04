@@ -4312,6 +4312,46 @@ export interface TopsqlSummaryResponse {
 /**
  * 
  * @export
+ * @interface TopsqlTikvNetworkIoCollectionConfig
+ */
+export interface TopsqlTikvNetworkIoCollectionConfig {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TopsqlTikvNetworkIoCollectionConfig
+     */
+    'enable'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TopsqlTikvNetworkIoCollectionConfig
+     */
+    'is_multi_value'?: boolean;
+}
+
+
+
+
+/**
+ * 
+ * @export
+ * @interface TopsqlUpdateTikvNetworkIoCollectionResponse
+ */
+export interface TopsqlUpdateTikvNetworkIoCollectionResponse {
+    /**
+     * 
+     * @type {Array<RestErrorResponse>}
+     * @memberof TopsqlUpdateTikvNetworkIoCollectionResponse
+     */
+    'warnings'?: Array<RestErrorResponse>;
+}
+
+
+
+
+/**
+ * 
+ * @export
  * @interface UserAuthenticateForm
  */
 export interface UserAuthenticateForm {

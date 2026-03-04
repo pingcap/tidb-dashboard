@@ -3,7 +3,11 @@
 package topsql
 
 import (
+	"bytes"
+	"encoding/json"
+	"net"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
@@ -11,7 +15,10 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/tikv"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
@@ -22,6 +29,8 @@ type ServiceParams struct {
 	fx.In
 	TiDBClient *tidb.Client
 	NgmProxy   *utils.NgmProxy
+	PDClient   *pd.Client
+	TiKVClient *tikv.Client
 }
 
 type Service struct {
@@ -44,6 +53,12 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	{
 		endpoint.GET("/config", s.GetConfig)
 		endpoint.POST("/config", auth.MWRequireWritePriv(), s.UpdateConfig)
+		endpoint.GET("/tikv_network_io_collection", s.GetTiKVNetworkIOCollection)
+		endpoint.POST(
+			"/tikv_network_io_collection",
+			auth.MWRequireWritePriv(),
+			s.UpdateTiKVNetworkIOCollection,
+		)
 		endpoint.GET("/instances", s.params.NgmProxy.Route("/topsql/v1/instances"))
 		endpoint.GET("/summary", s.params.NgmProxy.Route("/topsql/v1/summary"))
 	}
@@ -184,4 +199,197 @@ func (s *Service) UpdateConfig(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+const tikvNetworkIoCollectionKey = "resource-metering.enable-network-io-collection"
+
+type TikvNetworkIoCollectionConfig struct {
+	Enable       bool `json:"enable"`
+	IsMultiValue bool `json:"is_multi_value,omitempty"`
+}
+
+type UpdateTikvNetworkIoCollectionResponse struct {
+	Warnings []rest.ErrorResponse `json:"warnings"`
+}
+
+// @ID topsqlGetTiKVNetworkIOCollection
+// @Summary Get TiKV network IO collection config
+// @Router /topsql/tikv_network_io_collection [get]
+// @Security JwtAuth
+// @Success 200 {object} TikvNetworkIoCollectionConfig "ok"
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
+func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
+	tikvInfo, _, err := topology.FetchStoreTopology(s.params.PDClient)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+	if len(tikvInfo) == 0 {
+		c.JSON(http.StatusOK, &TikvNetworkIoCollectionConfig{Enable: false})
+		return
+	}
+
+	var (
+		successes  = 0
+		failures   = 0
+		firstSet   = false
+		firstValue = false
+		isMulti    = false
+		allTrue    = true
+	)
+
+	for _, kvStore := range tikvInfo {
+		data, err := s.params.TiKVClient.SendGetRequest(kvStore.IP, int(kvStore.StatusPort), "/config")
+		if err != nil {
+			failures++
+			isMulti = true
+			continue
+		}
+		v, found, err := parseNestedBoolByDotPath(data, tikvNetworkIoCollectionKey)
+		if err != nil {
+			failures++
+			isMulti = true
+			continue
+		}
+		// Treat missing as false (i.e. not enabled / not supported / not present)
+		if !found {
+			v = false
+			isMulti = true
+		}
+
+		successes++
+		if !v {
+			allTrue = false
+		}
+		if !firstSet {
+			firstSet = true
+			firstValue = v
+		} else if v != firstValue {
+			isMulti = true
+		}
+	}
+
+	if successes == 0 {
+		rest.Error(c, errorx.IllegalState.New("Failed to fetch config from any TiKV node"))
+		return
+	}
+	if failures > 0 {
+		// Be conservative: if some nodes are unreachable, don't claim "enabled on all nodes".
+		allTrue = false
+		isMulti = true
+	}
+
+	c.JSON(http.StatusOK, &TikvNetworkIoCollectionConfig{
+		Enable:       allTrue,
+		IsMultiValue: isMulti,
+	})
+}
+
+// @ID topsqlUpdateTiKVNetworkIOCollection
+// @Summary Update TiKV network IO collection config
+// @Param request body TikvNetworkIoCollectionConfig true "Request body"
+// @Router /topsql/tikv_network_io_collection [post]
+// @Security JwtAuth
+// @Success 200 {object} UpdateTikvNetworkIoCollectionResponse "ok"
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+// @Failure 500 {object} rest.ErrorResponse
+func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
+	var cfg TikvNetworkIoCollectionConfig
+	if err := c.ShouldBindJSON(&cfg); err != nil {
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
+		return
+	}
+
+	tikvInfo, _, err := topology.FetchStoreTopology(s.params.PDClient)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	body := map[string]interface{}{
+		tikvNetworkIoCollectionKey: cfg.Enable,
+	}
+	bodyJSON, err := json.Marshal(&body)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	failures := make([]error, 0)
+	for _, kvStore := range tikvInfo {
+		_, err := s.params.TiKVClient.SendPostRequest(
+			kvStore.IP,
+			int(kvStore.StatusPort),
+			"/config",
+			bytes.NewBuffer(bodyJSON),
+		)
+		if err != nil {
+			failures = append(
+				failures,
+				errorx.Decorate(err, "Failed to edit config for TiKV instance `%s`", net.JoinHostPort(kvStore.IP, strconv.Itoa(int(kvStore.Port)))),
+			)
+		}
+	}
+
+	if len(failures) == len(tikvInfo) && len(failures) > 0 {
+		rest.Error(c, failures[0])
+		return
+	}
+
+	warnings := make([]rest.ErrorResponse, 0)
+	for _, err := range failures {
+		warnings = append(warnings, rest.NewErrorResponse(err))
+	}
+	c.JSON(http.StatusOK, &UpdateTikvNetworkIoCollectionResponse{Warnings: warnings})
+}
+
+func parseNestedBoolByDotPath(data []byte, dotPath string) (value bool, found bool, err error) {
+	var m map[string]interface{}
+	if err := json.Unmarshal(data, &m); err != nil {
+		return false, false, err
+	}
+	cur := interface{}(m)
+	for _, p := range splitDotPath(dotPath) {
+		obj, ok := cur.(map[string]interface{})
+		if !ok {
+			return false, false, nil
+		}
+		next, ok := obj[p]
+		if !ok {
+			return false, false, nil
+		}
+		cur = next
+	}
+
+	switch v := cur.(type) {
+	case bool:
+		return v, true, nil
+	case string:
+		// Be tolerant if TiKV returns "true"/"false"
+		if v == "true" {
+			return true, true, nil
+		}
+		if v == "false" {
+			return false, true, nil
+		}
+		return false, true, nil
+	default:
+		return false, true, nil
+	}
+}
+
+func splitDotPath(dotPath string) []string {
+	// Avoid importing strings for a single split; keep consistent with other packages.
+	parts := make([]string, 0, 4)
+	last := 0
+	for i := 0; i < len(dotPath); i++ {
+		if dotPath[i] == '.' {
+			parts = append(parts, dotPath[last:i])
+			last = i + 1
+		}
+	}
+	parts = append(parts, dotPath[last:])
+	return parts
 }

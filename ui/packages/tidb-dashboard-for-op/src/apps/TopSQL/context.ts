@@ -6,6 +6,16 @@ import {
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, { TopsqlEditableConfig } from '~/client'
+import auth from '~/utils/auth'
+
+type TikvNetworkIoCollectionConfig = {
+  enable: boolean
+  is_multi_value?: boolean
+}
+
+type TikvNetworkIoCollectionUpdateResponse = {
+  warnings: any[]
+}
 
 class DataSource implements ITopSQLDataSource {
   topsqlConfigGet(options?: ReqConfig) {
@@ -14,6 +24,40 @@ class DataSource implements ITopSQLDataSource {
 
   topsqlConfigPost(request: TopsqlEditableConfig, options?: ReqConfig) {
     return client.getInstance().topsqlConfigPost({ request }, options)
+  }
+
+  topsqlTikvNetworkIoCollectionGet(options?: ReqConfig) {
+    return client
+      .getAxiosInstance()
+      .get<TikvNetworkIoCollectionConfig>(
+        '/topsql/tikv_network_io_collection',
+        {
+          ...options,
+          headers: {
+            ...options?.headers,
+            Authorization: auth.getAuthTokenAsBearer() || ''
+          }
+        } as any
+      )
+  }
+
+  topsqlTikvNetworkIoCollectionPost(
+    request: TikvNetworkIoCollectionConfig,
+    options?: ReqConfig
+  ) {
+    return client
+      .getAxiosInstance()
+      .post<TikvNetworkIoCollectionUpdateResponse>(
+        '/topsql/tikv_network_io_collection',
+        request,
+        {
+          ...options,
+          headers: {
+            ...options?.headers,
+            Authorization: auth.getAuthTokenAsBearer() || ''
+          }
+        } as any
+      )
   }
 
   topsqlInstancesGet(
@@ -66,6 +110,9 @@ export const ctx: ITopSQLContext = {
     checkNgm: true,
     showSetting: true,
     showLimit: true,
-    showGroupBy: true
+    showGroupBy: true,
+    showGroupByRegion: true,
+    showOrderBy: true,
+    minWindowInterval: 60
   } as ITopSQLConfig
 }

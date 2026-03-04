@@ -16,9 +16,9 @@ topsql:
     tikv_network_io_collection_tooltip_partial: Some TiKV nodes do not have collection enabled. You can click the switch to enable all, or update the TiKV default config via TiUP (see docs).
     tikv_network_io_collection_disabled_by_topsql: (Disabled when TopSQL is off)
     tikv_network_io_collection_status:
-      on: "(Current: all enabled)"
-      off: "(Current: all disabled)"
-      partial: "(Current: partially enabled)"
+      on: '(Current: all enabled)'
+      off: '(Current: all disabled)'
+      partial: '(Current: partially enabled)'
     disabled_result:
       title: Feature Not Enabled
       sub_title: Top SQL feature is not enabled. You can modify settings to enable the feature and wait for new data being collected.

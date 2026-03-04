@@ -90,7 +90,7 @@ export const ctx: (cfg: Partial<ITopSQLConfig>) => ITopSQLContext = (cfg) => ({
   ds,
   cfg: {
     checkNgm: true,
-    ...cfg,
-    showSetting: false
+    showSetting: true,
+    ...cfg
   }
 })

@@ -112,7 +112,6 @@ export const ctx: ITopSQLContext = {
     showLimit: true,
     showGroupBy: true,
     showGroupByRegion: true,
-    showOrderBy: true,
-    minWindowInterval: 60
+    showOrderBy: true
   } as ITopSQLConfig
 }

@@ -2,19 +2,12 @@ import {
   ITopSQLDataSource,
   ITopSQLContext,
   ITopSQLConfig,
+  TopsqlTikvNetworkIoCollectionConfig,
+  TopsqlTikvNetworkIoCollectionUpdateResponse,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, { TopsqlEditableConfig } from '~/client'
-
-type TikvNetworkIoCollectionConfig = {
-  enable: boolean
-  is_multi_value?: boolean
-}
-
-type TikvNetworkIoCollectionUpdateResponse = {
-  warnings: any[]
-}
 
 class DataSource implements ITopSQLDataSource {
   topsqlConfigGet(options?: ReqConfig) {
@@ -26,25 +19,27 @@ class DataSource implements ITopSQLDataSource {
   }
 
   topsqlTikvNetworkIoCollectionGet(options?: ReqConfig) {
-    return client
-      .getAxiosInstance()
-      .get<TikvNetworkIoCollectionConfig>(
-        '/topsql/tikv_network_io_collection',
-        options as any
-      )
+    // Cloud TopSQL does not expose TiKV multi-dimensional collection settings.
+    // Return a fixed disabled state to keep interface compatibility.
+    return Promise.resolve({
+      data: {
+        enable: false,
+        is_multi_value: false
+      } as TopsqlTikvNetworkIoCollectionConfig
+    } as any)
   }
 
   topsqlTikvNetworkIoCollectionPost(
-    request: TikvNetworkIoCollectionConfig,
+    request: TopsqlTikvNetworkIoCollectionConfig,
     options?: ReqConfig
   ) {
-    return client
-      .getAxiosInstance()
-      .post<TikvNetworkIoCollectionUpdateResponse>(
-        '/topsql/tikv_network_io_collection',
-        request,
-        options as any
-      )
+    // Cloud TopSQL does not expose TiKV multi-dimensional collection settings.
+    // Keep no-op behavior for compatibility if called unexpectedly.
+    return Promise.resolve({
+      data: {
+        warnings: []
+      } as TopsqlTikvNetworkIoCollectionUpdateResponse
+    } as any)
   }
 
   topsqlInstancesGet(
@@ -95,7 +90,7 @@ export const ctx: (cfg: Partial<ITopSQLConfig>) => ITopSQLContext = (cfg) => ({
   ds,
   cfg: {
     checkNgm: true,
-    showSetting: true,
-    ...cfg
+    ...cfg,
+    showSetting: false
   }
 })

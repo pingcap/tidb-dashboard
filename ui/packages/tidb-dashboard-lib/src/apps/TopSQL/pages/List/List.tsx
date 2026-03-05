@@ -99,6 +99,7 @@ const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
 export function TopSQLList() {
   const ctx = useContext(TopSQLContext)
   const { t } = useTranslation()
+  const canOpenSettings = ctx?.cfg.showSetting !== false
   const { topSQLConfig, isConfigLoading, updateConfig, haveHistoryData } =
     useTopSQLConfig()
   const [showSettings, setShowSettings] = useState(false)
@@ -149,6 +150,13 @@ export function TopSQLList() {
     isLoading: isInstancesLoading,
     fetchInstances
   } = useInstances(timeRange)
+  const {
+    data: tikvNetworkIoCollection,
+    isLoading: isTikvNetworkIoCollectionLoading,
+    sendRequest: refreshTikvNetworkIoCollection
+  } = useClientRequest(ctx!.ds.topsqlTikvNetworkIoCollectionGet, {
+    immediate: false
+  })
 
   const handleBrushEnd: BrushEndListener = useCallback(
     (v: BrushEvent) => {
@@ -214,6 +222,28 @@ export function TopSQLList() {
     return infos.join(' | ')
   }, [ctx?.cfg.orgName, ctx?.cfg.clusterName])
 
+  const shouldCheckNetworkIoCollection =
+    canOpenSettings &&
+    instance?.instance_type === 'tikv' &&
+    (orderBy === OrderBy.NetworkBytes ||
+      orderBy === OrderBy.LogicalIoBytes ||
+      groupBy === AggLevel.Region)
+  const shouldShowNetworkIoTip =
+    shouldCheckNetworkIoCollection &&
+    !isTikvNetworkIoCollectionLoading &&
+    (tikvNetworkIoCollection?.enable === false ||
+      tikvNetworkIoCollection?.is_multi_value === true)
+  const networkIoTipBody =
+    tikvNetworkIoCollection?.is_multi_value === true
+      ? t('topsql.tikv_network_io_collection_tip.body_partial')
+      : t('topsql.tikv_network_io_collection_tip.body')
+
+  useEffect(() => {
+    if (shouldCheckNetworkIoCollection) {
+      refreshTikvNetworkIoCollection()
+    }
+  }, [shouldCheckNetworkIoCollection, refreshTikvNetworkIoCollection])
+
   return (
     <>
       <div className={styles.container} ref={containerRef}>
@@ -224,18 +254,22 @@ export function TopSQLList() {
               data-e2e="topsql_not_enabled_alert"
               message={t(`topsql.alert_header.title`)}
               description={
-                <>
-                  {t(`topsql.alert_header.body`)}
-                  {` `}
-                  <a
-                    onClick={() => {
-                      setShowSettings(true)
-                      telemetry.clickSettings('bannerTips')
-                    }}
-                  >
-                    {t('topsql.alert_header.settings')}
-                  </a>
-                </>
+                canOpenSettings ? (
+                  <>
+                    {t(`topsql.alert_header.body`)}
+                    {` `}
+                    <a
+                      onClick={() => {
+                        setShowSettings(true)
+                        telemetry.clickSettings('bannerTips')
+                      }}
+                    >
+                      {t('topsql.alert_header.settings')}
+                    </a>
+                  </>
+                ) : (
+                  t(`topsql.alert_header.body`)
+                )
               }
               type="info"
               showIcon
@@ -380,7 +414,7 @@ export function TopSQLList() {
             </Space>
 
             <Space>
-              {ctx?.cfg.showSetting && (
+              {canOpenSettings && (
                 <Tooltip
                   mouseEnterDelay={0}
                   mouseLeaveDelay={0}
@@ -414,32 +448,61 @@ export function TopSQLList() {
           </Toolbar>
         </Card>
 
+        {shouldShowNetworkIoTip && (
+          <Card noMarginBottom>
+            <Alert
+              data-e2e="topsql_tikv_network_io_collection_alert"
+              message={t('topsql.tikv_network_io_collection_tip.title')}
+              description={
+                <>
+                  {networkIoTipBody}
+                  {` `}
+                  <a
+                    onClick={() => {
+                      setShowSettings(true)
+                      telemetry.clickSettings('settingIcon')
+                    }}
+                  >
+                    {t('topsql.tikv_network_io_collection_tip.action')}
+                  </a>
+                </>
+              }
+              type="warning"
+              showIcon
+            />
+          </Card>
+        )}
+
         {/* Show "not enabled" Result when there are no historical data */}
         {!isConfigLoading && !topSQLConfig?.enable && !haveHistoryData ? (
           <Result
             title={t('topsql.settings.disabled_result.title')}
             subTitle={t('topsql.settings.disabled_result.sub_title')}
             extra={
-              <Space>
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    setShowSettings(true)
-                    telemetry.clickSettings('firstTimeTips')
-                  }}
-                >
-                  {t('topsql.settings.open_settings')}
-                </Button>
-                {!isDistro() && (
-                  <Button
-                    onClick={() => {
-                      window.open(t('topsql.settings.help_url'), '_blank')
-                    }}
-                  >
-                    {t('topsql.settings.help')}
-                  </Button>
-                )}
-              </Space>
+              canOpenSettings || !isDistro() ? (
+                <Space>
+                  {canOpenSettings && (
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        setShowSettings(true)
+                        telemetry.clickSettings('firstTimeTips')
+                      }}
+                    >
+                      {t('topsql.settings.open_settings')}
+                    </Button>
+                  )}
+                  {!isDistro() && (
+                    <Button
+                      onClick={() => {
+                        window.open(t('topsql.settings.help_url'), '_blank')
+                      }}
+                    >
+                      {t('topsql.settings.help')}
+                    </Button>
+                  )}
+                </Space>
+              ) : undefined
             }
           />
         ) : (
@@ -483,19 +546,24 @@ export function TopSQLList() {
         )}
       </div>
 
-      <Drawer
-        title={t('statement.settings.title')}
-        width={300}
-        closable={true}
-        visible={showSettings}
-        onClose={() => setShowSettings(false)}
-        destroyOnClose={true}
-      >
-        <SettingsForm
+      {canOpenSettings && (
+        <Drawer
+          title={t('statement.settings.title')}
+          width={300}
+          closable={true}
+          visible={showSettings}
           onClose={() => setShowSettings(false)}
-          onConfigUpdated={updateConfig}
-        />
-      </Drawer>
+          destroyOnClose={true}
+        >
+          <SettingsForm
+            onClose={() => setShowSettings(false)}
+            onConfigUpdated={() => {
+              updateConfig()
+              refreshTikvNetworkIoCollection()
+            }}
+          />
+        </Drawer>
+      )}
     </>
   )
 }

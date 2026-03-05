@@ -2,6 +2,8 @@ import {
   ITopSQLDataSource,
   ITopSQLContext,
   ITopSQLConfig,
+  TopsqlTikvNetworkIoCollectionConfig,
+  TopsqlTikvNetworkIoCollectionUpdateResponse,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
@@ -14,6 +16,30 @@ class DataSource implements ITopSQLDataSource {
 
   topsqlConfigPost(request: TopsqlEditableConfig, options?: ReqConfig) {
     return client.getInstance().topsqlConfigPost({ request }, options)
+  }
+
+  topsqlTikvNetworkIoCollectionGet(options?: ReqConfig) {
+    // Cloud TopSQL does not expose TiKV multi-dimensional collection settings.
+    // Return a fixed disabled state to keep interface compatibility.
+    return Promise.resolve({
+      data: {
+        enable: false,
+        is_multi_value: false
+      } as TopsqlTikvNetworkIoCollectionConfig
+    } as any)
+  }
+
+  topsqlTikvNetworkIoCollectionPost(
+    request: TopsqlTikvNetworkIoCollectionConfig,
+    options?: ReqConfig
+  ) {
+    // Cloud TopSQL does not expose TiKV multi-dimensional collection settings.
+    // Keep no-op behavior for compatibility if called unexpectedly.
+    return Promise.resolve({
+      data: {
+        warnings: []
+      } as TopsqlTikvNetworkIoCollectionUpdateResponse
+    } as any)
   }
 
   topsqlInstancesGet(

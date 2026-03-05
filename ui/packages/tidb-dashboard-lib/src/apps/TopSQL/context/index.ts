@@ -3,12 +3,28 @@ import { createContext } from 'react'
 import { AxiosPromise } from 'axios'
 
 import {
+  RestErrorResponse,
   TopsqlEditableConfig,
   TopsqlInstanceResponse,
   TopsqlSummaryResponse
 } from '@lib/client'
 
 import { ReqConfig } from '@lib/types'
+
+export interface TopsqlTikvNetworkIoCollectionConfig {
+  /**
+   * Whether enable TiKV network IO collection (resource-metering.enable-network-io-collection)
+   */
+  enable: boolean
+  /**
+   * Whether values are not identical across TiKV nodes
+   */
+  is_multi_value?: boolean
+}
+
+export interface TopsqlTikvNetworkIoCollectionUpdateResponse {
+  warnings: RestErrorResponse[]
+}
 
 export interface ITopSQLDataSource {
   topsqlConfigGet(options?: ReqConfig): AxiosPromise<TopsqlEditableConfig>
@@ -17,6 +33,15 @@ export interface ITopSQLDataSource {
     request: TopsqlEditableConfig,
     options?: ReqConfig
   ): AxiosPromise<string>
+
+  topsqlTikvNetworkIoCollectionGet(
+    options?: ReqConfig
+  ): AxiosPromise<TopsqlTikvNetworkIoCollectionConfig>
+
+  topsqlTikvNetworkIoCollectionPost(
+    request: TopsqlTikvNetworkIoCollectionConfig,
+    options?: ReqConfig
+  ): AxiosPromise<TopsqlTikvNetworkIoCollectionUpdateResponse>
 
   topsqlInstancesGet(
     end?: string,

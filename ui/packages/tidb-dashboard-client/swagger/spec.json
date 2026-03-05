@@ -3576,6 +3576,83 @@
                 }
             }
         },
+        "/topsql/tikv_network_io_collection": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Get TiKV network IO collection config",
+                "operationId": "topsqlGetTiKVNetworkIOCollection",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/topsql.TikvNetworkIoCollectionConfig"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Update TiKV network IO collection config",
+                "operationId": "topsqlUpdateTiKVNetworkIOCollection",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/topsql.TikvNetworkIoCollectionConfig"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/topsql.UpdateTikvNetworkIoCollectionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/login": {
             "post": {
                 "summary": "Log in",
@@ -6240,6 +6317,28 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/topsql.SummaryByItem"
+                    }
+                }
+            }
+        },
+        "topsql.TikvNetworkIoCollectionConfig": {
+            "type": "object",
+            "properties": {
+                "enable": {
+                    "type": "boolean"
+                },
+                "is_multi_value": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "topsql.UpdateTikvNetworkIoCollectionResponse": {
+            "type": "object",
+            "properties": {
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rest.ErrorResponse"
                     }
                 }
             }

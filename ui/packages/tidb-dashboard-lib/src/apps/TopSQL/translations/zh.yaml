@@ -11,6 +11,14 @@ topsql:
     disable_warning: 确认要关闭该功能吗？
     enable: 启用功能
     enable_tooltip: 是否启用 Top SQL 功能，关闭后将只能看到历史数据，但能提升少量 {{distro.tidb}} 性能。
+    tikv_network_io_collection: 开启 TiKV 网络 IO 采集（多维度）
+    tikv_network_io_collection_tooltip: 开启后可采集 TiKV 网络流量，逻辑 IO 等多维度数据，不过会增加一定的存储和查询开销。全新 TiKV 节点不会自动开启采集，若需自动开启请通过 TiUP 修改 TiKV 默认配置（请参考文档）。
+    tikv_network_io_collection_tooltip_partial: 存在未开启采集的 TiKV 节点，可点击按钮全部开启，或者通过 TiUP 修改 TiKV 默认配置（请参考文档）
+    tikv_network_io_collection_disabled_by_topsql: （TopSQL 未开启时该开关强制关闭）
+    tikv_network_io_collection_status:
+      on: （当前状态：全开）
+      off: （当前状态：全关）
+      partial: （当前状态：部分开）
     disabled_result:
       title: 该功能未启用
       sub_title: Top SQL 功能未启用。您可以修改设置打开该功能后等待新数据收集。
@@ -21,8 +29,22 @@ topsql:
     enable_info:
       title: 成功
       content: Top SQL 功能现在已启用，正在收集数据。您需要等待大约 1 分钟时间以便看到该数据。
+    tikv_network_io_collection_info:
+      title: 成功
+      content: 已开启 TiKV 网络 IO 采集，正在下发到所有当前 TiKV 节点。您可能需要等待约 1 分钟以便看到对应维度的数据。注意，对新扩容的 TiKV 节点不会自动生效，如需生效请通过 tiup 修改 TiKV 默认配置并同步开启。
+      content_prefix: 已开启 TiKV 网络 IO 采集，正在下发到所有当前 TiKV 节点。您可能需要等待约 1 分钟以便看到对应维度的数据。
+      content_emphasis: 注意，对新扩容的 TiKV 节点不会自动生效，如需生效请通过 tiup 修改 TiKV 默认配置并同步开启。
+    tikv_network_io_collection_partial_info:
+      title: TiKV 网络 IO 采集未完全开启
+      content: 检测到仍有 TiKV 节点未开启采集，新数据可能不完整。您可以稍后重试，或者通过 TiUP 修改 TiKV 默认配置（请参考文档）。
+      action: 查看文档
     help: 帮助
     help_url: https://docs.pingcap.com/zh/tidb/dev/top-sql
+  tikv_network_io_collection_tip:
+    title: TiKV 网络 IO 采集未开启
+    body: 当前状态，历史数据若有则会展示，新数据需要开启 TiKV 网络/逻辑 IO 采集，
+    body_partial: 当前选择的维度依赖 TiKV 的网络/逻辑 IO 采集，检测到部分 TiKV 节点未开启。历史数据仍可展示，但新数据可能不完整。
+    action: 去设置
   refresh: 刷新
   chart:
     cpu_time: CPU 耗时

@@ -206,8 +206,7 @@ export function TopSQLList() {
   }, [ctx?.cfg.orgName, ctx?.cfg.clusterName])
 
   const shouldCheckNetworkIoCollection =
-    canOpenSettings &&
-    instance?.instance_type === 'tikv'
+    canOpenSettings && instance?.instance_type === 'tikv'
   const shouldShowNetworkIoTip =
     shouldCheckNetworkIoCollection &&
     !isTikvNetworkIoCollectionLoading &&

@@ -18,10 +18,6 @@ class DataSource implements ITopSQLDataSource {
     return client.getInstance().topsqlConfigPost({ request }, options)
   }
 
-<<<<<<< HEAD
-  topsqlInstancesGet(end?: string, start?: string, options?: ReqConfig) {
-    return client.getInstance().topsqlInstancesGet({ start, end }, options)
-=======
   topsqlTikvNetworkIoCollectionGet(options?: ReqConfig) {
     // Cloud TopSQL does not expose TiKV multi-dimensional collection settings.
     // Return a fixed disabled state to keep interface compatibility.
@@ -57,7 +53,6 @@ class DataSource implements ITopSQLDataSource {
       requestParameters.dataSource = dataSource
     }
     return client.getInstance().topsqlInstancesGet(requestParameters, options)
->>>>>>> 70e5bb19e (TopSQL(OP): support TiKV multi-dimensional collection controls and partial-state UX (#1868))
   }
 
   topsqlSummaryGet(
@@ -65,9 +60,11 @@ class DataSource implements ITopSQLDataSource {
     groupBy?: string,
     instance?: string,
     instanceType?: string,
+    orderBy?: string,
     start?: string,
     top?: string,
     window?: string,
+    dataSource?: string,
     options?: ReqConfig
   ) {
     return client.getInstance().topsqlSummaryGet(
@@ -76,9 +73,11 @@ class DataSource implements ITopSQLDataSource {
         groupBy,
         instance,
         instanceType,
+        orderBy,
         start,
         top,
-        window
+        window,
+        dataSource
       },
       options
     )

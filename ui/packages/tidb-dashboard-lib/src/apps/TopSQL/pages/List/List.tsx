@@ -179,10 +179,7 @@ export function TopSQLList() {
 
   const shouldCheckNetworkIoCollection =
     canOpenSettings &&
-    instance?.instance_type === 'tikv' &&
-    (orderBy === OrderBy.NetworkBytes ||
-      orderBy === OrderBy.LogicalIoBytes ||
-      groupBy === AggLevel.Region)
+    instance?.instance_type === 'tikv'
   const shouldShowNetworkIoTip =
     shouldCheckNetworkIoCollection &&
     !isTikvNetworkIoCollectionLoading &&

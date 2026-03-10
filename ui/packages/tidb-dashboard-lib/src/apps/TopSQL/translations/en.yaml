@@ -11,6 +11,14 @@ topsql:
     disable_warning: Are you sure want to disable this feature?
     enable: Enable Feature
     enable_tooltip: Whether Top SQL feature is enabled. When enabled, there will be small overhead.
+    tikv_network_io_collection: Enable TiKV Network IO collection (multi-dimensional)
+    tikv_network_io_collection_tooltip: When enabled, TiKV network traffic, logical IO, and other dimensions can be collected, but this increases storage and query overhead. Newly added TiKV nodes will not enable collection automatically. To auto-enable for new nodes, update the TiKV default config via TiUP (see docs).
+    tikv_network_io_collection_tooltip_partial: Some TiKV nodes do not have collection enabled. You can click the switch to enable all, or update the TiKV default config via TiUP (see docs).
+    tikv_network_io_collection_disabled_by_topsql: (Disabled when TopSQL is off)
+    tikv_network_io_collection_status:
+      on: '(Current: all enabled)'
+      off: '(Current: all disabled)'
+      partial: '(Current: partially enabled)'
     disabled_result:
       title: Feature Not Enabled
       sub_title: Top SQL feature is not enabled. You can modify settings to enable the feature and wait for new data being collected.
@@ -21,11 +29,27 @@ topsql:
     enable_info:
       title: Success
       content: Top SQL is enabled now and is collecting data. You need to wait for about 1 minute to view this data.
+    tikv_network_io_collection_info:
+      title: Success
+      content: TiKV Network IO collection has been enabled and is being applied to all current TiKV nodes. You may need to wait for about 1 minute to see data for related dimensions. Note that this is not applied automatically to newly scaled-out TiKV nodes. To make it effective for new nodes, update the TiKV default config via tiup and enable it there as well.
+      content_prefix: TiKV Network IO collection has been enabled and is being applied to all current TiKV nodes. You may need to wait for about 1 minute to see data for related dimensions.
+      content_emphasis: Note that this is not applied automatically to newly scaled-out TiKV nodes. To make it effective for new nodes, update the TiKV default config via tiup and enable it there as well.
+    tikv_network_io_collection_partial_info:
+      title: TiKV Network IO collection is not fully enabled
+      content: Some TiKV nodes still have collection disabled, so new data may be incomplete. You can retry later, or update the TiKV default config via TiUP (see docs).
+      action: View docs
     help: Help
     help_url: https://docs.pingcap.com/tidb/dev/top-sql
+  tikv_network_io_collection_tip:
+    title: TiKV Network IO collection is disabled
+    body: In the current state, historical data will be shown if available. New data requires enabling TiKV network/logical IO collection.
+    body_partial: The selected dimension depends on TiKV network/logical IO collection. Some TiKV nodes are not enabled. Historical data may still be shown, but new data may be incomplete.
+    action: Go to settings
   refresh: Refresh
   chart:
     cpu_time: CPU Time
+    network_bytes: Network Bytes
+    logical_io_bytes: Logical IO Bytes
   table:
     description: The following table shows which top {{topN}} queries are contributing the most to load in the current time range. Click one to see details.
     description_no_recent_data: There is no data currently. You need to wait for about 1 minute for new data being collected.
@@ -33,6 +57,8 @@ topsql:
     others_tooltip: All of other non Top {{topN}} Items
     fields:
       cpu_time: Total CPU Time
+      network_bytes: Total Network Bytes
+      logical_io_bytes: Total Logical IO Bytes
       sql: SQL Statement
       table: Table Name
       db: Database Name
@@ -46,6 +72,8 @@ topsql:
     no_plan_tooltip: This statement is not a query or the statement plan was being generated
     fields:
       cpu_time: Total CPU Time
+      network_bytes: Total Network Bytes
+      logical_io_bytes: Total Logical IO Bytes
       plan: Plan
       exec_count_per_sec: Call/sec
       scan_records_per_sec: Scan Rows/sec

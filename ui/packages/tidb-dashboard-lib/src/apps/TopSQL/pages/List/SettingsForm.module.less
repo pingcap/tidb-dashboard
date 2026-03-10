@@ -1,0 +1,71 @@
+@import 'antd/es/style/themes/default.less';
+
+.partialSwitch {
+  background: linear-gradient(
+    90deg,
+    @blue-6 0%,
+    @blue-6 50%,
+    @gray-5 50%,
+    @gray-5 100%
+  ) !important;
+  border-color: transparent !important;
+
+  &:hover:not(:global(.ant-switch-disabled)) {
+    background: linear-gradient(
+      90deg,
+      @blue-5 0%,
+      @blue-5 50%,
+      @gray-4 50%,
+      @gray-4 100%
+    ) !important;
+    border-color: transparent !important;
+  }
+
+  :global(.ant-switch-handle) {
+    left: calc(50% - 9px) !important;
+  }
+
+  :global(.ant-switch-inner) {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+}
+
+.switchWithStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.switchStatus {
+  color: @text-color-secondary;
+}
+
+.partialResultContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.successInfoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.successInfoEmphasis {
+  font-weight: 600;
+}
+
+.partialResultWarnings {
+  margin: 0;
+  padding: 8px;
+  max-height: 120px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: @background-color-light;
+  border: 1px solid @border-color-base;
+  border-radius: @border-radius-base;
+}

@@ -3,12 +3,28 @@ import { createContext } from 'react'
 import { AxiosPromise } from 'axios'
 
 import {
+  RestErrorResponse,
   TopsqlEditableConfig,
   TopsqlInstanceResponse,
   TopsqlSummaryResponse
 } from '@lib/client'
 
 import { ReqConfig } from '@lib/types'
+
+export interface TopsqlTikvNetworkIoCollectionConfig {
+  /**
+   * Whether enable TiKV network IO collection (resource-metering.enable-network-io-collection)
+   */
+  enable: boolean
+  /**
+   * Whether values are not identical across TiKV nodes
+   */
+  is_multi_value?: boolean
+}
+
+export interface TopsqlTikvNetworkIoCollectionUpdateResponse {
+  warnings: RestErrorResponse[]
+}
 
 export interface ITopSQLDataSource {
   topsqlConfigGet(options?: ReqConfig): AxiosPromise<TopsqlEditableConfig>
@@ -18,9 +34,19 @@ export interface ITopSQLDataSource {
     options?: ReqConfig
   ): AxiosPromise<string>
 
+  topsqlTikvNetworkIoCollectionGet(
+    options?: ReqConfig
+  ): AxiosPromise<TopsqlTikvNetworkIoCollectionConfig>
+
+  topsqlTikvNetworkIoCollectionPost(
+    request: TopsqlTikvNetworkIoCollectionConfig,
+    options?: ReqConfig
+  ): AxiosPromise<TopsqlTikvNetworkIoCollectionUpdateResponse>
+
   topsqlInstancesGet(
     end?: string,
     start?: string,
+    dataSource?: string,
     options?: ReqConfig
   ): AxiosPromise<TopsqlInstanceResponse>
 
@@ -29,9 +55,11 @@ export interface ITopSQLDataSource {
     groupBy?: string,
     instance?: string,
     instanceType?: string,
+    orderBy?: string,
     start?: string,
     top?: string,
     window?: string,
+    dataSource?: string,
     options?: ReqConfig
   ): AxiosPromise<TopsqlSummaryResponse>
 }
@@ -55,6 +83,10 @@ export interface ITopSQLConfig {
   showSearchInStatements?: boolean
   showLimit?: boolean
   showGroupBy?: boolean
+  showGroupByRegion?: boolean
+  showOrderBy?: boolean
+  minWindowInterval?: number
+  dataSource?: string
 }
 
 export interface ITopSQLContext {

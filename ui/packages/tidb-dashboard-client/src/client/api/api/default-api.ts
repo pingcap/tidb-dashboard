@@ -153,6 +153,10 @@ import { TopsqlInstanceResponse } from '../models';
 // @ts-ignore
 import { TopsqlSummaryResponse } from '../models';
 // @ts-ignore
+import { TopsqlTikvNetworkIoCollectionConfig } from '../models';
+// @ts-ignore
+import { TopsqlUpdateTikvNetworkIoCollectionResponse } from '../models';
+// @ts-ignore
 import { UserAuthenticateForm } from '../models';
 // @ts-ignore
 import { UserGetLoginInfoResponse } from '../models';
@@ -3665,13 +3669,47 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary Get TiKV network IO collection config
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        topsqlGetTiKVNetworkIOCollection: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/topsql/tikv_network_io_collection`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get availiable instances
+         * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [start] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlInstancesGet: async (end?: string, start?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        topsqlInstancesGet: async (dataSource?: string, end?: string, start?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/topsql/instances`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3686,6 +3724,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             // authentication JwtAuth required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (dataSource !== undefined) {
+                localVarQueryParameter['data_source'] = dataSource;
+            }
 
             if (end !== undefined) {
                 localVarQueryParameter['end'] = end;
@@ -3709,17 +3751,19 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary Get summaries
+         * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [groupBy] 
          * @param {string} [instance] 
          * @param {string} [instanceType] 
+         * @param {string} [orderBy] 
          * @param {string} [start] 
          * @param {string} [top] 
          * @param {string} [window] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlSummaryGet: async (end?: string, groupBy?: string, instance?: string, instanceType?: string, start?: string, top?: string, window?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        topsqlSummaryGet: async (dataSource?: string, end?: string, groupBy?: string, instance?: string, instanceType?: string, orderBy?: string, start?: string, top?: string, window?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/topsql/summary`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3735,6 +3779,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             // authentication JwtAuth required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
+            if (dataSource !== undefined) {
+                localVarQueryParameter['data_source'] = dataSource;
+            }
+
             if (end !== undefined) {
                 localVarQueryParameter['end'] = end;
             }
@@ -3749,6 +3797,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (instanceType !== undefined) {
                 localVarQueryParameter['instance_type'] = instanceType;
+            }
+
+            if (orderBy !== undefined) {
+                localVarQueryParameter['order_by'] = orderBy;
             }
 
             if (start !== undefined) {
@@ -3768,6 +3820,45 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Update TiKV network IO collection config
+         * @param {TopsqlTikvNetworkIoCollectionConfig} request Request body
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        topsqlUpdateTiKVNetworkIOCollection: async (request: TopsqlTikvNetworkIoCollectionConfig, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'request' is not null or undefined
+            assertParamExists('topsqlUpdateTiKVNetworkIOCollection', 'request', request)
+            const localVarPath = `/topsql/tikv_network_io_collection`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(request, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -5197,31 +5288,55 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Get TiKV network IO collection config
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async topsqlGetTiKVNetworkIOCollection(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlTikvNetworkIoCollectionConfig>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlGetTiKVNetworkIOCollection(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary Get availiable instances
+         * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [start] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async topsqlInstancesGet(end?: string, start?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlInstanceResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlInstancesGet(end, start, options);
+        async topsqlInstancesGet(dataSource?: string, end?: string, start?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlInstanceResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlInstancesGet(dataSource, end, start, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
          * @summary Get summaries
+         * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [groupBy] 
          * @param {string} [instance] 
          * @param {string} [instanceType] 
+         * @param {string} [orderBy] 
          * @param {string} [start] 
          * @param {string} [top] 
          * @param {string} [window] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async topsqlSummaryGet(end?: string, groupBy?: string, instance?: string, instanceType?: string, start?: string, top?: string, window?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlSummaryResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlSummaryGet(end, groupBy, instance, instanceType, start, top, window, options);
+        async topsqlSummaryGet(dataSource?: string, end?: string, groupBy?: string, instance?: string, instanceType?: string, orderBy?: string, start?: string, top?: string, window?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlSummaryResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlSummaryGet(dataSource, end, groupBy, instance, instanceType, orderBy, start, top, window, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Update TiKV network IO collection config
+         * @param {TopsqlTikvNetworkIoCollectionConfig} request Request body
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async topsqlUpdateTiKVNetworkIOCollection(request: TopsqlTikvNetworkIoCollectionConfig, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlUpdateTikvNetworkIoCollectionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlUpdateTiKVNetworkIOCollection(request, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6270,30 +6385,52 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary Get TiKV network IO collection config
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        topsqlGetTiKVNetworkIOCollection(options?: any): AxiosPromise<TopsqlTikvNetworkIoCollectionConfig> {
+            return localVarFp.topsqlGetTiKVNetworkIOCollection(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Get availiable instances
+         * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [start] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlInstancesGet(end?: string, start?: string, options?: any): AxiosPromise<TopsqlInstanceResponse> {
-            return localVarFp.topsqlInstancesGet(end, start, options).then((request) => request(axios, basePath));
+        topsqlInstancesGet(dataSource?: string, end?: string, start?: string, options?: any): AxiosPromise<TopsqlInstanceResponse> {
+            return localVarFp.topsqlInstancesGet(dataSource, end, start, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @summary Get summaries
+         * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [groupBy] 
          * @param {string} [instance] 
          * @param {string} [instanceType] 
+         * @param {string} [orderBy] 
          * @param {string} [start] 
          * @param {string} [top] 
          * @param {string} [window] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlSummaryGet(end?: string, groupBy?: string, instance?: string, instanceType?: string, start?: string, top?: string, window?: string, options?: any): AxiosPromise<TopsqlSummaryResponse> {
-            return localVarFp.topsqlSummaryGet(end, groupBy, instance, instanceType, start, top, window, options).then((request) => request(axios, basePath));
+        topsqlSummaryGet(dataSource?: string, end?: string, groupBy?: string, instance?: string, instanceType?: string, orderBy?: string, start?: string, top?: string, window?: string, options?: any): AxiosPromise<TopsqlSummaryResponse> {
+            return localVarFp.topsqlSummaryGet(dataSource, end, groupBy, instance, instanceType, orderBy, start, top, window, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Update TiKV network IO collection config
+         * @param {TopsqlTikvNetworkIoCollectionConfig} request Request body
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        topsqlUpdateTiKVNetworkIOCollection(request: TopsqlTikvNetworkIoCollectionConfig, options?: any): AxiosPromise<TopsqlUpdateTikvNetworkIoCollectionResponse> {
+            return localVarFp.topsqlUpdateTiKVNetworkIOCollection(request, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7481,6 +7618,13 @@ export interface DefaultApiTopsqlInstancesGetRequest {
      * @type {string}
      * @memberof DefaultApiTopsqlInstancesGet
      */
+    readonly dataSource?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlInstancesGet
+     */
     readonly end?: string
 
     /**
@@ -7497,6 +7641,13 @@ export interface DefaultApiTopsqlInstancesGetRequest {
  * @interface DefaultApiTopsqlSummaryGetRequest
  */
 export interface DefaultApiTopsqlSummaryGetRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlSummaryGet
+     */
+    readonly dataSource?: string
+
     /**
      * 
      * @type {string}
@@ -7530,6 +7681,13 @@ export interface DefaultApiTopsqlSummaryGetRequest {
      * @type {string}
      * @memberof DefaultApiTopsqlSummaryGet
      */
+    readonly orderBy?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiTopsqlSummaryGet
+     */
     readonly start?: string
 
     /**
@@ -7545,6 +7703,20 @@ export interface DefaultApiTopsqlSummaryGetRequest {
      * @memberof DefaultApiTopsqlSummaryGet
      */
     readonly window?: string
+}
+
+/**
+ * Request parameters for topsqlUpdateTiKVNetworkIOCollection operation in DefaultApi.
+ * @export
+ * @interface DefaultApiTopsqlUpdateTiKVNetworkIOCollectionRequest
+ */
+export interface DefaultApiTopsqlUpdateTiKVNetworkIOCollectionRequest {
+    /**
+     * Request body
+     * @type {TopsqlTikvNetworkIoCollectionConfig}
+     * @memberof DefaultApiTopsqlUpdateTiKVNetworkIOCollection
+     */
+    readonly request: TopsqlTikvNetworkIoCollectionConfig
 }
 
 /**
@@ -8725,6 +8897,17 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
+     * @summary Get TiKV network IO collection config
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public topsqlGetTiKVNetworkIOCollection(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).topsqlGetTiKVNetworkIOCollection(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary Get availiable instances
      * @param {DefaultApiTopsqlInstancesGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -8732,7 +8915,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public topsqlInstancesGet(requestParameters: DefaultApiTopsqlInstancesGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).topsqlInstancesGet(requestParameters.end, requestParameters.start, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).topsqlInstancesGet(requestParameters.dataSource, requestParameters.end, requestParameters.start, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8744,7 +8927,19 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public topsqlSummaryGet(requestParameters: DefaultApiTopsqlSummaryGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).topsqlSummaryGet(requestParameters.end, requestParameters.groupBy, requestParameters.instance, requestParameters.instanceType, requestParameters.start, requestParameters.top, requestParameters.window, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).topsqlSummaryGet(requestParameters.dataSource, requestParameters.end, requestParameters.groupBy, requestParameters.instance, requestParameters.instanceType, requestParameters.orderBy, requestParameters.start, requestParameters.top, requestParameters.window, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Update TiKV network IO collection config
+     * @param {DefaultApiTopsqlUpdateTiKVNetworkIOCollectionRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public topsqlUpdateTiKVNetworkIOCollection(requestParameters: DefaultApiTopsqlUpdateTiKVNetworkIOCollectionRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).topsqlUpdateTiKVNetworkIOCollection(requestParameters.request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

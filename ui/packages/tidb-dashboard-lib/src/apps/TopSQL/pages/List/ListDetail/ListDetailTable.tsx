@@ -19,6 +19,7 @@ import {
   isOverallRecord
 } from '@lib/apps/TopSQL/utils/specialRecord'
 import { telemetry } from '@lib/apps/TopSQL/utils/telemetry'
+import { OrderBy } from '../List'
 
 export type InstanceType = 'tidb' | 'tikv'
 
@@ -26,6 +27,7 @@ interface ListDetailTableProps {
   record: SQLRecord
   capacity: number
   instanceType: InstanceType
+  orderBy: OrderBy
 }
 
 const UNKNOWN_LABEL = 'Unknown'
@@ -46,24 +48,78 @@ const msFormat = (v: number = 0) => {
 export function ListDetailTable({
   record: sqlRecord,
   capacity,
-  instanceType
+  instanceType,
+  orderBy
 }: ListDetailTableProps) {
-  const { records: planRecords, isMultiPlans } = usePlanRecord(sqlRecord)
+  const {
+    records: planRecords,
+    isMultiPlans,
+    detailCapacity
+  } = usePlanRecord(sqlRecord, orderBy)
   const { t } = useTranslation()
+
+  // Use detailCapacity if available, otherwise fall back to capacity from parent
+  const effectiveCapacity = detailCapacity > 0 ? detailCapacity : capacity
+
+  // Get column title and value based on orderBy
+  const getColumnTitle = () => {
+    switch (orderBy) {
+      case OrderBy.NetworkBytes:
+        return t('topsql.detail.fields.network_bytes') || 'Network Bytes'
+      case OrderBy.LogicalIoBytes:
+        return t('topsql.detail.fields.logical_io_bytes') || 'Logical IO Bytes'
+      case OrderBy.CpuTime:
+      default:
+        return t('topsql.detail.fields.cpu_time')
+    }
+  }
+
+  const getColumnValue = (rec: PlanRecord): number => {
+    switch (orderBy) {
+      case OrderBy.NetworkBytes:
+        return rec.networkBytes || 0
+      case OrderBy.LogicalIoBytes:
+        return rec.logicalIoBytes || 0
+      case OrderBy.CpuTime:
+      default:
+        return rec.cpuTime || 0
+    }
+  }
+
+  const getValueFormatter = () => {
+    switch (orderBy) {
+      case OrderBy.NetworkBytes:
+      case OrderBy.LogicalIoBytes:
+        return (v: number) => getValueFormat('bytes')(v, 2)
+      case OrderBy.CpuTime:
+      default:
+        return (v: number) => getValueFormat('ms')(v, 2)
+    }
+  }
+
+  const formatter = getValueFormatter()
 
   const tableColumns = useMemo(
     () =>
       [
         {
-          name: t('topsql.detail.fields.cpu_time'),
-          key: 'cpuTime',
+          name: getColumnTitle(),
+          key:
+            orderBy === OrderBy.NetworkBytes
+              ? 'networkBytes'
+              : orderBy === OrderBy.LogicalIoBytes
+              ? 'logicalIoBytes'
+              : 'cpuTime',
           minWidth: 150,
           maxWidth: 250,
-          onRender: (rec: PlanRecord) => (
-            <Bar textWidth={80} value={rec.cpuTime!} capacity={capacity}>
-              {getValueFormat('ms')(rec.cpuTime, 2)}
-            </Bar>
-          )
+          onRender: (rec: PlanRecord) => {
+            const value = getColumnValue(rec)
+            return (
+              <Bar textWidth={80} value={value} capacity={effectiveCapacity}>
+                {formatter(value)}
+              </Bar>
+            )
+          }
         },
         {
           name: t('topsql.detail.fields.plan'),
@@ -145,7 +201,7 @@ export function ListDetailTable({
           )
         }
       ].filter((c) => !!c) as IColumn[],
-    [capacity, instanceType, t]
+    [effectiveCapacity, instanceType, orderBy, t]
   )
 
   const csvHeaders = tableColumns.map((c) => ({ label: c.name, key: c.key }))
@@ -211,35 +267,103 @@ export function ListDetailTable({
 
 export type PlanRecord = {
   cpuTime: number
+  networkBytes?: number
+  logicalIoBytes?: number
 } & TopsqlSummaryPlanItem
 
 const usePlanRecord = (
-  record: SQLRecord
-): { isMultiPlans: boolean; records: PlanRecord[] } => {
+  record: SQLRecord,
+  orderBy: OrderBy
+): { isMultiPlans: boolean; records: PlanRecord[]; detailCapacity: number } => {
   return useMemo(() => {
     if (!record?.plans?.length) {
-      return { isMultiPlans: false, records: [] }
+      return { isMultiPlans: false, records: [], detailCapacity: 0 }
     }
 
     const isMultiPlans = record.plans.length > 1
     const plans = [...record.plans]
 
+    let detailCapacity = 0
+
     const records: PlanRecord[] = plans
       .map((p) => {
         const cpuTime = p.cpu_time_ms?.reduce((pt, t) => pt + t, 0) || 0
+        const networkBytes = p.network_bytes?.reduce((pt, t) => pt + t, 0) || 0
+        const logicalIoBytes =
+          p.logical_io_bytes?.reduce((pt, t) => pt + t, 0) || 0
+
+        // Calculate capacity based on the selected orderBy dimension
+        let value = 0
+        switch (orderBy) {
+          case OrderBy.NetworkBytes:
+            value = networkBytes
+            break
+          case OrderBy.LogicalIoBytes:
+            value = logicalIoBytes
+            break
+          case OrderBy.CpuTime:
+          default:
+            value = cpuTime
+            break
+        }
+
+        if (detailCapacity < value) {
+          detailCapacity = value
+        }
+
         return {
           ...p,
-          cpuTime
+          cpuTime,
+          networkBytes,
+          logicalIoBytes
         }
       })
-      .sort((a, b) => b.cpuTime - a.cpuTime)
+      .sort((a, b) => {
+        // Sort based on the selected orderBy dimension
+        let aValue = 0
+        let bValue = 0
+        switch (orderBy) {
+          case OrderBy.NetworkBytes:
+            aValue = a.networkBytes || 0
+            bValue = b.networkBytes || 0
+            break
+          case OrderBy.LogicalIoBytes:
+            aValue = a.logicalIoBytes || 0
+            bValue = b.logicalIoBytes || 0
+            break
+          case OrderBy.CpuTime:
+          default:
+            aValue = a.cpuTime
+            bValue = b.cpuTime
+            break
+        }
+        return bValue - aValue
+      })
       .map(convertNoPlanRecord)
 
     // add overall record to the first
     if (isMultiPlans) {
-      records.unshift(createOverallRecord(record))
+      const overallRecord = createOverallRecord(record, orderBy)
+      records.unshift(overallRecord)
+      // Update capacity if overall record has larger value
+      const overallValue = getOverallValue(overallRecord, orderBy)
+      if (detailCapacity < overallValue) {
+        detailCapacity = overallValue
+      }
     }
 
-    return { isMultiPlans, records }
-  }, [record])
+    return { isMultiPlans, records, detailCapacity }
+  }, [record, orderBy])
+}
+
+const getOverallValue = (rec: PlanRecord, orderBy: OrderBy): number => {
+  switch (orderBy) {
+    case OrderBy.NetworkBytes:
+      return rec.networkBytes || 0
+    case OrderBy.LogicalIoBytes:
+      return rec.logicalIoBytes || 0
+    case OrderBy.CpuTime:
+    default:
+      return rec.cpuTime || 0
+  }
 }

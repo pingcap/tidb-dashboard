@@ -65,7 +65,14 @@ const LIMITS = [5, 20, 100]
 export enum AggLevel {
   Query = 'query',
   Table = 'table',
-  Schema = 'db'
+  Schema = 'db',
+  Region = 'region'
+}
+
+export enum OrderBy {
+  CpuTime = 'cpu',
+  NetworkBytes = 'network',
+  LogicalIoBytes = 'logical_io'
 }
 
 const formatLabel = (item: AggLevel): string => {
@@ -73,7 +80,16 @@ const formatLabel = (item: AggLevel): string => {
   return item.charAt(0).toUpperCase() + item.slice(1) // Capitalize first letter
 }
 
-const GROUP = [AggLevel.Query, AggLevel.Table, AggLevel.Schema]
+const formatOrderByLabel = (item: OrderBy): string => {
+  const labels: Record<OrderBy, string> = {
+    [OrderBy.CpuTime]: 'CPU',
+    [OrderBy.NetworkBytes]: 'Network',
+    [OrderBy.LogicalIoBytes]: 'Logical IO'
+  }
+  return labels[item] || item
+}
+
+const GROUP = [AggLevel.Query, AggLevel.Table, AggLevel.Schema, AggLevel.Region]
 
 const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
   return _toTimeRangeValue(v, v?.type === 'recent' ? RECENT_RANGE_OFFSET : 0)
@@ -82,6 +98,7 @@ const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
 export function TopSQLList() {
   const ctx = useContext(TopSQLContext)
   const { t } = useTranslation()
+  const canOpenSettings = ctx?.cfg.showSetting !== false
   const { topSQLConfig, isConfigLoading, updateConfig, haveHistoryData } =
     useTopSQLConfig()
   const [showSettings, setShowSettings] = useState(false)
@@ -92,6 +109,7 @@ export function TopSQLList() {
   const { timeRange, setTimeRange } = useURLTimeRange()
   const [limit, setLimit] = useState(5)
   const [groupBy, setGroupBy] = useState(AggLevel.Query)
+  const [orderBy, setOrderBy] = useState(OrderBy.CpuTime)
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const computeTimeWindowSize = useMemoizedFn(
@@ -100,21 +118,39 @@ export function TopSQLList() {
       const windowSize = Math.ceil(
         (CHART_BAR_WIDTH * (max - min)) / screenWidth
       )
-      setTimeWindowSize(windowSize)
-      return windowSize
+      const finalWindowSize =
+        ctx?.cfg.minWindowInterval !== undefined
+          ? Math.max(windowSize, ctx.cfg.minWindowInterval)
+          : windowSize
+      setTimeWindowSize(finalWindowSize)
+      return finalWindowSize
     }
   )
   const {
     topSQLData,
     isLoading: isDataLoading,
     updateTopSQLData
-  } = useTopSQLData(instance, timeRange, limit, groupBy, computeTimeWindowSize)
+  } = useTopSQLData(
+    instance,
+    timeRange,
+    limit,
+    groupBy,
+    orderBy,
+    computeTimeWindowSize
+  )
   const isLoading = isConfigLoading || isDataLoading
   const {
     instances,
     isLoading: isInstancesLoading,
     fetchInstances
   } = useInstances(timeRange)
+  const {
+    data: tikvNetworkIoCollection,
+    isLoading: isTikvNetworkIoCollectionLoading,
+    sendRequest: refreshTikvNetworkIoCollection
+  } = useClientRequest(ctx!.ds.topsqlTikvNetworkIoCollectionGet, {
+    immediate: false
+  })
 
   const handleBrushEnd: BrushEndListener = useCallback(
     (v: BrushEvent) => {
@@ -169,6 +205,28 @@ export function TopSQLList() {
     return infos.join(' | ')
   }, [ctx?.cfg.orgName, ctx?.cfg.clusterName])
 
+  const shouldCheckNetworkIoCollection =
+    canOpenSettings &&
+    instance?.instance_type === 'tikv' &&
+    (orderBy === OrderBy.NetworkBytes ||
+      orderBy === OrderBy.LogicalIoBytes ||
+      groupBy === AggLevel.Region)
+  const shouldShowNetworkIoTip =
+    shouldCheckNetworkIoCollection &&
+    !isTikvNetworkIoCollectionLoading &&
+    (tikvNetworkIoCollection?.enable === false ||
+      tikvNetworkIoCollection?.is_multi_value === true)
+  const networkIoTipBody =
+    tikvNetworkIoCollection?.is_multi_value === true
+      ? t('topsql.tikv_network_io_collection_tip.body_partial')
+      : t('topsql.tikv_network_io_collection_tip.body')
+
+  useEffect(() => {
+    if (shouldCheckNetworkIoCollection) {
+      refreshTikvNetworkIoCollection()
+    }
+  }, [shouldCheckNetworkIoCollection, refreshTikvNetworkIoCollection])
+
   return (
     <>
       <div className={styles.container} ref={containerRef}>
@@ -179,18 +237,22 @@ export function TopSQLList() {
               data-e2e="topsql_not_enabled_alert"
               message={t(`topsql.alert_header.title`)}
               description={
-                <>
-                  {t(`topsql.alert_header.body`)}
-                  {` `}
-                  <a
-                    onClick={() => {
-                      setShowSettings(true)
-                      telemetry.clickSettings('bannerTips')
-                    }}
-                  >
-                    {t('topsql.alert_header.settings')}
-                  </a>
-                </>
+                canOpenSettings ? (
+                  <>
+                    {t(`topsql.alert_header.body`)}
+                    {` `}
+                    <a
+                      onClick={() => {
+                        setShowSettings(true)
+                        telemetry.clickSettings('bannerTips')
+                      }}
+                    >
+                      {t('topsql.alert_header.settings')}
+                    </a>
+                  </>
+                ) : (
+                  t(`topsql.alert_header.body`)
+                )
               }
               type="info"
               showIcon
@@ -217,6 +279,13 @@ export function TopSQLList() {
                   // only group by sql when instance is not tikv
                   if (inst?.instance_type !== 'tikv') {
                     setGroupBy(AggLevel.Query)
+                  }
+                  // Reset orderBy if current selection is not supported by new instance type
+                  if (
+                    inst?.instance_type !== 'tikv' &&
+                    orderBy === OrderBy.LogicalIoBytes
+                  ) {
+                    setOrderBy(OrderBy.CpuTime)
                   }
                 }}
                 instances={instances}
@@ -261,11 +330,50 @@ export function TopSQLList() {
                   onChange={setGroupBy}
                   data-e2e="group_select"
                 >
-                  {GROUP.map((item) => (
+                  {GROUP.filter((item) => {
+                    // Only show Region option when showGroupByRegion is true
+                    // (instance?.instance_type === 'tikv' is already checked in outer condition)
+                    if (item === AggLevel.Region) {
+                      return ctx?.cfg.showGroupByRegion === true
+                    }
+                    return true
+                  }).map((item) => (
                     <Option value={item} key={item} data-e2e="group_option">
                       By {formatLabel(item)}
                     </Option>
                   ))}
+                </Select>
+              )}
+              {ctx?.cfg.showOrderBy && instance && (
+                <Select
+                  style={{ width: 150 }}
+                  value={orderBy}
+                  onChange={setOrderBy}
+                  data-e2e="order_by_select"
+                >
+                  <Option
+                    value={OrderBy.CpuTime}
+                    key={OrderBy.CpuTime}
+                    data-e2e="order_by_option_cpu_time"
+                  >
+                    Order By {formatOrderByLabel(OrderBy.CpuTime)}
+                  </Option>
+                  <Option
+                    value={OrderBy.NetworkBytes}
+                    key={OrderBy.NetworkBytes}
+                    data-e2e="order_by_option_network_bytes"
+                  >
+                    Order By {formatOrderByLabel(OrderBy.NetworkBytes)}
+                  </Option>
+                  {instance.instance_type === 'tikv' && (
+                    <Option
+                      value={OrderBy.LogicalIoBytes}
+                      key={OrderBy.LogicalIoBytes}
+                      data-e2e="order_by_option_logical_io_bytes"
+                    >
+                      Order By {formatOrderByLabel(OrderBy.LogicalIoBytes)}
+                    </Option>
+                  )}
                 </Select>
               )}
 
@@ -285,7 +393,7 @@ export function TopSQLList() {
             </Space>
 
             <Space>
-              {ctx?.cfg.showSetting && (
+              {canOpenSettings && (
                 <Tooltip
                   mouseEnterDelay={0}
                   mouseLeaveDelay={0}
@@ -319,32 +427,61 @@ export function TopSQLList() {
           </Toolbar>
         </Card>
 
+        {shouldShowNetworkIoTip && (
+          <Card noMarginBottom>
+            <Alert
+              data-e2e="topsql_tikv_network_io_collection_alert"
+              message={t('topsql.tikv_network_io_collection_tip.title')}
+              description={
+                <>
+                  {networkIoTipBody}
+                  {` `}
+                  <a
+                    onClick={() => {
+                      setShowSettings(true)
+                      telemetry.clickSettings('settingIcon')
+                    }}
+                  >
+                    {t('topsql.tikv_network_io_collection_tip.action')}
+                  </a>
+                </>
+              }
+              type="warning"
+              showIcon
+            />
+          </Card>
+        )}
+
         {/* Show "not enabled" Result when there are no historical data */}
         {!isConfigLoading && !topSQLConfig?.enable && !haveHistoryData ? (
           <Result
             title={t('topsql.settings.disabled_result.title')}
             subTitle={t('topsql.settings.disabled_result.sub_title')}
             extra={
-              <Space>
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    setShowSettings(true)
-                    telemetry.clickSettings('firstTimeTips')
-                  }}
-                >
-                  {t('topsql.settings.open_settings')}
-                </Button>
-                {!isDistro() && (
-                  <Button
-                    onClick={() => {
-                      window.open(t('topsql.settings.help_url'), '_blank')
-                    }}
-                  >
-                    {t('topsql.settings.help')}
-                  </Button>
-                )}
-              </Space>
+              canOpenSettings || !isDistro() ? (
+                <Space>
+                  {canOpenSettings && (
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        setShowSettings(true)
+                        telemetry.clickSettings('firstTimeTips')
+                      }}
+                    >
+                      {t('topsql.settings.open_settings')}
+                    </Button>
+                  )}
+                  {!isDistro() && (
+                    <Button
+                      onClick={() => {
+                        window.open(t('topsql.settings.help_url'), '_blank')
+                      }}
+                    >
+                      {t('topsql.settings.help')}
+                    </Button>
+                  )}
+                </Space>
+              ) : undefined
             }
           />
         ) : (
@@ -357,6 +494,7 @@ export function TopSQLList() {
                 onBrushEnd={handleBrushEnd}
                 data={topSQLData}
                 groupBy={groupBy}
+                orderBy={orderBy}
                 timeRangeTimestamp={toTimeRangeValue(timeRange)}
                 timeWindowSize={timeWindowSize}
                 ref={chartRef}
@@ -372,6 +510,7 @@ export function TopSQLList() {
                 instanceType={instance?.instance_type as InstanceType}
                 data={topSQLData}
                 groupBy={groupBy}
+                orderBy={orderBy}
                 timeRange={timeRange}
               />
             )}
@@ -386,19 +525,24 @@ export function TopSQLList() {
         )}
       </div>
 
-      <Drawer
-        title={t('statement.settings.title')}
-        width={300}
-        closable={true}
-        visible={showSettings}
-        onClose={() => setShowSettings(false)}
-        destroyOnClose={true}
-      >
-        <SettingsForm
+      {canOpenSettings && (
+        <Drawer
+          title={t('statement.settings.title')}
+          width={300}
+          closable={true}
+          visible={showSettings}
           onClose={() => setShowSettings(false)}
-          onConfigUpdated={updateConfig}
-        />
-      </Drawer>
+          destroyOnClose={true}
+        >
+          <SettingsForm
+            onClose={() => setShowSettings(false)}
+            onConfigUpdated={() => {
+              updateConfig()
+              refreshTikvNetworkIoCollection()
+            }}
+          />
+        </Drawer>
+      )}
     </>
   )
 }
@@ -408,6 +552,7 @@ const useTopSQLData = (
   timeRange: TimeRange,
   limit: number,
   groupBy: string,
+  orderBy: OrderBy,
   computeTimeWindowSize: (ts: TimeRangeValue) => number
 ) => {
   const ctx = useContext(TopSQLContext)
@@ -433,12 +578,18 @@ const useTopSQLData = (
         setIsLoading(true)
         const resp = await ctx!.ds.topsqlSummaryGet(
           String(end),
-          _instance.instance_type === 'tidb' ? AggLevel.Query : groupBy,
+          ctx?.cfg.showGroupBy === true
+            ? _instance.instance_type === 'tidb'
+              ? AggLevel.Query
+              : groupBy
+            : undefined,
           _instance.instance,
           _instance.instance_type,
+          ctx?.cfg.showOrderBy === true ? orderBy : undefined,
           String(start),
           String(limit),
-          `${timeWindowSize}s`
+          `${timeWindowSize}s`,
+          ctx?.cfg.dataSource
         )
         dataResp = resp.data
       } finally {
@@ -454,11 +605,39 @@ const useTopSQLData = (
         data.forEach((d) => {
           d.sql_text = formatSql(d.sql_text)
           d.plans?.forEach((item) => {
-            // Filter empty cpu time data
-            item.timestamp_sec = item.timestamp_sec?.filter(
-              (_, index) => !!item.cpu_time_ms?.[index]
+            // Filter data based on orderBy dimension
+            let filterFn: (index: number) => boolean
+            switch (orderBy) {
+              case OrderBy.NetworkBytes:
+                filterFn = (index: number) => !!item.network_bytes?.[index]
+                break
+              case OrderBy.LogicalIoBytes:
+                filterFn = (index: number) => !!item.logical_io_bytes?.[index]
+                break
+              case OrderBy.CpuTime:
+              default:
+                filterFn = (index: number) => !!item.cpu_time_ms?.[index]
+                break
+            }
+            item.timestamp_sec = item.timestamp_sec?.filter((_, index) =>
+              filterFn(index)
             )
-            item.cpu_time_ms = item.cpu_time_ms?.filter((c) => !!c)
+            // Filter the corresponding data arrays
+            if (item.cpu_time_ms) {
+              item.cpu_time_ms = item.cpu_time_ms.filter((_, index) =>
+                filterFn(index)
+              )
+            }
+            if (item.network_bytes) {
+              item.network_bytes = item.network_bytes.filter((_, index) =>
+                filterFn(index)
+              )
+            }
+            if (item.logical_io_bytes) {
+              item.logical_io_bytes = item.logical_io_bytes.filter((_, index) =>
+                filterFn(index)
+              )
+            }
 
             item.timestamp_sec = item.timestamp_sec?.map((t) => t * 1000)
           })
@@ -466,17 +645,50 @@ const useTopSQLData = (
         setTopSQLData(data)
       }
 
-      if (groupBy === AggLevel.Table || groupBy === AggLevel.Schema) {
+      if (
+        groupBy === AggLevel.Table ||
+        groupBy === AggLevel.Schema ||
+        groupBy === AggLevel.Region
+      ) {
         let data: TopsqlSummaryByItem[] = dataResp.data_by ?? []
         // Sort data by table
         // If this table occurs continuously on the timeline, we can easily see the sequential overhead
         // data.sort((a, b) => a.table_?.localeCompare(b.table!) || 0)
         data.forEach((d) => {
-          // Filter empty cpu time data
-          d.timestamp_sec = d.timestamp_sec?.filter(
-            (_, index) => !!d.cpu_time_ms?.[index]
+          // Filter data based on orderBy dimension
+          // Note: TopsqlSummaryByItem may have network_bytes and logical_io_bytes arrays
+          // but they're not in the type definition, so we use type assertion
+          const byItem = d as any
+          let filterFn: (index: number) => boolean
+          switch (orderBy) {
+            case OrderBy.NetworkBytes:
+              filterFn = (index: number) => !!byItem.network_bytes?.[index]
+              break
+            case OrderBy.LogicalIoBytes:
+              filterFn = (index: number) => !!byItem.logical_io_bytes?.[index]
+              break
+            case OrderBy.CpuTime:
+            default:
+              filterFn = (index: number) => !!d.cpu_time_ms?.[index]
+              break
+          }
+          d.timestamp_sec = d.timestamp_sec?.filter((_, index) =>
+            filterFn(index)
           )
-          d.cpu_time_ms = d.cpu_time_ms?.filter((c) => !!c)
+          // Filter the corresponding data arrays
+          if (d.cpu_time_ms) {
+            d.cpu_time_ms = d.cpu_time_ms.filter((_, index) => filterFn(index))
+          }
+          if (byItem.network_bytes) {
+            byItem.network_bytes = byItem.network_bytes.filter((_, index) =>
+              filterFn(index)
+            )
+          }
+          if (byItem.logical_io_bytes) {
+            byItem.logical_io_bytes = byItem.logical_io_bytes.filter(
+              (_, index) => filterFn(index)
+            )
+          }
 
           d.timestamp_sec = d.timestamp_sec?.map((t) => t * 1000)
         })
@@ -487,7 +699,7 @@ const useTopSQLData = (
 
   useEffect(() => {
     updateTopSQLData(instance, timeRange, limit)
-  }, [instance, timeRange, limit, groupBy, updateTopSQLData])
+  }, [instance, timeRange, limit, groupBy, orderBy, updateTopSQLData])
 
   return { topSQLData, isLoading, updateTopSQLData }
 }
@@ -521,7 +733,8 @@ const useTopSQLConfig = () => {
       try {
         const res = await ctx!.ds.topsqlInstancesGet(
           String(now),
-          String(sevenDaysAgo)
+          String(sevenDaysAgo),
+          ctx?.cfg.dataSource
         )
         const data = res.data.data
         if (!!data?.length) {
@@ -556,8 +769,23 @@ const useInstances = (timeRange: TimeRange) => {
       }
 
       const [start, end] = toTimeRangeValue(_timeRange)
-      const resp = await ctx!.ds.topsqlInstancesGet(String(end), String(start))
-      const data = sortBy(resp.data.data || [], ['instance_type', 'instance'])
+      const resp = await ctx!.ds.topsqlInstancesGet(
+        String(end),
+        String(start),
+        ctx?.cfg.dataSource
+      )
+      // Deduplicate by instance and instance_type combination
+      const instanceMap = new Map<string, TopsqlInstanceItem>()
+      ;(resp.data.data || []).forEach((item) => {
+        const key = `${item.instance}_${item.instance_type}`
+        if (item.instance && item.instance_type && !instanceMap.has(key)) {
+          instanceMap.set(key, item)
+        }
+      })
+      const data = sortBy(Array.from(instanceMap.values()), [
+        'instance_type',
+        'instance'
+      ])
 
       setInstances(data)
       return data

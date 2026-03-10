@@ -3985,6 +3985,30 @@ export interface TopsqlSummaryByItem {
     'cpu_time_ms_sum'?: number;
     /**
      * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryByItem
+     */
+    'logical_io_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryByItem
+     */
+    'logical_io_bytes_sum'?: number;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryByItem
+     */
+    'network_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryByItem
+     */
+    'network_bytes_sum'?: number;
+    /**
+     * 
      * @type {string}
      * @memberof TopsqlSummaryByItem
      */
@@ -4030,6 +4054,18 @@ export interface TopsqlSummaryItem {
      * @memberof TopsqlSummaryItem
      */
     'is_other'?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryItem
+     */
+    'logical_io_bytes'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TopsqlSummaryItem
+     */
+    'network_bytes'?: number;
     /**
      * 
      * @type {Array<TopsqlSummaryPlanItem>}
@@ -4091,6 +4127,18 @@ export interface TopsqlSummaryPlanItem {
     'exec_count_per_sec'?: number;
     /**
      * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryPlanItem
+     */
+    'logical_io_bytes'?: Array<number>;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TopsqlSummaryPlanItem
+     */
+    'network_bytes'?: Array<number>;
+    /**
+     * 
      * @type {string}
      * @memberof TopsqlSummaryPlanItem
      */
@@ -4142,6 +4190,46 @@ export interface TopsqlSummaryResponse {
      * @memberof TopsqlSummaryResponse
      */
     'data_by'?: Array<TopsqlSummaryByItem>;
+}
+
+
+
+
+/**
+ * 
+ * @export
+ * @interface TopsqlTikvNetworkIoCollectionConfig
+ */
+export interface TopsqlTikvNetworkIoCollectionConfig {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TopsqlTikvNetworkIoCollectionConfig
+     */
+    'enable'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TopsqlTikvNetworkIoCollectionConfig
+     */
+    'is_multi_value'?: boolean;
+}
+
+
+
+
+/**
+ * 
+ * @export
+ * @interface TopsqlUpdateTikvNetworkIoCollectionResponse
+ */
+export interface TopsqlUpdateTikvNetworkIoCollectionResponse {
+    /**
+     * 
+     * @type {Array<RestErrorResponse>}
+     * @memberof TopsqlUpdateTikvNetworkIoCollectionResponse
+     */
+    'warnings'?: Array<RestErrorResponse>;
 }
 
 

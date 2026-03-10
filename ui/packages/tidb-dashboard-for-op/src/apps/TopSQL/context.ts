@@ -1,10 +1,21 @@
 import {
   ITopSQLDataSource,
   ITopSQLContext,
+  ITopSQLConfig,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 import client, { TopsqlEditableConfig } from '~/client'
+import auth from '~/utils/auth'
+
+type TikvNetworkIoCollectionConfig = {
+  enable: boolean
+  is_multi_value?: boolean
+}
+
+type TikvNetworkIoCollectionUpdateResponse = {
+  warnings: any[]
+}
 
 class DataSource implements ITopSQLDataSource {
   topsqlConfigGet(options?: ReqConfig) {
@@ -15,8 +26,50 @@ class DataSource implements ITopSQLDataSource {
     return client.getInstance().topsqlConfigPost({ request }, options)
   }
 
-  topsqlInstancesGet(end?: string, start?: string, options?: ReqConfig) {
-    return client.getInstance().topsqlInstancesGet({ start, end }, options)
+  topsqlTikvNetworkIoCollectionGet(options?: ReqConfig) {
+    return client
+      .getAxiosInstance()
+      .get<TikvNetworkIoCollectionConfig>(
+        '/topsql/tikv_network_io_collection',
+        {
+          ...options,
+          headers: {
+            ...options?.headers,
+            Authorization: auth.getAuthTokenAsBearer() || ''
+          }
+        } as any
+      )
+  }
+
+  topsqlTikvNetworkIoCollectionPost(
+    request: TikvNetworkIoCollectionConfig,
+    options?: ReqConfig
+  ) {
+    return client
+      .getAxiosInstance()
+      .post<TikvNetworkIoCollectionUpdateResponse>(
+        '/topsql/tikv_network_io_collection',
+        request,
+        {
+          ...options,
+          headers: {
+            ...options?.headers,
+            Authorization: auth.getAuthTokenAsBearer() || ''
+          }
+        } as any
+      )
+  }
+  topsqlInstancesGet(
+    end?: string,
+    start?: string,
+    dataSource?: string,
+    options?: ReqConfig
+  ) {
+    const requestParameters: any = { start, end }
+    if (dataSource !== undefined) {
+      requestParameters.dataSource = dataSource
+    }
+    return client.getInstance().topsqlInstancesGet(requestParameters, options)
   }
 
   topsqlSummaryGet(
@@ -24,9 +77,11 @@ class DataSource implements ITopSQLDataSource {
     groupBy?: string,
     instance?: string,
     instanceType?: string,
+    orderBy?: string,
     start?: string,
     top?: string,
     window?: string,
+    dataSource?: string,
     options?: ReqConfig
   ) {
     return client.getInstance().topsqlSummaryGet(
@@ -35,9 +90,11 @@ class DataSource implements ITopSQLDataSource {
         groupBy,
         instance,
         instanceType,
+        orderBy,
         start,
         top,
-        window
+        window,
+        dataSource
       },
       options
     )
@@ -52,6 +109,8 @@ export const ctx: ITopSQLContext = {
     checkNgm: true,
     showSetting: true,
     showLimit: true,
-    showGroupBy: true
-  }
+    showGroupBy: true,
+    showGroupByRegion: true,
+    showOrderBy: true
+  } as ITopSQLConfig
 }

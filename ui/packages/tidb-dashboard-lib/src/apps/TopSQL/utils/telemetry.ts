@@ -1,7 +1,6 @@
 // Copyright 2024 PingCAP, Inc. Licensed under Apache-2.0.
 import { mixpanel } from '@lib/utils/telemetry'
 import { TimeRange } from '@lib/components'
-import { TopsqlEditableConfig } from '@lib/client'
 
 export const telemetry = {
   openSelectInstance() {
@@ -34,7 +33,7 @@ export const telemetry = {
   clickSettings(type: 'firstTimeTips' | 'settingIcon' | 'bannerTips') {
     mixpanel.track('TopSQL: Click Settings', { type })
   },
-  saveSettings(settings: TopsqlEditableConfig) {
+  saveSettings(settings: Record<string, any>) {
     mixpanel.track('TopSQL: Save Settings', { settings })
   },
   clickStatement(index: number, isOther: boolean) {

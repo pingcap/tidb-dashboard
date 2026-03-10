@@ -3463,6 +3463,11 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "name": "data_source",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "end",
                         "in": "query"
                     },
@@ -3505,6 +3510,11 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "name": "data_source",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "end",
                         "in": "query"
                     },
@@ -3521,6 +3531,11 @@
                     {
                         "type": "string",
                         "name": "instance_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "order_by",
                         "in": "query"
                     },
                     {
@@ -3544,6 +3559,83 @@
                         "description": "ok",
                         "schema": {
                             "$ref": "#/definitions/topsql.SummaryResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/topsql/tikv_network_io_collection": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Get TiKV network IO collection config",
+                "operationId": "topsqlGetTiKVNetworkIOCollection",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/topsql.TikvNetworkIoCollectionConfig"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "Update TiKV network IO collection config",
+                "operationId": "topsqlUpdateTiKVNetworkIOCollection",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/topsql.TikvNetworkIoCollectionConfig"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/topsql.UpdateTikvNetworkIoCollectionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
                         }
                     },
                     "401": {
@@ -6036,6 +6128,24 @@
                 "cpu_time_ms_sum": {
                     "type": "integer"
                 },
+                "logical_io_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "logical_io_bytes_sum": {
+                    "type": "integer"
+                },
+                "network_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "network_bytes_sum": {
+                    "type": "integer"
+                },
                 "text": {
                     "type": "string"
                 },
@@ -6061,6 +6171,12 @@
                 },
                 "is_other": {
                     "type": "boolean"
+                },
+                "logical_io_bytes": {
+                    "type": "integer"
+                },
+                "network_bytes": {
+                    "type": "integer"
                 },
                 "plans": {
                     "type": "array",
@@ -6097,6 +6213,18 @@
                 "exec_count_per_sec": {
                     "type": "number"
                 },
+                "logical_io_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "network_bytes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "plan_digest": {
                     "type": "string"
                 },
@@ -6130,6 +6258,28 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/topsql.SummaryByItem"
+                    }
+                }
+            }
+        },
+        "topsql.TikvNetworkIoCollectionConfig": {
+            "type": "object",
+            "properties": {
+                "enable": {
+                    "type": "boolean"
+                },
+                "is_multi_value": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "topsql.UpdateTikvNetworkIoCollectionResponse": {
+            "type": "object",
+            "properties": {
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rest.ErrorResponse"
                     }
                 }
             }

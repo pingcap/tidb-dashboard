@@ -254,7 +254,7 @@ func (s *Service) heatmaps(c *gin.Context) {
 		}
 		endTime = time.Unix(tsSec, 0)
 	}
-	if !(startTime.Before(endTime) && (endKey == "" || startKey < endKey)) {
+	if !startTime.Before(endTime) || (endKey != "" && startKey >= endKey) {
 		c.JSON(http.StatusBadRequest, "bad request")
 		return
 	}

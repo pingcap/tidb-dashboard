@@ -10,6 +10,7 @@ linters:
     - goheader
     - gosec
     - importas
+    - misspell
     - nestif
     - prealloc
     - predeclared
@@ -34,24 +35,25 @@ linters:
             - [ "utils" ] # AllowList
             - [ "VM" ] # DenyList
             - - skip-package-name-checks: true
+    gosec:
+      excludes:
+        - G115 # Type conversion which leads to integer overflow
   exclusions:
     generated: lax
     presets:
       - comments
       - std-error-handling
     rules:
-      - linters:
+      - path: ^pkg/|^cmd/
+        linters:
           - errorlint
           - exhaustive
           - nestif
           - wastedassign
-        path: ^pkg/|^cmd/
-      - linters:
+      - path: _test.go
+        linters:
           - gosec
-        text: 'G112:'
-      - linters:
-          - gosec
-        text: G115
+        test: "G705"
     paths:
       - swaggerspec
       - pkg/uiserver

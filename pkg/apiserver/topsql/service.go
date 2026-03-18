@@ -83,7 +83,7 @@ type InstanceItem struct {
 	InstanceType string `json:"instance_type"`
 }
 
-// @Summary Get availiable instances
+// @Summary Get available instances
 // @Router /topsql/instances [get]
 // @Security JwtAuth
 // @Param q query GetInstancesRequest true "Query"

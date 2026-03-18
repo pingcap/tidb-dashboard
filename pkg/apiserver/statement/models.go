@@ -128,8 +128,8 @@ type Model struct {
 // return "d1, d2, d3".
 func extractSchemasFromTableNames(tableNames string) string {
 	schemas := make(map[string]bool)
-	tables := strings.Split(tableNames, ",")
-	for _, v := range tables {
+	tables := strings.SplitSeq(tableNames, ",")
+	for v := range tables {
 		schema := strings.Trim(strings.Split(v, ".")[0], " ")
 		if len(schema) > 0 {
 			schemas[schema] = true
@@ -189,7 +189,7 @@ func getFieldsAndTags() (stmtFields []Field) {
 		stmtFields = append(stmtFields, sf)
 	}
 
-	return
+	return stmtFields
 }
 
 func filterFieldsByColumns(fields []Field, columns []string) []Field {

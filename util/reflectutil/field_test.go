@@ -10,14 +10,13 @@ import (
 )
 
 func TestIsFieldExported(t *testing.T) {
-	//nolint:structcheck
 	type f struct {
 		a   string //nolint:unused
 		B   string
 		ab  string //nolint:unused
 		aBC string //nolint:unused
 	}
-	rt := reflect.TypeOf(f{})
+	rt := reflect.TypeFor[f]()
 	require.Equal(t, 4, rt.NumField())
 	require.False(t, IsFieldExported(rt.Field(0)))
 	require.Equal(t, "a", rt.Field(0).Name)
@@ -31,7 +30,7 @@ func TestIsFieldExported(t *testing.T) {
 	type F2 struct {
 		f
 	}
-	rt = reflect.TypeOf(F2{})
+	rt = reflect.TypeFor[F2]()
 	require.Equal(t, 1, rt.NumField())
 	require.False(t, IsFieldExported(rt.Field(0)))
 	require.Equal(t, "f", rt.Field(0).Name)
@@ -39,7 +38,7 @@ func TestIsFieldExported(t *testing.T) {
 	type F3 struct {
 		F2
 	}
-	rt = reflect.TypeOf(F3{})
+	rt = reflect.TypeFor[F3]()
 	require.Equal(t, 1, rt.NumField())
 	require.True(t, IsFieldExported(rt.Field(0)))
 	require.Equal(t, "F2", rt.Field(0).Name)

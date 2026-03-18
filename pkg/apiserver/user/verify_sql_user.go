@@ -84,8 +84,8 @@ func parseUserGrants(grantRows []string) map[string]struct{} {
 	for _, row := range grantRows {
 		m := grantRegex.FindStringSubmatch(row)
 		if len(m) == 2 {
-			curRowGrants := strings.Split(m[1], ",")
-			for _, grant := range curRowGrants {
+			curRowGrants := strings.SplitSeq(m[1], ",")
+			for grant := range curRowGrants {
 				grants[grant] = struct{}{}
 			}
 		}

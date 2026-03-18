@@ -27,7 +27,7 @@ type Timestamp struct {
 var _ sql.Scanner = (*Timestamp)(nil)
 
 // Scan implements sql.Scanner.
-func (n *Timestamp) Scan(value interface{}) error {
+func (n *Timestamp) Scan(value any) error {
 	if value == nil {
 		n.Time = time.Unix(0, 0)
 		return nil

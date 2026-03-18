@@ -9,7 +9,7 @@ import (
 
 type DebugLogPrinter struct{}
 
-func (p DebugLogPrinter) Printf(m string, args ...interface{}) {
+func (p DebugLogPrinter) Printf(m string, args ...any) {
 	log.S().Debugf(m, args...)
 }
 

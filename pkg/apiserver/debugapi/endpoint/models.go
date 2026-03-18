@@ -32,7 +32,7 @@ type APIParamDefinition struct {
 	Name             string            `json:"name"`
 	Required         bool              `json:"required"`
 	UIComponentKind  string            `json:"ui_kind"`
-	UIComponentProps interface{}       `json:"ui_props"` // varies by different ui kinds
+	UIComponentProps any               `json:"ui_props"` // varies by different ui kinds
 	OnResolve        APIParamResolveFn `json:"-"`
 }
 

@@ -85,7 +85,7 @@ func (plane *Plane) Pixel(strategy *Strategy, target int, displayTags []string) 
 	}
 
 	wg.Add(valuesListLen)
-	for j := 0; j < valuesListLen; j++ {
+	for j := range valuesListLen {
 		go generateFunc(j)
 	}
 	wg.Wait()
@@ -122,5 +122,5 @@ func compact(strategy SplitStrategy, chunks []chunk) (compactChunk chunk, splitt
 	for i, c := range chunks {
 		splitter.Split(compactChunk, c, splitAdd, i)
 	}
-	return
+	return compactChunk, splitter
 }

@@ -15,7 +15,7 @@ import (
 // incoming configuration field should have the gorm tag `column` used to specify global variables
 // sql will be built like this,
 // struct { FieldName `gorm:"column:some_global_var"` } -> @@GLOBAL.some_global_var AS some_global_var.
-func buildGlobalConfigProjectionSelectSQL(config interface{}) string {
+func buildGlobalConfigProjectionSelectSQL(config any) string {
 	str := buildStringByStructField(config, func(f reflect.StructField) (string, bool) {
 		gormTag, ok := f.Tag.Lookup("gorm")
 		if !ok {
@@ -30,7 +30,7 @@ func buildGlobalConfigProjectionSelectSQL(config interface{}) string {
 // sql will be built like this,
 // struct { FieldName `gorm:"column:some_global_var"` } -> @@GLOBAL.some_global_var = @FieldName
 // `allowedFields` means only allowed fields can be kept in built SQL.
-func buildGlobalConfigNamedArgsUpdateSQL(config interface{}, allowedFields ...string) string {
+func buildGlobalConfigNamedArgsUpdateSQL(config any, allowedFields ...string) string {
 	str := buildStringByStructField(config, func(f reflect.StructField) (string, bool) {
 		// extract fields on demand
 		if len(allowedFields) != 0 && !lo.Contains(allowedFields, f.Name) {
@@ -47,9 +47,9 @@ func buildGlobalConfigNamedArgsUpdateSQL(config interface{}, allowedFields ...st
 	return "SET " + str // #nosec
 }
 
-func buildStringByStructField(i interface{}, buildFunc func(f reflect.StructField) (string, bool), sep string) string {
+func buildStringByStructField(i any, buildFunc func(f reflect.StructField) (string, bool), sep string) string {
 	var t reflect.Type
-	if reflect.ValueOf(i).Kind() == reflect.Ptr {
+	if reflect.ValueOf(i).Kind() == reflect.Pointer {
 		t = reflect.TypeOf(i).Elem()
 	} else {
 		t = reflect.TypeOf(i)
@@ -57,7 +57,7 @@ func buildStringByStructField(i interface{}, buildFunc func(f reflect.StructFiel
 
 	strs := []string{}
 	fNum := t.NumField()
-	for i := 0; i < fNum; i++ {
+	for i := range fNum {
 		str, ok := buildFunc(t.Field(i))
 		if !ok {
 			continue

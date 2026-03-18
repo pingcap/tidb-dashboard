@@ -203,7 +203,7 @@ func (c *chunk) GetFocusRows(threshold uint64) (count int) {
 	}
 	generateBucket(len(c.Values))
 
-	return
+	return count
 }
 
 // Given a `threshold`, merge the rows with less traffic,

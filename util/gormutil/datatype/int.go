@@ -20,7 +20,7 @@ type Int int
 var _ sql.Scanner = (*Int)(nil)
 
 // Scan implements sql.Scanner.
-func (n *Int) Scan(value interface{}) error {
+func (n *Int) Scan(value any) error {
 	if value == nil {
 		*n = 0
 		return nil

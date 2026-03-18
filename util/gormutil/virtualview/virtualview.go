@@ -49,7 +49,7 @@ type VirtualView struct {
 	mu sync.Mutex
 }
 
-func New(model interface{}) (*VirtualView, error) {
+func New(model any) (*VirtualView, error) {
 	schema, err := parseViewModelSchema(model)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func New(model interface{}) (*VirtualView, error) {
 	}, nil
 }
 
-func MustNew(model interface{}) *VirtualView {
+func MustNew(model any) *VirtualView {
 	vv, err := New(model)
 	if err != nil {
 		panic(err)

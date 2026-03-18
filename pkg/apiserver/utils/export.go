@@ -24,7 +24,7 @@ import (
 )
 
 // TODO: Better to be a streaming interface.
-func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []string) (data [][]string) {
+func GenerateCSVFromRaw(rawData []any, fields []string, timeFields []string) (data [][]string) {
 	timeFieldsMap := make(map[string]struct{})
 	for _, f := range timeFields {
 		timeFieldsMap[f] = struct{}{}
@@ -34,7 +34,7 @@ func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []str
 	t := reflect.TypeOf(rawData[0])
 	fieldsNum := t.NumField()
 	allFields := make([]string, fieldsNum)
-	for i := 0; i < fieldsNum; i++ {
+	for i := range fieldsNum {
 		field := t.Field(i)
 		allFields[i] = strings.ToLower(field.Tag.Get("json"))
 		fieldsMap[allFields[i]] = field.Name
@@ -69,14 +69,14 @@ func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []str
 		}
 		data = append(data, row)
 	}
-	return
+	return data
 }
 
 // TODO: Better to be a streaming interface.
 func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, err error) {
 	csvFile, err := os.CreateTemp("", filename)
 	if err != nil {
-		return
+		return token, err
 	}
 	defer csvFile.Close() // #nosec
 
@@ -91,13 +91,13 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 	}()
 	err = aesctr.Encrypt(pr, csvFile, secretKey[0:16], secretKey[16:])
 	if err != nil {
-		return
+		return token, err
 	}
 
 	// generate token by filepath and secretKey
 	secretKeyStr := base64.StdEncoding.EncodeToString(secretKey[:])
 	token, err = NewJWTString(tokenNamespace, secretKeyStr+" "+csvFile.Name())
-	return
+	return token, err
 }
 
 // FIXME: Remove or refine this function, as it is not general.

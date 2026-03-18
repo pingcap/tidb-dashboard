@@ -20,7 +20,7 @@ func writeContentType(w http.ResponseWriter, value []string) {
 }
 
 type Renderer struct {
-	Data interface{}
+	Data any
 }
 
 func (j Renderer) Render(w http.ResponseWriter) error {

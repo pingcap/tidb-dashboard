@@ -40,9 +40,9 @@ func (s *Service) getHandler(c *gin.Context) {
 }
 
 type EditRequest struct {
-	Kind     ItemKind    `json:"kind"`
-	ID       string      `json:"id"`
-	NewValue interface{} `json:"new_value"`
+	Kind     ItemKind `json:"kind"`
+	ID       string   `json:"id"`
+	NewValue any      `json:"new_value"`
 }
 
 type EditResponse struct {

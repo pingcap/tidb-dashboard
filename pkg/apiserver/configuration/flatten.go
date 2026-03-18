@@ -9,15 +9,15 @@ import (
 	"go.uber.org/zap"
 )
 
-func flattenRecursive(nestedConfig map[string]interface{}) map[string]interface{} {
-	flatMap := make(map[string]interface{})
+func flattenRecursive(nestedConfig map[string]any) map[string]any {
+	flatMap := make(map[string]any)
 	flatten(flatMap, nestedConfig, "")
 	return flatMap
 }
 
-func flatten(flatMap map[string]interface{}, nested interface{}, prefix string) {
+func flatten(flatMap map[string]any, nested any, prefix string) {
 	switch n := nested.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		for k, v := range n {
 			path := k
 			if prefix != "" {
@@ -25,7 +25,7 @@ func flatten(flatMap map[string]interface{}, nested interface{}, prefix string) 
 			}
 			flatten(flatMap, v, path)
 		}
-	case []interface{}:
+	case []any:
 		// For array, serialize as json string directly
 		j, err := json.Marshal(n)
 		if err != nil {

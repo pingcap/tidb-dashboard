@@ -164,7 +164,7 @@ func (lResp *LazyResponse) Finish() (respNoBody *http.Response, err error) {
 	}
 	respNoBody = lResp.executedResponseWithoutBody
 	lResp.close()
-	return
+	return respNoBody, err
 }
 
 // PipeBody pipes the body of the response to a writer.
@@ -182,7 +182,7 @@ func (lResp *LazyResponse) PipeBody(w io.Writer) (written int64, respNoBody *htt
 		lResp.executeInfo.Warn("Request failed", err)
 	}
 	lResp.close()
-	return
+	return written, respNoBody, err
 }
 
 // ReadBodyAsBytes reads all body content of the response to a byte slice.
@@ -201,7 +201,7 @@ func (lResp *LazyResponse) ReadBodyAsBytes() (bytes []byte, respNoBody *http.Res
 		lResp.executeInfo.Warn("Request failed", err)
 	}
 	lResp.close()
-	return
+	return bytes, respNoBody, err
 }
 
 // ReadBodyAsString reads all body content of the response to a string.
@@ -216,7 +216,7 @@ func (lResp *LazyResponse) ReadBodyAsString() (data string, respNoBody *http.Res
 
 // ReadBodyAsJSON reads all body content of the response as JSON and does unmarshal.
 // If the response status code is not a success status, an error will be returned.
-func (lResp *LazyResponse) ReadBodyAsJSON(destination interface{}) (respNoBody *http.Response, err error) {
+func (lResp *LazyResponse) ReadBodyAsJSON(destination any) (respNoBody *http.Response, err error) {
 	bytes, resp, err := lResp.ReadBodyAsBytes()
 	if err != nil {
 		return nil, err

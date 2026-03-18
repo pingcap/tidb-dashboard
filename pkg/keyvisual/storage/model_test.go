@@ -127,9 +127,9 @@ func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *check.C) {
 	var maxLayerNum uint8 = 2
 	axisModelNumEachLayer := 3
 	axisModelList := make([][]*AxisModel, maxLayerNum)
-	for layerNum := uint8(0); layerNum < maxLayerNum; layerNum++ {
+	for layerNum := range maxLayerNum {
 		axisModelList[layerNum] = make([]*AxisModel, axisModelNumEachLayer)
-		for i := 0; i < axisModelNumEachLayer; i++ {
+		for i := range axisModelNumEachLayer {
 			axisModelList[layerNum][i], err = NewAxisModel(layerNum, time.Now(), matrix.Axis{})
 			if err != nil {
 				c.Fatalf("NewAxisModel error: %v", err)

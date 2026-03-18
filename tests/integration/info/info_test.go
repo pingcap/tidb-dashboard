@@ -93,7 +93,7 @@ func (s *testInfoSuite) TestWithShareCodeAndWritePrivLoginUser() {
 }
 
 func (s *testInfoSuite) getTokenBySQLRoot() string {
-	param := make(map[string]interface{})
+	param := make(map[string]any)
 	param["type"] = 0
 	param["username"] = "root"
 	pwd, _ := user.Encrypt("", s.authService.RsaPublicKey)
@@ -116,7 +116,7 @@ func (s *testInfoSuite) getTokenBySQLRoot() string {
 }
 
 func (s *testInfoSuite) getTokenByShareCode(shareCode string) string {
-	param := make(map[string]interface{})
+	param := make(map[string]any)
 	param["type"] = 1
 	param["password"] = shareCode
 
@@ -138,7 +138,7 @@ func (s *testInfoSuite) getTokenByShareCode(shareCode string) string {
 
 func (s *testInfoSuite) shareCode(token string, grantWritePriv bool) string {
 	// request /user/share/code
-	param := make(map[string]interface{})
+	param := make(map[string]any)
 	param["expire_in_sec"] = 10800
 	param["revoke_write_priv"] = !grantWritePriv
 

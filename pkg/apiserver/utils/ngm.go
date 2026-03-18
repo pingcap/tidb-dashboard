@@ -118,7 +118,7 @@ func (n *NgmProxy) getNgmAddrFromCache() (string, error) {
 		return addr, err
 	}
 
-	resolveResult, err, _ := n.ngmReqGroup.Do("any_key", func() (interface{}, error) {
+	resolveResult, err, _ := n.ngmReqGroup.Do("any_key", func() (any, error) {
 		return fn()
 	})
 	return resolveResult.(string), err

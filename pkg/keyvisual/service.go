@@ -29,6 +29,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/utils"
+	_ "github.com/pingcap/tidb-dashboard/util/rest"
 )
 
 const (
@@ -254,7 +255,7 @@ func (s *Service) heatmaps(c *gin.Context) {
 		}
 		endTime = time.Unix(tsSec, 0)
 	}
-	if !(startTime.Before(endTime) && (endKey == "" || startKey < endKey)) {
+	if !startTime.Before(endTime) || endKey != "" && startKey >= endKey {
 		c.JSON(http.StatusBadRequest, "bad request")
 		return
 	}
@@ -330,11 +331,9 @@ func newStat(
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				in.Background(ctx, stat)
-			}()
+			})
 			return nil
 		},
 	})

@@ -18,7 +18,7 @@ type GetStatusResponse struct {
 // You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetStatus(ctx context.Context) (resp *GetStatusResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/status").ReadBodyAsJSON(&resp)
-	return
+	return resp, err
 }
 
 type GetHealthResponseMember struct {
@@ -32,7 +32,7 @@ type GetHealthResponse []GetHealthResponseMember
 // You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetHealth(ctx context.Context) (resp *GetHealthResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/health").ReadBodyAsJSON(&resp)
-	return
+	return resp, err
 }
 
 type GetMembersResponseMember struct {
@@ -51,7 +51,7 @@ type GetMembersResponse struct {
 // You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetMembers(ctx context.Context) (resp *GetMembersResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/members").ReadBodyAsJSON(&resp)
-	return
+	return resp, err
 }
 
 type GetConfigReplicateResponse struct {
@@ -62,7 +62,7 @@ type GetConfigReplicateResponse struct {
 // You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetConfigReplicate(ctx context.Context) (resp *GetConfigReplicateResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/config/replicate").ReadBodyAsJSON(&resp)
-	return
+	return resp, err
 }
 
 type GetStoresResponseStoreLabel struct {
@@ -94,5 +94,5 @@ type GetStoresResponse struct {
 // You must specify the base URL by calling SetDefaultBaseURL() before using this function.
 func (api *APIClient) GetStores(ctx context.Context) (resp *GetStoresResponse, err error) {
 	_, err = api.LR().SetContext(ctx).Get(APIPrefix + "/stores").ReadBodyAsJSON(&resp)
-	return
+	return resp, err
 }

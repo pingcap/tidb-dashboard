@@ -6,6 +6,7 @@ import (
 	"container/heap"
 	"fmt"
 	"math"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -538,11 +539,11 @@ func (r diffRows) Len() int           { return len(r) }
 func (r diffRows) Less(i, j int) bool { return math.Abs(r[i].ratio) < math.Abs(r[j].ratio) }
 func (r diffRows) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
 
-func (r *diffRows) Push(x interface{}) {
+func (r *diffRows) Push(x any) {
 	*r = append(*r, x.(diffRow))
 }
 
-func (r *diffRows) Pop() interface{} {
+func (r *diffRows) Pop() any {
 	old := *r
 	n := len(old)
 	x := old[n-1]
@@ -729,23 +730,18 @@ func parseFloat(s string) (float64, error) {
 }
 
 func checkIn(idx int, idxs []int) bool {
-	for _, i := range idxs {
-		if i == idx {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(idxs, idx)
 }
 
 func genRowLabel(row []string, joinColumns []int) string {
-	label := ""
+	var label strings.Builder
 	for i, idx := range joinColumns {
 		if i > 0 {
-			label += ","
+			label.WriteString(",")
 		}
-		label += row[idx]
+		label.WriteString(row[idx])
 	}
-	return label
+	return label.String()
 }
 
 func genRowsLablesMap(table *TableDef, rows [][]string) (map[string][]string, error) {

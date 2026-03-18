@@ -23,8 +23,8 @@ type QueryRequest struct {
 }
 
 type QueryResponse struct {
-	Status string                 `json:"status"`
-	Data   map[string]interface{} `json:"data"`
+	Status string         `json:"status"`
+	Data   map[string]any `json:"data"`
 }
 
 func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {

@@ -21,20 +21,20 @@ func Error(c *gin.Context, err error) {
 
 // JSON writes a JSON string to the client with the given status code.
 // The key of te `obj` will be serialized in snake_case by default (see `jsonserde` package).
-func JSON(c *gin.Context, code int, obj interface{}) {
+func JSON(c *gin.Context, code int, obj any) {
 	c.Render(code, ginadapter.Renderer{Data: obj})
 }
 
 // OK writes a JSON string to the client with the status code 200.
 // The key of te `obj` will be serialized in snake_case by default (see `jsonserde` package).
-func OK(c *gin.Context, obj interface{}) {
+func OK(c *gin.Context, obj any) {
 	JSON(c, http.StatusOK, obj)
 }
 
 // MustBind decodes the request body to the passed struct pointer.
 // If error occurs, `ErrBadRequest` will be recorded in the context and `false` will be returned. You should early
 // return the handler in this case.
-func MustBind(c *gin.Context, obj interface{}) bool {
+func MustBind(c *gin.Context, obj any) bool {
 	if err := c.ShouldBindWith(obj, ginadapter.Binding); err != nil {
 		Error(c, ErrBadRequest.WrapWithNoMessage(err))
 		return false

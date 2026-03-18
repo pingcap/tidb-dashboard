@@ -7,9 +7,9 @@ import (
 	"go.uber.org/fx"
 )
 
-type FxPrinter func(string, ...interface{})
+type FxPrinter func(string, ...any)
 
-func (p FxPrinter) Printf(format string, args ...interface{}) {
+func (p FxPrinter) Printf(format string, args ...any) {
 	p(format, args...)
 }
 

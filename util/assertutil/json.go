@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func JSONContains(t assert.TestingT, src string, contains string, msgAndArgs ...interface{}) bool {
-	var srcJSONMap, containedJSONMap map[string]interface{}
+func JSONContains(t assert.TestingT, src string, contains string, msgAndArgs ...any) bool {
+	var srcJSONMap, containedJSONMap map[string]any
 
 	if err := json.Unmarshal([]byte(src), &srcJSONMap); err != nil {
 		return assert.Fail(t, fmt.Sprintf("Src value ('%s') is not a valid json object string.\nJSON parsing error: '%s'", src, err.Error()), msgAndArgs...)
@@ -33,7 +33,7 @@ func JSONContains(t assert.TestingT, src string, contains string, msgAndArgs ...
 	return true
 }
 
-func RequireJSONContains(t require.TestingT, src string, contains string, msgAndArgs ...interface{}) {
+func RequireJSONContains(t require.TestingT, src string, contains string, msgAndArgs ...any) {
 	if JSONContains(t, src, contains, msgAndArgs...) {
 		return
 	}

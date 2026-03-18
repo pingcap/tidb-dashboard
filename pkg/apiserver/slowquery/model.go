@@ -143,7 +143,7 @@ func getFieldsAndTags() (slowQueryFields []Field) {
 		slowQueryFields = append(slowQueryFields, sqf)
 	}
 
-	return
+	return slowQueryFields
 }
 
 func filterFieldsByColumns(fields []Field, columns []string) []Field {

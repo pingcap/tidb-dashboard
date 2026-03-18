@@ -162,7 +162,7 @@ func (s *tidbLabelStrategy) updateTableMap(dbname string, tableInfos []*model.Ta
 	}
 }
 
-func (s *tidbLabelStrategy) request(path string, v interface{}) error {
+func (s *tidbLabelStrategy) request(path string, v any) error {
 	data, err := s.tidbClient.SendGetRequest(path)
 	if err != nil {
 		return err

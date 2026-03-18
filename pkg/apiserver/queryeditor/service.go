@@ -57,14 +57,14 @@ type RunRequest struct {
 }
 
 type RunResponse struct {
-	ErrorMsg    string          `json:"error_msg"`
-	ColumnNames []string        `json:"column_names"`
-	Rows        [][]interface{} `json:"rows"`
-	ExecutionMs int64           `json:"execution_ms"`
-	ActualRows  int             `json:"actual_rows"`
+	ErrorMsg    string   `json:"error_msg"`
+	ColumnNames []string `json:"column_names"`
+	Rows        [][]any  `json:"rows"`
+	ExecutionMs int64    `json:"execution_ms"`
+	ActualRows  int      `json:"actual_rows"`
 }
 
-func executeStatements(context context.Context, db *sql.DB, statements string) ([]string, [][]interface{}, error) {
+func executeStatements(context context.Context, db *sql.DB, statements string) ([]string, [][]any, error) {
 	rows, err := db.QueryContext(context, statements)
 	if err != nil {
 		return nil, nil, err
@@ -77,10 +77,10 @@ func executeStatements(context context.Context, db *sql.DB, statements string) (
 		return nil, nil, err
 	}
 
-	retRows := make([][]interface{}, 0)
+	retRows := make([][]any, 0)
 
 	values := make([]sql.RawBytes, len(colNames))
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
@@ -91,8 +91,8 @@ func executeStatements(context context.Context, db *sql.DB, statements string) (
 			return nil, nil, err
 		}
 
-		retRow := make([]interface{}, 0, len(values))
-		var value interface{}
+		retRow := make([]any, 0, len(values))
+		var value any
 		for _, col := range values {
 			if col == nil {
 				value = nil

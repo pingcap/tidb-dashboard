@@ -589,8 +589,8 @@ var editableConfigItems = map[ItemKind]map[string]struct{}{}
 func init() {
 	for kind, str := range editableConfigItemsRaw {
 		editableConfigItems[kind] = make(map[string]struct{})
-		configItems := strings.Split(strings.TrimSpace(str), "\n")
-		for _, key := range configItems {
+		configItems := strings.SplitSeq(strings.TrimSpace(str), "\n")
+		for key := range configItems {
 			editableConfigItems[kind][key] = struct{}{}
 		}
 	}

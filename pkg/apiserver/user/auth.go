@@ -113,7 +113,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 		Key:         secret[:],
 		Timeout:     time.Hour * 24,
 		MaxRefresh:  time.Hour * 24,
-		Authenticator: func(c *gin.Context) (interface{}, error) {
+		Authenticator: func(c *gin.Context) (any, error) {
 			var form AuthenticateForm
 			if err := c.ShouldBindJSON(&form); err != nil {
 				return nil, rest.ErrBadRequest.WrapWithNoMessage(err)
@@ -134,7 +134,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 			// }
 			return u, nil
 		},
-		PayloadFunc: func(data interface{}) jwt.MapClaims {
+		PayloadFunc: func(data any) jwt.MapClaims {
 			user, ok := data.(*utils.SessionUser)
 			if !ok {
 				return jwt.MapClaims{}
@@ -153,7 +153,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 				"p": base64.StdEncoding.EncodeToString(encrypted),
 			}
 		},
-		IdentityHandler: func(c *gin.Context) interface{} {
+		IdentityHandler: func(c *gin.Context) any {
 			claims := jwt.ExtractClaims(c)
 
 			encoded, ok := claims["p"].(string)
@@ -188,7 +188,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 
 			return &user
 		},
-		Authorizator: func(data interface{}, _ *gin.Context) bool {
+		Authorizator: func(data any, _ *gin.Context) bool {
 			// Ensure identity is valid
 			if data == nil {
 				return false

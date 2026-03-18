@@ -153,7 +153,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	}
 
 	// interface{} tricky
-	rawData := make([]interface{}, len(list))
+	rawData := make([]any, len(list))
 	for i, v := range list {
 		rawData[i] = v
 	}

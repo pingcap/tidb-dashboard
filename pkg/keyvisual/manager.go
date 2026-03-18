@@ -20,11 +20,9 @@ func (s *Service) managerHook() fx.Hook {
 	var wg sync.WaitGroup
 	return fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				s.managerLoop(ctx)
-			}()
+			})
 			return nil
 		},
 		OnStop: func(context.Context) error {

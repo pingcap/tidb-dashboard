@@ -10,7 +10,6 @@ import (
 )
 
 func TestIsFieldExported(t *testing.T) {
-	//nolint:structcheck
 	type f struct {
 		a   string //nolint:unused
 		B   string

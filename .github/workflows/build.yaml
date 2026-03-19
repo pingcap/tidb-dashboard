@@ -15,12 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      - uses: actions/setup-go@v3
+        uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
-          go-version: "1.25.7"
+          go-version-file: "go.mod"
       - name: Load go module cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cache/go-build
@@ -29,7 +29,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Load golangci-lint cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.cache/golangci-lint
           key: ${{ runner.os }}-golint
@@ -47,23 +47,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       # https://pnpm.io/continuous-integration#github-actions
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v5
         with:
           version: 8
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "22"
           cache: "pnpm"
           cache-dependency-path: "ui/pnpm-lock.yaml"
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v6
         with:
-          go-version: "1.25.7"
+          go-version-file: "go.mod"
       - name: Load go module cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cache/go-build

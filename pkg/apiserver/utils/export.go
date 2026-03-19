@@ -34,7 +34,7 @@ func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []str
 	t := reflect.TypeOf(rawData[0])
 	fieldsNum := t.NumField()
 	allFields := make([]string, fieldsNum)
-	for i := 0; i < fieldsNum; i++ {
+	for i := range fieldsNum {
 		field := t.Field(i)
 		allFields[i] = strings.ToLower(field.Tag.Get("json"))
 		fieldsMap[allFields[i]] = field.Name

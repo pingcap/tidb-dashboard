@@ -64,8 +64,8 @@ func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.
 
 	if req.Text != "" {
 		lowerStr := strings.ToLower(req.Text)
-		arr := strings.Fields(lowerStr)
-		for _, v := range arr {
+		arr := strings.FieldsSeq(lowerStr)
+		for v := range arr {
 			tx = tx.Where(
 				`Txn_start_ts REGEXP ?
 				 OR LOWER(Digest) REGEXP ?

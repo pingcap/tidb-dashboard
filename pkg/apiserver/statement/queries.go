@@ -79,8 +79,8 @@ func (s *Service) queryStatements(
 
 	if len(text) > 0 {
 		lowerText := strings.ToLower(text)
-		arr := strings.Fields(lowerText)
-		for _, v := range arr {
+		arr := strings.FieldsSeq(lowerText)
+		for v := range arr {
 			query = query.Where(
 				`LOWER(digest_text) REGEXP ?
 				 OR LOWER(digest) REGEXP ?

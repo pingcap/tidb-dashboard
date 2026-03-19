@@ -28,11 +28,9 @@ func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, etcdClient *clientv3
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				s.Background(ctx)
-			}()
+			})
 			return nil
 		},
 	})

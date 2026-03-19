@@ -85,7 +85,7 @@ func (plane *Plane) Pixel(strategy *Strategy, target int, displayTags []string) 
 	}
 
 	wg.Add(valuesListLen)
-	for j := 0; j < valuesListLen; j++ {
+	for j := range valuesListLen {
 		go generateFunc(j)
 	}
 	wg.Wait()

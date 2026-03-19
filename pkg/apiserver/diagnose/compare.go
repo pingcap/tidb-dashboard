@@ -6,6 +6,7 @@ import (
 	"container/heap"
 	"fmt"
 	"math"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -729,23 +730,18 @@ func parseFloat(s string) (float64, error) {
 }
 
 func checkIn(idx int, idxs []int) bool {
-	for _, i := range idxs {
-		if i == idx {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(idxs, idx)
 }
 
 func genRowLabel(row []string, joinColumns []int) string {
-	label := ""
+	var label strings.Builder
 	for i, idx := range joinColumns {
 		if i > 0 {
-			label += ","
+			label.WriteString(",")
 		}
-		label += row[idx]
+		label.WriteString(row[idx])
 	}
-	return label
+	return label.String()
 }
 
 func genRowsLablesMap(table *TableDef, rows [][]string) (map[string][]string, error) {

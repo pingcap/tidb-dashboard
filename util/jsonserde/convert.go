@@ -16,7 +16,7 @@ func swagToSnakeCase(in string) string {
 	length := len(runes)
 
 	var out []rune
-	for i := 0; i < length; i++ {
+	for i := range length {
 		if i > 0 && unicode.IsUpper(runes[i]) &&
 			((i+1 < length && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1])) {
 			out = append(out, '_')

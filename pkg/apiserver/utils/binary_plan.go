@@ -266,7 +266,7 @@ func diagnosticOperatorNode(node *simplejson.Json, diagOp diagnosticOperation) (
 		rootGroupInfo := node.Get(RootGroupExecInfo)
 		rootGroupInfoCount := len(rootGroupInfo.MustArray())
 		if rootGroupInfoCount > 0 {
-			for i := 0; i < rootGroupInfoCount; i++ {
+			for i := range rootGroupInfoCount {
 				joinTaskCountStr := rootGroupInfo.GetIndex(i).GetPath("inner", "task").MustString()
 				joinTaskCount, _ := strconv.Atoi(joinTaskCountStr)
 				if joinTaskCount > JoinTaskThreshold {
@@ -340,7 +340,7 @@ func diagnosticOperatorNodes(nodes *simplejson.Json, diagOp diagnosticOperation)
 		return diagOp, nil
 	}
 	var needUdateStatistics bool
-	for i := 0; i < length; i++ {
+	for i := range length {
 		c := nodes.GetIndex(i)
 		n, err := diagnosticOperatorNode(c, diagOp)
 		if err != nil {
@@ -357,8 +357,8 @@ func diagnosticOperatorNodes(nodes *simplejson.Json, diagOp diagnosticOperation)
 
 // cut go 1.18 strings.Cut.
 func cut(s, sep string) (before, after string, found bool) {
-	if i := strings.Index(s, sep); i >= 0 {
-		return s[:i], s[i+len(sep):], true
+	if before0, after0, ok := strings.Cut(s, sep); ok {
+		return before0, after0, true
 	}
 	return s, "", false
 }
@@ -372,7 +372,7 @@ func getScanDatabase(node *simplejson.Json) string {
 		return ""
 	}
 
-	for i := 0; i < length; i++ {
+	for i := range length {
 		database := accessObjects.GetIndex(i).GetPath(ScanObject, "database").MustString()
 		if database != "" {
 			return database
@@ -398,7 +398,7 @@ func useComparisonOperator(operatorInfo string) bool {
 		if strings.Contains(operatorInfo, op) {
 			useComparisonOperator = true
 			n := strings.Count(operatorInfo, op+"(")
-			for i := 0; i < n; i++ {
+			for range n {
 				column := ""
 				s1, s, _ := cut(operatorInfo, op+"(")
 				s, s2, _ := cut(s, ")")
@@ -545,7 +545,7 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 	var durations []time.Duration
 
 	if operator == Apply {
-		for i := 0; i < length; i++ {
+		for i := range length {
 			n := nodes.GetIndex(i)
 			if isBuildSide(n) {
 				newConcurrency := concurrency
@@ -589,7 +589,7 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 			}
 		}
 
-		for i := 0; i < length; i++ {
+		for i := range length {
 			n := nodes.GetIndex(i)
 			if isProbeSide(n) {
 				d, err := analyzeDurationNode(n, concurrency)
@@ -601,7 +601,7 @@ func analyzeDurationNodes(nodes *simplejson.Json, operator operator, concurrency
 			}
 		}
 	} else {
-		for i := 0; i < length; i++ {
+		for i := range length {
 			var d time.Duration
 			var err error
 			n := nodes.GetIndex(i)
@@ -664,7 +664,7 @@ func labelsContains(node *simplejson.Json, label string) bool {
 		return false
 	}
 
-	for i := 0; i < length; i++ {
+	for i := range length {
 		if labels.GetIndex(i).MustString() == label {
 			return true
 		}
@@ -719,7 +719,7 @@ func getBuildChildrenWithDriverSide(node *simplejson.Json) *simplejson.Json {
 		return nil
 	}
 
-	for i := 0; i < length; i++ {
+	for i := range length {
 		n := nodes.GetIndex(i)
 		if isBuildSide(n) {
 			return n
@@ -733,7 +733,7 @@ func getConcurrency(node *simplejson.Json, operator operator, concurrency concur
 	rootGroupInfo := node.Get(RootGroupExecInfo)
 	rootGroupInfoCount := len(rootGroupInfo.MustArray())
 	if rootGroupInfoCount > 0 {
-		for i := 0; i < rootGroupInfoCount; i++ {
+		for i := range rootGroupInfoCount {
 			switch operator {
 			case IndexJoin, IndexMergeJoin, IndexHashJoin:
 				tmpJoinConcurrencyStr := rootGroupInfo.GetIndex(i).GetPath("inner", "concurrency").MustString()
@@ -952,7 +952,7 @@ func formatChildrenNodes(nodes *simplejson.Json) error {
 		return nil
 	}
 
-	for i := 0; i < length; i++ {
+	for i := range length {
 		c := nodes.GetIndex(i)
 		err := formatNode(c)
 		if err != nil {

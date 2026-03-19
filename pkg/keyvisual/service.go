@@ -330,11 +330,9 @@ func newStat(
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				in.Background(ctx, stat)
-			}()
+			})
 			return nil
 		},
 	})

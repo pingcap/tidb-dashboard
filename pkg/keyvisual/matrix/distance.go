@@ -62,7 +62,7 @@ func (s *distanceSplitStrategy) NewSplitter(chunks []chunk, compactKeys []string
 
 	// generate key distance matrix
 	dis := make([][]int, axesLen)
-	for i := 0; i < axesLen; i++ {
+	for i := range axesLen {
 		dis[i] = make([]int, keysLen)
 	}
 
@@ -142,10 +142,7 @@ func (e *distanceSplitter) Split(dst, src chunk, tag splitTag, axesIndex int) {
 var workerCount int
 
 func init() {
-	workerCount = runtime.NumCPU()
-	if workerCount > 20 {
-		workerCount = 20
-	}
+	workerCount = min(runtime.NumCPU(), 20)
 }
 
 type scaleTask struct {
@@ -176,7 +173,7 @@ func (s *distanceSplitStrategy) GenerateScale(chunks []chunk, compactKeys []stri
 	axesLen := len(chunks)
 	scale := make([][]float64, axesLen)
 	wg.Add(axesLen)
-	for i := 0; i < axesLen; i++ {
+	for i := range axesLen {
 		s.ScaleWorkerCh <- &scaleTask{
 			WaitGroup:   &wg,
 			Dis:         dis[i],

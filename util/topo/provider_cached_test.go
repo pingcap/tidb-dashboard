@@ -176,14 +176,12 @@ func TestCachedTopologyConcurrentGet(t *testing.T) {
 	cp := NewCachedTopology(mp, time.Millisecond*500)
 
 	var wg sync.WaitGroup
-	for i := 0; i < 5; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range 5 {
+		wg.Go(func() {
 			v, err := cp.GetPrometheus(context.Background())
 			require.NoError(t, err)
 			require.Nil(t, v)
-		}()
+		})
 	}
 	wg.Wait()
 

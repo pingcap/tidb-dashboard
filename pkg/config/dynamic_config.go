@@ -3,6 +3,8 @@
 package config
 
 import (
+	"slices"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
@@ -30,10 +32,8 @@ type KeyVisualConfig struct {
 }
 
 func (c *KeyVisualConfig) validatePolicy() error {
-	for _, p := range KeyVisualPolicies {
-		if p == c.Policy {
-			return nil
-		}
+	if slices.Contains(KeyVisualPolicies, c.Policy) {
+		return nil
 	}
 	return ErrVerificationFailed.New("policy must be in %v", KeyVisualPolicies)
 }

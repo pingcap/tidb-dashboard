@@ -36,11 +36,9 @@ func (s *testCompatibilitySuite) SetupSuite() {
 	s.db.MustExec("SET tidb_slow_log_threshold = 0")
 	var wg sync.WaitGroup
 	for i := 1; i < 5; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			s.db.MustExec(fmt.Sprintf("SELECT count(*) FROM %s", slowquery.SlowQueryTable))
-		}()
+		})
 	}
 	wg.Wait()
 	s.db.MustExec("SET tidb_slow_log_threshold = 300")

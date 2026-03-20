@@ -11,7 +11,7 @@ func GetFieldsAndTags(obj interface{}, tags []string) []Field {
 	fieldTags := []Field{}
 	t := reflect.TypeOf(obj)
 	fNum := t.NumField()
-	for i := 0; i < fNum; i++ {
+	for i := range fNum {
 		f := Field{Tags: map[string]string{}}
 		structField := t.Field(i)
 

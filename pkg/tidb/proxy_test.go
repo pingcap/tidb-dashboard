@@ -64,7 +64,7 @@ func TestProxyPick(t *testing.T) {
 	picked := make(map[int]bool)
 	servers := make(map[int]*httptest.Server)
 	var currentPicked int
-	for i := 0; i < n; i++ {
+	for i := range n {
 		idx := i
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			picked[idx] = true
@@ -89,7 +89,7 @@ func TestProxyPick(t *testing.T) {
 	go p.run(ctx)
 	defer cancel()
 
-	for i := 0; i < n; i++ {
+	for range n {
 		client := &http.Client{}
 		res, err := client.Get("http://" + l.Addr().String())
 		if err != nil {

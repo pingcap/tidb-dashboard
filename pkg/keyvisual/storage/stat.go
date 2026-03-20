@@ -209,11 +209,9 @@ func NewStat(
 			if err := s.Restore(); err != nil {
 				return err
 			}
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				s.rebuildRegularly(ctx)
-			}()
+			})
 			return nil
 		},
 	})

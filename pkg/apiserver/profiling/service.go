@@ -72,11 +72,9 @@ var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.lifecycleCtx = ctx
-			s.wg.Add(1)
-			go func() {
-				defer s.wg.Done()
+			s.wg.Go(func() {
 				s.serviceLoop(ctx)
-			}()
+			})
 			return nil
 		},
 		OnStop: func(context.Context) error {
@@ -174,9 +172,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 		}
 	}
 
-	s.wg.Add(1)
-	go func() {
-		defer s.wg.Done()
+	s.wg.Go(func() {
 		var wg sync.WaitGroup
 		for i := 0; i < len(tasks); i++ {
 			wg.Add(1)
@@ -206,7 +202,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 			taskGroup.State = TaskStateFinish
 		}
 		s.params.LocalStore.Save(taskGroup.TaskGroupModel)
-	}()
+	})
 
 	return taskGroup, nil
 }

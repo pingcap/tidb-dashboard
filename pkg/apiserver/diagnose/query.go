@@ -265,17 +265,17 @@ func (t totalTimeByLabelsTableDef) genSumarySQLs(totalTime float64, startTime, e
 			t.tbl, startTime, endTime, quantile)
 		sqls = append(sqls, sql)
 	}
-	fields := ""
+	var fields strings.Builder
 	tbls := ""
 	for i, sql := range sqls {
 		if i > 0 {
-			fields += ","
+			fields.WriteString(",")
 			tbls += "join "
 		}
-		fields += fmt.Sprintf("t%v.*", i)
+		fields.WriteString(fmt.Sprintf("t%v.*", i))
 		tbls += fmt.Sprintf(" (%s) as t%v ", sql, i)
 	}
-	joinSQL := fmt.Sprintf("select %v from %v", fields, tbls)
+	joinSQL := fmt.Sprintf("select %v from %v", fields.String(), tbls)
 	return joinSQL
 }
 
@@ -283,7 +283,8 @@ func (t totalTimeByLabelsTableDef) genDetailSQLs(totalTime float64, startTime, e
 	if len(t.labels) == 0 {
 		return ""
 	}
-	joinSQL := "select t0.*,t1.total_count"
+	var joinSQL strings.Builder
+	joinSQL.WriteString("select t0.*,t1.total_count")
 	sqls := []string{
 		fmt.Sprintf("select '%[1]s', `%[6]s`, if(%[2]v>0,sum(value)/%[2]v,1) , sum(value) as total from metrics_schema.%[3]s_total_time where time >= '%[4]s' and time < '%[5]s' group by `%[6]s` having sum(value) > 0",
 			t.name, totalTime, t.tbl, startTime, endTime, strings.Join(t.labels, "`,`")),
@@ -295,26 +296,26 @@ func (t totalTimeByLabelsTableDef) genDetailSQLs(totalTime float64, startTime, e
 		sql := fmt.Sprintf("select `%[5]s`, max(value) as max_value from metrics_schema.%[1]s_duration where time >= '%[2]s' and time < '%[3]s' and quantile=%[4]f group by `%[5]s`",
 			t.tbl, startTime, endTime, quantile, strings.Join(t.labels, "`,`"))
 		sqls = append(sqls, sql)
-		joinSQL += fmt.Sprintf(",t%v.max_value", i+2)
+		joinSQL.WriteString(fmt.Sprintf(",t%v.max_value", i+2))
 	}
-	joinSQL += " from "
+	joinSQL.WriteString(" from ")
 	for i, sql := range sqls {
-		joinSQL += fmt.Sprintf(" (%s) as t%v ", sql, i)
+		joinSQL.WriteString(fmt.Sprintf(" (%s) as t%v ", sql, i))
 		if i != len(sqls)-1 {
-			joinSQL += "join "
+			joinSQL.WriteString("join ")
 		}
 	}
-	joinSQL += " where "
+	joinSQL.WriteString(" where ")
 	for i := 0; i < len(sqls)-1; i++ {
 		for j, label := range t.labels {
 			if i > 0 || j > 0 {
-				joinSQL += "and "
+				joinSQL.WriteString("and ")
 			}
-			joinSQL += fmt.Sprintf(" t%v.%s = t%v.%s ", i, label, i+1, label)
+			joinSQL.WriteString(fmt.Sprintf(" t%v.%s = t%v.%s ", i, label, i+1, label))
 		}
 	}
-	joinSQL += " order by t0.total desc"
-	return joinSQL
+	joinSQL.WriteString(" order by t0.total desc")
+	return joinSQL.String()
 }
 
 type totalValueAndTotalCountTableDef struct {
@@ -391,17 +392,17 @@ func (t totalValueAndTotalCountTableDef) genSumarySQLs(startTime, endTime string
 			t.tbl, startTime, endTime, quantile)
 		sqls = append(sqls, sql)
 	}
-	fields := ""
+	var fields strings.Builder
 	tbls := ""
 	for i, sql := range sqls {
 		if i > 0 {
-			fields += ","
+			fields.WriteString(",")
 			tbls += "join "
 		}
-		fields += fmt.Sprintf("t%v.*", i)
+		fields.WriteString(fmt.Sprintf("t%v.*", i))
 		tbls += fmt.Sprintf(" (%s) as t%v ", sql, i)
 	}
-	joinSQL := fmt.Sprintf("select %v from %v", fields, tbls)
+	joinSQL := fmt.Sprintf("select %v from %v", fields.String(), tbls)
 	return joinSQL
 }
 
@@ -409,7 +410,8 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 	if len(t.labels) == 0 {
 		return ""
 	}
-	joinSQL := "select t0.*,t1.count"
+	var joinSQL strings.Builder
+	joinSQL.WriteString("select t0.*,t1.count")
 	sqls := []string{
 		fmt.Sprintf("select '%[1]s', `%[5]s` , sum(value) as total from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' group by `%[5]s` having sum(value) > 0",
 			t.name, t.sumTbl, startTime, endTime, strings.Join(t.labels, "`,`")),
@@ -420,26 +422,26 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 		sql := fmt.Sprintf("select `%[5]s`, max(value) as max_value from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s' and quantile=%[4]f group by `%[5]s`",
 			t.tbl, startTime, endTime, quantile, strings.Join(t.labels, "`,`"))
 		sqls = append(sqls, sql)
-		joinSQL += fmt.Sprintf(",t%v.max_value", i+2)
+		joinSQL.WriteString(fmt.Sprintf(",t%v.max_value", i+2))
 	}
-	joinSQL += " from "
+	joinSQL.WriteString(" from ")
 	for i, sql := range sqls {
-		joinSQL += fmt.Sprintf(" (%s) as t%v ", sql, i)
+		joinSQL.WriteString(fmt.Sprintf(" (%s) as t%v ", sql, i))
 		if i != len(sqls)-1 {
-			joinSQL += "join "
+			joinSQL.WriteString("join ")
 		}
 	}
-	joinSQL += " where "
+	joinSQL.WriteString(" where ")
 	for i := 0; i < len(sqls)-1; i++ {
 		for j, label := range t.labels {
 			if i > 0 || j > 0 {
-				joinSQL += "and "
+				joinSQL.WriteString("and ")
 			}
-			joinSQL += fmt.Sprintf(" t%v.%s = t%v.%s ", i, label, i+1, label)
+			joinSQL.WriteString(fmt.Sprintf(" t%v.%s = t%v.%s ", i, label, i+1, label))
 		}
 	}
-	joinSQL += " order by t0.total desc"
-	return joinSQL
+	joinSQL.WriteString(" order by t0.total desc")
+	return joinSQL.String()
 }
 
 func querySQL(db *gorm.DB, sql string) ([][]string, error) {

@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -184,11 +185,9 @@ func buildTLSConfig(tlsInfo *transport.TLSInfo, allowedNames *string) *tls.Confi
 			return err
 		}
 
-		for _, name := range strings.Split(*allowedNames, ",") {
-			for _, dns := range state.PeerCertificates[0].DNSNames {
-				if name == dns {
-					return nil
-				}
+		for name := range strings.SplitSeq(*allowedNames, ",") {
+			if slices.Contains(state.PeerCertificates[0].DNSNames, name) {
+				return nil
 			}
 
 			for _, uri := range state.PeerCertificates[0].URIs {
@@ -287,13 +286,11 @@ func main() {
 
 	srv := &http.Server{Handler: mux} // nolint:gosec
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		if err := srv.Serve(listener); err != http.ErrServerClosed {
 			log.Error("Server aborted with an error", zap.Error(err))
 		}
-		wg.Done()
-	}()
+	})
 
 	<-ctx.Done()
 	if err := srv.Shutdown(context.Background()); err != nil {

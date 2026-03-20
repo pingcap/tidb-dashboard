@@ -25,7 +25,7 @@ type SessionUser struct {
 	TiDBPassword string
 
 	// This field only exists for CodeAuth.
-	SharedSessionExpireAt time.Time `msgpack:"-" json:",omitempty"`
+	SharedSessionExpireAt time.Time `msgpack:"-"`
 
 	// This field only exists for SSOAuth
 	OIDCIDToken string `json:",omitempty"`

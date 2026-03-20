@@ -254,7 +254,7 @@ func (t totalTimeByLabelsTableDef) genRow(values []string, subValues [][]string)
 }
 
 func (t totalTimeByLabelsTableDef) genSumarySQLs(totalTime float64, startTime, endTime string, quantiles []float64) string {
-	sqls := []string{
+	sqls := []string{ //nolint:prealloc
 		fmt.Sprintf("select '%[1]s','', if(%[2]v>0,sum(value)/%[2]v,1) , sum(value) from metrics_schema.%[3]s_total_time where time >= '%[4]s' and time < '%[5]s'",
 			t.name, totalTime, t.tbl, startTime, endTime),
 		fmt.Sprintf("select sum(value) from metrics_schema.%s_total_count where time >= '%s' and time < '%s'",
@@ -380,7 +380,7 @@ func (t totalValueAndTotalCountTableDef) genRow(values []string, subValues [][]s
 }
 
 func (t totalValueAndTotalCountTableDef) genSumarySQLs(startTime, endTime string, quantiles []float64) string {
-	sqls := []string{
+	sqls := []string{ //nolint:prealloc
 		fmt.Sprintf("select '%[1]s','' , sum(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s'",
 			t.name, t.sumTbl, startTime, endTime),
 		fmt.Sprintf("select sum(value) from metrics_schema.%s where time >= '%s' and time < '%s'",

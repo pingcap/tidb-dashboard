@@ -28,7 +28,7 @@ func convertProtobufToSVG(content []byte, task TaskModel) ([]byte, error) {
 }
 
 func convertProtobufToDot(content []byte, _ TaskModel) ([]byte, error) {
-	args := []string{
+	args := []string{ //nolint:prealloc
 		"-dot",
 		// prevent printing stdout
 		"-output", "dummy",

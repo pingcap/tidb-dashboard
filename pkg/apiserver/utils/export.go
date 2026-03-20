@@ -43,10 +43,10 @@ func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []str
 		fields = allFields
 	}
 
-	data = [][]string{fields}
+	data = [][]string{fields} //nolint:prealloc
 	timeLayout := "01-02 15:04:05"
 	for _, overview := range rawData {
-		row := []string{}
+		row := make([]string, 0, len(fields))
 		for _, field := range fields {
 			fieldName := fieldsMap[field]
 			s, _ := reflections.GetField(overview, fieldName)

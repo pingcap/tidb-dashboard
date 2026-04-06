@@ -8,9 +8,9 @@ import (
 
 // GetFieldsAndTags return fields' tags assign by `tags` parameter.
 func GetFieldsAndTags(obj interface{}, tags []string) []Field {
-	fieldTags := []Field{}
 	t := reflect.TypeOf(obj)
 	fNum := t.NumField()
+	fieldTags := make([]Field, 0, fNum)
 	for i := range fNum {
 		f := Field{Tags: map[string]string{}}
 		structField := t.Field(i)

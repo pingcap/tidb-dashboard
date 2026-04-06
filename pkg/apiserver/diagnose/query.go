@@ -272,7 +272,7 @@ func (t totalTimeByLabelsTableDef) genSumarySQLs(totalTime float64, startTime, e
 			fields.WriteString(",")
 			tbls += "join "
 		}
-		fields.WriteString(fmt.Sprintf("t%v.*", i))
+		fmt.Fprintf(&fields, "t%v.*", i)
 		tbls += fmt.Sprintf(" (%s) as t%v ", sql, i)
 	}
 	joinSQL := fmt.Sprintf("select %v from %v", fields.String(), tbls)
@@ -296,11 +296,11 @@ func (t totalTimeByLabelsTableDef) genDetailSQLs(totalTime float64, startTime, e
 		sql := fmt.Sprintf("select `%[5]s`, max(value) as max_value from metrics_schema.%[1]s_duration where time >= '%[2]s' and time < '%[3]s' and quantile=%[4]f group by `%[5]s`",
 			t.tbl, startTime, endTime, quantile, strings.Join(t.labels, "`,`"))
 		sqls = append(sqls, sql)
-		joinSQL.WriteString(fmt.Sprintf(",t%v.max_value", i+2))
+		fmt.Fprintf(&joinSQL, ",t%v.max_value", i+2)
 	}
 	joinSQL.WriteString(" from ")
 	for i, sql := range sqls {
-		joinSQL.WriteString(fmt.Sprintf(" (%s) as t%v ", sql, i))
+		fmt.Fprintf(&joinSQL, " (%s) as t%v ", sql, i)
 		if i != len(sqls)-1 {
 			joinSQL.WriteString("join ")
 		}
@@ -311,7 +311,7 @@ func (t totalTimeByLabelsTableDef) genDetailSQLs(totalTime float64, startTime, e
 			if i > 0 || j > 0 {
 				joinSQL.WriteString("and ")
 			}
-			joinSQL.WriteString(fmt.Sprintf(" t%v.%s = t%v.%s ", i, label, i+1, label))
+			fmt.Fprintf(&joinSQL, " t%v.%s = t%v.%s ", i, label, i+1, label)
 		}
 	}
 	joinSQL.WriteString(" order by t0.total desc")
@@ -399,7 +399,7 @@ func (t totalValueAndTotalCountTableDef) genSumarySQLs(startTime, endTime string
 			fields.WriteString(",")
 			tbls += "join "
 		}
-		fields.WriteString(fmt.Sprintf("t%v.*", i))
+		fmt.Fprintf(&fields, "t%v.*", i)
 		tbls += fmt.Sprintf(" (%s) as t%v ", sql, i)
 	}
 	joinSQL := fmt.Sprintf("select %v from %v", fields.String(), tbls)
@@ -422,11 +422,11 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 		sql := fmt.Sprintf("select `%[5]s`, max(value) as max_value from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s' and quantile=%[4]f group by `%[5]s`",
 			t.tbl, startTime, endTime, quantile, strings.Join(t.labels, "`,`"))
 		sqls = append(sqls, sql)
-		joinSQL.WriteString(fmt.Sprintf(",t%v.max_value", i+2))
+		fmt.Fprintf(&joinSQL, ",t%v.max_value", i+2)
 	}
 	joinSQL.WriteString(" from ")
 	for i, sql := range sqls {
-		joinSQL.WriteString(fmt.Sprintf(" (%s) as t%v ", sql, i))
+		fmt.Fprintf(&joinSQL, " (%s) as t%v ", sql, i)
 		if i != len(sqls)-1 {
 			joinSQL.WriteString("join ")
 		}
@@ -437,7 +437,7 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 			if i > 0 || j > 0 {
 				joinSQL.WriteString("and ")
 			}
-			joinSQL.WriteString(fmt.Sprintf(" t%v.%s = t%v.%s ", i, label, i+1, label))
+			fmt.Fprintf(&joinSQL, " t%v.%s = t%v.%s ", i, label, i+1, label)
 		}
 	}
 	joinSQL.WriteString(" order by t0.total desc")

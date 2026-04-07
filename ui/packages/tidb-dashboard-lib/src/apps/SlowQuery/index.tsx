@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useLocationChange } from '@lib/hooks/useLocationChange'
 import { addTranslations } from '@lib/utils/i18n'
 
-import { List, Detail } from './pages'
+import { List, Detail, MaterializedViewRefreshHistory } from './pages'
 import { SlowQueryContext } from './context'
 import translations from './translations'
 
@@ -25,11 +25,18 @@ const queryClient = new QueryClient({
 })
 
 function AppRoutes() {
+  const context = useContext(SlowQueryContext)
   useLocationChange()
 
   return (
     <Routes>
       <Route path="/slow_query" element={<List />} />
+      {context?.cfg.showMaterializedView && (
+        <Route
+          path="/materialized_view"
+          element={<MaterializedViewRefreshHistory />}
+        />
+      )}
       <Route path="/slow_query/detail" element={<Detail />} />
     </Routes>
   )

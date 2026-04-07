@@ -6,20 +6,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useLocationChange } from '@lib/hooks/useLocationChange'
 import { addTranslations } from '@lib/utils/i18n'
 
-import { List, Detail } from './pages'
-import { SlowQueryContext } from './context'
+import { RefreshHistory } from './pages'
+import { MaterializedViewContext } from './context'
 import translations from './translations'
 
 addTranslations(translations)
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1
-      // refetchOnMount: false,
-      // refetchOnReconnect: false,
     }
   }
 })
@@ -29,16 +26,15 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/slow_query" element={<List />} />
-      <Route path="/slow_query/detail" element={<Detail />} />
+      <Route path="/materialized_view" element={<RefreshHistory />} />
     </Routes>
   )
 }
 
 export default function () {
-  const context = useContext(SlowQueryContext)
+  const context = useContext(MaterializedViewContext)
   if (context === null) {
-    throw new Error('SlowQueryContext must not be null')
+    throw new Error('MaterializedViewContext must not be null')
   }
 
   return (

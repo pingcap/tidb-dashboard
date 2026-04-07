@@ -195,7 +195,7 @@ func QueryRefreshHistory(db *gorm.DB, req *RefreshHistoryRequest) (*RefreshHisto
 	offset := (req.Page - 1) * req.PageSize
 	selectStmt := strings.Join([]string{
 		"CAST(refresh_job_id AS CHAR) AS refresh_job_id",
-		"mv_schema AS schema",
+		"mv_schema AS `schema`",
 		"mv_name AS materialized_view",
 		"refresh_time",
 		"CAST(refresh_duration_sec AS DOUBLE) AS duration",

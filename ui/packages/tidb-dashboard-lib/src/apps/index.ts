@@ -22,6 +22,9 @@ export * from './Statement'
 export { default as SlowQueryApp } from './SlowQuery'
 export * from './SlowQuery'
 
+export { default as MaterializedViewApp } from './MaterializedView'
+export * from './MaterializedView'
+
 export { default as KeyVizApp } from './KeyViz'
 export * from './KeyViz'
 

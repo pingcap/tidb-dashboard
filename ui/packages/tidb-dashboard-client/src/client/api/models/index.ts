@@ -46,6 +46,8 @@ export * from './logsearch-search-log-request';
 export * from './logsearch-task-group-model';
 export * from './logsearch-task-group-response';
 export * from './logsearch-task-model';
+export * from './materializedview-refresh-history-item';
+export * from './materializedview-refresh-history-response';
 export * from './matrix-matrix';
 export * from './metrics-get-prom-address-config-response';
 export * from './metrics-put-custom-prom-address-request';

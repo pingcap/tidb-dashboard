@@ -1591,6 +1591,94 @@ export interface LogsearchTaskModel {
 /**
  * 
  * @export
+ * @interface MaterializedviewRefreshHistoryItem
+ */
+export interface MaterializedviewRefreshHistoryItem {
+    /**
+     * 
+     * @type {number}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'duration'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'failed_reason'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'materialized_view'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'refresh_job_id'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'refresh_read_tso'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'refresh_rows'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'refresh_status'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'refresh_time'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'schema'?: string;
+}
+
+
+
+
+/**
+ * 
+ * @export
+ * @interface MaterializedviewRefreshHistoryResponse
+ */
+export interface MaterializedviewRefreshHistoryResponse {
+    /**
+     * 
+     * @type {Array<MaterializedviewRefreshHistoryItem>}
+     * @memberof MaterializedviewRefreshHistoryResponse
+     */
+    'items'?: Array<MaterializedviewRefreshHistoryItem>;
+    /**
+     * 
+     * @type {number}
+     * @memberof MaterializedviewRefreshHistoryResponse
+     */
+    'total'?: number;
+}
+
+
+
+
+/**
+ * 
+ * @export
  * @interface MatrixMatrix
  */
 export interface MatrixMatrix {

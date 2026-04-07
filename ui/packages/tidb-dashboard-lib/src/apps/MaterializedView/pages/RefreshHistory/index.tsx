@@ -169,6 +169,34 @@ export default function RefreshHistory() {
     enabled: hasSearched
   })
 
+  function commitFilters(nextFilters: MaterializedViewFilters) {
+    const schema = nextFilters.schema.trim()
+    const materializedView = nextFilters.materializedView.trim()
+    const normalizedFilters = {
+      ...nextFilters,
+      schema,
+      materializedView
+    }
+
+    setFilters(normalizedFilters)
+    setPage(1)
+
+    if (!schema) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(SCHEMA_SESSION_KEY)
+      }
+      setHasSearched(false)
+      return
+    }
+
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(SCHEMA_SESSION_KEY, schema)
+    }
+
+    setHasSearched(true)
+    setAppliedFilters(normalizedFilters)
+  }
+
   const columns = useMemo<ColumnsType<IMaterializedViewRefreshHistoryItem>>(
     () => [
       {
@@ -222,7 +250,7 @@ export default function RefreshHistory() {
           if (value === null || value === undefined) {
             return '-'
           }
-          return getValueFormat('s')(value, 2)
+          return getValueFormat('s')(value, 6)
         }
       },
       {
@@ -286,24 +314,20 @@ export default function RefreshHistory() {
     [isDesc, orderBy, t]
   )
 
-  function applyFilters() {
+  function applyFilters(showError = true) {
     const schema = filters.schema.trim()
     if (!schema) {
-      message.error(t('materialized_view.filters.schema.required'))
+      if (showError) {
+        message.error(t('materialized_view.filters.schema.required'))
+      }
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(SCHEMA_SESSION_KEY)
+      }
+      setHasSearched(false)
       return
     }
 
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem(SCHEMA_SESSION_KEY, schema)
-    }
-
-    setPage(1)
-    setHasSearched(true)
-    setAppliedFilters({
-      ...filters,
-      schema,
-      materializedView: filters.materializedView.trim()
-    })
+    commitFilters(filters)
   }
 
   function handleTableChange(pagination, _filters, sorter) {
@@ -343,6 +367,8 @@ export default function RefreshHistory() {
               onChange={(e) =>
                 setFilters((prev) => ({ ...prev, schema: e.target.value }))
               }
+              onBlur={() => applyFilters(false)}
+              onPressEnter={() => applyFilters()}
               style={{ width: 160 }}
             />
 
@@ -357,14 +383,17 @@ export default function RefreshHistory() {
                   materializedView: e.target.value
                 }))
               }
+              onBlur={() => applyFilters(false)}
+              onPressEnter={() => applyFilters()}
               style={{ width: 180 }}
             />
 
             <LimitTimeRange
               value={filters.timeRange}
-              onChange={(timeRange) =>
-                setFilters((prev) => ({ ...prev, timeRange }))
-              }
+              onChange={(timeRange) => {
+                const nextFilters = { ...filters, timeRange }
+                commitFilters(nextFilters)
+              }}
               recent_seconds={[
                 60 * 60,
                 6 * 60 * 60,
@@ -383,14 +412,18 @@ export default function RefreshHistory() {
               selectedValueTransKey="materialized_view.filters.status.selected"
               columnTitle={t('materialized_view.filters.status.column_title')}
               value={filters.status}
-              onChange={(status) => setFilters((prev) => ({ ...prev, status }))}
+              onChange={(status) => {
+                const nextFilters = { ...filters, status }
+                commitFilters(nextFilters)
+              }}
               items={STATUS_OPTIONS}
               style={{ width: 160 }}
             />
 
             <InputNumber
               min={0}
-              precision={2}
+              precision={6}
+              step={0.000001}
               placeholder={t('materialized_view.filters.duration.placeholder')}
               value={filters.minDuration}
               onChange={(minDuration) =>
@@ -400,6 +433,8 @@ export default function RefreshHistory() {
                     minDuration === null ? undefined : Number(minDuration)
                 }))
               }
+              onBlur={() => applyFilters(false)}
+              onPressEnter={() => applyFilters()}
               style={{ width: 180 }}
             />
 

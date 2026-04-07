@@ -194,40 +194,6 @@ slow_query:
     help: Help
     help_url: https://docs.pingcap.com/tidb/dev/dashboard-slow-query
     download_db: Download DB
-  materialized_view:
-    nav_title: Materialized View
-    page_title: Materialized View - Refresh History
-    timezone: 'Timezone: {{ timezone }}'
-    empty_before_query: Enter a schema and click Query to load refresh history.
-    columns:
-      refresh_job_id: Refresh Job ID
-      schema: Schema
-      materialized_view: Materialized View
-      refresh_start_time: Refresh Start Time
-      duration: Duration
-      refresh_status: Refresh Status
-      refresh_rows: Refresh Rows
-      refresh_read_tso: Refresh Read TSO
-      failed_reason: Failed Reason
-    status:
-      success: Success
-      failed: Failed
-      running: Running
-    filters:
-      query: Query
-      schema:
-        placeholder: Schema
-        required: Schema is required
-      materialized_view:
-        placeholder: Materialized View
-      duration:
-        placeholder: Min Duration (sec)
-      status:
-        placeholder: All Statuses
-        selected: '{{ n }} Statuses'
-        column_title: Refresh Status
-    pagination:
-      total: '{{ total }} records'
   download_modal:
     download: Download
     title: 'Download Slow Query db File'

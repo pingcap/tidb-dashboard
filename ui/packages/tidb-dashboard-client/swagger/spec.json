@@ -1519,6 +1519,92 @@
                 }
             }
         },
+        "/materialized_view/list": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "List materialized view refresh histories",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "begin_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "desc",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "materialized_view",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "name": "min_duration",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "schema",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/materializedview.RefreshHistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/metrics/prom_address": {
             "get": {
                 "security": [
@@ -4829,6 +4915,52 @@
                     "$ref": "#/definitions/model.RequestTargetNode"
                 },
                 "task_group_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "materializedview.RefreshHistoryItem": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "number"
+                },
+                "failed_reason": {
+                    "type": "string"
+                },
+                "materialized_view": {
+                    "type": "string"
+                },
+                "refresh_job_id": {
+                    "type": "string"
+                },
+                "refresh_read_tso": {
+                    "type": "string"
+                },
+                "refresh_rows": {
+                    "type": "integer"
+                },
+                "refresh_status": {
+                    "type": "string"
+                },
+                "refresh_time": {
+                    "type": "string"
+                },
+                "schema": {
+                    "type": "string"
+                }
+            }
+        },
+        "materializedview.RefreshHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/materializedview.RefreshHistoryItem"
+                    }
+                },
+                "total": {
                     "type": "integer"
                 }
             }

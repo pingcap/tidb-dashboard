@@ -83,6 +83,8 @@ import { LogsearchTaskGroupModel } from '../models';
 // @ts-ignore
 import { LogsearchTaskGroupResponse } from '../models';
 // @ts-ignore
+import { MaterializedviewRefreshHistoryResponse } from '../models';
+// @ts-ignore
 import { MatrixMatrix } from '../models';
 // @ts-ignore
 import { MetricsGetPromAddressConfigResponse } from '../models';
@@ -2317,6 +2319,89 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             // authentication JwtAuth required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary List materialized view refresh histories
+         * @param {number} [beginTime] 
+         * @param {boolean} [desc] 
+         * @param {number} [endTime] 
+         * @param {string} [materializedView] 
+         * @param {number} [minDuration] 
+         * @param {string} [orderBy] 
+         * @param {number} [page] 
+         * @param {number} [pageSize] 
+         * @param {string} [schema] 
+         * @param {Array<string>} [status] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        materializedViewListGet: async (beginTime?: number, desc?: boolean, endTime?: number, materializedView?: string, minDuration?: number, orderBy?: string, page?: number, pageSize?: number, schema?: string, status?: Array<string>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/materialized_view/list`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (beginTime !== undefined) {
+                localVarQueryParameter['begin_time'] = beginTime;
+            }
+
+            if (desc !== undefined) {
+                localVarQueryParameter['desc'] = desc;
+            }
+
+            if (endTime !== undefined) {
+                localVarQueryParameter['end_time'] = endTime;
+            }
+
+            if (materializedView !== undefined) {
+                localVarQueryParameter['materialized_view'] = materializedView;
+            }
+
+            if (minDuration !== undefined) {
+                localVarQueryParameter['min_duration'] = minDuration;
+            }
+
+            if (orderBy !== undefined) {
+                localVarQueryParameter['orderBy'] = orderBy;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (pageSize !== undefined) {
+                localVarQueryParameter['page_size'] = pageSize;
+            }
+
+            if (schema !== undefined) {
+                localVarQueryParameter['schema'] = schema;
+            }
+
+            if (status) {
+                localVarQueryParameter['status'] = status;
+            }
 
 
     
@@ -4915,6 +5000,26 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary List materialized view refresh histories
+         * @param {number} [beginTime] 
+         * @param {boolean} [desc] 
+         * @param {number} [endTime] 
+         * @param {string} [materializedView] 
+         * @param {number} [minDuration] 
+         * @param {string} [orderBy] 
+         * @param {number} [page] 
+         * @param {number} [pageSize] 
+         * @param {string} [schema] 
+         * @param {Array<string>} [status] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async materializedViewListGet(beginTime?: number, desc?: boolean, endTime?: number, materializedView?: string, minDuration?: number, orderBy?: string, page?: number, pageSize?: number, schema?: string, status?: Array<string>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MaterializedviewRefreshHistoryResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.materializedViewListGet(beginTime, desc, endTime, materializedView, minDuration, orderBy, page, pageSize, schema, status, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary Get the Prometheus address cluster config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6044,6 +6149,25 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary List materialized view refresh histories
+         * @param {number} [beginTime] 
+         * @param {boolean} [desc] 
+         * @param {number} [endTime] 
+         * @param {string} [materializedView] 
+         * @param {number} [minDuration] 
+         * @param {string} [orderBy] 
+         * @param {number} [page] 
+         * @param {number} [pageSize] 
+         * @param {string} [schema] 
+         * @param {Array<string>} [status] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        materializedViewListGet(beginTime?: number, desc?: boolean, endTime?: number, materializedView?: string, minDuration?: number, orderBy?: string, page?: number, pageSize?: number, schema?: string, status?: Array<string>, options?: any): AxiosPromise<MaterializedviewRefreshHistoryResponse> {
+            return localVarFp.materializedViewListGet(beginTime, desc, endTime, materializedView, minDuration, orderBy, page, pageSize, schema, status, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Get the Prometheus address cluster config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -7080,6 +7204,83 @@ export interface DefaultApiLogsTaskgroupsIdRetryPostRequest {
      * @memberof DefaultApiLogsTaskgroupsIdRetryPost
      */
     readonly id: string
+}
+
+/**
+ * Request parameters for materializedViewListGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiMaterializedViewListGetRequest
+ */
+export interface DefaultApiMaterializedViewListGetRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly beginTime?: number
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly desc?: boolean
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly endTime?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly materializedView?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly minDuration?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly orderBy?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly page?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly pageSize?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly schema?: string
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly status?: Array<string>
 }
 
 /**
@@ -8519,6 +8720,18 @@ export class DefaultApi extends BaseAPI {
      */
     public logsTaskgroupsIdRetryPost(requestParameters: DefaultApiLogsTaskgroupsIdRetryPostRequest, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).logsTaskgroupsIdRetryPost(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary List materialized view refresh histories
+     * @param {DefaultApiMaterializedViewListGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public materializedViewListGet(requestParameters: DefaultApiMaterializedViewListGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).materializedViewListGet(requestParameters.beginTime, requestParameters.desc, requestParameters.endTime, requestParameters.materializedView, requestParameters.minDuration, requestParameters.orderBy, requestParameters.page, requestParameters.pageSize, requestParameters.schema, requestParameters.status, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

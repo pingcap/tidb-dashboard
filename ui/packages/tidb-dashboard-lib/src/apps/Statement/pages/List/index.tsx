@@ -100,6 +100,7 @@ export default function StatementsOverview() {
     fetchSchemas: ctx?.cfg.showDBFilter,
     fetchGroups: ctx?.cfg.showResourceGroupFilter,
     fetchConfig: ctx?.cfg.showConfig,
+    persistQueryInSession: ctx?.cfg.persistQueryInSession,
     initialQueryOptions: {
       ...DEF_STMT_QUERY_OPTIONS,
       visibleColumnKeys,
@@ -395,15 +396,16 @@ export default function StatementsOverview() {
           data-e2e="statements_table"
         >
           <ScrollablePane>
-            {controller.isDataLoadedSlowly && (ctx?.cfg.instantQuery ?? true) && (
-              <Card noMarginBottom noMarginTop>
-                <Alert
-                  message={t('statement.pages.overview.slow_load_info')}
-                  type="info"
-                  showIcon
-                />
-              </Card>
-            )}
+            {controller.isDataLoadedSlowly &&
+              (ctx?.cfg.instantQuery ?? true) && (
+                <Card noMarginBottom noMarginTop>
+                  <Alert
+                    message={t('statement.pages.overview.slow_load_info')}
+                    type="info"
+                    showIcon
+                  />
+                </Card>
+              )}
             <Card noMarginBottom noMarginTop>
               <p className="ant-form-item-extra">
                 {dataTimeRange && (ctx?.cfg.showActualTimeRange ?? true) && (

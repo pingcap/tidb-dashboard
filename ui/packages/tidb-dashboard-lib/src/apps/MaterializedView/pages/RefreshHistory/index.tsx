@@ -250,7 +250,7 @@ export default function RefreshHistory() {
           if (value === null || value === undefined) {
             return '-'
           }
-          return getValueFormat('s')(value, 6)
+          return getValueFormat('s')(value, 3)
         }
       },
       {
@@ -422,8 +422,8 @@ export default function RefreshHistory() {
 
             <InputNumber
               min={0}
-              precision={6}
-              step={0.000001}
+              precision={3}
+              step={0.001}
               placeholder={t('materialized_view.filters.duration.placeholder')}
               value={filters.minDuration}
               onChange={(minDuration) =>

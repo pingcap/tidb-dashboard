@@ -1,5 +1,6 @@
 import { useLocalStorageState } from 'ahooks'
 import { Options } from 'ahooks/lib/createUseStorageState'
+import { useState } from 'react'
 
 // These type definitions is a workaround for https://github.com/alibaba/hooks/issues/1582
 export interface IFuncUpdaterWithDefaultValue<T> {
@@ -20,10 +21,13 @@ export type StorageStateResultHasDefaultValue<T> = [
 export function useVersionedLocalStorageState<T>(
   key: string,
   // options: OptionsWithDefaultValue<T>
-  options: Options<T>
+  options: Options<T>,
+  enabled: boolean = true
 ): StorageStateResultHasDefaultValue<T> {
-  return useLocalStorageState(
+  const localStorageValue = useLocalStorageState(
     `v${process.env.REACT_APP_VERSION}.${key}`,
     options
   ) as any
+  const stateVlaue = useState(options.defaultValue) as any
+  return enabled ? localStorageValue : stateVlaue
 }

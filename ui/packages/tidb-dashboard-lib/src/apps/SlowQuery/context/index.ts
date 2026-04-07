@@ -7,6 +7,36 @@ import { SlowqueryModel, SlowqueryGetListRequest } from '@lib/client'
 import { IContextConfig, ReqConfig } from '@lib/types'
 import { PromDataSuccessResponse } from '@lib/utils'
 
+export interface IMaterializedViewRefreshHistoryItem {
+  refresh_job_id?: string
+  schema?: string
+  materialized_view?: string
+  refresh_time?: string
+  duration?: number | null
+  refresh_status?: 'success' | 'failed' | 'running' | string
+  refresh_rows?: number
+  refresh_read_tso?: string
+  failed_reason?: string | null
+}
+
+export interface IMaterializedViewRefreshHistoryRequest {
+  begin_time: number
+  end_time: number
+  schema: string
+  materialized_view?: string
+  status?: string[]
+  min_duration?: number
+  page?: number
+  page_size?: number
+  orderBy?: 'refresh_time' | 'refresh_duration_sec'
+  desc?: boolean
+}
+
+export interface IMaterializedViewRefreshHistoryResponse {
+  items?: IMaterializedViewRefreshHistoryItem[]
+  total?: number
+}
+
 export interface ISlowQueryDataSource {
   getDatabaseList(
     beginTime: number,
@@ -45,6 +75,11 @@ export interface ISlowQueryDataSource {
     request: SlowqueryGetListRequest,
     options?: ReqConfig
   ): AxiosPromise<string>
+
+  slowQueryMaterializedViewRefreshHistoryGet?(
+    request: IMaterializedViewRefreshHistoryRequest,
+    options?: ReqConfig
+  ): AxiosPromise<IMaterializedViewRefreshHistoryResponse>
 
   slowQueryAnalyze?(start: number, end: number): AxiosPromise
 
@@ -98,6 +133,8 @@ export interface ISlowQueryConfig extends IContextConfig {
 
   // show internal slow queries
   showInternalFilter?: boolean
+
+  showMaterializedView?: boolean
 }
 
 export interface ISlowQueryContext {

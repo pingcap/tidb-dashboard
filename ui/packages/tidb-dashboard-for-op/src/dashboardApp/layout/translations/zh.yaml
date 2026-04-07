@@ -41,3 +41,5 @@ health_check:
   ngm_not_started: 集群中未启动必要组件 `NgMonitoring`，部分功能将不可用。
   help_text: 帮助
   help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-faq#界面提示-集群中未启动必要组件-ngmonitoring
+materialized_view:
+  nav_title: Materialized View

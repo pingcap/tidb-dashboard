@@ -1,0 +1,45 @@
+@import 'antd/es/style/themes/default.less';
+
+.page {
+  &_container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  &_toolbar {
+    @media only screen and (max-width: @screen-md) {
+      flex-direction: column;
+    }
+  }
+}
+
+.table_card {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.failed_reason_cell {
+  max-width: 280px;
+}
+
+.failed_reason_popover {
+  max-width: 480px;
+}
+
+.failed_reason_text {
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.failed_reason_copy {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid @border-color-split;
+}
+
+.timezone_label {
+  color: @text-color-secondary;
+}

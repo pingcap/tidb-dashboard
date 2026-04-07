@@ -196,6 +196,40 @@ slow_query:
     help: 帮助
     help_url: https://docs.pingcap.com/zh/tidb/dev/dashboard-slow-query
     download_db: 下载 DB
+  materialized_view:
+    nav_title: Materialized View
+    page_title: Materialized View - Refresh History
+    timezone: '时区：{{ timezone }}'
+    empty_before_query: 请输入 Schema 后点击查询以加载刷新历史。
+    columns:
+      refresh_job_id: Refresh Job ID
+      schema: Schema
+      materialized_view: Materialized View
+      refresh_start_time: Refresh Start time
+      duration: Duration
+      refresh_status: Refresh Status
+      refresh_rows: Refresh Rows
+      refresh_read_tso: Refresh Read TSO
+      failed_reason: Failed Reason
+    status:
+      success: success
+      failed: failed
+      running: running
+    filters:
+      query: 查询
+      schema:
+        placeholder: Schema
+        required: Schema 不能为空
+      materialized_view:
+        placeholder: Materialized View
+      duration:
+        placeholder: 最小时长（秒）
+      status:
+        placeholder: 全部状态
+        selected: '{{ n }} 个状态'
+        column_title: Refresh Status
+    pagination:
+      total: 共 {{ total }} 条
   download_modal:
     download: 下载
     title: '下载慢查询 db 文件'

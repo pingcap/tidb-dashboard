@@ -40,3 +40,5 @@ health_check:
   ngm_not_started: A required component `NgMonitoring` is not started in this cluster. Some features may not work.
   help_text: Help
   help_url: https://docs.pingcap.com/tidb/dev/dashboard-faq#a-required-component-ngmonitoring-is-not-started-error-is-shown
+materialized_view:
+  nav_title: Materialized View

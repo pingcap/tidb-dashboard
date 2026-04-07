@@ -30,6 +30,7 @@ import AppMonitoring from '~/apps/Monitoring/meta'
 import AppClusterInfo from '~/apps/ClusterInfo/meta'
 import AppTopSQL from '~/apps/TopSQL/meta'
 import AppSlowQuery from '~/apps/SlowQuery/meta'
+import AppMaterializedView from '~/apps/MaterializedView/meta'
 import AppStatement from '~/apps/Statement/meta'
 import AppKeyViz from '~/apps/KeyViz/meta'
 import AppSystemReport from '~/apps/SystemReport/meta'
@@ -164,6 +165,7 @@ async function webPageStart() {
     .register(AppStatement)
     .register(AppSystemReport)
     .register(AppSlowQuery)
+    .register(AppMaterializedView)
     .register(AppDiagnose)
     .register(AppMonitoring)
     .register(AppSearchLogs)

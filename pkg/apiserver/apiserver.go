@@ -22,6 +22,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/diagnose"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/logsearch"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/materializedview"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/queryeditor"
@@ -148,6 +149,7 @@ var Modules = fx.Options(
 	conprof.Module,
 	statement.Module,
 	slowquery.Module,
+	materializedview.Module,
 	debugapi.Module,
 	topsql.Module,
 	visualplan.Module,

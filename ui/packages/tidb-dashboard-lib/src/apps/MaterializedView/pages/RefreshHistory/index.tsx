@@ -416,11 +416,10 @@ export default function RefreshHistory() {
                 12 * 60 * 60,
                 24 * 60 * 60,
                 7 * 24 * 60 * 60,
-                30 * 24 * 60 * 60
+                MAX_RANGE_SECONDS
               ]}
               customAbsoluteRangePicker={true}
               onZoomOutClick={() => {}}
-              timeRangeLimit={MAX_RANGE_SECONDS}
             />
 
             <MultiSelect.Plain

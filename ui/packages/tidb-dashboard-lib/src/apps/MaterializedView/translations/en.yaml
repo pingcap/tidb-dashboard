@@ -3,7 +3,7 @@ materialized_view:
   page_title: Materialized View - Refresh History
   page_title_detail: Materialized View - Refresh History Detail
   timezone: 'Timezone: {{ timezone }}'
-  empty_before_query: Enter a schema and click Query to load refresh history.
+  empty_before_query: Select databases and click Query to load refresh history.
   empty_result: No refresh history found in the selected range.
   columns:
     refresh_job_id: Refresh Job ID
@@ -21,9 +21,10 @@ materialized_view:
     running: Running
   filters:
     query: Query
-    schema:
-      placeholder: Schema
-      required: Schema is required
+    databases:
+      placeholder: All Databases
+      selected: '{{ n }} Databases'
+      column_title: Databases
     materialized_view:
       placeholder: Materialized View
     duration:

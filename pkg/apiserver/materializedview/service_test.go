@@ -9,7 +9,7 @@ func TestNormalizeRefreshHistoryRequest(t *testing.T) {
 		req := &RefreshHistoryRequest{
 			BeginTime: 1710000000,
 			EndTime:   1710003600,
-			Schema:    "test",
+			Schema:    []string{"test"},
 		}
 
 		if err := normalizeRefreshHistoryRequest(req); err != nil {
@@ -34,7 +34,7 @@ func TestNormalizeRefreshHistoryRequest(t *testing.T) {
 		req := &RefreshHistoryRequest{
 			BeginTime: 1710000000,
 			EndTime:   1710003600,
-			Schema:    "test",
+			Schema:    []string{"test"},
 			Status:    []string{"SUCCESS", " failed ", "SUCCESS"},
 		}
 
@@ -50,11 +50,30 @@ func TestNormalizeRefreshHistoryRequest(t *testing.T) {
 		}
 	})
 
+	t.Run("normalizes schemas", func(t *testing.T) {
+		req := &RefreshHistoryRequest{
+			BeginTime: 1710000000,
+			EndTime:   1710003600,
+			Schema:    []string{" test ", "mysql", "test", ""},
+		}
+
+		if err := normalizeRefreshHistoryRequest(req); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(req.Schema) != 2 {
+			t.Fatalf("unexpected schema length: %d", len(req.Schema))
+		}
+		if req.Schema[0] != "test" || req.Schema[1] != "mysql" {
+			t.Fatalf("unexpected schemas: %#v", req.Schema)
+		}
+	})
+
 	t.Run("rejects invalid range", func(t *testing.T) {
 		req := &RefreshHistoryRequest{
 			BeginTime: 1710000000,
 			EndTime:   1710000000 + materializedViewMaxRangeSeconds + 1,
-			Schema:    "test",
+			Schema:    []string{"test"},
 		}
 
 		if err := normalizeRefreshHistoryRequest(req); err == nil {
@@ -66,7 +85,7 @@ func TestNormalizeRefreshHistoryRequest(t *testing.T) {
 		req := &RefreshHistoryRequest{
 			BeginTime: 1710000000,
 			EndTime:   1710003600,
-			Schema:    "test",
+			Schema:    []string{"test"},
 			Status:    []string{"done"},
 		}
 

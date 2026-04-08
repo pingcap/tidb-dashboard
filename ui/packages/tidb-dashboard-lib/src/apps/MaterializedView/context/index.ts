@@ -19,7 +19,7 @@ export interface IMaterializedViewRefreshHistoryItem {
 export interface IMaterializedViewRefreshHistoryRequest {
   begin_time: number
   end_time: number
-  schema: string
+  schema?: string[]
   materialized_view?: string
   status?: string[]
   min_duration?: number
@@ -35,6 +35,7 @@ export interface IMaterializedViewRefreshHistoryResponse {
 }
 
 export interface IMaterializedViewDataSource {
+  getDatabaseList(options?: ReqConfig): AxiosPromise<Array<string>>
   materializedViewRefreshHistoryGet(
     request: IMaterializedViewRefreshHistoryRequest,
     options?: ReqConfig

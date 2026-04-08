@@ -19,6 +19,35 @@
   min-height: 0;
 }
 
+.history_table {
+  :global {
+    .ant-table-wrapper {
+      margin-left: -@padding-page;
+      margin-right: -@padding-page;
+    }
+
+    .ant-table {
+      font-size: 0.9rem;
+    }
+
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .ant-table-thead > tr > th:first-child,
+    .ant-table-tbody > tr > td:first-child {
+      padding-left: @padding-page;
+    }
+
+    .ant-table-thead > tr > th:last-child,
+    .ant-table-tbody > tr > td:last-child {
+      padding-right: @padding-page;
+    }
+  }
+}
+
 .failed_reason_cell {
   max-width: 280px;
   overflow: hidden;

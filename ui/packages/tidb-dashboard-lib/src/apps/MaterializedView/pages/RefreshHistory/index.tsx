@@ -10,8 +10,7 @@ import {
   Popover,
   Result,
   Space,
-  Table,
-  message
+  Table
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { useNavigate } from 'react-router-dom'
@@ -44,21 +43,79 @@ const DEFAULT_TIME_RANGE: TimeRange = {
 const MAX_RANGE_SECONDS = 30 * 24 * 60 * 60
 const DEFAULT_PAGE_SIZE = 10
 const STATUS_OPTIONS = ['success', 'failed', 'running']
-const SCHEMA_LOCAL_STORAGE_KEY = 'materialized_view.last_schema'
+const DATABASES_LOCAL_STORAGE_KEY = 'materialized_view.last_databases'
 
 type MaterializedViewFilters = {
   timeRange: TimeRange
-  schema: string
+  databases: string[]
   materializedView: string
   status: string[]
   minDuration?: number
 }
 
-function getInitialSchema() {
+function normalizeDatabases(databases: string[]) {
+  const databaseSet = new Set<string>()
+  return databases.reduce<string[]>((allDatabases, database) => {
+    const normalizedDatabase = database.trim()
+    if (
+      normalizedDatabase.length === 0 ||
+      databaseSet.has(normalizedDatabase)
+    ) {
+      return allDatabases
+    }
+    databaseSet.add(normalizedDatabase)
+    allDatabases.push(normalizedDatabase)
+    return allDatabases
+  }, [])
+}
+
+function getInitialDatabases() {
   if (typeof window === 'undefined') {
-    return ''
+    return []
   }
-  return localStorage.getItem(SCHEMA_LOCAL_STORAGE_KEY) || ''
+
+  const cachedDatabases = localStorage.getItem(DATABASES_LOCAL_STORAGE_KEY)
+  if (cachedDatabases) {
+    try {
+      const databases = JSON.parse(cachedDatabases)
+      if (Array.isArray(databases)) {
+        return normalizeDatabases(databases.map((database) => String(database)))
+      }
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+function persistDatabases(databases: string[]) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  if (databases.length === 0) {
+    localStorage.removeItem(DATABASES_LOCAL_STORAGE_KEY)
+    return
+  }
+
+  localStorage.setItem(DATABASES_LOCAL_STORAGE_KEY, JSON.stringify(databases))
+}
+
+function normalizeFilters(
+  nextFilters: MaterializedViewFilters
+): MaterializedViewFilters {
+  return {
+    ...nextFilters,
+    databases: normalizeDatabases(nextFilters.databases),
+    materializedView: nextFilters.materializedView.trim()
+  }
+}
+
+function areFiltersEqual(
+  left: MaterializedViewFilters,
+  right: MaterializedViewFilters
+) {
+  return JSON.stringify(left) === JSON.stringify(right)
 }
 
 function formatDateTime(value?: string | null) {
@@ -110,29 +167,45 @@ export default function RefreshHistory() {
   const navigate = useNavigate()
 
   const pageTitle = t('materialized_view.page_title')
-  const cachedSchema = useMemo(() => getInitialSchema(), [])
+  const cachedDatabases = useMemo(() => getInitialDatabases(), [])
   const initialFilters = useMemo<MaterializedViewFilters>(
     () => ({
       timeRange: DEFAULT_TIME_RANGE,
-      schema: cachedSchema,
+      databases: cachedDatabases,
       materializedView: '',
       status: [],
       minDuration: undefined
     }),
-    [cachedSchema]
+    [cachedDatabases]
   )
 
   const [filters, setFilters] =
     useState<MaterializedViewFilters>(initialFilters)
   const [appliedFilters, setAppliedFilters] =
     useState<MaterializedViewFilters>(initialFilters)
-  const [hasSearched, setHasSearched] = useState(Boolean(cachedSchema))
+  const [hasSearched, setHasSearched] = useState(
+    Boolean(cachedDatabases.length)
+  )
+  const [defDbs] = useState(cachedDatabases)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [orderBy, setOrderBy] = useState<
     'refresh_time' | 'refresh_duration_sec'
   >('refresh_time')
   const [isDesc, setIsDesc] = useState(true)
+
+  const { data: dbsData } = useQuery({
+    queryKey: ['materialized_view', 'dbs'],
+    queryFn: () =>
+      ctx!.ds.getDatabaseList({ handleError: 'custom' }).then((res) => res.data)
+  })
+
+  const finalDbs = useMemo(() => {
+    if (dbsData && dbsData.length > 0) {
+      return dbsData
+    }
+    return defDbs
+  }, [dbsData, defDbs])
 
   useEffect(() => {
     document.title = pageTitle
@@ -159,7 +232,10 @@ export default function RefreshHistory() {
           {
             begin_time: timeRangeValue[0],
             end_time: timeRangeValue[1],
-            schema: appliedFilters.schema,
+            schema:
+              appliedFilters.databases.length > 0
+                ? appliedFilters.databases
+                : undefined,
             materialized_view: appliedFilters.materializedView || undefined,
             status: appliedFilters.status,
             min_duration: appliedFilters.minDuration,
@@ -177,32 +253,32 @@ export default function RefreshHistory() {
     enabled: hasSearched
   })
 
-  function commitFilters(nextFilters: MaterializedViewFilters) {
-    const schema = nextFilters.schema.trim()
-    const materializedView = nextFilters.materializedView.trim()
-    const normalizedFilters = {
-      ...nextFilters,
-      schema,
-      materializedView
-    }
+  function commitFilters(
+    nextFilters: MaterializedViewFilters,
+    forceRefresh = false
+  ) {
+    const normalizedFilters = normalizeFilters(nextFilters)
+    const shouldRefetch =
+      forceRefresh &&
+      hasSearched &&
+      page === 1 &&
+      areFiltersEqual(normalizedFilters, appliedFilters)
 
     setFilters(normalizedFilters)
     setPage(1)
+    persistDatabases(normalizedFilters.databases)
 
-    if (!schema) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(SCHEMA_LOCAL_STORAGE_KEY)
-      }
+    if (normalizedFilters.databases.length === 0) {
       setHasSearched(false)
       return
     }
 
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(SCHEMA_LOCAL_STORAGE_KEY, schema)
-    }
-
     setHasSearched(true)
     setAppliedFilters(normalizedFilters)
+
+    if (shouldRefetch) {
+      void query.refetch()
+    }
   }
 
   const columns = useMemo<ColumnsType<IMaterializedViewRefreshHistoryItem>>(
@@ -330,20 +406,8 @@ export default function RefreshHistory() {
     [isDesc, orderBy, t]
   )
 
-  function applyFilters(showError = true) {
-    const schema = filters.schema.trim()
-    if (!schema) {
-      if (showError) {
-        message.error(t('materialized_view.filters.schema.required'))
-      }
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(SCHEMA_LOCAL_STORAGE_KEY)
-      }
-      setHasSearched(false)
-      return
-    }
-
-    commitFilters(filters)
+  function applyFilters(forceRefresh = false) {
+    commitFilters(filters, forceRefresh)
   }
 
   function handleTableChange(pagination, _filters, sorter) {
@@ -387,15 +451,19 @@ export default function RefreshHistory() {
           data-e2e="materialized_view_toolbar"
         >
           <Space>
-            <Input
-              placeholder={t('materialized_view.filters.schema.placeholder')}
-              value={filters.schema}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, schema: e.target.value }))
-              }
-              onBlur={() => applyFilters(false)}
-              onPressEnter={() => applyFilters()}
+            <MultiSelect.Plain
+              placeholder={t('materialized_view.filters.databases.placeholder')}
+              selectedValueTransKey="materialized_view.filters.databases.selected"
+              columnTitle={t(
+                'materialized_view.filters.databases.column_title'
+              )}
+              value={filters.databases}
               style={{ width: 160 }}
+              onChange={(databases) => {
+                const nextFilters = { ...filters, databases }
+                commitFilters(nextFilters)
+              }}
+              items={finalDbs}
             />
 
             <Input
@@ -409,9 +477,9 @@ export default function RefreshHistory() {
                   materializedView: e.target.value
                 }))
               }
-              onBlur={() => applyFilters(false)}
-              onPressEnter={() => applyFilters()}
-              style={{ width: 180 }}
+              onBlur={() => applyFilters()}
+              onPressEnter={() => applyFilters(true)}
+              style={{ width: 160 }}
             />
 
             <LimitTimeRange
@@ -458,12 +526,12 @@ export default function RefreshHistory() {
                     minDuration === null ? undefined : Number(minDuration)
                 }))
               }
-              onBlur={() => applyFilters(false)}
-              onPressEnter={() => applyFilters()}
+              onBlur={() => applyFilters()}
+              onPressEnter={() => applyFilters(true)}
               style={{ width: 180 }}
             />
 
-            <Button type="primary" onClick={() => applyFilters()}>
+            <Button type="primary" onClick={() => applyFilters(true)}>
               {t('materialized_view.filters.query')}
             </Button>
           </Space>
@@ -482,6 +550,7 @@ export default function RefreshHistory() {
         ) : (
           <Card noMarginTop noMarginBottom className={styles.table_card}>
             <Table
+              className={styles.history_table}
               onRow={(record) => ({
                 onClick: () => {
                   if (record.refresh_job_id) {

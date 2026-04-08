@@ -49,7 +49,7 @@ func newService(p ServiceParams) *Service {
 type RefreshHistoryRequest struct {
 	BeginTime        int64    `json:"begin_time" form:"begin_time"`
 	EndTime          int64    `json:"end_time" form:"end_time"`
-	Schema           string   `json:"schema" form:"schema"`
+	Schema           []string `json:"schema" form:"schema"`
 	MaterializedView string   `json:"materialized_view" form:"materialized_view"`
 	Status           []string `json:"status" form:"status"`
 	MinDuration      float64  `json:"min_duration" form:"min_duration"`
@@ -97,9 +97,23 @@ func normalizeRefreshHistoryRequest(req *RefreshHistoryRequest) error {
 		return errors.New("refresh_time range should not exceed 30 days")
 	}
 
-	req.Schema = strings.TrimSpace(req.Schema)
 	req.MaterializedView = strings.TrimSpace(req.MaterializedView)
-	if req.Schema == "" {
+
+	schemaSet := make(map[string]struct{}, len(req.Schema))
+	normalizedSchemas := make([]string, 0, len(req.Schema))
+	for _, schema := range req.Schema {
+		schema = strings.TrimSpace(schema)
+		if schema == "" {
+			continue
+		}
+		if _, ok := schemaSet[schema]; ok {
+			continue
+		}
+		schemaSet[schema] = struct{}{}
+		normalizedSchemas = append(normalizedSchemas, schema)
+	}
+	req.Schema = normalizedSchemas
+	if len(req.Schema) == 0 {
 		return errors.New("schema is required")
 	}
 
@@ -151,8 +165,11 @@ func normalizeRefreshHistoryRequest(req *RefreshHistoryRequest) error {
 func buildRefreshHistoryBaseQuery(db *gorm.DB, req *RefreshHistoryRequest) *gorm.DB {
 	tx := db.
 		Table("mysql.tidb_mview_refresh_hist").
-		Where("refresh_time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime).
-		Where("mv_schema = ?", req.Schema)
+		Where("refresh_time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
+
+	if len(req.Schema) > 0 {
+		tx = tx.Where("mv_schema IN (?)", req.Schema)
+	}
 
 	if req.MaterializedView != "" {
 		tx = tx.Where("mv_name = ?", req.MaterializedView)

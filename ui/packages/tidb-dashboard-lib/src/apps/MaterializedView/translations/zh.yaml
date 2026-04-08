@@ -3,7 +3,7 @@ materialized_view:
   page_title: Materialized View - Refresh History
   page_title_detail: Materialized View - Refresh History Detail
   timezone: '时区：{{ timezone }}'
-  empty_before_query: 请输入 Schema 后点击查询以加载刷新历史。
+  empty_before_query: 请选择 Databases 后点击查询以加载刷新历史。
   empty_result: 当前筛选条件下没有查询到刷新历史。
   columns:
     refresh_job_id: Refresh Job ID
@@ -21,9 +21,10 @@ materialized_view:
     running: running
   filters:
     query: 查询
-    schema:
-      placeholder: Schema
-      required: Schema 不能为空
+    databases:
+      placeholder: 全部 Databases
+      selected: '{{ n }} 个 Databases'
+      column_title: Databases
     materialized_view:
       placeholder: Materialized View
     duration:

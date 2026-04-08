@@ -98,6 +98,12 @@ function StatusBadge({
   )
 }
 
+function stopRowNavigation(
+  e: React.MouseEvent<HTMLDivElement | HTMLSpanElement>
+) {
+  e.stopPropagation()
+}
+
 export default function RefreshHistory() {
   const { t } = useTranslation()
   const ctx = useContext(MaterializedViewContext)
@@ -297,15 +303,23 @@ export default function RefreshHistory() {
             <Popover
               placement="topLeft"
               content={
-                <div className={styles.failed_reason_popover}>
+                <div
+                  className={styles.failed_reason_popover}
+                  onClick={stopRowNavigation}
+                  onMouseDown={stopRowNavigation}
+                >
                   <div className={styles.failed_reason_text}>{value}</div>
                   <div className={styles.failed_reason_copy}>
-                    <CopyLink data={value} />
+                    <CopyLink data={value} onClick={stopRowNavigation} />
                   </div>
                 </div>
               }
             >
-              <div className={styles.failed_reason_cell}>
+              <div
+                className={styles.failed_reason_cell}
+                onClick={stopRowNavigation}
+                onMouseDown={stopRowNavigation}
+              >
                 <TextWrap>{value}</TextWrap>
               </div>
             </Popover>

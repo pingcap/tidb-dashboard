@@ -438,7 +438,7 @@ export default function RefreshHistory() {
               style={{ width: 180 }}
             />
 
-            <Button type="primary" onClick={applyFilters}>
+            <Button type="primary" onClick={() => applyFilters()}>
               {t('materialized_view.filters.query')}
             </Button>
           </Space>

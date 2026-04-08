@@ -14,6 +14,7 @@ import {
   message
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
+import { useNavigate } from 'react-router-dom'
 
 import {
   Card,
@@ -100,6 +101,7 @@ function StatusBadge({
 export default function RefreshHistory() {
   const { t } = useTranslation()
   const ctx = useContext(MaterializedViewContext)
+  const navigate = useNavigate()
 
   const pageTitle = t('materialized_view.page_title')
   const cachedSchema = useMemo(() => getInitialSchema(), [])
@@ -455,6 +457,14 @@ export default function RefreshHistory() {
       <Card noMarginTop className={styles.table_card}>
         {hasSearched ? (
           <Table
+            onRow={(record) => ({
+              onClick: () => {
+                if (record.refresh_job_id) {
+                  navigate(`/materialized_view/detail/${record.refresh_job_id}`)
+                }
+              }
+            })}
+            rowClassName={styles.clickable_row}
             rowKey={(row: IMaterializedViewRefreshHistoryItem) =>
               `${row.refresh_job_id || ''}_${row.refresh_time || ''}`
             }

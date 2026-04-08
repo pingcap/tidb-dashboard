@@ -28,6 +28,10 @@ class DataSource implements IMaterializedViewDataSource {
       options
     )
   }
+
+  materializedViewRefreshHistoryDetailGet(id: string, options?: ReqConfig) {
+    return client.getInstance().materializedViewDetailIdGet(id, options)
+  }
 }
 
 const ds = new DataSource()

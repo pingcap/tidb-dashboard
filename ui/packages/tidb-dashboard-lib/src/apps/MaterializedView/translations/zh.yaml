@@ -1,6 +1,7 @@
 materialized_view:
   nav_title: Materialized View
   page_title: Materialized View - Refresh History
+  page_title_detail: Materialized View - Refresh History Detail
   timezone: '时区：{{ timezone }}'
   empty_before_query: 请输入 Schema 后点击查询以加载刷新历史。
   columns:

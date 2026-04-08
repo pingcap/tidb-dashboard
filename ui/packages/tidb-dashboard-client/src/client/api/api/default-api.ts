@@ -83,6 +83,8 @@ import { LogsearchTaskGroupModel } from '../models';
 // @ts-ignore
 import { LogsearchTaskGroupResponse } from '../models';
 // @ts-ignore
+import { MaterializedviewRefreshHistoryItem } from '../models';
+// @ts-ignore
 import { MaterializedviewRefreshHistoryResponse } from '../models';
 // @ts-ignore
 import { MatrixMatrix } from '../models';
@@ -2314,6 +2316,43 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get materialized view refresh history detail
+         * @param {string} id Refresh Job ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        materializedViewDetailIdGet: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('materializedViewDetailIdGet', 'id', id)
+            const localVarPath = `/materialized_view/detail/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -5000,6 +5039,17 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Get materialized view refresh history detail
+         * @param {string} id Refresh Job ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async materializedViewDetailIdGet(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MaterializedviewRefreshHistoryItem>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.materializedViewDetailIdGet(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary List materialized view refresh histories
          * @param {number} [beginTime] 
          * @param {boolean} [desc] 
@@ -6149,6 +6199,16 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary Get materialized view refresh history detail
+         * @param {string} id Refresh Job ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        materializedViewDetailIdGet(id: string, options?: any): AxiosPromise<MaterializedviewRefreshHistoryItem> {
+            return localVarFp.materializedViewDetailIdGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary List materialized view refresh histories
          * @param {number} [beginTime] 
          * @param {boolean} [desc] 
@@ -7202,6 +7262,20 @@ export interface DefaultApiLogsTaskgroupsIdRetryPostRequest {
      * task group id
      * @type {string}
      * @memberof DefaultApiLogsTaskgroupsIdRetryPost
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for materializedViewDetailIdGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiMaterializedViewDetailIdGetRequest
+ */
+export interface DefaultApiMaterializedViewDetailIdGetRequest {
+    /**
+     * Refresh Job ID
+     * @type {string}
+     * @memberof DefaultApiMaterializedViewDetailIdGet
      */
     readonly id: string
 }
@@ -8720,6 +8794,18 @@ export class DefaultApi extends BaseAPI {
      */
     public logsTaskgroupsIdRetryPost(requestParameters: DefaultApiLogsTaskgroupsIdRetryPostRequest, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).logsTaskgroupsIdRetryPost(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get materialized view refresh history detail
+     * @param {DefaultApiMaterializedViewDetailIdGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public materializedViewDetailIdGet(requestParameters: DefaultApiMaterializedViewDetailIdGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).materializedViewDetailIdGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

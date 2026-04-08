@@ -1,62 +1,20 @@
 .container {
-  display: flex;
-  flex-direction: column;
   height: 100vh;
 }
 
-.header {
-  padding: 16px 24px;
-  background-color: #fff;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.content {
-  flex: 1;
-  overflow: auto;
-  padding: 24px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-gap: 24px;
-  margin-bottom: 24px;
-}
-
-.gridItem {
-  display: flex;
-  flex-direction: column;
-}
-
-.label {
-  font-size: 12px;
-  color: #8c8c8c;
-  margin-bottom: 4px;
-}
-
 .value {
-  font-size: 14px;
-  color: #262626;
-}
-
-.failedReason {
-  margin-top: 24px;
-}
-
-.failedReasonLabel {
-  font-size: 14px;
-  color: #262626;
-  font-weight: 500;
-  margin-bottom: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .failedReasonValue {
-  padding: 16px;
+  margin: 0;
+  padding: 12px 16px;
   background-color: #fff1f0;
   border: 1px solid #ffa39e;
   border-radius: 4px;
   color: #cf1322;
   white-space: pre-wrap;
-  word-break: break-all;
+  word-break: break-word;
   font-family: monospace;
 }

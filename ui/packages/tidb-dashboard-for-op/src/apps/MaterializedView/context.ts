@@ -30,7 +30,7 @@ class DataSource implements IMaterializedViewDataSource {
   }
 
   materializedViewRefreshHistoryDetailGet(id: string, options?: ReqConfig) {
-    return client.getInstance().materializedViewDetailIdGet(id, options)
+    return client.getInstance().materializedViewDetailIdGet({ id }, options)
   }
 }
 

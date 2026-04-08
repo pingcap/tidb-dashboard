@@ -4,6 +4,7 @@ materialized_view:
   page_title_detail: Materialized View - Refresh History Detail
   timezone: 'Timezone: {{ timezone }}'
   empty_before_query: Enter a schema and click Query to load refresh history.
+  empty_result: No refresh history found in the selected range.
   columns:
     refresh_job_id: Refresh Job ID
     schema: Schema

@@ -5,10 +5,10 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import {
   Badge,
   Button,
-  Empty,
   Input,
   InputNumber,
   Popover,
+  Result,
   Space,
   Table,
   message
@@ -44,7 +44,7 @@ const DEFAULT_TIME_RANGE: TimeRange = {
 const MAX_RANGE_SECONDS = 30 * 24 * 60 * 60
 const DEFAULT_PAGE_SIZE = 10
 const STATUS_OPTIONS = ['success', 'failed', 'running']
-const SCHEMA_SESSION_KEY = 'materialized_view.last_schema'
+const SCHEMA_LOCAL_STORAGE_KEY = 'materialized_view.last_schema'
 
 type MaterializedViewFilters = {
   timeRange: TimeRange
@@ -58,7 +58,7 @@ function getInitialSchema() {
   if (typeof window === 'undefined') {
     return ''
   }
-  return sessionStorage.getItem(SCHEMA_SESSION_KEY) || ''
+  return localStorage.getItem(SCHEMA_LOCAL_STORAGE_KEY) || ''
 }
 
 function formatDateTime(value?: string | null) {
@@ -191,14 +191,14 @@ export default function RefreshHistory() {
 
     if (!schema) {
       if (typeof window !== 'undefined') {
-        sessionStorage.removeItem(SCHEMA_SESSION_KEY)
+        localStorage.removeItem(SCHEMA_LOCAL_STORAGE_KEY)
       }
       setHasSearched(false)
       return
     }
 
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem(SCHEMA_SESSION_KEY, schema)
+      localStorage.setItem(SCHEMA_LOCAL_STORAGE_KEY, schema)
     }
 
     setHasSearched(true)
@@ -337,7 +337,7 @@ export default function RefreshHistory() {
         message.error(t('materialized_view.filters.schema.required'))
       }
       if (typeof window !== 'undefined') {
-        sessionStorage.removeItem(SCHEMA_SESSION_KEY)
+        localStorage.removeItem(SCHEMA_LOCAL_STORAGE_KEY)
       }
       setHasSearched(false)
       return
@@ -370,10 +370,20 @@ export default function RefreshHistory() {
   }
 
   return (
-    <div className={styles.page_container}>
-      <Card noMarginBottom title={pageTitle}>
+    <div className={styles.list_container}>
+      <Card
+        noMarginBottom
+        title={pageTitle}
+        extra={
+          <span className={styles.timezone_label}>
+            {t('materialized_view.timezone', {
+              timezone: dayjs().format('UTCZ')
+            })}
+          </span>
+        }
+      >
         <Toolbar
-          className={styles.page_toolbar}
+          className={styles.list_toolbar}
           data-e2e="materialized_view_toolbar"
         >
           <Space>
@@ -457,53 +467,57 @@ export default function RefreshHistory() {
               {t('materialized_view.filters.query')}
             </Button>
           </Space>
-          <Space>
-            <span className={styles.timezone_label}>
-              {t('materialized_view.timezone', {
-                timezone: dayjs().format('UTCZ')
-              })}
-            </span>
-          </Space>
         </Toolbar>
       </Card>
 
-      <Card noMarginTop className={styles.table_card}>
-        {hasSearched ? (
-          <Table
-            onRow={(record) => ({
-              onClick: () => {
-                if (record.refresh_job_id) {
-                  navigate(`/materialized_view/detail/${record.refresh_job_id}`)
-                }
-              }
-            })}
-            rowClassName={styles.clickable_row}
-            rowKey={(row: IMaterializedViewRefreshHistoryItem) =>
-              `${row.refresh_job_id || ''}_${row.refresh_time || ''}`
-            }
-            columns={columns}
-            dataSource={query.data?.items ?? []}
-            loading={query.isLoading || query.isFetching}
-            onChange={handleTableChange}
-            pagination={{
-              current: page,
-              pageSize,
-              total: query.data?.total ?? 0,
-              showSizeChanger: true,
-              pageSizeOptions: ['10', '20', '50'],
-              showTotal: (total) =>
-                t('materialized_view.pagination.total', { total })
-            }}
-            size="small"
-            scroll={{ x: 1700 }}
-          />
+      <div style={{ height: 16 }} />
+
+      {hasSearched ? (
+        query.data?.items?.length === 0 &&
+        !query.isLoading &&
+        !query.isFetching ? (
+          <Card noMarginTop noMarginBottom className={styles.table_card}>
+            <Result title={t('materialized_view.empty_result')} />
+          </Card>
         ) : (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={t('materialized_view.empty_before_query')}
-          />
-        )}
-      </Card>
+          <Card noMarginTop noMarginBottom className={styles.table_card}>
+            <Table
+              onRow={(record) => ({
+                onClick: () => {
+                  if (record.refresh_job_id) {
+                    navigate(
+                      `/materialized_view/detail/${record.refresh_job_id}`
+                    )
+                  }
+                }
+              })}
+              rowClassName={styles.clickable_row}
+              rowKey={(row: IMaterializedViewRefreshHistoryItem) =>
+                `${row.refresh_job_id || ''}_${row.refresh_time || ''}`
+              }
+              columns={columns}
+              dataSource={query.data?.items ?? []}
+              loading={query.isLoading || query.isFetching}
+              onChange={handleTableChange}
+              pagination={{
+                current: page,
+                pageSize,
+                total: query.data?.total ?? 0,
+                showSizeChanger: true,
+                pageSizeOptions: ['10', '20', '50'],
+                showTotal: (total) =>
+                  t('materialized_view.pagination.total', { total })
+              }}
+              size="small"
+              scroll={{ x: 1700 }}
+            />
+          </Card>
+        )
+      ) : (
+        <Card noMarginTop noMarginBottom className={styles.table_card}>
+          <Result title={t('materialized_view.empty_before_query')} />
+        </Card>
+      )}
     </div>
   )
 }

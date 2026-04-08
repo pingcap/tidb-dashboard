@@ -4,6 +4,7 @@ materialized_view:
   page_title_detail: Materialized View - Refresh History Detail
   timezone: '时区：{{ timezone }}'
   empty_before_query: 请输入 Schema 后点击查询以加载刷新历史。
+  empty_result: 当前筛选条件下没有查询到刷新历史。
   columns:
     refresh_job_id: Refresh Job ID
     schema: Schema

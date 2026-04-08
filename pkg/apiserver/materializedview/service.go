@@ -82,6 +82,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	{
 		endpoint.GET("/list", s.getRefreshHistory)
+		endpoint.GET("/detail/:id", s.getRefreshHistoryDetail)
 	}
 }
 
@@ -241,6 +242,57 @@ func (s *Service) getRefreshHistory(c *gin.Context) {
 
 	db := utils.GetTiDBConnection(c)
 	result, err := QueryRefreshHistory(db, &req)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+func QueryRefreshHistoryDetail(db *gorm.DB, id string) (*RefreshHistoryItem, error) {
+	var item RefreshHistoryItem
+	selectStmt := strings.Join([]string{
+		"CAST(refresh_job_id AS CHAR) AS refresh_job_id",
+		"mv_schema AS `schema`",
+		"mv_name AS materialized_view",
+		"refresh_time",
+		"CAST(refresh_duration_sec AS DOUBLE) AS duration",
+		"refresh_status",
+		"refresh_rows",
+		"CAST(refresh_read_tso AS CHAR) AS refresh_read_tso",
+		"refresh_failed_reason",
+	}, ", ")
+
+	err := db.Table("mysql.tidb_mview_refresh_hist").
+		Select(selectStmt).
+		Where("refresh_job_id = ?", id).
+		First(&item).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("refresh history not found")
+		}
+		return nil, err
+	}
+	return &item, nil
+}
+
+// @Summary Get materialized view refresh history detail
+// @Param id path string true "Refresh Job ID"
+// @Success 200 {object} RefreshHistoryItem
+// @Router /materialized_view/detail/{id} [get]
+// @Security JwtAuth
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+func (s *Service) getRefreshHistoryDetail(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	result, err := QueryRefreshHistoryDetail(db, id)
 	if err != nil {
 		rest.Error(c, err)
 		return

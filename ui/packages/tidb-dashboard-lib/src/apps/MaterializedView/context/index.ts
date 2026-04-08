@@ -39,6 +39,10 @@ export interface IMaterializedViewDataSource {
     request: IMaterializedViewRefreshHistoryRequest,
     options?: ReqConfig
   ): AxiosPromise<IMaterializedViewRefreshHistoryResponse>
+  materializedViewRefreshHistoryDetailGet(
+    id: string,
+    options?: ReqConfig
+  ): AxiosPromise<IMaterializedViewRefreshHistoryItem>
 }
 
 export interface IMaterializedViewConfig extends IContextConfig {}

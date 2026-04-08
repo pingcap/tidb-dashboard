@@ -1,162 +1,223 @@
 import React, { useContext, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Spin, Breadcrumb, Skeleton } from 'antd'
-import { LeftOutlined } from '@ant-design/icons'
+import { Badge, Space, Typography } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
-import { Card } from '@lib/components'
+import {
+  AnimatedSkeleton,
+  CopyLink,
+  DateTime,
+  Descriptions,
+  ErrorBar,
+  Head
+} from '@lib/components'
 import { MaterializedViewContext } from '../../context'
 import styles from './index.module.less'
 
-function formatDateTime(value?: string | null) {
-  if (!value) return '-'
-  return new Date(value).toLocaleString()
+function StatusBadge({ status }: { status?: string }) {
+  const { t } = useTranslation()
+
+  const badgeStatus =
+    status === 'success'
+      ? 'success'
+      : status === 'failed'
+      ? 'error'
+      : status === 'running'
+      ? 'processing'
+      : 'default'
+
+  return (
+    <Badge
+      status={badgeStatus as 'success' | 'error' | 'processing' | 'default'}
+      text={t(`materialized_view.status.${status ?? 'running'}`)}
+    />
+  )
+}
+
+function renderRefreshTime(value?: string | null) {
+  if (!value) {
+    return '-'
+  }
+
+  const unixTimestampMs = new Date(value).getTime()
+  if (Number.isNaN(unixTimestampMs)) {
+    return value
+  }
+
+  return <DateTime.Calendar unixTimestampMs={unixTimestampMs} />
 }
 
 export default function RefreshHistoryDetail() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const ctx = useContext(MaterializedViewContext)
+  const historyBack = (location.state ?? ({} as any)).historyBack ?? false
 
   useEffect(() => {
     document.title = t('materialized_view.page_title_detail', { id })
   }, [t, id])
 
-  const { data: detail, isLoading } = useQuery({
+  const {
+    data: detail,
+    isLoading,
+    error
+  } = useQuery({
     queryKey: ['materialized_view', 'detail', id],
-    queryFn: () => {
-      // Use the newly added method directly, fallback to empty to avoid typing issues if not fully propagated
-      // @ts-ignore
-      if (ctx?.ds?.materializedViewRefreshHistoryDetailGet) {
-        // @ts-ignore
-        return ctx.ds
-          .materializedViewRefreshHistoryDetailGet(id!)
-          .then((res) => res.data)
-      }
-      return null
-    },
+    queryFn: () =>
+      ctx!.ds
+        .materializedViewRefreshHistoryDetailGet(id!, {
+          handleError: 'custom'
+        })
+        .then((res) => res.data),
     enabled: !!id
   })
 
-  // We only show failed reason prominently, others occupy less space
   return (
     <div className={styles.container}>
-      <Card noMargin noMarginBottom>
-        <Breadcrumb>
-          <Breadcrumb.Item>
-            <Link to="/materialized_view">
-              <LeftOutlined style={{ marginRight: 8 }} />
-              {t('materialized_view.page_title')}
-            </Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            {t('materialized_view.page_title_detail', 'Detail')}
-          </Breadcrumb.Item>
-        </Breadcrumb>
-      </Card>
-
-      <div className={styles.content}>
-        {isLoading ? (
-          <Skeleton active />
-        ) : (
-          <Card
-            title={t(
-              'materialized_view.page_title_detail',
-              'Refresh History Detail'
-            )}
+      <Head
+        title={t(
+          'materialized_view.page_title_detail',
+          'Materialized View - Refresh History Detail'
+        )}
+        back={
+          <Typography.Link
+            onClick={() =>
+              historyBack ? navigate(-1) : navigate('/materialized_view')
+            }
           >
-            <div className={styles.grid}>
-              <div className={styles.gridItem}>
-                <span className={styles.label}>
-                  {t('materialized_view.columns.refresh_job_id', 'Job ID')}
-                </span>
-                <span className={styles.value}>
-                  {detail?.refresh_job_id || '-'}
-                </span>
-              </div>
-              <div className={styles.gridItem}>
-                <span className={styles.label}>
-                  {t('materialized_view.columns.schema', 'Schema')}
-                </span>
-                <span className={styles.value}>{detail?.schema || '-'}</span>
-              </div>
-              <div className={styles.gridItem}>
-                <span className={styles.label}>
-                  {t(
-                    'materialized_view.columns.materialized_view',
-                    'Materialized View'
-                  )}
-                </span>
-                <span className={styles.value}>
-                  {detail?.materialized_view || '-'}
-                </span>
-              </div>
-              <div className={styles.gridItem}>
-                <span className={styles.label}>
-                  {t('materialized_view.columns.refresh_status', 'Status')}
-                </span>
-                <span className={styles.value}>
-                  {detail?.refresh_status || '-'}
-                </span>
-              </div>
-              <div className={styles.gridItem}>
-                <span className={styles.label}>
-                  {t(
-                    'materialized_view.columns.refresh_start_time',
-                    'Start Time'
-                  )}
-                </span>
-                <span className={styles.value}>
-                  {formatDateTime(detail?.refresh_time)}
-                </span>
-              </div>
-              <div className={styles.gridItem}>
-                <span className={styles.label}>
-                  {t('materialized_view.columns.duration', 'Duration')}
-                </span>
-                <span className={styles.value}>
-                  {detail?.duration != null
+            <ArrowLeftOutlined /> {t('materialized_view.page_title')}
+          </Typography.Link>
+        }
+      >
+        <AnimatedSkeleton showSkeleton={isLoading}>
+          {error && <ErrorBar errors={[error]} />}
+          {detail && (
+            <Descriptions>
+              <Descriptions.Item
+                label={
+                  <Space size="middle">
+                    <span>
+                      {t(
+                        'materialized_view.columns.refresh_job_id',
+                        'Refresh Job ID'
+                      )}
+                    </span>
+                    <CopyLink data={detail.refresh_job_id} />
+                  </Space>
+                }
+              >
+                <div className={styles.value}>
+                  {detail.refresh_job_id || '-'}
+                </div>
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={
+                  <Space size="middle">
+                    <span>
+                      {t('materialized_view.columns.schema', 'Schema')}
+                    </span>
+                    <CopyLink data={detail.schema} />
+                  </Space>
+                }
+              >
+                <div className={styles.value}>{detail.schema || '-'}</div>
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={
+                  <Space size="middle">
+                    <span>
+                      {t(
+                        'materialized_view.columns.materialized_view',
+                        'Materialized View'
+                      )}
+                    </span>
+                    <CopyLink data={detail.materialized_view} />
+                  </Space>
+                }
+              >
+                <div className={styles.value}>
+                  {detail.materialized_view || '-'}
+                </div>
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={t(
+                  'materialized_view.columns.refresh_status',
+                  'Refresh Status'
+                )}
+              >
+                <StatusBadge status={detail.refresh_status} />
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={t(
+                  'materialized_view.columns.refresh_start_time',
+                  'Refresh Start Time'
+                )}
+              >
+                {renderRefreshTime(detail.refresh_time)}
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={t('materialized_view.columns.duration', 'Duration')}
+              >
+                <div className={styles.value}>
+                  {detail.duration != null
                     ? `${detail.duration.toFixed(3)}s`
                     : '-'}
-                </span>
-              </div>
-              <div className={styles.gridItem}>
-                <span className={styles.label}>
-                  {t('materialized_view.columns.refresh_rows', 'Rows')}
-                </span>
-                <span className={styles.value}>
-                  {detail?.refresh_rows || '-'}
-                </span>
-              </div>
-              <div className={styles.gridItem}>
-                <span className={styles.label}>
-                  {t('materialized_view.columns.refresh_read_tso', 'Read TSO')}
-                </span>
-                <span className={styles.value}>
-                  {detail?.refresh_read_tso || '-'}
-                </span>
-              </div>
-            </div>
-
-            {detail?.failed_reason && (
-              <div className={styles.failedReason}>
-                <div className={styles.failedReasonLabel}>
-                  {t(
-                    'materialized_view.columns.failed_reason',
-                    'Failed Reason'
-                  )}
-                  :
                 </div>
-                <div className={styles.failedReasonValue}>
-                  {detail.failed_reason}
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={t(
+                  'materialized_view.columns.refresh_rows',
+                  'Refresh Rows'
+                )}
+              >
+                <div className={styles.value}>{detail.refresh_rows ?? '-'}</div>
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={
+                  <Space size="middle">
+                    <span>
+                      {t(
+                        'materialized_view.columns.refresh_read_tso',
+                        'Refresh Read TSO'
+                      )}
+                    </span>
+                    <CopyLink data={detail.refresh_read_tso} />
+                  </Space>
+                }
+              >
+                <div className={styles.value}>
+                  {detail.refresh_read_tso || '-'}
                 </div>
-              </div>
-            )}
-          </Card>
-        )}
-      </div>
+              </Descriptions.Item>
+              {detail.failed_reason ? (
+                <Descriptions.Item
+                  span={2}
+                  multiline
+                  label={
+                    <Space size="middle">
+                      <span>
+                        {t(
+                          'materialized_view.columns.failed_reason',
+                          'Failed Reason'
+                        )}
+                      </span>
+                      <CopyLink data={detail.failed_reason} />
+                    </Space>
+                  }
+                >
+                  <pre className={styles.failedReasonValue}>
+                    {detail.failed_reason}
+                  </pre>
+                </Descriptions.Item>
+              ) : null}
+            </Descriptions>
+          )}
+        </AnimatedSkeleton>
+      </Head>
     </div>
   )
 }

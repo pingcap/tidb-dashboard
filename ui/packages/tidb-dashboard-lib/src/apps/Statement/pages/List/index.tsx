@@ -83,9 +83,13 @@ export default function StatementsOverview() {
 
   const [showSettings, setShowSettings] = useState(false)
   const [visibleColumnKeys, setVisibleColumnKeys] =
-    useVersionedLocalStorageState(STMT_VISIBLE_COLUMN_KEYS, {
-      defaultValue: DEF_STMT_COLUMN_KEYS
-    })
+    useVersionedLocalStorageState(
+      STMT_VISIBLE_COLUMN_KEYS,
+      {
+        defaultValue: DEF_STMT_COLUMN_KEYS
+      },
+      ctx?.cfg.persistQueryOptions
+    )
   const [showFullSQL, setShowFullSQL] = useVersionedLocalStorageState(
     STMT_SHOW_FULL_SQL,
     { defaultValue: false }
@@ -100,6 +104,7 @@ export default function StatementsOverview() {
     fetchSchemas: ctx?.cfg.showDBFilter,
     fetchGroups: ctx?.cfg.showResourceGroupFilter,
     fetchConfig: ctx?.cfg.showConfig,
+    persistQueryInSession: ctx?.cfg.persistQueryOptions,
     initialQueryOptions: {
       ...DEF_STMT_QUERY_OPTIONS,
       visibleColumnKeys,

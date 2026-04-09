@@ -94,6 +94,7 @@ export interface IStatementConfig extends IContextConfig {
   showDBFilter?: boolean // default is true
   showResourceGroupFilter?: boolean // default is true
   showHelp?: boolean // default is true
+  persistQueryOptions?: boolean // default is true
 
   // control whether show statement actual time range
   // for example:

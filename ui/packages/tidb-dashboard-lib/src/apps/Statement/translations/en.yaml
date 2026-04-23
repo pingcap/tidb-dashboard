@@ -223,3 +223,17 @@ statement:
     sum_unpacked_bytes_sent_tiflash_cross_zone_tooltip: The total number of bytes sent to TiFlash across zones
     sum_unpacked_bytes_received_tiflash_cross_zone: Total Cross-Zone Bytes Received from TiFlash
     sum_unpacked_bytes_received_tiflash_cross_zone_tooltip: The total number of bytes received from TiFlash across zones
+    avg_ia_read_segment_count: Mean IA Read Segments
+    avg_ia_read_segment_count_tooltip: The average number of IA read segments per execution
+    avg_ia_remote_read_segment_size: Mean IA Remote Read Segment Size
+    avg_ia_remote_read_segment_size_tooltip: The average of bytes read from IA remote segments
+    avg_ia_remote_read_segment_wait_time: Mean IA Remote Read Segment Wait Time
+    avg_ia_remote_read_segment_wait_time_tooltip: The average wait time spent reading IA remote segments
+    max_ia_read_segment_count: Max IA Read Segments
+    max_ia_read_segment_count_tooltip: Maximum IA read segment count
+    max_ia_remote_read_segment_size: Max IA Remote Read Segment Size
+    max_ia_remote_read_segment_size_tooltip: Maximum number of bytes read from IA remote segments
+    max_ia_remote_read_segment_wait_time: Max IA Remote Read Segment Wait Time
+    max_ia_remote_read_segment_wait_time_tooltip: Maximum wait time spent reading IA remote segments
+    ia_remote_read_segment_wait_time: IA Remote Read Segment Wait Time
+    ia_remote_read_segment_wait_time_tooltip: The wait time spent reading IA remote segments

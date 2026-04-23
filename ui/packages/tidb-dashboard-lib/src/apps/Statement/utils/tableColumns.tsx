@@ -105,6 +105,18 @@ export const derivedFields = {
   avg_time_queued_by_rc: genDerivedBarSources(
     'avg_time_queued_by_rc',
     'max_time_queued_by_rc'
+  ),
+  avg_ia_read_segment_count: genDerivedBarSources(
+    'avg_ia_read_segment_count',
+    'max_ia_read_segment_count'
+  ),
+  avg_ia_remote_read_segment_size: genDerivedBarSources(
+    'avg_ia_remote_read_segment_size',
+    'max_ia_remote_read_segment_size'
+  ),
+  avg_ia_remote_read_segment_wait_time: genDerivedBarSources(
+    'avg_ia_remote_read_segment_wait_time',
+    'max_ia_remote_read_segment_wait_time'
   )
 }
 
@@ -310,7 +322,10 @@ export function statementColumns(
       'sum_unpacked_bytes_received_tiflash_cross_zone',
       'bytes',
       rows
-    )
+    ),
+    avgMaxColumn(tcf, 'avg_ia_read_segment_count', 'short', rows),
+    avgMaxColumn(tcf, 'avg_ia_remote_read_segment_size', 'bytes', rows),
+    avgMaxColumn(tcf, 'avg_ia_remote_read_segment_wait_time', 'ns', rows)
   ])
 }
 

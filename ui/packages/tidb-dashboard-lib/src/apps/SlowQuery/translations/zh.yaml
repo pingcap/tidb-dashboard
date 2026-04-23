@@ -146,6 +146,12 @@ slow_query:
     unpacked_bytes_sent_tiflash_cross_zone_tooltip: 跨可用区发送至 TiFlash 的字节数
     unpacked_bytes_received_tiflash_cross_zone: 跨可用区从 TiFlash 接收的字节数
     unpacked_bytes_received_tiflash_cross_zone_tooltip: 跨可用区从 TiFlash 接收的字节数
+    
+    # IA remote read
+    ia_remote_read_segment_size: IA 远程读取数据量
+    ia_remote_read_segment_size_tooltip: 从 IA 远程存储段读取的数据总量
+    ia_remote_read_segment_wait_time: IA 远程读分段等待时间
+    ia_remote_read_segment_wait_time_tooltip: IA 远程读分段等待时间
 
   common:
     status:

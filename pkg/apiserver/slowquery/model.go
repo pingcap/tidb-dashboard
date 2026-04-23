@@ -116,6 +116,10 @@ type Model struct {
 	UnpackedBytesReceivedTiFlashTotal     uint `gorm:"column:Unpacked_bytes_received_tiflash_total" json:"unpacked_bytes_received_tiflash_total"`
 	UnpackedBytesSentTiFlashCrossZone     uint `gorm:"column:Unpacked_bytes_sent_tiflash_cross_zone" json:"unpacked_bytes_sent_tiflash_cross_zone"`
 	UnpackedBytesReceivedTiFlashCrossZone uint `gorm:"column:Unpacked_bytes_received_tiflash_cross_zone" json:"unpacked_bytes_received_tiflash_cross_zone"`
+
+	// IA remote read
+	IARemoteReadSegmentSize     uint64  `gorm:"column:IA_remote_read_segment_size" json:"ia_remote_read_segment_size"`
+	IARemoteReadSegmentWaitTime float64 `gorm:"column:IA_remote_read_segment_wait_time" json:"ia_remote_read_segment_wait_time"`
 }
 
 type Field struct {

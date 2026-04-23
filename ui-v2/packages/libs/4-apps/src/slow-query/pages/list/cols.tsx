@@ -154,6 +154,8 @@ export function useListTableColumns() {
       tcf.number("ru", "short"), // @todo: fix
       tcf.text("resource_group"),
       tcf.number("time_queued_by_rc", "s"),
+      tcf.number("ia_remote_read_segment_size", "bytes"),
+      tcf.number("ia_remote_read_segment_wait_time", "s"),
     ])
   }, [tk])
 

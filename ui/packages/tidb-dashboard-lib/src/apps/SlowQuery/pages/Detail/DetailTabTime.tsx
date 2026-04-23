@@ -119,6 +119,11 @@ export const tabTimeItems = (data: SlowqueryModel, t: TFunction) => {
       key: 'time_queued_by_rc',
       value: data.time_queued_by_rc! * 10e8,
       indentLevel: 1
+    },
+    {
+      key: 'ia_remote_read_segment_wait_time',
+      value: data.ia_remote_read_segment_wait_time! * 10e8,
+      indentLevel: 1
     }
   ]
 }

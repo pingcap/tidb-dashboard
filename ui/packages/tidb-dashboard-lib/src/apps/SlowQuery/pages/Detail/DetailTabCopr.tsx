@@ -107,5 +107,11 @@ export const tabCoprItems = (data: SlowqueryModel) => [
         value={data.unpacked_bytes_received_tiflash_cross_zone}
       />
     )
+  },
+  {
+    key: 'ia_remote_read_segment_size',
+    value: (
+      <ValueWithTooltip.ScaledBytes value={data.ia_remote_read_segment_size} />
+    )
   }
 ]

@@ -201,6 +201,16 @@ function useLocales() {
     "fields.time_queued_by_rc.desc",
     "The total wait time spent in the resource queue (note: {{distro.tikv}} executes requests in parallel so that this is not a wall time)",
   )
+  tk("fields.ia_remote_read_segment_size", "IA Remote Read Segment Size")
+  tk(
+    "fields.ia_remote_read_segment_size.desc",
+    "Total number of bytes read from IA remote segments",
+  )
+  tk("fields.ia_remote_read_segment_wait_time", "IA Remote Read Segment Wait Time")
+  tk(
+    "fields.ia_remote_read_segment_wait_time.desc",
+    "The wait time spent reading IA remote segments",
+  )
 
   // additional fields
   tk("fields.backoff_detail", "Backoff Detail")

@@ -23,6 +23,8 @@ export interface SlowqueryModel {
   exec_retry_time?: number
   get_commit_ts_time?: number
   host?: string
+  ia_remote_read_segment_size?: number
+  ia_remote_read_segment_wait_time?: number
   index_names?: string
   instance?: string
   is_internal?: number

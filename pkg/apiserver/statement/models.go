@@ -122,6 +122,17 @@ type Model struct {
 	SumUnpackedBytesReceivedTiFlashTotal     uint `json:"sum_unpacked_bytes_received_tiflash_total" agg:"SUM(sum_unpacked_bytes_received_tiflash_total)"`
 	SumUnpackedBytesSentTiFlashCrossZone     uint `json:"sum_unpacked_bytes_sent_tiflash_cross_zone" agg:"SUM(sum_unpacked_bytes_sent_tiflash_cross_zone)"`
 	SumUnpackedBytesReceivedTiFlashCrossZone uint `json:"sum_unpacked_bytes_received_tiflash_cross_zone" agg:"SUM(sum_unpacked_bytes_received_tiflash_cross_zone)"`
+
+	// IA remote read segment metrics
+	SumIaReadSegmentCount          int64   `json:"sum_ia_read_segment_count" agg:"SUM(sum_ia_read_segment_count)"`
+	SumIaRemoteReadSegmentSize     int64   `json:"sum_ia_remote_read_segment_size" agg:"SUM(sum_ia_remote_read_segment_size)"`
+	SumIaRemoteReadSegmentWaitTime float64 `json:"sum_ia_remote_read_segment_wait_time" agg:"SUM(sum_ia_remote_read_segment_wait_time)"`
+	AvgIaReadSegmentCount          float64 `json:"avg_ia_read_segment_count" agg:"SUM(exec_count * avg_ia_read_segment_count) / SUM(exec_count)"`
+	AvgIaRemoteReadSegmentSize     float64 `json:"avg_ia_remote_read_segment_size" agg:"SUM(exec_count * avg_ia_remote_read_segment_size) / SUM(exec_count)"`
+	AvgIaRemoteReadSegmentWaitTime float64 `json:"avg_ia_remote_read_segment_wait_time" agg:"SUM(exec_count * avg_ia_remote_read_segment_wait_time) / SUM(exec_count)"`
+	MaxIaReadSegmentCount          int64   `json:"max_ia_read_segment_count" agg:"MAX(max_ia_read_segment_count)"`
+	MaxIaRemoteReadSegmentSize     int64   `json:"max_ia_remote_read_segment_size" agg:"MAX(max_ia_remote_read_segment_size)"`
+	MaxIaRemoteReadSegmentWaitTime float64 `json:"max_ia_remote_read_segment_wait_time" agg:"MAX(max_ia_remote_read_segment_wait_time)"`
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"

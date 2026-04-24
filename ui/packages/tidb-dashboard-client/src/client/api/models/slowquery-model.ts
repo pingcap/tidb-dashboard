@@ -165,6 +165,18 @@ export interface SlowqueryModel {
      */
     'host'?: string;
     /**
+     * IA remote read
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'ia_remote_read_segment_size'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SlowqueryModel
+     */
+    'ia_remote_read_segment_wait_time'?: number;
+    /**
      * 
      * @type {string}
      * @memberof SlowqueryModel

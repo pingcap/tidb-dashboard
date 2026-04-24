@@ -3459,7 +3459,7 @@
                         "JwtAuth": []
                     }
                 ],
-                "summary": "Get availiable instances",
+                "summary": "Get available instances",
                 "parameters": [
                     {
                         "type": "string",
@@ -5269,6 +5269,13 @@
                 "host": {
                     "type": "string"
                 },
+                "ia_remote_read_segment_size": {
+                    "description": "IA remote read",
+                    "type": "integer"
+                },
+                "ia_remote_read_segment_wait_time": {
+                    "type": "number"
+                },
                 "index_names": {
                     "type": "string"
                 },
@@ -5598,6 +5605,15 @@
                 "avg_get_commit_ts_time": {
                     "type": "integer"
                 },
+                "avg_ia_read_segment_count": {
+                    "type": "number"
+                },
+                "avg_ia_remote_read_segment_size": {
+                    "type": "number"
+                },
+                "avg_ia_remote_read_segment_wait_time": {
+                    "type": "number"
+                },
                 "avg_latency": {
                     "type": "integer"
                 },
@@ -5719,6 +5735,15 @@
                 },
                 "max_get_commit_ts_time": {
                     "type": "integer"
+                },
+                "max_ia_read_segment_count": {
+                    "type": "integer"
+                },
+                "max_ia_remote_read_segment_size": {
+                    "type": "integer"
+                },
+                "max_ia_remote_read_segment_wait_time": {
+                    "type": "number"
                 },
                 "max_latency": {
                     "type": "integer"
@@ -5842,6 +5867,16 @@
                 },
                 "sum_errors": {
                     "type": "integer"
+                },
+                "sum_ia_read_segment_count": {
+                    "description": "IA remote read segment metrics",
+                    "type": "integer"
+                },
+                "sum_ia_remote_read_segment_size": {
+                    "type": "integer"
+                },
+                "sum_ia_remote_read_segment_wait_time": {
+                    "type": "number"
                 },
                 "sum_latency": {
                     "type": "integer"

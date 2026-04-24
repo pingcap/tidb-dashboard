@@ -3702,7 +3702,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Get availiable instances
+         * @summary Get available instances
          * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [start] 
@@ -5298,7 +5298,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Get availiable instances
+         * @summary Get available instances
          * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [start] 
@@ -6394,7 +6394,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Get availiable instances
+         * @summary Get available instances
          * @param {string} [dataSource] 
          * @param {string} [end] 
          * @param {string} [start] 
@@ -8908,7 +8908,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary Get availiable instances
+     * @summary Get available instances
      * @param {DefaultApiTopsqlInstancesGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

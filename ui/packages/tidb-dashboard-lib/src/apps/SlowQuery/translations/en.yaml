@@ -144,6 +144,10 @@ slow_query:
     unpacked_bytes_sent_tiflash_cross_zone_tooltip: The number of bytes sent to TiFlash across zones
     unpacked_bytes_received_tiflash_cross_zone: Cross-Zone Bytes Received from TiFlash
     unpacked_bytes_received_tiflash_cross_zone_tooltip: The number of bytes received from TiFlash across zones
+    ia_remote_read_segment_size: IA Remote Read Segment Size
+    ia_remote_read_segment_size_tooltip: Total number of bytes read from IA remote segments
+    ia_remote_read_segment_wait_time: IA Remote Read Segment Wait Time
+    ia_remote_read_segment_wait_time_tooltip: The wait time spent reading IA remote segments
 
   common:
     status:

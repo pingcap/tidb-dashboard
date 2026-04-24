@@ -62,6 +62,19 @@ function getData(
       value: formatNumByUnit(data.rocksdb_key_skipped_count || 0, "short"),
       desc: tk("fields.rocksdb_key_skipped_count.desc"),
     },
+    {
+      name: tk("fields.ia_remote_read_segment_size"),
+      value: formatNumByUnit(data.ia_remote_read_segment_size || 0, "bytes"),
+      desc: tk("fields.ia_remote_read_segment_size.desc"),
+    },
+    {
+      name: tk("fields.ia_remote_read_segment_wait_time"),
+      value: formatNumByUnit(
+        data.ia_remote_read_segment_wait_time || 0,
+        "s",
+      ),
+      desc: tk("fields.ia_remote_read_segment_wait_time.desc"),
+    },
   ]
 }
 

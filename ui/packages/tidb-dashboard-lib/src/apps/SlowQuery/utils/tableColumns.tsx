@@ -136,6 +136,8 @@ export function slowQueryColumns(
     tcf.bar.single('unpacked_bytes_sent_tiflash_total', 'bytes', rows),
     tcf.bar.single('unpacked_bytes_received_tiflash_total', 'bytes', rows),
     tcf.bar.single('unpacked_bytes_sent_tiflash_cross_zone', 'bytes', rows),
-    tcf.bar.single('unpacked_bytes_received_tiflash_cross_zone', 'bytes', rows)
+    tcf.bar.single('unpacked_bytes_received_tiflash_cross_zone', 'bytes', rows),
+    tcf.bar.single('ia_remote_read_segment_size', 'bytes', rows),
+    tcf.bar.single('ia_remote_read_segment_wait_time', 's', rows)
   ])
 }

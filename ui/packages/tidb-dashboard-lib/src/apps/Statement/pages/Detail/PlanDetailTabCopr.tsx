@@ -1,4 +1,5 @@
 import React from 'react'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
 import { ValueWithTooltip } from '@lib/components'
@@ -134,6 +135,22 @@ export const tabCoprItems = (data: StatementModel) => [
     value: (
       <ValueWithTooltip.ScaledBytes
         value={data.sum_unpacked_bytes_received_tiflash_cross_zone}
+      />
+    )
+  },
+  {
+    key: 'avg_ia_remote_read_segment_size',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.avg_ia_remote_read_segment_size}
+      />
+    )
+  },
+  {
+    key: 'max_ia_remote_read_segment_size',
+    value: (
+      <ValueWithTooltip.ScaledBytes
+        value={data.max_ia_remote_read_segment_size}
       />
     )
   }

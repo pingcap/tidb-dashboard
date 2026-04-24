@@ -79,6 +79,24 @@ export interface StatementModel {
      * @type {number}
      * @memberof StatementModel
      */
+    'avg_ia_read_segment_count'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'avg_ia_remote_read_segment_size'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'avg_ia_remote_read_segment_wait_time'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
     'avg_latency'?: number;
     /**
      * 
@@ -313,6 +331,24 @@ export interface StatementModel {
      * @type {number}
      * @memberof StatementModel
      */
+    'max_ia_read_segment_count'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'max_ia_remote_read_segment_size'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'max_ia_remote_read_segment_wait_time'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
     'max_latency'?: number;
     /**
      * 
@@ -542,6 +578,24 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'sum_errors'?: number;
+    /**
+     * IA remote read segment metrics
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_ia_read_segment_count'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_ia_remote_read_segment_size'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'sum_ia_remote_read_segment_wait_time'?: number;
     /**
      * 
      * @type {number}

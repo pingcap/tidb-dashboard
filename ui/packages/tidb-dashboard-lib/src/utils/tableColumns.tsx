@@ -57,8 +57,8 @@ function fieldsKeyColumn(transKeyPrefix: string): IColumn {
   return {
     name: TranslatedColumnName(TRANS_KEY_PREFIX, 'name'),
     key: 'key',
-    minWidth: 150,
-    maxWidth: 250,
+    minWidth: 200,
+    maxWidth: 400,
     onRender: (rec) => {
       return (
         <div style={{ paddingLeft: (rec.indentLevel || 0) * 24 }}>

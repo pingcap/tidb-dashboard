@@ -70,5 +70,10 @@ export const tabTimeItems = (data: StatementModel, t: TFunction) => [
     avg: data.avg_latency,
     min: data.min_latency,
     max: data.max_latency
+  },
+  {
+    key: 'ia_remote_read_segment_wait_time',
+    avg: data.avg_ia_remote_read_segment_wait_time,
+    max: data.max_ia_remote_read_segment_wait_time
   }
 ]

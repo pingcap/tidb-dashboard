@@ -273,16 +273,21 @@ func main() {
 	defer s.Stop(context.Background()) //nolint:errcheck
 
 	mux := http.DefaultServeMux
-	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(assets))
-	mux.Handle("/", http.RedirectHandler(config.UIPathPrefix, http.StatusFound))
-	mux.Handle(config.UIPathPrefix, uiHandler)
-	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))
-	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())
+	uiPathPrefix := cliConfig.CoreConfig.UIPathPrefix()
+	apiPathPrefix := cliConfig.CoreConfig.APIPathPrefix()
+	swaggerPathPrefix := cliConfig.CoreConfig.SwaggerPathPrefix()
+	uiHandler := http.StripPrefix(strings.TrimRight(uiPathPrefix, "/"), uiserver.Handler(assets))
+	if uiPathPrefix != "/" {
+		mux.Handle("/", http.RedirectHandler(uiPathPrefix, http.StatusFound))
+	}
+	mux.Handle(uiPathPrefix, uiHandler)
+	mux.Handle(apiPathPrefix, apiserver.Handler(s))
+	mux.Handle(swaggerPathPrefix, swaggerserver.Handler(cliConfig.CoreConfig))
 
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
-	log.Info(fmt.Sprintf("UI:      http://%s/dashboard/", net.JoinHostPort(cliConfig.ListenHost, strconv.Itoa(cliConfig.ListenPort))))
-	log.Info(fmt.Sprintf("API:     http://%s/dashboard/api/", net.JoinHostPort(cliConfig.ListenHost, strconv.Itoa(cliConfig.ListenPort))))
-	log.Info(fmt.Sprintf("Swagger: http://%s/dashboard/api/swagger/", net.JoinHostPort(cliConfig.ListenHost, strconv.Itoa(cliConfig.ListenPort))))
+	log.Info(fmt.Sprintf("UI:      http://%s%s", listenAddr, uiPathPrefix))
+	log.Info(fmt.Sprintf("API:     http://%s%s", listenAddr, apiPathPrefix))
+	log.Info(fmt.Sprintf("Swagger: http://%s%s", listenAddr, swaggerPathPrefix))
 
 	srv := &http.Server{Handler: mux} // nolint:gosec
 	var wg sync.WaitGroup

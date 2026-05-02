@@ -6,6 +6,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gin-contrib/gzip"
@@ -270,14 +271,14 @@ func (s *Service) provideLocals() (*config.Config, http.FileSystem, *keyvisualre
 	return s.config, s.uiAssetFS, s.customKeyVisualProvider
 }
 
-func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup) {
+func newAPIHandlerEngine(cfg *config.Config) (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup) {
 	apiHandlerEngine = gin.New()
 	apiHandlerEngine.Use(gin.Recovery())
 	apiHandlerEngine.Use(cors.AllowAll())
 	apiHandlerEngine.Use(gzip.Gzip(gzip.DefaultCompression))
 	apiHandlerEngine.Use(rest.ErrorHandlerFn())
 
-	endpoint = apiHandlerEngine.Group("/dashboard/api")
+	endpoint = apiHandlerEngine.Group(strings.TrimRight(cfg.APIPathPrefix(), "/"))
 
 	return
 }

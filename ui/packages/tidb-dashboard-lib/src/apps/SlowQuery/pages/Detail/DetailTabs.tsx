@@ -97,9 +97,15 @@ export default function DetailTabs({ data }: { data: SlowqueryModel }) {
         key: 'warnings',
         title: t('slow_query.detail.tabs.warnings'),
         content: () => {
+          let jsonData = {}
+          if (typeof data.warnings === 'string') {
+            jsonData = JSON.parse(data.warnings)
+          } else if (typeof data.warnings === 'object') {
+            jsonData = data.warnings
+          }
           return (
             <ReactJson
-              src={data.warnings! as any}
+              src={jsonData}
               enableClipboard={false}
               displayObjectSize={false}
               displayDataTypes={false}

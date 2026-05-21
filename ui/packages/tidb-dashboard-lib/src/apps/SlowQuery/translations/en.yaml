@@ -122,6 +122,34 @@ slow_query:
 
     ru: RU
     ru_tooltip: request units
+    ru_v2: RU V2
+    ru_v2_tooltip: Total RU V2 consumed by this query
+    ru_v2_detail: RU V2 Detail
+    ru_v2_detail_tooltip: Per-component RU V2 breakdown (raw)
+    ru_v2_metrics_label: RU V2 Metrics
+    ru_v2_metrics:
+      total_ru: Total RU
+      tidb_ru: TiDB RU
+      tikv_ru: TiKV RU
+      tiflash_ru: TiFlash RU
+      txn_cnt: Transaction Count
+      plan_cnt: Plan Count
+      plan_derive_stats_paths: Plan Derive Stats Paths
+      session_parser_total: Session Parser Total
+      executor_l1: Executor L1
+      executor_l2: Executor L2
+      executor_l3: Executor L3
+      executor_l5_insert_rows: Executor L5 Insert Rows
+      result_chunk_cells: Result Chunk Cells
+      resource_manager_read_cnt: Resource Manager Read Count
+      resource_manager_write_cnt: Resource Manager Write Count
+      tikv_coprocessor_executor_iterations: TiKV Coprocessor Executor Iterations
+      tikv_coprocessor_response_bytes: TiKV Coprocessor Response Bytes
+      tikv_coprocessor_executor_work_total: TiKV Coprocessor Executor Work Total
+      tikv_storage_processed_keys_get: TiKV Storage Processed Keys (Get)
+      tikv_storage_processed_keys_batch_get: TiKV Storage Processed Keys (Batch Get)
+      tikv_kv_engine_cache_miss: TiKV KV Engine Cache Miss
+      tikv_raftstore_store_write_trigger_wb_bytes: TiKV Raftstore Write Trigger WB Bytes
     resource_group: Resource Group
     resource_group_tooltip: The resource group that the query belongs to
     time_queued_by_rc: The total time queued by RC
@@ -174,6 +202,7 @@ slow_query:
       time: Time
       copr: Coprocessor
       txn: Transaction
+      ru_v2: RU V2
       warnings: Warnings
   toolbar:
     schemas:

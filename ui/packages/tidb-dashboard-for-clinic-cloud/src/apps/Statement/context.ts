@@ -184,6 +184,7 @@ export const ctx: (cfg: Partial<IStatementConfig>) => IStatementContext = (
     ds: new DataSource(),
     cfg: {
       apiPathBase: client.getBasePath(),
+      showRuV2: true,
       ...cfg
     }
   }

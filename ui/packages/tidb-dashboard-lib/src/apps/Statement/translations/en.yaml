@@ -201,6 +201,12 @@ statement:
     max_ru_tooltip: The maximum number of request units (RU) consumed by the statement
     sum_ru: Total RU
     sum_ru_tooltip: The total number of request units (RU) consumed by the statement
+    avg_ru_v2: Mean RU V2
+    avg_ru_v2_tooltip: The average number of RU V2 consumed by the statement
+    sum_ru_v2: Total RU V2
+    sum_ru_v2_tooltip: The total number of RU V2 consumed by the statement
+    max_ru_v2: Max RU V2
+    max_ru_v2_tooltip: The maximum number of RU V2 consumed by the statement
     avg_time_queued_by_rc: Mean RC Wait Time in Queue
     avg_time_queued_by_rc_tooltip: The average time that the query waits in the resource control's queue (not a wall time)
     max_time_queued_by_rc: Max RC Wait Time in Queue

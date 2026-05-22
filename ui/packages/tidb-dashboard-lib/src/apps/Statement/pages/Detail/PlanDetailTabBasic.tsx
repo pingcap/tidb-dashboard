@@ -5,7 +5,10 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { StatementModel } from '@lib/client'
 import { DateTime, Pre, ValueWithTooltip, TextWrap } from '@lib/components'
 
-export const tabBasicItems = (data: StatementModel) => [
+export const tabBasicItems = (
+  data: StatementModel,
+  options?: { showRuV2?: boolean }
+) => [
   {
     key: 'table_names',
     value: (
@@ -82,6 +85,26 @@ export const tabBasicItems = (data: StatementModel) => [
     key: 'max_ru',
     value: getValueFormat('short')(data.max_ru || 0, 1)
   },
+  ...(options?.showRuV2
+    ? [
+        {
+          key: 'avg_ru_v2',
+          value: getValueFormat('short')(data.avg_ru_v2 || 0, 1)
+        },
+        {
+          key: 'sum_ru_v2',
+          value: getValueFormat('short')(data.sum_ru_v2 || 0, 1)
+        },
+        {
+          key: 'max_ru_v2',
+          value: getValueFormat('short')(data.max_ru_v2 || 0, 1)
+        },
+        {
+          key: 'sum_ru',
+          value: getValueFormat('short')(data.sum_ru || 0, 1)
+        }
+      ]
+    : []),
   {
     key: 'resource_group',
     value: data.resource_group

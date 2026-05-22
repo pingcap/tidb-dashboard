@@ -124,6 +124,34 @@ slow_query:
 
     ru: RU
     ru_tooltip: 资源单位(RU)
+    ru_v2: RU V2
+    ru_v2_tooltip: 本次查询消耗的 RU V2 总量
+    ru_v2_detail: RU V2 明细
+    ru_v2_detail_tooltip: 各组件 RU V2 拆分（原始数据）
+    ru_v2_metrics_label: RU V2 Metrics
+    ru_v2_metrics:
+      total_ru: Total RU
+      tidb_ru: TiDB RU
+      tikv_ru: TiKV RU
+      tiflash_ru: TiFlash RU
+      txn_cnt: 事务数
+      plan_cnt: Plan 数
+      plan_derive_stats_paths: Plan Derive Stats Paths
+      session_parser_total: Session Parser Total
+      executor_l1: Executor L1
+      executor_l2: Executor L2
+      executor_l3: Executor L3
+      executor_l5_insert_rows: Executor L5 插入行数
+      result_chunk_cells: Result Chunk Cells
+      resource_manager_read_cnt: Resource Manager 读次数
+      resource_manager_write_cnt: Resource Manager 写次数
+      tikv_coprocessor_executor_iterations: TiKV Coprocessor Executor 迭代数
+      tikv_coprocessor_response_bytes: TiKV Coprocessor 响应字节
+      tikv_coprocessor_executor_work_total: TiKV Coprocessor Executor 工作总量
+      tikv_storage_processed_keys_get: TiKV Storage Processed Keys (Get)
+      tikv_storage_processed_keys_batch_get: TiKV Storage Processed Keys (Batch Get)
+      tikv_kv_engine_cache_miss: TiKV KV Engine Cache Miss
+      tikv_raftstore_store_write_trigger_wb_bytes: TiKV Raftstore Write Trigger WB Bytes
     resource_group: 资源组
     resource_group_tooltip: SQL 语句所属的资源组
     time_queued_by_rc: RC 等待累积耗时
@@ -178,6 +206,7 @@ slow_query:
       time: 执行时间
       copr: Coprocessor 读取
       txn: 事务
+      ru_v2: RU V2
       warnings: 警告
   toolbar:
     schemas:

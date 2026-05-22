@@ -98,6 +98,10 @@ export interface ISlowQueryConfig extends IContextConfig {
 
   // show internal slow queries
   showInternalFilter?: boolean
+
+  // show RU V2 fields (clinic-only: ru_v2, ru_v2_detail columns,
+  // Basic-tab rows, and the dedicated RU V2 Metrics tab)
+  showRuV2?: boolean
 }
 
 export interface ISlowQueryContext {

@@ -3,10 +3,7 @@ import { SlowqueryModel } from '@lib/client'
 import { DateTime } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-export const tabBasicItems = (
-  data: SlowqueryModel,
-  options?: { showRuV2?: boolean }
-) => [
+export const tabBasicItems = (data: SlowqueryModel) => [
   {
     key: 'timestamp',
     value: <DateTime.Calendar unixTimestampMs={(data.timestamp ?? 0) * 1000} />
@@ -38,6 +35,5 @@ export const tabBasicItems = (
   { key: 'user', value: data.user },
   { key: 'host', value: data.host },
   { key: 'ru', value: data.ru },
-  ...(options?.showRuV2 ? [{ key: 'ru_v2', value: data.ru_v2 }] : []),
   { key: 'resource_group', value: data.resource_group }
 ]

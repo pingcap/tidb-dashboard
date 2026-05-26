@@ -10,13 +10,11 @@ import { tabBasicItems } from './DetailTabBasic'
 import { tabTimeItems } from './DetailTabTime'
 import { tabCoprItems } from './DetailTabCopr'
 import { tabTxnItems } from './DetailTabTxn'
-import { RuV2TabContent } from './DetailTabRuV2'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import { SlowQueryContext } from '../../context'
 
 export default function DetailTabs({ data }: { data: SlowqueryModel }) {
   const ctx = useContext(SlowQueryContext)
-  const showRuV2 = !!ctx?.cfg.showRuV2
 
   const { t } = useTranslation()
   const { schemaColumns } = useSchemaColumns(
@@ -24,22 +22,12 @@ export default function DetailTabs({ data }: { data: SlowqueryModel }) {
   )
 
   const tabs = useMemo(() => {
-    const schemaSet = new Set(schemaColumns)
-    // Premium tier only declares `ru_v2` in the schema; Starter / Essential
-    // also declare `ru_v2_detail` and `ru_v2_metrics`. Use the presence of the
-    // metrics struct as the tier signal: when absent it's Premium, so the
-    // ru_v2 row stays inside the Basic tab; when present, RU V2 / Detail /
-    // Metrics get their own dedicated tab.
-    const isEssentialLike = schemaSet.has('ru_v2_metrics')
-    const showRuV2InBasic =
-      showRuV2 && schemaSet.has('ru_v2') && !isEssentialLike
-    const showRuV2Tab = showRuV2 && isEssentialLike
     const tbs = [
       {
         key: 'basic',
         title: t('slow_query.detail.tabs.basic'),
         content: () => {
-          const items = tabBasicItems(data, { showRuV2: showRuV2InBasic })
+          const items = tabBasicItems(data)
           const columns = valueColumns('slow_query.fields.')
           return (
             <CardTable
@@ -104,15 +92,6 @@ export default function DetailTabs({ data }: { data: SlowqueryModel }) {
         }
       }
     ]
-    if (showRuV2Tab) {
-      tbs.push({
-        key: 'ru_v2',
-        title: t('slow_query.detail.tabs.ru_v2'),
-        content: () => (
-          <RuV2TabContent data={data} schemaColumns={schemaColumns} />
-        )
-      })
-    }
     if (data.warnings) {
       tbs.push({
         key: 'warnings',
@@ -133,6 +112,6 @@ export default function DetailTabs({ data }: { data: SlowqueryModel }) {
       })
     }
     return tbs
-  }, [schemaColumns, data, t, showRuV2])
+  }, [schemaColumns, data, t])
   return <CardTabs animated={false} tabs={tabs} />
 }

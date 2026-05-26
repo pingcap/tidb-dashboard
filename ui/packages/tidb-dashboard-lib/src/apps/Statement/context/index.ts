@@ -115,10 +115,6 @@ export interface IStatementConfig extends IContextConfig {
     customAbsoluteRangePicker: boolean
     timeRangeLimit?: number
   }
-
-  // show RU V2 fields (clinic-only: avg_ru_v2 / sum_ru_v2 columns and the
-  // matching Basic-tab rows)
-  showRuV2?: boolean
 }
 
 export interface IStatementContext {

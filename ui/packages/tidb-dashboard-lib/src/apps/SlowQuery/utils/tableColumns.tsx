@@ -125,8 +125,6 @@ export function slowQueryColumns(
     }),
     // resource control
     tcf.bar.single('ru', 'none', rows),
-    tcf.bar.single('ru_v2', 'none', rows),
-    tcf.textWithTooltip('ru_v2_detail', rows),
     tcf.textWithTooltip('resource_group', rows),
     tcf.bar.single('time_queued_by_rc', 's', rows),
 

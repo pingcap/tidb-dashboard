@@ -34,7 +34,7 @@ export default function DetailTabs({
       key: 'basic',
       title: t('statement.pages.detail.tabs.basic'),
       content: () => {
-        const items = tabBasicItems(data, { showRuV2: !!ctx?.cfg.showRuV2 })
+        const items = tabBasicItems(data)
         const columns = valueColumns('statement.fields.')
         return (
           <CardTable

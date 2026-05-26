@@ -102,7 +102,6 @@ export const derivedFields = {
     'max_rocksdb_block_read_byte'
   ),
   avg_ru: genDerivedBarSources('avg_ru', 'max_ru'),
-  avg_ru_v2: genDerivedBarSources('avg_ru_v2', 'max_ru_v2'),
   avg_time_queued_by_rc: genDerivedBarSources(
     'avg_time_queued_by_rc',
     'max_time_queued_by_rc'
@@ -301,12 +300,6 @@ export function statementColumns(
     tcf.textWithTooltip('resource_group', rows),
     avgMaxColumn(tcf, 'avg_ru', 'none', rows),
     tcf.textWithTooltip('sum_ru', rows).patchConfig({
-      minWidth: 100,
-      maxWidth: 300,
-      columnActionsMode: ColumnActionsMode.clickable
-    }),
-    avgMaxColumn(tcf, 'avg_ru_v2', 'none', rows),
-    tcf.textWithTooltip('sum_ru_v2', rows).patchConfig({
       minWidth: 100,
       maxWidth: 300,
       columnActionsMode: ColumnActionsMode.clickable

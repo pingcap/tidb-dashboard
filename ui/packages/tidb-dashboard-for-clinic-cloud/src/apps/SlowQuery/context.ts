@@ -209,7 +209,6 @@ export const ctx: (cfg: Partial<ISlowQueryConfig>) => ISlowQueryContext = (
       showResourceGroupFilter: true,
       showDownloadSlowQueryDBFile: true,
       showInternalFilter: true,
-      showRuV2: true,
       ...cfg
     }
   }

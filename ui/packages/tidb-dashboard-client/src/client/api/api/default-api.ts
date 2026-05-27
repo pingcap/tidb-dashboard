@@ -2377,12 +2377,13 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} [orderBy] 
          * @param {number} [page] 
          * @param {number} [pageSize] 
+         * @param {Array<string>} [refreshMethod] 
          * @param {Array<string>} [schema] 
          * @param {Array<string>} [status] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        materializedViewListGet: async (beginTime?: number, desc?: boolean, endTime?: number, materializedView?: string, minDuration?: number, orderBy?: string, page?: number, pageSize?: number, schema?: Array<string>, status?: Array<string>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        materializedViewListGet: async (beginTime?: number, desc?: boolean, endTime?: number, materializedView?: string, minDuration?: number, orderBy?: string, page?: number, pageSize?: number, refreshMethod?: Array<string>, schema?: Array<string>, status?: Array<string>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/materialized_view/list`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2428,6 +2429,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (pageSize !== undefined) {
                 localVarQueryParameter['page_size'] = pageSize;
+            }
+
+            if (refreshMethod) {
+                localVarQueryParameter['refresh_method'] = refreshMethod;
             }
 
             if (schema) {
@@ -4968,13 +4973,14 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {string} [orderBy] 
          * @param {number} [page] 
          * @param {number} [pageSize] 
+         * @param {Array<string>} [refreshMethod] 
          * @param {Array<string>} [schema] 
          * @param {Array<string>} [status] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async materializedViewListGet(beginTime?: number, desc?: boolean, endTime?: number, materializedView?: string, minDuration?: number, orderBy?: string, page?: number, pageSize?: number, schema?: Array<string>, status?: Array<string>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MaterializedviewRefreshHistoryResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.materializedViewListGet(beginTime, desc, endTime, materializedView, minDuration, orderBy, page, pageSize, schema, status, options);
+        async materializedViewListGet(beginTime?: number, desc?: boolean, endTime?: number, materializedView?: string, minDuration?: number, orderBy?: string, page?: number, pageSize?: number, refreshMethod?: Array<string>, schema?: Array<string>, status?: Array<string>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MaterializedviewRefreshHistoryResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.materializedViewListGet(beginTime, desc, endTime, materializedView, minDuration, orderBy, page, pageSize, refreshMethod, schema, status, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6103,13 +6109,14 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {string} [orderBy] 
          * @param {number} [page] 
          * @param {number} [pageSize] 
+         * @param {Array<string>} [refreshMethod] 
          * @param {Array<string>} [schema] 
          * @param {Array<string>} [status] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        materializedViewListGet(beginTime?: number, desc?: boolean, endTime?: number, materializedView?: string, minDuration?: number, orderBy?: string, page?: number, pageSize?: number, schema?: Array<string>, status?: Array<string>, options?: any): AxiosPromise<MaterializedviewRefreshHistoryResponse> {
-            return localVarFp.materializedViewListGet(beginTime, desc, endTime, materializedView, minDuration, orderBy, page, pageSize, schema, status, options).then((request) => request(axios, basePath));
+        materializedViewListGet(beginTime?: number, desc?: boolean, endTime?: number, materializedView?: string, minDuration?: number, orderBy?: string, page?: number, pageSize?: number, refreshMethod?: Array<string>, schema?: Array<string>, status?: Array<string>, options?: any): AxiosPromise<MaterializedviewRefreshHistoryResponse> {
+            return localVarFp.materializedViewListGet(beginTime, desc, endTime, materializedView, minDuration, orderBy, page, pageSize, refreshMethod, schema, status, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7204,6 +7211,13 @@ export interface DefaultApiMaterializedViewListGetRequest {
      * @memberof DefaultApiMaterializedViewListGet
      */
     readonly pageSize?: number
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiMaterializedViewListGet
+     */
+    readonly refreshMethod?: Array<string>
 
     /**
      * 
@@ -8645,7 +8659,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public materializedViewListGet(requestParameters: DefaultApiMaterializedViewListGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).materializedViewListGet(requestParameters.beginTime, requestParameters.desc, requestParameters.endTime, requestParameters.materializedView, requestParameters.minDuration, requestParameters.orderBy, requestParameters.page, requestParameters.pageSize, requestParameters.schema, requestParameters.status, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).materializedViewListGet(requestParameters.beginTime, requestParameters.desc, requestParameters.endTime, requestParameters.materializedView, requestParameters.minDuration, requestParameters.orderBy, requestParameters.page, requestParameters.pageSize, requestParameters.refreshMethod, requestParameters.schema, requestParameters.status, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

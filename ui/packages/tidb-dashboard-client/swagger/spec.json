@@ -1613,6 +1613,15 @@
                             "type": "string"
                         },
                         "collectionFormat": "multi",
+                        "name": "refresh_method",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
                         "name": "schema",
                         "in": "query"
                     },
@@ -4890,6 +4899,9 @@
                 },
                 "refresh_rows": {
                     "type": "integer"
+                },
+                "refresh_method": {
+                    "type": "string"
                 },
                 "refresh_status": {
                     "type": "string"

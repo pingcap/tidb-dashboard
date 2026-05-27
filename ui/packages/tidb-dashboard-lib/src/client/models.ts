@@ -1635,6 +1635,12 @@ export interface MaterializedviewRefreshHistoryItem {
      * @type {string}
      * @memberof MaterializedviewRefreshHistoryItem
      */
+    'refresh_method'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
     'refresh_status'?: string;
     /**
      * 
@@ -4370,4 +4376,3 @@ export interface VersionInfo {
      */
     'standalone'?: string;
 }
-

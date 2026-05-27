@@ -43,12 +43,19 @@ const DEFAULT_TIME_RANGE: TimeRange = {
 const MAX_RANGE_SECONDS = 30 * 24 * 60 * 60
 const DEFAULT_PAGE_SIZE = 10
 const STATUS_OPTIONS = ['success', 'failed', 'running']
+const REFRESH_METHOD_OPTIONS = [
+  'fast auto',
+  'fast manual',
+  'complete auto',
+  'complete manual'
+]
 const DATABASES_LOCAL_STORAGE_KEY = 'materialized_view.last_databases'
 
 type MaterializedViewFilters = {
   timeRange: TimeRange
   databases: string[]
   materializedView: string
+  refreshMethod: string[]
   status: string[]
   minDuration?: number
 }
@@ -131,6 +138,11 @@ function formatDateTime(value?: string | null) {
   return date.utcOffset(tz.getTimeZone()).format('YYYY-MM-DD HH:mm:ss')
 }
 
+function formatRefreshMethod(value?: string | null) {
+  const normalizedValue = value?.trim()
+  return normalizedValue ? normalizedValue : '-'
+}
+
 function StatusBadge({
   status
 }: {
@@ -173,6 +185,7 @@ export default function RefreshHistory() {
       timeRange: DEFAULT_TIME_RANGE,
       databases: cachedDatabases,
       materializedView: '',
+      refreshMethod: [],
       status: [],
       minDuration: undefined
     }),
@@ -237,6 +250,10 @@ export default function RefreshHistory() {
                 ? appliedFilters.databases
                 : undefined,
             materialized_view: appliedFilters.materializedView || undefined,
+            refresh_method:
+              appliedFilters.refreshMethod.length > 0
+                ? appliedFilters.refreshMethod
+                : undefined,
             status: appliedFilters.status,
             min_duration: appliedFilters.minDuration,
             page,
@@ -357,6 +374,15 @@ export default function RefreshHistory() {
           }
           return getValueFormat('short')(value, 0, 1)
         }
+      },
+      {
+        title: t('materialized_view.columns.refresh_method'),
+        dataIndex: 'refresh_method',
+        key: 'refresh_method',
+        width: 160,
+        render: (value: string | null) => (
+          <TextWrap>{formatRefreshMethod(value)}</TextWrap>
+        )
       },
       {
         title: t('materialized_view.columns.refresh_read_tso'),
@@ -531,6 +557,23 @@ export default function RefreshHistory() {
               style={{ width: 180 }}
             />
 
+            <MultiSelect.Plain
+              placeholder={t(
+                'materialized_view.filters.refresh_method.placeholder'
+              )}
+              selectedValueTransKey="materialized_view.filters.refresh_method.selected"
+              columnTitle={t(
+                'materialized_view.filters.refresh_method.column_title'
+              )}
+              value={filters.refreshMethod}
+              onChange={(refreshMethod) => {
+                const nextFilters = { ...filters, refreshMethod }
+                commitFilters(nextFilters)
+              }}
+              items={REFRESH_METHOD_OPTIONS}
+              style={{ width: 180 }}
+            />
+
             <Button type="primary" onClick={() => applyFilters(true)}>
               {t('materialized_view.filters.query')}
             </Button>
@@ -578,7 +621,7 @@ export default function RefreshHistory() {
                   t('materialized_view.pagination.total', { total })
               }}
               size="small"
-              scroll={{ x: 1700 }}
+              scroll={{ x: 1860 }}
             />
           </Card>
         )

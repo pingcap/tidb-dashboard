@@ -22,6 +22,7 @@ class DataSource implements IMaterializedViewDataSource {
         endTime: request.end_time,
         schema: request.schema,
         materializedView: request.materialized_view,
+        refreshMethod: request.refresh_method,
         status: request.status,
         minDuration: request.min_duration,
         page: request.page,

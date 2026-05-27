@@ -49,6 +49,11 @@ function renderRefreshTime(value?: string | null) {
   return <DateTime.Calendar unixTimestampMs={unixTimestampMs} />
 }
 
+function renderRefreshMethod(value?: string | null) {
+  const normalizedValue = value?.trim()
+  return normalizedValue ? normalizedValue : '-'
+}
+
 export default function RefreshHistoryDetail() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
@@ -175,6 +180,16 @@ export default function RefreshHistoryDetail() {
                 )}
               >
                 <div className={styles.value}>{detail.refresh_rows ?? '-'}</div>
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={t(
+                  'materialized_view.columns.refresh_method',
+                  'Refresh Method'
+                )}
+              >
+                <div className={styles.value}>
+                  {renderRefreshMethod(detail.refresh_method)}
+                </div>
               </Descriptions.Item>
               <Descriptions.Item
                 label={

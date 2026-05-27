@@ -32,6 +32,13 @@ var materializedViewAllowedStatuses = map[string]struct{}{
 	"running": {},
 }
 
+var materializedViewAllowedRefreshMethods = map[string]struct{}{
+	"fast auto":       {},
+	"fast manual":     {},
+	"complete auto":   {},
+	"complete manual": {},
+}
+
 type ServiceParams struct {
 	fx.In
 	TiDBClient *tidb.Client
@@ -51,6 +58,7 @@ type RefreshHistoryRequest struct {
 	EndTime          int64    `json:"end_time" form:"end_time"`
 	Schema           []string `json:"schema" form:"schema"`
 	MaterializedView string   `json:"materialized_view" form:"materialized_view"`
+	RefreshMethod    []string `json:"refresh_method" form:"refresh_method"`
 	Status           []string `json:"status" form:"status"`
 	MinDuration      float64  `json:"min_duration" form:"min_duration"`
 	Page             int      `json:"page" form:"page"`
@@ -67,6 +75,7 @@ type RefreshHistoryItem struct {
 	Duration         *float64  `gorm:"column:duration" json:"duration"`
 	RefreshStatus    string    `gorm:"column:refresh_status" json:"refresh_status"`
 	RefreshRows      int64     `gorm:"column:refresh_rows" json:"refresh_rows"`
+	RefreshMethod    string    `gorm:"column:refresh_method" json:"refresh_method"`
 	RefreshReadTSO   string    `gorm:"column:refresh_read_tso" json:"refresh_read_tso"`
 	FailedReason     *string   `gorm:"column:refresh_failed_reason" json:"failed_reason"`
 }
@@ -159,6 +168,24 @@ func normalizeRefreshHistoryRequest(req *RefreshHistoryRequest) error {
 	}
 	req.Status = normalizedStatuses
 
+	refreshMethodSet := make(map[string]struct{}, len(req.RefreshMethod))
+	normalizedRefreshMethods := make([]string, 0, len(req.RefreshMethod))
+	for _, refreshMethod := range req.RefreshMethod {
+		refreshMethod = strings.ToLower(strings.TrimSpace(refreshMethod))
+		if refreshMethod == "" {
+			continue
+		}
+		if _, ok := materializedViewAllowedRefreshMethods[refreshMethod]; !ok {
+			return errors.New("unsupported refresh method")
+		}
+		if _, ok := refreshMethodSet[refreshMethod]; ok {
+			continue
+		}
+		refreshMethodSet[refreshMethod] = struct{}{}
+		normalizedRefreshMethods = append(normalizedRefreshMethods, refreshMethod)
+	}
+	req.RefreshMethod = normalizedRefreshMethods
+
 	return nil
 }
 
@@ -173,6 +200,9 @@ func buildRefreshHistoryBaseQuery(db *gorm.DB, req *RefreshHistoryRequest) *gorm
 
 	if req.MaterializedView != "" {
 		tx = tx.Where("mv_name = ?", req.MaterializedView)
+	}
+	if len(req.RefreshMethod) > 0 {
+		tx = tx.Where("refresh_method IN (?)", req.RefreshMethod)
 	}
 	if len(req.Status) > 0 {
 		tx = tx.Where("refresh_status IN (?)", req.Status)
@@ -201,6 +231,21 @@ func buildRefreshHistoryOrderClause(orderBy string, isDesc bool) string {
 	}
 }
 
+func buildRefreshHistorySelectStmt() string {
+	return strings.Join([]string{
+		"CAST(refresh_job_id AS CHAR) AS refresh_job_id",
+		"mv_schema AS `schema`",
+		"mv_name AS materialized_view",
+		"refresh_time",
+		"CAST(refresh_duration_sec AS DOUBLE) AS duration",
+		"refresh_status",
+		"refresh_rows",
+		"refresh_method",
+		"CAST(refresh_read_tso AS CHAR) AS refresh_read_tso",
+		"refresh_failed_reason",
+	}, ", ")
+}
+
 func QueryRefreshHistory(db *gorm.DB, req *RefreshHistoryRequest) (*RefreshHistoryResponse, error) {
 	baseQuery := buildRefreshHistoryBaseQuery(db, req)
 
@@ -211,17 +256,7 @@ func QueryRefreshHistory(db *gorm.DB, req *RefreshHistoryRequest) (*RefreshHisto
 
 	items := make([]RefreshHistoryItem, 0, req.PageSize)
 	offset := (req.Page - 1) * req.PageSize
-	selectStmt := strings.Join([]string{
-		"CAST(refresh_job_id AS CHAR) AS refresh_job_id",
-		"mv_schema AS `schema`",
-		"mv_name AS materialized_view",
-		"refresh_time",
-		"CAST(refresh_duration_sec AS DOUBLE) AS duration",
-		"refresh_status",
-		"refresh_rows",
-		"CAST(refresh_read_tso AS CHAR) AS refresh_read_tso",
-		"refresh_failed_reason",
-	}, ", ")
+	selectStmt := buildRefreshHistorySelectStmt()
 
 	err := buildRefreshHistoryBaseQuery(db, req).
 		Select(selectStmt).
@@ -269,17 +304,7 @@ func (s *Service) getRefreshHistory(c *gin.Context) {
 
 func QueryRefreshHistoryDetail(db *gorm.DB, id string) (*RefreshHistoryItem, error) {
 	var item RefreshHistoryItem
-	selectStmt := strings.Join([]string{
-		"CAST(refresh_job_id AS CHAR) AS refresh_job_id",
-		"mv_schema AS `schema`",
-		"mv_name AS materialized_view",
-		"refresh_time",
-		"CAST(refresh_duration_sec AS DOUBLE) AS duration",
-		"refresh_status",
-		"refresh_rows",
-		"CAST(refresh_read_tso AS CHAR) AS refresh_read_tso",
-		"refresh_failed_reason",
-	}, ", ")
+	selectStmt := buildRefreshHistorySelectStmt()
 
 	err := db.Table("mysql.tidb_mview_refresh_hist").
 		Select(selectStmt).

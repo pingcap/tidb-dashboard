@@ -13,6 +13,7 @@ materialized_view:
     duration: Duration
     refresh_status: Refresh Status
     refresh_rows: Refresh Rows
+    refresh_method: Refresh Method
     refresh_read_tso: Refresh Read TSO
     failed_reason: Failed Reason
   status:
@@ -33,5 +34,9 @@ materialized_view:
       placeholder: All Statuses
       selected: '{{ n }} Statuses'
       column_title: Refresh Status
+    refresh_method:
+      placeholder: All Refresh Methods
+      selected: '{{ n }} Refresh Methods'
+      column_title: Refresh Method
   pagination:
     total: '{{ total }} records'

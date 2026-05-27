@@ -50,6 +50,26 @@ func TestNormalizeRefreshHistoryRequest(t *testing.T) {
 		}
 	})
 
+	t.Run("normalizes refresh methods", func(t *testing.T) {
+		req := &RefreshHistoryRequest{
+			BeginTime:     1710000000,
+			EndTime:       1710003600,
+			Schema:        []string{"test"},
+			RefreshMethod: []string{" FAST AUTO ", "complete manual", "fast auto"},
+		}
+
+		if err := normalizeRefreshHistoryRequest(req); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(req.RefreshMethod) != 2 {
+			t.Fatalf("unexpected refresh method length: %d", len(req.RefreshMethod))
+		}
+		if req.RefreshMethod[0] != "fast auto" || req.RefreshMethod[1] != "complete manual" {
+			t.Fatalf("unexpected refresh methods: %#v", req.RefreshMethod)
+		}
+	})
+
 	t.Run("normalizes schemas", func(t *testing.T) {
 		req := &RefreshHistoryRequest{
 			BeginTime: 1710000000,
@@ -91,6 +111,19 @@ func TestNormalizeRefreshHistoryRequest(t *testing.T) {
 
 		if err := normalizeRefreshHistoryRequest(req); err == nil {
 			t.Fatalf("expected status validation error")
+		}
+	})
+
+	t.Run("rejects invalid refresh method", func(t *testing.T) {
+		req := &RefreshHistoryRequest{
+			BeginTime:     1710000000,
+			EndTime:       1710003600,
+			Schema:        []string{"test"},
+			RefreshMethod: []string{"incremental"},
+		}
+
+		if err := normalizeRefreshHistoryRequest(req); err == nil {
+			t.Fatalf("expected refresh method validation error")
 		}
 	})
 

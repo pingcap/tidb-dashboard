@@ -13,6 +13,7 @@ materialized_view:
     duration: Duration
     refresh_status: Refresh Status
     refresh_rows: Refresh Rows
+    refresh_method: Refresh Method
     refresh_read_tso: Refresh Read TSO
     failed_reason: Failed Reason
   status:
@@ -33,5 +34,9 @@ materialized_view:
       placeholder: 全部状态
       selected: '{{ n }} 个状态'
       column_title: Refresh Status
+    refresh_method:
+      placeholder: 全部 Refresh Methods
+      selected: '{{ n }} 个 Refresh Methods'
+      column_title: Refresh Method
   pagination:
     total: 共 {{ total }} 条

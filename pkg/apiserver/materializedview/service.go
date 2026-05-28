@@ -67,6 +67,16 @@ type RefreshHistoryRequest struct {
 	IsDesc           bool     `json:"desc" form:"desc"`
 }
 
+type RefreshAlertRequest struct {
+	Schema           []string `json:"schema" form:"schema"`
+	MaterializedView string   `json:"materialized_view" form:"materialized_view"`
+	LastSuccessTime  int64    `json:"last_success_time" form:"last_success_time"`
+	Page             int      `json:"page" form:"page"`
+	PageSize         int      `json:"page_size" form:"page_size"`
+	OrderBy          string   `json:"orderBy" form:"orderBy"`
+	IsDesc           bool     `json:"desc" form:"desc"`
+}
+
 type RefreshHistoryItem struct {
 	RefreshJobID     string    `gorm:"column:refresh_job_id" json:"refresh_job_id"`
 	Schema           string    `gorm:"column:schema" json:"schema"`
@@ -80,9 +90,24 @@ type RefreshHistoryItem struct {
 	FailedReason     *string   `gorm:"column:refresh_failed_reason" json:"failed_reason"`
 }
 
+type RefreshAlertItem struct {
+	Schema             string     `gorm:"column:schema" json:"schema"`
+	MaterializedView   string     `gorm:"column:materialized_view" json:"materialized_view"`
+	MaterializedViewID string     `gorm:"column:materialized_view_id" json:"materialized_view_id"`
+	LastSuccessTime    *time.Time `gorm:"column:last_success_time" json:"last_success_time"`
+	AlertType          string     `gorm:"column:alert_type" json:"alert_type"`
+	RefreshFailed      string     `gorm:"column:refresh_failed" json:"refresh_failed"`
+	UpdateTime         *time.Time `gorm:"column:update_time" json:"update_time"`
+}
+
 type RefreshHistoryResponse struct {
 	Items []RefreshHistoryItem `json:"items"`
 	Total int64                `json:"total"`
+}
+
+type RefreshAlertResponse struct {
+	Items []RefreshAlertItem `json:"items"`
+	Total int64              `json:"total"`
 }
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -92,7 +117,25 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	{
 		endpoint.GET("/list", s.getRefreshHistory)
 		endpoint.GET("/detail/:id", s.getRefreshHistoryDetail)
+		endpoint.GET("/alert", s.getRefreshAlert)
 	}
+}
+
+func normalizeSchemaList(schemas []string) []string {
+	schemaSet := make(map[string]struct{}, len(schemas))
+	normalizedSchemas := make([]string, 0, len(schemas))
+	for _, schema := range schemas {
+		schema = strings.TrimSpace(schema)
+		if schema == "" {
+			continue
+		}
+		if _, ok := schemaSet[schema]; ok {
+			continue
+		}
+		schemaSet[schema] = struct{}{}
+		normalizedSchemas = append(normalizedSchemas, schema)
+	}
+	return normalizedSchemas
 }
 
 func normalizeRefreshHistoryRequest(req *RefreshHistoryRequest) error {
@@ -108,20 +151,7 @@ func normalizeRefreshHistoryRequest(req *RefreshHistoryRequest) error {
 
 	req.MaterializedView = strings.TrimSpace(req.MaterializedView)
 
-	schemaSet := make(map[string]struct{}, len(req.Schema))
-	normalizedSchemas := make([]string, 0, len(req.Schema))
-	for _, schema := range req.Schema {
-		schema = strings.TrimSpace(schema)
-		if schema == "" {
-			continue
-		}
-		if _, ok := schemaSet[schema]; ok {
-			continue
-		}
-		schemaSet[schema] = struct{}{}
-		normalizedSchemas = append(normalizedSchemas, schema)
-	}
-	req.Schema = normalizedSchemas
+	req.Schema = normalizeSchemaList(req.Schema)
 	if len(req.Schema) == 0 {
 		return errors.New("schema is required")
 	}
@@ -189,6 +219,40 @@ func normalizeRefreshHistoryRequest(req *RefreshHistoryRequest) error {
 	return nil
 }
 
+func normalizeRefreshAlertRequest(req *RefreshAlertRequest) error {
+	req.MaterializedView = strings.TrimSpace(req.MaterializedView)
+	req.Schema = normalizeSchemaList(req.Schema)
+	if len(req.Schema) == 0 {
+		return errors.New("schema is required")
+	}
+
+	if req.LastSuccessTime < 0 {
+		return errors.New("last_success_time should not be negative")
+	}
+	if req.Page <= 0 {
+		req.Page = materializedViewDefaultPage
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = materializedViewDefaultPageSize
+	}
+	if req.PageSize > materializedViewMaxPageSize {
+		req.PageSize = materializedViewMaxPageSize
+	}
+
+	if req.OrderBy == "" {
+		req.OrderBy = "update_time"
+		req.IsDesc = true
+	}
+
+	switch req.OrderBy {
+	case "last_success_time", "update_time":
+	default:
+		return errors.New("unsupported orderBy")
+	}
+
+	return nil
+}
+
 func buildRefreshHistoryBaseQuery(db *gorm.DB, req *RefreshHistoryRequest) *gorm.DB {
 	tx := db.
 		Table("mysql.tidb_mview_refresh_hist").
@@ -214,6 +278,23 @@ func buildRefreshHistoryBaseQuery(db *gorm.DB, req *RefreshHistoryRequest) *gorm
 	return tx
 }
 
+func buildRefreshAlertBaseQuery(db *gorm.DB, req *RefreshAlertRequest) *gorm.DB {
+	tx := db.Table("mysql.tidb_mview_refresh_alert")
+
+	if len(req.Schema) > 0 {
+		tx = tx.Where("mv_schema IN (?)", req.Schema)
+	}
+
+	if req.MaterializedView != "" {
+		tx = tx.Where("mv_name = ?", req.MaterializedView)
+	}
+	if req.LastSuccessTime > 0 {
+		tx = tx.Where("last_success_time >= FROM_UNIXTIME(?)", req.LastSuccessTime)
+	}
+
+	return tx
+}
+
 func buildRefreshHistoryOrderClause(orderBy string, isDesc bool) string {
 	switch orderBy {
 	case "refresh_time":
@@ -231,6 +312,23 @@ func buildRefreshHistoryOrderClause(orderBy string, isDesc bool) string {
 	}
 }
 
+func buildRefreshAlertOrderClause(orderBy string, isDesc bool) string {
+	switch orderBy {
+	case "last_success_time":
+		if isDesc {
+			return "last_success_time DESC"
+		}
+		return "last_success_time ASC"
+	case "update_time":
+		if isDesc {
+			return "update_time DESC"
+		}
+		return "update_time ASC"
+	default:
+		return "update_time DESC"
+	}
+}
+
 func buildRefreshHistorySelectStmt() string {
 	return strings.Join([]string{
 		"CAST(refresh_job_id AS CHAR) AS refresh_job_id",
@@ -243,6 +341,18 @@ func buildRefreshHistorySelectStmt() string {
 		"refresh_method",
 		"CAST(refresh_read_tso AS CHAR) AS refresh_read_tso",
 		"refresh_failed_reason",
+	}, ", ")
+}
+
+func buildRefreshAlertSelectStmt() string {
+	return strings.Join([]string{
+		"mv_schema AS `schema`",
+		"mv_name AS materialized_view",
+		"CAST(mv_id AS CHAR) AS materialized_view_id",
+		"last_success_time",
+		"alert_type",
+		"CASE WHEN refresh_failed THEN 'Yes' ELSE '' END AS refresh_failed",
+		"update_time",
 	}, ", ")
 }
 
@@ -274,6 +384,34 @@ func QueryRefreshHistory(db *gorm.DB, req *RefreshHistoryRequest) (*RefreshHisto
 	}, nil
 }
 
+func QueryRefreshAlert(db *gorm.DB, req *RefreshAlertRequest) (*RefreshAlertResponse, error) {
+	baseQuery := buildRefreshAlertBaseQuery(db, req)
+
+	var total int64
+	if err := baseQuery.Count(&total).Error; err != nil {
+		return nil, err
+	}
+
+	items := make([]RefreshAlertItem, 0, req.PageSize)
+	offset := (req.Page - 1) * req.PageSize
+	selectStmt := buildRefreshAlertSelectStmt()
+
+	err := buildRefreshAlertBaseQuery(db, req).
+		Select(selectStmt).
+		Order(buildRefreshAlertOrderClause(req.OrderBy, req.IsDesc)).
+		Offset(offset).
+		Limit(req.PageSize).
+		Find(&items).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &RefreshAlertResponse{
+		Items: items,
+		Total: total,
+	}, nil
+}
+
 // @Summary List materialized view refresh histories
 // @Param q query RefreshHistoryRequest true "Query"
 // @Success 200 {object} RefreshHistoryResponse
@@ -294,6 +432,34 @@ func (s *Service) getRefreshHistory(c *gin.Context) {
 
 	db := utils.GetTiDBConnection(c)
 	result, err := QueryRefreshHistory(db, &req)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// @Summary List materialized view refresh alerts
+// @Param q query RefreshAlertRequest true "Query"
+// @Success 200 {object} RefreshAlertResponse
+// @Router /materialized_view/alert [get]
+// @Security JwtAuth
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+func (s *Service) getRefreshAlert(c *gin.Context) {
+	var req RefreshAlertRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
+		return
+	}
+	if err := normalizeRefreshAlertRequest(&req); err != nil {
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	result, err := QueryRefreshAlert(db, &req)
 	if err != nil {
 		rest.Error(c, err)
 		return

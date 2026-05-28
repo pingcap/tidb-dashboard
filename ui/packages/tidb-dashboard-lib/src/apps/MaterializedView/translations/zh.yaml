@@ -1,15 +1,27 @@
 materialized_view:
   nav_title: Materialized View
   page_title: Materialized View - Refresh History
+  page_title_alert: Materialized View - Refresh Alert
   page_title_detail: Materialized View - Refresh History Detail
   timezone: '时区：{{ timezone }}'
   empty_before_query: 请选择 Databases 后点击查询以加载刷新历史。
   empty_result: 当前筛选条件下没有查询到刷新历史。
+  empty_alert_before_query: 请选择 Databases 后点击查询以加载刷新告警。
+  empty_alert_result: 当前筛选条件下没有查询到刷新告警。
+  header:
+    prefix: 'Materialized View -'
+    refresh_history: Refresh History
+    refresh_alert: Refresh Alert
   columns:
     refresh_job_id: Refresh Job ID
     schema: Schema
     materialized_view: Materialized View
+    materialized_view_id: Materialized View ID
     refresh_start_time: Refresh Start time
+    last_success_time: Last Success Time
+    alert_type: Alert Type
+    refresh_failed: Refresh Failed
+    update_time: Update Time
     duration: Duration
     refresh_status: Refresh Status
     refresh_rows: Refresh Rows
@@ -28,6 +40,8 @@ materialized_view:
       column_title: Databases
     materialized_view:
       placeholder: Materialized View
+    last_success_time:
+      placeholder: Last Success Time >=
     duration:
       placeholder: 最小时长（秒）
     status:

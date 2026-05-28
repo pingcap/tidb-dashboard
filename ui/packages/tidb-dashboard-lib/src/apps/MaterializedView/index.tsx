@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useLocationChange } from '@lib/hooks/useLocationChange'
 import { addTranslations } from '@lib/utils/i18n'
 
-import { RefreshHistory, RefreshHistoryDetail } from './pages'
+import { RefreshAlert, RefreshHistory, RefreshHistoryDetail } from './pages'
 import { MaterializedViewContext } from './context'
 import translations from './translations'
 
@@ -27,6 +27,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/materialized_view" element={<RefreshHistory />} />
+      <Route path="/materialized_view/alert" element={<RefreshAlert />} />
       <Route
         path="/materialized_view/detail/:id"
         element={<RefreshHistoryDetail />}

@@ -31,6 +31,7 @@ import {
   IMaterializedViewRefreshHistoryItem,
   MaterializedViewContext
 } from '../../context'
+import HeaderTabs from '../HeaderTabs'
 
 import styles from './index.module.less'
 import dayjs from 'dayjs'
@@ -463,7 +464,7 @@ export default function RefreshHistory() {
     <div className={styles.list_container}>
       <Card
         noMarginBottom
-        title={pageTitle}
+        title={<HeaderTabs active="history" />}
         extra={
           <span className={styles.timezone_label}>
             {t('materialized_view.timezone', {

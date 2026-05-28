@@ -36,6 +36,31 @@ export interface IMaterializedViewRefreshHistoryResponse {
   total?: number
 }
 
+export interface IMaterializedViewRefreshAlertItem {
+  schema?: string
+  materialized_view?: string
+  materialized_view_id?: string
+  last_success_time?: string | null
+  alert_type?: 'Warning' | 'Overdue' | string
+  refresh_failed?: 'Yes' | string
+  update_time?: string | null
+}
+
+export interface IMaterializedViewRefreshAlertRequest {
+  schema?: string[]
+  materialized_view?: string
+  last_success_time?: number
+  page?: number
+  page_size?: number
+  orderBy?: 'last_success_time' | 'update_time'
+  desc?: boolean
+}
+
+export interface IMaterializedViewRefreshAlertResponse {
+  items?: IMaterializedViewRefreshAlertItem[]
+  total?: number
+}
+
 export interface IMaterializedViewDataSource {
   getDatabaseList(options?: ReqConfig): AxiosPromise<Array<string>>
   materializedViewRefreshHistoryGet(
@@ -46,6 +71,10 @@ export interface IMaterializedViewDataSource {
     id: string,
     options?: ReqConfig
   ): AxiosPromise<IMaterializedViewRefreshHistoryItem>
+  materializedViewRefreshAlertGet(
+    request: IMaterializedViewRefreshAlertRequest,
+    options?: ReqConfig
+  ): AxiosPromise<IMaterializedViewRefreshAlertResponse>
 }
 
 export interface IMaterializedViewConfig extends IContextConfig {}

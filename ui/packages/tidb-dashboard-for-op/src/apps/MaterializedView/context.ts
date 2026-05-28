@@ -1,11 +1,13 @@
 import {
   IMaterializedViewContext,
   IMaterializedViewDataSource,
+  IMaterializedViewRefreshAlertRequest,
   IMaterializedViewRefreshHistoryRequest,
   ReqConfig
 } from '@pingcap/tidb-dashboard-lib'
 
 import client from '~/client'
+import auth from '~/utils/auth'
 
 class DataSource implements IMaterializedViewDataSource {
   getDatabaseList(options?: ReqConfig) {
@@ -36,6 +38,41 @@ class DataSource implements IMaterializedViewDataSource {
 
   materializedViewRefreshHistoryDetailGet(id: string, options?: ReqConfig) {
     return client.getInstance().materializedViewDetailIdGet({ id }, options)
+  }
+
+  materializedViewRefreshAlertGet(
+    request: IMaterializedViewRefreshAlertRequest,
+    options?: ReqConfig
+  ) {
+    const params = new URLSearchParams()
+    request.schema?.forEach((schema) => params.append('schema', schema))
+    if (request.materialized_view) {
+      params.set('materialized_view', request.materialized_view)
+    }
+    if (request.last_success_time !== undefined) {
+      params.set('last_success_time', String(request.last_success_time))
+    }
+    if (request.page !== undefined) {
+      params.set('page', String(request.page))
+    }
+    if (request.page_size !== undefined) {
+      params.set('page_size', String(request.page_size))
+    }
+    if (request.orderBy !== undefined) {
+      params.set('orderBy', request.orderBy)
+    }
+    if (request.desc !== undefined) {
+      params.set('desc', String(request.desc))
+    }
+
+    return client.getAxiosInstance().get('/materialized_view/alert', {
+      ...options,
+      params,
+      headers: {
+        ...(options?.headers ?? {}),
+        Authorization: auth.getAuthTokenAsBearer() || ''
+      }
+    })
   }
 }
 

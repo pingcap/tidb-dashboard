@@ -83,6 +83,8 @@ import { LogsearchTaskGroupModel } from '../models';
 // @ts-ignore
 import { LogsearchTaskGroupResponse } from '../models';
 // @ts-ignore
+import { MaterializedviewRefreshAlertResponse } from '../models';
+// @ts-ignore
 import { MaterializedviewRefreshHistoryItem } from '../models';
 // @ts-ignore
 import { MaterializedviewRefreshHistoryResponse } from '../models';
@@ -2317,6 +2319,74 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             // authentication JwtAuth required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary List materialized view refresh alerts
+         * @param {boolean} [desc] 
+         * @param {number} [lastSuccessTime] 
+         * @param {string} [materializedView] 
+         * @param {string} [orderBy] 
+         * @param {number} [page] 
+         * @param {number} [pageSize] 
+         * @param {Array<string>} [schema] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        materializedViewAlertGet: async (desc?: boolean, lastSuccessTime?: number, materializedView?: string, orderBy?: string, page?: number, pageSize?: number, schema?: Array<string>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/materialized_view/alert`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (desc !== undefined) {
+                localVarQueryParameter['desc'] = desc;
+            }
+
+            if (lastSuccessTime !== undefined) {
+                localVarQueryParameter['last_success_time'] = lastSuccessTime;
+            }
+
+            if (materializedView !== undefined) {
+                localVarQueryParameter['materialized_view'] = materializedView;
+            }
+
+            if (orderBy !== undefined) {
+                localVarQueryParameter['orderBy'] = orderBy;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (pageSize !== undefined) {
+                localVarQueryParameter['page_size'] = pageSize;
+            }
+
+            if (schema) {
+                localVarQueryParameter['schema'] = schema;
+            }
 
 
     
@@ -4953,6 +5023,23 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary List materialized view refresh alerts
+         * @param {boolean} [desc] 
+         * @param {number} [lastSuccessTime] 
+         * @param {string} [materializedView] 
+         * @param {string} [orderBy] 
+         * @param {number} [page] 
+         * @param {number} [pageSize] 
+         * @param {Array<string>} [schema] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async materializedViewAlertGet(desc?: boolean, lastSuccessTime?: number, materializedView?: string, orderBy?: string, page?: number, pageSize?: number, schema?: Array<string>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MaterializedviewRefreshAlertResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.materializedViewAlertGet(desc, lastSuccessTime, materializedView, orderBy, page, pageSize, schema, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary Get materialized view refresh history detail
          * @param {string} id Refresh Job ID
          * @param {*} [options] Override http request option.
@@ -6090,6 +6177,22 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary List materialized view refresh alerts
+         * @param {boolean} [desc] 
+         * @param {number} [lastSuccessTime] 
+         * @param {string} [materializedView] 
+         * @param {string} [orderBy] 
+         * @param {number} [page] 
+         * @param {number} [pageSize] 
+         * @param {Array<string>} [schema] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        materializedViewAlertGet(desc?: boolean, lastSuccessTime?: number, materializedView?: string, orderBy?: string, page?: number, pageSize?: number, schema?: Array<string>, options?: any): AxiosPromise<MaterializedviewRefreshAlertResponse> {
+            return localVarFp.materializedViewAlertGet(desc, lastSuccessTime, materializedView, orderBy, page, pageSize, schema, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Get materialized view refresh history detail
          * @param {string} id Refresh Job ID
          * @param {*} [options] Override http request option.
@@ -7134,6 +7237,62 @@ export interface DefaultApiLogsTaskgroupsIdRetryPostRequest {
      * @memberof DefaultApiLogsTaskgroupsIdRetryPost
      */
     readonly id: string
+}
+
+/**
+ * Request parameters for materializedViewAlertGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiMaterializedViewAlertGetRequest
+ */
+export interface DefaultApiMaterializedViewAlertGetRequest {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DefaultApiMaterializedViewAlertGet
+     */
+    readonly desc?: boolean
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMaterializedViewAlertGet
+     */
+    readonly lastSuccessTime?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiMaterializedViewAlertGet
+     */
+    readonly materializedView?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof DefaultApiMaterializedViewAlertGet
+     */
+    readonly orderBy?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMaterializedViewAlertGet
+     */
+    readonly page?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultApiMaterializedViewAlertGet
+     */
+    readonly pageSize?: number
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DefaultApiMaterializedViewAlertGet
+     */
+    readonly schema?: Array<string>
 }
 
 /**
@@ -8636,6 +8795,18 @@ export class DefaultApi extends BaseAPI {
      */
     public logsTaskgroupsIdRetryPost(requestParameters: DefaultApiLogsTaskgroupsIdRetryPostRequest, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).logsTaskgroupsIdRetryPost(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary List materialized view refresh alerts
+     * @param {DefaultApiMaterializedViewAlertGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public materializedViewAlertGet(requestParameters: DefaultApiMaterializedViewAlertGetRequest = {}, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).materializedViewAlertGet(requestParameters.desc, requestParameters.lastSuccessTime, requestParameters.materializedView, requestParameters.orderBy, requestParameters.page, requestParameters.pageSize, requestParameters.schema, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -245,7 +245,7 @@ func normalizeRefreshAlertRequest(req *RefreshAlertRequest) error {
 	}
 
 	switch req.OrderBy {
-	case "last_success_time", "update_time":
+	case "last_success_time", "update_time", "updated_at":
 	default:
 		return errors.New("unsupported orderBy")
 	}
@@ -319,13 +319,13 @@ func buildRefreshAlertOrderClause(orderBy string, isDesc bool) string {
 			return "last_success_time DESC"
 		}
 		return "last_success_time ASC"
-	case "update_time":
+	case "update_time", "updated_at":
 		if isDesc {
-			return "update_time DESC"
+			return "updated_at DESC"
 		}
-		return "update_time ASC"
+		return "updated_at ASC"
 	default:
-		return "update_time DESC"
+		return "updated_at DESC"
 	}
 }
 
@@ -348,11 +348,11 @@ func buildRefreshAlertSelectStmt() string {
 	return strings.Join([]string{
 		"mv_schema AS `schema`",
 		"mv_name AS materialized_view",
-		"CAST(mv_id AS CHAR) AS materialized_view_id",
+		"CAST(mview_id AS CHAR) AS materialized_view_id",
 		"last_success_time",
-		"alert_type",
+		"alter_level AS alert_type",
 		"CASE WHEN refresh_failed THEN 'Yes' ELSE '' END AS refresh_failed",
-		"update_time",
+		"updated_at AS update_time",
 	}, ", ")
 }
 

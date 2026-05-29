@@ -49,6 +49,12 @@ export interface MaterializedviewRefreshHistoryItem {
      * @type {string}
      * @memberof MaterializedviewRefreshHistoryItem
      */
+    'refresh_method'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
     'refresh_read_tso'?: string;
     /**
      * 
@@ -56,12 +62,6 @@ export interface MaterializedviewRefreshHistoryItem {
      * @memberof MaterializedviewRefreshHistoryItem
      */
     'refresh_rows'?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof MaterializedviewRefreshHistoryItem
-     */
-    'refresh_method'?: string;
     /**
      * 
      * @type {string}
@@ -81,3 +81,4 @@ export interface MaterializedviewRefreshHistoryItem {
      */
     'schema'?: string;
 }
+

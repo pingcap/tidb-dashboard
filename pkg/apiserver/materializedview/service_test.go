@@ -280,13 +280,19 @@ func TestBuildRefreshAlertOrderClause(t *testing.T) {
 			name:    "update time desc",
 			orderBy: "update_time",
 			isDesc:  true,
-			expect:  "update_time DESC",
+			expect:  "updated_at DESC",
 		},
 		{
 			name:    "update time asc",
 			orderBy: "update_time",
 			isDesc:  false,
-			expect:  "update_time ASC",
+			expect:  "updated_at ASC",
+		},
+		{
+			name:    "updated at desc",
+			orderBy: "updated_at",
+			isDesc:  true,
+			expect:  "updated_at DESC",
 		},
 	}
 

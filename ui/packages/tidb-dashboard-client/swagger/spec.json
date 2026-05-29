@@ -1519,6 +1519,77 @@
                 }
             }
         },
+        "/materialized_view/alert": {
+            "get": {
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
+                ],
+                "summary": "List materialized view refresh alerts",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "name": "desc",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "last_success_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "materialized_view",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "name": "schema",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/materializedview.RefreshAlertResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/materialized_view/detail/{id}": {
             "get": {
                 "security": [
@@ -4879,6 +4950,46 @@
                 }
             }
         },
+        "materializedview.RefreshAlertItem": {
+            "type": "object",
+            "properties": {
+                "alert_type": {
+                    "type": "string"
+                },
+                "last_success_time": {
+                    "type": "string"
+                },
+                "materialized_view": {
+                    "type": "string"
+                },
+                "materialized_view_id": {
+                    "type": "string"
+                },
+                "refresh_failed": {
+                    "type": "string"
+                },
+                "schema": {
+                    "type": "string"
+                },
+                "update_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "materializedview.RefreshAlertResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/materializedview.RefreshAlertItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "materializedview.RefreshHistoryItem": {
             "type": "object",
             "properties": {
@@ -4894,14 +5005,14 @@
                 "refresh_job_id": {
                     "type": "string"
                 },
+                "refresh_method": {
+                    "type": "string"
+                },
                 "refresh_read_tso": {
                     "type": "string"
                 },
                 "refresh_rows": {
                     "type": "integer"
-                },
-                "refresh_method": {
-                    "type": "string"
                 },
                 "refresh_status": {
                     "type": "string"

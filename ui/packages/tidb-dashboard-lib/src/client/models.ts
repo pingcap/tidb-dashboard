@@ -1591,6 +1591,82 @@ export interface LogsearchTaskModel {
 /**
  * 
  * @export
+ * @interface MaterializedviewRefreshAlertItem
+ */
+export interface MaterializedviewRefreshAlertItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshAlertItem
+     */
+    'alert_type'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshAlertItem
+     */
+    'last_success_time'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshAlertItem
+     */
+    'materialized_view'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshAlertItem
+     */
+    'materialized_view_id'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshAlertItem
+     */
+    'refresh_failed'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshAlertItem
+     */
+    'schema'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshAlertItem
+     */
+    'update_time'?: string;
+}
+
+
+
+
+/**
+ * 
+ * @export
+ * @interface MaterializedviewRefreshAlertResponse
+ */
+export interface MaterializedviewRefreshAlertResponse {
+    /**
+     * 
+     * @type {Array<MaterializedviewRefreshAlertItem>}
+     * @memberof MaterializedviewRefreshAlertResponse
+     */
+    'items'?: Array<MaterializedviewRefreshAlertItem>;
+    /**
+     * 
+     * @type {number}
+     * @memberof MaterializedviewRefreshAlertResponse
+     */
+    'total'?: number;
+}
+
+
+
+
+/**
+ * 
+ * @export
  * @interface MaterializedviewRefreshHistoryItem
  */
 export interface MaterializedviewRefreshHistoryItem {
@@ -1623,6 +1699,12 @@ export interface MaterializedviewRefreshHistoryItem {
      * @type {string}
      * @memberof MaterializedviewRefreshHistoryItem
      */
+    'refresh_method'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
     'refresh_read_tso'?: string;
     /**
      * 
@@ -1630,12 +1712,6 @@ export interface MaterializedviewRefreshHistoryItem {
      * @memberof MaterializedviewRefreshHistoryItem
      */
     'refresh_rows'?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof MaterializedviewRefreshHistoryItem
-     */
-    'refresh_method'?: string;
     /**
      * 
      * @type {string}
@@ -4376,3 +4452,4 @@ export interface VersionInfo {
      */
     'standalone'?: string;
 }
+

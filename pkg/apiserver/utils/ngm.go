@@ -52,12 +52,14 @@ type NgmProxy struct {
 	ngmReqGroup  singleflight.Group
 	ngmAddrCache atomic.Value
 	timeout      time.Duration
+	config       *config.Config
 }
 
 func NewNgmProxy(lc fx.Lifecycle, etcdClient *clientv3.Client, config *config.Config) (*NgmProxy, error) {
 	s := &NgmProxy{
 		etcdClient: etcdClient,
 		timeout:    time.Duration(config.NgmTimeout) * time.Second,
+		config:     config,
 	}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -92,6 +94,7 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 			IdleConnTimeout:       90 * time.Second,
 			TLSHandshakeTimeout:   10 * time.Second,
 			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig:       n.config.ClusterTLSConfig,
 		}
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
@@ -127,7 +130,7 @@ func (n *NgmProxy) getNgmAddrFromCache() (string, error) {
 func (n *NgmProxy) resolveNgmAddress() (string, error) {
 	addr, err := topology.FetchNgMonitoringTopology(n.lifecycleCtx, n.etcdClient)
 	if err == nil && addr != "" {
-		return fmt.Sprintf("http://%s", addr), nil
+		return fmt.Sprintf("%s://%s", n.config.GetClusterHTTPScheme(), addr), nil
 	}
 	return "", ErrNgmNotStart.Wrap(err, "NgMonitoring component is not started")
 }

@@ -350,7 +350,7 @@ func buildRefreshAlertSelectStmt() string {
 		"mv_name AS materialized_view",
 		"CAST(mview_id AS CHAR) AS materialized_view_id",
 		"last_success_time",
-		"alter_level AS alert_type",
+		"alert_level AS alert_type",
 		"CASE WHEN refresh_failed THEN 'Yes' ELSE '' END AS refresh_failed",
 		"updated_at AS update_time",
 	}, ", ")

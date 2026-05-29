@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -195,6 +195,7 @@ export default function RefreshHistory() {
 
   const [filters, setFilters] =
     useState<MaterializedViewFilters>(initialFilters)
+  const filtersRef = useRef<MaterializedViewFilters>(initialFilters)
   const [appliedFilters, setAppliedFilters] =
     useState<MaterializedViewFilters>(initialFilters)
   const [hasSearched, setHasSearched] = useState(
@@ -282,7 +283,7 @@ export default function RefreshHistory() {
       page === 1 &&
       areFiltersEqual(normalizedFilters, appliedFilters)
 
-    setFilters(normalizedFilters)
+    updateFilters(normalizedFilters)
     setPage(1)
     persistDatabases(normalizedFilters.databases)
 
@@ -433,8 +434,21 @@ export default function RefreshHistory() {
     [isDesc, orderBy, t]
   )
 
+  function updateFilters(
+    nextFiltersOrUpdater:
+      | MaterializedViewFilters
+      | ((prev: MaterializedViewFilters) => MaterializedViewFilters)
+  ) {
+    const nextFilters =
+      typeof nextFiltersOrUpdater === 'function'
+        ? nextFiltersOrUpdater(filtersRef.current)
+        : nextFiltersOrUpdater
+    filtersRef.current = nextFilters
+    setFilters(nextFilters)
+  }
+
   function applyFilters(forceRefresh = false) {
-    commitFilters(filters, forceRefresh)
+    commitFilters(filtersRef.current, forceRefresh)
   }
 
   function handleTableChange(pagination, _filters, sorter) {
@@ -499,7 +513,7 @@ export default function RefreshHistory() {
               )}
               value={filters.materializedView}
               onChange={(e) =>
-                setFilters((prev) => ({
+                updateFilters((prev) => ({
                   ...prev,
                   materializedView: e.target.value
                 }))
@@ -547,7 +561,7 @@ export default function RefreshHistory() {
               placeholder={t('materialized_view.filters.duration.placeholder')}
               value={filters.minDuration}
               onChange={(minDuration) =>
-                setFilters((prev) => ({
+                updateFilters((prev) => ({
                   ...prev,
                   minDuration:
                     minDuration === null ? undefined : Number(minDuration)

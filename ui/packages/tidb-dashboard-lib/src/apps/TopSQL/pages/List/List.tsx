@@ -23,7 +23,7 @@ import {
   SettingOutlined
 } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import { useMount, useSessionStorage } from 'react-use'
+import { useSessionStorage } from 'react-use'
 import { useMemoizedFn } from 'ahooks'
 import { sortBy } from 'lodash'
 import formatSql from '@lib/utils/sqlFormatter'
@@ -96,6 +96,85 @@ const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
   return _toTimeRangeValue(v, v?.type === 'recent' ? RECENT_RANGE_OFFSET : 0)
 }
 
+type TopSQLQueryParams = {
+  instance: string
+  instance_type: string
+  limit: number
+  group_by: AggLevel
+  order_by: OrderBy
+}
+
+const isSameInstance = (
+  prev: TopsqlInstanceItem | null | undefined,
+  next: TopsqlInstanceItem | null | undefined
+) =>
+  prev?.instance === next?.instance &&
+  prev?.instance_type === next?.instance_type
+
+const findInstance = (
+  instances: TopsqlInstanceItem[],
+  instanceName?: string,
+  instanceType?: string
+) => {
+  if (!instanceName) {
+    return null
+  }
+
+  if (instanceType) {
+    return (
+      instances.find(
+        (item) =>
+          item.instance === instanceName && item.instance_type === instanceType
+      ) ?? null
+    )
+  }
+
+  return instances.find((item) => item.instance === instanceName) ?? null
+}
+
+const resolveSelectedInstance = (
+  instances: TopsqlInstanceItem[],
+  instanceName: string,
+  instanceType: string,
+  storedInstance: TopsqlInstanceItem | null | undefined
+) => {
+  const instanceFromUrl = findInstance(instances, instanceName, instanceType)
+  if (instanceFromUrl) {
+    return instanceFromUrl
+  }
+
+  if (instanceName && instanceType) {
+    return {
+      instance: instanceName,
+      instance_type: instanceType
+    }
+  }
+
+  const instanceFromStorage = findInstance(
+    instances,
+    storedInstance?.instance,
+    storedInstance?.instance_type
+  )
+
+  return instanceFromStorage || storedInstance || instances[0] || null
+}
+
+const normalizeLimit = (value: number) => {
+  return LIMITS.includes(value) ? value : LIMITS[0]
+}
+
+const normalizeGroupBy = (value: string) => {
+  return GROUP.includes(value as AggLevel)
+    ? (value as AggLevel)
+    : AggLevel.Query
+}
+
+const normalizeOrderBy = (value: string) => {
+  return Object.values(OrderBy).includes(value as OrderBy)
+    ? (value as OrderBy)
+    : OrderBy.CpuTime
+}
+
 export function TopSQLList() {
   const ctx = useContext(TopSQLContext)
   const { t } = useTranslation()
@@ -103,19 +182,20 @@ export function TopSQLList() {
   const { topSQLConfig, isConfigLoading, updateConfig, haveHistoryData } =
     useTopSQLConfig()
   const [showSettings, setShowSettings] = useState(false)
-  const [instance, setInstance] = useSessionStorage<TopsqlInstanceItem | null>(
-    'topsql.instance',
-    null
-  )
-  const { queryParams, setQueryParams } = useQueryParams<{
-    instance: string
-  }>({
-    instance: ''
+  const [storedInstance, setStoredInstance] =
+    useSessionStorage<TopsqlInstanceItem | null>('topsql.instance', null)
+  const { queryParams, setQueryParams } = useQueryParams<TopSQLQueryParams>({
+    instance: '',
+    instance_type: '',
+    limit: LIMITS[0],
+    group_by: AggLevel.Query,
+    order_by: OrderBy.CpuTime
   })
   const { timeRange, setTimeRange } = useURLTimeRange()
-  const [limit, setLimit] = useState(5)
-  const [groupBy, setGroupBy] = useState(AggLevel.Query)
-  const [orderBy, setOrderBy] = useState(OrderBy.CpuTime)
+  const limit = useMemo(
+    () => normalizeLimit(queryParams.limit),
+    [queryParams.limit]
+  )
   const [timeWindowSize, setTimeWindowSize] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const computeTimeWindowSize = useMemoizedFn(
@@ -133,6 +213,49 @@ export function TopSQLList() {
     }
   )
   const {
+    instances,
+    isLoading: isInstancesLoading,
+    fetchInstances
+  } = useInstances(timeRange)
+  const instance = useMemo(
+    () =>
+      resolveSelectedInstance(
+        instances,
+        queryParams.instance,
+        queryParams.instance_type,
+        storedInstance
+      ),
+    [instances, queryParams.instance, queryParams.instance_type, storedInstance]
+  )
+  const groupBy = useMemo(() => {
+    if (ctx?.cfg.showGroupBy !== true || instance?.instance_type !== 'tikv') {
+      return AggLevel.Query
+    }
+    const group = normalizeGroupBy(queryParams.group_by)
+    if (group === AggLevel.Region && ctx?.cfg.showGroupByRegion !== true) {
+      return AggLevel.Query
+    }
+    return group
+  }, [
+    ctx?.cfg.showGroupBy,
+    ctx?.cfg.showGroupByRegion,
+    instance?.instance_type,
+    queryParams.group_by
+  ])
+  const orderBy = useMemo(() => {
+    if (ctx?.cfg.showOrderBy !== true) {
+      return OrderBy.CpuTime
+    }
+    const order = normalizeOrderBy(queryParams.order_by)
+    if (
+      instance?.instance_type !== 'tikv' &&
+      order === OrderBy.LogicalIoBytes
+    ) {
+      return OrderBy.CpuTime
+    }
+    return order
+  }, [ctx?.cfg.showOrderBy, instance?.instance_type, queryParams.order_by])
+  const {
     topSQLData,
     isLoading: isDataLoading,
     updateTopSQLData
@@ -146,17 +269,42 @@ export function TopSQLList() {
   )
   const isLoading = isConfigLoading || isDataLoading
   const {
-    instances,
-    isLoading: isInstancesLoading,
-    fetchInstances
-  } = useInstances(timeRange)
-  const {
     data: tikvNetworkIoCollection,
     isLoading: isTikvNetworkIoCollectionLoading,
     sendRequest: refreshTikvNetworkIoCollection
   } = useClientRequest(ctx!.ds.topsqlTikvNetworkIoCollectionGet, {
     immediate: false
   })
+  const syncSelectedInstance = useMemoizedFn(
+    (nextInstances: TopsqlInstanceItem[]) => {
+      const nextInstance = resolveSelectedInstance(
+        nextInstances,
+        queryParams.instance,
+        queryParams.instance_type,
+        storedInstance
+      )
+
+      if (!nextInstance) {
+        return null
+      }
+
+      if (!isSameInstance(storedInstance, nextInstance)) {
+        setStoredInstance(nextInstance)
+      }
+
+      if (
+        queryParams.instance !== nextInstance.instance ||
+        queryParams.instance_type !== nextInstance.instance_type
+      ) {
+        setQueryParams({
+          instance: nextInstance.instance!,
+          instance_type: nextInstance.instance_type!
+        })
+      }
+
+      return nextInstance
+    }
+  )
 
   const handleBrushEnd: BrushEndListener = useCallback(
     (v: BrushEvent) => {
@@ -183,31 +331,6 @@ export function TopSQLList() {
     [setTimeRange]
   )
 
-  const fetchInstancesAndSelectInstance = useMemoizedFn(async () => {
-    const instances = await fetchInstances(timeRange)
-    const instanceFromURL = queryParams.instance
-
-    if (instanceFromURL) {
-      const instance = instances.find(
-        (instance) => instance.instance === instanceFromURL
-      )
-      if (instance) {
-        setInstance(instance)
-        return
-      }
-    }
-
-    // Select the first instance if there not instance selected
-    if (!!instance) {
-      return
-    }
-    setInstance(instances[0])
-  })
-
-  useMount(() => {
-    fetchInstancesAndSelectInstance()
-  })
-
   const chartRef = useRef<any>(null)
 
   // only for clinic
@@ -221,6 +344,36 @@ export function TopSQLList() {
     }
     return infos.join(' | ')
   }, [ctx?.cfg.orgName, ctx?.cfg.clusterName])
+
+  useEffect(() => {
+    syncSelectedInstance(instances)
+  }, [instances, syncSelectedInstance])
+
+  useEffect(() => {
+    const nextParams: Partial<TopSQLQueryParams> = {}
+
+    if (queryParams.limit !== limit) {
+      nextParams.limit = limit
+    }
+    if (queryParams.group_by !== groupBy) {
+      nextParams.group_by = groupBy
+    }
+    if (queryParams.order_by !== orderBy) {
+      nextParams.order_by = orderBy
+    }
+
+    if (Object.keys(nextParams).length > 0) {
+      setQueryParams(nextParams)
+    }
+  }, [
+    groupBy,
+    limit,
+    orderBy,
+    queryParams.group_by,
+    queryParams.limit,
+    queryParams.order_by,
+    setQueryParams
+  ])
 
   const shouldCheckNetworkIoCollection =
     canOpenSettings &&
@@ -289,23 +442,22 @@ export function TopSQLList() {
               <InstanceSelect
                 value={instance}
                 onChange={(inst) => {
-                  setInstance(inst)
-                  if (!!inst?.instance) {
-                    setQueryParams({ instance: inst.instance })
+                  const nextParams: Partial<TopSQLQueryParams> = {
+                    instance: inst.instance!,
+                    instance_type: inst.instance_type!
                   }
+
+                  if (inst.instance_type !== 'tikv') {
+                    nextParams.group_by = AggLevel.Query
+                    if (orderBy === OrderBy.LogicalIoBytes) {
+                      nextParams.order_by = OrderBy.CpuTime
+                    }
+                  }
+
+                  setStoredInstance(inst)
+                  setQueryParams(nextParams)
                   if (inst) {
                     telemetry.finishSelectInstance(inst?.instance_type!)
-                  }
-                  // only group by sql when instance is not tikv
-                  if (inst?.instance_type !== 'tikv') {
-                    setGroupBy(AggLevel.Query)
-                  }
-                  // Reset orderBy if current selection is not supported by new instance type
-                  if (
-                    inst?.instance_type !== 'tikv' &&
-                    orderBy === OrderBy.LogicalIoBytes
-                  ) {
-                    setOrderBy(OrderBy.CpuTime)
                   }
                 }}
                 instances={instances}
@@ -334,7 +486,7 @@ export function TopSQLList() {
                 <Select
                   style={{ width: 150 }}
                   value={limit}
-                  onChange={setLimit}
+                  onChange={(value) => setQueryParams({ limit: value })}
                   data-e2e="limit_select"
                 >
                   {LIMITS.map((item) => (
@@ -348,7 +500,7 @@ export function TopSQLList() {
                 <Select
                   style={{ width: 150 }}
                   value={groupBy}
-                  onChange={setGroupBy}
+                  onChange={(value) => setQueryParams({ group_by: value })}
                   data-e2e="group_select"
                 >
                   {GROUP.filter((item) => {
@@ -369,7 +521,7 @@ export function TopSQLList() {
                 <Select
                   style={{ width: 150 }}
                   value={orderBy}
-                  onChange={setOrderBy}
+                  onChange={(value) => setQueryParams({ order_by: value })}
                   data-e2e="order_by_select"
                 >
                   <Option
@@ -402,8 +554,9 @@ export function TopSQLList() {
                 defaultValue={ctx?.cfg.autoRefresh === false ? 0 : undefined}
                 disabled={isLoading}
                 onRefresh={async () => {
-                  await fetchInstancesAndSelectInstance()
-                  updateTopSQLData(instance, timeRange, limit)
+                  const nextInstances = await fetchInstances(timeRange)
+                  const nextInstance = syncSelectedInstance(nextInstances)
+                  updateTopSQLData(nextInstance, timeRange, limit)
                 }}
               />
               {isLoading && (

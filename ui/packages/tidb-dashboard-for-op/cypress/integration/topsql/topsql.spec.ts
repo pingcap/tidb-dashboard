@@ -154,6 +154,57 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'latest', () => {
       })
     })
 
+    describe('URL state', () => {
+      it('updates url when dropdown filters change', () => {
+        setCustomTimeRange(
+          '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
+        )
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('instance-selector').click()
+        cy.contains('.ant-select-item-option', '127.0.0.1:20160').click()
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('limit_select').click()
+        cy.contains('[data-e2e="limit_option"]', 'Limit 20').click()
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('group_select').click()
+        cy.contains('[data-e2e="group_option"]', 'By Region').click()
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('order_by_select').click()
+        cy.getByTestId('order_by_option_logical_io_bytes').click()
+        cy.wait('@getTopsqlSummary')
+
+        cy.location('search').should('include', 'instance=127.0.0.1%3A20160')
+        cy.location('search').should('include', 'instance_type=tikv')
+        cy.location('search').should('include', 'limit=20')
+        cy.location('search').should('include', 'group_by=region')
+        cy.location('search').should('include', 'order_by=logical_io')
+      })
+
+      it('uses url params to restore dropdown filters', () => {
+        cy.window().then((win) => win.sessionStorage.clear())
+        cy.visit(
+          `${this.uri.topsql}?from=1641916800&to=1641934800&instance=127.0.0.1%3A20160&instance_type=tikv&limit=20&group_by=region&order_by=logical_io`
+        )
+        cy.wait('@getTopsqlSummary')
+        cy.wait('@getTopsqlConfig')
+
+        cy.getByTestId('instance-selector').should(
+          'contain',
+          'tikv - 127.0.0.1:20160'
+        )
+        cy.getByTestId('limit_select').should('contain', 'Limit 20')
+        cy.getByTestId('group_select').should('contain', 'By Region')
+        cy.getByTestId('order_by_select').should(
+          'contain',
+          'Order By Logical IO'
+        )
+      })
+    })
+
     describe('Refresh', () => {
       it('click refresh button with the recent x time range, fetch the recent x time range data', () => {
         cy.getByTestId('timerange-selector').click()

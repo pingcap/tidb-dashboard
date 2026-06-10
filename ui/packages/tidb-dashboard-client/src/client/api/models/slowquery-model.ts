@@ -345,6 +345,12 @@ export interface SlowqueryModel {
      */
     'ru'?: number;
     /**
+     *
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'session_connect_attrs'?: string;
+    /**
      * 
      * @type {string}
      * @memberof SlowqueryModel
@@ -435,4 +441,3 @@ export interface SlowqueryModel {
      */
     'write_sql_response_total'?: number;
 }
-

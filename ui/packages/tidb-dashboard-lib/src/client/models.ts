@@ -2531,6 +2531,12 @@ export interface SlowqueryModel {
      */
     'ru'?: number;
     /**
+     *
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'session_connect_attrs'?: string;
+    /**
      * 
      * @type {string}
      * @memberof SlowqueryModel
@@ -4370,4 +4376,3 @@ export interface VersionInfo {
      */
     'standalone'?: string;
 }
-

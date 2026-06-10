@@ -5367,6 +5367,9 @@
                     "description": "Resource Control",
                     "type": "number"
                 },
+                "session_connect_attrs": {
+                    "type": "string"
+                },
                 "stats": {
                     "type": "string"
                 },

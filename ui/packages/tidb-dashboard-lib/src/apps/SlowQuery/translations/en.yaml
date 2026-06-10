@@ -43,6 +43,8 @@ slow_query:
     user_tooltip: The user that executes the query
     host: Client Address
     host_tooltip: The address of the client that sends the query
+    session_connect_attrs: Session Connect Attrs
+    session_connect_attrs_tooltip: JSON-formatted connection attributes provided by the client session
     db: Execution Database
     db_tooltip: The database used to execute the query
 
@@ -150,6 +152,7 @@ slow_query:
       time: Time
       copr: Coprocessor
       txn: Transaction
+      session_attrs: Session Attributes
       warnings: Warnings
   toolbar:
     schemas:

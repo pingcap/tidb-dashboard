@@ -13,7 +13,7 @@ import { tabTxnItems } from './DetailTabTxn'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import { SlowQueryContext } from '../../context'
 
-function parseSessionConnectAttrs(raw?: string) {
+function parseSessionConnectAttrs(raw?: string | null) {
   if (!raw || raw === 'null') {
     return null
   }

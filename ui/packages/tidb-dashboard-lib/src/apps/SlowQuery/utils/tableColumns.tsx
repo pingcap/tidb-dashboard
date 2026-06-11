@@ -32,7 +32,11 @@ export const derivedFields = {
   ]
 }
 
-function formatSessionConnectAttrs(value?: string) {
+type SlowqueryModelWithSessionConnectAttrs = SlowqueryModel & {
+  session_connect_attrs?: string | null
+}
+
+function formatSessionConnectAttrs(value?: string | null) {
   if (!value || value === 'null') {
     return '-'
   }
@@ -95,7 +99,7 @@ export function slowQueryColumns(
         maxWidth: 220
       })
       .patchConfig({
-        onRender: (rec: SlowqueryModel) => {
+        onRender: (rec: SlowqueryModelWithSessionConnectAttrs) => {
           const text = formatSessionConnectAttrs(rec.session_connect_attrs)
           return (
             <Tooltip title={text} data-e2e="text_with_tooltip">

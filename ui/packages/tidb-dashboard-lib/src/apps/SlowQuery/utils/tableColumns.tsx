@@ -1,9 +1,10 @@
-import { Badge } from 'antd'
+import { Badge, Tooltip } from 'antd'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { SlowqueryModel } from '@lib/client'
+import { TextWrap } from '@lib/components'
 import { TableColumnFactory } from '@lib/utils/tableColumnFactory'
 
 //////////////////////////////////////////
@@ -29,6 +30,17 @@ export const derivedFields = {
     { tooltipPrefix: 'max', fieldName: 'cop_wait_max' },
     { tooltipPrefix: 'p90', fieldName: 'cop_wait_p90' }
   ]
+}
+
+type SlowqueryModelWithSessionConnectAttrs = SlowqueryModel & {
+  session_connect_attrs?: string | null
+}
+
+function formatSessionConnectAttrs(value?: string | null) {
+  if (!value || value === 'null') {
+    return '-'
+  }
+  return value
 }
 
 //////////////////////////////////////////
@@ -78,6 +90,24 @@ export function slowQueryColumns(
     // connection
     tcf.textWithTooltip('user', rows),
     tcf.textWithTooltip('host', rows),
+    tcf
+      .control({
+        name: 'session_connect_attrs',
+        key: 'session_connect_attrs',
+        fieldName: 'session_connect_attrs',
+        minWidth: 100,
+        maxWidth: 220
+      })
+      .patchConfig({
+        onRender: (rec: SlowqueryModelWithSessionConnectAttrs) => {
+          const text = formatSessionConnectAttrs(rec.session_connect_attrs)
+          return (
+            <Tooltip title={text} data-e2e="text_with_tooltip">
+              <TextWrap>{text}</TextWrap>
+            </Tooltip>
+          )
+        }
+      }),
     // time
     tcf.bar.single('wait_time', 's', rows),
     tcf.bar.single('backoff_time', 's', rows),

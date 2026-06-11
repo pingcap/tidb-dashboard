@@ -13,6 +13,17 @@ import { tabTxnItems } from './DetailTabTxn'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import { SlowQueryContext } from '../../context'
 
+function parseSessionConnectAttrs(raw?: string | null) {
+  if (!raw || raw === 'null') {
+    return null
+  }
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return raw
+  }
+}
+
 export default function DetailTabs({ data }: { data: SlowqueryModel }) {
   const ctx = useContext(SlowQueryContext)
 
@@ -92,7 +103,38 @@ export default function DetailTabs({ data }: { data: SlowqueryModel }) {
         }
       }
     ]
-    if (data.warnings) {
+    const hasSessionConnectAttrs = schemaColumns.includes(
+      'session_connect_attrs'
+    )
+    const sessionConnectAttrsRaw = hasSessionConnectAttrs
+      ? data.session_connect_attrs
+      : null
+    const sessionConnectAttrs = parseSessionConnectAttrs(sessionConnectAttrsRaw)
+    if (hasSessionConnectAttrs) {
+      tbs.push({
+        key: 'session_attrs',
+        title: t('slow_query.detail.tabs.session_attrs'),
+        content: () => {
+          if (
+            sessionConnectAttrs == null ||
+            typeof sessionConnectAttrs === 'string'
+          ) {
+            return <pre>{sessionConnectAttrsRaw ?? 'null'}</pre>
+          }
+          return (
+            <ReactJson
+              src={sessionConnectAttrs as any}
+              enableClipboard={false}
+              displayObjectSize={false}
+              displayDataTypes={false}
+              name={false}
+              iconStyle="circle"
+              groupArraysAfterLength={10}
+            />
+          )
+        }
+      })
+    } else if (data.warnings) {
       tbs.push({
         key: 'warnings',
         title: t('slow_query.detail.tabs.warnings'),

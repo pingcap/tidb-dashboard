@@ -55,8 +55,9 @@ type Model struct {
 	PlanFromBinding int    `gorm:"column:Plan_from_binding" json:"plan_from_binding"`
 
 	// Connection
-	User string `gorm:"column:User" json:"user"`
-	Host string `gorm:"column:Host" json:"host"`
+	User                string  `gorm:"column:User" json:"user"`
+	Host                string  `gorm:"column:Host" json:"host"`
+	SessionConnectAttrs *string `gorm:"column:Session_connect_attrs" json:"session_connect_attrs"`
 
 	// Time
 	ProcessTime            float64 `gorm:"column:Process_time" json:"process_time"`

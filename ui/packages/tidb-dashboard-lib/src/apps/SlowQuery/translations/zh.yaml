@@ -42,6 +42,8 @@ slow_query:
     user_tooltip: 执行该 SQL 查询的用户名，可能存在多个执行用户，仅显示其中某一个
     host: 客户端地址
     host_tooltip: 发送 SQL 查询的客户端地址
+    session_connect_attrs: 会话连接属性
+    session_connect_attrs_tooltip: 客户端会话上报的 JSON 格式连接属性
     db: 执行数据库
     db_tooltip: 执行该 SQL 查询时使用的数据库名称
 
@@ -152,6 +154,7 @@ slow_query:
       time: 执行时间
       copr: Coprocessor 读取
       txn: 事务
+      session_attrs: 会话属性
       warnings: 警告
   toolbar:
     schemas:

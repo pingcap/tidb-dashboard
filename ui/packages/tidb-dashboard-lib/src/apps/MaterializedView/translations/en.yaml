@@ -23,6 +23,7 @@ materialized_view:
     refresh_failed: Refresh Failed
     update_time: Update Time
     duration: Duration
+    schedule_duration: Schedule Duration
     refresh_status: Refresh Status
     refresh_rows: Refresh Rows
     refresh_method: Refresh Method
@@ -44,6 +45,8 @@ materialized_view:
       placeholder: Last Success Time >=
     duration:
       placeholder: Min Duration (sec)
+    schedule_duration:
+      placeholder: Min Schedule Duration (sec)
     status:
       placeholder: All Statuses
       selected: '{{ n }} Statuses'

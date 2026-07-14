@@ -45,6 +45,7 @@ export interface ClusterinfoClusterStatisticsPartial {
 
 
 
+
 /**
  * 
  * @export
@@ -76,7 +77,6 @@ export interface ClusterinfoClusterStatistics {
      */
     'versions'?: Array<string>;
 }
-
 
 
 
@@ -1724,6 +1724,12 @@ export interface MaterializedviewRefreshHistoryItem {
      * @memberof MaterializedviewRefreshHistoryItem
      */
     'refresh_time'?: string;
+    /**
+     *
+     * @type {number}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'schedule_duration'?: number;
     /**
      * 
      * @type {string}
@@ -4452,4 +4458,3 @@ export interface VersionInfo {
      */
     'standalone'?: string;
 }
-

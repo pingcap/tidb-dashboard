@@ -59,6 +59,7 @@ type MaterializedViewFilters = {
   refreshMethod: string[]
   status: string[]
   minDuration?: number
+  minScheduleDuration?: number
 }
 
 function normalizeDatabases(databases: string[]) {
@@ -188,7 +189,8 @@ export default function RefreshHistory() {
       materializedView: '',
       refreshMethod: [],
       status: [],
-      minDuration: undefined
+      minDuration: undefined,
+      minScheduleDuration: undefined
     }),
     [cachedDatabases]
   )
@@ -258,6 +260,7 @@ export default function RefreshHistory() {
                 : undefined,
             status: appliedFilters.status,
             min_duration: appliedFilters.minDuration,
+            min_schedule_duration: appliedFilters.minScheduleDuration,
             page,
             page_size: pageSize,
             orderBy,
@@ -354,6 +357,18 @@ export default function RefreshHistory() {
             return '-'
           }
           return getValueFormat('s')(value, 3)
+        }
+      },
+      {
+        title: t('materialized_view.columns.schedule_duration'),
+        dataIndex: 'schedule_duration',
+        key: 'schedule_duration',
+        width: 160,
+        render: (value: number | null) => {
+          if (value === null || value === undefined) {
+            return '-'
+          }
+          return `${value.toFixed(3)} s`
         }
       },
       {
@@ -572,6 +587,28 @@ export default function RefreshHistory() {
               style={{ width: 180 }}
             />
 
+            <InputNumber
+              min={0}
+              precision={3}
+              step={0.001}
+              placeholder={t(
+                'materialized_view.filters.schedule_duration.placeholder'
+              )}
+              value={filters.minScheduleDuration}
+              onChange={(minScheduleDuration) =>
+                updateFilters((prev) => ({
+                  ...prev,
+                  minScheduleDuration:
+                    minScheduleDuration === null
+                      ? undefined
+                      : Number(minScheduleDuration)
+                }))
+              }
+              onBlur={() => applyFilters()}
+              onPressEnter={() => applyFilters(true)}
+              style={{ width: 230 }}
+            />
+
             <MultiSelect.Plain
               placeholder={t(
                 'materialized_view.filters.refresh_method.placeholder'
@@ -636,7 +673,7 @@ export default function RefreshHistory() {
                   t('materialized_view.pagination.total', { total })
               }}
               size="small"
-              scroll={{ x: 1860 }}
+              scroll={{ x: 2020 }}
             />
           </Card>
         )

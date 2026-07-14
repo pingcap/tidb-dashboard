@@ -54,17 +54,18 @@ func newService(p ServiceParams) *Service {
 }
 
 type RefreshHistoryRequest struct {
-	BeginTime        int64    `json:"begin_time" form:"begin_time"`
-	EndTime          int64    `json:"end_time" form:"end_time"`
-	Schema           []string `json:"schema" form:"schema"`
-	MaterializedView string   `json:"materialized_view" form:"materialized_view"`
-	RefreshMethod    []string `json:"refresh_method" form:"refresh_method"`
-	Status           []string `json:"status" form:"status"`
-	MinDuration      float64  `json:"min_duration" form:"min_duration"`
-	Page             int      `json:"page" form:"page"`
-	PageSize         int      `json:"page_size" form:"page_size"`
-	OrderBy          string   `json:"orderBy" form:"orderBy"`
-	IsDesc           bool     `json:"desc" form:"desc"`
+	BeginTime           int64    `json:"begin_time" form:"begin_time"`
+	EndTime             int64    `json:"end_time" form:"end_time"`
+	Schema              []string `json:"schema" form:"schema"`
+	MaterializedView    string   `json:"materialized_view" form:"materialized_view"`
+	RefreshMethod       []string `json:"refresh_method" form:"refresh_method"`
+	Status              []string `json:"status" form:"status"`
+	MinDuration         float64  `json:"min_duration" form:"min_duration"`
+	MinScheduleDuration *float64 `json:"min_schedule_duration" form:"min_schedule_duration"`
+	Page                int      `json:"page" form:"page"`
+	PageSize            int      `json:"page_size" form:"page_size"`
+	OrderBy             string   `json:"orderBy" form:"orderBy"`
+	IsDesc              bool     `json:"desc" form:"desc"`
 }
 
 type RefreshAlertRequest struct {
@@ -83,6 +84,7 @@ type RefreshHistoryItem struct {
 	MaterializedView string    `gorm:"column:materialized_view" json:"materialized_view"`
 	RefreshStartTime time.Time `gorm:"column:refresh_time" json:"refresh_time"`
 	Duration         *float64  `gorm:"column:duration" json:"duration"`
+	ScheduleDuration *float64  `gorm:"column:schedule_duration" json:"schedule_duration"`
 	RefreshStatus    string    `gorm:"column:refresh_status" json:"refresh_status"`
 	RefreshRows      int64     `gorm:"column:refresh_rows" json:"refresh_rows"`
 	RefreshMethod    string    `gorm:"column:refresh_method" json:"refresh_method"`
@@ -167,6 +169,9 @@ func normalizeRefreshHistoryRequest(req *RefreshHistoryRequest) error {
 	}
 	if req.MinDuration < 0 {
 		return errors.New("min_duration should not be negative")
+	}
+	if req.MinScheduleDuration != nil && *req.MinScheduleDuration < 0 {
+		return errors.New("min_schedule_duration should not be negative")
 	}
 
 	if req.OrderBy == "" {
@@ -274,6 +279,9 @@ func buildRefreshHistoryBaseQuery(db *gorm.DB, req *RefreshHistoryRequest) *gorm
 	if req.MinDuration > 0 {
 		tx = tx.Where("refresh_duration_sec >= ?", req.MinDuration)
 	}
+	if req.MinScheduleDuration != nil {
+		tx = tx.Where("refresh_schedule_duration_sec >= ?", *req.MinScheduleDuration)
+	}
 
 	return tx
 }
@@ -336,6 +344,7 @@ func buildRefreshHistorySelectStmt() string {
 		"mv_name AS materialized_view",
 		"refresh_time",
 		"CAST(refresh_duration_sec AS DOUBLE) AS duration",
+		"CAST(refresh_schedule_duration_sec AS DOUBLE) AS schedule_duration",
 		"refresh_status",
 		"refresh_rows",
 		"refresh_method",

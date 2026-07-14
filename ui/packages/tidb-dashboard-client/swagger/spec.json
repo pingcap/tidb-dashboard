@@ -1664,6 +1664,11 @@
                         "in": "query"
                     },
                     {
+                        "type": "number",
+                        "name": "min_schedule_duration",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "name": "orderBy",
                         "in": "query"
@@ -5019,6 +5024,9 @@
                 },
                 "refresh_time": {
                     "type": "string"
+                },
+                "schedule_duration": {
+                    "type": "number"
                 },
                 "schema": {
                     "type": "string"

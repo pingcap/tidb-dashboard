@@ -75,10 +75,15 @@ export interface MaterializedviewRefreshHistoryItem {
      */
     'refresh_time'?: string;
     /**
+     *
+     * @type {number}
+     * @memberof MaterializedviewRefreshHistoryItem
+     */
+    'schedule_duration'?: number;
+    /**
      * 
      * @type {string}
      * @memberof MaterializedviewRefreshHistoryItem
      */
     'schema'?: string;
 }
-

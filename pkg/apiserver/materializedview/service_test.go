@@ -2,7 +2,14 @@
 
 package materializedview
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+)
 
 func TestNormalizeRefreshHistoryRequest(t *testing.T) {
 	t.Run("fills defaults", func(t *testing.T) {
@@ -124,6 +131,20 @@ func TestNormalizeRefreshHistoryRequest(t *testing.T) {
 
 		if err := normalizeRefreshHistoryRequest(req); err == nil {
 			t.Fatalf("expected refresh method validation error")
+		}
+	})
+
+	t.Run("rejects invalid minimum schedule duration", func(t *testing.T) {
+		minScheduleDuration := -0.001
+		req := &RefreshHistoryRequest{
+			BeginTime:           1710000000,
+			EndTime:             1710003600,
+			Schema:              []string{"test"},
+			MinScheduleDuration: &minScheduleDuration,
+		}
+
+		if err := normalizeRefreshHistoryRequest(req); err == nil {
+			t.Fatalf("expected min schedule duration validation error")
 		}
 	})
 
@@ -254,6 +275,37 @@ func TestBuildRefreshHistoryOrderClause(t *testing.T) {
 				t.Fatalf("unexpected order clause: %s", got)
 			}
 		})
+	}
+}
+
+func TestBuildRefreshHistoryBaseQueryIncludesMinScheduleDuration(t *testing.T) {
+	sqlDB, _, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to create mock database: %v", err)
+	}
+	defer sqlDB.Close()
+
+	db, err := gorm.Open(mysql.New(mysql.Config{
+		Conn:                      sqlDB,
+		SkipInitializeWithVersion: true,
+	}), &gorm.Config{DryRun: true})
+	if err != nil {
+		t.Fatalf("failed to create gorm database: %v", err)
+	}
+
+	minScheduleDuration := 0.0
+	req := &RefreshHistoryRequest{
+		BeginTime:           1710000000,
+		EndTime:             1710003600,
+		Schema:              []string{"test"},
+		MinScheduleDuration: &minScheduleDuration,
+	}
+	stmt := buildRefreshHistoryBaseQuery(db, req).Find(&[]RefreshHistoryItem{}).Statement
+	if !strings.Contains(stmt.SQL.String(), "refresh_schedule_duration_sec >= ?") {
+		t.Fatalf("schedule duration condition is missing from query: %s", stmt.SQL.String())
+	}
+	if got := stmt.Vars[len(stmt.Vars)-1]; got != minScheduleDuration {
+		t.Fatalf("unexpected minimum schedule duration: %v", got)
 	}
 }
 

@@ -10,6 +10,7 @@ export interface IMaterializedViewRefreshHistoryItem {
   materialized_view?: string
   refresh_time?: string
   duration?: number | null
+  schedule_duration?: number | null
   refresh_status?: 'success' | 'failed' | 'running' | string
   refresh_rows?: number
   refresh_method?: string
@@ -25,6 +26,7 @@ export interface IMaterializedViewRefreshHistoryRequest {
   refresh_method?: string[]
   status?: string[]
   min_duration?: number
+  min_schedule_duration?: number
   page?: number
   page_size?: number
   orderBy?: 'refresh_time' | 'refresh_duration_sec'

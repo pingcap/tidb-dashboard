@@ -26,7 +26,11 @@ jobs:
           cache-dependency-path: "ui/pnpm-lock.yaml"
       - uses: actions/setup-go@v3
         with:
+<<<<<<< HEAD
           go-version: "1.25.7"
+=======
+          go-version: "1.25.12"
+>>>>>>> 1164ffa7c (chore: update Go version to 1.25.12 (#1913))
       - name: Load go module cache
         uses: actions/cache@v3
         with:

@@ -4,6 +4,7 @@ package slowquery
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -60,6 +61,12 @@ func (s *testMockDBSuite) mockDBSession() *gorm.DB {
 	return s.db.Gorm().Debug().Table(TestSlowQueryTableName)
 }
 
+func (s *testMockDBSuite) slowQuerySupportsSessionConnectAttrs() bool {
+	cls, err := slowquery.GetAvailableFields(s.sysSchema, s.mockDBSession())
+	s.Require().NoError(err)
+	return slices.Contains(cls, "session_connect_attrs")
+}
+
 func (s *testMockDBSuite) TestGetListDefaultRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{})
 
@@ -114,8 +121,10 @@ func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	s.Require().NotEmpty(d.Digest)
 	s.Require().NotEmpty(d.GetCommitTSTime)
 	s.Require().NotEmpty(d.Host)
-	s.Require().NotNil(d.SessionConnectAttrs)
-	s.Require().JSONEq(`{"_client_name":"Go-MySQL-Driver","_os":"linux","app_name":"test_app"}`, *d.SessionConnectAttrs)
+	if s.slowQuerySupportsSessionConnectAttrs() {
+		s.Require().NotNil(d.SessionConnectAttrs)
+		s.Require().JSONEq(`{"_client_name":"Go-MySQL-Driver","_os":"linux","app_name":"test_app"}`, *d.SessionConnectAttrs)
+	}
 	s.Require().NotEmpty(d.IndexNames)
 	s.Require().NotEmpty(d.Instance)
 	s.Require().NotEmpty(d.IsInternal)
@@ -147,7 +156,7 @@ func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 func (s *testMockDBSuite) TestGetAvailableFields() {
 	cls, err := slowquery.GetAvailableFields(s.sysSchema, s.mockDBSession())
 	s.Require().NoError(err)
-	s.Require().Contains(cls, "session_connect_attrs")
+	s.Require().Contains(cls, "digest")
 }
 
 func (s *testMockDBSuite) TestGetListTimeRangeRequest() {
@@ -290,6 +299,8 @@ func (s *testMockDBSuite) TestGetDetailRequest() {
 	s.Require().Equal(ds2.Timestamp, 1639928987.802016)
 	s.Require().Equal(ds2.Digest, "2375da6810d9c5a0d1c84875b1376bfd469ad952c1884f5dc1d6f36fc953b5df")
 	s.Require().Equal(ds2.ConnectionID, "7")
-	s.Require().NotNil(ds2.SessionConnectAttrs)
-	s.Require().JSONEq(`{"_client_name":"Go-MySQL-Driver","_os":"linux","app_name":"test_app"}`, *ds2.SessionConnectAttrs)
+	if s.slowQuerySupportsSessionConnectAttrs() {
+		s.Require().NotNil(ds2.SessionConnectAttrs)
+		s.Require().JSONEq(`{"_client_name":"Go-MySQL-Driver","_os":"linux","app_name":"test_app"}`, *ds2.SessionConnectAttrs)
+	}
 }

@@ -1,5 +1,5 @@
-import { task, series, parallel } from 'gulp'
-import shell from 'gulp-shell'
+const { task, series, parallel } = require('gulp')
+const shell = require('gulp-shell')
 
 task('tsc:watch', shell.task('tsc --watch'))
 task('tsc:check', shell.task('tsc'))

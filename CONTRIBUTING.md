@@ -45,7 +45,7 @@ The followings are required for developing TiDB Dashboard:
 - git - Version control
 - make - Build tool (run common workflows)
 - [Golang 1.21+](https://golang.org/) - To compile the server.
-- [Node.js 18](https://nodejs.org/) - To compile the front-end.
+- [Node.js 22](https://nodejs.org/) - To compile the front-end.
 - [PNPM 8](https://pnpm.io/) - To manage front-end dependencies.
 - [Java 8+](https://www.java.com/ES/download/) - To generate JavaScript API client by OpenAPI specification.
 
@@ -58,7 +58,7 @@ Package frontend and backend into a single binary:
    ```bash
    # Build a binary into `bin/tidb-dashboard`.
    make package
-   
+
    # Run.
    make run
    ```
@@ -114,7 +114,7 @@ Swagger UI is available at http://localhost:12333/dashboard/api/swagger after th
 If you want to develop docker image locally 🤔.
 
 1. Ensure the Docker Buildx is installed on your local machine.
-   
+
    > Docker Buildx is included in Docker Desktop for Windows, macOS, and Linux.
    > Docker Linux packages also include Docker Buildx when installed using the DEB or RPM packages.
 
@@ -129,7 +129,7 @@ If you want to develop docker image locally 🤔.
 
    # Or, if you want to build cross-platform image and push it to your dev docker registry, run:
    REPOSITORY=your-tidb-dashboard-repository make docker-build-and-push-image
-   
+
     # Or, if you want to build centos7 based image, run:
    DOCKERFILE=./dockerfiles/centos7.Dockerfile make docker-build-image-locally-arm64
 
@@ -140,7 +140,7 @@ If you want to develop docker image locally 🤔.
 3. Run newly build image with docker-compose.
 
    > Please make sure that `tiup playground` is not running on the background.
-   
+
       ```bash
       # On repository root directory, run:
       docker-compose -f ./dockerfiles/docker-compose.yml up

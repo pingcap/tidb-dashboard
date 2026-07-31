@@ -1,7 +1,5 @@
-import { task, series, parallel } from 'gulp'
-import shell from 'gulp-shell'
-
-task('distro:gen', shell.task('../../../scripts/distro/write_strings.sh'))
+const { task, series, parallel } = require('gulp')
+const shell = require('gulp-shell')
 
 task(
   'speedscope:copy',
@@ -22,16 +20,13 @@ task('esbuild:build', shell.task('NODE_ENV=production node builder.js'))
 
 task(
   'dev',
-  series(
-    parallel('distro:gen', 'speedscope:copy'),
-    parallel('tsc:watch', 'lint:watch', 'esbuild:dev')
-  )
+  series('speedscope:copy', parallel('tsc:watch', 'lint:watch', 'esbuild:dev'))
 )
 
 task(
   'build',
   series(
-    parallel('distro:gen', 'speedscope:copy'),
+    'speedscope:copy',
     parallel('tsc:check', 'lint:check', 'esbuild:build')
   )
 )

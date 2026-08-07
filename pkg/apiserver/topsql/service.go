@@ -112,41 +112,53 @@ type SummaryResponse struct {
 }
 
 type SummaryItem struct {
-	SQLDigest         string            `json:"sql_digest"`
-	SQLText           string            `json:"sql_text"`
-	IsOther           bool              `json:"is_other"`
-	CPUTimeMs         uint64            `json:"cpu_time_ms"`
-	ExecCountPerSec   float64           `json:"exec_count_per_sec"`
-	DurationPerExecMs float64           `json:"duration_per_exec_ms"`
-	ScanRecordsPerSec float64           `json:"scan_records_per_sec"`
-	ScanIndexesPerSec float64           `json:"scan_indexes_per_sec"`
-	NetworkBytes      uint64            `json:"network_bytes"`
-	LogicalIoBytes    uint64            `json:"logical_io_bytes"`
-	Plans             []SummaryPlanItem `json:"plans"`
+	SQLDigest             string            `json:"sql_digest"`
+	SQLText               string            `json:"sql_text"`
+	IsOther               bool              `json:"is_other"`
+	CPUTimeMs             uint64            `json:"cpu_time_ms"`
+	ExecCountPerSec       float64           `json:"exec_count_per_sec"`
+	DurationPerExecMs     float64           `json:"duration_per_exec_ms"`
+	ScanRecordsPerSec     float64           `json:"scan_records_per_sec"`
+	ScanIndexesPerSec     float64           `json:"scan_indexes_per_sec"`
+	NetworkBytes          uint64            `json:"network_bytes"`
+	LogicalIoBytes        uint64            `json:"logical_io_bytes"`
+	LogicalReadBytes      uint64            `json:"logical_read_bytes"`
+	LogicalWriteBytes     uint64            `json:"logical_write_bytes"`
+	RocksdbBlockReadCount uint64            `json:"rocksdb_block_read_count"`
+	Plans                 []SummaryPlanItem `json:"plans"`
 }
 
 type SummaryByItem struct {
-	Text              string   `json:"text"`
-	TimestampSec      []uint64 `json:"timestamp_sec"`
-	CPUTimeMs         []uint64 `json:"cpu_time_ms,omitempty"`
-	CPUTimeMsSum      uint64   `json:"cpu_time_ms_sum"`
-	NetworkBytes      []uint64 `json:"network_bytes,omitempty"`
-	NetworkBytesSum   uint64   `json:"network_bytes_sum"`
-	LogicalIoBytes    []uint64 `json:"logical_io_bytes,omitempty"`
-	LogicalIoBytesSum uint64   `json:"logical_io_bytes_sum"`
+	Text                     string   `json:"text"`
+	TimestampSec             []uint64 `json:"timestamp_sec"`
+	CPUTimeMs                []uint64 `json:"cpu_time_ms,omitempty"`
+	CPUTimeMsSum             uint64   `json:"cpu_time_ms_sum"`
+	NetworkBytes             []uint64 `json:"network_bytes,omitempty"`
+	NetworkBytesSum          uint64   `json:"network_bytes_sum"`
+	LogicalIoBytes           []uint64 `json:"logical_io_bytes,omitempty"`
+	LogicalIoBytesSum        uint64   `json:"logical_io_bytes_sum"`
+	LogicalReadBytes         []uint64 `json:"logical_read_bytes,omitempty"`
+	LogicalReadBytesSum      uint64   `json:"logical_read_bytes_sum"`
+	LogicalWriteBytes        []uint64 `json:"logical_write_bytes,omitempty"`
+	LogicalWriteBytesSum     uint64   `json:"logical_write_bytes_sum"`
+	RocksdbBlockReadCount    []uint64 `json:"rocksdb_block_read_count,omitempty"`
+	RocksdbBlockReadCountSum uint64   `json:"rocksdb_block_read_count_sum"`
 }
 
 type SummaryPlanItem struct {
-	PlanDigest        string   `json:"plan_digest"`
-	PlanText          string   `json:"plan_text"`
-	TimestampSec      []uint64 `json:"timestamp_sec"`
-	CPUTimeMs         []uint64 `json:"cpu_time_ms,omitempty"`
-	ExecCountPerSec   float64  `json:"exec_count_per_sec"`
-	DurationPerExecMs float64  `json:"duration_per_exec_ms"`
-	ScanRecordsPerSec float64  `json:"scan_records_per_sec"`
-	ScanIndexesPerSec float64  `json:"scan_indexes_per_sec"`
-	NetworkBytes      []uint64 `json:"network_bytes"`
-	LogicalIoBytes    []uint64 `json:"logical_io_bytes"`
+	PlanDigest            string   `json:"plan_digest"`
+	PlanText              string   `json:"plan_text"`
+	TimestampSec          []uint64 `json:"timestamp_sec"`
+	CPUTimeMs             []uint64 `json:"cpu_time_ms,omitempty"`
+	ExecCountPerSec       float64  `json:"exec_count_per_sec"`
+	DurationPerExecMs     float64  `json:"duration_per_exec_ms"`
+	ScanRecordsPerSec     float64  `json:"scan_records_per_sec"`
+	ScanIndexesPerSec     float64  `json:"scan_indexes_per_sec"`
+	NetworkBytes          []uint64 `json:"network_bytes"`
+	LogicalIoBytes        []uint64 `json:"logical_io_bytes"`
+	LogicalReadBytes      []uint64 `json:"logical_read_bytes"`
+	LogicalWriteBytes     []uint64 `json:"logical_write_bytes"`
+	RocksdbBlockReadCount []uint64 `json:"rocksdb_block_read_count"`
 }
 
 // @Summary Get summaries
@@ -206,15 +218,24 @@ func (s *Service) UpdateConfig(c *gin.Context) {
 }
 
 const (
-	tikvNetworkIoCollectionKey = "resource-metering.enable-network-io-collection"
+	tikvNetworkIoCollectionKey  = "resource-metering.enable-network-io-collection"
+	tikvDetailedIoCollectionKey = "resource-metering.enable-detailed-io-collection"
 
 	tikvNetworkIoCollectionNodeTimeout    = 3 * time.Second
 	tikvNetworkIoCollectionMaxConcurrency = 10
 )
 
 type TikvNetworkIoCollectionConfig struct {
-	Enable       bool `json:"enable"`
-	IsMultiValue bool `json:"is_multi_value,omitempty"`
+	Enable                 bool `json:"enable"`
+	IsMultiValue           bool `json:"is_multi_value,omitempty"`
+	DetailedIoEnabled      bool `json:"detailed_io_enabled"`
+	DetailedIoIsMultiValue bool `json:"detailed_io_is_multi_value,omitempty"`
+	DetailedIoSupported    bool `json:"detailed_io_supported"`
+}
+
+type UpdateTikvNetworkIoCollectionRequest struct {
+	Enable            bool  `json:"enable"`
+	DetailedIoEnabled *bool `json:"detailed_io_enabled,omitempty"`
 }
 
 type UpdateTikvNetworkIoCollectionResponse struct {
@@ -240,9 +261,11 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 	}
 
 	type getResult struct {
-		value bool
-		found bool
-		err   error
+		networkValue  bool
+		networkFound  bool
+		detailedValue bool
+		detailedFound bool
+		err           error
 	}
 
 	concurrency := getTiKVNetworkIoCollectionConcurrency(len(tikvInfo))
@@ -260,12 +283,28 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 					resultChan <- getResult{err: err}
 					continue
 				}
-				v, found, err := parseNestedBoolByDotPath(data, tikvNetworkIoCollectionKey)
+				networkValue, networkFound, err := parseNestedBoolByDotPath(
+					data,
+					tikvNetworkIoCollectionKey,
+				)
 				if err != nil {
 					resultChan <- getResult{err: err}
 					continue
 				}
-				resultChan <- getResult{value: v, found: found}
+				detailedValue, detailedFound, err := parseNestedBoolByDotPath(
+					data,
+					tikvDetailedIoCollectionKey,
+				)
+				if err != nil {
+					resultChan <- getResult{err: err}
+					continue
+				}
+				resultChan <- getResult{
+					networkValue:  networkValue,
+					networkFound:  networkFound,
+					detailedValue: detailedValue,
+					detailedFound: detailedFound,
+				}
 			}
 		})
 	}
@@ -279,9 +318,10 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 
 	successes := 0
 	failures := 0
-	trueCount := 0
-	falseCount := 0
-	hasMissing := false
+	networkFoundCount := 0
+	networkTrueCount := 0
+	detailedFoundCount := 0
+	detailedTrueCount := 0
 	for result := range resultChan {
 		if result.err != nil {
 			failures++
@@ -290,15 +330,18 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 
 		successes++
 		// Keep existing semantics: missing key is treated as "false".
-		if !result.found {
-			hasMissing = true
-			falseCount++
-			continue
+		if result.networkFound {
+			networkFoundCount++
+			if result.networkValue {
+				networkTrueCount++
+			}
 		}
-		if result.value {
-			trueCount++
-		} else {
-			falseCount++
+
+		if result.detailedFound {
+			detailedFoundCount++
+			if result.detailedValue {
+				detailedTrueCount++
+			}
 		}
 	}
 
@@ -307,21 +350,33 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 		return
 	}
 
-	// Keep existing semantics:
-	// 1. Any failed request means "not enabled on all nodes".
-	// 2. Missing config key is treated as false and marks multi-value.
-	allTrue := failures == 0 && !hasMissing && falseCount == 0
-	isMulti := failures > 0 || hasMissing || (trueCount > 0 && falseCount > 0)
+	networkStatus := summarizeTiKVCollectionConfig(
+		len(tikvInfo),
+		failures,
+		networkFoundCount,
+		networkTrueCount,
+		true,
+	)
+	detailedStatus := summarizeTiKVCollectionConfig(
+		len(tikvInfo),
+		failures,
+		detailedFoundCount,
+		detailedTrueCount,
+		false,
+	)
 
 	c.JSON(http.StatusOK, &TikvNetworkIoCollectionConfig{
-		Enable:       allTrue,
-		IsMultiValue: isMulti,
+		Enable:                 networkStatus.enabled,
+		IsMultiValue:           networkStatus.isMultiValue,
+		DetailedIoEnabled:      detailedStatus.enabled,
+		DetailedIoIsMultiValue: detailedStatus.isMultiValue,
+		DetailedIoSupported:    detailedStatus.supported,
 	})
 }
 
 // @ID topsqlUpdateTiKVNetworkIOCollection
 // @Summary Update TiKV network IO collection config
-// @Param request body TikvNetworkIoCollectionConfig true "Request body"
+// @Param request body UpdateTikvNetworkIoCollectionRequest true "Request body"
 // @Router /topsql/tikv_network_io_collection [post]
 // @Security JwtAuth
 // @Success 200 {object} UpdateTikvNetworkIoCollectionResponse "ok"
@@ -329,7 +384,7 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
 func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
-	var cfg TikvNetworkIoCollectionConfig
+	var cfg UpdateTikvNetworkIoCollectionRequest
 	if err := c.ShouldBindJSON(&cfg); err != nil {
 		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
@@ -343,6 +398,9 @@ func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
 
 	body := map[string]interface{}{
 		tikvNetworkIoCollectionKey: cfg.Enable,
+	}
+	if cfg.DetailedIoEnabled != nil {
+		body[tikvDetailedIoCollectionKey] = *cfg.DetailedIoEnabled
 	}
 	bodyJSON, err := json.Marshal(&body)
 	if err != nil {
@@ -426,6 +484,34 @@ func getTiKVNetworkIoCollectionConcurrency(tikvCount int) int {
 	return concurrency
 }
 
+type tikvCollectionConfigStatus struct {
+	enabled      bool
+	isMultiValue bool
+	supported    bool
+}
+
+func summarizeTiKVCollectionConfig(
+	total int,
+	failures int,
+	found int,
+	enabled int,
+	allMissingIsMultiValue bool,
+) tikvCollectionConfigStatus {
+	supported := found > 0
+	if !supported && !allMissingIsMultiValue {
+		return tikvCollectionConfigStatus{}
+	}
+
+	disabled := found - enabled
+	return tikvCollectionConfigStatus{
+		enabled: failures == 0 && found == total && enabled == total,
+		isMultiValue: failures > 0 ||
+			found != total ||
+			(enabled > 0 && disabled > 0),
+		supported: supported,
+	}
+}
+
 func parseNestedBoolByDotPath(data []byte, dotPath string) (value bool, found bool, err error) {
 	var m map[string]interface{}
 	if err := json.Unmarshal(data, &m); err != nil {
@@ -462,15 +548,5 @@ func parseNestedBoolByDotPath(data []byte, dotPath string) (value bool, found bo
 }
 
 func splitDotPath(dotPath string) []string {
-	// Avoid importing strings for a single split; keep consistent with other packages.
-	parts := make([]string, 0, 4)
-	last := 0
-	for i := 0; i < len(dotPath); i++ {
-		if dotPath[i] == '.' {
-			parts = append(parts, dotPath[last:i])
-			last = i + 1
-		}
-	}
-	parts = append(parts, dotPath[last:])
-	return parts
+	return strings.Split(dotPath, ".")
 }

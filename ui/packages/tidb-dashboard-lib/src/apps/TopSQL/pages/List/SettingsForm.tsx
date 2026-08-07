@@ -13,7 +13,10 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 import { telemetry } from '../../utils/telemetry'
-import { TopSQLContext } from '../../context'
+import {
+  TopSQLContext,
+  TopsqlTikvNetworkIoCollectionConfig
+} from '../../context'
 import styles from './SettingsForm.module.less'
 
 interface Props {
@@ -24,6 +27,7 @@ interface Props {
 interface FormValues {
   enable: boolean
   tikv_network_io_collection: boolean
+  tikv_detailed_io_collection: boolean
 }
 
 export function SettingsForm({ onClose, onConfigUpdated }: Props) {
@@ -56,12 +60,20 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
           setSubmitting(true)
           const shouldCheckTikvCollectionResult =
             values.tikv_network_io_collection &&
-            form.isFieldTouched('tikv_network_io_collection')
+            (form.isFieldTouched('tikv_network_io_collection') ||
+              (values.tikv_detailed_io_collection &&
+                form.isFieldTouched('tikv_detailed_io_collection')))
+          const tikvCollectionRequest = {
+            enable: values.tikv_network_io_collection,
+            ...(initialTikvNetworkIoCollection?.detailed_io_supported
+              ? {
+                  detailed_io_enabled: values.tikv_detailed_io_collection
+                }
+              : {})
+          }
           const [, tikvCollectionUpdateResponse] = await Promise.all([
             ctx!.ds.topsqlConfigPost(newConfig),
-            ctx!.ds.topsqlTikvNetworkIoCollectionPost({
-              enable: values.tikv_network_io_collection
-            })
+            ctx!.ds.topsqlTikvNetworkIoCollectionPost(tikvCollectionRequest)
           ])
           const tikvCollectionWarningMessages = (
             tikvCollectionUpdateResponse.data.warnings ?? []
@@ -69,7 +81,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
             .map((w) => w.message || w.full_text || '')
             .filter((msg) => !!msg)
           let tikvCollectionAfterSave:
-            | { enable: boolean; is_multi_value?: boolean }
+            | TopsqlTikvNetworkIoCollectionConfig
             | undefined
           if (shouldCheckTikvCollectionResult) {
             try {
@@ -82,7 +94,8 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
 
           telemetry.saveSettings({
             ...newConfig,
-            tikv_network_io_collection: values.tikv_network_io_collection
+            tikv_network_io_collection: values.tikv_network_io_collection,
+            tikv_detailed_io_collection: values.tikv_detailed_io_collection
           })
           onClose()
           onConfigUpdated()
@@ -98,7 +111,10 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
             const isPartialAfterSave =
               tikvCollectionAfterSave?.is_multi_value === true
             const isAllEnabledAfterSave =
-              tikvCollectionAfterSave?.enable === true
+              tikvCollectionAfterSave?.enable === true &&
+              (!values.tikv_detailed_io_collection ||
+                (tikvCollectionAfterSave?.detailed_io_enabled === true &&
+                  tikvCollectionAfterSave?.detailed_io_is_multi_value !== true))
             if (
               !isPartialAfterSave &&
               isAllEnabledAfterSave &&
@@ -174,7 +190,15 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [t, onClose, onConfigUpdated, initialConfig, ctx, form]
+    [
+      t,
+      onClose,
+      onConfigUpdated,
+      initialConfig,
+      initialTikvNetworkIoCollection,
+      ctx,
+      form
+    ]
   )
 
   const combinedLoading = loading || loadingTikvNetworkIoCollection
@@ -182,6 +206,10 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
   const topsqlEnabled = Form.useWatch('enable', form)
   const tikvNetworkIoCollectionEnabled = Form.useWatch(
     'tikv_network_io_collection',
+    form
+  )
+  const tikvDetailedIoCollectionEnabled = Form.useWatch(
+    'tikv_detailed_io_collection',
     form
   )
   const tikvStatusText = useMemo(() => {
@@ -223,6 +251,51 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
       : t('topsql.settings.tikv_network_io_collection_tooltip')
   }, [showTikvNetworkIoCollectionPartialState, t])
 
+  const detailedIoStatusText = useMemo(() => {
+    if (topsqlEnabled === false) {
+      return t('topsql.settings.tikv_network_io_collection_disabled_by_topsql')
+    }
+    if (tikvNetworkIoCollectionEnabled === false) {
+      return t('topsql.settings.tikv_detailed_io_collection_requires_network')
+    }
+    if (!initialTikvNetworkIoCollection) {
+      return ''
+    }
+    if (initialTikvNetworkIoCollection.detailed_io_is_multi_value) {
+      return t('topsql.settings.tikv_network_io_collection_status.partial')
+    }
+    return initialTikvNetworkIoCollection.detailed_io_enabled
+      ? t('topsql.settings.tikv_network_io_collection_status.on')
+      : t('topsql.settings.tikv_network_io_collection_status.off')
+  }, [
+    topsqlEnabled,
+    tikvNetworkIoCollectionEnabled,
+    initialTikvNetworkIoCollection,
+    t
+  ])
+  const showTikvDetailedIoCollectionPartialState = useMemo(() => {
+    if (
+      topsqlEnabled === false ||
+      tikvNetworkIoCollectionEnabled === false ||
+      !initialTikvNetworkIoCollection?.detailed_io_is_multi_value
+    ) {
+      return false
+    }
+    if (form.isFieldTouched('tikv_detailed_io_collection')) {
+      return false
+    }
+    return (
+      tikvDetailedIoCollectionEnabled ===
+      initialTikvNetworkIoCollection.detailed_io_enabled
+    )
+  }, [
+    topsqlEnabled,
+    tikvNetworkIoCollectionEnabled,
+    initialTikvNetworkIoCollection,
+    tikvDetailedIoCollectionEnabled,
+    form
+  ])
+
   useEffect(() => {
     if (topsqlEnabled === false) {
       form.setFieldsValue({ tikv_network_io_collection: false })
@@ -240,7 +313,9 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
           initialValues={{
             ...initialConfig,
             tikv_network_io_collection:
-              initialTikvNetworkIoCollection?.enable ?? false
+              initialTikvNetworkIoCollection?.enable ?? false,
+            tikv_detailed_io_collection:
+              initialTikvNetworkIoCollection?.detailed_io_enabled ?? false
           }}
           onFinish={handleSubmit}
         >
@@ -289,6 +364,46 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
               )}
             </div>
           </Form.Item>
+          {initialTikvNetworkIoCollection?.detailed_io_supported && (
+            <Form.Item
+              valuePropName="checked"
+              label={t('topsql.settings.tikv_detailed_io_collection')}
+              extra={t('topsql.settings.tikv_detailed_io_collection_tooltip')}
+            >
+              <div className={styles.switchWithStatus}>
+                <Form.Item
+                  noStyle
+                  name="tikv_detailed_io_collection"
+                  valuePropName="checked"
+                >
+                  <Switch
+                    data-e2e="topsql_settings_tikv_detailed_io_collection"
+                    disabled={
+                      !isWriteable ||
+                      topsqlEnabled === false ||
+                      tikvNetworkIoCollectionEnabled === false
+                    }
+                    className={
+                      showTikvDetailedIoCollectionPartialState
+                        ? styles.partialSwitch
+                        : undefined
+                    }
+                    checkedChildren={
+                      showTikvDetailedIoCollectionPartialState ? '-' : undefined
+                    }
+                    unCheckedChildren={
+                      showTikvDetailedIoCollectionPartialState ? '-' : undefined
+                    }
+                  />
+                </Form.Item>
+                {detailedIoStatusText && (
+                  <span className={styles.switchStatus}>
+                    {detailedIoStatusText}
+                  </span>
+                )}
+              </div>
+            </Form.Item>
+          )}
           <DrawerFooter>
             <Space>
               <Button

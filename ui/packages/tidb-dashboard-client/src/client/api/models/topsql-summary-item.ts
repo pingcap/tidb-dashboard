@@ -51,6 +51,9 @@ export interface TopsqlSummaryItem {
      * @memberof TopsqlSummaryItem
      */
     'logical_io_bytes'?: number;
+    'logical_read_bytes'?: number;
+    'logical_write_bytes'?: number;
+    'rocksdb_block_read_count'?: number;
     /**
      * 
      * @type {number}
@@ -88,4 +91,3 @@ export interface TopsqlSummaryItem {
      */
     'sql_text'?: string;
 }
-

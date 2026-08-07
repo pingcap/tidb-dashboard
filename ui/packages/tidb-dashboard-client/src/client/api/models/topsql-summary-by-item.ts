@@ -44,6 +44,12 @@ export interface TopsqlSummaryByItem {
      * @memberof TopsqlSummaryByItem
      */
     'logical_io_bytes_sum'?: number;
+    'logical_read_bytes'?: Array<number>;
+    'logical_read_bytes_sum'?: number;
+    'logical_write_bytes'?: Array<number>;
+    'logical_write_bytes_sum'?: number;
+    'rocksdb_block_read_count'?: Array<number>;
+    'rocksdb_block_read_count_sum'?: number;
     /**
      * 
      * @type {Array<number>}
@@ -69,4 +75,3 @@ export interface TopsqlSummaryByItem {
      */
     'timestamp_sec'?: Array<number>;
 }
-

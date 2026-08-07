@@ -68,6 +68,19 @@ export function ListDetailTable({
         return t('topsql.detail.fields.network_bytes') || 'Network Bytes'
       case OrderBy.LogicalIoBytes:
         return t('topsql.detail.fields.logical_io_bytes') || 'Logical IO Bytes'
+      case OrderBy.LogicalReadBytes:
+        return (
+          t('topsql.detail.fields.logical_read_bytes') || 'Logical Read Bytes'
+        )
+      case OrderBy.LogicalWriteBytes:
+        return (
+          t('topsql.detail.fields.logical_write_bytes') || 'Logical Write Bytes'
+        )
+      case OrderBy.RocksdbBlockReadCount:
+        return (
+          t('topsql.detail.fields.rocksdb_block_read_count') ||
+          'RocksDB Block Reads'
+        )
       case OrderBy.CpuTime:
       default:
         return t('topsql.detail.fields.cpu_time')
@@ -80,6 +93,12 @@ export function ListDetailTable({
         return rec.networkBytes || 0
       case OrderBy.LogicalIoBytes:
         return rec.logicalIoBytes || 0
+      case OrderBy.LogicalReadBytes:
+        return rec.logicalReadBytes || 0
+      case OrderBy.LogicalWriteBytes:
+        return rec.logicalWriteBytes || 0
+      case OrderBy.RocksdbBlockReadCount:
+        return rec.rocksdbBlockReadCount || 0
       case OrderBy.CpuTime:
       default:
         return rec.cpuTime || 0
@@ -90,7 +109,11 @@ export function ListDetailTable({
     switch (orderBy) {
       case OrderBy.NetworkBytes:
       case OrderBy.LogicalIoBytes:
+      case OrderBy.LogicalReadBytes:
+      case OrderBy.LogicalWriteBytes:
         return (v: number) => getValueFormat('bytes')(v, 2)
+      case OrderBy.RocksdbBlockReadCount:
+        return (v: number) => getValueFormat('short')(v, 2)
       case OrderBy.CpuTime:
       default:
         return (v: number) => getValueFormat('ms')(v, 2)
@@ -109,6 +132,12 @@ export function ListDetailTable({
               ? 'networkBytes'
               : orderBy === OrderBy.LogicalIoBytes
               ? 'logicalIoBytes'
+              : orderBy === OrderBy.LogicalReadBytes
+              ? 'logicalReadBytes'
+              : orderBy === OrderBy.LogicalWriteBytes
+              ? 'logicalWriteBytes'
+              : orderBy === OrderBy.RocksdbBlockReadCount
+              ? 'rocksdbBlockReadCount'
               : 'cpuTime',
           minWidth: 150,
           maxWidth: 250,
@@ -269,6 +298,9 @@ export type PlanRecord = {
   cpuTime: number
   networkBytes?: number
   logicalIoBytes?: number
+  logicalReadBytes?: number
+  logicalWriteBytes?: number
+  rocksdbBlockReadCount?: number
 } & TopsqlSummaryPlanItem
 
 const usePlanRecord = (
@@ -291,6 +323,12 @@ const usePlanRecord = (
         const networkBytes = p.network_bytes?.reduce((pt, t) => pt + t, 0) || 0
         const logicalIoBytes =
           p.logical_io_bytes?.reduce((pt, t) => pt + t, 0) || 0
+        const logicalReadBytes =
+          p.logical_read_bytes?.reduce((pt, t) => pt + t, 0) || 0
+        const logicalWriteBytes =
+          p.logical_write_bytes?.reduce((pt, t) => pt + t, 0) || 0
+        const rocksdbBlockReadCount =
+          p.rocksdb_block_read_count?.reduce((pt, t) => pt + t, 0) || 0
 
         // Calculate capacity based on the selected orderBy dimension
         let value = 0
@@ -300,6 +338,15 @@ const usePlanRecord = (
             break
           case OrderBy.LogicalIoBytes:
             value = logicalIoBytes
+            break
+          case OrderBy.LogicalReadBytes:
+            value = logicalReadBytes
+            break
+          case OrderBy.LogicalWriteBytes:
+            value = logicalWriteBytes
+            break
+          case OrderBy.RocksdbBlockReadCount:
+            value = rocksdbBlockReadCount
             break
           case OrderBy.CpuTime:
           default:
@@ -315,7 +362,10 @@ const usePlanRecord = (
           ...p,
           cpuTime,
           networkBytes,
-          logicalIoBytes
+          logicalIoBytes,
+          logicalReadBytes,
+          logicalWriteBytes,
+          rocksdbBlockReadCount
         }
       })
       .sort((a, b) => {
@@ -330,6 +380,18 @@ const usePlanRecord = (
           case OrderBy.LogicalIoBytes:
             aValue = a.logicalIoBytes || 0
             bValue = b.logicalIoBytes || 0
+            break
+          case OrderBy.LogicalReadBytes:
+            aValue = a.logicalReadBytes || 0
+            bValue = b.logicalReadBytes || 0
+            break
+          case OrderBy.LogicalWriteBytes:
+            aValue = a.logicalWriteBytes || 0
+            bValue = b.logicalWriteBytes || 0
+            break
+          case OrderBy.RocksdbBlockReadCount:
+            aValue = a.rocksdbBlockReadCount || 0
+            bValue = b.rocksdbBlockReadCount || 0
             break
           case OrderBy.CpuTime:
           default:
@@ -362,6 +424,12 @@ const getOverallValue = (rec: PlanRecord, orderBy: OrderBy): number => {
       return rec.networkBytes || 0
     case OrderBy.LogicalIoBytes:
       return rec.logicalIoBytes || 0
+    case OrderBy.LogicalReadBytes:
+      return rec.logicalReadBytes || 0
+    case OrderBy.LogicalWriteBytes:
+      return rec.logicalWriteBytes || 0
+    case OrderBy.RocksdbBlockReadCount:
+      return rec.rocksdbBlockReadCount || 0
     case OrderBy.CpuTime:
     default:
       return rec.cpuTime || 0

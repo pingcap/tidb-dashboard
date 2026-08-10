@@ -257,9 +257,7 @@ export function TopSQLList() {
       canOpenSettings &&
       tikvNetworkIoCollection?.enable === true &&
       tikvNetworkIoCollection?.is_multi_value !== true &&
-      tikvNetworkIoCollection?.detailed_io_supported === true &&
-      tikvNetworkIoCollection?.detailed_io_enabled === true &&
-      tikvNetworkIoCollection?.detailed_io_is_multi_value !== true)
+      tikvNetworkIoCollection?.detailed_io_enabled === true)
   const groupBy = useMemo(() => {
     if (ctx?.cfg.showGroupBy !== true || instance?.instance_type !== 'tikv') {
       return AggLevel.Query

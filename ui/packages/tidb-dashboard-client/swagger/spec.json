@@ -6419,12 +6419,6 @@
                 "detailed_io_enabled": {
                     "type": "boolean"
                 },
-                "detailed_io_is_multi_value": {
-                    "type": "boolean"
-                },
-                "detailed_io_supported": {
-                    "type": "boolean"
-                },
                 "enable": {
                     "type": "boolean"
                 },
@@ -6435,6 +6429,9 @@
         },
         "topsql.UpdateTikvNetworkIoCollectionRequest": {
             "type": "object",
+            "required": [
+                "enable"
+            ],
             "properties": {
                 "detailed_io_enabled": {
                     "type": "boolean"

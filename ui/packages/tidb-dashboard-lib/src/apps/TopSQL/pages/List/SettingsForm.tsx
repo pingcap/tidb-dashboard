@@ -65,7 +65,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
                 form.isFieldTouched('tikv_detailed_io_collection')))
           const tikvCollectionRequest = {
             enable: values.tikv_network_io_collection,
-            ...(initialTikvNetworkIoCollection?.detailed_io_supported
+            ...(form.isFieldTouched('tikv_detailed_io_collection')
               ? {
                   detailed_io_enabled: values.tikv_detailed_io_collection
                 }
@@ -113,8 +113,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
             const isAllEnabledAfterSave =
               tikvCollectionAfterSave?.enable === true &&
               (!values.tikv_detailed_io_collection ||
-                (tikvCollectionAfterSave?.detailed_io_enabled === true &&
-                  tikvCollectionAfterSave?.detailed_io_is_multi_value !== true))
+                tikvCollectionAfterSave?.detailed_io_enabled === true)
             if (
               !isPartialAfterSave &&
               isAllEnabledAfterSave &&
@@ -190,15 +189,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         updateConfig(values)
       }
     },
-    [
-      t,
-      onClose,
-      onConfigUpdated,
-      initialConfig,
-      initialTikvNetworkIoCollection,
-      ctx,
-      form
-    ]
+    [t, onClose, onConfigUpdated, initialConfig, ctx, form]
   )
 
   const combinedLoading = loading || loadingTikvNetworkIoCollection
@@ -206,10 +197,6 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
   const topsqlEnabled = Form.useWatch('enable', form)
   const tikvNetworkIoCollectionEnabled = Form.useWatch(
     'tikv_network_io_collection',
-    form
-  )
-  const tikvDetailedIoCollectionEnabled = Form.useWatch(
-    'tikv_detailed_io_collection',
     form
   )
   const tikvStatusText = useMemo(() => {
@@ -261,9 +248,6 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
     if (!initialTikvNetworkIoCollection) {
       return ''
     }
-    if (initialTikvNetworkIoCollection.detailed_io_is_multi_value) {
-      return t('topsql.settings.tikv_network_io_collection_status.partial')
-    }
     return initialTikvNetworkIoCollection.detailed_io_enabled
       ? t('topsql.settings.tikv_network_io_collection_status.on')
       : t('topsql.settings.tikv_network_io_collection_status.off')
@@ -273,29 +257,6 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
     initialTikvNetworkIoCollection,
     t
   ])
-  const showTikvDetailedIoCollectionPartialState = useMemo(() => {
-    if (
-      topsqlEnabled === false ||
-      tikvNetworkIoCollectionEnabled === false ||
-      !initialTikvNetworkIoCollection?.detailed_io_is_multi_value
-    ) {
-      return false
-    }
-    if (form.isFieldTouched('tikv_detailed_io_collection')) {
-      return false
-    }
-    return (
-      tikvDetailedIoCollectionEnabled ===
-      initialTikvNetworkIoCollection.detailed_io_enabled
-    )
-  }, [
-    topsqlEnabled,
-    tikvNetworkIoCollectionEnabled,
-    initialTikvNetworkIoCollection,
-    tikvDetailedIoCollectionEnabled,
-    form
-  ])
-
   useEffect(() => {
     if (topsqlEnabled === false) {
       form.setFieldsValue({ tikv_network_io_collection: false })
@@ -364,46 +325,33 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
               )}
             </div>
           </Form.Item>
-          {initialTikvNetworkIoCollection?.detailed_io_supported && (
-            <Form.Item
-              valuePropName="checked"
-              label={t('topsql.settings.tikv_detailed_io_collection')}
-              extra={t('topsql.settings.tikv_detailed_io_collection_tooltip')}
-            >
-              <div className={styles.switchWithStatus}>
-                <Form.Item
-                  noStyle
-                  name="tikv_detailed_io_collection"
-                  valuePropName="checked"
-                >
-                  <Switch
-                    data-e2e="topsql_settings_tikv_detailed_io_collection"
-                    disabled={
-                      !isWriteable ||
-                      topsqlEnabled === false ||
-                      tikvNetworkIoCollectionEnabled === false
-                    }
-                    className={
-                      showTikvDetailedIoCollectionPartialState
-                        ? styles.partialSwitch
-                        : undefined
-                    }
-                    checkedChildren={
-                      showTikvDetailedIoCollectionPartialState ? '-' : undefined
-                    }
-                    unCheckedChildren={
-                      showTikvDetailedIoCollectionPartialState ? '-' : undefined
-                    }
-                  />
-                </Form.Item>
-                {detailedIoStatusText && (
-                  <span className={styles.switchStatus}>
-                    {detailedIoStatusText}
-                  </span>
-                )}
-              </div>
-            </Form.Item>
-          )}
+          <Form.Item
+            valuePropName="checked"
+            label={t('topsql.settings.tikv_detailed_io_collection')}
+            extra={t('topsql.settings.tikv_detailed_io_collection_tooltip')}
+          >
+            <div className={styles.switchWithStatus}>
+              <Form.Item
+                noStyle
+                name="tikv_detailed_io_collection"
+                valuePropName="checked"
+              >
+                <Switch
+                  data-e2e="topsql_settings_tikv_detailed_io_collection"
+                  disabled={
+                    !isWriteable ||
+                    topsqlEnabled === false ||
+                    tikvNetworkIoCollectionEnabled === false
+                  }
+                />
+              </Form.Item>
+              {detailedIoStatusText && (
+                <span className={styles.switchStatus}>
+                  {detailedIoStatusText}
+                </span>
+              )}
+            </div>
+          </Form.Item>
           <DrawerFooter>
             <Space>
               <Button

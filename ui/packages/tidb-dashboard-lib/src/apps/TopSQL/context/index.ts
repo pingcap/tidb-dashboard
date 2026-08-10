@@ -25,14 +25,6 @@ export interface TopsqlTikvNetworkIoCollectionConfig {
    * (resource-metering.enable-detailed-io-collection)
    */
   detailed_io_enabled?: boolean
-  /**
-   * Whether detailed IO collection values are not identical across TiKV nodes
-   */
-  detailed_io_is_multi_value?: boolean
-  /**
-   * Whether at least one TiKV node supports detailed IO collection
-   */
-  detailed_io_supported?: boolean
 }
 
 export interface TopsqlTikvNetworkIoCollectionUpdateResponse {

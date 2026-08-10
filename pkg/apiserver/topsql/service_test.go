@@ -6,13 +6,12 @@ import "testing"
 
 func TestSummarizeTiKVCollectionConfig(t *testing.T) {
 	testCases := []struct {
-		name                   string
-		total                  int
-		failures               int
-		found                  int
-		enabled                int
-		allMissingIsMultiValue bool
-		expected               tikvCollectionConfigStatus
+		name     string
+		total    int
+		failures int
+		found    int
+		enabled  int
+		expected tikvCollectionConfigStatus
 	}{
 		{
 			name:    "all enabled",
@@ -20,18 +19,15 @@ func TestSummarizeTiKVCollectionConfig(t *testing.T) {
 			found:   3,
 			enabled: 3,
 			expected: tikvCollectionConfigStatus{
-				enabled:   true,
-				supported: true,
+				enabled: true,
 			},
 		},
 		{
-			name:    "all disabled",
-			total:   3,
-			found:   3,
-			enabled: 0,
-			expected: tikvCollectionConfigStatus{
-				supported: true,
-			},
+			name:     "all disabled",
+			total:    3,
+			found:    3,
+			enabled:  0,
+			expected: tikvCollectionConfigStatus{},
 		},
 		{
 			name:    "mixed values",
@@ -40,7 +36,6 @@ func TestSummarizeTiKVCollectionConfig(t *testing.T) {
 			enabled: 2,
 			expected: tikvCollectionConfigStatus{
 				isMultiValue: true,
-				supported:    true,
 			},
 		},
 		{
@@ -51,21 +46,14 @@ func TestSummarizeTiKVCollectionConfig(t *testing.T) {
 			enabled:  2,
 			expected: tikvCollectionConfigStatus{
 				isMultiValue: true,
-				supported:    true,
 			},
 		},
 		{
-			name:                   "legacy key missing",
-			total:                  3,
-			allMissingIsMultiValue: true,
+			name:  "key missing",
+			total: 3,
 			expected: tikvCollectionConfigStatus{
 				isMultiValue: true,
 			},
-		},
-		{
-			name:     "detailed key unsupported",
-			total:    3,
-			expected: tikvCollectionConfigStatus{},
 		},
 		{
 			name:    "mixed version cluster",
@@ -74,7 +62,6 @@ func TestSummarizeTiKVCollectionConfig(t *testing.T) {
 			enabled: 2,
 			expected: tikvCollectionConfigStatus{
 				isMultiValue: true,
-				supported:    true,
 			},
 		},
 	}
@@ -86,7 +73,6 @@ func TestSummarizeTiKVCollectionConfig(t *testing.T) {
 				testCase.failures,
 				testCase.found,
 				testCase.enabled,
-				testCase.allMissingIsMultiValue,
 			)
 			if actual != testCase.expected {
 				t.Fatalf("expected %+v, got %+v", testCase.expected, actual)

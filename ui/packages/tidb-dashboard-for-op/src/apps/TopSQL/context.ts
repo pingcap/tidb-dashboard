@@ -12,8 +12,6 @@ type TikvNetworkIoCollectionConfig = {
   enable: boolean
   is_multi_value?: boolean
   detailed_io_enabled?: boolean
-  detailed_io_is_multi_value?: boolean
-  detailed_io_supported?: boolean
 }
 
 type TikvNetworkIoCollectionUpdateResponse = {

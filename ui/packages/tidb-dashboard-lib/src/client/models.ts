@@ -4404,18 +4404,6 @@ export interface TopsqlTikvNetworkIoCollectionConfig {
      * @type {boolean}
      * @memberof TopsqlTikvNetworkIoCollectionConfig
      */
-    'detailed_io_is_multi_value'?: boolean;
-    /**
-     *
-     * @type {boolean}
-     * @memberof TopsqlTikvNetworkIoCollectionConfig
-     */
-    'detailed_io_supported'?: boolean;
-    /**
-     *
-     * @type {boolean}
-     * @memberof TopsqlTikvNetworkIoCollectionConfig
-     */
     'enable'?: boolean;
     /**
      *
@@ -4445,7 +4433,7 @@ export interface TopsqlUpdateTikvNetworkIoCollectionRequest {
      * @type {boolean}
      * @memberof TopsqlUpdateTikvNetworkIoCollectionRequest
      */
-    'enable'?: boolean;
+    'enable': boolean;
 }
 
 

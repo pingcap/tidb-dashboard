@@ -25,9 +25,7 @@ class DataSource implements ITopSQLDataSource {
       data: {
         enable: false,
         is_multi_value: false,
-        detailed_io_enabled: false,
-        detailed_io_is_multi_value: false,
-        detailed_io_supported: false
+        detailed_io_enabled: false
       } as TopsqlTikvNetworkIoCollectionConfig
     } as any)
   }

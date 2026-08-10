@@ -226,15 +226,13 @@ const (
 )
 
 type TikvNetworkIoCollectionConfig struct {
-	Enable                 bool `json:"enable"`
-	IsMultiValue           bool `json:"is_multi_value,omitempty"`
-	DetailedIoEnabled      bool `json:"detailed_io_enabled"`
-	DetailedIoIsMultiValue bool `json:"detailed_io_is_multi_value,omitempty"`
-	DetailedIoSupported    bool `json:"detailed_io_supported"`
+	Enable            bool `json:"enable"`
+	IsMultiValue      bool `json:"is_multi_value,omitempty"`
+	DetailedIoEnabled bool `json:"detailed_io_enabled"`
 }
 
 type UpdateTikvNetworkIoCollectionRequest struct {
-	Enable            bool  `json:"enable"`
+	Enable            *bool `json:"enable" binding:"required"`
 	DetailedIoEnabled *bool `json:"detailed_io_enabled,omitempty"`
 }
 
@@ -355,22 +353,18 @@ func (s *Service) GetTiKVNetworkIOCollection(c *gin.Context) {
 		failures,
 		networkFoundCount,
 		networkTrueCount,
-		true,
 	)
 	detailedStatus := summarizeTiKVCollectionConfig(
 		len(tikvInfo),
 		failures,
 		detailedFoundCount,
 		detailedTrueCount,
-		false,
 	)
 
 	c.JSON(http.StatusOK, &TikvNetworkIoCollectionConfig{
-		Enable:                 networkStatus.enabled,
-		IsMultiValue:           networkStatus.isMultiValue,
-		DetailedIoEnabled:      detailedStatus.enabled,
-		DetailedIoIsMultiValue: detailedStatus.isMultiValue,
-		DetailedIoSupported:    detailedStatus.supported,
+		Enable:            networkStatus.enabled,
+		IsMultiValue:      networkStatus.isMultiValue,
+		DetailedIoEnabled: detailedStatus.enabled,
 	})
 }
 
@@ -397,7 +391,7 @@ func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
 	}
 
 	body := map[string]interface{}{
-		tikvNetworkIoCollectionKey: cfg.Enable,
+		tikvNetworkIoCollectionKey: *cfg.Enable,
 	}
 	if cfg.DetailedIoEnabled != nil {
 		body[tikvDetailedIoCollectionKey] = *cfg.DetailedIoEnabled
@@ -487,7 +481,6 @@ func getTiKVNetworkIoCollectionConcurrency(tikvCount int) int {
 type tikvCollectionConfigStatus struct {
 	enabled      bool
 	isMultiValue bool
-	supported    bool
 }
 
 func summarizeTiKVCollectionConfig(
@@ -495,20 +488,13 @@ func summarizeTiKVCollectionConfig(
 	failures int,
 	found int,
 	enabled int,
-	allMissingIsMultiValue bool,
 ) tikvCollectionConfigStatus {
-	supported := found > 0
-	if !supported && !allMissingIsMultiValue {
-		return tikvCollectionConfigStatus{}
-	}
-
 	disabled := found - enabled
 	return tikvCollectionConfigStatus{
 		enabled: failures == 0 && found == total && enabled == total,
 		isMultiValue: failures > 0 ||
 			found != total ||
 			(enabled > 0 && disabled > 0),
-		supported: supported,
 	}
 }
 

@@ -27,18 +27,6 @@ export interface TopsqlTikvNetworkIoCollectionConfig {
      */
     'detailed_io_enabled'?: boolean;
     /**
-     *
-     * @type {boolean}
-     * @memberof TopsqlTikvNetworkIoCollectionConfig
-     */
-    'detailed_io_is_multi_value'?: boolean;
-    /**
-     *
-     * @type {boolean}
-     * @memberof TopsqlTikvNetworkIoCollectionConfig
-     */
-    'detailed_io_supported'?: boolean;
-    /**
      * 
      * @type {boolean}
      * @memberof TopsqlTikvNetworkIoCollectionConfig

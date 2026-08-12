@@ -293,65 +293,65 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
             </Form.Item>
           </Form.Item>
 
-          <Form.Item
-            valuePropName="checked"
-            label={t('topsql.settings.tikv_network_io_collection')}
-            extra={tikvNetworkIoCollectionTooltip}
-          >
-            <div className={styles.switchWithStatus}>
-              <Form.Item
-                noStyle
-                name="tikv_network_io_collection"
-                valuePropName="checked"
-              >
-                <Switch
-                  data-e2e="topsql_settings_tikv_network_io_collection"
-                  disabled={!isWriteable || topsqlEnabled === false}
-                  className={
-                    showTikvNetworkIoCollectionPartialState
-                      ? styles.partialSwitch
-                      : undefined
-                  }
-                  checkedChildren={
-                    showTikvNetworkIoCollectionPartialState ? '-' : undefined
-                  }
-                  unCheckedChildren={
-                    showTikvNetworkIoCollectionPartialState ? '-' : undefined
-                  }
-                />
-              </Form.Item>
-              {tikvStatusText && (
-                <span className={styles.switchStatus}>{tikvStatusText}</span>
-              )}
-            </div>
-          </Form.Item>
-          <Form.Item
-            valuePropName="checked"
-            label={t('topsql.settings.tikv_detailed_io_collection')}
-            extra={t('topsql.settings.tikv_detailed_io_collection_tooltip')}
-          >
-            <div className={styles.switchWithStatus}>
-              <Form.Item
-                noStyle
-                name="tikv_detailed_io_collection"
-                valuePropName="checked"
-              >
-                <Switch
-                  data-e2e="topsql_settings_tikv_detailed_io_collection"
-                  disabled={
-                    !isWriteable ||
-                    topsqlEnabled === false ||
-                    tikvNetworkIoCollectionEnabled === false
-                  }
-                />
-              </Form.Item>
-              {detailedIoStatusText && (
-                <span className={styles.switchStatus}>
-                  {detailedIoStatusText}
-                </span>
-              )}
-            </div>
-          </Form.Item>
+          {topsqlEnabled === true && (
+            <Form.Item
+              valuePropName="checked"
+              label={t('topsql.settings.tikv_network_io_collection')}
+              extra={tikvNetworkIoCollectionTooltip}
+            >
+              <div className={styles.switchWithStatus}>
+                <Form.Item
+                  noStyle
+                  name="tikv_network_io_collection"
+                  valuePropName="checked"
+                >
+                  <Switch
+                    data-e2e="topsql_settings_tikv_network_io_collection"
+                    disabled={!isWriteable}
+                    className={
+                      showTikvNetworkIoCollectionPartialState
+                        ? styles.partialSwitch
+                        : undefined
+                    }
+                    checkedChildren={
+                      showTikvNetworkIoCollectionPartialState ? '-' : undefined
+                    }
+                    unCheckedChildren={
+                      showTikvNetworkIoCollectionPartialState ? '-' : undefined
+                    }
+                  />
+                </Form.Item>
+                {tikvStatusText && (
+                  <span className={styles.switchStatus}>{tikvStatusText}</span>
+                )}
+              </div>
+            </Form.Item>
+          )}
+          {tikvNetworkIoCollectionEnabled === true && (
+            <Form.Item
+              valuePropName="checked"
+              label={t('topsql.settings.tikv_detailed_io_collection')}
+              extra={t('topsql.settings.tikv_detailed_io_collection_tooltip')}
+            >
+              <div className={styles.switchWithStatus}>
+                <Form.Item
+                  noStyle
+                  name="tikv_detailed_io_collection"
+                  valuePropName="checked"
+                >
+                  <Switch
+                    data-e2e="topsql_settings_tikv_detailed_io_collection"
+                    disabled={!isWriteable}
+                  />
+                </Form.Item>
+                {detailedIoStatusText && (
+                  <span className={styles.switchStatus}>
+                    {detailedIoStatusText}
+                  </span>
+                )}
+              </div>
+            </Form.Item>
+          )}
           <DrawerFooter>
             <Space>
               <Button

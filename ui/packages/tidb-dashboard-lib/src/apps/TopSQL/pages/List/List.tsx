@@ -91,7 +91,7 @@ const formatOrderByLabel = (item: OrderBy): string => {
     [OrderBy.LogicalIoBytes]: 'Logical IO',
     [OrderBy.LogicalReadBytes]: 'Logical Read',
     [OrderBy.LogicalWriteBytes]: 'Logical Write',
-    [OrderBy.RocksdbBlockReadCount]: 'RocksDB Block Reads'
+    [OrderBy.RocksdbBlockReadCount]: 'Read IOPS'
   }
   return labels[item] || item
 }

@@ -77,10 +77,7 @@ export function ListDetailTable({
           t('topsql.detail.fields.logical_write_bytes') || 'Logical Write Bytes'
         )
       case OrderBy.RocksdbBlockReadCount:
-        return (
-          t('topsql.detail.fields.rocksdb_block_read_count') ||
-          'RocksDB Block Reads'
-        )
+        return t('topsql.detail.fields.rocksdb_block_read_count') || 'Read IOPS'
       case OrderBy.CpuTime:
       default:
         return t('topsql.detail.fields.cpu_time')

@@ -16,7 +16,7 @@ topsql:
     tikv_network_io_collection_tooltip_partial: 存在未开启采集的 TiKV 节点，可点击按钮全部开启，或者通过 TiUP 修改 TiKV 默认配置（请参考文档）
     tikv_network_io_collection_disabled_by_topsql: （TopSQL 未开启时该开关强制关闭）
     tikv_detailed_io_collection: 开启 TiKV 详细 IO 维度
-    tikv_detailed_io_collection_tooltip: 与 TiKV 网络 IO 采集同时开启后，Logical Reads、Logical Writes 和 RocksDB Block Reads 将作为独立 Top SQL 维度采集和筛选。该功能会增加上报数据量和存储开销。
+    tikv_detailed_io_collection_tooltip: 与 TiKV 网络 IO 采集同时开启后，Logical Reads、Logical Writes 和 Read IOPS 将作为独立 Top SQL 维度采集和筛选。该功能会增加上报数据量和存储开销。
     tikv_detailed_io_collection_requires_network: （依赖 TiKV 网络 IO 采集）
     tikv_network_io_collection_status:
       on: （当前状态：全开）
@@ -55,7 +55,7 @@ topsql:
     logical_io_bytes: 逻辑 IO 字节数
     logical_read_bytes: 逻辑读字节数
     logical_write_bytes: 逻辑写字节数
-    rocksdb_block_read_count: RocksDB 块读取次数
+    rocksdb_block_read_count: Read IOPS
   table:
     description: 以下表格展示了当前时间范围内消耗负载最多的 {{topN}} 类 SQL 查询，点击后可进一步显示详情。
     description_no_recent_data: 当前暂无数据，您需要等待约 1 分钟完成新数据采集。
@@ -67,7 +67,7 @@ topsql:
       logical_io_bytes: 累计逻辑 IO 字节数
       logical_read_bytes: 累计逻辑读字节数
       logical_write_bytes: 累计逻辑写字节数
-      rocksdb_block_read_count: 累计 RocksDB 块读取次数
+      rocksdb_block_read_count: 累计 Read IOPS
       sql: SQL 语句
       table: 表名
       db: 数据库名
@@ -85,7 +85,7 @@ topsql:
       logical_io_bytes: 累计逻辑 IO 字节数
       logical_read_bytes: 累计逻辑读字节数
       logical_write_bytes: 累计逻辑写字节数
-      rocksdb_block_read_count: 累计 RocksDB 块读取次数
+      rocksdb_block_read_count: 累计 Read IOPS
       plan: 执行计划
       exec_count_per_sec: Call/sec
       scan_records_per_sec: Scan Rows/sec

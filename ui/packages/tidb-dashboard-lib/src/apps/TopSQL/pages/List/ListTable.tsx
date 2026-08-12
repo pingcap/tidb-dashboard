@@ -112,8 +112,7 @@ export function ListTable({
           )
         case OrderBy.RocksdbBlockReadCount:
           return (
-            t('topsql.table.fields.rocksdb_block_read_count') ||
-            'RocksDB Block Reads'
+            t('topsql.table.fields.rocksdb_block_read_count') || 'Read IOPS'
           )
         case OrderBy.CpuTime:
         default:

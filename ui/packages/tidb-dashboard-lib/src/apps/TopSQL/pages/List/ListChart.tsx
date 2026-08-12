@@ -45,7 +45,7 @@ const getAxisTitle = (orderBy: OrderBy, t: any): string => {
     case OrderBy.LogicalWriteBytes:
       return t('topsql.chart.logical_write_bytes') || 'Logical Write Bytes'
     case OrderBy.RocksdbBlockReadCount:
-      return t('topsql.chart.rocksdb_block_read_count') || 'RocksDB Block Reads'
+      return t('topsql.chart.rocksdb_block_read_count') || 'Read IOPS'
     case OrderBy.CpuTime:
     default:
       return t('topsql.chart.cpu_time')

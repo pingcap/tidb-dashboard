@@ -58,14 +58,22 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         }
         try {
           setSubmitting(true)
+          const networkIoCollectionTouched = form.isFieldTouched(
+            'tikv_network_io_collection'
+          )
+          const detailedIoCollectionTouched = form.isFieldTouched(
+            'tikv_detailed_io_collection'
+          )
+          const tikvCollectionSettingsTouched =
+            networkIoCollectionTouched || detailedIoCollectionTouched
           const shouldCheckTikvCollectionResult =
             values.tikv_network_io_collection &&
-            (form.isFieldTouched('tikv_network_io_collection') ||
+            (networkIoCollectionTouched ||
               (values.tikv_detailed_io_collection &&
-                form.isFieldTouched('tikv_detailed_io_collection')))
+                detailedIoCollectionTouched))
           const tikvCollectionRequest = {
             enable: values.tikv_network_io_collection,
-            ...(form.isFieldTouched('tikv_detailed_io_collection')
+            ...(detailedIoCollectionTouched
               ? {
                   detailed_io_enabled: values.tikv_detailed_io_collection
                 }
@@ -107,6 +115,37 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
             })
           }
 
+          const showTikvCollectionWarning = () => {
+            Modal.warning({
+              title: t(
+                'topsql.settings.tikv_network_io_collection_partial_info.title'
+              ),
+              content: (
+                <div className={styles.partialResultContent}>
+                  <div>
+                    {t(
+                      'topsql.settings.tikv_network_io_collection_partial_info.content'
+                    )}
+                  </div>
+                  {tikvCollectionWarningMessages.length > 0 && (
+                    <pre className={styles.partialResultWarnings}>
+                      {tikvCollectionWarningMessages.join('\n')}
+                    </pre>
+                  )}
+                  <a
+                    onClick={() =>
+                      window.open(t('topsql.settings.help_url'), '_blank')
+                    }
+                  >
+                    {t(
+                      'topsql.settings.tikv_network_io_collection_partial_info.action'
+                    )}
+                  </a>
+                </div>
+              )
+            })
+          }
+
           if (shouldCheckTikvCollectionResult) {
             const isPartialAfterSave =
               tikvCollectionAfterSave?.is_multi_value === true
@@ -139,35 +178,13 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
                 )
               })
             } else {
-              Modal.warning({
-                title: t(
-                  'topsql.settings.tikv_network_io_collection_partial_info.title'
-                ),
-                content: (
-                  <div className={styles.partialResultContent}>
-                    <div>
-                      {t(
-                        'topsql.settings.tikv_network_io_collection_partial_info.content'
-                      )}
-                    </div>
-                    {tikvCollectionWarningMessages.length > 0 && (
-                      <pre className={styles.partialResultWarnings}>
-                        {tikvCollectionWarningMessages.join('\n')}
-                      </pre>
-                    )}
-                    <a
-                      onClick={() =>
-                        window.open(t('topsql.settings.help_url'), '_blank')
-                      }
-                    >
-                      {t(
-                        'topsql.settings.tikv_network_io_collection_partial_info.action'
-                      )}
-                    </a>
-                  </div>
-                )
-              })
+              showTikvCollectionWarning()
             }
+          } else if (
+            tikvCollectionSettingsTouched &&
+            tikvCollectionWarningMessages.length > 0
+          ) {
+            showTikvCollectionWarning()
           }
         } finally {
           setSubmitting(false)

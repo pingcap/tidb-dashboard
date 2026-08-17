@@ -38,8 +38,8 @@ topsql:
       content_prefix: TiKV IO collection has been enabled and is being applied to all current TiKV nodes. You may need to wait for about 1 minute to see data for related dimensions.
       content_emphasis: Note that this is not applied automatically to newly scaled-out TiKV nodes. To make it effective for new nodes, update the TiKV default config via tiup and enable it there as well.
     tikv_network_io_collection_partial_info:
-      title: TiKV IO collection is not fully enabled
-      content: Some TiKV nodes still have the requested collection settings disabled, so new data may be incomplete. You can retry later, or update the TiKV default config via TiUP (see docs).
+      title: TiKV IO collection settings were only partially applied
+      content: Some TiKV nodes did not apply the requested collection settings, so their actual states may be inconsistent. You can retry later, or update the TiKV default config via TiUP (see docs).
       action: View docs
     help: Help
     help_url: https://docs.pingcap.com/tidb/dev/top-sql

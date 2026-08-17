@@ -38,8 +38,8 @@ topsql:
       content_prefix: 已开启 TiKV IO 采集，正在下发到所有当前 TiKV 节点。您可能需要等待约 1 分钟以便看到对应维度的数据。
       content_emphasis: 注意，对新扩容的 TiKV 节点不会自动生效，如需生效请通过 tiup 修改 TiKV 默认配置并同步开启。
     tikv_network_io_collection_partial_info:
-      title: TiKV IO 采集未完全开启
-      content: 检测到仍有 TiKV 节点未开启请求的采集配置，新数据可能不完整。您可以稍后重试，或者通过 TiUP 修改 TiKV 默认配置（请参考文档）。
+      title: TiKV IO 采集配置仅部分生效
+      content: 部分 TiKV 节点未成功应用请求的采集配置，当前各节点状态可能不一致。您可以稍后重试，或者通过 TiUP 修改 TiKV 默认配置（请参考文档）。
       action: 查看文档
     help: 帮助
     help_url: https://docs.pingcap.com/zh/tidb/dev/top-sql

@@ -98,6 +98,8 @@ const formatOrderByLabel = (item: OrderBy): string => {
 
 const GROUP = [AggLevel.Query, AggLevel.Table, AggLevel.Schema, AggLevel.Region]
 
+const ORDER_BY_SELECT_WIDTH = 220
+
 const toTimeRangeValue: typeof _toTimeRangeValue = (v) => {
   return _toTimeRangeValue(v, v?.type === 'recent' ? RECENT_RANGE_OFFSET : 0)
 }
@@ -286,6 +288,14 @@ export function TopSQLList() {
         order === OrderBy.RocksdbBlockReadCount)
     ) {
       return OrderBy.CpuTime
+    }
+    if (
+      instance?.instance_type === 'tikv' &&
+      order === OrderBy.LogicalIoBytes &&
+      detailedIoConfigLoaded &&
+      detailedIoDimensionsEnabled
+    ) {
+      return OrderBy.LogicalReadBytes
     }
     if (
       isDetailedIoOrderBy(order) &&
@@ -567,7 +577,7 @@ export function TopSQLList() {
               )}
               {ctx?.cfg.showOrderBy && instance && (
                 <Select
-                  style={{ width: 150 }}
+                  style={{ width: ORDER_BY_SELECT_WIDTH, maxWidth: '100%' }}
                   value={orderBy}
                   onChange={(value) => setQueryParams({ order_by: value })}
                   data-e2e="order_by_select"
@@ -590,16 +600,6 @@ export function TopSQLList() {
                     <>
                       {detailedIoDimensionsEnabled ? (
                         <>
-                          {orderBy === OrderBy.LogicalIoBytes && (
-                            <Option
-                              value={OrderBy.LogicalIoBytes}
-                              key={OrderBy.LogicalIoBytes}
-                              data-e2e="order_by_option_logical_io_bytes"
-                            >
-                              Order By{' '}
-                              {formatOrderByLabel(OrderBy.LogicalIoBytes)}
-                            </Option>
-                          )}
                           <Option
                             value={OrderBy.LogicalReadBytes}
                             key={OrderBy.LogicalReadBytes}

@@ -42,8 +42,9 @@ jobs:
 
   backend_integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     strategy:
+      fail-fast: false
       matrix:
         # tidb_version: [nightly, ^6.0, ^5.4, ^5.0]
         tidb_version: [nightly, ^6.0]
@@ -71,6 +72,8 @@ jobs:
       - name: Run integration test
         run: |
           make integration_test TIDB_VERSION=${{ matrix.tidb_version }}
+        env:
+          TIDB_START_TIMEOUT_SECONDS: 2700
       # - name: Upload coverage to Codecov
       #   uses: codecov/codecov-action@v2
       #   with:

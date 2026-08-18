@@ -5,17 +5,18 @@ set -euo pipefail
 INTEGRATION_LOG_PATH=/tmp/dashboard-integration-test.log
 INTEGRATION_PID_LOG_PATH=/tmp/dashboard-integration-test-pid.log
 TIUP_BIN_DIR=$HOME/.tiup/bin
+TIDB_START_TIMEOUT_SECONDS=${TIDB_START_TIMEOUT_SECONDS:-900}
 
 PROJECT_DIR="$(dirname "$0")/.."
 BIN="${PROJECT_DIR}/bin"
 
 start_tidb() {
-  echo "+ Waiting for TiDB start, for at most 15 min..."
+  echo "+ Waiting for TiDB start, for at most $TIDB_START_TIMEOUT_SECONDS seconds..."
 
-  rm -rf $INTEGRATION_LOG_PATH
+  rm -f "$INTEGRATION_LOG_PATH"
   TIDB_VERSION=${1:-latest}
-  $TIUP_BIN_DIR/tiup playground $TIDB_VERSION > $INTEGRATION_LOG_PATH &
-  echo $! > $INTEGRATION_PID_LOG_PATH
+  "$TIUP_BIN_DIR/tiup" playground "$TIDB_VERSION" --without-monitor --tiflash=0 > "$INTEGRATION_LOG_PATH" 2>&1 &
+  echo $! > "$INTEGRATION_PID_LOG_PATH"
   ensure_tidb
 
   echo "  - Start TiDB@$TIDB_VERSION Success!"
@@ -23,15 +24,28 @@ start_tidb() {
 
 stop_tidb() {
   echo "+ Waiting for TiDB teardown..."
-  kill `cat $INTEGRATION_PID_LOG_PATH`
+  if [ ! -f "$INTEGRATION_PID_LOG_PATH" ]; then
+    return
+  fi
+
+  pid=$(cat "$INTEGRATION_PID_LOG_PATH")
+  if kill -0 "$pid" 2>/dev/null; then
+    kill "$pid"
+  fi
 }
 
 ensure_tidb() {
-  i=1
-  while ! grep "TiDB Playground Cluster is started" $INTEGRATION_LOG_PATH; do
-    i=$((i+1))
-    if [ "$i" -gt 90 ]; then
+  deadline=$((SECONDS + TIDB_START_TIMEOUT_SECONDS))
+  while ! grep -q "TiDB Playground Cluster is started" "$INTEGRATION_LOG_PATH"; do
+    pid=$(cat "$INTEGRATION_PID_LOG_PATH")
+    if ! kill -0 "$pid" 2>/dev/null; then
+      echo 'TiUP playground exited before TiDB started'
+      cat "$INTEGRATION_LOG_PATH"
+      return 1
+    fi
+    if [ "$SECONDS" -ge "$deadline" ]; then
       echo 'Failed to start TiDB'
+      cat "$INTEGRATION_LOG_PATH"
       return 1
     fi
     sleep 10

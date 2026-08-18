@@ -41,6 +41,8 @@
   Rocksdb_block_cache_hit_count: 1
   Rocksdb_block_read_count: 1
   Rocksdb_block_read_byte: 1
+  IA_remote_read_segment_size: 1
+  IA_remote_read_segment_wait_time: 1
   DB: "1"
   Index_names: "1"
   Is_internal: 1
@@ -372,6 +374,7 @@
   User: root
   Host: 127.0.0.1
   Conn_ID: 7
+  Session_connect_attrs: '{"_client_name":"Go-MySQL-Driver","_os":"linux","app_name":"test_app"}'
   Exec_retry_count: 0
   Exec_retry_time: 0
   Query_time: 0.005136275

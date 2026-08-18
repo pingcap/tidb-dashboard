@@ -74,6 +74,23 @@ func (s *testMockDBSuite) requireSessionConnectAttrs(value *string) {
 	s.Require().JSONEq(`{"_client_name":"Go-MySQL-Driver","_os":"linux","app_name":"test_app"}`, *value)
 }
 
+func (s *testMockDBSuite) requireIARemoteReadFields(size uint64, waitTime float64) {
+	fields, err := slowquery.GetAvailableFields(s.sysSchema, s.mockDBSession())
+	s.Require().NoError(err)
+
+	if slices.Contains(fields, "ia_remote_read_segment_size") {
+		s.Require().NotZero(size)
+	} else {
+		s.Require().Zero(size)
+	}
+
+	if slices.Contains(fields, "ia_remote_read_segment_wait_time") {
+		s.Require().NotZero(waitTime)
+	} else {
+		s.Require().Zero(waitTime)
+	}
+}
+
 func (s *testMockDBSuite) TestGetListDefaultRequest() {
 	ds := s.mustQuerySlowLogList(&slowquery.GetListRequest{})
 
@@ -129,6 +146,7 @@ func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	s.Require().NotEmpty(d.GetCommitTSTime)
 	s.Require().NotEmpty(d.Host)
 	s.requireSessionConnectAttrs(d.SessionConnectAttrs)
+	s.requireIARemoteReadFields(d.IARemoteReadSegmentSize, d.IARemoteReadSegmentWaitTime)
 	s.Require().NotEmpty(d.IndexNames)
 	s.Require().NotEmpty(d.Instance)
 	s.Require().NotEmpty(d.IsInternal)

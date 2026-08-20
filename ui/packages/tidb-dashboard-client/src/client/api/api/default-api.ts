@@ -155,6 +155,8 @@ import { TopsqlSummaryResponse } from '../models';
 // @ts-ignore
 import { TopsqlTikvNetworkIoCollectionConfig } from '../models';
 // @ts-ignore
+import { TopsqlUpdateTikvNetworkIoCollectionRequest } from '../models';
+// @ts-ignore
 import { TopsqlUpdateTikvNetworkIoCollectionResponse } from '../models';
 // @ts-ignore
 import { UserAuthenticateForm } from '../models';
@@ -3829,11 +3831,11 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary Update TiKV network IO collection config
-         * @param {TopsqlTikvNetworkIoCollectionConfig} request Request body
+         * @param {TopsqlUpdateTikvNetworkIoCollectionRequest} request Request body
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlUpdateTiKVNetworkIOCollection: async (request: TopsqlTikvNetworkIoCollectionConfig, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        topsqlUpdateTiKVNetworkIOCollection: async (request: TopsqlUpdateTikvNetworkIoCollectionRequest, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'request' is not null or undefined
             assertParamExists('topsqlUpdateTiKVNetworkIOCollection', 'request', request)
             const localVarPath = `/topsql/tikv_network_io_collection`;
@@ -5331,11 +5333,11 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Update TiKV network IO collection config
-         * @param {TopsqlTikvNetworkIoCollectionConfig} request Request body
+         * @param {TopsqlUpdateTikvNetworkIoCollectionRequest} request Request body
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async topsqlUpdateTiKVNetworkIOCollection(request: TopsqlTikvNetworkIoCollectionConfig, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlUpdateTikvNetworkIoCollectionResponse>> {
+        async topsqlUpdateTiKVNetworkIOCollection(request: TopsqlUpdateTikvNetworkIoCollectionRequest, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TopsqlUpdateTikvNetworkIoCollectionResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.topsqlUpdateTiKVNetworkIOCollection(request, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6425,11 +6427,11 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary Update TiKV network IO collection config
-         * @param {TopsqlTikvNetworkIoCollectionConfig} request Request body
+         * @param {TopsqlUpdateTikvNetworkIoCollectionRequest} request Request body
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        topsqlUpdateTiKVNetworkIOCollection(request: TopsqlTikvNetworkIoCollectionConfig, options?: any): AxiosPromise<TopsqlUpdateTikvNetworkIoCollectionResponse> {
+        topsqlUpdateTiKVNetworkIOCollection(request: TopsqlUpdateTikvNetworkIoCollectionRequest, options?: any): AxiosPromise<TopsqlUpdateTikvNetworkIoCollectionResponse> {
             return localVarFp.topsqlUpdateTiKVNetworkIOCollection(request, options).then((request) => request(axios, basePath));
         },
         /**
@@ -7713,10 +7715,10 @@ export interface DefaultApiTopsqlSummaryGetRequest {
 export interface DefaultApiTopsqlUpdateTiKVNetworkIOCollectionRequest {
     /**
      * Request body
-     * @type {TopsqlTikvNetworkIoCollectionConfig}
+     * @type {TopsqlUpdateTikvNetworkIoCollectionRequest}
      * @memberof DefaultApiTopsqlUpdateTiKVNetworkIOCollection
      */
-    readonly request: TopsqlTikvNetworkIoCollectionConfig
+    readonly request: TopsqlUpdateTikvNetworkIoCollectionRequest
 }
 
 /**

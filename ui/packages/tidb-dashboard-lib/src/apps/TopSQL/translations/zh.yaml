@@ -15,6 +15,9 @@ topsql:
     tikv_network_io_collection_tooltip: 开启后可采集 TiKV 网络流量，逻辑 IO 等多维度数据，不过会增加一定的存储和查询开销。全新 TiKV 节点不会自动开启采集，若需自动开启请通过 TiUP 修改 TiKV 默认配置（请参考文档）。
     tikv_network_io_collection_tooltip_partial: 存在未开启采集的 TiKV 节点，可点击按钮全部开启，或者通过 TiUP 修改 TiKV 默认配置（请参考文档）
     tikv_network_io_collection_disabled_by_topsql: （TopSQL 未开启时该开关强制关闭）
+    tikv_detailed_io_collection: 开启 TiKV 详细 IO 维度
+    tikv_detailed_io_collection_tooltip: 与 TiKV 网络 IO 采集同时开启后，Logical Reads、Logical Writes 和 Read IOPS 将作为独立 Top SQL 维度采集和筛选。该功能会增加上报数据量和存储开销。
+    tikv_detailed_io_collection_requires_network: （依赖 TiKV 网络 IO 采集）
     tikv_network_io_collection_status:
       on: （当前状态：全开）
       off: （当前状态：全关）
@@ -31,12 +34,12 @@ topsql:
       content: Top SQL 功能现在已启用，正在收集数据。您需要等待大约 1 分钟时间以便看到该数据。
     tikv_network_io_collection_info:
       title: 成功
-      content: 已开启 TiKV 网络 IO 采集，正在下发到所有当前 TiKV 节点。您可能需要等待约 1 分钟以便看到对应维度的数据。注意，对新扩容的 TiKV 节点不会自动生效，如需生效请通过 tiup 修改 TiKV 默认配置并同步开启。
-      content_prefix: 已开启 TiKV 网络 IO 采集，正在下发到所有当前 TiKV 节点。您可能需要等待约 1 分钟以便看到对应维度的数据。
+      content: 已开启 TiKV IO 采集，正在下发到所有当前 TiKV 节点。您可能需要等待约 1 分钟以便看到对应维度的数据。注意，对新扩容的 TiKV 节点不会自动生效，如需生效请通过 tiup 修改 TiKV 默认配置并同步开启。
+      content_prefix: 已开启 TiKV IO 采集，正在下发到所有当前 TiKV 节点。您可能需要等待约 1 分钟以便看到对应维度的数据。
       content_emphasis: 注意，对新扩容的 TiKV 节点不会自动生效，如需生效请通过 tiup 修改 TiKV 默认配置并同步开启。
     tikv_network_io_collection_partial_info:
-      title: TiKV 网络 IO 采集未完全开启
-      content: 检测到仍有 TiKV 节点未开启采集，新数据可能不完整。您可以稍后重试，或者通过 TiUP 修改 TiKV 默认配置（请参考文档）。
+      title: TiKV IO 采集配置仅部分生效
+      content: 部分 TiKV 节点未成功应用请求的采集配置，当前各节点状态可能不一致。您可以稍后重试，或者通过 TiUP 修改 TiKV 默认配置（请参考文档）。
       action: 查看文档
     help: 帮助
     help_url: https://docs.pingcap.com/zh/tidb/dev/top-sql
@@ -50,6 +53,9 @@ topsql:
     cpu_time: CPU 耗时
     network_bytes: 网络字节数
     logical_io_bytes: 逻辑 IO 字节数
+    logical_read_bytes: 逻辑读字节数
+    logical_write_bytes: 逻辑写字节数
+    rocksdb_block_read_count: Read IOPS
   table:
     description: 以下表格展示了当前时间范围内消耗负载最多的 {{topN}} 类 SQL 查询，点击后可进一步显示详情。
     description_no_recent_data: 当前暂无数据，您需要等待约 1 分钟完成新数据采集。
@@ -59,6 +65,9 @@ topsql:
       cpu_time: 累计 CPU 耗时
       network_bytes: 累计网络字节数
       logical_io_bytes: 累计逻辑 IO 字节数
+      logical_read_bytes: 累计逻辑读字节数
+      logical_write_bytes: 累计逻辑写字节数
+      rocksdb_block_read_count: 累计 Read IOPS
       sql: SQL 语句
       table: 表名
       db: 数据库名
@@ -74,6 +83,9 @@ topsql:
       cpu_time: 累计 CPU 耗时
       network_bytes: 累计网络字节数
       logical_io_bytes: 累计逻辑 IO 字节数
+      logical_read_bytes: 累计逻辑读字节数
+      logical_write_bytes: 累计逻辑写字节数
+      rocksdb_block_read_count: 累计 Read IOPS
       plan: 执行计划
       exec_count_per_sec: Call/sec
       scan_records_per_sec: Scan Rows/sec

@@ -13,7 +13,10 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { DrawerFooter, ErrorBar } from '@lib/components'
 import { useIsWriteable } from '@lib/utils/store'
 import { telemetry } from '../../utils/telemetry'
-import { TopSQLContext } from '../../context'
+import {
+  TopSQLContext,
+  TopsqlTikvNetworkIoCollectionConfig
+} from '../../context'
 import styles from './SettingsForm.module.less'
 
 interface Props {
@@ -24,6 +27,7 @@ interface Props {
 interface FormValues {
   enable: boolean
   tikv_network_io_collection: boolean
+  tikv_detailed_io_collection: boolean
 }
 
 export function SettingsForm({ onClose, onConfigUpdated }: Props) {
@@ -54,14 +58,30 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
         }
         try {
           setSubmitting(true)
+          const networkIoCollectionTouched = form.isFieldTouched(
+            'tikv_network_io_collection'
+          )
+          const detailedIoCollectionTouched = form.isFieldTouched(
+            'tikv_detailed_io_collection'
+          )
+          const tikvCollectionSettingsTouched =
+            networkIoCollectionTouched || detailedIoCollectionTouched
           const shouldCheckTikvCollectionResult =
             values.tikv_network_io_collection &&
-            form.isFieldTouched('tikv_network_io_collection')
+            (networkIoCollectionTouched ||
+              (values.tikv_detailed_io_collection &&
+                detailedIoCollectionTouched))
+          const tikvCollectionRequest = {
+            enable: values.tikv_network_io_collection,
+            ...(detailedIoCollectionTouched
+              ? {
+                  detailed_io_enabled: values.tikv_detailed_io_collection
+                }
+              : {})
+          }
           const [, tikvCollectionUpdateResponse] = await Promise.all([
             ctx!.ds.topsqlConfigPost(newConfig),
-            ctx!.ds.topsqlTikvNetworkIoCollectionPost({
-              enable: values.tikv_network_io_collection
-            })
+            ctx!.ds.topsqlTikvNetworkIoCollectionPost(tikvCollectionRequest)
           ])
           const tikvCollectionWarningMessages = (
             tikvCollectionUpdateResponse.data.warnings ?? []
@@ -69,7 +89,7 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
             .map((w) => w.message || w.full_text || '')
             .filter((msg) => !!msg)
           let tikvCollectionAfterSave:
-            | { enable: boolean; is_multi_value?: boolean }
+            | TopsqlTikvNetworkIoCollectionConfig
             | undefined
           if (shouldCheckTikvCollectionResult) {
             try {
@@ -82,7 +102,8 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
 
           telemetry.saveSettings({
             ...newConfig,
-            tikv_network_io_collection: values.tikv_network_io_collection
+            tikv_network_io_collection: values.tikv_network_io_collection,
+            tikv_detailed_io_collection: values.tikv_detailed_io_collection
           })
           onClose()
           onConfigUpdated()
@@ -94,11 +115,44 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
             })
           }
 
+          const showTikvCollectionWarning = () => {
+            Modal.warning({
+              title: t(
+                'topsql.settings.tikv_network_io_collection_partial_info.title'
+              ),
+              content: (
+                <div className={styles.partialResultContent}>
+                  <div>
+                    {t(
+                      'topsql.settings.tikv_network_io_collection_partial_info.content'
+                    )}
+                  </div>
+                  {tikvCollectionWarningMessages.length > 0 && (
+                    <pre className={styles.partialResultWarnings}>
+                      {tikvCollectionWarningMessages.join('\n')}
+                    </pre>
+                  )}
+                  <a
+                    onClick={() =>
+                      window.open(t('topsql.settings.help_url'), '_blank')
+                    }
+                  >
+                    {t(
+                      'topsql.settings.tikv_network_io_collection_partial_info.action'
+                    )}
+                  </a>
+                </div>
+              )
+            })
+          }
+
           if (shouldCheckTikvCollectionResult) {
             const isPartialAfterSave =
               tikvCollectionAfterSave?.is_multi_value === true
             const isAllEnabledAfterSave =
-              tikvCollectionAfterSave?.enable === true
+              tikvCollectionAfterSave?.enable === true &&
+              (!values.tikv_detailed_io_collection ||
+                tikvCollectionAfterSave?.detailed_io_enabled === true)
             if (
               !isPartialAfterSave &&
               isAllEnabledAfterSave &&
@@ -124,35 +178,13 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
                 )
               })
             } else {
-              Modal.warning({
-                title: t(
-                  'topsql.settings.tikv_network_io_collection_partial_info.title'
-                ),
-                content: (
-                  <div className={styles.partialResultContent}>
-                    <div>
-                      {t(
-                        'topsql.settings.tikv_network_io_collection_partial_info.content'
-                      )}
-                    </div>
-                    {tikvCollectionWarningMessages.length > 0 && (
-                      <pre className={styles.partialResultWarnings}>
-                        {tikvCollectionWarningMessages.join('\n')}
-                      </pre>
-                    )}
-                    <a
-                      onClick={() =>
-                        window.open(t('topsql.settings.help_url'), '_blank')
-                      }
-                    >
-                      {t(
-                        'topsql.settings.tikv_network_io_collection_partial_info.action'
-                      )}
-                    </a>
-                  </div>
-                )
-              })
+              showTikvCollectionWarning()
             }
+          } else if (
+            tikvCollectionSettingsTouched &&
+            tikvCollectionWarningMessages.length > 0
+          ) {
+            showTikvCollectionWarning()
           }
         } finally {
           setSubmitting(false)
@@ -223,6 +255,25 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
       : t('topsql.settings.tikv_network_io_collection_tooltip')
   }, [showTikvNetworkIoCollectionPartialState, t])
 
+  const detailedIoStatusText = useMemo(() => {
+    if (topsqlEnabled === false) {
+      return t('topsql.settings.tikv_network_io_collection_disabled_by_topsql')
+    }
+    if (tikvNetworkIoCollectionEnabled === false) {
+      return t('topsql.settings.tikv_detailed_io_collection_requires_network')
+    }
+    if (!initialTikvNetworkIoCollection) {
+      return ''
+    }
+    return initialTikvNetworkIoCollection.detailed_io_enabled
+      ? t('topsql.settings.tikv_network_io_collection_status.on')
+      : t('topsql.settings.tikv_network_io_collection_status.off')
+  }, [
+    topsqlEnabled,
+    tikvNetworkIoCollectionEnabled,
+    initialTikvNetworkIoCollection,
+    t
+  ])
   useEffect(() => {
     if (topsqlEnabled === false) {
       form.setFieldsValue({ tikv_network_io_collection: false })
@@ -240,7 +291,9 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
           initialValues={{
             ...initialConfig,
             tikv_network_io_collection:
-              initialTikvNetworkIoCollection?.enable ?? false
+              initialTikvNetworkIoCollection?.enable ?? false,
+            tikv_detailed_io_collection:
+              initialTikvNetworkIoCollection?.detailed_io_enabled ?? false
           }}
           onFinish={handleSubmit}
         >
@@ -257,38 +310,65 @@ export function SettingsForm({ onClose, onConfigUpdated }: Props) {
             </Form.Item>
           </Form.Item>
 
-          <Form.Item
-            valuePropName="checked"
-            label={t('topsql.settings.tikv_network_io_collection')}
-            extra={tikvNetworkIoCollectionTooltip}
-          >
-            <div className={styles.switchWithStatus}>
-              <Form.Item
-                noStyle
-                name="tikv_network_io_collection"
-                valuePropName="checked"
-              >
-                <Switch
-                  data-e2e="topsql_settings_tikv_network_io_collection"
-                  disabled={!isWriteable || topsqlEnabled === false}
-                  className={
-                    showTikvNetworkIoCollectionPartialState
-                      ? styles.partialSwitch
-                      : undefined
-                  }
-                  checkedChildren={
-                    showTikvNetworkIoCollectionPartialState ? '-' : undefined
-                  }
-                  unCheckedChildren={
-                    showTikvNetworkIoCollectionPartialState ? '-' : undefined
-                  }
-                />
-              </Form.Item>
-              {tikvStatusText && (
-                <span className={styles.switchStatus}>{tikvStatusText}</span>
-              )}
-            </div>
-          </Form.Item>
+          {topsqlEnabled === true && (
+            <Form.Item
+              valuePropName="checked"
+              label={t('topsql.settings.tikv_network_io_collection')}
+              extra={tikvNetworkIoCollectionTooltip}
+            >
+              <div className={styles.switchWithStatus}>
+                <Form.Item
+                  noStyle
+                  name="tikv_network_io_collection"
+                  valuePropName="checked"
+                >
+                  <Switch
+                    data-e2e="topsql_settings_tikv_network_io_collection"
+                    disabled={!isWriteable}
+                    className={
+                      showTikvNetworkIoCollectionPartialState
+                        ? styles.partialSwitch
+                        : undefined
+                    }
+                    checkedChildren={
+                      showTikvNetworkIoCollectionPartialState ? '-' : undefined
+                    }
+                    unCheckedChildren={
+                      showTikvNetworkIoCollectionPartialState ? '-' : undefined
+                    }
+                  />
+                </Form.Item>
+                {tikvStatusText && (
+                  <span className={styles.switchStatus}>{tikvStatusText}</span>
+                )}
+              </div>
+            </Form.Item>
+          )}
+          {tikvNetworkIoCollectionEnabled === true && (
+            <Form.Item
+              valuePropName="checked"
+              label={t('topsql.settings.tikv_detailed_io_collection')}
+              extra={t('topsql.settings.tikv_detailed_io_collection_tooltip')}
+            >
+              <div className={styles.switchWithStatus}>
+                <Form.Item
+                  noStyle
+                  name="tikv_detailed_io_collection"
+                  valuePropName="checked"
+                >
+                  <Switch
+                    data-e2e="topsql_settings_tikv_detailed_io_collection"
+                    disabled={!isWriteable}
+                  />
+                </Form.Item>
+                {detailedIoStatusText && (
+                  <span className={styles.switchStatus}>
+                    {detailedIoStatusText}
+                  </span>
+                )}
+              </div>
+            </Form.Item>
+          )}
           <DrawerFooter>
             <Space>
               <Button

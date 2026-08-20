@@ -40,6 +40,12 @@ const getAxisTitle = (orderBy: OrderBy, t: any): string => {
       return t('topsql.chart.network_bytes') || 'Network Bytes'
     case OrderBy.LogicalIoBytes:
       return t('topsql.chart.logical_io_bytes') || 'Logical IO Bytes'
+    case OrderBy.LogicalReadBytes:
+      return t('topsql.chart.logical_read_bytes') || 'Logical Read Bytes'
+    case OrderBy.LogicalWriteBytes:
+      return t('topsql.chart.logical_write_bytes') || 'Logical Write Bytes'
+    case OrderBy.RocksdbBlockReadCount:
+      return t('topsql.chart.rocksdb_block_read_count') || 'Read IOPS'
     case OrderBy.CpuTime:
     default:
       return t('topsql.chart.cpu_time')
@@ -54,6 +60,13 @@ const getAxisTickFormatter = (orderBy: OrderBy) => {
     case OrderBy.LogicalIoBytes:
       return (v: number, decimals: number) =>
         getValueFormat('bytes')(v, decimals)
+    case OrderBy.LogicalReadBytes:
+    case OrderBy.LogicalWriteBytes:
+      return (v: number, decimals: number) =>
+        getValueFormat('bytes')(v, decimals)
+    case OrderBy.RocksdbBlockReadCount:
+      return (v: number, decimals: number) =>
+        getValueFormat('short')(v, decimals)
     case OrderBy.CpuTime:
     default:
       return (v: number, decimals: number) => getValueFormat('ms')(v, decimals)
@@ -204,6 +217,12 @@ function useChartData(seriesDataO: any[], groupBy: string, orderBy: OrderBy) {
             return values.network_bytes?.[i] || 0
           case OrderBy.LogicalIoBytes:
             return values.logical_io_bytes?.[i] || 0
+          case OrderBy.LogicalReadBytes:
+            return values.logical_read_bytes?.[i] || 0
+          case OrderBy.LogicalWriteBytes:
+            return values.logical_write_bytes?.[i] || 0
+          case OrderBy.RocksdbBlockReadCount:
+            return values.rocksdb_block_read_count?.[i] || 0
           case OrderBy.CpuTime:
           default:
             return values.cpu_time_ms?.[i] || 0
@@ -273,6 +292,12 @@ function useChartData(seriesDataO: any[], groupBy: string, orderBy: OrderBy) {
             return series.network_bytes?.[i] || 0
           case OrderBy.LogicalIoBytes:
             return series.logical_io_bytes?.[i] || 0
+          case OrderBy.LogicalReadBytes:
+            return series.logical_read_bytes?.[i] || 0
+          case OrderBy.LogicalWriteBytes:
+            return series.logical_write_bytes?.[i] || 0
+          case OrderBy.RocksdbBlockReadCount:
+            return series.rocksdb_block_read_count?.[i] || 0
           case OrderBy.CpuTime:
           default:
             return series.cpu_time_ms?.[i] || 0

@@ -4175,6 +4175,12 @@ export interface TopsqlSummaryByItem {
      * @memberof TopsqlSummaryByItem
      */
     'logical_io_bytes_sum'?: number;
+    'logical_read_bytes'?: Array<number>;
+    'logical_read_bytes_sum'?: number;
+    'logical_write_bytes'?: Array<number>;
+    'logical_write_bytes_sum'?: number;
+    'rocksdb_block_read_count'?: Array<number>;
+    'rocksdb_block_read_count_sum'?: number;
     /**
      * 
      * @type {Array<number>}
@@ -4240,6 +4246,9 @@ export interface TopsqlSummaryItem {
      * @memberof TopsqlSummaryItem
      */
     'logical_io_bytes'?: number;
+    'logical_read_bytes'?: number;
+    'logical_write_bytes'?: number;
+    'rocksdb_block_read_count'?: number;
     /**
      * 
      * @type {number}
@@ -4311,6 +4320,9 @@ export interface TopsqlSummaryPlanItem {
      * @memberof TopsqlSummaryPlanItem
      */
     'logical_io_bytes'?: Array<number>;
+    'logical_read_bytes'?: Array<number>;
+    'logical_write_bytes'?: Array<number>;
+    'rocksdb_block_read_count'?: Array<number>;
     /**
      * 
      * @type {Array<number>}
@@ -4376,19 +4388,25 @@ export interface TopsqlSummaryResponse {
 
 
 /**
- * 
+ *
  * @export
  * @interface TopsqlTikvNetworkIoCollectionConfig
  */
 export interface TopsqlTikvNetworkIoCollectionConfig {
     /**
-     * 
+     *
+     * @type {boolean}
+     * @memberof TopsqlTikvNetworkIoCollectionConfig
+     */
+    'detailed_io_enabled'?: boolean;
+    /**
+     *
      * @type {boolean}
      * @memberof TopsqlTikvNetworkIoCollectionConfig
      */
     'enable'?: boolean;
     /**
-     * 
+     *
      * @type {boolean}
      * @memberof TopsqlTikvNetworkIoCollectionConfig
      */
@@ -4399,13 +4417,36 @@ export interface TopsqlTikvNetworkIoCollectionConfig {
 
 
 /**
- * 
+ *
+ * @export
+ * @interface TopsqlUpdateTikvNetworkIoCollectionRequest
+ */
+export interface TopsqlUpdateTikvNetworkIoCollectionRequest {
+    /**
+     *
+     * @type {boolean}
+     * @memberof TopsqlUpdateTikvNetworkIoCollectionRequest
+     */
+    'detailed_io_enabled'?: boolean;
+    /**
+     *
+     * @type {boolean}
+     * @memberof TopsqlUpdateTikvNetworkIoCollectionRequest
+     */
+    'enable'?: boolean;
+}
+
+
+
+
+/**
+ *
  * @export
  * @interface TopsqlUpdateTikvNetworkIoCollectionResponse
  */
 export interface TopsqlUpdateTikvNetworkIoCollectionResponse {
     /**
-     * 
+     *
      * @type {Array<RestErrorResponse>}
      * @memberof TopsqlUpdateTikvNetworkIoCollectionResponse
      */
@@ -4550,4 +4591,3 @@ export interface VersionInfo {
      */
     'standalone'?: string;
 }
-

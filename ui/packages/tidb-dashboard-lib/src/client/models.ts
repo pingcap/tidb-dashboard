@@ -4433,7 +4433,7 @@ export interface TopsqlUpdateTikvNetworkIoCollectionRequest {
      * @type {boolean}
      * @memberof TopsqlUpdateTikvNetworkIoCollectionRequest
      */
-    'enable': boolean;
+    'enable'?: boolean;
 }
 
 

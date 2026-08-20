@@ -232,7 +232,7 @@ type TikvNetworkIoCollectionConfig struct {
 }
 
 type UpdateTikvNetworkIoCollectionRequest struct {
-	Enable            *bool `json:"enable" binding:"required"`
+	Enable            bool  `json:"enable"`
 	DetailedIoEnabled *bool `json:"detailed_io_enabled,omitempty"`
 }
 
@@ -391,7 +391,7 @@ func (s *Service) UpdateTiKVNetworkIOCollection(c *gin.Context) {
 	}
 
 	body := map[string]interface{}{
-		tikvNetworkIoCollectionKey: *cfg.Enable,
+		tikvNetworkIoCollectionKey: cfg.Enable,
 	}
 	if cfg.DetailedIoEnabled != nil {
 		body[tikvDetailedIoCollectionKey] = *cfg.DetailedIoEnabled

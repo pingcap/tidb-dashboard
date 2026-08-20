@@ -6429,9 +6429,6 @@
         },
         "topsql.UpdateTikvNetworkIoCollectionRequest": {
             "type": "object",
-            "required": [
-                "enable"
-            ],
             "properties": {
                 "detailed_io_enabled": {
                     "type": "boolean"

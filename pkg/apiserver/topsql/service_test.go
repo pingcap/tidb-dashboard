@@ -11,38 +11,68 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
-func TestUpdateTikvNetworkIoCollectionRequestBackwardCompatibility(t *testing.T) {
-	bindRequest := func(t *testing.T, body string) UpdateTikvNetworkIoCollectionRequest {
-		t.Helper()
-
-		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(body))
-		req.Header.Set("Content-Type", "application/json")
-		var cfg UpdateTikvNetworkIoCollectionRequest
-		if err := binding.JSON.Bind(req, &cfg); err != nil {
-			t.Fatalf("expected request to bind successfully, got %v", err)
-		}
-		return cfg
+func TestUpdateTikvNetworkIoCollectionRequestValidation(t *testing.T) {
+	testCases := []struct {
+		name           string
+		body           string
+		expectError    bool
+		expectEnable   bool
+		expectDetailed *bool
+	}{
+		{
+			name:        "empty request",
+			body:        `{}`,
+			expectError: true,
+		},
+		{
+			name:        "detailed IO only",
+			body:        `{"detailed_io_enabled":true}`,
+			expectError: true,
+		},
+		{
+			name:         "disable network IO",
+			body:         `{"enable":false}`,
+			expectEnable: false,
+		},
+		{
+			name:           "enable network and detailed IO",
+			body:           `{"enable":true,"detailed_io_enabled":true}`,
+			expectEnable:   true,
+			expectDetailed: boolPointer(true),
+		},
 	}
 
-	t.Run("empty request", func(t *testing.T) {
-		cfg := bindRequest(t, `{}`)
-		if cfg.Enable {
-			t.Fatal("expected omitted enable to preserve the false default")
-		}
-		if cfg.DetailedIoEnabled != nil {
-			t.Fatalf("expected omitted detailed_io_enabled to remain nil, got %v", *cfg.DetailedIoEnabled)
-		}
-	})
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(testCase.body))
+			req.Header.Set("Content-Type", "application/json")
+			var cfg UpdateTikvNetworkIoCollectionRequest
+			err := binding.JSON.Bind(req, &cfg)
+			if testCase.expectError {
+				if err == nil {
+					t.Fatal("expected request validation to fail")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("expected request to bind successfully, got %v", err)
+			}
+			if cfg.Enable == nil || *cfg.Enable != testCase.expectEnable {
+				t.Fatalf("expected enable to be %v, got %v", testCase.expectEnable, cfg.Enable)
+			}
+			if testCase.expectDetailed == nil {
+				if cfg.DetailedIoEnabled != nil {
+					t.Fatalf("expected detailed_io_enabled to be omitted, got %v", *cfg.DetailedIoEnabled)
+				}
+			} else if cfg.DetailedIoEnabled == nil || *cfg.DetailedIoEnabled != *testCase.expectDetailed {
+				t.Fatalf("expected detailed_io_enabled to be %v, got %v", *testCase.expectDetailed, cfg.DetailedIoEnabled)
+			}
+		})
+	}
+}
 
-	t.Run("detailed IO only", func(t *testing.T) {
-		cfg := bindRequest(t, `{"detailed_io_enabled":true}`)
-		if cfg.Enable {
-			t.Fatal("expected omitted enable to preserve the false default")
-		}
-		if cfg.DetailedIoEnabled == nil || !*cfg.DetailedIoEnabled {
-			t.Fatalf("expected detailed_io_enabled to be true, got %v", cfg.DetailedIoEnabled)
-		}
-	})
+func boolPointer(value bool) *bool {
+	return &value
 }
 
 func TestSummarizeTiKVCollectionConfig(t *testing.T) {

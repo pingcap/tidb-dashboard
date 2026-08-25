@@ -44,6 +44,9 @@ export interface TopsqlSummaryPlanItem {
      * @memberof TopsqlSummaryPlanItem
      */
     'logical_io_bytes'?: Array<number>;
+    'logical_read_bytes'?: Array<number>;
+    'logical_write_bytes'?: Array<number>;
+    'rocksdb_block_read_count'?: Array<number>;
     /**
      * 
      * @type {Array<number>}
@@ -81,4 +84,3 @@ export interface TopsqlSummaryPlanItem {
      */
     'timestamp_sec'?: Array<number>;
 }
-

@@ -11,6 +11,7 @@ import auth from '~/utils/auth'
 type TikvNetworkIoCollectionConfig = {
   enable: boolean
   is_multi_value?: boolean
+  detailed_io_enabled?: boolean
 }
 
 type TikvNetworkIoCollectionUpdateResponse = {

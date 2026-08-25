@@ -54,6 +54,9 @@ export type SQLRecord = TopsqlSummaryItem &
     cpuTime: number
     networkBytes?: number
     logicalIoBytes?: number
+    logicalReadBytes?: number
+    logicalWriteBytes?: number
+    rocksdbBlockReadCount?: number
   }
 
 function isConvertNumber(value: string): boolean {
@@ -98,6 +101,19 @@ export function ListTable({
           return t('topsql.table.fields.network_bytes') || 'Network Bytes'
         case OrderBy.LogicalIoBytes:
           return t('topsql.table.fields.logical_io_bytes') || 'Logical IO Bytes'
+        case OrderBy.LogicalReadBytes:
+          return (
+            t('topsql.table.fields.logical_read_bytes') || 'Logical Read Bytes'
+          )
+        case OrderBy.LogicalWriteBytes:
+          return (
+            t('topsql.table.fields.logical_write_bytes') ||
+            'Logical Write Bytes'
+          )
+        case OrderBy.RocksdbBlockReadCount:
+          return (
+            t('topsql.table.fields.rocksdb_block_read_count') || 'Read IOPS'
+          )
         case OrderBy.CpuTime:
         default:
           return t('topsql.table.fields.cpu_time')
@@ -110,6 +126,12 @@ export function ListTable({
           return rec.networkBytes || 0
         case OrderBy.LogicalIoBytes:
           return rec.logicalIoBytes || 0
+        case OrderBy.LogicalReadBytes:
+          return rec.logicalReadBytes || 0
+        case OrderBy.LogicalWriteBytes:
+          return rec.logicalWriteBytes || 0
+        case OrderBy.RocksdbBlockReadCount:
+          return rec.rocksdbBlockReadCount || 0
         case OrderBy.CpuTime:
         default:
           return rec.cpuTime || 0
@@ -120,7 +142,11 @@ export function ListTable({
       switch (orderBy) {
         case OrderBy.NetworkBytes:
         case OrderBy.LogicalIoBytes:
+        case OrderBy.LogicalReadBytes:
+        case OrderBy.LogicalWriteBytes:
           return (v: number) => getValueFormat('bytes')(v, 2)
+        case OrderBy.RocksdbBlockReadCount:
+          return (v: number) => getValueFormat('short')(v, 2)
         case OrderBy.CpuTime:
         default:
           return (v: number) => getValueFormat('ms')(v, 2)
@@ -136,6 +162,12 @@ export function ListTable({
             ? 'networkBytes'
             : orderBy === OrderBy.LogicalIoBytes
             ? 'logicalIoBytes'
+            : orderBy === OrderBy.LogicalReadBytes
+            ? 'logicalReadBytes'
+            : orderBy === OrderBy.LogicalWriteBytes
+            ? 'logicalWriteBytes'
+            : orderBy === OrderBy.RocksdbBlockReadCount
+            ? 'rocksdbBlockReadCount'
             : 'cpuTime',
         minWidth: 150,
         maxWidth: 250,
@@ -327,6 +359,9 @@ function useTableData(records: any[], orderBy: OrderBy) {
         let cpuTime = 0
         let networkBytes = 0
         let logicalIoBytes = 0
+        let logicalReadBytes = 0
+        let logicalWriteBytes = 0
+        let rocksdbBlockReadCount = 0
 
         r.plans?.forEach((plan: any) => {
           plan.timestamp_sec?.forEach((t: number, i: number) => {
@@ -334,6 +369,9 @@ function useTableData(records: any[], orderBy: OrderBy) {
             // network_bytes and logical_io_bytes might be arrays similar to cpu_time_ms
             networkBytes += plan.network_bytes?.[i] || 0
             logicalIoBytes += plan.logical_io_bytes?.[i] || 0
+            logicalReadBytes += plan.logical_read_bytes?.[i] || 0
+            logicalWriteBytes += plan.logical_write_bytes?.[i] || 0
+            rocksdbBlockReadCount += plan.rocksdb_block_read_count?.[i] || 0
           })
         })
 
@@ -344,6 +382,12 @@ function useTableData(records: any[], orderBy: OrderBy) {
           cpuTime = r.cpu_time_ms_sum ?? sum(r.cpu_time_ms)
           networkBytes = r.network_bytes_sum ?? sum(r.network_bytes)
           logicalIoBytes = r.logical_io_bytes_sum ?? sum(r.logical_io_bytes)
+          logicalReadBytes =
+            r.logical_read_bytes_sum ?? sum(r.logical_read_bytes)
+          logicalWriteBytes =
+            r.logical_write_bytes_sum ?? sum(r.logical_write_bytes)
+          rocksdbBlockReadCount =
+            r.rocksdb_block_read_count_sum ?? sum(r.rocksdb_block_read_count)
         }
 
         // Calculate capacity based on the selected orderBy dimension
@@ -358,6 +402,15 @@ function useTableData(records: any[], orderBy: OrderBy) {
           case OrderBy.LogicalIoBytes:
             sortValue = logicalIoBytes
             break
+          case OrderBy.LogicalReadBytes:
+            sortValue = logicalReadBytes
+            break
+          case OrderBy.LogicalWriteBytes:
+            sortValue = logicalWriteBytes
+            break
+          case OrderBy.RocksdbBlockReadCount:
+            sortValue = rocksdbBlockReadCount
+            break
         }
 
         if (capacity < sortValue) {
@@ -369,6 +422,9 @@ function useTableData(records: any[], orderBy: OrderBy) {
           cpuTime,
           networkBytes,
           logicalIoBytes,
+          logicalReadBytes,
+          logicalWriteBytes,
+          rocksdbBlockReadCount,
           plans: r.plans || []
         }
       })
@@ -381,6 +437,12 @@ function useTableData(records: any[], orderBy: OrderBy) {
             return !!r.networkBytes
           case OrderBy.LogicalIoBytes:
             return !!r.logicalIoBytes
+          case OrderBy.LogicalReadBytes:
+            return !!r.logicalReadBytes
+          case OrderBy.LogicalWriteBytes:
+            return !!r.logicalWriteBytes
+          case OrderBy.RocksdbBlockReadCount:
+            return !!r.rocksdbBlockReadCount
           default:
             return !!r.cpuTime
         }
@@ -401,6 +463,18 @@ function useTableData(records: any[], orderBy: OrderBy) {
           case OrderBy.LogicalIoBytes:
             aValue = a.logicalIoBytes || 0
             bValue = b.logicalIoBytes || 0
+            break
+          case OrderBy.LogicalReadBytes:
+            aValue = a.logicalReadBytes || 0
+            bValue = b.logicalReadBytes || 0
+            break
+          case OrderBy.LogicalWriteBytes:
+            aValue = a.logicalWriteBytes || 0
+            bValue = b.logicalWriteBytes || 0
+            break
+          case OrderBy.RocksdbBlockReadCount:
+            aValue = a.rocksdbBlockReadCount || 0
+            bValue = b.rocksdbBlockReadCount || 0
             break
         }
         return bValue - aValue

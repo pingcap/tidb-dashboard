@@ -184,6 +184,60 @@ skipOn(Cypress.env('TIDB_VERSION') !== 'latest', () => {
         cy.location('search').should('include', 'order_by=logical_io')
       })
 
+      it('uses the backend-compatible order_by for Read IOPS', () => {
+        cy.intercept(
+          `${Cypress.env('apiBasePath')}/topsql/tikv_network_io_collection`,
+          {
+            enable: true,
+            is_multi_value: false,
+            detailed_io_enabled: true
+          }
+        ).as('getTikvNetworkIoCollection')
+
+        setCustomTimeRange(
+          '2022-01-12 00:00:00{enter}2022-01-12 05:00:00{enter}'
+        )
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('instance-selector').click()
+        cy.contains('.ant-select-item-option', '127.0.0.1:20160').click()
+        cy.wait('@getTikvNetworkIoCollection')
+        cy.wait('@getTopsqlSummary')
+
+        cy.getByTestId('order_by_select').click()
+        cy.getByTestId('order_by_option_rocksdb_block_read_count').click()
+        cy.wait('@getTopsqlSummary')
+          .its('request.url')
+          .should('include', 'order_by=rocksdb_block_read')
+      })
+
+      it('normalizes the legacy Read IOPS order_by url', () => {
+        cy.intercept(
+          `${Cypress.env('apiBasePath')}/topsql/tikv_network_io_collection`,
+          {
+            enable: true,
+            is_multi_value: false,
+            detailed_io_enabled: true
+          }
+        ).as('getTikvNetworkIoCollection')
+
+        cy.window().then((win) => win.sessionStorage.clear())
+        cy.visit(
+          `${this.uri.topsql}?from=1641916800&to=1641934800&instance=127.0.0.1%3A20160&instance_type=tikv&limit=5&group_by=query&order_by=block_read`
+        )
+        cy.wait('@getTopsqlSummary')
+          .its('request.url')
+          .should('include', 'order_by=rocksdb_block_read')
+        cy.wait('@getTopsqlConfig')
+        cy.wait('@getTikvNetworkIoCollection')
+
+        cy.getByTestId('order_by_select').should(
+          'contain',
+          'Order By Read IOPS'
+        )
+        cy.location('search').should('include', 'order_by=rocksdb_block_read')
+      })
+
       it('uses url params to restore dropdown filters', () => {
         cy.window().then((win) => win.sessionStorage.clear())
         cy.visit(

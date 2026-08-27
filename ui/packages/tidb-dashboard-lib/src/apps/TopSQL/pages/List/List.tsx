@@ -178,6 +178,9 @@ const normalizeGroupBy = (value: string) => {
 }
 
 const normalizeOrderBy = (value: string) => {
+  if (value === 'block_read') {
+    return OrderBy.RocksdbBlockReadCount
+  }
   return Object.values(OrderBy).includes(value as OrderBy)
     ? (value as OrderBy)
     : OrderBy.CpuTime

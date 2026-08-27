@@ -76,7 +76,7 @@ export enum OrderBy {
   LogicalIoBytes = 'logical_io',
   LogicalReadBytes = 'logical_read',
   LogicalWriteBytes = 'logical_write',
-  RocksdbBlockReadCount = 'block_read'
+  RocksdbBlockReadCount = 'rocksdb_block_read'
 }
 
 const formatLabel = (item: AggLevel): string => {

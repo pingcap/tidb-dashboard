@@ -4,12 +4,15 @@ package swaggerserver
 
 import (
 	"net/http"
+	"strings"
 
 	httpSwagger "github.com/swaggo/http-swagger"
-	// Swagger doc.
-	_ "github.com/pingcap/tidb-dashboard/swaggerspec"
+
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/swaggerspec"
 )
 
-func Handler() http.Handler {
+func Handler(cfg *config.Config) http.Handler {
+	swaggerspec.SwaggerInfo_swagger.BasePath = strings.TrimRight(cfg.APIPathPrefix(), "/")
 	return httpSwagger.Handler()
 }

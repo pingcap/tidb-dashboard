@@ -12,13 +12,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
-const (
-	defaultPublicPathPrefix = "/dashboard"
-
-	UIPathPrefix      = "/dashboard/"
-	APIPathPrefix     = "/dashboard/api/"
-	SwaggerPathPrefix = "/dashboard/api/swagger/"
-)
+const defaultPublicPathPrefix = "/dashboard"
 
 type Config struct {
 	DataDir          string
@@ -82,6 +76,24 @@ func (c *Config) NormalizePDEndPoint() error {
 func (c *Config) NormalizePublicPathPrefix() {
 	if c.PublicPathPrefix == "" {
 		c.PublicPathPrefix = defaultPublicPathPrefix
+		return
 	}
-	c.PublicPathPrefix = strings.TrimRight(c.PublicPathPrefix, "/")
+	trimmed := strings.Trim(c.PublicPathPrefix, "/")
+	if trimmed == "" {
+		c.PublicPathPrefix = ""
+		return
+	}
+	c.PublicPathPrefix = "/" + trimmed
+}
+
+func (c *Config) UIPathPrefix() string {
+	return c.PublicPathPrefix + "/"
+}
+
+func (c *Config) APIPathPrefix() string {
+	return c.PublicPathPrefix + "/api/"
+}
+
+func (c *Config) SwaggerPathPrefix() string {
+	return c.PublicPathPrefix + "/api/swagger/"
 }

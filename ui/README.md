@@ -16,7 +16,7 @@
 1. `pnpm i`
 1. `pnpm dev`
 
-> Note:
+> [!Note]
 >
 > You can run `pnpm dev:op`, `pnpm dev:clinic-op`, `pnpm dev:clinic-cloud` only to start a specific dashboard variant, while `pnpm dev` starts all of them.
 >

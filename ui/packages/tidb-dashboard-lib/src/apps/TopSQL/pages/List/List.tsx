@@ -76,7 +76,7 @@ export enum OrderBy {
   LogicalIoBytes = 'logical_io',
   LogicalReadBytes = 'logical_read',
   LogicalWriteBytes = 'logical_write',
-  RocksdbBlockReadCount = 'block_read'
+  RocksdbBlockReadCount = 'rocksdb_block_read'
 }
 
 const formatLabel = (item: AggLevel): string => {
@@ -178,6 +178,9 @@ const normalizeGroupBy = (value: string) => {
 }
 
 const normalizeOrderBy = (value: string) => {
+  if (value === 'block_read') {
+    return OrderBy.RocksdbBlockReadCount
+  }
   return Object.values(OrderBy).includes(value as OrderBy)
     ? (value as OrderBy)
     : OrderBy.CpuTime

@@ -35,8 +35,9 @@ type Client struct {
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
 	client := &Client{
-		httpClient:   httpClient,
-		httpScheme:   config.GetClusterHTTPScheme(),
+		httpClient: httpClient,
+		httpScheme: config.GetClusterHTTPScheme(),
+		// TODO: HTTP failover across PDEndPoints (leader-first, then followers), like tikv/pd/client.
 		baseURL:      config.PDEndPoint,
 		lifecycleCtx: nil,
 		timeout:      defaultPDTimeout,

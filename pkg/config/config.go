@@ -4,6 +4,7 @@ package config
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -24,6 +25,7 @@ type Config struct {
 	DataDir          string
 	TempDir          string
 	PDEndPoint       string
+	PDEndPoints      []string
 	PublicPathPrefix string
 
 	ClusterTLSConfig *tls.Config        // TLS config for mTLS authentication between TiDB components.
@@ -64,19 +66,52 @@ func (c *Config) GetClusterHTTPScheme() string {
 	return "http"
 }
 
+func (c *Config) GetPDEndPoints() []string {
+	if len(c.PDEndPoints) > 0 {
+		return c.PDEndPoints
+	}
+	if c.PDEndPoint != "" {
+		return []string{c.PDEndPoint}
+	}
+	return nil
+}
+
 func (c *Config) NormalizePDEndPoint() error {
-	if !strings.HasPrefix(c.PDEndPoint, "http://") && !strings.HasPrefix(c.PDEndPoint, "https://") {
-		c.PDEndPoint = "http://" + c.PDEndPoint
+	rawEndpoints := strings.Split(c.PDEndPoint, ",")
+	endpoints := make([]string, 0, len(rawEndpoints))
+	for _, item := range rawEndpoints {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+
+		normalized, err := c.normalizeOnePDEndPoint(item)
+		if err != nil {
+			return err
+		}
+		endpoints = append(endpoints, normalized)
+	}
+	if len(endpoints) == 0 {
+		return fmt.Errorf("PD endpoint is empty")
 	}
 
-	pdEndPoint, err := url.Parse(c.PDEndPoint)
+	c.PDEndPoints = endpoints
+	c.PDEndPoint = endpoints[0]
+	return nil
+}
+
+func (c *Config) normalizeOnePDEndPoint(raw string) (string, error) {
+	if !strings.HasPrefix(raw, "http://") && !strings.HasPrefix(raw, "https://") {
+		raw = "http://" + raw
+	}
+
+	pdEndPoint, err := url.Parse(raw)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	pdEndPoint.Scheme = c.GetClusterHTTPScheme()
-	c.PDEndPoint = pdEndPoint.String()
-	return nil
+	return pdEndPoint.String(), nil
 }
 
 func (c *Config) NormalizePublicPathPrefix() {

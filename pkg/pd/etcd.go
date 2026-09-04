@@ -20,7 +20,7 @@ func NewEtcdClient(lc fx.Lifecycle, config *config.Config) (*clientv3.Client, er
 	zapCfg.Encoding = log.ZapEncodingName
 
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:            []string{config.PDEndPoint},
+		Endpoints:            config.GetPDEndPoints(),
 		AutoSyncInterval:     30 * time.Second,
 		DialTimeout:          5 * time.Second,
 		DialKeepAliveTime:    utils.DefaultGRPCKeepaliveParams.Time,

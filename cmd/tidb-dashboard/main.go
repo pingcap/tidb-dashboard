@@ -65,7 +65,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", cfg.CoreConfig.DataDir, "path to the Dashboard Server data directory")
 	flag.StringVar(&cfg.CoreConfig.TempDir, "temp-dir", cfg.CoreConfig.TempDir, "path to the Dashboard Server temporary directory, used to store the searched logs")
 	flag.StringVar(&cfg.CoreConfig.PublicPathPrefix, "path-prefix", cfg.CoreConfig.PublicPathPrefix, "public URL path prefix for reverse proxies")
-	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", cfg.CoreConfig.PDEndPoint, "PD endpoint address that Dashboard Server connects to")
+	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", cfg.CoreConfig.PDEndPoint, "PD endpoint address that Dashboard Server connects to, comma-separated if multiple")
 	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", cfg.CoreConfig.EnableTelemetry, "allow telemetry")
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
 	flag.StringVar(&cfg.CoreConfig.FeatureVersion, "feature-version", cfg.CoreConfig.FeatureVersion, "target TiDB version for standalone mode")

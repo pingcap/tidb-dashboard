@@ -26,7 +26,7 @@ import (
 func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/profiling")
 	endpoint.GET("/group/list", auth.MWAuthRequired(), s.getGroupList)
-	endpoint.POST("/group/start", auth.MWAuthRequired(), s.handleStartGroup)
+	endpoint.POST("/group/start", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.handleStartGroup)
 	endpoint.GET("/group/detail/:groupId", auth.MWAuthRequired(), s.getGroupDetail)
 	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.handleCancelGroup)
 	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteGroup)
@@ -58,6 +58,10 @@ func (s *Service) handleStartGroup(c *gin.Context) {
 	}
 	if len(req.Targets) == 0 {
 		rest.Error(c, rest.ErrBadRequest.New("Expect at least 1 target"))
+		return
+	}
+	if err := validateTargets(req.Targets); err != nil {
+		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
 

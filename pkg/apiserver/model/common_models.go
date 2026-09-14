@@ -4,6 +4,7 @@ package model
 
 import (
 	"fmt"
+	"net"
 	"strings"
 )
 
@@ -25,6 +26,44 @@ type RequestTargetNode struct {
 	DisplayName string   `json:"display_name" gorm:"size:32" example:"127.0.0.1:4000"`
 	IP          string   `json:"ip" gorm:"size:32" example:"127.0.0.1"`
 	Port        int      `json:"port" example:"4000"`
+}
+
+// Validate checks that a target can safely be used as a network host and port.
+func (n RequestTargetNode) Validate() error {
+	if !validHost(n.IP) {
+		return fmt.Errorf("invalid target host")
+	}
+	if n.Port < 1 || n.Port > 65535 {
+		return fmt.Errorf("invalid target port")
+	}
+	return nil
+}
+
+func validHost(host string) bool {
+	if host == "" || len(host) > 253 || strings.TrimSpace(host) != host {
+		return false
+	}
+	if net.ParseIP(host) != nil {
+		return true
+	}
+
+	host = strings.TrimSuffix(host, ".")
+	if host == "" {
+		return false
+	}
+	for _, label := range strings.Split(host, ".") {
+		if len(label) == 0 || len(label) > 63 || label[0] == '-' || label[len(label)-1] == '-' {
+			return false
+		}
+		for i := range label {
+			c := label[i]
+			if (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') &&
+				(c < '0' || c > '9') && c != '-' {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func (n *RequestTargetNode) String() string {

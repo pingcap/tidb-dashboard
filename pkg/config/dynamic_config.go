@@ -82,6 +82,11 @@ func (c *DynamicConfig) Validate() error {
 	}
 
 	if len(c.Profiling.AutoCollectionTargets) > 0 {
+		for i, target := range c.Profiling.AutoCollectionTargets {
+			if err := target.Validate(); err != nil {
+				return ErrVerificationFailed.New("profiling target %d is invalid", i)
+			}
+		}
 		if c.Profiling.AutoCollectionDurationSecs == 0 {
 			return ErrVerificationFailed.New("auto_collection_duration_secs cannot be 0")
 		}

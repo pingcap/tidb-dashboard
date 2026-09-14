@@ -3617,7 +3617,27 @@ sub FetchDynamicProfile {
     }
 
     my @fetcher = AddFetchTimeout($fetch_timeout, @URL_FETCHER);
-    my $cmd = ShellEscape(@fetcher, $url) . " > " . ShellEscape($tmp_profile);
+    open(my $profile_out, ">", $tmp_profile)
+        or error("Unable to open profile file: $!\n");
+    binmode($profile_out);
+    open(my $profile_fetcher, "-|", @fetcher, $url)
+        or error("Failed to start profile fetcher: $!\n");
+    binmode($profile_fetcher);
+    while (1) {
+      my $read = read($profile_fetcher, my $buffer, 64 * 1024);
+      if (!defined($read)) {
+        close($profile_fetcher);
+        close($profile_out);
+        error("Failed to read profile: $!\n");
+      }
+      last if $read == 0;
+      print $profile_out $buffer
+          or error("Failed to write profile: $!\n");
+    }
+    close($profile_fetcher)
+        or error("Failed to fetch profile: $!\n");
+    close($profile_out)
+        or error("Failed to write profile: $!\n");
     if ($path =~ m/$PROFILE_PAGE|$PMUPROFILE_PAGE|$CENSUSPROFILE_PAGE/){
       print STDERR "Gathering CPU profile from $url for $main::opt_seconds seconds to\n  ${real_profile}\n";
       if ($encourage_patience) {
@@ -3627,7 +3647,6 @@ sub FetchDynamicProfile {
       print STDERR "Fetching $path profile from $url to\n  ${real_profile}\n";
     }
 
-    (system($cmd) == 0) || error("Failed to get profile: $cmd: $!\n");
     (system("mv", $tmp_profile, $real_profile) == 0) || error("Unable to rename profile\n");
     print STDERR "Wrote profile to $real_profile\n";
     $main::collected_profile = $real_profile;
@@ -5312,7 +5331,7 @@ sub ShellEscape {
   foreach my $word (@_) {
     my $escaped_word = $word;
     if ($word =~ m![^a-zA-Z0-9/.,_=-]!) {  # check for anything not in whitelist
-      $escaped_word =~ s/'/'\\''/;
+      $escaped_word =~ s/'/'\\''/g;
       $escaped_word = "'$escaped_word'";
     }
     push(@escaped_words, $escaped_word);

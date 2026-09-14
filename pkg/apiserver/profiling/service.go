@@ -29,6 +29,7 @@ var (
 	ErrTimeout                    = ErrNS.NewType("timeout")
 	ErrUnsupportedProfilingType   = ErrNS.NewType("unsupported_profiling_type")
 	ErrUnsupportedProfilingTarget = ErrNS.NewType("unsupported_profiling_target")
+	ErrInvalidTarget              = ErrNS.NewType("invalid_target")
 )
 
 type StartRequest struct {
@@ -149,6 +150,10 @@ func (s *Service) exclusiveExecute(ctx context.Context, req *StartRequest) (*Tas
 }
 
 func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
+	if err := validateTargets(req.Targets); err != nil {
+		return nil, err
+	}
+
 	taskGroup := NewTaskGroup(s.params.LocalStore, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets), req.RequstedProfilingTypes)
 	if err := s.params.LocalStore.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		log.Warn("failed to start task group", zap.Error(err))

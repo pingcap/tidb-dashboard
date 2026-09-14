@@ -35,6 +35,10 @@ type fetcher struct {
 }
 
 func (f *fetcher) FetchAndWriteToFile(duration uint, fileNameWithoutExt string, profilingType TaskProfilingType) (string, TaskRawDataType, error) {
+	if err := f.target.Validate(); err != nil {
+		return "", "", ErrInvalidTarget.Wrap(err, "profiling target is invalid")
+	}
+
 	var profilingRawDataType TaskRawDataType
 	var fileExtenstion string
 	secs := strconv.Itoa(int(duration))

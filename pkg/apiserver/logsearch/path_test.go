@@ -38,3 +38,26 @@ func TestResolvePathWithinDirectory(t *testing.T) {
 		})
 	}
 }
+
+func TestResolveChildPathWithinDirectoryRejectsDirectoryItself(t *testing.T) {
+	directory := t.TempDir()
+	if _, err := resolveChildPathWithinDirectory(directory, directory); !errors.Is(err, errPathOutsideDirectory) {
+		t.Fatalf("resolveChildPathWithinDirectory() error = %v, want %v", err, errPathOutsideDirectory)
+	}
+}
+
+func TestResolveStoredPathWithinDirectory(t *testing.T) {
+	workDir := t.TempDir()
+	t.Chdir(workDir)
+
+	directory := filepath.Join(workDir, "logs")
+	storedPath := filepath.Join("logs", "1")
+	got, err := resolveStoredChildPathWithinDirectory(directory, storedPath)
+	if err != nil {
+		t.Fatalf("resolveStoredChildPathWithinDirectory() unexpected error: %v", err)
+	}
+	want := filepath.Join(directory, "1")
+	if got != want {
+		t.Fatalf("resolveStoredChildPathWithinDirectory() = %q, want %q", got, want)
+	}
+}

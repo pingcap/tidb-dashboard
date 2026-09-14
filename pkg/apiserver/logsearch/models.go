@@ -96,18 +96,22 @@ func (TaskModel) TableName() string {
 }
 
 // Note: this function does not save model itself.
-func (task *TaskModel) RemoveDataAndPreview(db *dbstore.DB, logStoreDir *string) {
+func (task *TaskModel) RemoveDataAndPreview(db *dbstore.DB, logStoreDirectory string, logStoreDir *string) {
+	var taskGroupDir string
+	if logStoreDir != nil {
+		taskGroupDir, _ = resolveStoredChildPathWithinDirectory(logStoreDirectory, *logStoreDir)
+	}
 	if task.LogStorePath != nil {
-		if logStoreDir != nil {
-			if path, err := resolvePathWithinDirectory(*logStoreDir, *task.LogStorePath); err == nil {
+		if taskGroupDir != "" {
+			if path, err := resolveStoredChildPathWithinDirectory(taskGroupDir, *task.LogStorePath); err == nil {
 				_ = os.Remove(path)
 			}
 		}
 		task.LogStorePath = nil
 	}
 	if task.SlowLogStorePath != nil {
-		if logStoreDir != nil {
-			if path, err := resolvePathWithinDirectory(*logStoreDir, *task.SlowLogStorePath); err == nil {
+		if taskGroupDir != "" {
+			if path, err := resolveStoredChildPathWithinDirectory(taskGroupDir, *task.SlowLogStorePath); err == nil {
 				_ = os.Remove(path)
 			}
 		}
@@ -130,7 +134,7 @@ func (TaskGroupModel) TableName() string {
 
 func (tg *TaskGroupModel) Delete(db *dbstore.DB, logStoreDirectory string) {
 	if tg.LogStoreDir != nil {
-		if path, err := resolvePathWithinDirectory(logStoreDirectory, *tg.LogStoreDir); err == nil {
+		if path, err := resolveStoredChildPathWithinDirectory(logStoreDirectory, *tg.LogStoreDir); err == nil {
 			_ = os.RemoveAll(path)
 		}
 	}

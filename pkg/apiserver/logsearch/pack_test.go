@@ -9,6 +9,7 @@ import (
 
 func TestResolveTaskLogPath(t *testing.T) {
 	logStoreDir := t.TempDir()
+	taskGroupDir := filepath.Join(logStoreDir, "1")
 	outsidePath := filepath.Join(t.TempDir(), "outside.zip")
 
 	tests := []struct {
@@ -20,15 +21,15 @@ func TestResolveTaskLogPath(t *testing.T) {
 	}{
 		{
 			name:   "normal path",
-			task:   TaskModel{LogStorePath: stringPointer(filepath.Join(logStoreDir, "task-1.zip"))},
-			logDir: stringPointer(logStoreDir),
-			want:   filepath.Join(logStoreDir, "task-1.zip"),
+			task:   TaskModel{LogStorePath: stringPointer(filepath.Join(taskGroupDir, "task-1.zip"))},
+			logDir: stringPointer(taskGroupDir),
+			want:   filepath.Join(taskGroupDir, "task-1.zip"),
 		},
 		{
 			name:   "slow log fallback",
-			task:   TaskModel{SlowLogStorePath: stringPointer(filepath.Join(logStoreDir, "task-1-slow.zip"))},
-			logDir: stringPointer(logStoreDir),
-			want:   filepath.Join(logStoreDir, "task-1-slow.zip"),
+			task:   TaskModel{SlowLogStorePath: stringPointer(filepath.Join(taskGroupDir, "task-1-slow.zip"))},
+			logDir: stringPointer(taskGroupDir),
+			want:   filepath.Join(taskGroupDir, "task-1-slow.zip"),
 		},
 		{
 			name:      "path outside log directory",
@@ -41,11 +42,17 @@ func TestResolveTaskLogPath(t *testing.T) {
 			task:      TaskModel{LogStorePath: stringPointer(filepath.Join(logStoreDir, "task-1.zip"))},
 			wantError: true,
 		},
+		{
+			name:      "task group directory outside configured directory",
+			task:      TaskModel{LogStorePath: stringPointer(filepath.Join(outsidePath, "task-1.zip"))},
+			logDir:    stringPointer(filepath.Dir(outsidePath)),
+			wantError: true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := resolveTaskLogPath(&tt.task, tt.logDir)
+			got, err := resolveTaskLogPath(&tt.task, logStoreDir, tt.logDir)
 			if tt.wantError {
 				if err == nil {
 					t.Fatal("resolveTaskLogPath() error = nil, want error")
@@ -59,6 +66,24 @@ func TestResolveTaskLogPath(t *testing.T) {
 				t.Fatalf("resolveTaskLogPath() = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestResolveTaskLogPathWithRelativePersistedPaths(t *testing.T) {
+	workDir := t.TempDir()
+	t.Chdir(workDir)
+
+	logStoreDir := filepath.Join(workDir, "logs")
+	task := TaskModel{
+		LogStorePath: stringPointer(filepath.Join("logs", "1", "task-1.zip")),
+	}
+	got, err := resolveTaskLogPath(&task, logStoreDir, stringPointer(filepath.Join("logs", "1")))
+	if err != nil {
+		t.Fatalf("resolveTaskLogPath() unexpected error: %v", err)
+	}
+	want := filepath.Join(logStoreDir, "1", "task-1.zip")
+	if got != want {
+		t.Fatalf("resolveTaskLogPath() = %q, want %q", got, want)
 	}
 }
 

@@ -42,6 +42,19 @@ func TestTaskGroupDeleteOnlyRemovesWithinConfiguredDirectory(t *testing.T) {
 		t.Fatalf("outside path was removed: %v", err)
 	}
 
+	outsideTaskPath := filepath.Join(outsideDir, "task-1.zip")
+	if err := os.WriteFile(outsideTaskPath, []byte("keep"), 0o600); err != nil {
+		t.Fatalf("create outside task file: %v", err)
+	}
+	outsideTask := &TaskModel{LogStorePath: stringPointer(outsideTaskPath)}
+	outsideTask.RemoveDataAndPreview(db, root, stringPointer(outsideDir))
+	if _, err := os.Stat(outsideTaskPath); err != nil {
+		t.Fatalf("outside task path was removed: %v", err)
+	}
+	if outsideTask.LogStorePath != nil {
+		t.Fatal("outside task path was not cleared from the model")
+	}
+
 	managedDir := filepath.Join(root, "1")
 	if err := os.MkdirAll(managedDir, 0o700); err != nil {
 		t.Fatalf("create managed directory: %v", err)
@@ -53,5 +66,36 @@ func TestTaskGroupDeleteOnlyRemovesWithinConfiguredDirectory(t *testing.T) {
 	managedGroup.Delete(db, root)
 	if _, err := os.Stat(managedDir); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("managed path still exists or returned unexpected error: %v", err)
+	}
+
+	rootGroupMarker := filepath.Join(root, "root-marker")
+	if err := os.MkdirAll(root, 0o700); err != nil {
+		t.Fatalf("create root directory: %v", err)
+	}
+	if err := os.WriteFile(rootGroupMarker, []byte("keep"), 0o600); err != nil {
+		t.Fatalf("create root marker: %v", err)
+	}
+	rootGroup := &TaskGroupModel{LogStoreDir: stringPointer(root)}
+	if err := db.Create(rootGroup).Error; err != nil {
+		t.Fatalf("create root task group: %v", err)
+	}
+	rootGroup.Delete(db, root)
+	if _, err := os.Stat(rootGroupMarker); err != nil {
+		t.Fatalf("configured root was removed: %v", err)
+	}
+
+	workDir := t.TempDir()
+	t.Chdir(workDir)
+	relativeManagedDir := filepath.Join(workDir, "relative-logs", "1")
+	if err := os.MkdirAll(relativeManagedDir, 0o700); err != nil {
+		t.Fatalf("create relative managed directory: %v", err)
+	}
+	relativeGroup := &TaskGroupModel{LogStoreDir: stringPointer(filepath.Join("relative-logs", "1"))}
+	if err := db.Create(relativeGroup).Error; err != nil {
+		t.Fatalf("create relative task group: %v", err)
+	}
+	relativeGroup.Delete(db, filepath.Join(workDir, "relative-logs"))
+	if _, err := os.Stat(relativeManagedDir); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("relative managed path still exists or returned unexpected error: %v", err)
 	}
 }

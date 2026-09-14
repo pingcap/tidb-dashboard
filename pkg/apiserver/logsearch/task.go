@@ -144,7 +144,11 @@ func (t *Task) SyncRun() {
 				zap.Any("task", t),
 				zap.String("err", *t.model.Error),
 			)
-			t.model.RemoveDataAndPreview(t.taskGroup.service.db, t.taskGroup.model.LogStoreDir)
+			t.model.RemoveDataAndPreview(
+				t.taskGroup.service.db,
+				t.taskGroup.service.logStoreDirectory,
+				t.taskGroup.model.LogStoreDir,
+			)
 			t.model.State = TaskStateError
 			t.taskGroup.service.db.Save(t.model)
 			return

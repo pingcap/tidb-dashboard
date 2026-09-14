@@ -17,7 +17,7 @@ type taskDownload struct {
 	path string
 }
 
-func resolveTaskLogPath(task *TaskModel, logStoreDir *string) (string, error) {
+func resolveTaskLogPath(task *TaskModel, logStoreDirectory string, logStoreDir *string) (string, error) {
 	logPath := task.LogStorePath
 	if logPath == nil {
 		logPath = task.SlowLogStorePath
@@ -28,7 +28,11 @@ func resolveTaskLogPath(task *TaskModel, logStoreDir *string) (string, error) {
 	if logStoreDir == nil {
 		return "", fmt.Errorf("log store directory is not available")
 	}
-	return resolvePathWithinDirectory(*logStoreDir, *logPath)
+	taskGroupDir, err := resolveStoredChildPathWithinDirectory(logStoreDirectory, *logStoreDir)
+	if err != nil {
+		return "", fmt.Errorf("resolve task group log directory: %w", err)
+	}
+	return resolveStoredChildPathWithinDirectory(taskGroupDir, *logPath)
 }
 
 func serveTaskForDownload(task taskDownload, c *gin.Context) {

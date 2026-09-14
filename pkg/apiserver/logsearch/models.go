@@ -128,9 +128,11 @@ func (TaskGroupModel) TableName() string {
 	return "log_search_task_groups"
 }
 
-func (tg *TaskGroupModel) Delete(db *dbstore.DB) {
+func (tg *TaskGroupModel) Delete(db *dbstore.DB, logStoreDirectory string) {
 	if tg.LogStoreDir != nil {
-		_ = os.RemoveAll(*tg.LogStoreDir)
+		if path, err := resolvePathWithinDirectory(logStoreDirectory, *tg.LogStoreDir); err == nil {
+			_ = os.RemoveAll(path)
+		}
 	}
 	db.Where("task_group_id = ?", tg.ID).Delete(&PreviewModel{})
 	db.Where("task_group_id = ?", tg.ID).Delete(&TaskModel{})
@@ -154,10 +156,10 @@ func autoMigrate(db *dbstore.DB) error {
 	return db.AutoMigrate(&TaskModel{}, &TaskGroupModel{}, &PreviewModel{})
 }
 
-func cleanupAllTasks(db *dbstore.DB) {
+func cleanupAllTasks(db *dbstore.DB, logStoreDirectory string) {
 	var taskGroups []*TaskGroupModel
 	db.Find(&taskGroups)
 	for _, tg := range taskGroups {
-		tg.Delete(db)
+		tg.Delete(db, logStoreDirectory)
 	}
 }

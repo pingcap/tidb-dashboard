@@ -45,7 +45,7 @@ func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
 	}
-	cleanupAllTasks(db)
+	cleanupAllTasks(db, dir)
 
 	service := &Service{
 		config:            config,
@@ -131,7 +131,7 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 			State:       TaskStateRunning,
 		}
 		if err := s.db.Create(task).Error; err != nil {
-			taskGroup.Delete(s.db)
+			taskGroup.Delete(s.db, s.logStoreDirectory)
 			rest.Error(c, err)
 			return
 		}
@@ -305,7 +305,7 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 		rest.Error(c, err)
 		return
 	}
-	taskGroup.Delete(s.db)
+	taskGroup.Delete(s.db, s.logStoreDirectory)
 	c.JSON(http.StatusOK, rest.EmptyResponse{})
 }
 
@@ -343,14 +343,23 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 		return
 	}
 	ids := strings.Split(str, ",")
-	tasks := make([]*TaskModel, 0, len(ids))
+	tasks := make([]taskDownload, 0, len(ids))
 	for _, id := range ids {
 		var task TaskModel
 		if s.db.
 			Where("id = ? AND state = ?", id, TaskStateFinished).
 			First(&task).
 			Error == nil {
-			tasks = append(tasks, &task)
+			var taskGroup TaskGroupModel
+			if s.db.First(&taskGroup, task.TaskGroupID).Error != nil {
+				continue
+			}
+			logPath, err := resolveTaskLogPath(&task, taskGroup.LogStoreDir)
+			if err != nil {
+				log.Warn("Ignore log download with invalid path", zap.Uint("task_id", task.ID), zap.Error(err))
+				continue
+			}
+			tasks = append(tasks, taskDownload{task: &task, path: logPath})
 			// Ignore errors silently
 		}
 	}

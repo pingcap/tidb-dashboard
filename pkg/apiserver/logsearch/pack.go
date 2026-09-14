@@ -9,34 +9,36 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap/tidb-dashboard/util/rest"
 	"github.com/pingcap/tidb-dashboard/util/ziputil"
 )
 
-func serveTaskForDownload(task *TaskModel, c *gin.Context) {
+type taskDownload struct {
+	task *TaskModel
+	path string
+}
+
+func resolveTaskLogPath(task *TaskModel, logStoreDir *string) (string, error) {
 	logPath := task.LogStorePath
 	if logPath == nil {
 		logPath = task.SlowLogStorePath
 	}
 	if logPath == nil {
-		rest.Error(c, rest.ErrBadRequest.New("Log is not ready"))
-		return
+		return "", fmt.Errorf("log is not ready")
 	}
-	c.FileAttachment(*logPath, fmt.Sprintf("logs-%s.zip", task.Target.FileName()))
+	if logStoreDir == nil {
+		return "", fmt.Errorf("log store directory is not available")
+	}
+	return resolvePathWithinDirectory(*logStoreDir, *logPath)
 }
 
-func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
+func serveTaskForDownload(task taskDownload, c *gin.Context) {
+	c.FileAttachment(task.path, fmt.Sprintf("logs-%s.zip", task.task.Target.FileName()))
+}
+
+func serveMultipleTaskForDownload(tasks []taskDownload, c *gin.Context) {
 	filePaths := make([]string, 0, len(tasks))
 	for _, task := range tasks {
-		logPath := task.LogStorePath
-		if logPath == nil {
-			logPath = task.SlowLogStorePath
-		}
-		if logPath == nil {
-			rest.Error(c, rest.ErrBadRequest.New("Some logs are not available"))
-			return
-		}
-		filePaths = append(filePaths, *logPath)
+		filePaths = append(filePaths, task.path)
 	}
 
 	c.Writer.Header().Set("Content-type", "application/octet-stream")

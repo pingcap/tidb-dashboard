@@ -219,7 +219,7 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 		t.setError(err)
 		return
 	}
-	f, err := os.Create(savedPath)
+	f, err := os.Create(savedPath) // #nosec G304 -- savedPath is resolved within LogStoreDir above.
 	if err != nil {
 		t.setError(err)
 		return

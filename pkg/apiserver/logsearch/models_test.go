@@ -8,9 +8,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
 
 func TestTaskGroupDeleteOnlyRemovesWithinConfiguredDirectory(t *testing.T) {

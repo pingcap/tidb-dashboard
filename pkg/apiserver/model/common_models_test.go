@@ -38,3 +38,50 @@ func TestRequestTargetNodeValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestRequestTargetNodeFileName(t *testing.T) {
+	tests := []struct {
+		name   string
+		target RequestTargetNode
+		expect string
+	}{
+		{
+			name:   "normal ipv4 display name",
+			target: RequestTargetNode{Kind: NodeKindTiDB, DisplayName: "127.0.0.1:4000"},
+			expect: "tidb_127.0.0.1_4000",
+		},
+		{
+			name:   "ipv6 display name",
+			target: RequestTargetNode{Kind: NodeKindTiDB, DisplayName: "[::1]:4000"},
+			expect: "tidb_[__1]_4000",
+		},
+		{
+			name:   "path traversal in display name",
+			target: RequestTargetNode{Kind: NodeKindTiDB, DisplayName: "../../tmp/x"},
+			expect: "tidb_.._.._tmp_x",
+		},
+		{
+			name:   "windows path traversal in display name",
+			target: RequestTargetNode{Kind: NodeKindTiDB, DisplayName: `..\..\tmp\x`},
+			expect: "tidb_.._.._tmp_x",
+		},
+		{
+			name:   "path traversal in kind",
+			target: RequestTargetNode{Kind: NodeKind("../"), DisplayName: "target"},
+			expect: "..__target",
+		},
+		{
+			name:   "control characters",
+			target: RequestTargetNode{Kind: NodeKindTiDB, DisplayName: "target\r\n"},
+			expect: "tidb_target__",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.target.FileName(); got != tt.expect {
+				t.Fatalf("RequestTargetNode.FileName() = %q, want %q", got, tt.expect)
+			}
+		})
+	}
+}

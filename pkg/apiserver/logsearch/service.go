@@ -130,8 +130,11 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 			Target:      &target,
 			State:       TaskStateRunning,
 		}
-		// Ignore task creation errors
-		s.db.Create(task)
+		if err := s.db.Create(task).Error; err != nil {
+			taskGroup.Delete(s.db)
+			rest.Error(c, err)
+			return
+		}
 		tasks = append(tasks, task)
 	}
 	if !s.scheduler.AsyncStart(&taskGroup, tasks) {

@@ -96,10 +96,22 @@ func (TaskModel) TableName() string {
 }
 
 // Note: this function does not save model itself.
-func (task *TaskModel) RemoveDataAndPreview(db *dbstore.DB) {
+func (task *TaskModel) RemoveDataAndPreview(db *dbstore.DB, logStoreDir *string) {
 	if task.LogStorePath != nil {
-		_ = os.RemoveAll(*task.LogStorePath)
+		if logStoreDir != nil {
+			if path, err := resolvePathWithinDirectory(*logStoreDir, *task.LogStorePath); err == nil {
+				_ = os.Remove(path)
+			}
+		}
 		task.LogStorePath = nil
+	}
+	if task.SlowLogStorePath != nil {
+		if logStoreDir != nil {
+			if path, err := resolvePathWithinDirectory(*logStoreDir, *task.SlowLogStorePath); err == nil {
+				_ = os.Remove(path)
+			}
+		}
+		task.SlowLogStorePath = nil
 	}
 	db.Where("task_id = ?", task.ID).Delete(&PreviewModel{})
 }

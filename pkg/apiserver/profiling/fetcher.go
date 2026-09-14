@@ -101,7 +101,7 @@ var jeprof string
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	if strings.HasSuffix(op.path, "heap") {
 		scheme := f.client.GetHTTPScheme()
-		cmd := exec.Command("perl", "/dev/stdin", "--raw", scheme+"://"+op.ip+":"+strconv.Itoa(op.port)+op.path) //nolint:gosec
+		cmd := exec.Command("perl", "/dev/stdin", "--raw", scheme+"://"+net.JoinHostPort(op.ip, strconv.Itoa(op.port))+op.path) //nolint:gosec
 		cmd.Stdin = strings.NewReader(jeprof)
 		if f.client.GetTLSInfo() != nil {
 			cmd.Env = append(os.Environ(), fmt.Sprintf(
@@ -148,7 +148,7 @@ type tiflashFetcher struct {
 func (f *tiflashFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	if strings.HasSuffix(op.path, "heap") {
 		scheme := f.client.GetHTTPScheme()
-		cmd := exec.Command("perl", "/dev/stdin", "--raw", scheme+"://"+op.ip+":"+strconv.Itoa(op.port)+op.path) //nolint:gosec
+		cmd := exec.Command("perl", "/dev/stdin", "--raw", scheme+"://"+net.JoinHostPort(op.ip, strconv.Itoa(op.port))+op.path) //nolint:gosec
 		cmd.Stdin = strings.NewReader(jeprof)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {

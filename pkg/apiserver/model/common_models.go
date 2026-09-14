@@ -4,8 +4,10 @@ package model
 
 import (
 	"fmt"
-	"net"
+	"net/netip"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 type NodeKind string
@@ -40,27 +42,37 @@ func (n RequestTargetNode) Validate() error {
 }
 
 func validHost(host string) bool {
-	if host == "" || len(host) > 253 || strings.TrimSpace(host) != host {
+	if host == "" || strings.TrimSpace(host) != host || !utf8.ValidString(host) {
 		return false
 	}
-	if net.ParseIP(host) != nil {
-		return true
+	if addr, err := netip.ParseAddr(host); err == nil {
+		return addr.Zone() == "" || validIPv6Zone(addr.Zone())
 	}
 
 	host = strings.TrimSuffix(host, ".")
-	if host == "" {
+	if host == "" || len(host) > 253 || strings.Contains(host, ":") {
 		return false
 	}
 	for _, label := range strings.Split(host, ".") {
 		if len(label) == 0 || len(label) > 63 || label[0] == '-' || label[len(label)-1] == '-' {
 			return false
 		}
-		for i := range label {
-			c := label[i]
-			if (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') &&
-				(c < '0' || c > '9') && c != '-' {
+		for _, c := range label {
+			if c != '_' && c != '-' && !unicode.IsLetter(c) && !unicode.IsDigit(c) {
 				return false
 			}
+		}
+	}
+	return true
+}
+
+func validIPv6Zone(zone string) bool {
+	if zone == "" || !utf8.ValidString(zone) {
+		return false
+	}
+	for _, c := range zone {
+		if !unicode.IsLetter(c) && !unicode.IsDigit(c) && c != '_' && c != '-' && c != '.' {
+			return false
 		}
 	}
 	return true

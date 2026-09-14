@@ -6,6 +6,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 
@@ -133,14 +134,34 @@ func (TaskGroupModel) TableName() string {
 }
 
 func (tg *TaskGroupModel) Delete(db *dbstore.DB, logStoreDirectory string) {
-	if tg.LogStoreDir != nil {
-		if path, err := resolveStoredChildPathWithinDirectory(logStoreDirectory, *tg.LogStoreDir); err == nil {
-			_ = os.RemoveAll(path)
-		}
-	}
+	removeTaskGroupDirectory(logStoreDirectory, tg.ID, tg.LogStoreDir)
 	db.Where("task_group_id = ?", tg.ID).Delete(&PreviewModel{})
 	db.Where("task_group_id = ?", tg.ID).Delete(&TaskModel{})
 	db.Where("id = ?", tg.ID).Delete(&TaskGroupModel{})
+}
+
+func removeTaskGroupDirectory(logStoreDirectory string, taskGroupID uint, logStoreDir *string) {
+	if logStoreDir == nil {
+		return
+	}
+
+	path, err := resolveStoredChildPathWithinDirectory(logStoreDirectory, *logStoreDir)
+	isLegacyPath := false
+	if err != nil {
+		path, err = resolveLegacyDefaultTaskGroupPath(taskGroupID, *logStoreDir)
+		isLegacyPath = err == nil
+	}
+	if err != nil {
+		return
+	}
+	if err := os.RemoveAll(path); err != nil {
+		return
+	}
+	if isLegacyPath {
+		// Remove the old random root only when it is empty. Never remove its
+		// contents here because it may contain task groups unknown to the DB.
+		_ = os.Remove(filepath.Dir(path))
+	}
 }
 
 type PreviewModel struct {

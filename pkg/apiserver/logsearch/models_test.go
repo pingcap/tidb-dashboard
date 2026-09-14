@@ -99,3 +99,43 @@ func TestTaskGroupDeleteOnlyRemovesWithinConfiguredDirectory(t *testing.T) {
 		t.Fatalf("relative managed path still exists or returned unexpected error: %v", err)
 	}
 }
+
+func TestTaskGroupDeleteCleansLegacyDefaultDirectory(t *testing.T) {
+	gormDB, err := gorm.Open(sqlite.Open(filepath.Join(t.TempDir(), "test.sqlite.db")))
+	if err != nil {
+		t.Fatalf("open test database: %v", err)
+	}
+	db := &dbstore.DB{DB: gormDB}
+	if err := autoMigrate(db); err != nil {
+		t.Fatalf("migrate test database: %v", err)
+	}
+
+	legacyRoot, err := os.MkdirTemp("", legacyDefaultLogStorePrefix)
+	if err != nil {
+		t.Fatalf("create legacy log directory: %v", err)
+	}
+	defer os.RemoveAll(legacyRoot)
+
+	taskGroupID := uint(123)
+	legacyGroupDir := filepath.Join(legacyRoot, "123")
+	if err := os.MkdirAll(legacyGroupDir, 0o700); err != nil {
+		t.Fatalf("create legacy task group directory: %v", err)
+	}
+	legacyMarker := filepath.Join(legacyGroupDir, "marker")
+	if err := os.WriteFile(legacyMarker, []byte("remove"), 0o600); err != nil {
+		t.Fatalf("create legacy marker: %v", err)
+	}
+
+	taskGroup := &TaskGroupModel{ID: taskGroupID, LogStoreDir: stringPointer(legacyGroupDir)}
+	if err := db.Create(taskGroup).Error; err != nil {
+		t.Fatalf("create legacy task group: %v", err)
+	}
+	taskGroup.Delete(db, filepath.Join(t.TempDir(), "logs"))
+
+	if _, err := os.Stat(legacyMarker); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("legacy task group was not removed: %v", err)
+	}
+	if _, err := os.Stat(legacyRoot); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("empty legacy root was not removed: %v", err)
+	}
+}

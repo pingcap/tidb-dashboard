@@ -5,11 +5,15 @@ package logsearch
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
 var errPathOutsideDirectory = errors.New("path is outside the target directory")
+
+const legacyDefaultLogStorePrefix = "dashboard-logs"
 
 func resolvePathWithinDirectory(directory, name string) (string, error) {
 	return resolvePath(directory, name, false)
@@ -32,6 +36,40 @@ func resolveStoredChildPathWithinDirectory(directory, name string) (string, erro
 		}
 	}
 	return resolvePath(directory, name, true)
+}
+
+// resolveLegacyDefaultTaskGroupPath only accepts paths created by the old
+// default log directory logic: $TMPDIR/dashboard-logs*/<task-group-id>.
+// This narrow allowlist lets upgrades clean old temporary data without
+// weakening the containment check for arbitrary persisted paths.
+func resolveLegacyDefaultTaskGroupPath(taskGroupID uint, name string) (string, error) {
+	if !filepath.IsAbs(name) {
+		return "", fmt.Errorf("%w: legacy path must be absolute", errPathOutsideDirectory)
+	}
+
+	candidate, err := filepath.Abs(filepath.Clean(name))
+	if err != nil {
+		return "", fmt.Errorf("resolve legacy target path: %w", err)
+	}
+	tempDirectory, err := filepath.Abs(filepath.Clean(os.TempDir()))
+	if err != nil {
+		return "", fmt.Errorf("resolve temporary directory: %w", err)
+	}
+	legacyDirectory := filepath.Dir(candidate)
+	if filepath.Dir(legacyDirectory) != tempDirectory ||
+		!strings.HasPrefix(filepath.Base(legacyDirectory), legacyDefaultLogStorePrefix) ||
+		filepath.Base(candidate) != strconv.FormatUint(uint64(taskGroupID), 10) {
+		return "", fmt.Errorf("%w: %s", errPathOutsideDirectory, name)
+	}
+
+	info, err := os.Lstat(legacyDirectory)
+	if err != nil {
+		return "", fmt.Errorf("stat legacy directory: %w", err)
+	}
+	if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+		return "", fmt.Errorf("%w: legacy directory is not a real directory", errPathOutsideDirectory)
+	}
+	return candidate, nil
 }
 
 func resolvePath(directory, name string, requireChild bool) (string, error) {

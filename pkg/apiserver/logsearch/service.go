@@ -5,7 +5,7 @@ package logsearch
 import (
 	"context"
 	"net/http"
-	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -35,17 +35,19 @@ type Service struct {
 func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service {
 	dir := config.TempDir
 	if dir == "" {
-		var err error
-		dir, err = os.MkdirTemp("", "dashboard-logs")
-		if err != nil {
-			log.Fatal("Failed to create directory for storing logs", zap.Error(err))
-		}
+		// Keep the default directory stable across restarts so persisted task
+		// groups can be cleaned up safely after the service is restarted.
+		dir = filepath.Join(config.DataDir, "logs")
 	}
-	err := autoMigrate(db)
+	dir, err := filepath.Abs(dir)
+	if err != nil {
+		log.Fatal("Failed to resolve directory for storing logs", zap.Error(err))
+	}
+	err = autoMigrate(db)
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
 	}
-	cleanupAllTasks(db)
+	cleanupAllTasks(db, dir)
 
 	service := &Service{
 		config:            config,
@@ -130,8 +132,11 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 			Target:      &target,
 			State:       TaskStateRunning,
 		}
-		// Ignore task creation errors
-		s.db.Create(task)
+		if err := s.db.Create(task).Error; err != nil {
+			taskGroup.Delete(s.db, s.logStoreDirectory)
+			rest.Error(c, err)
+			return
+		}
 		tasks = append(tasks, task)
 	}
 	if !s.scheduler.AsyncStart(&taskGroup, tasks) {
@@ -302,7 +307,7 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 		rest.Error(c, err)
 		return
 	}
-	taskGroup.Delete(s.db)
+	taskGroup.Delete(s.db, s.logStoreDirectory)
 	c.JSON(http.StatusOK, rest.EmptyResponse{})
 }
 
@@ -340,14 +345,23 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 		return
 	}
 	ids := strings.Split(str, ",")
-	tasks := make([]*TaskModel, 0, len(ids))
+	tasks := make([]taskDownload, 0, len(ids))
 	for _, id := range ids {
 		var task TaskModel
 		if s.db.
 			Where("id = ? AND state = ?", id, TaskStateFinished).
 			First(&task).
 			Error == nil {
-			tasks = append(tasks, &task)
+			var taskGroup TaskGroupModel
+			if s.db.First(&taskGroup, task.TaskGroupID).Error != nil {
+				continue
+			}
+			logPath, err := resolveTaskLogPath(&task, s.logStoreDirectory, taskGroup.LogStoreDir)
+			if err != nil {
+				log.Warn("Ignore log download with invalid path", zap.Uint("task_id", task.ID), zap.Error(err))
+				continue
+			}
+			tasks = append(tasks, taskDownload{task: &task, path: logPath})
 			// Ignore errors silently
 		}
 	}

@@ -9,7 +9,12 @@ import {
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { CSVLink } from 'react-csv'
 
-import { TopsqlSummaryItem, TopsqlSummaryByItem } from '@lib/client'
+import { TopsqlSummaryByItem } from '@lib/client'
+import {
+  getResponseMetricTotal,
+  getTopSQLRecordKey,
+  TopSQLSummaryItem
+} from '../../utils/response'
 import {
   Card,
   CardTable,
@@ -49,7 +54,7 @@ interface ListTableProps {
 
 const emptyFn = () => {}
 
-export type SQLRecord = TopsqlSummaryItem &
+export type SQLRecord = TopSQLSummaryItem &
   TopsqlSummaryByItem & {
     cpuTime: number
     networkBytes?: number
@@ -75,9 +80,14 @@ export function ListTable({
   onRowOver
 }: ListTableProps) {
   const { t } = useTranslation()
-  const { data: tableRecords, capacity } = useTableData(data, orderBy)
   const navigate = useNavigate()
   const ctx = useContext(TopSQLContext)
+  const { data: tableRecords, capacity } = useTableData(
+    data,
+    orderBy,
+    !!ctx?.cfg.preserveResponseOrder
+  )
+  const showKeyspace = !!ctx?.cfg.showKeyspace && instanceType === 'tikv'
 
   const tableColumns = useMemo(() => {
     function goDetail(ev: React.MouseEvent<HTMLElement>, record: SQLRecord) {
@@ -256,6 +266,17 @@ export function ListTable({
         }
       }
     ]
+    if (showKeyspace) {
+      cols.splice(1, 0, {
+        name: t('topsql.table.fields.keyspace'),
+        key: 'keyspace',
+        minWidth: 190,
+        maxWidth: 250,
+        onRender: (record: SQLRecord) => (
+          <span data-e2e="topsql_keyspace">{record.keyspace ?? '-'}</span>
+        )
+      })
+    }
     if (ctx?.cfg.showSearchInStatements === false) {
       cols = cols.filter((c) => c.key !== 'actions')
     }
@@ -268,14 +289,17 @@ export function ListTable({
     orderBy,
     navigate,
     timeRange,
-    ctx?.cfg.showSearchInStatements
+    ctx?.cfg.showSearchInStatements,
+    showKeyspace
   ])
 
   const csvHeaders = tableColumns
-    .slice(0, 2)
+    .filter((column) => column.key !== 'actions')
     .map((c) => ({ label: c.name, key: c.key }))
 
-  const getKey = useMemoizedFn((r: SQLRecord) => r?.sql_digest ?? r?.text ?? '')
+  const getKey = useMemoizedFn((record: SQLRecord) =>
+    getTopSQLRecordKey(record)
+  )
 
   const { selectedRecord, selection } = useRecordSelection<SQLRecord>({
     storageKey: 'topsql.list_table_selected_key',
@@ -287,7 +311,7 @@ export function ListTable({
   })
   const onRenderRow = useMemoizedFn((props: any) => (
     <div
-      onMouseEnter={() => onRowOver(props.item?.sql_digest ?? props.item?.text)}
+      onMouseEnter={() => onRowOver(getKey(props.item))}
       onMouseLeave={onRowLeave}
       onClick={() =>
         telemetry.clickStatement(props.itemIndex, props.itemIndex === topN)
@@ -334,6 +358,7 @@ export function ListTable({
           groupBy !== AggLevel.Schema &&
           groupBy !== AggLevel.Region && (
             <ListDetail
+              key={selectedRecord.responseKey}
               instanceType={instanceType}
               record={selectedRecord}
               capacity={capacity}
@@ -345,10 +370,34 @@ export function ListTable({
   ) : null
 }
 
-function useTableData(records: any[], orderBy: OrderBy) {
+function useTableData(
+  records: any[],
+  orderBy: OrderBy,
+  preserveResponseOrder: boolean
+) {
   const tableData: { data: SQLRecord[]; capacity: number } = useMemo(() => {
     if (!records) {
       return { data: [], capacity: 0 }
+    }
+    if (preserveResponseOrder) {
+      const data: SQLRecord[] = records.map((record) => ({
+        ...record,
+        cpuTime: getResponseMetricTotal(record, 'cpu'),
+        networkBytes: getResponseMetricTotal(record, 'network'),
+        logicalIoBytes: getResponseMetricTotal(record, 'logical_io'),
+        logicalReadBytes: getResponseMetricTotal(record, 'logical_read'),
+        logicalWriteBytes: getResponseMetricTotal(record, 'logical_write'),
+        rocksdbBlockReadCount: getResponseMetricTotal(
+          record,
+          'rocksdb_block_read'
+        ),
+        plans: record.plans || []
+      }))
+      const capacity = records.reduce(
+        (max, record) => Math.max(max, getResponseMetricTotal(record, orderBy)),
+        0
+      )
+      return { data, capacity }
     }
     const sum = (arr?: Array<number>): number =>
       (arr ?? []).reduce((acc, v) => acc + (v || 0), 0)
@@ -481,6 +530,6 @@ function useTableData(records: any[], orderBy: OrderBy) {
       })
       .sort((a, b) => (b.is_other ? -1 : 0))
     return { data: d, capacity }
-  }, [records, orderBy])
+  }, [records, orderBy, preserveResponseOrder])
   return tableData
 }

@@ -8,13 +8,19 @@ import {
   BrushEndListener
 } from '@elastic/charts'
 import { orderBy as lodashOrderBy, toPairs } from 'lodash'
-import React, { useMemo, useState, forwardRef } from 'react'
+import React, { useContext, useMemo, useState, forwardRef } from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TopsqlSummaryItem, TopsqlSummaryByItem } from '@lib/client'
 import { useTranslation } from 'react-i18next'
 import { useChange } from '@lib/utils/useChange'
 import { DEFAULT_CHART_SETTINGS, timeTickFormatter } from '@lib/utils/charts'
 import { AggLevel, OrderBy } from './List'
+import { TopSQLContext } from '../../context'
+import {
+  buildResponseChartData,
+  getTopSQLRecordKey,
+  TopSQLSummaryItem
+} from '../../utils/response'
 
 export interface ListChartProps {
   data: any[]
@@ -23,6 +29,7 @@ export interface ListChartProps {
   orderBy: OrderBy
   timeRangeTimestamp: [number, number]
   onBrushEnd: BrushEndListener
+  showKeyspace?: boolean
 }
 
 const isQueryAggLevel = (groupBy: string) => {
@@ -75,10 +82,20 @@ const getAxisTickFormatter = (orderBy: OrderBy) => {
 
 export const ListChart = forwardRef<Chart, ListChartProps>(
   (
-    { onBrushEnd, data, groupBy, orderBy, timeWindowSize, timeRangeTimestamp },
+    {
+      onBrushEnd,
+      data,
+      groupBy,
+      orderBy,
+      timeWindowSize,
+      timeRangeTimestamp,
+      showKeyspace
+    },
     ref
   ) => {
     const { t } = useTranslation()
+    const ctx = useContext(TopSQLContext)
+    const preserveResponseOrder = !!ctx?.cfg.preserveResponseOrder
     // And we need update all the data at the same time and let the chart refresh only once for a better experience.
     const [bundle, setBundle] = useState({
       data,
@@ -90,9 +107,22 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
     const { chartData } = useChartData(
       bundle.data,
       bundle.groupBy,
-      bundle.orderBy
+      bundle.orderBy,
+      preserveResponseOrder
     )
-    const { digestMap } = useDigestMap(bundle.data, bundle.groupBy)
+    const { digestMap } = useDigestMap(
+      bundle.data,
+      bundle.groupBy,
+      preserveResponseOrder
+    )
+    const responseRecords = useMemo(() => {
+      const records: Record<string, TopSQLSummaryItem> = {}
+      if (preserveResponseOrder)
+        bundle.data.forEach((record) => {
+          records[getTopSQLRecordKey(record)] = record
+        })
+      return records
+    }, [bundle.data, preserveResponseOrder])
 
     useChange(() => {
       setBundle({ data, groupBy, orderBy, timeWindowSize, timeRangeTimestamp })
@@ -128,14 +158,18 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
         />
         {Object.keys(chartData).map((originText) => {
           const sql = digestMap?.[originText] || ''
+          const responseRecord = responseRecords[originText]
           let text = sql
-          if (!originText) {
+          if (preserveResponseOrder ? responseRecord?.is_other : !originText) {
             text = t('topsql.table.others')
             // is unknown text
           } else if (!sql) {
             if (isQueryAggLevel(bundle.groupBy)) {
               // cannot find the sql text, but we agg by sql
-              text = `(SQL ${originText.slice(0, 8)})`
+              text = `(SQL ${(responseRecord?.sql_digest ?? originText).slice(
+                0,
+                8
+              )})`
             } else {
               text = originText
             }
@@ -144,6 +178,9 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
             text = sql.length > 50 ? `${sql.slice(0, 50)}...` : sql
           }
 
+          if (showKeyspace && responseRecord?.keyspace != null) {
+            text = `${text} [${responseRecord.keyspace}]`
+          }
           return (
             <BarSeries
               key={originText}
@@ -178,7 +215,11 @@ export const ListChart = forwardRef<Chart, ListChartProps>(
   }
 )
 
-function useDigestMap(seriesDataO: any[] = [], groupBy: string) {
+function useDigestMap(
+  seriesDataO: any[] = [],
+  groupBy: string,
+  preserveResponseOrder: boolean
+) {
   const digestMap = useMemo(() => {
     if (!seriesDataO) {
       return {}
@@ -190,17 +231,26 @@ function useDigestMap(seriesDataO: any[] = [], groupBy: string) {
     if (!seriesData) {
       return {}
     }
-    return seriesData.reduce((prev, { sql_digest, sql_text }) => {
-      prev[sql_digest!] = sql_text
+    return seriesData.reduce((prev, record) => {
+      prev[
+        preserveResponseOrder ? getTopSQLRecordKey(record) : record.sql_digest!
+      ] = record.sql_text
       return prev
     }, {} as { [digest: string]: string | undefined })
-  }, [seriesDataO, groupBy])
+  }, [seriesDataO, groupBy, preserveResponseOrder])
   return { digestMap }
 }
 
-function useChartData(seriesDataO: any[], groupBy: string, orderBy: OrderBy) {
+function useChartData(
+  seriesDataO: any[],
+  groupBy: string,
+  orderBy: OrderBy,
+  preserveResponseOrder: boolean
+) {
   let chartData: Record<string, Array<[number, number]>> = {}
   chartData = useMemo(() => {
+    if (preserveResponseOrder)
+      return buildResponseChartData(seriesDataO || [], orderBy)
     if (isQueryAggLevel(groupBy)) {
       if (!seriesDataO) {
         return {}
@@ -318,7 +368,7 @@ function useChartData(seriesDataO: any[], groupBy: string, orderBy: OrderBy) {
       })
       return datumBy
     }
-  }, [seriesDataO, groupBy, orderBy])
+  }, [seriesDataO, groupBy, orderBy, preserveResponseOrder])
 
   return {
     chartData

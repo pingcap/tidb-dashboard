@@ -32,8 +32,21 @@ func (n *RequestTargetNode) String() string {
 }
 
 func (n *RequestTargetNode) FileName() string {
-	displayName := strings.NewReplacer(":", "_").Replace(n.DisplayName)
-	return fmt.Sprintf("%s_%s", n.Kind, displayName)
+	return fmt.Sprintf("%s_%s", sanitizeFilenamePart(string(n.Kind)), sanitizeFilenamePart(n.DisplayName))
+}
+
+func sanitizeFilenamePart(value string) string {
+	return strings.Map(func(r rune) rune {
+		switch r {
+		case '/', '\\', ':', '*', '?', '"', '<', '>', '|':
+			return '_'
+		default:
+			if unicode.IsControl(r) {
+				return '_'
+			}
+			return r
+		}
+	}, value)
 }
 
 type RequestTargetStatistics struct {

@@ -6,6 +6,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 
@@ -96,10 +97,26 @@ func (TaskModel) TableName() string {
 }
 
 // Note: this function does not save model itself.
-func (task *TaskModel) RemoveDataAndPreview(db *dbstore.DB) {
+func (task *TaskModel) RemoveDataAndPreview(db *dbstore.DB, logStoreDirectory string, logStoreDir *string) {
+	var taskGroupDir string
+	if logStoreDir != nil {
+		taskGroupDir, _ = resolveStoredChildPathWithinDirectory(logStoreDirectory, *logStoreDir)
+	}
 	if task.LogStorePath != nil {
-		_ = os.RemoveAll(*task.LogStorePath)
+		if taskGroupDir != "" {
+			if path, err := resolveStoredChildPathWithinDirectory(taskGroupDir, *task.LogStorePath); err == nil {
+				_ = os.Remove(path)
+			}
+		}
 		task.LogStorePath = nil
+	}
+	if task.SlowLogStorePath != nil {
+		if taskGroupDir != "" {
+			if path, err := resolveStoredChildPathWithinDirectory(taskGroupDir, *task.SlowLogStorePath); err == nil {
+				_ = os.Remove(path)
+			}
+		}
+		task.SlowLogStorePath = nil
 	}
 	db.Where("task_id = ?", task.ID).Delete(&PreviewModel{})
 }
@@ -116,13 +133,35 @@ func (TaskGroupModel) TableName() string {
 	return "log_search_task_groups"
 }
 
-func (tg *TaskGroupModel) Delete(db *dbstore.DB) {
-	if tg.LogStoreDir != nil {
-		_ = os.RemoveAll(*tg.LogStoreDir)
-	}
+func (tg *TaskGroupModel) Delete(db *dbstore.DB, logStoreDirectory string) {
+	removeTaskGroupDirectory(logStoreDirectory, tg.ID, tg.LogStoreDir)
 	db.Where("task_group_id = ?", tg.ID).Delete(&PreviewModel{})
 	db.Where("task_group_id = ?", tg.ID).Delete(&TaskModel{})
 	db.Where("id = ?", tg.ID).Delete(&TaskGroupModel{})
+}
+
+func removeTaskGroupDirectory(logStoreDirectory string, taskGroupID uint, logStoreDir *string) {
+	if logStoreDir == nil {
+		return
+	}
+
+	path, err := resolveStoredChildPathWithinDirectory(logStoreDirectory, *logStoreDir)
+	isLegacyPath := false
+	if err != nil {
+		path, err = resolveLegacyDefaultTaskGroupPath(taskGroupID, *logStoreDir)
+		isLegacyPath = err == nil
+	}
+	if err != nil {
+		return
+	}
+	if err := os.RemoveAll(path); err != nil {
+		return
+	}
+	if isLegacyPath {
+		// Remove the old random root only when it is empty. Never remove its
+		// contents here because it may contain task groups unknown to the DB.
+		_ = os.Remove(filepath.Dir(path))
+	}
 }
 
 type PreviewModel struct {
@@ -142,10 +181,10 @@ func autoMigrate(db *dbstore.DB) error {
 	return db.AutoMigrate(&TaskModel{}, &TaskGroupModel{}, &PreviewModel{})
 }
 
-func cleanupAllTasks(db *dbstore.DB) {
+func cleanupAllTasks(db *dbstore.DB, logStoreDirectory string) {
 	var taskGroups []*TaskGroupModel
 	db.Find(&taskGroups)
 	for _, tg := range taskGroups {
-		tg.Delete(db)
+		tg.Delete(db, logStoreDirectory)
 	}
 }

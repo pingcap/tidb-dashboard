@@ -10,6 +10,7 @@ import {
 } from '@lib/client'
 
 import { ReqConfig } from '@lib/types'
+import type { TopSQLOrderBy } from '../utils/response'
 
 export interface TopsqlTikvNetworkIoCollectionConfig {
   /**
@@ -91,6 +92,12 @@ export interface ITopSQLConfig {
   showGroupBy?: boolean
   showGroupByRegion?: boolean
   showOrderBy?: boolean
+  allowedOrderBy?: TopSQLOrderBy[]
+  allowedInstanceTypes?: Array<'tidb' | 'tikv'>
+  // Keep the server's SQL records, ranking and Top N unchanged.
+  preserveResponseOrder?: boolean
+  // Display the Cloud keyspace ID for physical TiKV Top SQL.
+  showKeyspace?: boolean
   showDetailedIoDimensions?: boolean
   minWindowInterval?: number
   dataSource?: string

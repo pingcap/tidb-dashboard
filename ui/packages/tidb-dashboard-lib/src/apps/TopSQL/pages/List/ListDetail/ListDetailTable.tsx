@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import { SelectionMode, IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -7,7 +7,8 @@ import { QuestionCircleOutlined } from '@ant-design/icons'
 import { CSVLink } from 'react-csv'
 
 import { Bar, TextWrap, CardTable, Card } from '@lib/components'
-import { TopsqlSummaryPlanItem } from '@lib/client'
+import { TopSQLContext } from '../../../context'
+import type { TopSQLSummaryPlanItem } from '../../../utils/response'
 
 import type { SQLRecord } from '../ListTable'
 import { ListDetailContent } from './ListDetailContent'
@@ -51,11 +52,12 @@ export function ListDetailTable({
   instanceType,
   orderBy
 }: ListDetailTableProps) {
+  const ctx = useContext(TopSQLContext)
   const {
     records: planRecords,
     isMultiPlans,
     detailCapacity
-  } = usePlanRecord(sqlRecord, orderBy)
+  } = usePlanRecord(sqlRecord, orderBy, !!ctx?.cfg.preserveResponseOrder)
   const { t } = useTranslation()
 
   // Use detailCapacity if available, otherwise fall back to capacity from parent
@@ -232,7 +234,10 @@ export function ListDetailTable({
 
   const csvHeaders = tableColumns.map((c) => ({ label: c.name, key: c.key }))
 
-  const getKey = useCallback((r: PlanRecord) => r?.plan_digest!, [])
+  const getKey = useCallback(
+    (r: PlanRecord) => r?.responseKey ?? r?.plan_digest!,
+    []
+  )
 
   const { selectedRecord, selection } = useRecordSelection<PlanRecord>({
     storageKey: 'topsql.list_detail_table_selected_key',
@@ -298,11 +303,12 @@ export type PlanRecord = {
   logicalReadBytes?: number
   logicalWriteBytes?: number
   rocksdbBlockReadCount?: number
-} & TopsqlSummaryPlanItem
+} & TopSQLSummaryPlanItem
 
 const usePlanRecord = (
   record: SQLRecord,
-  orderBy: OrderBy
+  orderBy: OrderBy,
+  preserveResponseOrder: boolean
 ): { isMultiPlans: boolean; records: PlanRecord[]; detailCapacity: number } => {
   return useMemo(() => {
     if (!record?.plans?.length) {
@@ -314,58 +320,58 @@ const usePlanRecord = (
 
     let detailCapacity = 0
 
-    const records: PlanRecord[] = plans
-      .map((p) => {
-        const cpuTime = p.cpu_time_ms?.reduce((pt, t) => pt + t, 0) || 0
-        const networkBytes = p.network_bytes?.reduce((pt, t) => pt + t, 0) || 0
-        const logicalIoBytes =
-          p.logical_io_bytes?.reduce((pt, t) => pt + t, 0) || 0
-        const logicalReadBytes =
-          p.logical_read_bytes?.reduce((pt, t) => pt + t, 0) || 0
-        const logicalWriteBytes =
-          p.logical_write_bytes?.reduce((pt, t) => pt + t, 0) || 0
-        const rocksdbBlockReadCount =
-          p.rocksdb_block_read_count?.reduce((pt, t) => pt + t, 0) || 0
+    let records: PlanRecord[] = plans.map((p) => {
+      const cpuTime = p.cpu_time_ms?.reduce((pt, t) => pt + t, 0) || 0
+      const networkBytes = p.network_bytes?.reduce((pt, t) => pt + t, 0) || 0
+      const logicalIoBytes =
+        p.logical_io_bytes?.reduce((pt, t) => pt + t, 0) || 0
+      const logicalReadBytes =
+        p.logical_read_bytes?.reduce((pt, t) => pt + t, 0) || 0
+      const logicalWriteBytes =
+        p.logical_write_bytes?.reduce((pt, t) => pt + t, 0) || 0
+      const rocksdbBlockReadCount =
+        p.rocksdb_block_read_count?.reduce((pt, t) => pt + t, 0) || 0
 
-        // Calculate capacity based on the selected orderBy dimension
-        let value = 0
-        switch (orderBy) {
-          case OrderBy.NetworkBytes:
-            value = networkBytes
-            break
-          case OrderBy.LogicalIoBytes:
-            value = logicalIoBytes
-            break
-          case OrderBy.LogicalReadBytes:
-            value = logicalReadBytes
-            break
-          case OrderBy.LogicalWriteBytes:
-            value = logicalWriteBytes
-            break
-          case OrderBy.RocksdbBlockReadCount:
-            value = rocksdbBlockReadCount
-            break
-          case OrderBy.CpuTime:
-          default:
-            value = cpuTime
-            break
-        }
+      // Calculate capacity based on the selected orderBy dimension
+      let value = 0
+      switch (orderBy) {
+        case OrderBy.NetworkBytes:
+          value = networkBytes
+          break
+        case OrderBy.LogicalIoBytes:
+          value = logicalIoBytes
+          break
+        case OrderBy.LogicalReadBytes:
+          value = logicalReadBytes
+          break
+        case OrderBy.LogicalWriteBytes:
+          value = logicalWriteBytes
+          break
+        case OrderBy.RocksdbBlockReadCount:
+          value = rocksdbBlockReadCount
+          break
+        case OrderBy.CpuTime:
+        default:
+          value = cpuTime
+          break
+      }
 
-        if (detailCapacity < value) {
-          detailCapacity = value
-        }
+      if (detailCapacity < value) {
+        detailCapacity = value
+      }
 
-        return {
-          ...p,
-          cpuTime,
-          networkBytes,
-          logicalIoBytes,
-          logicalReadBytes,
-          logicalWriteBytes,
-          rocksdbBlockReadCount
-        }
-      })
-      .sort((a, b) => {
+      return {
+        ...p,
+        cpuTime,
+        networkBytes,
+        logicalIoBytes,
+        logicalReadBytes,
+        logicalWriteBytes,
+        rocksdbBlockReadCount
+      }
+    })
+    if (!preserveResponseOrder) {
+      records.sort((a, b) => {
         // Sort based on the selected orderBy dimension
         let aValue = 0
         let bValue = 0
@@ -398,11 +404,14 @@ const usePlanRecord = (
         }
         return bValue - aValue
       })
-      .map(convertNoPlanRecord)
+    }
+    records = records.map(convertNoPlanRecord)
 
     // add overall record to the first
     if (isMultiPlans) {
       const overallRecord = createOverallRecord(record, orderBy)
+      if (record.responseKey)
+        overallRecord.responseKey = `${record.responseKey}:overall`
       records.unshift(overallRecord)
       // Update capacity if overall record has larger value
       const overallValue = getOverallValue(overallRecord, orderBy)
@@ -412,7 +421,7 @@ const usePlanRecord = (
     }
 
     return { isMultiPlans, records, detailCapacity }
-  }, [record, orderBy])
+  }, [record, orderBy, preserveResponseOrder])
 }
 
 const getOverallValue = (rec: PlanRecord, orderBy: OrderBy): number => {

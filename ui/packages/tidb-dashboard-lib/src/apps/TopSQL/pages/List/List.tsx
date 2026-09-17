@@ -55,6 +55,12 @@ import { onLegendItemOver, onLegendItemOut } from './legendAction'
 import { InstanceType } from './ListDetail/ListDetailTable'
 import { isDistro } from '@lib/utils/distro'
 import { TopSQLContext } from '../../context'
+import { normalizeTopSQLResponse } from '../../utils/response'
+import {
+  createLatestTopSQLInstanceRequest,
+  isTopSQLInstanceAllowed,
+  resolveTopSQLInstance
+} from '../../utils/instances'
 import { useURLTimeRange } from '@lib/hooks/useURLTimeRange'
 import { useQueryParams } from '@lib/hooks/useQueryParams'
 
@@ -118,54 +124,6 @@ const isSameInstance = (
 ) =>
   prev?.instance === next?.instance &&
   prev?.instance_type === next?.instance_type
-
-const findInstance = (
-  instances: TopsqlInstanceItem[],
-  instanceName?: string,
-  instanceType?: string
-) => {
-  if (!instanceName) {
-    return null
-  }
-
-  if (instanceType) {
-    return (
-      instances.find(
-        (item) =>
-          item.instance === instanceName && item.instance_type === instanceType
-      ) ?? null
-    )
-  }
-
-  return instances.find((item) => item.instance === instanceName) ?? null
-}
-
-const resolveSelectedInstance = (
-  instances: TopsqlInstanceItem[],
-  instanceName: string,
-  instanceType: string,
-  storedInstance: TopsqlInstanceItem | null | undefined
-) => {
-  const instanceFromUrl = findInstance(instances, instanceName, instanceType)
-  if (instanceFromUrl) {
-    return instanceFromUrl
-  }
-
-  if (instanceName && instanceType) {
-    return {
-      instance: instanceName,
-      instance_type: instanceType
-    }
-  }
-
-  const instanceFromStorage = findInstance(
-    instances,
-    storedInstance?.instance,
-    storedInstance?.instance_type
-  )
-
-  return instanceFromStorage || storedInstance || instances[0] || null
-}
 
 const normalizeLimit = (value: number) => {
   return LIMITS.includes(value) ? value : LIMITS[0]
@@ -231,17 +189,29 @@ export function TopSQLList() {
   const {
     instances,
     isLoading: isInstancesLoading,
+    hasFetched: haveInstancesLoaded,
     fetchInstances
   } = useInstances(timeRange)
   const instance = useMemo(
     () =>
-      resolveSelectedInstance(
+      resolveTopSQLInstance(
         instances,
         queryParams.instance,
         queryParams.instance_type,
-        storedInstance
+        storedInstance,
+        {
+          allowedInstanceTypes: ctx?.cfg.allowedInstanceTypes,
+          requireListedInstance: ctx?.cfg.preserveResponseOrder
+        }
       ),
-    [instances, queryParams.instance, queryParams.instance_type, storedInstance]
+    [
+      instances,
+      queryParams.instance,
+      queryParams.instance_type,
+      storedInstance,
+      ctx?.cfg.allowedInstanceTypes,
+      ctx?.cfg.preserveResponseOrder
+    ]
   )
   const {
     data: tikvNetworkIoCollection,
@@ -264,7 +234,11 @@ export function TopSQLList() {
       tikvNetworkIoCollection?.is_multi_value !== true &&
       tikvNetworkIoCollection?.detailed_io_enabled === true)
   const groupBy = useMemo(() => {
-    if (ctx?.cfg.showGroupBy !== true || instance?.instance_type !== 'tikv') {
+    if (
+      ctx?.cfg.preserveResponseOrder ||
+      ctx?.cfg.showGroupBy !== true ||
+      instance?.instance_type !== 'tikv'
+    ) {
       return AggLevel.Query
     }
     const group = normalizeGroupBy(queryParams.group_by)
@@ -273,6 +247,7 @@ export function TopSQLList() {
     }
     return group
   }, [
+    ctx?.cfg.preserveResponseOrder,
     ctx?.cfg.showGroupBy,
     ctx?.cfg.showGroupByRegion,
     instance?.instance_type,
@@ -283,6 +258,9 @@ export function TopSQLList() {
       return OrderBy.CpuTime
     }
     const order = normalizeOrderBy(queryParams.order_by)
+    if (ctx?.cfg.allowedOrderBy && !ctx.cfg.allowedOrderBy.includes(order)) {
+      return OrderBy.CpuTime
+    }
     if (
       instance?.instance_type !== 'tikv' &&
       (order === OrderBy.LogicalIoBytes ||
@@ -309,12 +287,37 @@ export function TopSQLList() {
     }
     return order
   }, [
+    ctx?.cfg.allowedOrderBy,
     ctx?.cfg.showOrderBy,
     instance?.instance_type,
     queryParams.order_by,
     detailedIoConfigLoaded,
     detailedIoDimensionsEnabled
   ])
+  const orderByOptions = [
+    OrderBy.CpuTime,
+    OrderBy.NetworkBytes,
+    ...(instance?.instance_type === 'tikv'
+      ? detailedIoDimensionsEnabled
+        ? [
+            OrderBy.LogicalReadBytes,
+            OrderBy.LogicalWriteBytes,
+            OrderBy.RocksdbBlockReadCount
+          ]
+        : [OrderBy.LogicalIoBytes]
+      : [])
+  ].filter(
+    (value) =>
+      !ctx?.cfg.allowedOrderBy || ctx.cfg.allowedOrderBy.includes(value)
+  )
+  const orderByTestIds: Record<OrderBy, string> = {
+    [OrderBy.CpuTime]: 'cpu_time',
+    [OrderBy.NetworkBytes]: 'network_bytes',
+    [OrderBy.LogicalIoBytes]: 'logical_io_bytes',
+    [OrderBy.LogicalReadBytes]: 'logical_read_bytes',
+    [OrderBy.LogicalWriteBytes]: 'logical_write_bytes',
+    [OrderBy.RocksdbBlockReadCount]: 'rocksdb_block_read_count'
+  }
   const {
     topSQLData,
     isLoading: isDataLoading,
@@ -330,14 +333,27 @@ export function TopSQLList() {
   const isLoading = isConfigLoading || isDataLoading
   const syncSelectedInstance = useMemoizedFn(
     (nextInstances: TopsqlInstanceItem[]) => {
-      const nextInstance = resolveSelectedInstance(
+      const nextInstance = resolveTopSQLInstance(
         nextInstances,
         queryParams.instance,
         queryParams.instance_type,
-        storedInstance
+        storedInstance,
+        {
+          allowedInstanceTypes: ctx?.cfg.allowedInstanceTypes,
+          requireListedInstance: ctx?.cfg.preserveResponseOrder
+        }
       )
 
       if (!nextInstance) {
+        if (
+          haveInstancesLoaded &&
+          (ctx?.cfg.preserveResponseOrder || ctx?.cfg.allowedInstanceTypes)
+        ) {
+          if (storedInstance) setStoredInstance(null)
+          if (queryParams.instance || queryParams.instance_type) {
+            setQueryParams({ instance: '', instance_type: '' })
+          }
+        }
         return null
       }
 
@@ -400,7 +416,7 @@ export function TopSQLList() {
 
   useEffect(() => {
     syncSelectedInstance(instances)
-  }, [instances, syncSelectedInstance])
+  }, [instances, haveInstancesLoaded, syncSelectedInstance])
 
   useEffect(() => {
     const nextParams: Partial<TopSQLQueryParams> = {}
@@ -557,27 +573,29 @@ export function TopSQLList() {
                   ))}
                 </Select>
               )}
-              {ctx?.cfg.showGroupBy && instance?.instance_type === 'tikv' && (
-                <Select
-                  style={{ width: 150 }}
-                  value={groupBy}
-                  onChange={(value) => setQueryParams({ group_by: value })}
-                  data-e2e="group_select"
-                >
-                  {GROUP.filter((item) => {
-                    // Only show Region option when showGroupByRegion is true
-                    // (instance?.instance_type === 'tikv' is already checked in outer condition)
-                    if (item === AggLevel.Region) {
-                      return ctx?.cfg.showGroupByRegion === true
-                    }
-                    return true
-                  }).map((item) => (
-                    <Option value={item} key={item} data-e2e="group_option">
-                      By {formatLabel(item)}
-                    </Option>
-                  ))}
-                </Select>
-              )}
+              {!ctx?.cfg.preserveResponseOrder &&
+                ctx?.cfg.showGroupBy &&
+                instance?.instance_type === 'tikv' && (
+                  <Select
+                    style={{ width: 150 }}
+                    value={groupBy}
+                    onChange={(value) => setQueryParams({ group_by: value })}
+                    data-e2e="group_select"
+                  >
+                    {GROUP.filter((item) => {
+                      // Only show Region option when showGroupByRegion is true
+                      // (instance?.instance_type === 'tikv' is already checked in outer condition)
+                      if (item === AggLevel.Region) {
+                        return ctx?.cfg.showGroupByRegion === true
+                      }
+                      return true
+                    }).map((item) => (
+                      <Option value={item} key={item} data-e2e="group_option">
+                        By {formatLabel(item)}
+                      </Option>
+                    ))}
+                  </Select>
+                )}
               {ctx?.cfg.showOrderBy && instance && (
                 <Select
                   style={{ width: ORDER_BY_SELECT_WIDTH, maxWidth: '100%' }}
@@ -585,60 +603,15 @@ export function TopSQLList() {
                   onChange={(value) => setQueryParams({ order_by: value })}
                   data-e2e="order_by_select"
                 >
-                  <Option
-                    value={OrderBy.CpuTime}
-                    key={OrderBy.CpuTime}
-                    data-e2e="order_by_option_cpu_time"
-                  >
-                    Order By {formatOrderByLabel(OrderBy.CpuTime)}
-                  </Option>
-                  <Option
-                    value={OrderBy.NetworkBytes}
-                    key={OrderBy.NetworkBytes}
-                    data-e2e="order_by_option_network_bytes"
-                  >
-                    Order By {formatOrderByLabel(OrderBy.NetworkBytes)}
-                  </Option>
-                  {instance.instance_type === 'tikv' && (
-                    <>
-                      {detailedIoDimensionsEnabled ? (
-                        <>
-                          <Option
-                            value={OrderBy.LogicalReadBytes}
-                            key={OrderBy.LogicalReadBytes}
-                            data-e2e="order_by_option_logical_read_bytes"
-                          >
-                            Order By{' '}
-                            {formatOrderByLabel(OrderBy.LogicalReadBytes)}
-                          </Option>
-                          <Option
-                            value={OrderBy.LogicalWriteBytes}
-                            key={OrderBy.LogicalWriteBytes}
-                            data-e2e="order_by_option_logical_write_bytes"
-                          >
-                            Order By{' '}
-                            {formatOrderByLabel(OrderBy.LogicalWriteBytes)}
-                          </Option>
-                          <Option
-                            value={OrderBy.RocksdbBlockReadCount}
-                            key={OrderBy.RocksdbBlockReadCount}
-                            data-e2e="order_by_option_rocksdb_block_read_count"
-                          >
-                            Order By{' '}
-                            {formatOrderByLabel(OrderBy.RocksdbBlockReadCount)}
-                          </Option>
-                        </>
-                      ) : (
-                        <Option
-                          value={OrderBy.LogicalIoBytes}
-                          key={OrderBy.LogicalIoBytes}
-                          data-e2e="order_by_option_logical_io_bytes"
-                        >
-                          Order By {formatOrderByLabel(OrderBy.LogicalIoBytes)}
-                        </Option>
-                      )}
-                    </>
-                  )}
+                  {orderByOptions.map((value) => (
+                    <Option
+                      value={value}
+                      key={value}
+                      data-e2e={`order_by_option_${orderByTestIds[value]}`}
+                    >
+                      Order By {formatOrderByLabel(value)}
+                    </Option>
+                  ))}
                 </Select>
               )}
 
@@ -647,6 +620,7 @@ export function TopSQLList() {
                 disabled={isLoading}
                 onRefresh={async () => {
                   const nextInstances = await fetchInstances(timeRange)
+                  if (!nextInstances) return
                   const nextInstance = syncSelectedInstance(nextInstances)
                   updateTopSQLData(nextInstance, timeRange, limit)
                 }}
@@ -758,6 +732,9 @@ export function TopSQLList() {
             >
               <ListChart
                 onBrushEnd={handleBrushEnd}
+                showKeyspace={
+                  !!ctx?.cfg.showKeyspace && instance?.instance_type === 'tikv'
+                }
                 data={topSQLData}
                 groupBy={groupBy}
                 orderBy={orderBy}
@@ -824,6 +801,7 @@ const useTopSQLData = (
   const ctx = useContext(TopSQLContext)
 
   const [topSQLData, setTopSQLData] = useState<any[]>([])
+  const requestSequence = useRef(0)
   const [isLoading, setIsLoading] = useState(false)
   const updateTopSQLData = useMemoizedFn(
     async (
@@ -831,10 +809,17 @@ const useTopSQLData = (
       _timeRange: TimeRange,
       _limit: number | 5
     ) => {
-      if (!_instance) {
+      if (!_instance || !isTopSQLInstanceAllowed(_instance, ctx?.cfg || {})) {
+        if (ctx?.cfg.preserveResponseOrder) {
+          requestSequence.current += 1
+          setTopSQLData([])
+          setIsLoading(false)
+        }
         return
       }
 
+      const requestId = ++requestSequence.current
+      if (ctx?.cfg.preserveResponseOrder) setTopSQLData([])
       let dataResp: TopsqlSummaryResponse
       const ts = toTimeRangeValue(_timeRange)
       const timeWindowSize = computeTimeWindowSize(ts)
@@ -844,22 +829,45 @@ const useTopSQLData = (
         setIsLoading(true)
         const resp = await ctx!.ds.topsqlSummaryGet(
           String(end),
-          ctx?.cfg.showGroupBy === true
+          ctx?.cfg.preserveResponseOrder
+            ? AggLevel.Query
+            : ctx?.cfg.showGroupBy === true
             ? _instance.instance_type === 'tidb'
               ? AggLevel.Query
               : groupBy
             : undefined,
           _instance.instance,
           _instance.instance_type,
-          ctx?.cfg.showOrderBy === true ? orderBy : undefined,
+          ctx?.cfg.showOrderBy === true || ctx?.cfg.preserveResponseOrder
+            ? orderBy
+            : undefined,
           String(start),
-          String(limit),
+          String(_limit),
           `${timeWindowSize}s`,
           ctx?.cfg.dataSource
         )
         dataResp = resp.data
       } finally {
-        setIsLoading(false)
+        if (
+          !ctx?.cfg.preserveResponseOrder ||
+          requestId === requestSequence.current
+        ) {
+          setIsLoading(false)
+        }
+      }
+
+      if (ctx?.cfg.preserveResponseOrder) {
+        if (requestId !== requestSequence.current) return
+        setTopSQLData(
+          normalizeTopSQLResponse(
+            dataResp.data || [],
+            `${_instance.instance_type}:${_instance.instance}`
+          ).map((record) => ({
+            ...record,
+            sql_text: formatSql(record.sql_text || '')
+          }))
+        )
+        return
       }
 
       if (groupBy === AggLevel.Query || instance?.instance_type === 'tidb') {
@@ -1081,6 +1089,8 @@ const useInstances = (timeRange: TimeRange) => {
 
   const [instances, setInstances] = useState<TopsqlInstanceItem[]>([])
   const [isLoading, setLoading] = useState(false)
+  const [hasFetched, setHasFetched] = useState(false)
+  const latestRequest = useRef(createLatestTopSQLInstanceRequest())
 
   const fetchInstances = useCallback(
     async (_timeRange: TimeRange | null) => {
@@ -1088,41 +1098,61 @@ const useInstances = (timeRange: TimeRange) => {
         return []
       }
 
-      const [start, end] = toTimeRangeValue(_timeRange)
-      const resp = await ctx!.ds.topsqlInstancesGet(
-        String(end),
-        String(start),
-        ctx?.cfg.dataSource
-      )
-      // Deduplicate by instance and instance_type combination
-      const instanceMap = new Map<string, TopsqlInstanceItem>()
-      ;(resp.data.data || []).forEach((item) => {
-        const key = `${item.instance}_${item.instance_type}`
-        if (item.instance && item.instance_type && !instanceMap.has(key)) {
-          instanceMap.set(key, item)
-        }
-      })
-      const data = sortBy(Array.from(instanceMap.values()), [
-        'instance_type',
-        'instance'
-      ])
+      const request = async () => {
+        const [start, end] = toTimeRangeValue(_timeRange)
+        const resp = await ctx!.ds.topsqlInstancesGet(
+          String(end),
+          String(start),
+          ctx?.cfg.dataSource
+        )
+        // Deduplicate by instance and instance_type combination
+        const instanceMap = new Map<string, TopsqlInstanceItem>()
+        ;(resp.data.data || []).forEach((item) => {
+          if (!isTopSQLInstanceAllowed(item, ctx?.cfg || {})) return
+          const key = `${item.instance}_${item.instance_type}`
+          if (item.instance && item.instance_type && !instanceMap.has(key)) {
+            instanceMap.set(key, item)
+          }
+        })
+        const data = sortBy(Array.from(instanceMap.values()), [
+          'instance_type',
+          'instance'
+        ])
 
-      setInstances(data)
+        return data
+      }
+      const applyResponse = (data: TopsqlInstanceItem[]) => {
+        setInstances(data)
+        setHasFetched(true)
+      }
+      if (ctx?.cfg.preserveResponseOrder) {
+        setLoading(true)
+        return latestRequest.current(request, applyResponse, () =>
+          setLoading(false)
+        )
+      }
+      const data = await request()
+      applyResponse(data)
       return data
     },
     [ctx]
   )
 
   useEffect(() => {
-    setLoading(true)
-    fetchInstances(timeRange).finally(() => {
-      setLoading(false)
-    })
-  }, [timeRange, fetchInstances])
+    if (ctx?.cfg.preserveResponseOrder) {
+      fetchInstances(timeRange)
+    } else {
+      setLoading(true)
+      fetchInstances(timeRange).finally(() => {
+        setLoading(false)
+      })
+    }
+  }, [timeRange, fetchInstances, ctx?.cfg.preserveResponseOrder])
 
   return {
     instances,
     fetchInstances,
+    hasFetched,
     isLoading
   }
 }

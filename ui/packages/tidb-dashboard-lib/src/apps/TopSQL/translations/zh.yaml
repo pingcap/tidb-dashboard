@@ -68,6 +68,7 @@ topsql:
       logical_read_bytes: 累计逻辑读字节数
       logical_write_bytes: 累计逻辑写字节数
       rocksdb_block_read_count: 累计 Read IOPS
+      keyspace: 集群 ID
       sql: SQL 语句
       table: 表名
       db: 数据库名

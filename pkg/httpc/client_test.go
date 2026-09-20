@@ -21,6 +21,16 @@ func newTestClient(t *testing.T) *Client {
 	return NewHTTPClient(lc, config)
 }
 
+func Test_NewHTTPClientClonesTLSConfig(t *testing.T) {
+	tlsConfig := &tls.Config{}
+	lc := fxtest.NewLifecycle(t)
+	c := NewHTTPClient(lc, &config.Config{ClusterTLSConfig: tlsConfig})
+
+	transport, ok := c.Transport.(*http.Transport)
+	require.True(t, ok)
+	require.NotSame(t, tlsConfig, transport.TLSClientConfig)
+}
+
 func Test_Clone(t *testing.T) {
 	c := newTestClient(t)
 	cc := c.Clone()
@@ -66,10 +76,9 @@ func Test_Send_withHeader(t *testing.T) {
 	require.Equal(t, "", string(d3))
 }
 
-func Test_Send_overHTTP2(t *testing.T) {
+func Test_Send_overHTTP2WhenTLSConfigAdvertisesH2(t *testing.T) {
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, 2, r.ProtoMajor)
-		_, _ = w.Write([]byte("ok"))
+		_, _ = w.Write([]byte(r.Proto))
 	}))
 	ts.EnableHTTP2 = true
 	ts.StartTLS()
@@ -77,12 +86,15 @@ func Test_Send_overHTTP2(t *testing.T) {
 
 	lc := fxtest.NewLifecycle(t)
 	c := NewHTTPClient(lc, &config.Config{
-		ClusterTLSConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
+		ClusterTLSConfig: &tls.Config{ //nolint:gosec
+			InsecureSkipVerify: true,
+			NextProtos:         []string{"h2", "http/1.1"},
+		},
 	})
 
 	resp, err := c.Send(context.Background(), ts.URL, http.MethodGet, nil, nil, "")
 	require.NoError(t, err)
 	body, err := resp.Body()
 	require.NoError(t, err)
-	require.Equal(t, "ok", string(body))
+	require.Equal(t, "HTTP/2.0", string(body))
 }

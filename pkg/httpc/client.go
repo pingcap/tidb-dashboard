@@ -31,6 +31,7 @@ type Client struct {
 func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
 	cli := http.Client{
 		Transport: &http.Transport{
+			ForceAttemptHTTP2: true,
 			DialTLS: func(network, addr string) (net.Conn, error) {
 				conn, err := tls.Dial(network, addr, config.ClusterTLSConfig)
 				return conn, err

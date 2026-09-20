@@ -32,6 +32,7 @@ func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
 	tlsConfig := config.ClusterTLSConfig
 	if tlsConfig != nil {
 		tlsConfig = tlsConfig.Clone()
+		tlsConfig.NextProtos = append([]string(nil), tlsConfig.NextProtos...)
 	}
 
 	cli := http.Client{

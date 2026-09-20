@@ -19,6 +19,7 @@ func TestJeprofDoesNotInterpretProfileURLAsShell(t *testing.T) {
 
 	dir := t.TempDir()
 	fetcherPath := filepath.Join(dir, "jeprof-test-fetcher")
+	//nolint:gosec // The test helper must be executable.
 	if err := os.WriteFile(fetcherPath, []byte("#!/bin/sh\nexit 0\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}

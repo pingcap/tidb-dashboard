@@ -36,6 +36,11 @@ type Client struct {
 }
 
 func newTransport(tlsConfig *tls.Config) *http.Transport {
+	if tlsConfig != nil {
+		tlsConfig = tlsConfig.Clone()
+		tlsConfig.NextProtos = append([]string(nil), tlsConfig.NextProtos...)
+	}
+
 	dialer := &net.Dialer{
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,

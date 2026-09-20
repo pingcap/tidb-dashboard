@@ -22,13 +22,15 @@ func newTestClient(t *testing.T) *Client {
 }
 
 func Test_NewHTTPClientClonesTLSConfig(t *testing.T) {
-	tlsConfig := &tls.Config{}
+	tlsConfig := &tls.Config{NextProtos: []string{"http/1.1"}}
 	lc := fxtest.NewLifecycle(t)
 	c := NewHTTPClient(lc, &config.Config{ClusterTLSConfig: tlsConfig})
 
 	transport, ok := c.Transport.(*http.Transport)
 	require.True(t, ok)
 	require.NotSame(t, tlsConfig, transport.TLSClientConfig)
+	transport.TLSClientConfig.NextProtos[0] = "h2"
+	require.Equal(t, []string{"http/1.1"}, tlsConfig.NextProtos)
 }
 
 func Test_Clone(t *testing.T) {

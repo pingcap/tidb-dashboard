@@ -11,7 +11,6 @@ import (
 	"math"
 	"net"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -64,8 +63,8 @@ func (tg *TaskGroup) SyncRun() {
 	log.Debug("LogSearchTaskGroup start", zap.Uint("task_group_id", tg.model.ID))
 
 	// Create log directory
-	dir := path.Join(tg.service.logStoreDirectory, strconv.Itoa(int(tg.model.ID)))
-	err := os.MkdirAll(dir, 0o777) // #nosec
+	dir := filepath.Join(tg.service.logStoreDirectory, strconv.Itoa(int(tg.model.ID)))
+	err := os.MkdirAll(dir, 0o700) // #nosec
 	if err == nil {
 		tg.model.LogStoreDir = &dir
 		tg.service.db.Save(tg.model)
@@ -145,7 +144,11 @@ func (t *Task) SyncRun() {
 				zap.Any("task", t),
 				zap.String("err", *t.model.Error),
 			)
-			t.model.RemoveDataAndPreview(t.taskGroup.service.db)
+			t.model.RemoveDataAndPreview(
+				t.taskGroup.service.db,
+				t.taskGroup.service.logStoreDirectory,
+				t.taskGroup.model.LogStoreDir,
+			)
 			t.model.State = TaskStateError
 			t.taskGroup.service.db.Save(t.model)
 			return
@@ -206,11 +209,17 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 
 	// Create zip file for the log in the log directory
 	fileName := t.model.Target.FileName()
+	storedFileName := fmt.Sprintf("task-%d", t.model.ID)
 	if targetType == diagnosticspb.SearchLogRequest_Slow {
 		fileName = fileName + "-slow"
+		storedFileName = storedFileName + "-slow"
 	}
-	savedPath := path.Join(*t.taskGroup.model.LogStoreDir, fileName+".zip")
-	f, err := os.Create(filepath.Clean(savedPath))
+	savedPath, err := resolvePathWithinDirectory(*t.taskGroup.model.LogStoreDir, storedFileName+".zip")
+	if err != nil {
+		t.setError(err)
+		return
+	}
+	f, err := os.Create(savedPath) // #nosec G304 -- savedPath is resolved within LogStoreDir above.
 	if err != nil {
 		t.setError(err)
 		return

@@ -4,7 +4,10 @@ package model
 
 import (
 	"fmt"
+	"net/netip"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 type NodeKind string
@@ -27,13 +30,74 @@ type RequestTargetNode struct {
 	Port        int      `json:"port" example:"4000"`
 }
 
+// Validate checks that a target can safely be used as a network host and port.
+func (n RequestTargetNode) Validate() error {
+	if !validHost(n.IP) {
+		return fmt.Errorf("invalid target host")
+	}
+	if n.Port < 1 || n.Port > 65535 {
+		return fmt.Errorf("invalid target port")
+	}
+	return nil
+}
+
+func validHost(host string) bool {
+	if host == "" || strings.TrimSpace(host) != host || !utf8.ValidString(host) {
+		return false
+	}
+	if addr, err := netip.ParseAddr(host); err == nil {
+		return addr.Zone() == "" || validIPv6Zone(addr.Zone())
+	}
+
+	host = strings.TrimSuffix(host, ".")
+	if host == "" || len(host) > 253 || strings.Contains(host, ":") {
+		return false
+	}
+	for _, label := range strings.Split(host, ".") {
+		if len(label) == 0 || len(label) > 63 || label[0] == '-' || label[len(label)-1] == '-' {
+			return false
+		}
+		for _, c := range label {
+			if c != '_' && c != '-' && !unicode.IsLetter(c) && !unicode.IsDigit(c) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func validIPv6Zone(zone string) bool {
+	if zone == "" || !utf8.ValidString(zone) {
+		return false
+	}
+	for _, c := range zone {
+		if !unicode.IsLetter(c) && !unicode.IsDigit(c) && c != '_' && c != '-' && c != '.' {
+			return false
+		}
+	}
+	return true
+}
+
 func (n *RequestTargetNode) String() string {
 	return fmt.Sprintf("%s(%s)", n.Kind, n.DisplayName)
 }
 
 func (n *RequestTargetNode) FileName() string {
-	displayName := strings.NewReplacer(":", "_").Replace(n.DisplayName)
-	return fmt.Sprintf("%s_%s", n.Kind, displayName)
+	return fmt.Sprintf("%s_%s", sanitizeFilenamePart(string(n.Kind)), sanitizeFilenamePart(n.DisplayName))
+}
+
+func sanitizeFilenamePart(value string) string {
+	return strings.Map(func(r rune) rune {
+		switch r {
+		case '/', '\\', ':', '*', '?', '"', '<', '>', '|':
+			return '_'
+		default:
+			if unicode.IsControl(r) {
+				return '_'
+			}
+			return r
+		}
+	}, value)
 }
 
 type RequestTargetStatistics struct {

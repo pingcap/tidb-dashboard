@@ -65,8 +65,8 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 			binding.Use(s.planBindingFeatureFlag.VersionGuard())
 			{
 				binding.GET("", s.getPlanBindingHandler)
-				binding.POST("", s.createPlanBindingHandler)
-				binding.DELETE("", s.dropPlanBindingHandler)
+				binding.POST("", auth.MWRequireWritePriv(), s.createPlanBindingHandler)
+				binding.DELETE("", auth.MWRequireWritePriv(), s.dropPlanBindingHandler)
 			}
 		}
 	}

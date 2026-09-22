@@ -4,6 +4,7 @@ package httpc
 
 import (
 	"context"
+	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,6 +19,18 @@ func newTestClient(t *testing.T) *Client {
 	lc := fxtest.NewLifecycle(t)
 	config := &config.Config{}
 	return NewHTTPClient(lc, config)
+}
+
+func Test_NewHTTPClientClonesTLSConfig(t *testing.T) {
+	tlsConfig := &tls.Config{NextProtos: []string{"http/1.1"}}
+	lc := fxtest.NewLifecycle(t)
+	c := NewHTTPClient(lc, &config.Config{ClusterTLSConfig: tlsConfig})
+
+	transport, ok := c.Transport.(*http.Transport)
+	require.True(t, ok)
+	require.NotSame(t, tlsConfig, transport.TLSClientConfig)
+	transport.TLSClientConfig.NextProtos[0] = "h2"
+	require.Equal(t, []string{"http/1.1"}, tlsConfig.NextProtos)
 }
 
 func Test_Clone(t *testing.T) {
@@ -63,4 +76,27 @@ func Test_Send_withHeader(t *testing.T) {
 	resp3, _ := c.Send(context.Background(), ts.URL, http.MethodGet, nil, nil, "")
 	d3, _ := resp3.Body()
 	require.Equal(t, "", string(d3))
+}
+
+func Test_Send_overHTTP2WhenTLSConfigAdvertisesH2(t *testing.T) {
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(r.Proto))
+	}))
+	ts.EnableHTTP2 = true
+	ts.StartTLS()
+	defer ts.Close()
+
+	lc := fxtest.NewLifecycle(t)
+	c := NewHTTPClient(lc, &config.Config{
+		ClusterTLSConfig: &tls.Config{ //nolint:gosec
+			InsecureSkipVerify: true,
+			NextProtos:         []string{"h2", "http/1.1"},
+		},
+	})
+
+	resp, err := c.Send(context.Background(), ts.URL, http.MethodGet, nil, nil, "")
+	require.NoError(t, err)
+	body, err := resp.Body()
+	require.NoError(t, err)
+	require.Equal(t, "HTTP/2.0", string(body))
 }

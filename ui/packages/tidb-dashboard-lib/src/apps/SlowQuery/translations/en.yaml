@@ -178,6 +178,26 @@ slow_query:
       txn: Transaction
       session_attrs: Session Attributes
       warnings: Warnings
+    read_pool:
+      title: Read Pool Task Details
+      tasks: 'Tasks: {{ count }}'
+      fair_queue: 'Fair queue: {{ enabled }}'
+      enabled: Enabled
+      disabled: Disabled
+      metric: Metric
+      total: Total
+      avg: Average
+      max: Maximum
+      min: Minimum
+      metrics:
+        poll_count: Poll Count
+        dispatch_count: Dispatch Count
+        task_wall_time: Task Wall Time
+        queue_wait: Queue Wait
+        wake_wait: Wake Wait
+        waited_task_slices: Waited Task Slices
+        poll_cpu: Poll CPU
+        poll_wall: Poll Wall
   toolbar:
     schemas:
       placeholder: All Databases

@@ -182,6 +182,26 @@ slow_query:
       txn: 事务
       session_attrs: 会话属性
       warnings: 警告
+    read_pool:
+      title: Read Pool 任务详情
+      tasks: '任务数：{{ count }}'
+      fair_queue: '公平队列：{{ enabled }}'
+      enabled: 已启用
+      disabled: 未启用
+      metric: 指标
+      total: 总计
+      avg: 平均
+      max: 最大
+      min: 最小
+      metrics:
+        poll_count: Poll 次数
+        dispatch_count: Dispatch 次数
+        task_wall_time: 任务墙钟时间
+        queue_wait: 队列等待
+        wake_wait: 唤醒等待
+        waited_task_slices: 等待任务时间片
+        poll_cpu: Poll CPU 时间
+        poll_wall: Poll 墙钟时间
   toolbar:
     schemas:
       placeholder: 所有数据库

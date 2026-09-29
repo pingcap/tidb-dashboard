@@ -27,41 +27,58 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function isValue(value: unknown) {
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+const GO_DURATION = /^(?:\d+(?:\.\d+)?(?:ns|µs|μs|us|ms|s|m|h))+$/
+
+function isDuration(value: unknown): value is number | string {
   return (
-    value === undefined ||
-    typeof value === 'string' ||
-    (typeof value === 'number' && Number.isFinite(value))
+    isFiniteNumber(value) ||
+    (typeof value === 'string' && GO_DURATION.test(value))
   )
 }
 
-function isAggregate(value: unknown) {
+function isAggregate(
+  value: unknown,
+  valueValidator: (value: unknown) => boolean
+) {
+  if (value === undefined) return true
+  if (!isObject(value)) return false
+  const keys = ['total', 'avg', 'max', 'min'] as const
+  const presentKeys = keys.filter((key) => value[key] !== undefined)
   return (
-    value === undefined ||
-    (isObject(value) &&
-      ['total', 'avg', 'max', 'min'].every((key) => isValue(value[key])))
+    presentKeys.length > 0 &&
+    presentKeys.every((key) => valueValidator(value[key]))
   )
 }
 
 function isDetails(value: unknown): value is ReadPoolTaskDetails {
-  if (!isObject(value) || !isValue(value.tasks)) return false
-  const aggregateKeys = [
-    'poll_count',
-    'dispatch_count',
+  if (!isObject(value) || !isFiniteNumber(value.tasks)) return false
+  const counterAggregateKeys = ['poll_count', 'dispatch_count'] as const
+  const durationAggregateKeys = [
     'task_wall_time',
     'queue_wait',
     'wake_wait',
     'poll_cpu',
     'poll_wall'
-  ]
-  if (!aggregateKeys.every((key) => isAggregate(value[key]))) return false
+  ] as const
+  if (
+    !counterAggregateKeys.every((key) =>
+      isAggregate(value[key], isFiniteNumber)
+    ) ||
+    !durationAggregateKeys.every((key) => isAggregate(value[key], isDuration))
+  ) {
+    return false
+  }
   if (value.fair_queue !== undefined) {
     if (!isObject(value.fair_queue)) return false
     const { enabled, waited_task_slices: slices } = value.fair_queue
     if (enabled !== undefined && typeof enabled !== 'boolean') return false
-    if (!isAggregate(slices)) return false
+    if (!isAggregate(slices, isFiniteNumber)) return false
   }
-  return ['tasks', 'fair_queue', ...aggregateKeys].some(
+  return ['tasks', ...counterAggregateKeys, ...durationAggregateKeys].some(
     (key) => value[key] !== undefined
   )
 }

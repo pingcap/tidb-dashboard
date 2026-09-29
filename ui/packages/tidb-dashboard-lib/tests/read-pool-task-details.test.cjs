@@ -96,6 +96,10 @@ test('ignores missing, malformed and unsafe values without throwing', () => {
     '{"fair_queue":{"enabled":"true"}}',
     '{tasks:1, poll_count:{total:NaN}}',
     '{tasks:1, wake_wait:{total:broken}}',
+    '{tasks:1, poll_count:{total:"2"}}',
+    '{tasks:1, task_wall_time:{total:"not-a-duration"}}',
+    '{tasks:"1", task_wall_time:{total:"1ms"}}',
+    { tasks: 1, queue_wait: {} },
     { tasks: Number.NaN },
     { tasks: 1, poll_count: { total: Number.POSITIVE_INFINITY } }
   ]

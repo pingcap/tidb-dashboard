@@ -95,7 +95,7 @@ export function tabReadPoolItems(data: SlowqueryModel, t: TFunction) {
     {
       key: 'read_pool_tasks',
       keyDisplay: (
-        <Typography.Text strong>
+        <Typography.Text>
           {t('slow_query.fields.read_pool_tasks')}
         </Typography.Text>
       ),

@@ -100,6 +100,27 @@ slow_query:
     cop_wait_addr: 最长等待时间实例
     cop_wait_addr_tooltip: 耗费最长时间等待 Coprocessor 请求的 {{distro.tikv}} 实例地址
 
+    read_pool_tasks: Read Pool 任务数
+    read_pool_tasks_tooltip: Read Pool 任务总数，悬停指标数值查看聚合统计
+    read_pool_fair_queue: 公平队列
+    read_pool_fair_queue_tooltip: 是否启用了按 Keyspace 公平调度
+    read_pool_poll_count: Poll 次数
+    read_pool_poll_count_tooltip: 任务 Poll 的总次数
+    read_pool_dispatch_count: 调度次数
+    read_pool_dispatch_count_tooltip: 任务被调度的总次数
+    read_pool_task_wall_time: 任务总耗时
+    read_pool_task_wall_time_tooltip: Read Pool 任务的累计自然时间
+    read_pool_queue_wait: 排队等待耗时
+    read_pool_queue_wait_tooltip: 累计排队等待时间
+    read_pool_wake_wait: 唤醒等待耗时
+    read_pool_wake_wait_tooltip: 累计唤醒等待时间
+    read_pool_waited_task_slices: 等待任务切片数
+    read_pool_waited_task_slices_tooltip: 公平队列中累计等待的任务切片数
+    read_pool_poll_cpu: Poll CPU 耗时
+    read_pool_poll_cpu_tooltip: 任务 Poll 的累计 CPU 时间
+    read_pool_poll_wall: Poll 自然耗时
+    read_pool_poll_wall_tooltip: 任务 Poll 的累计自然时间
+
     txn_start_ts: 事务号
     txn_start_ts_tooltip: 事务开始的时间戳，也即是事务号
     write_keys: 写入 Key 个数
@@ -183,25 +204,12 @@ slow_query:
       session_attrs: 会话属性
       warnings: 警告
     read_pool:
-      title: Read Pool 任务详情
-      tasks: '任务数：{{ count }}'
-      fair_queue: '公平队列：{{ enabled }}'
       enabled: 已启用
       disabled: 未启用
-      metric: 指标
       total: 总计
       avg: 平均
       max: 最大
       min: 最小
-      metrics:
-        poll_count: Poll 次数
-        dispatch_count: Dispatch 次数
-        task_wall_time: 任务墙钟时间
-        queue_wait: 队列等待
-        wake_wait: 唤醒等待
-        waited_task_slices: 等待任务时间片
-        poll_cpu: Poll CPU 时间
-        poll_wall: Poll 墙钟时间
   toolbar:
     schemas:
       placeholder: 所有数据库

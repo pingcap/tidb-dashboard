@@ -98,6 +98,27 @@ slow_query:
     cop_wait_addr: Copr Address (Wait)
     cop_wait_addr_tooltip: The address of the {{distro.tikv}} that takes most time wait the Coprocessor request
 
+    read_pool_tasks: Read Pool Tasks
+    read_pool_tasks_tooltip: Number of Read Pool tasks; hover over metric values for aggregate statistics
+    read_pool_fair_queue: Fair queue
+    read_pool_fair_queue_tooltip: Whether keyspace fair scheduling was enabled
+    read_pool_poll_count: Poll Count
+    read_pool_poll_count_tooltip: Total number of task polls
+    read_pool_dispatch_count: Dispatch Count
+    read_pool_dispatch_count_tooltip: Total number of task dispatches
+    read_pool_task_wall_time: Task Wall Time
+    read_pool_task_wall_time_tooltip: Total wall time of Read Pool tasks
+    read_pool_queue_wait: Queue Wait
+    read_pool_queue_wait_tooltip: Total queue wait time
+    read_pool_wake_wait: Wake Wait
+    read_pool_wake_wait_tooltip: Total wake wait time
+    read_pool_waited_task_slices: Waited Task Slices
+    read_pool_waited_task_slices_tooltip: Total task slices waited in the fair queue
+    read_pool_poll_cpu: Poll CPU
+    read_pool_poll_cpu_tooltip: Total CPU time spent polling tasks
+    read_pool_poll_wall: Poll Wall
+    read_pool_poll_wall_tooltip: Total wall time spent polling tasks
+
     txn_start_ts: Start Timestamp
     txn_start_ts_tooltip: Transaction start timestamp, a.k.a. Transaction ID
     write_keys: Write Keys
@@ -179,25 +200,12 @@ slow_query:
       session_attrs: Session Attributes
       warnings: Warnings
     read_pool:
-      title: Read Pool Task Details
-      tasks: 'Tasks: {{ count }}'
-      fair_queue: 'Fair queue: {{ enabled }}'
       enabled: Enabled
       disabled: Disabled
-      metric: Metric
       total: Total
       avg: Average
       max: Maximum
       min: Minimum
-      metrics:
-        poll_count: Poll Count
-        dispatch_count: Dispatch Count
-        task_wall_time: Task Wall Time
-        queue_wait: Queue Wait
-        wake_wait: Wake Wait
-        waited_task_slices: Waited Task Slices
-        poll_cpu: Poll CPU
-        poll_wall: Poll Wall
   toolbar:
     schemas:
       placeholder: All Databases

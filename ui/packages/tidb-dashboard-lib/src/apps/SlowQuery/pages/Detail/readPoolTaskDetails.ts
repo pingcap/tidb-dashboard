@@ -55,7 +55,12 @@ function isAggregate(
 }
 
 function isDetails(value: unknown): value is ReadPoolTaskDetails {
-  if (!isObject(value) || !isFiniteNumber(value.tasks)) return false
+  if (
+    !isObject(value) ||
+    (value.tasks !== undefined && !isFiniteNumber(value.tasks))
+  ) {
+    return false
+  }
   const counterAggregateKeys = ['poll_count', 'dispatch_count'] as const
   const durationAggregateKeys = [
     'task_wall_time',
@@ -78,9 +83,12 @@ function isDetails(value: unknown): value is ReadPoolTaskDetails {
     if (enabled !== undefined && typeof enabled !== 'boolean') return false
     if (!isAggregate(slices, isFiniteNumber)) return false
   }
-  return ['tasks', ...counterAggregateKeys, ...durationAggregateKeys].some(
-    (key) => value[key] !== undefined
-  )
+  return [
+    'tasks',
+    'fair_queue',
+    ...counterAggregateKeys,
+    ...durationAggregateKeys
+  ].some((key) => value[key] !== undefined)
 }
 
 /** Parse JSON or TiDB's compact slow-log format without evaluating input. */

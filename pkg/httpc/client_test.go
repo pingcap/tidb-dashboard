@@ -22,7 +22,10 @@ func newTestClient(t *testing.T) *Client {
 }
 
 func Test_NewHTTPClientClonesTLSConfig(t *testing.T) {
-	tlsConfig := &tls.Config{NextProtos: []string{"http/1.1"}}
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+		NextProtos: []string{"http/1.1"},
+	}
 	lc := fxtest.NewLifecycle(t)
 	c := NewHTTPClient(lc, &config.Config{ClusterTLSConfig: tlsConfig})
 
@@ -88,8 +91,8 @@ func Test_Send_overHTTP2WhenTLSConfigAdvertisesH2(t *testing.T) {
 
 	lc := fxtest.NewLifecycle(t)
 	c := NewHTTPClient(lc, &config.Config{
-		ClusterTLSConfig: &tls.Config{ //nolint:gosec
-			InsecureSkipVerify: true,
+		ClusterTLSConfig: &tls.Config{
+			InsecureSkipVerify: true, //nolint:gosec // Test server uses a self-signed certificate.
 			NextProtos:         []string{"h2", "http/1.1"},
 		},
 	})

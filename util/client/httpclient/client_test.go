@@ -10,7 +10,10 @@ import (
 )
 
 func TestNewTransportClonesTLSConfig(t *testing.T) {
-	tlsConfig := &tls.Config{NextProtos: []string{"http/1.1"}}
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+		NextProtos: []string{"http/1.1"},
+	}
 	transport := newTransport(tlsConfig)
 
 	require.NotSame(t, tlsConfig, transport.TLSClientConfig)

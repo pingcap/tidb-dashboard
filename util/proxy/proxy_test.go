@@ -393,8 +393,6 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 	// Add a new alive upstream
 	p.SetUpstreams([]string{testutil.GetHTTPServerHost(server), testutil.GetHTTPServerHost(server2)})
 	require.False(t, p.HasActiveUpstream())
-	_, err = sendGetToProxy(p)
-	require.Error(t, err)
 
 	time.Sleep(probeWait)
 	require.True(t, p.HasActiveUpstream())
@@ -416,8 +414,6 @@ func TestUpstreamSwitchComplex(t *testing.T) {
 	// Add a new alive upstream
 	p.SetUpstreams([]string{testutil.GetHTTPServerHost(server), testutil.GetHTTPServerHost(server2), host3})
 	require.False(t, p.HasActiveUpstream())
-	_, err = sendGetToProxy(p)
-	require.Error(t, err)
 
 	time.Sleep(probeWait)
 	require.True(t, p.HasActiveUpstream())

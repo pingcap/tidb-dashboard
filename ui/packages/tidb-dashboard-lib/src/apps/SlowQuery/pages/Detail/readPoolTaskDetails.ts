@@ -82,6 +82,7 @@ function isDetails(value: unknown): value is ReadPoolTaskDetails {
     const { enabled, waited_task_slices: slices } = value.fair_queue
     if (enabled !== undefined && typeof enabled !== 'boolean') return false
     if (!isAggregate(slices, isFiniteNumber)) return false
+    if (enabled === undefined && slices === undefined) return false
   }
   return [
     'tasks',

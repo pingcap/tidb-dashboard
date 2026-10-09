@@ -86,11 +86,12 @@ type Model struct {
 	TxnRetry       int `gorm:"column:Txn_retry" json:"txn_retry"`
 
 	// Coprocessor
-	RequestCount uint   `gorm:"column:Request_count" json:"request_count"`
-	ProcessKeys  uint   `gorm:"column:Process_keys" json:"process_keys"`
-	TotalKeys    uint   `gorm:"column:Total_keys" json:"total_keys"`
-	CopProcAddr  string `gorm:"column:Cop_proc_addr" json:"cop_proc_addr"`
-	CopWaitAddr  string `gorm:"column:Cop_wait_addr" json:"cop_wait_addr"`
+	RequestCount        uint    `gorm:"column:Request_count" json:"request_count"`
+	ProcessKeys         uint    `gorm:"column:Process_keys" json:"process_keys"`
+	TotalKeys           uint    `gorm:"column:Total_keys" json:"total_keys"`
+	CopProcAddr         string  `gorm:"column:Cop_proc_addr" json:"cop_proc_addr"`
+	CopWaitAddr         string  `gorm:"column:Cop_wait_addr" json:"cop_wait_addr"`
+	ReadPoolTaskDetails *string `gorm:"column:Read_pool_task_details" json:"read_pool_task_details"`
 
 	// RocksDB
 	RocksdbDeleteSkippedCount uint `gorm:"column:Rocksdb_delete_skipped_count" json:"rocksdb_delete_skipped_count"`

@@ -67,10 +67,7 @@ function readPoolSummary(
 
 /** Keep pool counters and timings in at most two native Coprocessor detail rows. */
 export function tabReadPoolItems(data: SlowqueryModel, t: TFunction) {
-  const details = parseReadPoolTaskDetails(
-    (data as SlowqueryModel & { read_pool_task_details?: unknown })
-      .read_pool_task_details
-  )
+  const details = parseReadPoolTaskDetails(data.read_pool_task_details)
   if (!details) return []
 
   const counters: ReadPoolMetric[] = [

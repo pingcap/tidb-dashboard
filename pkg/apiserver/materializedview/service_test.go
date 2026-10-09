@@ -259,13 +259,13 @@ func TestBuildRefreshHistoryOrderClause(t *testing.T) {
 			name:    "refresh start time desc",
 			orderBy: "refresh_time",
 			isDesc:  true,
-			expect:  "refresh_time DESC",
+			expect:  "refresh_start_time DESC",
 		},
 		{
 			name:    "refresh start time asc",
 			orderBy: "refresh_time",
 			isDesc:  false,
-			expect:  "refresh_time ASC",
+			expect:  "refresh_start_time ASC",
 		},
 	}
 
@@ -309,6 +309,55 @@ func TestBuildRefreshHistoryBaseQueryIncludesMinScheduleDuration(t *testing.T) {
 	}
 }
 
+func TestBuildRefreshHistoryQueriesUsePR71589Columns(t *testing.T) {
+	selectStmt := buildRefreshHistorySelectStmt()
+	for _, column := range []string{
+		"mview_schema AS `schema`",
+		"mview_name AS materialized_view",
+		"refresh_start_time AS refresh_time",
+	} {
+		if !strings.Contains(selectStmt, column) {
+			t.Fatalf("history select is missing %q: %s", column, selectStmt)
+		}
+	}
+	for _, oldColumn := range []string{", mv_schema", ", mv_name", ", refresh_time,"} {
+		if strings.Contains(selectStmt, oldColumn) {
+			t.Fatalf("history select unexpectedly uses old physical column %q: %s", oldColumn, selectStmt)
+		}
+	}
+
+	sqlDB, _, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to create mock database: %v", err)
+	}
+	defer sqlDB.Close()
+
+	db, err := gorm.Open(mysql.New(mysql.Config{
+		Conn:                      sqlDB,
+		SkipInitializeWithVersion: true,
+	}), &gorm.Config{DryRun: true})
+	if err != nil {
+		t.Fatalf("failed to create gorm database: %v", err)
+	}
+
+	req := &RefreshHistoryRequest{
+		BeginTime:        1710000000,
+		EndTime:          1710003600,
+		Schema:           []string{"test"},
+		MaterializedView: "mv",
+	}
+	query := buildRefreshHistoryBaseQuery(db, req).Find(&[]RefreshHistoryItem{}).Statement.SQL.String()
+	for _, column := range []string{
+		"refresh_start_time BETWEEN",
+		"mview_schema IN",
+		"mview_name =",
+	} {
+		if !strings.Contains(query, column) {
+			t.Fatalf("history query is missing %q: %s", column, query)
+		}
+	}
+}
+
 func TestBuildRefreshAlertOrderClause(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -320,31 +369,31 @@ func TestBuildRefreshAlertOrderClause(t *testing.T) {
 			name:    "last success time desc",
 			orderBy: "last_success_time",
 			isDesc:  true,
-			expect:  "last_success_time DESC",
+			expect:  "last_success_snapshot_time DESC",
 		},
 		{
 			name:    "last success time asc",
 			orderBy: "last_success_time",
 			isDesc:  false,
-			expect:  "last_success_time ASC",
+			expect:  "last_success_snapshot_time ASC",
 		},
 		{
 			name:    "update time desc",
 			orderBy: "update_time",
 			isDesc:  true,
-			expect:  "updated_at DESC",
+			expect:  "update_time DESC",
 		},
 		{
 			name:    "update time asc",
 			orderBy: "update_time",
 			isDesc:  false,
-			expect:  "updated_at ASC",
+			expect:  "update_time ASC",
 		},
 		{
 			name:    "updated at desc",
 			orderBy: "updated_at",
 			isDesc:  true,
-			expect:  "updated_at DESC",
+			expect:  "update_time DESC",
 		},
 	}
 
@@ -354,5 +403,55 @@ func TestBuildRefreshAlertOrderClause(t *testing.T) {
 				t.Fatalf("unexpected order clause: %s", got)
 			}
 		})
+	}
+}
+
+func TestBuildRefreshAlertQueriesUsePR71589Columns(t *testing.T) {
+	selectStmt := buildRefreshAlertSelectStmt()
+	for _, column := range []string{
+		"mview_schema AS `schema`",
+		"mview_name AS materialized_view",
+		"last_success_snapshot_time AS last_success_time",
+		"update_time",
+	} {
+		if !strings.Contains(selectStmt, column) {
+			t.Fatalf("alert select is missing %q: %s", column, selectStmt)
+		}
+	}
+	for _, oldColumn := range []string{", mv_schema", ", mv_name", ", last_success_time,", "updated_at"} {
+		if strings.Contains(selectStmt, oldColumn) {
+			t.Fatalf("alert select unexpectedly uses old physical column %q: %s", oldColumn, selectStmt)
+		}
+	}
+
+	sqlDB, _, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to create mock database: %v", err)
+	}
+	defer sqlDB.Close()
+
+	db, err := gorm.Open(mysql.New(mysql.Config{
+		Conn:                      sqlDB,
+		SkipInitializeWithVersion: true,
+	}), &gorm.Config{DryRun: true})
+	if err != nil {
+		t.Fatalf("failed to create gorm database: %v", err)
+	}
+
+	lastSuccessTime := int64(1710000000)
+	req := &RefreshAlertRequest{
+		Schema:           []string{"test"},
+		MaterializedView: "mv",
+		LastSuccessTime:  lastSuccessTime,
+	}
+	query := buildRefreshAlertBaseQuery(db, req).Find(&[]RefreshAlertItem{}).Statement.SQL.String()
+	for _, column := range []string{
+		"mview_schema IN",
+		"mview_name =",
+		"last_success_snapshot_time >=",
+	} {
+		if !strings.Contains(query, column) {
+			t.Fatalf("alert query is missing %q: %s", column, query)
+		}
 	}
 }

@@ -5,6 +5,7 @@ export interface SlowqueryModel {
   binary_plan_json?: string
   binary_plan_text?: string
   commit_backoff_time?: number
+  backoff_total?: number
   commit_time?: number
   compile_time?: number
   connection_id?: string

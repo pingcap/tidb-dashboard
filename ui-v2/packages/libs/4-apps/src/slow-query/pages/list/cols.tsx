@@ -125,6 +125,7 @@ export function useListTableColumns() {
       tcf.number("prewrite_time", "s"),
       tcf.number("commit_time", "s"),
       tcf.number("commit_backoff_time", "s"),
+      tcf.number("backoff_total", "s"),
       tcf.number("resolve_lock_time", "s"),
       // cop
       tcf.number("cop_proc_avg", "s"),

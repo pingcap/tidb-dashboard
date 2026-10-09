@@ -72,6 +72,7 @@ type Model struct {
 	WaitPreWriteBinlogTime float64 `gorm:"column:Wait_prewrite_binlog_time" json:"wait_prewrite_binlog_time"`
 	CommitTime             float64 `gorm:"column:Commit_time" json:"commit_time"`
 	CommitBackoffTime      float64 `gorm:"column:Commit_backoff_time" json:"commit_backoff_time"`
+	BackoffTotal           float64 `gorm:"column:Backoff_total" json:"backoff_total"`
 	CopProcAvg             float64 `gorm:"column:Cop_proc_avg" json:"cop_proc_avg"`
 	CopProcP90             float64 `gorm:"column:Cop_proc_p90" json:"cop_proc_p90"`
 	CopProcMax             float64 `gorm:"column:Cop_proc_max" json:"cop_proc_max"`

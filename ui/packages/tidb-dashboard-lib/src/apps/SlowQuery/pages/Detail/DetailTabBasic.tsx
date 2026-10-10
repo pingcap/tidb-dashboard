@@ -1,9 +1,11 @@
 import React from 'react'
+import { TFunction } from 'react-i18next'
+import { formatPhaseBackoff } from '../../utils/phaseBackoff'
 import { SlowqueryModel } from '@lib/client'
 import { DateTime } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-export const tabBasicItems = (data: SlowqueryModel) => [
+export const tabBasicItems = (data: SlowqueryModel, t: TFunction) => [
   {
     key: 'timestamp',
     value: <DateTime.Calendar unixTimestampMs={(data.timestamp ?? 0) * 1000} />
@@ -18,6 +20,23 @@ export const tabBasicItems = (data: SlowqueryModel) => [
   { key: 'index_names', value: data.index_names },
   { key: 'stats', value: data.stats },
   { key: 'backoff_types', value: data.backoff_types },
+  {
+    key: 'prewrite_backoff_types',
+    value: formatPhaseBackoff(
+      data.prewrite_backoff_types,
+      t('slow_query.fields.phase_backoff_unavailable'),
+      t('slow_query.fields.phase_backoff_empty')
+    )
+  },
+  {
+    key: 'commit_backoff_types',
+    value: formatPhaseBackoff(
+      data.commit_backoff_types,
+      t('slow_query.fields.phase_backoff_unavailable'),
+      t('slow_query.fields.phase_backoff_empty')
+    )
+  },
+
   {
     key: 'memory_max',
     value: getValueFormat('bytes')(data.memory_max || 0, 1)

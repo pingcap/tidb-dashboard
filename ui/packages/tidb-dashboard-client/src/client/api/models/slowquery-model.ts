@@ -58,6 +58,12 @@ export interface SlowqueryModel {
     'commit_backoff_time'?: number;
     /**
      * 
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'commit_backoff_types'?: string | null;
+    /**
+     * 
      * @type {number}
      * @memberof SlowqueryModel
      */
@@ -267,6 +273,12 @@ export interface SlowqueryModel {
      */
     'prev_stmt'?: string;
     /**
+     * nil means the phase column is unavailable; an empty string means the reader recorded no types.
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'prewrite_backoff_types'?: string | null;
+    /**
      * 
      * @type {number}
      * @memberof SlowqueryModel
@@ -362,6 +374,12 @@ export interface SlowqueryModel {
      * @memberof SlowqueryModel
      */
     'ru'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'session_connect_attrs'?: string;
     /**
      * 
      * @type {string}

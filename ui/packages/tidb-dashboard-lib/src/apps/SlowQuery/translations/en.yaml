@@ -41,6 +41,12 @@ slow_query:
     index_names_tooltip: The name of the used index
     stats: Used Statistics
     backoff_types: Backoff Types
+    prewrite_backoff_types: Prewrite Backoff Types
+    commit_backoff_types: Commit Backoff Types
+    prewrite_backoff_types_tooltip: Recorded types from the prewrite batch with the longest cumulative backoff; not all statement retries.
+    commit_backoff_types_tooltip: Recorded foreground commit backoff types; not all statement retries.
+    phase_backoff_unavailable: Unavailable in current data source
+    phase_backoff_empty: No types recorded
     user: Execution User
     user_tooltip: The user that executes the query
     host: Client Address

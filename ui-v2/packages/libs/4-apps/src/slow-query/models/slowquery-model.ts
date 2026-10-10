@@ -1,6 +1,8 @@
 export interface SlowqueryModel {
   backoff_time?: number
   backoff_types?: string
+  prewrite_backoff_types?: string | null
+  commit_backoff_types?: string | null
   binary_plan?: string
   binary_plan_json?: string
   binary_plan_text?: string

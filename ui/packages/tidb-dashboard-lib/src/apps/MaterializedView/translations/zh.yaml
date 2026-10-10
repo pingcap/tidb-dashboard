@@ -18,7 +18,7 @@ materialized_view:
     materialized_view: Materialized View
     materialized_view_id: Materialized View ID
     refresh_start_time: Refresh Start time
-    last_success_time: Last Success Time
+    last_success_time: 最近一次成功刷新的快照时间
     alert_type: Alert Type
     refresh_failed: Refresh Failed
     update_time: Update Time
@@ -42,7 +42,7 @@ materialized_view:
     materialized_view:
       placeholder: Materialized View
     last_success_time:
-      placeholder: Last Success Time >=
+      placeholder: 最近一次成功刷新的快照时间 >=
     duration:
       placeholder: 最小时长（秒）
     schedule_duration:

@@ -259,13 +259,13 @@ func TestBuildRefreshHistoryOrderClause(t *testing.T) {
 			name:    "refresh start time desc",
 			orderBy: "refresh_time",
 			isDesc:  true,
-			expect:  "refresh_time DESC",
+			expect:  "refresh_start_time DESC",
 		},
 		{
 			name:    "refresh start time asc",
 			orderBy: "refresh_time",
 			isDesc:  false,
-			expect:  "refresh_time ASC",
+			expect:  "refresh_start_time ASC",
 		},
 	}
 
@@ -320,31 +320,31 @@ func TestBuildRefreshAlertOrderClause(t *testing.T) {
 			name:    "last success time desc",
 			orderBy: "last_success_time",
 			isDesc:  true,
-			expect:  "last_success_time DESC",
+			expect:  "last_success_snapshot_time DESC",
 		},
 		{
 			name:    "last success time asc",
 			orderBy: "last_success_time",
 			isDesc:  false,
-			expect:  "last_success_time ASC",
+			expect:  "last_success_snapshot_time ASC",
 		},
 		{
 			name:    "update time desc",
 			orderBy: "update_time",
 			isDesc:  true,
-			expect:  "updated_at DESC",
+			expect:  "update_time DESC",
 		},
 		{
 			name:    "update time asc",
 			orderBy: "update_time",
 			isDesc:  false,
-			expect:  "updated_at ASC",
+			expect:  "update_time ASC",
 		},
 		{
 			name:    "updated at desc",
 			orderBy: "updated_at",
 			isDesc:  true,
-			expect:  "updated_at DESC",
+			expect:  "update_time DESC",
 		},
 	}
 

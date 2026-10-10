@@ -261,14 +261,14 @@ func normalizeRefreshAlertRequest(req *RefreshAlertRequest) error {
 func buildRefreshHistoryBaseQuery(db *gorm.DB, req *RefreshHistoryRequest) *gorm.DB {
 	tx := db.
 		Table("mysql.tidb_mview_refresh_hist").
-		Where("refresh_time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
+		Where("refresh_start_time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
 
 	if len(req.Schema) > 0 {
-		tx = tx.Where("mv_schema IN (?)", req.Schema)
+		tx = tx.Where("mview_schema IN (?)", req.Schema)
 	}
 
 	if req.MaterializedView != "" {
-		tx = tx.Where("mv_name = ?", req.MaterializedView)
+		tx = tx.Where("mview_name = ?", req.MaterializedView)
 	}
 	if len(req.RefreshMethod) > 0 {
 		tx = tx.Where("refresh_method IN (?)", req.RefreshMethod)
@@ -290,14 +290,14 @@ func buildRefreshAlertBaseQuery(db *gorm.DB, req *RefreshAlertRequest) *gorm.DB 
 	tx := db.Table("mysql.tidb_mview_refresh_alert")
 
 	if len(req.Schema) > 0 {
-		tx = tx.Where("mv_schema IN (?)", req.Schema)
+		tx = tx.Where("mview_schema IN (?)", req.Schema)
 	}
 
 	if req.MaterializedView != "" {
-		tx = tx.Where("mv_name = ?", req.MaterializedView)
+		tx = tx.Where("mview_name = ?", req.MaterializedView)
 	}
 	if req.LastSuccessTime > 0 {
-		tx = tx.Where("last_success_time >= FROM_UNIXTIME(?)", req.LastSuccessTime)
+		tx = tx.Where("last_success_snapshot_time >= FROM_UNIXTIME(?)", req.LastSuccessTime)
 	}
 
 	return tx
@@ -307,16 +307,16 @@ func buildRefreshHistoryOrderClause(orderBy string, isDesc bool) string {
 	switch orderBy {
 	case "refresh_time":
 		if isDesc {
-			return "refresh_time DESC"
+			return "refresh_start_time DESC"
 		}
-		return "refresh_time ASC"
+		return "refresh_start_time ASC"
 	case "refresh_duration_sec":
 		if isDesc {
 			return "refresh_duration_sec DESC"
 		}
 		return "refresh_duration_sec ASC"
 	default:
-		return "refresh_time DESC"
+		return "refresh_start_time DESC"
 	}
 }
 
@@ -324,25 +324,25 @@ func buildRefreshAlertOrderClause(orderBy string, isDesc bool) string {
 	switch orderBy {
 	case "last_success_time":
 		if isDesc {
-			return "last_success_time DESC"
+			return "last_success_snapshot_time DESC"
 		}
-		return "last_success_time ASC"
+		return "last_success_snapshot_time ASC"
 	case "update_time", "updated_at":
 		if isDesc {
-			return "updated_at DESC"
+			return "update_time DESC"
 		}
-		return "updated_at ASC"
+		return "update_time ASC"
 	default:
-		return "updated_at DESC"
+		return "update_time DESC"
 	}
 }
 
 func buildRefreshHistorySelectStmt() string {
 	return strings.Join([]string{
 		"CAST(refresh_job_id AS CHAR) AS refresh_job_id",
-		"mv_schema AS `schema`",
-		"mv_name AS materialized_view",
-		"refresh_time",
+		"mview_schema AS `schema`",
+		"mview_name AS materialized_view",
+		"refresh_start_time AS refresh_time",
 		"CAST(refresh_duration_sec AS DOUBLE) AS duration",
 		"CAST(refresh_schedule_duration_sec AS DOUBLE) AS schedule_duration",
 		"refresh_status",
@@ -355,13 +355,13 @@ func buildRefreshHistorySelectStmt() string {
 
 func buildRefreshAlertSelectStmt() string {
 	return strings.Join([]string{
-		"mv_schema AS `schema`",
-		"mv_name AS materialized_view",
+		"mview_schema AS `schema`",
+		"mview_name AS materialized_view",
 		"CAST(mview_id AS CHAR) AS materialized_view_id",
-		"last_success_time",
+		"last_success_snapshot_time AS last_success_time",
 		"alert_level AS alert_type",
 		"CASE WHEN refresh_failed THEN 'Yes' ELSE '' END AS refresh_failed",
-		"updated_at AS update_time",
+		"update_time",
 	}, ", ")
 }
 

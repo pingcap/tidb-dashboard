@@ -47,6 +47,7 @@
   Index_names: "1"
   Is_internal: 1
   Digest: TEST_ALL_FIELDS
+  Read_pool_task_details: "{tasks:1, poll_count:{total:2}}"
   Stats: "1"
   Cop_proc_avg: 1
   Cop_proc_p90: 1

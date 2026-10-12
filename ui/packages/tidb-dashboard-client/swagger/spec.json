@@ -5344,6 +5344,9 @@
                     "description": "latency",
                     "type": "number"
                 },
+                "read_pool_task_details": {
+                    "type": "string"
+                },
                 "request_count": {
                     "description": "Coprocessor",
                     "type": "integer"
